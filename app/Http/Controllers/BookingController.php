@@ -1,0 +1,285 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\BeautyService;
+use App\Models\Booking;
+use App\Models\DiscountCode;
+use App\Models\Specialist;
+use App\Notifications\BookingNotification;
+use App\Notifications\CustomerBookingNotification;
+use App\Services\PaymentService;
+use App\Services\SMSService;
+use Illuminate\Http\Client\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\View;
+
+class BookingController extends Controller
+{
+    public function create()
+    {
+        $services = BeautyService::all();
+        $specialists = Specialist::all();
+
+        return view('bookings.create', compact('services', 'specialists'));
+    }
+
+    public function getAvailableTimeSlots(Request $request, Specialist $specialist, $date)
+    {
+        $schedule = $specialist->workSchedule()
+            ->where('day_of_week', Carbon::parse($date)->dayOfWeek)
+            ->first();
+
+        if (!$schedule ||
+            $specialist->holidays()->whereDate('date', $date)->exists() ||
+            $specialist->leaves()
+                ->whereDate('start_date', '<=', $date)
+                ->whereDate('end_date', '>=', $date)
+                ->where('status', 'approved')
+                ->exists()
+        ) {
+            return response()->json([]);
+        }
+
+        $availableSlots = $specialist->getAvailableSlots($date);
+        return response()->json([
+            'slots' => $availableSlots,
+            'schedule' => [
+                'start_time' => $schedule->start_time,
+                'end_time' => $schedule->end_time,
+                'break_start' => $schedule->break_start,
+                'break_end' => $schedule->break_end
+            ]
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'service_id' => 'required|exists:beauty_services,id',
+            'specialist_id' => 'required|exists:specialists,id',
+            'booking_time' => 'required|date|after:now',
+        ]);
+
+        $specialist = Specialist::find($request->specialist_id);
+        $availableSlots = $specialist->getAvailableSlots(date('Y-m-d', strtotime($request->booking_time)));
+
+        if (!in_array(date('H:i', strtotime($request->booking_time)), $availableSlots)) {
+            return response()->json(['message' => 'این زمان قبلاً رزرو شده است.'], 422);
+        }
+
+        $booking = Booking::create([
+            'service_id' => $request->service_id,
+            'specialist_id' => $request->specialist_id,
+            'user_id' => auth()->id(),
+            'booking_time' => $request->booking_time,
+            'status' => 'pending',
+            'prepayment_amount' => 50000,
+            'payment_status' => 'unpaid'
+        ]);
+
+        return response()->json([
+            'message' => 'نوبت با موفقیت ثبت شد.',
+            'booking' => $booking
+        ]);
+    }
+
+    public function processPayment(Booking $booking)
+    {
+        try {
+            $payment = new PaymentService();
+            $result = $payment->pay([
+                'amount' => $booking->prepayment_amount,
+                'callback_url' => route('payment.callback', $booking),
+                'description' => 'پیش پرداخت نوبت سالن زیبایی'
+            ]);
+
+            $booking->update([
+                'payment_ref' => $result['ref_id']
+            ]);
+
+            return redirect($result['payment_url']);
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'خطا در اتصال به درگاه پرداخت');
+        }
+    }
+
+    public function paymentCallback(Request $request, Booking $booking)
+    {
+        try {
+            $payment = new PaymentService();
+            $result = $payment->verify($request->all());
+
+            if ($result['status'] === 'success') {
+                $booking->update([
+                    'payment_status' => 'paid',
+                    'status' => 'confirmed'
+                ]);
+
+                $booking->specialist->notify(new BookingNotification($booking));
+                $booking->user->notify(new CustomerBookingNotification($booking));
+
+                return redirect()->route('bookings.success')
+                    ->with('success', 'رزرو با موفقیت انجام شد.');
+            }
+
+            return redirect()->route('bookings.failed')
+                ->with('error', 'پرداخت ناموفق بود.');
+
+        } catch (\Exception $e) {
+            return redirect()->route('bookings.failed')
+                ->with('error', 'خطا در تایید پرداخت');
+        }
+    }
+
+    public function reschedule(Request $request, Booking $booking)
+    {
+        if (!$booking->canBeRescheduled()) {
+            return back()->with('error', 'امکان تغییر زمان این نوبت وجود ندارد.');
+        }
+
+        $validated = $request->validate([
+            'booking_time' => 'required|date|after:now'
+        ]);
+
+        $booking->update([
+            'booking_time' => $validated['booking_time']
+        ]);
+
+        $smsService = new SMSService();
+        $message = sprintf(
+            'زمان نوبت شما به %s تغییر کرد.',
+            verta($booking->booking_time)->format('Y/m/d H:i')
+        );
+        $smsService->send($booking->user->phone, $message);
+
+        return redirect()->route('bookings.show', $booking)
+            ->with('success', 'زمان نوبت با موفقیت تغییر کرد.');
+    }
+
+    public function cancel(Booking $booking)
+    {
+        if (!$booking->canBeCancelled()) {
+            return back()->with('error', 'امکان لغو این نوبت وجود ندارد.');
+        }
+
+        $booking->update(['status' => 'cancelled']);
+
+        $smsService = new SMSService();
+        $message = sprintf(
+            'نوبت شما در تاریخ %s لغو شد.',
+            verta($booking->booking_time)->format('Y/m/d H:i')
+        );
+        $smsService->send($booking->user->phone, $message);
+
+        return redirect()->route('bookings.index')
+            ->with('success', 'نوبت با موفقیت لغو شد.');
+    }
+
+    public function applyDiscount(Request $request, Booking $booking): \Illuminate\Http\RedirectResponse
+    {
+        $request->validate([
+            'code' => 'required|string'
+        ]);
+
+        $discountCode = DiscountCode::where('code', $request->code)->first();
+
+        if (!$discountCode || !$discountCode->isValid()) {
+            return back()->with('error', 'کد تخفیف نامعتبر است.');
+        }
+
+        $discountAmount = $discountCode->type === 'percentage'
+            ? ($booking->prepayment_amount * $discountCode->amount / 100)
+            : $discountCode->amount;
+
+        $booking->update([
+            'discount_code' => $discountCode->code,
+            'discount_amount' => $discountAmount,
+            'prepayment_amount' => $booking->prepayment_amount - $discountAmount
+        ]);
+
+        $discountCode->increment('used_count');
+
+        return back()->with('success', 'کد تخفیف با موفقیت اعمال شد.');
+    }
+
+    public function rate(Request $request, Booking $booking): \Illuminate\Http\RedirectResponse
+    {
+        $validated = $request->validate([
+            'rating' => 'required|integer|between:1,5',
+            'review' => 'nullable|string|max:500'
+        ]);
+
+        $booking->update($validated);
+
+        return back()->with('success', 'نظر شما با موفقیت ثبت شد.');
+    }
+
+    public function getNextAvailableSlots($specialist_id, $count = 5): \Illuminate\Support\Collection
+    {
+        $specialist = Specialist::findOrFail($specialist_id);
+        $nextDays = collect();
+        $date = now();
+
+        while ($nextDays->count() < $count) {
+            $slots = $specialist->getAvailableSlots($date->format('Y-m-d'));
+            if (!empty($slots)) {
+                $nextDays->push([
+                    'date' => $date->format('Y-m-d'),
+                    'slots' => $slots
+                ]);
+            }
+            $date->addDay();
+        }
+
+        return $nextDays;
+    }
+
+    public function getMonthlyAvailability($specialist_id, $year_month): array
+    {
+        $specialist = Specialist::findOrFail($specialist_id);
+        $date = Carbon::createFromFormat('Y-m', $year_month);
+        $daysInMonth = $date->daysInMonth;
+
+        $availability = [];
+        for ($day = 1; $day <= $daysInMonth; $day++) {
+            $currentDate = $date->copy()->setDay($day);
+            $slots = $specialist->getAvailableSlots($currentDate->format('Y-m-d'));
+
+            $availability[] = [
+                'date' => $currentDate->format('Y-m-d'),
+                'has_slots' => !empty($slots),
+                'slots_count' => count($slots),
+                'is_holiday' => $specialist->holidays()
+                    ->whereDate('date', $currentDate)
+                    ->exists(),
+                'is_leave' => $specialist->leaves()
+                    ->whereDate('start_date', '<=', $currentDate)
+                    ->whereDate('end_date', '>=', $currentDate)
+                    ->where('status', 'approved')
+                    ->exists()
+            ];
+        }
+
+        return $availability;
+    }
+
+    public function getUserBookings(): \Illuminate\Database\Eloquent\Collection
+    {
+        return Booking::with(['service', 'specialist'])
+            ->where('user_id', auth()->id())
+            ->orderBy('booking_time', 'desc')
+            ->get();
+    }
+
+    public function index()
+    {
+        $bookings = Booking::where('user_id', auth()->id())
+            ->with(['service', 'specialist'])
+            ->latest()
+            ->paginate(10);
+
+        return view('bookings.index', compact('bookings'));
+    }
+}

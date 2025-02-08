@@ -1,0 +1,171 @@
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Services\TwoFactorAuthService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
+class TwoFactorController extends Controller
+{
+    protected TwoFactorAuthService $twoFactorService;
+
+    public function __construct(TwoFactorAuthService $twoFactorService)
+    {
+        $this->twoFactorService = $twoFactorService;
+    }
+
+    public function show()
+    {
+        return view('auth.2fa.index', [
+            'enabled' => $this->twoFactorService->isEnabled(auth()->user())
+        ]);
+    }
+
+    public function showSetup()
+    {
+        if ($this->twoFactorService->isEnabled(auth()->user())) {
+            return redirect()->route('security.2fa')
+                ->with('error', 'احراز هویت دو مرحله‌ای قبلاً فعال شده است.');
+        }
+
+        $code = $this->twoFactorService->generateCode(auth()->user());
+        return view('auth.2fa.setup', compact('code'));
+    }
+
+    public function showConfirmation()
+    {
+        return view('auth.2fa.confirm');
+    }
+
+    public function enable(Request $request)
+    {
+        try {
+            $request->validate([
+                'code' => 'required|string|size:6'
+            ]);
+
+            if ($this->twoFactorService->verify(auth()->user(), $request->code)) {
+                $this->twoFactorService->enable(auth()->user());
+
+                Log::info('2FA enabled', [
+                    'user_id' => auth()->id()
+                ]);
+
+                return response()->json([
+                    'message' => 'احراز هویت دو مرحله‌ای با موفقیت فعال شد.'
+                ]);
+            }
+
+            return response()->json([
+                'error' => 'کد وارد شده نامعتبر است.'
+            ], 422);
+
+        } catch (\Exception $e) {
+            Log::error('2FA enable failed', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'error' => 'خطا در فعال‌سازی احراز هویت دو مرحله‌ای.'
+            ], 500);
+        }
+    }
+
+    public function disable(Request $request)
+    {
+        try {
+            $request->validate([
+                'code' => 'required|string|size:6'
+            ]);
+
+            if ($this->twoFactorService->verify(auth()->user(), $request->code)) {
+                $this->twoFactorService->disable(auth()->user());
+
+                Log::info('2FA disabled', [
+                    'user_id' => auth()->id()
+                ]);
+
+                return response()->json([
+                    'message' => 'احراز هویت دو مرحله‌ای غیرفعال شد.'
+                ]);
+            }
+
+            return response()->json([
+                'error' => 'کد وارد شده نامعتبر است.'
+            ], 422);
+
+        } catch (\Exception $e) {
+            Log::error('2FA disable failed', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'error' => 'خطا در غیرفعال‌سازی احراز هویت دو مرحله‌ای.'
+            ], 500);
+        }
+    }
+
+    public function verify(Request $request)
+    {
+        try {
+            $request->validate([
+                'code' => 'required|string|size:6'
+            ]);
+
+            if ($this->twoFactorService->verify(auth()->user(), $request->code)) {
+                session(['2fa_verified' => true]);
+
+                Log::info('2FA verification successful', [
+                    'user_id' => auth()->id()
+                ]);
+
+                return response()->json([
+                    'message' => 'کد تایید شد.'
+                ]);
+            }
+
+            return response()->json([
+                'error' => 'کد وارد شده نامعتبر است.'
+            ], 422);
+
+        } catch (\Exception $e) {
+            Log::error('2FA verification failed', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'error' => 'خطا در تایید کد.'
+            ], 500);
+        }
+    }
+
+    public function resend()
+    {
+        try {
+            $code = $this->twoFactorService->generateCode(auth()->user());
+
+            Log::info('2FA code resent', [
+                'user_id' => auth()->id()
+            ]);
+
+            return response()->json([
+                'message' => 'کد جدید ارسال شد.'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('2FA code resend failed', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'error' => 'خطا در ارسال مجدد کد.'
+            ], 500);
+        }
+    }
+}
