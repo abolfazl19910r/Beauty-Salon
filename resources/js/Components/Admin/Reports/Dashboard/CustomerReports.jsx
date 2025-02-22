@@ -1,16 +1,21 @@
 // resources/js/Components/Admin/Reports/Dashboard/CustomerReports.jsx
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import ExportButtons from '../Common/ExportButtons';
 
-const CustomerReports = () => {
+const CustomerReports = ({ reportType, startDate, endDate }) => {
     const [satisfactionData, setSatisfactionData] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch('/admin/reports/customer-satisfaction');
+                const params = new URLSearchParams({
+                    type: reportType,
+                    start_date: startDate,
+                    end_date: endDate
+                });
+
+                const response = await fetch(`/admin/reports/customer-satisfaction?${params}`);
                 const data = await response.json();
                 setSatisfactionData(data);
             } catch (error) {
@@ -21,7 +26,7 @@ const CustomerReports = () => {
         };
 
         fetchData();
-    }, []);
+    }, [reportType, startDate, endDate]);
 
     if (loading) return <div className="p-4">در حال بارگذاری...</div>;
 
@@ -29,13 +34,8 @@ const CustomerReports = () => {
         acc + curr.satisfaction_rate, 0) / satisfactionData.length;
 
     return (
-        <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">رضایت مشتریان</h2>
-                <ExportButtons reportType="satisfaction" />
-            </div>
-
-            <div className="bg-blue-50 rounded-lg p-6 mb-6">
+        <div className="space-y-6">
+            <div className="bg-blue-50 rounded-lg p-6">
                 <div className="text-center">
                     <div className="text-3xl font-bold text-blue-600 mb-2">
                         {Math.round(overallSatisfaction)}%
@@ -52,7 +52,7 @@ const CustomerReports = () => {
                 </div>
             </div>
 
-            <div className="h-96">
+            <div className="h-[400px]">
                 <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={satisfactionData}>
                         <CartesianGrid strokeDasharray="3 3" />
@@ -78,14 +78,14 @@ const CustomerReports = () => {
                 </ResponsiveContainer>
             </div>
 
-            <div className="mt-6 grid gap-4">
+            <div className="grid gap-4">
                 {satisfactionData.map((item, index) => (
                     <div key={index} className="border rounded-lg p-4">
                         <div className="flex justify-between items-center mb-2">
                             <h4 className="font-bold">{item.specialist_name}</h4>
                             <span className="text-sm text-gray-500">
-                {item.total_ratings} نظر
-              </span>
+                                {item.total_ratings} نظر
+                            </span>
                         </div>
                         <div className="space-y-2">
                             <div className="flex justify-between items-center">

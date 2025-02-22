@@ -1,6 +1,6 @@
 // resources/js/Components/Admin/Reports/Common/DateFilter.jsx
 import React from 'react';
-import { CalendarIcon } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 
 const DateFilter = ({ startDate, endDate, onStartDateChange, onEndDateChange }) => {
     return (
@@ -14,7 +14,7 @@ const DateFilter = ({ startDate, endDate, onStartDateChange, onEndDateChange }) 
                         onChange={(e) => onStartDateChange(e.target.value)}
                         className="pr-10 pl-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full"
                     />
-                    <CalendarIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                    <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                 </div>
             </div>
 
@@ -27,7 +27,7 @@ const DateFilter = ({ startDate, endDate, onStartDateChange, onEndDateChange }) 
                         onChange={(e) => onEndDateChange(e.target.value)}
                         className="pr-10 pl-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full"
                     />
-                    <CalendarIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                    <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                 </div>
             </div>
         </div>

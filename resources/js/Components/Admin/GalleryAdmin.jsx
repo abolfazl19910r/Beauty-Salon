@@ -1,4 +1,6 @@
 // resources/js/components/admin/GalleryAdmin.jsx
+import {useEffect, useState} from "react";
+
 const GalleryAdmin = () => {
     const [images, setImages] = useState([]);
     const [newImage, setNewImage] = useState({

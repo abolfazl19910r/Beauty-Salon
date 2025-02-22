@@ -1,4 +1,6 @@
 // resources/js/components/admin/AnnouncementAdmin.jsx
+import {useEffect, useState} from "react";
+
 const AnnouncementAdmin = () => {
     const [announcements, setAnnouncements] = useState([]);
     const [newAnnouncement, setNewAnnouncement] = useState({
