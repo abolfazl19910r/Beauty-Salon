@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import react from '@vitejs/plugin-react';
+import path from 'path';
 
 export default defineConfig({
     plugins: [
@@ -11,72 +12,56 @@ export default defineConfig({
                 'resources/js/reports.jsx',
                 'resources/js/loyalty.jsx',
                 'resources/js/blog.jsx',
-                'resources/js/notifications.jsx'
+                'resources/js/notifications.jsx',
+                'resources/js/services-report.jsx'
             ],
             refresh: true,
         }),
-        react()
+        react({
+            include: '**/*.jsx'
+        })
     ],
     resolve: {
         alias: {
-            '@': '/resources/js',
-            '@components': '/resources/js/Components',
-            '@layouts': '/resources/js/Layouts',
-            '@pages': '/resources/js/Pages',
-            '@utils': '/resources/js/Utils'
-        }
-    },
-    build: {
-        rollupOptions: {
-            output: {
-                manualChunks: {
-                    // React و پکیج‌های اصلی
-                    react: ['react', 'react-dom'],
-
-                    // کتابخانه‌های چارت و گراف
-                    charts: ['recharts'],
-
-                    // کتابخانه‌های Utility
-                    vendor: ['axios', 'lodash', 'date-fns', 'date-fns-jalali'],
-
-                    // کامپوننت‌های UI
-                    ui: ['@headlessui/react', '@heroicons/react', 'lucide-react'],
-
-                    // کتابخانه‌های فرم و اعتبارسنجی
-                    forms: ['react-hook-form', '@hookform/resolvers', 'yup'],
-
-                    // کتابخانه‌های مربوط به ویرایشگر
-                    editor: ['@tiptap/react', '@tiptap/starter-kit', '@tiptap/extension-image'],
-
-                    // کتابخانه‌های مربوط به نوتیفیکیشن
-                    notifications: ['react-hot-toast', 'socket.io-client']
-                }
-            }
-        },
-        chunkSizeWarningLimit: 1500,
-        sourcemap: true,
-        minify: 'terser',
-        terserOptions: {
-            compress: {
-                drop_console: true,
-                drop_debugger: true
-            }
+            '@': path.resolve(__dirname, './resources/js'),
+            '@components': path.resolve(__dirname, './resources/js/Components'),
+            '@layouts': path.resolve(__dirname, './resources/js/Layouts'),
+            '@pages': path.resolve(__dirname, './resources/js/Pages'),
+            '@utils': path.resolve(__dirname, './resources/js/Utils'),
+            '@lib': path.resolve(__dirname, './resources/js/lib')
         }
     },
     optimizeDeps: {
         include: [
             'react',
             'react-dom',
+            '@headlessui/react',
+            '@heroicons/react',
+            'lucide-react',
             'recharts',
             'axios',
-            'lodash',
-            '@headlessui/react',
-            'lucide-react'
+            'clsx',
+            'tailwind-merge'
         ]
+    },
+    build: {
+        chunkSizeWarningLimit: 1000,
+        rollupOptions: {
+            output: {
+                manualChunks(id) {
+                    if (id.includes('node_modules')) {
+                        return 'vendor';
+                    }
+                }
+            }
+        }
     },
     server: {
         hmr: {
             overlay: true
+        },
+        watch: {
+            usePolling: true
         }
     }
 });
