@@ -5,7 +5,6 @@
 @section('content')
     <div class="max-w-7xl mx-auto">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- اطلاعات کاربر -->
             <div class="md:col-span-1">
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex justify-between items-center mb-4">
@@ -35,7 +34,6 @@
                 </div>
             </div>
 
-            <!-- نوبت‌های اخیر -->
             <div class="md:col-span-2">
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex justify-between items-center mb-4">

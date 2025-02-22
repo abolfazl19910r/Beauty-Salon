@@ -1,4 +1,3 @@
-<!-- resources/views/welcome.blade.php -->
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="rtl">
 <head>
@@ -10,13 +9,11 @@
 <body class="antialiased">
 <div class="relative min-h-screen bg-gray-100">
     <div class="max-w-7xl mx-auto p-6 lg:p-8">
-        <!-- Header -->
         <div class="text-center">
             <h1 class="text-4xl font-bold text-gray-900">سالن زیبایی</h1>
             <p class="mt-4 text-lg text-gray-600">خوش آمدید</p>
         </div>
 
-        <!-- Auth Links -->
         <div class="mt-16">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
                 <a href="{{ route('login') }}" class="scale-100 p-6 bg-white rounded-lg shadow-lg hover:scale-[1.02] transition-all duration-300">
@@ -39,7 +36,6 @@
             </div>
         </div>
 
-        <!-- Features -->
         <div class="mt-16">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="p-6 bg-white rounded-lg shadow-lg">

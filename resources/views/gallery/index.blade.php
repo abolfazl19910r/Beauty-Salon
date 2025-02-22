@@ -1,4 +1,3 @@
-<!-- resources/views/gallery/index.blade.php -->
 @extends('layouts.app')
 
 @section('content')

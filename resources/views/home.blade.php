@@ -3,7 +3,6 @@
 @section('title', 'صفحه اصلی')
 
 @section('content')
-    <!-- Hero Section -->
     <div class="relative bg-gradient-to-r from-blue-500 to-purple-600 text-white py-16 rounded-2xl mb-12">
         <div class="container mx-auto px-4">
             <div class="max-w-2xl">
@@ -16,11 +15,9 @@
             </div>
         </div>
         <div class="absolute bottom-0 right-0 w-1/3 h-full opacity-10">
-            <!-- Add decorative background SVG or pattern here -->
         </div>
     </div>
 
-    <!-- Services Section -->
     <section class="mb-16">
         <div class="flex justify-between items-center mb-8">
             <h2 class="text-2xl font-bold">خدمات ما</h2>
@@ -53,14 +50,12 @@
         </div>
     </section>
 
-    <!-- Specialists Section -->
     <section class="mb-16">
         <h2 class="text-2xl font-bold mb-8">متخصصین ما</h2>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
             @foreach($specialists as $specialist)
                 <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 text-center">
                     <div class="w-24 h-24 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center">
-                        <!-- Add specialist avatar or icon here -->
                         <span class="text-3xl text-gray-400">👤</span>
                     </div>
                     <h3 class="font-bold mb-2">{{ $specialist->name }}</h3>
@@ -70,7 +65,6 @@
         </div>
     </section>
 
-    <!-- Features Section -->
     <section class="mb-16">
         <h2 class="text-2xl font-bold mb-8">چرا ما را انتخاب کنید</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -109,7 +103,6 @@
         </div>
     </section>
 
-    <!-- Contact Section -->
     <section class="bg-white rounded-2xl shadow-sm p-8">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>

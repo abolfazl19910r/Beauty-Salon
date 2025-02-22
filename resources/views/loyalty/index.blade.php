@@ -4,7 +4,6 @@
 
 @section('content')
     <div class="max-w-7xl mx-auto py-6">
-        <!-- کارت نمایش امتیاز -->
         <div class="bg-white rounded-lg shadow p-6 mb-6">
             <div class="flex justify-between items-center">
                 <div>
@@ -21,7 +20,6 @@
                 </div>
             </div>
 
-            <!-- نوار پیشرفت تا پاداش بعدی -->
             @if($nextReward)
                 <div class="mt-6">
                     <div class="flex justify-between text-sm mb-2">
@@ -35,7 +33,6 @@
             @endif
         </div>
 
-        <!-- لیست پاداش‌ها -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             @foreach($rewards as $reward)
                 <div class="bg-white rounded-lg shadow p-6">
@@ -73,7 +70,6 @@
             @endforeach
         </div>
 
-        <!-- تاریخچه امتیازات -->
         <div class="bg-white rounded-lg shadow">
             <div class="p-6 border-b">
                 <h2 class="text-xl font-bold">تاریخچه امتیازات</h2>

@@ -12,7 +12,6 @@
                 </p>
             </div>
 
-            <!-- اطلاعات فعلی نوبت -->
             <div class="bg-blue-50 p-4 rounded mb-6">
                 <h2 class="font-bold mb-2">زمان فعلی نوبت</h2>
                 <div class="text-gray-600" dir="ltr">
@@ -20,9 +19,7 @@
                 </div>
             </div>
 
-            <!-- فرم تغییر زمان -->
             <form @submit.prevent="submitReschedule">
-                <!-- انتخاب تاریخ -->
                 <div class="mb-6">
                     <label class="block text-gray-700 mb-2">انتخاب تاریخ جدید</label>
                     <div class="grid grid-cols-7 gap-2 mb-4">
@@ -35,7 +32,6 @@
                     </div>
                 </div>
 
-                <!-- انتخاب ساعت -->
                 <div v-if="selectedDate" class="mb-6">
                     <label class="block text-gray-700 mb-2">انتخاب ساعت جدید</label>
                     <div class="grid grid-cols-4 gap-2">
@@ -49,7 +45,6 @@
                     </div>
                 </div>
 
-                <!-- خلاصه تغییرات -->
                 <div v-if="selectedTime" class="bg-gray-50 p-4 rounded mb-6">
                     <h3 class="font-bold mb-2">خلاصه تغییرات</h3>
                     <div class="grid grid-cols-2 gap-4">

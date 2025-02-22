@@ -13,7 +13,6 @@
         </div>
 
         <div class="bg-white rounded-lg shadow">
-            <!-- فیلترها -->
             <div class="p-4 border-b">
                 <form action="{{ route('bookings.index') }}" method="GET" class="flex gap-4">
                     <select name="status" class="border rounded px-3 py-2">
@@ -38,7 +37,6 @@
                 </form>
             </div>
 
-            <!-- لیست نوبت‌ها -->
             @if($bookings->isEmpty())
                 <div class="p-8 text-center text-gray-500">
                     نوبتی یافت نشد.

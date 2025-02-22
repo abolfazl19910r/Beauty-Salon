@@ -8,7 +8,6 @@
 
         <div class="bg-white rounded-lg shadow p-6">
             <form @submit.prevent="submitBooking" class="space-y-6">
-                <!-- انتخاب سرویس -->
                 <div>
                     <label class="block text-gray-700 mb-2">انتخاب سرویس</label>
                     <select v-model="selectedService" @change="loadSpecialists" class="w-full border rounded-md p-2">
@@ -19,7 +18,6 @@
                     </select>
                 </div>
 
-                <!-- انتخاب متخصص -->
                 <div>
                     <label class="block text-gray-700 mb-2">انتخاب متخصص</label>
                     <select v-model="selectedSpecialist" @change="loadAvailableDates" class="w-full border rounded-md p-2">
@@ -30,7 +28,6 @@
                     </select>
                 </div>
 
-                <!-- انتخاب تاریخ -->
                 <div>
                     <label class="block text-gray-700 mb-2">انتخاب تاریخ</label>
                     <div class="grid grid-cols-7 gap-2 mb-4">
@@ -43,7 +40,6 @@
                     </div>
                 </div>
 
-                <!-- انتخاب ساعت -->
                 <div v-if="selectedDate">
                     <label class="block text-gray-700 mb-2">انتخاب ساعت</label>
                     <div class="grid grid-cols-4 gap-2">
@@ -57,7 +53,6 @@
                     </div>
                 </div>
 
-                <!-- خلاصه رزرو -->
                 <div v-if="selectedTime" class="border-t pt-4 mt-4">
                     <h3 class="font-bold mb-2">خلاصه رزرو</h3>
                     <div class="text-sm space-y-2">

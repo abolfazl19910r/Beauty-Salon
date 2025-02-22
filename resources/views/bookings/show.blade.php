@@ -11,7 +11,6 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- اطلاعات نوبت -->
                 <div>
                     <h2 class="text-lg font-bold mb-4">اطلاعات نوبت</h2>
                     <div class="space-y-3">
@@ -56,7 +55,6 @@
                     </div>
                 </div>
 
-                <!-- اطلاعات پرداخت -->
                 <div>
                     <h2 class="text-lg font-bold mb-4">اطلاعات پرداخت</h2>
                     <div class="space-y-3">
@@ -90,7 +88,6 @@
                 </div>
             </div>
 
-            <!-- دکمه‌های عملیات -->
             <div class="mt-8">
                 <div id="booking-actions" data-booking="{{ json_encode($booking) }}"></div>
 
