@@ -117,21 +117,18 @@ const ScheduleIndex = () => {
 };
 
 const WorkSchedule = ({ specialist }) => {
-    // Work Schedule Component Implementation
     return (
         <div>Work Schedule Component</div>
     );
 };
 
 const Holidays = ({ specialist }) => {
-    // Holidays Component Implementation
     return (
         <div>Holidays Component</div>
     );
 };
 
 const Leaves = ({ specialist }) => {
-    // Leaves Component Implementation
     return (
         <div>Leaves Component</div>
     );
