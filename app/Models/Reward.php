@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-// app/Models/Reward.php
 class Reward extends Model
 {
     protected $fillable = [

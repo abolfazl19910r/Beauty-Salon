@@ -54,7 +54,6 @@ class WorkSchedule extends Model
         $start = Carbon::parse($this->start_time);
         $end = Carbon::parse($this->end_time);
 
-        // ایجاد اسلات‌های 30 دقیقه‌ای
         while ($start <= $end) {
             $slots[] = $start->format('H:i');
             $start->addMinutes(30);

@@ -4,9 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class BeautyService extends Model
 {
+    protected $table = 'beauty_services';
+
     use HasFactory;
     protected $fillable = [
         'name',
@@ -25,6 +29,16 @@ class BeautyService extends Model
         static::creating(function ($service) {
             if (!$service->slug) {
                 $service->slug = Str::slug($service->name);
+            }
+        });
+
+        static::deleting(function($service) {
+            $service->specialists()->detach();
+
+            $service->bookings()->delete();
+
+            if ($service->image) {
+                Storage::disk('public')->delete($service->image);
             }
         });
     }

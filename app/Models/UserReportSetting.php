@@ -1,5 +1,4 @@
 <?php
-// app/Models/UserReportSetting.php
 
 namespace App\Models;
 

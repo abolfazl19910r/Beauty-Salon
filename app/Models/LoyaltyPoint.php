@@ -21,7 +21,6 @@ class LoyaltyPoint extends Model
         'expires_at' => 'datetime',
     ];
 
-    // Relationships
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -32,7 +31,6 @@ class LoyaltyPoint extends Model
         return $this->belongsTo(Booking::class);
     }
 
-    // Scopes
     public function scopeActive($query)
     {
         return $query->where(function($q) {
@@ -51,11 +49,8 @@ class LoyaltyPoint extends Model
         return $query->where('type', 'spent');
     }
 
-    // Methods
     public static function calculatePointsForBooking(Booking $booking): int
     {
-        // محاسبه امتیاز بر اساس مبلغ پرداختی
-        // مثال: هر 10,000 تومان = 1 امتیاز
         return (int) floor($booking->prepayment_amount / 10000);
     }
 
