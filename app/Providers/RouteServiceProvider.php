@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Specialist;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
@@ -10,10 +11,14 @@ use Illuminate\Support\Facades\Route;
 
 class RouteServiceProvider extends ServiceProvider
 {
-    public const HOME = '/admin/dashboard'; // مسیر ریدایرکت بعد از لاگین
+    public const HOME = '/admin/dashboard';
 
     public function boot(): void
     {
+        Route::bind('specialist', function ($value) {
+            return Specialist::findOrFail($value);
+        });
+
         $this->configureRateLimiting();
 
         $this->routes(function () {

@@ -1,5 +1,4 @@
 <?php
-// app/Observers/BookingObserver.php
 
 namespace App\Observers;
 
