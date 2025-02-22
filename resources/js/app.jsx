@@ -1,75 +1,123 @@
+import React from 'react';
 import './bootstrap';
 import { lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createApp } from 'vue'
 import AdminDashboard from './Components/Admin/AdminDashboard.jsx';
-const ReportsPanel = lazy(() => import('./Components/Admin/Reports/ReportsPanel.jsx'));
-import MonthlyReport from './Components/Admin/Reports/MonthlyReport.jsx';
-import SpecialistReports from './Components/Admin/Reports/SpecialistReports.jsx';
-import SatisfactionReport from './Components/Admin/Reports/SatisfactionReport.jsx';
-import FinancialReports from './Components/Admin/Reports/FinancialReports.jsx';
-import CustomerReports from './Components/Admin/Reports/CustomerReports.jsx';
+import ReportDashboard from './Components/Admin/Reports/ReportDashboard.jsx';
 import BookingActions from './Components/BookingActions.jsx';
 import TwoFactorAuth from './Components/Auth/TwoFactorAuth';
 import SecureForm from './Components/Common/SecureForm';
 
+// Debug logs
+console.log('App.jsx initialized');
+
+// Set up global React
 window.React = React;
 window.ReactDOM = { createRoot };
 
+// Admin Dashboard
 if (document.getElementById('admin-dashboard')) {
-    const root = createRoot(document.getElementById('admin-dashboard'));
-    root.render(<AdminDashboard />);
+    console.log('Mounting AdminDashboard...');
+    try {
+        const root = createRoot(document.getElementById('admin-dashboard'));
+        root.render(
+            <React.StrictMode>
+                <AdminDashboard />
+            </React.StrictMode>
+        );
+        console.log('AdminDashboard mounted successfully');
+    } catch (error) {
+        console.error('Error mounting AdminDashboard:', error);
+    }
 }
 
-if (document.getElementById('reports-panel')) {
-    const root = createRoot(document.getElementById('reports-panel'));
-    root.render(<ReportsPanel />);
+// Reports Dashboard
+const reportsElement = document.getElementById('reports-panel');
+if (reportsElement) {
+    console.log('Mounting ReportDashboard...');
+    try {
+        const root = createRoot(reportsElement);
+
+        // Loading component
+        const LoadingComponent = () => (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-center">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                    <div className="mt-2 text-gray-600">در حال بارگذاری...</div>
+                </div>
+            </div>
+        );
+
+        root.render(
+            <React.StrictMode>
+                <Suspense fallback={<LoadingComponent />}>
+                    <ReportDashboard
+                        baseUrl={window.initialData?.baseUrl}
+                        routes={window.initialData?.routes}
+                    />
+                </Suspense>
+            </React.StrictMode>
+        );
+        console.log('ReportDashboard mounted successfully');
+    } catch (error) {
+        console.error('Error mounting ReportDashboard:', error);
+        // Show error in UI
+        reportsElement.innerHTML = `
+            <div class="p-4 text-center text-red-600">
+                خطا در بارگذاری داشبورد گزارشات
+                <br/>
+                <small class="text-gray-500">${error.message}</small>
+            </div>
+        `;
+    }
 }
 
-if (document.getElementById('monthly-report')) {
-    const root = createRoot(document.getElementById('monthly-report'));
-    root.render(<MonthlyReport />);
-}
-
-if (document.getElementById('specialist-reports')) {
-    const root = createRoot(document.getElementById('specialist-reports'));
-    root.render(<SpecialistReports />);
-}
-
-if (document.getElementById('satisfaction-report')) {
-    const root = createRoot(document.getElementById('satisfaction-report'));
-    root.render(<SatisfactionReport />);
-}
-
-if (document.getElementById('financial-reports')) {
-    const root = createRoot(document.getElementById('financial-reports'));
-    root.render(<FinancialReports />);
-}
-
-if (document.getElementById('customer-reports')) {
-    const root = createRoot(document.getElementById('customer-reports'));
-    root.render(<CustomerReports />);
-}
-
-if (document.getElementById('reports-root')) {
-    const root = createRoot(document.getElementById('reports-root'));
-    root.render(React.createElement(ReportsPanel));
-}
-
+// Booking Actions
 if (document.getElementById('booking-actions')) {
-    const container = document.getElementById('booking-actions');
-    const bookingData = JSON.parse(container.dataset.booking);
-    const root = createRoot(container);
-    root.render(<BookingActions booking={bookingData} />);
+    console.log('Mounting BookingActions...');
+    try {
+        const container = document.getElementById('booking-actions');
+        const bookingData = JSON.parse(container.dataset.booking);
+        const root = createRoot(container);
+        root.render(
+            <React.StrictMode>
+                <BookingActions booking={bookingData} />
+            </React.StrictMode>
+        );
+        console.log('BookingActions mounted successfully');
+    } catch (error) {
+        console.error('Error mounting BookingActions:', error);
+    }
 }
 
+// Two Factor Auth
 if (document.getElementById('two-factor-auth')) {
-    const root = createRoot(document.getElementById('two-factor-auth'));
-    root.render(React.createElement(TwoFactorAuth));
+    console.log('Mounting TwoFactorAuth...');
+    try {
+        const root = createRoot(document.getElementById('two-factor-auth'));
+        root.render(
+            <React.StrictMode>
+                <TwoFactorAuth />
+            </React.StrictMode>
+        );
+        console.log('TwoFactorAuth mounted successfully');
+    } catch (error) {
+        console.error('Error mounting TwoFactorAuth:', error);
+    }
 }
 
-if (document.getElementById('SecureForm')) {
-    const root = createRoot(document.getElementById('secure-form'));
-    root.render(React.createElement(SecureForm));
+// Secure Form
+if (document.getElementById('secure-form')) {
+    console.log('Mounting SecureForm...');
+    try {
+        const root = createRoot(document.getElementById('secure-form'));
+        root.render(
+            <React.StrictMode>
+                <SecureForm />
+            </React.StrictMode>
+        );
+        console.log('SecureForm mounted successfully');
+    } catch (error) {
+        console.error('Error mounting SecureForm:', error);
+    }
 }
-
