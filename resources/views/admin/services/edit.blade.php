@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'ویرایش خدمت')
 
@@ -7,9 +7,7 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h1 class="text-2xl font-bold mb-6">ویرایش خدمت</h1>
 
-            <form action="{{ route('admin.services.update', $service) }}"
-                  method="POST"
-                  enctype="multipart/form-data">
+            <form action="{{ route('admin.services.update', ['id' => $service->id]) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -21,9 +19,6 @@
                            value="{{ old('name', $service->name) }}"
                            class="w-full border rounded px-3 py-2"
                            required>
-                    @error('name')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
                 </div>
 
                 <div class="mb-4">
@@ -103,9 +98,8 @@
                 </div>
 
                 <div class="flex justify-between">
-                    <button type="submit"
-                            class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
-                        بروزرسانی
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">
+                        ذخیره تغییرات
                     </button>
                     <a href="{{ route('admin.services.index') }}"
                        class="bg-gray-200 text-gray-700 px-6 py-2 rounded hover:bg-gray-300">

@@ -4,9 +4,9 @@
 
 @section('content')
     <div id="admin-dashboard"></div>
-
-    @push('scripts')
-        @viteReactRefresh
-        @vite(['resources/js/app.jsx'])
-    @endpush
 @endsection
+
+@push('scripts')
+    @viteReactRefresh
+    @vite(['resources/js/app.jsx'])
+@endpush

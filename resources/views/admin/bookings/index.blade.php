@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'مدیریت نوبت‌ها')
 
@@ -27,9 +27,11 @@
                     </option>
                 </select>
 
-                <input type="date" class="border rounded px-3 py-2"
+                <input type="text"
+                       id="date-picker"
+                       class="border rounded px-3 py-2"
                        value="{{ request('date', date('Y-m-d')) }}"
-                       onchange="window.location.href='{{ route('admin.bookings.index') }}?date='+this.value">
+                       readonly>
             </div>
         </div>
 
@@ -50,9 +52,15 @@
                 @foreach($bookings as $booking)
                     <tr>
                         <td class="px-6 py-4">{{ $booking->id }}</td>
-                        <td class="px-6 py-4">{{ $booking->user->name }}</td>
+                        <td class="px-6 py-4">
+                            @if(isset($booking->user))
+                                {{ $booking->user->name }}
+                            @else
+                                کاربر نامشخص
+                            @endif
+                        </td>
                         <td class="px-6 py-4">{{ $booking->service->name }}</td>
-                        <td class="px-6 py-4">{{ $booking->specialist->name }}</td>
+                        <td class="px-6 py-4">{{ $booking->specialist?->name ?? 'متخصص نامشخص' }}</td>
                         <td class="px-6 py-4" dir="ltr">
                             {{ verta($booking->booking_time)->format('Y/m/d H:i') }}
                         </td>
@@ -114,4 +122,19 @@
             {{ $bookings->links() }}
         </div>
     </div>
+    @push('scripts')
+        <script>
+            $(document).ready(function() {
+                $('#date-picker').persianDatepicker({
+                    format: 'YYYY/MM/DD',
+                    initialValue: false,
+                    autoClose: true,
+                    onSelect: function(unix) {
+                        const date = new persianDate(unix).toCalendar('gregorian').format('YYYY-MM-DD');
+                        window.location.href = '{{ route("admin.bookings.index") }}?date=' + date;
+                    }
+                });
+            });
+        </script>
+    @endpush
 @endsection

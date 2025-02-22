@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'مدیریت خدمات')
 
@@ -44,13 +44,13 @@
                             <a href="{{ route('admin.services.edit', $service) }}"
                                class="text-blue-500 hover:text-blue-700">ویرایش</a>
 
-                            <form action="{{ route('admin.services.destroy', $service) }}"
-                                  method="POST" class="inline">
+                            <form action="{{ route('admin.services.destroy', ['id' => $service->id]) }}"
+                                  method="POST"
+                                  class="inline"
+                                  onsubmit="return confirm('آیا از حذف این خدمت اطمینان دارید؟')">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit"
-                                        class="text-red-500 mr-4 hover:text-red-700"
-                                        onclick="return confirm('آیا مطمئن هستید؟')">
+                                <button type="submit" class="text-red-500 mr-4 hover:text-red-700">
                                     حذف
                                 </button>
                             </form>
