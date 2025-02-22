@@ -7,7 +7,7 @@ use Carbon\Carbon;
 
 class ReportCacheService
 {
-    protected int $defaultTtl = 3600; // 1 ساعت
+    protected int $defaultTtl = 3600;
 
     public function remember(string $key, array $params, \Closure $callback, $ttl = null)
     {

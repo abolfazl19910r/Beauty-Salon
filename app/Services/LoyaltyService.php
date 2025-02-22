@@ -46,6 +46,9 @@ class LoyaltyService
             ->get();
     }
 
+    /**
+     * @throws \Exception
+     */
     public function redeemReward($userId, Reward $reward)
     {
         if (!$reward->isAvailableForUser(auth()->user())) {
@@ -55,7 +58,6 @@ class LoyaltyService
         try {
             DB::beginTransaction();
 
-            // کم کردن امتیاز
             $loyaltyPoint = LoyaltyPoint::create([
                 'user_id' => $userId,
                 'points' => -$reward->required_points,
@@ -63,7 +65,6 @@ class LoyaltyService
                 'type' => 'spent'
             ]);
 
-            // ایجاد کد تخفیف
             $discountCode = DiscountCode::create([
                 'code' => strtoupper(Str::random(8)),
                 'type' => $reward->discount_type,
@@ -74,12 +75,10 @@ class LoyaltyService
                 'is_active' => true
             ]);
 
-            // افزایش تعداد استفاده
             $reward->incrementUsage();
 
             DB::commit();
 
-            // ارسال نوتیفیکیشن
             auth()->user()->notify(new RewardRedeemed($reward, $discountCode));
 
             return $discountCode;
@@ -101,7 +100,7 @@ class LoyaltyService
             'points' => $points,
             'type' => 'earned',
             'description' => 'امتیاز کسب شده از رزرو',
-            'expires_at' => now()->addYear() // امتیازها بعد از یک سال منقضی می‌شوند
+            'expires_at' => now()->addYear()
         ]);
 
         auth()->user()->notify(new PointsEarned($loyaltyPoint));
@@ -111,8 +110,6 @@ class LoyaltyService
 
     protected function calculatePointsForBooking($booking): int
     {
-        // محاسبه امتیاز بر اساس مبلغ پرداختی
-        // مثال: هر 10,000 تومان = 1 امتیاز
         return (int) floor($booking->prepayment_amount / 10000);
     }
 }

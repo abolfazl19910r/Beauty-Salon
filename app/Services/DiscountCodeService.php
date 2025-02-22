@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\DiscountCode;
 use App\Models\Booking;
+use Exception;
 use Illuminate\Support\Facades\DB;
 
 class DiscountCodeService
@@ -19,18 +20,18 @@ class DiscountCodeService
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function applyToBooking(string $code, int $bookingId): array
     {
         $code = DiscountCode::where('code', $code)->first();
         if (!$code || !$code->isValid()) {
-            throw new \Exception('کد تخفیف نامعتبر است.');
+            throw new Exception('کد تخفیف نامعتبر است.');
         }
 
         $booking = Booking::findOrFail($bookingId);
         if ($booking->discount_code) {
-            throw new \Exception('کد تخفیف قبلاً اعمال شده است.');
+            throw new Exception('کد تخفیف قبلاً اعمال شده است.');
         }
 
         DB::beginTransaction();
@@ -51,7 +52,7 @@ class DiscountCodeService
                 'discount_amount' => $discountAmount,
                 'final_price' => $booking->prepayment_amount
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             throw $e;
         }

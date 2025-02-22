@@ -1,10 +1,10 @@
 <?php
-// app/Services/ReportService.php
 
 namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\BeautyService;
+use App\Models\ScheduledReport;
 use App\Models\Specialist;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -13,8 +13,7 @@ use Illuminate\Support\Facades\DB;
 class ReportService
 {
     protected ReportCacheService $cacheService;
-    protected int $cacheDuration = 3600; // 1 hour
-
+    protected int $cacheDuration = 3600;
     public function __construct(ReportCacheService $cacheService)
     {
         $this->cacheService = $cacheService;
@@ -107,7 +106,6 @@ class ReportService
         $bookingCount = $specialist->total_bookings;
         $revenue = $specialist->bookings_sum_prepayment_amount;
 
-        // Weighted score calculation
         $score = ($completionRate * 0.3) +
             ($returnRate * 0.3) +
             (min($bookingCount / 100, 1) * 20) +

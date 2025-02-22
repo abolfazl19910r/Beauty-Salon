@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\Payment;
+use App\Models\SupportTicket;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
