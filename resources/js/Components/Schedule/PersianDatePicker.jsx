@@ -61,7 +61,6 @@ const PersianDatePicker = ({
     );
 };
 
-// کامپوننت انتخاب بازه تاریخ
 export const PersianDateRangePicker = ({
                                            startDate,
                                            endDate,

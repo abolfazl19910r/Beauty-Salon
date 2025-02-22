@@ -2,7 +2,6 @@
 import React from 'react';
 import { Calendar, Clock, User } from 'lucide-react';
 
-// دیتای نمونه برای تست
 const sampleBooking = {
     id: 1,
     service: {
@@ -23,7 +22,7 @@ const sampleBooking = {
 };
 
 const BookingCard = ({
-                         booking = sampleBooking,  // استفاده از دیتای نمونه به عنوان پیش‌فرض
+                         booking = sampleBooking,
                          onCancel = () => {},
                          onReschedule = () => {},
                          onRate = () => {}

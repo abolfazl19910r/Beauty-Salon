@@ -5,7 +5,7 @@ const SecureForm = ({
                         onSubmit,
                         children,
                         maxAttempts = 3,
-                        blockDuration = 5, // minutes
+                        blockDuration = 5,
                         className = '',
                         submitButton = true,
                         submitText = 'ارسال'
@@ -18,7 +18,6 @@ const SecureForm = ({
     const [timeLeft, setTimeLeft] = useState(0);
 
     useEffect(() => {
-        // بررسی وضعیت مسدودی از localStorage
         const storedBlockExpiry = localStorage.getItem('formBlockExpiry');
         if (storedBlockExpiry) {
             const expiry = new Date(storedBlockExpiry);
@@ -64,7 +63,6 @@ const SecureForm = ({
             await onSubmit(formData);
             setAttempts(0);
 
-            // Reset form after successful submission
             e.target.reset();
 
         } catch (err) {

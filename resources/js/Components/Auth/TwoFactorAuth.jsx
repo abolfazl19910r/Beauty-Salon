@@ -23,12 +23,10 @@ const TwoFactorAuth = ({ onVerify, onResendCode }) => {
         newCode[index] = value;
         setCode(newCode);
 
-        // Auto-focus next input
         if (value && index < 5) {
             document.getElementById(`code-${index + 1}`).focus();
         }
 
-        // Auto-submit when all digits are entered
         if (value && index === 5) {
             handleSubmit(newCode.join(''));
         }

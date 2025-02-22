@@ -32,13 +32,11 @@ const MonthCalendar = ({ specialist, initialDate = new Date(), onSelectDate }) =
         const lastDay = new Date(year, month + 1, 0);
         const days = [];
 
-        // Add empty cells for days before first of month
         const firstDayOfWeek = firstDay.getDay();
         for (let i = 0; i < firstDayOfWeek; i++) {
             days.push({ type: 'empty' });
         }
 
-        // Add actual days
         for (let date = 1; date <= lastDay.getDate(); date++) {
             const fullDate = new Date(year, month, date).toISOString().split('T')[0];
             const status = getDayStatus(fullDate);
