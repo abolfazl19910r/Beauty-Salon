@@ -149,30 +149,32 @@ class ReportsController extends Controller
         return response()->json($satisfaction);
     }
 
-    public function popularServices()
+    public function popularServices(Request $request)
     {
-        $services = BeautyService::withCount(['bookings' => function($query) {
-            $query->where('created_at', '>=', now()->subMonths(3))
+        $startDate = $request->input('start_date', now()->subMonths(3));
+        $endDate = $request->input('end_date', now());
+
+        $services = BeautyService::withCount(['bookings' => function($query) use ($startDate, $endDate) {
+            $query->whereBetween('created_at', [$startDate, $endDate])
                 ->where('status', '!=', 'cancelled');
         }])
-            ->withSum(['bookings' => function($query) {
+            ->withSum(['bookings' => function($query) use ($startDate, $endDate) {
                 $query->where('payment_status', 'paid')
-                    ->where('created_at', '>=', now()->subMonths(3));
+                    ->whereBetween('created_at', [$startDate, $endDate]);
             }], 'prepayment_amount')
             ->orderByDesc('bookings_count')
             ->limit(10)
             ->get()
-            ->map(function($service) {
+            ->map(function($service) use ($startDate, $endDate) {
                 return [
                     'id' => $service->id,
                     'name' => $service->name,
                     'bookings_count' => $service->bookings_count,
                     'revenue' => $service->bookings_sum_prepayment_amount,
-                    'trend' => $this->calculateServiceTrend($service->id)
+                    'trend' => $this->calculateServiceTrend($service->id, $startDate, $endDate)
                 ];
             });
 
-        Log::info('Popular services report generated', ['count' => $services->count()]);
         return response()->json($services);
     }
 
@@ -260,19 +262,24 @@ class ReportsController extends Controller
             : 0;
     }
 
-    protected function calculateServiceTrend($serviceId): float|int
+    protected function calculateServiceTrend($serviceId, $startDate, $endDate): float|int
     {
-        $previousMonth = Booking::where('service_id', $serviceId)
-            ->whereBetween('created_at', [now()->subMonths(2), now()->subMonth()])
+        $interval = Carbon::parse($startDate)->diffInDays($endDate);
+
+        $previousStart = Carbon::parse($startDate)->subDays($interval);
+        $previousEnd = Carbon::parse($startDate);
+
+        $previousCount = Booking::where('service_id', $serviceId)
+            ->whereBetween('created_at', [$previousStart, $previousEnd])
             ->count();
 
-        $currentMonth = Booking::where('service_id', $serviceId)
-            ->whereBetween('created_at', [now()->subMonth(), now()])
+        $currentCount = Booking::where('service_id', $serviceId)
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
 
-        if ($previousMonth == 0) return 100;
+        if ($previousCount == 0) return 100;
 
-        $change = (($currentMonth - $previousMonth) / $previousMonth) * 100;
+        $change = (($currentCount - $previousCount) / $previousCount) * 100;
         return round($change, 2);
     }
 
@@ -328,5 +335,18 @@ class ReportsController extends Controller
                 DB::raw('SUM(prepayment_amount) as total_amount')
             )
             ->get();
+    }
+
+    public function servicesReport()
+    {
+        $servicesData = BeautyService::withCount(['bookings' => function($query) {
+            $query->where('created_at', '>=', now()->subMonths(3));
+        }])
+            ->withSum(['bookings' => function($query) {
+                $query->where('payment_status', 'paid');
+            }], 'prepayment_amount')
+            ->get();
+
+        return view('admin.reports.services', compact('servicesData'));
     }
 }

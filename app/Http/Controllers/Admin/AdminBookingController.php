@@ -17,49 +17,92 @@ class AdminBookingController extends Controller
         $this->refundService = $refundService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $bookings = Booking::with(['user', 'specialist', 'service'])
-            ->latest()
-            ->paginate(15);
+        $query = Booking::with(['user', 'specialist', 'service'])->latest();
+
+        if ($request->has('status') && $request->status !== '') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->has('date')) {
+            $query->whereDate('booking_time', $request->date);
+        }
+
+        $bookings = $query->paginate(15);
 
         return view('admin.bookings.index', compact('bookings'));
     }
 
-    public function show(Booking $booking)
+    public function show($id)
     {
+        $booking = Booking::with(['service', 'user', 'specialist'])->findOrFail($id);
         return view('admin.bookings.show', compact('booking'));
     }
 
-    public function update(Request $request, Booking $booking)
+    public function update(Request $request, $booking_id)
     {
+        $booking = Booking::findOrFail($booking_id);
+
+        Log::info('درخواست آپدیت:', [
+            'booking_id' => $booking->id,
+            'current_status' => $booking->status,
+            'requested_status' => $request->status
+        ]);
+
         $validated = $request->validate([
             'status' => 'required|in:pending,confirmed,cancelled',
         ]);
 
         $oldStatus = $booking->status;
-        $booking->update($validated);
 
-        if ($booking->status === 'cancelled' &&
-            $oldStatus !== 'cancelled' &&
-            $booking->payment_status === 'paid' &&
-            !$booking->refunded_at) {
-
-            Log::info('Processing refund for cancelled booking', [
-                'booking_id' => $booking->id,
-                'amount' => $booking->prepayment_amount
+        try {
+            Log::info('قبل از آپدیت:', [
+                'status' => $booking->status
             ]);
 
-            $refundResult = $this->refundService->processRefund($booking);
+            $booking->update($validated);
 
-            if (!$refundResult) {
-                return redirect()->route('admin.bookings.index')
-                    ->with('warning', 'نوبت لغو شد اما در برگشت وجه مشکلی پیش آمد. تیکت پشتیبانی ایجاد شد.');
+            Log::info('بعد از آپدیت:', [
+                'status' => $booking->fresh()->status
+            ]);
+
+            if ($booking->status === 'cancelled' &&
+                $oldStatus !== 'cancelled' &&
+                $booking->payment_status === 'paid' &&
+                !$booking->refunded_at) {
+
+                Log::info('شروع فرآیند استرداد وجه برای نوبت لغو شده', [
+                    'booking_id' => $booking->id,
+                    'amount' => $booking->prepayment_amount
+                ]);
+
+                $refundResult = $this->refundService->processRefund($booking);
+
+                if (!$refundResult) {
+                    return redirect()->route('admin.bookings.show', ['booking' => $booking->id])
+                        ->with('warning', 'نوبت لغو شد اما در برگشت وجه مشکلی پیش آمد. تیکت پشتیبانی ایجاد شد.');
+                }
             }
-        }
 
-        return redirect()->route('admin.bookings.index')
-            ->with('success', 'وضعیت نوبت با موفقیت بروزرسانی شد.');
+            $successMessage = match($booking->status) {
+                'confirmed' => 'نوبت با موفقیت تایید شد.',
+                'cancelled' => 'نوبت با موفقیت لغو شد.',
+                default => 'وضعیت نوبت با موفقیت بروزرسانی شد.'
+            };
+
+            return redirect()->route('admin.bookings.show', ['booking' => $booking->id])
+                ->with('success', $successMessage);
+
+        } catch (\Exception $e) {
+            Log::error('خطا در بروزرسانی وضعیت نوبت', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return redirect()->route('admin.bookings.show', ['booking' => $booking->id])
+                ->with('error', 'خطایی در بروزرسانی وضعیت نوبت رخ داد. لطفا مجددا تلاش کنید.');
+        }
     }
 
     public function destroy(Booking $booking)

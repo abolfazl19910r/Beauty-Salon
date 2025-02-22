@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BeautyService;
 use App\Models\ServiceCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class AdminServiceController extends Controller
@@ -43,14 +44,17 @@ class AdminServiceController extends Controller
             ->with('success', 'خدمت جدید با موفقیت ایجاد شد.');
     }
 
-    public function edit(BeautyService $service)
+    public function edit($id)
     {
+        $service = BeautyService::findOrFail($id);
         $categories = ServiceCategory::all();
         return view('admin.services.edit', compact('service', 'categories'));
     }
 
-    public function update(Request $request, BeautyService $service)
+    public function update(Request $request, $id)
     {
+        $service = BeautyService::findOrFail($id);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -73,14 +77,34 @@ class AdminServiceController extends Controller
             ->with('success', 'خدمت با موفقیت بروزرسانی شد.');
     }
 
-    public function destroy(BeautyService $service)
+    public function destroy($id)
     {
-        if ($service->image) {
-            Storage::disk('public')->delete($service->image);
-        }
+        try {
+            $service = BeautyService::findOrFail($id);
 
-        $service->delete();
-        return redirect()->route('admin.services.index')
-            ->with('success', 'خدمت با موفقیت حذف شد.');
+            Log::info('Attempting to delete service:', [
+                'id' => $id,
+                'name' => $service->name,
+                'bookings_count' => $service->bookings()->count(),
+                'specialists_count' => $service->specialists()->count()
+            ]);
+
+            if ($service->delete()) {
+                return redirect()->route('admin.services.index')
+                    ->with('success', 'خدمت با موفقیت حذف شد.');
+            }
+
+            return redirect()->route('admin.services.index')
+                ->with('error', 'خطا در حذف خدمت.');
+
+        } catch (\Exception $e) {
+            Log::error('Error deleting service:', [
+                'id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            return redirect()->route('admin.services.index')
+                ->with('error', 'خطا در حذف خدمت: ' . $e->getMessage());
+        }
     }
 }
