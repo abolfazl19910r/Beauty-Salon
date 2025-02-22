@@ -21,7 +21,6 @@ class AuthenticatedSessionController extends Controller
             'phone' => ['required', 'string'],
             'password' => ['required', 'string'],
         ]);
-//        dd(Auth::attempt($credentials), $credentials, Auth::user());
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 

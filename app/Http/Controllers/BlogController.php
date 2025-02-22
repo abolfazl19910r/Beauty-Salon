@@ -92,4 +92,3 @@ class BlogController extends Controller
         return response()->json(BlogCategory::withCount('posts')->get());
     }
 }
-

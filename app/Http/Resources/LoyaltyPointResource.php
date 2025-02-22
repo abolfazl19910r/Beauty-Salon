@@ -27,4 +27,3 @@ class LoyaltyPointResource extends JsonResource
         ];
     }
 }
-

@@ -13,7 +13,7 @@ class SessionSecurity
         if (Auth::check()) {
             config(['session.lifetime' => 30]);
 
-            if (time() - session('last_activity', 0) > 1800) { // 30 minutes
+            if (time() - session('last_activity', 0) > 1800) {
                 Auth::logout();
                 return redirect()->route('login')
                     ->with('message', 'جلسه شما به دلیل عدم فعالیت منقضی شد. لطفا مجددا وارد شوید.');

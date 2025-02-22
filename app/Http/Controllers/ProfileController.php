@@ -12,9 +12,7 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    /**
-     * نمایش پروفایل کاربر
-     */
+
     public function show(): View
     {
         return view('profile.show', [
@@ -25,9 +23,6 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * نمایش فرم ویرایش پروفایل
-     */
     public function edit(Request $request): View
     {
         return view('profile.edit', [
@@ -35,9 +30,6 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * بروزرسانی اطلاعات پروفایل
-     */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $request->user()->fill($request->validated());
@@ -51,9 +43,6 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
-    /**
-     * بروزرسانی رمز عبور
-     */
     public function updatePassword(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -68,9 +57,6 @@ class ProfileController extends Controller
         return back()->with('status', 'password-updated');
     }
 
-    /**
-     * حذف حساب کاربری
-     */
     public function destroy(Request $request): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [
