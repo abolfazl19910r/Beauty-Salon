@@ -8,7 +8,7 @@ use App\Models\Specialist;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
-class WorkScheduleController extends Controller
+class AdminWorkScheduleController extends Controller
 {
     public function index(Specialist $specialist)
     {

@@ -7,7 +7,7 @@ use App\Models\Specialist;
 use App\Models\SpecialistSchedule;
 use Illuminate\Http\Request;
 
-class SpecialistScheduleController extends Controller
+class AdminSpecialistScheduleController extends Controller
 {
     public function edit(Specialist $specialist)
     {

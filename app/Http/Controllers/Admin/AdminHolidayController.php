@@ -8,7 +8,7 @@ use App\Models\Specialist;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
-class HolidayController extends Controller
+class AdminHolidayController extends Controller
 {
     public function index(Specialist $specialist)
     {

@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use App\Notifications\LeaveStatusNotification;
 use Carbon\Carbon;
 
-class LeaveController extends Controller
+class AdminLeaveController extends Controller
 {
     public function index(Specialist $specialist)
     {
