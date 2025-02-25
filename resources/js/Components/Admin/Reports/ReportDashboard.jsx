@@ -1,18 +1,17 @@
 // resources/js/Components/Admin/Reports/ReportDashboard.jsx
 import React, { useState, useEffect } from 'react';
-import RevenueCharts from './Dashboard/RevenueCharts';
-import PopularServices from './Dashboard/PopularServices';
-import CustomerReports from './Dashboard/CustomerReports';
+import RevenueCharts from '../Dashboard/RevenueCharts';
+import PopularServices from '../Dashboard/PopularServices';
+import CustomerReports from '../Dashboard/CustomerReports';
 import FinancialReports from './FinancialReports';
 import SpecialistReports from './SpecialistReports';
-import PersianDatePicker from './Common/PersianDatePicker';
+import PersianDatePicker from '../../Common/PersianDatePicker.jsx';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Download, AlertCircle } from 'lucide-react';
-import { toGregorian, comparePersianDates } from './Utils/DateUtils';
+import { toGregorian, comparePersianDates } from '../../../Utils/DateUtils';
 
 const ReportDashboard = ({ baseUrl, routes }) => {
-    // State management
     const [activeTab, setActiveTab] = useState('overview');
     const [reportType, setReportType] = useState('daily');
     const [dateRange, setDateRange] = useState({
@@ -29,8 +28,8 @@ const ReportDashboard = ({ baseUrl, routes }) => {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [reportData, setReportData] = useState(null);
 
-    // Tab configuration
     const tabs = [
         { id: 'overview', name: 'نمای کلی', icon: '📊' },
         { id: 'financial', name: 'گزارش مالی', icon: '💰' },
@@ -38,30 +37,33 @@ const ReportDashboard = ({ baseUrl, routes }) => {
         { id: 'customers', name: 'رضایت مشتریان', icon: '⭐' }
     ];
 
-    // Report type options
     const reportTypes = [
         { id: 'daily', label: 'روزانه' },
         { id: 'weekly', label: 'هفتگی' },
         { id: 'monthly', label: 'ماهانه' }
     ];
 
+    const ROUTE_MAP = {
+        'overview': reportType,
+        'financial': 'financial',
+        'specialists': 'specialist-performance',
+        'customers': 'customer-satisfaction'
+    };
+
     useEffect(() => {
         if (dateRange.start && dateRange.end) {
             fetchData();
         }
-    }, [reportType, dateRange]);
+    }, [reportType, dateRange, activeTab]);
 
     const handleDateChange = (field, persianDate) => {
-        // پاک کردن خطای قبلی
         setDateErrors(prev => ({ ...prev, [field]: '' }));
 
-        // به‌روزرسانی تاریخ شمسی
         setPersianDates(prev => ({
             ...prev,
             [field]: persianDate
         }));
 
-        // اعتبارسنجی محدوده تاریخ
         if (field === 'start' && persianDates.end) {
             if (comparePersianDates(persianDate, persianDates.end) > 0) {
                 setDateErrors(prev => ({
@@ -82,7 +84,6 @@ const ReportDashboard = ({ baseUrl, routes }) => {
             }
         }
 
-        // تبدیل به تاریخ میلادی و به‌روزرسانی state
         const gregorianDate = toGregorian(persianDate);
         setDateRange(prev => ({
             ...prev,
@@ -91,53 +92,63 @@ const ReportDashboard = ({ baseUrl, routes }) => {
     };
 
     const fetchData = async () => {
-        if (!baseUrl || !routes) return;
+        if (!baseUrl) {
+            console.error("Base URL is missing");
+            return;
+        }
 
         setLoading(true);
         setError(null);
 
         try {
-            // بر اساس نوع گزارش و تب فعال، داده‌های مربوطه را دریافت می‌کنیم
+            const endpointName = ROUTE_MAP[activeTab] || reportType;
+
             const params = new URLSearchParams({
                 type: reportType,
                 start_date: dateRange.start,
                 end_date: dateRange.end
             });
 
-            let endpoint;
-            switch (activeTab) {
-                case 'financial':
-                    endpoint = routes.financialData;
-                    break;
-                case 'specialists':
-                    endpoint = routes.specialistsData;
-                    break;
-                case 'customers':
-                    endpoint = routes.customersData;
-                    break;
-                default:
-                    endpoint = routes.revenueData;
-            }
+            const url = `${baseUrl}/admin/reports/${endpointName}?${params}`;
+            console.log('Fetching data from:', url);
 
-            const response = await fetch(`${baseUrl}${endpoint}?${params}`);
-            if (!response.ok) {
-                throw new Error('خطا در دریافت اطلاعات');
-            }
+            const response = await fetchWithErrorHandling(url);
+            setReportData(response);
 
-            const data = await response.json();
-            // به‌روزرسانی داده‌ها در کامپوننت‌های مربوطه
-            // این بخش بسته به ساختار داده‌های برگشتی تکمیل می‌شود
-
+            console.log('Data received:', response);
         } catch (err) {
-            setError('خطا در دریافت اطلاعات. لطفا مجددا تلاش کنید.');
+            setError('خطا در دریافت اطلاعات: ' + err.message);
             console.error('Error fetching data:', err);
         } finally {
             setLoading(false);
         }
     };
 
+    const fetchWithErrorHandling = async (url) => {
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            if (response.status === 500) {
+                throw new Error('خطای داخلی سرور');
+            } else if (response.status === 400) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'داده‌های ارسالی معتبر نیستند');
+            } else if (response.status === 404) {
+                throw new Error('مسیر مورد نظر یافت نشد');
+            }
+
+            throw new Error('خطا در دریافت اطلاعات');
+        }
+
+        return await response.json();
+    };
+
     const handleExport = async (format) => {
         try {
+            setLoading(true);
+
+            const endpointName = ROUTE_MAP[activeTab] || reportType;
+
             const params = new URLSearchParams({
                 type: reportType,
                 start_date: dateRange.start,
@@ -145,26 +156,34 @@ const ReportDashboard = ({ baseUrl, routes }) => {
                 format
             });
 
-            const response = await fetch(`${baseUrl}${routes.export}?${params}`);
-            if (!response.ok) throw new Error('Export failed');
+            const url = `${baseUrl}/admin/reports/export?${params}`;
+            console.log('Exporting from:', url);
+
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error('خطا در دریافت فایل خروجی');
+            }
 
             const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
+            const downloadUrl = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url;
+            a.href = downloadUrl;
             a.download = `report-${reportType}-${format}.${format}`;
             document.body.appendChild(a);
             a.click();
-            window.URL.revokeObjectURL(url);
+            a.remove();
+            window.URL.revokeObjectURL(downloadUrl);
         } catch (err) {
-            setError('خطا در خروجی گرفتن از گزارش');
+            setError('خطا در خروجی گرفتن از گزارش: ' + err.message);
             console.error('Export error:', err);
+        } finally {
+            setLoading(false);
         }
     };
 
-    // Error boundary
-    if (!baseUrl || !routes) {
-        console.error('Required props missing:', { baseUrl, routes });
+    if (!baseUrl) {
+        console.error('Required props missing: baseUrl is undefined');
         return (
             <div className="p-4 text-red-600 text-center">
                 خطا در بارگذاری: اطلاعات مورد نیاز در دسترس نیست
@@ -181,6 +200,7 @@ const ReportDashboard = ({ baseUrl, routes }) => {
                     <button
                         onClick={() => handleExport('pdf')}
                         className="px-4 py-2 bg-red-500 text-white rounded-lg flex items-center gap-2 hover:bg-red-600 transition-colors"
+                        disabled={loading}
                     >
                         <Download className="w-5 h-5" />
                         <span>خروجی PDF</span>
@@ -188,6 +208,7 @@ const ReportDashboard = ({ baseUrl, routes }) => {
                     <button
                         onClick={() => handleExport('excel')}
                         className="px-4 py-2 bg-green-500 text-white rounded-lg flex items-center gap-2 hover:bg-green-600 transition-colors"
+                        disabled={loading}
                     >
                         <Download className="w-5 h-5" />
                         <span>خروجی Excel</span>
@@ -284,13 +305,14 @@ const ReportDashboard = ({ baseUrl, routes }) => {
                                         reportType={reportType}
                                         startDate={dateRange.start}
                                         endDate={dateRange.end}
-                                        routes={routes}
+                                        data={reportData}
+                                        baseUrl={baseUrl}
                                     />
                                 </Card>
 
                                 <Card className="bg-white p-6">
                                     <h3 className="text-lg font-medium mb-4">خدمات محبوب</h3>
-                                    <PopularServices routes={routes} />
+                                    <PopularServices baseUrl={baseUrl} />
                                 </Card>
                             </>
                         )}
@@ -301,7 +323,8 @@ const ReportDashboard = ({ baseUrl, routes }) => {
                                     reportType={reportType}
                                     startDate={dateRange.start}
                                     endDate={dateRange.end}
-                                    routes={routes}
+                                    data={reportData}
+                                    baseUrl={baseUrl}
                                 />
                             </Card>
                         )}
@@ -312,7 +335,8 @@ const ReportDashboard = ({ baseUrl, routes }) => {
                                     reportType={reportType}
                                     startDate={dateRange.start}
                                     endDate={dateRange.end}
-                                    routes={routes}
+                                    data={reportData}
+                                    baseUrl={baseUrl}
                                 />
                             </Card>
                         )}
@@ -323,7 +347,8 @@ const ReportDashboard = ({ baseUrl, routes }) => {
                                     reportType={reportType}
                                     startDate={dateRange.start}
                                     endDate={dateRange.end}
-                                    routes={routes}
+                                    data={reportData}
+                                    baseUrl={baseUrl}
                                 />
                             </Card>
                         )}

@@ -17,7 +17,15 @@ const SpecialistReports = ({ reportType, startDate, endDate }) => {
 
                 const response = await fetch(`/admin/reports/specialist-performance?${params}`);
                 const data = await response.json();
-                setSpecialists(data);
+
+                if (data && data.specialists) {
+                    setSpecialists(data.specialists);
+                } else if (Array.isArray(data)) {
+                    setSpecialists(data);
+                } else {
+                    console.error('Invalid data format received:', data);
+                    setSpecialists([]);
+                }
             } catch (error) {
                 console.error('Error fetching specialist data:', error);
             } finally {
