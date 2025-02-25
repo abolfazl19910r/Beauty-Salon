@@ -7,7 +7,7 @@ use App\Models\Specialist;
 use App\Models\SpecialistLeave;
 use Illuminate\Http\Request;
 
-class SpecialistLeaveController extends Controller
+class AdminSpecialistLeaveController extends Controller
 {
     public function index(Specialist $specialist)
     {
