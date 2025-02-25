@@ -9,50 +9,155 @@ use App\Models\Specialist;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class AdminDashboardController extends Controller
 {
     public function getData()
     {
-        $stats = [
-            'totalBookings' => Booking::count(),
-            'todayBookings' => Booking::whereDate('created_at', today())->count(),
-            'totalServices' => BeautyService::count(),
-            'totalSpecialists' => Specialist::count(),
-            'totalUsers' => User::count(),
-            'totalRevenue' => Booking::where('payment_status', 'paid')->sum('prepayment_amount'),
+        try {
+            $stats = [
+                'totalBookings' => Booking::count(),
+                'todayBookings' => Booking::whereDate('created_at', today())->count(),
+                'totalServices' => BeautyService::count(),
+                'totalSpecialists' => Specialist::count(),
+                'totalUsers' => User::count(),
+                'totalRevenue' => Booking::where('payment_status', 'paid')->sum('prepayment_amount'),
+            ];
+
+            return response()->json([
+                'stats' => $stats,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getDailyRevenue(Request $request)
+    {
+        try {
+            $startDate = $request->get('start_date', now()->subDays(7));
+            $endDate = $request->get('end_date', now());
+
+            $dailyRevenue = Booking::where('payment_status', 'paid')
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->groupBy(DB::raw('DATE(created_at)'))
+                ->select(
+                    DB::raw('DATE(created_at) as date'),
+                    DB::raw('SUM(prepayment_amount) as total'),
+                    DB::raw('COUNT(*) as bookings_count')
+                )
+                ->orderBy('date')
+                ->get();
+
+            $dailyRevenue = $dailyRevenue->map(function ($item) {
+                $item->date = verta($item->date)->format('Y/m/d');
+                return $item;
+            });
+
+            return response()->json(['dailyRevenue' => $dailyRevenue]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getPopularServices()
+    {
+        try {
+            $lastMonth = now()->subDays(30);
+            $previousMonth = now()->subDays(60);
+
+            $currentMonthServices = BeautyService::withCount(['bookings' => function ($query) use ($lastMonth) {
+                $query->where('created_at', '>=', $lastMonth);
+            }])
+                ->withSum(['bookings' => function ($query) use ($lastMonth) {
+                    $query->where('created_at', '>=', $lastMonth);
+                }], 'prepayment_amount');
+
+            $previousMonthServices = BeautyService::withCount(['bookings' => function ($query) use ($previousMonth, $lastMonth) {
+                $query->whereBetween('created_at', [$previousMonth, $lastMonth]);
+            }])->pluck('bookings_count', 'id');
+
+            $popularServices = $currentMonthServices
+                ->orderByDesc('bookings_count')
+                ->take(5)
+                ->get(['id', 'name'])
+                ->map(function($service) use ($previousMonthServices) {
+                    $previousCount = $previousMonthServices[$service->id] ?? 0;
+                    $currentCount = $service->bookings_count;
+
+                    return [
+                        'id' => $service->id,
+                        'name' => $service->name,
+                        'bookings_count' => $currentCount,
+                        'revenue' => $service->bookings_sum_prepayment_amount,
+                        'trend' => $previousCount > 0
+                            ? round((($currentCount - $previousCount) / $previousCount) * 100, 1)
+                            : 100
+                    ];
+                });
+
+            return response()->json(['popularServices' => $popularServices]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getActiveSpecialists()
+    {
+        try {
+            $lastMonth = now()->subDays(30);
+
+            $activeSpecialists = Specialist::withCount(['bookings' => function ($query) use ($lastMonth) {
+                $query->where('created_at', '>=', $lastMonth);
+            }])
+                ->withSum(['bookings' => function ($query) use ($lastMonth) {
+                    $query->where('created_at', '>=', $lastMonth);
+                }], 'prepayment_amount')
+                ->withAvg(['bookings' => function ($query) use ($lastMonth) {
+                    $query->where('created_at', '>=', $lastMonth);
+                }], 'rating')
+                ->withCount(['bookings as successful_bookings' => function ($query) use ($lastMonth) {
+                    $query->where('created_at', '>=', $lastMonth)
+                        ->where('status', 'completed');
+                }])
+                ->orderByDesc('bookings_count')
+                ->take(5)
+                ->get(['id', 'name'])
+                ->map(function($specialist) {
+                    $completion_rate = $specialist->bookings_count > 0
+                        ? round(($specialist->successful_bookings / $specialist->bookings_count) * 100, 1)
+                        : 0;
+
+                    return [
+                        'id' => $specialist->id,
+                        'name' => $specialist->name,
+                        'bookings_count' => $specialist->bookings_count,
+                        'revenue' => $specialist->bookings_sum_prepayment_amount,
+                        'rating' => round($specialist->bookings_avg_rating, 1),
+                        'successful_bookings' => $specialist->successful_bookings,
+                        'completion_rate' => $completion_rate,
+                        'performance_score' => $this->calculatePerformanceScore($specialist),
+                        'top_performer' => $completion_rate >= 90
+                    ];
+                });
+
+            return response()->json(['activeSpecialists' => $activeSpecialists]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    private function calculatePerformanceScore($specialist): float
+    {
+        $scoreFactors = [
+            'bookings' => $specialist->bookings_count * 10,
+            'completion' => $specialist->completion_rate,
+            'rating' => ($specialist->bookings_avg_rating ?? 0) * 20,
+            'revenue' => min(($specialist->bookings_sum_prepayment_amount / 1000000), 100)
         ];
 
-        $dailyRevenue = Booking::where('payment_status', 'paid')
-            ->where('created_at', '>=', now()->subDays(7))
-            ->groupBy(DB::raw('DATE(created_at)'))
-            ->select(
-                DB::raw('DATE(created_at) as date'),
-                DB::raw('SUM(prepayment_amount) as total')
-            )
-            ->orderBy('date')
-            ->get();
-
-        $popularServices = BeautyService::withCount(['bookings' => function ($query) {
-            $query->where('created_at', '>=', now()->subDays(30));
-        }])
-            ->orderByDesc('bookings_count')
-            ->take(5)
-            ->get(['id', 'name', 'bookings_count']);
-
-        $activeSpecialists = Specialist::withCount(['bookings' => function ($query) {
-            $query->where('created_at', '>=', now()->subDays(30));
-        }])
-            ->orderByDesc('bookings_count')
-            ->take(5)
-            ->get(['id', 'name', 'bookings_count']);
-
-        return response()->json([
-            'stats' => $stats,
-            'dailyRevenue' => $dailyRevenue,
-            'popularServices' => $popularServices,
-            'activeSpecialists' => $activeSpecialists,
-        ]);
+        return round(array_sum($scoreFactors) / 4, 1);
     }
 
     public function dashboard()
