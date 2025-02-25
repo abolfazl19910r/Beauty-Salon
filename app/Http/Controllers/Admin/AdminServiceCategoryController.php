@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-class ServiceCategoryController extends Controller
+class AdminServiceCategoryController extends Controller
 {
     public function index()
     {
