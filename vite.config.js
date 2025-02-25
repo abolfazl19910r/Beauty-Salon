@@ -9,11 +9,7 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/js/app.jsx',
-                'resources/js/reports.jsx',
-                'resources/js/loyalty.jsx',
-                'resources/js/blog.jsx',
-                'resources/js/notifications.jsx',
-                'resources/js/services-report.jsx'
+                'resources/js/admin.jsx'
             ],
             refresh: true,
         }),
@@ -26,7 +22,6 @@ export default defineConfig({
             '@': path.resolve(__dirname, './resources/js'),
             '@components': path.resolve(__dirname, './resources/js/Components'),
             '@layouts': path.resolve(__dirname, './resources/js/Layouts'),
-            '@pages': path.resolve(__dirname, './resources/js/Pages'),
             '@utils': path.resolve(__dirname, './resources/js/Utils'),
             '@lib': path.resolve(__dirname, './resources/js/lib')
         }
