@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="rtl" class="rtl">
 <head>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css" rel="stylesheet" type="text/css" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -11,7 +12,7 @@
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gray-100 rtl">
 <!-- Sidebar and Main Content Container -->
 <div class="flex h-screen">
     <!-- Sidebar -->
