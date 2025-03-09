@@ -44,7 +44,7 @@
                             <a href="{{ route('admin.services.edit', $service) }}"
                                class="text-blue-500 hover:text-blue-700">ویرایش</a>
 
-                            <form action="{{ route('admin.services.destroy', ['id' => $service->id]) }}"
+                            <form action="{{ route('admin.services.destroy', ['service' => $service->id]) }}"
                                   method="POST"
                                   class="inline"
                                   onsubmit="return confirm('آیا از حذف این خدمت اطمینان دارید؟')">
