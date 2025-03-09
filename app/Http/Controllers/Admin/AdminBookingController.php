@@ -19,17 +19,20 @@ class AdminBookingController extends Controller
 
     public function index(Request $request)
     {
-        $query = Booking::with(['user', 'specialist', 'service'])->latest();
+        $query = Booking::with(['user', 'service', 'specialist']);
 
-        if ($request->has('status') && $request->status !== '') {
+        if ($request->has('status')) {
             $query->where('status', $request->status);
         }
 
         if ($request->has('date')) {
-            $query->whereDate('booking_time', $request->date);
+            $date = $request->date;
+            $query->whereDate('booking_time', $date);
+        } else {
+            $query->whereDate('booking_time', today());
         }
 
-        $bookings = $query->paginate(15);
+        $bookings = $query->orderBy('booking_time', 'desc')->paginate(10);
 
         return view('admin.bookings.index', compact('bookings'));
     }
