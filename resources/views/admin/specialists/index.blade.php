@@ -12,27 +12,27 @@
             </a>
         </div>
 
-        <div class="bg-white rounded-lg shadow overflow-x-auto">
-            <table class="w-full">
+        <div class="bg-white rounded-lg shadow overflow-x-auto" dir="rtl">
+            <table class="w-full" dir="rtl">
                 <thead>
-                <tr class="bg-gray-50">
+                <tr class="bg-gray-50 text-right">
                     <th class="px-6 py-3 text-right">نام</th>
-                    <th class="px-6 py-3">شماره تماس</th>
-                    <th class="px-6 py-3">ایمیل</th>
-                    <th class="px-6 py-3">تعداد نوبت‌های امروز</th>
-                    <th class="px-6 py-3">عملیات</th>
+                    <th class="px-6 py-3 text-right">شماره تماس</th>
+                    <th class="px-6 py-3 text-right">ایمیل</th>
+                    <th class="px-6 py-3 text-right">تعداد نوبت‌های امروز</th>
+                    <th class="px-6 py-3 text-right">عملیات</th>
                 </tr>
                 </thead>
                 <tbody class="divide-y">
                 @foreach($specialists as $specialist)
                     <tr>
-                        <td class="px-6 py-4">{{ $specialist->name }}</td>
-                        <td class="px-6 py-4" dir="ltr">{{ $specialist->phone }}</td>
-                        <td class="px-6 py-4">{{ $specialist->email }}</td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 text-right">{{ $specialist->name }}</td>
+                        <td class="px-6 py-4 text-right" dir="ltr">{{ $specialist->phone }}</td>
+                        <td class="px-6 py-4 text-right">{{ $specialist->email }}</td>
+                        <td class="px-6 py-4 text-right">
                             {{ $specialist->bookings()->whereDate('booking_time', today())->count() }}
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 text-right">
                             <a href="{{ route('admin.specialists.edit', $specialist->id) }}"
                                class="text-blue-500">ویرایش</a>
                             <form action="{{ route('admin.specialists.destroy', $specialist->id) }}"
