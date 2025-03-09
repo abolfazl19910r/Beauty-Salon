@@ -1,4 +1,4 @@
-//BookingCard.jsx
+//resources/js/Components/booking/BookingCard.jsx
 import React from 'react';
 import { Calendar, Clock, User } from 'lucide-react';
 

@@ -1,4 +1,4 @@
-// BookingsList.jsx
+//resources/js/Components/booking/BookingsList.jsx
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock } from 'lucide-react';
 

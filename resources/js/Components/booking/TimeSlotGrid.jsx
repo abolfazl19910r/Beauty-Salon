@@ -1,4 +1,4 @@
-//TimeSlotGrid.jsx
+//resources/js/Components/booking/TimeSlotGrid.jsx
 import React from 'react';
 import { Clock } from 'lucide-react';
 

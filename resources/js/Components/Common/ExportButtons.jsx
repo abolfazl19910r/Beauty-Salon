@@ -1,4 +1,4 @@
-// resources/js/Components/Admin/Reports/Common/ExportButtons.jsx
+// resources/js/Components/Common/ExportButtons.jsx
 import React from 'react';
 import { Download } from 'lucide-react';
 

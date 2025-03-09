@@ -1,4 +1,4 @@
-// BookingFlow.jsx
+//resources/js/Components/booking/ BookingFlow.jsx
 import React, { useState } from 'react';
 import { Calendar, User, Clock } from 'lucide-react';
 

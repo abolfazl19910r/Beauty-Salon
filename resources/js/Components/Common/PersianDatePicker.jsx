@@ -1,7 +1,7 @@
-// resources/js/Components/Admin/Reports/Common/PersianDatePicker.jsx
+// resources/js/Components/Common/PersianDatePicker.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, ChevronRight, ChevronLeft } from 'lucide-react';
-import { getMonthDays, isValidPersianDate, comparePersianDates } from '../../Utils/DateUtils.js';
+import { getMonthDays, isValidPersianDate, comparePersianDates } from '@utils/DateUtils.js';
 
 const DAYS = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'];
 const MONTHS = [

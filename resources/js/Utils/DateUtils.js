@@ -1,4 +1,4 @@
-// resources/js/Components/Admin/Reports/Utils/DateUtils.js
+// resources/js/Utils/DateUtils.js
 
 export const toGregorian = (persianDateStr) => {
     if (!persianDateStr || !isValidPersianDate(persianDateStr)) {

@@ -1,3 +1,4 @@
+// resources/js/Components/Common/SecureForm.jsx
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, Lock, RefreshCw } from 'lucide-react';
 

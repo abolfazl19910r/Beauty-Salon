@@ -1,4 +1,4 @@
-// resources/js/Components/Admin/Reports/Common/DateFilter.jsx
+// resources/js/Components/Common/DateFilter.jsx
 import React from 'react';
 import { Calendar } from 'lucide-react';
 

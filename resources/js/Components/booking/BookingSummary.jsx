@@ -1,4 +1,4 @@
-//BookingSummary.jsx
+//resources/js/Components/booking/BookingSummary.jsx
 import React from 'react';
 
 const BookingSummary = ({
