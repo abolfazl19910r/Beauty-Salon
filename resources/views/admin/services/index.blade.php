@@ -12,16 +12,16 @@
             </a>
         </div>
 
-        <div class="bg-white rounded-lg shadow overflow-x-auto">
-            <table class="w-full">
+        <div class="bg-white rounded-lg shadow overflow-x-auto" dir="rtl">
+            <table class="w-full" dir="rtl">
                 <thead>
-                <tr class="bg-gray-50">
+                <tr class="bg-gray-50 text-right">
                     <th class="px-6 py-3 text-right">تصویر</th>
-                    <th class="px-6 py-3">نام</th>
-                    <th class="px-6 py-3">دسته‌بندی</th>
-                    <th class="px-6 py-3">قیمت</th>
-                    <th class="px-6 py-3">مدت زمان</th>
-                    <th class="px-6 py-3">عملیات</th>
+                    <th class="px-6 py-3 text-right">نام</th>
+                    <th class="px-6 py-3 text-right">دسته‌بندی</th>
+                    <th class="px-6 py-3 text-right">قیمت</th>
+                    <th class="px-6 py-3 text-right">مدت زمان</th>
+                    <th class="px-6 py-3 text-right">عملیات</th>
                 </tr>
                 </thead>
                 <tbody class="divide-y">
