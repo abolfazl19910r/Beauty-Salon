@@ -4,14 +4,25 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Loyalty;
+use App\Models\LoyaltyPoint;
+use App\Models\Reward;
 use Illuminate\Http\Request;
 
 class AdminLoyaltyController extends Controller
 {
     public function index()
     {
-        $loyaltyPrograms = Loyalty::orderBy('created_at', 'desc')->paginate(10);
-        return view('admin.loyalty.index', compact('loyaltyPrograms'));
+        $totalActivePoints = LoyaltyPoint::where('type', 'earned')->sum('points');
+        $totalPointUsers = LoyaltyPoint::distinct('user_id')->count('user_id');
+        $averageUserPoints = $totalPointUsers > 0 ? $totalActivePoints / $totalPointUsers : 0;
+        $totalRedeemedRewards = Reward::sum('used_count');
+
+        return view('admin.loyalty.index', compact(
+            'totalActivePoints',
+            'totalPointUsers',
+            'averageUserPoints',
+            'totalRedeemedRewards'
+        ));
     }
 
     public function create()
