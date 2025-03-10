@@ -3,15 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\BeautyService;
-use App\Models\ServiceCategory;
-use App\Models\Specialist;
+use App\Models\Category;
 
 class ServiceController extends Controller
 {
     public function index()
     {
         $services = BeautyService::paginate(12);
-        $categories = ServiceCategory::all();
+        $categories = Category::all();
 
         return view('services.index', compact('services', 'categories'));
     }
