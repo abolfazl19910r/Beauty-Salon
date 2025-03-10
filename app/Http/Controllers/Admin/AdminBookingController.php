@@ -67,6 +67,15 @@ class AdminBookingController extends Controller
             ->with('success', 'نوبت با موفقیت ایجاد شد.');
     }
 
+    public function edit(Booking $booking)
+    {
+        $users = User::all();
+        $services = BeautyService::all();
+        $specialists = Specialist::all();
+
+        return view('admin.bookings.edit', compact('booking', 'users', 'services', 'specialists'));
+    }
+
     public function show($id)
     {
         $booking = Booking::with(['service', 'user', 'specialist'])->findOrFail($id);
