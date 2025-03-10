@@ -49,6 +49,24 @@ class AdminBookingController extends Controller
         return view('admin.bookings.create', compact('users', 'services', 'specialists'));
     }
 
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'service_id' => 'required|exists:beauty_services,id',
+            'specialist_id' => 'required|exists:specialists,id',
+            'booking_time' => 'required|date',
+            'status' => 'required|in:pending,confirmed,cancelled',
+            'payment_status' => 'required|in:paid,unpaid',
+            'notes' => 'nullable|string'
+        ]);
+
+        $booking = Booking::create($validated);
+
+        return redirect()->route('admin.bookings.show', $booking)
+            ->with('success', 'نوبت با موفقیت ایجاد شد.');
+    }
+
     public function show($id)
     {
         $booking = Booking::with(['service', 'user', 'specialist'])->findOrFail($id);
