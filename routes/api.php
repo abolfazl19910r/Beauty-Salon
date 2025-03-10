@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('api')->group(function () {
     require __DIR__.'/api/public/services.php';
     require __DIR__.'/api/public/specialists.php';
+    require __DIR__ . '/api/public/gallery.php';
+    require __DIR__ . '/api/public/announcements.php';
+
 
     Route::middleware('auth:sanctum')->group(function () {
         require __DIR__.'/api/auth/security.php';
