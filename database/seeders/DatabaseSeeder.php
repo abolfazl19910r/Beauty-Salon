@@ -4,10 +4,10 @@ namespace Database\Seeders;
 
 use App\Models\BeautyService;
 use App\Models\Booking;
-use App\Models\ServiceCategory;
 use App\Models\Specialist;
 use App\Models\User;
 use App\Models\WorkSchedule;
+use App\Services\CategoryService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -37,7 +37,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($categories as $category => $services) {
-            $cat = ServiceCategory::create([
+            $cat = CategoryService::create([
                 'name' => $category,
                 'slug' => Str::slug($category)
             ]);
