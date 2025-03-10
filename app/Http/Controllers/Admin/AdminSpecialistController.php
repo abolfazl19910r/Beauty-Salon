@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ServiceCategory;
 use App\Models\Specialist;
+use App\Services\CategoryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -21,7 +21,7 @@ class AdminSpecialistController extends Controller
 
     public function create()
     {
-        $services = ServiceCategory::with('services')->get();
+        $services = CategoryService::with('services')->get();
         return view('admin.specialists.create', compact('services'));
     }
 
@@ -52,7 +52,7 @@ class AdminSpecialistController extends Controller
         if (!$specialist) {
             abort(404);
         }
-        $services = ServiceCategory::with('services')->get();
+        $services = CategoryService::with('services')->get();
         $selectedServices = $specialist->services->pluck('id')->toArray();
         return view('admin.specialists.edit', compact('specialist', 'services', 'selectedServices'));
     }
