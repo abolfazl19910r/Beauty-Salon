@@ -9,77 +9,369 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@latest/dist/css/persian-datepicker.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
+    @stack('styles')
+    <style>
+        .persian-number {
+            -moz-font-feature-settings: "ss02";
+            -webkit-font-feature-settings: "ss02";
+            font-feature-settings: "ss02";
+        }
+
+        /* Sidebar active item gradient */
+        .sidebar-active {
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0.5) 100%);
+            border-right: 3px solid #2563eb;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(243, 244, 246, 0.8);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.5);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(107, 114, 128, 0.7);
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Card hover effects */
+        .hover-shadow-lg {
+            transition: box-shadow 0.3s, transform 0.3s;
+        }
+
+        .hover-shadow-lg:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+    </style>
 </head>
-<body class="bg-gray-100 rtl">
-<!-- Sidebar and Main Content Container -->
-<div class="flex h-screen">
+<body class="bg-gray-50 rtl font-vazir text-gray-800">
+<div class="flex h-screen overflow-hidden">
     <!-- Sidebar -->
-    <aside class="w-64 min-h-screen bg-gray-800 text-white">
-        <div class="p-4">
-            <h2 class="text-xl font-bold">پنل مدیریت</h2>
+    <aside class="w-64 min-h-screen bg-white shadow-lg border-l overflow-y-auto hidden md:block">
+        <div class="p-4 border-b border-gray-100">
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-bold flex items-center">
+                    <svg class="w-8 h-8 ml-2 text-pink-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="8.5" cy="7" r="4"></circle>
+                        <path d="M20 8v6M23 11h-6"></path>
+                    </svg>
+                    <span class="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">پنل مدیریت</span>
+                </h2>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">سیستم مدیریت سالن زیبایی</p>
         </div>
-        <nav class="mt-4">
-            <a href="{{ route('admin.dashboard') }}"
-               class="block px-4 py-2 {{ request()->routeIs('admin.dashboard') ? 'bg-gray-900' : 'hover:bg-gray-700' }} transition-colors">
-                داشبورد
-            </a>
-            <a href="{{ route('admin.reports.index') }}"
-               class="block px-4 py-2 {{ request()->routeIs('admin.reports*') ? 'bg-gray-900' : 'hover:bg-gray-700' }} transition-colors">
-                گزارشات
-            </a>
-            <a href="{{ route('admin.services.index') }}"
-               class="block px-4 py-2 {{ request()->routeIs('admin.services*') ? 'bg-gray-900' : 'hover:bg-gray-700' }} transition-colors">
-                مدیریت خدمات
-            </a>
-            <a href="{{ route('admin.specialists.index') }}"
-               class="block px-4 py-2 {{ request()->routeIs('admin.specialists*') ? 'bg-gray-900' : 'hover:bg-gray-700' }} transition-colors">
-                مدیریت متخصصین
-            </a>
-            <a href="{{ route('admin.bookings.index') }}"
-               class="block px-4 py-2 {{ request()->routeIs('admin.bookings*') ? 'bg-gray-900' : 'hover:bg-gray-700' }} transition-colors">
-                مدیریت نوبت‌ها
-            </a>
+
+        <nav class="mt-4 px-2">
+            <div class="py-2">
+                <h3 class="text-xs font-semibold text-gray-400 px-3 mb-2 uppercase">داشبورد</h3>
+                <a href="{{ route('admin.dashboard') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.dashboard') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
+                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    داشبورد
+                </a>
+
+                <a href="{{ route('admin.reports.index') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.reports*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
+                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+                        <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+                    </svg>
+                    گزارشات
+                </a>
+            </div>
+
+            <div class="py-2">
+                <h3 class="text-xs font-semibold text-gray-400 px-3 mb-2 uppercase">مدیریت</h3>
+                <a href="{{ route('admin.services.index') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.services*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
+                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    خدمات
+                </a>
+
+                <a href="{{ route('admin.specialists.index') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.specialists*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
+                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    متخصصین
+                </a>
+
+                <a href="{{ route('admin.bookings.index') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.bookings*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
+                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    نوبت‌ها
+                </a>
+
+                <a href="{{ route('admin.categories.index') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.categories*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
+                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                        <polyline points="2 17 12 22 22 17"></polyline>
+                        <polyline points="2 12 12 17 22 12"></polyline>
+                    </svg>
+                    دسته‌بندی‌ها
+                </a>
+            </div>
+
+            <div class="py-2">
+                <h3 class="text-xs font-semibold text-gray-400 px-3 mb-2 uppercase">سیستم‌ها</h3>
+                <a href="{{ route('admin.loyalty.index') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.loyalty*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
+                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                    امتیازات
+                </a>
+
+                <a href="{{ route('admin.blog.index') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.blog*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
+                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                    وبلاگ
+                </a>
+
+                <a href="{{ route('admin.gallery.index') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.gallery*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
+                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                    گالری
+                </a>
+
+                <a href="{{ route('admin.announcements.index') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.announcements*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
+                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    اعلانات
+                </a>
+            </div>
+
+            <div class="py-2">
+                <h3 class="text-xs font-semibold text-gray-400 px-3 mb-2 uppercase">تنظیمات</h3>
+                <a href="{{ route('admin.profile.edit') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.profile*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
+                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    پروفایل
+                </a>
+
+                <form method="POST" action="{{ route('logout') }}" class="w-full">
+                    @csrf
+                    <button type="submit" class="w-full flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors text-right">
+                        <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        خروج
+                    </button>
+                </form>
+            </div>
         </nav>
     </aside>
 
+    <!-- Mobile sidebar backdrop -->
+    <div id="sidebar-backdrop" class="md:hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-40 hidden" onclick="toggleSidebar()"></div>
+
     <!-- Main Content -->
-    <main class="flex-1 overflow-x-hidden overflow-y-auto">
-        <!-- Notifications -->
-        @if(session('success'))
-            <div class="m-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-                <span class="block sm:inline">{{ session('success') }}</span>
-            </div>
-        @endif
+    <div class="flex-1 flex flex-col overflow-hidden relative">
+        <!-- Header -->
+        <header class="bg-white border-b shadow-sm sticky top-0 z-30">
+            <div class="px-4 py-3 flex justify-between items-center">
+                <!-- Mobile menu button -->
+                <button type="button" class="md:hidden text-gray-600 focus:outline-none" onclick="toggleSidebar()">
+                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
 
-        @if(session('error'))
-            <div class="m-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                <span class="block sm:inline">{{ session('error') }}</span>
-            </div>
-        @endif
+                <!-- Page title - Mobile Only -->
+                <h1 class="text-lg font-bold md:hidden">@yield('title')</h1>
 
-        <!-- Main Content Area -->
-        <div class="p-6">
-            @yield('content')
-        </div>
-    </main>
+                <!-- Header right items -->
+                <div class="flex items-center space-x-3 space-x-reverse">
+                    <!-- Search icon -->
+                    <button type="button" class="p-1 rounded-full text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+
+                    <!-- Notifications -->
+                    <button type="button" class="p-1 rounded-full text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 relative">
+                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-500 rounded-full">3</span>
+                    </button>
+
+                    <!-- User dropdown -->
+                    <div class="relative inline-block text-left">
+                        <button type="button" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                            <span class="text-sm font-medium">{{ substr(auth()->user()->name ?? 'کاربر', 0, 1) }}</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Breadcrumb - Desktop only -->
+            <div class="hidden md:flex px-4 py-2 border-t bg-gray-50 text-sm">
+                <a href="{{ route('admin.dashboard') }}" class="text-blue-600 hover:text-blue-800">پنل مدیریت</a>
+                <span class="mx-2 text-gray-400">/</span>
+                <span class="text-gray-600">@yield('title')</span>
+            </div>
+        </header>
+
+        <!-- Main content area -->
+        <main class="flex-1 overflow-y-auto bg-gray-50 p-4">
+            @if(session('success'))
+                <div class="mb-4 bg-green-50 border-r-4 border-green-500 p-4 text-green-800 fade-in rounded-lg shadow-sm" role="alert">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="mr-3">
+                            <span>{{ session('success') }}</span>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="mb-4 bg-red-50 border-r-4 border-red-500 p-4 text-red-800 fade-in rounded-lg shadow-sm" role="alert">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="mr-3">
+                            <span>{{ session('error') }}</span>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Page Content -->
+            <div class="fade-in">
+                @yield('content')
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white py-3 px-4 text-center text-gray-500 text-xs border-t">
+            <p>© {{ date('Y') }} سیستم مدیریت سالن زیبایی. تمامی حقوق محفوظ است.</p>
+        </footer>
+    </div>
 </div>
 
 <!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://unpkg.com/persian-date/dist/persian-date.min.js"></script>
 <script src="https://unpkg.com/persian-datepicker/dist/js/persian-datepicker.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<!-- Custom Scripts -->
+<script>
+    // Mobile sidebar toggle
+    function toggleSidebar() {
+        const sidebar = document.querySelector('aside');
+        const backdrop = document.getElementById('sidebar-backdrop');
+        sidebar.classList.toggle('hidden');
+        backdrop.classList.toggle('hidden');
+    }
+
+    // Alert auto-dismiss
+    setTimeout(() => {
+        const alerts = document.querySelectorAll('.fade-in[role="alert"]');
+        alerts.forEach(alert => {
+            alert.style.opacity = '0';
+            alert.style.transition = 'opacity 0.5s';
+            setTimeout(() => alert.remove(), 500);
+        });
+    }, 5000);
+
+    // Confirm delete actions
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteButtons = document.querySelectorAll('[data-confirm-delete]');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                const message = button.getAttribute('data-confirm-message') || 'آیا از حذف این آیتم اطمینان دارید؟';
+
+                Swal.fire({
+                    title: 'هشدار',
+                    text: message,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'بله، حذف شود',
+                    cancelButtonText: 'انصراف'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const form = button.closest('form');
+                        if (form) form.submit();
+                    }
+                });
+            });
+        });
+    });
+</script>
+
 @stack('scripts')
-
-<!-- Debug Info (only in development) -->
-@if(config('app.debug'))
-    <script>
-        console.log('Layout initialized');
-        console.log('Route:', '{{ request()->route()->getName() }}');
-    </script>
-@endif
 </body>
 </html>
