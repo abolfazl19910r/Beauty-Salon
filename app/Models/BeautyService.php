@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\CategoryService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
@@ -45,7 +46,7 @@ class BeautyService extends Model
 
     public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(ServiceCategory::class);
+        return $this->belongsTo(Category::class);
     }
 
     public function getImageUrlAttribute(): ?string
