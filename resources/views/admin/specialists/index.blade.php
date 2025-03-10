@@ -4,7 +4,6 @@
 
 @section('content')
     <div class="max-w-7xl mx-auto">
-        <!-- Page header -->
         <div class="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-6">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div class="mb-4 md:mb-0">
@@ -30,7 +29,6 @@
             </div>
         </div>
 
-        <!-- Search and Filters -->
         <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
             <form action="{{ route('admin.specialists.index') }}" method="GET" class="flex flex-col md:flex-row gap-4">
                 <div class="flex-grow">
@@ -58,7 +56,6 @@
             </form>
         </div>
 
-        <!-- Data table -->
         <div class="bg-white rounded-lg shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full min-w-full divide-y divide-gray-200">
@@ -163,7 +160,6 @@
                 </table>
             </div>
 
-            <!-- Pagination -->
             @if($specialists->hasPages())
                 <div class="px-6 py-4 border-t">
                     {{ $specialists->links() }}
@@ -176,7 +172,6 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Any additional JavaScript for this page
             console.log('Specialists management page loaded');
         });
     </script>

@@ -25,6 +25,9 @@
                            value="{{ old('name', $service->name) }}"
                            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                            required>
+                    @error('name')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div class="mb-4">
@@ -34,7 +37,7 @@
                             class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                         <option value="">بدون دسته‌بندی</option>
                         @foreach($categories as $id => $name)
-                            <option value="{{ $id }}" {{ old('category_id') == $id ? 'selected' : '' }}>{{ $name }}</option>
+                            <option value="{{ $id }}" {{ (old('category_id', $service->category_id) == $id) ? 'selected' : '' }}>{{ $name }}</option>
                         @endforeach
                     </select>
                     @error('category_id')
