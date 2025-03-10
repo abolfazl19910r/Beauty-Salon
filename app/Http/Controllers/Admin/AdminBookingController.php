@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BeautyService;
 use App\Models\Booking;
+use App\Models\Specialist;
+use App\Models\User;
 use App\Services\RefundService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -35,6 +38,15 @@ class AdminBookingController extends Controller
         $bookings = $query->orderBy('booking_time', 'desc')->paginate(10);
 
         return view('admin.bookings.index', compact('bookings'));
+    }
+
+    public function create()
+    {
+        $users = User::all();
+        $services = BeautyService::all();
+        $specialists = Specialist::all();
+
+        return view('admin.bookings.create', compact('users', 'services', 'specialists'));
     }
 
     public function show($id)
