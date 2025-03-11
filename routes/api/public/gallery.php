@@ -3,7 +3,7 @@
 use App\Http\Controllers\GalleryController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('gallery')->name('api.gallery.')->group(function () {
+Route::prefix('gallery')->name('gallery.')->group(function () {
     Route::get('/', [GalleryController::class, 'index'])->name('index');
     Route::post('/', [GalleryController::class, 'store'])->name('store');
     Route::post('/reorder', [GalleryController::class, 'reorder'])->name('reorder');
