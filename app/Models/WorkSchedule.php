@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
 class WorkSchedule extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'specialist_id',
         'work_days',
