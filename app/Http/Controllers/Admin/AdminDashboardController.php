@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\BeautyService;
 use App\Models\Specialist;
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -162,6 +163,55 @@ class AdminDashboardController extends Controller
 
     public function dashboard()
     {
-        return view('admin.dashboard');
+        $todayBookingsCount = Booking::whereDate('booking_time', today())->count();
+        $totalRevenue = Booking::where('payment_status', 'paid')->sum('prepayment_amount');
+        $usersCount = User::count();
+        $specialistsCount = Specialist::count();
+        $rolesCount = Role::count();
+
+        $roles = Role::withCount('users')->take(4)->get();
+
+        $popularServices = BeautyService::withCount('bookings')
+            ->orderBy('bookings_count', 'desc')
+            ->take(4)
+            ->get();
+
+        $topSpecialists = Specialist::withCount(['bookings' => function($query) {
+            $query->whereDate('booking_time', today());
+        }])
+            ->withSum(['bookings' => function($query) {
+                $query->where('payment_status', 'paid');
+            }], 'prepayment_amount')
+            ->orderBy('bookings_count', 'desc')
+            ->take(3)
+            ->get();
+
+        $recentBookings = Booking::with(['user', 'service'])
+            ->latest()
+            ->take(4)
+            ->get();
+
+        $weeklyRevenue = Booking::where('payment_status', 'paid')
+            ->whereBetween('created_at', [now()->subDays(6), now()])
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('SUM(prepayment_amount) as total')
+            )
+            ->orderBy('date')
+            ->get();
+
+        return view('admin.dashboard', compact(
+            'todayBookingsCount',
+            'totalRevenue',
+            'usersCount',
+            'specialistsCount',
+            'rolesCount',
+            'roles',
+            'popularServices',
+            'topSpecialists',
+            'recentBookings',
+            'weeklyRevenue'
+        ));
     }
 }
