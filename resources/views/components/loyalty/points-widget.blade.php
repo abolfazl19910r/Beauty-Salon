@@ -1,4 +1,3 @@
-// resources/views/components/loyalty/points-widget.blade.php
 <div class="bg-white rounded-lg shadow p-4">
     <div class="flex justify-between items-center">
         <div class="text-gray-600">موجودی امتیاز</div>
