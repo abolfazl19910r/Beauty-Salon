@@ -17,15 +17,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     require __DIR__.'/web/security.php';
 });
 
-Route::prefix('admin')
-    ->middleware(['auth', 'admin'])
-    ->name('admin.')
-    ->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+
+    Route::get('/', [App\Http\Controllers\Admin\AdminDashboardController::class, 'dashboard'])->name('dashboard');
+
         require __DIR__.'/admin/dashboard.php';
         require __DIR__.'/admin/profile.php';
 
         require __DIR__.'/admin/services.php';
         require __DIR__.'/admin/specialists.php';
+        require __DIR__.'/admin/users.php';
 
         require __DIR__.'/admin/bookings.php';
         require __DIR__.'/admin/categories.php';
@@ -37,4 +38,5 @@ Route::prefix('admin')
 
         require __DIR__.'/admin/reports.php';
         require __DIR__.'/admin/security.php';
+        require __DIR__.'/admin/roles.php';
     });
