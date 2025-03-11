@@ -7,7 +7,6 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title') | پنل مدیریت سالن زیبایی</title>
 
-    <!-- Styles -->
     <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@latest/dist/css/persian-datepicker.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
@@ -21,13 +20,11 @@
             font-feature-settings: "ss02";
         }
 
-        /* Sidebar active item gradient */
         .sidebar-active {
             background: linear-gradient(90deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0.5) 100%);
             border-right: 3px solid #2563eb;
         }
 
-        /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -47,7 +44,6 @@
             background: rgba(107, 114, 128, 0.7);
         }
 
-        /* Animations */
         .fade-in {
             animation: fadeIn 0.5s ease-in-out;
         }
@@ -57,7 +53,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Card hover effects */
         .hover-shadow-lg {
             transition: box-shadow 0.3s, transform 0.3s;
         }
@@ -193,6 +188,28 @@
             </div>
 
             <div class="py-2">
+                <h3 class="text-xs font-semibold text-gray-400 px-3 mb-2 uppercase">مدیریت کاربران</h3>
+                <a href="{{ route('admin.users.index') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.users*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
+                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    کاربران
+                </a>
+
+                <a href="{{ route('admin.roles.index') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.roles*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
+                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 11h6m-3-3v6M17 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h10z"></path>
+                    </svg>
+                    نقش‌ها
+                </a>
+            </div>
+
+            <div class="py-2">
                 <h3 class="text-xs font-semibold text-gray-400 px-3 mb-2 uppercase">تنظیمات</h3>
                 <a href="{{ route('admin.profile.edit') }}"
                    class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.profile*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
@@ -218,15 +235,11 @@
         </nav>
     </aside>
 
-    <!-- Mobile sidebar backdrop -->
     <div id="sidebar-backdrop" class="md:hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-40 hidden" onclick="toggleSidebar()"></div>
 
-    <!-- Main Content -->
     <div class="flex-1 flex flex-col overflow-hidden relative">
-        <!-- Header -->
         <header class="bg-white border-b shadow-sm sticky top-0 z-30">
             <div class="px-4 py-3 flex justify-between items-center">
-                <!-- Mobile menu button -->
                 <button type="button" class="md:hidden text-gray-600 focus:outline-none" onclick="toggleSidebar()">
                     <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -235,12 +248,9 @@
                     </svg>
                 </button>
 
-                <!-- Page title - Mobile Only -->
                 <h1 class="text-lg font-bold md:hidden">@yield('title')</h1>
 
-                <!-- Header right items -->
                 <div class="flex items-center space-x-3 space-x-reverse">
-                    <!-- Search icon -->
                     <button type="button" class="p-1 rounded-full text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8"></circle>
@@ -248,7 +258,6 @@
                         </svg>
                     </button>
 
-                    <!-- Notifications -->
                     <button type="button" class="p-1 rounded-full text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 relative">
                         <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
@@ -257,7 +266,6 @@
                         <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-500 rounded-full">3</span>
                     </button>
 
-                    <!-- User dropdown -->
                     <div class="relative inline-block text-left">
                         <button type="button" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
                             <span class="text-sm font-medium">{{ substr(auth()->user()->name ?? 'کاربر', 0, 1) }}</span>
@@ -266,7 +274,6 @@
                 </div>
             </div>
 
-            <!-- Breadcrumb - Desktop only -->
             <div class="hidden md:flex px-4 py-2 border-t bg-gray-50 text-sm">
                 <a href="{{ route('admin.dashboard') }}" class="text-blue-600 hover:text-blue-800">پنل مدیریت</a>
                 <span class="mx-2 text-gray-400">/</span>
@@ -274,7 +281,6 @@
             </div>
         </header>
 
-        <!-- Main content area -->
         <main class="flex-1 overflow-y-auto bg-gray-50 p-4">
             @if(session('success'))
                 <div class="mb-4 bg-green-50 border-r-4 border-green-500 p-4 text-green-800 fade-in rounded-lg shadow-sm" role="alert">
@@ -306,27 +312,23 @@
                 </div>
             @endif
 
-            <!-- Page Content -->
             <div class="fade-in">
                 @yield('content')
             </div>
         </main>
 
-        <!-- Footer -->
         <footer class="bg-white py-3 px-4 text-center text-gray-500 text-xs border-t">
             <p>© {{ date('Y') }} سیستم مدیریت سالن زیبایی. تمامی حقوق محفوظ است.</p>
         </footer>
     </div>
 </div>
 
-<!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://unpkg.com/persian-date/dist/persian-date.min.js"></script>
 <script src="https://unpkg.com/persian-datepicker/dist/js/persian-datepicker.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    // Mobile sidebar toggle
     function toggleSidebar() {
         const sidebar = document.querySelector('aside');
         const backdrop = document.getElementById('sidebar-backdrop');
@@ -334,7 +336,6 @@
         backdrop.classList.toggle('hidden');
     }
 
-    // Alert auto-dismiss
     setTimeout(() => {
         const alerts = document.querySelectorAll('.fade-in[role="alert"]');
         alerts.forEach(alert => {
@@ -344,7 +345,6 @@
         });
     }, 5000);
 
-    // Confirm delete actions
     document.addEventListener('DOMContentLoaded', function() {
         const deleteButtons = document.querySelectorAll('[data-confirm-delete]');
         deleteButtons.forEach(button => {
