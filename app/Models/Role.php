@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Role extends Model
 {
@@ -14,26 +15,17 @@ class Role extends Model
         'label',
     ];
 
-    /**
-     * کاربرانی که این نقش را دارند
-     */
-    public function users()
+    public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class);
     }
 
-    /**
-     * اضافه کردن یک نقش به کاربر
-     */
-    public function assignToUser(User $user)
+    public function assignToUser(User $user): null
     {
         return $this->users()->attach($user);
     }
 
-    /**
-     * حذف یک نقش از کاربر
-     */
-    public function removeFromUser(User $user)
+    public function removeFromUser(User $user): int
     {
         return $this->users()->detach($user);
     }
