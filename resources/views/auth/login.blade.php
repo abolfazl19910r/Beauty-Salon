@@ -4,8 +4,11 @@ use Illuminate\Support\Facades\Route;
 ?>
 <x-guest-layout>
     <div class="min-h-screen flex items-center justify-center bg-gray-50">
-        <div class="max-w-md w-full p-6 bg-white rounded-lg shadow-lg">
-            <div class="text-center mb-8">
+        <div class="max-w-md w-full p-6 bg-white rounded-lg shadow-lg hover-shadow">
+            <div class="text-center mb-6">
+                <svg class="w-12 h-12 text-pink-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
                 <h2 class="text-2xl font-bold text-gray-800">ورود به سالن زیبایی</h2>
                 <p class="text-gray-600 mt-2">برای رزرو نوبت وارد شوید</p>
             </div>
@@ -15,7 +18,6 @@ use Illuminate\Support\Facades\Route;
             <form method="POST" action="{{ route('login') }}" class="space-y-6">
                 @csrf
 
-                <!-- Phone -->
                 <div>
                     <x-input-label for="phone" :value="__('شماره موبایل')" class="font-medium text-gray-700" />
                     <div class="mt-1 relative rounded-md shadow-sm">
@@ -38,7 +40,6 @@ use Illuminate\Support\Facades\Route;
                     <x-input-error :messages="$errors->get('phone')" class="mt-2" />
                 </div>
 
-                <!-- Password -->
                 <div>
                     <x-input-label for="password" :value="__('رمز عبور')" class="font-medium text-gray-700" />
                     <div class="mt-1 relative rounded-md shadow-sm">
@@ -57,7 +58,6 @@ use Illuminate\Support\Facades\Route;
                     <x-input-error :messages="$errors->get('password')" class="mt-2" />
                 </div>
 
-                <!-- Remember Me -->
                 <div class="flex items-center justify-between">
                     <label for="remember_me" class="inline-flex items-center">
                         <input id="remember_me"
@@ -76,7 +76,7 @@ use Illuminate\Support\Facades\Route;
                 </div>
 
                 <div>
-                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
+                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors">
                         {{ __('ورود') }}
                     </button>
                 </div>
