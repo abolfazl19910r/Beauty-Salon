@@ -2,12 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('api')->group(function () {
+Route::prefix('api')->name('api.')->group(function () {
     require __DIR__.'/api/public/services.php';
     require __DIR__.'/api/public/specialists.php';
     require __DIR__.'/api/public/gallery.php';
-    require __DIR__ . '/api/public/announcements.php';
-    require __DIR__ . '/api/public/blog.php';
+    require __DIR__.'/api/public/announcements.php';
+    require __DIR__.'/api/public/blog.php';
 
 
     Route::middleware('auth:sanctum')->group(function () {
