@@ -8,6 +8,7 @@ use App\View\Composers\ViewComposer;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,5 +28,11 @@ class AppServiceProvider extends ServiceProvider
     {
         Blade::component('layouts.guest', 'guest-layout');
         View::composer('*', ViewComposer::class);
+
+        Paginator::useTailwind();
+
+        Blade::if('role', function ($role) {
+            return auth()->check() && auth()->user()->hasRole($role);
+        });
     }
 }
