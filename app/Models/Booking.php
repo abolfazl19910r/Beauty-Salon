@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Booking extends Model
 {
@@ -42,17 +44,17 @@ class Booking extends Model
 
     protected array $dates = ['booking_time'];
 
-    public function service(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function service(): BelongsTo
     {
         return $this->belongsTo(BeautyService::class);
     }
 
-    public function specialist(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function specialist(): BelongsTo
     {
         return $this->belongsTo(Specialist::class);
     }
 
-    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
@@ -118,7 +120,7 @@ class Booking extends Model
         return $query->where('booking_time', '<=', now());
     }
 
-    public function payment(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function payment(): HasOne
     {
         return $this->hasOne(Payment::class);
     }
