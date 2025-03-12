@@ -2,7 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('api')->name('api.')->group(function () {
+Route::name('api.')->group(function () {
+
     require __DIR__.'/api/public/services.php';
     require __DIR__.'/api/public/specialists.php';
     require __DIR__.'/api/public/gallery.php';
