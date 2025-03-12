@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\BeautyService;
 use App\Models\Booking;
 use App\Models\Service;
 use App\Models\Specialist;
@@ -92,7 +93,7 @@ class RouteServiceProvider extends ServiceProvider
         });
 
         Route::bind('service', function ($value) {
-            return Service::findOrFail($value);
+            return BeautyService::findOrFail($value);
         });
 
         Route::bind('booking', function ($value) {
