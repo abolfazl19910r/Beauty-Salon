@@ -12,9 +12,9 @@ use Illuminate\Support\Facades\DB;
 
 class ReportService
 {
-    protected ReportCacheService $cacheService;
+    protected DiscountCodeObserver $cacheService;
     protected int $cacheDuration = 3600;
-    public function __construct(ReportCacheService $cacheService)
+    public function __construct(DiscountCodeObserver $cacheService)
     {
         $this->cacheService = $cacheService;
     }
