@@ -535,4 +535,23 @@ class BookingController extends Controller
             'count' => $bookings->count()
         ]);
     }
+
+    /**
+     *
+     * @return JsonResponse
+     */
+    public function past(): JsonResponse
+    {
+        $bookings = Booking::with(['service', 'specialist'])
+            ->where('user_id', Auth::id())
+            ->where('booking_time', '<=', now())
+            ->orderBy('booking_time', 'desc')
+            ->get();
+
+        return response()->json([
+            'bookings' => $bookings,
+            'count' => $bookings->count()
+        ]);
+    }
+
 }
