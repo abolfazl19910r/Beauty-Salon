@@ -728,4 +728,23 @@ class BookingController extends Controller
             return back()->with('error', 'خطا در تغییر زمان نوبت: ' . $e->getMessage());
         }
     }
+
+    /**
+     *
+     * @return JsonResponse
+     */
+    public function latestSuccessful(): JsonResponse
+    {
+        try {
+            $booking = Booking::with(['service', 'specialist'])
+                ->where('user_id', Auth::id())
+                ->where('payment_status', 'paid')
+                ->latest('paid_at')
+                ->firstOrFail();
+
+            return response()->json($booking);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'هیچ رزرو موفقی یافت نشد.'], 404);
+        }
+    }
 }
