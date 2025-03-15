@@ -131,55 +131,93 @@
             methods: {
                 async loadServices() {
                     try {
-                        this.loading = true;
                         const response = await fetch('/api/services');
                         this.services = await response.json();
                     } catch (error) {
-                        console.error('Error loading services:', error);
-                    } finally {
-                        this.loading = false;
                     }
                 },
+
                 async loadSpecialists() {
                     if (!this.selectedService) return;
                     try {
-                        this.loading = true;
                         const response = await fetch(`/api/specialists/${this.selectedService}`);
                         this.specialists = await response.json();
-                        this.selectedSpecialist = '';
-                        this.selectedDate = null;
-                        this.selectedTime = null;
-                        this.availableDates = [];
-                        this.availableTimeSlots = [];
                     } catch (error) {
-                        console.error('Error loading specialists:', error);
-                    } finally {
-                        this.loading = false;
                     }
                 },
                 async loadAvailableDates() {
                     if (!this.selectedSpecialist) return;
+
                     try {
                         this.loading = true;
-                        const response = await fetch(`/api/available-dates/${this.selectedSpecialist}`);
-                        this.availableDates = await response.json();
-                        this.selectedDate = null;
-                        this.selectedTime = null;
-                        this.availableTimeSlots = [];
+
+                        const response = await fetch(`/api/available-dates/${this.selectedSpecialist}`, {
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const text = await response.text();
+
+                        if (!text.trim()) {
+                            this.availableDates = [];
+                            return;
+                        }
+
+                        try {
+                            const dates = JSON.parse(text);
+
+                            if (Array.isArray(dates)) {
+                                this.availableDates = dates;
+                            } else if (dates.error) {
+                                this.availableDates = [];
+                            } else {
+                                this.availableDates = [];
+                            }
+                        } catch (e) {
+                            this.availableDates = [];
+                        }
                     } catch (error) {
-                        console.error('Error loading dates:', error);
+                        this.availableDates = [];
                     } finally {
                         this.loading = false;
                     }
                 },
                 async loadTimeSlots() {
                     if (!this.selectedDate || !this.selectedSpecialist) return;
+
                     try {
                         this.loading = true;
-                        const response = await fetch(`/api/time-slots/${this.selectedSpecialist}/${this.selectedDate}`);
-                        this.availableTimeSlots = await response.json();
+
+                        const response = await fetch(`/api/time-slots/${this.selectedSpecialist}/${this.selectedDate}`, {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const data = await response.json();
+
+                        if (data.slots && Array.isArray(data.slots)) {
+                            this.availableTimeSlots = data.slots;
+                        } else {
+                            this.availableTimeSlots = [];
+
+                            if (data.message) {
+                                alert(data.message);
+                            }
+                        }
                     } catch (error) {
-                        console.error('Error loading time slots:', error);
+                        this.availableTimeSlots = [];
                     } finally {
                         this.loading = false;
                     }
@@ -200,28 +238,40 @@
 
                     try {
                         this.loading = true;
-                        const response = await fetch('/api/bookings', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            },
-                            body: JSON.stringify({
-                                service_id: this.selectedService,
-                                specialist_id: this.selectedSpecialist,
-                                booking_date: this.selectedDate,
-                                booking_time: this.selectedTime
-                            })
-                        });
+                        const bookingDateTime = `${this.selectedDate}T${this.selectedTime}:00`;
 
-                        if (response.ok) {
-                            window.location.href = '/bookings/success';
-                        } else {
-                            const error = await response.json();
-                            alert(error.message);
-                        }
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '/bookings';
+                        form.style.display = 'none';
+
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = '_token';
+                        csrfInput.value = document.querySelector('meta[name="csrf-token"]').content;
+                        form.appendChild(csrfInput);
+
+                        const serviceInput = document.createElement('input');
+                        serviceInput.type = 'hidden';
+                        serviceInput.name = 'service_id';
+                        serviceInput.value = this.selectedService;
+                        form.appendChild(serviceInput);
+
+                        const specialistInput = document.createElement('input');
+                        specialistInput.type = 'hidden';
+                        specialistInput.name = 'specialist_id';
+                        specialistInput.value = this.selectedSpecialist;
+                        form.appendChild(specialistInput);
+
+                        const timeInput = document.createElement('input');
+                        timeInput.type = 'hidden';
+                        timeInput.name = 'booking_time';
+                        timeInput.value = bookingDateTime;
+                        form.appendChild(timeInput);
+
+                        document.body.appendChild(form);
+                        form.submit();
                     } catch (error) {
-                        console.error('Error submitting booking:', error);
                         alert('خطا در ثبت رزرو. لطفا دوباره تلاش کنید.');
                     } finally {
                         this.loading = false;
