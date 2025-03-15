@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,89 +25,93 @@ class Specialist extends Model
         return self::orderBy('created_at', 'desc');
     }
 
-    public function schedules(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function schedules(): HasMany
     {
         return $this->hasMany(SpecialistSchedule::class);
     }
 
-    public function workSchedule(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function workSchedule(): HasOne
     {
         return $this->hasOne(WorkSchedule::class);
     }
 
-    public function leaves(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function leaves(): HasMany
     {
         return $this->hasMany(SpecialistLeave::class);
     }
 
-    public function holidays(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function holidays(): HasMany
     {
         return $this->hasMany(Holiday::class);
     }
 
-    public function bookings(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class, 'specialist_id');
     }
 
-    public function services(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function services(): BelongsToMany
     {
         return $this->belongsToMany(BeautyService::class, 'specialist_services');
     }
 
     public function getAvailableSlots($date): array
     {
-        $carbonDate = Carbon::parse($date);
+        try {
+            $carbonDate = Carbon::parse($date);
 
-        $hasLeave = $this->leaves()
-            ->where('start_date', '<=', $date)
-            ->where('end_date', '>=', $date)
-            ->where('status', 'approved')
-            ->exists();
+            $hasLeave = $this->leaves()
+                ->where('start_date', '<=', $date)
+                ->where('end_date', '>=', $date)
+                ->where('status', 'approved')
+                ->exists();
 
-        if ($hasLeave) {
-            return [];
-        }
-
-        $schedule = $this->schedules()
-            ->where('day_of_week', $carbonDate->dayOfWeek)
-            ->where('is_active', true)
-            ->first();
-
-        if (!$schedule) {
-            return [];
-        }
-
-        $slots = [];
-        $currentTime = Carbon::parse($schedule->start_time);
-        $endTime = Carbon::parse($schedule->end_time);
-
-        while ($currentTime < $endTime) {
-            $timeSlot = $currentTime->format('H:i');
-
-            $isBreakTime = false;
-            if ($schedule->break_start && $schedule->break_end) {
-                $breakStart = Carbon::parse($schedule->break_start);
-                $breakEnd = Carbon::parse($schedule->break_end);
-                $isBreakTime = $currentTime->between($breakStart, $breakEnd);
+            if ($hasLeave) {
+                return [];
             }
 
-            if (!$isBreakTime) {
-                $isBooked = $this->bookings()
-                    ->whereDate('booking_time', $date)
-                    ->whereTime('booking_time', $timeSlot)
-                    ->where('status', '!=', 'cancelled')
-                    ->exists();
+            $schedule = $this->schedules()
+                ->where('day_of_week', $carbonDate->dayOfWeek)
+                ->where('is_active', true)
+                ->first();
 
-                if (!$isBooked) {
-                    $slots[] = $timeSlot;
+            if (!$schedule) {
+                return [];
+            }
+
+            $slots = [];
+            $currentTime = Carbon::parse($schedule->start_time);
+            $endTime = Carbon::parse($schedule->end_time);
+
+            while ($currentTime < $endTime) {
+                $timeSlot = $currentTime->format('H:i');
+
+                $isBreakTime = false;
+                if ($schedule->break_start && $schedule->break_end) {
+                    $breakStart = Carbon::parse($schedule->break_start);
+                    $breakEnd = Carbon::parse($schedule->break_end);
+                    $isBreakTime = $currentTime->between($breakStart, $breakEnd);
                 }
+
+                if (!$isBreakTime) {
+                    $isBooked = $this->bookings()
+                        ->whereDate('booking_time', $date)
+                        ->whereTime('booking_time', $timeSlot)
+                        ->where('status', '!=', 'cancelled')
+                        ->exists();
+
+                    if (!$isBooked) {
+                        $slots[] = $timeSlot;
+                    }
+                }
+
+                $currentTime->addMinutes(30);
             }
 
-            $currentTime->addMinutes(30);
+            return $slots;
+        } catch (\Exception $e) {
+            return [];
         }
-
-        return $slots;
     }
 
     public function isAvailable($dateTime): bool
@@ -121,11 +128,18 @@ class Specialist extends Model
     {
         $date = Carbon::createFromFormat('Y-m', $yearMonth)->startOfMonth();
         $daysInMonth = $date->daysInMonth;
+
         $result = [
             'available_days' => [],
             'fully_booked_days' => [],
             'holiday_days' => []
         ];
+
+        $hasSchedules = $this->schedules()->where('is_active', true)->exists();
+
+        if (!$hasSchedules) {
+            return $result;
+        }
 
         for ($day = 1; $day <= $daysInMonth; $day++) {
             $currentDate = $date->copy()->setDay($day);
