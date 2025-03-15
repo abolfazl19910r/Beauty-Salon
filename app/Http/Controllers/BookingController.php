@@ -389,21 +389,29 @@ class BookingController extends Controller
                 return back()->with('error', 'کد تخفیف نامعتبر است.');
             }
 
-    public function applyDiscount(Request $request, Booking $booking): \Illuminate\Http\RedirectResponse
-    {
-        $request->validate([
-            'code' => 'required|string'
-        ]);
+            $discountAmount = $discountCode->type === 'percentage'
+                ? ($booking->prepayment_amount * $discountCode->amount / 100)
+                : $discountCode->amount;
 
-        $discountCode = DiscountCode::where('code', $request->code)->first();
+            DB::transaction(function() use ($booking, $discountCode, $discountAmount) {
+                $booking->update([
+                    'discount_code' => $discountCode->code,
+                    'discount_amount' => $discountAmount,
+                    'prepayment_amount' => max(0, $booking->prepayment_amount - $discountAmount)
+                ]);
 
-        if (!$discountCode || !$discountCode->isValid()) {
-            return back()->with('error', 'کد تخفیف نامعتبر است.');
+                $discountCode->increment('used_count');
+            });
+
+            return back()->with('success', 'کد تخفیف با موفقیت اعمال شد.');
+
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors());
+        } catch (Exception $e) {
+            return back()->with('error', 'خطا در اعمال کد تخفیف: ' . $e->getMessage());
         }
+    }
 
-        $discountAmount = $discountCode->type === 'percentage'
-            ? ($booking->prepayment_amount * $discountCode->amount / 100)
-            : $discountCode->amount;
 
         $booking->update([
             'discount_code' => $discountCode->code,
