@@ -675,4 +675,57 @@ class BookingController extends Controller
             return back()->with('error', 'خطا در نمایش فرم تغییر زمان: ' . $e->getMessage());
         }
     }
+
+    public function updateReschedule(Request $request, Booking $booking)
+    {
+        try {
+            if ($booking->user_id !== auth()->id()) {
+                throw new Exception('دسترسی غیرمجاز');
+            }
+
+            if (!$booking->canBeRescheduled()) {
+                return back()->with('error', 'امکان تغییر زمان این نوبت وجود ندارد.');
+            }
+
+            $validated = $request->validate([
+                'booking_time' => 'required|date|after:now',
+            ]);
+
+            $bookingTime = $request->booking_time;
+            $specialist = $booking->specialist;
+            $bookingDate = date('Y-m-d', strtotime($bookingTime));
+            $bookingTimeOnly = date('H:i', strtotime($bookingTime));
+
+            $availableSlots = $specialist->getAvailableSlots($bookingDate);
+
+            if (!in_array($bookingTimeOnly, $availableSlots)) {
+                return back()->with('error', 'زمان انتخاب شده در دسترس نیست.');
+            }
+
+            DB::transaction(function() use ($booking, $bookingTime) {
+                $oldTime = $booking->booking_time;
+
+                $booking->update([
+                    'booking_time' => $bookingTime
+                ]);
+
+                $booking->specialist->notify(new BookingRescheduledNotification($booking, $oldTime));
+
+                $message = sprintf(
+                    'زمان نوبت شما با موفقیت از %s به %s تغییر یافت.',
+                    verta($oldTime)->format('Y/m/d H:i'),
+                    verta($bookingTime)->format('Y/m/d H:i')
+                );
+                $this->smsService->send($booking->user->phone, $message);
+            });
+
+            return redirect()->route('bookings.show', $booking)
+                ->with('success', 'زمان نوبت با موفقیت تغییر یافت.');
+
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (Exception $e) {
+            return back()->with('error', 'خطا در تغییر زمان نوبت: ' . $e->getMessage());
+        }
+    }
 }
