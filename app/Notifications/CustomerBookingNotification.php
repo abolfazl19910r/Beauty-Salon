@@ -3,9 +3,6 @@
 namespace App\Notifications;
 
 use App\Services\SMSService;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class CustomerBookingNotification extends Notification
@@ -21,10 +18,22 @@ class CustomerBookingNotification extends Notification
 
     public function via($notifiable): array
     {
-        return ['sms'];
+        return ['database', 'sms'];
     }
 
-    public function toSms($notifiable)
+    public function toArray($notifiable): array
+    {
+        return [
+            'booking_id' => $this->booking->id,
+            'message' => 'رزرو شما با موفقیت ثبت و تأیید شد',
+            'service_name' => $this->booking->service->name,
+            'specialist_name' => $this->booking->specialist->name,
+            'booking_time' => $this->booking->booking_time,
+            'payment_ref' => $this->booking->payment_ref
+        ];
+    }
+
+    public function toSms($notifiable): bool
     {
         $message = sprintf(
             'نوبت شما با موفقیت ثبت و پرداخت شد:
