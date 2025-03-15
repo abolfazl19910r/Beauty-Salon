@@ -7,7 +7,6 @@ use App\Services\PaymentService;
 use App\Notifications\BookingNotification;
 use App\Notifications\CustomerBookingNotification;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -21,11 +20,10 @@ class PaymentController extends Controller
     public function show(Booking $booking)
     {
         if ($booking->payment_status === 'paid') {
-            return redirect()->route('bookings.show', $booking)
-                ->with('error', 'این نوبت قبلاً پرداخت شده است.');
+            return redirect()->route('bookings.show', ['booking' => $booking]);
         }
 
-        return view('payment.show', compact('booking'));
+        return view('payment.show', ['booking' => $booking]);
     }
 
     public function process(Booking $booking)
