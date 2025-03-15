@@ -79,9 +79,53 @@ class BookingController extends Controller
         }
     }
 
-        if (!$schedule ||
-            $specialist->holidays()->whereDate('date', $date)->exists() ||
-            $specialist->leaves()
+    public function checkDiscount(Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'code' => 'required|string',
+                'service_id' => 'required|exists:beauty_services,id'
+            ]);
+
+            $discountCode = DiscountCode::where('code', $request->code)->first();
+
+            if (!$discountCode || !$discountCode->isValid()) {
+                return response()->json([
+                    'valid' => false,
+                    'message' => 'کد تخفیف نامعتبر است.'
+                ], 200);
+            }
+
+            $service = BeautyService::find($request->service_id);
+            $prepaymentAmount = 50000;
+
+            $discountAmount = $discountCode->type === 'percentage'
+                ? ($prepaymentAmount * $discountCode->amount / 100)
+                : $discountCode->amount;
+
+            $finalPrice = max(0, $prepaymentAmount - $discountAmount);
+
+            return response()->json([
+                'valid' => true,
+                'discount_amount' => $discountAmount,
+                'final_price' => $finalPrice,
+                'message' => 'کد تخفیف معتبر است.'
+            ]);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'valid' => false,
+                'message' => $e->getMessage()
+            ], 422);
+        } catch (Exception $e) {
+            Log::error('خطا در بررسی کد تخفیف: ' . $e->getMessage());
+            return response()->json([
+                'valid' => false,
+                'message' => 'خطا در بررسی کد تخفیف.'
+            ], 500);
+        }
+    }
+
                 ->whereDate('start_date', '<=', $date)
                 ->whereDate('end_date', '>=', $date)
                 ->where('status', 'approved')
