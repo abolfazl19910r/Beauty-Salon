@@ -5,6 +5,9 @@ namespace App\Models;
 use App\Services\CategoryService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -34,9 +37,21 @@ class BeautyService extends Model
         });
 
         static::deleting(function($service) {
+            $activeBookings = $service->bookings()
+                ->whereIn('status', ['pending', 'confirmed'])
+                ->orWhere('payment_status', 'paid')
+                ->count();
+
+            if ($activeBookings > 0) {
+                throw new \Exception('این سرویس دارای رزروهای فعال است و نمی‌توان آن را حذف کرد.');
+            }
+
             $service->specialists()->detach();
 
-            $service->bookings()->delete();
+            $service->bookings()->update([
+                'status' => 'cancelled',
+                'cancellation_reason' => 'سرویس حذف شده است'
+            ]);
 
             if ($service->image) {
                 Storage::disk('public')->delete($service->image);
@@ -44,7 +59,7 @@ class BeautyService extends Model
         });
     }
 
-    public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
@@ -64,12 +79,12 @@ class BeautyService extends Model
         return self::latest()->paginate($perPage);
     }
 
-    public function bookings(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class, 'service_id');
     }
 
-    public function specialists(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function specialists(): BelongsToMany
     {
         return $this->belongsToMany(Specialist::class, 'specialist_services');
     }
