@@ -31,6 +31,34 @@
             </div>
         </div>
 
+        <div class="bg-blue-50 p-5 rounded-lg mb-6 text-right">
+            <h2 class="font-bold mb-4 text-center">جزئیات نوبت</h2>
+            <div class="space-y-2">
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">خدمت:</span>
+                    <span class="font-medium">{{ $booking->service->name }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">متخصص:</span>
+                    <span class="font-medium">{{ $booking->specialist->name }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">تاریخ:</span>
+                    <span class="font-medium" dir="ltr">{{ verta($booking->booking_time)->format('Y/m/d') }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">ساعت:</span>
+                    <span class="font-medium" dir="ltr">{{ verta($booking->booking_time)->format('H:i') }}</span>
+                </div>
+                @if($booking->service->duration)
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">مدت زمان:</span>
+                        <span class="font-medium">{{ $booking->service->duration }} دقیقه</span>
+                    </div>
+                @endif
+            </div>
+        </div>
+
         <div class="space-x-4 space-x-reverse">
             <a href="{{ route('bookings.show', $booking) }}"
                class="inline-block bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-lg hover:opacity-90 transition-opacity">
