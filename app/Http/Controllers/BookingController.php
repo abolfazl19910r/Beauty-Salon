@@ -290,28 +290,45 @@ class BookingController extends Controller
     public function paymentCallback(Request $request, Booking $booking)
     {
         try {
-            $payment = new PaymentService();
-            $result = $payment->verify($request->all());
+            if ($booking->user_id !== auth()->id()) {
+                throw new Exception('دسترسی غیرمجاز');
+            }
+
+            $result = $this->paymentService->verify($request->all());
 
             if ($result['status'] === 'success') {
-                $booking->update([
-                    'payment_status' => 'paid',
-                    'status' => 'confirmed'
-                ]);
+                DB::transaction(function() use ($booking, $result) {
+                    $booking->update([
+                        'payment_status' => 'paid',
+                        'status' => 'confirmed',
+                        'paid_at' => now(),
+                        'payment_details' => $result
+                    ]);
 
-                $booking->specialist->notify(new BookingNotification($booking));
-                $booking->user->notify(new CustomerBookingNotification($booking));
+                    $booking->user->notify(new CustomerBookingNotification($booking));
 
-                return redirect()->route('bookings.success')
+                    $message = sprintf(
+                        'نوبت شما در تاریخ %s ساعت %s با موفقیت ثبت شد. شماره پیگیری: %s',
+                        verta($booking->booking_time)->format('Y/m/d'),
+                        verta($booking->booking_time)->format('H:i'),
+                        $booking->payment_ref
+                    );
+
+                    $this->smsService->send($booking->user->phone, $message);
+                });
+
+                session(['booking_id' => $booking->id]);
+
+                return redirect()->route('bookings.success', ['id' => $booking->id])
                     ->with('success', 'رزرو با موفقیت انجام شد.');
             }
 
             return redirect()->route('bookings.failed')
-                ->with('error', 'پرداخت ناموفق بود.');
+                ->with('error', 'پرداخت ناموفق بود: ' . ($result['message'] ?? 'خطای نامشخص'));
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return redirect()->route('bookings.failed')
-                ->with('error', 'خطا در تایید پرداخت');
+                ->with('error', 'خطا در تأیید پرداخت: ' . $e->getMessage());
         }
     }
 
