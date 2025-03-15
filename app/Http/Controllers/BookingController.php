@@ -46,11 +46,38 @@ class BookingController extends Controller
         return view('bookings.create', compact('services', 'specialists'));
     }
 
-    public function getAvailableTimeSlots(Request $request, Specialist $specialist, $date)
+    public function confirm(Request $request)
     {
-        $schedule = $specialist->workSchedule()
-            ->where('day_of_week', Carbon::parse($date)->dayOfWeek)
-            ->first();
+        try {
+            $validated = $request->validate([
+                'service_id' => 'required|exists:beauty_services,id',
+                'specialist_id' => 'required|exists:specialists,id',
+                'booking_time' => 'required|date|after:now',
+            ]);
+
+            $service = BeautyService::findOrFail($request->service_id);
+            $specialist = Specialist::findOrFail($request->specialist_id);
+            $bookingTime = $request->booking_time;
+
+            $bookingDate = date('Y-m-d', strtotime($bookingTime));
+            $bookingTimeOnly = date('H:i', strtotime($bookingTime));
+            $availableSlots = $specialist->getAvailableSlots($bookingDate);
+
+            if (!in_array($bookingTimeOnly, $availableSlots)) {
+                return back()->with('error', 'متأسفانه این زمان دیگر در دسترس نیست. لطفاً زمان دیگری انتخاب کنید.');
+            }
+
+            $prepaymentAmount = 50000;
+
+            return view('bookings.confirm', compact('service', 'specialist', 'bookingTime', 'prepaymentAmount'));
+
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (Exception $e) {
+            Log::error('خطا در نمایش صفحه تأیید رزرو: ' . $e->getMessage());
+            return back()->with('error', 'خطایی رخ داد. لطفاً دوباره تلاش کنید.');
+        }
+    }
 
         if (!$schedule ||
             $specialist->holidays()->whereDate('date', $date)->exists() ||
