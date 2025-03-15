@@ -488,7 +488,7 @@ class BookingController extends Controller
         return $availability;
     }
 
-    public function getUserBookings(): \Illuminate\Database\Eloquent\Collection
+    public function getUserBookings(): Collection
     {
         return Booking::with(['service', 'specialist'])
             ->where('user_id', auth()->id())
@@ -496,12 +496,23 @@ class BookingController extends Controller
             ->get();
     }
 
-    public function index()
+    /**
+     *
+     * @param Request $request
+     * @return \Illuminate\View\View
+     */
+    public function index(Request $request): \Illuminate\View\View
     {
-        $bookings = Booking::where('user_id', auth()->id())
-            ->with(['service', 'specialist'])
-            ->latest()
-            ->paginate(10);
+        $status = $request->query('status');
+        $query = Booking::with(['service', 'specialist'])
+            ->where('user_id', Auth::id())
+            ->orderBy('booking_time', 'desc');
+
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        $bookings = $query->paginate(10);
 
         return view('bookings.index', compact('bookings'));
     }
