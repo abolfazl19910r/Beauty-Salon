@@ -516,4 +516,23 @@ class BookingController extends Controller
 
         return view('bookings.index', compact('bookings'));
     }
+
+    /**
+     *
+     * @return JsonResponse
+     */
+    public function upcoming(): JsonResponse
+    {
+        $bookings = Booking::with(['service', 'specialist'])
+            ->where('user_id', Auth::id())
+            ->where('booking_time', '>', now())
+            ->whereNotIn('status', ['cancelled'])
+            ->orderBy('booking_time', 'asc')
+            ->get();
+
+        return response()->json([
+            'bookings' => $bookings,
+            'count' => $bookings->count()
+        ]);
+    }
 }
