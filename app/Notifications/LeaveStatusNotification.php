@@ -3,26 +3,41 @@
 namespace App\Notifications;
 
 use App\Models\Leave;
-use Illuminate\Bus\Queueable;
+use App\Services\SMSService;
 use Illuminate\Notifications\Notification;
 
 class LeaveStatusNotification extends Notification
 {
-    use Queueable;
+    private Leave $leave;
+    private SMSService $smsService;
 
-    protected $leave;
-
+    /**
+     *
+     * @param Leave $leave
+     * @return void
+     */
     public function __construct(Leave $leave)
     {
         $this->leave = $leave;
+        $this->smsService = new SMSService();
     }
 
-    public function via($notifiable): array
+    /**
+     *
+     * @param mixed $notifiable
+     * @return array
+     */
+    public function via(mixed $notifiable): array
     {
         return ['database', 'sms'];
     }
 
-    public function toDatabase($notifiable): array
+    /**
+     *
+     * @param mixed $notifiable
+     * @return array
+     */
+    public function toDatabase(mixed $notifiable): array
     {
         return [
             'leave_id' => $this->leave->id,
@@ -33,7 +48,12 @@ class LeaveStatusNotification extends Notification
         ];
     }
 
-    public function toSms($notifiable)
+    /**
+     *
+     * @param mixed $notifiable
+     * @return bool
+     */
+    public function toSms(mixed $notifiable): bool
     {
         $statusText = match($this->leave->status) {
             'approved' => 'تایید',
@@ -52,10 +72,6 @@ class LeaveStatusNotification extends Notification
             $message .= "\nدلیل: " . $this->leave->reject_reason;
         }
 
-        // ارسال از طریق سرویس پیامک
-        return [
-            'phone' => $notifiable->phone,
-            'message' => $message
-        ];
+        return $this->smsService->send($notifiable->phone, $message);
     }
 }
