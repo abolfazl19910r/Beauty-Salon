@@ -34,7 +34,13 @@
                         </svg>
                         <div>
                             <span class="text-gray-600 block mb-1">خدمت:</span>
-                            <span class="font-medium">{{ $booking->service->name }}</span>
+                            <span class="font-medium">
+                                @if($booking->service)
+                                    {{ $booking->service->name }}
+                                @else
+                                    خدمت نامشخص
+                                @endif
+                            </span>
                         </div>
                     </div>
                     <div class="flex items-start">
@@ -45,7 +51,13 @@
                         </svg>
                         <div>
                             <span class="text-gray-600 block mb-1">متخصص:</span>
-                            <span class="font-medium">{{ $booking->specialist->name }}</span>
+                            <span class="font-medium">
+                                @if($booking->specialist)
+                                    {{ $booking->specialist->name }}
+                                @else
+                                    متخصص نامشخص
+                                @endif
+                            </span>
                         </div>
                     </div>
                     <div class="flex items-start md:col-span-2">
@@ -76,7 +88,13 @@
                 <div class="space-y-3">
                     <div class="flex justify-between items-center border-b border-blue-100 pb-2">
                         <span class="text-blue-700">مبلغ کل:</span>
-                        <span class="persian-number">{{ number_format($booking->service->price) }} تومان</span>
+                        <span class="persian-number">
+                            @if($booking->service)
+                                {{ number_format($booking->service->price) }} تومان
+                            @else
+                                مبلغ نامشخص
+                            @endif
+                        </span>
                     </div>
                     <div class="flex justify-between items-center text-lg">
                         <span class="text-blue-700 font-bold">مبلغ پیش پرداخت:</span>
@@ -85,7 +103,7 @@
                 </div>
             </div>
 
-            <form action="{{ route('payment.process', $booking) }}" method="POST">
+            <form action="{{ route('payment.process', ['booking' => $booking->id]) }}" method="POST">
                 @csrf
                 <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 rounded-lg font-bold hover:opacity-90 transition-colors flex items-center justify-center">
                     <svg class="w-5 h-5 ml-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -97,12 +115,12 @@
             </form>
 
             <div class="mt-4 text-center">
-                <a href="{{ route('bookings.show', $booking) }}" class="text-pink-600 hover:text-pink-700 inline-flex items-center">
+                <a href="javascript:history.back()" class="text-pink-600 hover:text-pink-700 inline-flex items-center">
                     <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="19" y1="12" x2="5" y2="12"></line>
                         <polyline points="12 19 5 12 12 5"></polyline>
                     </svg>
-                    بازگشت به جزئیات نوبت
+                    بازگشت به صفحه قبل
                 </a>
             </div>
         </div>
