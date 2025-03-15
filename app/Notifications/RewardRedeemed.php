@@ -2,39 +2,44 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
+use App\Services\SMSService;
 use Illuminate\Notifications\Notification;
 
 class RewardRedeemed extends Notification
 {
-    use Queueable;
+    private mixed $reward;
+    private mixed $discountCode;
+    private SMSService $smsService;
 
-    protected $reward;
-    protected $discountCode;
-
-    public function __construct($reward, $discountCode)
+    /**
+     *
+     * @param mixed $reward
+     * @param mixed $discountCode
+     * @return void
+     */
+    public function __construct(mixed $reward, mixed $discountCode)
     {
         $this->reward = $reward;
         $this->discountCode = $discountCode;
+        $this->smsService = new SMSService();
     }
 
-    public function via($notifiable): array
+    /**
+     *
+     * @param mixed $notifiable
+     * @return array
+     */
+    public function via(mixed $notifiable): array
     {
-        return ['mail', 'database', 'sms'];
+        return ['database', 'sms'];
     }
 
-    public function toMail($notifiable): MailMessage
-    {
-        return (new MailMessage)
-            ->subject('دریافت پاداش جدید')
-            ->line("پاداش {$this->reward->title} با موفقیت دریافت شد")
-            ->line("کد تخفیف شما: {$this->discountCode->code}")
-            ->line("مهلت استفاده از کد تخفیف تا: " . verta($this->discountCode->expires_at)->format('Y/m/d'))
-            ->action('مشاهده پاداش‌ها', route('loyalty.rewards'));
-    }
-
-    public function toDatabase($notifiable): array
+    /**
+     *
+     * @param mixed $notifiable
+     * @return array
+     */
+    public function toDatabase(mixed $notifiable): array
     {
         return [
             'reward_id' => $this->reward->id,
@@ -44,9 +49,20 @@ class RewardRedeemed extends Notification
         ];
     }
 
-    public function toSms($notifiable): string
+    /**
+     *
+     * @param mixed $notifiable
+     * @return bool
+     */
+    public function toSms(mixed $notifiable): bool
     {
-        return "کد تخفیف {$this->discountCode->code} برای پاداش {$this->reward->title} صادر شد. مهلت استفاده تا " .
-            verta($this->discountCode->expires_at)->format('Y/m/d');
+        $message = sprintf(
+            "کد تخفیف %s برای پاداش %s صادر شد. مهلت استفاده تا %s",
+            $this->discountCode->code,
+            $this->reward->title,
+            verta($this->discountCode->expires_at)->format('Y/m/d')
+        );
+
+        return $this->smsService->send($notifiable->phone, $message);
     }
 }
