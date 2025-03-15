@@ -372,24 +372,22 @@ class BookingController extends Controller
         }
     }
 
-    public function cancel(Booking $booking)
+    public function applyDiscount(Request $request, Booking $booking): RedirectResponse
     {
-        if (!$booking->canBeCancelled()) {
-            return back()->with('error', 'امکان لغو این نوبت وجود ندارد.');
-        }
+        try {
+            if ($booking->user_id !== auth()->id()) {
+                throw new Exception('دسترسی غیرمجاز');
+            }
 
-        $booking->update(['status' => 'cancelled']);
+            $request->validate([
+                'code' => 'required|string'
+            ]);
 
-        $smsService = new SMSService();
-        $message = sprintf(
-            'نوبت شما در تاریخ %s لغو شد.',
-            verta($booking->booking_time)->format('Y/m/d H:i')
-        );
-        $smsService->send($booking->user->phone, $message);
+            $discountCode = DiscountCode::where('code', $request->code)->first();
 
-        return redirect()->route('bookings.index')
-            ->with('success', 'نوبت با موفقیت لغو شد.');
-    }
+            if (!$discountCode || !$discountCode->isValid()) {
+                return back()->with('error', 'کد تخفیف نامعتبر است.');
+            }
 
     public function applyDiscount(Request $request, Booking $booking): \Illuminate\Http\RedirectResponse
     {
