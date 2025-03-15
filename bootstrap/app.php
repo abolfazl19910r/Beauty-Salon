@@ -17,7 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->group('admin', [
             \App\Http\Middleware\AdminMiddleware::class,
         ]);
-        $middleware->alias((array)'admin', \App\Http\Middleware\AdminMiddleware::class);
+
+        $middleware->alias([
+            'check.booking.ownership' => \App\Http\Middleware\CheckBookingOwnership::class,
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
