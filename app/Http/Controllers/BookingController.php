@@ -614,4 +614,20 @@ class BookingController extends Controller
                 ->with('error', 'خطا در نمایش اطلاعات رزرو. لطفاً با پشتیبانی تماس بگیرید.');
         }
     }
+
+    public function failed(Request $request)
+    {
+        $bookingId = session('booking_id');
+        $booking = null;
+
+        if ($bookingId) {
+            $booking = Booking::where('id', $bookingId)
+                ->where('user_id', auth()->id())
+                ->first();
+        }
+
+        $errorMessage = session('error') ?? 'متاسفانه پرداخت با خطا مواجه شد.';
+
+        return view('bookings.failed', compact('booking', 'errorMessage'));
+    }
 }
