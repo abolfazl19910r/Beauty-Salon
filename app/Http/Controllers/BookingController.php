@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\DiscountCode;
 use App\Models\Specialist;
 use App\Notifications\BookingNotification;
+use App\Notifications\BookingRescheduledNotification;
 use App\Notifications\CustomerBookingNotification;
 use App\Services\PaymentService;
 use App\Services\SMSService;
@@ -18,7 +19,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use Illuminate\Validation\ValidationException;
 
@@ -74,7 +74,6 @@ class BookingController extends Controller
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
         } catch (Exception $e) {
-            Log::error('خطا در نمایش صفحه تأیید رزرو: ' . $e->getMessage());
             return back()->with('error', 'خطایی رخ داد. لطفاً دوباره تلاش کنید.');
         }
     }
@@ -118,7 +117,6 @@ class BookingController extends Controller
                 'message' => $e->getMessage()
             ], 422);
         } catch (Exception $e) {
-            Log::error('خطا در بررسی کد تخفیف: ' . $e->getMessage());
             return response()->json([
                 'valid' => false,
                 'message' => 'خطا در بررسی کد تخفیف.'
@@ -126,24 +124,59 @@ class BookingController extends Controller
         }
     }
 
+    public function getAvailableTimeSlots(Specialist $specialist, $date)
+    {
+        try {
+            $carbonDate = Carbon::parse($date);
+            $dayOfWeek = $carbonDate->dayOfWeek;
+
+            if ($specialist->holidays()->whereDate('date', $date)->exists()) {
+                return response()->json([
+                    'slots' => [],
+                    'message' => 'این روز تعطیل است'
+                ]);
+            }
+
+            if ($specialist->leaves()
                 ->whereDate('start_date', '<=', $date)
                 ->whereDate('end_date', '>=', $date)
                 ->where('status', 'approved')
-                ->exists()
-        ) {
-            return response()->json([]);
-        }
+                ->exists()) {
+                return response()->json([
+                    'slots' => [],
+                    'message' => 'متخصص در این روز مرخصی است'
+                ]);
+            }
 
-        $availableSlots = $specialist->getAvailableSlots($date);
-        return response()->json([
-            'slots' => $availableSlots,
-            'schedule' => [
-                'start_time' => $schedule->start_time,
-                'end_time' => $schedule->end_time,
-                'break_start' => $schedule->break_start,
-                'break_end' => $schedule->break_end
-            ]
-        ]);
+            $schedule = $specialist->schedules()
+                ->where('day_of_week', $dayOfWeek)
+                ->where('is_active', true)
+                ->first();
+
+            if (!$schedule) {
+                return response()->json([
+                    'slots' => [],
+                    'message' => 'این روز جزو روزهای کاری متخصص نیست'
+                ]);
+            }
+
+            $availableSlots = $specialist->getAvailableSlots($date);
+
+            return response()->json([
+                'slots' => $availableSlots,
+                'schedule' => [
+                    'start_time' => $schedule->start_time,
+                    'end_time' => $schedule->end_time,
+                    'break_start' => $schedule->break_start ?? null,
+                    'break_end' => $schedule->break_end ?? null
+                ]
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'خطا در دریافت ساعت‌های در دسترس',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function store(Request $request)
