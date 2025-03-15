@@ -261,11 +261,19 @@ class BookingController extends Controller
     public function processPayment(Booking $booking)
     {
         try {
-            $payment = new PaymentService();
-            $result = $payment->pay([
+            if ($booking->user_id !== auth()->id()) {
+                throw new Exception('دسترسی غیرمجاز');
+            }
+
+            if ($booking->payment_status === 'paid') {
+                return redirect()->route('bookings.show', $booking)
+                    ->with('info', 'این رزرو قبلاً پرداخت شده است.');
+            }
+
+            $result = $this->paymentService->pay([
                 'amount' => $booking->prepayment_amount,
-                'callback_url' => route('payment.callback', $booking),
-                'description' => 'پیش پرداخت نوبت سالن زیبایی'
+                'callback_url' => route('payment.callback', ['booking' => $booking->id]),
+                'description' => 'پیش پرداخت نوبت سالن زیبایی - شناسه: ' . $booking->id
             ]);
 
             $booking->update([
@@ -274,8 +282,8 @@ class BookingController extends Controller
 
             return redirect($result['payment_url']);
 
-        } catch (\Exception $e) {
-            return back()->with('error', 'خطا در اتصال به درگاه پرداخت');
+        } catch (Exception $e) {
+            return back()->with('error', 'خطا در اتصال به درگاه پرداخت: ' . $e->getMessage());
         }
     }
 
