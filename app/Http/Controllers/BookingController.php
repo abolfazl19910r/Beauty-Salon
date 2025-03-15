@@ -412,28 +412,31 @@ class BookingController extends Controller
         }
     }
 
-
-        $booking->update([
-            'discount_code' => $discountCode->code,
-            'discount_amount' => $discountAmount,
-            'prepayment_amount' => $booking->prepayment_amount - $discountAmount
-        ]);
-
-        $discountCode->increment('used_count');
-
-        return back()->with('success', 'کد تخفیف با موفقیت اعمال شد.');
-    }
-
-    public function rate(Request $request, Booking $booking): \Illuminate\Http\RedirectResponse
+    public function rate(Request $request, Booking $booking): RedirectResponse
     {
-        $validated = $request->validate([
-            'rating' => 'required|integer|between:1,5',
-            'review' => 'nullable|string|max:500'
-        ]);
+        try {
+            if ($booking->user_id !== auth()->id()) {
+                throw new Exception('دسترسی غیرمجاز');
+            }
 
-        $booking->update($validated);
+            $validated = $request->validate([
+                'rating' => 'required|integer|between:1,5',
+                'review' => 'nullable|string|max:500'
+            ]);
 
-        return back()->with('success', 'نظر شما با موفقیت ثبت شد.');
+            $booking->update($validated);
+
+            $booking->specialist->notify(new \App\Notifications\NewReviewNotification($booking));
+
+            auth()->user()->addLoyaltyPoints(10, 'ثبت نظر برای نوبت #' . $booking->id);
+
+            return back()->with('success', 'نظر شما با موفقیت ثبت شد.');
+
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors());
+        } catch (Exception $e) {
+            return back()->with('error', 'خطا در ثبت نظر: ' . $e->getMessage());
+        }
     }
 
     public function getNextAvailableSlots($specialist_id, $count = 5): \Illuminate\Support\Collection
