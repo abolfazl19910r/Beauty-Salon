@@ -3,27 +3,41 @@
 namespace App\Notifications;
 
 use App\Models\LoyaltyPoint;
-use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
+use App\Services\SMSService;
 use Illuminate\Notifications\Notification;
 
 class PointsEarned extends Notification
 {
-    use Queueable;
+    private LoyaltyPoint $loyaltyPoint;
+    private SMSService $smsService;
 
-    protected $loyaltyPoint;
-
-    public function __construct($loyaltyPoint)
+    /**
+     *
+     * @param LoyaltyPoint $loyaltyPoint
+     * @return void
+     */
+    public function __construct(LoyaltyPoint $loyaltyPoint)
     {
         $this->loyaltyPoint = $loyaltyPoint;
+        $this->smsService = new SMSService();
     }
 
-    public function via($notifiable): array
+    /**
+     *
+     * @param mixed $notifiable
+     * @return array
+     */
+    public function via(mixed $notifiable): array
     {
         return ['database', 'sms'];
     }
 
-    public function toDatabase($notifiable): array
+    /**
+     *
+     * @param mixed $notifiable
+     * @return array
+     */
+    public function toDatabase(mixed $notifiable): array
     {
         return [
             'points' => $this->loyaltyPoint->points,
@@ -33,9 +47,19 @@ class PointsEarned extends Notification
         ];
     }
 
-    public function toSms($notifiable): string
+    /**
+     *
+     * @param mixed $notifiable
+     * @return bool
+     */
+    public function toSms(mixed $notifiable): bool
     {
-        return "{$this->loyaltyPoint->points} امتیاز به حساب کاربری شما اضافه شد. موجودی فعلی: " .
-            LoyaltyPoint::where('user_id', $notifiable->id)->sum('points');
+        $message = sprintf(
+            "%d امتیاز به حساب کاربری شما اضافه شد. موجودی فعلی: %d",
+            $this->loyaltyPoint->points,
+            LoyaltyPoint::where('user_id', $notifiable->id)->sum('points')
+        );
+
+        return $this->smsService->send($notifiable->phone, $message);
     }
 }
