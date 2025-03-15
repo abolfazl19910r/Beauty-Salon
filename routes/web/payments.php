@@ -6,16 +6,16 @@ use App\Http\Controllers\LoyaltyController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('payment')->name('payment.')->group(function () {
-    Route::get('/{booking}', [PaymentController::class, 'show'])
-        ->name('show')
-        ->middleware('check.booking.ownership');
-    Route::post('/{booking}/process', [PaymentController::class, 'process'])
-        ->name('process')
-        ->middleware('check.booking.ownership');
-
     Route::get('/callback', [PaymentController::class, 'callback'])->name('callback');
     Route::get('/result', [PaymentController::class, 'result'])->name('result');
     Route::get('/failed', [PaymentController::class, 'failed'])->name('failed');
+
+    Route::get('/{booking}', [PaymentController::class, 'show'])->name('show')
+        ->middleware('check.booking.ownership')
+        ->whereNumber('booking');
+    Route::post('/{booking}/process', [PaymentController::class, 'process'])->name('process')
+        ->middleware('check.booking.ownership')
+        ->whereNumber('booking');
 });
 
 Route::prefix('payments/secure')->middleware('2fa.enabled')->name('payments.secure.')->group(function () {
