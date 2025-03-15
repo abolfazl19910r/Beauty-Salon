@@ -2,8 +2,8 @@
 
 namespace App\Notifications;
 
-use Illuminate\Notifications\Notification;
 use App\Services\SMSService;
+use Illuminate\Notifications\Notification;
 
 class BookingNotification extends Notification
 {
@@ -18,10 +18,21 @@ class BookingNotification extends Notification
 
     public function via($notifiable): array
     {
-        return ['sms'];
+        return ['database', 'sms'];
     }
 
-    public function toSms($notifiable)
+    public function toArray($notifiable): array
+    {
+        return [
+            'booking_id' => $this->booking->id,
+            'message' => 'یک نوبت جدید برای شما ثبت شده است',
+            'user_name' => $this->booking->user->name,
+            'service_name' => $this->booking->service->name,
+            'booking_time' => $this->booking->booking_time
+        ];
+    }
+
+    public function toSms($notifiable): bool
     {
         $message = sprintf(
             'متخصص گرامی، یک نوبت جدید:
