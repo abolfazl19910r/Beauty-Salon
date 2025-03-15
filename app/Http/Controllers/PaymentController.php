@@ -40,12 +40,12 @@ class PaymentController extends Controller
 
             $result = $this->paymentService->createPayment($booking);
 
-            if (!$result['success']) {
+            if (!isset($result['success']) || !$result['success']) {
                 return redirect()->route('payment.result')
                     ->with([
                         'success' => false,
                         'booking' => $booking,
-                        'error_message' => $result['message']
+                        'error_message' => $result['message'] ?? 'خطا در اتصال به درگاه پرداخت'
                     ]);
             }
 
@@ -56,11 +56,6 @@ class PaymentController extends Controller
             return redirect($result['payment_url']);
 
         } catch (\Exception $e) {
-            Log::error('Payment process failed', [
-                'booking_id' => $booking->id,
-                'error' => $e->getMessage()
-            ]);
-
             return redirect()->route('payment.result')
                 ->with([
                     'success' => false,
