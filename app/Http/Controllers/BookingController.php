@@ -657,4 +657,22 @@ class BookingController extends Controller
                 ->with('error', 'خطا در نمایش صفحه پرداخت: ' . $e->getMessage());
         }
     }
+
+    public function reschedule(Booking $booking)
+    {
+        try {
+            if ($booking->user_id !== auth()->id()) {
+                throw new Exception('دسترسی غیرمجاز');
+            }
+
+            if (!$booking->canBeRescheduled()) {
+                return back()->with('error', 'امکان تغییر زمان این نوبت وجود ندارد.');
+            }
+
+            return view('bookings.reschedule', compact('booking'));
+
+        } catch (Exception $e) {
+            return back()->with('error', 'خطا در نمایش فرم تغییر زمان: ' . $e->getMessage());
+        }
+    }
 }
