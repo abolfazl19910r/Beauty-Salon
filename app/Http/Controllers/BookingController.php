@@ -554,4 +554,20 @@ class BookingController extends Controller
         ]);
     }
 
+
+    public function getAvailableDates(Specialist $specialist)
+    {
+        try {
+            $currentMonth = date('Y-m');
+            $availability = $specialist->getMonthAvailability($currentMonth);
+            $dates = array_map(function($day) {
+                return $day['date'];
+            }, $availability['available_days']);
+
+            return response()->json($dates);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
 }
