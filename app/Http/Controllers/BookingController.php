@@ -332,29 +332,44 @@ class BookingController extends Controller
         }
     }
 
-    public function reschedule(Request $request, Booking $booking)
+    public function cancel(Booking $booking)
     {
-        if (!$booking->canBeRescheduled()) {
-            return back()->with('error', 'امکان تغییر زمان این نوبت وجود ندارد.');
+        try {
+            if ($booking->user_id !== auth()->id()) {
+                throw new Exception('دسترسی غیرمجاز');
+            }
+
+            if (!$booking->canBeCancelled()) {
+                return back()->with('error', 'امکان لغو این نوبت وجود ندارد.');
+            }
+
+            DB::transaction(function() use ($booking) {
+                $booking->update(['status' => 'cancelled']);
+
+                if ($booking->payment_status === 'paid' && $booking->isRefundable()) {
+                    $booking->update([
+                        'refund_status' => 'pending',
+                        'refund_details' => [
+                            'requested_at' => now()->toDateTimeString(),
+                            'requested_by' => 'user',
+                            'amount' => $booking->getRefundableAmount()
+                        ]
+                    ]);
+                }
+
+                $message = sprintf(
+                    'نوبت شما در تاریخ %s لغو شد.',
+                    verta($booking->booking_time)->format('Y/m/d H:i')
+                );
+                $this->smsService->send($booking->user->phone, $message);
+            });
+
+            return redirect()->route('bookings.index')
+                ->with('success', 'نوبت با موفقیت لغو شد.');
+
+        } catch (Exception $e) {
+            return back()->with('error', 'خطا در لغو نوبت: ' . $e->getMessage());
         }
-
-        $validated = $request->validate([
-            'booking_time' => 'required|date|after:now'
-        ]);
-
-        $booking->update([
-            'booking_time' => $validated['booking_time']
-        ]);
-
-        $smsService = new SMSService();
-        $message = sprintf(
-            'زمان نوبت شما به %s تغییر کرد.',
-            verta($booking->booking_time)->format('Y/m/d H:i')
-        );
-        $smsService->send($booking->user->phone, $message);
-
-        return redirect()->route('bookings.show', $booking)
-            ->with('success', 'زمان نوبت با موفقیت تغییر کرد.');
     }
 
     public function cancel(Booking $booking)
