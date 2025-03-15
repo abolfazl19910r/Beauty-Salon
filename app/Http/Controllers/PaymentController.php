@@ -65,13 +65,17 @@ class PaymentController extends Controller
         }
     }
 
-    public function callback(Request $request, Booking $booking)
+    public function callback(Request $request)
     {
-        Log::info('Payment callback received', [
-            'booking_id' => $booking->id,
-            'authority' => $request->Authority,
-            'status' => $request->Status
-        ]);
+        $booking = Booking::where('payment_reference', $request->Authority)->first();
+
+        if (!$booking) {
+            return redirect()->route('payment.result')
+                ->with([
+                    'success' => false,
+                    'error_message' => 'اطلاعات نوبت یافت نشد.'
+                ]);
+        }
 
         if ($request->Status !== 'OK') {
             return redirect()->route('payment.result')
@@ -115,11 +119,6 @@ class PaymentController extends Controller
                 ]);
 
         } catch (\Exception $e) {
-            Log::error('Payment verification failed', [
-                'booking_id' => $booking->id,
-                'error' => $e->getMessage()
-            ]);
-
             return redirect()->route('payment.result')
                 ->with([
                     'success' => false,
