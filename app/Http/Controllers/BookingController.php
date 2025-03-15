@@ -181,33 +181,81 @@ class BookingController extends Controller
 
     public function store(Request $request)
     {
+        if (!auth()->check()) {
+            return response()->json([
+                'message' => 'برای رزرو نوبت ابتدا باید وارد سیستم شوید.'
+            ], 401);
+        }
+
         $validated = $request->validate([
             'service_id' => 'required|exists:beauty_services,id',
             'specialist_id' => 'required|exists:specialists,id',
             'booking_time' => 'required|date|after:now',
+            'discount_code' => 'nullable|string'
         ]);
 
-        $specialist = Specialist::find($request->specialist_id);
-        $availableSlots = $specialist->getAvailableSlots(date('Y-m-d', strtotime($request->booking_time)));
+        try {
+            return DB::transaction(function() use ($request) {
+                $bookingTime = $request->booking_time;
+                $specialist = Specialist::find($request->specialist_id);
+                $bookingDate = date('Y-m-d', strtotime($bookingTime));
+                $bookingTimeOnly = date('H:i', strtotime($bookingTime));
 
-        if (!in_array(date('H:i', strtotime($request->booking_time)), $availableSlots)) {
-            return response()->json(['message' => 'این زمان قبلاً رزرو شده است.'], 422);
+                $availableSlots = $specialist->getAvailableSlots($bookingDate);
+
+                if (!in_array($bookingTimeOnly, $availableSlots)) {
+                    throw ValidationException::withMessages([
+                        'booking_time' => ['این زمان قبلاً رزرو شده است.']
+                    ]);
+                }
+
+                $prepaymentAmount = 50000;
+                $discountAmount = 0;
+
+                if ($request->filled('discount_code')) {
+                    $discountCode = DiscountCode::where('code', $request->discount_code)->first();
+
+                    if ($discountCode && $discountCode->isValid()) {
+                        $discountAmount = $discountCode->type === 'percentage'
+                            ? ($prepaymentAmount * $discountCode->amount / 100)
+                            : $discountCode->amount;
+
+                        $discountCode->increment('used_count');
+                    }
+                }
+
+                $finalAmount = max(0, $prepaymentAmount - $discountAmount);
+
+                $booking = Booking::create([
+                    'service_id' => $request->service_id,
+                    'specialist_id' => $request->specialist_id,
+                    'user_id' => auth()->id(),
+                    'booking_time' => $bookingTime,
+                    'status' => 'pending',
+                    'prepayment_amount' => $finalAmount,
+                    'payment_status' => 'unpaid',
+                    'discount_code' => $request->discount_code,
+                    'discount_amount' => $discountAmount
+                ]);
+
+                $booking->load(['service', 'specialist']);
+
+                if (request()->expectsJson()) {
+                    return response()->json([
+                        'message' => 'نوبت با موفقیت ثبت شد.',
+                        'booking' => $booking
+                    ]);
+                }
+
+                return redirect()->route('payment.show', ['booking' => $booking->id]);
+            });
+
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (Exception $e) {
+            return back()->with('error', 'خطا در ثبت رزرو. لطفا دوباره تلاش کنید.')
+                ->withInput();
         }
-
-        $booking = Booking::create([
-            'service_id' => $request->service_id,
-            'specialist_id' => $request->specialist_id,
-            'user_id' => auth()->id(),
-            'booking_time' => $request->booking_time,
-            'status' => 'pending',
-            'prepayment_amount' => 50000,
-            'payment_status' => 'unpaid'
-        ]);
-
-        return response()->json([
-            'message' => 'نوبت با موفقیت ثبت شد.',
-            'booking' => $booking
-        ]);
     }
 
     public function processPayment(Booking $booking)
