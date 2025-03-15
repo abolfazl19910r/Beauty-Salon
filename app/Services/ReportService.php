@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\BeautyService;
 use App\Models\ScheduledReport;
 use App\Models\Specialist;
+use App\Observers\DiscountCodeObserver;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
