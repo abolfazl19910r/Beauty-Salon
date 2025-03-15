@@ -630,4 +630,31 @@ class BookingController extends Controller
 
         return view('bookings.failed', compact('booking', 'errorMessage'));
     }
+
+    public function show(Booking $booking)
+    {
+        try {
+            if ($booking->user_id !== auth()->id()) {
+                throw new Exception('دسترسی غیرمجاز');
+            }
+
+            $booking->load(['service', 'specialist']);
+
+            if (!$booking->service) {
+                return redirect()->route('bookings.index')
+                    ->with('error', 'اطلاعات سرویس برای این نوبت یافت نشد.');
+            }
+
+            if ($booking->payment_status === 'paid') {
+                return redirect()->route('bookings.show', $booking)
+                    ->with('error', 'این نوبت قبلاً پرداخت شده است.');
+            }
+
+            return redirect()->route('payment.show', ['booking' => $booking->id]);
+
+        } catch (Exception $e) {
+            return redirect()->route('bookings.index')
+                ->with('error', 'خطا در نمایش صفحه پرداخت: ' . $e->getMessage());
+        }
+    }
 }
