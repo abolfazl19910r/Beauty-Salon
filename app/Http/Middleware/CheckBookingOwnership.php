@@ -10,11 +10,19 @@ class CheckBookingOwnership
 {
     public function handle(Request $request, Closure $next)
     {
-        $booking = $request->route('booking');
+        $bookingId = $request->route('booking');
+
+        if (is_object($bookingId)) {
+            $booking = $bookingId;
+        } else {
+            $booking = Booking::findOrFail($bookingId);
+        }
 
         if ($booking->user_id !== auth()->id()) {
             abort(403, 'شما دسترسی به این نوبت را ندارید.');
         }
+
+        $request->route()->setParameter('booking', $booking);
 
         return $next($request);
     }
