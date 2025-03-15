@@ -35,6 +35,11 @@ class BookingController extends Controller
 
     public function create()
     {
+        if (!auth()->check()) {
+            return redirect()->route('login')
+                ->with('message', 'برای رزرو نوبت ابتدا باید وارد شوید.');
+        }
+
         $services = BeautyService::all();
         $specialists = Specialist::all();
 
