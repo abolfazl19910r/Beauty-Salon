@@ -10,12 +10,29 @@ use App\Notifications\BookingNotification;
 use App\Notifications\CustomerBookingNotification;
 use App\Services\PaymentService;
 use App\Services\SMSService;
-use Illuminate\Http\Client\Request;
+use Exception;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
+use Illuminate\Validation\ValidationException;
 
 class BookingController extends Controller
 {
+    protected PaymentService $paymentService;
+    protected SMSService $smsService;
+
+    public function __construct(PaymentService $paymentService, SMSService $smsService)
+    {
+        $this->paymentService = $paymentService;
+        $this->smsService = $smsService;
+    }
+
     public function create()
     {
         $services = BeautyService::all();
