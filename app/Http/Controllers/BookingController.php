@@ -570,4 +570,48 @@ class BookingController extends Controller
         }
     }
 
+    /**
+     *
+     * @param Request $request
+     * @return \Illuminate\View\View
+     */
+    public function success(Request $request): \Illuminate\View\View
+    {
+        try {
+            $booking = null;
+
+            if ($request->has('id')) {
+                $bookingId = $request->id;
+                $booking = Booking::with(['service', 'specialist'])
+                    ->where('id', $bookingId)
+                    ->where('user_id', auth()->id())
+                    ->first();
+            } elseif (session()->has('booking_id')) {
+                $bookingId = session('booking_id');
+                $booking = Booking::with(['service', 'specialist'])
+                    ->where('id', $bookingId)
+                    ->where('user_id', auth()->id())
+                    ->first();
+            } else {
+                $booking = Booking::with(['service', 'specialist'])
+                    ->where('user_id', auth()->id())
+                    ->where('payment_status', 'paid')
+                    ->latest('paid_at')
+                    ->first();
+            }
+
+            if (!$booking) {
+                return redirect()->route('bookings.index')
+                    ->with('error', 'اطلاعات رزرو یافت نشد. لطفاً با پشتیبانی تماس بگیرید.');
+            }
+
+            session(['last_paid_booking_id' => $booking->id]);
+
+            return view('bookings.success', compact('booking'));
+
+        } catch (Exception $e) {
+            return redirect()->route('bookings.index')
+                ->with('error', 'خطا در نمایش اطلاعات رزرو. لطفاً با پشتیبانی تماس بگیرید.');
+        }
+    }
 }
