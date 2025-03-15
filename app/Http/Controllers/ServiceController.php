@@ -26,13 +26,15 @@ class ServiceController extends Controller
         return view('services.show', compact('service', 'specialists', 'relatedServices'));
     }
 
-    public function list(): \Illuminate\Database\Eloquent\Collection
+    public function list()
     {
-        return BeautyService::all();
+        $services = BeautyService::all();
+        return response()->json($services);
     }
 
-    public function specialists(BeautyService $service)
+    public function specialists(BeautyService $beautyService)
     {
-        return $service->specialists;
+        return response()->json($beautyService->specialists);
     }
+
 }
