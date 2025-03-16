@@ -20,11 +20,25 @@ class AdminBookingController extends Controller
         $this->refundService = $refundService;
     }
 
+    public function getStats(Request $request)
+    {
+        $date = $request->date ? $request->date : today();
+
+        $stats = [
+            'total' => Booking::whereDate('booking_time', $date)->count(),
+            'confirmed' => Booking::whereDate('booking_time', $date)
+                ->where('status', 'confirmed')->count(),
+            'cancelled' => Booking::whereDate('booking_time', $date)
+                ->where('status', 'cancelled')->count(),
+        ];
+
+        return response()->json($stats);
+    }
     public function index(Request $request)
     {
-        $query = Booking::with(['user', 'service', 'specialist']);
+        $query = Booking::with(['user', 'specialist', 'service'])->latest();
 
-        if ($request->has('status')) {
+        if ($request->has('status') && $request->status !== '') {
             $query->where('status', $request->status);
         }
 
@@ -32,12 +46,23 @@ class AdminBookingController extends Controller
             $date = $request->date;
             $query->whereDate('booking_time', $date);
         } else {
-            $query->whereDate('booking_time', today());
+            $date = today();
         }
 
-        $bookings = $query->orderBy('booking_time', 'desc')->paginate(10);
+        $bookings = $query->paginate(15);
 
-        return view('admin.bookings.index', compact('bookings'));
+        $totalBookings = Booking::whereDate('booking_time', $date)->count();
+        $confirmedBookings = Booking::whereDate('booking_time', $date)
+            ->where('status', 'confirmed')->count();
+        $cancelledBookings = Booking::whereDate('booking_time', $date)
+            ->where('status', 'cancelled')->count();
+
+        return view('admin.bookings.index', compact(
+            'bookings',
+            'totalBookings',
+            'confirmedBookings',
+            'cancelledBookings'
+        ));
     }
 
     public function create()
