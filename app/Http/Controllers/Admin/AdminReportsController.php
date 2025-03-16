@@ -527,13 +527,13 @@ class AdminReportsController extends Controller
 
     private function getPaymentMethodsBreakdown()
     {
-        return Booking::where('payment_status', 'paid')
-            ->groupBy('payment_method')
+        return \App\Models\Payment::where('status', 'completed')
             ->select(
-                'payment_method',
+                DB::raw("COALESCE(gateway_reference, 'نامشخص') as payment_method"),
                 DB::raw('COUNT(*) as count'),
-                DB::raw('SUM(prepayment_amount) as total_amount')
+                DB::raw('SUM(amount) as total_amount')
             )
+            ->groupBy('payment_method')
             ->get();
     }
 
