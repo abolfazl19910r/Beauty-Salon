@@ -11,4 +11,5 @@ Route::prefix('bookings')->name('bookings.')->group(function () {
     Route::get('/{booking}', [AdminBookingController::class, 'show'])->name('show');
     Route::put('/{booking}', [AdminBookingController::class, 'update'])->name('update');
     Route::delete('/{booking}', [AdminBookingController::class, 'destroy'])->name('destroy');
+    Route::get('/stats', [AdminBookingController::class, 'getStats'])->name('stats');
 });
