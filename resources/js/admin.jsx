@@ -6,27 +6,24 @@ import AnnouncementAdmin from '@/Components/Admin/Announcements/AnnouncementAdmi
 import BlogAdmin from '@/Components/Admin/Blog/BlogAdmin';
 import GalleryAdmin from '@/Components/Admin/Gallery/GalleryAdmin';
 import ReportDashboard from '@/Components/Admin/Reports/ReportDashboard';
+import BookingStats from '@/Components/Admin/BookingStats';
 
-// Loading component
 const LoadingComponent = () => (
     <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
     </div>
 );
 
-// Mount component helper
-const mountComponent = (elementId, Component) => {
+const mountComponent = (elementId, Component, customProps = {}) => {
     const element = document.getElementById(elementId);
     if (!element) return;
 
     console.log(`Mounting ${elementId}...`);
 
-    // Get props from data attributes or window.initialData
-    let props = {};
+    let props = { ...customProps };
     if (element.dataset && Object.keys(element.dataset).length > 0) {
-        props = { ...element.dataset };
+        props = { ...props, ...element.dataset };
 
-        // Parse JSON attributes if they exist
         if (props.routes) {
             try {
                 props.routes = JSON.parse(props.routes);
@@ -36,7 +33,6 @@ const mountComponent = (elementId, Component) => {
         }
     }
 
-    // Use window.initialData if available
     if (window.initialData) {
         props = { ...props, ...window.initialData };
     }
@@ -63,7 +59,25 @@ const mountComponent = (elementId, Component) => {
     }
 };
 
-// Mount admin components
+if (document.getElementById('booking-stats')) {
+    const container = document.getElementById('booking-stats');
+    let customProps = {};
+
+    if (container.dataset.stats) {
+        try {
+            customProps.initialStats = JSON.parse(container.dataset.stats);
+        } catch (error) {
+            console.error('Error parsing booking stats:', error);
+        }
+    }
+
+    if (container.dataset.date) {
+        customProps.date = container.dataset.date;
+    }
+
+    mountComponent('booking-stats', BookingStats, customProps);
+}
+
 mountComponent('admin-dashboard', AdminDashboard);
 mountComponent('reports-panel', ReportDashboard);
 mountComponent('admin-loyalty', LoyaltyAdmin);
