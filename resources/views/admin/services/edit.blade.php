@@ -100,7 +100,7 @@
                                 <circle cx="8.5" cy="8.5" r="1.5"></circle>
                                 <polyline points="21 15 16 10 5 21"></polyline>
                             </svg>
-                            <span class="mt-2 text-sm text-gray-600">انتخاب تصویر جدید</span>
+                            <span id="file-name-display" class="mt-2 text-sm text-gray-600">انتخاب تصویر جدید</span>
                             <input type="file"
                                    id="image"
                                    name="image"
@@ -135,3 +135,21 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('image');
+            const fileNameDisplay = document.getElementById('file-name-display');
+
+            if (fileInput && fileNameDisplay) {
+                fileInput.addEventListener('change', function() {
+                    const fileName = this.files[0]?.name;
+                    if (fileName) {
+                        fileNameDisplay.textContent = fileName;
+                    }
+                });
+            }
+        });
+    </script>
+@endpush
