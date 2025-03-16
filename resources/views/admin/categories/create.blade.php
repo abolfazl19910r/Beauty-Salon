@@ -33,7 +33,7 @@
                     <label for="parent_id" class="block mb-2 text-sm font-medium text-gray-700">دسته والد</label>
                     <select id="parent_id" name="parent_id" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
                         <option value="">بدون دسته والد (دسته اصلی)</option>
-                        @foreach($categories ?? [] as $category)
+                        @foreach($parentCategories ?? [] as $category)
                             <option value="{{ $category->id }}" {{ old('parent_id') == $category->id ? 'selected' : '' }}>
                                 {{ $category->name }}
                             </option>
@@ -90,7 +90,7 @@
                                 <circle cx="8.5" cy="8.5" r="1.5"></circle>
                                 <polyline points="21 15 16 10 5 21"></polyline>
                             </svg>
-                            <span class="mt-2 text-sm text-gray-600">انتخاب تصویر</span>
+                            <span class="mt-2 text-sm text-gray-600" id="file-name-display">انتخاب تصویر</span>
                             <input type="file"
                                    id="image"
                                    name="image"
@@ -146,12 +146,13 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const fileInput = document.getElementById('image');
+            const fileNameDisplay = document.getElementById('file-name-display');
+
             if (fileInput) {
                 fileInput.addEventListener('change', function() {
                     const fileName = this.files[0]?.name;
                     if (fileName) {
-                        const fileLabel = this.nextElementSibling;
-                        fileLabel.textContent = fileName;
+                        fileNameDisplay.textContent = fileName;
                     }
                 });
             }

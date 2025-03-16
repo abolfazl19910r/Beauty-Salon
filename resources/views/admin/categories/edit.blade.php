@@ -107,7 +107,7 @@
                                 <circle cx="8.5" cy="8.5" r="1.5"></circle>
                                 <polyline points="21 15 16 10 5 21"></polyline>
                             </svg>
-                            <span class="mt-2 text-sm text-gray-600">{{ $category->image ? 'تغییر تصویر' : 'انتخاب تصویر' }}</span>
+                            <span class="mt-2 text-sm text-gray-600" id="file-name-display">{{ $category->image ? 'تغییر تصویر' : 'انتخاب تصویر' }}</span>
                             <input type="file"
                                    id="image"
                                    name="image"
@@ -163,12 +163,13 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const fileInput = document.getElementById('image');
+            const fileNameDisplay = document.getElementById('file-name-display');
+
             if (fileInput) {
                 fileInput.addEventListener('change', function() {
                     const fileName = this.files[0]?.name;
                     if (fileName) {
-                        const fileLabel = this.nextElementSibling;
-                        fileLabel.textContent = fileName;
+                        fileNameDisplay.textContent = fileName;
                     }
                 });
             }
