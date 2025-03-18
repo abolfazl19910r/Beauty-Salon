@@ -18,7 +18,7 @@ class Booking extends Model
         'status',
         'prepayment_amount',
         'payment_status',
-        'payment_ref',
+        'payment_reference',
         'payment_details',
         'paid_at',
         'discount_code',
