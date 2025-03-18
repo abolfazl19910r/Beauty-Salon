@@ -13,7 +13,7 @@
                 ویرایش نوبت #{{ $booking->id }}
             </h1>
 
-            <a href="{{ route('admin.bookings.show', $booking) }}" class="inline-flex items-center px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+            <a href="{{ url('admin/bookings/'.$booking->id) }}" class="inline-flex items-center px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
                 <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 12H5"></path>
                     <path d="M12 19l-7-7 7-7"></path>
@@ -23,7 +23,7 @@
         </div>
 
         <div class="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 p-6">
-            <form action="{{ route('admin.bookings.update', $booking) }}" method="POST" class="space-y-6">
+            <form action="{{ url('admin/bookings/'.$booking->id) }}" method="POST" class="space-y-6">
                 @csrf
                 @method('PUT')
 
@@ -130,7 +130,7 @@
                         </svg>
                         ذخیره تغییرات
                     </button>
-                    <a href="{{ route('admin.bookings.show', $booking) }}"
+                    <a href="{{ url('admin/bookings/'.$booking->id) }}"
                        class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:shadow-md transition-all duration-200 flex items-center">
                         <svg class="w-5 h-5 ml-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M19 12H5"></path>
