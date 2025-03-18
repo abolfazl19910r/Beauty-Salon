@@ -34,9 +34,9 @@ class AdminPaymentController extends Controller
             'payment_status' => 'paid',
             'prepayment_amount' => $request->amount,
             'payment_method' => $request->payment_method,
-            'payment_ref' => $request->reference,
+            'payment_reference' => $request->reference,
             'paid_at' => now(),
-            'status' => 'confirmed' // اگر می‌خواهید با پرداخت، نوبت تایید شود
+            'status' => 'confirmed'
         ]);
 
         return redirect()->route('admin.bookings.show', $booking)
