@@ -130,4 +130,23 @@ class AdminLoyaltyController extends Controller
 
         return response()->json($history);
     }
+
+    public function export(Request $request)
+    {
+        $type = $request->input('type', 'points');
+
+        if ($type === 'points') {
+            $data = LoyaltyPoint::with('user:id,name')
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } elseif ($type === 'rewards') {
+            $data = Reward::withCount('redemptions')
+                ->orderBy('required_points')
+                ->get();
+        } else {
+            $data = [];
+        }
+
+        return response()->json($data);
+    }
 }
