@@ -23,6 +23,7 @@ Route::name('api.')->group(function () {
             require __DIR__.'/api/admin/reports.php';
             require __DIR__.'/api/admin/services.php';
             require __DIR__.'/api/admin/specialists.php';
+            require __DIR__.'/api/admin/loyalty.php';
             require __DIR__.'/api/admin/bookings.php';
         });
     });
