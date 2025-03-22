@@ -112,4 +112,13 @@ class AdminLoyaltyController extends Controller
             'spent' => $points->spent
         ]);
     }
+
+    public function getRewards()
+    {
+        $rewards = Reward::where('is_active', true)
+            ->orderBy('required_points')
+            ->get();
+
+        return response()->json($rewards);
+    }
 }
