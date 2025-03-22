@@ -7,6 +7,7 @@ use App\Models\Loyalty;
 use App\Models\LoyaltyPoint;
 use App\Models\Reward;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AdminLoyaltyController extends Controller
 {
@@ -78,5 +79,23 @@ class AdminLoyaltyController extends Controller
 
         return redirect()->route('admin.loyalty.index')
             ->with('success', 'برنامه وفاداری با موفقیت حذف شد.');
+    }
+
+    public function redeemReward(Request $request, Reward $reward)
+    {
+        try {
+            $validatedData = $request->validate([
+                'user_id' => 'required|exists:users,id'
+            ]);
+
+            $loyaltyService = app()->make(\App\Services\LoyaltyService::class);
+            $result = $loyaltyService->redeemReward($validatedData['user_id'], $reward);
+
+            return redirect()->route('admin.loyalty.index')
+                ->with('success', 'پاداش با موفقیت برای کاربر فعال شد.');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.loyalty.index')
+                ->with('error', 'خطا در فعال‌سازی پاداش: ' . $e->getMessage());
+        }
     }
 }
