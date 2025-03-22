@@ -121,4 +121,13 @@ class AdminLoyaltyController extends Controller
 
         return response()->json($rewards);
     }
+
+    public function getHistory()
+    {
+        $history = LoyaltyPoint::with(['user:id,name', 'booking'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return response()->json($history);
+    }
 }
