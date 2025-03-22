@@ -92,11 +92,11 @@
                 <div id="admin-loyalty"
                      class="fade-in"
                      data-routes="{{ json_encode([
-                        'points' => route('loyalty.points'),
-                        'rewards' => route('loyalty.rewards'),
-                        'history' => route('loyalty.history'),
-                        'redeemReward' => route('loyalty.redeem-reward', ['reward' => ':id']),
-                        'export' => route('loyalty.export')
+                        'points' => route('admin.loyalty.points'),
+                        'rewards' => route('admin.loyalty.rewards'),
+                        'history' => route('admin.loyalty.history'),
+                        'redeemReward' => route('admin.loyalty.redeem-reward', ['reward' => ':id']),
+                        'export' => route('admin.loyalty.export')
                     ]) }}">
                     <div class="flex justify-center items-center min-h-[400px]">
                         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
@@ -122,11 +122,11 @@
                 totalRedeemedRewards: {{ $totalRedeemedRewards }}
             },
             routes: {
-                points: '{{ route('loyalty.points') }}',
-                rewards: '{{ route('loyalty.rewards') }}',
-                history: '{{ route('loyalty.history') }}',
-                redeemReward: '{{ route('loyalty.redeem-reward', ['reward' => ':id']) }}',
-                export: '{{ route('loyalty.export') }}'
+                points: '{{ route('admin.loyalty.points') }}',
+                rewards: '{{ route('admin.loyalty.rewards') }}',
+                history: '{{ route('admin.loyalty.history') }}',
+                redeemReward: '{{ route('admin.loyalty.redeem-reward', ['reward' => ':id']) }}',
+                export: '{{ route('admin.loyalty.export') }}'
             }
         };
     </script>
