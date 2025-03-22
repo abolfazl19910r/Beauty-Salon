@@ -6,7 +6,7 @@ import AnnouncementAdmin from '@/Components/Admin/Announcements/AnnouncementAdmi
 import BlogAdmin from '@/Components/Admin/Blog/BlogAdmin';
 import GalleryAdmin from '@/Components/Admin/Gallery/GalleryAdmin';
 import ReportDashboard from '@/Components/Admin/Reports/ReportDashboard';
-import BookingStats from '@/Components/Admin/BookingStats';
+import BookingStats from '@/Components/booking/BookingStats';
 
 const LoadingComponent = () => (
     <div className="flex justify-center items-center min-h-screen">
