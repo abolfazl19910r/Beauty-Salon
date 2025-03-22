@@ -98,4 +98,18 @@ class AdminLoyaltyController extends Controller
                 ->with('error', 'خطا در فعال‌سازی پاداش: ' . $e->getMessage());
         }
     }
+
+    public function getPoints()
+    {
+        $points = LoyaltyPoint::select(
+            DB::raw('SUM(CASE WHEN type = "earned" THEN points ELSE 0 END) as earned'),
+            DB::raw('SUM(CASE WHEN type = "spent" THEN points ELSE 0 END) as spent')
+        )->first();
+
+        return response()->json([
+            'total' => $points->earned - $points->spent,
+            'earned' => $points->earned,
+            'spent' => $points->spent
+        ]);
+    }
 }
