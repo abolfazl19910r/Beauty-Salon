@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Reward extends Model
 {
@@ -38,5 +39,10 @@ class Reward extends Model
     public function incrementUsage()
     {
         $this->increment('used_count');
+    }
+
+    public function loyalty(): BelongsTo
+    {
+        return $this->belongsTo(Loyalty::class);
     }
 }
