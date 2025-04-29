@@ -214,4 +214,10 @@ class AdminLoyaltyController extends Controller
             ], 500);
         }
     }
+
+    public function showReward(Reward $reward)
+    {
+        return response()->json($reward);
+    }
+
 }
