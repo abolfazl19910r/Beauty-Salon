@@ -421,4 +421,36 @@ class AdminLoyaltyController extends Controller
 
         return response()->json($settings);
     }
+
+    public function updateSettings(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'points_per_purchase' => 'sometimes|numeric|min:0',
+                'points_expiry_days' => 'sometimes|integer|min:0',
+                'min_points_for_redeem' => 'sometimes|integer|min:0',
+                'enable_referral_points' => 'sometimes|boolean',
+                'referral_points' => 'sometimes|integer|min:0',
+                'welcome_points' => 'sometimes|integer|min:0'
+            ]);
+
+            foreach ($validated as $key => $value) {
+                DB::table('settings')
+                    ->updateOrInsert(
+                        ['group' => 'loyalty', 'key' => $key],
+                        ['value' => $value]
+                    );
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تنظیمات با موفقیت بروزرسانی شد'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در بروزرسانی تنظیمات: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
