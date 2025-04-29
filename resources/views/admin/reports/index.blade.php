@@ -14,7 +14,7 @@
             </h1>
 
             <div class="flex gap-2">
-                <a href="{{ route('admin.reports.export', ['type' => 'pdf']) }}" class="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                <a href="{{ route('admin.reports.export', ['format' => 'pdf', 'report_type' => 'daily']) }}" id="pdf-export-link" class="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
                     <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
@@ -24,7 +24,7 @@
                     خروجی PDF
                 </a>
 
-                <a href="{{ route('admin.reports.export', ['type' => 'excel']) }}" class="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                <a href="{{ route('admin.reports.export', ['format' => 'excel', 'report_type' => 'daily']) }}" id="excel-export-link" class="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
                     <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
@@ -216,56 +216,96 @@
             dateFormat: 'jYYYY/jMM/jDD'
         };
 
-        document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function() {
             const tabButtons = document.querySelectorAll('.tab-button');
+            let activeReportType = 'daily';
+            let startDate = '';
+            let endDate = '';
+
+            function updateExportLinks() {
+            let params = new URLSearchParams();
+            params.append('report_type', activeReportType);
+
+            if (startDate && endDate) {
+            params.append('start_date', startDate);
+            params.append('end_date', endDate);
+        }
+
+            let pdfLink = document.getElementById('pdf-export-link');
+            if (pdfLink) {
+            let pdfBaseUrl = "{{ route('admin.reports.export') }}";
+            params.set('format', 'pdf');
+            pdfLink.href = `${pdfBaseUrl}?${params.toString()}`;
+        }
+
+            let excelLink = document.getElementById('excel-export-link');
+            if (excelLink) {
+            let excelBaseUrl = "{{ route('admin.reports.export') }}";
+            params.set('format', 'excel');
+            excelLink.href = `${excelBaseUrl}?${params.toString()}`;
+        }
+        }
 
             tabButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    tabButtons.forEach(btn => btn.classList.remove('active'));
-
-                    this.classList.add('active');
-
-                    const tabName = this.getAttribute('data-tab');
-                    console.log('Selected tab:', tabName);
-
-                });
-            });
+            button.addEventListener('click', function() {
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            const tabName = this.getAttribute('data-tab');
+            console.log('Selected tab:', tabName);
+        });
+        });
 
             $('#start-date, #end-date').persianDatepicker({
-                format: 'YYYY/MM/DD',
-                autoClose: true
-            });
+            format: 'YYYY/MM/DD',
+            autoClose: true,
+            onSelect: function(unix) {
+            const input = this.model.inputElement;
+            if (input.id === 'start-date') {
+            startDate = new Date(unix).toISOString().split('T')[0];
+        } else if (input.id === 'end-date') {
+            endDate = new Date(unix).toISOString().split('T')[0];
+        }
+            updateExportLinks();
+        }
+        });
 
             window.selectReportType = function(type) {
-                const reportCards = document.querySelectorAll('[id$="-report-card"]');
-                reportCards.forEach(card => {
-                    card.classList.remove('ring-2', 'ring-blue-200', 'border-2', 'border-blue-500');
-                });
+            const reportCards = document.querySelectorAll('[id$="-report-card"]');
+            reportCards.forEach(card => {
+            card.classList.remove('ring-2', 'ring-blue-200', 'border-2', 'border-blue-500');
+        });
 
-                document.getElementById(type + '-report-card').classList.add('ring-2', 'ring-blue-200', 'border-2', 'border-blue-500');
+            document.getElementById(type + '-report-card').classList.add('ring-2', 'ring-blue-200', 'border-2', 'border-blue-500');
 
-                const datePickerSection = document.getElementById('date-picker-section');
-                if(type === 'custom') {
-                    datePickerSection.classList.remove('hidden');
-                } else {
-                    datePickerSection.classList.add('hidden');
+            const datePickerSection = document.getElementById('date-picker-section');
+            if(type === 'custom') {
+            datePickerSection.classList.remove('hidden');
+        } else {
+            datePickerSection.classList.add('hidden');
+            console.log('Selected report type:', type);
+        }
 
-                    console.log('Selected report type:', type);
-                }
-            };
+            activeReportType = type;
 
-            selectReportType('daily');
+            updateExportLinks();
+        };
 
             document.getElementById('apply-date-range').addEventListener('click', function() {
-                const startDate = document.getElementById('start-date').value;
-                const endDate = document.getElementById('end-date').value;
+            const startDateInput = document.getElementById('start-date').value;
+            const endDateInput = document.getElementById('end-date').value;
 
-                if(startDate && endDate) {
-                    console.log('Custom date range:', startDate, 'to', endDate);
-                } else {
-                    alert('لطفاً بازه زمانی را انتخاب کنید');
-                }
-            });
+            if(startDateInput && endDateInput) {
+            console.log('Custom date range:', startDateInput, 'to', endDateInput);
+
+            updateExportLinks();
+        } else {
+            alert('لطفاً بازه زمانی را انتخاب کنید');
+        }
+        });
+
+            updateExportLinks();
+
+            selectReportType('daily');
         });
     </script>
     @viteReactRefresh
