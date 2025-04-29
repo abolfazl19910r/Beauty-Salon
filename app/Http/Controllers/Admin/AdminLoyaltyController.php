@@ -412,4 +412,13 @@ class AdminLoyaltyController extends Controller
             ], 500);
         }
     }
+
+    public function getSettings()
+    {
+        $settings = DB::table('settings')
+            ->where('group', 'loyalty')
+            ->pluck('value', 'key');
+
+        return response()->json($settings);
+    }
 }
