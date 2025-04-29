@@ -9,6 +9,7 @@ use App\Models\Specialist;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -20,6 +21,7 @@ use App\Services\ChartExportService;
 use App\Services\ReportService;
 use App\Models\ScheduledReport;
 use App\Models\UserReportSetting;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AdminReportsController extends Controller
 {
@@ -306,11 +308,25 @@ class AdminReportsController extends Controller
         }
     }
 
-    public function exportReport(Request $request): \Illuminate\Http\Response|\Symfony\Component\HttpFoundation\BinaryFileResponse|JsonResponse
+    public function exportReport(Request $request): Response|BinaryFileResponse|JsonResponse
     {
         try {
-            $type = $request->input('type', 'daily');
-            $format = $request->input('format', 'excel');
+            $format = $request->input('format');
+            if (!$format && in_array($request->input('type'), ['excel', 'pdf'])) {
+                $format = $request->input('type');
+            }
+            if (!$format) {
+                $format = 'excel';
+            }
+
+            $reportType = $request->input('report_type');
+            if (!$reportType && in_array($request->input('type'), ['daily', 'weekly', 'monthly'])) {
+                $reportType = $request->input('type');
+            }
+            if (!$reportType) {
+                $reportType = 'daily';
+            }
+
             $startDate = $request->input('start_date', now()->subDays(30)->format('Y-m-d'));
             $endDate = $request->input('end_date', now()->format('Y-m-d'));
 
@@ -318,39 +334,98 @@ class AdminReportsController extends Controller
                 return $this->errorResponse('تاریخ‌های ارسالی معتبر نیستند');
             }
 
+            $newRequest = clone $request;
+            $newRequest->merge([
+                'start_date' => $startDate,
+                'end_date' => $endDate
+            ]);
+
             $data = null;
-            switch($type) {
+            switch($reportType) {
                 case 'daily':
-                    $result = $this->dailyRevenue($request);
-                    $data = $result->getData(true)['data'] ?? [];
+                    $result = $this->dailyRevenue($newRequest);
+                    if ($result instanceof \Illuminate\Http\JsonResponse) {
+                        $data = $result->getData(true)['data'] ?? [];
+                    } else {
+                        $data = $result;
+                    }
                     break;
                 case 'weekly':
-                    $result = $this->weeklyRevenue($request);
-                    $data = $result->getData(true)['data'] ?? [];
+                    $result = $this->weeklyRevenue($newRequest);
+                    if ($result instanceof \Illuminate\Http\JsonResponse) {
+                        $data = $result->getData(true)['data'] ?? [];
+                    } else {
+                        $data = $result;
+                    }
                     break;
                 case 'monthly':
-                    $result = $this->monthlyRevenue($request);
-                    $data = $result->getData(true)['data'] ?? [];
+                    $result = $this->monthlyRevenue($newRequest);
+                    if ($result instanceof \Illuminate\Http\JsonResponse) {
+                        $data = $result->getData(true)['data'] ?? [];
+                    } else {
+                        $data = $result;
+                    }
                     break;
                 default:
                     return $this->errorResponse('نوع گزارش معتبر نیست');
             }
 
             if ($format === 'excel') {
-                return Excel::download(new ReportsExport($data, $type), "report-{$type}.xlsx");
+                return Excel::download(new ReportsExport($data, $reportType), "report-{$reportType}.xlsx");
             }
 
             if ($format === 'pdf') {
-                $pdf = PDF::loadView('exports.report', [
+                $typeText = $reportType === 'daily' ? 'روزانه' : ($reportType === 'weekly' ? 'هفتگی' : 'ماهانه');
+                $headings = (new ReportsExport($data, $reportType))->headings();
+
+                $defaultConfig = (new \Mpdf\Config\ConfigVariables())->getDefaults();
+                $fontDirs = $defaultConfig['fontDir'];
+
+                $defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
+                $fontData = $defaultFontConfig['fontdata'];
+
+                $mpdf = new \Mpdf\Mpdf([
+                    'mode' => 'utf-8',
+                    'format' => 'A4',
+                    'orientation' => 'P',
+                    'fontDir' => array_merge($fontDirs, [
+                        storage_path('fonts'),
+                    ]),
+                    'fontdata' => $fontData + [
+                            'vazir' => [
+                                'R' => 'Vazirmatn-Regular.ttf',
+                                'B' => 'Vazirmatn-Bold.ttf',
+                            ]
+                        ],
+                    'default_font' => 'vazir',
+                    'margin_left' => 10,
+                    'margin_right' => 10,
+                    'margin_top' => 10,
+                    'margin_bottom' => 10,
+                    'tempDir' => sys_get_temp_dir(),
+                ]);
+
+                $mpdf->SetDirectionality('rtl');
+
+                $mpdf->SetHTMLHeader('<div style="text-align: center; font-weight: bold; font-size: 20px; color: #db2777;">سالن زیبایی</div>');
+                $mpdf->SetHTMLFooter('<div style="text-align: center; font-size: 12px; color: #6b7280;">گزارش ایجاد شده توسط سیستم مدیریت سالن زیبایی - ' . jalali_date(now(), 'Y') . '</div>');
+
+                $html = view('exports.report', [
                     'data' => $data,
-                    'type' => $type,
-                    'headings' => (new ReportsExport($data, $type))->headings(),
+                    'type' => $typeText,
+                    'headings' => $headings,
                     'period' => [
                         'start' => $startDate,
                         'end' => $endDate
                     ]
+                ])->render();
+
+                $mpdf->WriteHTML($html);
+
+                return response($mpdf->Output("report-{$reportType}.pdf", \Mpdf\Output\Destination::STRING_RETURN), 200, [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'attachment; filename="report-' . $reportType . '.pdf"',
                 ]);
-                return $pdf->download("report-{$type}.pdf");
             }
 
             return $this->successResponse($data);
