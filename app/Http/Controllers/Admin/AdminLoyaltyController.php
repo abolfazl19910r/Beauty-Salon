@@ -126,11 +126,20 @@ class AdminLoyaltyController extends Controller
 
     public function getRewards()
     {
-        $rewards = Reward::where('is_active', true)
-            ->orderBy('required_points')
-            ->get();
+        try {
+            $rewards = Reward::where('is_active', true)
+                ->orderBy('required_points')
+                ->get();
 
-        return response()->json($rewards);
+            return response()->json($rewards);
+        } catch (\Exception $e) {
+            Log::error('خطا در دریافت پاداش‌ها: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'خطا در دریافت لیست پاداش‌ها',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function getHistory()
