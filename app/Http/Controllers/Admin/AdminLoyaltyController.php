@@ -372,4 +372,44 @@ class AdminLoyaltyController extends Controller
             ], 500);
         }
     }
+
+    public function deductUserPoints(Request $request, User $user)
+    {
+        try {
+            $validated = $request->validate([
+                'points' => 'required|integer|min:1',
+                'description' => 'required|string'
+            ]);
+
+            $currentPoints = LoyaltyPoint::where('user_id', $user->id)
+                ->selectRaw('SUM(points) as total')
+                ->first()
+                ->total;
+
+            if ($currentPoints < $validated['points']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'امتیاز کاربر کافی نیست'
+                ], 422);
+            }
+
+            $point = LoyaltyPoint::create([
+                'user_id' => $user->id,
+                'points' => -$validated['points'],
+                'type' => 'spent',
+                'description' => $validated['description']
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'امتیاز با موفقیت از کاربر کسر شد',
+                'data' => $point
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در کسر امتیاز: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
