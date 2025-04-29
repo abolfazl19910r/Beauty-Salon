@@ -168,4 +168,50 @@ class AdminLoyaltyController extends Controller
 
         return response()->json($data);
     }
+
+    public function storeReward(Request $request)
+    {
+        try {
+            Log::info('Creating new reward', $request->all());
+
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'required_points' => 'required|integer|min:1',
+                'discount_type' => 'required|in:fixed,percentage',
+                'discount_amount' => [
+                    'required',
+                    'numeric',
+                    'min:1',
+                    function($attribute, $value, $fail) use ($request) {
+                        if ($request->discount_type === 'percentage' && $value > 100) {
+                            $fail('درصد تخفیف نمی‌تواند بیشتر از 100 باشد.');
+                        }
+                    }
+                ],
+                'max_uses' => 'required|integer|min:1',
+                'is_active' => 'boolean'
+            ]);
+
+            $reward = Reward::create($validated);
+
+            Log::info('Reward created successfully', ['id' => $reward->id]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'پاداش با موفقیت ایجاد شد',
+                'data' => $reward
+            ], 201);
+        } catch (\Exception $e) {
+            Log::error('Error creating reward', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در ایجاد پاداش: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
