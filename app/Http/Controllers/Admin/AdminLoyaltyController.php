@@ -282,4 +282,34 @@ class AdminLoyaltyController extends Controller
             ], 500);
         }
     }
+
+    public function getStatistics()
+    {
+        $totalActivePoints = LoyaltyPoint::where('type', 'earned')->sum('points');
+        $totalPointUsers = LoyaltyPoint::distinct('user_id')->count('user_id');
+        $averageUserPoints = $totalPointUsers > 0 ? round($totalActivePoints / $totalPointUsers) : 0;
+        $totalRedeemedRewards = Reward::sum('used_count');
+
+        $topUsers = LoyaltyPoint::select('user_id', DB::raw('SUM(points) as total_points'))
+            ->groupBy('user_id')
+            ->orderByDesc('total_points')
+            ->limit(5)
+            ->with('user:id,name,phone')
+            ->get();
+
+        $recentRedemptions = LoyaltyPoint::where('type', 'spent')
+            ->with(['user:id,name', 'booking'])
+            ->orderByDesc('created_at')
+            ->limit(10)
+            ->get();
+
+        return response()->json([
+            'total_active_points' => $totalActivePoints,
+            'total_point_users' => $totalPointUsers,
+            'average_user_points' => $averageUserPoints,
+            'total_redeemed_rewards' => $totalRedeemedRewards,
+            'top_users' => $topUsers,
+            'recent_redemptions' => $recentRedemptions
+        ]);
+    }
 }
