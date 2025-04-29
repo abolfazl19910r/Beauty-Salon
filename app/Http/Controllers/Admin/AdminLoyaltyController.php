@@ -312,4 +312,34 @@ class AdminLoyaltyController extends Controller
             'recent_redemptions' => $recentRedemptions
         ]);
     }
+
+    public function getUserPoints(User $user)
+    {
+        $points = LoyaltyPoint::where('user_id', $user->id)
+            ->select(
+                DB::raw('SUM(CASE WHEN type = "earned" THEN points ELSE 0 END) as earned'),
+                DB::raw('SUM(CASE WHEN type = "spent" THEN points ELSE 0 END) as spent')
+            )
+            ->first();
+
+        $history = LoyaltyPoint::where('user_id', $user->id)
+            ->with('booking')
+            ->orderByDesc('created_at')
+            ->take(10)
+            ->get();
+
+        return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'phone' => $user->phone
+            ],
+            'points' => [
+                'current' => $points->earned - $points->spent,
+                'earned' => $points->earned,
+                'spent' => $points->spent
+            ],
+            'history' => $history
+        ]);
+    }
 }
