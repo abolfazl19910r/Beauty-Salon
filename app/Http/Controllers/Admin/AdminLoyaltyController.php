@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Loyalty;
 use App\Models\LoyaltyPoint;
 use App\Models\Reward;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AdminLoyaltyController extends Controller
 {
@@ -47,14 +49,23 @@ class AdminLoyaltyController extends Controller
             ->with('success', 'برنامه وفاداری با موفقیت ایجاد شد.');
     }
 
-    public function show(Loyalty $loyalty)
+    public function show(Reward $reward)
     {
-        return view('admin.loyalty.show', compact('loyalty'));
+        return view('admin.loyalty.show', compact('reward'));
     }
 
-    public function edit(Loyalty $loyalty)
+    public function edit($reward)
     {
-        return view('admin.loyalty.edit', compact('loyalty'));
+        try {
+            $rewardItem = Reward::findOrFail($reward);
+
+            return view('admin.loyalty.edit', [
+                'reward' => $rewardItem
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->route('loyalty.index')
+                ->with('error', 'خطا در بارگذاری اطلاعات پاداش: ' . $e->getMessage());
+        }
     }
 
     public function update(Request $request, Loyalty $loyalty)
