@@ -23,12 +23,14 @@ const LoyaltyAdmin = () => {
     const fetchRewards = async () => {
         try {
             setLoading(true);
-            const response = await fetch('/api/admin/rewards');
+            const response = await fetch(window.initialData.routes.rewards);
             if (!response.ok) throw new Error('خطا در دریافت لیست پاداش‌ها');
             const data = await response.json();
+            console.log('دریافت پاداش‌ها:', data);
             setRewards(data);
             setError(null);
         } catch (err) {
+            console.error('خطا در دریافت پاداش‌ها:', err);
             setError(err.message);
         } finally {
             setLoading(false);
@@ -38,16 +40,24 @@ const LoyaltyAdmin = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            console.log('ارسال پاداش جدید:', newReward);
             const response = await fetch('/api/admin/rewards', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify(newReward)
             });
 
-            if (!response.ok) throw new Error('خطا در ایجاد پاداش جدید');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'خطا در ایجاد پاداش جدید');
+            }
+
+            const result = await response.json();
+            console.log('پاسخ ایجاد پاداش:', result);
 
             await fetchRewards();
             setNewReward({
@@ -61,6 +71,7 @@ const LoyaltyAdmin = () => {
             });
 
         } catch (err) {
+            console.error('خطا در ایجاد پاداش:', err);
             setError(err.message);
         }
     };
@@ -72,28 +83,35 @@ const LoyaltyAdmin = () => {
             const response = await fetch(`/api/admin/rewards/${id}`, {
                 method: 'DELETE',
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
                 }
             });
 
-            if (!response.ok) throw new Error('خطا در حذف پاداش');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'خطا در حذف پاداش');
+            }
 
+            console.log('پاداش با موفقیت حذف شد');
             await fetchRewards();
         } catch (err) {
+            console.error('خطا در حذف پاداش:', err);
             setError(err.message);
         }
     };
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center min-h-screen">
+            <div className="flex justify-center items-center min-h-[400px]">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <span className="mr-2 text-gray-500">در حال بارگذاری...</span>
             </div>
         );
     }
 
     return (
-        <div className="space-y-6 p-6">
+        <div className="space-y-6">
             <h2 className="text-2xl font-bold">مدیریت برنامه وفاداری</h2>
 
             {error && (
@@ -218,33 +236,41 @@ const LoyaltyAdmin = () => {
                             </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                            {rewards.map(reward => (
-                                <tr key={reward.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap">{reward.title}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{reward.required_points}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {reward.discount_type === 'fixed' ? 'مبلغ ثابت' : 'درصدی'}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{reward.discount_amount}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                                                reward.is_active
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : 'bg-red-100 text-red-800'
-                                            }`}>
-                                                {reward.is_active ? 'فعال' : 'غیرفعال'}
-                                            </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button
-                                            onClick={() => handleDelete(reward.id)}
-                                            className="text-red-600 hover:text-red-900"
-                                        >
-                                            حذف
-                                        </button>
+                            {rewards.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                                        هیچ پاداشی یافت نشد
                                     </td>
                                 </tr>
-                            ))}
+                            ) : (
+                                rewards.map(reward => (
+                                    <tr key={reward.id}>
+                                        <td className="px-6 py-4 whitespace-nowrap">{reward.title}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">{reward.required_points}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {reward.discount_type === 'fixed' ? 'مبلغ ثابت' : 'درصدی'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">{reward.discount_amount}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                                                    reward.is_active
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : 'bg-red-100 text-red-800'
+                                                }`}>
+                                                    {reward.is_active ? 'فعال' : 'غیرفعال'}
+                                                </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button
+                                                onClick={() => handleDelete(reward.id)}
+                                                className="text-red-600 hover:text-red-900"
+                                            >
+                                                حذف
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                             </tbody>
                         </table>
                     </div>
