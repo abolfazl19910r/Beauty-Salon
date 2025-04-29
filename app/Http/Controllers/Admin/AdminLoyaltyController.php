@@ -220,4 +220,42 @@ class AdminLoyaltyController extends Controller
         return response()->json($reward);
     }
 
+    public function updateReward(Request $request, Reward $reward)
+    {
+        try {
+            $validated = $request->validate([
+                'title' => 'sometimes|string|max:255',
+                'description' => 'nullable|string',
+                'required_points' => 'sometimes|integer|min:1',
+                'discount_type' => 'sometimes|in:fixed,percentage',
+                'discount_amount' => [
+                    'sometimes',
+                    'numeric',
+                    'min:1',
+                    function($attribute, $value, $fail) use ($request) {
+                        if ($request->has('discount_type') &&
+                            $request->discount_type === 'percentage' &&
+                            $value > 100) {
+                            $fail('درصد تخفیف نمی‌تواند بیشتر از 100 باشد.');
+                        }
+                    }
+                ],
+                'max_uses' => 'sometimes|integer|min:' . $reward->used_count,
+                'is_active' => 'sometimes|boolean'
+            ]);
+
+            $reward->update($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'پاداش با موفقیت بروزرسانی شد',
+                'data' => $reward
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در بروزرسانی پاداش: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
