@@ -160,8 +160,7 @@ class AdminLoyaltyController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
         } elseif ($type === 'rewards') {
-            $data = Reward::withCount('redemptions')
-                ->orderBy('required_points')
+            $data = Reward::orderBy('required_points')
                 ->get();
         } else {
             $data = [];
