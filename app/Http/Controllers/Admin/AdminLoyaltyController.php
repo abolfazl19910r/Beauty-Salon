@@ -258,4 +258,28 @@ class AdminLoyaltyController extends Controller
             ], 500);
         }
     }
+
+    public function destroyReward(Reward $reward)
+    {
+        try {
+            if ($reward->used_count > 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'پاداش‌هایی که استفاده شده‌اند قابل حذف نیستند'
+                ], 422);
+            }
+
+            $reward->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'پاداش با موفقیت حذف شد'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در حذف پاداش: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
