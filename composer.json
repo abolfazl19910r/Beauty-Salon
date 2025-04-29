@@ -9,12 +9,14 @@
         "php": "^8.2",
         "ext-xlswriter": "*",
         "barryvdh/laravel-dompdf": "^3.1",
-        "hekmatinasser/verta": "^8.4",
+        "hekmatinasser/verta": "^8.5",
         "intervention/image": "^3.11",
         "laravel/framework": "^11.31",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "maatwebsite/excel": "^3.1",
+        "morilog/jalali": "^3.4",
+        "mpdf/mpdf": "^8.2",
         "spatie/laravel-activitylog": "^4.9"
     },
     "require-dev": {
@@ -32,7 +34,10 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "files": [
+            "app/Helpers/JalaliDate.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
