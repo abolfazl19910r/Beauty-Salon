@@ -159,11 +159,13 @@ return [
         App\Providers\RouteServiceProvider::class,
         Maatwebsite\Excel\ExcelServiceProvider::class,
         Barryvdh\DomPDF\ServiceProvider::class,
+        \Hekmatinasser\Verta\Laravel\VertaServiceProvider::class,
     ],
 
     'aliases' => [
         'Route' => Illuminate\Support\Facades\Route::class,
         'Excel' => Maatwebsite\Excel\Facades\Excel::class,
         'PDF' => Barryvdh\DomPDF\Facade\Pdf::class,
+        'Verta' => \Hekmatinasser\Verta\Verta::class,
     ]
 ];
