@@ -342,4 +342,34 @@ class AdminLoyaltyController extends Controller
             'history' => $history
         ]);
     }
+
+    public function addUserPoints(Request $request, User $user)
+    {
+        try {
+            $validated = $request->validate([
+                'points' => 'required|integer|min:1',
+                'description' => 'required|string',
+                'expires_at' => 'nullable|date|after:today'
+            ]);
+
+            $point = LoyaltyPoint::create([
+                'user_id' => $user->id,
+                'points' => $validated['points'],
+                'type' => 'earned',
+                'description' => $validated['description'],
+                'expires_at' => $validated['expires_at'] ?? null
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'امتیاز با موفقیت به کاربر اضافه شد',
+                'data' => $point
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در افزودن امتیاز: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
