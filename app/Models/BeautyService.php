@@ -38,8 +38,10 @@ class BeautyService extends Model
 
         static::deleting(function($service) {
             $activeBookings = $service->bookings()
-                ->whereIn('status', ['pending', 'confirmed'])
-                ->orWhere('payment_status', 'paid')
+                ->where(function($query) {
+                    $query->whereIn('status', ['pending', 'confirmed'])
+                        ->orWhere('payment_status', 'paid');
+                })
                 ->count();
 
             if ($activeBookings > 0) {
@@ -49,8 +51,7 @@ class BeautyService extends Model
             $service->specialists()->detach();
 
             $service->bookings()->update([
-                'status' => 'cancelled',
-                'cancellation_reason' => 'سرویس حذف شده است'
+                'status' => 'cancelled'
             ]);
 
             if ($service->image) {
