@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Loyalty extends Model
 {
@@ -22,4 +23,9 @@ class Loyalty extends Model
         'discount_percentage' => 'float',
         'is_active' => 'boolean',
     ];
+
+    public function rewards(): HasMany
+    {
+        return $this->hasMany(Reward::class);
+    }
 }
