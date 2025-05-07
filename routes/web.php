@@ -19,7 +19,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
 
-    Route::get('/', [App\Http\Controllers\Admin\AdminDashboardController::class, 'dashboard'])->name('dashboard');
+    Route::get('/', [App\Http\Controllers\Admin\AdminDashboardController::class, 'dashboard'])->name('home');
 
         require __DIR__.'/admin/dashboard.php';
         require __DIR__.'/admin/profile.php';
