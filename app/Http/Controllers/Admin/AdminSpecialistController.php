@@ -35,7 +35,8 @@ class AdminSpecialistController extends Controller
 
     public function create()
     {
-        $services = CategoryService::with('services')->get();
+        $services = Category::with('services')->get();
+
         return view('admin.specialists.create', compact('services'));
     }
 
