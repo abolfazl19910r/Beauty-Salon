@@ -31,7 +31,7 @@ class AdminSpecialistScheduleController extends Controller
             $specialist->schedules()->create($schedule);
         }
 
-        return redirect()->route('admin.specialists.show', $specialist)
+        return redirect()->route('admin.specialists.show', ['specialist' => $specialist->id])
             ->with('success', 'برنامه کاری با موفقیت بروزرسانی شد.');
     }
 }
