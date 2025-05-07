@@ -79,7 +79,7 @@
                             <td class="px-4 py-3">
                                 @if($leave->status === 'pending')
                                     <div class="flex space-x-2 space-x-reverse">
-                                        <form action="{{ route('admin.specialists.leaves.update', [$specialist, $leave]) }}"
+                                        <form action="{{ route('admin.specialists.leaves.update', ['specialist' => $specialist->id, 'leave' => $leave->id]) }}"
                                               method="POST" class="inline">
                                             @csrf
                                             @method('PUT')
@@ -90,7 +90,7 @@
                                                 </svg>
                                             </button>
                                         </form>
-                                        <form action="{{ route('admin.specialists.leaves.update', [$specialist, $leave]) }}"
+                                        <form action="{{ route('admin.specialists.leaves.update', ['specialist' => $specialist->id, 'leave' => $leave->id]) }}"
                                               method="POST" class="inline">
                                             @csrf
                                             @method('PUT')
@@ -145,7 +145,7 @@
                     </button>
                 </div>
 
-                <form action="{{ route('admin.specialists.leaves.store', $specialist) }}" method="POST">
+                <form action="{{ route('admin.specialists.leaves.store', ['specialist' => $specialist->id]) }}" method="POST">
                     @csrf
                     <div class="p-5 space-y-4">
                         <div>
