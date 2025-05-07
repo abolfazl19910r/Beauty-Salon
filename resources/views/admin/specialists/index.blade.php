@@ -107,7 +107,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                 <div class="flex items-center space-x-2 space-x-reverse">
-                                    <a href="{{ route('admin.specialists.show', $specialist->id) }}"
+                                    <a href="{{ route('admin.specialists.show', ['specialist' => $specialist->id]) }}"
                                        class="group bg-blue-50 text-blue-600 p-2 rounded-md hover:bg-blue-600 hover:text-white transition-colors"
                                        title="مشاهده جزئیات">
                                         <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
