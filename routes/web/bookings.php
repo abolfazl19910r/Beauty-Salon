@@ -25,5 +25,5 @@ Route::prefix('bookings')->name('bookings.')->group(function () {
 Route::prefix('payment')->name('payment.')->group(function () {
     Route::get('/{booking}', [PaymentController::class, 'show'])->name('show');
     Route::post('/{booking}/process', [PaymentController::class, 'process'])->name('process');
-    Route::get('/{booking}/callback', [PaymentController::class, 'callback'])->name('callback');
+    Route::get('/{booking}/callback', [PaymentController::class, 'callback'])->name('booking.callback');
 });
