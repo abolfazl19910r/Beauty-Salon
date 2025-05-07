@@ -12,8 +12,8 @@ class AdminWorkScheduleController extends Controller
 {
     public function index(Specialist $specialist)
     {
-        $schedule = $specialist->workSchedule;
-        return response()->json($schedule);
+        $schedules = $specialist->schedules()->get()->groupBy('day_of_week');
+        return view('admin.schedule.index', compact('specialist', 'schedules'));
     }
 
     public function store(Request $request, Specialist $specialist)
