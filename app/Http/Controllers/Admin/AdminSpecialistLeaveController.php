@@ -37,7 +37,7 @@ class AdminSpecialistLeaveController extends Controller
 
         $leave->update($validated);
 
-        return redirect()->route('admin.specialists.leaves.index', $specialist)
+        return redirect()->route('admin.specialists.leaves.index', ['specialist' => $specialist->id])
             ->with('success', 'وضعیت مرخصی با موفقیت بروزرسانی شد.');
     }
 }
