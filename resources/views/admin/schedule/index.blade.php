@@ -105,10 +105,10 @@
     <script>
         window.initialData = {
             routes: {
-                specialists: '{{ route('api.specialists.index') }}',
-                schedules: '{{ route('api.schedules.index') }}',
-                holidays: '{{ route('api.holidays.index') }}',
-                leaves: '{{ route('api.leaves.index') }}'
+                specialists: '{{ url("/api/specialists") }}',
+                schedules: '{{ url("/api/schedules") }}',
+                holidays: '{{ url("/api/holidays") }}',
+                leaves: '{{ url("/api/leaves") }}'
             }
         };
     </script>
