@@ -22,7 +22,7 @@ class AdminSpecialistController extends Controller
     public function index()
     {
         $specialists = Specialist::whereNull('deleted_at')
-        ->latest()
+            ->latest()
             ->paginate(10);
         return view('admin.specialists.index', compact('specialists'));
     }
