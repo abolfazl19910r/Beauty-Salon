@@ -67,7 +67,9 @@ class AdminSpecialistController extends Controller
         if (!$specialist) {
             abort(404);
         }
-        $services = CategoryService::with('services')->get();
+
+        $services = Category::with('services')->get();
+
         $selectedServices = $specialist->services->pluck('id')->toArray();
         return view('admin.specialists.edit', compact('specialist', 'services', 'selectedServices'));
     }
