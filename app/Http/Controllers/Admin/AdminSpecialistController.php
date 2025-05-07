@@ -27,6 +27,12 @@ class AdminSpecialistController extends Controller
         return view('admin.specialists.index', compact('specialists'));
     }
 
+    public function show($id)
+    {
+        $specialist = Specialist::findOrFail($id);
+        return view('admin.specialists.show', compact('specialist'));
+    }
+
     public function create()
     {
         $services = CategoryService::with('services')->get();
