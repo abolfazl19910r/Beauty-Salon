@@ -24,7 +24,7 @@
                 <p class="text-sm text-gray-500 mt-1">مشخصات و خدمات قابل ارائه توسط متخصص</p>
             </div>
 
-            <form action="{{ route('admin.specialists.update', $specialist->id) }}" method="POST">
+            <form action="{{ route('admin.specialists.update', ['specialist' => $specialist->id]) }}" method="POST">
                 @csrf
                 @method('PUT')
 
@@ -122,7 +122,7 @@
                 </div>
 
                 <div class="p-5 bg-gray-50 border-t border-gray-100 flex flex-col-reverse sm:flex-row justify-between gap-3">
-                    <a href="{{ route('admin.specialists.show', $specialist) }}"
+                    <a href="{{ route('admin.specialists.show', ['specialist' => $specialist->id]) }}"
                        class="w-full sm:w-auto inline-flex justify-center items-center px-6 py-2.5 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         انصراف
                     </a>
