@@ -25,7 +25,7 @@ class AdminSpecialistLeaveController extends Controller
 
         $specialist->leaves()->create($validated);
 
-        return redirect()->route('admin.specialists.leaves.index', $specialist)
+        return redirect()->route('admin.specialists.leaves.index', ['specialist' => $specialist->id])
             ->with('success', 'مرخصی با موفقیت ثبت شد.');
     }
 
