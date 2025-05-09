@@ -20,8 +20,23 @@ class AdminSpecialistScheduleController extends Controller
         }
     }
 
+    public function edit($specialistId)
     {
+        try {
+            $specialist = Specialist::findOrFail($specialistId);
+
+            $schedules = $specialist->schedules()
+                ->get()
+                ->groupBy('day_of_week');
+
+            return view('admin.specialists.schedules.edit', [
+                'specialist' => $specialist,
+                'schedules' => $schedules
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->route('admin.specialists.index')->with('error', 'متخصص مورد نظر یافت نشد.');
         }
+    }
 
     }
 }
