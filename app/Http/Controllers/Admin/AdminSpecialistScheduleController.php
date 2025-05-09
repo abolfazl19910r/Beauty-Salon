@@ -9,10 +9,7 @@ use Illuminate\Http\Request;
 
 class AdminSpecialistScheduleController extends Controller
 {
-    public function edit(Specialist $specialist)
     {
-        $schedules = $specialist->schedules()->get()->groupBy('day_of_week');
-        return view('admin.specialists.schedules.edit', compact('specialist', 'schedules'));
     }
 
     public function update(Request $request, Specialist $specialist)
