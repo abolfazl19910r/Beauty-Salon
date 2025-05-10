@@ -29,4 +29,6 @@ Route::prefix('schedule')->name('schedule.')->group(function () {
 
 Route::prefix('leaves')->name('leaves.')->group(function () {
     Route::get('/{specialist}', [AdminSpecialistLeaveController::class, 'index'])->name('index');
+    Route::post('/{specialist}', [AdminSpecialistLeaveController::class, 'store'])->name('store');
+    Route::put('/{specialist}/{leave}', [AdminSpecialistLeaveController::class, 'update'])->name('update');
 });
