@@ -2,6 +2,10 @@
 
 @section('title', 'مدیریت مرخصی‌ها')
 
+@section('styles')
+    <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@latest/dist/css/persian-datepicker.min.css">
+@endsection
+
 @section('content')
     <div class="max-w-6xl mx-auto">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
@@ -46,10 +50,10 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
                                     </span>
-                                    {{ verta($leave->start_date)->format('Y/m/d') }}
+                                    {{ jdate($leave->start_date)->format('Y/m/d') }}
                                 </div>
                             </td>
-                            <td class="px-4 py-3">{{ verta($leave->end_date)->format('Y/m/d') }}</td>
+                            <td class="px-4 py-3">{{ jdate($leave->end_date)->format('Y/m/d') }}</td>
                             <td class="px-4 py-3">
                                 @if($leave->reason)
                                     {{ $leave->reason }}
@@ -79,7 +83,7 @@
                             <td class="px-4 py-3">
                                 @if($leave->status === 'pending')
                                     <div class="flex space-x-2 space-x-reverse">
-                                        <form action="{{ route('admin.specialists.leaves.update', ['specialist' => $specialist->id, 'leave' => $leave->id]) }}"
+                                        <form action="{{ request()->is('admin/leaves/*') ? url('/admin/leaves/' . $specialist->id . '/' . $leave->id) : url('/admin/specialists/' . $specialist->id . '/leaves/' . $leave->id) }}"
                                               method="POST" class="inline">
                                             @csrf
                                             @method('PUT')
@@ -90,7 +94,7 @@
                                                 </svg>
                                             </button>
                                         </form>
-                                        <form action="{{ route('admin.specialists.leaves.update', ['specialist' => $specialist->id, 'leave' => $leave->id]) }}"
+                                        <form action="{{ request()->is('admin/leaves/*') ? url('/admin/leaves/' . $specialist->id . '/' . $leave->id) : url('/admin/specialists/' . $specialist->id . '/leaves/' . $leave->id) }}"
                                               method="POST" class="inline">
                                             @csrf
                                             @method('PUT')
@@ -145,7 +149,7 @@
                     </button>
                 </div>
 
-                <form action="{{ route('admin.specialists.leaves.store', ['specialist' => $specialist->id]) }}" method="POST">
+                <form action="{{ request()->is('admin/leaves/*') ? url('/admin/leaves/' . $specialist->id) : url('/admin/specialists/' . $specialist->id . '/leaves') }}" method="POST">
                     @csrf
                     <div class="p-5 space-y-4">
                         <div>
@@ -156,8 +160,9 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                 </div>
-                                <input type="date" name="start_date" required
-                                       class="w-full pr-10 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                <input type="text" id="start_date_jalali" name="start_date_jalali" required
+                                       class="w-full pr-10 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                       placeholder="انتخاب تاریخ شروع">
                             </div>
                         </div>
                         <div>
@@ -168,8 +173,9 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                 </div>
-                                <input type="date" name="end_date" required
-                                       class="w-full pr-10 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                <input type="text" id="end_date_jalali" name="end_date_jalali" required
+                                       class="w-full pr-10 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                       placeholder="انتخاب تاریخ پایان">
                             </div>
                         </div>
                         <div>
@@ -197,6 +203,9 @@
 @endsection
 
 @push('scripts')
+    <script src="https://unpkg.com/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://unpkg.com/persian-date@latest/dist/persian-date.min.js"></script>
+    <script src="https://unpkg.com/persian-datepicker@latest/dist/js/persian-datepicker.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const modal = document.getElementById('new-leave-modal');
@@ -204,6 +213,29 @@
                 if (event.target === modal) {
                     modal.classList.add('hidden');
                 }
+            });
+
+            $("#start_date_jalali").persianDatepicker({
+                format: 'YYYY/MM/DD',
+                minDate: new persianDate(),
+                autoClose: true,
+                initialValue: true,
+                onSelect: function(unix) {
+                    const pd = new persianDate(unix);
+                    $("#end_date_jalali").persianDatepicker({
+                        format: 'YYYY/MM/DD',
+                        minDate: pd,
+                        autoClose: true,
+                        initialValue: true
+                    });
+                }
+            });
+
+            $("#end_date_jalali").persianDatepicker({
+                format: 'YYYY/MM/DD',
+                minDate: new persianDate(),
+                autoClose: true,
+                initialValue: true
             });
         });
     </script>
