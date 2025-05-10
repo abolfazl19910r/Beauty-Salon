@@ -64,15 +64,29 @@ class AdminSpecialistLeaveController extends Controller
         }
     }
 
-    public function update(Request $request, Specialist $specialist, SpecialistLeave $leave)
+    public function update(Request $request, $specialistId, $leaveId)
     {
-        $validated = $request->validate([
-            'status' => 'required|in:approved,rejected'
-        ]);
+        try {
+            $specialist = Specialist::findOrFail($specialistId);
+            $leave = SpecialistLeave::findOrFail($leaveId);
 
-        $leave->update($validated);
+            $validated = $request->validate([
+                'status' => 'required|in:approved,rejected'
+            ]);
 
-        return redirect()->route('admin.specialists.leaves.index', ['specialist' => $specialist->id])
-            ->with('success', 'وضعیت مرخصی با موفقیت بروزرسانی شد.');
+            $leave->update($validated);
+
+            $currentUrl = $request->url();
+            if (str_contains($currentUrl, '/admin/leaves/')) {
+                $redirectUrl = '/admin/leaves/' . $specialist->id;
+            } else {
+                $redirectUrl = '/admin/specialists/' . $specialist->id . '/leaves';
+            }
+
+            return redirect($redirectUrl)
+                ->with('success', 'وضعیت مرخصی با موفقیت بروزرسانی شد.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'خطا در بروزرسانی اطلاعات: ' . $e->getMessage());
+        }
     }
 }
