@@ -23,18 +23,45 @@ class AdminSpecialistLeaveController extends Controller
         }
     }
 
-    public function store(Request $request, Specialist $specialist)
+    public function store(Request $request, $specialistId)
     {
-        $validated = $request->validate([
-            'start_date' => 'required|date|after_or_equal:today',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'reason' => 'nullable|string|max:255'
-        ]);
+        try {
+            $specialist = Specialist::findOrFail($specialistId);
 
-        $specialist->leaves()->create($validated);
+            $validated = $request->validate([
+                'start_date_jalali' => 'required|string',
+                'end_date_jalali' => 'required|string',
+                'reason' => 'nullable|string|max:255'
+            ]);
 
-        return redirect()->route('admin.specialists.leaves.index', ['specialist' => $specialist->id])
-            ->with('success', 'مرخصی با موفقیت ثبت شد.');
+            $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+            $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
+            $startDateEn = str_replace($persianDigits, $englishDigits, $validated['start_date_jalali']);
+            $endDateEn = str_replace($persianDigits, $englishDigits, $validated['end_date_jalali']);
+
+            $startDate = Jalalian::fromFormat('Y/m/d', $startDateEn)->toCarbon()->toDateString();
+            $endDate = Jalalian::fromFormat('Y/m/d', $endDateEn)->toCarbon()->toDateString();
+
+            $specialist->leaves()->create([
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'reason' => $validated['reason'] ?? null,
+                'status' => 'pending'
+            ]);
+
+            $currentUrl = $request->url();
+            if (str_contains($currentUrl, '/admin/leaves/')) {
+                $redirectUrl = '/admin/leaves/' . $specialist->id;
+            } else {
+                $redirectUrl = '/admin/specialists/' . $specialist->id . '/leaves';
+            }
+
+            return redirect($redirectUrl)
+                ->with('success', 'مرخصی با موفقیت ثبت شد.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'خطا در ذخیره اطلاعات: ' . $e->getMessage());
+        }
     }
 
     public function update(Request $request, Specialist $specialist, SpecialistLeave $leave)
