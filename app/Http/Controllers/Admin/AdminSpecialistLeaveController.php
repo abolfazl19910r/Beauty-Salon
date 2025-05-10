@@ -6,13 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Models\Specialist;
 use App\Models\SpecialistLeave;
 use Illuminate\Http\Request;
+use Morilog\Jalali\Jalalian;
 
 class AdminSpecialistLeaveController extends Controller
 {
-    public function index(Specialist $specialist)
+    public function index($specialistId)
     {
-        $leaves = $specialist->leaves()->latest()->paginate(10);
-        return view('admin.specialists.leaves.index', compact('specialist', 'leaves'));
+        try {
+            $specialist = Specialist::findOrFail($specialistId);
+            $leaves = $specialist->leaves()->latest()->paginate(10);
+
+            return view('admin.specialists.leaves.index', compact('specialist', 'leaves'));
+        } catch (\Exception $e) {
+            return redirect('/admin/specialists')
+                ->with('error', 'متخصص مورد نظر یافت نشد.');
+        }
     }
 
     public function store(Request $request, Specialist $specialist)
