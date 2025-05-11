@@ -90,13 +90,14 @@ class AdminCategoryController extends Controller
         return view('admin.categories.show', compact('category', 'childrenCount', 'servicesCount'));
     }
 
-    public function edit(Category $category)
+    public function edit($id)
     {
-        $parentCategories = Category::parents()
-            ->where('id', '!=', $category->id)
+        $category = Category::findOrFail($id);
+
+        $categories = Category::where('id', '!=', $category->id)
             ->get(['id', 'name']);
 
-        return view('admin.categories.edit', compact('category', 'parentCategories'));
+        return view('admin.categories.edit', compact('category', 'categories'));
     }
 
     public function update(Request $request, Category $category)
