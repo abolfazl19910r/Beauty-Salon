@@ -44,16 +44,19 @@ class AdminBookingController extends Controller
 
         if ($request->has('date')) {
             $date = $request->date;
-            $query->whereDate('booking_time', $date);
         } else {
             $date = today();
         }
 
+        $query->whereDate('booking_time', $date);
+
         $bookings = $query->paginate(15);
 
         $totalBookings = Booking::whereDate('booking_time', $date)->count();
+
         $confirmedBookings = Booking::whereDate('booking_time', $date)
             ->where('status', 'confirmed')->count();
+
         $cancelledBookings = Booking::whereDate('booking_time', $date)
             ->where('status', 'cancelled')->count();
 
