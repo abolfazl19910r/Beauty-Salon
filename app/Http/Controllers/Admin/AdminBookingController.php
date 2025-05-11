@@ -115,54 +115,93 @@ class AdminBookingController extends Controller
     {
         $booking = Booking::findOrFail($booking_id);
 
-        if ($request->has('booking_time')) {
-            $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-            $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-            $request->merge([
-                'booking_time' => str_replace($persianDigits, $englishDigits, $request->booking_time)
+        if ($request->has('status') && !$request->has('user_id')) {
+            $oldStatus = $booking->status;
+
+            $validated = $request->validate([
+                'status' => 'required|in:pending,confirmed,cancelled',
             ]);
-        }
 
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'service_id' => 'required|exists:beauty_services,id',
-            'specialist_id' => 'required|exists:specialists,id',
-            'booking_time' => 'required|date',
-            'status' => 'required|in:pending,confirmed,cancelled',
-            'payment_status' => 'required|in:paid,unpaid',
-            'notes' => 'nullable|string'
-        ]);
+            try {
+                $booking->update(['status' => $validated['status']]);
 
-        $oldStatus = $booking->status;
+                if ($booking->status === 'cancelled' &&
+                    $oldStatus !== 'cancelled' &&
+                    $booking->payment_status === 'paid' &&
+                    !$booking->refunded_at) {
 
-        try {
-            $booking->update($validated);
+                    $refundResult = $this->refundService->processRefund($booking);
 
-            if ($booking->status === 'cancelled' &&
-                $oldStatus !== 'cancelled' &&
-                $booking->payment_status === 'paid' &&
-                !$booking->refunded_at) {
-
-                $refundResult = $this->refundService->processRefund($booking);
-
-                if (!$refundResult) {
-                    return redirect()->route('admin.bookings.show', ['booking' => $booking->id])
-                        ->with('warning', 'نوبت لغو شد اما در برگشت وجه مشکلی پیش آمد. تیکت پشتیبانی ایجاد شد.');
+                    if (!$refundResult) {
+                        return redirect()->route('admin.bookings.index')
+                            ->with('warning', 'نوبت لغو شد اما در برگشت وجه مشکلی پیش آمد. تیکت پشتیبانی ایجاد شد.');
+                    }
                 }
+
+                $successMessage = match($booking->status) {
+                    'confirmed' => 'نوبت با موفقیت تایید شد.',
+                    'cancelled' => 'نوبت با موفقیت لغو شد.',
+                    default => 'وضعیت نوبت با موفقیت بروزرسانی شد.'
+                };
+
+                return redirect()->route('admin.bookings.index')
+                    ->with('success', $successMessage);
+
+            } catch (\Exception $e) {
+                return redirect()->route('admin.bookings.index')
+                    ->with('error', 'خطایی در بروزرسانی وضعیت نوبت رخ داد. لطفا مجددا تلاش کنید.');
+            }
+        }
+        else {
+            if ($request->has('booking_time')) {
+                $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+                $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+                $request->merge([
+                    'booking_time' => str_replace($persianDigits, $englishDigits, $request->booking_time)
+                ]);
             }
 
-            $successMessage = match($booking->status) {
-                'confirmed' => 'نوبت با موفقیت تایید شد.',
-                'cancelled' => 'نوبت با موفقیت لغو شد.',
-                default => 'وضعیت نوبت با موفقیت بروزرسانی شد.'
-            };
+            $validated = $request->validate([
+                'user_id' => 'required|exists:users,id',
+                'service_id' => 'required|exists:beauty_services,id',
+                'specialist_id' => 'required|exists:specialists,id',
+                'booking_time' => 'required|date',
+                'status' => 'required|in:pending,confirmed,cancelled',
+                'payment_status' => 'required|in:paid,unpaid',
+                'notes' => 'nullable|string'
+            ]);
 
-            return redirect()->route('admin.bookings.show', ['booking' => $booking->id])
-                ->with('success', $successMessage);
+            $oldStatus = $booking->status;
 
-        } catch (\Exception $e) {
-            return redirect()->route('admin.bookings.show', ['booking' => $booking->id])
-                ->with('error', 'خطایی در بروزرسانی وضعیت نوبت رخ داد. لطفا مجددا تلاش کنید.');
+            try {
+                $booking->update($validated);
+
+                if ($booking->status === 'cancelled' &&
+                    $oldStatus !== 'cancelled' &&
+                    $booking->payment_status === 'paid' &&
+                    !$booking->refunded_at) {
+
+                    $refundResult = $this->refundService->processRefund($booking);
+
+                    if (!$refundResult) {
+                        return redirect()->route('admin.bookings.show', ['booking' => $booking->id])
+                            ->with('warning', 'نوبت لغو شد اما در برگشت وجه مشکلی پیش آمد. تیکت پشتیبانی ایجاد شد.');
+                    }
+                }
+
+                $successMessage = match($booking->status) {
+                    'confirmed' => 'نوبت با موفقیت تایید شد.',
+                    'cancelled' => 'نوبت با موفقیت لغو شد.',
+                    default => 'وضعیت نوبت با موفقیت بروزرسانی شد.'
+                };
+
+                return redirect()->route('admin.bookings.show', ['booking' => $booking->id])
+                    ->with('success', $successMessage);
+
+            } catch (\Exception $e) {
+                return redirect()->route('admin.bookings.show', ['booking' => $booking->id])
+                    ->with('error', 'خطایی در بروزرسانی وضعیت نوبت رخ داد. لطفا مجددا تلاش کنید.');
+            }
         }
     }
 
