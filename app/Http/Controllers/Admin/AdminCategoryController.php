@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Services\CategoryService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class AdminCategoryController extends Controller
@@ -56,10 +56,16 @@ class AdminCategoryController extends Controller
             'parent_id' => 'nullable|exists:categories,id',
             'is_active' => 'boolean',
             'icon' => 'nullable|string|max:50',
-            'order' => 'nullable|integer'
+            'order' => 'nullable|integer',
+            'image' => 'nullable|image|max:2048'
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('categories', 'public');
+            $validated['image'] = $path;
+        }
 
         try {
             $category = $this->categoryService->create($validated);
@@ -67,11 +73,6 @@ class AdminCategoryController extends Controller
             return redirect()->route('admin.categories.index')
                 ->with('success', 'دسته‌بندی با موفقیت ایجاد شد.');
         } catch (\Exception $e) {
-            Log::error('خطا در ایجاد دسته‌بندی', [
-                'error' => $e->getMessage(),
-                'data' => $validated
-            ]);
-
             return redirect()->back()->withInput()
                 ->with('error', 'خطا در ایجاد دسته‌بندی. لطفا مجددا تلاش کنید.');
         }
