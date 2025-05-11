@@ -78,9 +78,12 @@ class AdminCategoryController extends Controller
         }
     }
 
-    public function show(Category $category)
+    public function show($id)
     {
+        $category = Category::findOrFail($id);
+
         $category->load(['parent', 'children']);
+
         $childrenCount = $category->children->count();
         $servicesCount = $category->services->count();
 
