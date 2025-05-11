@@ -149,8 +149,10 @@ class AdminCategoryController extends Controller
         }
     }
 
-    public function toggleStatus(Category $category)
+    public function toggleStatus($id)
     {
+        $category = Category::findOrFail($id);
+
         try {
             $this->categoryService->toggleStatus($category);
             $status = $category->fresh()->is_active ? 'فعال' : 'غیرفعال';
@@ -158,11 +160,6 @@ class AdminCategoryController extends Controller
             return redirect()->route('admin.categories.index')
                 ->with('success', "دسته‌بندی با موفقیت {$status} شد.");
         } catch (\Exception $e) {
-            Log::error('خطا در تغییر وضعیت دسته‌بندی', [
-                'error' => $e->getMessage(),
-                'category_id' => $category->id
-            ]);
-
             return redirect()->back()
                 ->with('error', 'خطا در تغییر وضعیت دسته‌بندی. لطفا مجددا تلاش کنید.');
         }
