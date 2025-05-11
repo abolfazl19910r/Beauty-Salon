@@ -100,19 +100,37 @@ class AdminCategoryController extends Controller
         return view('admin.categories.edit', compact('category', 'categories'));
     }
 
-    public function update(Request $request, Category $category)
+    public function update(Request $request, $id)
     {
+        $category = Category::findOrFail($id);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
             'description' => 'nullable|string',
             'parent_id' => 'nullable|exists:categories,id',
             'is_active' => 'boolean',
             'icon' => 'nullable|string|max:50',
-            'order' => 'nullable|integer'
+            'order' => 'nullable|integer',
+            'image' => 'nullable|image|max:2048',
+            'remove_image' => 'nullable|boolean'
         ]);
 
         if ($category->name !== $validated['name']) {
             $validated['slug'] = Str::slug($validated['name']);
+        }
+
+        if ($request->has('remove_image') && $request->remove_image) {
+            if ($category->image) {
+                Storage::disk('public')->delete($category->image);
+                $validated['image'] = null;
+            }
+        }
+        elseif ($request->hasFile('image')) {
+            if ($category->image) {
+                Storage::disk('public')->delete($category->image);
+            }
+            $path = $request->file('image')->store('categories', 'public');
+            $validated['image'] = $path;
         }
 
         if (isset($validated['parent_id']) && $validated['parent_id'] == $category->id) {
@@ -126,12 +144,6 @@ class AdminCategoryController extends Controller
             return redirect()->route('admin.categories.index')
                 ->with('success', 'دسته‌بندی با موفقیت به‌روزرسانی شد.');
         } catch (\Exception $e) {
-            Log::error('خطا در به‌روزرسانی دسته‌بندی', [
-                'error' => $e->getMessage(),
-                'category_id' => $category->id,
-                'data' => $validated
-            ]);
-
             return redirect()->back()->withInput()
                 ->with('error', 'خطا در به‌روزرسانی دسته‌بندی. لطفا مجددا تلاش کنید.');
         }
