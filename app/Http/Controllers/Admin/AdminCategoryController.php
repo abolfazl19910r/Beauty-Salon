@@ -165,8 +165,10 @@ class AdminCategoryController extends Controller
         }
     }
 
-    public function destroy(Category $category)
+    public function destroy($id)
     {
+        $category = Category::findOrFail($id);
+
         try {
             if ($category->children()->count() > 0 || $category->services()->count() > 0) {
                 return redirect()->route('admin.categories.index')
@@ -178,11 +180,6 @@ class AdminCategoryController extends Controller
             return redirect()->route('admin.categories.index')
                 ->with('success', 'دسته‌بندی با موفقیت حذف شد.');
         } catch (\Exception $e) {
-            Log::error('خطا در حذف دسته‌بندی', [
-                'error' => $e->getMessage(),
-                'category_id' => $category->id
-            ]);
-
             return redirect()->back()
                 ->with('error', 'خطا در حذف دسته‌بندی. لطفا مجددا تلاش کنید.');
         }
