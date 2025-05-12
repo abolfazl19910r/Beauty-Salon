@@ -70,16 +70,14 @@ class AdminLoyaltyController extends Controller
         return view('admin.loyalty.show', compact('reward'));
     }
 
-    public function edit($reward)
+    public function edit(Reward $reward)
     {
         try {
-            $rewardItem = Reward::findOrFail($reward);
-
             return view('admin.loyalty.edit', [
-                'reward' => $rewardItem
+                'reward' => $reward
             ]);
         } catch (\Exception $e) {
-            return redirect()->route('loyalty.index')
+            return redirect()->route('admin.loyalty.index')
                 ->with('error', 'خطا در بارگذاری اطلاعات پاداش: ' . $e->getMessage());
         }
     }
