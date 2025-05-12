@@ -115,12 +115,22 @@ class AdminLoyaltyController extends Controller
         }
     }
 
-    public function destroy(Loyalty $loyalty)
+    public function destroy(Reward $reward)
     {
-        $loyalty->delete();
+        try {
+            if ($reward->used_count > 0) {
+                return redirect()->route('admin.loyalty.index')
+                    ->with('error', 'پاداش‌هایی که استفاده شده‌اند قابل حذف نیستند');
+            }
 
-        return redirect()->route('admin.loyalty.index')
-            ->with('success', 'برنامه وفاداری با موفقیت حذف شد.');
+            $reward->delete();
+
+            return redirect()->route('admin.loyalty.index')
+                ->with('success', 'پاداش با موفقیت حذف شد.');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.loyalty.index')
+                ->with('error', 'خطا در حذف پاداش: ' . $e->getMessage());
+        }
     }
 
     public function redeemReward(Request $request, Reward $reward)
