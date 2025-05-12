@@ -82,20 +82,37 @@ class AdminLoyaltyController extends Controller
         }
     }
 
-    public function update(Request $request, Loyalty $loyalty)
+    public function update(Request $request, Reward $reward)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'points_required' => 'required|integer|min:1',
-            'discount_percentage' => 'required|numeric|min:0|max:100',
-            'is_active' => 'boolean',
-        ]);
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'required_points' => 'required|integer|min:1',
+                'discount_type' => 'required|in:fixed,percentage',
+                'discount_amount' => [
+                    'required',
+                    'numeric',
+                    'min:1',
+                    function($attribute, $value, $fail) use ($request) {
+                        if ($request->discount_type === 'percentage' && $value > 100) {
+                            $fail('درصد تخفیف نمی‌تواند بیشتر از 100 باشد.');
+                        }
+                    }
+                ],
+                'max_uses' => 'required|integer|min:' . $reward->used_count,
+                'is_active' => 'boolean'
+            ]);
 
-        $loyalty->update($validated);
+            $reward->update($validated);
 
-        return redirect()->route('admin.loyalty.index')
-            ->with('success', 'برنامه وفاداری با موفقیت به‌روزرسانی شد.');
+            return redirect()->route('admin.loyalty.index')
+                ->with('success', 'پاداش با موفقیت به‌روزرسانی شد.');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.loyalty.edit', $reward)
+                ->with('error', 'خطا در به‌روزرسانی پاداش: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     public function destroy(Loyalty $loyalty)
