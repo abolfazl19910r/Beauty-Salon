@@ -36,6 +36,29 @@
                             <label for="required_points" class="block text-sm font-medium text-gray-700">امتیاز مورد نیاز</label>
                             <input type="number" name="required_points" id="required_points" value="{{ $reward->required_points }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                         </div>
+                        <div>
+                            <label for="description" class="block text-sm font-medium text-gray-700">توضیحات</label>
+                            <textarea name="description" id="description" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">{{ $reward->description }}</textarea>
+                        </div>
+                        <div>
+                            <label for="discount_type" class="block text-sm font-medium text-gray-700">نوع تخفیف</label>
+                            <select name="discount_type" id="discount_type" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <option value="fixed" {{ $reward->discount_type === 'fixed' ? 'selected' : '' }}>مبلغ ثابت</option>
+                                <option value="percentage" {{ $reward->discount_type === 'percentage' ? 'selected' : '' }}>درصدی</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="discount_amount" class="block text-sm font-medium text-gray-700">مقدار تخفیف</label>
+                            <input type="number" name="discount_amount" id="discount_amount" value="{{ $reward->discount_amount }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="max_uses" class="block text-sm font-medium text-gray-700">حداکثر استفاده</label>
+                            <input type="number" name="max_uses" id="max_uses" value="{{ $reward->max_uses }}" min="{{ $reward->used_count }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div class="flex items-center mt-3">
+                            <input type="checkbox" name="is_active" id="is_active" {{ $reward->is_active ? 'checked' : '' }} class="rounded border-gray-300 text-blue-500 focus:ring-blue-500">
+                            <label for="is_active" class="mr-2 text-sm text-gray-700">پاداش فعال باشد</label>
+                        </div>
                     </div>
                     <div class="mt-6">
                         <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
@@ -47,3 +70,34 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const discountTypeSelect = document.getElementById('discount_type');
+            const discountAmountInput = document.getElementById('discount_amount');
+
+            function updateDiscountTypeHint() {
+                const hint = document.getElementById('discount-type-hint');
+                if (hint) hint.remove();
+
+                const newHint = document.createElement('p');
+                newHint.id = 'discount-type-hint';
+                newHint.className = 'text-xs text-gray-500 mt-1';
+
+                if (discountTypeSelect.value === 'percentage') {
+                    newHint.innerText = 'مقدار باید بین 1 تا 100 باشد';
+                } else {
+                    newHint.innerText = 'مقدار به تومان وارد شود';
+                }
+
+                discountAmountInput.parentNode.appendChild(newHint);
+            }
+
+            if (discountTypeSelect && discountAmountInput) {
+                updateDiscountTypeHint();
+                discountTypeSelect.addEventListener('change', updateDiscountTypeHint);
+            }
+        });
+    </script>
+@endpush
