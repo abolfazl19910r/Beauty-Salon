@@ -35,18 +35,34 @@ class AdminLoyaltyController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'points_required' => 'required|integer|min:1',
-            'discount_percentage' => 'required|numeric|min:0|max:100',
-            'is_active' => 'boolean',
-        ]);
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'required_points' => 'required|integer|min:1',
+                'discount_type' => 'required|in:fixed,percentage',
+                'discount_amount' => [
+                    'required',
+                    'numeric',
+                    'min:1',
+                    function($attribute, $value, $fail) use ($request) {
+                        if ($request->discount_type === 'percentage' && $value > 100) {
+                            $fail('درصد تخفیف نمی‌تواند بیشتر از 100 باشد.');
+                        }
+                    }
+                ],
+                'max_uses' => 'required|integer|min:1',
+                'is_active' => 'boolean'
+            ]);
 
-        Loyalty::create($validated);
+            $reward = Reward::create($validated);
 
-        return redirect()->route('admin.loyalty.index')
-            ->with('success', 'برنامه وفاداری با موفقیت ایجاد شد.');
+            return redirect()->route('admin.loyalty.index')
+                ->with('success', 'پاداش با موفقیت ایجاد شد');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.loyalty.index')
+                ->with('error', 'خطا در ایجاد پاداش: ' . $e->getMessage());
+        }
     }
 
     public function show(Reward $reward)
