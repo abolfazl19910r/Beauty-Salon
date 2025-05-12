@@ -117,12 +117,3 @@
         </div>
     </div>
 @endsection
-
-@push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('صفحه نمایش پاداش بارگذاری شد');
-            console.log('Reward Data:', @json($reward));
-        });
-    </script>
-@endpush
