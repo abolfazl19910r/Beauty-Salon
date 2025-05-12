@@ -95,7 +95,7 @@
                         'points' => route('admin.loyalty.points'),
                         'rewards' => route('admin.loyalty.rewards'),
                         'history' => route('admin.loyalty.history'),
-                        'redeemReward' => route('admin.loyalty.redeem-reward', ['reward' => ':id']),
+                        'redeemReward' => url('admin/loyalty/rewards/:id/redeem'),
                         'export' => route('admin.loyalty.export')
                     ]) }}">
                     <div class="flex justify-center items-center min-h-[400px]">
@@ -115,52 +115,25 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('صفحه مدیریت امتیازات بارگذاری شد');
-
-            console.log('Routes:', {
-                points: '{{ route("admin.loyalty.points") }}',
-                rewards: '{{ route("admin.loyalty.rewards") }}',
-                history: '{{ route("admin.loyalty.history") }}',
-                redeemReward: '{{ route("admin.loyalty.redeem-reward", ["reward" => ":id"]) }}',
-                export: '{{ route("admin.loyalty.export") }}'
-            });
-
-            console.log('Stats:', {
-                totalActivePoints: {{ $totalActivePoints }},
-                totalPointUsers: {{ $totalPointUsers }},
-                averageUserPoints: {{ $averageUserPoints }},
-                totalRedeemedRewards: {{ $totalRedeemedRewards }}
-            });
-
-            const originalFetch = window.fetch;
-            window.fetch = function(url, options) {
-                console.log('درخواست fetch به آدرس:', url, 'با اطلاعات:', options);
-                return originalFetch(url, options)
-                    .then(response => {
-                        console.log('پاسخ دریافت شد:', response.status);
-                        return response;
-                    })
-                    .catch(error => {
-                        console.error('خطا در درخواست fetch:', error);
-                        throw error;
-                    });
+            window.initialData = {
+                stats: {
+                    totalActivePoints: {{ $totalActivePoints }},
+                    totalPointUsers: {{ $totalPointUsers }},
+                    averageUserPoints: {{ $averageUserPoints }},
+                    totalRedeemedRewards: {{ $totalRedeemedRewards }}
+                },
+                routes: {
+                    points: '{{ route("admin.loyalty.points") }}',
+                    rewards: '{{ route("admin.loyalty.rewards") }}',
+                    history: '{{ route("admin.loyalty.history") }}',
+                    redeemReward: '{{ url("admin/loyalty/rewards/:id/redeem") }}',
+                    export: '{{ route("admin.loyalty.export") }}',
+                    store: '{{ route("admin.loyalty.store") }}',
+                    edit: '{{ url("admin/loyalty/:id/edit") }}',
+                    destroy: '{{ url("admin/loyalty/:id") }}'
+                }
             };
         });
-        window.initialData = {
-            stats: {
-                totalActivePoints: {{ $totalActivePoints }},
-                totalPointUsers: {{ $totalPointUsers }},
-                averageUserPoints: {{ $averageUserPoints }},
-                totalRedeemedRewards: {{ $totalRedeemedRewards }}
-            },
-            routes: {
-                points: '{{ route('admin.loyalty.points') }}',
-                rewards: '{{ route('admin.loyalty.rewards') }}',
-                history: '{{ route('admin.loyalty.history') }}',
-                redeemReward: '{{ route('admin.loyalty.redeem-reward', ['reward' => ':id']) }}',
-                export: '{{ route('admin.loyalty.export') }}'
-            }
-        };
     </script>
     @viteReactRefresh
     @vite(['resources/js/admin.jsx'])
