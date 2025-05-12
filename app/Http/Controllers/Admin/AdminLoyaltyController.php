@@ -174,8 +174,6 @@ class AdminLoyaltyController extends Controller
 
             return response()->json($rewards);
         } catch (\Exception $e) {
-            Log::error('خطا در دریافت پاداش‌ها: ' . $e->getMessage());
-
             return response()->json([
                 'message' => 'خطا در دریافت لیست پاداش‌ها',
                 'error' => $e->getMessage()
@@ -213,8 +211,6 @@ class AdminLoyaltyController extends Controller
     public function storeReward(Request $request)
     {
         try {
-            Log::info('Creating new reward', $request->all());
-
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'nullable|string',
@@ -236,19 +232,12 @@ class AdminLoyaltyController extends Controller
 
             $reward = Reward::create($validated);
 
-            Log::info('Reward created successfully', ['id' => $reward->id]);
-
             return response()->json([
                 'success' => true,
                 'message' => 'پاداش با موفقیت ایجاد شد',
                 'data' => $reward
             ], 201);
         } catch (\Exception $e) {
-            Log::error('Error creating reward', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
             return response()->json([
                 'success' => false,
                 'message' => 'خطا در ایجاد پاداش: ' . $e->getMessage()
