@@ -412,7 +412,7 @@ class AdminLoyaltyController extends Controller
             ]);
 
             $currentPoints = LoyaltyPoint::where('user_id', $user->id)
-                ->selectRaw('SUM(points) as total')
+                ->selectRaw('SUM(CASE WHEN type = "earned" THEN points ELSE -points END) as total')
                 ->first()
                 ->total;
 
@@ -425,7 +425,7 @@ class AdminLoyaltyController extends Controller
 
             $point = LoyaltyPoint::create([
                 'user_id' => $user->id,
-                'points' => -$validated['points'],
+                'points' => $validated['points'],
                 'type' => 'spent',
                 'description' => $validated['description']
             ]);
