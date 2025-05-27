@@ -7,7 +7,6 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "ext-xlswriter": "*",
         "barryvdh/laravel-dompdf": "^3.1",
         "hekmatinasser/verta": "^8.5",
         "intervention/image": "^3.11",
@@ -17,6 +16,7 @@
         "maatwebsite/excel": "^3.1",
         "morilog/jalali": "^3.4",
         "mpdf/mpdf": "^8.2",
+        "phpoffice/phpspreadsheet": "^1.29",
         "spatie/laravel-activitylog": "^4.9"
     },
     "require-dev": {
