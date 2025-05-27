@@ -62,22 +62,29 @@ class SpecialistSeeder extends Seeder
             ]);
 
             $usedDates = [];
-
             for ($i = 0; $i < 2; $i++) {
+                $attempts = 0;
                 do {
-                    $randomDate = now()->addDays(rand(10, 40))->format('Y-m-d');
+                    $randomDate = now()->addDays(rand(10, 60))->format('Y-m-d');
+                    $attempts++;
+
+                    if ($attempts > 50) {
+                        break;
+                    }
                 } while (in_array($randomDate, $usedDates) ||
                 Holiday::where('specialist_id', $specialist->id)
                     ->where('date', $randomDate)
                     ->exists());
 
-                $usedDates[] = $randomDate;
+                if (!in_array($randomDate, $usedDates) && $attempts <= 50) {
+                    $usedDates[] = $randomDate;
 
-                Holiday::create([
-                    'specialist_id' => $specialist->id,
-                    'date' => $randomDate,
-                    'description' => 'تعطیلی شخصی',
-                ]);
+                    Holiday::create([
+                        'specialist_id' => $specialist->id,
+                        'date' => $randomDate,
+                        'description' => 'تعطیلی شخصی',
+                    ]);
+                }
             }
 
             foreach ($data['services'] as $serviceName) {
@@ -88,10 +95,13 @@ class SpecialistSeeder extends Seeder
             }
 
             if (rand(0, 1)) {
+                $startDate = now()->addDays(rand(15, 30));
+                $endDate = $startDate->copy()->addDays(rand(1, 10));
+
                 Leave::create([
                     'specialist_id' => $specialist->id,
-                    'start_date' => now()->addDays(rand(15, 30)),
-                    'end_date' => now()->addDays(rand(31, 45)),
+                    'start_date' => $startDate,
+                    'end_date' => $endDate,
                     'status' => rand(0, 1) ? 'pending' : 'approved',
                     'reason' => 'مرخصی شخصی',
                 ]);
@@ -112,9 +122,33 @@ class SpecialistSeeder extends Seeder
                 $services = BeautyService::inRandomOrder()->limit(rand(2, 4))->get();
                 $specialist->services()->attach($services->pluck('id'));
 
-                Holiday::factory(rand(1, 3))->create([
-                    'specialist_id' => $specialist->id,
-                ]);
+                $generatedDates = [];
+                $holidayCount = rand(1, 3);
+
+                for ($i = 0; $i < $holidayCount; $i++) {
+                    $attempts = 0;
+                    do {
+                        $randomDate = now()->addDays(rand(10, 60))->format('Y-m-d');
+                        $attempts++;
+
+                        if ($attempts > 50) {
+                            break;
+                        }
+                    } while (in_array($randomDate, $generatedDates) ||
+                    Holiday::where('specialist_id', $specialist->id)
+                        ->where('date', $randomDate)
+                        ->exists());
+
+                    if (!in_array($randomDate, $generatedDates) && $attempts <= 50) {
+                        $generatedDates[] = $randomDate;
+
+                        Holiday::create([
+                            'specialist_id' => $specialist->id,
+                            'date' => $randomDate,
+                            'description' => fake()->optional()->sentence() ?: 'تعطیلی',
+                        ]);
+                    }
+                }
             });
     }
 }
