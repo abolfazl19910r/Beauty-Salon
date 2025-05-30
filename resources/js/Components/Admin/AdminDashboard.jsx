@@ -59,7 +59,6 @@ const AdminDashboard = () => {
             setLoading(true);
             console.log('Fetching dashboard data...');
 
-            // در ابتدا به صورت مستقیم استفاده می‌کنیم تا مطمئن شویم API کار می‌کند
             const response = await fetch('/api/admin/dashboard');
 
             if (!response.ok) {
