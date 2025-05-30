@@ -66,18 +66,94 @@ class AdminBlogController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'excerpt' => 'nullable|string',
-            'category_id' => 'required|exists:blog_categories,id',
-            'image' => 'nullable|image|max:2048',
-            'is_published' => 'boolean',
-            'published_at' => 'nullable|date'
-        ]);
+        DB::beginTransaction();
 
-        if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('blog', 'public');
+        try {
+            if (!Auth::check()) {
+                throw new \Exception('کاربر احراز هویت نشده است');
+            }
+
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'content' => 'required|string',
+                'excerpt' => 'nullable|string|max:500',
+                'category_id' => 'required|exists:blog_categories,id',
+                'image' => 'nullable|image|max:2048',
+                'is_published' => 'nullable',
+                'published_at_jalali' => [
+                    'nullable',
+                    'string',
+                    'regex:/^\d{4}\/\d{2}\/\d{2}\s\d{2}:\d{2}$/',
+                    function ($attribute, $value, $fail) {
+                        try {
+                            Jalalian::fromFormat('Y/m/d H:i', $value);
+                        } catch (\Exception $e) {
+                            $fail('فرمت تاریخ نامعتبر است. فرمت صحیح: YYYY/MM/DD HH:MM');
+                        }
+                    }
+                ]
+            ]);
+
+            $validated['is_published'] = $this->convertToBoolean($request->input('is_published'));
+
+            if (!empty($validated['published_at_jalali'])) {
+                try {
+                    $jalaliDate = Jalalian::fromFormat('Y/m/d H:i', $validated['published_at_jalali']);
+                    $validated['published_at'] = $jalaliDate->toCarbon();
+                } catch (\Exception $e) {
+                    return back()->withInput()->with('error', 'فرمت تاریخ نامعتبر است');
+                }
+            } elseif ($validated['is_published']) {
+                $validated['published_at'] = now();
+            }
+
+            if ($request->hasFile('image')) {
+                try {
+                    $imagePath = $request->file('image')->store('blog', 'public');
+                    $validated['image'] = $imagePath;
+                } catch (\Exception $imageException) {
+                    return back()->withInput()->with('error', 'خطا در آپلود تصویر');
+                }
+            }
+
+            $validated['author_id'] = Auth::id();
+            $validated['slug'] = Str::slug($validated['title']);
+
+            if (isset($validated['excerpt']) && strlen($validated['excerpt']) > 500) {
+                $validated['excerpt'] = Str::limit($validated['excerpt'], 500);
+            }
+
+            $category = BlogCategory::findOrFail($validated['category_id']);
+
+            $post = BlogPost::create($validated);
+
+            DB::commit();
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'مقاله با موفقیت ایجاد شد.',
+                    'data' => $post->load('category')
+                ], 201);
+            }
+
+            return redirect()->route('admin.blog.index')
+                ->with('success', 'مقاله با موفقیت ایجاد شد.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'خطا در ایجاد مقاله: ' . $e->getMessage(),
+                    'error_details' => config('app.debug') ? $e->getTraceAsString() : null
+                ], 500);
+            }
+
+            return back()->with('error', 'خطا در ایجاد مقاله: ' . $e->getMessage());
+        }
+    }
         }
 
         $validated['author_id'] = Auth::id();
