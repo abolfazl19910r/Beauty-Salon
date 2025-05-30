@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use Exception;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
+use Morilog\Jalali\Jalalian;
 
 class BlogPost extends Model
 {
@@ -14,6 +17,7 @@ class BlogPost extends Model
         'excerpt',
         'image',
         'category_id',
+        'author_id',
         'is_published',
         'published_at'
     ];
@@ -74,7 +78,6 @@ class BlogPost extends Model
 
     public function getImageUrlAttribute(): ?string
     {
-        return $this->image ? asset('storage/' . $this->image) : null;
         return $this->image
             ? asset('storage/' . $this->image)
             : null;
