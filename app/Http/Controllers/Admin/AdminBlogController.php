@@ -188,8 +188,13 @@ class AdminBlogController extends Controller
 
     public function edit(BlogPost $post)
     {
-        $categories = BlogCategory::all();
-        return view('admin.blog.edit', compact('post', 'categories'));
+        try {
+            $categories = BlogCategory::all();
+
+            return view('admin.blog.edit', compact('post', 'categories'));
+        } catch (\Exception $e) {
+            return back()->with('error', 'خطا در بارگذاری صفحه ویرایش مقاله');
+        }
     }
 
     public function update(Request $request, BlogPost $post)
