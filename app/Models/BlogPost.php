@@ -40,9 +40,14 @@ class BlogPost extends Model
     protected static function boot()
     {
         parent::boot();
+
         static::creating(function ($post) {
             if (!$post->slug) {
                 $post->slug = Str::slug($post->title);
+            }
+
+            if (!$post->author_id) {
+                $post->author_id = auth()->id();
             }
         });
     }
