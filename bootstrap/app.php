@@ -12,16 +12,26 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->group('web', [
+        $middleware->web(append: [
             \Illuminate\Session\Middleware\StartSession::class,
         ]);
-        $middleware->group('admin', [
-            \App\Http\Middleware\AdminMiddleware::class,
+
+        $middleware->api(prepend: [
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
 
         $middleware->alias([
             'check.booking.ownership' => \App\Http\Middleware\CheckBookingOwnership::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'auth' => \App\Http\Middleware\Authenticate::class,
+            'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+            'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+            'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+        ]);
+
+        $middleware->group('admin', [
+            'auth',
+            'admin',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
