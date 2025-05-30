@@ -120,20 +120,41 @@ class AdminBlogCategoryController extends Controller
 
     public function update(Request $request, BlogCategory $category)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:blog_categories,name,' . $category->id,
-            'description' => 'nullable|string',
-            'order' => 'nullable|integer'
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255|unique:blog_categories,name,' . $category->id,
+                'description' => 'nullable|string',
+                'order' => 'nullable|integer'
+            ]);
 
-        if ($category->name !== $validated['name']) {
-            $validated['slug'] = Str::slug($validated['name']);
+            if ($category->name !== $validated['name']) {
+                $validated['slug'] = Str::slug($validated['name']);
+            }
+
+            $category->update($validated);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $category,
+                    'message' => 'دسته‌بندی با موفقیت به‌روزرسانی شد.'
+                ]);
+            }
+
+            return redirect()->route('admin.blog.categories.index')
+                ->with('success', 'دسته‌بندی با موفقیت به‌روزرسانی شد.');
+
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'خطا در به‌روزرسانی دسته‌بندی: ' . $e->getMessage(),
+                    'error_details' => config('app.debug') ? $e->getTraceAsString() : null
+                ], 500);
+            }
+
+            return back()->withInput()->with('error', 'خطا در به‌روزرسانی دسته‌بندی');
         }
-
-        $category->update($validated);
-
-        return redirect()->route('admin.blog.categories.index')
-            ->with('success', 'دسته‌بندی با موفقیت به‌روزرسانی شد.');
     }
 
     public function destroy(BlogCategory $category)
