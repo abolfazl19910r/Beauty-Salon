@@ -154,18 +154,27 @@ class AdminBlogController extends Controller
             return back()->with('error', 'خطا در ایجاد مقاله: ' . $e->getMessage());
         }
     }
+
+    private function convertToBoolean($value): bool
+    {
+        if ($value === null || $value === '') {
+            return false;
         }
 
-        $validated['author_id'] = Auth::id();
-
-        if (isset($validated['is_published']) && $validated['is_published'] && empty($validated['published_at'])) {
-            $validated['published_at'] = now();
+        if (is_bool($value)) {
+            return $value;
         }
 
-        $post = BlogPost::create($validated);
+        if (is_string($value)) {
+            $value = strtolower(trim($value));
+            return in_array($value, ['true', '1', 'yes', 'on']);
+        }
 
-        return redirect()->route('admin.blog.index')
-            ->with('success', 'مقاله با موفقیت ایجاد شد.');
+        if (is_numeric($value)) {
+            return $value == 1;
+        }
+
+        return false;
     }
 
     public function show(BlogPost $post)
