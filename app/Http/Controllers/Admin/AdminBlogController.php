@@ -53,8 +53,15 @@ class AdminBlogController extends Controller
 
     public function create()
     {
-        $categories = BlogCategory::all();
-        return view('admin.blog.create', compact('categories'));
+        try {
+            $categories = BlogCategory::all();
+
+            $defaultPublishedAt = Jalalian::now()->format('Y/m/d H:i');
+
+            return view('admin.blog.create', compact('categories', 'defaultPublishedAt'));
+        } catch (\Exception $e) {
+            return back()->with('error', 'خطا در بارگذاری صفحه ایجاد مقاله');
+        }
     }
 
     public function store(Request $request)
