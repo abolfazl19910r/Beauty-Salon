@@ -199,31 +199,58 @@ class AdminBlogController extends Controller
 
     public function update(Request $request, BlogPost $post)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'excerpt' => 'nullable|string',
-            'category_id' => 'required|exists:blog_categories,id',
-            'image' => 'nullable|image|max:2048',
-            'is_published' => 'boolean',
-            'published_at' => 'nullable|date'
-        ]);
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'content' => 'required|string',
+                'excerpt' => 'nullable|string',
+                'category_id' => 'required|exists:blog_categories,id',
+                'image' => 'nullable|image|max:2048',
+                'is_published' => 'boolean',
+                'published_at' => 'nullable|date'
+            ]);
 
-        if ($request->hasFile('image')) {
-            if ($post->image) {
-                Storage::disk('public')->delete($post->image);
+            if ($request->hasFile('image')) {
+                if ($post->image) {
+                    Storage::disk('public')->delete($post->image);
+                }
+
+                $imagePath = $request->file('image')->store('blog', 'public');
+                $validated['image'] = $imagePath;
             }
-            $validated['image'] = $request->file('image')->store('blog', 'public');
+
+            if ($validated['title'] !== $post->title) {
+                $validated['slug'] = Str::slug($validated['title']);
+            }
+
+            if (isset($validated['is_published']) && $validated['is_published']) {
+                $validated['published_at'] = $validated['published_at'] ?? now();
+            }
+
+            $post->update($validated);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $post->load('category'),
+                    'message' => 'مقاله با موفقیت به‌روزرسانی شد.'
+                ]);
+            }
+
+            return redirect()->route('admin.blog.index')
+                ->with('success', 'مقاله با موفقیت به‌روزرسانی شد.');
+
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'خطا در به‌روزرسانی مقاله: ' . $e->getMessage(),
+                    'error_details' => config('app.debug') ? $e->getTraceAsString() : null
+                ], 500);
+            }
+
+            return back()->with('error', 'خطا در به‌روزرسانی مقاله: ' . $e->getMessage());
         }
-
-        if (isset($validated['is_published']) && $validated['is_published'] && empty($validated['published_at'])) {
-            $validated['published_at'] = now();
-        }
-
-        $post->update($validated);
-
-        return redirect()->route('admin.blog.index')
-            ->with('success', 'مقاله با موفقیت به‌روزرسانی شد.');
     }
 
     public function destroy(BlogPost $post)
