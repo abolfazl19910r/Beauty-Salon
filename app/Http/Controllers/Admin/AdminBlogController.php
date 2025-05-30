@@ -287,17 +287,38 @@ class AdminBlogController extends Controller
 
     public function togglePublish(BlogPost $post)
     {
-        $post->is_published = !$post->is_published;
+        try {
+            $post->is_published = !$post->is_published;
 
-        if ($post->is_published && !$post->published_at) {
-            $post->published_at = now();
+            if ($post->is_published && !$post->published_at) {
+                $post->published_at = now();
+            }
+
+            $post->save();
+
+            $status = $post->is_published ? 'منتشر' : 'پیش‌نویس';
+
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $post->load('category'),
+                    'message' => "مقاله با موفقیت به حالت {$status} تغییر یافت."
+                ]);
+            }
+
+            return redirect()->route('admin.blog.index')
+                ->with('success', "مقاله با موفقیت به حالت {$status} تغییر یافت.");
+
+        } catch (\Exception $e) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'خطا در تغییر وضعیت: ' . $e->getMessage(),
+                    'error_details' => config('app.debug') ? $e->getTraceAsString() : null
+                ], 500);
+            }
+
+            return back()->with('error', 'خطا در تغییر وضعیت: ' . $e->getMessage());
         }
-
-        $post->save();
-
-        $status = $post->is_published ? 'منتشر' : 'پیش‌نویس';
-
-        return redirect()->route('admin.blog.index')
-            ->with('success', "مقاله با موفقیت به حالت {$status} تغییر یافت.");
     }
 }
