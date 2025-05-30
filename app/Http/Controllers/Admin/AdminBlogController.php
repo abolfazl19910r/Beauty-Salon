@@ -255,14 +255,34 @@ class AdminBlogController extends Controller
 
     public function destroy(BlogPost $post)
     {
-        if ($post->image) {
-            Storage::disk('public')->delete($post->image);
+        try {
+            if ($post->image) {
+                Storage::disk('public')->delete($post->image);
+            }
+
+            $post->delete();
+
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'مقاله با موفقیت حذف شد.'
+                ]);
+            }
+
+            return redirect()->route('admin.blog.index')
+                ->with('success', 'مقاله با موفقیت حذف شد.');
+
+        } catch (\Exception $e) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'خطا در حذف مقاله: ' . $e->getMessage(),
+                    'error_details' => config('app.debug') ? $e->getTraceAsString() : null
+                ], 500);
+            }
+
+            return back()->with('error', 'خطا در حذف مقاله');
         }
-
-        $post->delete();
-
-        return redirect()->route('admin.blog.index')
-            ->with('success', 'مقاله با موفقیت حذف شد.');
     }
 
     public function togglePublish(BlogPost $post)
