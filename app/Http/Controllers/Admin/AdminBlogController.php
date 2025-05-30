@@ -7,18 +7,48 @@ use App\Models\BlogCategory;
 use App\Models\BlogPost;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Morilog\Jalali\Jalalian;
 
 class AdminBlogController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $posts = BlogPost::with('category')
-            ->latest()
-            ->paginate(10);
+        try {
+            if ($request->expectsJson()) {
+                $posts = BlogPost::with('category')
+                    ->latest()
+                    ->get()
+                    ->map(function($post) {
+                        $post->image_url = $post->image ? asset('storage/' . $post->image) : null;
+                        return $post;
+                    });
 
-        return view('admin.blog.index', compact('posts'));
+                return response()->json([
+                    'success' => true,
+                    'data' => $posts,
+                    'total_views' => BlogPost::sum('views'),
+                    'post_count' => BlogPost::count(),
+                    'category_count' => BlogCategory::count(),
+                    'message' => 'مقالات با موفقیت دریافت شدند'
+                ]);
+            }
+
+            $posts = BlogPost::with('category')->latest()->get();
+            $categories = BlogCategory::all();
+            $stats = [
+                'total_views' => BlogPost::sum('views'),
+                'post_count' => BlogPost::count(),
+                'category_count' => BlogCategory::count()
+            ];
+
+            return view('admin.blog.index', compact('posts', 'categories', 'stats'));
+        } catch (\Exception $e) {
+            return back()->with('error', 'خطا در دریافت مقالات');
+        }
     }
 
     public function create()
