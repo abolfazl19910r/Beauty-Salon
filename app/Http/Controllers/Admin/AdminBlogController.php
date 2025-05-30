@@ -179,7 +179,11 @@ class AdminBlogController extends Controller
 
     public function show(BlogPost $post)
     {
-        return view('admin.blog.show', compact('post'));
+        try {
+            return view('admin.blog.show', compact('post'));
+        } catch (\Exception $e) {
+            return back()->with('error', 'خطا در نمایش مقاله');
+        }
     }
 
     public function edit(BlogPost $post)
