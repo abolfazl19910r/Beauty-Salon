@@ -157,16 +157,45 @@ class AdminBlogCategoryController extends Controller
         }
     }
 
-    public function destroy(BlogCategory $category)
+    public function destroy(Request $request, BlogCategory $category)
     {
-        if ($category->posts()->count() > 0) {
+        try {
+            $postsCount = $category->posts()->count();
+
+            if ($postsCount > 0) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'این دسته‌بندی دارای مقاله است و نمی‌توان آن را حذف کرد.'
+                    ], 422);
+                }
+
+                return redirect()->route('admin.blog.categories.index')
+                    ->with('error', 'این دسته‌بندی دارای مقاله است و نمی‌توان آن را حذف کرد.');
+            }
+
+            $category->delete();
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'دسته‌بندی با موفقیت حذف شد.'
+                ]);
+            }
+
             return redirect()->route('admin.blog.categories.index')
-                ->with('error', 'این دسته‌بندی دارای مقاله است و نمی‌توان آن را حذف کرد.');
+                ->with('success', 'دسته‌بندی با موفقیت حذف شد.');
+
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'خطا در حذف دسته‌بندی: ' . $e->getMessage(),
+                    'error_details' => config('app.debug') ? $e->getTraceAsString() : null
+                ], 500);
+            }
+
+            return back()->with('error', 'خطا در حذف دسته‌بندی');
         }
-
-        $category->delete();
-
-        return redirect()->route('admin.blog.categories.index')
-            ->with('success', 'دسته‌بندی با موفقیت حذف شد.');
     }
 }
