@@ -52,6 +52,11 @@ class BlogPost extends Model
         return $this->belongsTo(BlogCategory::class);
     }
 
+    public function author(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'author_id');
+    }
+
     public function getImageUrlAttribute(): ?string
     {
         return $this->image ? asset('storage/' . $this->image) : null;
