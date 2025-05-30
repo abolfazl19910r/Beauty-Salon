@@ -55,5 +55,10 @@ class BlogPost extends Model
     public function getImageUrlAttribute(): ?string
     {
         return $this->image ? asset('storage/' . $this->image) : null;
+    public function getPublishedAtJalaliAttribute(): ?string
+    {
+        return $this->published_at
+            ? Jalalian::fromCarbon($this->published_at)->format('Y/m/d H:i')
+            : null;
     }
 }
