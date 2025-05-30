@@ -6,16 +6,42 @@ use App\Http\Controllers\Controller;
 use App\Models\BlogCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class AdminBlogCategoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $categories = BlogCategory::withCount('posts')
-            ->orderBy('order')
-            ->paginate(10);
+        try {
+            $categories = BlogCategory::withCount('posts')
+                ->orderBy('order')
+                ->paginate(10);
 
-        return view('admin.blog.categories.index', compact('categories'));
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $categories->items(),
+                    'meta' => [
+                        'total' => $categories->total(),
+                        'per_page' => $categories->perPage(),
+                        'current_page' => $categories->currentPage()
+                    ],
+                    'message' => 'دسته‌بندی‌ها با موفقیت دریافت شدند'
+                ]);
+            }
+
+            return view('admin.blog.categories.index', compact('categories'));
+
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'خطا در دریافت دسته‌بندی‌ها: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return back()->with('error', 'خطا در دریافت دسته‌بندی‌ها');
+        }
     }
 
     public function create()
