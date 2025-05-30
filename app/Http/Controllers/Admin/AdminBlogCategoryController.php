@@ -101,9 +101,21 @@ class AdminBlogCategoryController extends Controller
         }
     }
 
-    public function edit(BlogCategory $category)
+    public function edit(Request $request, BlogCategory $category)
     {
-        return view('admin.blog.categories.edit', compact('category'));
+        try {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $category
+                ]);
+            }
+
+            return view('admin.blog.categories.edit', compact('category'));
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'خطا در بارگذاری صفحه ویرایش دسته‌بندی');
+        }
     }
 
     public function update(Request $request, BlogCategory $category)
