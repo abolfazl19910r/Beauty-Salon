@@ -47,7 +47,7 @@ class BlogPost extends Model
         });
     }
 
-    public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function category(): BelongsTo
     {
         return $this->belongsTo(BlogCategory::class);
     }
