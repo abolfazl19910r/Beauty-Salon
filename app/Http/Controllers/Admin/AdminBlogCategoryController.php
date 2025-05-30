@@ -63,22 +63,42 @@ class AdminBlogCategoryController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:blog_categories',
-            'description' => 'nullable|string',
-            'order' => 'nullable|integer'
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255|unique:blog_categories',
+                'description' => 'nullable|string',
+                'order' => 'nullable|integer'
+            ]);
 
-        if (empty($validated['order'])) {
-            $validated['order'] = BlogCategory::max('order') + 1;
+            if (empty($validated['order'])) {
+                $validated['order'] = BlogCategory::max('order') + 1;
+            }
+
+            $validated['slug'] = Str::slug($validated['name']);
+
+            $category = BlogCategory::create($validated);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $category,
+                    'message' => 'دسته‌بندی با موفقیت ایجاد شد.'
+                ], 201);
+            }
+
+            return redirect()->route('admin.blog.categories.index')
+                ->with('success', 'دسته‌بندی با موفقیت ایجاد شد.');
+
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'خطا در ایجاد دسته‌بندی: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return back()->withInput()->with('error', 'خطا در ایجاد دسته‌بندی');
         }
-
-        $validated['slug'] = Str::slug($validated['name']);
-
-        $category = BlogCategory::create($validated);
-
-        return redirect()->route('admin.blog.categories.index')
-            ->with('success', 'دسته‌بندی با موفقیت ایجاد شد.');
     }
 
     public function edit(BlogCategory $category)
