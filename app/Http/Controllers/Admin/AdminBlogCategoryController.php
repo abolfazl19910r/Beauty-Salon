@@ -44,9 +44,21 @@ class AdminBlogCategoryController extends Controller
         }
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return view('admin.blog.categories.create');
+        try {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'صفحه ایجاد دسته‌بندی آماده است'
+                ]);
+            }
+
+            return view('admin.blog.categories.create');
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'خطا در بارگذاری صفحه ایجاد دسته‌بندی');
+        }
     }
 
     public function store(Request $request)
