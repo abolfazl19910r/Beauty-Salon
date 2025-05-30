@@ -23,6 +23,9 @@ class BlogPost extends Model
         'published_at' => 'datetime'
     ];
 
+    /**
+     * @throws Exception
+     */
     public static function create(array $validated): static
     {
         $post = new static();
@@ -32,9 +35,16 @@ class BlogPost extends Model
             $post->slug = Str::slug($validated['title']);
         }
 
-        $post->save();
+        if (!$post->author_id) {
+            $post->author_id = auth()->id();
+        }
 
-        return $post;
+        try {
+            $saved = $post->save();
+            return $post;
+        } catch (Exception $e) {
+            throw $e;
+        }
     }
 
     protected static function boot()
