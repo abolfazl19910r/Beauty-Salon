@@ -133,9 +133,10 @@ class AdminUserController extends Controller
      */
     public function show(User $user): View
     {
-        $user->load('roles');
-        $bookings = $user->bookings()->latest()->take(5)->get();
-        return view('admin.users.show', compact('user', 'bookings'));
+        $roles = Role::all();
+        $userRoles = $user->roles()->pluck('roles.id')->toArray();
+        $bookings = $user->bookings()->with(['service', 'specialist'])->latest()->take(5)->get();
+        return view('admin.users.show', compact('user', 'roles', 'userRoles', 'bookings'));
     }
 
     /**

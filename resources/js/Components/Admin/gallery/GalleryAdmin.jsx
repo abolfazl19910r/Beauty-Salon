@@ -23,31 +23,20 @@ const GalleryAdmin = () => {
     const fetchImages = async () => {
         try {
             setLoading(true);
-            const response = await fetch('/api/admin/gallery');
+            const response = await fetch('/admin/gallery/images', {
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
             if (!response.ok) throw new Error('خطا در دریافت تصاویر');
             const data = await response.json();
             setImages(data);
             setError(null);
         } catch (err) {
             setError(err.message);
+            console.error('Fetch error:', err);
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            if (file.size > 2 * 1024 * 1024) {
-                setError('حجم تصویر نباید بیشتر از 2 مگابایت باشد');
-                return;
-            }
-            setSelectedImage(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result);
-            };
-            reader.readAsDataURL(file);
         }
     };
 
@@ -62,10 +51,9 @@ const GalleryAdmin = () => {
         formData.append('image', selectedImage);
         formData.append('title', newImage.title);
         formData.append('description', newImage.description);
-        formData.append('order', images.length + 1);
 
         try {
-            const response = await fetch('/api/admin/gallery', {
+            const response = await fetch('/admin/gallery/upload', {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
@@ -76,14 +64,6 @@ const GalleryAdmin = () => {
             if (!response.ok) throw new Error('خطا در آپلود تصویر');
 
             await fetchImages();
-            setNewImage({
-                title: '',
-                description: '',
-                order: 0
-            });
-            setSelectedImage(null);
-            setImagePreview(null);
-            setError(null);
         } catch (err) {
             setError(err.message);
         }
@@ -93,7 +73,7 @@ const GalleryAdmin = () => {
         if (!confirm('آیا از حذف این تصویر اطمینان دارید؟')) return;
 
         try {
-            const response = await fetch(`/api/admin/gallery/${id}`, {
+            const response = await fetch(`/admin/gallery/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
@@ -108,27 +88,11 @@ const GalleryAdmin = () => {
         }
     };
 
-    const moveImage = (index, direction) => {
-        if (!reordering) return;
-
-        const newImages = [...images];
-        if (direction === 'up' && index > 0) {
-            [newImages[index], newImages[index - 1]] = [newImages[index - 1], newImages[index]];
-            newImages[index].order = index;
-            newImages[index - 1].order = index - 1;
-        } else if (direction === 'down' && index < images.length - 1) {
-            [newImages[index], newImages[index + 1]] = [newImages[index + 1], newImages[index]];
-            newImages[index].order = index;
-            newImages[index + 1].order = index + 1;
-        }
-        setImages(newImages);
-    };
-
     const saveReordering = async () => {
         if (!reordering) return;
 
         try {
-            const response = await fetch('/api/admin/gallery/reorder', {
+            const response = await fetch('/admin/gallery/reorder', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -150,6 +114,39 @@ const GalleryAdmin = () => {
             setError(err.message);
         }
     };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 2 * 1024 * 1024) {
+                setError('حجم تصویر نباید بیشتر از 2 مگابایت باشد');
+                return;
+            }
+            setSelectedImage(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const moveImage = (index, direction) => {
+        if (!reordering) return;
+
+        const newImages = [...images];
+        if (direction === 'up' && index > 0) {
+            [newImages[index], newImages[index - 1]] = [newImages[index - 1], newImages[index]];
+            newImages[index].order = index;
+            newImages[index - 1].order = index - 1;
+        } else if (direction === 'down' && index < images.length - 1) {
+            [newImages[index], newImages[index + 1]] = [newImages[index + 1], newImages[index]];
+            newImages[index].order = index;
+            newImages[index + 1].order = index + 1;
+        }
+        setImages(newImages);
+    };
+
 
     if (loading) {
         return (
