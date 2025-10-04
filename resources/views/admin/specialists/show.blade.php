@@ -15,21 +15,21 @@
                 </div>
             </div>
             <div class="mt-4 md:mt-0 flex flex-wrap gap-2">
-                <a href="{{ route('admin.specialists.edit', ['specialist' => $specialist->id]) }}"
+                <a href="{{ route('admin.specialists.edit', $specialist) }}"
                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                     ویرایش اطلاعات
                 </a>
-                <a href="{{ route('admin.schedule.index', ['specialist' => $specialist->id]) }}"
+                <a href="{{ route('admin.schedule.index', $specialist) }}"
                    class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors shadow-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     برنامه کاری
                 </a>
-                <a href="{{ route('admin.leaves.index', ['specialist' => $specialist->id]) }}"
+                <a href="{{ route('admin.specialists.leaves.index', $specialist) }}"
                    class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors shadow-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -96,7 +96,7 @@
                 <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
                     <div class="p-4 border-b border-gray-100 flex justify-between items-center">
                         <h2 class="text-lg font-semibold text-gray-800">برنامه کاری هفتگی</h2>
-                        <a href="{{ route('admin.schedule.index', ['specialist' => $specialist->id]) }}" class="text-blue-600 hover:text-blue-800 text-sm">
+                        <a href="{{ route('admin.schedule.index', $specialist) }}" class="text-blue-600 hover:text-blue-800 text-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                             </svg>
@@ -146,7 +146,7 @@
                 <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
                     <div class="p-4 border-b border-gray-100 flex justify-between items-center">
                         <h2 class="text-lg font-semibold text-gray-800">مرخصی‌های فعلی</h2>
-                        <a href="{{ route('admin.leaves.index', ['specialist' => $specialist->id]) }}" class="text-blue-600 hover:text-blue-800 text-sm">
+                        <a href="{{ route('admin.specialists.leaves.index', $specialist) }}" class="text-blue-600 hover:text-blue-800 text-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                             </svg>

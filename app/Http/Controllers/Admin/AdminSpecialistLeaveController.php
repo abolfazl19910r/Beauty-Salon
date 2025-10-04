@@ -10,24 +10,15 @@ use Morilog\Jalali\Jalalian;
 
 class AdminSpecialistLeaveController extends Controller
 {
-    public function index($specialistId)
+    public function index(Specialist $specialist)
     {
-        try {
-            $specialist = Specialist::findOrFail($specialistId);
-            $leaves = $specialist->leaves()->latest()->paginate(10);
-
-            return view('admin.specialists.leaves.index', compact('specialist', 'leaves'));
-        } catch (\Exception $e) {
-            return redirect('/admin/specialists')
-                ->with('error', 'متخصص مورد نظر یافت نشد.');
-        }
+        $leaves = $specialist->leaves()->latest()->paginate(10);
+        return view('admin.specialists.leaves.index', compact('specialist', 'leaves'));
     }
 
-    public function store(Request $request, $specialistId)
+    public function store(Request $request, Specialist $specialist)
     {
         try {
-            $specialist = Specialist::findOrFail($specialistId);
-
             $validated = $request->validate([
                 'start_date_jalali' => 'required|string',
                 'end_date_jalali' => 'required|string',
@@ -50,40 +41,23 @@ class AdminSpecialistLeaveController extends Controller
                 'status' => 'pending'
             ]);
 
-            $currentUrl = $request->url();
-            if (str_contains($currentUrl, '/admin/leaves/')) {
-                $redirectUrl = '/admin/leaves/' . $specialist->id;
-            } else {
-                $redirectUrl = '/admin/specialists/' . $specialist->id . '/leaves';
-            }
-
-            return redirect($redirectUrl)
+            return redirect()->route('admin.specialists.leaves.index', $specialist)
                 ->with('success', 'مرخصی با موفقیت ثبت شد.');
         } catch (\Exception $e) {
             return back()->with('error', 'خطا در ذخیره اطلاعات: ' . $e->getMessage());
         }
     }
 
-    public function update(Request $request, $specialistId, $leaveId)
+    public function update(Request $request, Specialist $specialist, SpecialistLeave $leave)
     {
         try {
-            $specialist = Specialist::findOrFail($specialistId);
-            $leave = SpecialistLeave::findOrFail($leaveId);
-
             $validated = $request->validate([
                 'status' => 'required|in:approved,rejected'
             ]);
 
             $leave->update($validated);
 
-            $currentUrl = $request->url();
-            if (str_contains($currentUrl, '/admin/leaves/')) {
-                $redirectUrl = '/admin/leaves/' . $specialist->id;
-            } else {
-                $redirectUrl = '/admin/specialists/' . $specialist->id . '/leaves';
-            }
-
-            return redirect($redirectUrl)
+            return redirect()->route('admin.specialists.leaves.index', $specialist)
                 ->with('success', 'وضعیت مرخصی با موفقیت بروزرسانی شد.');
         } catch (\Exception $e) {
             return back()->with('error', 'خطا در بروزرسانی اطلاعات: ' . $e->getMessage());

@@ -1,8 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminLeaveController;
 use App\Http\Controllers\Admin\AdminWorkScheduleController;
 use App\Http\Controllers\Admin\AdminHolidayController;
-use App\Http\Controllers\Admin\AdminLeaveController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('specialists/{specialist}')->group(function () {
@@ -23,12 +23,6 @@ Route::prefix('specialists/{specialist}')->group(function () {
         Route::post('/check', [AdminHolidayController::class, 'checkDate'])->name('check');
     });
 
-    Route::prefix('leaves')->name('leaves.')->group(function () {
-        Route::get('/', [AdminLeaveController::class, 'index'])->name('index');
-        Route::post('/', [AdminLeaveController::class, 'store'])->name('store');
-        Route::put('/{leave}', [AdminLeaveController::class, 'update'])->name('update');
-        Route::delete('/{leave}', [AdminLeaveController::class, 'destroy'])->name('destroy');
-    });
 });
 
-Route::get('/leaves/pending', [AdminLeaveController::class, 'pendingLeaves'])->name('leaves.pending');
+ Route::get('/leaves/pending', [AdminLeaveController::class, 'pendingLeaves'])->name('leaves.pending');

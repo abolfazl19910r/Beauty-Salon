@@ -83,23 +83,23 @@
                             <td class="px-4 py-3">
                                 @if($leave->status === 'pending')
                                     <div class="flex space-x-2 space-x-reverse">
-                                        <form action="{{ request()->is('admin/leaves/*') ? url('/admin/leaves/' . $specialist->id . '/' . $leave->id) : url('/admin/specialists/' . $specialist->id . '/leaves/' . $leave->id) }}"
+                                        <form action="{{ route('admin.specialists.leaves.update', [$specialist, $leave]) }}"
                                               method="POST" class="inline">
                                             @csrf
                                             @method('PUT')
                                             <input type="hidden" name="status" value="approved">
-                                            <button type="submit" class="text-green-600 hover:text-green-800 transition-colors">
+                                            <button type="submit" class="text-green-600 hover:text-green-800 transition-colors" title="تایید">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                                 </svg>
                                             </button>
                                         </form>
-                                        <form action="{{ request()->is('admin/leaves/*') ? url('/admin/leaves/' . $specialist->id . '/' . $leave->id) : url('/admin/specialists/' . $specialist->id . '/leaves/' . $leave->id) }}"
+                                        <form action="{{ route('admin.specialists.leaves.update', [$specialist, $leave]) }}"
                                               method="POST" class="inline">
                                             @csrf
                                             @method('PUT')
                                             <input type="hidden" name="status" value="rejected">
-                                            <button type="submit" class="text-red-600 hover:text-red-800 transition-colors">
+                                            <button type="submit" class="text-red-600 hover:text-red-800 transition-colors" title="رد">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                                 </svg>
@@ -149,7 +149,7 @@
                     </button>
                 </div>
 
-                <form action="{{ request()->is('admin/leaves/*') ? url('/admin/leaves/' . $specialist->id) : url('/admin/specialists/' . $specialist->id . '/leaves') }}" method="POST">
+                <form action="{{ route('admin.specialists.leaves.store', $specialist) }}" method="POST">
                     @csrf
                     <div class="p-5 space-y-4">
                         <div>

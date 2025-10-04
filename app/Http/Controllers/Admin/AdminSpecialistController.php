@@ -27,9 +27,8 @@ class AdminSpecialistController extends Controller
         return view('admin.specialists.index', compact('specialists'));
     }
 
-    public function show($id)
+    public function show(Specialist $specialist)
     {
-        $specialist = Specialist::findOrFail($id);
         return view('admin.specialists.show', compact('specialist'));
     }
 
@@ -61,23 +60,15 @@ class AdminSpecialistController extends Controller
             ->with('success', 'متخصص جدید با موفقیت ایجاد شد.');
     }
 
-    public function edit($id)
+    public function edit(Specialist $specialist)
     {
-        $specialist = Specialist::find($id);
-        if (!$specialist) {
-            abort(404);
-        }
-
         $services = Category::with('services')->get();
-
         $selectedServices = $specialist->services->pluck('id')->toArray();
         return view('admin.specialists.edit', compact('specialist', 'services', 'selectedServices'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, Specialist $specialist)
     {
-        $specialist = Specialist::findOrFail($id);
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:11|unique:specialists,phone,' . $specialist->id,
@@ -90,23 +81,19 @@ class AdminSpecialistController extends Controller
         unset($validated['services']);
 
         $specialist->update($validated);
-
         $specialist->services()->sync($services);
 
         return redirect()->route('admin.specialists.index')
             ->with('success', 'اطلاعات متخصص با موفقیت بروزرسانی شد.');
     }
 
-    public function destroy($id)
+    public function destroy(Specialist $specialist)
     {
         try {
             DB::beginTransaction();
 
-            $specialist = Specialist::findOrFail($id);
-            Log::info('Attempting to delete specialist ID: ' . $id);
-
             $specialist->services()->detach();
-            $result = $specialist->delete();
+            $specialist->delete();
 
             DB::commit();
 

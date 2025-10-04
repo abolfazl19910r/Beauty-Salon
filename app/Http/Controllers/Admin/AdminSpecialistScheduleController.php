@@ -10,48 +10,31 @@ use Illuminate\Support\Facades\DB;
 
 class AdminSpecialistScheduleController extends Controller
 {
-    public function index($specialistId)
+    public function index(Specialist $specialist)
     {
-        try {
-            $specialist = Specialist::findOrFail($specialistId);
-            return $this->edit($specialistId);
-        } catch (\Exception $e) {
-            return redirect()->route('admin.specialists.index')->with('error', 'متخصص مورد نظر یافت نشد.');
-        }
+        return $this->edit($specialist);
     }
 
-    public function edit($specialistId)
+    public function edit(Specialist $specialist)
     {
-        try {
-            $specialist = Specialist::findOrFail($specialistId);
+        $schedules = $specialist->schedules()
+            ->get()
+            ->groupBy('day_of_week');
 
-            $schedules = $specialist->schedules()
-                ->get()
-                ->groupBy('day_of_week');
-
-            return view('admin.specialists.schedules.edit', [
-                'specialist' => $specialist,
-                'schedules' => $schedules
-            ]);
-        } catch (\Exception $e) {
-            return redirect()->route('admin.specialists.index')->with('error', 'متخصص مورد نظر یافت نشد.');
-        }
+        return view('admin.specialists.schedules.edit', [
+            'specialist' => $specialist,
+            'schedules' => $schedules
+        ]);
     }
 
-    public function update(Request $request, $specialistId)
+    public function update(Request $request, Specialist $specialist)
     {
         try {
-            if (empty($specialistId) && $request->has('specialist_id')) {
-                $specialistId = $request->input('specialist_id');
-            }
-
-            $specialist = Specialist::findOrFail($specialistId);
-
             $request->validate([
                 'schedules.*.day_of_week' => 'required|integer|between:0,6',
                 'schedules.*.is_active' => 'nullable',
-                'schedules.*.start_time' => 'nullable|required_with:schedules.*.is_active',
-                'schedules.*.end_time' => 'nullable|required_with:schedules.*.is_active|after:schedules.*.start_time',
+                'schedules.*.start_time' => 'nullable|required_if:schedules.*.is_active,1',
+                'schedules.*.end_time' => 'nullable|required_if:schedules.*.is_active,1|after:schedules.*.start_time',
             ]);
 
             DB::beginTransaction();
@@ -60,19 +43,12 @@ class AdminSpecialistScheduleController extends Controller
 
             if ($request->has('schedules')) {
                 foreach ($request->schedules as $dayNumber => $schedule) {
-                    if (isset($schedule['is_active'])) {
+                    if (isset($schedule['is_active']) && $schedule['is_active']) {
                         $specialist->schedules()->create([
                             'day_of_week' => $schedule['day_of_week'],
                             'start_time' => $schedule['start_time'],
                             'end_time' => $schedule['end_time'],
                             'is_active' => true,
-                        ]);
-                    } else {
-                        $specialist->schedules()->create([
-                            'day_of_week' => $schedule['day_of_week'],
-                            'start_time' => null,
-                            'end_time' => null,
-                            'is_active' => false,
                         ]);
                     }
                 }
@@ -80,7 +56,7 @@ class AdminSpecialistScheduleController extends Controller
 
             DB::commit();
 
-            return redirect('/admin/specialists/' . $specialist->id)
+            return redirect()->route('admin.specialists.show', $specialist)
                 ->with('success', 'برنامه کاری با موفقیت بروزرسانی شد.');
 
         } catch (\Exception $e) {

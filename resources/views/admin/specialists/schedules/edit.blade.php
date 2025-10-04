@@ -7,15 +7,15 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
             <div>
                 <h1 class="text-2xl font-bold text-gray-800 mb-2">مدیریت برنامه کاری</h1>
-                <p class="text-sm text-gray-500">تنظیم ساعات کاری متخصص {{ $specialist->name ?? 'نامشخص' }}</p>
+                <p class="text-sm text-gray-500">تنظیم ساعات کاری متخصص {{ $specialist->name }}</p>
             </div>
-            <button onclick="window.history.back()"
-                    class="mt-3 md:mt-0 flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors shadow-sm">
+            <a href="{{ route('admin.specialists.show', $specialist) }}"
+               class="mt-3 md:mt-0 flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
                 </svg>
                 بازگشت
-            </button>
+            </a>
         </div>
 
         <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
@@ -24,10 +24,9 @@
                 <p class="text-sm text-gray-500 mt-1">روزها و ساعات فعالیت متخصص را تنظیم کنید</p>
             </div>
 
-            <form method="POST" id="scheduleForm">
+            <form method="POST" action="{{ route('admin.specialists.schedules.update', $specialist) }}">
                 @csrf
                 @method('PUT')
-                <input type="hidden" name="specialist_id" value="{{ $specialist->id ?? '' }}">
 
                 <div class="p-5">
                     <div class="grid gap-6">
@@ -106,7 +105,7 @@
                 </div>
 
                 <div class="p-5 bg-gray-50 border-t border-gray-100 flex justify-end">
-                    <button type="button" onclick="submitForm()" class="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg shadow hover:shadow-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                    <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg shadow hover:shadow-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
                         <span class="flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
@@ -152,17 +151,5 @@
                 });
             });
         });
-
-        function submitForm() {
-            const form = document.getElementById('scheduleForm');
-            const specialistId = document.querySelector('input[name="specialist_id"]').value;
-
-            if (specialistId) {
-                form.action = '/admin/specialists/' + specialistId + '/schedules';
-                form.submit();
-            } else {
-                alert('خطا: شناسه متخصص یافت نشد.');
-            }
-        }
     </script>
 @endpush

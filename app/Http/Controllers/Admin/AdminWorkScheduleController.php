@@ -13,7 +13,7 @@ class AdminWorkScheduleController extends Controller
     public function index(Specialist $specialist)
     {
         $schedules = $specialist->schedules()->get()->groupBy('day_of_week');
-        return view('admin.schedule.index', compact('specialist', 'schedules'));
+        return view('admin.specialists.schedules.edit', compact('specialist', 'schedules'));
     }
 
     public function store(Request $request, Specialist $specialist)

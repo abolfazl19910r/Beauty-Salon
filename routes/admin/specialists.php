@@ -10,7 +10,6 @@ Route::prefix('specialists')->name('specialists.')->group(function () {
     Route::get('/create', [AdminSpecialistController::class, 'create'])->name('create');
     Route::post('/', [AdminSpecialistController::class, 'store'])->name('store');
 
-    Route::get('/{specialist}', [AdminSpecialistController::class, 'show'])->name('show');
     Route::get('/{specialist}/edit', [AdminSpecialistController::class, 'edit'])->name('edit');
     Route::put('/{specialist}', [AdminSpecialistController::class, 'update'])->name('update');
     Route::delete('/{specialist}', [AdminSpecialistController::class, 'destroy'])->name('destroy');
@@ -21,14 +20,10 @@ Route::prefix('specialists')->name('specialists.')->group(function () {
     Route::get('/{specialist}/leaves', [AdminSpecialistLeaveController::class, 'index'])->name('leaves.index');
     Route::post('/{specialist}/leaves', [AdminSpecialistLeaveController::class, 'store'])->name('leaves.store');
     Route::put('/{specialist}/leaves/{leave}', [AdminSpecialistLeaveController::class, 'update'])->name('leaves.update');
+
+    Route::get('/{specialist}', [AdminSpecialistController::class, 'show'])->name('show');
 });
 
 Route::prefix('schedule')->name('schedule.')->group(function () {
     Route::get('/{specialist}', [AdminSpecialistScheduleController::class, 'edit'])->name('index');
-});
-
-Route::prefix('leaves')->name('leaves.')->group(function () {
-    Route::get('/{specialist}', [AdminSpecialistLeaveController::class, 'index'])->name('index');
-    Route::post('/{specialist}', [AdminSpecialistLeaveController::class, 'store'])->name('store');
-    Route::put('/{specialist}/{leave}', [AdminSpecialistLeaveController::class, 'update'])->name('update');
 });
