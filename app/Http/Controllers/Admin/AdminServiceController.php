@@ -82,29 +82,14 @@ class AdminServiceController extends Controller
     public function destroy(BeautyService $service)
     {
         try {
-            Log::info('Attempting to delete service:', [
-                'id' => $service->id,
-                'name' => $service->name,
-                'bookings_count' => $service->bookings()->count(),
-                'specialists_count' => $service->specialists()->count()
-            ]);
-
-            if ($service->delete()) {
-                return redirect()->route('admin.services.index')
-                    ->with('success', 'خدمت با موفقیت حذف شد.');
-            }
+            $service->delete();
 
             return redirect()->route('admin.services.index')
-                ->with('error', 'خطا در حذف خدمت.');
+                ->with('success', 'خدمت با موفقیت حذف شد.');
 
         } catch (\Exception $e) {
-            Log::error('Error deleting service:', [
-                'id' => $service->id,
-                'error' => $e->getMessage()
-            ]);
-
             return redirect()->route('admin.services.index')
-                ->with('error', 'خطا در حذف خدمت: ' . $e->getMessage());
+                ->with('error', $e->getMessage());
         }
     }
 }

@@ -92,9 +92,8 @@
                                           class="inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="button"
-                                                data-confirm-delete="true"
-                                                data-confirm-message="آیا از حذف خدمت {{ $service->name }} اطمینان دارید؟"
+                                        <button type="submit"
+                                                onclick="return confirm('آیا از حذف خدمت {{ $service->name }} اطمینان دارید؟')"
                                                 class="group inline-flex items-center text-red-600 hover:text-red-800 transition-colors">
                                             <svg class="w-4 h-4 mr-1 group-hover:scale-110 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <polyline points="3 6 5 6 21 6"></polyline>
