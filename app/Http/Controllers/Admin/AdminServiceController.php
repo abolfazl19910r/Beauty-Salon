@@ -26,10 +26,8 @@ class AdminServiceController extends Controller
         return view('admin.services.create', compact('categories'));
     }
 
-    public function edit($id)
+    public function edit(BeautyService $service)
     {
-        $service = BeautyService::findOrFail($id);
-
         $categoryService = app(CategoryService::class);
         $categories = $categoryService->getCategorySelectOptions();
 
@@ -57,10 +55,8 @@ class AdminServiceController extends Controller
             ->with('success', 'خدمت جدید با موفقیت ایجاد شد.');
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, BeautyService $service)
     {
-        $service = BeautyService::findOrFail($id);
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -83,13 +79,11 @@ class AdminServiceController extends Controller
             ->with('success', 'خدمت با موفقیت بروزرسانی شد.');
     }
 
-    public function destroy($id)
+    public function destroy(BeautyService $service)
     {
         try {
-            $service = BeautyService::findOrFail($id);
-
             Log::info('Attempting to delete service:', [
-                'id' => $id,
+                'id' => $service->id,
                 'name' => $service->name,
                 'bookings_count' => $service->bookings()->count(),
                 'specialists_count' => $service->specialists()->count()
@@ -105,7 +99,7 @@ class AdminServiceController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Error deleting service:', [
-                'id' => $id,
+                'id' => $service->id,
                 'error' => $e->getMessage()
             ]);
 

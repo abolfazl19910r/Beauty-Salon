@@ -78,7 +78,7 @@
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <div class="flex items-center gap-3">
-                                    <a href="{{ route('admin.services.edit', $service) }}"
+                                    <a href="{{ route('admin.services.edit', ['service' => $service->id]) }}"
                                        class="group inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
                                         <svg class="w-4 h-4 mr-1 group-hover:scale-110 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
