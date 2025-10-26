@@ -11,15 +11,47 @@ class AdminGalleryController extends Controller
 {
     public function index()
     {
-        $imagesCount = GalleryImage::count();
-        $albumsCount = 0;
-        $usedSpace = round(Storage::disk('public')->size('gallery') / (1024 * 1024), 2);
+        $stats = $this->getStats();
 
         return view('admin.gallery.index', [
+            'imagesCount' => $stats['imagesCount'],
+            'albumsCount' => $stats['albumsCount'],
+            'usedSpace' => $stats['usedSpace']
+        ]);
+    }
+
+    public function stats()
+    {
+        return response()->json($this->getStats());
+    }
+
+    private function getStats(): array
+    {
+        $imagesCount = GalleryImage::count();
+        $albumsCount = 0;
+        $usedSpace = $this->calculateUsedSpace();
+
+        return [
             'imagesCount' => $imagesCount,
             'albumsCount' => $albumsCount,
             'usedSpace' => $usedSpace
-        ]);
+        ];
+    }
+
+    private function calculateUsedSpace(): float
+    {
+        $totalSize = 0;
+        $files = Storage::disk('public')->allFiles('gallery');
+
+        foreach ($files as $file) {
+            try {
+                $totalSize += Storage::disk('public')->size($file);
+            } catch (\Exception $e) {
+                continue;
+            }
+        }
+
+        return round($totalSize / (1024 * 1024), 2);
     }
 
     public function getImages()

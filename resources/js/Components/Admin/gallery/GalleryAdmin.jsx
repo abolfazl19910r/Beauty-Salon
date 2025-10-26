@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Alert } from '@/components/ui/alert';
-import { Loader2, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Loader2, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Image, FolderOpen, HardDrive } from 'lucide-react';
 
 const GalleryAdmin = () => {
     const [images, setImages] = useState([]);
+    const [stats, setStats] = useState({
+        imagesCount: 0,
+        albumsCount: 0,
+        usedSpace: 0
+    });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [uploading, setUploading] = useState(false);
     const [reordering, setReordering] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
@@ -18,7 +24,23 @@ const GalleryAdmin = () => {
 
     useEffect(() => {
         fetchImages();
+        fetchStats();
     }, []);
+
+    const fetchStats = async () => {
+        try {
+            const response = await fetch('/admin/gallery/stats', {
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
+            if (!response.ok) throw new Error('خطا در دریافت آمار');
+            const data = await response.json();
+            setStats(data);
+        } catch (err) {
+            console.error('Stats fetch error:', err);
+        }
+    };
 
     const fetchImages = async () => {
         try {
@@ -40,6 +62,21 @@ const GalleryAdmin = () => {
         }
     };
 
+    const resetForm = () => {
+        setNewImage({
+            title: '',
+            description: '',
+            order: 0
+        });
+        setSelectedImage(null);
+        setImagePreview(null);
+
+        const fileInput = document.querySelector('input[type="file"]');
+        if (fileInput) {
+            fileInput.value = '';
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!selectedImage) {
@@ -53,6 +90,9 @@ const GalleryAdmin = () => {
         formData.append('description', newImage.description);
 
         try {
+            setUploading(true);
+            setError(null);
+
             const response = await fetch('/admin/gallery/upload', {
                 method: 'POST',
                 headers: {
@@ -63,9 +103,17 @@ const GalleryAdmin = () => {
 
             if (!response.ok) throw new Error('خطا در آپلود تصویر');
 
-            await fetchImages();
+            resetForm();
+
+            await Promise.all([
+                fetchImages(),
+                fetchStats()
+            ]);
+
         } catch (err) {
             setError(err.message);
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -82,7 +130,10 @@ const GalleryAdmin = () => {
 
             if (!response.ok) throw new Error('خطا در حذف تصویر');
 
-            await fetchImages();
+            await Promise.all([
+                fetchImages(),
+                fetchStats()
+            ]);
         } catch (err) {
             setError(err.message);
         }
@@ -147,7 +198,6 @@ const GalleryAdmin = () => {
         setImages(newImages);
     };
 
-
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
@@ -158,6 +208,50 @@ const GalleryAdmin = () => {
 
     return (
         <div className="space-y-6 p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="hover:shadow-lg transition-shadow">
+                    <CardContent className="p-6">
+                        <div className="flex items-center">
+                            <div className="p-3 rounded-full bg-purple-100 text-purple-600">
+                                <Image className="h-8 w-8" />
+                            </div>
+                            <div className="mr-4">
+                                <p className="text-gray-500 text-sm">تعداد تصاویر</p>
+                                <h2 className="text-2xl font-bold text-gray-700">{stats.imagesCount}</h2>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="hover:shadow-lg transition-shadow">
+                    <CardContent className="p-6">
+                        <div className="flex items-center">
+                            <div className="p-3 rounded-full bg-blue-100 text-blue-600">
+                                <FolderOpen className="h-8 w-8" />
+                            </div>
+                            <div className="mr-4">
+                                <p className="text-gray-500 text-sm">آلبوم‌ها</p>
+                                <h2 className="text-2xl font-bold text-gray-700">{stats.albumsCount}</h2>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="hover:shadow-lg transition-shadow">
+                    <CardContent className="p-6">
+                        <div className="flex items-center">
+                            <div className="p-3 rounded-full bg-green-100 text-green-600">
+                                <HardDrive className="h-8 w-8" />
+                            </div>
+                            <div className="mr-4">
+                                <p className="text-gray-500 text-sm">فضای استفاده شده</p>
+                                <h2 className="text-2xl font-bold text-gray-700">{stats.usedSpace} MB</h2>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <svg
@@ -214,6 +308,7 @@ const GalleryAdmin = () => {
                                 onChange={handleImageChange}
                                 className="w-full border rounded px-3 py-2"
                                 accept="image/*"
+                                disabled={uploading}
                             />
                             {imagePreview && (
                                 <div className="mt-2">
@@ -234,6 +329,7 @@ const GalleryAdmin = () => {
                                 onChange={e => setNewImage({...newImage, title: e.target.value})}
                                 className="w-full border rounded px-3 py-2"
                                 required
+                                disabled={uploading}
                             />
                         </div>
 
@@ -244,15 +340,24 @@ const GalleryAdmin = () => {
                                 onChange={e => setNewImage({...newImage, description: e.target.value})}
                                 className="w-full border rounded px-3 py-2"
                                 rows="3"
+                                disabled={uploading}
                             />
                         </div>
 
                         <div>
                             <button
                                 type="submit"
-                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                disabled={uploading}
                             >
-                                آپلود تصویر
+                                {uploading ? (
+                                    <>
+                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                        در حال آپلود...
+                                    </>
+                                ) : (
+                                    'آپلود تصویر'
+                                )}
                             </button>
                         </div>
                     </form>

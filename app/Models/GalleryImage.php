@@ -10,29 +10,23 @@ class GalleryImage extends Model
         'title',
         'description',
         'image_path',
-        'order'
+        'order',
+        'is_active',
+        'imageable_id',
+        'imageable_type'
     ];
 
-    public static function where(string $column, mixed $value): \Illuminate\Database\Eloquent\Builder
-    {
-        return self::query()->where($column, $value);
-    }
-
-    public static function create(array $validated): static
-    {
-        $image = new static();
-        $image->fill($validated);
-        $image->save();
-        return $image;
-    }
-
-    public static function orderBy(string $column): \Illuminate\Database\Eloquent\Builder
-    {
-        return self::query()->orderBy($column);
-    }
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
 
     public function getImageUrlAttribute(): string
     {
         return asset('storage/' . $this->image_path);
+    }
+
+    public function imageable()
+    {
+        return $this->morphTo();
     }
 }
