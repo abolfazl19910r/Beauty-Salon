@@ -95,9 +95,8 @@ class AdminBookingController extends Controller
             ->with('success', 'نوبت با موفقیت ایجاد شد.');
     }
 
-    public function edit($id)
+    public function edit(Booking $booking)
     {
-        $booking = Booking::findOrFail($id);
         $users = User::all();
         $services = BeautyService::all();
         $specialists = Specialist::all();
@@ -105,16 +104,15 @@ class AdminBookingController extends Controller
         return view('admin.bookings.edit', compact('booking', 'users', 'services', 'specialists'));
     }
 
-    public function show($id)
+    public function show(Booking $booking)
     {
-        $booking = Booking::with(['service', 'user', 'specialist'])->findOrFail($id);
+        // Model قبلاً توسط Laravel load شده، فقط relation ها رو eager load میکنیم
+        $booking->load(['service', 'user', 'specialist']);
         return view('admin.bookings.show', compact('booking'));
     }
 
-    public function update(Request $request, $booking_id)
+    public function update(Request $request, Booking $booking)
     {
-        $booking = Booking::findOrFail($booking_id);
-
         if ($request->has('status') && !$request->has('user_id')) {
             $oldStatus = $booking->status;
 
