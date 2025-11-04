@@ -119,6 +119,8 @@
     </nav>
 </header>
 
+<div id="announcement-banner" class="container mx-auto px-4 pt-4"></div>
+
 <main class="container mx-auto px-4 py-8 flex-grow fade-in">
     @if(session('success'))
         <div class="bg-green-50 border-r-4 border-green-500 p-4 text-green-700 rounded mb-4 flex items-start">

@@ -4,54 +4,80 @@
 
 @section('content')
     <div class="container px-6 mx-auto">
-        <div class="flex items-center justify-between mb-6">
-            <h1 class="text-2xl font-bold flex items-center">
-                <svg class="w-6 h-6 ml-2 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+
+        @if(session('success'))
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4 flex items-center" role="alert">
+                <svg class="w-5 h-5 ml-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
                 </svg>
-                مدیریت اعلانات
-            </h1>
-
-            <div>
-                <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-                    <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M19 12H5"></path>
-                        <path d="M12 19l-7-7 7-7"></path>
-                    </svg>
-                    بازگشت به داشبورد
-                </a>
+                <span>{{ session('success') }}</span>
             </div>
-        </div>
+        @endif
 
-        <div class="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
-            <div class="p-6">
-                <div id="admin-announcements" class="fade-in">
-                    <div class="flex justify-center items-center min-h-[400px]">
-                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                        <span class="mr-2 text-gray-500">در حال بارگذاری...</span>
-                    </div>
-                </div>
+        @if(session('error'))
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4 flex items-center" role="alert">
+                <svg class="w-5 h-5 ml-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>{{ session('error') }}</span>
+            </div>
+        @endif
+
+        <div id="admin-announcements">
+            <div class="flex justify-center items-center min-h-[400px]">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <span class="mr-2 text-gray-500">در حال بارگذاری...</span>
             </div>
         </div>
     </div>
 @endsection
 
 @push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+
+    <style>
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .pwt-btn-today,
+        .pwt-btn-submit {
+            background-color: #3b82f6 !important;
+            color: white !important;
+        }
+
+        .pwt-btn-today:hover,
+        .pwt-btn-submit:hover {
+            background-color: #2563eb !important;
+        }
+    </style>
+
     @vite('resources/css/app.css')
 @endpush
 
 @push('scripts')
-    <script>
-        window.initialData = {
-            routes: {
-                list: '{{ route('api.announcements.index') }}',
-                create: '{{ route('api.announcements.store') }}',
-                update: '{{ route('api.announcements.update', ':id') }}',
-                delete: '{{ route('api.announcements.destroy', ':id') }}'
-            }
-        };
-    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     @viteReactRefresh
     @vite(['resources/js/admin.jsx'])
 @endpush
