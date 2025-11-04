@@ -7,67 +7,77 @@ use Illuminate\Http\Request;
 
 class AnnouncementController extends Controller
 {
-    public function index()
+    /**
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function active()
     {
-        $announcements = Announcement::active()
-            ->when(request()->expectsJson(), function ($query) {
-                return $query->latest('published_at');
-            }, function ($query) {
-                return $query->byPriority()->paginate(15);
-            });
+        $announcements = Announcement::where('is_active', true)
+            ->where('published_at', '<=', now())
+            ->where(function($q) {
+                $q->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->orderBy('priority', 'desc')
+            ->orderBy('published_at', 'desc')
+            ->get();
 
-        return request()->expectsJson()
-            ? response()->json($announcements)
-            : view('announcements.index', compact('announcements'));
+        return response()->json($announcements);
     }
 
-    public function store(Request $request)
+    /**
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function top()
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'is_active' => 'sometimes|boolean',
-            'type' => 'required|in:general,maintenance,promotion',
-            'priority' => 'required|integer|min:0',
-            'published_at' => 'nullable|date',
-            'expires_at' => 'nullable|date|after:published_at'
-        ]);
-
-        $announcement = Announcement::create($validated);
-
-        return $request->expectsJson()
-            ? response()->json($announcement, 201)
-            : redirect()->route('announcements.index')->with('success', 'اطلاعیه با موفقیت ایجاد شد.');
-    }
-
-    public function update(Request $request, Announcement $announcement)
-    {
-        $validated = $request->validate([
-            'title' => 'sometimes|string|max:255',
-            'content' => 'sometimes|string',
-            'is_active' => 'sometimes|boolean',
-            'type' => 'sometimes|in:general,maintenance,promotion',
-            'priority' => 'sometimes|integer|min:0',
-            'published_at' => 'nullable|date',
-            'expires_at' => 'nullable|date|after:published_at'
-        ]);
-
-        $announcement->update($validated);
+        $announcement = Announcement::where('is_active', true)
+            ->where('published_at', '<=', now())
+            ->where(function($q) {
+                $q->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->orderBy('priority', 'desc')
+            ->first();
 
         return response()->json($announcement);
     }
 
-    public function destroy(Announcement $announcement)
+    /**
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function index()
     {
-        $announcement->delete();
+        $announcements = Announcement::where('is_active', true)
+            ->where('published_at', '<=', now())
+            ->where(function($q) {
+                $q->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->orderBy('priority', 'desc')
+            ->orderBy('published_at', 'desc')
+            ->paginate(10);
 
-        return request()->expectsJson()
-            ? response()->json(['message' => 'اعلان با موفقیت حذف شد'])
-            : redirect()->route('announcements.index')->with('success', 'اعلان با موفقیت حذف شد');
+        return response()->json($announcements);
     }
 
-    public function edit(Announcement $announcement)
+    /**
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show($id)
     {
-        return view('announcements.edit', compact('announcement'));
+        $announcement = Announcement::where('is_active', true)
+            ->where('published_at', '<=', now())
+            ->where(function($q) {
+                $q->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->findOrFail($id);
+
+        return response()->json($announcement);
     }
 }
