@@ -2,7 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import AdminDashboard from '@/Components/Admin/AdminDashboard';
 import LoyaltyAdmin from '@/Components/Admin/Loyalty/LoyaltyAdmin';
-import AnnouncementAdmin from '@/Components/Admin/Announcements/AnnouncementAdmin';
+import AnnouncementAdmin from '@/Components/Admin/Announcement/AnnouncementAdmin';
 import BlogAdmin from '@/Components/Admin/Blog/BlogAdmin';
 import GalleryAdmin from '@/Components/Admin/Gallery/GalleryAdmin';
 import ReportDashboard from '@/Components/Admin/Reports/ReportDashboard';

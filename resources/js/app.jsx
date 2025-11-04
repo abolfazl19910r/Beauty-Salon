@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client';
 import BookingActions from './Components/BookingActions';
 import TwoFactorAuth from './Components/Auth/TwoFactorAuth';
 import SecureForm from './Components/Common/SecureForm';
+import AnnouncementBanner from './components/Announcement/AnnouncementBanner';
 
 // Loading component
 const LoadingComponent = () => (
@@ -54,3 +55,4 @@ if (document.getElementById('booking-actions')) {
 
 mountComponent('two-factor-auth', TwoFactorAuth);
 mountComponent('secure-form', SecureForm);
+mountComponent('announcement-banner', AnnouncementBanner);
