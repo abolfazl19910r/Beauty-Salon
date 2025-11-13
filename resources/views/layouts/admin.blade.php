@@ -237,7 +237,7 @@
 
     <div id="sidebar-backdrop" class="md:hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-40 hidden" onclick="toggleSidebar()"></div>
 
-    <div class="flex-1 flex flex-col overflow-hidden relative">
+    <div class="flex-1 flex flex-col relative">
         <header class="bg-white border-b shadow-sm sticky top-0 z-30">
             <div class="px-4 py-3 flex justify-between items-center">
                 <button type="button" class="md:hidden text-gray-600 focus:outline-none" onclick="toggleSidebar()">
