@@ -251,7 +251,10 @@
                 <h1 class="text-lg font-bold md:hidden">@yield('title')</h1>
 
                 <div class="flex items-center space-x-3 space-x-reverse">
-                    <button type="button" class="p-1 rounded-full text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <button type="button"
+                            id="search-button"
+                            class="p-1 rounded-full text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            onclick="toggleSearchModal()">
                         <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8"></circle>
                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -359,12 +362,89 @@
     </div>
 </div>
 
+<div id="search-modal"
+     class="fixed inset-0 z-[100] hidden flex items-start justify-center pt-16 bg-gray-900 bg-opacity-50 transition-opacity"
+     aria-modal="true" role="dialog"
+     onclick="closeSearchModalIfClickOutside(event)">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 overflow-hidden transform transition-all fade-in-up"
+         role="document"
+         id="search-modal-content">
+
+        <div class="p-4">
+            <h3 class="text-lg font-medium text-gray-900 border-b pb-2 mb-4">جستجوی سریع در پنل</h3>
+            <form action="{{ route('admin.search.index') }}" method="GET">
+                <div class="relative">
+                    <input type="search" name="q" placeholder="جستجو بین خدمات، متخصصین، کاربران..."
+                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm transition"
+                           autofocus>
+                    <div class="absolute right-3 top-0 bottom-0 flex items-center pointer-events-none text-gray-400">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <button type="button" onclick="toggleSearchModal()"
+                            class="ml-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+                        انصراف
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">
+                        جستجو
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .fade-in-up {
+        animation: fadeInUp 0.3s ease-out;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://unpkg.com/persian-date/dist/persian-date.min.js"></script>
 <script src="https://unpkg.com/persian-datepicker/dist/js/persian-datepicker.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+
+    function toggleSearchModal() {
+        const modal = document.getElementById('search-modal');
+        if (modal.classList.contains('hidden')) {
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                const searchInput = modal.querySelector('input[type="search"]');
+                if (searchInput) searchInput.focus();
+            }, 50);
+        } else {
+            modal.classList.add('hidden');
+        }
+    }
+
+    function closeSearchModalIfClickOutside(event) {
+        const modal = document.getElementById('search-modal');
+        const content = document.getElementById('search-modal-content');
+        if (!content.contains(event.target) && event.target === modal) {
+            modal.classList.add('hidden');
+        }
+    }
+
+    document.addEventListener('keydown', function(event) {
+        const modal = document.getElementById('search-modal');
+        if (event.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+            modal.classList.add('hidden');
+        }
+    });
+
     function toggleSidebar() {
         const sidebar = document.querySelector('aside');
         const backdrop = document.getElementById('sidebar-backdrop');

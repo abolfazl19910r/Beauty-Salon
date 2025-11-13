@@ -28,6 +28,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         require __DIR__.'/admin/specialists.php';
         require __DIR__.'/admin/users.php';
 
+        require __DIR__.'/admin/search.php';
+
         require __DIR__.'/admin/bookings.php';
         require __DIR__.'/admin/payments.php';
         require __DIR__.'/admin/categories.php';
