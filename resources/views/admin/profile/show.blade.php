@@ -17,7 +17,7 @@
         <div class="p-6">
             <div class="mb-8 flex items-center">
                 <div class="w-24 h-24 rounded-full bg-blue-500 flex items-center justify-center text-white text-4xl font-bold">
-                    {{ substr($user->name, 0, 1) }}
+                    {{ mb_substr($user->name, 0, 1) }}
                 </div>
                 <div class="mr-6">
                     <h3 class="text-2xl font-bold">{{ $user->name }}</h3>

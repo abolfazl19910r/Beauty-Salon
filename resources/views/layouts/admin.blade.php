@@ -268,7 +268,7 @@
 
                     <div class="relative inline-block text-left">
                         <button type="button" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
-                            <span class="text-sm font-medium">{{ substr(auth()->user()->name ?? 'کاربر', 0, 1) }}</span>
+                            <span class="text-sm font-medium">{{ mb_substr(auth()->user()->name ?? 'کاربر', 0, 1) }}</span>
                         </button>
 
                         <div id="user-menu-dropdown"
