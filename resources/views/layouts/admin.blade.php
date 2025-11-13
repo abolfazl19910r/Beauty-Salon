@@ -270,6 +270,42 @@
                         <button type="button" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
                             <span class="text-sm font-medium">{{ substr(auth()->user()->name ?? 'کاربر', 0, 1) }}</span>
                         </button>
+
+                        <div id="user-menu-dropdown"
+                             class="hidden absolute left-0 z-50 mt-2 w-56 origin-top-left rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                             role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
+                            <div class="py-1" role="none">
+
+                                <div class="px-4 py-2 border-b">
+                                    <p class="text-sm font-medium text-gray-900 truncate">{{ auth()->user()->name ?? 'کاربر' }}</p>
+                                    <p class="text-sm text-gray-500 truncate">{{ auth()->user()->email ?? '' }}</p>
+                                </div>
+
+                                <a href="{{ route('admin.profile.show') }}" class="text-gray-700 hover:bg-gray-100 flex items-center px-4 py-2 text-sm" role="menuitem" tabindex="-1" id="user-menu-item-0">
+                                    <svg class="w-5 h-5 mr-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zM8 12a6 6 0 00-5.43 3.59A8 8 0 0118 10a8 8 0 01-4.57 7.59A6 6 0 008 12z" clip-rule="evenodd" />
+                                    </svg>
+                                    نمایش پروفایل
+                                </a>
+                                <a href="{{ route('admin.profile.edit') }}" class="text-gray-700 hover:bg-gray-100 flex items-center px-4 py-2 text-sm" role="menuitem" tabindex="-1" id="user-menu-item-1">
+                                    <svg class="w-5 h-5 mr-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+                                        <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" />
+                                    </svg>
+                                    ویرایش پروفایل
+                                </a>
+
+                                <form method="POST" action="{{ route('logout') }}" role="none" class="border-t border-gray-100">
+                                    @csrf
+                                    <button type="submit" class="w-full text-left text-red-600 hover:bg-red-50 flex items-center px-4 py-2 text-sm" role="menuitem" tabindex="-1" id="user-menu-item-2">
+                                        <svg class="w-5 h-5 mr-2 text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m-3 0l3-3m0 0l-3-3m3 3H9" />
+                                        </svg>
+                                        خروج
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -344,6 +380,32 @@
             setTimeout(() => alert.remove(), 500);
         });
     }, 5000);
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const userMenuButton = document.getElementById('user-menu-button');
+        const userMenuDropdown = document.getElementById('user-menu-dropdown');
+
+        if (userMenuButton && userMenuDropdown) {
+            userMenuButton.addEventListener('click', function(event) {
+                userMenuDropdown.classList.toggle('hidden');
+                event.stopPropagation();
+            });
+
+            document.addEventListener('click', function(event) {
+                if (!userMenuDropdown.classList.contains('hidden')) {
+                    if (!userMenuDropdown.contains(event.target) && !userMenuButton.contains(event.target)) {
+                        userMenuDropdown.classList.add('hidden');
+                    }
+                }
+            });
+
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && !userMenuDropdown.classList.contains('hidden')) {
+                    userMenuDropdown.classList.add('hidden');
+                }
+            });
+        }
+    });
 
     document.addEventListener('DOMContentLoaded', function() {
         const deleteButtons = document.querySelectorAll('[data-confirm-delete]');
