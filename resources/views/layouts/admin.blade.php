@@ -150,6 +150,20 @@
 
             <div class="py-2">
                 <h3 class="text-xs font-semibold text-gray-400 px-3 mb-2 uppercase">سیستم‌ها</h3>
+
+                <a href="{{ route('admin.notifications.index') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.notifications*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors justify-between">
+                    <span class="flex items-center">
+                        <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        اعلانات
+                    </span>
+                        <span id="sidebar-notification-count" class="mr-2 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 hidden">
+                    </span>
+                </a>
+
                 <a href="{{ route('admin.loyalty.index') }}"
                    class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.loyalty*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
                     <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -180,10 +194,13 @@
                 <a href="{{ route('admin.announcements.index') }}"
                    class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.announcements*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
                     <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
                     </svg>
-                    اعلانات
+                    اطلاعیه
                 </a>
             </div>
 
@@ -293,7 +310,7 @@
                                 <p id="no-notifications-message" class="px-4 py-2 text-sm text-gray-500 hidden">اعلانی برای نمایش وجود ندارد.</p>
                             </div>
                             <div class="border-t border-gray-100">
-                                <a href="{{ route('admin.announcements.index') }}"
+                                <a href="{{ route('admin.notifications.index') }}"
                                    class="w-full text-center text-blue-600 hover:bg-blue-50 block px-4 py-2 text-sm"
                                    role="menuitem"
                                    tabindex="-1">
@@ -446,54 +463,151 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://unpkg.com/persian-date/dist/persian-date.min.js"></script>
-<script src="https://unpkg.com/persian-datepicker/dist/js/persian-datepicker.min.js"></script>
+<script src="https://unpkg.com/persian-datepicker@latest/dist/js/persian-datepicker.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
+    window.AdminRoutes = {
+        notificationsIndex: '{{ route("admin.notifications.index") }}',
+        notificationsLatest: '{{ route("admin.notifications.latest") }}',
+        notificationsCount: '{{ route("admin.notifications.count") }}',
+        notificationsRead: '{{ route("admin.notifications.read", ":id") }}',
+        csrfToken: document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+    };
 
-    function toggleSearchModal() {
-        const modal = document.getElementById('search-modal');
-        if (modal.classList.contains('hidden')) {
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                const searchInput = modal.querySelector('input[type="search"]');
-                if (searchInput) searchInput.focus();
-            }, 50);
-        } else {
-            modal.classList.add('hidden');
-        }
+    function fetchUnreadCount() {
+        fetch(window.AdminRoutes.notificationsCount)
+            .then(response => response.json())
+            .then(data => {
+                const headerBadge = document.getElementById('notification-count-badge');
+                const sidebarBadge = document.getElementById('sidebar-notification-count');
+
+                if (data.count > 0) {
+                    headerBadge.textContent = data.count;
+                    headerBadge.classList.remove('hidden');
+                } else {
+                    headerBadge.classList.add('hidden');
+                }
+
+                if (sidebarBadge) {
+                    if (data.count > 0) {
+                        sidebarBadge.textContent = data.count;
+                        sidebarBadge.classList.remove('hidden');
+                    } else {
+                        sidebarBadge.classList.add('hidden');
+                    }
+                }
+
+            })
+            .catch(error => console.error('Error fetching unread count:', error));
     }
 
-    function closeSearchModalIfClickOutside(event) {
-        const modal = document.getElementById('search-modal');
-        const content = document.getElementById('search-modal-content');
-        if (!content.contains(event.target) && event.target === modal) {
-            modal.classList.add('hidden');
-        }
+    function fetchLatestNotifications() {
+        const listContainer = document.getElementById('notification-list');
+        listContainer.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm">در حال بارگذاری...</div>';
+
+        fetch(window.AdminRoutes.notificationsLatest)
+            .then(response => response.json())
+            .then(data => {
+                listContainer.innerHTML = '';
+                const notifications = data.notifications;
+
+                if (notifications.length === 0) {
+                    listContainer.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm">اعلان جدیدی ندارید.</div>';
+                } else {
+                    notifications.forEach(notification => {
+                        const item = document.createElement('a');
+                        item.href = notification.link;
+                        item.classList.add('flex', 'items-start', 'px-4', 'py-3', 'hover:bg-gray-50', 'border-b', 'border-gray-100');
+                        item.setAttribute('data-notification-id', notification.id);
+
+                        item.innerHTML = `
+                            <div class="text-sm font-medium text-gray-800 flex-1 ml-3">${notification.message}</div>
+                            <div class="text-xs text-gray-500 whitespace-nowrap">${notification.time_ago}</div>
+                        `;
+
+                        item.addEventListener('click', function(e) {
+                            markNotificationAsRead(notification.id, notification.link);
+                        });
+
+                        listContainer.appendChild(item);
+                    });
+
+                    const viewAllLink = document.createElement('a');
+                    viewAllLink.href = window.AdminRoutes.notificationsIndex;
+                    viewAllLink.classList.add('block', 'text-center', 'text-blue-600', 'hover:text-blue-800', 'py-2', 'text-sm', 'font-medium');
+                    viewAllLink.textContent = 'مشاهده همه اعلانات';
+                    listContainer.appendChild(viewAllLink);
+                }
+            })
+            .catch(error => {
+                listContainer.innerHTML = '<div class="p-4 text-center text-red-500 text-sm">خطا در بارگذاری اعلانات.</div>';
+                console.error('Error fetching latest notifications:', error);
+            });
     }
 
-    document.addEventListener('keydown', function(event) {
-        const modal = document.getElementById('search-modal');
-        if (event.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
-            modal.classList.add('hidden');
+    function markNotificationAsRead(id, redirectLink) {
+        const url = window.AdminRoutes.notificationsRead.replace(':id', id);
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': window.AdminRoutes.csrfToken,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (response.ok) {
+                    fetchUnreadCount();
+                    window.location.href = redirectLink;
+                } else {
+                    console.error('Failed to mark notification as read');
+                    window.location.href = redirectLink;
+                }
+            })
+            .catch(error => {
+                console.error('Network or other error:', error);
+                window.location.href = redirectLink;
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+
+        fetchUnreadCount();
+
+        setInterval(fetchUnreadCount, 60000);
+
+        const notificationButton = document.getElementById('notification-button');
+        const notificationDropdown = document.getElementById('notification-dropdown');
+
+        if (notificationButton && notificationDropdown) {
+            notificationButton.addEventListener('click', function(event) {
+                const userMenuDropdown = document.getElementById('user-menu-dropdown');
+                if (userMenuDropdown && !userMenuDropdown.classList.contains('hidden')) {
+                    userMenuDropdown.classList.add('hidden');
+                }
+                notificationDropdown.classList.toggle('hidden');
+                event.stopPropagation();
+
+                if (!notificationDropdown.classList.contains('hidden')) {
+                    fetchLatestNotifications();
+                }
+            });
+
+            document.addEventListener('click', function(event) {
+                if (!notificationDropdown.classList.contains('hidden')) {
+                    if (!notificationDropdown.contains(event.target) && !notificationButton.contains(event.target)) {
+                        notificationDropdown.classList.add('hidden');
+                    }
+                }
+            });
+
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && !notificationDropdown.classList.contains('hidden')) {
+                    notificationDropdown.classList.add('hidden');
+                }
+            });
         }
     });
-
-    function toggleSidebar() {
-        const sidebar = document.querySelector('aside');
-        const backdrop = document.getElementById('sidebar-backdrop');
-        sidebar.classList.toggle('hidden');
-        backdrop.classList.toggle('hidden');
-    }
-
-    setTimeout(() => {
-        const alerts = document.querySelectorAll('.fade-in[role="alert"]');
-        alerts.forEach(alert => {
-            alert.style.opacity = '0';
-            alert.style.transition = 'opacity 0.5s';
-            setTimeout(() => alert.remove(), 500);
-        });
-    }, 5000);
 
     document.addEventListener('DOMContentLoaded', function() {
         const userMenuButton = document.getElementById('user-menu-button');
@@ -501,6 +615,10 @@
 
         if (userMenuButton && userMenuDropdown) {
             userMenuButton.addEventListener('click', function(event) {
+                const notificationDropdown = document.getElementById('notification-dropdown');
+                if (notificationDropdown && !notificationDropdown.classList.contains('hidden')) {
+                    notificationDropdown.classList.add('hidden');
+                }
                 userMenuDropdown.classList.toggle('hidden');
                 event.stopPropagation();
             });
@@ -545,36 +663,6 @@
                 });
             });
         });
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const notificationButton = document.getElementById('notification-button');
-        const notificationDropdown = document.getElementById('notification-dropdown');
-
-        if (notificationButton && notificationDropdown) {
-            notificationButton.addEventListener('click', function(event) {
-                const userMenuDropdown = document.getElementById('user-menu-dropdown');
-                if (userMenuDropdown && !userMenuDropdown.classList.contains('hidden')) {
-                    userMenuDropdown.classList.add('hidden');
-                }
-                notificationDropdown.classList.toggle('hidden');
-                event.stopPropagation();
-            });
-
-            document.addEventListener('click', function(event) {
-                if (!notificationDropdown.classList.contains('hidden')) {
-                    if (!notificationDropdown.contains(event.target) && !notificationButton.contains(event.target)) {
-                        notificationDropdown.classList.add('hidden');
-                    }
-                }
-            });
-
-            document.addEventListener('keydown', function(event) {
-                if (event.key === 'Escape' && !notificationDropdown.classList.contains('hidden')) {
-                    notificationDropdown.classList.add('hidden');
-                }
-            });
-        }
     });
 </script>
 

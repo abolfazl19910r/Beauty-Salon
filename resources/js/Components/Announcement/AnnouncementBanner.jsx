@@ -14,7 +14,7 @@ const AnnouncementBanner = () => {
     const fetchActiveAnnouncements = async () => {
         try {
             const response = await fetch('/api/announcements/active');
-            if (!response.ok) throw new Error('خطا در دریافت اعلانات');
+            if (!response.ok) throw new Error('خطا در دریافت اطلاعیه ها');
             const data = await response.json();
             setAnnouncements(data);
         } catch (error) {
@@ -114,7 +114,7 @@ const AnnouncementBanner = () => {
                                 <button
                                     onClick={() => dismissAnnouncement(announcement.id)}
                                     className={`${style.iconColor} hover:opacity-70 transition-opacity flex-shrink-0`}
-                                    title="بستن این اعلان"
+                                    title="بستن این اطلاعیه"
                                 >
                                     <X className="h-5 w-5" />
                                 </button>

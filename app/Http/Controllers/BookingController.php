@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\BookingCreated;
 use App\Models\BeautyService;
 use App\Models\Booking;
 use App\Models\DiscountCode;
@@ -237,7 +238,7 @@ class BookingController extends Controller
                     'discount_code' => $request->discount_code,
                     'discount_amount' => $discountAmount
                 ]);
-
+                BookingCreated::dispatch($booking);
                 $booking->load(['service', 'specialist']);
 
                 if (request()->expectsJson()) {

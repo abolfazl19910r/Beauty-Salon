@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -30,6 +31,18 @@ class User extends Authenticatable
         'phone_verified_at' => 'datetime',
         'is_admin' => 'boolean',
     ];
+
+    /**
+     *
+     * @return MorphMany
+     */
+    public function notifications(): MorphMany
+    {
+        return $this->morphMany(
+            \App\Models\UserNotification::class,
+            'notifiable'
+        )->orderBy('created_at', 'desc');
+    }
 
     public function roles(): BelongsToMany
     {

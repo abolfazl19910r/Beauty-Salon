@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'مدیریت اعلانات')
+@section('title', 'مدیریت اطلاعیه ها')
 
 @section('content')
     <div class="container px-6 mx-auto">

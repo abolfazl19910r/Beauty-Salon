@@ -45,6 +45,15 @@
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                     <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                 </svg>
+                اطلاعیه ها
+            </x-admin-nav-link>
+
+            <x-admin-nav-link href="{{ route('admin.notifications.index') }}" :active="request()->routeIs('admin.notifications.*')"
+                              class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors">
+                <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
                 اعلانات
             </x-admin-nav-link>
 

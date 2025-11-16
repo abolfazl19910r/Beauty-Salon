@@ -103,7 +103,7 @@ const AnnouncementAdmin = () => {
                     'Accept': 'application/json'
                 }
             });
-            if (!response.ok) throw new Error('خطا در دریافت اعلانات');
+            if (!response.ok) throw new Error('خطا در دریافت اطلاعیه ها');
             const data = await response.json();
             setAnnouncements(Array.isArray(data) ? data : data.data || []);
             setError(null);
@@ -252,7 +252,7 @@ const AnnouncementAdmin = () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'خطا در ایجاد اعلان جدید');
+                throw new Error(errorData.message || 'خطا در ایجاد اطلاعیه جدید');
             }
 
             await Promise.all([
@@ -280,7 +280,7 @@ const AnnouncementAdmin = () => {
     };
 
     const handleDelete = async (id) => {
-        if (!confirm('آیا از حذف این اعلان اطمینان دارید؟')) return;
+        if (!confirm('آیا از حذف این اطلاعیه اطمینان دارید؟')) return;
 
         try {
             const response = await fetch(`/admin/announcements/${id}`, {
@@ -291,7 +291,7 @@ const AnnouncementAdmin = () => {
                 }
             });
 
-            if (!response.ok) throw new Error('خطا در حذف اعلان');
+            if (!response.ok) throw new Error('خطا در حذف اطلاعیه');
 
             await Promise.all([
                 fetchStats(),
@@ -378,7 +378,7 @@ const AnnouncementAdmin = () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'خطا در ویرایش اعلان');
+                throw new Error(errorData.message || 'خطا در ویرایش اطلاعیه');
             }
 
             await Promise.all([
@@ -439,7 +439,7 @@ const AnnouncementAdmin = () => {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <Bell className="h-6 w-6 text-blue-500" />
-                    <h2 className="text-2xl font-bold">مدیریت اعلانات</h2>
+                    <h2 className="text-2xl font-bold">مدیریت اطلاعیه ها</h2>
                 </div>
                 <a href="/admin" className="inline-flex items-center px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                     <svg className="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -461,7 +461,7 @@ const AnnouncementAdmin = () => {
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm opacity-80 mb-1">کل اعلانات</p>
+                                <p className="text-sm opacity-80 mb-1">کل اطلاعیه ها</p>
                                 <p className="text-3xl font-bold">{stats.total}</p>
                             </div>
                             <div className="bg-white bg-opacity-20 rounded-full p-3">
@@ -518,7 +518,7 @@ const AnnouncementAdmin = () => {
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <CardTitle>
-                            {editingId ? 'ویرایش اعلان' : 'افزودن اعلان جدید'}
+                            {editingId ? 'ویرایش اطلاعیه' : 'افزودن اطلاعیه جدید'}
                         </CardTitle>
                         {editingId && (
                             <button
@@ -543,13 +543,13 @@ const AnnouncementAdmin = () => {
                                     value={newAnnouncement.title}
                                     onChange={e => setNewAnnouncement({...newAnnouncement, title: e.target.value})}
                                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="عنوان اعلان را وارد کنید"
+                                    placeholder="عنوان اطلاعیه را وارد کنید"
                                     required
                                 />
                             </div>
                             <div>
                                 <label className="block mb-2 text-sm font-medium text-gray-700">
-                                    نوع اعلان <span className="text-red-500">*</span>
+                                    نوع اطلاعیه <span className="text-red-500">*</span>
                                 </label>
                                 <select
                                     value={newAnnouncement.type}
@@ -572,7 +572,7 @@ const AnnouncementAdmin = () => {
                                 onChange={e => setNewAnnouncement({...newAnnouncement, content: e.target.value})}
                                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 rows="4"
-                                placeholder="محتوای اعلان را وارد کنید"
+                                placeholder="محتوای اطلاعیه را وارد کنید"
                                 required
                             />
                         </div>
@@ -657,7 +657,7 @@ const AnnouncementAdmin = () => {
                                 className="ml-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                             />
                             <label htmlFor="is_active" className="text-sm font-medium text-gray-700">
-                                فعال بودن اعلان
+                                فعال بودن اطلاعیه
                             </label>
                         </div>
 
@@ -676,7 +676,7 @@ const AnnouncementAdmin = () => {
                                 className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
                             >
                                 <Bell className="h-4 w-4" />
-                                {editingId ? 'به‌روزرسانی اعلان' : 'افزودن اعلان'}
+                                {editingId ? 'به‌روزرسانی اطلاعیه' : 'افزودن اطلاعیه'}
                             </button>
                         </div>
                     </form>
@@ -685,7 +685,7 @@ const AnnouncementAdmin = () => {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>لیست اعلانات ({announcements.length})</CardTitle>
+                    <CardTitle>لیست اطلاعیه ها ({announcements.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="overflow-x-auto">
@@ -705,7 +705,7 @@ const AnnouncementAdmin = () => {
                             {announcements.length === 0 ? (
                                 <tr>
                                     <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
-                                        هیچ اعلانی یافت نشد
+                                        هیچ اطلاعیه یافت نشد
                                     </td>
                                 </tr>
                             ) : (

@@ -39,6 +39,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         require __DIR__.'/admin/blog.php';
         require __DIR__.'/admin/announcements.php';
 
+        require __DIR__.'/admin/notifications.php';
+
         require __DIR__.'/admin/reports.php';
         require __DIR__.'/admin/security.php';
         require __DIR__.'/admin/roles.php';

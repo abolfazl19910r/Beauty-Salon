@@ -106,7 +106,7 @@ class AdminAnnouncementController extends Controller
         $announcement->delete();
 
         return response()->json([
-            'message' => 'اعلان با موفقیت حذف شد'
+            'message' => 'اطلاعیه با موفقیت حذف شد'
         ]);
     }
 }

@@ -11,7 +11,7 @@ import {
 const Sidebar = () => {
     const menuItems = [
         { title: 'داشبورد', path: '/admin/dashboard', icon: LayoutDashboard },
-        { title: 'اعلانات', path: '/admin/announcements', icon: Bell },
+        { title: 'اطلاعیه', path: '/admin/announcements', icon: Bell },
         { title: 'وبلاگ', path: '/admin/blog', icon: Newspaper },
         { title: 'گالری', path: '/admin/gallery', icon: Image },
         { title: 'امتیازات', path: '/admin/loyalty', icon: Gift },
