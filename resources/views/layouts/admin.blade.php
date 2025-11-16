@@ -261,13 +261,47 @@
                         </svg>
                     </button>
 
-                    <button type="button" class="p-1 rounded-full text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 relative">
-                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                        </svg>
-                        <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-500 rounded-full">3</span>
-                    </button>
+                    <div class="relative inline-block text-left">
+                        <button type="button"
+                                id="notification-button"
+                                class="p-1 rounded-full text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 relative"
+                                aria-expanded="false" aria-haspopup="true">
+                            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                            </svg>
+                            {{-- این عدد باید از دیتابیس دریافت شود --}}
+                            <span id="notification-count" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-500 rounded-full">3</span>
+                        </button>
+
+                        <div id="notification-dropdown"
+                             class="hidden absolute left-0 z-50 mt-2 w-72 origin-top-left rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                             role="menu" aria-orientation="vertical" aria-labelledby="notification-button" tabindex="-1">
+                            <div class="px-4 py-2 border-b">
+                                <p class="text-sm font-bold text-gray-900">اعلانات جدید</p>
+                            </div>
+                            <div class="py-1 max-h-64 overflow-y-auto" role="none">
+                                <a href="#" class="text-gray-700 hover:bg-gray-100 flex items-center px-4 py-2 text-sm" role="menuitem" tabindex="-1">
+                                    نوبت جدید: کاشت ناخن برای سارا
+                                </a>
+                                <a href="#" class="text-gray-700 hover:bg-gray-100 flex items-center px-4 py-2 text-sm" role="menuitem" tabindex="-1">
+                                    کاربر جدیدی ثبت نام کرد.
+                                </a>
+                                <a href="#" class="text-gray-700 hover:bg-gray-100 flex items-center px-4 py-2 text-sm" role="menuitem" tabindex="-1">
+                                    گزارش هفتگی آماده است.
+                                </a>
+                                <p id="no-notifications-message" class="px-4 py-2 text-sm text-gray-500 hidden">اعلانی برای نمایش وجود ندارد.</p>
+                            </div>
+                            <div class="border-t border-gray-100">
+                                <a href="{{ route('admin.announcements.index') }}"
+                                   class="w-full text-center text-blue-600 hover:bg-blue-50 block px-4 py-2 text-sm"
+                                   role="menuitem"
+                                   tabindex="-1">
+                                    مشاهده همه اعلانات
+                                </a>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="relative inline-block text-left">
                         <button type="button" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
@@ -511,6 +545,36 @@
                 });
             });
         });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const notificationButton = document.getElementById('notification-button');
+        const notificationDropdown = document.getElementById('notification-dropdown');
+
+        if (notificationButton && notificationDropdown) {
+            notificationButton.addEventListener('click', function(event) {
+                const userMenuDropdown = document.getElementById('user-menu-dropdown');
+                if (userMenuDropdown && !userMenuDropdown.classList.contains('hidden')) {
+                    userMenuDropdown.classList.add('hidden');
+                }
+                notificationDropdown.classList.toggle('hidden');
+                event.stopPropagation();
+            });
+
+            document.addEventListener('click', function(event) {
+                if (!notificationDropdown.classList.contains('hidden')) {
+                    if (!notificationDropdown.contains(event.target) && !notificationButton.contains(event.target)) {
+                        notificationDropdown.classList.add('hidden');
+                    }
+                }
+            });
+
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && !notificationDropdown.classList.contains('hidden')) {
+                    notificationDropdown.classList.add('hidden');
+                }
+            });
+        }
     });
 </script>
 
