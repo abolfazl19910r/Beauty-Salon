@@ -48,8 +48,9 @@ Route::name('api.')->group(function () {
             if (file_exists(__DIR__.'/api/admin/bookings.php')) {
                 require __DIR__.'/api/admin/bookings.php';
             }
-
-            require __DIR__.'/api/admin/loyalty.php';
+            if (file_exists(__DIR__.'/api/admin/loyalty.php')) {
+                require __DIR__.'/api/admin/loyalty.php';
+            }
         });
     });
 });
