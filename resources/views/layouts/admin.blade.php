@@ -61,6 +61,32 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             transform: translateY(-2px);
         }
+
+        .notification-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 0 4px;
+            border-radius: 9px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .notification-item-unread {
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0.1) 100%);
+            border-right: 3px solid #3b82f6;
+        }
     </style>
 </head>
 <body class="bg-gray-50 rtl font-vazir text-gray-800">
@@ -160,7 +186,7 @@
                         </svg>
                         اعلانات
                     </span>
-                        <span id="sidebar-notification-count" class="mr-2 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 hidden">
+                    <span id="sidebar-notification-count" class="mr-2 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 hidden">
                     </span>
                 </a>
 
@@ -287,8 +313,8 @@
                                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                                 <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                             </svg>
-                            {{-- این عدد باید از دیتابیس دریافت شود --}}
-                            <span id="notification-count" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-500 rounded-full">3</span>
+                            {{-- عدد فعلی را 0 کنید و در جاوااسکریپت پنهانش می‌کنیم --}}
+                            <span id="notification-count" class="absolute top-0 right-0 hidden items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-500 rounded-full">0</span>
                         </button>
 
                         <div id="notification-dropdown"
@@ -297,16 +323,8 @@
                             <div class="px-4 py-2 border-b">
                                 <p class="text-sm font-bold text-gray-900">اعلانات جدید</p>
                             </div>
-                            <div class="py-1 max-h-64 overflow-y-auto" role="none">
-                                <a href="#" class="text-gray-700 hover:bg-gray-100 flex items-center px-4 py-2 text-sm" role="menuitem" tabindex="-1">
-                                    نوبت جدید: کاشت ناخن برای سارا
-                                </a>
-                                <a href="#" class="text-gray-700 hover:bg-gray-100 flex items-center px-4 py-2 text-sm" role="menuitem" tabindex="-1">
-                                    کاربر جدیدی ثبت نام کرد.
-                                </a>
-                                <a href="#" class="text-gray-700 hover:bg-gray-100 flex items-center px-4 py-2 text-sm" role="menuitem" tabindex="-1">
-                                    گزارش هفتگی آماده است.
-                                </a>
+                            <div id="notification-list-container" class="py-1 max-h-64 overflow-y-auto" role="none">
+                                <p id="loading-notifications-message" class="px-4 py-2 text-sm text-gray-500">در حال بارگذاری...</p>
                                 <p id="no-notifications-message" class="px-4 py-2 text-sm text-gray-500 hidden">اعلانی برای نمایش وجود ندارد.</p>
                             </div>
                             <div class="border-t border-gray-100">
@@ -322,7 +340,9 @@
 
                     <div class="relative inline-block text-left">
                         <button type="button" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
-                            <span class="text-sm font-medium">{{ mb_substr(auth()->user()->name ?? 'کاربر', 0, 1) }}</span>
+                            <span class="text-sm font-medium">
+                                {{ mb_substr(optional(auth()->user())->name ?? 'کاربر', 0, 1) }}
+                            </span>
                         </button>
 
                         <div id="user-menu-dropdown"
@@ -470,7 +490,8 @@
         notificationsIndex: '{{ route("admin.notifications.index") }}',
         notificationsLatest: '{{ route("admin.notifications.latest") }}',
         notificationsCount: '{{ route("admin.notifications.count") }}',
-        notificationsRead: '{{ route("admin.notifications.read", ":id") }}',
+        // اصلاح شد: استفاده از "000" به عنوان Placeholder امن
+        notificationsRead: '{{ route("admin.notifications.read", "000") }}'.replace('000', ':id'),
         csrfToken: document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
     };
 
@@ -478,69 +499,78 @@
         fetch(window.AdminRoutes.notificationsCount)
             .then(response => response.json())
             .then(data => {
-                const headerBadge = document.getElementById('notification-count-badge');
-                const sidebarBadge = document.getElementById('sidebar-notification-count');
+                const countElement = document.getElementById('notification-count');
+                const count = data.count;
 
-                if (data.count > 0) {
-                    headerBadge.textContent = data.count;
-                    headerBadge.classList.remove('hidden');
+                if (count > 0) {
+                    countElement.textContent = count > 99 ? '99+' : count;
+                    countElement.classList.remove('hidden');
                 } else {
-                    headerBadge.classList.add('hidden');
+                    countElement.classList.add('hidden');
                 }
-
-                if (sidebarBadge) {
-                    if (data.count > 0) {
-                        sidebarBadge.textContent = data.count;
-                        sidebarBadge.classList.remove('hidden');
-                    } else {
-                        sidebarBadge.classList.add('hidden');
-                    }
-                }
-
             })
-            .catch(error => console.error('Error fetching unread count:', error));
+            .catch(error => console.error('Error fetching notification count:', error));
     }
 
     function fetchLatestNotifications() {
-        const listContainer = document.getElementById('notification-list');
-        listContainer.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm">در حال بارگذاری...</div>';
+        const listContainer = document.getElementById('notification-list-container');
+        const noMessage = document.getElementById('no-notifications-message');
+        const loadingMessage = document.getElementById('loading-notifications-message');
+
+        if (!listContainer || !noMessage || !loadingMessage) return; // افزودن چک‌های امنیتی
+
+        // نمایش لودینگ
+        listContainer.innerHTML = '';
+        loadingMessage.classList.remove('hidden');
+        listContainer.appendChild(loadingMessage);
+        noMessage.classList.add('hidden');
 
         fetch(window.AdminRoutes.notificationsLatest)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
             .then(data => {
-                listContainer.innerHTML = '';
-                const notifications = data.notifications;
+                loadingMessage.classList.add('hidden');
 
-                if (notifications.length === 0) {
-                    listContainer.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm">اعلان جدیدی ندارید.</div>';
-                } else {
-                    notifications.forEach(notification => {
-                        const item = document.createElement('a');
-                        item.href = notification.link;
-                        item.classList.add('flex', 'items-start', 'px-4', 'py-3', 'hover:bg-gray-50', 'border-b', 'border-gray-100');
-                        item.setAttribute('data-notification-id', notification.id);
+                if (data.notifications && data.notifications.length > 0) {
+                    data.notifications.forEach(notification => {
+                        const link = document.createElement('a');
+                        link.href = notification.link;
+                        link.classList.add('text-gray-700', 'hover:bg-gray-100', 'flex', 'flex-col', 'items-start', 'px-4', 'py-2', 'text-sm', 'border-b', 'border-gray-50');
+                        link.setAttribute('role', 'menuitem');
+                        link.setAttribute('tabindex', '-1');
 
-                        item.innerHTML = `
-                            <div class="text-sm font-medium text-gray-800 flex-1 ml-3">${notification.message}</div>
-                            <div class="text-xs text-gray-500 whitespace-nowrap">${notification.time_ago}</div>
-                        `;
+                        // افزودن استایل خوانده نشده‌ها
+                        if (!notification.read_at) {
+                            link.classList.add('bg-blue-50', 'font-semibold');
+                        }
 
-                        item.addEventListener('click', function(e) {
-                            markNotificationAsRead(notification.id, notification.link);
-                        });
+                        link.innerHTML = `
+                        <span class="truncate w-full">${notification.message}</span>
+                        <span class="text-xs ${notification.read_at ? 'text-gray-500' : 'text-blue-500'} mt-0.5">${notification.time_ago}</span>
+                    `;
 
-                        listContainer.appendChild(item);
+                        // *** افزودن Event Listener برای مارک کردن به عنوان خوانده شده ***
+                        if (!notification.read_at) {
+                            link.addEventListener('click', (e) => {
+                                e.preventDefault(); // جلوگیری از هدایت فوری
+                                markNotificationAsRead(notification.id, notification.link);
+                            });
+                        }
+
+                        listContainer.appendChild(link);
                     });
-
-                    const viewAllLink = document.createElement('a');
-                    viewAllLink.href = window.AdminRoutes.notificationsIndex;
-                    viewAllLink.classList.add('block', 'text-center', 'text-blue-600', 'hover:text-blue-800', 'py-2', 'text-sm', 'font-medium');
-                    viewAllLink.textContent = 'مشاهده همه اعلانات';
-                    listContainer.appendChild(viewAllLink);
+                } else {
+                    noMessage.classList.remove('hidden');
+                    listContainer.appendChild(noMessage);
                 }
             })
             .catch(error => {
-                listContainer.innerHTML = '<div class="p-4 text-center text-red-500 text-sm">خطا در بارگذاری اعلانات.</div>';
+                loadingMessage.classList.add('hidden');
+                noMessage.textContent = 'خطا در بارگذاری اعلانات.';
+                noMessage.classList.remove('hidden');
+                listContainer.appendChild(noMessage);
                 console.error('Error fetching latest notifications:', error);
             });
     }

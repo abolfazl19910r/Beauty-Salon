@@ -19,6 +19,18 @@ class AdminNotificationController extends Controller
         return view('admin.notifications.index', compact('notifications'));
     }
 
+    public function show($id)
+    {
+        $user = Auth::user();
+        $notification = $user->notifications()->findOrFail($id);
+
+        if (is_null($notification->read_at)) {
+            $notification->markAsRead();
+        }
+
+        return view('admin.notifications.show', compact('notification'));
+    }
+
     public function markAsRead($id)
     {
         $notification = Auth::user()->notifications()->find($id);
@@ -28,7 +40,47 @@ class AdminNotificationController extends Controller
             return response()->json(['success' => true]);
         }
 
-        return response()->json(['success' => false], 404);
+        return response()->json(['success' => true, 'message' => 'اعلان قبلاً خوانده شده بود یا یافت نشد.'], 200);
+    }
+
+    public function delete($id)
+    {
+        $deleted = Auth::user()->notifications()->where('id', $id)->delete();
+
+        if ($deleted) {
+            return response()->json([
+                'success' => true,
+                'message' => 'اعلان با موفقیت حذف شد.'
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'اعلان پیدا نشد یا حذف با شکست مواجه شد.'
+        ], 404);
+    }
+
+    public function toggleRead($id)
+    {
+        $notification = Auth::user()->notifications()->find($id);
+
+        if ($notification) {
+            if ($notification->read_at) {
+                $notification->read_at = null;
+                $notification->save();
+                $status = 'unread';
+            } else {
+                $notification->markAsRead();
+                $status = 'read';
+            }
+            return response()->json([
+                'success' => true,
+                'status' => $status,
+                'message' => 'وضعیت اعلان با موفقیت به‌روز شد.'
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'اعلان پیدا نشد.'], 404);
     }
 
     public function markAllAsRead()
@@ -42,7 +94,7 @@ class AdminNotificationController extends Controller
     public function deleteAll()
     {
         $deleted = DB::table('user_notifications')
-        ->where('user_id', Auth::id())
+            ->where('user_id', Auth::id())
             ->delete();
 
         return redirect()->route('admin.notifications.index')
