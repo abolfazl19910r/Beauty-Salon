@@ -600,6 +600,29 @@
             });
     }
 
+    function toggleSearchModal() {
+        const modal = document.getElementById('search-modal');
+        if (modal) {
+            modal.classList.toggle('hidden');
+
+            if (!modal.classList.contains('hidden')) {
+                const searchInput = modal.querySelector('input[name="q"]');
+                if (searchInput) {
+                    setTimeout(() => searchInput.focus(), 100);
+                }
+            }
+        }
+    }
+
+    function closeSearchModalIfClickOutside(event) {
+        const modal = document.getElementById('search-modal');
+        const content = document.getElementById('search-modal-content');
+
+        if (modal && content && event.target === modal) {
+            toggleSearchModal();
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
 
         fetchUnreadCount();
