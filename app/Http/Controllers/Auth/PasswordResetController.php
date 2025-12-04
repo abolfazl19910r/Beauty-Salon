@@ -33,35 +33,19 @@ class PasswordResetController extends Controller
 
         $user = User::where('phone', $request->phone)->first();
 
-        if (!$user) {
-            return back()->withErrors([
-                'phone' => 'کاربری با این شماره موبایل یافت نشد.',
-            ]);
-        }
-
         $token = Str::random(60);
-
         $verificationCode = rand(100000, 999999);
-
-        DB::table('password_reset_tokens')->updateOrInsert(
-            ['phone' => $request->phone],
-            [
-                'token' => $token,
-                'created_at' => now()
-            ]
-        );
 
         $user->update([
             'verification_code' => $verificationCode,
             'verification_code_expire_at' => now()->addMinutes(2)
         ]);
 
-        $message = "کد بازیابی رمز عبور شما: {$verificationCode}";
-        $this->smsService->send($request->phone, $message);
+        $template = config('services.kavenegar.templates.reset_password');
 
-        return redirect()
-            ->route('password.reset', ['token' => $token])
-            ->with('success', 'کد بازیابی به شماره موبایل شما ارسال شد.');
+        $this->smsService->sendTemplate($user->phone, $template, [(string)$verificationCode]);
+
+        return redirect()->route('password.verify', compact('token'));
     }
 
     public function showReset(Request $request)
