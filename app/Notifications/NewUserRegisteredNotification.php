@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Log;
 
 class NewUserRegisteredNotification extends Notification implements ShouldQueue
 {
@@ -25,7 +26,13 @@ class NewUserRegisteredNotification extends Notification implements ShouldQueue
 
     public function toArray(object $notifiable): array
     {
-        $link = route('admin.users.show', $this->newUser->id);
+        $link = '#';
+
+        try {
+            $link = route('admin.users.show', $this->newUser->id, absolute: true);
+        } catch (\InvalidArgumentException $e) {
+            Log::error("Route 'admin.users.show' not defined in queued notification.", ['error' => $e->getMessage()]);
+        }
 
         return [
             'type' => 'new_user_registered',
