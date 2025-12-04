@@ -19,23 +19,28 @@ class User extends Authenticatable
         'phone',
         'password',
         'is_admin',
+        'verification_code',
+        'verification_code_expire_at',
+        'phone_verified_at',
+        'login_verification_code',
+        'login_verification_code_expire_at',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+        'verification_code',
+        'login_verification_code',
     ];
 
     protected $casts = [
         'password' => 'hashed',
         'phone_verified_at' => 'datetime',
         'is_admin' => 'boolean',
+        'verification_code_expire_at' => 'datetime',
+        'login_verification_code_expire_at' => 'datetime',
     ];
 
-    /**
-     *
-     * @return MorphMany
-     */
     public function notifications(): MorphMany
     {
         return $this->morphMany(
@@ -49,11 +54,6 @@ class User extends Authenticatable
         return $this->belongsToMany(Role::class);
     }
 
-    /**
-     *
-     * @param string $role
-     * @return bool
-     */
     public function hasRole($role): bool
     {
         if (is_string($role)) {
@@ -115,14 +115,14 @@ class User extends Authenticatable
         return $this;
     }
 
-    public function hasVerifiedPhone(): bool
-    {
-        return !is_null($this->phone_verified_at);
-    }
-
     public function routeNotificationForSms()
     {
         return $this->phone;
+    }
+
+    public function hasVerifiedPhone(): bool
+    {
+        return !is_null($this->phone_verified_at);
     }
 
     public function markPhoneAsVerified(): bool
@@ -161,5 +161,10 @@ class User extends Authenticatable
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
+    }
+
+    public function routeNotificationForKavenegar(Notification $notification): string
+    {
+        return $this->phone;
     }
 }
