@@ -3,45 +3,151 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
-use App\Providers\RouteServiceProvider;
+use App\Services\PhoneVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
 {
-    public function create()
+    protected PhoneVerificationService $verificationService;
+
+    public function __construct(PhoneVerificationService $verificationService)
+    {
+        $this->verificationService = $verificationService;
+    }
+
+    public function create(): View
     {
         return view('auth.login');
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
-            'phone' => ['required', 'string'],
+            'phone' => ['required', 'string', 'regex:/^09[0-9]{9}$/'],
             'password' => ['required', 'string'],
         ]);
-        if (Auth::attempt($credentials)) {
+
+        $user = User::where('phone', $credentials['phone'])->first();
+
+        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+            return back()->withErrors([
+                'phone' => 'اطلاعات وارد شده صحیح نمی‌باشد.',
+            ])->withInput($request->only('phone'));
+        }
+
+        try {
+            $this->verificationService->sendLoginCode($user);
+        } catch (\Exception $e) {
+            Log::error('Failed to send login code', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return back()->withErrors([
+                'phone' => 'خطا در ارسال کد تایید. لطفا دوباره تلاش کنید.',
+            ]);
+        }
+
+        session([
+            'login_user_id' => $user->id,
+            'login_attempt_time' => now()
+        ]);
+
+        return redirect()->route('login.verify.show')
+            ->with('success', 'کد تایید به شماره موبایل شما ارسال شد.');
+    }
+
+    public function showVerify(): View|RedirectResponse
+    {
+        if (!session('login_user_id')) {
+            return redirect()->route('login')
+                ->withErrors(['error' => 'لطفا ابتدا وارد شوید.']);
+        }
+
+        $user = User::find(session('login_user_id'));
+
+        if (!$user) {
+            session()->forget(['login_user_id', 'login_attempt_time']);
+            return redirect()->route('login')
+                ->withErrors(['error' => 'کاربر یافت نشد.']);
+        }
+
+        return view('auth.login-verify', compact('user'));
+    }
+
+    public function verify(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'code' => ['required', 'string', 'size:6'],
+        ]);
+
+        $userId = session('login_user_id');
+
+        if (!$userId) {
+            return redirect()->route('login')
+                ->withErrors(['error' => 'جلسه شما منقضی شده است. لطفا دوباره تلاش کنید.']);
+        }
+
+        $user = User::find($userId);
+
+        if (!$user) {
+            session()->forget(['login_user_id', 'login_attempt_time']);
+            return redirect()->route('login')
+                ->withErrors(['error' => 'کاربر یافت نشد.']);
+        }
+
+        if ($this->verificationService->verifyLoginCode($user, $request->code)) {
+            session()->forget(['login_user_id', 'login_attempt_time']);
+
+            Auth::login($user);
             $request->session()->regenerate();
 
-            $user = Auth::user();
-            if($user->is_admin) {
-                return redirect()->intended('/admin/dashboard');
+            if ($user->is_admin) {
+                return redirect('/admin/dashboard')
+                ->with('success', 'خوش آمدید!');
             }
 
-            return redirect()->intended('/dashboard');
+            return redirect('/dashboard')
+            ->with('success', 'خوش آمدید!');
         }
 
         return back()->withErrors([
-            'phone' => 'اطلاعات وارد شده صحیح نمی‌باشد.',
+            'code' => 'کد وارد شده نامعتبر یا منقضی شده است.'
         ]);
     }
 
-    public function destroy(Request $request)
+    public function resendCode(Request $request): RedirectResponse
+    {
+        $userId = session('login_user_id');
+
+        if (!$userId) {
+            return back()->withErrors(['error' => 'جلسه شما منقضی شده است.']);
+        }
+
+        $user = User::find($userId);
+
+        if (!$user) {
+            return back()->withErrors(['error' => 'کاربر یافت نشد.']);
+        }
+
+        $this->verificationService->sendLoginCode($user);
+
+        return back()->with('success', 'کد تایید مجدد ارسال شد.');
+    }
+
+    public function destroy(Request $request): RedirectResponse
     {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/');
+
+        return redirect('/')
+            ->with('success', 'با موفقیت خارج شدید.');
     }
 }
