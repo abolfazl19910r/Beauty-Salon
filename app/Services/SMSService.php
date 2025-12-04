@@ -2,106 +2,111 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
+use Kavenegar\KavenegarApi;
+use Kavenegar\Exceptions\ApiException;
+use Kavenegar\Exceptions\HttpException;
+use Illuminate\Support\Facades\Log;
 
 class SMSService
 {
-    protected mixed $apiKey;
-    protected mixed $sender;
-    protected string $baseUrl;
+    protected $api;
 
     public function __construct()
     {
-        $this->apiKey = config('services.kavenegar.api_key');
-        $this->sender = config('services.kavenegar.sender', '10004346');
-        $this->baseUrl = 'https://api.kavenegar.com/v1';
+        $this->api = new KavenegarApi(config('services.kavenegar.api_key'));
     }
 
-    /**
-     *
-     * @param string $mobile
-     * @param string $message
-     * @return bool
-     */
     public function send(string $mobile, string $message): bool
     {
         try {
             if (app()->environment('local') && !config('services.kavenegar.send_in_local', false)) {
+                Log::info('SMS skipped in local', ['mobile' => $mobile, 'message' => $message]);
                 return true;
             }
 
-            $response = Http::get("{$this->baseUrl}/{$this->apiKey}/sms/send.json", [
-                'receptor' => $mobile,
-                'message' => $message,
-                'sender' => $this->sender
+            $result = $this->api->Send(
+                config('services.kavenegar.sender'),
+                $mobile,
+                $message
+            );
+
+            Log::info('SMS sent successfully', ['mobile' => $mobile, 'result' => $result]);
+            return true;
+
+        } catch (ApiException $e) {
+            Log::error("Kavenegar API Error (Send): " . $e->getMessage(), [
+                'mobile' => $mobile,
+                'code' => $e->getCode()
             ]);
-
-            $result = $response->json();
-
-            if ($response->successful() && isset($result['return']['status']) && $result['return']['status'] == 200) {
-                return true;
-            }
-
+            return false;
+        } catch (HttpException $e) {
+            Log::error("Kavenegar HTTP Error (Send): " . $e->getMessage(), ['mobile' => $mobile]);
             return false;
         } catch (\Exception $e) {
+            Log::error("General SMS Send Error: " . $e->getMessage());
             return false;
         }
     }
 
-    /**
-     *
-     * @param string $mobile
-     * @param string $template
-     * @param array $tokens
-     * @return bool
-     */
-    public function sendTemplate(string $mobile, string $template, array $tokens): bool
+    public function sendTemplate(string $mobile, string $templateName, array $tokens): bool
     {
         try {
             if (app()->environment('local') && !config('services.kavenegar.send_in_local', false)) {
+                Log::info('SMS template skipped in local', [
+                    'mobile' => $mobile,
+                    'template' => $templateName,
+                    'tokens' => $tokens
+                ]);
                 return true;
             }
 
-            $params = [
-                'receptor' => $mobile,
-                'template' => $template
-            ];
+            $token1 = $tokens[0] ?? null;
+            $token2 = $tokens[1] ?? null;
+            $token3 = $tokens[2] ?? null;
 
-            foreach ($tokens as $index => $token) {
-                $params["token{$index}"] = $token;
-            }
+            $result = $this->api->VerifyLookup(
+                $mobile,
+                $token1,
+                $token2,
+                $token3,
+                $templateName,
+                'sms'
+            );
 
-            $response = Http::get("{$this->baseUrl}/{$this->apiKey}/verify/lookup.json", $params);
+            Log::info('SMS template sent successfully', [
+                'mobile' => $mobile,
+                'template' => $templateName,
+                'result' => $result
+            ]);
 
-            $result = $response->json();
+            return true;
 
-            if ($response->successful() && isset($result['return']['status']) && $result['return']['status'] == 200) {
-                return true;
-            }
-
+        } catch (ApiException $e) {
+            Log::error("Kavenegar API Error (Lookup): " . $e->getMessage(), [
+                'mobile' => $mobile,
+                'template' => $templateName,
+                'code' => $e->getCode()
+            ]);
             return false;
+
+        } catch (HttpException $e) {
+            Log::error("Kavenegar HTTP Error (Lookup): " . $e->getMessage(), [
+                'mobile' => $mobile,
+                'template' => $templateName
+            ]);
+            return false;
+
         } catch (\Exception $e) {
+            Log::error("General SMS Lookup Error: " . $e->getMessage());
             return false;
         }
     }
 
-    /**
-     *
-     * @param string $mobile
-     * @param string $code
-     * @return bool
-     */
     public function sendVerificationCode(string $mobile, string $code): bool
     {
         return $this->sendTemplate($mobile, 'verify', [$code]);
     }
 
-    /**
-     *
-     * @param string $mobile
-     * @param array $data
-     * @return bool
-     */
     public function sendBookingConfirmation(string $mobile, array $data): bool
     {
         $message = sprintf(
@@ -114,16 +119,10 @@ class SMSService
         return $this->send($mobile, $message);
     }
 
-    /**
-     *
-     * @param string $mobile
-     * @param array $data
-     * @return bool
-     */
     public function sendBookingReminder(string $mobile, array $data): bool
     {
         $message = sprintf(
-            'یادآوری: نوبت شما در تاریخ %s ساعت %s. لطفا ۱۵ دقیقه قبل از نوبت حضور داشته باشید.',
+            'یادآوری: نوبت شما در تاریخ %s ساعت %s. لطفا 15 دقیقه قبل از نوبت حضور داشته باشید.',
             $data['date'],
             $data['time']
         );
