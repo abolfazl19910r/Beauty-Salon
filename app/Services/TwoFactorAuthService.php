@@ -20,8 +20,9 @@ class TwoFactorAuthService
 
         Cache::put("2fa:{$user->id}", $code, now()->addMinutes(2));
 
-        $message = "کد تایید شما: {$code}\nاین کد تا ۲ دقیقه معتبر است.";
-        $this->smsService->send($user->phone, $message);
+        $template = config('services.kavenegar.templates.login_verify');
+
+        $this->smsService->sendTemplate($user->phone, $template, [(string)$code]);
 
         Log::info('2FA code generated', [
             'user_id' => $user->id,
