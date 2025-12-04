@@ -40,6 +40,19 @@ return [
         'base_url' => env('SMS_BASE_URL'),
     ],
 
+    'kavenegar' => [
+        'api_key' => env('KAVENEGAR_API_KEY'),
+        'sender' => env('KAVENEGAR_SENDER', '2000660110'),
+        'send_in_local' => env('KAVENEGAR_SEND_IN_LOCAL', false),
+
+        'templates' => [
+            'login_verify' => env('KAVENEGAR_TEMPLATE_LOGIN', 'login-verify'),
+            'register_verify' => env('KAVENEGAR_TEMPLATE_REGISTER', 'register-verify'),
+            'reset_password' => env('KAVENEGAR_TEMPLATE_RESET', 'reset-password'),
+            'two_factor_auth' => env('KAVENEGAR_TEMPLATE_2FA', 'two-factor-auth'),
+        ],
+    ],
+
     'zarinpal' => [
         'merchant_id' => env('ZARINPAL_MERCHANT_ID'),
         'api_key' => env('ZARINPAL_API_KEY'),
