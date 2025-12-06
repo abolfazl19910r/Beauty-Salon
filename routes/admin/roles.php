@@ -13,7 +13,7 @@ Route::prefix('roles')->name('roles.')->group(function () {
     Route::put('/{role}', [AdminRoleController::class, 'update'])->name('update');
     Route::delete('/{role}', [AdminRoleController::class, 'destroy'])->name('destroy');
 
-    Route::get('/{role}/assign', [AdminRoleController::class, 'assignUserForm'])->name('assign.form');
-    Route::post('/{role}/assign', [AdminRoleController::class, 'assignUser'])->name('assign');
+    Route::get('/{role}/assign', [AdminRoleController::class, 'assignForm'])->name('assign.form');
+    Route::post('/{role}/assign', [AdminRoleController::class, 'assign'])->name('assign');
     Route::delete('/{role}/users/{user}', [AdminRoleController::class, 'removeUser'])->name('remove.user');
 });
