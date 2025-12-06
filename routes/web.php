@@ -17,7 +17,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     require __DIR__.'/web/security.php';
 });
 
-Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_admin_panel'])->group(function () {
 
     Route::get('/', [App\Http\Controllers\Admin\AdminDashboardController::class, 'dashboard'])->name('home');
 
@@ -44,4 +44,5 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         require __DIR__.'/admin/reports.php';
         require __DIR__.'/admin/security.php';
         require __DIR__.'/admin/roles.php';
+        require __DIR__.'/admin/permissions.php';
     });
