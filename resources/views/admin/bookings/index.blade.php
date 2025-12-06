@@ -16,6 +16,7 @@
                     مدیریت نوبت‌ها
                 </h1>
 
+                @permission('create-bookings')
                 <a href="{{ route('admin.bookings.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
                     <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -23,6 +24,7 @@
                     </svg>
                     افزودن نوبت جدید
                 </a>
+                @endpermission
             </div>
 
             <div class="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -191,6 +193,7 @@
                                     </svg>
                                 </a>
 
+                                @permission('edit-bookings')
                                 <a href="{{ route('admin.bookings.edit', $booking) }}"
                                    class="group inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors">
                                     <svg class="w-5 h-5 group-hover:scale-110 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -198,7 +201,9 @@
                                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                                     </svg>
                                 </a>
+                                @endpermission
 
+                                @permission('approve-bookings')
                                 @if($booking->status == 'pending')
                                     <form action="{{ route('admin.bookings.update', $booking) }}"
                                           method="POST" class="inline">
@@ -212,7 +217,9 @@
                                         </button>
                                     </form>
                                 @endif
+                                @endpermission
 
+                                @permission('delete-bookings')
                                 @if($booking->status != 'cancelled')
                                     <form action="{{ route('admin.bookings.update', $booking) }}"
                                           method="POST" class="inline">
@@ -229,6 +236,7 @@
                                         </button>
                                     </form>
                                 @endif
+                                @endpermission
                             </div>
                         </td>
                     </tr>

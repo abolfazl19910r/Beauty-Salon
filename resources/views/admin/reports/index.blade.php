@@ -14,7 +14,10 @@
             </h1>
 
             <div class="flex gap-2">
-                <a href="{{ route('admin.reports.export', ['format' => 'pdf', 'report_type' => 'daily']) }}" id="pdf-export-link" class="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                @permission('export-reports')
+                <a href="{{ route('admin.reports.export', ['format' => 'pdf', 'report_type' => 'daily']) }}"
+                   id="pdf-export-link"
+                   class="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
                     <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
@@ -24,7 +27,9 @@
                     خروجی PDF
                 </a>
 
-                <a href="{{ route('admin.reports.export', ['format' => 'excel', 'report_type' => 'daily']) }}" id="excel-export-link" class="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                <a href="{{ route('admin.reports.export', ['format' => 'excel', 'report_type' => 'daily']) }}"
+                   id="excel-export-link"
+                   class="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
                     <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
@@ -34,6 +39,7 @@
                     </svg>
                     خروجی Excel
                 </a>
+                @endpermission
 
                 <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
                     <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

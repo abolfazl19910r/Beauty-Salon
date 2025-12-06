@@ -17,6 +17,7 @@
                     </h1>
                     <p class="text-gray-500 text-sm mt-2">در این بخش می‌توانید خدمات سالن را مدیریت کنید</p>
                 </div>
+                @permission('create-services')
                 <a href="{{ route('admin.services.create') }}"
                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg shadow-sm transition-all duration-200 focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                     <svg class="w-5 h-5 ml-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -25,6 +26,7 @@
                     </svg>
                     افزودن خدمت جدید
                 </a>
+                @endpermission
             </div>
         </div>
 
@@ -78,6 +80,7 @@
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <div class="flex items-center gap-3">
+                                    @permission('edit-services')
                                     <a href="{{ route('admin.services.edit', ['service' => $service->id]) }}"
                                        class="group inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
                                         <svg class="w-4 h-4 mr-1 group-hover:scale-110 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -86,7 +89,9 @@
                                         </svg>
                                         <span>ویرایش</span>
                                     </a>
+                                    @endpermission
 
+                                    @permission('delete-services')
                                     <form action="{{ route('admin.services.destroy', ['service' => $service->id]) }}"
                                           method="POST"
                                           class="inline">
@@ -104,6 +109,7 @@
                                             <span>حذف</span>
                                         </button>
                                     </form>
+                                    @endpermission
                                 </div>
                             </td>
                         </tr>

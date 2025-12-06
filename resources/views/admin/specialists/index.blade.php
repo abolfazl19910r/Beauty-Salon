@@ -16,6 +16,8 @@
                     </h1>
                     <p class="text-gray-500 text-sm mt-2">در این بخش می‌توانید متخصصین را مدیریت کنید</p>
                 </div>
+
+                @permission('create-specialists')
                 <a href="{{ route('admin.specialists.create') }}"
                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg shadow-sm transition-all duration-200 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     <svg class="w-5 h-5 ml-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -26,6 +28,7 @@
                     </svg>
                     افزودن متخصص جدید
                 </a>
+                @endpermission
             </div>
         </div>
 
@@ -116,6 +119,7 @@
                                         </svg>
                                     </a>
 
+                                    @permission('edit-specialists')
                                     <a href="{{ route('admin.specialists.edit', $specialist->id) }}"
                                        class="group bg-indigo-50 text-indigo-600 p-2 rounded-md hover:bg-indigo-600 hover:text-white transition-colors"
                                        title="ویرایش">
@@ -124,7 +128,10 @@
                                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                                         </svg>
                                     </a>
+                                    @endpermission
 
+
+                                    @permission('delete-specialists')
                                     <form action="{{ route('admin.specialists.destroy', $specialist->id) }}" method="POST" class="inline">
                                         @csrf
                                         @method('DELETE')
@@ -141,6 +148,7 @@
                                             </svg>
                                         </button>
                                     </form>
+                                    @endpermission
                                 </div>
                             </td>
                         </tr>

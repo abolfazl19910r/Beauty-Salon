@@ -116,6 +116,15 @@
                 </svg>
                 نقش‌ها
             </x-admin-nav-link>
+
+            @permission('manage-roles')
+            <x-admin-nav-link href=href="{{ route('admin.permissions.index') }}":active="request()->routeIs('admin.permissions.*')"
+               class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors">
+                <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                دسترسی‌ها
+            </x-admin-nav-link>
         </div>
     </nav>
 </nav>

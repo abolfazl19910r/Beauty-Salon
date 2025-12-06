@@ -20,7 +20,6 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6">
-            <!-- اطلاعات نقش -->
             <div class="md:col-span-8">
                 <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 h-full">
                     <div class="p-6">
@@ -57,7 +56,31 @@
                 </div>
             </div>
 
-            <!-- عملیات -->
+            <div class="md:col-span-12 mt-6">
+                <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
+                    <div class="p-6">
+                        <h2 class="text-lg font-bold text-gray-800 mb-4">دسترسی‌های این نقش</h2>
+
+                        @if($permissions->isEmpty())
+                            <p class="text-gray-500 text-sm">هیچ دسترسی به این نقش اختصاص داده نشده است.</p>
+                        @else
+                            @foreach($permissions as $groupName => $groupPermissions)
+                                <div class="mb-4">
+                                    <h3 class="text-md font-semibold text-gray-700 mb-2">{{ $groupName ?? 'عمومی' }}</h3>
+                                    <div class="flex flex-wrap gap-2">
+                                        @foreach($groupPermissions as $permission)
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                {{ $permission->label }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endif
+                    </div>
+                </div>
+            </div>
+
             <div class="md:col-span-4">
                 <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 h-full">
                     <div class="p-6">
@@ -94,7 +117,6 @@
             </div>
         </div>
 
-        <!-- کاربران دارای نقش -->
         <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
             <div class="p-6">
                 <div class="flex items-center justify-between mb-6">
@@ -160,6 +182,37 @@
                     <div class="pt-4 border-t border-gray-100 mt-4">
                         {{ $users->links() }}
                     </div>
+                @endif
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 mb-6">
+            <div class="p-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 ml-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    دسترسی‌های این نقش
+                </h2>
+
+                @if($permissions->isEmpty())
+                    <p class="text-gray-500 text-sm">هیچ دسترسی به این نقش اختصاص داده نشده است.</p>
+                @else
+                    @foreach($permissions as $groupName => $groupPermissions)
+                        <div class="mb-4">
+                            <h3 class="text-md font-semibold text-gray-700 mb-2 pb-1 border-b">{{ $groupName ?? 'عمومی' }}</h3>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach($groupPermissions as $permission)
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                {{ $permission->label }}
+                            </span>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
                 @endif
             </div>
         </div>

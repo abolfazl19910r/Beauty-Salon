@@ -10,12 +10,14 @@
                 <p class="text-sm text-gray-500">مدیریت نقش‌ها و دسترسی‌های کاربران سیستم</p>
             </div>
             <div class="mt-4 md:mt-0">
+                @permission('manage-roles')
                 <a href="{{ route('admin.roles.create') }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1.5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
                     </svg>
                     افزودن نقش جدید
                 </a>
+                @endpermission
             </div>
         </div>
 
@@ -26,12 +28,14 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                     <p class="text-gray-500 mb-4">هیچ نقشی در سیستم تعریف نشده است!</p>
+                    @permission('manage-roles')
                     <a href="{{ route('admin.roles.create') }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 inline-flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
                         </svg>
                         ایجاد اولین نقش
                     </a>
+                    @endpermission
                 </div>
             @else
                 <div class="overflow-x-auto">
@@ -53,9 +57,9 @@
                                 </td>
                                 <td class="py-4 px-6 text-gray-500" dir="ltr">{{ $role->name }}</td>
                                 <td class="py-4 px-6">
-                                        <span class="inline-flex items-center justify-center px-2 py-1 text-xs font-medium leading-none text-blue-800 bg-blue-100 rounded-full">
-                                            {{ $role->users_count }}
-                                        </span>
+                                    <span class="inline-flex items-center justify-center px-2 py-1 text-xs font-medium leading-none text-blue-800 bg-blue-100 rounded-full">
+                                        {{ $role->users_count }}
+                                    </span>
                                 </td>
                                 <td class="py-4 px-6 text-gray-500" dir="ltr">
                                     {{ verta($role->created_at)->format('Y/m/d H:i') }}
@@ -70,6 +74,8 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                             </svg>
                                         </a>
+
+                                        @permission('manage-roles')
                                         <a href="{{ route('admin.roles.edit', $role) }}"
                                            class="text-yellow-600 hover:text-yellow-800 transition-colors"
                                            title="ویرایش">
@@ -97,6 +103,7 @@
                                                 </svg>
                                             </button>
                                         </form>
+                                        @endpermission
                                     </div>
                                 </td>
                             </tr>
