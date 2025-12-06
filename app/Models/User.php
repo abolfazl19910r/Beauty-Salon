@@ -167,4 +167,24 @@ class User extends Authenticatable
     {
         return $this->phone;
     }
+
+    public function hasPermission($permission)
+    {
+        if ($this->is_admin) {
+            return true;
+        }
+
+        foreach ($this->roles as $role) {
+            if ($role->hasPermission($permission)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function getAllPermissions()
+    {
+        return $this->roles->flatMap->permissions->unique('id');
+    }
 }
