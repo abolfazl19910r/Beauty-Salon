@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             ScheduledReportSeeder::class,
 
             NotificationSeeder::class,
+            PermissionSeeder::class,
         ]);
     }
 }
