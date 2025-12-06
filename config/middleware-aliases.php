@@ -17,4 +17,5 @@ return [
     // Custom Middleware Aliases
     'admin' => \App\Http\Middleware\AdminMiddleware::class,
     'check.booking.ownership' => \App\Http\Middleware\CheckBookingOwnership::class,
+    'role' => \App\Http\Middleware\RoleMiddleware::class,
 ];
