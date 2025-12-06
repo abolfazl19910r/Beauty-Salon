@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -12,35 +13,25 @@ use Illuminate\View\View;
 
 class AdminRoleController extends Controller
 {
-    /**
-     *
-     * @return View
-     */
     public function index(): View
     {
         $roles = Role::withCount('users')->paginate(10);
         return view('admin.roles.index', compact('roles'));
     }
 
-    /**
-     *
-     * @return View
-     */
     public function create(): View
     {
-        return view('admin.roles.create');
+        $permissions = Permission::all()->groupBy('group');
+        return view('admin.roles.create', compact('permissions'));
     }
 
-    /**
-     *
-     * @param Request $request
-     * @return RedirectResponse
-     */
     public function store(Request $request): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255|unique:roles,name',
             'label' => 'required|string|max:255',
+            'permissions' => 'array',
+            'permissions.*' => 'exists:permissions,id',
         ], [
             'name.required' => 'نام فنی نقش الزامی است.',
             'name.unique' => 'نام فنی نقش تکراری است.',
@@ -53,47 +44,41 @@ class AdminRoleController extends Controller
                 ->withInput();
         }
 
-        Role::create([
+        $role = Role::create([
             'name' => $request->name,
             'label' => $request->label,
         ]);
+
+        if ($request->has('permissions')) {
+            $role->permissions()->sync($request->permissions);
+        }
 
         return redirect()->route('admin.roles.index')
             ->with('success', 'نقش با موفقیت ایجاد شد.');
     }
 
-    /**
-     *
-     * @param Role $role
-     * @return View
-     */
     public function show(Role $role): View
     {
         $users = $role->users()->paginate(10);
-        return view('admin.roles.show', compact('role', 'users'));
+        $permissions = $role->permissions->groupBy('group');
+        return view('admin.roles.show', compact('role', 'users', 'permissions'));
     }
 
-    /**
-     *
-     * @param Role $role
-     * @return View
-     */
     public function edit(Role $role): View
     {
-        return view('admin.roles.edit', compact('role'));
+        $permissions = Permission::all()->groupBy('group');
+        $rolePermissions = $role->permissions->pluck('id')->toArray();
+
+        return view('admin.roles.edit', compact('role', 'permissions', 'rolePermissions'));
     }
 
-    /**
-     *
-     * @param Request $request
-     * @param Role $role
-     * @return RedirectResponse
-     */
     public function update(Request $request, Role $role): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
             'label' => 'required|string|max:255',
+            'permissions' => 'array',
+            'permissions.*' => 'exists:permissions,id',
         ], [
             'name.required' => 'نام فنی نقش الزامی است.',
             'name.unique' => 'نام فنی نقش تکراری است.',
@@ -111,18 +96,16 @@ class AdminRoleController extends Controller
             'label' => $request->label,
         ]);
 
+        $role->permissions()->sync($request->permissions ?? []);
+
         return redirect()->route('admin.roles.show', $role)
             ->with('success', 'نقش با موفقیت بروزرسانی شد.');
     }
 
-    /**
-     *
-     * @param Role $role
-     * @return RedirectResponse
-     */
     public function destroy(Role $role): RedirectResponse
     {
         $role->users()->detach();
+        $role->permissions()->detach();
 
         $role->delete();
 
@@ -130,11 +113,6 @@ class AdminRoleController extends Controller
             ->with('success', 'نقش با موفقیت حذف شد.');
     }
 
-    /**
-     *
-     * @param Role $role
-     * @return View
-     */
     public function assignForm(Role $role): View
     {
         $users = User::whereDoesntHave('roles', function ($query) use ($role) {
@@ -144,12 +122,6 @@ class AdminRoleController extends Controller
         return view('admin.roles.assign', compact('role', 'users'));
     }
 
-    /**
-     *
-     * @param Request $request
-     * @param Role $role
-     * @return RedirectResponse
-     */
     public function assign(Request $request, Role $role): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
@@ -172,12 +144,6 @@ class AdminRoleController extends Controller
             ->with('success', 'نقش با موفقیت به کاربر اختصاص داده شد.');
     }
 
-    /**
-     *
-     * @param Role $role
-     * @param User $user
-     * @return RedirectResponse
-     */
     public function removeUser(Role $role, User $user): RedirectResponse
     {
         $user->removeRole($role);
