@@ -6,7 +6,7 @@ use App\Models\Role;
 
 trait HasRoles
 {
-
+    protected $permissionsCache = null;
     public function roles()
     {
         return $this->belongsToMany(Role::class);
@@ -82,5 +82,37 @@ trait HasRoles
         $this->roles()->sync($roles);
 
         return $this;
+    }
+
+    public function getAllPermissions()
+    {
+        if (!is_null($this->permissionsCache)) {
+            return $this->permissionsCache;
+        }
+
+        $this->permissionsCache = $this->roles->load('permissions')
+        ->flatMap(fn ($role) => $role->permissions)
+            ->pluck('name')
+            ->unique();
+
+        return $this->permissionsCache;
+    }
+
+    /**
+     * @param string $permissionName
+     * @return bool
+     */
+    public function hasPermissionTo(string $permissionName): bool
+    {
+        if ($this->is_admin) {
+            return true;
+        }
+
+        return $this->getAllPermissions()->contains($permissionName);
+    }
+
+    public function hasAnyPermissionTo($permissions): bool
+    {
+        return collect($permissions)->some(fn ($permission) => $this->hasPermissionTo($permission));
     }
 }
