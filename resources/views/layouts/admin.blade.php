@@ -121,6 +121,7 @@
                     داشبورد
                 </a>
 
+                @permission('view-reports')
                 <a href="{{ route('admin.reports.index') }}"
                    class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.reports*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
                     <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -129,10 +130,12 @@
                     </svg>
                     گزارشات
                 </a>
+                @endpermission
             </div>
 
             <div class="py-2">
                 <h3 class="text-xs font-semibold text-gray-400 px-3 mb-2 uppercase">مدیریت</h3>
+                @permission('view-services')
                 <a href="{{ route('admin.services.index') }}"
                    class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.services*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
                     <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -142,7 +145,9 @@
                     </svg>
                     خدمات
                 </a>
+                @endpermission
 
+                @permission('view-specialists')
                 <a href="{{ route('admin.specialists.index') }}"
                    class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.specialists*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
                     <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -151,7 +156,9 @@
                     </svg>
                     متخصصین
                 </a>
+                @endpermission
 
+                @permission('view-bookings')
                 <a href="{{ route('admin.bookings.index') }}"
                    class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.bookings*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
                     <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -162,7 +169,9 @@
                     </svg>
                     نوبت‌ها
                 </a>
+                @endpermission
 
+                @permission('view-categories')
                 <a href="{{ route('admin.categories.index') }}"
                    class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.categories*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
                     <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -172,6 +181,7 @@
                     </svg>
                     دسته‌بندی‌ها
                 </a>
+                @endpermission
             </div>
 
             <div class="py-2">
@@ -190,6 +200,7 @@
                     </span>
                 </a>
 
+                @permission('view-loyalty')
                 <a href="{{ route('admin.loyalty.index') }}"
                    class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.loyalty*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
                     <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -197,7 +208,9 @@
                     </svg>
                     امتیازات
                 </a>
+                @endpermission
 
+                @permission('view-blog')
                 <a href="{{ route('admin.blog.index') }}"
                    class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.blog*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
                     <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -206,7 +219,9 @@
                     </svg>
                     وبلاگ
                 </a>
+                @endpermission
 
+                @permission('view-gallery')
                 <a href="{{ route('admin.gallery.index') }}"
                    class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.gallery*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
                     <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -216,7 +231,9 @@
                     </svg>
                     گالری
                 </a>
+                @endpermission
 
+                @permission('view-announcements')
                 <a href="{{ route('admin.announcements.index') }}"
                    class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.announcements*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
                     <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -228,10 +245,12 @@
                     </svg>
                     اطلاعیه
                 </a>
+                @endpermission
             </div>
 
             <div class="py-2">
                 <h3 class="text-xs font-semibold text-gray-400 px-3 mb-2 uppercase">مدیریت کاربران</h3>
+                @permission('view-users')
                 <a href="{{ route('admin.users.index') }}"
                    class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.users*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
                     <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -242,7 +261,19 @@
                     </svg>
                     کاربران
                 </a>
+                @endpermission
 
+                @permission('manage-roles')
+                <a href="{{ route('admin.permissions.index') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.permissions*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
+                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    دسترسی‌ها
+                </a>
+                @endpermission
+
+                @permission('manage-roles')
                 <a href="{{ route('admin.roles.index') }}"
                    class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.roles*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
                     <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -250,6 +281,7 @@
                     </svg>
                     نقش‌ها
                 </a>
+                @endpermission
             </div>
 
             <div class="py-2">
