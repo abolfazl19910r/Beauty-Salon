@@ -15,6 +15,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     require __DIR__.'/web/payments.php';
 
     require __DIR__.'/web/security.php';
+    require __DIR__.'/web/specialistprofile.php';
+
 });
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_admin_panel'])->group(function () {
