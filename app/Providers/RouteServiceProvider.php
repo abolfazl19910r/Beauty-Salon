@@ -27,6 +27,8 @@ class RouteServiceProvider extends ServiceProvider
      */
     public const USER_HOME = '/dashboard';
 
+    public const SPECIALIST_HOME = '/specialist/dashboard';
+
     /**
      *
      * @var array
@@ -137,7 +139,14 @@ class RouteServiceProvider extends ServiceProvider
 
     public static function getHomeForUser(User $user): string
     {
-        return $user->is_admin ? static::HOME : static::USER_HOME;
+        if ($user->hasRole('specialists')) {
+            return static::SPECIALIST_HOME;
+        }
+
+        if ($user->is_admin) {
+            return static::HOME;
+        }
+        return static::USER_HOME;
     }
 
     /**
