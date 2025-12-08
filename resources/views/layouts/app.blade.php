@@ -78,8 +78,27 @@
                 <a href="{{ route('services.index') }}" class="text-gray-600 hover:text-pink-500 transition-colors px-3 py-2">خدمات</a>
 
                 @auth
-                    <a href="{{ route('bookings.index') }}" class="text-gray-600 hover:text-pink-500 transition-colors px-3 py-2">نوبت‌های من</a>
-                    <a href="{{ route('profile.show') }}" class="text-gray-600 hover:text-pink-500 transition-colors px-3 py-2">پروفایل</a>
+                    @if(auth()->user()->hasRole('specialists'))
+                        <a href="{{ route('specialist.profile.show') }}" class="text-gray-600 hover:text-pink-500 transition-colors px-3 py-2 flex items-center">
+                            <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            پروفایل من
+                        </a>
+                        <a href="{{ route('specialist.dashboard') }}" class="text-gray-600 hover:text-pink-500 transition-colors px-3 py-2 flex items-center">
+                            <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                            پنل کاری
+                        </a>
+                    @else
+                        <a href="{{ route('bookings.index') }}" class="text-gray-600 hover:text-pink-500 transition-colors px-3 py-2">نوبت‌های من</a>
+                        <a href="{{ route('profile.show') }}" class="text-gray-600 hover:text-pink-500 transition-colors px-3 py-2">پروفایل</a>
+                    @endif
 
                     <form action="{{ route('logout') }}" method="POST" class="inline">
                         @csrf
@@ -105,8 +124,13 @@
         <div id="mobile-menu" class="hidden md:hidden mt-4 pb-2 fade-in">
             <a href="{{ route('services.index') }}" class="block py-2 text-gray-600 hover:text-pink-500">خدمات</a>
             @auth
-                <a href="{{ route('bookings.index') }}" class="block py-2 text-gray-600 hover:text-pink-500">نوبت‌های من</a>
-                <a href="{{ route('profile.show') }}" class="block py-2 text-gray-600 hover:text-pink-500">پروفایل</a>
+                @if(auth()->user()->hasRole('specialists'))
+                    <a href="{{ route('specialist.profile.show') }}" class="block py-2 text-gray-600 hover:text-pink-500">پروفایل من</a>
+                    <a href="{{ route('specialist.dashboard') }}" class="block py-2 text-gray-600 hover:text-pink-500">پنل کاری</a>
+                @else
+                    <a href="{{ route('bookings.index') }}" class="block py-2 text-gray-600 hover:text-pink-500">نوبت‌های من</a>
+                    <a href="{{ route('profile.show') }}" class="block py-2 text-gray-600 hover:text-pink-500">پروفایل</a>
+                @endif
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
                     <button type="submit" class="block w-full text-right py-2 text-gray-600 hover:text-pink-500">خروج</button>
