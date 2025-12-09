@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 
 class BookingController extends Controller
 {
@@ -199,6 +200,7 @@ class BookingController extends Controller
             return DB::transaction(function() use ($request) {
                 $bookingTime = $request->booking_time;
                 $specialist = Specialist::find($request->specialist_id);
+                $service = BeautyService::find($request->service_id);
                 $bookingDate = date('Y-m-d', strtotime($bookingTime));
                 $bookingTimeOnly = date('H:i', strtotime($bookingTime));
 
@@ -238,8 +240,11 @@ class BookingController extends Controller
                     'discount_code' => $request->discount_code,
                     'discount_amount' => $discountAmount
                 ]);
+
                 BookingCreated::dispatch($booking);
-                $booking->load(['service', 'specialist']);
+                $booking->load(['service', 'specialist', 'user']);
+
+                $this->sendBookingNotificationToSpecialist($booking);
 
                 if (request()->expectsJson()) {
                     return response()->json([
@@ -256,6 +261,44 @@ class BookingController extends Controller
         } catch (Exception $e) {
             return back()->with('error', 'خطا در ثبت رزرو. لطفا دوباره تلاش کنید.')
                 ->withInput();
+        }
+    }
+
+    protected function sendBookingNotificationToSpecialist(Booking $booking): void
+    {
+        try {
+            $dashboardUrl = route('specialist.my-dashboard');
+            $persianDate = verta($booking->booking_time)->format('Y/m/d');
+            $persianTime = verta($booking->booking_time)->format('H:i');
+
+            $message = sprintf(
+                "%s عزیز، سلام 👋\n\n".
+                "🔔 نوبت جدید برای شما ثبت شد:\n\n".
+                "👤 مشتری: %s\n".
+                "📱 تماس: %s\n".
+                "📋 سرویس: %s\n".
+                "📅 تاریخ: %s\n".
+                "🕐 ساعت: %s\n".
+                "🔢 کد پیگیری: #%s\n\n".
+                "🔗 برای مشاهده و تایید:\n%s",
+                $booking->specialist->name,
+                $booking->user->name,
+                $booking->user->phone,
+                $booking->service->name,
+                $persianDate,
+                $persianTime,
+                $booking->id,
+                $dashboardUrl
+            );
+
+            $this->smsService->send($booking->specialist->phone, $message);
+
+        } catch (Exception $e) {
+            Log::error('خطا در ارسال پیامک به متخصص', [
+                'booking_id' => $booking->id,
+                'specialist_id' => $booking->specialist_id,
+                'error' => $e->getMessage()
+            ]);
         }
     }
 
