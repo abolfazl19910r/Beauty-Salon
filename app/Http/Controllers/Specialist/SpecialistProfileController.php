@@ -12,9 +12,18 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules;
 use Carbon\Carbon;
 use Morilog\Jalali\Jalalian;
+use App\Services\SMSService;
+use Illuminate\Support\Facades\Log;
 
 class SpecialistProfileController extends Controller
 {
+
+    protected SMSService $smsService;
+
+    public function __construct(SMSService $smsService)
+    {
+        $this->smsService = $smsService;
+    }
 
     public function dashboardBookings()
     {
@@ -31,9 +40,9 @@ class SpecialistProfileController extends Controller
         }
 
         $bookings = Booking::where('specialist_id', $specialist->id)
-            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->whereNotIn('status', ['completed'])
             ->with(['service', 'user'])
-            ->orderBy('booking_time', 'asc')
+            ->orderByRaw("FIELD(status, 'pending', 'confirmed', 'cancelled')")
             ->orderBy('booking_time', 'asc')
             ->paginate(15);
 
@@ -289,13 +298,52 @@ class SpecialistProfileController extends Controller
             abort(403, 'شما مجاز به تغییر وضعیت این نوبت نیستید.');
         }
 
-        $status = 'confirmed';
-        $booking->update(['status' => $status]);
+        if ($booking->status === 'confirmed') {
+            return back()->with('info', 'این نوبت قبلاً تایید شده است.');
+        }
 
-        return back()->with('success', 'نوبت با موفقیت به عنوان "انجام شده" ثبت شد.');
+        try {
+            DB::transaction(function() use ($booking, $specialist) {
+                $booking->update(['status' => 'confirmed']);
+
+                $persianDate = verta($booking->booking_time)->format('Y/m/d');
+                $persianTime = verta($booking->booking_time)->format('H:i');
+
+                $message = sprintf(
+                    "%s عزیز، سلام 👋\n\n".
+                    "✅ نوبت شما تایید شد\n\n".
+                    "📋 سرویس: %s\n".
+                    "📅 تاریخ: %s\n".
+                    "🕐 ساعت: %s\n".
+                    "🔢 کد پیگیری: #%s\n".
+                    "👤 متخصص: %s\n\n".
+                    "⏰ لطفاً 15 دقیقه قبل از وقت حضور داشته باشید.\n\n".
+                    "🙏 منتظر دیدار شما هستیم",
+                    $booking->user->name,
+                    $booking->service->name,
+                    $persianDate,
+                    $persianTime,
+                    $booking->id,
+                    $specialist->name
+                );
+
+                $this->smsService->send($booking->user->phone, $message);
+
+            });
+
+            return back()->with('success', '✓ نوبت با موفقیت تایید شد و به مشتری اطلاع‌رسانی شد.');
+
+        } catch (Exception $e) {
+            Log::error('خطا در تایید نوبت', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return back()->with('error', 'خطا در تایید نوبت. لطفاً دوباره تلاش کنید.');
+        }
     }
 
-    public function cancelBooking(Booking $booking)
+    public function cancelBooking(Request $request, Booking $booking)
     {
         $user = auth()->user();
         $specialist = Specialist::where('phone', $user->phone)->first();
@@ -304,9 +352,56 @@ class SpecialistProfileController extends Controller
             abort(403, 'شما مجاز به لغو این نوبت نیستید.');
         }
 
-        $status = 'cancelled';
-        $booking->update(['status' => $status]);
+        if ($booking->status === 'cancelled') {
+            return back()->with('info', 'این نوبت قبلاً لغو شده است.');
+        }
 
-        return back()->with('success', 'نوبت با موفقیت لغو شد.');
+        try {
+            $cancelReason = $request->input('cancel_reason', 'دلیل مشخص نشده');
+
+            DB::transaction(function () use ($booking, $cancelReason, $specialist) {
+                $booking->update([
+                    'status' => 'cancelled',
+                    'cancellation_reason' => $cancelReason,
+                    'cancelled_by' => 'specialist',
+                    'cancelled_at' => now()
+                ]);
+
+                $persianDate = verta($booking->booking_time)->format('Y/m/d');
+                $persianTime = verta($booking->booking_time)->format('H:i');
+
+                $message = sprintf(
+                    "%s عزیز، سلام 👋\n\n" .
+                    "❌ متاسفانه نوبت شما لغو شد\n\n" .
+                    "📋 سرویس: %s\n" .
+                    "📅 تاریخ: %s - ساعت %s\n" .
+                    "🔢 کد پیگیری: #%s\n" .
+                    "👤 متخصص: %s\n\n" .
+                    "📝 دلیل لغو:\n%s\n\n" .
+                    "📞 برای رزرو مجدد با ما تماس بگیرید.\n" .
+                    "🙏 از صبوری شما متشکریم",
+                    $booking->user->name,
+                    $booking->service->name,
+                    $persianDate,
+                    $persianTime,
+                    $booking->id,
+                    $specialist->name,
+                    $cancelReason
+                );
+
+                $this->smsService->send($booking->user->phone, $message);
+
+            });
+
+            return back()->with('success', '✓ نوبت لغو شد و به مشتری اطلاع‌رسانی شد.');
+
+        } catch (Exception $e) {
+            Log::error('خطا در لغو نوبت', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return back()->with('error', 'خطا در لغو نوبت. لطفاً دوباره تلاش کنید.');
+        }
     }
 }
