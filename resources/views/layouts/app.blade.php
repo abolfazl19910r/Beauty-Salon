@@ -86,7 +86,7 @@
                             </svg>
                             پروفایل من
                         </a>
-                        <a href="{{ route('specialist.dashboard') }}" class="text-gray-600 hover:text-pink-500 transition-colors px-3 py-2 flex items-center">
+                        <a href="{{ route('specialist.my-dashboard') }}" class="text-gray-600 hover:text-pink-500 transition-colors px-3 py-2 flex items-center">
                             <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="3" width="7" height="7"></rect>
                                 <rect x="14" y="3" width="7" height="7"></rect>
@@ -126,7 +126,7 @@
             @auth
                 @if(auth()->user()->hasRole('specialists'))
                     <a href="{{ route('specialist.profile.show') }}" class="block py-2 text-gray-600 hover:text-pink-500">پروفایل من</a>
-                    <a href="{{ route('specialist.dashboard') }}" class="block py-2 text-gray-600 hover:text-pink-500">پنل کاری</a>
+                    <a href="{{ route('specialist.my-dashboard') }}" class="block py-2 text-gray-600 hover:text-pink-500">پنل کاری</a>
                 @else
                     <a href="{{ route('bookings.index') }}" class="block py-2 text-gray-600 hover:text-pink-500">نوبت‌های من</a>
                     <a href="{{ route('profile.show') }}" class="block py-2 text-gray-600 hover:text-pink-500">پروفایل</a>

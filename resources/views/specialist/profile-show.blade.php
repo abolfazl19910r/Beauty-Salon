@@ -69,7 +69,7 @@
                             @endif
 
                             <div class="pt-4 border-t space-y-2">
-                                <a href="{{ route('specialist.dashboard') }}"
+                                <a href="{{ route('specialist.my-dashboard') }}"
                                    class="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                                     <svg class="w-4 h-4 inline ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <rect x="3" y="3" width="7" height="7"></rect>
