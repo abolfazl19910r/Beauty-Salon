@@ -30,13 +30,17 @@ class Booking extends Model
         'refunded_at',
         'refunded_amount',
         'refund_reference',
-        'refund_details'
+        'refund_details',
+        'cancellation_reason',
+        'cancelled_by',
+        'cancelled_at'
     ];
 
     protected $casts = [
         'booking_time' => 'datetime',
         'paid_at' => 'datetime',
         'refunded_at' => 'datetime',
+        'cancelled_at' => 'datetime',
         'payment_details' => 'json',
         'refund_details' => 'json',
         'reminder_sent' => 'boolean'
@@ -198,6 +202,16 @@ class Booking extends Model
             'refunded' => 'green',
             'failed' => 'red',
             default => 'gray'
+        };
+    }
+
+    public function getCancelledByNameAttribute(): ?string
+    {
+        return match($this->cancelled_by) {
+            'customer' => 'مشتری',
+            'specialist' => 'متخصص',
+            'admin' => 'مدیر سیستم',
+            default => null
         };
     }
 }
