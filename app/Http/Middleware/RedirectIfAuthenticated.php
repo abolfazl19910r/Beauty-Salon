@@ -14,7 +14,7 @@ class RedirectIfAuthenticated
      * Handle an incoming request.
      *
      * @param Request $request
-     * @param \Closure(Request): (Response) $next
+     * @param Closure $next
      * @param string ...$guards
      * @return Response
      */
@@ -24,7 +24,17 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                return redirect(RouteServiceProvider::HOME);
+                $user = Auth::user();
+
+                if ($user->hasRole('specialists')) {
+                    return redirect(RouteServiceProvider::SPECIALIST_HOME);
+                }
+
+                if ($user->is_admin) {
+                    return redirect(RouteServiceProvider::HOME);
+                }
+
+                return redirect(RouteServiceProvider::USER_HOME);
             }
         }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Services\PhoneVerificationService;
+use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -108,13 +109,8 @@ class AuthenticatedSessionController extends Controller
             Auth::login($user);
             $request->session()->regenerate();
 
-            if ($user->is_admin) {
-                return redirect('/admin/dashboard')
+            return redirect()->intended($this->redirectPath())
                 ->with('success', 'خوش آمدید!');
-            }
-
-            return redirect('/dashboard')
-            ->with('success', 'خوش آمدید!');
         }
 
         return back()->withErrors([
@@ -143,11 +139,26 @@ class AuthenticatedSessionController extends Controller
 
     public function destroy(Request $request): RedirectResponse
     {
-        Auth::logout();
+        Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return redirect('/')
             ->with('success', 'با موفقیت خارج شدید.');
+    }
+
+    protected function redirectPath(): string
+    {
+        $user = Auth::user();
+
+        if ($user && $user->hasRole('specialists')) {
+            return RouteServiceProvider::SPECIALIST_HOME;
+        }
+
+        if ($user && $user->is_admin) {
+            return RouteServiceProvider::HOME;
+        }
+
+        return RouteServiceProvider::USER_HOME;
     }
 }
