@@ -7,6 +7,8 @@ require __DIR__.'/web/public.php';
 require __DIR__.'/web/auth.php';
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    require __DIR__.'/web/specialistprofile.php';
+
     require __DIR__.'/web/profiles.php';
 
     require __DIR__.'/web/services.php';
@@ -15,7 +17,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     require __DIR__.'/web/payments.php';
 
     require __DIR__.'/web/security.php';
-    require __DIR__.'/web/specialistprofile.php';
 
 });
 
