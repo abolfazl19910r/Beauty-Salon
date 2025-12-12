@@ -80,6 +80,62 @@ class BookingController extends Controller
         }
     }
 
+    public function index(Request $request): \Illuminate\View\View
+    {
+        $status = $request->query('status');
+        $query = Booking::with(['service', 'specialist'])
+            ->where('user_id', Auth::id())
+            ->orderBy('booking_time', 'desc');
+
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        $bookings = $query->paginate(10);
+
+        return view('bookings.index', compact('bookings'));
+    }
+
+    public function success(Request $request): \Illuminate\View\View
+    {
+        try {
+            $booking = null;
+
+            if ($request->has('id')) {
+                $bookingId = $request->id;
+                $booking = Booking::with(['service', 'specialist'])
+                    ->where('id', $bookingId)
+                    ->where('user_id', auth()->id())
+                    ->first();
+            } elseif (session()->has('booking_id')) {
+                $bookingId = session('booking_id');
+                $booking = Booking::with(['service', 'specialist'])
+                    ->where('id', $bookingId)
+                    ->where('user_id', auth()->id())
+                    ->first();
+            } else {
+                $booking = Booking::with(['service', 'specialist'])
+                    ->where('user_id', auth()->id())
+                    ->where('payment_status', 'paid')
+                    ->latest('paid_at')
+                    ->first();
+            }
+
+            if (!$booking) {
+                return redirect()->route('bookings.index')
+                    ->with('error', 'اطلاعات رزرو یافت نشد. لطفاً با پشتیبانی تماس بگیرید.');
+            }
+
+            session(['last_paid_booking_id' => $booking->id]);
+
+            return view('bookings.success', compact('booking'));
+
+        } catch (Exception $e) {
+            return redirect()->route('bookings.index')
+                ->with('error', 'خطا در نمایش اطلاعات رزرو. لطفاً با پشتیبانی تماس بگیرید.');
+        }
+    }
+
     public function checkDiscount(Request $request): JsonResponse
     {
         try {
@@ -229,12 +285,14 @@ class BookingController extends Controller
 
                 $finalAmount = max(0, $prepaymentAmount - $discountAmount);
 
+                $initialStatus = $specialist->hasAutoConfirm() ? 'confirmed' : 'pending';
+
                 $booking = Booking::create([
                     'service_id' => $request->service_id,
                     'specialist_id' => $request->specialist_id,
                     'user_id' => auth()->id(),
                     'booking_time' => $bookingTime,
-                    'status' => 'pending',
+                    'status' => $initialStatus,
                     'prepayment_amount' => $finalAmount,
                     'payment_status' => 'unpaid',
                     'discount_code' => $request->discount_code,
@@ -244,12 +302,17 @@ class BookingController extends Controller
                 BookingCreated::dispatch($booking);
                 $booking->load(['service', 'specialist', 'user']);
 
-                $this->sendBookingNotificationToSpecialist($booking);
+                $this->sendBookingNotificationToSpecialist($booking, $specialist);
+
+                if ($specialist->hasAutoConfirm()) {
+                    $this->sendAutoConfirmedNotificationToCustomer($booking, $specialist);
+                }
 
                 if (request()->expectsJson()) {
                     return response()->json([
                         'message' => 'نوبت با موفقیت ثبت شد.',
-                        'booking' => $booking
+                        'booking' => $booking,
+                        'auto_confirmed' => $specialist->hasAutoConfirm()
                     ]);
                 }
 
@@ -264,39 +327,98 @@ class BookingController extends Controller
         }
     }
 
-    protected function sendBookingNotificationToSpecialist(Booking $booking): void
+    protected function sendBookingNotificationToSpecialist(Booking $booking, Specialist $specialist): void
     {
         try {
-            $dashboardUrl = route('specialist.my-dashboard');
+            $persianDate = verta($booking->booking_time)->format('Y/m/d');
+            $persianTime = verta($booking->booking_time)->format('H:i');
+
+            if ($specialist->hasAutoConfirm()) {
+                $message = sprintf(
+                    "%s عزیز، سلام 👋\n\n".
+                    "🔔 نوبت جدید برای شما ثبت شد:\n\n".
+                    "👤 مشتری: %s\n".
+                    "📱 تماس: %s\n".
+                    "📋 سرویس: %s\n".
+                    "📅 تاریخ: %s\n".
+                    "🕐 ساعت: %s\n".
+                    "🔢 کد پیگیری: #%s\n\n".
+                    "✅ این نوبت به صورت خودکار تایید شده است.\n".
+                    "📱 برای مدیریت نوبت‌ها به پنل خود مراجعه کنید.",
+                    $specialist->name,
+                    $booking->user->name,
+                    $booking->user->phone,
+                    $booking->service->name,
+                    $persianDate,
+                    $persianTime,
+                    $booking->id
+                );
+            } else {
+                $dashboardUrl = route('specialist.my-dashboard');
+
+                $message = sprintf(
+                    "%s عزیز، سلام 👋\n\n".
+                    "🔔 نوبت جدید برای شما ثبت شد:\n\n".
+                    "👤 مشتری: %s\n".
+                    "📱 تماس: %s\n".
+                    "📋 سرویس: %s\n".
+                    "📅 تاریخ: %s\n".
+                    "🕐 ساعت: %s\n".
+                    "🔢 کد پیگیری: #%s\n\n".
+                    "⚠️ این نوبت نیاز به تایید شما دارد.\n\n".
+                    "🔗 برای مشاهده و تایید:\n%s",
+                    $specialist->name,
+                    $booking->user->name,
+                    $booking->user->phone,
+                    $booking->service->name,
+                    $persianDate,
+                    $persianTime,
+                    $booking->id,
+                    $dashboardUrl
+                );
+            }
+
+            $this->smsService->send($specialist->phone, $message);
+
+        } catch (Exception $e) {
+            Log::error('خطا در ارسال پیامک به متخصص', [
+                'booking_id' => $booking->id,
+                'specialist_id' => $specialist->id,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    protected function sendAutoConfirmedNotificationToCustomer(Booking $booking, Specialist $specialist): void
+    {
+        try {
             $persianDate = verta($booking->booking_time)->format('Y/m/d');
             $persianTime = verta($booking->booking_time)->format('H:i');
 
             $message = sprintf(
                 "%s عزیز، سلام 👋\n\n".
-                "🔔 نوبت جدید برای شما ثبت شد:\n\n".
-                "👤 مشتری: %s\n".
-                "📱 تماس: %s\n".
+                "✅ نوبت شما با موفقیت تایید شد\n\n".
                 "📋 سرویس: %s\n".
                 "📅 تاریخ: %s\n".
                 "🕐 ساعت: %s\n".
-                "🔢 کد پیگیری: #%s\n\n".
-                "🔗 برای مشاهده و تایید:\n%s",
-                $booking->specialist->name,
+                "🔢 کد پیگیری: #%s\n".
+                "👤 متخصص: %s\n\n".
+                "⏰ لطفاً 15 دقیقه قبل از وقت حضور داشته باشید.\n\n".
+                "🙏 منتظر دیدار شما هستیم",
                 $booking->user->name,
-                $booking->user->phone,
                 $booking->service->name,
                 $persianDate,
                 $persianTime,
                 $booking->id,
-                $dashboardUrl
+                $specialist->name
             );
 
-            $this->smsService->send($booking->specialist->phone, $message);
+            $this->smsService->send($booking->user->phone, $message);
 
         } catch (Exception $e) {
-            Log::error('خطا در ارسال پیامک به متخصص', [
+            Log::error('خطا در ارسال پیامک تایید خودکار به مشتری', [
                 'booking_id' => $booking->id,
-                'specialist_id' => $booking->specialist_id,
+                'user_id' => $booking->user_id,
                 'error' => $e->getMessage()
             ]);
         }
@@ -542,27 +664,6 @@ class BookingController extends Controller
 
     /**
      *
-     * @param Request $request
-     * @return \Illuminate\View\View
-     */
-    public function index(Request $request): \Illuminate\View\View
-    {
-        $status = $request->query('status');
-        $query = Booking::with(['service', 'specialist'])
-            ->where('user_id', Auth::id())
-            ->orderBy('booking_time', 'desc');
-
-        if ($status) {
-            $query->where('status', $status);
-        }
-
-        $bookings = $query->paginate(10);
-
-        return view('bookings.index', compact('bookings'));
-    }
-
-    /**
-     *
      * @return JsonResponse
      */
     public function upcoming(): JsonResponse
@@ -611,51 +712,6 @@ class BookingController extends Controller
             return response()->json($dates);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
-    /**
-     *
-     * @param Request $request
-     * @return \Illuminate\View\View
-     */
-    public function success(Request $request): \Illuminate\View\View
-    {
-        try {
-            $booking = null;
-
-            if ($request->has('id')) {
-                $bookingId = $request->id;
-                $booking = Booking::with(['service', 'specialist'])
-                    ->where('id', $bookingId)
-                    ->where('user_id', auth()->id())
-                    ->first();
-            } elseif (session()->has('booking_id')) {
-                $bookingId = session('booking_id');
-                $booking = Booking::with(['service', 'specialist'])
-                    ->where('id', $bookingId)
-                    ->where('user_id', auth()->id())
-                    ->first();
-            } else {
-                $booking = Booking::with(['service', 'specialist'])
-                    ->where('user_id', auth()->id())
-                    ->where('payment_status', 'paid')
-                    ->latest('paid_at')
-                    ->first();
-            }
-
-            if (!$booking) {
-                return redirect()->route('bookings.index')
-                    ->with('error', 'اطلاعات رزرو یافت نشد. لطفاً با پشتیبانی تماس بگیرید.');
-            }
-
-            session(['last_paid_booking_id' => $booking->id]);
-
-            return view('bookings.success', compact('booking'));
-
-        } catch (Exception $e) {
-            return redirect()->route('bookings.index')
-                ->with('error', 'خطا در نمایش اطلاعات رزرو. لطفاً با پشتیبانی تماس بگیرید.');
         }
     }
 
