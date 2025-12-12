@@ -186,9 +186,14 @@ class SpecialistProfileController extends Controller
                 'schedules.*.is_active' => 'nullable',
                 'schedules.*.start_time' => 'nullable|required_if:schedules.*.is_active,1',
                 'schedules.*.end_time' => 'nullable|required_if:schedules.*.is_active,1|after:schedules.*.start_time',
+                'auto_confirm_bookings' => 'nullable|in:0,1',
             ]);
 
             DB::beginTransaction();
+
+            $specialist->update([
+                'auto_confirm_bookings' => $request->input('auto_confirm_bookings', 0) == 1
+            ]);
 
             $specialist->schedules()->delete();
 
@@ -207,8 +212,13 @@ class SpecialistProfileController extends Controller
 
             DB::commit();
 
-            return redirect()->route('specialist.schedule')
-                ->with('success', 'برنامه کاری با موفقیت بروزرسانی شد');
+            $message = 'برنامه کاری با موفقیت بروزرسانی شد';
+            if ($specialist->auto_confirm_bookings) {
+                $message .= ' - تایید خودکار نوبت‌ها فعال شد';
+            }
+
+            return redirect()->route('specialist.profile.show')
+                ->with('success', $message);
 
         } catch (\Exception $e) {
             DB::rollBack();
