@@ -17,8 +17,18 @@ class Specialist extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $fillable = ['name', 'phone', 'email'];
+    protected $fillable = [
+        'name',
+        'phone',
+        'email',
+        'auto_confirm_bookings'
+    ];
+
     protected $dates = ['deleted_at'];
+
+    protected $casts = [
+        'auto_confirm_bookings' => 'boolean',
+    ];
 
     public static function latest()
     {
@@ -171,5 +181,10 @@ class Specialist extends Model
         }
 
         return $result;
+    }
+
+    public function hasAutoConfirm(): bool
+    {
+        return $this->auto_confirm_bookings === true;
     }
 }
