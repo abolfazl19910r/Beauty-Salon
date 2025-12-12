@@ -31,15 +31,61 @@
             </div>
         @endif
 
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg p-5 mb-6 shadow-sm">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <svg class="w-8 h-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="mr-3 flex-1">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">تایید خودکار نوبت‌های رزرو شده</h3>
+                    <p class="text-sm text-gray-600 mb-4">
+                        با فعال کردن این گزینه، نوبت‌های رزرو شده به صورت خودکار تایید می‌شوند و نیازی به تایید دستی هر نوبت ندارید.
+                    </p>
+
+                    <label class="inline-flex items-center cursor-pointer bg-white rounded-lg px-4 py-3 border-2 border-blue-300 hover:border-blue-400 transition-all">
+                        <input type="checkbox"
+                               id="auto_confirm_toggle"
+                               name="auto_confirm_bookings"
+                               value="1"
+                               class="form-checkbox h-6 w-6 text-blue-600 rounded transition duration-150"
+                            {{ $specialist->auto_confirm_bookings ? 'checked' : '' }}>
+                        <span class="mr-3 font-medium text-gray-800">فعال‌سازی تایید خودکار نوبت‌ها</span>
+                    </label>
+
+                    <div class="mt-4 bg-white rounded-lg p-3 border border-blue-200">
+                        <div class="flex items-start text-sm text-gray-600">
+                            <svg class="w-5 h-5 text-blue-500 ml-2 flex-shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            <div>
+                                <strong>توجه:</strong> با فعال کردن این گزینه:
+                                <ul class="list-disc list-inside mt-2 space-y-1">
+                                    <li>نوبت‌های جدید بلافاصله تایید می‌شوند</li>
+                                    <li>پیامک ارسالی به شما لینک تایید/لغو نخواهد داشت</li>
+                                    <li>همچنان می‌توانید از پنل خود نوبت‌ها را مدیریت کنید</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 overflow-hidden">
             <div class="p-5 border-b border-gray-100">
                 <h2 class="text-lg font-semibold text-gray-800">ساعات کاری هفتگی</h2>
                 <p class="text-sm text-gray-500 mt-1">روزها و ساعات فعالیت خود را تنظیم کنید</p>
             </div>
 
-            <form method="POST" action="{{ route('specialist.schedule.update') }}">
+            <form method="POST" action="{{ route('specialist.schedule.update') }}" id="scheduleForm">
                 @csrf
                 @method('PUT')
+
+                <input type="hidden" name="auto_confirm_bookings" id="auto_confirm_hidden" value="{{ $specialist->auto_confirm_bookings ? '1' : '0' }}">
 
                 <div class="p-5">
                     <div class="grid gap-6">
@@ -159,7 +205,7 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const checkboxes = document.querySelectorAll('input[name*="[is_active]"]');
             checkboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', function() {
                     const container = this.closest('.border');
@@ -169,6 +215,13 @@
                         container.classList.remove('bg-pink-50');
                     }
                 });
+            });
+
+            const autoConfirmToggle = document.getElementById('auto_confirm_toggle');
+            const autoConfirmHidden = document.getElementById('auto_confirm_hidden');
+
+            autoConfirmToggle.addEventListener('change', function() {
+                autoConfirmHidden.value = this.checked ? '1' : '0';
             });
         });
     </script>
