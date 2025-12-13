@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class SpecialistLeave extends Model
 {
+    use HasFactory;
+    protected $table = 'leaves';
+
     protected $fillable = [
         'specialist_id',
         'start_date',
