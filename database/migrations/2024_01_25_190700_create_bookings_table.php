@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('specialist_id')->constrained('specialists');
             $table->foreignId('user_id')->constrained('users');
             $table->dateTime('booking_time');
-            $table->enum('status', ['pending', 'confirmed', 'cancelled']);
+            $table->enum('status', ['pending', 'confirmed', 'cancelled', 'pending_payment'])->default('pending');
             $table->string('discount_code')->nullable();
             $table->decimal('discount_amount', 10, 2)->nullable();
             $table->decimal('prepayment_amount', 10, 2)->default(50000);
@@ -27,6 +27,9 @@ return new class extends Migration
             $table->timestamp('paid_at')->nullable();
             $table->integer('rating')->nullable();
             $table->text('review')->nullable();
+            $table->enum('cancelled_by', ['customer', 'specialist', 'admin', 'system'])->nullable()->comment('شخصی که نوبت را لغو کرده');
+            $table->text('cancellation_reason')->nullable()->comment('دلیل لغو نوبت');
+            $table->timestamp('cancelled_at')->nullable()->comment('زمان لغو نوبت');
             $table->boolean('reminder_sent')->default(false);
             $table->enum('refund_status', ['pending', 'refunded', 'failed'])->nullable();
             $table->timestamp('refunded_at')->nullable();
@@ -34,6 +37,9 @@ return new class extends Migration
             $table->string('refund_reference')->nullable();
             $table->json('refund_details')->nullable();
             $table->timestamps();
+
+            $table->index('cancelled_by');
+            $table->index('cancelled_at');
         });
     }
 

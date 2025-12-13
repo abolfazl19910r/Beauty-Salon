@@ -22,6 +22,24 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
+
+        Schema::create('scheduled_report_runs', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('scheduled_report_id')->constrained()->onDelete('cascade');
+            $table->string('status');
+            $table->text('result_file')->nullable();
+            $table->text('error_message')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('user_report_settings', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->json('settings');
+            $table->timestamps();
+
+            $table->unique('user_id');
+        });
     }
 
     /**
@@ -29,6 +47,8 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('user_report_settings');
+        Schema::dropIfExists('scheduled_report_runs');
         Schema::dropIfExists('scheduled_reports');
     }
 };

@@ -29,6 +29,16 @@ return new class extends Migration
             $table->index(['status', 'priority']);
             $table->index(['category', 'created_at']);
         });
+
+        Schema::create('support_ticket_messages', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('ticket_id')->constrained('support_tickets')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->text('message');
+            $table->boolean('is_staff_reply')->default(false);
+            $table->json('attachments')->nullable();
+            $table->timestamps();
+        });
     }
 
     /**
@@ -36,6 +46,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('support_ticket_messages');
         Schema::dropIfExists('support_tickets');
     }
 };

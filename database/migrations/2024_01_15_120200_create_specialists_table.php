@@ -15,7 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('phone');
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('email')->unique();
+            $table->boolean('auto_confirm_bookings')->default(false);
             $table->timestamps();
             $table->softDeletes();
         });

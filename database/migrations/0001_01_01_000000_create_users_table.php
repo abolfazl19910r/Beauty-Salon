@@ -20,6 +20,8 @@ return new class extends Migration
             $table->boolean('is_admin')->default(false);
             $table->string('verification_code')->nullable();
             $table->timestamp('verification_code_expire_at')->nullable();
+            $table->string('login_verification_code', 6)->nullable();
+            $table->timestamp('login_verification_code_expire_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
