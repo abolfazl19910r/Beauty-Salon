@@ -3,7 +3,7 @@
 @section('title', 'پرداخت نوبت')
 
 @section('content')
-    <div class="max-w-2xl mx-auto">
+    <div class="max-w-2xl mx-auto fade-in">
         <div class="bg-white rounded-lg shadow-lg p-6 hover-shadow">
             <div class="border-b pb-4 mb-6 flex items-center">
                 <svg class="w-6 h-6 ml-2 text-pink-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -12,7 +12,23 @@
                 </svg>
                 <div>
                     <h1 class="text-2xl font-bold">پرداخت نوبت</h1>
-                    <p class="text-gray-500">شماره نوبت: {{ $booking->id }}</p>
+                    <p class="text-gray-500 persian-number">شماره نوبت: {{ $booking->id }}</p>
+                </div>
+            </div>
+
+            <div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-yellow-600 mt-0.5 ml-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <div>
+                        <p class="text-yellow-800 font-medium mb-1">توجه مهم:</p>
+                        <p class="text-yellow-700 text-sm">
+                            در صورت عدم پرداخت طی 30 دقیقه، نوبت شما به صورت خودکار لغو خواهد شد.
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -35,11 +51,7 @@
                         <div>
                             <span class="text-gray-600 block mb-1">خدمت:</span>
                             <span class="font-medium">
-                                @if($booking->service)
-                                    {{ $booking->service->name }}
-                                @else
-                                    خدمت نامشخص
-                                @endif
+                                {{ $booking->service ? $booking->service->name : 'خدمت نامشخص' }}
                             </span>
                         </div>
                     </div>
@@ -52,11 +64,7 @@
                         <div>
                             <span class="text-gray-600 block mb-1">متخصص:</span>
                             <span class="font-medium">
-                                @if($booking->specialist)
-                                    {{ $booking->specialist->name }}
-                                @else
-                                    متخصص نامشخص
-                                @endif
+                                {{ $booking->specialist ? $booking->specialist->name : 'متخصص نامشخص' }}
                             </span>
                         </div>
                     </div>
@@ -77,7 +85,7 @@
                 </div>
             </div>
 
-            <div class="bg-blue-50 p-5 rounded-lg mb-6">
+            <div class="bg-blue-50 border border-blue-200 p-5 rounded-lg mb-6">
                 <h3 class="font-bold mb-4 flex items-center text-blue-700">
                     <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="12" y1="1" x2="12" y2="23"></line>
@@ -86,26 +94,28 @@
                     جزئیات پرداخت
                 </h3>
                 <div class="space-y-3">
-                    <div class="flex justify-between items-center border-b border-blue-100 pb-2">
-                        <span class="text-blue-700">مبلغ کل:</span>
-                        <span class="persian-number">
-                            @if($booking->service)
-                                {{ number_format($booking->service->price) }} تومان
-                            @else
-                                مبلغ نامشخص
-                            @endif
-                        </span>
-                    </div>
+                    @if($booking->service)
+                        <div class="flex justify-between items-center border-b border-blue-100 pb-2">
+                            <span class="text-blue-700">مبلغ کل خدمت:</span>
+                            <span class="persian-number">{{ number_format($booking->service->price) }} تومان</span>
+                        </div>
+                    @endif
                     <div class="flex justify-between items-center text-lg">
                         <span class="text-blue-700 font-bold">مبلغ پیش پرداخت:</span>
                         <span class="text-blue-700 font-bold persian-number">{{ number_format($booking->prepayment_amount) }} تومان</span>
                     </div>
+                    @if($booking->discount_amount > 0)
+                        <div class="flex justify-between items-center text-green-600 text-sm">
+                            <span>تخفیف اعمال شده:</span>
+                            <span class="persian-number">{{ number_format($booking->discount_amount) }} تومان</span>
+                        </div>
+                    @endif
                 </div>
             </div>
 
             <form action="{{ route('payment.process', ['booking' => $booking->id]) }}" method="POST">
                 @csrf
-                <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 rounded-lg font-bold hover:opacity-90 transition-colors flex items-center justify-center">
+                <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 rounded-lg font-bold hover:opacity-90 transition-opacity flex items-center justify-center">
                     <svg class="w-5 h-5 ml-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
                         <line x1="1" y1="10" x2="23" y2="10"></line>
@@ -115,13 +125,25 @@
             </form>
 
             <div class="mt-4 text-center">
-                <a href="javascript:history.back()" class="text-pink-600 hover:text-pink-700 inline-flex items-center">
+                <a href="{{ route('bookings.index') }}" class="text-gray-600 hover:text-pink-600 inline-flex items-center transition-colors">
                     <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="19" y1="12" x2="5" y2="12"></line>
                         <polyline points="12 19 5 12 12 5"></polyline>
                     </svg>
-                    بازگشت به صفحه قبل
+                    انصراف و بازگشت به لیست نوبت‌ها
                 </a>
+            </div>
+
+            <div class="mt-6 pt-6 border-t">
+                <div class="flex items-start text-sm text-gray-600">
+                    <svg class="w-5 h-5 text-green-500 ml-2 mt-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <p>
+                        پرداخت شما از طریق درگاه امن زرین‌پال انجام می‌شود و اطلاعات کارت بانکی شما ذخیره نمی‌گردد.
+                    </p>
+                </div>
             </div>
         </div>
     </div>

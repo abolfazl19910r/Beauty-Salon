@@ -27,13 +27,16 @@
                         <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>
                             تایید شده
                         </option>
+                        <option value="pending_payment" {{ request('status') == 'pending_payment' ? 'selected' : '' }}>
+                            در انتظار پرداخت
+                        </option>
                         <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>
                             لغو شده
                         </option>
                     </select>
 
                     <input type="date" name="date" class="border rounded-lg px-3 py-2 focus:border-pink-500 focus:ring focus:ring-pink-200 transition-colors"
-                           value="{{ request('date', date('Y-m-d')) }}">
+                           value="{{ request('date') }}">
 
                     <button type="submit" class="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center">
                         <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -113,6 +116,14 @@
                                                 تایید شده
                                             </span>
                                             @break
+                                        @case('pending_payment')
+                                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs inline-flex items-center">
+                                                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                                </svg>
+                                                در انتظار پرداخت
+                                            </span>
+                                            @break
                                         @case('cancelled')
                                             <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs inline-flex items-center">
                                                 <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,34 +137,36 @@
                                 <td class="px-6 py-4">
                                     <div class="flex items-center space-x-2 space-x-reverse">
                                         <a href="{{ route('bookings.show', $booking) }}"
-                                           class="text-blue-500 hover:text-blue-700 transition-colors">
+                                           class="text-blue-500 hover:text-blue-700 transition-colors" title="مشاهده جزئیات">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                             </svg>
                                         </a>
 
-                                        @if($booking->payment_status == 'unpaid')
+                                        @if($booking->payment_status == 'unpaid' && in_array($booking->status, ['pending_payment', 'confirmed']))
                                             <a href="{{ route('payment.show', $booking) }}"
-                                               class="text-green-500 hover:text-green-700 transition-colors">
+                                               class="text-green-500 hover:text-green-700 transition-colors" title="پرداخت">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
                                                 </svg>
                                             </a>
                                         @endif
 
-                                        @if($booking->status != 'cancelled' && $booking->booking_time > now())
+                                        @if($booking->status == 'confirmed' && $booking->booking_time > now())
                                             <a href="{{ route('bookings.reschedule', $booking) }}"
-                                               class="text-yellow-500 hover:text-yellow-700 transition-colors">
+                                               class="text-yellow-500 hover:text-yellow-700 transition-colors" title="تغییر زمان">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                 </svg>
                                             </a>
+                                        @endif
 
+                                        @if(in_array($booking->status, ['pending', 'confirmed', 'pending_payment']) && $booking->booking_time > now()->addHours(24))
                                             <form action="{{ route('bookings.cancel', $booking) }}" method="POST" class="inline">
                                                 @csrf
                                                 @method('PUT')
-                                                <button type="submit" class="text-red-500 hover:text-red-700 transition-colors"
+                                                <button type="submit" class="text-red-500 hover:text-red-700 transition-colors" title="لغو نوبت"
                                                         onclick="return confirm('آیا مطمئن هستید؟')">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>

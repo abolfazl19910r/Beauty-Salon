@@ -79,18 +79,25 @@
                     </div>
                 </div>
 
-                <button type="submit"
-                        :disabled="!isFormValid"
-                        class="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 px-4 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
-                    <span v-if="loading" class="flex items-center justify-center">
-                        <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        در حال پردازش...
-                    </span>
-                    <span v-else>ثبت رزرو</span>
-                </button>
+                <div class="flex gap-4">
+                    <button type="button"
+                            @click="$router.go(-1)"
+                            class="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors">
+                        بازگشت
+                    </button>
+                    <button type="submit"
+                            :disabled="!isFormValid"
+                            class="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 px-4 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span v-if="loading" class="flex items-center justify-center">
+                            <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            در حال پردازش...
+                        </span>
+                        <span v-else>ادامه و تایید رزرو</span>
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -134,6 +141,7 @@
                         const response = await fetch('/api/services');
                         this.services = await response.json();
                     } catch (error) {
+                        console.error('خطا در بارگذاری سرویس‌ها:', error);
                     }
                 },
 
@@ -142,15 +150,21 @@
                     try {
                         const response = await fetch(`/api/specialists/${this.selectedService}`);
                         this.specialists = await response.json();
+                        this.selectedSpecialist = '';
+                        this.availableDates = [];
+                        this.selectedDate = null;
+                        this.availableTimeSlots = [];
+                        this.selectedTime = null;
                     } catch (error) {
+                        console.error('خطا در بارگذاری متخصصین:', error);
                     }
                 },
+
                 async loadAvailableDates() {
                     if (!this.selectedSpecialist) return;
 
                     try {
                         this.loading = true;
-
                         const response = await fetch(`/api/available-dates/${this.selectedSpecialist}`, {
                             headers: {
                                 'Accept': 'application/json'
@@ -161,38 +175,24 @@
                             throw new Error(`HTTP error! status: ${response.status}`);
                         }
 
-                        const text = await response.text();
-
-                        if (!text.trim()) {
-                            this.availableDates = [];
-                            return;
-                        }
-
-                        try {
-                            const dates = JSON.parse(text);
-
-                            if (Array.isArray(dates)) {
-                                this.availableDates = dates;
-                            } else if (dates.error) {
-                                this.availableDates = [];
-                            } else {
-                                this.availableDates = [];
-                            }
-                        } catch (e) {
-                            this.availableDates = [];
-                        }
+                        const dates = await response.json();
+                        this.availableDates = Array.isArray(dates) ? dates : [];
+                        this.selectedDate = null;
+                        this.availableTimeSlots = [];
+                        this.selectedTime = null;
                     } catch (error) {
+                        console.error('خطا در بارگذاری تاریخ‌ها:', error);
                         this.availableDates = [];
                     } finally {
                         this.loading = false;
                     }
                 },
+
                 async loadTimeSlots() {
                     if (!this.selectedDate || !this.selectedSpecialist) return;
 
                     try {
                         this.loading = true;
-
                         const response = await fetch(`/api/time-slots/${this.selectedSpecialist}/${this.selectedDate}`, {
                             headers: {
                                 'Accept': 'application/json',
@@ -201,7 +201,6 @@
                         });
 
                         if (!response.ok) {
-                            const errorText = await response.text();
                             throw new Error(`HTTP error! status: ${response.status}`);
                         }
 
@@ -211,38 +210,41 @@
                             this.availableTimeSlots = data.slots;
                         } else {
                             this.availableTimeSlots = [];
-
                             if (data.message) {
                                 alert(data.message);
                             }
                         }
                     } catch (error) {
+                        console.error('خطا در بارگذاری ساعت‌ها:', error);
                         this.availableTimeSlots = [];
                     } finally {
                         this.loading = false;
                     }
                 },
+
                 formatDate(date) {
                     return new persianDate(new Date(date)).format('YYYY/MM/DD');
                 },
+
                 selectDate(date) {
                     this.selectedDate = date;
                     this.selectedTime = null;
                     this.loadTimeSlots();
                 },
+
                 selectTime(time) {
                     this.selectedTime = time;
                 },
+
                 async submitBooking() {
                     if (!this.isFormValid) return;
 
                     try {
                         this.loading = true;
-                        const bookingDateTime = `${this.selectedDate}T${this.selectedTime}:00`;
-
+                        const bookingDateTime = `${this.selectedDate} ${this.selectedTime}:00`;
                         const form = document.createElement('form');
                         form.method = 'POST';
-                        form.action = '/bookings';
+                        form.action = '/bookings/confirm';
                         form.style.display = 'none';
 
                         const csrfInput = document.createElement('input');
@@ -272,6 +274,7 @@
                         document.body.appendChild(form);
                         form.submit();
                     } catch (error) {
+                        console.error('خطا در ثبت رزرو:', error);
                         alert('خطا در ثبت رزرو. لطفا دوباره تلاش کنید.');
                     } finally {
                         this.loading = false;

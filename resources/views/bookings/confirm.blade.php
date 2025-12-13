@@ -20,7 +20,7 @@
                     </div>
                     <div class="flex justify-between border-b pb-2">
                         <span class="text-gray-600">تاریخ:</span>
-                        <span class="font-medium">{{ verta($bookingTime)->format('Y/m/d') }}</span>
+                        <span class="font-medium persian-number">{{ verta($bookingTime)->format('Y/m/d') }}</span>
                     </div>
                     <div class="flex justify-between border-b pb-2">
                         <span class="text-gray-600">ساعت:</span>
@@ -28,11 +28,11 @@
                     </div>
                     <div class="flex justify-between border-b pb-2">
                         <span class="text-gray-600">مدت زمان:</span>
-                        <span class="font-medium">{{ $service->duration }} دقیقه</span>
+                        <span class="font-medium persian-number">{{ $service->duration }} دقیقه</span>
                     </div>
                     <div class="flex justify-between font-bold pt-2 text-lg">
                         <span>مبلغ پیش پرداخت:</span>
-                        <span class="text-pink-600">{{ number_format($prepaymentAmount) }} تومان</span>
+                        <span class="text-pink-600 persian-number" id="final-price">{{ number_format($prepaymentAmount) }} تومان</span>
                     </div>
                 </div>
             </div>
@@ -62,10 +62,10 @@
                 <input type="hidden" name="discount_code" id="hidden-discount-code" value="">
 
                 <div class="flex gap-4">
-                    <button type="button" onclick="window.history.back()"
-                            class="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors">
+                    <a href="{{ route('bookings.create') }}"
+                       class="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors text-center">
                         بازگشت و ویرایش
-                    </button>
+                    </a>
                     <button type="submit"
                             class="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 px-4 rounded-lg hover:opacity-90 transition-opacity">
                         تأیید و رفتن به درگاه پرداخت
@@ -83,10 +83,16 @@
             const discountCodeInput = document.getElementById('discount-code');
             const hiddenDiscountCode = document.getElementById('hidden-discount-code');
             const discountMessage = document.getElementById('discount-message');
+            const finalPriceEl = document.getElementById('final-price');
 
             applyDiscountBtn.addEventListener('click', async function() {
                 const code = discountCodeInput.value.trim();
-                if (!code) return;
+                if (!code) {
+                    discountMessage.innerHTML = 'لطفا کد تخفیف را وارد کنید';
+                    discountMessage.className = 'mt-2 text-sm text-red-600';
+                    discountMessage.classList.remove('hidden');
+                    return;
+                }
 
                 try {
                     discountMessage.innerHTML = 'در حال بررسی کد تخفیف...';
@@ -108,20 +114,21 @@
                     const result = await response.json();
 
                     if (response.ok && result.valid) {
-                        discountMessage.innerHTML = `کد تخفیف معتبر است: ${result.discount_amount} تومان تخفیف`;
+                        discountMessage.innerHTML = `✓ کد تخفیف معتبر است: ${result.discount_amount.toLocaleString()} تومان تخفیف`;
                         discountMessage.className = 'mt-2 text-sm text-green-600';
                         hiddenDiscountCode.value = code;
 
-                        if (result.final_price) {
-                            document.querySelector('.text-pink-600').innerHTML =
-                                `${result.final_price.toLocaleString()} تومان`;
+                        if (result.final_price !== undefined) {
+                            finalPriceEl.innerHTML = `${result.final_price.toLocaleString()} تومان`;
                         }
                     } else {
-                        discountMessage.innerHTML = result.message || 'کد تخفیف نامعتبر است';
+                        discountMessage.innerHTML = '✗ ' + (result.message || 'کد تخفیف نامعتبر است');
                         discountMessage.className = 'mt-2 text-sm text-red-600';
                         hiddenDiscountCode.value = '';
+                        finalPriceEl.innerHTML = '{{ number_format($prepaymentAmount) }} تومان';
                     }
                 } catch (error) {
+                    console.error('Error:', error);
                     discountMessage.innerHTML = 'خطا در بررسی کد تخفیف';
                     discountMessage.className = 'mt-2 text-sm text-red-600';
                 }
