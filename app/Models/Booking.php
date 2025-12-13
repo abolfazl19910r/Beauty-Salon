@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -65,13 +66,24 @@ class Booking extends Model
 
     public function canBeRescheduled(): bool
     {
-        return $this->status !== 'cancelled' &&
+        return $this->status === 'confirmed' &&
             $this->booking_time->diffInHours(now()) > 24;
+    }
+
+    public function scopePendingPayment($query)
+    {
+        return $query->where('status', 'pending_payment');
+    }
+
+    public function scopeAwaitingPayment($query)
+    {
+        return $query->where('status', 'pending_payment')
+            ->where('payment_status', 'unpaid');
     }
 
     public function canBeCancelled(): bool
     {
-        return $this->status !== 'cancelled' &&
+        return in_array($this->status, ['pending', 'confirmed', 'pending_payment']) &&
             $this->booking_time->diffInHours(now()) > 24;
     }
 
@@ -81,8 +93,15 @@ class Booking extends Model
             'pending' => 'bg-yellow-100 text-yellow-800',
             'confirmed' => 'bg-green-100 text-green-800',
             'cancelled' => 'bg-red-100 text-red-800',
+            'pending_payment' => 'bg-blue-100 text-blue-800',
             default => 'bg-gray-100 text-gray-800'
         };
+    }
+
+
+    public function isPendingPayment(): bool
+    {
+        return $this->status === 'pending_payment';
     }
 
     public function isPending(): bool
@@ -101,6 +120,7 @@ class Booking extends Model
             'pending' => 'در انتظار تایید',
             'confirmed' => 'تایید شده',
             'cancelled' => 'لغو شده',
+            'pending_payment' => 'در انتظار پرداخت',
             default => 'نامشخص'
         };
     }
@@ -213,5 +233,10 @@ class Booking extends Model
             'admin' => 'مدیر سیستم',
             default => null
         };
+    }
+
+    public function loyaltyPoints(): HasMany
+    {
+        return $this->hasMany(\App\Models\LoyaltyPoint::class);
     }
 }
