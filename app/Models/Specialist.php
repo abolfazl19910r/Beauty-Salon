@@ -20,6 +20,7 @@ class Specialist extends Model
     protected $fillable = [
         'name',
         'phone',
+        'user_id',
         'email',
         'auto_confirm_bookings'
     ];
@@ -98,6 +99,13 @@ class Specialist extends Model
                 return [];
             }
 
+            $bookedTimes = $this->bookings()
+                ->whereDate('booking_time', $date)
+                ->where('status', '!=', 'cancelled')
+                ->pluck('booking_time')
+                ->map(fn($time) => Carbon::parse($time)->format('H:i'))
+                ->toArray();
+
             $slots = [];
             $currentTime = Carbon::parse($schedule->start_time);
             $endTime = Carbon::parse($schedule->end_time);
@@ -118,16 +126,8 @@ class Specialist extends Model
                     $isBreakTime = $currentTime->between($breakStart, $breakEnd);
                 }
 
-                if (!$isBreakTime) {
-                    $isBooked = $this->bookings()
-                        ->whereDate('booking_time', $date)
-                        ->whereTime('booking_time', $timeSlot)
-                        ->where('status', '!=', 'cancelled')
-                        ->exists();
-
-                    if (!$isBooked) {
-                        $slots[] = $timeSlot;
-                    }
+                if (!$isBreakTime && !in_array($timeSlot, $bookedTimes)) {
+                    $slots[] = $timeSlot;
                 }
 
                 $currentTime->addMinutes(30);

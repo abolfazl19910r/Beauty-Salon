@@ -71,12 +71,231 @@ class BookingController extends Controller
 
             $prepaymentAmount = 50000;
 
+            session([
+                'pending_booking' => [
+                    'service_id' => $request->service_id,
+                    'specialist_id' => $request->specialist_id,
+                    'booking_time' => $bookingTime,
+                ]
+            ]);
+
             return view('bookings.confirm', compact('service', 'specialist', 'bookingTime', 'prepaymentAmount'));
 
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
         } catch (Exception $e) {
             return back()->with('error', 'خطایی رخ داد. لطفاً دوباره تلاش کنید.');
+        }
+    }
+
+    public function store(Request $request)
+    {
+        if (!auth()->check()) {
+            return response()->json([
+                'message' => 'برای رزرو نوبت ابتدا باید وارد سیستم شوید.'
+            ], 401);
+        }
+
+        $validated = $request->validate([
+            'service_id' => 'required|exists:beauty_services,id',
+            'specialist_id' => 'required|exists:specialists,id',
+            'booking_time' => 'required|date|after:now',
+            'discount_code' => 'nullable|string'
+        ]);
+
+        try {
+            return DB::transaction(function() use ($request) {
+                $bookingTime = $request->booking_time;
+                $specialist = Specialist::find($request->specialist_id);
+                $service = BeautyService::find($request->service_id);
+                $bookingDate = date('Y-m-d', strtotime($bookingTime));
+                $bookingTimeOnly = date('H:i', strtotime($bookingTime));
+
+                $availableSlots = $specialist->getAvailableSlots($bookingDate);
+
+                if (!in_array($bookingTimeOnly, $availableSlots)) {
+                    throw ValidationException::withMessages([
+                        'booking_time' => ['این زمان قبلاً رزرو شده است.']
+                    ]);
+                }
+
+                $prepaymentAmount = 50000;
+                $discountAmount = 0;
+
+                if ($request->filled('discount_code')) {
+                    $discountCode = DiscountCode::where('code', $request->discount_code)->first();
+
+                    if ($discountCode && $discountCode->isValid()) {
+                        $discountAmount = $discountCode->type === 'percentage'
+                            ? ($prepaymentAmount * $discountCode->amount / 100)
+                            : $discountCode->amount;
+
+                        $discountCode->increment('used_count');
+                    }
+                }
+
+                $finalAmount = max(0, $prepaymentAmount - $discountAmount);
+
+                $initialStatus = 'pending_payment';
+
+                $booking = Booking::create([
+                    'service_id' => $request->service_id,
+                    'specialist_id' => $request->specialist_id,
+                    'user_id' => auth()->id(),
+                    'booking_time' => $bookingTime,
+                    'status' => $initialStatus,
+                    'prepayment_amount' => $finalAmount,
+                    'payment_status' => 'unpaid',
+                    'discount_code' => $request->discount_code,
+                    'discount_amount' => $discountAmount
+                ]);
+
+                $booking->load(['service', 'specialist', 'user']);
+                if (request()->expectsJson()) {
+                    return response()->json([
+                        'message' => 'نوبت با موفقیت ثبت شد.',
+                        'booking' => $booking
+                    ]);
+                }
+
+                return redirect()->route('payment.show', ['booking' => $booking->id]);
+            });
+
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (Exception $e) {
+            return back()->with('error', 'خطا در ثبت رزرو. لطفا دوباره تلاش کنید.')
+                ->withInput();
+        }
+    }
+
+    public function paymentCallback(Request $request, Booking $booking)
+    {
+        try {
+            if ($booking->user_id !== auth()->id()) {
+                throw new Exception('دسترسی غیرمجاز');
+            }
+
+            $result = $this->paymentService->verify($request->all());
+
+            if ($result['status'] === 'success') {
+                DB::transaction(function() use ($booking, $result) {
+                    $specialist = $booking->specialist;
+
+                    $finalStatus = $specialist->hasAutoConfirm() ? 'confirmed' : 'pending';
+
+                    $booking->update([
+                        'payment_status' => 'paid',
+                        'status' => $finalStatus,
+                        'paid_at' => now(),
+                        'payment_details' => $result
+                    ]);
+
+                    BookingCreated::dispatch($booking);
+                    $booking->user->notify(new CustomerBookingNotification($booking));
+                    $this->sendBookingNotificationToSpecialist($booking, $specialist);
+                    if ($specialist->hasAutoConfirm()) {
+                        $this->sendAutoConfirmedNotificationToCustomer($booking, $specialist);
+                    }
+
+                    $message = sprintf(
+                        'نوبت شما در تاریخ %s ساعت %s با موفقیت ثبت شد. شماره پیگیری: %s',
+                        verta($booking->booking_time)->format('Y/m/d'),
+                        verta($booking->booking_time)->format('H:i'),
+                        $booking->payment_ref
+                    );
+
+                    $this->smsService->send($booking->user->phone, $message);
+                });
+
+                session(['booking_id' => $booking->id]);
+
+                return redirect()->route('bookings.success', ['id' => $booking->id])
+                    ->with('success', 'رزرو با موفقیت انجام شد.');
+            }
+            $booking->update(['status' => 'cancelled']);
+
+            return redirect()->route('bookings.failed')
+                ->with('error', 'پرداخت ناموفق بود: ' . ($result['message'] ?? 'خطایی نامشخص'));
+
+        } catch (Exception $e) {
+            $booking->update(['status' => 'cancelled']);
+
+            return redirect()->route('bookings.failed')
+                ->with('error', 'خطا در تأیید پرداخت: ' . $e->getMessage());
+        }
+    }
+
+    public function cancel(Booking $booking)
+    {
+        try {
+            if ($booking->user_id !== auth()->id()) {
+                throw new Exception('دسترسی غیرمجاز');
+            }
+
+            if (!$booking->canBeCancelled()) {
+                return back()->with('error', 'امکان لغو این نوبت وجود ندارد.');
+            }
+
+            DB::transaction(function() use ($booking) {
+                $booking->update([
+                    'status' => 'cancelled',
+                    'cancelled_by' => 'customer',
+                    'cancelled_at' => now(),
+                    'cancellation_reason' => 'لغو توسط مشتری'
+                ]);
+
+                if ($booking->payment_status === 'paid' && $booking->isRefundable()) {
+                    $refundableAmount = $booking->getRefundableAmount();
+
+                    $booking->update([
+                        'refund_status' => 'pending',
+                        'refund_details' => [
+                            'requested_at' => now()->toDateTimeString(),
+                            'requested_by' => 'user',
+                            'amount' => $refundableAmount,
+                            'cancellation_hours_before' => $booking->booking_time->diffInHours(now())
+                        ]
+                    ]);
+
+                    $refundMessage = sprintf(
+                        'نوبت شما در تاریخ %s لغو شد. مبلغ %s تومان طی 3-5 روز کاری به حساب شما برگشت داده خواهد شد.',
+                        verta($booking->booking_time)->format('Y/m/d H:i'),
+                        number_format($refundableAmount)
+                    );
+                    $this->smsService->send($booking->user->phone, $refundMessage);
+                } else {
+                    $message = sprintf(
+                        'نوبت شما در تاریخ %s ساعت %s لغو شد.',
+                        verta($booking->booking_time)->format('Y/m/d'),
+                        verta($booking->booking_time)->format('H:i')
+                    );
+                    $this->smsService->send($booking->user->phone, $message);
+                }
+
+                if ($booking->specialist && $booking->specialist->phone) {
+                    $specialistMessage = sprintf(
+                        'نوبت مشتری %s در تاریخ %s ساعت %s لغو شد. کد پیگیری: #%s',
+                        $booking->user->name,
+                        verta($booking->booking_time)->format('Y/m/d'),
+                        verta($booking->booking_time)->format('H:i'),
+                        $booking->id
+                    );
+                    $this->smsService->send($booking->specialist->phone, $specialistMessage);
+                }
+            });
+
+            return redirect()->route('bookings.index')
+                ->with('success', 'نوبت با موفقیت لغو شد.');
+
+        } catch (Exception $e) {
+            Log::error('خطا در لغو نوبت', [
+                'booking_id' => $booking->id,
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage()
+            ]);
+
+            return back()->with('error', 'خطا در لغو نوبت. لطفا دوباره تلاش کنید.');
         }
     }
 
@@ -237,96 +456,6 @@ class BookingController extends Controller
         }
     }
 
-    public function store(Request $request)
-    {
-        if (!auth()->check()) {
-            return response()->json([
-                'message' => 'برای رزرو نوبت ابتدا باید وارد سیستم شوید.'
-            ], 401);
-        }
-
-        $validated = $request->validate([
-            'service_id' => 'required|exists:beauty_services,id',
-            'specialist_id' => 'required|exists:specialists,id',
-            'booking_time' => 'required|date|after:now',
-            'discount_code' => 'nullable|string'
-        ]);
-
-        try {
-            return DB::transaction(function() use ($request) {
-                $bookingTime = $request->booking_time;
-                $specialist = Specialist::find($request->specialist_id);
-                $service = BeautyService::find($request->service_id);
-                $bookingDate = date('Y-m-d', strtotime($bookingTime));
-                $bookingTimeOnly = date('H:i', strtotime($bookingTime));
-
-                $availableSlots = $specialist->getAvailableSlots($bookingDate);
-
-                if (!in_array($bookingTimeOnly, $availableSlots)) {
-                    throw ValidationException::withMessages([
-                        'booking_time' => ['این زمان قبلاً رزرو شده است.']
-                    ]);
-                }
-
-                $prepaymentAmount = 50000;
-                $discountAmount = 0;
-
-                if ($request->filled('discount_code')) {
-                    $discountCode = DiscountCode::where('code', $request->discount_code)->first();
-
-                    if ($discountCode && $discountCode->isValid()) {
-                        $discountAmount = $discountCode->type === 'percentage'
-                            ? ($prepaymentAmount * $discountCode->amount / 100)
-                            : $discountCode->amount;
-
-                        $discountCode->increment('used_count');
-                    }
-                }
-
-                $finalAmount = max(0, $prepaymentAmount - $discountAmount);
-
-                $initialStatus = $specialist->hasAutoConfirm() ? 'confirmed' : 'pending';
-
-                $booking = Booking::create([
-                    'service_id' => $request->service_id,
-                    'specialist_id' => $request->specialist_id,
-                    'user_id' => auth()->id(),
-                    'booking_time' => $bookingTime,
-                    'status' => $initialStatus,
-                    'prepayment_amount' => $finalAmount,
-                    'payment_status' => 'unpaid',
-                    'discount_code' => $request->discount_code,
-                    'discount_amount' => $discountAmount
-                ]);
-
-                BookingCreated::dispatch($booking);
-                $booking->load(['service', 'specialist', 'user']);
-
-                $this->sendBookingNotificationToSpecialist($booking, $specialist);
-
-                if ($specialist->hasAutoConfirm()) {
-                    $this->sendAutoConfirmedNotificationToCustomer($booking, $specialist);
-                }
-
-                if (request()->expectsJson()) {
-                    return response()->json([
-                        'message' => 'نوبت با موفقیت ثبت شد.',
-                        'booking' => $booking,
-                        'auto_confirmed' => $specialist->hasAutoConfirm()
-                    ]);
-                }
-
-                return redirect()->route('payment.show', ['booking' => $booking->id]);
-            });
-
-        } catch (ValidationException $e) {
-            return back()->withErrors($e->errors())->withInput();
-        } catch (Exception $e) {
-            return back()->with('error', 'خطا در ثبت رزرو. لطفا دوباره تلاش کنید.')
-                ->withInput();
-        }
-    }
-
     protected function sendBookingNotificationToSpecialist(Booking $booking, Specialist $specialist): void
     {
         try {
@@ -450,91 +579,6 @@ class BookingController extends Controller
 
         } catch (Exception $e) {
             return back()->with('error', 'خطا در اتصال به درگاه پرداخت: ' . $e->getMessage());
-        }
-    }
-
-    public function paymentCallback(Request $request, Booking $booking)
-    {
-        try {
-            if ($booking->user_id !== auth()->id()) {
-                throw new Exception('دسترسی غیرمجاز');
-            }
-
-            $result = $this->paymentService->verify($request->all());
-
-            if ($result['status'] === 'success') {
-                DB::transaction(function() use ($booking, $result) {
-                    $booking->update([
-                        'payment_status' => 'paid',
-                        'status' => 'confirmed',
-                        'paid_at' => now(),
-                        'payment_details' => $result
-                    ]);
-
-                    $booking->user->notify(new CustomerBookingNotification($booking));
-
-                    $message = sprintf(
-                        'نوبت شما در تاریخ %s ساعت %s با موفقیت ثبت شد. شماره پیگیری: %s',
-                        verta($booking->booking_time)->format('Y/m/d'),
-                        verta($booking->booking_time)->format('H:i'),
-                        $booking->payment_ref
-                    );
-
-                    $this->smsService->send($booking->user->phone, $message);
-                });
-
-                session(['booking_id' => $booking->id]);
-
-                return redirect()->route('bookings.success', ['id' => $booking->id])
-                    ->with('success', 'رزرو با موفقیت انجام شد.');
-            }
-
-            return redirect()->route('bookings.failed')
-                ->with('error', 'پرداخت ناموفق بود: ' . ($result['message'] ?? 'خطای نامشخص'));
-
-        } catch (Exception $e) {
-            return redirect()->route('bookings.failed')
-                ->with('error', 'خطا در تأیید پرداخت: ' . $e->getMessage());
-        }
-    }
-
-    public function cancel(Booking $booking)
-    {
-        try {
-            if ($booking->user_id !== auth()->id()) {
-                throw new Exception('دسترسی غیرمجاز');
-            }
-
-            if (!$booking->canBeCancelled()) {
-                return back()->with('error', 'امکان لغو این نوبت وجود ندارد.');
-            }
-
-            DB::transaction(function() use ($booking) {
-                $booking->update(['status' => 'cancelled']);
-
-                if ($booking->payment_status === 'paid' && $booking->isRefundable()) {
-                    $booking->update([
-                        'refund_status' => 'pending',
-                        'refund_details' => [
-                            'requested_at' => now()->toDateTimeString(),
-                            'requested_by' => 'user',
-                            'amount' => $booking->getRefundableAmount()
-                        ]
-                    ]);
-                }
-
-                $message = sprintf(
-                    'نوبت شما در تاریخ %s لغو شد.',
-                    verta($booking->booking_time)->format('Y/m/d H:i')
-                );
-                $this->smsService->send($booking->user->phone, $message);
-            });
-
-            return redirect()->route('bookings.index')
-                ->with('success', 'نوبت با موفقیت لغو شد.');
-
-        } catch (Exception $e) {
-            return back()->with('error', 'خطا در لغو نوبت: ' . $e->getMessage());
         }
     }
 
