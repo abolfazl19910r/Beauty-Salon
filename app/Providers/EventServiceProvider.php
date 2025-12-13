@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Events\ScheduleBookingTasksEvent;
+use App\Listeners\RegisterBookingSchedule;
 use App\Models\Booking;
 use App\Models\DiscountCode;
 use App\Observers\BookingObserver;
@@ -23,6 +25,9 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\BookingCreated::class => [
             \App\Listeners\SendAdminBookingNotifications::class,
         ],
+        ScheduleBookingTasksEvent::class => [
+            RegisterBookingSchedule::class,
+        ],
         \App\Events\ReminderScheduleEvent::class => [
             \App\Listeners\RegisterReminderSchedule::class,
         ],
@@ -41,5 +46,10 @@ class EventServiceProvider extends ServiceProvider
                     ->timezone('Asia/Tehran');
             });
         }
+    }
+
+    public function shouldDiscoverEvents(): bool
+    {
+        return false;
     }
 }
