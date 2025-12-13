@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Booking;
+use App\Models\DiscountCode;
+use App\Observers\BookingObserver;
+use App\Observers\DiscountCodeObserver;
 use App\Services\SecurePaymentService;
 use App\Services\TwoFactorAuthService;
 use App\View\Composers\ViewComposer;
@@ -38,5 +42,8 @@ class AppServiceProvider extends ServiceProvider
         Blade::if('permission', function ($permission) {
             return auth()->check() && auth()->user()->hasPermission($permission);
         });
+
+        Booking::observe(BookingObserver::class);
+        DiscountCode::observe(DiscountCodeObserver::class);
     }
 }
