@@ -169,6 +169,13 @@ class SpecialistController extends Controller
         $dateString = $date->format('Y-m-d');
         $dayOfWeek = $date->dayOfWeek;
 
+        if ($date->lt(Carbon::today())) {
+            return response()->json([
+                'available_slots' => [],
+                'message' => 'امکان رزرو برای تاریخ‌های گذشته وجود ندارد'
+            ]);
+        }
+
         $isOnLeave = $specialist->leaves()
             ->where('status', 'approved')
             ->where('start_date', '<=', $dateString)
@@ -201,6 +208,7 @@ class SpecialistController extends Controller
         $slots = [];
         $currentTime = Carbon::parse($schedule->start_time);
         $endTime = Carbon::parse($schedule->end_time);
+        $now = Carbon::now();
 
         $bookedSlots = $specialist->bookings()
             ->whereDate('booking_time', $dateString)
@@ -213,6 +221,12 @@ class SpecialistController extends Controller
 
         while ($currentTime < $endTime) {
             $timeSlot = $currentTime->format('H:i');
+
+            $slotDateTime = Carbon::parse($dateString . ' ' . $timeSlot);
+            if ($slotDateTime->lte($now)) {
+                $currentTime->addMinutes(30);
+                continue;
+            }
 
             if (!in_array($timeSlot, $bookedSlots)) {
                 $slots[] = $timeSlot;
@@ -229,6 +243,39 @@ class SpecialistController extends Controller
                 'end_time' => $schedule->end_time
             ]
         ]);
+    }
+
+    public function getAvailableDates(Specialist $specialist)
+    {
+        try {
+            $startDate = Carbon::today();
+            $endDate = Carbon::today()->addDays(30);
+
+            $availableDates = [];
+
+            while ($startDate->lte($endDate)) {
+                $dateString = $startDate->format('Y-m-d');
+
+                $hasSchedule = $specialist->schedules()
+                    ->where('day_of_week', $startDate->dayOfWeek)
+                    ->where('is_active', true)
+                    ->exists();
+
+                if ($hasSchedule) {
+                    $availableSlots = $specialist->getAvailableSlots($dateString);
+
+                    if (!empty($availableSlots)) {
+                        $availableDates[] = $dateString;
+                    }
+                }
+
+                $startDate->addDay();
+            }
+
+            return response()->json($availableDates);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function topRated()
