@@ -54,7 +54,7 @@ return [
     ],
 
     'zarinpal' => [
-        'merchant_id' => env('ZARINPAL_MERCHANT_ID'),
+        'merchant_id' => env('ZARINPAL_MERCHANT_ID', '279ad21d-99e3-402d-b3c1-2981d375a604'),
         'api_key' => env('ZARINPAL_API_KEY'),
         'base_url' => env('ZARINPAL_BASE_URL', 'https://api.zarinpal.com/pg/v4'),
         'sandbox' => env('ZARINPAL_SANDBOX', true)
