@@ -3,9 +3,9 @@
 namespace Database\Factories;
 
 use App\Models\Booking;
+use App\Models\LoyaltyPoint;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\LoyaltyPoint;
 
 class LoyaltyPointFactory extends Factory
 {
@@ -14,28 +14,23 @@ class LoyaltyPointFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
-            'booking_id' => Booking::factory(),
-            'points' => fake()->numberBetween(10, 100),
+            'user_id' => User::factory(), // ایجاد یوزر جدید یا استفاده از موجود
+            'booking_id' => Booking::factory(), // ایجاد رزرو جدید
+            'points' => fake()->numberBetween(50, 500),
             'type' => 'earned',
-            'description' => 'امتیاز از رزرو',
+            'description' => 'امتیاز دریافت شده',
             'expires_at' => now()->addYear(),
         ];
     }
 
+    // حالتی برای امتیاز خرج شده
     public function spent(): static
     {
         return $this->state(fn (array $attributes) => [
             'type' => 'spent',
-            'points' => -1 * fake()->numberBetween(10, 100),
-            'description' => 'استفاده از پاداش',
-        ]);
-    }
-
-    public function expiring(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'expires_at' => now()->addDays(5),
+            'points' => -1 * fake()->numberBetween(50, 500),
+            'description' => 'خرج امتیاز برای پاداش',
+            'booking_id' => null,
         ]);
     }
 }

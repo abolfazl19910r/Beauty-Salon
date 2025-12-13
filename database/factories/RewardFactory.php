@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Reward;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class RewardFactory extends Factory
 {
@@ -11,22 +11,19 @@ class RewardFactory extends Factory
 
     public function definition(): array
     {
+        $type = fake()->randomElement(['fixed', 'percentage']);
+
         return [
-            'title' => fake()->sentence(3),
+            'title' => fake()->words(3, true),
             'description' => fake()->paragraph(),
-            'required_points' => fake()->numberBetween(100, 1000),
-            'discount_type' => fake()->randomElement(['fixed', 'percentage']),
-            'discount_amount' => fake()->numberBetween(10, 50),
+            'required_points' => fake()->numberBetween(100, 2000),
+            'discount_type' => $type,
+            'discount_amount' => $type === 'percentage'
+                ? fake()->numberBetween(5, 50)
+                : fake()->numberBetween(50000, 500000),
             'is_active' => true,
-            'max_uses' => fake()->numberBetween(50, 100),
+            'max_uses' => fake()->optional()->numberBetween(10, 100),
             'used_count' => 0,
         ];
-    }
-
-    public function inactive(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'is_active' => false,
-        ]);
     }
 }

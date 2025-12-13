@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\BlogCategory;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 class BlogCategoryFactory extends Factory
@@ -16,8 +16,8 @@ class BlogCategoryFactory extends Factory
         return [
             'name' => $name,
             'slug' => Str::slug($name),
-            'description' => fake()->sentence(),
-            'order' => fake()->numberBetween(1, 10),
+            'description' => fake()->realText(100),
+            'order' => fake()->numberBetween(0, 20),
         ];
     }
 }

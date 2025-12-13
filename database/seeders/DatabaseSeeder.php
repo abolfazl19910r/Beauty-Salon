@@ -9,6 +9,9 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            RoleSeeder::class,
+            PermissionSeeder::class,
+
             UserSeeder::class,
 
             CategorySeeder::class,
@@ -18,18 +21,22 @@ class DatabaseSeeder extends Seeder
             SpecialistServiceSeeder::class,
 
             BookingSeeder::class,
+            PaymentSeeder::class,
 
-            SystemSettingsSeeder::class,
-            LoyaltySeeder::class,
+            DiscountCodeSeeder::class,
+            DiscountUsageSeeder::class,
+            LoyaltyBasicDataSeeder::class,
+            RewardSeeder::class,
+            LoyaltySimulationSeeder::class,
 
-            ContentSeeder::class,
+            GeneralContentSeeder::class,
+            BlogSeeder::class,
 
             SupportTicketSeeder::class,
-
             ScheduledReportSeeder::class,
 
             NotificationSeeder::class,
-            PermissionSeeder::class,
+            UserNotificationSeeder::class,
         ]);
     }
 }

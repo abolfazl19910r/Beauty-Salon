@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\BeautyService;
 use App\Models\Specialist;
+use App\Models\BeautyService;
 use Illuminate\Database\Seeder;
 
 class SpecialistServiceSeeder extends Seeder
@@ -19,13 +19,15 @@ class SpecialistServiceSeeder extends Seeder
         }
 
         foreach ($specialists as $specialist) {
-            $randomServices = $services->random(rand(2, 5));
+            $randomServices = $services->random(rand(3, min(7, $services->count())));
 
-            foreach ($randomServices as $service) {
-                if (!$specialist->services()->where('beauty_service_id', $service->id)->exists()) {
-                    $specialist->services()->attach($service->id);
-                }
-            }
+            $serviceIds = $randomServices->pluck('id')->toArray();
+            $specialist->services()->sync($serviceIds);
+        }
+
+        $manager = Specialist::where('email', 'specialist@example.com')->first();
+        if ($manager) {
+            $manager->services()->sync($services->pluck('id'));
         }
     }
 }

@@ -17,25 +17,35 @@ class CategorySeeder extends Seeder
             'ابرو' => ['اصلاح ابرو', 'میکروبلیدینگ', 'تاتو ابرو', 'هاشور ابرو']
         ];
 
+        $orderCounter = 1;
+
         foreach ($mainCategories as $main => $subCategories) {
-            $mainCategory = Category::create([
-                'name' => $main,
-                'slug' => Str::slug($main),
-                'description' => 'دسته‌بندی خدمات ' . $main,
-                'is_active' => true,
-                'order' => 10,
-            ]);
+            $mainCategory = Category::firstOrCreate(
+                ['slug' => Str::slug($main)],
+                [
+                    'name' => $main,
+                    'description' => 'دسته‌بندی خدمات ' . $main,
+                    'is_active' => true,
+                    'order' => $orderCounter++,
+                    'icon' => 'icon-' . Str::slug($main),
+                ]
+            );
 
             foreach ($subCategories as $index => $subCategory) {
-                Category::create([
-                    'name' => $subCategory,
-                    'slug' => Str::slug($subCategory),
-                    'description' => 'زیر دسته ' . $main,
-                    'parent_id' => $mainCategory->id,
-                    'is_active' => true,
-                    'order' => $index + 1,
-                ]);
+                Category::firstOrCreate(
+                    ['slug' => Str::slug($subCategory)],
+                    [
+                        'name' => $subCategory,
+                        'description' => 'زیر دسته ' . $main,
+                        'parent_id' => $mainCategory->id,
+                        'is_active' => true,
+                        'order' => $index + 1,
+                    ]
+                );
             }
         }
+
+        Category::factory(5)->create();
+        Category::factory(5)->withParent()->create();
     }
 }

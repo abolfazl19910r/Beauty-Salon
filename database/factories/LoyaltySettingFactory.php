@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\LoyaltySetting;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class LoyaltySettingFactory extends Factory
 {
@@ -12,8 +12,8 @@ class LoyaltySettingFactory extends Factory
     public function definition(): array
     {
         return [
-            'key' => fake()->unique()->word(),
-            'value' => fake()->numberBetween(1, 100),
+            'key' => fake()->unique()->slug(),
+            'value' => fake()->word(),
             'description' => fake()->sentence(),
         ];
     }

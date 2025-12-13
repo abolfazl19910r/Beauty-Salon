@@ -11,7 +11,7 @@ class BeautyServiceSeeder extends Seeder
 {
     public function run(): void
     {
-        $services = [
+        $servicesData = [
             'رنگ مو' => [
                 'رنگ کامل مو' => [200000, 120],
                 'هایلایت' => [300000, 180],
@@ -45,23 +45,30 @@ class BeautyServiceSeeder extends Seeder
             ]
         ];
 
-        foreach ($services as $categoryName => $items) {
+        foreach ($servicesData as $categoryName => $items) {
             $category = Category::where('name', $categoryName)->first();
 
             if (!$category) {
+                echo "Warning: Category '{$categoryName}' not found. Skipping services for this category.\n";
                 continue;
             }
 
-            foreach ($items as $serviceName => $details) {
-                BeautyService::create([
-                    'name' => $serviceName,
-                    'slug' => Str::slug($serviceName),
-                    'description' => 'توضیحات خدمت ' . $serviceName,
-                    'price' => $details[0],
-                    'duration' => $details[1],
-                    'category_id' => $category->id,
-                ]);
+            foreach ($items as $serviceName => $data) {
+                $price = $data[0];
+                $duration = $data[1];
+
+                BeautyService::firstOrCreate(
+                    ['slug' => Str::slug($serviceName)],
+                    [
+                        'name' => $serviceName,
+                        'description' => 'شرحی مختصر برای سرویس ' . $serviceName,
+                        'price' => $price,
+                        'duration' => $duration,
+                        'category_id' => $category->id,
+                    ]
+                );
             }
         }
+        BeautyService::factory(10)->create();
     }
 }

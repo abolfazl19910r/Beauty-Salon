@@ -2,8 +2,10 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Specialist;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Role;
 
 class SpecialistFactory extends Factory
 {
@@ -11,10 +13,33 @@ class SpecialistFactory extends Factory
 
     public function definition(): array
     {
+        $user = User::factory()->create();
+
+        $specialistRole = Role::where('name', 'specialist')->first();
+        if ($specialistRole) {
+            $user->roles()->attach($specialistRole);
+        }
+
         return [
-            'name' => fake()->name(),
-            'phone' => fake()->unique()->numerify('09#########'),
-            'email' => fake()->unique()->safeEmail()
+            'user_id' => $user->id,
+            'name' => $user->name,
+            'phone' => $user->phone,
+            'email' => fake()->unique()->safeEmail(),
+            'auto_confirm_bookings' => fake()->boolean(20),
         ];
+    }
+
+    public function autoConfirm(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'auto_confirm_bookings' => true,
+        ]);
+    }
+
+    public function manualConfirm(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'auto_confirm_bookings' => false,
+        ]);
     }
 }

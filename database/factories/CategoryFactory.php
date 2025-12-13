@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Category;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 class CategoryFactory extends Factory
@@ -12,22 +12,31 @@ class CategoryFactory extends Factory
 
     public function definition(): array
     {
-        $name = fake()->unique()->word();
+        $name = fake()->unique()->words(rand(1, 3), true);
+
         return [
             'name' => $name,
             'slug' => Str::slug($name),
-            'description' => fake()->paragraph(),
+            'description' => fake()->paragraph(2),
+            'parent_id' => null,
             'is_active' => true,
+            'icon' => fake()->randomElement(['fa-cut', 'fa-nail', 'fa-face']),
+            'image' => null,
             'order' => fake()->numberBetween(1, 100),
-            'icon' => null,
-            'image' => null
         ];
     }
 
     public function withParent(): static
     {
         return $this->state(fn (array $attributes) => [
-            'parent_id' => Category::factory(),
+            'parent_id' => Category::factory()->state(['parent_id' => null]),
+        ]);
+    }
+
+    public function inactive(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_active' => false,
         ]);
     }
 }

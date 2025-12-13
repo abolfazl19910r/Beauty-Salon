@@ -5,109 +5,86 @@ namespace Database\Seeders;
 use App\Models\SupportTicket;
 use App\Models\SupportTicketMessage;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class SupportTicketSeeder extends Seeder
 {
     public function run(): void
     {
-        $users = User::where('is_admin', false)->get();
-        $admin = User::where('is_admin', true)->first();
+        $admin = \App\Models\User::firstOrCreate(
+            ['phone' => '09399717435'],
+            [
+                'name' => 'Admin User',
+                'password' => Hash::make('admin'),
+                'phone_verified_at' => now(),
+            ]
+        );
 
-        if (!$admin || $users->isEmpty()) {
-            return;
-        }
+        $supportUser = \App\Models\User::firstOrCreate(
+            ['phone' => '09121234567'],
+            [
+                'name' => 'Support User',
+                'password' => Hash::make('password'),
+                'phone_verified_at' => now(),
+            ]
+        );
 
-        $ticketTypes = [
-            'سوال درباره خدمات' => ['medium', 'service'],
-            'مشکل در پرداخت' => ['high', 'payment'],
-            'درخواست لغو نوبت' => ['medium', 'booking'],
-            'سوال درباره ساعات کاری' => ['low', 'other'],
-            'شکایت از خدمات' => ['high', 'service'],
-            'مشکل فنی سایت' => ['high', 'other'],
-            'درخواست تغییر زمان نوبت' => ['medium', 'booking'],
-            'سوال درباره قیمت‌ها' => ['low', 'other'],
-        ];
+        $users = User::factory(10)->create();
+        $allUsers = User::all();
 
-        foreach ($users as $user) {
-            $ticketCount = rand(1, 3);
+        $tickets = SupportTicket::factory(30)
+            ->recycle($users)
+            ->state(new Sequence(
+                ['status' => 'open'],
+                ['status' => 'in_progress', 'assigned_to' => $admin->id],
+                ['status' => 'resolved', 'resolved_at' => now()->subDays(5)],
+                ['status' => 'closed', 'resolved_at' => now()->subDays(10), 'closed_at' => now()->subDays(2)],
+            ))
+            ->create();
 
-            for ($i = 0; $i < $ticketCount; $i++) {
-                $ticketTitle = array_rand($ticketTypes);
-                $ticketInfo = $ticketTypes[$ticketTitle];
+        $tickets->each(function (SupportTicket $ticket) use ($admin, $allUsers) {
+            $messageCount = rand(1, 5);
 
-                $ticket = SupportTicket::create([
-                    'user_id' => $user->id,
-                    'title' => $ticketTitle,
-                    'description' => fake()->paragraphs(2, true),
-                    'priority' => $ticketInfo[0],
-                    'status' => fake()->randomElement(['open', 'in_progress', 'resolved', 'closed']),
-                    'category' => $ticketInfo[1],
-                    'assigned_to' => rand(0, 1) ? $admin->id : null,
-                ]);
+            for ($i = 0; $i < $messageCount; $i++) {
+                if ($ticket->status !== 'closed' && $ticket->status !== 'resolved') {
+                    $isStaffReply = (rand(0, 1) === 1) && ($i > 0);
 
-                SupportTicketMessage::create([
-                    'ticket_id' => $ticket->id,
-                    'user_id' => $user->id,
-                    'message' => fake()->paragraphs(2, true),
-                    'is_staff_reply' => false,
-                ]);
-
-                if (in_array($ticket->status, ['in_progress', 'resolved', 'closed'])) {
-                    SupportTicketMessage::create([
+                    SupportTicketMessage::factory()->create([
                         'ticket_id' => $ticket->id,
-                        'user_id' => $admin->id,
-                        'message' => fake()->paragraphs(2, true),
-                        'is_staff_reply' => true,
+                        'user_id' => $isStaffReply ? $admin->id : $ticket->user_id,
+                        'is_staff_reply' => $isStaffReply,
                     ]);
-
-                    if (rand(0, 1)) {
-                        SupportTicketMessage::create([
-                            'ticket_id' => $ticket->id,
-                            'user_id' => $user->id,
-                            'message' => fake()->paragraph(),
-                            'is_staff_reply' => false,
-                        ]);
-                    }
-
-                    if (in_array($ticket->status, ['resolved', 'closed'])) {
-                        SupportTicketMessage::create([
-                            'ticket_id' => $ticket->id,
-                            'user_id' => $admin->id,
-                            'message' => fake()->paragraphs(1, true),
-                            'is_staff_reply' => true,
-                        ]);
-
-                        if ($ticket->status === 'resolved') {
-                            $ticket->update([
-                                'resolved_at' => now()->subDays(rand(1, 10)),
-                            ]);
-                        } elseif ($ticket->status === 'closed') {
-                            $ticket->update([
-                                'resolved_at' => now()->subDays(rand(5, 15)),
-                                'closed_at' => now()->subDays(rand(1, 5)),
-                            ]);
-                        }
-                    }
+                } else {
+                    SupportTicketMessage::factory()->create([
+                        'ticket_id' => $ticket->id,
+                        'user_id' => $ticket->user_id,
+                        'is_staff_reply' => false,
+                    ]);
                 }
             }
-        }
+        });
 
-        SupportTicket::create([
+        $urgentTicket = SupportTicket::factory()->urgent()->create([
             'user_id' => $users->random()->id,
-            'title' => 'مشکل اضطراری در پرداخت',
-            'description' => 'پرداخت از حساب من انجام شده اما سیستم نوبت من را تایید نکرده است.',
-            'priority' => 'urgent',
-            'status' => 'open',
+            'title' => 'مشکل اضطراری در پرداخت و رزرو',
+            'description' => 'پرداخت انجام شده ولی نوبت من ثبت نشده است. نیاز به رسیدگی فوری دارم.',
             'category' => 'payment',
-            'metadata' => json_encode(['payment_id' => rand(1000, 9999)]),
         ]);
 
-        SupportTicketMessage::create([
-            'ticket_id' => SupportTicket::latest()->first()->id,
-            'user_id' => $users->random()->id,
-            'message' => 'لطفا هرچه سریعتر رسیدگی کنید. شماره پیگیری پرداخت: '.rand(10000000, 99999999),
-            'is_staff_reply' => false,
+        SupportTicketMessage::factory()->create([
+            'ticket_id' => $urgentTicket->id,
+            'user_id' => $urgentTicket->user_id,
+            'message' => 'شماره پیگیری پرداخت: '.rand(10000000, 99999999),
         ]);
+
+        SupportTicketMessage::factory()->staffReply()->create([
+            'ticket_id' => $urgentTicket->id,
+            'user_id' => $admin->id,
+            'message' => 'در حال بررسی با بخش مالی. لطفا چند دقیقه منتظر بمانید.',
+        ]);
+
+        $urgentTicket->update(['status' => 'in_progress', 'assigned_to' => $admin->id]);
     }
 }

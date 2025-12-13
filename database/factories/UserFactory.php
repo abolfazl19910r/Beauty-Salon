@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use App\Models\User;
 
 class UserFactory extends Factory
 {
@@ -21,6 +21,10 @@ class UserFactory extends Factory
             'phone_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'is_admin' => false,
+            'verification_code' => null,
+            'verification_code_expire_at' => null,
+            'login_verification_code' => null,
+            'login_verification_code_expire_at' => null,
             'remember_token' => Str::random(10),
         ];
     }
@@ -36,6 +40,22 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'phone_verified_at' => null,
+        ]);
+    }
+
+    public function withActiveOtp(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'verification_code' => '123456',
+            'verification_code_expire_at' => now()->addMinutes(2),
+        ]);
+    }
+
+    public function withActiveLoginOtp(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'login_verification_code' => '987654',
+            'login_verification_code_expire_at' => now()->addMinutes(2),
         ]);
     }
 }
