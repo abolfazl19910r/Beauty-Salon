@@ -69,6 +69,11 @@ class Specialist extends Model
     {
         try {
             $carbonDate = Carbon::parse($date);
+            $now = Carbon::now();
+
+            if ($carbonDate->lt(Carbon::today())) {
+                return [];
+            }
 
             $hasLeave = $this->leaves()
                 ->where('start_date', '<=', $date)
@@ -76,7 +81,11 @@ class Specialist extends Model
                 ->where('status', 'approved')
                 ->exists();
 
-            if ($hasLeave) {
+            $isHoliday = $this->holidays()
+                ->whereDate('date', $carbonDate)
+                ->exists();
+
+            if ($hasLeave || $isHoliday) {
                 return [];
             }
 
@@ -95,6 +104,12 @@ class Specialist extends Model
 
             while ($currentTime < $endTime) {
                 $timeSlot = $currentTime->format('H:i');
+
+                $slotDateTime = Carbon::parse($date . ' ' . $timeSlot);
+                if ($slotDateTime->lte($now)) {
+                    $currentTime->addMinutes(30);
+                    continue;
+                }
 
                 $isBreakTime = false;
                 if ($schedule->break_start && $schedule->break_end) {
