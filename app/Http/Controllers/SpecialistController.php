@@ -74,175 +74,42 @@ class SpecialistController extends Controller
         ]);
     }
 
+    public function availableSlots(Specialist $specialist, $date, Request $request)
+    {
+        $duration = $request->service_duration;
+        $slots = $specialist->getAvailableSlots($date, $duration);
+
+        if (empty($slots)) {
+            return response()->json([
+                'available_slots' => [],
+                'message' => 'در این تاریخ زمانی برای رزرو یافت نشد.'
+            ]);
+        }
+
+        return response()->json([
+            'date' => $date,
+            'available_slots' => $slots
+        ]);
+    }
+
     public function availability(Specialist $specialist, Request $request)
     {
         $month = $request->month ?? date('m');
         $year = $request->year ?? date('Y');
+        $yearMonth = "{$year}-{$month}";
 
-        $startDate = Carbon::createFromDate($year, $month, 1)->startOfDay();
-        $endDate = $startDate->copy()->endOfMonth();
-
-        $availability = [];
-        $currentDate = $startDate->copy();
-
-        $schedules = $specialist->schedules()
-            ->where('is_active', true)
-            ->get()
-            ->keyBy('day_of_week');
-
-        $leaves = $specialist->leaves()
-            ->where('status', 'approved')
-            ->where(function($q) use ($startDate, $endDate) {
-                $q->where('start_date', '<=', $endDate)
-                    ->where('end_date', '>=', $startDate);
-            })
-            ->get();
-
-        $holidays = $specialist->holidays()
-            ->whereBetween('date', [$startDate, $endDate])
-            ->pluck('date')
-            ->map(function($date) {
-                return Carbon::parse($date)->format('Y-m-d');
-            })
-            ->toArray();
-
-        while ($currentDate <= $endDate) {
-            $currentDateString = $currentDate->format('Y-m-d');
-            $dayOfWeek = $currentDate->dayOfWeek;
-
-            $isOnLeave = $leaves->contains(function($leave) use ($currentDate) {
-                return Carbon::parse($leave->start_date)->startOfDay() <= $currentDate &&
-                    Carbon::parse($leave->end_date)->endOfDay() >= $currentDate;
-            });
-
-            $isHoliday = in_array($currentDateString, $holidays);
-
-            $hasSchedule = isset($schedules[$dayOfWeek]);
-
-            $bookedSlots = $specialist->bookings()
-                ->whereDate('booking_time', $currentDateString)
-                ->whereNotIn('status', ['cancelled'])
-                ->pluck('booking_time')
-                ->map(function($time) {
-                    return Carbon::parse($time)->format('H:i');
-                })
-                ->toArray();
-
-            $availability[] = [
-                'date' => $currentDateString,
-                'day_of_week' => $dayOfWeek,
-                'day_name' => $currentDate->locale('fa')->dayName,
-                'is_available' => $hasSchedule && !$isOnLeave && !$isHoliday,
-                'is_holiday' => $isHoliday,
-                'is_on_leave' => $isOnLeave,
-                'has_schedule' => $hasSchedule,
-                'schedule' => $hasSchedule ? [
-                    'start_time' => $schedules[$dayOfWeek]->start_time,
-                    'end_time' => $schedules[$dayOfWeek]->end_time
-                ] : null,
-                'booked_slots_count' => count($bookedSlots)
-            ];
-
-            $currentDate->addDay();
-        }
+        $availabilityData = $specialist->getMonthAvailability($yearMonth);
 
         if (request()->wantsJson()) {
             return response()->json([
                 'specialist' => $specialist,
-                'availability' => $availability,
+                'availability' => $availabilityData,
                 'year' => $year,
                 'month' => $month
             ]);
         }
 
-        return view('specialists.availability', [
-            'specialist' => $specialist,
-            'availability' => $availability,
-            'year' => $year,
-            'month' => $month
-        ]);
-    }
-
-    public function availableSlots(Specialist $specialist, $date)
-    {
-        $date = Carbon::parse($date);
-        $dateString = $date->format('Y-m-d');
-        $dayOfWeek = $date->dayOfWeek;
-
-        if ($date->lt(Carbon::today())) {
-            return response()->json([
-                'available_slots' => [],
-                'message' => 'امکان رزرو برای تاریخ‌های گذشته وجود ندارد'
-            ]);
-        }
-
-        $isOnLeave = $specialist->leaves()
-            ->where('status', 'approved')
-            ->where('start_date', '<=', $dateString)
-            ->where('end_date', '>=', $dateString)
-            ->exists();
-
-        $isHoliday = $specialist->holidays()
-            ->whereDate('date', $dateString)
-            ->exists();
-
-        if ($isOnLeave || $isHoliday) {
-            return response()->json([
-                'available_slots' => [],
-                'message' => $isHoliday ? 'این روز تعطیل است' : 'متخصص در این روز مرخصی است'
-            ]);
-        }
-
-        $schedule = $specialist->schedules()
-            ->where('day_of_week', $dayOfWeek)
-            ->where('is_active', true)
-            ->first();
-
-        if (!$schedule) {
-            return response()->json([
-                'available_slots' => [],
-                'message' => 'این روز جزو روزهای کاری متخصص نیست'
-            ]);
-        }
-
-        $slots = [];
-        $currentTime = Carbon::parse($schedule->start_time);
-        $endTime = Carbon::parse($schedule->end_time);
-        $now = Carbon::now();
-
-        $bookedSlots = $specialist->bookings()
-            ->whereDate('booking_time', $dateString)
-            ->whereNotIn('status', ['cancelled'])
-            ->pluck('booking_time')
-            ->map(function($time) {
-                return Carbon::parse($time)->format('H:i');
-            })
-            ->toArray();
-
-        while ($currentTime < $endTime) {
-            $timeSlot = $currentTime->format('H:i');
-
-            $slotDateTime = Carbon::parse($dateString . ' ' . $timeSlot);
-            if ($slotDateTime->lte($now)) {
-                $currentTime->addMinutes(30);
-                continue;
-            }
-
-            if (!in_array($timeSlot, $bookedSlots)) {
-                $slots[] = $timeSlot;
-            }
-
-            $currentTime->addMinutes(30);
-        }
-
-        return response()->json([
-            'date' => $dateString,
-            'available_slots' => $slots,
-            'schedule' => [
-                'start_time' => $schedule->start_time,
-                'end_time' => $schedule->end_time
-            ]
-        ]);
+        return view('specialists.availability', compact('specialist', 'availabilityData', 'year', 'month'));
     }
 
     public function getAvailableDates(Specialist $specialist)
