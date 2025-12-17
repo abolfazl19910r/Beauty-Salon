@@ -151,11 +151,11 @@ class AuthenticatedSessionController extends Controller
     {
         $user = Auth::user();
 
-        if ($user && $user->hasRole('specialists')) {
-            return RouteServiceProvider::SPECIALIST_HOME;
+        if ($user->hasRole('specialists') || $user->hasRole('specialist')) {
+            return '/my-dashboard';
         }
 
-        if ($user && $user->is_admin) {
+        if ($user->is_admin) {
             return RouteServiceProvider::HOME;
         }
 
