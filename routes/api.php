@@ -7,6 +7,10 @@ Route::name('api.')->group(function () {
     require __DIR__.'/api/public/services.php';
     require __DIR__.'/api/public/specialists.php';
 
+    if (file_exists(__DIR__.'/api/public/bookings.php')) {
+        require __DIR__.'/api/public/bookings.php';
+    }
+
     if (file_exists(__DIR__.'/api/public/gallery.php')) {
         require __DIR__.'/api/public/gallery.php';
     }
