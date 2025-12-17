@@ -13,12 +13,12 @@
                     <select v-model="selectedService" @change="loadSpecialists" class="w-full border rounded-lg p-2 focus:border-pink-500 focus:ring focus:ring-pink-200 transition-colors">
                         <option value="">انتخاب کنید</option>
                         <option v-for="service in services" :key="service.id" :value="service.id">
-                            @{{ service.name }} - @{{ service.price }} تومان
+                            @{{ service.name }} - @{{ formatPrice(service.price) }} تومان
                         </option>
                     </select>
                 </div>
 
-                <div>
+                <div v-if="selectedService">
                     <label class="block text-gray-700 mb-2 font-medium">انتخاب متخصص</label>
                     <select v-model="selectedSpecialist" @change="loadAvailableDates" class="w-full border rounded-lg p-2 focus:border-pink-500 focus:ring focus:ring-pink-200 transition-colors">
                         <option value="">انتخاب کنید</option>
@@ -42,13 +42,19 @@
 
                 <div v-if="selectedDate && availableTimeSlots.length > 0">
                     <label class="block text-gray-700 mb-2 font-medium">انتخاب ساعت</label>
+                    <div class="text-sm text-gray-600 mb-2" v-if="getServiceDuration">
+                        <span class="font-medium">توجه:</span> هر نوبت <span class="font-bold persian-number">@{{ getServiceDuration }}</span> دقیقه طول می‌کشد
+                    </div>
                     <div class="grid grid-cols-4 gap-2">
                         <button v-for="time in availableTimeSlots" :key="time"
                                 @click="selectTime(time)"
                                 type="button"
-                                class="p-2 rounded-lg transition-colors"
+                                class="p-3 rounded-lg transition-colors text-center"
                                 :class="selectedTime === time ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white' : 'bg-gray-100 hover:bg-gray-200'">
-                            @{{ time }}
+                            <div class="font-bold">@{{ time }}</div>
+                            <div class="text-xs mt-1" v-if="getServiceDuration">
+                                تا @{{ calculateEndTime(time, getServiceDuration) }}
+                            </div>
                         </button>
                     </div>
                 </div>
@@ -60,6 +66,10 @@
                             <span class="text-gray-600">سرویس:</span>
                             <span class="font-medium">@{{ getServiceName }}</span>
                         </div>
+                        <div class="flex justify-between" v-if="getServiceDuration">
+                            <span class="text-gray-600">مدت زمان:</span>
+                            <span class="font-medium persian-number">@{{ getServiceDuration }} دقیقه</span>
+                        </div>
                         <div class="flex justify-between">
                             <span class="text-gray-600">متخصص:</span>
                             <span class="font-medium">@{{ getSpecialistName }}</span>
@@ -69,8 +79,12 @@
                             <span class="font-medium persian-number">@{{ formatDate(selectedDate) }}</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-gray-600">ساعت:</span>
+                            <span class="text-gray-600">ساعت شروع:</span>
                             <span class="font-medium">@{{ selectedTime }}</span>
+                        </div>
+                        <div class="flex justify-between" v-if="getServiceDuration && selectedTime">
+                            <span class="text-gray-600">ساعت پایان (تقریبی):</span>
+                            <span class="font-medium">@{{ calculateEndTime(selectedTime, getServiceDuration) }}</span>
                         </div>
                         <div class="flex justify-between pt-2 border-t mt-2">
                             <span class="font-bold">مبلغ پیش پرداخت:</span>
@@ -80,11 +94,10 @@
                 </div>
 
                 <div class="flex gap-4">
-                    <button type="button"
-                            @click="$router.go(-1)"
-                            class="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors">
+                    <a href="{{ route('services.index') }}"
+                       class="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors text-center">
                         بازگشت
-                    </button>
+                    </a>
                     <button type="submit"
                             :disabled="!isFormValid"
                             class="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 px-4 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
@@ -118,7 +131,8 @@
                     selectedSpecialist: '',
                     selectedDate: null,
                     selectedTime: null,
-                    loading: false
+                    loading: false,
+                    serviceDuration: null
                 }
             },
             computed: {
@@ -127,19 +141,35 @@
                         this.selectedDate && this.selectedTime;
                 },
                 getServiceName() {
-                    const service = this.services.find(s => s.id === this.selectedService);
+                    const service = this.services.find(s => s.id == this.selectedService);
                     return service ? service.name : '';
                 },
+                getServiceDuration() {
+                    const service = this.services.find(s => s.id == this.selectedService);
+                    return service ? service.duration : null;
+                },
                 getSpecialistName() {
-                    const specialist = this.specialists.find(s => s.id === this.selectedSpecialist);
+                    const specialist = this.specialists.find(s => s.id == this.selectedSpecialist);
                     return specialist ? specialist.name : '';
                 }
             },
             methods: {
+                formatPrice(price) {
+                    return new Intl.NumberFormat('fa-IR').format(price);
+                },
+
                 async loadServices() {
                     try {
                         const response = await fetch('/api/services');
                         this.services = await response.json();
+
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const serviceFromUrl = urlParams.get('service');
+
+                        if (serviceFromUrl) {
+                            this.selectedService = parseInt(serviceFromUrl);
+                            await this.loadSpecialists();
+                        }
                     } catch (error) {
                         console.error('خطا در بارگذاری سرویس‌ها:', error);
                     }
@@ -150,11 +180,13 @@
                     try {
                         const response = await fetch(`/api/specialists/${this.selectedService}`);
                         this.specialists = await response.json();
-                        this.selectedSpecialist = '';
-                        this.availableDates = [];
-                        this.selectedDate = null;
-                        this.availableTimeSlots = [];
-                        this.selectedTime = null;
+
+                        if (!this.selectedSpecialist) {
+                            this.availableDates = [];
+                            this.selectedDate = null;
+                            this.availableTimeSlots = [];
+                            this.selectedTime = null;
+                        }
                     } catch (error) {
                         console.error('خطا در بارگذاری متخصصین:', error);
                     }
@@ -189,11 +221,13 @@
                 },
 
                 async loadTimeSlots() {
-                    if (!this.selectedDate || !this.selectedSpecialist) return;
+                    if (!this.selectedDate || !this.selectedSpecialist || !this.selectedService) return;
 
                     try {
                         this.loading = true;
-                        const response = await fetch(`/api/time-slots/${this.selectedSpecialist}/${this.selectedDate}`, {
+                        const url = `/api/time-slots/${this.selectedSpecialist}/${this.selectedDate}?service_id=${this.selectedService}`;
+
+                        const response = await fetch(url, {
                             headers: {
                                 'Accept': 'application/json',
                                 'X-Requested-With': 'XMLHttpRequest'
@@ -208,6 +242,10 @@
 
                         if (data.slots && Array.isArray(data.slots)) {
                             this.availableTimeSlots = data.slots;
+
+                            if (data.service_duration) {
+                                console.log(`مدت زمان سرویس: ${data.service_duration} دقیقه`);
+                            }
                         } else {
                             this.availableTimeSlots = [];
                             if (data.message) {
@@ -234,6 +272,17 @@
 
                 selectTime(time) {
                     this.selectedTime = time;
+                },
+
+                calculateEndTime(startTime, duration) {
+                    if (!startTime || !duration) return '';
+
+                    const [hours, minutes] = startTime.split(':').map(Number);
+                    const totalMinutes = hours * 60 + minutes + duration;
+                    const endHours = Math.floor(totalMinutes / 60);
+                    const endMinutes = totalMinutes % 60;
+
+                    return `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
                 },
 
                 async submitBooking() {
