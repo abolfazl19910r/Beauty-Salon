@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Notifications\ChannelManager;
+use Illuminate\Notifications\Channels\DatabaseChannel as BaseDatabaseChannel;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -45,5 +47,22 @@ class AppServiceProvider extends ServiceProvider
 
         Booking::observe(BookingObserver::class);
         DiscountCode::observe(DiscountCodeObserver::class);
+
+        $this->app->extend(ChannelManager::class, function ($manager) {
+            $manager->extend('database', function ($app) {
+                return new class($app->make('db'), $app->make('events')) extends BaseDatabaseChannel {
+                    protected function buildPayload($notifiable, $notification)
+                    {
+                        $payload = parent::buildPayload($notifiable, $notification);
+
+                        $payload['user_id'] = $notifiable->id;
+
+                        return $payload;
+                    }
+                };
+            });
+
+            return $manager;
+        });
     }
 }
