@@ -43,21 +43,30 @@ class AdminSpecialistController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:11|unique:specialists',
-            'email' => 'required|email|unique:specialists',
+            'phone' => 'required|string|max:11|unique:specialists,phone',
+            'email' => 'required|email|unique:specialists,email',
             'services' => ['required', 'array'],
-            'services.*' => ['exists:beauty_services,id']
+            'services.*' => ['exists:beauty_services,id'],
         ]);
 
-        $services = $validated['services'];
-        unset($validated['services']);
+        try {
+            return DB::transaction(function () use ($validated) {
+                $services = $validated['services'];
+                unset($validated['services']);
 
-        $specialist = Specialist::create($validated);
+                $validated['user_id'] = auth()->id();
 
-        $specialist->services()->attach($services);
+                $specialist = Specialist::create($validated);
+                $specialist->services()->attach($services);
 
-        return redirect()->route('admin.specialists.index')
-            ->with('success', 'متخصص جدید با موفقیت ایجاد شد.');
+                return redirect()
+                    ->route('admin.specialists.index')
+                    ->with('success', 'متخصص جدید با موفقیت ایجاد شد.');
+            });
+        } catch (\Exception $e) {
+            Log::error('Error storing specialist: ' . $e->getMessage());
+            return back()->with('error', 'خطایی در ثبت اطلاعات رخ داد.')->withInput();
+        }
     }
 
     public function edit(Specialist $specialist)
