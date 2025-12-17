@@ -42,7 +42,12 @@ class User extends Authenticatable
         'login_verification_code_expire_at' => 'datetime',
     ];
 
-    public function notifications(): MorphMany
+    public function receivesBroadcastNotificationsOn()
+    {
+        return 'users.' . $this->id;
+    }
+
+    public function notifications()
     {
         return $this->morphMany(
             \App\Models\UserNotification::class,
