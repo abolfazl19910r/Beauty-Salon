@@ -10,14 +10,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RedirectIfAuthenticated
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param Request $request
-     * @param Closure $next
-     * @param string ...$guards
-     * @return Response
-     */
     public function handle(Request $request, Closure $next, string ...$guards): Response
     {
         $guards = empty($guards) ? [null] : $guards;
@@ -26,8 +18,8 @@ class RedirectIfAuthenticated
             if (Auth::guard($guard)->check()) {
                 $user = Auth::user();
 
-                if ($user->hasRole('specialists')) {
-                    return redirect(RouteServiceProvider::SPECIALIST_HOME);
+                if ($user->hasRole('specialists') || $user->hasRole('specialist')) {
+                    return redirect('/my-dashboard');
                 }
 
                 if ($user->is_admin) {
