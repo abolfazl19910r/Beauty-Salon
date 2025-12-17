@@ -13,7 +13,7 @@ Route::prefix('specialists')->name('specialists.')->group(function () {
     Route::get('/{specialist}/available-slots/{date}', [SpecialistController::class, 'availableSlots'])->name('available-slots');
 });
 
-Route::middleware(['auth', 'role:specialists'])->name('specialist.')->group(function () {
+Route::middleware(['auth', 'verified'])->name('specialist.')->group(function () {
 
     Route::get('/my-dashboard', [SpecialistProfileController::class, 'dashboardBookings'])->name('my-dashboard');
 
@@ -21,14 +21,11 @@ Route::middleware(['auth', 'role:specialists'])->name('specialist.')->group(func
     Route::get('/specialist/profile/edit', [SpecialistProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/specialist/profile', [SpecialistProfileController::class, 'update'])->name('profile.update');
     Route::put('/specialist/profile/password', [SpecialistProfileController::class, 'updatePassword'])->name('profile.password');
-
     Route::get('/specialist/schedule', [SpecialistProfileController::class, 'schedule'])->name('schedule');
     Route::put('/specialist/schedule', [SpecialistProfileController::class, 'updateSchedule'])->name('schedule.update');
-
     Route::get('/specialist/leaves', [SpecialistProfileController::class, 'leaves'])->name('leaves');
     Route::post('/specialist/leaves', [SpecialistProfileController::class, 'storeLeave'])->name('leaves.store');
     Route::delete('/specialist/leaves/{leave}', [SpecialistProfileController::class, 'destroyLeave'])->name('leaves.destroy');
-
     Route::put('/specialist/bookings/{booking}/complete', [SpecialistProfileController::class, 'completeBooking'])->name('bookings.complete');
     Route::put('/specialist/bookings/{booking}/cancel', [SpecialistProfileController::class, 'cancelBooking'])->name('bookings.cancel');
 });
