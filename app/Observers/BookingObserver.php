@@ -4,7 +4,10 @@ namespace App\Observers;
 
 use App\Models\Booking;
 use App\Models\User;
-use App\Models\LoyaltyPoint;
+use App\Notifications\BookingStatusUpdated;
+use App\Notifications\CustomerBookingNotification;
+use App\Notifications\BookingNotification;
+use App\Notifications\SpecialistBookingCancelledNotification;
 use App\Services\ReportCacheService;
 use App\Services\SMSService;
 use Illuminate\Support\Facades\Log;
@@ -22,121 +25,79 @@ class BookingObserver
 
     public function created(Booking $booking): void
     {
-        if ($booking->status !== 'pending_payment') {
-            $this->sendBookingConfirmation($booking);
+        if ($booking->payment_status === 'paid' && $booking->status !== 'pending_payment') {
+            $this->sendInitialNotifications($booking);
         }
-
         $this->cacheService->flush();
     }
 
     public function updated(Booking $booking): void
     {
         if ($booking->wasChanged('payment_status') && $booking->payment_status === 'paid') {
+            $this->sendInitialNotifications($booking);
+
             if (method_exists(User::class, 'addLoyaltyPoints')) {
                 $this->addLoyaltyPoints($booking);
             }
-
-            if ($booking->wasChanged('status') && $booking->status === 'confirmed') {
-                $this->sendBookingConfirmation($booking);
-            }
         }
 
-        if ($booking->wasChanged('status') && $booking->status === 'cancelled') {
-            $this->handleCancellation($booking);
+        if ($booking->wasChanged('status')) {
+            $this->handleStatusChange($booking);
         }
 
         $this->cacheService->flush();
     }
 
-    public function deleted(Booking $booking): void
+    protected function sendInitialNotifications(Booking $booking): void
     {
-        $this->cacheService->flush();
-    }
+        if ($booking->user) {
+            $booking->user->notify(new CustomerBookingNotification($booking));
+        }
 
-    protected function sendBookingConfirmation(Booking $booking): void
-    {
-        try {
-            if ($booking->user && $booking->user->phone) {
-                $message = sprintf(
-                    "رزرو شما با موفقیت ثبت شد\n" .
-                    "خدمت: %s\n" .
-                    "متخصص: %s\n" .
-                    "تاریخ: %s\n" .
-                    "ساعت: %s\n" .
-                    "کد پیگیری: #%s",
-                    $booking->service->name,
-                    $booking->specialist->name,
-                    verta($booking->booking_time)->format('Y/m/d'),
-                    verta($booking->booking_time)->format('H:i'),
-                    $booking->id
-                );
-
-                $this->smsService->send($booking->user->phone, $message);
-            }
-        } catch (\Exception $e) {
-            Log::error('خطا در ارسال پیامک تایید رزرو', [
-                'booking_id' => $booking->id,
-                'error' => $e->getMessage()
-            ]);
+        if ($booking->specialist) {
+            $booking->specialist->notify(new BookingNotification($booking));
         }
     }
 
-    protected function handleCancellation(Booking $booking): void
+    protected function handleStatusChange(Booking $booking): void
     {
-        try {
-            $cancelledBy = $booking->cancelled_by ?? 'unknown';
+        $newStatus = $booking->status;
 
-            Log::info('نوبت لغو شد', [
-                'booking_id' => $booking->id,
-                'cancelled_by' => $cancelledBy,
-                'cancellation_reason' => $booking->cancellation_reason
-            ]);
+        if ($newStatus === 'confirmed') {
+            $booking->user->notify(new BookingStatusUpdated($booking, 'confirmed'));
+        }
 
-        } catch (\Exception $e) {
-            Log::error('خطا در مدیریت لغو نوبت', [
-                'booking_id' => $booking->id,
-                'error' => $e->getMessage()
-            ]);
+        elseif ($newStatus === 'cancelled') {
+
+            $booking->user->notify(new BookingStatusUpdated($booking, 'cancelled', $booking->cancellation_reason));
+
+            if ($booking->specialist) {
+                $cancelledBy = $booking->cancelled_by ?? 'system';
+                $booking->specialist->notify(new SpecialistBookingCancelledNotification($booking, $cancelledBy));
+            }
         }
     }
 
     protected function addLoyaltyPoints(Booking $booking): void
     {
         try {
-            $user = User::find($booking->user_id);
+            $user = $booking->user;
+            if (!$user || !method_exists($user, 'addLoyaltyPoints')) return;
 
-            if (!$user || !method_exists($user, 'addLoyaltyPoints')) {
-                return;
-            }
-
-            $basePoints = 5;
-
-            $amountPoints = floor($booking->prepayment_amount / 10000);
-
-            $totalPoints = $basePoints + $amountPoints;
-
-            $user->addLoyaltyPoints(
-                $totalPoints,
-                "رزرو خدمت {$booking->service->name}"
-            );
+            $points = 5 + floor($booking->prepayment_amount / 10000);
+            $user->addLoyaltyPoints($points, "رزرو خدمت {$booking->service->name}");
 
             if ($user->phone) {
-                $currentPoints = LoyaltyPoint::where('user_id', $user->id)->sum('points');
-
-                $message = sprintf(
-                    "%d امتیاز به حساب کاربری شما اضافه شد. موجودی فعلی: %d امتیاز",
-                    $totalPoints,
-                    $currentPoints
-                );
-
+                $message = "مشتری گرامی، {$points} امتیاز وفاداری برای رزرو شماره #{$booking->id} به حساب شما اضافه شد.";
                 $this->smsService->send($user->phone, $message);
             }
         } catch (\Exception $e) {
-            Log::error('خطا در اضافه کردن امتیاز وفاداری', [
-                'booking_id' => $booking->id,
-                'user_id' => $booking->user_id,
-                'error' => $e->getMessage()
-            ]);
+            Log::error('Error in Loyalty Points:', ['error' => $e->getMessage()]);
         }
+    }
+
+    public function deleted(Booking $booking): void
+    {
+        $this->cacheService->flush();
     }
 }
