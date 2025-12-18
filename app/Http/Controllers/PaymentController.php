@@ -4,23 +4,156 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Services\PaymentService;
-use App\Notifications\BookingNotification;
-use App\Notifications\CustomerBookingNotification;
-use App\Events\BookingCreated;
-use App\Services\SMSService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
     protected PaymentService $paymentService;
-    protected SMSService $smsService;
 
-    public function __construct(PaymentService $paymentService, SMSService $smsService)
+    public function __construct(PaymentService $paymentService)
     {
         $this->paymentService = $paymentService;
-        $this->smsService = $smsService;
+    }
+
+    public function process(Booking $booking)
+    {
+        try {
+            if ($booking->user_id !== auth()->id()) {
+                abort(403);
+            }
+
+            if ($booking->payment_status === 'paid') {
+                return redirect()->route('payment.result')->with(['success' => true, 'booking' => $booking]);
+            }
+
+            Log::info('🔵 Payment Process Started', [
+                'booking_id' => $booking->id,
+                'amount_toman' => $booking->prepayment_amount,
+                'user_id' => auth()->id(),
+                'user_phone' => auth()->user()->phone
+            ]);
+
+            $result = $this->paymentService->createPayment($booking);
+
+            Log::info('🟡 Payment Gateway Response', [
+                'booking_id' => $booking->id,
+                'result' => $result
+            ]);
+
+            if (isset($result['success']) && $result['success'] && isset($result['payment_url'])) {
+                Log::info('✅ Redirecting to payment gateway', [
+                    'booking_id' => $booking->id,
+                    'url' => $result['payment_url']
+                ]);
+                return redirect($result['payment_url']);
+            }
+
+            $errorMessage = $result['message'] ?? 'در حال حاضر امکان اتصال به درگاه بانکی وجود ندارد.';
+            Log::error('❌ Payment Gateway Error', [
+                'booking_id' => $booking->id,
+                'error' => $errorMessage,
+                'full_result' => $result
+            ]);
+
+            return back()->with('error', 'خطای بانک: ' . $errorMessage);
+
+        } catch (\Exception $e) {
+            Log::error('💥 Payment Process Exception', [
+                'booking_id' => $booking->id,
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'خطای سیستمی در فرآیند پرداخت: ' . $e->getMessage());
+        }
+    }
+
+    public function callback(Request $request)
+    {
+        try {
+            Log::info('🔵 Payment Callback Received', [
+                'all_params' => $request->all(),
+                'Authority' => $request->Authority,
+                'Status' => $request->Status
+            ]);
+
+            $result = $this->paymentService->verifyPayment($request);
+
+            Log::info('🟡 Payment Verification Result', [
+                'result' => $result
+            ]);
+
+            $booking = Booking::findOrFail($result['booking_id']);
+
+            if ($result['success']) {
+                Log::info('✅ Payment Verified Successfully', [
+                    'booking_id' => $booking->id,
+                    'ref_id' => $result['ref_id'] ?? null
+                ]);
+
+                $booking->refresh();
+
+                if ($booking->payment_status !== 'paid') {
+                    Log::info('💳 Updating booking payment status', [
+                        'booking_id' => $booking->id,
+                        'current_payment_status' => $booking->payment_status
+                    ]);
+
+                    $booking->update([
+                        'payment_status' => 'paid',
+                        'paid_at' => now(),
+                        'payment_ref' => $result['ref_id'] ?? $result['reference']
+                    ]);
+
+                    Log::info('📨 Booking Updated Successfully', [
+                        'booking_id' => $booking->id,
+                        'status' => $booking->status,
+                        'payment_status' => $booking->payment_status
+                    ]);
+                } else {
+                    Log::warning('⚠️ Booking already paid, skipping update', [
+                        'booking_id' => $booking->id,
+                        'payment_status' => $booking->payment_status,
+                        'paid_at' => $booking->paid_at
+                    ]);
+                }
+
+                return redirect()->route('bookings.success', ['id' => $booking->id])
+                    ->with('success', 'پرداخت با موفقیت انجام شد و نوبت شما ثبت شد.');
+            }
+
+            Log::warning('⚠️ Payment Failed', [
+                'booking_id' => $booking->id,
+                'message' => $result['message'] ?? 'Unknown'
+            ]);
+
+            $booking->update(['status' => 'cancelled', 'cancellation_reason' => 'پرداخت ناموفق']);
+
+            return redirect()->route('bookings.failed')
+                ->with('error', $result['message'] ?? 'پرداخت ناموفق بود');
+
+        } catch (\Exception $e) {
+            Log::error('💥 Payment Callback Exception', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->route('bookings.failed')
+                ->with('error', 'خطا در تایید تراکنش');
+        }
+    }
+
+    public function result()
+    {
+        $success = session('success', false);
+        $booking = session('booking');
+        $error_message = session('error_message');
+
+        if (!$booking) return redirect()->route('home');
+
+        return view('payment.result', compact('success', 'booking', 'error_message'));
     }
 
     public function show(Booking $booking)
@@ -35,204 +168,5 @@ class PaymentController extends Controller
         }
 
         return view('payment.show', ['booking' => $booking]);
-    }
-
-    public function process(Booking $booking)
-    {
-        try {
-            if ($booking->user_id !== auth()->id()) {
-                abort(403, 'دسترسی غیرمجاز');
-            }
-
-            if ($booking->payment_status === 'paid') {
-                return redirect()->route('payment.result')
-                    ->with([
-                        'success' => false,
-                        'booking' => $booking,
-                        'error_message' => 'این نوبت قبلاً پرداخت شده است.'
-                    ]);
-            }
-            $result = $this->paymentService->createPayment($booking);
-
-            if (!isset($result['success']) || !$result['success']) {
-                Log::warning('Payment creation failed', [
-                    'booking_id' => $booking->id,
-                    'result' => $result
-                ]);
-
-                return redirect()->route('payment.result')
-                    ->with([
-                        'success' => false,
-                        'booking' => $booking,
-                        'error_message' => $result['message'] ?? 'خطا در اتصال به درگاه پرداخت'
-                    ]);
-            }
-
-            $booking->update([
-                'payment_reference' => $result['reference']
-            ]);
-            return redirect($result['payment_url']);
-
-        } catch (\Exception $e) {
-            Log::error('Exception in payment process', [
-                'booking_id' => $booking->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return redirect()->route('payment.result')
-                ->with([
-                    'success' => false,
-                    'booking' => $booking,
-                    'error_message' => 'خطا در اتصال به درگاه پرداخت'
-                ]);
-        }
-    }
-
-    public function callback(Request $request)
-    {
-        try {
-            $authority = $request->input('Authority');
-            $status = $request->input('Status');
-
-            if (!$authority) {
-                Log::error('Authority not found in callback');
-                return redirect()->route('payment.result')
-                    ->with([
-                        'success' => false,
-                        'error_message' => 'اطلاعات پرداخت یافت نشد.'
-                    ]);
-            }
-
-            $booking = Booking::where('payment_reference', $authority)->first();
-
-            if (!$booking) {
-                Log::error('Booking not found', ['authority' => $authority]);
-                return redirect()->route('payment.result')
-                    ->with([
-                        'success' => false,
-                        'error_message' => 'اطلاعات نوبت یافت نشد.'
-                    ]);
-            }
-
-            if ($booking->user_id !== auth()->id()) {
-                abort(403, 'دسترسی غیرمجاز');
-            }
-
-            if ($status !== 'OK') {
-                $booking->update([
-                    'status' => 'cancelled',
-                    'cancelled_by' => 'customer',
-                    'cancelled_at' => now(),
-                    'cancellation_reason' => 'لغو پرداخت توسط کاربر'
-                ]);
-
-                return redirect()->route('payment.result')
-                    ->with([
-                        'success' => false,
-                        'booking' => $booking,
-                        'error_message' => 'پرداخت توسط کاربر لغو شد.'
-                    ]);
-            }
-
-            $result = $this->paymentService->verifyPayment(
-                $authority,
-                (int) $booking->prepayment_amount
-            );
-
-            if ($result['success']) {
-                DB::transaction(function() use ($booking, $result) {
-                    $specialist = $booking->specialist;
-                    $finalStatus = $specialist && $specialist->hasAutoConfirm()
-                        ? 'confirmed'
-                        : 'pending';
-
-                    $booking->update([
-                        'payment_status' => 'paid',
-                        'status' => $finalStatus,
-                        'payment_ref' => $result['transaction_id'],
-                        'payment_details' => $result,
-                        'paid_at' => now()
-                    ]);
-
-                    BookingCreated::dispatch($booking);
-
-                    $booking->user->notify(new CustomerBookingNotification($booking));
-
-                    if ($specialist) {
-                        $specialist->notify(new BookingNotification($booking));
-                    }
-
-                    $message = sprintf(
-                        "رزرو شما با موفقیت ثبت شد\n" .
-                        "خدمت: %s\n" .
-                        "تاریخ: %s ساعت %s\n" .
-                        "کد پیگیری: #%s",
-                        $booking->service->name,
-                        verta($booking->booking_time)->format('Y/m/d'),
-                        verta($booking->booking_time)->format('H:i'),
-                        $booking->id
-                    );
-                    $this->smsService->send($booking->user->phone, $message);
-                });
-
-                session(['booking_id' => $booking->id]);
-
-                return redirect()->route('payment.result')
-                    ->with([
-                        'success' => true,
-                        'booking' => $booking
-                    ]);
-            }
-
-            $booking->update([
-                'status' => 'cancelled',
-                'cancelled_by' => 'system',
-                'cancelled_at' => now(),
-                'cancellation_reason' => 'پرداخت ناموفق'
-            ]);
-
-            Log::warning('Payment verification failed', [
-                'booking_id' => $booking->id,
-                'result' => $result
-            ]);
-
-            return redirect()->route('payment.result')
-                ->with([
-                    'success' => false,
-                    'booking' => $booking,
-                    'error_message' => $result['message'] ?? 'پرداخت تایید نشد.'
-                ]);
-
-        } catch (\Exception $e) {
-            Log::error('Exception in payment callback', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return redirect()->route('payment.result')
-                ->with([
-                    'success' => false,
-                    'error_message' => 'خطا در پردازش پرداخت'
-                ]);
-        }
-    }
-
-    public function result()
-    {
-        $success = session('success', false);
-        $booking = session('booking');
-        $error_message = session('error_message');
-
-        if (!$booking && session('booking_id')) {
-            $booking = Booking::find(session('booking_id'));
-        }
-
-        if (!$booking) {
-            return redirect()->route('bookings.index')
-                ->with('error', 'اطلاعات نوبت یافت نشد.');
-        }
-
-        return view('payment.result', compact('success', 'booking', 'error_message'));
     }
 }
