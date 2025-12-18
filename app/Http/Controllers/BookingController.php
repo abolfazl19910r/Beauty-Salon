@@ -12,6 +12,8 @@ use App\Notifications\BookingRescheduledNotification;
 use App\Notifications\CustomerBookingNotification;
 use App\Services\PaymentService;
 use App\Services\SMSService;
+use App\Notifications\BookingStatusUpdated;
+use App\Notifications\SpecialistBookingCancelledNotification;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
@@ -181,7 +183,6 @@ class BookingController extends Controller
             if ($result['status'] === 'success') {
                 DB::transaction(function() use ($booking, $result) {
                     $specialist = $booking->specialist;
-
                     $finalStatus = $specialist->hasAutoConfirm() ? 'confirmed' : 'pending';
 
                     $booking->update([
@@ -191,21 +192,10 @@ class BookingController extends Controller
                         'payment_details' => $result
                     ]);
 
-                    BookingCreated::dispatch($booking);
-                    $booking->user->notify(new CustomerBookingNotification($booking));
-                    $this->sendBookingNotificationToSpecialist($booking, $specialist);
-                    if ($specialist->hasAutoConfirm()) {
-                        $this->sendAutoConfirmedNotificationToCustomer($booking, $specialist);
-                    }
-
-                    $message = sprintf(
-                        'نوبت شما در تاریخ %s ساعت %s با موفقیت ثبت شد. شماره پیگیری: %s',
-                        verta($booking->booking_time)->format('Y/m/d'),
-                        verta($booking->booking_time)->format('H:i'),
-                        $booking->payment_ref
-                    );
-
-                    $this->smsService->send($booking->user->phone, $message);
+                    Log::info('✅ پرداخت موفق و Observer فعال شد', [
+                        'booking_id' => $booking->id,
+                        'status' => $finalStatus
+                    ]);
                 });
 
                 session(['booking_id' => $booking->id]);
@@ -213,12 +203,18 @@ class BookingController extends Controller
                 return redirect()->route('bookings.success', ['id' => $booking->id])
                     ->with('success', 'رزرو با موفقیت انجام شد.');
             }
+
             $booking->update(['status' => 'cancelled']);
 
             return redirect()->route('bookings.failed')
                 ->with('error', 'پرداخت ناموفق بود: ' . ($result['message'] ?? 'خطایی نامشخص'));
 
         } catch (Exception $e) {
+            Log::error('❌ خطا در callback پرداخت', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage()
+            ]);
+
             $booking->update(['status' => 'cancelled']);
 
             return redirect()->route('bookings.failed')
@@ -226,76 +222,38 @@ class BookingController extends Controller
         }
     }
 
-    public function cancel(Booking $booking)
+    public function cancel(Booking $booking): RedirectResponse
     {
+        if ($booking->user_id !== Auth::id()) {
+            abort(403, 'دسترسی غیرمجاز');
+        }
+
+        if ($booking->status === 'cancelled') {
+            return back()->with('info', 'این نوبت قبلاً لغو شده است.');
+        }
+
         try {
-            if ($booking->user_id !== auth()->id()) {
-                throw new Exception('دسترسی غیرمجاز');
-            }
-
-            if (!$booking->canBeCancelled()) {
-                return back()->with('error', 'امکان لغو این نوبت وجود ندارد.');
-            }
-
             DB::transaction(function() use ($booking) {
                 $booking->update([
                     'status' => 'cancelled',
-                    'cancelled_by' => 'customer',
-                    'cancelled_at' => now(),
-                    'cancellation_reason' => 'لغو توسط مشتری'
+                    'cancellation_reason' => 'لغو توسط مشتری',
+                    'cancelled_by' => 'user',
+                    'cancelled_at' => now()
                 ]);
 
-                if ($booking->payment_status === 'paid' && $booking->isRefundable()) {
-                    $refundableAmount = $booking->getRefundableAmount();
+                $booking->user->notify(new BookingStatusUpdated($booking, 'cancelled', 'لغو توسط شما'));
+                Log::info('Customer cancelled booking. Notification sent to customer.', ['booking_id' => $booking->id]);
 
-                    $booking->update([
-                        'refund_status' => 'pending',
-                        'refund_details' => [
-                            'requested_at' => now()->toDateTimeString(),
-                            'requested_by' => 'user',
-                            'amount' => $refundableAmount,
-                            'cancellation_hours_before' => $booking->booking_time->diffInHours(now())
-                        ]
-                    ]);
-
-                    $refundMessage = sprintf(
-                        'نوبت شما در تاریخ %s لغو شد. مبلغ %s تومان طی 3-5 روز کاری به حساب شما برگشت داده خواهد شد.',
-                        verta($booking->booking_time)->format('Y/m/d H:i'),
-                        number_format($refundableAmount)
-                    );
-                    $this->smsService->send($booking->user->phone, $refundMessage);
-                } else {
-                    $message = sprintf(
-                        'نوبت شما در تاریخ %s ساعت %s لغو شد.',
-                        verta($booking->booking_time)->format('Y/m/d'),
-                        verta($booking->booking_time)->format('H:i')
-                    );
-                    $this->smsService->send($booking->user->phone, $message);
-                }
-
-                if ($booking->specialist && $booking->specialist->phone) {
-                    $specialistMessage = sprintf(
-                        'نوبت مشتری %s در تاریخ %s ساعت %s لغو شد. کد پیگیری: #%s',
-                        $booking->user->name,
-                        verta($booking->booking_time)->format('Y/m/d'),
-                        verta($booking->booking_time)->format('H:i'),
-                        $booking->id
-                    );
-                    $this->smsService->send($booking->specialist->phone, $specialistMessage);
+                if ($booking->specialist) {
+                    $booking->specialist->user->notify(new SpecialistBookingCancelledNotification($booking, 'user'));
+                    Log::info('Customer cancelled booking. Notification sent to specialist.', ['booking_id' => $booking->id]);
                 }
             });
 
-            return redirect()->route('bookings.index')
-                ->with('success', 'نوبت با موفقیت لغو شد.');
-
-        } catch (Exception $e) {
-            Log::error('خطا در لغو نوبت', [
-                'booking_id' => $booking->id,
-                'user_id' => auth()->id(),
-                'error' => $e->getMessage()
-            ]);
-
-            return back()->with('error', 'خطا در لغو نوبت. لطفا دوباره تلاش کنید.');
+            return back()->with('success', '✓ نوبت شما با موفقیت لغو شد و به متخصص اطلاع‌رسانی گردید.');
+        } catch (\Exception $e) {
+            Log::error('خطا در لغو نوبت توسط مشتری', ['booking_id' => $booking->id, 'error' => $e->getMessage()]);
+            return back()->with('error', 'خطا در لغو نوبت: ' . $e->getMessage());
         }
     }
 
@@ -401,20 +359,37 @@ class BookingController extends Controller
         }
     }
 
-    public function getAvailableTimeSlots(Specialist $specialist, $date)
+    public function getAvailableTimeSlots(Request $request, $specialist, $date): JsonResponse
     {
         try {
+            if ($specialist instanceof Specialist) {
+                $specialistModel = $specialist;
+            } else {
+                $specialistId = is_numeric($specialist) ? (int)$specialist : $specialist;
+                $specialistModel = Specialist::findOrFail($specialistId);
+            }
+
             $carbonDate = Carbon::parse($date);
             $dayOfWeek = $carbonDate->dayOfWeek;
 
-            if ($specialist->holidays()->whereDate('date', $date)->exists()) {
+            $serviceId = $request->query('service_id');
+            $serviceDuration = null;
+
+            if ($serviceId) {
+                $service = BeautyService::find($serviceId);
+                if ($service) {
+                    $serviceDuration = $service->duration;
+                }
+            }
+
+            if ($specialistModel->holidays()->whereDate('date', $date)->exists()) {
                 return response()->json([
                     'slots' => [],
                     'message' => 'این روز تعطیل است'
                 ]);
             }
 
-            if ($specialist->leaves()
+            if ($specialistModel->leaves()
                 ->whereDate('start_date', '<=', $date)
                 ->whereDate('end_date', '>=', $date)
                 ->where('status', 'approved')
@@ -425,7 +400,7 @@ class BookingController extends Controller
                 ]);
             }
 
-            $schedule = $specialist->schedules()
+            $schedule = $specialistModel->schedules()
                 ->where('day_of_week', $dayOfWeek)
                 ->where('is_active', true)
                 ->first();
@@ -437,10 +412,18 @@ class BookingController extends Controller
                 ]);
             }
 
-            $availableSlots = $specialist->getAvailableSlots($date);
+            $availableSlots = $specialistModel->getAvailableSlots($date, $serviceDuration);
+
+            if (empty($availableSlots)) {
+                return response()->json([
+                    'slots' => [],
+                    'message' => 'هیچ زمان خالی برای این تاریخ وجود ندارد'
+                ]);
+            }
 
             return response()->json([
                 'slots' => $availableSlots,
+                'service_duration' => $serviceDuration,
                 'schedule' => [
                     'start_time' => $schedule->start_time,
                     'end_time' => $schedule->end_time,
@@ -448,108 +431,28 @@ class BookingController extends Controller
                     'break_end' => $schedule->break_end ?? null
                 ]
             ]);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::error('متخصص یافت نشد در getAvailableTimeSlots', [
+                'specialist_param' => is_object($specialist) ? get_class($specialist) : $specialist,
+                'date' => $date,
+                'error' => $e->getMessage()
+            ]);
+            return response()->json([
+                'slots' => [],
+                'message' => 'متخصص مورد نظر یافت نشد'
+            ], 404);
         } catch (Exception $e) {
+            Log::error('خطا در دریافت اسلات‌های زمانی', [
+                'specialist_param' => is_object($specialist) ? get_class($specialist) : $specialist,
+                'date' => $date,
+                'service_id' => $request->query('service_id'),
+                'error' => $e->getMessage()
+            ]);
             return response()->json([
                 'error' => 'خطا در دریافت ساعت‌های در دسترس',
                 'message' => $e->getMessage()
             ], 500);
-        }
-    }
-
-    protected function sendBookingNotificationToSpecialist(Booking $booking, Specialist $specialist): void
-    {
-        try {
-            $persianDate = verta($booking->booking_time)->format('Y/m/d');
-            $persianTime = verta($booking->booking_time)->format('H:i');
-
-            if ($specialist->hasAutoConfirm()) {
-                $message = sprintf(
-                    "%s عزیز، سلام 👋\n\n".
-                    "🔔 نوبت جدید برای شما ثبت شد:\n\n".
-                    "👤 مشتری: %s\n".
-                    "📱 تماس: %s\n".
-                    "📋 سرویس: %s\n".
-                    "📅 تاریخ: %s\n".
-                    "🕐 ساعت: %s\n".
-                    "🔢 کد پیگیری: #%s\n\n".
-                    "✅ این نوبت به صورت خودکار تایید شده است.\n".
-                    "📱 برای مدیریت نوبت‌ها به پنل خود مراجعه کنید.",
-                    $specialist->name,
-                    $booking->user->name,
-                    $booking->user->phone,
-                    $booking->service->name,
-                    $persianDate,
-                    $persianTime,
-                    $booking->id
-                );
-            } else {
-                $dashboardUrl = route('specialist.my-dashboard');
-
-                $message = sprintf(
-                    "%s عزیز، سلام 👋\n\n".
-                    "🔔 نوبت جدید برای شما ثبت شد:\n\n".
-                    "👤 مشتری: %s\n".
-                    "📱 تماس: %s\n".
-                    "📋 سرویس: %s\n".
-                    "📅 تاریخ: %s\n".
-                    "🕐 ساعت: %s\n".
-                    "🔢 کد پیگیری: #%s\n\n".
-                    "⚠️ این نوبت نیاز به تایید شما دارد.\n\n".
-                    "🔗 برای مشاهده و تایید:\n%s",
-                    $specialist->name,
-                    $booking->user->name,
-                    $booking->user->phone,
-                    $booking->service->name,
-                    $persianDate,
-                    $persianTime,
-                    $booking->id,
-                    $dashboardUrl
-                );
-            }
-
-            $this->smsService->send($specialist->phone, $message);
-
-        } catch (Exception $e) {
-            Log::error('خطا در ارسال پیامک به متخصص', [
-                'booking_id' => $booking->id,
-                'specialist_id' => $specialist->id,
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
-
-    protected function sendAutoConfirmedNotificationToCustomer(Booking $booking, Specialist $specialist): void
-    {
-        try {
-            $persianDate = verta($booking->booking_time)->format('Y/m/d');
-            $persianTime = verta($booking->booking_time)->format('H:i');
-
-            $message = sprintf(
-                "%s عزیز، سلام 👋\n\n".
-                "✅ نوبت شما با موفقیت تایید شد\n\n".
-                "📋 سرویس: %s\n".
-                "📅 تاریخ: %s\n".
-                "🕐 ساعت: %s\n".
-                "🔢 کد پیگیری: #%s\n".
-                "👤 متخصص: %s\n\n".
-                "⏰ لطفاً 15 دقیقه قبل از وقت حضور داشته باشید.\n\n".
-                "🙏 منتظر دیدار شما هستیم",
-                $booking->user->name,
-                $booking->service->name,
-                $persianDate,
-                $persianTime,
-                $booking->id,
-                $specialist->name
-            );
-
-            $this->smsService->send($booking->user->phone, $message);
-
-        } catch (Exception $e) {
-            Log::error('خطا در ارسال پیامک تایید خودکار به مشتری', [
-                'booking_id' => $booking->id,
-                'user_id' => $booking->user_id,
-                'error' => $e->getMessage()
-            ]);
         }
     }
 
@@ -744,18 +647,67 @@ class BookingController extends Controller
     }
 
 
-    public function getAvailableDates(Specialist $specialist)
+    public function getAvailableDates($specialist): JsonResponse
     {
         try {
-            $currentMonth = date('Y-m');
-            $availability = $specialist->getMonthAvailability($currentMonth);
-            $dates = array_map(function($day) {
-                return $day['date'];
-            }, $availability['available_days']);
+            if ($specialist instanceof Specialist) {
+                $specialistModel = $specialist;
+            } else {
+                $specialistId = is_numeric($specialist) ? (int)$specialist : $specialist;
+                $specialistModel = Specialist::findOrFail($specialistId);
+            }
+
+            $dates = [];
+            $startDate = Carbon::today();
+
+            for ($i = 0; $i < 30; $i++) {
+                $date = $startDate->copy()->addDays($i);
+
+                $schedule = $specialistModel->schedules()
+                    ->where('day_of_week', $date->dayOfWeek)
+                    ->where('is_active', true)
+                    ->first();
+
+                if (!$schedule) {
+                    continue;
+                }
+
+                $hasLeave = $specialistModel->leaves()
+                    ->where('start_date', '<=', $date->format('Y-m-d'))
+                    ->where('end_date', '>=', $date->format('Y-m-d'))
+                    ->where('status', 'approved')
+                    ->exists();
+
+                $isHoliday = $specialistModel->holidays()
+                    ->whereDate('date', $date)
+                    ->exists();
+
+                if (!$hasLeave && !$isHoliday) {
+                    $dates[] = $date->format('Y-m-d');
+                }
+            }
 
             return response()->json($dates);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::error('متخصص یافت نشد', [
+                'specialist_param' => is_object($specialist) ? get_class($specialist) : $specialist,
+                'error' => $e->getMessage()
+            ]);
+            return response()->json([
+                'error' => 'متخصص مورد نظر یافت نشد',
+                'dates' => []
+            ], 404);
         } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            Log::error('خطا در دریافت تاریخ‌ها', [
+                'specialist_param' => is_object($specialist) ? get_class($specialist) : $specialist,
+                'error' => $e->getMessage()
+            ]);
+            return response()->json([
+                'error' => 'خطا در دریافت تاریخ‌ها',
+                'message' => $e->getMessage(),
+                'dates' => []
+            ], 500);
         }
     }
 
@@ -779,7 +731,7 @@ class BookingController extends Controller
     {
         try {
             if ($booking->user_id !== auth()->id()) {
-                throw new Exception('دسترسی غیرمجاز');
+                abort(403, 'دسترسی غیرمجاز');
             }
 
             $booking->load(['service', 'specialist']);
@@ -789,16 +741,26 @@ class BookingController extends Controller
                     ->with('error', 'اطلاعات سرویس برای این نوبت یافت نشد.');
             }
 
-            if ($booking->payment_status === 'paid') {
-                return redirect()->route('bookings.show', $booking)
-                    ->with('error', 'این نوبت قبلاً پرداخت شده است.');
+            if ($booking->payment_status === 'unpaid' &&
+                $booking->status === 'pending_payment' &&
+                !session()->has('from_payment_result')) {
+
+                return redirect()->route('payment.show', ['booking' => $booking->id])
+                    ->with('info', 'لطفاً ابتدا پرداخت را تکمیل کنید.');
             }
 
-            return redirect()->route('payment.show', ['booking' => $booking->id]);
+            session()->forget('from_payment_result');
+
+            return view('bookings.show', compact('booking'));
 
         } catch (Exception $e) {
+            Log::error('خطا در نمایش جزئیات نوبت', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage()
+            ]);
+
             return redirect()->route('bookings.index')
-                ->with('error', 'خطا در نمایش صفحه پرداخت: ' . $e->getMessage());
+                ->with('error', 'خطا در نمایش جزئیات نوبت: ' . $e->getMessage());
         }
     }
 
@@ -889,6 +851,28 @@ class BookingController extends Controller
             return response()->json($booking);
         } catch (\Exception $e) {
             return response()->json(['error' => 'هیچ رزرو موفقی یافت نشد.'], 404);
+        }
+    }
+
+    public function getSpecialistsByService($serviceId): JsonResponse
+    {
+        try {
+            $service = BeautyService::findOrFail($serviceId);
+
+            $specialists = $service->specialists()
+                ->select('specialists.id', 'specialists.name', 'specialists.email', 'specialists.phone')
+                ->get();
+
+            return response()->json($specialists);
+        } catch (Exception $e) {
+            Log::error('خطا در دریافت متخصصین', [
+                'service_id' => $serviceId,
+                'error' => $e->getMessage()
+            ]);
+            return response()->json([
+                'error' => 'خطا در دریافت متخصصین',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 }
