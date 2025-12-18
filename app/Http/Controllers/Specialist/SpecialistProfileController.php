@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Specialist;
 use App\Models\Booking;
 use App\Models\SpecialistLeave;
+use App\Notifications\BookingStatusUpdated;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
@@ -29,10 +31,121 @@ class SpecialistProfileController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->hasRole('specialists')) {
-            abort(403, 'شما به این بخش دسترسی ندارید');
+        $specialist = Specialist::where('user_id', $user->id)
+            ->orWhere('phone', $user->phone)
+            ->first();
+
+        if (!$specialist) {
+            return view('specialist.profile-not-found');
         }
 
+        $todaySchedule = Booking::where('specialist_id', $specialist->id)
+            ->whereDate('booking_time', Carbon::today())
+            ->where('payment_status', 'paid')
+            ->with(['service', 'user'])
+            ->orderBy('booking_time', 'asc')
+            ->get();
+
+        $todayBookingsCount = $todaySchedule->count();
+
+        $todayRevenue = Booking::where('specialist_id', $specialist->id)
+            ->whereDate('booking_time', Carbon::today())
+            ->where('payment_status', 'paid')
+            ->where('status', '!=', 'cancelled')
+            ->sum('prepayment_amount');
+
+        $monthBookingsCount = Booking::where('specialist_id', $specialist->id)
+            ->whereMonth('booking_time', Carbon::now()->month)
+            ->whereYear('booking_time', Carbon::now()->year)
+            ->where('payment_status', 'paid')
+            ->count();
+
+        $averageRating = Booking::where('specialist_id', $specialist->id)
+            ->whereNotNull('rating')
+            ->avg('rating') ?: 0;
+
+        $upcomingBookings = Booking::where('specialist_id', $specialist->id)
+            ->where('booking_time', '>', Carbon::now())
+            ->where('booking_time', '<=', Carbon::now()->addDays(7))
+            ->where('payment_status', 'paid')
+            ->with(['service', 'user'])
+            ->orderBy('booking_time', 'asc')
+            ->get();
+
+        $upcomingBookings->each(function($booking) {
+
+            $booking->booking_date_persian = Jalalian::fromCarbon($booking->booking_time)->format('Y/m/d');
+
+            $booking->status_fa = match($booking->status) {
+                'pending'   => 'در انتظار تایید',
+                'confirmed' => 'تایید شده',
+                'completed' => 'انجام شده',
+                'cancelled' => 'لغو شده',
+                default     => 'نامشخص'
+            };
+        });
+
+        $recentReviews = Booking::where('specialist_id', $specialist->id)
+            ->whereNotNull('review')
+            ->with('user')
+            ->orderBy('updated_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        $allBookingsCount = Booking::where('specialist_id', $specialist->id)
+            ->where('payment_status', 'paid')
+            ->count();
+
+        $confirmedBookingsCount = Booking::where('specialist_id', $specialist->id)
+            ->where('status', 'confirmed')
+            ->where('payment_status', 'paid')
+            ->count();
+
+        $pendingBookingsCount = Booking::where('specialist_id', $specialist->id)
+            ->where('status', 'pending')
+            ->where('payment_status', 'paid')
+            ->count();
+
+        $completedBookingsCount = Booking::where('specialist_id', $specialist->id)
+            ->where('status', 'completed')
+            ->where('payment_status', 'paid')
+            ->count();
+
+        $weeklyRevenue = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::today()->subDays($i);
+            $revenue = Booking::where('specialist_id', $specialist->id)
+                ->whereDate('booking_time', $date)
+                ->where('payment_status', 'paid')
+                ->where('status', '!=', 'cancelled')
+                ->sum('prepayment_amount');
+
+            $weeklyRevenue[] = [
+                'date' => Jalalian::fromCarbon($date)->format('m/d'),
+                'total' => $revenue
+            ];
+        }
+
+        return view('specialist.dashboard', compact(
+            'specialist',
+            'todaySchedule',
+            'todayBookingsCount',
+            'todayRevenue',
+            'monthBookingsCount',
+            'averageRating',
+            'upcomingBookings',
+            'recentReviews',
+            'weeklyRevenue',
+            'allBookingsCount',
+            'confirmedBookingsCount',
+            'pendingBookingsCount',
+            'completedBookingsCount'
+        ));
+    }
+
+    public function bookings()
+    {
+        $user = auth()->user();
         $specialist = Specialist::where('phone', $user->phone)->first();
 
         if (!$specialist) {
@@ -40,23 +153,18 @@ class SpecialistProfileController extends Controller
         }
 
         $bookings = Booking::where('specialist_id', $specialist->id)
-            ->whereNotIn('status', ['completed'])
             ->with(['service', 'user'])
-            ->orderByRaw("FIELD(status, 'pending', 'confirmed', 'cancelled')")
-            ->orderBy('booking_time', 'asc')
-            ->paginate(15);
+            ->latest()
+            ->paginate(10);
 
-        return view('specialist.dashboard-bookings', [
-            'specialist' => $specialist,
-            'bookings' => $bookings,
-        ]);
+        return view('specialist.bookings', compact('specialist', 'bookings'));
     }
 
     public function show()
     {
         $user = auth()->user();
 
-        if (!$user->hasRole('specialists')) {
+        if (!$user->hasRole('specialists') && !$user->hasRole('specialist')) {
             abort(403, 'شما به این بخش دسترسی ندارید');
         }
 
@@ -98,11 +206,26 @@ class SpecialistProfileController extends Controller
         ));
     }
 
+    public function showBooking(Booking $booking)
+    {
+        $user = auth()->user();
+
+        $specialist = Specialist::where('phone', $user->phone)->first();
+
+        if (!$specialist || $booking->specialist_id !== $specialist->id) {
+            abort(403, 'شما اجازه دسترسی به این نوبت را ندارید.');
+        }
+
+        $booking->load(['user', 'service', 'specialist']);
+
+        return view('specialist.booking-show', compact('booking', 'specialist'));
+    }
+
     public function edit()
     {
         $user = auth()->user();
 
-        if (!$user->hasRole('specialists')) {
+        if (!$user->hasRole('specialists') && !$user->hasRole('specialist')) {
             abort(403, 'شما به این بخش دسترسی ندارید');
         }
 
@@ -158,6 +281,9 @@ class SpecialistProfileController extends Controller
     public function schedule()
     {
         $user = auth()->user();
+        if (!$user->hasRole('specialists') && !$user->hasRole('specialist')) {
+            abort(403, 'شما به این بخش دسترسی ندارید');
+        }
         $specialist = Specialist::where('phone', $user->phone)->first();
 
         if (!$specialist) {
@@ -229,6 +355,9 @@ class SpecialistProfileController extends Controller
     public function leaves()
     {
         $user = auth()->user();
+        if (!$user->hasRole('specialists') && !$user->hasRole('specialist')) {
+            abort(403, 'شما به این بخش دسترسی ندارید');
+        }
         $specialist = Specialist::where('phone', $user->phone)->first();
 
         if (!$specialist) {
@@ -313,43 +442,16 @@ class SpecialistProfileController extends Controller
         }
 
         try {
-            DB::transaction(function() use ($booking, $specialist) {
+            DB::transaction(function() use ($booking) {
                 $booking->update(['status' => 'confirmed']);
 
-                $persianDate = verta($booking->booking_time)->format('Y/m/d');
-                $persianTime = verta($booking->booking_time)->format('H:i');
-
-                $message = sprintf(
-                    "%s عزیز، سلام 👋\n\n".
-                    "✅ نوبت شما تایید شد\n\n".
-                    "📋 سرویس: %s\n".
-                    "📅 تاریخ: %s\n".
-                    "🕐 ساعت: %s\n".
-                    "🔢 کد پیگیری: #%s\n".
-                    "👤 متخصص: %s\n\n".
-                    "⏰ لطفاً 15 دقیقه قبل از وقت حضور داشته باشید.\n\n".
-                    "🙏 منتظر دیدار شما هستیم",
-                    $booking->user->name,
-                    $booking->service->name,
-                    $persianDate,
-                    $persianTime,
-                    $booking->id,
-                    $specialist->name
-                );
-
-                $this->smsService->send($booking->user->phone, $message);
-
+                $booking->user->notify(new \App\Notifications\BookingStatusUpdated($booking, 'confirmed'));
             });
 
-            return back()->with('success', '✓ نوبت با موفقیت تایید شد و به مشتری اطلاع‌رسانی شد.');
-
+            return back()->with('success', '✓ نوبت تایید شد و پیامک اطلاع‌رسانی ارسال گردید.');
         } catch (Exception $e) {
-            Log::error('خطا در تایید نوبت', [
-                'booking_id' => $booking->id,
-                'error' => $e->getMessage()
-            ]);
-
-            return back()->with('error', 'خطا در تایید نوبت. لطفاً دوباره تلاش کنید.');
+            Log::error('خطا در تایید نوبت توسط متخصص', ['booking_id' => $booking->id, 'error' => $e->getMessage()]);
+            return back()->with('error', 'خطا در تایید نوبت: ' . $e->getMessage());
         }
     }
 
@@ -366,10 +468,10 @@ class SpecialistProfileController extends Controller
             return back()->with('info', 'این نوبت قبلاً لغو شده است.');
         }
 
-        try {
-            $cancelReason = $request->input('cancel_reason', 'دلیل مشخص نشده');
+        $cancelReason = $request->input('cancel_reason', 'دلیل مشخص نشده');
 
-            DB::transaction(function () use ($booking, $cancelReason, $specialist) {
+        try {
+            DB::transaction(function () use ($booking, $cancelReason) {
                 $booking->update([
                     'status' => 'cancelled',
                     'cancellation_reason' => $cancelReason,
@@ -377,41 +479,13 @@ class SpecialistProfileController extends Controller
                     'cancelled_at' => now()
                 ]);
 
-                $persianDate = verta($booking->booking_time)->format('Y/m/d');
-                $persianTime = verta($booking->booking_time)->format('H:i');
-
-                $message = sprintf(
-                    "%s عزیز، سلام 👋\n\n" .
-                    "❌ متاسفانه نوبت شما لغو شد\n\n" .
-                    "📋 سرویس: %s\n" .
-                    "📅 تاریخ: %s - ساعت %s\n" .
-                    "🔢 کد پیگیری: #%s\n" .
-                    "👤 متخصص: %s\n\n" .
-                    "📝 دلیل لغو:\n%s\n\n" .
-                    "📞 برای رزرو مجدد با ما تماس بگیرید.\n" .
-                    "🙏 از صبوری شما متشکریم",
-                    $booking->user->name,
-                    $booking->service->name,
-                    $persianDate,
-                    $persianTime,
-                    $booking->id,
-                    $specialist->name,
-                    $cancelReason
-                );
-
-                $this->smsService->send($booking->user->phone, $message);
-
+                $booking->user->notify(new BookingStatusUpdated($booking, 'cancelled', $cancelReason));
             });
 
-            return back()->with('success', '✓ نوبت لغو شد و به مشتری اطلاع‌رسانی شد.');
-
+            return back()->with('success', '✓ نوبت لغو و به مشتری اطلاع‌رسانی شد.');
         } catch (Exception $e) {
-            Log::error('خطا در لغو نوبت', [
-                'booking_id' => $booking->id,
-                'error' => $e->getMessage()
-            ]);
-
-            return back()->with('error', 'خطا در لغو نوبت. لطفاً دوباره تلاش کنید.');
+            Log::error('خطا در لغو نوبت توسط متخصص', ['booking_id' => $booking->id, 'error' => $e->getMessage()]);
+            return back()->with('error', 'خطا در لغو نوبت: ' . $e->getMessage());
         }
     }
 }
