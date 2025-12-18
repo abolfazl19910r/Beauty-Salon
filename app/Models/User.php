@@ -198,4 +198,56 @@ class User extends Authenticatable
     {
         return $this->hasOne(Specialist::class, 'phone', 'phone');
     }
+
+    /**
+     *
+     * @param int $points
+     * @param string $description
+     * @param int|null $bookingId
+     * @return void
+     */
+    public function addLoyaltyPoints(int $points, string $description = '', ?int $bookingId = null): void
+    {
+        try {
+            LoyaltyPoint::create([
+                'user_id' => $this->id,
+                'booking_id' => $bookingId,
+                'points' => $points,
+                'description' => $description,
+                'type' => 'earned',
+                'expires_at' => now()->addYear(),
+            ]);
+
+            \Illuminate\Support\Facades\Log::info('🎁 Loyalty points added to user', [
+                'user_id' => $this->id,
+                'points' => $points,
+                'description' => $description,
+                'booking_id' => $bookingId
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('❌ Failed to add loyalty points', [
+                'user_id' => $this->id,
+                'points' => $points,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     *
+     * @return int
+     */
+    public function getTotalLoyaltyPoints(): int
+    {
+        try {
+            return \App\Models\LoyaltyPoint::where('user_id', $this->id)
+                ->where(function($query) {
+                    $query->whereNull('expires_at')
+                        ->orWhere('expires_at', '>', now());
+                })
+                ->sum('points');
+        } catch (\Exception $e) {
+            return 0;
+        }
+    }
 }
