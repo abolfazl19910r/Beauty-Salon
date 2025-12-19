@@ -26,6 +26,10 @@ Route::middleware(['auth', 'verified'])->name('specialist.')->group(function () 
     Route::get('/specialist/leaves', [SpecialistProfileController::class, 'leaves'])->name('leaves');
     Route::post('/specialist/leaves', [SpecialistProfileController::class, 'storeLeave'])->name('leaves.store');
     Route::delete('/specialist/leaves/{leave}', [SpecialistProfileController::class, 'destroyLeave'])->name('leaves.destroy');
+
+    Route::get('/specialist/bookings', [SpecialistProfileController::class, 'bookings'])->name('bookings');
+
     Route::put('/specialist/bookings/{booking}/complete', [SpecialistProfileController::class, 'completeBooking'])->name('bookings.complete');
     Route::put('/specialist/bookings/{booking}/cancel', [SpecialistProfileController::class, 'cancelBooking'])->name('bookings.cancel');
+    Route::get('/specialist/bookings/{booking}', [SpecialistProfileController::class, 'showBooking'])->name('bookings.show');
 });
