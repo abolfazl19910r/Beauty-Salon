@@ -3,13 +3,12 @@
 namespace App\Observers;
 
 use App\Models\Booking;
-use App\Models\User;
-use App\Notifications\BookingStatusUpdated;
-use App\Notifications\CustomerBookingNotification;
 use App\Notifications\BookingNotification;
+use App\Notifications\BookingStatusUpdated;
 use App\Notifications\SpecialistBookingCancelledNotification;
 use App\Services\ReportCacheService;
 use App\Services\SMSService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class BookingObserver
@@ -23,58 +22,160 @@ class BookingObserver
         $this->smsService = $smsService;
     }
 
-    public function created(Booking $booking): void
-    {
-        if ($booking->payment_status === 'paid' && $booking->status !== 'pending_payment') {
-            $this->sendInitialNotifications($booking);
-        }
-        $this->cacheService->flush();
-    }
-
     public function updated(Booking $booking): void
     {
-        if ($booking->wasChanged('payment_status') && $booking->payment_status === 'paid') {
-            $this->sendInitialNotifications($booking);
+        try {
+            if ($booking->wasChanged('payment_status') && $booking->payment_status === 'paid') {
 
-            if (method_exists(User::class, 'addLoyaltyPoints')) {
-                $this->addLoyaltyPoints($booking);
+                $cacheKey = "booking_payment_processed_{$booking->id}";
+
+                if (Cache::has($cacheKey)) {
+                    Log::debug('⏭️ Payment already processed, skipping Observer', [
+                        'booking_id' => $booking->id,
+                        'cached_at' => Cache::get($cacheKey)
+                    ]);
+                    return;
+                }
+
+                Cache::put($cacheKey, now()->toDateTimeString(), 60);
+
+                Log::info('💰 Payment Status Changed to Paid', [
+                    'booking_id' => $booking->id,
+                    'old_status' => $booking->getOriginal('payment_status'),
+                    'new_status' => $booking->payment_status,
+                    'changes' => $booking->getChanges()
+                ]);
+
+                $specialist = $booking->specialist;
+
+                $isAutoConfirm = $specialist->auto_confirm_bookings ?? false;
+
+                Log::info('🔍 Checking Auto-Confirm Setting', [
+                    'booking_id' => $booking->id,
+                    'specialist_id' => $specialist->id,
+                    'auto_confirm_bookings' => $specialist->auto_confirm_bookings,
+                    'is_auto_confirm' => $isAutoConfirm
+                ]);
+
+                if ($isAutoConfirm) {
+                    Log::info('🤖 Auto-confirm is enabled', ['booking_id' => $booking->id]);
+
+                    $booking->updateQuietly(['status' => 'confirmed']);
+
+                    try {
+                        $booking->user->notify(new BookingStatusUpdated($booking, 'confirmed'));
+                        Log::info('✅ Customer notification sent (auto-confirm)', [
+                            'booking_id' => $booking->id,
+                            'user_id' => $booking->user_id
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('❌ Failed to send customer notification', [
+                            'booking_id' => $booking->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+
+                    try {
+                        $specialist->notify(new BookingNotification($booking, false));
+                        Log::info('✅ Specialist notification sent (auto-confirm)', [
+                            'booking_id' => $booking->id,
+                            'specialist_id' => $specialist->id
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('❌ Failed to send specialist notification', [
+                            'booking_id' => $booking->id,
+                            'specialist_id' => $specialist->id,
+                            'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString()
+                        ]);
+                    }
+                } else {
+                    Log::info('👤 Manual approval required', ['booking_id' => $booking->id]);
+
+                    try {
+                        $booking->user->notify(new BookingStatusUpdated($booking, 'pending_specialist'));
+                        Log::info('✅ Customer notification sent (pending approval)', [
+                            'booking_id' => $booking->id
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('❌ Failed to send customer notification', [
+                            'booking_id' => $booking->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+
+                    try {
+                        $specialist->notify(new BookingNotification($booking, true));
+                        Log::info('✅ Specialist notification sent (needs approval)', [
+                            'booking_id' => $booking->id,
+                            'specialist_id' => $specialist->id
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('❌ Failed to send specialist notification', [
+                            'booking_id' => $booking->id,
+                            'specialist_id' => $specialist->id,
+                            'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString()
+                        ]);
+                    }
+                }
+
+                try {
+                    $this->addLoyaltyPoints($booking);
+                    Log::info('🎁 Loyalty points added', ['booking_id' => $booking->id]);
+                } catch (\Exception $e) {
+                    Log::error('❌ Failed to add loyalty points', [
+                        'booking_id' => $booking->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
             }
-        }
 
-        if ($booking->wasChanged('status')) {
-            $this->handleStatusChange($booking);
-        }
+            if ($booking->wasChanged('status') && $booking->status === 'cancelled') {
+                Log::info('🚫 Booking Cancelled', [
+                    'booking_id' => $booking->id,
+                    'cancelled_by' => $booking->cancelled_by
+                ]);
 
-        $this->cacheService->flush();
-    }
+                try {
+                    $booking->user->notify(new BookingStatusUpdated($booking, 'cancelled', $booking->cancellation_reason));
+                    Log::info('✅ Cancellation notification sent to customer', [
+                        'booking_id' => $booking->id
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('❌ Failed to send cancellation notification to customer', [
+                        'booking_id' => $booking->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
 
-    protected function sendInitialNotifications(Booking $booking): void
-    {
-        if ($booking->user) {
-            $booking->user->notify(new CustomerBookingNotification($booking));
-        }
-
-        if ($booking->specialist) {
-            $booking->specialist->notify(new BookingNotification($booking));
-        }
-    }
-
-    protected function handleStatusChange(Booking $booking): void
-    {
-        $newStatus = $booking->status;
-
-        if ($newStatus === 'confirmed') {
-            $booking->user->notify(new BookingStatusUpdated($booking, 'confirmed'));
-        }
-
-        elseif ($newStatus === 'cancelled') {
-
-            $booking->user->notify(new BookingStatusUpdated($booking, 'cancelled', $booking->cancellation_reason));
-
-            if ($booking->specialist) {
-                $cancelledBy = $booking->cancelled_by ?? 'system';
-                $booking->specialist->notify(new SpecialistBookingCancelledNotification($booking, $cancelledBy));
+                if ($booking->specialist) {
+                    try {
+                        $cancelledBy = $booking->cancelled_by ?? 'system';
+                        $booking->specialist->notify(new SpecialistBookingCancelledNotification($booking, $cancelledBy));
+                        Log::info('✅ Cancellation notification sent to specialist', [
+                            'booking_id' => $booking->id,
+                            'specialist_id' => $booking->specialist_id
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('❌ Failed to send cancellation notification to specialist', [
+                            'booking_id' => $booking->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
             }
+
+            $this->cacheService->flush();
+
+        } catch (\Exception $e) {
+            Log::error('💥 Critical Error in BookingObserver', [
+                'booking_id' => $booking->id ?? null,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
         }
     }
 
@@ -82,22 +183,42 @@ class BookingObserver
     {
         try {
             $user = $booking->user;
-            if (!$user || !method_exists($user, 'addLoyaltyPoints')) return;
+            if (!$user || !method_exists($user, 'addLoyaltyPoints')) {
+                Log::warning('⚠️ User does not have addLoyaltyPoints method', [
+                    'booking_id' => $booking->id,
+                    'user_id' => $user->id ?? null
+                ]);
+                return;
+            }
 
             $points = 5 + floor($booking->prepayment_amount / 10000);
-            $user->addLoyaltyPoints($points, "رزرو خدمت {$booking->service->name}");
+            $user->addLoyaltyPoints($points, "رزرو نوبت #{$booking->id}", $booking->id);
 
-            if ($user->phone) {
-                $message = "مشتری گرامی، {$points} امتیاز وفاداری برای رزرو شماره #{$booking->id} به حساب شما اضافه شد.";
-                $this->smsService->send($user->phone, $message);
-            }
+            Log::info('🎁 Loyalty points added successfully', [
+                'booking_id' => $booking->id,
+                'user_id' => $user->id,
+                'points' => $points
+            ]);
         } catch (\Exception $e) {
-            Log::error('Error in Loyalty Points:', ['error' => $e->getMessage()]);
+            Log::error('❌ Loyalty Points Error', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage()
+            ]);
         }
     }
 
     public function deleted(Booking $booking): void
     {
-        $this->cacheService->flush();
+        try {
+            $this->cacheService->flush();
+            Log::info('🗑️ Booking deleted, cache flushed', [
+                'booking_id' => $booking->id
+            ]);
+        } catch (\Exception $e) {
+            Log::error('❌ Error in deleted observer', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 }
