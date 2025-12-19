@@ -42,82 +42,44 @@ class BookingObserver
                 Log::info('💰 Payment Status Changed to Paid', [
                     'booking_id' => $booking->id,
                     'old_status' => $booking->getOriginal('payment_status'),
-                    'new_status' => $booking->payment_status,
-                    'changes' => $booking->getChanges()
+                    'new_payment_status' => $booking->payment_status,
+                    'current_booking_status' => $booking->status
                 ]);
 
                 $specialist = $booking->specialist;
-
                 $isAutoConfirm = $specialist->auto_confirm_bookings ?? false;
 
-                Log::info('🔍 Checking Auto-Confirm Setting', [
-                    'booking_id' => $booking->id,
-                    'specialist_id' => $specialist->id,
-                    'auto_confirm_bookings' => $specialist->auto_confirm_bookings,
-                    'is_auto_confirm' => $isAutoConfirm
-                ]);
-
-                if ($isAutoConfirm) {
-                    Log::info('🤖 Auto-confirm is enabled', ['booking_id' => $booking->id]);
-
-                    $booking->updateQuietly(['status' => 'confirmed']);
-
-                    try {
+                try {
+                    if ($booking->status === 'confirmed') {
                         $booking->user->notify(new BookingStatusUpdated($booking, 'confirmed'));
-                        Log::info('✅ Customer notification sent (auto-confirm)', [
+                        Log::info('✅ Customer notification sent (auto-confirmed)', [
                             'booking_id' => $booking->id,
-                            'user_id' => $booking->user_id
+                            'status' => $booking->status
                         ]);
-                    } catch (\Exception $e) {
-                        Log::error('❌ Failed to send customer notification', [
-                            'booking_id' => $booking->id,
-                            'error' => $e->getMessage()
-                        ]);
-                    }
 
-                    try {
                         $specialist->notify(new BookingNotification($booking, false));
-                        Log::info('✅ Specialist notification sent (auto-confirm)', [
+                        Log::info('✅ Specialist notification sent (auto-confirmed)', [
                             'booking_id' => $booking->id,
                             'specialist_id' => $specialist->id
                         ]);
-                    } catch (\Exception $e) {
-                        Log::error('❌ Failed to send specialist notification', [
-                            'booking_id' => $booking->id,
-                            'specialist_id' => $specialist->id,
-                            'error' => $e->getMessage(),
-                            'trace' => $e->getTraceAsString()
-                        ]);
-                    }
-                } else {
-                    Log::info('👤 Manual approval required', ['booking_id' => $booking->id]);
-
-                    try {
+                    } elseif ($booking->status === 'pending') {
                         $booking->user->notify(new BookingStatusUpdated($booking, 'pending_specialist'));
                         Log::info('✅ Customer notification sent (pending approval)', [
-                            'booking_id' => $booking->id
-                        ]);
-                    } catch (\Exception $e) {
-                        Log::error('❌ Failed to send customer notification', [
                             'booking_id' => $booking->id,
-                            'error' => $e->getMessage()
+                            'status' => $booking->status
                         ]);
-                    }
 
-                    try {
                         $specialist->notify(new BookingNotification($booking, true));
                         Log::info('✅ Specialist notification sent (needs approval)', [
                             'booking_id' => $booking->id,
                             'specialist_id' => $specialist->id
                         ]);
-                    } catch (\Exception $e) {
-                        Log::error('❌ Failed to send specialist notification', [
-                            'booking_id' => $booking->id,
-                            'specialist_id' => $specialist->id,
-                            'error' => $e->getMessage(),
-                            'trace' => $e->getTraceAsString()
-                        ]);
                     }
+                } catch (\Exception $e) {
+                    Log::error('❌ Failed to send notifications', [
+                        'booking_id' => $booking->id,
+                        'error' => $e->getMessage()
+                    ]);
                 }
 
                 try {
