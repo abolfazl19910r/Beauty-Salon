@@ -1,12 +1,11 @@
-@extends('layouts.app')
+@extends('layouts.specialist')
 
-@section('title', 'پنل من')
+@section('title', 'داشبورد')
 
 @section('content')
     <div class="fade-in">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
             <div>
-                <h1 class="text-2xl font-bold text-gray-800 mb-2">پنل من</h1>
                 <p class="text-sm text-gray-500">خوش آمدید {{ $specialist->name }}</p>
             </div>
 
@@ -19,6 +18,65 @@
                 پروفایل من
             </a>
         </div>
+
+        <div class="mt-8 mb-6">
+            <div class="flex items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">آمار کل</h2>
+                <div class="flex-grow mr-4 h-px bg-gray-200"></div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 mb-1">کل نوبت‌ها</p>
+                            <h3 class="text-2xl font-bold text-gray-800">{{ number_format($allBookingsCount) }}</h3>
+                        </div>
+                        <div class="p-2 bg-blue-50 rounded-lg text-blue-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 mb-1">تایید شده</p>
+                            <h3 class="text-2xl font-bold text-green-600">{{ number_format($confirmedBookingsCount) }}</h3>
+                        </div>
+                        <div class="p-2 bg-green-50 rounded-lg text-green-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 mb-1">در انتظار تایید</p>
+                            <h3 class="text-2xl font-bold text-orange-500">{{ number_format($pendingBookingsCount) }}</h3>
+                        </div>
+                        <div class="p-2 bg-orange-50 rounded-lg text-orange-500">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 mb-1">انجام شده</p>
+                            <h3 class="text-2xl font-bold text-purple-600">{{ number_format($completedBookingsCount) }}</h3>
+                        </div>
+                        <div class="p-2 bg-purple-50 rounded-lg text-purple-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-grow mr-4 h-px bg-gray-200"></div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
             <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
@@ -77,6 +135,8 @@
                 </div>
             </div>
         </div>
+
+
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
             <div class="xl:col-span-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
@@ -146,7 +206,9 @@
                                             <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }} - {{ $booking->user->name }}</p>
                                             <p class="text-xs text-gray-600">{{ $booking->service->name }}</p>
                                         </div>
-                                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">{{ $booking->status }}</span>
+                                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                                            {{ $booking->status_fa }}
+                                        </span>
                                     </div>
                                 @endforeach
                             </div>
