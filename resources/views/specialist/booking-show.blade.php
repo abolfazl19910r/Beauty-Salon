@@ -24,13 +24,15 @@
                 <div>
                     @php $status = trim($booking->status); @endphp
                     @if($status == 'pending')
-                        <span class="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-lg font-bold text-sm">در انتظار تایید</span>
+                        <span class="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-lg font-bold text-sm">⏳ در انتظار تایید</span>
                     @elseif($status == 'confirmed')
-                        <span class="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg font-bold text-sm">تایید شده</span>
+                        <span class="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg font-bold text-sm">✅ تایید شده</span>
                     @elseif($status == 'completed')
-                        <span class="px-4 py-2 bg-green-100 text-green-800 rounded-lg font-bold text-sm">انجام شده</span>
+                        <span class="px-4 py-2 bg-green-100 text-green-800 rounded-lg font-bold text-sm">✔️ انجام شده</span>
                     @elseif($status == 'cancelled')
-                        <span class="px-4 py-2 bg-red-100 text-red-800 rounded-lg font-bold text-sm">لغو شده</span>
+                        <span class="px-4 py-2 bg-red-100 text-red-800 rounded-lg font-bold text-sm">❌ لغو شده</span>
+                    @elseif($status == 'pending_payment')
+                        <span class="px-4 py-2 bg-orange-100 text-orange-800 rounded-lg font-bold text-sm">💳 در انتظار پرداخت</span>
                     @endif
                 </div>
             </div>
@@ -50,29 +52,40 @@
                         <p class="text-gray-600">
                             <strong>وضعیت پرداخت:</strong>
                             @switch($booking->payment_status)
-                                @case('paid') <span class="text-green-600 font-bold">پرداخت شده</span> @break
-                                @case('pending_payment') <span class="text-yellow-600 font-bold">در انتظار پرداخت</span> @break
-                                @default <span class="text-red-600 font-bold">پرداخت نشده / ناموفق</span>
+                                @case('paid') <span class="text-green-600 font-bold">✅ پرداخت شده</span> @break
+                                @case('pending_payment') <span class="text-yellow-600 font-bold">⏳ در انتظار پرداخت</span> @break
+                                @default <span class="text-red-600 font-bold">❌ پرداخت نشده</span>
                             @endswitch
                         </p>
                     </div>
                 </div>
 
-                @if(!in_array($status, ['completed', 'cancelled']))
+                @php
+                    $isAutoConfirm = $specialist->auto_confirm_bookings ?? false;
+                    $canShowButtons = !in_array($status, ['completed', 'cancelled', 'pending_payment']);
+                @endphp
+
+                @if($canShowButtons)
                     <div class="mt-10 pt-6 border-t flex flex-wrap gap-4 justify-end">
                         @if($status == 'pending')
-                            <form action="{{ route('specialist.bookings.complete', $booking->id) }}" method="POST">
+                            <form action="{{ route('specialist.bookings.complete', $booking->id) }}" method="POST" class="inline">
                                 @csrf @method('PUT')
                                 <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-bold transition shadow-md">
-                                    تایید دستی و پذیرش نوبت
+                                    ✅ تایید دستی و پذیرش نوبت
                                 </button>
                             </form>
+                            <button onclick="document.getElementById('cancelModal').classList.remove('hidden')"
+                                    class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-lg font-bold transition shadow-md">
+                                ❌ لغو این نوبت
+                            </button>
                         @endif
 
-                        <button onclick="document.getElementById('cancelModal').classList.remove('hidden')"
-                                class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-lg font-bold transition shadow-md">
-                            لغو این نوبت
-                        </button>
+                        @if($status == 'confirmed')
+                            <button onclick="document.getElementById('cancelModal').classList.remove('hidden')"
+                                    class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-lg font-bold transition shadow-md">
+                                ❌ لغو این نوبت
+                            </button>
+                        @endif
                     </div>
                 @endif
             </div>
@@ -81,7 +94,7 @@
 
     <div id="cancelModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
-            <h3 class="text-xl font-bold text-gray-900 mb-2">لغو نوبت</h3>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">❌ لغو نوبت</h3>
             <p class="text-gray-500 mb-4">آیا از لغو نوبت "{{ $booking->service->name }}" اطمینان دارید؟</p>
             <form action="{{ route('specialist.bookings.cancel', $booking->id) }}" method="POST">
                 @csrf @method('PUT')
@@ -90,8 +103,8 @@
                     <textarea name="cancel_reason" required class="w-full border rounded-lg p-3" rows="3" placeholder="مثلاً: تداخل در برنامه کاری..."></textarea>
                 </div>
                 <div class="flex gap-3">
-                    <button type="button" onclick="document.getElementById('cancelModal').classList.add('hidden')" class="flex-1 bg-gray-100 py-2 rounded-lg">انصراف</button>
-                    <button type="submit" class="flex-1 bg-red-600 text-white py-2 rounded-lg">تایید لغو نوبت</button>
+                    <button type="button" onclick="document.getElementById('cancelModal').classList.add('hidden')" class="flex-1 bg-gray-100 py-2 rounded-lg hover:bg-gray-200">انصراف</button>
+                    <button type="submit" class="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700">تایید لغو نوبت</button>
                 </div>
             </form>
         </div>
