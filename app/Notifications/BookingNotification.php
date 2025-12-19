@@ -8,12 +8,12 @@ use Illuminate\Notifications\Notification;
 class BookingNotification extends Notification
 {
     private $booking;
-    private SMSService $smsService;
+    private $needsApproval;
 
-    public function __construct($booking)
+    public function __construct($booking, $needsApproval = false)
     {
         $this->booking = $booking;
-        $this->smsService = new SMSService();
+        $this->needsApproval = $needsApproval;
     }
 
     public function via($notifiable): array
@@ -35,17 +35,26 @@ class BookingNotification extends Notification
     public function toSms($notifiable): bool
     {
         $message = sprintf(
-            'متخصص گرامی، یک نوبت جدید:
-مشتری: %s
-تاریخ: %s
-سرویس: %s
-شماره تماس: %s',
+            "متخصص گرامی، نوبت جدید ثبت شد:\n👤 مشتری: %s\n📅 تاریخ: %s\n⏰ ساعت: %s\n💇 سرویس: %s\n📞 تماس: %s",
             $this->booking->user->name,
-            verta($this->booking->booking_time)->format('Y/m/d H:i'),
+            verta($this->booking->booking_time)->format('Y/m/d'),
+            verta($this->booking->booking_time)->format('H:i'),
             $this->booking->service->name,
             $this->booking->user->phone
         );
 
-        return $this->smsService->send($notifiable->phone, $message);
+        $bookingLink = route('specialist.bookings.show', ['booking' => $this->booking->id]);
+
+        if ($this->needsApproval) {
+            $message .= "\n\n⚠️ نیاز به تایید دستی دارد";
+            $message .= "\n🔗 برای بررسی این نوبت کلیک کنید:";
+            $message .= "\n" . $bookingLink;
+        } else {
+            $message .= "\n\n✅ تایید خودکار";
+            $message .= "\n🔗 مشاهده جزئیات:";
+            $message .= "\n" . $bookingLink;
+        }
+
+        return (new SMSService())->send($notifiable->phone, $message);
     }
 }
