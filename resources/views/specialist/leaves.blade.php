@@ -1,6 +1,6 @@
-@extends('layouts.app')
+@extends('layouts.specialist')
 
-@section('title', 'مدیریت مرخصی‌ها')
+@section('title', ' مرخصی‌')
 
 @section('styles')
     <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@latest/dist/css/persian-datepicker.min.css">

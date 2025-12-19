@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.specialist')
 
 @section('title', 'مدیریت برنامه کاری')
 
