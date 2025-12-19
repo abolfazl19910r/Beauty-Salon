@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Channels\SmsChannel;
 use App\Models\Booking;
 use App\Models\DiscountCode;
 use App\Observers\BookingObserver;
@@ -10,6 +11,7 @@ use App\Services\SecurePaymentService;
 use App\Services\TwoFactorAuthService;
 use App\View\Composers\ViewComposer;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
@@ -63,6 +65,10 @@ class AppServiceProvider extends ServiceProvider
             });
 
             return $manager;
+        });
+
+        Notification::extend('sms', function ($app) {
+            return $app->make(SmsChannel::class);
         });
     }
 }
