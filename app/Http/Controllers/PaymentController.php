@@ -98,18 +98,33 @@ class PaymentController extends Controller
                 if ($booking->payment_status !== 'paid') {
                     Log::info('💳 Updating booking payment status', [
                         'booking_id' => $booking->id,
-                        'current_payment_status' => $booking->payment_status
+                        'current_payment_status' => $booking->payment_status,
+                        'current_status' => $booking->status
+                    ]);
+
+                    $specialist = $booking->specialist;
+                    $isAutoConfirm = $specialist->auto_confirm_bookings ?? false;
+
+                    $newStatus = $isAutoConfirm ? 'confirmed' : 'pending';
+
+                    Log::info('🔍 Determining new status', [
+                        'booking_id' => $booking->id,
+                        'specialist_id' => $specialist->id,
+                        'auto_confirm_bookings' => $isAutoConfirm,
+                        'new_status' => $newStatus
                     ]);
 
                     $booking->update([
                         'payment_status' => 'paid',
                         'paid_at' => now(),
-                        'payment_ref' => $result['ref_id'] ?? $result['reference']
+                        'payment_ref' => $result['ref_id'] ?? $result['reference'],
+                        'status' => $newStatus
                     ]);
 
                     Log::info('📨 Booking Updated Successfully', [
                         'booking_id' => $booking->id,
-                        'status' => $booking->status,
+                        'old_status' => 'pending_payment',
+                        'new_status' => $booking->status,
                         'payment_status' => $booking->payment_status
                     ]);
                 } else {
