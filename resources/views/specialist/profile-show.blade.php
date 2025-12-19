@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.specialist')
 
 @section('title', 'پروفایل من')
 
@@ -57,8 +57,8 @@
                             <div class="pt-4 border-t">
                                 <label class="block text-gray-500 text-sm mb-2">نقش</label>
                                 <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
-                                متخصص
-                            </span>
+                                    متخصص
+                                </span>
                             </div>
 
                             @if($specialist->specialty)
@@ -67,66 +67,7 @@
                                     <div class="text-gray-900">{{ $specialist->specialty }}</div>
                                 </div>
                             @endif
-
-                            <div class="pt-4 border-t space-y-2">
-                                <a href="{{ route('specialist.my-dashboard') }}"
-                                   class="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                                    <svg class="w-4 h-4 inline ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="3" y="3" width="7" height="7"></rect>
-                                        <rect x="14" y="3" width="7" height="7"></rect>
-                                        <rect x="14" y="14" width="7" height="7"></rect>
-                                        <rect x="3" y="14" width="7" height="7"></rect>
-                                    </svg>
-                                    پنل کاری من
-                                </a>
-
-                                <a href="{{ route('specialist.schedule') }}"
-                                   class="block w-full text-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                                    <svg class="w-4 h-4 inline ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                                    </svg>
-                                    برنامه کاری
-                                </a>
-
-                                <a href="{{ route('specialist.leaves') }}"
-                                   class="block w-full text-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-                                    <svg class="w-4 h-4 inline ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <polyline points="12 6 12 12 16 14"></polyline>
-                                    </svg>
-                                    مرخصی‌ها
-                                </a>
-                            </div>
                         @endif
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 overflow-hidden mt-6">
-                    <div class="p-5 border-b border-gray-100">
-                        <h2 class="text-lg font-semibold text-gray-800 flex items-center">
-                            <svg class="w-5 h-5 ml-2 text-green-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                            </svg>
-                            آمار نوبت‌های من
-                        </h2>
-                    </div>
-
-                    <div class="p-5 space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600">کل نوبت‌ها</span>
-                            <span class="font-bold text-gray-800">{{ $totalBookings }}</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600">انجام شده</span>
-                            <span class="font-bold text-green-600">{{ $completedBookings }}</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600">لغو شده</span>
-                            <span class="font-bold text-red-600">{{ $cancelledBookings }}</span>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -282,5 +223,4 @@
                 </div>
             </div>
         </div>
-    </div>
 @endsection
