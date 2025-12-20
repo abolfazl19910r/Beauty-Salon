@@ -22,12 +22,6 @@
             </a>
         </div>
 
-        @if(session('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-                {{ session('success') }}
-            </div>
-        @endif
-
         <div class="space-y-6">
             <div class="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 overflow-hidden">
                 <div class="p-5 border-b border-gray-100">

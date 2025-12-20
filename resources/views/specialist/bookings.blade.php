@@ -4,10 +4,6 @@
 
 @section('content')
     <div class="fade-in">
-        @if(session('success'))
-            <div class="bg-green-100 border-r-4 border-green-500 text-green-700 p-4 mb-6 rounded shadow-sm">{{ session('success') }}</div>
-        @endif
-
         <div class="bg-white rounded-lg shadow overflow-hidden">
             @if($bookings->isEmpty())
                 <div class="p-10 text-center text-gray-400 font-medium">هیچ نوبتی در لیست شما یافت نشد.</div>

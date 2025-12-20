@@ -33,25 +33,11 @@
                 </a>
             </div>
         </div>
-
-        @if(session('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        @if(session('error'))
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-                {{ session('error') }}
-            </div>
-        @endif
-
         <div class="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 overflow-hidden">
             <div class="p-5 border-b border-gray-100">
                 <h2 class="text-lg font-semibold text-gray-800">لیست مرخصی‌ها</h2>
                 <p class="text-sm text-gray-500 mt-1">مشاهده درخواست‌های مرخصی</p>
             </div>
-
             <div class="overflow-x-auto">
                 <table class="w-full">
                     <thead>
@@ -108,13 +94,10 @@
                             </td>
                             <td class="px-4 py-3">
                                 @if($leave->status === 'pending')
-                                    <form action="{{ route('specialist.leaves.destroy', $leave) }}"
-                                          method="POST" class="inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
+                                    <form action="#" method="POST" class="inline">
+                                        <button type="button"
                                                 class="text-red-600 hover:text-red-800 transition-colors text-sm"
-                                                onclick="return confirm('آیا از حذف این درخواست اطمینان دارید؟')">
+                                                onclick="showDeleteLeaveModal('{{ route('specialist.leaves.destroy', $leave) }}')">
                                             <svg class="w-5 h-5 inline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                 <polyline points="3 6 5 6 21 6"></polyline>
                                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -205,6 +188,34 @@
             </div>
         </div>
     </div>
+
+    <div id="deleteLeaveModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg p-6 max-w-sm w-full">
+            <h3 class="text-lg font-bold mb-4 text-red-600">❌ تایید حذف درخواست</h3>
+            <p class="text-gray-600 mb-6" id="deleteLeaveMessage">
+                آیا از حذف این درخواست مرخصی اطمینان دارید؟ این عملیات قابل بازگشت نیست.
+            </p>
+            <form id="deleteLeaveForm" method="POST">
+                @csrf
+                @method('DELETE')
+                <div class="flex gap-3 mt-4">
+                    <button type="submit" class="flex-1 bg-red-600 text-white py-2 rounded-lg font-bold hover:bg-red-700 transition">بله، حذف شود</button>
+                    <button type="button" onclick="hideDeleteLeaveModal()" class="flex-1 bg-gray-100 py-2 rounded-lg hover:bg-gray-200 transition">انصراف</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showDeleteLeaveModal(url) {
+            document.getElementById('deleteLeaveForm').action = url;
+            document.getElementById('deleteLeaveModal').classList.remove('hidden');
+        }
+
+        function hideDeleteLeaveModal() {
+            document.getElementById('deleteLeaveModal').classList.add('hidden');
+        }
+    </script>
 @endsection
 
 @push('scripts')

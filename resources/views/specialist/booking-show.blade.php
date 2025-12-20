@@ -11,10 +11,6 @@
             </a>
         </div>
 
-        @if(session('success'))
-            <div class="bg-green-100 border-r-4 border-green-500 text-green-700 p-4 mb-6 rounded shadow-sm">{{ session('success') }}</div>
-        @endif
-
         <div class="bg-white rounded-xl shadow-lg overflow-hidden">
             <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
                 <div>

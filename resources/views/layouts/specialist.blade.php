@@ -32,8 +32,35 @@
         ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.5); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(107, 114, 128, 0.7); }
 
-        .fade-in { animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-out {
+            animation: fadeOut 0.3s ease-out;
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
     </style>
     @stack('styles')
 </head>
@@ -160,16 +187,34 @@
 
         <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-4 md:p-6">
             @if(session('success'))
-                <div class="mb-4 bg-green-50 border-r-4 border-green-500 p-4 rounded-lg flex items-center fade-in">
-                    <svg class="w-6 h-6 text-green-500 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <span class="text-green-700">{{ session('success') }}</span>
+                <div id="success-notification" class="mb-4 bg-green-50 border-r-4 border-green-500 p-4 rounded-lg flex items-center justify-between fade-in shadow-md">
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 text-green-500 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="text-green-700">{{ session('success') }}</span>
+                    </div>
+                    <button onclick="closeNotification('success-notification')" class="text-green-700 hover:text-green-900 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
                 </div>
             @endif
 
             @if(session('error'))
-                <div class="mb-4 bg-red-50 border-r-4 border-red-500 p-4 rounded-lg flex items-center fade-in">
-                    <svg class="w-6 h-6 text-red-500 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <span class="text-red-700">{{ session('error') }}</span>
+                <div id="error-notification" class="mb-4 bg-red-50 border-r-4 border-red-500 p-4 rounded-lg flex items-center justify-between fade-in shadow-md">
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 text-red-500 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="text-red-700">{{ session('error') }}</span>
+                    </div>
+                    <button onclick="closeNotification('error-notification')" class="text-red-700 hover:text-red-900 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
                 </div>
             @endif
 
@@ -195,6 +240,35 @@
 
         backdrop.classList.toggle('hidden');
     }
+
+    function closeNotification(id) {
+        const notification = document.getElementById(id);
+        if (notification) {
+            notification.style.transition = 'all 0.3s ease-out';
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateY(-10px)';
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const successNotification = document.getElementById('success-notification');
+        const errorNotification = document.getElementById('error-notification');
+
+        if (successNotification) {
+            setTimeout(() => {
+                closeNotification('success-notification');
+            }, 5000);
+        }
+
+        if (errorNotification) {
+            setTimeout(() => {
+                closeNotification('error-notification');
+            }, 5000);
+        }
+    });
 </script>
 
 @stack('scripts')
