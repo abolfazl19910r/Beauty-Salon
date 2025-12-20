@@ -51,8 +51,8 @@ class BookingNotification extends Notification
             $message .= "\n" . $bookingLink;
         } else {
             $message .= "\n\n✅ تایید خودکار";
-            $message .= "\n🔗 مشاهده جزئیات:";
-            $message .= "\n" . $bookingLink;
+//            $message .= "\n🔗 مشاهده جزئیات:";
+//            $message .= "\n" . $bookingLink;
         }
 
         return (new SMSService())->send($notifiable->phone, $message);
