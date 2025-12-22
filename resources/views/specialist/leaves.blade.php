@@ -1,10 +1,6 @@
 @extends('layouts.specialist')
 
-@section('title', ' مرخصی‌')
-
-@section('styles')
-    <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@latest/dist/css/persian-datepicker.min.css">
-@endsection
+@section('title', 'مرخصی‌ها')
 
 @section('content')
     <div class="max-w-6xl mx-auto py-6">
@@ -14,15 +10,14 @@
                 <p class="text-sm text-gray-500">درخواست و مشاهده مرخصی‌های خود</p>
             </div>
             <div class="flex gap-2">
-                <button type="button"
-                        onclick="document.getElementById('new-leave-modal').classList.remove('hidden')"
-                        class="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center">
+                <a href="{{ route('specialist.leaves.create') }}"
+                   class="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center">
                     <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
                     ثبت مرخصی جدید
-                </button>
+                </a>
                 <a href="{{ route('specialist.profile.show') }}"
                    class="flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors">
                     <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -94,17 +89,15 @@
                             </td>
                             <td class="px-4 py-3">
                                 @if($leave->status === 'pending')
-                                    <form action="#" method="POST" class="inline">
-                                        <button type="button"
-                                                class="text-red-600 hover:text-red-800 transition-colors text-sm"
-                                                onclick="showDeleteLeaveModal('{{ route('specialist.leaves.destroy', $leave) }}')">
-                                            <svg class="w-5 h-5 inline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <polyline points="3 6 5 6 21 6"></polyline>
-                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                            </svg>
-                                            حذف
-                                        </button>
-                                    </form>
+                                    <button type="button"
+                                            class="text-red-600 hover:text-red-800 transition-colors text-sm"
+                                            onclick="showDeleteLeaveModal('{{ route('specialist.leaves.destroy', $leave) }}')">
+                                        <svg class="w-5 h-5 inline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        </svg>
+                                        حذف
+                                    </button>
                                 @else
                                     <span class="text-gray-400 text-sm">-</span>
                                 @endif
@@ -120,7 +113,11 @@
                                         <line x1="8" y1="2" x2="8" y2="6"></line>
                                         <line x1="3" y1="10" x2="21" y2="10"></line>
                                     </svg>
-                                    <p>هیچ درخواست مرخصی ثبت نشده است</p>
+                                    <p class="text-gray-600 font-medium mb-2">هیچ درخواست مرخصی ثبت نشده است</p>
+                                    <a href="{{ route('specialist.leaves.create') }}"
+                                       class="text-pink-600 hover:text-pink-700 text-sm font-medium">
+                                        اولین مرخصی خود را ثبت کنید
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -134,58 +131,6 @@
                     {{ $leaves->links() }}
                 </div>
             @endif
-        </div>
-    </div>
-
-    <div id="new-leave-modal" class="hidden fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-50">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
-                <div class="p-5 border-b border-gray-100 flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-gray-800">ثبت مرخصی جدید</h2>
-                    <button type="button"
-                            onclick="document.getElementById('new-leave-modal').classList.add('hidden')"
-                            class="text-gray-400 hover:text-gray-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-
-                <form action="{{ route('specialist.leaves.store') }}" method="POST">
-                    @csrf
-                    <div class="p-5 space-y-4">
-                        <div>
-                            <label class="block mb-1 text-sm font-medium text-gray-700">تاریخ شروع</label>
-                            <input type="text" id="start_date_jalali" name="start_date_jalali" required
-                                   class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-                                   placeholder="انتخاب تاریخ شروع">
-                        </div>
-                        <div>
-                            <label class="block mb-1 text-sm font-medium text-gray-700">تاریخ پایان</label>
-                            <input type="text" id="end_date_jalali" name="end_date_jalali" required
-                                   class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-                                   placeholder="انتخاب تاریخ پایان">
-                        </div>
-                        <div>
-                            <label class="block mb-1 text-sm font-medium text-gray-700">دلیل</label>
-                            <textarea name="reason" rows="3"
-                                      class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-                                      placeholder="توضیحاتی درباره درخواست مرخصی..."></textarea>
-                        </div>
-                    </div>
-
-                    <div class="p-5 border-t border-gray-100 flex justify-end space-x-4 space-x-reverse">
-                        <button type="button"
-                                onclick="document.getElementById('new-leave-modal').classList.add('hidden')"
-                                class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition-colors">
-                            انصراف
-                        </button>
-                        <button type="submit" class="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg hover:opacity-90 transition-opacity">
-                            ثبت مرخصی
-                        </button>
-                    </div>
-                </form>
-            </div>
         </div>
     </div>
 
@@ -215,44 +160,11 @@
         function hideDeleteLeaveModal() {
             document.getElementById('deleteLeaveModal').classList.add('hidden');
         }
-    </script>
-@endsection
 
-@push('scripts')
-    <script src="https://unpkg.com/jquery@3.6.0/dist/jquery.min.js"></script>
-    <script src="https://unpkg.com/persian-date@latest/dist/persian-date.min.js"></script>
-    <script src="https://unpkg.com/persian-datepicker@latest/dist/js/persian-datepicker.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('new-leave-modal');
-            window.addEventListener('click', function(event) {
-                if (event.target === modal) {
-                    modal.classList.add('hidden');
-                }
-            });
-
-            $("#start_date_jalali").persianDatepicker({
-                format: 'YYYY/MM/DD',
-                minDate: new persianDate(),
-                autoClose: true,
-                initialValue: false,
-                onSelect: function(unix) {
-                    const pd = new persianDate(unix);
-                    $("#end_date_jalali").persianDatepicker({
-                        format: 'YYYY/MM/DD',
-                        minDate: pd,
-                        autoClose: true,
-                        initialValue: false
-                    });
-                }
-            });
-
-            $("#end_date_jalali").persianDatepicker({
-                format: 'YYYY/MM/DD',
-                minDate: new persianDate(),
-                autoClose: true,
-                initialValue: false
-            });
+        document.getElementById('deleteLeaveModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideDeleteLeaveModal();
+            }
         });
     </script>
-@endpush
+@endsection

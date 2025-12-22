@@ -27,6 +27,8 @@ Route::middleware(['auth', 'verified'])->name('specialist.')->group(function () 
     Route::post('/specialist/leaves', [SpecialistProfileController::class, 'storeLeave'])->name('leaves.store');
     Route::delete('/specialist/leaves/{leave}', [SpecialistProfileController::class, 'destroyLeave'])->name('leaves.destroy');
 
+    Route::get('/specialist/leaves/create', [SpecialistProfileController::class, 'createLeave'])->name('leaves.create');
+
     Route::get('/specialist/bookings', [SpecialistProfileController::class, 'bookings'])->name('bookings');
 
     Route::put('/specialist/bookings/{booking}/complete', [SpecialistProfileController::class, 'completeBooking'])->name('bookings.complete');

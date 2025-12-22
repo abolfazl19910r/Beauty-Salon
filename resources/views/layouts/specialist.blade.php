@@ -253,22 +253,20 @@
         }
     }
 
+    function startNotificationTimeout(id) {
+        const notification = document.getElementById(id);
+        if (notification) {
+            setTimeout(() => {
+                closeNotification(id);
+            }, 5000);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
-        const successNotification = document.getElementById('success-notification');
-        const errorNotification = document.getElementById('error-notification');
-
-        if (successNotification) {
-            setTimeout(() => {
-                closeNotification('success-notification');
-            }, 5000);
-        }
-
-        if (errorNotification) {
-            setTimeout(() => {
-                closeNotification('error-notification');
-            }, 5000);
-        }
+        startNotificationTimeout('success-notification');
+        startNotificationTimeout('error-notification');
     });
+
 </script>
 
 @stack('scripts')

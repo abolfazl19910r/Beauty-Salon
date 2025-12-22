@@ -369,6 +369,22 @@ class SpecialistProfileController extends Controller
         return view('specialist.leaves', compact('specialist', 'leaves'));
     }
 
+    public function createLeave()
+    {
+        $user = auth()->user();
+        if (!$user->hasRole('specialists') && !$user->hasRole('specialist')) {
+            abort(403, 'شما به این بخش دسترسی ندارید');
+        }
+
+        $specialist = Specialist::where('phone', $user->phone)->first();
+
+        if (!$specialist) {
+            return view('specialist.profile-not-found');
+        }
+
+        return view('specialist.leaves-create', compact('specialist'));
+    }
+
     public function storeLeave(Request $request)
     {
         $user = auth()->user();
