@@ -22,8 +22,9 @@
             </a>
         </div>
 
-        <div class="space-y-6">
-            <div class="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 overflow-hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div class="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col">
                 <div class="p-5 border-b border-gray-100">
                     <h2 class="text-lg font-semibold text-gray-800 flex items-center">
                         <svg class="w-5 h-5 ml-2 text-pink-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -34,66 +35,39 @@
                     </h2>
                 </div>
 
-                <form method="POST" action="{{ route('specialist.profile.update') }}" class="p-6">
+                <form method="POST" action="{{ route('specialist.profile.update') }}" class="p-6 flex-grow flex flex-col justify-between">
                     @csrf
                     @method('PUT')
 
                     <div class="space-y-4">
                         <div>
                             <label for="name" class="block text-sm font-medium text-gray-700 mb-2">نام و نام خانوادگی</label>
-                            <input type="text"
-                                   name="name"
-                                   id="name"
-                                   value="{{ old('name', $user->name) }}"
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                                   required>
-                            @error('name')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                            <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" required>
+                            @error('name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
                             <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">شماره تماس</label>
-                            <input type="text"
-                                   name="phone"
-                                   id="phone"
-                                   value="{{ old('phone', $user->phone) }}"
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                                   dir="ltr"
-                                   required>
-                            @error('phone')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                            <input type="text" name="phone" id="phone" value="{{ old('phone', $user->phone) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" dir="ltr" required>
+                            @error('phone') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
                             <label for="email" class="block text-sm font-medium text-gray-700 mb-2">ایمیل (اختیاری)</label>
-                            <input type="email"
-                                   name="email"
-                                   id="email"
-                                   value="{{ old('email', $user->email) }}"
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                                   dir="ltr">
-                            @error('email')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                            <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" dir="ltr">
+                            @error('email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
                     <div class="mt-6">
-                        <button type="submit" class="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center">
-                            <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                                <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                                <polyline points="7 3 7 8 15 8"></polyline>
-                            </svg>
+                        <button type="submit" class="w-full justify-center bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center">
                             ذخیره تغییرات
                         </button>
                     </div>
                 </form>
             </div>
 
-            <div class="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 overflow-hidden">
+            <div class="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col">
                 <div class="p-5 border-b border-gray-100">
                     <h2 class="text-lg font-semibold text-gray-800 flex items-center">
                         <svg class="w-5 h-5 ml-2 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -102,61 +76,39 @@
                         </svg>
                         تغییر رمز عبور
                     </h2>
-                    <p class="mt-1 text-sm text-gray-600">
-                        برای حفظ امنیت حساب کاربری، از رمز عبور قوی استفاده کنید
-                    </p>
                 </div>
 
-                <form method="POST" action="{{ route('specialist.profile.password') }}" class="p-6">
+                <form method="POST" action="{{ route('specialist.profile.password') }}" class="p-6 flex-grow flex flex-col justify-between">
                     @csrf
                     @method('PUT')
 
                     <div class="space-y-4">
                         <div>
                             <label for="current_password" class="block text-sm font-medium text-gray-700 mb-2">رمز عبور فعلی</label>
-                            <input type="password"
-                                   name="current_password"
-                                   id="current_password"
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                                   required>
-                            @error('current_password')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                            <input type="password" name="current_password" id="current_password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" required>
+                            @error('current_password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
                             <label for="password" class="block text-sm font-medium text-gray-700 mb-2">رمز عبور جدید</label>
-                            <input type="password"
-                                   name="password"
-                                   id="password"
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                                   required>
-                            @error('password')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                            <input type="password" name="password" id="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" required>
+                            @error('password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
-                            <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">تکرار رمز عبور جدید</label>
-                            <input type="password"
-                                   name="password_confirmation"
-                                   id="password_confirmation"
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                                   required>
+                            <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">تکرار رمز عبور</label>
+                            <input type="password" name="password_confirmation" id="password_confirmation" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" required>
                         </div>
                     </div>
 
                     <div class="mt-6">
-                        <button type="submit" class="bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-6 py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center">
-                            <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                            </svg>
+                        <button type="submit" class="w-full justify-center bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-6 py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center">
                             تغییر رمز عبور
                         </button>
                     </div>
                 </form>
             </div>
+
         </div>
     </div>
 @endsection
