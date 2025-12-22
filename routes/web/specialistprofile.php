@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Specialist\SpecialistProfileController;
+use App\Http\Controllers\Specialist\SpecialistReportController;
 use App\Http\Controllers\SpecialistController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,4 +35,6 @@ Route::middleware(['auth', 'verified'])->name('specialist.')->group(function () 
     Route::put('/specialist/bookings/{booking}/complete', [SpecialistProfileController::class, 'completeBooking'])->name('bookings.complete');
     Route::put('/specialist/bookings/{booking}/cancel', [SpecialistProfileController::class, 'cancelBooking'])->name('bookings.cancel');
     Route::get('/specialist/bookings/{booking}', [SpecialistProfileController::class, 'showBooking'])->name('bookings.show');
+    Route::get('/specialist/reports', [SpecialistReportController::class, 'index'])->name('reports.index');
+
 });
