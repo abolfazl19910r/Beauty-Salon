@@ -33,32 +33,50 @@ class PasswordResetController extends Controller
 
         $user = User::where('phone', $request->phone)->first();
 
-        $token = Str::random(60);
+        if (!$user) {
+            return back()->withErrors(['phone' => 'کاربری با این شماره یافت نشد.']);
+        }
+
         $verificationCode = rand(100000, 999999);
+        $token = Str::random(60);
 
         $user->update([
             'verification_code' => $verificationCode,
             'verification_code_expire_at' => now()->addMinutes(2)
         ]);
 
-        $template = config('services.kavenegar.templates.reset_password');
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['phone' => $request->phone],
+            [
+                'phone' => $request->phone,
+                'token' => $token,
+                'created_at' => now()
+            ]
+        );
 
-        $this->smsService->sendTemplate($user->phone, $template, [(string)$verificationCode]);
+        try {
+            $template = config('services.kavenegar.templates.reset_password', 'verification');
+            $this->smsService->sendTemplate($user->phone, $template, [(string)$verificationCode]);
+        } catch (\Exception $e) {
+            return back()->withErrors(['phone' => 'خطا در ارسال پیامک.']);
+        }
 
-        return redirect()->route('password.verify', compact('token'));
+        return redirect()->route('password.verify', ['token' => $token])
+            ->with('success', 'کد تایید ارسال شد.');
     }
 
     public function showReset(Request $request)
     {
         $token = $request->token;
-        $reset = DB::table('password_reset_tokens')
+
+        $resetRecord = DB::table('password_reset_tokens')
             ->where('token', $token)
             ->first();
 
-        if (!$reset || Carbon::parse($reset->created_at)->addHour()->isPast()) {
+        if (!$resetRecord || Carbon::parse($resetRecord->created_at)->addHour()->isPast()) {
             return redirect()
                 ->route('password.request')
-                ->withErrors(['token' => 'لینک بازیابی نامعتبر یا منقضی شده است.']);
+                ->withErrors(['phone' => 'لینک بازیابی نامعتبر یا منقضی شده است. لطفا مجدد درخواست دهید.']);
         }
 
         return view('auth.reset-password', compact('token'));
@@ -72,29 +90,22 @@ class PasswordResetController extends Controller
             'password' => 'required|min:8|confirmed',
         ]);
 
-        $reset = DB::table('password_reset_tokens')
+        $resetRecord = DB::table('password_reset_tokens')
             ->where('token', $request->token)
             ->first();
 
-        if (!$reset || Carbon::parse($reset->created_at)->addHour()->isPast()) {
-            return back()->withErrors([
-                'token' => 'لینک بازیابی نامعتبر یا منقضی شده است.',
-            ]);
+        if (!$resetRecord) {
+            return back()->withErrors(['code' => 'درخواست نامعتبر است.']);
         }
 
-        $user = User::where('phone', $reset->phone)->first();
+        $user = User::where('phone', $resetRecord->phone)->first();
 
         if (!$user) {
-            return back()->withErrors([
-                'phone' => 'کاربری با این شماره موبایل یافت نشد.',
-            ]);
+            return back()->withErrors(['code' => 'کاربر یافت نشد.']);
         }
 
-        if ($user->verification_code !== $request->code ||
-            now()->isAfter($user->verification_code_expire_at)) {
-            return back()->withErrors([
-                'code' => 'کد تایید نامعتبر یا منقضی شده است.',
-            ]);
+        if ($user->verification_code !== $request->code || now()->isAfter($user->verification_code_expire_at)) {
+            return back()->withErrors(['code' => 'کد تایید اشتباه یا منقضی شده است.']);
         }
 
         $user->update([
@@ -103,12 +114,8 @@ class PasswordResetController extends Controller
             'verification_code_expire_at' => null
         ]);
 
-        DB::table('password_reset_tokens')
-            ->where('phone', $reset->phone)
-            ->delete();
+        DB::table('password_reset_tokens')->where('phone', $user->phone)->delete();
 
-        return redirect()
-            ->route('login')
-            ->with('success', 'رمز عبور شما با موفقیت تغییر کرد.');
+        return redirect()->route('login')->with('success', 'رمز عبور با موفقیت تغییر کرد.');
     }
 }

@@ -5,35 +5,36 @@
                 <svg class="w-12 h-12 text-pink-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
                 </svg>
-                <h2 class="text-2xl font-bold text-gray-800">بازنشانی رمز عبور</h2>
-                <p class="text-gray-600 mt-2">رمز عبور جدید خود را تعیین کنید</p>
+                <h2 class="text-2xl font-bold text-gray-800">تغییر رمز عبور</h2>
+                <p class="text-gray-600 mt-2">کد پیامک شده و رمز جدید را وارد کنید</p>
             </div>
+
+            @if (session('success'))
+                <div class="mb-4 p-4 bg-green-50 text-green-700 rounded text-sm">
+                    {{ session('success') }}
+                </div>
+            @endif
 
             <form method="POST" action="{{ route('password.store') }}" class="space-y-6">
                 @csrf
 
-                <input type="hidden" name="token" value="{{ $request->route('token') }}">
+                <input type="hidden" name="token" value="{{ $token }}">
 
                 <div>
-                    <x-input-label for="email" :value="__('ایمیل')" class="font-medium text-gray-700" />
+                    <x-input-label for="code" :value="__('کد تایید ۶ رقمی')" class="font-medium text-gray-700" />
                     <div class="mt-1 relative rounded-md shadow-sm">
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                            </svg>
-                        </div>
-                        <x-text-input id="email"
-                                      class="block w-full pr-10"
-                                      type="email"
-                                      name="email"
-                                      :value="old('email', $request->email)"
+                        <x-text-input id="code"
+                                      class="block w-full text-center tracking-widest text-lg"
+                                      type="text"
+                                      name="code"
                                       required
                                       autofocus
-                                      autocomplete="username"
-                                      dir="ltr" />
+                                      maxlength="6"
+                                      placeholder="------"
+                                      dir="ltr"
+                                      inputmode="numeric" />
                     </div>
-                    <x-input-error :messages="$errors->get('email')" class="mt-2" />
+                    <x-input-error :messages="$errors->get('code')" class="mt-2" />
                 </div>
 
                 <div>
@@ -74,7 +75,7 @@
 
                 <div>
                     <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors">
-                        {{ __('بازنشانی رمز عبور') }}
+                        {{ __('تغییر رمز عبور') }}
                     </button>
                 </div>
             </form>
