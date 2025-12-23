@@ -92,6 +92,7 @@ class Booking extends Model
         return match($this->status) {
             'pending' => 'bg-yellow-100 text-yellow-800',
             'confirmed' => 'bg-green-100 text-green-800',
+            'completed' => 'bg-blue-600 text-white',
             'cancelled' => 'bg-red-100 text-red-800',
             'pending_payment' => 'bg-blue-100 text-blue-800',
             default => 'bg-gray-100 text-gray-800'
@@ -104,9 +105,19 @@ class Booking extends Model
         return $this->status === 'pending_payment';
     }
 
+    public function isCompleted(): bool
+    {
+        return $this->status === 'completed';
+    }
+
     public function isPending(): bool
     {
         return $this->status === 'pending';
+    }
+
+    public function scopeCompleted($query)
+    {
+        return $query->where('status', 'completed');
     }
 
     public function isDue(): bool
@@ -119,6 +130,7 @@ class Booking extends Model
         return match($this->status) {
             'pending' => 'در انتظار تایید',
             'confirmed' => 'تایید شده',
+            'completed' => 'انجام شده',
             'cancelled' => 'لغو شده',
             'pending_payment' => 'در انتظار پرداخت',
             default => 'نامشخص'
