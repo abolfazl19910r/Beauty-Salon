@@ -142,7 +142,7 @@ class SpecialistProfileController extends Controller
         ));
     }
 
-    public function bookings()
+    public function bookings(Request $request)
     {
         $user = auth()->user();
         $specialist = Specialist::where('phone', $user->phone)->first();
@@ -151,10 +151,79 @@ class SpecialistProfileController extends Controller
             return view('specialist.profile-not-found');
         }
 
-        $bookings = Booking::where('specialist_id', $specialist->id)
-            ->with(['service', 'user'])
-            ->latest()
-            ->paginate(10);
+        $query = Booking::where('specialist_id', $specialist->id)
+            ->with(['service', 'user']);
+
+        if ($request->filled('date_from')) {
+            try {
+                $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+                $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+                $dateFrom = str_replace($persianDigits, $englishDigits, $request->date_from);
+
+                $dateFrom = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $dateFrom)
+                    ->toCarbon()
+                    ->startOfDay();
+                $query->where('booking_time', '>=', $dateFrom);
+            } catch (\Exception $e) {
+                Log::warning('خطا در تبدیل تاریخ از: ' . $e->getMessage());
+            }
+        }
+
+        if ($request->filled('date_to')) {
+            try {
+                $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+                $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+                $dateTo = str_replace($persianDigits, $englishDigits, $request->date_to);
+
+                $dateTo = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $dateTo)
+                    ->toCarbon()
+                    ->endOfDay();
+                $query->where('booking_time', '<=', $dateTo);
+            } catch (\Exception $e) {
+                Log::warning('خطا در تبدیل تاریخ تا: ' . $e->getMessage());
+            }
+        }
+
+        if ($request->filled('time')) {
+            $query->whereTime('booking_time', $request->time);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('payment_status')) {
+            $query->where('payment_status', $request->payment_status);
+        }
+
+        if ($request->filled('phone')) {
+            $query->whereHas('user', function($q) use ($request) {
+                $q->where('phone', 'like', '%' . $request->phone . '%');
+            });
+        }
+
+        if ($request->filled('customer_name')) {
+            $query->whereHas('user', function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->customer_name . '%');
+            });
+        }
+
+        $sortBy = $request->get('sort_by', 'latest');
+        switch ($sortBy) {
+            case 'oldest':
+                $query->oldest('booking_time');
+                break;
+            case 'date_asc':
+                $query->orderBy('booking_time', 'asc');
+                break;
+            case 'date_desc':
+                $query->orderBy('booking_time', 'desc');
+                break;
+            default:
+                $query->latest();
+        }
+
+        $bookings = $query->paginate(10)->withQueryString();
 
         return view('specialist.bookings', compact('specialist', 'bookings'));
     }

@@ -273,7 +273,7 @@ class BookingController extends Controller
         return view('bookings.index', compact('bookings'));
     }
 
-    public function success(Request $request): \Illuminate\View\View
+    public function success(Request $request)
     {
         try {
             $booking = null;
