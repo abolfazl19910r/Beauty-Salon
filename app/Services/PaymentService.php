@@ -24,12 +24,6 @@ class PaymentService
             $this->apiUrl = 'https://api.zarinpal.com/pg/v4/payment';
             $this->gatewayUrl = 'https://www.zarinpal.com/pg/StartPay';
         }
-
-        Log::info('💳 PaymentService Initialized', [
-            'sandbox' => $this->sandbox,
-            'api_url' => $this->apiUrl,
-            'merchant_id_length' => strlen($this->merchantId)
-        ]);
     }
 
     public function createPayment($booking): array
@@ -49,14 +43,6 @@ class PaymentService
                 ]
             ];
 
-            Log::info('📤 Sending Payment Request to ZarinPal', [
-                'booking_id' => $booking->id,
-                'amount_rial' => $amount,
-                'amount_toman' => $booking->prepayment_amount,
-                'callback_url' => $callbackUrl,
-                'request_data' => $requestData
-            ]);
-
             $response = Http::timeout(30)
                 ->withHeaders([
                     'Content-Type' => 'application/json',
@@ -67,22 +53,9 @@ class PaymentService
             $statusCode = $response->status();
             $result = $response->json();
 
-            Log::info('📥 ZarinPal Response', [
-                'booking_id' => $booking->id,
-                'status_code' => $statusCode,
-                'response_body' => $result,
-                'is_successful' => $response->successful()
-            ]);
-
             if ($response->successful() && isset($result['data']['code']) && $result['data']['code'] == 100) {
                 $authority = $result['data']['authority'];
                 $paymentUrl = $this->gatewayUrl . '/' . $authority;
-
-                Log::info('✅ Payment Request Successful', [
-                    'booking_id' => $booking->id,
-                    'authority' => $authority,
-                    'payment_url' => $paymentUrl
-                ]);
 
                 return [
                     'success' => true,
@@ -128,12 +101,6 @@ class PaymentService
             $authority = $request->Authority ?? $request->authority;
             $status = $request->Status ?? $request->status;
 
-            Log::info('🔍 Verifying Payment', [
-                'authority' => $authority,
-                'status' => $status,
-                'all_params' => $request->all()
-            ]);
-
             if ($status === 'NOK' || $status === 'cancel') {
                 Log::warning('⚠️ Payment Cancelled by User', ['authority' => $authority]);
                 return [
@@ -161,13 +128,6 @@ class PaymentService
                 'amount' => $amount
             ];
 
-            Log::info('📤 Sending Verify Request', [
-                'booking_id' => $booking->id,
-                'authority' => $authority,
-                'amount_rial' => $amount,
-                'request_data' => $requestData
-            ]);
-
             $response = Http::timeout(30)
                 ->withHeaders([
                     'Content-Type' => 'application/json',
@@ -177,21 +137,10 @@ class PaymentService
 
             $result = $response->json();
 
-            Log::info('📥 Verify Response', [
-                'booking_id' => $booking->id,
-                'response' => $result
-            ]);
-
             if ($response->successful() && isset($result['data']['code'])) {
                 $code = $result['data']['code'];
                 if ($code == 100 || $code == 101) {
                     $refId = $result['data']['ref_id'] ?? $authority;
-
-                    Log::info('✅ Payment Verified Successfully', [
-                        'booking_id' => $booking->id,
-                        'ref_id' => $refId,
-                        'code' => $code
-                    ]);
 
                     return [
                         'status' => 'success',

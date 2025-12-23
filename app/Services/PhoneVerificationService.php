@@ -132,11 +132,6 @@ class PhoneVerificationService
             'login_verification_code' => null,
             'login_verification_code_expire_at' => null,
         ]);
-
-        Log::info('Login verification successful', [
-            'user_id' => $user->id
-        ]);
-
         return true;
     }
 

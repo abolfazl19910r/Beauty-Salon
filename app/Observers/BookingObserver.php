@@ -30,21 +30,10 @@ class BookingObserver
                 $cacheKey = "booking_payment_processed_{$booking->id}";
 
                 if (Cache::has($cacheKey)) {
-                    Log::debug('⏭️ Payment already processed, skipping Observer', [
-                        'booking_id' => $booking->id,
-                        'cached_at' => Cache::get($cacheKey)
-                    ]);
                     return;
                 }
 
                 Cache::put($cacheKey, now()->toDateTimeString(), 60);
-
-                Log::info('💰 Payment Status Changed to Paid', [
-                    'booking_id' => $booking->id,
-                    'old_status' => $booking->getOriginal('payment_status'),
-                    'new_payment_status' => $booking->payment_status,
-                    'current_booking_status' => $booking->status
-                ]);
 
                 $specialist = $booking->specialist;
                 $isAutoConfirm = $specialist->auto_confirm_bookings ?? false;
@@ -52,28 +41,11 @@ class BookingObserver
                 try {
                     if ($booking->status === 'confirmed') {
                         $booking->user->notify(new BookingStatusUpdated($booking, 'confirmed'));
-                        Log::info('✅ Customer notification sent (auto-confirmed)', [
-                            'booking_id' => $booking->id,
-                            'status' => $booking->status
-                        ]);
 
                         $specialist->notify(new BookingNotification($booking, false));
-                        Log::info('✅ Specialist notification sent (auto-confirmed)', [
-                            'booking_id' => $booking->id,
-                            'specialist_id' => $specialist->id
-                        ]);
                     } elseif ($booking->status === 'pending') {
                         $booking->user->notify(new BookingStatusUpdated($booking, 'pending_specialist'));
-                        Log::info('✅ Customer notification sent (pending approval)', [
-                            'booking_id' => $booking->id,
-                            'status' => $booking->status
-                        ]);
-
                         $specialist->notify(new BookingNotification($booking, true));
-                        Log::info('✅ Specialist notification sent (needs approval)', [
-                            'booking_id' => $booking->id,
-                            'specialist_id' => $specialist->id
-                        ]);
                     }
                 } catch (\Exception $e) {
                     Log::error('❌ Failed to send notifications', [
@@ -84,7 +56,6 @@ class BookingObserver
 
                 try {
                     $this->addLoyaltyPoints($booking);
-                    Log::info('🎁 Loyalty points added', ['booking_id' => $booking->id]);
                 } catch (\Exception $e) {
                     Log::error('❌ Failed to add loyalty points', [
                         'booking_id' => $booking->id,
@@ -94,16 +65,8 @@ class BookingObserver
             }
 
             if ($booking->wasChanged('status') && $booking->status === 'cancelled') {
-                Log::info('🚫 Booking Cancelled', [
-                    'booking_id' => $booking->id,
-                    'cancelled_by' => $booking->cancelled_by
-                ]);
-
                 try {
                     $booking->user->notify(new BookingStatusUpdated($booking, 'cancelled', $booking->cancellation_reason));
-                    Log::info('✅ Cancellation notification sent to customer', [
-                        'booking_id' => $booking->id
-                    ]);
                 } catch (\Exception $e) {
                     Log::error('❌ Failed to send cancellation notification to customer', [
                         'booking_id' => $booking->id,
@@ -115,10 +78,6 @@ class BookingObserver
                     try {
                         $cancelledBy = $booking->cancelled_by ?? 'system';
                         $booking->specialist->notify(new SpecialistBookingCancelledNotification($booking, $cancelledBy));
-                        Log::info('✅ Cancellation notification sent to specialist', [
-                            'booking_id' => $booking->id,
-                            'specialist_id' => $booking->specialist_id
-                        ]);
                     } catch (\Exception $e) {
                         Log::error('❌ Failed to send cancellation notification to specialist', [
                             'booking_id' => $booking->id,
@@ -155,12 +114,6 @@ class BookingObserver
 
             $points = 5 + floor($booking->prepayment_amount / 10000);
             $user->addLoyaltyPoints($points, "رزرو نوبت #{$booking->id}", $booking->id);
-
-            Log::info('🎁 Loyalty points added successfully', [
-                'booking_id' => $booking->id,
-                'user_id' => $user->id,
-                'points' => $points
-            ]);
         } catch (\Exception $e) {
             Log::error('❌ Loyalty Points Error', [
                 'booking_id' => $booking->id,
@@ -173,9 +126,6 @@ class BookingObserver
     {
         try {
             $this->cacheService->flush();
-            Log::info('🗑️ Booking deleted, cache flushed', [
-                'booking_id' => $booking->id
-            ]);
         } catch (\Exception $e) {
             Log::error('❌ Error in deleted observer', [
                 'booking_id' => $booking->id,

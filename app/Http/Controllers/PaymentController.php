@@ -27,25 +27,9 @@ class PaymentController extends Controller
                 return redirect()->route('payment.result')->with(['success' => true, 'booking' => $booking]);
             }
 
-            Log::info('🔵 Payment Process Started', [
-                'booking_id' => $booking->id,
-                'amount_toman' => $booking->prepayment_amount,
-                'user_id' => auth()->id(),
-                'user_phone' => auth()->user()->phone
-            ]);
-
             $result = $this->paymentService->createPayment($booking);
 
-            Log::info('🟡 Payment Gateway Response', [
-                'booking_id' => $booking->id,
-                'result' => $result
-            ]);
-
             if (isset($result['success']) && $result['success'] && isset($result['payment_url'])) {
-                Log::info('✅ Redirecting to payment gateway', [
-                    'booking_id' => $booking->id,
-                    'url' => $result['payment_url']
-                ]);
                 return redirect($result['payment_url']);
             }
 
@@ -73,59 +57,22 @@ class PaymentController extends Controller
     public function callback(Request $request)
     {
         try {
-            Log::info('🔵 Payment Callback Received', [
-                'all_params' => $request->all(),
-                'Authority' => $request->Authority,
-                'Status' => $request->Status
-            ]);
-
             $result = $this->paymentService->verifyPayment($request);
-
-            Log::info('🟡 Payment Verification Result', [
-                'result' => $result
-            ]);
-
             $booking = Booking::findOrFail($result['booking_id']);
 
             if ($result['success']) {
-                Log::info('✅ Payment Verified Successfully', [
-                    'booking_id' => $booking->id,
-                    'ref_id' => $result['ref_id'] ?? null
-                ]);
-
                 $booking->refresh();
 
                 if ($booking->payment_status !== 'paid') {
-                    Log::info('💳 Updating booking payment status', [
-                        'booking_id' => $booking->id,
-                        'current_payment_status' => $booking->payment_status,
-                        'current_status' => $booking->status
-                    ]);
-
                     $specialist = $booking->specialist;
                     $isAutoConfirm = $specialist->auto_confirm_bookings ?? false;
 
                     $newStatus = $isAutoConfirm ? 'confirmed' : 'pending';
-
-                    Log::info('🔍 Determining new status', [
-                        'booking_id' => $booking->id,
-                        'specialist_id' => $specialist->id,
-                        'auto_confirm_bookings' => $isAutoConfirm,
-                        'new_status' => $newStatus
-                    ]);
-
                     $booking->update([
                         'payment_status' => 'paid',
                         'paid_at' => now(),
                         'payment_ref' => $result['ref_id'] ?? $result['reference'],
                         'status' => $newStatus
-                    ]);
-
-                    Log::info('📨 Booking Updated Successfully', [
-                        'booking_id' => $booking->id,
-                        'old_status' => 'pending_payment',
-                        'new_status' => $booking->status,
-                        'payment_status' => $booking->payment_status
                     ]);
                 } else {
                     Log::warning('⚠️ Booking already paid, skipping update', [

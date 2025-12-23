@@ -30,7 +30,6 @@ class SMSService
                 $message
             );
 
-            Log::info('SMS sent successfully', ['mobile' => $mobile, 'result' => $result]);
             return true;
 
         } catch (ApiException $e) {
@@ -52,11 +51,6 @@ class SMSService
     {
         try {
             if (app()->environment('local') && !config('services.kavenegar.send_in_local', false)) {
-                Log::info('SMS template skipped in local', [
-                    'mobile' => $mobile,
-                    'template' => $templateName,
-                    'tokens' => $tokens
-                ]);
                 return true;
             }
 
@@ -72,13 +66,6 @@ class SMSService
                 $templateName,
                 'sms'
             );
-
-            Log::info('SMS template sent successfully', [
-                'mobile' => $mobile,
-                'template' => $templateName,
-                'result' => $result
-            ]);
-
             return true;
 
         } catch (ApiException $e) {

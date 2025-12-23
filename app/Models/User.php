@@ -217,13 +217,6 @@ class User extends Authenticatable
                 'type' => 'earned',
                 'expires_at' => now()->addYear(),
             ]);
-
-            \Illuminate\Support\Facades\Log::info('🎁 Loyalty points added to user', [
-                'user_id' => $this->id,
-                'points' => $points,
-                'description' => $description,
-                'booking_id' => $bookingId
-            ]);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('❌ Failed to add loyalty points', [
                 'user_id' => $this->id,
