@@ -67,7 +67,7 @@
                             <form action="{{ route('specialist.bookings.complete', $booking->id) }}" method="POST" class="inline">
                                 @csrf @method('PUT')
                                 <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-bold transition shadow-md">
-                                    ✅ تایید دستی و پذیرش نوبت
+                                    ✅ پذیرش نوبت
                                 </button>
                             </form>
                             <button onclick="document.getElementById('cancelModal').classList.remove('hidden')"
@@ -77,11 +77,26 @@
                         @endif
 
                         @if($status == 'confirmed')
+                            <form action="{{ route('specialist.bookings.mark-completed', $booking->id) }}" method="POST" class="inline">
+                                @csrf @method('PUT')
+                                <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-lg font-bold transition shadow-md">
+                                    ✔️ انجام شده
+                                </button>
+                            </form>
+
                             <button onclick="document.getElementById('cancelModal').classList.remove('hidden')"
                                     class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-lg font-bold transition shadow-md">
                                 ❌ لغو این نوبت
                             </button>
                         @endif
+                    </div>
+                @endif
+
+                @if($status == 'completed')
+                    <div class="mt-10 pt-6 border-t">
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                            <p class="text-green-800 font-bold">✔️ انجام شده</p>
+                        </div>
                     </div>
                 @endif
             </div>
