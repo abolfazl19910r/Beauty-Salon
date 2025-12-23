@@ -73,7 +73,6 @@ class SpecialistProfileController extends Controller
             ->get();
 
         $upcomingBookings->each(function($booking) {
-
             $booking->booking_date_persian = Jalalian::fromCarbon($booking->booking_time)->format('Y/m/d');
 
             $booking->status_fa = match($booking->status) {
@@ -260,7 +259,7 @@ class SpecialistProfileController extends Controller
             ]);
         }
 
-        return redirect()->route('specialist.profile-show.blade')
+        return redirect()->route('specialist.profile-show')
             ->with('success', 'اطلاعات پروفایل با موفقیت بروزرسانی شد');
     }
 
@@ -471,6 +470,33 @@ class SpecialistProfileController extends Controller
         }
     }
 
+    public function markAsCompleted(Booking $booking)
+    {
+        $user = auth()->user();
+        $specialist = Specialist::where('phone', $user->phone)->first();
+
+        if (!$specialist || $booking->specialist_id !== $specialist->id) {
+            abort(403, 'شما مجاز به تغییر وضعیت این نوبت نیستید.');
+        }
+
+        if ($booking->status !== 'confirmed') {
+            return back()->with('error', 'فقط نوبت‌های تایید شده قابل علامت‌گذاری به عنوان "انجام شده" هستند.');
+        }
+
+        try {
+            DB::transaction(function() use ($booking) {
+                $booking->update(['status' => 'completed']);
+
+                $booking->user->notify(new \App\Notifications\BookingStatusUpdated($booking, 'completed'));
+            });
+
+            return back()->with('success', '✓ نوبت به عنوان انجام شده علامت‌گذاری شد و به مشتری اطلاع‌رسانی گردید.');
+        } catch (Exception $e) {
+            Log::error('خطا در علامت‌گذاری نوبت به عنوان انجام شده', ['booking_id' => $booking->id, 'error' => $e->getMessage()]);
+            return back()->with('error', 'خطا در علامت‌گذاری نوبت: ' . $e->getMessage());
+        }
+    }
+
     public function cancelBooking(Request $request, Booking $booking)
     {
         $user = auth()->user();
@@ -482,6 +508,10 @@ class SpecialistProfileController extends Controller
 
         if ($booking->status === 'cancelled') {
             return back()->with('info', 'این نوبت قبلاً لغو شده است.');
+        }
+
+        if ($booking->status === 'completed') {
+            return back()->with('error', 'نوبت‌های انجام شده قابل لغو نیستند.');
         }
 
         $cancelReason = $request->input('cancel_reason', 'دلیل مشخص نشده');
