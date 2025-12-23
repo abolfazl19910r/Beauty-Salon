@@ -31,8 +31,8 @@ Route::middleware(['auth', 'verified'])->name('specialist.')->group(function () 
     Route::get('/specialist/leaves/create', [SpecialistProfileController::class, 'createLeave'])->name('leaves.create');
 
     Route::get('/specialist/bookings', [SpecialistProfileController::class, 'bookings'])->name('bookings');
-
     Route::put('/specialist/bookings/{booking}/complete', [SpecialistProfileController::class, 'completeBooking'])->name('bookings.complete');
+    Route::put('/specialist/bookings/{booking}/mark-completed', [SpecialistProfileController::class, 'markAsCompleted'])->name('bookings.mark-completed');
     Route::put('/specialist/bookings/{booking}/cancel', [SpecialistProfileController::class, 'cancelBooking'])->name('bookings.cancel');
     Route::get('/specialist/bookings/{booking}', [SpecialistProfileController::class, 'showBooking'])->name('bookings.show');
     Route::get('/specialist/reports', [SpecialistReportController::class, 'index'])->name('reports.index');
