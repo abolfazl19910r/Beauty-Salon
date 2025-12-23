@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('specialist_id')->constrained('specialists');
             $table->foreignId('user_id')->constrained('users');
             $table->dateTime('booking_time');
-            $table->enum('status', ['pending', 'confirmed', 'cancelled', 'pending_payment'])->default('pending');
+            $table->enum('status', ['pending', 'confirmed', 'cancelled', 'pending_payment', 'completed'])->default('pending');
             $table->string('discount_code')->nullable();
             $table->decimal('discount_amount', 10, 2)->nullable();
             $table->decimal('prepayment_amount', 10, 2)->default(50000);
