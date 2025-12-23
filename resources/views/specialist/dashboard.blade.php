@@ -4,21 +4,6 @@
 
 @section('content')
     <div class="fade-in">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-            <div>
-                <p class="text-sm text-gray-500">خوش آمدید {{ $specialist->name }}</p>
-            </div>
-
-            <a href="{{ route('specialist.profile.show') }}"
-               class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center">
-                <svg class="w-5 h-5 ml-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-                پروفایل من
-            </a>
-        </div>
-
         <div class="mt-8 mb-6">
             <div class="flex items-center mb-4">
                 <h2 class="text-xl font-bold text-gray-800">آمار کل</h2>

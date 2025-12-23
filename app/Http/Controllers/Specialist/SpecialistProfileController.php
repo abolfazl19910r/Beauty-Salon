@@ -504,4 +504,91 @@ class SpecialistProfileController extends Controller
             return back()->with('error', 'خطا در لغو نوبت: ' . $e->getMessage());
         }
     }
+
+    public function notifications()
+    {
+        $user = auth()->user();
+
+        $specialist = Specialist::where('phone', $user->phone)->first();
+
+        if (!$specialist) {
+            return view('specialist.profile-not-found');
+        }
+
+        $notifications = $user->notifications()
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return view('specialist.notifications', compact('specialist', 'notifications'));
+    }
+
+    public function latestNotifications()
+    {
+        $user = auth()->user();
+
+        $notifications = $user->notifications()
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function ($notification) {
+                return [
+                    'id' => $notification->id,
+                    'message' => $notification->data['message'] ?? 'اعلان جدید',
+                    'link' => $notification->data['link'] ?? route('specialist.my-dashboard'),
+                    'read_at' => $notification->read_at,
+                    'time_ago' => $this->timeAgo($notification->created_at),
+                ];
+            });
+
+        return response()->json([
+            'notifications' => $notifications
+        ]);
+    }
+
+    public function notificationsCount()
+    {
+        $user = auth()->user();
+
+        $count = $user->unreadNotifications()->count();
+
+        return response()->json([
+            'count' => $count
+        ]);
+    }
+
+    public function markNotificationAsRead($id)
+    {
+        $user = auth()->user();
+
+        $notification = $user->notifications()->find($id);
+
+        if ($notification && !$notification->read_at) {
+            $notification->markAsRead();
+        }
+
+        return response()->json([
+            'success' => true
+        ]);
+    }
+
+    private function timeAgo($datetime)
+    {
+        $now = Carbon::now();
+        $diff = $datetime->diffInSeconds($now);
+
+        if ($diff < 60) {
+            return 'لحظاتی پیش';
+        } elseif ($diff < 3600) {
+            $minutes = floor($diff / 60);
+            return $minutes . ' دقیقه پیش';
+        } elseif ($diff < 86400) {
+            $hours = floor($diff / 3600);
+            return $hours . ' ساعت پیش';
+        } elseif ($diff < 604800) {
+            $days = floor($diff / 86400);
+            return $days . ' روز پیش';
+        } else {
+            return Jalalian::fromCarbon($datetime)->format('Y/m/d');
+        }
+    }
 }

@@ -37,4 +37,10 @@ Route::middleware(['auth', 'verified'])->name('specialist.')->group(function () 
     Route::get('/specialist/bookings/{booking}', [SpecialistProfileController::class, 'showBooking'])->name('bookings.show');
     Route::get('/specialist/reports', [SpecialistReportController::class, 'index'])->name('reports.index');
 
+    Route::prefix('specialist')->group(function () {
+        Route::get('/notifications', [SpecialistProfileController::class, 'notifications'])->name('notifications.index');
+        Route::get('/notifications/latest', [SpecialistProfileController::class, 'latestNotifications'])->name('notifications.latest');
+        Route::get('/notifications/count', [SpecialistProfileController::class, 'notificationsCount'])->name('notifications.count');
+        Route::post('/notifications/{id}/read', [SpecialistProfileController::class, 'markNotificationAsRead'])->name('notifications.read');
+    });
 });
