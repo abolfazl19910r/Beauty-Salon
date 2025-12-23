@@ -73,6 +73,11 @@
                                         @endif
 
                                         @if($status == 'confirmed')
+                                            <button onclick="markCompleted({{ $booking->id }}, '{{ $booking->user->name }}', '{{ $booking->service->name }}')"
+                                                    class="bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-purple-600 transition">
+                                                ✔️ انجام شد
+                                            </button>
+
                                             <button onclick="showCancelModal({{ $booking->id }}, '{{ $booking->user->name }}', '{{ $booking->service->name }}')"
                                                     class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-600 transition">
                                                 ❌ لغو نوبت
@@ -103,6 +108,20 @@
         </div>
     </div>
 
+    <div id="completedModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 class="text-lg font-bold mb-4 text-purple-600">✔️انجام شده</h3>
+            <p class="text-gray-600 mb-6" id="completedMessage"></p>
+            <form id="completedForm" method="POST">
+                @csrf @method('PUT')
+                <div class="flex gap-3">
+                    <button type="submit" class="flex-1 bg-purple-600 text-white py-2 rounded-lg font-bold hover:bg-purple-700">بله، انجام شد</button>
+                    <button type="button" onclick="hideCompletedModal()" class="flex-1 bg-gray-100 py-2 rounded-lg hover:bg-gray-200">انصراف</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="cancelListModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 class="text-lg font-bold mb-4 text-red-600">❌ لغو نوبت</h3>
@@ -124,13 +143,26 @@
             document.getElementById('confirmForm').action = `/specialist/bookings/${id}/complete`;
             document.getElementById('confirmModal').classList.remove('hidden');
         }
-        function hideConfirmModal() { document.getElementById('confirmModal').classList.add('hidden'); }
+        function hideConfirmModal() {
+            document.getElementById('confirmModal').classList.add('hidden');
+        }
+
+        function markCompleted(id, name, service) {
+            document.getElementById('completedMessage').innerText = `آیا می‌خواهید نوبت "${service}" برای "${name}" را به عنوان انجام شده علامت‌گذاری کنید؟`;
+            document.getElementById('completedForm').action = `/specialist/bookings/${id}/mark-completed`;
+            document.getElementById('completedModal').classList.remove('hidden');
+        }
+        function hideCompletedModal() {
+            document.getElementById('completedModal').classList.add('hidden');
+        }
 
         function showCancelModal(id, name, service) {
             document.getElementById('cancelMessage').innerText = `آیا می‌خواهید نوبت "${service}" مشتری "${name}" را لغو کنید؟`;
             document.getElementById('cancelListForm').action = `/specialist/bookings/${id}/cancel`;
             document.getElementById('cancelListModal').classList.remove('hidden');
         }
-        function hideCancelModal() { document.getElementById('cancelListModal').classList.add('hidden'); }
+        function hideCancelModal() {
+            document.getElementById('cancelListModal').classList.add('hidden');
+        }
     </script>
 @endsection
