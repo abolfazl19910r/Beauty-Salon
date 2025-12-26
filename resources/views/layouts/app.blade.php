@@ -96,6 +96,12 @@
                             پنل کاری
                         </a>
                     @else
+                        <a href="{{ route('wallet.index') }}" class="text-gray-600 hover:text-pink-500 transition-colors px-3 py-2 flex items-center">
+                            <svg class="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                            </svg>
+                            کیف پول
+                        </a>
                         <a href="{{ route('bookings.index') }}" class="text-gray-600 hover:text-pink-500 transition-colors px-3 py-2">نوبت‌های من</a>
                         <a href="{{ route('profile.show') }}" class="text-gray-600 hover:text-pink-500 transition-colors px-3 py-2">پروفایل</a>
                     @endif
@@ -128,6 +134,7 @@
                     <a href="{{ route('specialist.profile.show') }}" class="block py-2 text-gray-600 hover:text-pink-500">پروفایل من</a>
                     <a href="{{ route('specialist.my-dashboard') }}" class="block py-2 text-gray-600 hover:text-pink-500">پنل کاری</a>
                 @else
+                    <a href="{{ route('wallet.index') }}" class="block py-2 text-gray-600 hover:text-pink-500">کیف پول</a>
                     <a href="{{ route('bookings.index') }}" class="block py-2 text-gray-600 hover:text-pink-500">نوبت‌های من</a>
                     <a href="{{ route('profile.show') }}" class="block py-2 text-gray-600 hover:text-pink-500">پروفایل</a>
                 @endif
