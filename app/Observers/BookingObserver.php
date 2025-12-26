@@ -6,8 +6,6 @@ use App\Models\Booking;
 use App\Models\WalletSetting;
 use App\Models\AdminWallet;
 use App\Notifications\BookingNotification;
-use App\Notifications\BookingStatusUpdated;
-use App\Notifications\SpecialistBookingCancelledNotification;
 use App\Services\ReportCacheService;
 use App\Services\SMSService;
 use Illuminate\Support\Facades\Cache;
@@ -29,67 +27,11 @@ class BookingObserver
     {
         try {
             if ($booking->wasChanged('payment_status') && $booking->payment_status === 'paid') {
-                $cacheKey = "booking_payment_processed_{$booking->id}";
-
-                if (Cache::has($cacheKey)) {
-                    return;
-                }
-
-                Cache::put($cacheKey, now()->toDateTimeString(), 60);
-
-                $this->addIncomeAndCommission($booking);
-
-                $specialist = $booking->specialist;
-                $isAutoConfirm = $specialist->auto_confirm_bookings ?? false;
-
-                try {
-                    if ($booking->status === 'confirmed') {
-                        $booking->user->notify(new BookingStatusUpdated($booking, 'confirmed'));
-                        $specialist->notify(new BookingNotification($booking, false));
-                    } elseif ($booking->status === 'pending') {
-                        $booking->user->notify(new BookingStatusUpdated($booking, 'pending_specialist'));
-                        $specialist->notify(new BookingNotification($booking, true));
-                    }
-                } catch (\Exception $e) {
-                    Log::error('❌ Failed to send notifications', [
-                        'booking_id' => $booking->id,
-                        'error' => $e->getMessage()
-                    ]);
-                }
-
-                try {
-                    $this->addLoyaltyPoints($booking);
-                } catch (\Exception $e) {
-                    Log::error('❌ Failed to add loyalty points', [
-                        'booking_id' => $booking->id,
-                        'error' => $e->getMessage()
-                    ]);
-                }
+                $this->handlePaymentStatusChange($booking);
             }
 
             if ($booking->wasChanged('status') && $booking->status === 'cancelled') {
-                $this->handleCancellation($booking);
-
-                try {
-                    $booking->user->notify(new BookingStatusUpdated($booking, 'cancelled', $booking->cancellation_reason));
-                } catch (\Exception $e) {
-                    Log::error('❌ Failed to send cancellation notification to customer', [
-                        'booking_id' => $booking->id,
-                        'error' => $e->getMessage()
-                    ]);
-                }
-
-                if ($booking->specialist) {
-                    try {
-                        $cancelledBy = $booking->cancelled_by ?? 'system';
-                        $booking->specialist->notify(new SpecialistBookingCancelledNotification($booking, $cancelledBy));
-                    } catch (\Exception $e) {
-                        Log::error('❌ Failed to send cancellation notification to specialist', [
-                            'booking_id' => $booking->id,
-                            'error' => $e->getMessage()
-                        ]);
-                    }
-                }
+                $this->handleBookingCancellation($booking);
             }
 
             $this->cacheService->flush();
@@ -100,9 +42,63 @@ class BookingObserver
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
             ]);
         }
+    }
+
+    protected function handlePaymentStatusChange(Booking $booking): void
+    {
+        $cacheKey = "booking_payment_processed_{$booking->id}";
+
+        if (Cache::has($cacheKey)) {
+            return;
+        }
+
+        Cache::put($cacheKey, true, 180);
+
+        $this->addIncomeAndCommission($booking);
+
+        $specialist = $booking->specialist;
+        $isAutoConfirm = $specialist->auto_confirm_bookings ?? false;
+
+        try {
+            if ($booking->status === 'confirmed') {
+                $this->sendCustomerConfirmationSMS($booking);
+                $specialist->notify(new BookingNotification($booking, false));
+            } elseif ($booking->status === 'pending') {
+                $this->sendCustomerPendingSMS($booking);
+                $specialist->notify(new BookingNotification($booking, true));
+            }
+        } catch (\Exception $e) {
+            Log::error('❌ Failed to send payment notifications', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        try {
+            $this->addLoyaltyPoints($booking);
+        } catch (\Exception $e) {
+            Log::error('❌ Failed to add loyalty points', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    protected function handleBookingCancellation(Booking $booking): void
+    {
+        $cacheKey = "booking_cancellation_processed_{$booking->id}";
+
+        if (Cache::has($cacheKey)) {
+            return;
+        }
+
+        Cache::put($cacheKey, true, 300);
+
+        $this->handleCancellation($booking);
+
+        $this->sendCancellationSMS($booking);
     }
 
     protected function addIncomeAndCommission(Booking $booking): void
@@ -110,7 +106,7 @@ class BookingObserver
         try {
             $specialist = $booking->specialist;
             if (!$specialist) {
-                Log::warning('⚠️ Specialist not found for booking', ['booking_id' => $booking->id]);
+                Log::warning('⚠️ Specialist not found', ['booking_id' => $booking->id]);
                 return;
             }
 
@@ -122,7 +118,6 @@ class BookingObserver
             $specialistIncome = $totalAmount - $adminCommission;
 
             DB::transaction(function() use ($specialist, $specialistIncome, $adminCommission, $booking) {
-
                 $wallet = $specialist->getOrCreateWallet();
                 $wallet->addIncome(
                     $specialistIncome,
@@ -136,13 +131,6 @@ class BookingObserver
                     $booking->id,
                     "کمیسیون از نوبت #{$booking->id} - متخصص: {$specialist->name}"
                 );
-
-                Log::info('✅ Income and commission added', [
-                    'booking_id' => $booking->id,
-                    'specialist_id' => $specialist->id,
-                    'specialist_income' => $specialistIncome,
-                    'admin_commission' => $adminCommission
-                ]);
             });
 
         } catch (\Exception $e) {
@@ -162,6 +150,7 @@ class BookingObserver
 
             $specialist = $booking->specialist;
             if (!$specialist) {
+                Log::warning('⚠️ Specialist not found for cancellation', ['booking_id' => $booking->id]);
                 return;
             }
 
@@ -169,10 +158,17 @@ class BookingObserver
 
             DB::transaction(function() use ($booking, $specialist, $cancelledBy) {
                 $settings = WalletSetting::get();
-                $wallet = $specialist->getOrCreateWallet();
+
+                $existingRefund = \App\Models\UserWalletTransaction::where('booking_id', $booking->id)
+                    ->where('type', 'refund')
+                    ->exists();
+
+                if ($existingRefund) {
+                    Log::warning('⚠️ Refund already exists', ['booking_id' => $booking->id]);
+                    return;
+                }
 
                 if ($cancelledBy === 'specialist') {
-
                     $customerWallet = $booking->user->getOrCreateWallet();
                     $customerWallet->addRefund(
                         $booking->prepayment_amount,
@@ -180,13 +176,7 @@ class BookingObserver
                         "بازگشت وجه از نوبت #{$booking->id} - لغو توسط متخصص"
                     );
 
-                    Log::info('✅ Refund issued to customer', [
-                        'booking_id' => $booking->id,
-                        'customer_id' => $booking->user_id,
-                        'amount' => $booking->prepayment_amount
-                    ]);
                 }
-
                 elseif ($cancelledBy === 'customer') {
                     $customerFee = $settings->calculateCustomerCancellationFee(
                         $booking->prepayment_amount,
@@ -205,6 +195,7 @@ class BookingObserver
                     }
 
                     if ($customerFee > 0) {
+                        $wallet = $specialist->getOrCreateWallet();
                         $specialistShare = $customerFee * 0.8;
 
                         $wallet->addIncome(
@@ -213,13 +204,14 @@ class BookingObserver
                             "جریمه لغو نوبت #{$booking->id} توسط مشتری"
                         );
                     }
-
-                    Log::info('✅ Customer cancellation processed', [
-                        'booking_id' => $booking->id,
-                        'customer_id' => $booking->user_id,
-                        'fee' => $customerFee,
-                        'refund' => $refundAmount
-                    ]);
+                }
+                elseif ($cancelledBy === 'admin') {
+                    $customerWallet = $booking->user->getOrCreateWallet();
+                    $customerWallet->addRefund(
+                        $booking->prepayment_amount,
+                        $booking->id,
+                        "بازگشت وجه از نوبت #{$booking->id} - لغو توسط مدیر"
+                    );
                 }
             });
 
@@ -229,6 +221,113 @@ class BookingObserver
                 'error' => $e->getMessage()
             ]);
         }
+    }
+
+    protected function sendCancellationSMS(Booking $booking): void
+    {
+        $cacheKey = "sms_cancellation_sent_{$booking->id}";
+
+        if (Cache::has($cacheKey)) {
+            return;
+        }
+
+        Cache::put($cacheKey, true, 300);
+
+        try {
+            $cancelledBy = $booking->cancelled_by ?? 'system';
+
+            $this->sendCustomerCancellationSMS($booking);
+
+            if ($booking->specialist) {
+                $this->sendSpecialistCancellationSMS($booking, $cancelledBy);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('❌ Failed to send cancellation SMS', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    protected function sendCustomerCancellationSMS(Booking $booking): void
+    {
+        $persianDate = verta($booking->booking_time)->format('Y/m/d');
+        $persianTime = verta($booking->booking_time)->format('H:i');
+
+        $message = sprintf(
+            "سلام %s، نوبت شما لغو شد.\n👤 متخصص: %s\n💇 سرویس: %s\n📅 تاریخ: %s\n⏰ زمان: %s\n💰 پیش‌پرداخت: %s تومان\n🔢 پیگیری: #%s\n🏠 آدرس: تهران، خیابان ... \n❌ دلیل: %s",
+            $booking->user->name,
+            $booking->specialist->name,
+            $booking->service->name,
+            $persianDate,
+            $persianTime,
+            number_format($booking->prepayment_amount),
+            $booking->id,
+            $booking->cancellation_reason ?? 'ذکر نشده'
+        );
+
+        $this->smsService->send($booking->user->phone, $message);
+    }
+
+    protected function sendSpecialistCancellationSMS(Booking $booking, string $cancelledBy): void
+    {
+        $specialist = $booking->specialist;
+        $user = $booking->user;
+
+        $title = match($cancelledBy) {
+            'specialist' => 'نوبت توسط شما لغو شد',
+            'admin' => 'نوبت توسط مدیر سیستم لغو شد',
+            'customer' => 'نوبت توسط مشتری لغو شد',
+            default => 'نوبت لغو شد'
+        };
+
+        $message = "{$specialist->name} عزیز، سلام 👋\n\n";
+        $message .= "📋 {$title}\n\n";
+        $message .= "👤 مشتری: {$user->name}\n";
+        $message .= "📞 تماس: {$user->phone}\n";
+        $message .= "💇 سرویس: {$booking->service->name}\n";
+        $message .= "📅 تاریخ: " . verta($booking->booking_time)->format('Y/m/d') . " - ساعت " . verta($booking->booking_time)->format('H:i');
+
+        $this->smsService->send($specialist->phone, $message);
+    }
+
+    protected function sendCustomerConfirmationSMS(Booking $booking): void
+    {
+        $persianDate = verta($booking->booking_time)->format('Y/m/d');
+        $persianTime = verta($booking->booking_time)->format('H:i');
+
+        $message = sprintf(
+            "سلام %s، نوبت شما تایید شد.\n👤 متخصص: %s\n💇 سرویس: %s\n📅 تاریخ: %s\n⏰ زمان: %s\n💰 پیش‌پرداخت: %s تومان\n🔢 پیگیری: #%s\n🏠 آدرس: تهران، خیابان ... \n✅ لطفا ۱۵ دقیقه زودتر در محل حضور داشته باشید.",
+            $booking->user->name,
+            $booking->specialist->name,
+            $booking->service->name,
+            $persianDate,
+            $persianTime,
+            number_format($booking->prepayment_amount),
+            $booking->id
+        );
+
+        $this->smsService->send($booking->user->phone, $message);
+    }
+
+    protected function sendCustomerPendingSMS(Booking $booking): void
+    {
+        $persianDate = verta($booking->booking_time)->format('Y/m/d');
+        $persianTime = verta($booking->booking_time)->format('H:i');
+
+        $message = sprintf(
+            "سلام %s، نوبت شما با موفقیت ثبت شد و در انتظار تایید نهایی متخصص است. نتیجه به زودی اطلاع‌رسانی می‌شود.\n👤 متخصص: %s\n💇 سرویس: %s\n📅 تاریخ: %s\n⏰ زمان: %s\n💰 پیش‌پرداخت: %s تومان\n🔢 پیگیری: #%s\n🏠 آدرس: تهران، خیابان ...",
+            $booking->user->name,
+            $booking->specialist->name,
+            $booking->service->name,
+            $persianDate,
+            $persianTime,
+            number_format($booking->prepayment_amount),
+            $booking->id
+        );
+
+        $this->smsService->send($booking->user->phone, $message);
     }
 
     protected function addLoyaltyPoints(Booking $booking): void
