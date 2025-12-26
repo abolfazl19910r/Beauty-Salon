@@ -243,4 +243,29 @@ class User extends Authenticatable
             return 0;
         }
     }
+
+    public function wallet(): HasOne
+    {
+        return $this->hasOne(UserWallet::class);
+    }
+
+    public function getOrCreateWallet(): UserWallet
+    {
+        if (!$this->wallet) {
+            $this->wallet()->create([
+                'balance' => 0,
+                'total_deposited' => 0,
+                'total_spent' => 0,
+            ]);
+            $this->load('wallet');
+        }
+
+        return $this->wallet;
+    }
+
+    public function hasBalance(float $amount): bool
+    {
+        $wallet = $this->getOrCreateWallet();
+        return $wallet->balance >= $amount;
+    }
 }
