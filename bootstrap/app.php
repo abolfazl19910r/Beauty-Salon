@@ -4,6 +4,7 @@ use App\Events\ReminderScheduleEvent;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Console\Scheduling\Schedule;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -37,9 +38,15 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin',
         ]);
     })
+    ->withSchedule(function (Schedule $schedule) {
+        $schedule->command('wallet:settle-pending')
+            ->dailyAt('01:00')
+            ->withoutOverlapping()
+            ->onOneServer();
+
+        event(new ReminderScheduleEvent());
+    })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })
-    ->withSchedule(function ($schedule) {
-        event(new ReminderScheduleEvent());
-    })->create();
+    ->create();
