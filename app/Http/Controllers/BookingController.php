@@ -233,26 +233,19 @@ class BookingController extends Controller
         }
 
         try {
-            DB::transaction(function() use ($booking) {
-                $booking->update([
-                    'status' => 'cancelled',
-                    'cancellation_reason' => 'لغو توسط مشتری',
-                    'cancelled_by' => 'user',
-                    'cancelled_at' => now()
-                ]);
+            $booking->update([
+                'status' => 'cancelled',
+                'cancellation_reason' => 'لغو توسط مشتری',
+                'cancelled_by' => 'customer',
+                'cancelled_at' => now()
+            ]);
+            return back()->with('success', '✓ نوبت شما با موفقیت لغو شد.');
 
-                $booking->user->notify(new BookingStatusUpdated($booking, 'cancelled', 'لغو توسط شما'));
-                Log::info('Customer cancelled booking. Notification sent to customer.', ['booking_id' => $booking->id]);
-
-                if ($booking->specialist) {
-                    $booking->specialist->user->notify(new SpecialistBookingCancelledNotification($booking, 'user'));
-                    Log::info('Customer cancelled booking. Notification sent to specialist.', ['booking_id' => $booking->id]);
-                }
-            });
-
-            return back()->with('success', '✓ نوبت شما با موفقیت لغو شد و به متخصص اطلاع‌رسانی گردید.');
         } catch (\Exception $e) {
-            Log::error('خطا در لغو نوبت توسط مشتری', ['booking_id' => $booking->id, 'error' => $e->getMessage()]);
+            Log::error('خطا در لغو نوبت توسط مشتری', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage()
+            ]);
             return back()->with('error', 'خطا در لغو نوبت: ' . $e->getMessage());
         }
     }
