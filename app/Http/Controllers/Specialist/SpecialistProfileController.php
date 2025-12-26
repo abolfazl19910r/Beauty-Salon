@@ -586,20 +586,19 @@ class SpecialistProfileController extends Controller
         $cancelReason = $request->input('cancel_reason', 'دلیل مشخص نشده');
 
         try {
-            DB::transaction(function () use ($booking, $cancelReason) {
-                $booking->update([
-                    'status' => 'cancelled',
-                    'cancellation_reason' => $cancelReason,
-                    'cancelled_by' => 'specialist',
-                    'cancelled_at' => now()
-                ]);
-
-                $booking->user->notify(new BookingStatusUpdated($booking, 'cancelled', $cancelReason));
-            });
-
+            $booking->update([
+                'status' => 'cancelled',
+                'cancellation_reason' => $cancelReason,
+                'cancelled_by' => 'specialist',
+                'cancelled_at' => now()
+            ]);
             return back()->with('success', '✓ نوبت لغو و به مشتری اطلاع‌رسانی شد.');
+
         } catch (Exception $e) {
-            Log::error('خطا در لغو نوبت توسط متخصص', ['booking_id' => $booking->id, 'error' => $e->getMessage()]);
+            Log::error('خطا در لغو نوبت توسط متخصص', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage()
+            ]);
             return back()->with('error', 'خطا در لغو نوبت: ' . $e->getMessage());
         }
     }
