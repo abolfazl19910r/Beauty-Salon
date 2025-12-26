@@ -285,6 +285,34 @@
             </div>
 
             <div class="py-2">
+                <h3 class="text-xs font-semibold text-gray-400 px-3 mb-2 uppercase">امور مالی</h3>
+
+                <a href="{{ route('admin.wallet.index') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.wallet.index') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
+                    <svg class="w-5 h-5 ml-2 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    کیف پول‌ها
+                </a>
+
+                <a href="{{ route('admin.wallet.withdrawals') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.wallet.withdrawals*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
+                    <svg class="w-5 h-5 ml-2 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    درخواست‌های برداشت
+                </a>
+
+                <a href="{{ route('admin.wallet.settings') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.wallet.settings') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
+                    <svg class="w-5 h-5 ml-2 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    تنظیمات مالی
+                </a>
+            </div>
+
+            <div class="py-2">
                 <h3 class="text-xs font-semibold text-gray-400 px-3 mb-2 uppercase">تنظیمات</h3>
                 <a href="{{ route('admin.profile.edit') }}"
                    class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg {{ request()->routeIs('admin.profile*') ? 'sidebar-active text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition-colors">
@@ -345,7 +373,6 @@
                                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                                 <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                             </svg>
-                            {{-- عدد فعلی را 0 کنید و در جاوااسکریپت پنهانش می‌کنیم --}}
                             <span id="notification-count" class="absolute top-0 right-0 hidden items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-500 rounded-full">0</span>
                         </button>
 
@@ -522,7 +549,6 @@
         notificationsIndex: '{{ route("admin.notifications.index") }}',
         notificationsLatest: '{{ route("admin.notifications.latest") }}',
         notificationsCount: '{{ route("admin.notifications.count") }}',
-        // اصلاح شد: استفاده از "000" به عنوان Placeholder امن
         notificationsRead: '{{ route("admin.notifications.read", "000") }}'.replace('000', ':id'),
         csrfToken: document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
     };
@@ -549,9 +575,8 @@
         const noMessage = document.getElementById('no-notifications-message');
         const loadingMessage = document.getElementById('loading-notifications-message');
 
-        if (!listContainer || !noMessage || !loadingMessage) return; // افزودن چک‌های امنیتی
+        if (!listContainer || !noMessage || !loadingMessage) return;
 
-        // نمایش لودینگ
         listContainer.innerHTML = '';
         loadingMessage.classList.remove('hidden');
         listContainer.appendChild(loadingMessage);
@@ -573,7 +598,6 @@
                         link.setAttribute('role', 'menuitem');
                         link.setAttribute('tabindex', '-1');
 
-                        // افزودن استایل خوانده نشده‌ها
                         if (!notification.read_at) {
                             link.classList.add('bg-blue-50', 'font-semibold');
                         }
@@ -583,10 +607,9 @@
                         <span class="text-xs ${notification.read_at ? 'text-gray-500' : 'text-blue-500'} mt-0.5">${notification.time_ago}</span>
                     `;
 
-                        // *** افزودن Event Listener برای مارک کردن به عنوان خوانده شده ***
                         if (!notification.read_at) {
                             link.addEventListener('click', (e) => {
-                                e.preventDefault(); // جلوگیری از هدایت فوری
+                                e.preventDefault();
                                 markNotificationAsRead(notification.id, notification.link);
                             });
                         }

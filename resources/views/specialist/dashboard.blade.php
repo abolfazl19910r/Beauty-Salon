@@ -86,7 +86,7 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500">درآمد امروز</p>
+                        <p class="text-sm text-gray-500">درآمد امروز (بیعانه)</p>
                         <h3 class="text-2xl font-bold text-gray-800">{{ number_format($todayRevenue) }}</h3>
                     </div>
                 </div>
