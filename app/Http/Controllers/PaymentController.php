@@ -68,12 +68,21 @@ class PaymentController extends Controller
                     $isAutoConfirm = $specialist->auto_confirm_bookings ?? false;
 
                     $newStatus = $isAutoConfirm ? 'confirmed' : 'pending';
-                    $booking->update([
-                        'payment_status' => 'paid',
-                        'paid_at' => now(),
-                        'payment_ref' => $result['ref_id'] ?? $result['reference'],
-                        'status' => $newStatus
-                    ]);
+
+                    \Illuminate\Support\Facades\DB::transaction(function () use ($booking, $result, $newStatus, $specialist) {
+
+                        $booking->update([
+                            'payment_status' => 'paid',
+                            'paid_at' => now(),
+                            'payment_ref' => $result['ref_id'] ?? $result['reference'],
+                            'status' => $newStatus
+                        ]);
+
+                        $specialist->getOrCreateWallet()->addIncome(
+                            $booking->prepayment_amount,
+                            $booking->id
+                        );
+                    });
                 } else {
                     Log::warning('⚠️ Booking already paid, skipping update', [
                         'booking_id' => $booking->id,
