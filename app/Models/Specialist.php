@@ -316,4 +316,24 @@ class Specialist extends Model
             'notifiable'
         )->orderBy('created_at', 'desc');
     }
+
+    public function wallet(): HasOne
+    {
+        return $this->hasOne(SpecialistWallet::class);
+    }
+
+    public function getOrCreateWallet(): SpecialistWallet
+    {
+        if (!$this->wallet) {
+            $this->wallet()->create([
+                'balance' => 0,
+                'total_earned' => 0,
+                'total_withdrawn' => 0,
+                'pending_amount' => 0,
+            ]);
+            $this->load('wallet');
+        }
+
+        return $this->wallet;
+    }
 }
