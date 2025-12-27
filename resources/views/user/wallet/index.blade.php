@@ -4,14 +4,23 @@
 
 @section('content')
     <div class="max-w-7xl mx-auto">
-        <div class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-900 flex items-center">
-                <svg class="w-8 h-8 ml-2 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+        <div class="mb-6 flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 flex items-center">
+                    <svg class="w-8 h-8 ml-2 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    کیف پول من
+                </h1>
+                <p class="text-gray-600 mt-2">مدیریت موجودی و تراکنش‌های مالی شما</p>
+            </div>
+            <a href="{{ route('wallet.charge') }}"
+               class="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-xl hover:opacity-90 transition-opacity flex items-center shadow-lg">
+                <svg class="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                کیف پول من
-            </h1>
-            <p class="text-gray-600 mt-2">مدیریت موجودی و تراکنش‌های مالی شما</p>
+                شارژ کیف پول
+            </a>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
