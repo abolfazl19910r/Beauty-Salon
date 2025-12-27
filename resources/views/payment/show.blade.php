@@ -85,13 +85,74 @@
                 </div>
             </div>
 
+            @if($wallet->balance > 0)
+                <div class="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center ml-3">
+                                <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800 text-lg">موجودی کیف پول شما</h3>
+                                <p class="text-2xl font-bold text-green-600 persian-number">{{ number_format($wallet->balance) }} تومان</p>
+                            </div>
+                        </div>
+
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="use-wallet-toggle" class="sr-only peer" onchange="toggleWalletPayment()">
+                            <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:right-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-green-500"></div>
+                            <span class="mr-3 text-sm font-medium text-gray-700">استفاده از کیف پول</span>
+                        </label>
+                    </div>
+
+                    <div id="wallet-options" class="hidden mt-4 space-y-3 border-t border-green-200 pt-4">
+                        <label class="flex items-center p-3 bg-white rounded-lg cursor-pointer hover:bg-green-50 transition border-2 border-transparent hover:border-green-300">
+                            <input type="radio" name="wallet_option" value="full" class="w-5 h-5 text-green-600" onchange="updatePaymentAmount()"
+                                {{ $wallet->balance >= $booking->prepayment_amount ? '' : 'disabled' }}>
+                            <div class="mr-3 flex-1">
+                                <div class="font-semibold text-gray-800">پرداخت کامل از کیف پول</div>
+                                <div class="text-sm text-gray-600">
+                                    @if($wallet->balance >= $booking->prepayment_amount)
+                                        <span class="text-green-600">✓ موجودی شما کافی است</span>
+                                    @else
+                                        <span class="text-red-600">✗ موجودی کافی نیست (کمبود: {{ number_format($booking->prepayment_amount - $wallet->balance) }} تومان)</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="text-left">
+                                <div class="font-bold text-green-600 persian-number">{{ number_format(min($wallet->balance, $booking->prepayment_amount)) }}</div>
+                                <div class="text-xs text-gray-500">تومان</div>
+                            </div>
+                        </label>
+
+                        @if($wallet->balance < $booking->prepayment_amount)
+                            <label class="flex items-center p-3 bg-white rounded-lg cursor-pointer hover:bg-blue-50 transition border-2 border-transparent hover:border-blue-300">
+                                <input type="radio" name="wallet_option" value="partial" class="w-5 h-5 text-blue-600" onchange="updatePaymentAmount()">
+                                <div class="mr-3 flex-1">
+                                    <div class="font-semibold text-gray-800">پرداخت ترکیبی</div>
+                                    <div class="text-sm text-gray-600">
+                                        <span class="text-blue-600">{{ number_format($wallet->balance) }} تومان از کیف پول + {{ number_format($booking->prepayment_amount - $wallet->balance) }} تومان از درگاه</span>
+                                    </div>
+                                </div>
+                                <div class="text-left">
+                                    <div class="font-bold text-blue-600 persian-number">{{ number_format($wallet->balance) }}</div>
+                                    <div class="text-xs text-gray-500">از کیف پول</div>
+                                </div>
+                            </label>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
             <div class="bg-blue-50 border border-blue-200 p-5 rounded-lg mb-6">
                 <h3 class="font-bold mb-4 flex items-center text-blue-700">
                     <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="12" y1="1" x2="12" y2="23"></line>
                         <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                     </svg>
-                    جزئیات پرداخت
+                    خلاصه پرداخت
                 </h3>
                 <div class="space-y-3">
                     @if($booking->service)
@@ -100,27 +161,47 @@
                             <span class="persian-number">{{ number_format($booking->service->price) }} تومان</span>
                         </div>
                     @endif
-                    <div class="flex justify-between items-center text-lg">
-                        <span class="text-blue-700 font-bold">مبلغ پیش پرداخت:</span>
-                        <span class="text-blue-700 font-bold persian-number">{{ number_format($booking->prepayment_amount) }} تومان</span>
+                    <div class="flex justify-between items-center border-b border-blue-100 pb-2">
+                        <span class="text-blue-700">مبلغ پیش پرداخت:</span>
+                        <span class="font-bold persian-number">{{ number_format($booking->prepayment_amount) }} تومان</span>
                     </div>
+
+                    <div id="wallet-payment-summary" class="hidden">
+                        <div class="flex justify-between items-center text-green-600 border-b border-blue-100 pb-2">
+                            <span>پرداخت از کیف پول:</span>
+                            <span class="font-semibold persian-number" id="wallet-amount">0 تومان</span>
+                        </div>
+                        <div class="flex justify-between items-center text-purple-600 border-b border-blue-100 pb-2">
+                            <span>پرداخت از درگاه:</span>
+                            <span class="font-semibold persian-number" id="gateway-amount">{{ number_format($booking->prepayment_amount) }} تومان</span>
+                        </div>
+                    </div>
+
                     @if($booking->discount_amount > 0)
                         <div class="flex justify-between items-center text-green-600 text-sm">
                             <span>تخفیف اعمال شده:</span>
                             <span class="persian-number">{{ number_format($booking->discount_amount) }} تومان</span>
                         </div>
                     @endif
+
+                    <div class="flex justify-between items-center text-lg font-bold pt-2 border-t-2 border-blue-300">
+                        <span class="text-blue-700">مبلغ قابل پرداخت:</span>
+                        <span class="text-blue-700 persian-number" id="final-amount">{{ number_format($booking->prepayment_amount) }} تومان</span>
+                    </div>
                 </div>
             </div>
 
-            <form action="{{ route('payment.process', ['booking' => $booking->id]) }}" method="POST">
+            <form id="payment-form" method="POST">
                 @csrf
+                <input type="hidden" name="use_wallet" id="use_wallet" value="0">
+                <input type="hidden" name="wallet_amount" id="wallet_amount" value="0">
+
                 <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 rounded-lg font-bold hover:opacity-90 transition-opacity flex items-center justify-center">
                     <svg class="w-5 h-5 ml-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
                         <line x1="1" y1="10" x2="23" y2="10"></line>
                     </svg>
-                    پرداخت و تایید نوبت
+                    <span id="payment-button-text">پرداخت و تایید نوبت</span>
                 </button>
             </form>
 
@@ -147,4 +228,57 @@
             </div>
         </div>
     </div>
+
+    <script>
+        const bookingAmount = {{ $booking->prepayment_amount }};
+        const walletBalance = {{ $wallet->balance }};
+
+        function toggleWalletPayment() {
+            const toggle = document.getElementById('use-wallet-toggle');
+            const walletOptions = document.getElementById('wallet-options');
+
+            if (toggle.checked) {
+                walletOptions.classList.remove('hidden');
+                if (walletBalance >= bookingAmount) {
+                    document.querySelector('input[name="wallet_option"][value="full"]').checked = true;
+                } else {
+                    document.querySelector('input[name="wallet_option"][value="partial"]').checked = true;
+                }
+                updatePaymentAmount();
+            } else {
+                walletOptions.classList.add('hidden');
+                document.getElementById('use_wallet').value = '0';
+                document.getElementById('wallet_amount').value = '0';
+                document.getElementById('wallet-payment-summary').classList.add('hidden');
+                document.getElementById('final-amount').textContent = bookingAmount.toLocaleString('fa-IR') + ' تومان';
+                document.getElementById('payment-button-text').textContent = 'پرداخت و تایید نوبت';
+                document.getElementById('payment-form').action = '{{ route("payment.process", $booking) }}';
+            }
+        }
+
+        function updatePaymentAmount() {
+            const walletOption = document.querySelector('input[name="wallet_option"]:checked');
+            if (!walletOption) return;
+
+            const useWalletFull = walletOption.value === 'full';
+            const walletAmount = useWalletFull ? Math.min(walletBalance, bookingAmount) : walletBalance;
+            const gatewayAmount = Math.max(0, bookingAmount - walletAmount);
+
+            document.getElementById('use_wallet').value = '1';
+            document.getElementById('wallet_amount').value = walletAmount;
+
+            document.getElementById('wallet-payment-summary').classList.remove('hidden');
+            document.getElementById('wallet-amount').textContent = walletAmount.toLocaleString('fa-IR') + ' تومان';
+            document.getElementById('gateway-amount').textContent = gatewayAmount.toLocaleString('fa-IR') + ' تومان';
+            document.getElementById('final-amount').textContent = gatewayAmount.toLocaleString('fa-IR') + ' تومان';
+
+            if (gatewayAmount === 0) {
+                document.getElementById('payment-button-text').textContent = '✓ پرداخت کامل از کیف پول';
+            } else if (walletAmount > 0) {
+                document.getElementById('payment-button-text').textContent = 'پرداخت ترکیبی (کیف پول + درگاه)';
+            }
+
+            document.getElementById('payment-form').action = '{{ route("payment.wallet", $booking) }}';
+        }
+    </script>
 @endsection

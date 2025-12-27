@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
@@ -54,6 +55,103 @@ class PaymentController extends Controller
         }
     }
 
+    public function processWithWallet(Request $request, Booking $booking)
+    {
+        try {
+            if ($booking->user_id !== auth()->id()) {
+                abort(403, 'دسترسی غیرمجاز');
+            }
+
+            if ($booking->payment_status === 'paid') {
+                return redirect()->route('bookings.show', $booking)
+                    ->with('info', 'این نوبت قبلاً پرداخت شده است.');
+            }
+
+            $validated = $request->validate([
+                'use_wallet' => 'required|boolean',
+                'wallet_amount' => 'nullable|numeric|min:0',
+            ]);
+
+            $user = auth()->user();
+            $wallet = $user->getOrCreateWallet();
+            $totalAmount = $booking->prepayment_amount;
+            $walletAmount = min(
+                $validated['wallet_amount'] ?? $wallet->balance,
+                $wallet->balance,
+                $totalAmount
+            );
+            $remainingAmount = $totalAmount - $walletAmount;
+
+            return DB::transaction(function() use ($booking, $wallet, $walletAmount, $remainingAmount, $totalAmount) {
+                if ($remainingAmount <= 0) {
+                    $wallet->deductPayment(
+                        $walletAmount,
+                        $booking->id,
+                        "پرداخت نوبت #{$booking->id} از کیف پول"
+                    );
+
+                    $specialist = $booking->specialist;
+                    $finalStatus = $specialist->auto_confirm_bookings ? 'confirmed' : 'pending';
+                    $booking->update([
+                        'payment_status' => 'paid',
+                        'status' => $finalStatus,
+                        'paid_at' => now(),
+                        'payment_ref' => 'WALLET-' . $booking->id . '-' . time(),
+                        'payment_details' => [
+                            'method' => 'wallet',
+                            'wallet_amount' => $walletAmount,
+                            'gateway_amount' => 0
+                        ]
+                    ]);
+                    return redirect()->route('bookings.success', ['id' => $booking->id])
+                        ->with('success', 'پرداخت از کیف پول با موفقیت انجام شد');
+                }
+
+                if ($walletAmount > 0) {
+                    $wallet->deductPayment(
+                        $walletAmount,
+                        $booking->id,
+                        "پرداخت بخشی از نوبت #{$booking->id} از کیف پول (مابقی از درگاه)"
+                    );
+
+                    session([
+                        'partial_payment_' . $booking->id => [
+                            'wallet_amount' => $walletAmount,
+                            'remaining_amount' => $remainingAmount
+                        ]
+                    ]);
+                }
+
+                $result = $this->paymentService->createPayment($booking, $remainingAmount);
+
+                if (isset($result['success']) && $result['success'] && isset($result['payment_url'])) {
+                    return redirect($result['payment_url']);
+                }
+
+                if ($walletAmount > 0) {
+                    $wallet->increment('balance', $walletAmount);
+                    $wallet->transactions()->create([
+                        'booking_id' => $booking->id,
+                        'type' => 'refund',
+                        'amount' => $walletAmount,
+                        'balance_after' => $wallet->balance,
+                        'description' => "بازگشت وجه به دلیل خطا در اتصال به درگاه - نوبت #{$booking->id}",
+                    ]);
+                }
+
+                throw new \Exception($result['message'] ?? 'خطا در اتصال به درگاه پرداخت');
+            });
+
+        } catch (\Exception $e) {
+            Log::error('💥 خطا در پرداخت با کیف پول', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return back()->with('error', 'خطا در پرداخت: ' . $e->getMessage());
+        }
+    }
+
     public function callback(Request $request)
     {
         try {
@@ -66,16 +164,29 @@ class PaymentController extends Controller
                 if ($booking->payment_status !== 'paid') {
                     $specialist = $booking->specialist;
                     $isAutoConfirm = $specialist->auto_confirm_bookings ?? false;
-
                     $newStatus = $isAutoConfirm ? 'confirmed' : 'pending';
 
-                    \Illuminate\Support\Facades\DB::transaction(function () use ($booking, $result, $newStatus, $specialist) {
+                    DB::transaction(function () use ($booking, $result, $newStatus, $specialist) {
+                        $partialPayment = session('partial_payment_' . $booking->id);
+                        $paymentDetails = [
+                            'method' => $partialPayment ? 'wallet_gateway' : 'gateway',
+                            'gateway_ref' => $result['ref_id'] ?? $result['reference'],
+                            'card_pan' => $result['card_pan'] ?? null,
+                        ];
+
+                        if ($partialPayment) {
+                            $paymentDetails['wallet_amount'] = $partialPayment['wallet_amount'];
+                            $paymentDetails['gateway_amount'] = $partialPayment['remaining_amount'];
+
+                            session()->forget('partial_payment_' . $booking->id);
+                        }
 
                         $booking->update([
                             'payment_status' => 'paid',
                             'paid_at' => now(),
                             'payment_ref' => $result['ref_id'] ?? $result['reference'],
-                            'status' => $newStatus
+                            'status' => $newStatus,
+                            'payment_details' => $paymentDetails
                         ]);
 
                         $specialist->getOrCreateWallet()->addIncome(
@@ -83,22 +194,26 @@ class PaymentController extends Controller
                             $booking->id
                         );
                     });
-                } else {
-                    Log::warning('⚠️ Booking already paid, skipping update', [
-                        'booking_id' => $booking->id,
-                        'payment_status' => $booking->payment_status,
-                        'paid_at' => $booking->paid_at
-                    ]);
                 }
 
                 return redirect()->route('bookings.success', ['id' => $booking->id])
                     ->with('success', 'پرداخت با موفقیت انجام شد و نوبت شما ثبت شد.');
             }
 
-            Log::warning('⚠️ Payment Failed', [
-                'booking_id' => $booking->id,
-                'message' => $result['message'] ?? 'Unknown'
-            ]);
+            $partialPayment = session('partial_payment_' . $booking->id);
+            if ($partialPayment && isset($partialPayment['wallet_amount'])) {
+                $wallet = $booking->user->getOrCreateWallet();
+                $wallet->increment('balance', $partialPayment['wallet_amount']);
+                $wallet->transactions()->create([
+                    'booking_id' => $booking->id,
+                    'type' => 'refund',
+                    'amount' => $partialPayment['wallet_amount'],
+                    'balance_after' => $wallet->balance,
+                    'description' => "بازگشت وجه به دلیل عدم موفقیت پرداخت - نوبت #{$booking->id}",
+                ]);
+
+                session()->forget('partial_payment_' . $booking->id);
+            }
 
             $booking->update(['status' => 'cancelled', 'cancellation_reason' => 'پرداخت ناموفق']);
 
@@ -138,6 +253,11 @@ class PaymentController extends Controller
                 ->with('info', 'این نوبت قبلاً پرداخت شده است.');
         }
 
-        return view('payment.show', ['booking' => $booking]);
+        $wallet = auth()->user()->getOrCreateWallet();
+
+        return view('payment.show', [
+            'booking' => $booking,
+            'wallet' => $wallet
+        ]);
     }
 }

@@ -13,7 +13,12 @@ Route::prefix('payment')->name('payment.')->group(function () {
     Route::get('/{booking}', [PaymentController::class, 'show'])->name('show')
         ->middleware('check.booking.ownership')
         ->whereNumber('booking');
+
     Route::post('/{booking}/process', [PaymentController::class, 'process'])->name('process')
+        ->middleware('check.booking.ownership')
+        ->whereNumber('booking');
+
+    Route::post('/{booking}/wallet', [PaymentController::class, 'processWithWallet'])->name('wallet')
         ->middleware('check.booking.ownership')
         ->whereNumber('booking');
 });

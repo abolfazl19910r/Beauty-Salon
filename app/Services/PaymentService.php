@@ -26,11 +26,12 @@ class PaymentService
         }
     }
 
-    public function createPayment($booking): array
+    public function createPayment($booking, $customAmount = null): array
     {
         try {
             $callbackUrl = route('payment.callback', ['booking' => $booking->id]);
-            $amount = (int) ($booking->prepayment_amount * 10);
+            $paymentAmount = $customAmount ?? $booking->prepayment_amount;
+            $amount = (int) ($paymentAmount * 10);
 
             $requestData = [
                 'merchant_id' => $this->merchantId,
@@ -120,7 +121,12 @@ class PaymentService
             }
 
             $booking = \App\Models\Booking::findOrFail($bookingId);
-            $amount = (int) ($booking->prepayment_amount * 10);
+            $partialPayment = session('partial_payment_' . $booking->id);
+            $verifyAmount = $partialPayment
+                ? $partialPayment['remaining_amount']
+                : $booking->prepayment_amount;
+
+            $amount = (int) ($verifyAmount * 10);
 
             $requestData = [
                 'merchant_id' => $this->merchantId,
@@ -179,6 +185,133 @@ class PaymentService
 
             return [
                 'status' => 'failed',
+                'success' => false,
+                'message' => 'خطا در تایید پرداخت'
+            ];
+        }
+    }
+
+    public function createWalletChargePayment($user, $amount): array
+    {
+        try {
+            $callbackUrl = route('wallet.charge.callback');
+            $amountInRials = (int) ($amount * 10);
+
+            $requestData = [
+                'merchant_id' => $this->merchantId,
+                'amount' => $amountInRials,
+                'callback_url' => $callbackUrl,
+                'description' => sprintf('شارژ کیف پول - کاربر: %s', $user->name ?? $user->phone),
+                'metadata' => [
+                    'mobile' => $user->phone ?? '',
+                    'email' => $user->email ?? ''
+                ]
+            ];
+
+            $response = Http::timeout(30)
+                ->withHeaders([
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ])
+                ->post($this->apiUrl . '/request.json', $requestData);
+
+            $result = $response->json();
+
+            if ($response->successful() && isset($result['data']['code']) && $result['data']['code'] == 100) {
+                $authority = $result['data']['authority'];
+                $paymentUrl = $this->gatewayUrl . '/' . $authority;
+
+                return [
+                    'success' => true,
+                    'payment_url' => $paymentUrl,
+                    'reference' => $authority
+                ];
+            }
+
+            $errorCode = $result['data']['code'] ?? $result['errors']['code'] ?? -999;
+            $errorMessage = $this->getZarinpalError($errorCode);
+
+            Log::error('❌ Wallet Charge Request Failed', [
+                'user_id' => $user->id,
+                'amount' => $amount,
+                'error_code' => $errorCode,
+                'message' => $errorMessage,
+            ]);
+
+            return [
+                'success' => false,
+                'message' => $errorMessage
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('💥 Wallet Charge Creation Exception', [
+                'user_id' => $user->id,
+                'amount' => $amount,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'خطا در اتصال به درگاه پرداخت.'
+            ];
+        }
+    }
+
+    public function verifyWalletChargePayment($request, $expectedAmount): array
+    {
+        try {
+            $authority = $request->Authority ?? $request->authority;
+            $status = $request->Status ?? $request->status;
+
+            if ($status === 'NOK' || $status === 'cancel') {
+                return [
+                    'success' => false,
+                    'message' => 'پرداخت توسط کاربر لغو شد'
+                ];
+            }
+
+            $amount = (int) ($expectedAmount * 10);
+
+            $requestData = [
+                'merchant_id' => $this->merchantId,
+                'authority' => $authority,
+                'amount' => $amount
+            ];
+
+            $response = Http::timeout(30)
+                ->withHeaders([
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ])
+                ->post($this->apiUrl . '/verify.json', $requestData);
+
+            $result = $response->json();
+
+            if ($response->successful() && isset($result['data']['code'])) {
+                $code = $result['data']['code'];
+                if ($code == 100 || $code == 101) {
+                    return [
+                        'success' => true,
+                        'ref_id' => $result['data']['ref_id'] ?? $authority,
+                        'card_pan' => $result['data']['card_pan'] ?? null,
+                    ];
+                }
+            }
+
+            $errorCode = $result['data']['code'] ?? $result['errors']['code'] ?? -999;
+            $errorMessage = $this->getZarinpalError($errorCode);
+
+            return [
+                'success' => false,
+                'message' => $errorMessage
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('💥 Wallet Charge Verification Exception', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
                 'success' => false,
                 'message' => 'خطا در تایید پرداخت'
             ];
