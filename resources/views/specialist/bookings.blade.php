@@ -29,7 +29,6 @@
             background-color: transparent !important;
         }
 
-        /* استایل‌های سفارشی برای بخش فیلتر */
         #filterForm {
             transition: all 0.3s ease-in-out;
             overflow: hidden;
@@ -45,7 +44,6 @@
             opacity: 1;
         }
 
-        /* انیمیشن برای ردیف‌های نوبت */
         .booking-row {
             transition: all 0.2s ease;
         }
@@ -54,7 +52,6 @@
             transform: translateX(-2px);
         }
 
-        /* بهبود نمایش در موبایل */
         @media (max-width: 768px) {
             #filterForm .grid {
                 grid-template-columns: 1fr;
@@ -282,7 +279,7 @@
                                     @if(!in_array($status, ['completed', 'cancelled', 'pending_payment']))
 
                                         @if($status == 'pending')
-                                            <button onclick="confirmBooking({{ $booking->id }}, '{{ addslashes($booking->user->name) }}', '{{ addslashes($booking->service->name) }}')"
+                                            <button onclick="confirmBooking('{{ route('specialist.bookings.complete', $booking->id) }}', '{{ addslashes($booking->user->name) }}', '{{ addslashes($booking->service->name) }}')"
                                                     class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-600 transition">
                                                 ✅ تایید
                                             </button>
@@ -365,7 +362,6 @@
     <script src="https://unpkg.com/persian-datepicker@latest/dist/js/persian-datepicker.min.js"></script>
     <script>
         $(document).ready(function() {
-            // تنظیمات تقویم شمسی
             const datePickerOptions = {
                 format: 'YYYY/MM/DD',
                 autoClose: true,
@@ -380,7 +376,6 @@
                 position: 'auto',
             };
 
-            // تقویم از تاریخ
             $("#date_from").persianDatepicker({
                 ...datePickerOptions,
                 onSelect: function(unix) {
@@ -393,12 +388,10 @@
                 }
             });
 
-            // تقویم تا تاریخ
             $("#date_to").persianDatepicker({
                 ...datePickerOptions
             });
 
-            // فرمت کردن ورودی تاریخ
             function formatDateInput(input) {
                 const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
                 const englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
@@ -426,7 +419,6 @@
             });
         });
 
-        // توابع Toggle فیلترها
         function toggleFilters() {
             const filterForm = document.getElementById('filterForm');
             const toggleText = document.getElementById('filterToggleText');
@@ -440,17 +432,15 @@
             }
         }
 
-        // نمایش فیلترها اگر فیلتری فعال باشد
         @if(request()->hasAny(['date_from', 'date_to', 'time', 'status', 'payment_status', 'phone', 'customer_name']))
         document.addEventListener('DOMContentLoaded', function() {
             toggleFilters();
         });
         @endif
 
-        // توابع مدیریت Modal ها
-        function confirmBooking(id, name, service) {
+        function confirmBooking(url, name, service) {
             document.getElementById('confirmMessage').innerText = `آیا از تایید نوبت "${service}" برای مشتری "${name}" اطمینان دارید؟`;
-            document.getElementById('confirmForm').action = `/specialist/bookings/${id}/confirm`;
+            document.getElementById('confirmForm').action = url;
             document.getElementById('confirmModal').classList.remove('hidden');
         }
 
