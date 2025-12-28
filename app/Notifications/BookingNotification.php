@@ -34,6 +34,8 @@ class BookingNotification extends Notification
 
     public function toSms($notifiable): bool
     {
+        $confirmationLink = route('specialist.bookings.show', ['booking' => $this->booking->id]);
+
         $message = sprintf(
             "%s عزیز، نوبت جدید ثبت شد:\n👤 مشتری: %s\n📅 تاریخ: %s\n⏰ ساعت: %s\n💇 سرویس: %s\n📞 تماس: %s",
             $notifiable->name,
@@ -45,11 +47,9 @@ class BookingNotification extends Notification
         );
 
         if ($this->needsApproval) {
-            $message .= "\n\n⏳ نیاز به تایید شما";
+            $message .= "\n\n⏳ نیاز به تایید شما\n🔗 جهت تایید کلیک کنید:\n" . $confirmationLink;
         } else {
             $message .= "\n\n✅ تایید خودکار";
-//            $message .= "\n🔗 مشاهده جزئیات:";
-//            $message .= "\n" . $bookingLink;
         }
 
         return (new SMSService())->send($notifiable->phone, $message);

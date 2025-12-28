@@ -313,20 +313,10 @@ class BookingObserver
 
     protected function sendCustomerPendingSMS(Booking $booking): void
     {
-        $persianDate = verta($booking->booking_time)->format('Y/m/d');
-        $persianTime = verta($booking->booking_time)->format('H:i');
-
         $message = sprintf(
-            "سلام %s، نوبت شما با موفقیت ثبت شد و در انتظار تایید نهایی متخصص است. نتیجه به زودی اطلاع‌رسانی می‌شود.\n👤 متخصص: %s\n💇 سرویس: %s\n📅 تاریخ: %s\n⏰ زمان: %s\n💰 پیش‌پرداخت: %s تومان\n🔢 پیگیری: #%s\n🏠 آدرس: تهران، خیابان ...",
-            $booking->user->name,
-            $booking->specialist->name,
-            $booking->service->name,
-            $persianDate,
-            $persianTime,
-            number_format($booking->prepayment_amount),
-            $booking->id
+            "سلام %s، نوبت شما با موفقیت ثبت شد و در انتظار تایید نهایی متخصص است. نتیجه به زودی اطلاع‌رسانی می‌شود.",
+            $booking->user->name
         );
-
         $this->smsService->send($booking->user->phone, $message);
     }
 
