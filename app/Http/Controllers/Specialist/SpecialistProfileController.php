@@ -411,7 +411,7 @@ class SpecialistProfileController extends Controller
                 $message .= ' - تایید خودکار نوبت‌ها فعال شد';
             }
 
-            return redirect()->route('specialist.profile.show')
+            return redirect()->route('specialist.my-dashboard')
                 ->with('success', $message);
 
         } catch (\Exception $e) {

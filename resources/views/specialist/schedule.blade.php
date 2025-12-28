@@ -9,7 +9,7 @@
                 <h1 class="text-2xl font-bold text-gray-800 mb-2">مدیریت برنامه کاری</h1>
                 <p class="text-sm text-gray-500">تنظیم ساعات کاری هفتگی</p>
             </div>
-            <a href="{{ route('specialist.profile.show') }}"
+            <a href="{{ route('specialist.my-dashboard') }}"
                class="flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors">
                 <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="19" y1="12" x2="5" y2="12"></line>
