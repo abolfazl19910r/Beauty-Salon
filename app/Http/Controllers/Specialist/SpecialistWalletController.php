@@ -102,7 +102,8 @@ class SpecialistWalletController extends Controller
                 'iban_verified' => false,
             ]);
 
-            return back()->with('success', 'اطلاعات بانکی با موفقیت ثبت شد.');
+            return redirect()->route('specialist.wallet.index')
+                ->with('success', 'اطلاعات بانکی با موفقیت ثبت شد.');
 
         } catch (Exception $e) {
             return back()->with('error', 'خطایی رخ داد.');
