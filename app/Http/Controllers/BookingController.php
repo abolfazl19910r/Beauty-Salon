@@ -319,16 +319,26 @@ class BookingController extends Controller
             if (!$discountCode || !$discountCode->isValid()) {
                 return response()->json([
                     'valid' => false,
-                    'message' => 'کد تخفیف نامعتبر است.'
+                    'message' => 'کد تخفیف نامعتبر است یا منقضی شده.'
                 ], 200);
             }
 
-            $service = BeautyService::find($request->service_id);
+            if ($discountCode->user_id && $discountCode->user_id !== auth()->id()) {
+                return response()->json([
+                    'valid' => false,
+                    'message' => 'این کد تخفیف برای شما قابل استفاده نیست.'
+                ], 200);
+            }
+
             $prepaymentAmount = 50000;
 
             $discountAmount = $discountCode->type === 'percentage'
                 ? ($prepaymentAmount * $discountCode->amount / 100)
                 : $discountCode->amount;
+
+            if ($discountCode->max_amount) {
+                $discountAmount = min($discountAmount, $discountCode->max_amount);
+            }
 
             $finalPrice = max(0, $prepaymentAmount - $discountAmount);
 
@@ -336,7 +346,7 @@ class BookingController extends Controller
                 'valid' => true,
                 'discount_amount' => $discountAmount,
                 'final_price' => $finalPrice,
-                'message' => 'کد تخفیف معتبر است.'
+                'message' => 'کد تخفیف معتبر است!'
             ]);
 
         } catch (ValidationException $e) {
@@ -345,6 +355,11 @@ class BookingController extends Controller
                 'message' => $e->getMessage()
             ], 422);
         } catch (Exception $e) {
+            Log::error('خطا در بررسی کد تخفیف', [
+                'error' => $e->getMessage(),
+                'code' => $request->code ?? null
+            ]);
+
             return response()->json([
                 'valid' => false,
                 'message' => 'خطا در بررسی کد تخفیف.'
@@ -482,7 +497,7 @@ class BookingController extends Controller
     {
         try {
             if ($booking->user_id !== auth()->id()) {
-                throw new Exception('دسترسی غیرمجاز');
+                abort(403, 'دسترسی غیرمجاز');
             }
 
             $request->validate([
@@ -492,28 +507,43 @@ class BookingController extends Controller
             $discountCode = DiscountCode::where('code', $request->code)->first();
 
             if (!$discountCode || !$discountCode->isValid()) {
-                return back()->with('error', 'کد تخفیف نامعتبر است.');
+                return back()->with('error', 'کد تخفیف نامعتبر است یا منقضی شده.');
             }
 
-            $discountAmount = $discountCode->type === 'percentage'
-                ? ($booking->prepayment_amount * $discountCode->amount / 100)
-                : $discountCode->amount;
+            if ($discountCode->user_id && $discountCode->user_id !== auth()->id()) {
+                return back()->with('error', 'این کد تخفیف متعلق به شما نیست.');
+            }
 
-            DB::transaction(function() use ($booking, $discountCode, $discountAmount) {
+            DB::transaction(function() use ($booking, $discountCode) {
+                $basePrepayment = 50000;
+                $discountAmount = $discountCode->type === 'percentage'
+                    ? ($basePrepayment * $discountCode->amount / 100)
+                    : $discountCode->amount;
+                if ($discountCode->max_amount) {
+                    $discountAmount = min($discountAmount, $discountCode->max_amount);
+                }
+                $finalPrepayment = max(0, $basePrepayment - $discountAmount);
                 $booking->update([
                     'discount_code' => $discountCode->code,
                     'discount_amount' => $discountAmount,
-                    'prepayment_amount' => max(0, $booking->prepayment_amount - $discountAmount)
+                    'prepayment_amount' => $finalPrepayment
                 ]);
-
                 $discountCode->increment('used_count');
             });
 
-            return back()->with('success', 'کد تخفیف با موفقیت اعمال شد.');
+            return back()->with('success', sprintf(
+                'کد تخفیف اعمال شد. مبلغ قابل پرداخت: %s تومان',
+                number_format($booking->prepayment_amount)
+            ));
 
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors());
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
+            Log::error('خطا در اعمال کد تخفیف', [
+                'booking_id' => $booking->id,
+                'code' => $request->code,
+                'error' => $e->getMessage()
+            ]);
             return back()->with('error', 'خطا در اعمال کد تخفیف: ' . $e->getMessage());
         }
     }

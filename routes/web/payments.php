@@ -28,13 +28,3 @@ Route::prefix('payments/secure')->middleware('2fa.enabled')->name('payments.secu
     Route::get('/verify/{reference}', [SecurePaymentController::class, 'showVerification'])->name('verify');
     Route::get('/result/{reference}', [SecurePaymentController::class, 'showResult'])->name('result');
 });
-
-Route::prefix('loyalty')->name('loyalty.')->group(function () {
-    Route::get('/', [LoyaltyController::class, 'index'])->name('index');
-    Route::get('/points', [LoyaltyController::class, 'getPoints'])->name('points');
-    Route::get('/history', [LoyaltyController::class, 'getHistory'])->name('history');
-    Route::get('/rewards', [LoyaltyController::class, 'getRewards'])->name('rewards');
-    Route::get('/progress', [LoyaltyController::class, 'getProgress'])->name('progress');
-
-    Route::post('/rewards/{reward}/redeem', [LoyaltyController::class, 'redeemReward'])->name('redeem');
-});

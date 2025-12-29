@@ -5,56 +5,107 @@ namespace App\Http\Controllers;
 use App\Models\LoyaltyPoint;
 use App\Models\Reward;
 use App\Models\DiscountCode;
-use App\Notifications\RewardRedeemed;
-use App\Notifications\PointsEarned;
+use App\Services\LoyaltyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class LoyaltyController extends Controller
 {
+    protected LoyaltyService $loyaltyService;
+
+    public function __construct(LoyaltyService $loyaltyService)
+    {
+        $this->loyaltyService = $loyaltyService;
+    }
+
     public function index()
     {
-        $userPoints = LoyaltyPoint::where('user_id', auth()->id())->sum('points');
-        $history = LoyaltyPoint::where('user_id', auth()->id())
-            ->with('booking')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        try {
+            $userId = auth()->id();
+            $userPoints = $this->loyaltyService->getCurrentPoints($userId);
+            $expiringPoints = $this->loyaltyService->getExpiringPoints($userId, 30);
+            $history = $this->loyaltyService->getHistory($userId, 10);
+            $rewards = $this->loyaltyService->getAvailableRewards($userId);
+            $nextReward = $this->getNextReward($userPoints);
+            $activeCodes = DiscountCode::where('user_id', $userId)
+                ->where('is_active', true)
+                ->where(function($q) {
+                    $q->whereNull('expires_at')
+                        ->orWhere('expires_at', '>', now());
+                })
+                ->where('used_count', '<', DB::raw('max_uses'))
+                ->latest()
+                ->get();
 
-        $rewards = Reward::where('is_active', true)
-            ->orderBy('required_points')
-            ->get();
+            return view('loyalty.index', compact(
+                'userPoints',
+                'expiringPoints',
+                'history',
+                'rewards',
+                'nextReward',
+                'activeCodes'
+            ));
 
-        $nextReward = $this->getNextReward($userPoints);
+        } catch (\Exception $e) {
+            Log::error('خطا در بارگذاری پنل امتیازات', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage()
+            ]);
 
-        return view('loyalty.index', compact('userPoints', 'history', 'rewards', 'nextReward'));
+            return back()->with('error', 'خطا در بارگذاری اطلاعات امتیازات. لطفاً دوباره تلاش کنید.');
+        }
+    }
+
+    public function redeemReward(Request $request, Reward $reward)
+    {
+        try {
+            $userId = auth()->id();
+
+            if (!$reward->isAvailableForUser(auth()->user())) {
+                return back()->with('error', 'امتیاز کافی ندارید یا این پاداش در دسترس نیست.');
+            }
+
+            DB::beginTransaction();
+            $discountCode = $this->loyaltyService->redeemReward($userId, $reward);
+
+            DB::commit();
+
+            return redirect()
+                ->route('loyalty.index')
+                ->with('success', "🎉 تبریک! پاداش با موفقیت دریافت شد. کد تخفیف شما: {$discountCode->code}");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('خطا در تبدیل امتیاز به پاداش', [
+                'user_id' => auth()->id(),
+                'reward_id' => $reward->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return back()->with('error', 'خطا در دریافت پاداش: ' . $e->getMessage());
+        }
     }
 
     public function getPoints()
     {
-        $points = LoyaltyPoint::where('user_id', auth()->id())->sum('points');
+        $points = $this->loyaltyService->getCurrentPoints(auth()->id());
         return response()->json(['points' => $points]);
     }
 
-    public function getHistory()
+    public function getHistory(Request $request)
     {
-        $history = LoyaltyPoint::where('user_id', auth()->id())
-            ->with('booking')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $perPage = $request->input('per_page', 10);
+        $history = $this->loyaltyService->getHistory(auth()->id(), $perPage);
 
-        return response()->json([
-            'history' => $history
-        ]);
+        return response()->json($history);
     }
 
     public function getRewards()
     {
-        $rewards = Reward::where('is_active', true)
-            ->orderBy('required_points')
-            ->get();
-
-        $userPoints = LoyaltyPoint::where('user_id', auth()->id())->sum('points');
+        $rewards = $this->loyaltyService->getAvailableRewards(auth()->id());
+        $userPoints = $this->loyaltyService->getCurrentPoints(auth()->id());
 
         return response()->json([
             'rewards' => $rewards,
@@ -64,7 +115,7 @@ class LoyaltyController extends Controller
 
     public function getProgress()
     {
-        $userPoints = LoyaltyPoint::where('user_id', auth()->id())->sum('points');
+        $userPoints = $this->loyaltyService->getCurrentPoints(auth()->id());
         $nextReward = $this->getNextReward($userPoints);
 
         return response()->json([
@@ -77,71 +128,30 @@ class LoyaltyController extends Controller
         ]);
     }
 
-    public function redeemReward(Request $request, Reward $reward)
+    public function discountCodes()
     {
-        if (!$reward->isAvailableForUser(auth()->user())) {
-            return response()->json([
-                'message' => 'امتیاز کافی ندارید یا پاداش در دسترس نیست'
-            ], 400);
-        }
-
-        try {
-            DB::beginTransaction();
-
-            LoyaltyPoint::create([
-                'user_id' => auth()->id(),
-                'points' => -$reward->required_points,
-                'description' => "استفاده از پاداش: {$reward->title}"
-            ]);
-
-            $discountCode = DiscountCode::create([
-                'code' => strtoupper(Str::random(8)),
-                'type' => $reward->discount_type,
-                'amount' => $reward->discount_amount,
-                'user_id' => auth()->id(),
-                'max_uses' => 1,
-                'expires_at' => now()->addDays(30)
-            ]);
-
-            $reward->incrementUsage();
-
-            auth()->user()->notify(new RewardRedeemed($reward, $discountCode));
-
-            DB::commit();
-
-            return response()->json([
-                'message' => 'پاداش با موفقیت دریافت شد',
-                'discount_code' => $discountCode->code
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'message' => 'خطا در دریافت پاداش'
-            ], 500);
-        }
-    }
-
-    public function earnPoints(Request $request)
-    {
-        $validated = $request->validate([
-            'booking_id' => 'required|exists:bookings,id',
-            'points' => 'required|integer|min:1'
-        ]);
-
-        $loyaltyPoint = LoyaltyPoint::create([
-            'user_id' => auth()->id(),
-            'booking_id' => $validated['booking_id'],
-            'points' => $validated['points'],
-            'type' => 'earned',
-            'description' => 'امتیاز کسب شده از رزرو'
-        ]);
-
-        auth()->user()->notify(new PointsEarned($loyaltyPoint));
+        $codes = DiscountCode::where('user_id', auth()->id())
+            ->where('is_active', true)
+            ->where(function($q) {
+                $q->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->where('used_count', '<', DB::raw('max_uses'))
+            ->latest()
+            ->get()
+            ->map(function($code) {
+                return [
+                    'code' => $code->code,
+                    'type' => $code->type,
+                    'amount' => $code->amount,
+                    'expires_at' => $code->expires_at,
+                    'remaining_uses' => $code->max_uses - $code->used_count,
+                    'max_uses' => $code->max_uses
+                ];
+            });
 
         return response()->json([
-            'message' => 'امتیاز با موفقیت افزوده شد',
-            'points' => $validated['points']
+            'discount_codes' => $codes
         ]);
     }
 
@@ -156,8 +166,8 @@ class LoyaltyController extends Controller
     public function overview()
     {
         $user = auth()->user();
-        $userPoints = LoyaltyPoint::where('user_id', $user->id)->sum('points');
-        $expiringPoints = $user->getExpiringPoints();
+        $userPoints = $this->loyaltyService->getCurrentPoints($user->id);
+        $expiringPoints = $this->loyaltyService->getExpiringPoints($user->id);
         $nextReward = $this->getNextReward($userPoints);
 
         return response()->json([
@@ -167,9 +177,9 @@ class LoyaltyController extends Controller
                 'total_earned' => LoyaltyPoint::where('user_id', $user->id)
                     ->where('type', 'earned')
                     ->sum('points'),
-                'total_spent' => LoyaltyPoint::where('user_id', $user->id)
+                'total_spent' => abs(LoyaltyPoint::where('user_id', $user->id)
                     ->where('type', 'spent')
-                    ->sum('points')
+                    ->sum('points'))
             ],
             'next_reward' => $nextReward ? [
                 'title' => $nextReward->title,
@@ -179,96 +189,8 @@ class LoyaltyController extends Controller
         ]);
     }
 
-    public function history(Request $request)
+    public function myCodes()
     {
-        $perPage = $request->input('per_page', 10);
-
-        $history = LoyaltyPoint::where('user_id', auth()->id())
-            ->with(['booking' => function($query) {
-                $query->select('id', 'booking_time', 'service_id', 'specialist_id')
-                    ->with(['service:id,name', 'specialist:id,name']);
-            }])
-            ->orderBy('created_at', 'desc')
-            ->paginate($perPage);
-
-        return response()->json([
-            'data' => $history->map(function($point) {
-                return [
-                    'id' => $point->id,
-                    'points' => $point->points,
-                    'type' => $point->type,
-                    'description' => $point->description,
-                    'expires_at' => $point->expires_at,
-                    'created_at' => $point->created_at,
-                    'booking' => $point->booking ? [
-                        'id' => $point->booking->id,
-                        'date' => $point->booking->booking_time,
-                        'service' => $point->booking->service->name,
-                        'specialist' => $point->booking->specialist->name
-                    ] : null
-                ];
-            }),
-            'meta' => [
-                'current_page' => $history->currentPage(),
-                'last_page' => $history->lastPage(),
-                'per_page' => $history->perPage(),
-                'total' => $history->total()
-            ]
-        ]);
-    }
-
-    public function rewards()
-    {
-        $userPoints = LoyaltyPoint::where('user_id', auth()->id())->sum('points');
-
-        $rewards = Reward::where('is_active', true)
-            ->orderBy('required_points')
-            ->get()
-            ->map(function($reward) use ($userPoints) {
-                return [
-                    'id' => $reward->id,
-                    'title' => $reward->title,
-                    'description' => $reward->description,
-                    'required_points' => $reward->required_points,
-                    'discount_type' => $reward->discount_type,
-                    'discount_amount' => $reward->discount_amount,
-                    'available' => $reward->isAvailableForUser(auth()->user()),
-                    'is_achievable' => $userPoints >= $reward->required_points,
-                    'points_needed' => max(0, $reward->required_points - $userPoints),
-                    'remaining_uses' => $reward->max_uses ?
-                        ($reward->max_uses - $reward->used_count) : null
-                ];
-            });
-
-        return response()->json([
-            'rewards' => $rewards,
-            'user_points' => $userPoints
-        ]);
-    }
-
-    public function discountCodes()
-    {
-        $codes = DiscountCode::where('user_id', auth()->id())
-            ->where(function($query) {
-                $query->where('is_active', true)
-                    ->where(function($q) {
-                        $q->whereNull('expires_at')
-                            ->orWhere('expires_at', '>', now());
-                    });
-            })
-            ->get()
-            ->map(function($code) {
-                return [
-                    'code' => $code->code,
-                    'type' => $code->type,
-                    'amount' => $code->amount,
-                    'expires_at' => $code->expires_at,
-                    'remaining_uses' => $code->max_uses - $code->used_count
-                ];
-            });
-
-        return response()->json([
-            'discount_codes' => $codes
-        ]);
+        return view('loyalty.my-codes');
     }
 }

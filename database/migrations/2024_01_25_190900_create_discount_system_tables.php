@@ -16,6 +16,9 @@ return new class extends Migration
             $table->string('code')->unique();
             $table->enum('type', ['fixed', 'percentage']);
             $table->decimal('amount', 10, 2);
+            $table->decimal('max_amount', 10, 2)
+                ->nullable()
+                ->comment('حداکثر مبلغ تخفیف (برای محدود کردن تخفیف‌های درصدی)');
             $table->integer('max_uses');
             $table->integer('used_count')->default(0);
             $table->boolean('is_active')->default(true);
