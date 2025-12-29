@@ -12,6 +12,11 @@ Route::prefix('bookings')->name('bookings.')->group(function () {
     Route::post('/', [BookingController::class, 'store'])->name('store');
     Route::get('/failed', [BookingController::class, 'failed'])->name('failed');
 
+    Route::post('/check-discount', [BookingController::class, 'checkDiscount'])->name('check-discount');
+    Route::get('/specialists/{specialist}/dates', [BookingController::class, 'getAvailableDates'])->name('available-dates');
+    Route::get('/specialists/{specialist}/slots/{date}', [BookingController::class, 'getAvailableTimeSlots'])->name('available-slots');
+    Route::get('/services/{service}/specialists', [BookingController::class, 'getSpecialistsByService'])->name('service-specialists');
+
     Route::middleware('check.booking.ownership')->group(function () {
         Route::get('/{booking}', [BookingController::class, 'show'])->name('show');
         Route::get('/{booking}/reschedule', [BookingController::class, 'showReschedule'])->name('reschedule');
@@ -20,10 +25,4 @@ Route::prefix('bookings')->name('bookings.')->group(function () {
         Route::post('/{booking}/rate', [BookingController::class, 'rate'])->name('rate');
         Route::post('/{booking}/apply-discount', [BookingController::class, 'applyDiscount'])->name('apply-discount');
     });
-});
-
-Route::prefix('payment')->name('payment.')->group(function () {
-    Route::get('/{booking}', [PaymentController::class, 'show'])->name('show');
-    Route::post('/{booking}/process', [PaymentController::class, 'process'])->name('process');
-    Route::get('/{booking}/callback', [PaymentController::class, 'callback'])->name('booking.callback');
 });
