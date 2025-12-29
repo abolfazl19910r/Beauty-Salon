@@ -16,16 +16,18 @@ class DiscountCode extends Model
         'max_uses',
         'used_count',
         'expires_at',
-        'is_active'
+        'is_active',
+        'user_id',
+        'max_amount'
     ];
-
-    protected array $dates = ['expires_at'];
 
     protected $casts = [
         'is_active' => 'boolean',
         'amount' => 'decimal:2',
+        'max_amount' => 'decimal:2',
         'used_count' => 'integer',
-        'max_uses' => 'integer'
+        'max_uses' => 'integer',
+        'expires_at' => 'datetime'
     ];
 
     public function bookings(): \Illuminate\Database\Eloquent\Relations\HasMany
@@ -33,23 +35,67 @@ class DiscountCode extends Model
         return $this->hasMany(Booking::class, 'discount_code', 'code');
     }
 
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function isValid(): bool
     {
-        return $this->is_active &&
-            $this->used_count < $this->max_uses &&
-            ($this->expires_at === null || $this->expires_at->isFuture());
+        if (!$this->is_active) {
+            return false;
+        }
+
+        if ($this->used_count >= $this->max_uses) {
+            return false;
+        }
+
+        if ($this->expires_at) {
+            if (is_string($this->expires_at)) {
+                $expiresAt = \Carbon\Carbon::parse($this->expires_at);
+            } else {
+                $expiresAt = $this->expires_at;
+            }
+
+            if ($expiresAt->isPast()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function calculateDiscount($amount)
     {
         if ($this->type === 'percentage') {
-            return ($amount * $this->amount) / 100;
+            $discount = ($amount * $this->amount) / 100;
+        } else {
+            $discount = $this->amount;
         }
-        return $this->amount;
+
+        if ($this->max_amount) {
+            $discount = min($discount, $this->max_amount);
+        }
+
+        return $discount;
     }
 
     public function incrementUsage()
     {
         $this->increment('used_count');
+    }
+
+    public function isForSpecificUser(): bool
+    {
+        return $this->user_id !== null;
+    }
+
+    public function canBeUsedBy($userId): bool
+    {
+        if ($this->user_id === null) {
+            return true;
+        }
+
+        return $this->user_id == $userId;
     }
 }
