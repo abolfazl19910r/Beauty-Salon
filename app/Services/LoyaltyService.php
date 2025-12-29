@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Booking;
 use App\Models\LoyaltyPoint;
 use App\Models\Reward;
 use App\Models\DiscountCode;
