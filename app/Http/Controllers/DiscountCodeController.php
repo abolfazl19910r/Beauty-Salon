@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\DiscountCode;
+use App\Models\Booking;
 use App\Http\Resources\DiscountCodeResource;
 use App\Services\DiscountCodeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class DiscountCodeController extends Controller
 {
@@ -89,6 +91,62 @@ class DiscountCodeController extends Controller
         ]);
     }
 
+    public function applyToBooking(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'code' => 'required|string',
+                'service_id' => 'required|exists:beauty_services,id'
+            ]);
+
+            $discountCode = DiscountCode::where('code', $validated['code'])->first();
+
+            if (!$discountCode || !$discountCode->isValid()) {
+                return response()->json([
+                    'valid' => false,
+                    'message' => 'کد تخفیف نامعتبر است یا منقضی شده.'
+                ], 200);
+            }
+
+            if ($discountCode->user_id && $discountCode->user_id !== auth()->id()) {
+                return response()->json([
+                    'valid' => false,
+                    'message' => 'این کد تخفیف برای شما قابل استفاده نیست.'
+                ], 200);
+            }
+
+            $prepaymentAmount = 50000;
+
+            $discountAmount = $discountCode->type === 'percentage'
+                ? ($prepaymentAmount * $discountCode->amount / 100)
+                : $discountCode->amount;
+
+            if ($discountCode->max_amount) {
+                $discountAmount = min($discountAmount, $discountCode->max_amount);
+            }
+
+            $finalPrice = max(0, $prepaymentAmount - $discountAmount);
+
+            return response()->json([
+                'valid' => true,
+                'discount_amount' => $discountAmount,
+                'final_price' => $finalPrice,
+                'message' => 'کد تخفیف معتبر است و آماده اعمال می‌باشد.'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('خطا در بررسی کد تخفیف', [
+                'error' => $e->getMessage(),
+                'code' => $request->code ?? null
+            ]);
+
+            return response()->json([
+                'valid' => false,
+                'message' => 'خطا در بررسی کد تخفیف.'
+            ], 500);
+        }
+    }
+
     public function update(Request $request, DiscountCode $discountCode)
     {
         $validated = $request->validate([
@@ -118,31 +176,5 @@ class DiscountCodeController extends Controller
 
         return redirect()->route('discount-codes.index')
             ->with('success', 'کد تخفیف با موفقیت حذف شد.');
-    }
-
-    public function applyToBooking(Request $request)
-    {
-        $request->validate([
-            'code' => 'required|string',
-            'booking_id' => 'required|exists:bookings,id'
-        ]);
-
-        try {
-            $result = $this->discountCodeService->applyToBooking(
-                $request->code,
-                $request->booking_id
-            );
-
-            return response()->json([
-                'success' => true,
-                'discount_amount' => $result['discount_amount'],
-                'final_price' => $result['final_price']
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 400);
-        }
     }
 }
