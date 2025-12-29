@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Services\PaymentService;
+use App\Services\LoyaltyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -11,10 +12,12 @@ use Illuminate\Support\Facades\DB;
 class PaymentController extends Controller
 {
     protected PaymentService $paymentService;
+    protected LoyaltyService $loyaltyService;
 
-    public function __construct(PaymentService $paymentService)
+    public function __construct(PaymentService $paymentService, LoyaltyService $loyaltyService)
     {
         $this->paymentService = $paymentService;
+        $this->loyaltyService = $loyaltyService;
     }
 
     public function process(Booking $booking)
@@ -23,11 +26,38 @@ class PaymentController extends Controller
             if ($booking->user_id !== auth()->id()) {
                 abort(403);
             }
-
             if ($booking->payment_status === 'paid') {
                 return redirect()->route('payment.result')->with(['success' => true, 'booking' => $booking]);
             }
+            if ($booking->prepayment_amount <= 0) {
+                return DB::transaction(function() use ($booking) {
+                    $specialist = $booking->specialist;
+                    $finalStatus = $specialist->auto_confirm_bookings ? 'confirmed' : 'pending';
+                    $booking->update([
+                        'payment_status' => 'paid',
+                        'status' => $finalStatus,
+                        'paid_at' => now(),
+                        'payment_ref' => 'FREE-DISCOUNT-' . $booking->id,
+                        'payment_details' => [
+                            'method' => 'full_discount',
+                            'gateway_amount' => 0,
+                            'discount_code' => $booking->discount_code
+                        ]
+                    ]);
 
+                    try {
+                        $this->loyaltyService->earnPointsFromBooking($booking->user_id, $booking->id);
+                    } catch (\Exception $e) {
+                        Log::warning('خطا در اعطای امتیاز وفاداری', [
+                            'booking_id' => $booking->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+
+                    return redirect()->route('bookings.success', ['id' => $booking->id])
+                        ->with('success', 'نوبت شما با موفقیت ثبت شد (تخفیف کامل).');
+                });
+            }
             $result = $this->paymentService->createPayment($booking);
 
             if (isset($result['success']) && $result['success'] && isset($result['payment_url'])) {
@@ -47,11 +77,9 @@ class PaymentController extends Controller
             Log::error('💥 Payment Process Exception', [
                 'booking_id' => $booking->id,
                 'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return back()->with('error', 'خطای سیستمی در فرآیند پرداخت: ' . $e->getMessage());
+            return back()->with('error', 'خطایی سیستمی در فرآیند پرداخت: ' . $e->getMessage());
         }
     }
 
@@ -103,6 +131,15 @@ class PaymentController extends Controller
                             'gateway_amount' => 0
                         ]
                     ]);
+                    try {
+                        $this->loyaltyService->earnPointsFromBooking(auth()->id(), $booking->id);
+                    } catch (\Exception $e) {
+                        Log::warning('خطا در اعطای امتیاز وفاداری', [
+                            'booking_id' => $booking->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+
                     return redirect()->route('bookings.success', ['id' => $booking->id])
                         ->with('success', 'پرداخت از کیف پول با موفقیت انجام شد');
                 }
@@ -177,7 +214,6 @@ class PaymentController extends Controller
                         if ($partialPayment) {
                             $paymentDetails['wallet_amount'] = $partialPayment['wallet_amount'];
                             $paymentDetails['gateway_amount'] = $partialPayment['remaining_amount'];
-
                             session()->forget('partial_payment_' . $booking->id);
                         }
 
@@ -193,6 +229,14 @@ class PaymentController extends Controller
                             $booking->prepayment_amount,
                             $booking->id
                         );
+                        try {
+                            $this->loyaltyService->earnPointsFromBooking($booking->user_id, $booking->id);
+                        } catch (\Exception $e) {
+                            Log::warning('⚠️ خطا در اعطای امتیاز وفاداری', [
+                                'booking_id' => $booking->id,
+                                'error' => $e->getMessage()
+                            ]);
+                        }
                     });
                 }
 
