@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Specialist\SpecialistProfileController;
 use App\Http\Controllers\Specialist\SpecialistReportController;
+use App\Http\Controllers\Specialist\SpecialistReviewController;
 use App\Http\Controllers\Specialist\SpecialistWalletController;
 use App\Http\Controllers\SpecialistController;
 use Illuminate\Support\Facades\Route;
@@ -59,5 +60,14 @@ Route::middleware(['auth', 'verified'])->name('specialist.')->group(function () 
         Route::get('/notifications/latest', [SpecialistProfileController::class, 'latestNotifications'])->name('notifications.latest');
         Route::get('/notifications/count', [SpecialistProfileController::class, 'notificationsCount'])->name('notifications.count');
         Route::post('/notifications/{id}/read', [SpecialistProfileController::class, 'markNotificationAsRead'])->name('notifications.read');
+    });
+
+    Route::prefix('reviews')->name('reviews.')->group(function () {
+        Route::get('/', [SpecialistReviewController::class, 'index'])->name('index');
+        Route::get('/{review}', [SpecialistReviewController::class, 'show'])->name('show');
+        Route::post('/{review}/respond', [SpecialistReviewController::class, 'respond'])->name('respond');
+        Route::put('/{review}/update-response', [SpecialistReviewController::class, 'updateResponse'])->name('update-response');
+        Route::delete('/{review}/delete-response', [SpecialistReviewController::class, 'deleteResponse'])->name('delete-response');
+        Route::get('/stats', [SpecialistReviewController::class, 'stats'])->name('stats');
     });
 });
