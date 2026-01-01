@@ -49,13 +49,10 @@ class BookingStatusUpdated extends Notification
         $persianDate = verta($this->booking->booking_time)->format('Y/m/d');
         $persianTime = verta($this->booking->booking_time)->format('H:i');
 
-        if ($this->status === 'completed') {
-            $amountLabel = "مبلغ کل";
-            $amountValue = number_format($this->booking->service->price);
-        } else {
-            $amountLabel = "پیش‌پرداخت";
-            $amountValue = number_format($this->booking->prepayment_amount);
-        }
+        $amountLabel = $this->status === 'completed' ? "مبلغ کل" : "پیش‌پرداخت";
+        $amountValue = $this->status === 'completed'
+            ? number_format($this->booking->service->price)
+            : number_format($this->booking->prepayment_amount);
 
         $baseInfo = sprintf(
             "\n👤 متخصص: %s\n💇 سرویس: %s\n📅 تاریخ: %s\n⏰ زمان: %s\n💰 %s: %s تومان\n🔢 پیگیری: #%s\n🏠 آدرس: تهران، خیابان ... ",
@@ -68,8 +65,13 @@ class BookingStatusUpdated extends Notification
             $this->booking->id
         );
 
+        if ($this->status === 'completed') {
+            return "سلام {$notifiable->name} عزیز، نوبت شما انجام شد و به پایان رسید."
+                . $baseInfo
+                . "\n✔️ از اینکه ما را انتخاب کردید سپاسگزاریم.🌹";
+        }
+
         return match ($this->status) {
-            'completed' => "سلام {$notifiable->name} عزیز، نوبت شما انجام شد و به پایان رسید." . $baseInfo . "\n✔️ از اینکه ما را انتخاب کردید سپاسگزاریم. لطفاً نظر خود را ثبت کرده و ما را به دوستانتان معرفی کنید.🌹",
             'confirmed' => "سلام {$notifiable->name}، نوبت شما تایید شد." . $baseInfo . "\n✅ لطفا ۱۵ دقیقه زودتر در محل حضور داشته باشید.",
             'pending_specialist' => "سلام {$notifiable->name}، نوبت شما با موفقیت ثبت شد و در انتظار تایید نهایی متخصص است. نتیجه به زودی اطلاع‌رسانی می‌شود." . $baseInfo,
             'cancelled' => "سلام {$notifiable->name}، نوبت شما لغو شد." . $baseInfo . "\n❌ دلیل: " . ($this->reason ?? 'ذکر نشده'),
