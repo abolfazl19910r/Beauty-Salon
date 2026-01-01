@@ -16,15 +16,17 @@ use Carbon\Carbon;
 use Morilog\Jalali\Jalalian;
 use App\Services\SMSService;
 use Illuminate\Support\Facades\Log;
+use App\Services\ReviewService;
 
 class SpecialistProfileController extends Controller
 {
-
     protected SMSService $smsService;
+    protected ReviewService $reviewService;
 
-    public function __construct(SMSService $smsService)
+    public function __construct(SMSService $smsService, ReviewService $reviewService)
     {
         $this->smsService = $smsService;
+        $this->reviewService = $reviewService;
     }
 
     public function dashboardBookings()
@@ -542,9 +544,9 @@ class SpecialistProfileController extends Controller
     public function markAsCompleted(Booking $booking)
     {
         $user = auth()->user();
-        $specialist = Specialist::where('phone', $user->phone)->first();
+        $specialist = Specialist::where('phone', $user->phone)->firstOrFail();
 
-        if (!$specialist || $booking->specialist_id !== $specialist->id) {
+        if ($booking->specialist_id !== $specialist->id) {
             abort(403, 'شما مجاز به تغییر وضعیت این نوبت نیستید.');
         }
 
@@ -555,13 +557,33 @@ class SpecialistProfileController extends Controller
         try {
             DB::transaction(function() use ($booking) {
                 $booking->update(['status' => 'completed']);
+                try {
+                    $reviewSent = $this->reviewService->sendReviewRequest($booking);
 
-                $booking->user->notify(new \App\Notifications\BookingStatusUpdated($booking, 'completed'));
+                    if ($reviewSent) {;
+                    } else {
+                        Log::warning('⚠️ Review request not sent', [
+                            'booking_id' => $booking->id
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('❌ Failed to send review request', [
+                        'booking_id' => $booking->id,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                }
+                $booking->user->notify(new BookingStatusUpdated($booking, 'completed'));
             });
 
-            return back()->with('success', '✓ نوبت به عنوان انجام شده علامت‌گذاری شد و به مشتری اطلاع‌رسانی گردید.');
-        } catch (Exception $e) {
-            Log::error('خطا در علامت‌گذاری نوبت به عنوان انجام شده', ['booking_id' => $booking->id, 'error' => $e->getMessage()]);
+            return back()->with('success', '✅ نوبت به عنوان انجام شده علامت‌گذاری شد و درخواست نظرسنجی برای مشتری ارسال گردید.');
+
+        } catch (\Exception $e) {
+            Log::error('خطا در علامت‌گذاری نوبت به عنوان انجام شده', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return back()->with('error', 'خطا در علامت‌گذاری نوبت: ' . $e->getMessage());
         }
     }
