@@ -43,7 +43,8 @@ return Application::configure(basePath: dirname(__DIR__))
             ->dailyAt('01:00')
             ->withoutOverlapping()
             ->onOneServer();
-
+        $schedule->command('review-tokens:cleanup')
+            ->daily();
         event(new ReminderScheduleEvent());
     })
     ->withExceptions(function (Exceptions $exceptions) {
