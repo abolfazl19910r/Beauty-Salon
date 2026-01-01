@@ -89,4 +89,19 @@ class BeautyService extends Model
     {
         return $this->belongsToMany(Specialist::class, 'specialist_services');
     }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class, 'service_id');
+    }
+
+    public function getAverageRating(): float
+    {
+        return round($this->reviews()->approved()->avg('overall_rating') ?? 0, 1);
+    }
+
+    public function getTotalReviews(): int
+    {
+        return $this->reviews()->approved()->count();
+    }
 }

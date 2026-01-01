@@ -2,253 +2,106 @@
 
 namespace App\Models;
 
+use App\Services\CategoryService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
-class Booking extends Model
+class BeautyService extends Model
 {
+    protected $table = 'beauty_services';
+
     use HasFactory;
     protected $fillable = [
-        'service_id',
-        'specialist_id',
-        'user_id',
-        'booking_time',
-        'status',
-        'prepayment_amount',
-        'payment_status',
-        'payment_reference',
-        'payment_details',
-        'paid_at',
-        'discount_code',
-        'discount_amount',
-        'rating',
-        'review',
-        'reminder_sent',
-        'refund_status',
-        'refunded_at',
-        'refunded_amount',
-        'refund_reference',
-        'refund_details',
-        'cancellation_reason',
-        'cancelled_by',
-        'cancelled_at'
+        'name',
+        'slug',
+        'description',
+        'price',
+        'duration',
+        'image',
+        'category_id'
     ];
 
-    protected $casts = [
-        'booking_time' => 'datetime',
-        'paid_at' => 'datetime',
-        'refunded_at' => 'datetime',
-        'cancelled_at' => 'datetime',
-        'payment_details' => 'json',
-        'refund_details' => 'json',
-        'reminder_sent' => 'boolean'
-    ];
-
-    protected array $dates = ['booking_time'];
-
-    public function service(): BelongsTo
+    protected static function boot()
     {
-        return $this->belongsTo(BeautyService::class);
+        parent::boot();
+
+        static::creating(function ($service) {
+            if (!$service->slug) {
+                $service->slug = Str::slug($service->name);
+            }
+        });
+
+        static::deleting(function($service) {
+            $activeBookings = $service->bookings()
+                ->where(function($query) {
+                    $query->whereIn('status', ['pending', 'confirmed'])
+                        ->orWhere('payment_status', 'paid');
+                })
+                ->count();
+
+            if ($activeBookings > 0) {
+                throw new \Exception('این سرویس دارای رزروهای فعال است و نمی‌توان آن را حذف کرد.');
+            }
+
+            $service->specialists()->detach();
+
+            $service->bookings()->update([
+                'status' => 'cancelled'
+            ]);
+
+            if ($service->image) {
+                Storage::disk('public')->delete($service->image);
+            }
+        });
     }
 
-    public function specialist(): BelongsTo
+    public function category(): BelongsTo
     {
-        return $this->belongsTo(Specialist::class);
+        return $this->belongsTo(Category::class);
     }
 
-    public function user(): BelongsTo
+    public function getImageUrlAttribute(): ?string
     {
-        return $this->belongsTo(User::class);
+        return $this->image ? asset('storage/' . $this->image) : null;
     }
 
-    public function canBeRescheduled(): bool
+    public static function latest()
     {
-        return $this->status === 'confirmed' &&
-            $this->booking_time->diffInHours(now()) > 24;
+        return self::orderBy('created_at', 'desc');
     }
 
-    public function scopePendingPayment($query)
+    public static function paginate(int $perPage = 15)
     {
-        return $query->where('status', 'pending_payment');
+        return self::latest()->paginate($perPage);
     }
 
-    public function scopeAwaitingPayment($query)
+    public function bookings(): HasMany
     {
-        return $query->where('status', 'pending_payment')
-            ->where('payment_status', 'unpaid');
+        return $this->hasMany(Booking::class, 'service_id');
     }
 
-    public function canBeCancelled(): bool
+    public function specialists(): BelongsToMany
     {
-        return in_array($this->status, ['pending', 'confirmed', 'pending_payment']) &&
-            $this->booking_time->diffInHours(now()) > 24;
+        return $this->belongsToMany(Specialist::class, 'specialist_services');
     }
 
-    public function getStatusBadgeAttribute(): string
+    public function reviews(): HasMany
     {
-        return match($this->status) {
-            'pending' => 'bg-yellow-100 text-yellow-800',
-            'confirmed' => 'bg-green-100 text-green-800',
-            'completed' => 'bg-blue-600 text-white',
-            'cancelled' => 'bg-red-100 text-red-800',
-            'pending_payment' => 'bg-blue-100 text-blue-800',
-            default => 'bg-gray-100 text-gray-800'
-        };
+        return $this->hasMany(Review::class, 'service_id');
     }
 
-
-    public function isPendingPayment(): bool
+    public function getAverageRating(): float
     {
-        return $this->status === 'pending_payment';
+        return round($this->reviews()->approved()->avg('overall_rating') ?? 0, 1);
     }
 
-    public function isCompleted(): bool
+    public function getTotalReviews(): int
     {
-        return $this->status === 'completed';
-    }
-
-    public function isPending(): bool
-    {
-        return $this->status === 'pending';
-    }
-
-    public function scopeCompleted($query)
-    {
-        return $query->where('status', 'completed');
-    }
-
-    public function isDue(): bool
-    {
-        return $this->booking_time->isPast() && !$this->rating;
-    }
-
-    public function getStatusTextAttribute(): string
-    {
-        return match($this->status) {
-            'pending' => 'در انتظار تایید',
-            'confirmed' => 'تایید شده',
-            'completed' => 'انجام شده',
-            'cancelled' => 'لغو شده',
-            'pending_payment' => 'در انتظار پرداخت',
-            default => 'نامشخص'
-        };
-    }
-
-    public function getRemainingTimeAttribute(): string
-    {
-        if ($this->isPending()) {
-            return $this->booking_time->longAbsoluteDiffForHumans();
-        }
-        return '';
-    }
-
-    public function scopeUpcoming($query)
-    {
-        return $query->where('booking_time', '>', now())
-            ->whereNotIn('status', ['cancelled']);
-    }
-
-    public function scopePast($query)
-    {
-        return $query->where('booking_time', '<=', now());
-    }
-
-    public function payment(): HasOne
-    {
-        return $this->hasOne(Payment::class);
-    }
-
-    public function isRefundable(): bool
-    {
-        return $this->payment_status === 'paid' &&
-            $this->status === 'cancelled' &&
-            !$this->isRefunded() &&
-            $this->booking_time->isFuture();
-    }
-
-    public function isRefunded(): bool
-    {
-        return $this->refund_status === 'refunded';
-    }
-
-    public function hasRefundFailed(): bool
-    {
-        return $this->refund_status === 'failed';
-    }
-
-    public function isPendingRefund(): bool
-    {
-        return $this->refund_status === 'pending';
-    }
-
-    public function markAsRefunded(array $details = []): bool
-    {
-        return $this->update([
-            'refund_status' => 'refunded',
-            'refunded_at' => now(),
-            'refunded_amount' => $this->prepayment_amount,
-            'refund_details' => array_merge(
-                $details,
-                ['refunded_by' => auth()->id() ?? 'system']
-            )
-        ]);
-    }
-
-    public function markAsRefundFailed(array $details = []): bool
-    {
-        return $this->update([
-            'refund_status' => 'failed',
-            'refund_details' => array_merge(
-                $details,
-                ['failed_at' => now()->toDateTimeString()]
-            )
-        ]);
-    }
-
-    public function getRefundableAmount(): float
-    {
-        if ($this->booking_time->diffInHours(now()) < 24) {
-            return $this->prepayment_amount * 0.8;
-        }
-
-        return $this->prepayment_amount;
-    }
-
-    public function getRefundStatusTextAttribute(): string
-    {
-        return match($this->refund_status) {
-            'pending' => 'در انتظار بررسی',
-            'refunded' => 'برگشت داده شده',
-            'failed' => 'ناموفق',
-            default => 'نامشخص'
-        };
-    }
-
-    public function getRefundStatusColorAttribute(): string
-    {
-        return match($this->refund_status) {
-            'pending' => 'yellow',
-            'refunded' => 'green',
-            'failed' => 'red',
-            default => 'gray'
-        };
-    }
-
-    public function getCancelledByNameAttribute(): ?string
-    {
-        return match($this->cancelled_by) {
-            'customer' => 'مشتری',
-            'specialist' => 'متخصص',
-            'admin' => 'مدیر سیستم',
-            default => null
-        };
-    }
-
-    public function loyaltyPoints(): HasMany
-    {
-        return $this->hasMany(\App\Models\LoyaltyPoint::class);
+        return $this->reviews()->approved()->count();
     }
 }
