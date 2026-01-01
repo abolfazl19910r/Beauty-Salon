@@ -1,0 +1,42 @@
+<?php
+
+namespace App\Notifications;
+
+use App\Models\Review;
+use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Notification;
+
+class NegativeReviewNotification extends Notification
+{
+    use Queueable;
+
+    protected Review $review;
+
+    public function __construct(Review $review)
+    {
+        $this->review = $review;
+    }
+
+    public function via($notifiable): array
+    {
+        return ['database'];
+    }
+
+    public function toArray($notifiable): array
+    {
+        return [
+            'title' => '⚠️ نظر منفی دریافت شد',
+            'message' => sprintf(
+                'نظر منفی (%d ستاره) از %s برای متخصص %s ثبت شد.',
+                $this->review->overall_rating,
+                $this->review->user->name,
+                $this->review->specialist->name
+            ),
+            'link' => route('admin.reviews.show', $this->review->id),
+            'review_id' => $this->review->id,
+            'rating' => $this->review->overall_rating,
+            'specialist_id' => $this->review->specialist_id,
+            'type' => 'negative_review'
+        ];
+    }
+}
