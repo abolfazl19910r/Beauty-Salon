@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 require __DIR__.'/web/public.php';
 
 require __DIR__.'/web/auth.php';
+require __DIR__.'/web/reviews.php';
 
 Route::middleware(['auth', 'verified'])->group(function () {
     require __DIR__.'/web/specialistprofile.php';
@@ -50,4 +51,5 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_a
     require __DIR__.'/admin/roles.php';
     require __DIR__.'/admin/permissions.php';
     require __DIR__.'/admin/wallet.php';
+    require __DIR__.'/admin/reviews.php';
 });
