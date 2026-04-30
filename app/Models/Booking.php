@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-class BeautyService extends Model
+class Booking extends Model
 {
     protected $table = 'beauty_services';
 
