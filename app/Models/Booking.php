@@ -2,106 +2,70 @@
 
 namespace App\Models;
 
-use App\Services\CategoryService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\LoyaltyPoint;
 
 class Booking extends Model
 {
-    protected $table = 'beauty_services';
-
     use HasFactory;
+
+    protected $table = 'bookings';
+
     protected $fillable = [
-        'name',
-        'slug',
-        'description',
-        'price',
-        'duration',
-        'image',
-        'category_id'
+        'service_id',
+        'specialist_id',
+        'user_id',
+        'booking_time',
+        'status',
+        'discount_code',
+        'discount_amount',
+        'prepayment_amount',
+        'payment_status',
+        'payment_reference',
+        'payment_details',
+        'paid_at',
+        'rating',
+        'review',
+        'cancelled_by',
+        'cancellation_reason',
+        'cancelled_at',
+        'reminder_sent',
+        'refund_status',
+        'refunded_at',
+        'refunded_amount',
+        'refund_reference',
+        'refund_details'
     ];
 
-    protected static function boot()
+    public function user(): BelongsTo
     {
-        parent::boot();
-
-        static::creating(function ($service) {
-            if (!$service->slug) {
-                $service->slug = Str::slug($service->name);
-            }
-        });
-
-        static::deleting(function($service) {
-            $activeBookings = $service->bookings()
-                ->where(function($query) {
-                    $query->whereIn('status', ['pending', 'confirmed'])
-                        ->orWhere('payment_status', 'paid');
-                })
-                ->count();
-
-            if ($activeBookings > 0) {
-                throw new \Exception('این سرویس دارای رزروهای فعال است و نمی‌توان آن را حذف کرد.');
-            }
-
-            $service->specialists()->detach();
-
-            $service->bookings()->update([
-                'status' => 'cancelled'
-            ]);
-
-            if ($service->image) {
-                Storage::disk('public')->delete($service->image);
-            }
-        });
+        return $this->belongsTo(User::class);
     }
 
-    public function category(): BelongsTo
+    public function service(): BelongsTo
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(BeautyService::class, 'service_id');
     }
 
-    public function getImageUrlAttribute(): ?string
+    public function specialist(): BelongsTo
     {
-        return $this->image ? asset('storage/' . $this->image) : null;
+        return $this->belongsTo(Specialist::class);
     }
 
-    public static function latest()
+    public function payments(): HasMany
     {
-        return self::orderBy('created_at', 'desc');
+        return $this->hasMany(Payment::class);
     }
 
-    public static function paginate(int $perPage = 15)
+    public function loyaltyPoints(): Booking|HasOne
     {
-        return self::latest()->paginate($perPage);
-    }
+        return $this->hasOne(LoyaltyPoint::class);
 
-    public function bookings(): HasMany
-    {
-        return $this->hasMany(Booking::class, 'service_id');
-    }
-
-    public function specialists(): BelongsToMany
-    {
-        return $this->belongsToMany(Specialist::class, 'specialist_services');
-    }
-
-    public function reviews(): HasMany
-    {
-        return $this->hasMany(Review::class, 'service_id');
-    }
-
-    public function getAverageRating(): float
-    {
-        return round($this->reviews()->approved()->avg('overall_rating') ?? 0, 1);
-    }
-
-    public function getTotalReviews(): int
-    {
-        return $this->reviews()->approved()->count();
+        // یا اگر هر رزرو می‌تواند شامل چندین تراکنش امتیاز باشد:
+        // return $this->hasMany(LoyaltyPoint::class);
     }
 }
