@@ -1,0 +1,49 @@
+# ============================================================
+# Beauty Salon - .dockerignore
+# ============================================================
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Docker files خودش
+docker/
+docker-compose*.yml
+Dockerfile
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Laravel
+.env
+.env.*
+!.env.example
+storage/app/public/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/logs/*
+
+# Tests
+tests/
+phpunit.xml
+
+# Development tools
+.phpunit.cache
+.php-cs-fixer.cache
+
+# Docs
+README.md
+CHANGELOG.md
+*.md
+
+# IDE
+.idea/
+.vscode/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
