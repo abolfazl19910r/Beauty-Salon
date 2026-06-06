@@ -32,7 +32,6 @@ class Specialist extends Model
         'auto_confirm_bookings' => 'boolean',
     ];
 
-    protected $appends = ['work_days'];
 
     public static function latest()
     {

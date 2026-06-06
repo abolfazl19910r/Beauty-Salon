@@ -7,13 +7,9 @@
     @auth
         <meta name="user-logged-in" content="true">
     @endauth
-    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css" rel="stylesheet" type="text/css" />
     <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
 
     <title>@yield('title') | سالن زیبایی</title>
-
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://unpkg.com/persian-date/dist/persian-date.min.js"></script>
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
 
     <style>

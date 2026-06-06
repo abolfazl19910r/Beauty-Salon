@@ -17,7 +17,10 @@ class ServiceController extends Controller
 
     public function show(BeautyService $service)
     {
-        $specialists = $service->specialists()->get();
+        $specialists = $service->specialists()
+            ->with(['schedules' => fn($q) => $q->where('is_active', true)->orderBy('day_of_week')])
+            ->get();
+
         $relatedServices = BeautyService::where('category_id', $service->category_id)
             ->where('id', '!=', $service->id)
             ->limit(3)

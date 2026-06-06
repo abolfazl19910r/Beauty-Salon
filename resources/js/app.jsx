@@ -1,58 +1,48 @@
-import React from 'react';
 import './bootstrap';
 import { createRoot } from 'react-dom/client';
+import React from 'react';
 
-// User Components
-import BookingActions from './Components/BookingActions';
-import TwoFactorAuth from './Components/Auth/TwoFactorAuth';
-import SecureForm from './Components/Common/SecureForm';
-import AnnouncementBanner from './components/Announcement/AnnouncementBanner';
-
-// Loading component
 const LoadingComponent = () => (
-    <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            <div className="mt-2 text-gray-600">در حال بارگذاری...</div>
-        </div>
+    <div className="flex items-center justify-center p-4">
+        <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
     </div>
 );
 
-// Mount component helper
-const mountComponent = (elementId, Component, props = {}) => {
+const mountComponent = (elementId, importFn, getProps = () => ({})) => {
     const element = document.getElementById(elementId);
-    if (element) {
-        console.log(`Mounting ${elementId}...`);
-        try {
-            const root = createRoot(element);
-            root.render(
-                <React.StrictMode>
-                    <React.Suspense fallback={<LoadingComponent />}>
-                        <Component {...props} />
-                    </React.Suspense>
-                </React.StrictMode>
-            );
-            console.log(`${elementId} mounted successfully`);
-        } catch (error) {
-            console.error(`Error mounting ${elementId}:`, error);
-            element.innerHTML = `
-                <div class="p-4 text-center text-red-600">
-                    خطا در بارگذاری کامپوننت
-                    <br/>
-                    <small class="text-gray-500">${error.message}</small>
-                </div>
-            `;
-        }
-    }
+    if (!element) return;
+
+    importFn().then(({ default: Component }) => {
+        const root = createRoot(element);
+        root.render(
+            <React.StrictMode>
+                <React.Suspense fallback={<LoadingComponent />}>
+                    <Component {...getProps(element)} />
+                </React.Suspense>
+            </React.StrictMode>
+        );
+    }).catch(err => {
+        console.error(`Error mounting ${elementId}:`, err);
+    });
 };
 
-// Mount user components
-if (document.getElementById('booking-actions')) {
-    const container = document.getElementById('booking-actions');
-    const bookingData = JSON.parse(container.dataset.booking || '{}');
-    mountComponent('booking-actions', BookingActions, { booking: bookingData });
-}
+mountComponent(
+    'booking-actions',
+    () => import('./Components/BookingActions'),
+    (el) => ({ booking: JSON.parse(el.dataset.booking || '{}') })
+);
 
-mountComponent('two-factor-auth', TwoFactorAuth);
-mountComponent('secure-form', SecureForm);
-mountComponent('announcement-banner', AnnouncementBanner);
+mountComponent(
+    'two-factor-auth',
+    () => import('./Components/Auth/TwoFactorAuth')
+);
+
+mountComponent(
+    'secure-form',
+    () => import('./Components/Common/SecureForm')
+);
+
+mountComponent(
+    'announcement-banner',
+    () => import('./components/Announcement/AnnouncementBanner')
+);
