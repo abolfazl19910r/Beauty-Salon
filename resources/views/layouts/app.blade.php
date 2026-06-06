@@ -7,7 +7,10 @@
     @auth
         <meta name="user-logged-in" content="true">
     @endauth
-    <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 
     <title>@yield('title') | سالن زیبایی</title>
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
