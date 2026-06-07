@@ -89,11 +89,34 @@ class SMSService
         }
     }
 
-    public function sendVerificationCode(string $mobile, string $code): bool
-    {
-        return $this->sendTemplate($mobile, 'verify', [$code]);
-    }
+//    public function sendVerificationCode(string $mobile, string $code, string $type = 'login'): bool
+//    {
+//        $templateMap = [
+//            'login'    => config('services.kavenegar.templates.login_verify'),
+//            'register' => config('services.kavenegar.templates.register_verify'),
+//            'reset'    => config('services.kavenegar.templates.reset_password'),
+//            '2fa'      => config('services.kavenegar.templates.two_factor_auth'),
+//        ];
+//
+//        $template = $templateMap[$type] ?? config('services.kavenegar.templates.login_verify');
+//
+//        return $this->sendTemplate($mobile, $template, [$code]);
+//    }
 
+
+    public function sendVerificationCode(string $mobile, string $code, string $type = 'login'): bool
+    {
+        $messages = [
+            'login'    => "سالن زیبایی\nکد تایید ورود شما: {$code}\nاین کد تا ۲ دقیقه اعتبار دارد.\nلغو۱۱",
+            'register' => "سالن زیبایی\nکد تایید ثبت‌نام: {$code}\nاین کد تا ۲ دقیقه اعتبار دارد.\nلغو۱۱",
+            'reset'    => "سالن زیبایی\nکد بازیابی رمز عبور: {$code}\nاین کد تا ۵ دقیقه اعتبار دارد.\nلغو۱۱",
+            '2fa'      => "سالن زیبایی\nکد احراز هویت دو مرحله‌ای: {$code}\nاین کد تا ۲ دقیقه اعتبار دارد.\nلغو۱۱",
+        ];
+
+        $message = $messages[$type] ?? $messages['login'];
+
+        return $this->send($mobile, $message);
+    }
     public function sendBookingConfirmation(string $mobile, array $data): bool
     {
         $message = sprintf(
