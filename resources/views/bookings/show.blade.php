@@ -3,149 +3,162 @@
 @section('title', 'جزئیات نوبت')
 
 @section('content')
-    <div class="max-w-4xl mx-auto fade-in">
-        <div class="bg-white rounded-lg shadow-sm hover-shadow p-6">
-            <div class="border-b pb-4 mb-6">
-                <h1 class="text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">جزئیات نوبت</h1>
-                <p class="text-gray-500 mt-2 flex items-center">
-                    <svg class="w-5 h-5 ml-1 text-pink-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                        <line x1="7" y1="7" x2="7.01" y2="7"></line>
-                    </svg>
-                    شماره نوبت: {{ $booking->id }}
-                </p>
-            </div>
+    <style>
+        .info-row { border-bottom: 1px solid rgba(201,162,75,0.08); }
+        .info-row:last-child { border-bottom: none; }
+        .status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+        .badge-pending    { background: rgba(251,191,36,0.15); color: #FCD34D; }
+        .badge-confirmed  { background: rgba(52,211,153,0.15); color: #6EE7B7; }
+        .badge-pending_payment { background: rgba(96,165,250,0.15); color: #93C5FD; }
+        .badge-cancelled  { background: rgba(248,113,113,0.15); color: #FCA5A5; }
+    </style>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-gray-50 p-5 rounded-lg">
-                    <h2 class="text-lg font-bold mb-4 flex items-center text-pink-600">
-                        <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                        </svg>
-                        اطلاعات نوبت
-                    </h2>
-                    <div class="space-y-3">
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">خدمت:</span>
-                            <span class="font-medium">{{ $booking->service->name }}</span>
+    <div class="max-w-3xl mx-auto fade-in">
+
+        {{-- هدر --}}
+        <div class="flex items-center gap-3 mb-8">
+            <a href="{{ route('bookings.index') }}"
+               class="w-9 h-9 rounded-xl bg-[#2E2117] border border-[#C9A24B]/15 flex items-center justify-center
+                  text-[#F8F3E9]/60 hover:text-[#E6CD8A] transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <div>
+                <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase">نوبت #{{ $booking->id }}</p>
+                <h1 class="text-2xl font-bold text-[#E6CD8A]"
+                    style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">جزئیات نوبت</h1>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+
+            {{-- اطلاعات نوبت --}}
+            <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 overflow-hidden">
+                <div class="px-5 py-3.5 border-b border-[#C9A24B]/10 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    <h2 class="font-bold text-sm text-[#E6CD8A]">اطلاعات نوبت</h2>
+                </div>
+                <div class="divide-y divide-[#C9A24B]/8">
+                    @foreach([
+                        ['label' => 'خدمت', 'value' => $booking->service->name],
+                        ['label' => 'متخصص', 'value' => $booking->specialist->name],
+                        ['label' => 'تاریخ و ساعت', 'value' => verta($booking->booking_time)->format('Y/m/d H:i'), 'persian' => true, 'ltr' => true],
+                        ['label' => 'مدت زمان', 'value' => $booking->service->duration . ' دقیقه', 'persian' => true],
+                    ] as $row)
+                        <div class="flex items-center justify-between px-5 py-3.5 text-sm">
+                            <span class="text-[#F8F3E9]/55">{{ $row['label'] }}</span>
+                            <span class="font-medium text-[#F8F3E9] {{ isset($row['persian']) ? 'persian-number' : '' }}"
+                              {{ isset($row['ltr']) ? 'dir=ltr' : '' }}>
+                            {{ $row['value'] }}
+                        </span>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">متخصص:</span>
-                            <span class="font-medium">{{ $booking->specialist->name }}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">تاریخ و ساعت:</span>
-                            <span class="font-medium persian-number" dir="ltr">
-                                {{ verta($booking->booking_time)->format('Y/m/d H:i') }}
-                            </span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">وضعیت:</span>
-                            @switch($booking->status)
-                                @case('pending')
-                                    <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs inline-flex items-center">
-                                        <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        در انتظار تایید
-                                    </span>
-                                    @break
-                                @case('confirmed')
-                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs inline-flex items-center">
-                                        <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        تایید شده
-                                    </span>
-                                    @break
-                                @case('cancelled')
-                                    <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs inline-flex items-center">
-                                        <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        لغو شده
-                                    </span>
-                                    @break
-                            @endswitch
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">مدت زمان:</span>
-                            <span class="font-medium persian-number">{{ $booking->service->duration }} دقیقه</span>
-                        </div>
+                    @endforeach
+                    <div class="flex items-center justify-between px-5 py-3.5 text-sm">
+                        <span class="text-[#F8F3E9]/55">وضعیت</span>
+                        @php
+                            $statusMap = [
+                                'pending' => ['class' => 'badge-pending', 'label' => 'در انتظار تایید'],
+                                'confirmed' => ['class' => 'badge-confirmed', 'label' => 'تایید شده'],
+                                'pending_payment' => ['class' => 'badge-pending_payment', 'label' => 'در انتظار پرداخت'],
+                                'cancelled' => ['class' => 'badge-cancelled', 'label' => 'لغو شده'],
+                            ];
+                            $st = $statusMap[$booking->status] ?? ['class' => 'badge-pending', 'label' => $booking->status];
+                        @endphp
+                        <span class="status-badge {{ $st['class'] }}">{{ $st['label'] }}</span>
                     </div>
                 </div>
+            </div>
 
-                <div class="bg-gray-50 p-5 rounded-lg">
-                    <h2 class="text-lg font-bold mb-4 flex items-center text-purple-600">
-                        <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                            <line x1="1" y1="10" x2="23" y2="10"></line>
-                        </svg>
-                        اطلاعات پرداخت
-                    </h2>
-                    <div class="space-y-3">
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">مبلغ کل:</span>
-                            <span class="font-medium persian-number">{{ number_format($booking->service->price) }} تومان</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">پیش پرداخت:</span>
-                            <span class="font-medium persian-number">{{ number_format($booking->prepayment_amount) }} تومان</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">وضعیت پرداخت:</span>
-                            @if($booking->payment_status == 'paid')
-                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs inline-flex items-center">
-                                    <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                    </svg>
-                                    پرداخت شده
-                                </span>
-                            @else
-                                <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs inline-flex items-center">
-                                    <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                    پرداخت نشده
-                                </span>
-                            @endif
-                        </div>
-                        @if($booking->payment_ref)
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">شماره پیگیری:</span>
-                                <span class="font-medium" dir="ltr">{{ $booking->payment_ref }}</span>
-                            </div>
+            {{-- اطلاعات پرداخت --}}
+            <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 overflow-hidden">
+                <div class="px-5 py-3.5 border-b border-[#C9A24B]/10 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                        <line x1="1" y1="10" x2="23" y2="10"/>
+                    </svg>
+                    <h2 class="font-bold text-sm text-[#E6CD8A]">اطلاعات پرداخت</h2>
+                </div>
+                <div class="divide-y divide-[#C9A24B]/8">
+                    <div class="flex items-center justify-between px-5 py-3.5 text-sm">
+                        <span class="text-[#F8F3E9]/55">مبلغ کل</span>
+                        <span class="font-medium text-[#F8F3E9] persian-number">{{ number_format($booking->service->price) }} تومان</span>
+                    </div>
+                    <div class="flex items-center justify-between px-5 py-3.5 text-sm">
+                        <span class="text-[#F8F3E9]/55">پیش‌پرداخت</span>
+                        <span class="font-medium text-[#F8F3E9] persian-number">{{ number_format($booking->prepayment_amount) }} تومان</span>
+                    </div>
+                    <div class="flex items-center justify-between px-5 py-3.5 text-sm">
+                        <span class="text-[#F8F3E9]/55">وضعیت پرداخت</span>
+                        @if($booking->payment_status == 'paid')
+                            <span class="status-badge" style="background:rgba(52,211,153,0.15);color:#6EE7B7">✓ پرداخت شده</span>
+                        @else
+                            <span class="status-badge" style="background:rgba(248,113,113,0.15);color:#FCA5A5">✗ پرداخت نشده</span>
                         @endif
                     </div>
-                </div>
-            </div>
-
-            <div class="mt-8">
-                <div id="booking-actions" data-booking="{{ json_encode($booking) }}" class="mb-6"></div>
-
-                <div class="flex justify-between">
-                    <a href="{{ route('bookings.index') }}"
-                       class="inline-flex items-center bg-gray-200 text-gray-700 px-5 py-2 rounded-lg hover:bg-gray-300 transition-colors">
-                        <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="19" y1="12" x2="5" y2="12"></line>
-                            <polyline points="12 19 5 12 12 5"></polyline>
-                        </svg>
-                        بازگشت به لیست نوبت‌ها
-                    </a>
-
-                    @if($booking->payment_status == 'unpaid')
-                        <a href="{{ route('payment.show', $booking) }}"
-                           class="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-5 py-2 rounded-lg hover:opacity-90 transition-opacity inline-flex items-center">
-                            <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                                <line x1="1" y1="10" x2="23" y2="10"></line>
-                            </svg>
-                            پرداخت نوبت
-                        </a>
+                    @if($booking->payment_ref)
+                        <div class="flex items-center justify-between px-5 py-3.5 text-sm">
+                            <span class="text-[#F8F3E9]/55">شماره پیگیری</span>
+                            <span class="font-medium text-[#F8F3E9] text-xs" dir="ltr">{{ $booking->payment_ref }}</span>
+                        </div>
                     @endif
                 </div>
             </div>
+        </div>
+
+        {{-- دکمه‌های عملیات --}}
+        <div class="flex flex-wrap gap-3">
+            <a href="{{ route('bookings.index') }}"
+               class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm border border-[#C9A24B]/25
+                  text-[#F8F3E9]/70 hover:bg-[#C9A24B]/10 transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                </svg>
+                بازگشت به لیست
+            </a>
+
+            @if($booking->payment_status == 'unpaid' && in_array($booking->status, ['pending_payment', 'confirmed']))
+                <a href="{{ route('payment.show', $booking) }}"
+                   class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
+                      bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-[#1A1410]
+                      hover:shadow-lg hover:shadow-[#C9A24B]/25 transition-all">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                        <line x1="1" y1="10" x2="23" y2="10"/>
+                    </svg>
+                    پرداخت نوبت
+                </a>
+            @endif
+
+            @if($booking->status == 'confirmed' && $booking->booking_time > now())
+                <a href="{{ route('bookings.reschedule', $booking) }}"
+                   class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm border border-yellow-400/25
+                      text-yellow-400 hover:bg-yellow-400/10 transition-colors">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    تغییر زمان
+                </a>
+            @endif
+
+            @if(in_array($booking->status, ['pending', 'confirmed', 'pending_payment']) && $booking->booking_time > now()->addHours(24))
+                <form action="{{ route('bookings.cancel', $booking) }}" method="POST"
+                      onsubmit="return confirm('آیا مطمئن هستید که می‌خواهید این نوبت را لغو کنید؟')">
+                    @csrf @method('PUT')
+                    <button type="submit"
+                            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm border border-red-400/25
+                               text-red-400 hover:bg-red-400/10 transition-colors">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        لغو نوبت
+                    </button>
+                </form>
+            @endif
         </div>
     </div>
 @endsection

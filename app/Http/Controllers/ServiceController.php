@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BeautyService;
 use App\Models\Category;
+use Illuminate\Support\Facades\Cache;
 
 class ServiceController extends Controller
 {
@@ -31,7 +32,8 @@ class ServiceController extends Controller
 
     public function list()
     {
-        $services = BeautyService::all();
+        // کش ۳۰ دقیقه‌ای — لیست خدمات به‌ندرت تغییر می‌کند
+        $services = Cache::remember('all_beauty_services', now()->addMinutes(30), fn () => BeautyService::all());
         return response()->json($services);
     }
 

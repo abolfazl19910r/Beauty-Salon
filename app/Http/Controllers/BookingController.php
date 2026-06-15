@@ -680,35 +680,57 @@ class BookingController extends Controller
                 $specialistModel = Specialist::findOrFail($specialistId);
             }
 
-            $dates = [];
-            $startDate = Carbon::today();
+            // کش نتیجه به مدت ۳۰ دقیقه — چون تاریخ‌های موجود در طول روز تغییر نمی‌کنند
+            $cacheKey = "available_dates_{$specialistModel->id}_" . Carbon::today()->format('Y-m-d');
+            $dates = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes(30), function () use ($specialistModel) {
 
-            for ($i = 0; $i < 30; $i++) {
-                $date = $startDate->copy()->addDays($i);
+                $startDate = Carbon::today();
+                $endDate   = $startDate->copy()->addDays(29);
 
-                $schedule = $specialistModel->schedules()
-                    ->where('day_of_week', $date->dayOfWeek)
+                // ۱) همه schedule‌های فعال متخصص — یک query
+                $activeScheduleDays = $specialistModel->schedules()
                     ->where('is_active', true)
-                    ->first();
+                    ->pluck('day_of_week')
+                    ->flip()
+                    ->all();
 
-                if (!$schedule) {
-                    continue;
-                }
-
-                $hasLeave = $specialistModel->leaves()
-                    ->where('start_date', '<=', $date->format('Y-m-d'))
-                    ->where('end_date', '>=', $date->format('Y-m-d'))
+                // ۲) همه leave‌های تایید‌شده در بازه — یک query
+                $leaves = $specialistModel->leaves()
                     ->where('status', 'approved')
-                    ->exists();
+                    ->where('start_date', '<=', $endDate->format('Y-m-d'))
+                    ->where('end_date',   '>=', $startDate->format('Y-m-d'))
+                    ->get(['start_date', 'end_date']);
 
-                $isHoliday = $specialistModel->holidays()
-                    ->whereDate('date', $date)
-                    ->exists();
+                // ۳) همه تعطیلات در بازه — یک query
+                $holidays = $specialistModel->holidays()
+                    ->whereBetween(DB::raw('DATE(`date`)'), [
+                        $startDate->format('Y-m-d'),
+                        $endDate->format('Y-m-d'),
+                    ])
+                    ->pluck(DB::raw('DATE(`date`)'))
+                    ->flip()
+                    ->all();
 
-                if (!$hasLeave && !$isHoliday) {
-                    $dates[] = $date->format('Y-m-d');
+                $result = [];
+                for ($i = 0; $i < 30; $i++) {
+                    $date    = $startDate->copy()->addDays($i);
+                    $dateStr = $date->format('Y-m-d');
+
+                    if (!array_key_exists($date->dayOfWeek, $activeScheduleDays)) {
+                        continue;
+                    }
+                    if (array_key_exists($dateStr, $holidays)) {
+                        continue;
+                    }
+                    $hasLeave = $leaves->contains(function ($leave) use ($dateStr) {
+                        return $leave->start_date <= $dateStr && $leave->end_date >= $dateStr;
+                    });
+                    if (!$hasLeave) {
+                        $result[] = $dateStr;
+                    }
                 }
-            }
+                return $result;
+            });
 
             return response()->json($dates);
 
@@ -882,9 +904,14 @@ class BookingController extends Controller
         try {
             $service = BeautyService::findOrFail($serviceId);
 
-            $specialists = $service->specialists()
-                ->select('specialists.id', 'specialists.name', 'specialists.email', 'specialists.phone')
-                ->get();
+            // کش نتیجه به مدت ۶۰ دقیقه — ارتباط متخصص با خدمت به‌ندرت تغییر می‌کند
+            $specialists = \Illuminate\Support\Facades\Cache::remember(
+                "specialists_by_service_{$serviceId}",
+                now()->addMinutes(60),
+                fn () => $service->specialists()
+                    ->select('specialists.id', 'specialists.name', 'specialists.email', 'specialists.phone')
+                    ->get()
+            );
 
             return response()->json($specialists);
         } catch (Exception $e) {
