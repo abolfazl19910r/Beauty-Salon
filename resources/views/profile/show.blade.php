@@ -13,7 +13,7 @@
 
     <div class="max-w-6xl mx-auto fade-in">
 
-        {{-- هدر --}}
+        {{-- Header --}}
         <div class="mb-8">
             <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase mb-1">حساب کاربری</p>
             <h1 class="text-2xl md:text-3xl font-bold text-[#E6CD8A]"
@@ -22,10 +22,10 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-            {{-- ستون چپ: اطلاعات کاربر --}}
+            {{-- Left column: User information --}}
             <div class="md:col-span-1 space-y-5">
 
-                {{-- کارت اطلاعات شخصی --}}
+                {{-- Personal information card --}}
                 <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 overflow-hidden">
                     <div class="px-5 py-4 border-b border-[#C9A24B]/10 flex items-center justify-between">
                         <h2 class="font-bold text-sm text-[#E6CD8A] flex items-center gap-2">
@@ -43,7 +43,7 @@
                         </a>
                     </div>
 
-                    {{-- آواتار --}}
+                    {{-- Avatar --}}
                     <div class="flex flex-col items-center py-6 border-b border-[#C9A24B]/8">
                         <div class="w-16 h-16 rounded-full bg-[#C9A24B]/15 border-2 border-[#C9A24B]/30
                                 flex items-center justify-center mb-3
@@ -68,7 +68,7 @@
                     </div>
                 </div>
 
-                {{-- لینک‌های سریع --}}
+                {{-- Quick links --}}
                 <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 overflow-hidden">
                     <div class="px-5 py-3.5 border-b border-[#C9A24B]/10">
                         <h3 class="font-bold text-sm text-[#E6CD8A]">دسترسی سریع</h3>
@@ -98,7 +98,7 @@
                 </div>
             </div>
 
-            {{-- ستون راست: نوبت‌های اخیر --}}
+            {{-- Right column: Recent turns --}}
             <div class="md:col-span-2">
                 <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 overflow-hidden">
                     <div class="px-5 py-4 border-b border-[#C9A24B]/10 flex items-center justify-between">

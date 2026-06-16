@@ -5,7 +5,7 @@
 @section('content')
     <div class="max-w-2xl mx-auto fade-in">
 
-        {{-- هدر --}}
+        {{-- Header --}}
         <div class="flex items-center gap-3 mb-8">
             <a href="{{ route('profile.show') }}"
                class="w-9 h-9 rounded-xl bg-[#2E2117] border border-[#C9A24B]/15 flex items-center justify-center
@@ -22,7 +22,7 @@
         </div>
 
         <div class="space-y-5">
-            {{-- اطلاعات پروفایل --}}
+            {{-- Profile information --}}
             <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 overflow-hidden">
                 <div class="px-6 py-4 border-b border-[#C9A24B]/10 flex items-center gap-2">
                     <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -36,7 +36,7 @@
                 </div>
             </div>
 
-            {{-- تغییر رمز عبور --}}
+            {{-- Change password --}}
             <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 overflow-hidden">
                 <div class="px-6 py-4 border-b border-[#C9A24B]/10 flex items-center gap-2">
                     <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -51,7 +51,7 @@
                 </div>
             </div>
 
-            {{-- حذف حساب --}}
+            {{-- Delete account --}}
             <div class="bg-[#2E2117] rounded-2xl border border-red-500/15 overflow-hidden">
                 <div class="px-6 py-4 border-b border-red-500/10 flex items-center gap-2">
                     <svg class="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

@@ -5,7 +5,7 @@
 @section('content')
     <div class="fade-in">
 
-        {{-- هدر --}}
+        {{-- Header --}}
         <div class="flex items-center justify-between mb-8">
             <div>
                 <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase mb-1">خوش آمدید</p>
@@ -26,7 +26,6 @@
             </button>
         </div>
 
-        {{-- کامپوننت React (دست‌نخورده) --}}
         <div id="admin-dashboard"></div>
 
     </div>
