@@ -23,9 +23,9 @@
 
     <div class="max-w-4xl mx-auto">
 
-        {{-- کارت اصلی خدمت --}}
+        {{-- Main service card --}}
         <div class="bg-[#2E2117] rounded-3xl overflow-hidden border border-[#C9A24B]/12 shadow-2xl fade-in mb-10">
-            {{-- تصویر --}}
+            {{-- Image --}}
             @if($service->image)
                 <div class="overflow-hidden h-72">
                     <img src="{{ $service->image_url }}" alt="{{ $service->name }}"
@@ -39,7 +39,7 @@
             @endif
 
             <div class="p-6 md:p-8">
-                {{-- تیتر + دسته + قیمت --}}
+                {{-- Title + Category + Price --}}
                 <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
                     <div>
                         <h1 class="text-2xl md:text-3xl font-bold text-[#F8F3E9] mb-3"
@@ -68,12 +68,12 @@
                     </div>
                 </div>
 
-                {{-- توضیحات --}}
+                {{-- Description --}}
                 <div class="bg-[#1A1410]/60 rounded-2xl p-5 mb-8 text-[#F8F3E9]/75 leading-8 text-sm border border-[#C9A24B]/8">
                     {!! nl2br(e($service->description)) !!}
                 </div>
 
-                {{-- متخصصین این خدمت --}}
+                {{-- Specialists in this service --}}
                 @if(count($specialists) > 0)
                     <div class="mb-8">
                         <h2 class="flex items-center gap-2 text-lg font-bold text-[#E6CD8A] mb-4"
@@ -108,7 +108,7 @@
                     </div>
                 @endif
 
-                {{-- دکمه رزرو --}}
+                {{-- Reservation button --}}
                 <div class="text-center pt-4 border-t border-[#C9A24B]/10">
                     <a href="{{ route('bookings.create', ['service' => $service->id]) }}"
                        class="inline-block px-10 py-3.5 rounded-full font-bold text-sm transition-all duration-300
@@ -120,7 +120,7 @@
             </div>
         </div>
 
-        {{-- خدمات مرتبط --}}
+        {{-- Related services --}}
         @if($relatedServices->isNotEmpty())
             <div class="fade-in">
                 <h2 class="flex items-center gap-2 text-2xl font-bold text-[#E6CD8A] mb-6"

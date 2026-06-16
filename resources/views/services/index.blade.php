@@ -39,7 +39,7 @@
         }
     </style>
 
-    {{-- هدر صفحه --}}
+    {{-- Page header --}}
     <div class="mb-10 fade-in">
         <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase mb-2">خدمات سالن راستا</p>
         <h1 class="text-3xl md:text-4xl font-bold text-[#E6CD8A]" style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">
@@ -48,7 +48,7 @@
         <p class="text-[#F8F3E9]/60 mt-2">بهترین خدمات زیبایی با متخصص‌ترین تیم</p>
     </div>
 
-    {{-- فیلتر دسته‌بندی --}}
+    {{-- Category filter --}}
     <div class="mb-8 fade-in">
         <div class="flex items-center gap-2 mb-4">
             <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -70,11 +70,11 @@
         </div>
     </div>
 
-    {{-- گرید خدمات --}}
+    {{-- Service Grid --}}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @forelse($services as $index => $service)
             <div class="card-hover bg-[#2E2117] rounded-2xl overflow-hidden border border-[#C9A24B]/10 flex flex-col fade-in">
-                {{-- تصویر --}}
+                {{-- Image --}}
                 <div class="overflow-hidden h-52 relative">
                     @if($service->image)
                         <img src="{{ $service->image_url }}" alt="{{ $service->name }}"
@@ -83,7 +83,7 @@
                         <img src="{{ asset('images/placeholder-service.svg') }}" alt="{{ $service->name }}"
                              class="w-full h-full object-cover">
                     @endif
-                    {{-- برچسب دسته --}}
+                    {{-- Category label --}}
                     @if($service->category)
                         <span class="absolute top-3 right-3 text-xs font-semibold px-3 py-1 rounded-full
                                  bg-[#1A1410]/80 text-[#E6CD8A] border border-[#C9A24B]/30 backdrop-blur-sm">
@@ -92,7 +92,7 @@
                     @endif
                 </div>
 
-                {{-- محتوا --}}
+                {{-- Content --}}
                 <div class="p-5 flex flex-col flex-grow">
                     <h3 class="text-lg font-bold text-[#F8F3E9] mb-2"
                         style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">
@@ -102,7 +102,7 @@
                         {{ $service->description }}
                     </p>
 
-                    {{-- مدت‌زمان و قیمت --}}
+                    {{-- Duration and price --}}
                     <div class="flex items-center justify-between text-sm border-t border-[#C9A24B]/10 pt-4 mb-4">
                     <span class="flex items-center gap-1 text-[#F8F3E9]/60">
                         <svg class="w-4 h-4 text-[#C9A24B]/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -115,7 +115,7 @@
                     </span>
                     </div>
 
-                    {{-- دکمه‌ها --}}
+                    {{-- Buttons --}}
                     <div class="flex gap-2">
                         <a href="{{ route('services.show', $service) }}"
                            class="flex-1 text-center py-2.5 rounded-xl text-sm border border-[#C9A24B]/30
@@ -146,7 +146,7 @@
         @endforelse
     </div>
 
-    {{-- صفحه‌بندی --}}
+    {{-- Pagination --}}
     @if($services->hasPages())
         <div class="mt-10 flex justify-center fade-in">
             {{ $services->links() }}
