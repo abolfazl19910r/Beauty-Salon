@@ -100,4 +100,5 @@
             }, 1000);
         });
     </script>
+
 </x-guest-layout>

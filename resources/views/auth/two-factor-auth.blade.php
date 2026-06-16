@@ -1,8 +1,3 @@
-{{--
-    این صفحه در کد اصلی از layouts.app استفاده می‌کرد.
-    برای یکدستی با بقیه صفحات Auth، به x-guest-layout تغییر داده شد.
-    اگه نیاز به بازگشت به layouts.app دارید، @extends را برگردانید.
---}}
 <x-guest-layout>
     <div class="text-center mb-8">
         <div class="w-14 h-14 rounded-full bg-[#C9A24B]/15 flex items-center justify-center mx-auto mb-4">
@@ -16,7 +11,7 @@
     </div>
 
     <div id="two-factor-auth" class="space-y-6">
-        {{-- ورودی‌های تک‌رقمی --}}
+        {{-- Single digit inputs --}}
         <div class="flex justify-center gap-2 rtl:gap-2" dir="ltr">
             @for($i = 0; $i < 6; $i++)
                 <input type="text" maxlength="1" inputmode="numeric"
@@ -98,7 +93,7 @@
 
             confirmBtn.addEventListener('click', function() {
                 combined.value = [...digits].map(d => d.value).join('');
-                // TODO: submit form or send via fetch
+
             });
         });
     </script>

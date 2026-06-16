@@ -39,4 +39,5 @@
             تایید
         </button>
     </form>
+
 </x-guest-layout>

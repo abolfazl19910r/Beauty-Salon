@@ -65,4 +65,5 @@
             تغییر رمز عبور
         </button>
     </form>
+
 </x-guest-layout>

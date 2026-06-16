@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
     <form method="POST" action="{{ route('login') }}" class="space-y-5">
         @csrf
 
-        {{-- شماره موبایل --}}
+        {{-- Mobile number --}}
         <div>
             <x-input-label for="phone" :value="__('شماره موبایل')" />
             <div class="relative">
@@ -34,7 +34,7 @@ use Illuminate\Support\Facades\Route;
             <x-input-error :messages="$errors->get('phone')" />
         </div>
 
-        {{-- رمز عبور --}}
+        {{-- Password --}}
         <div>
             <x-input-label for="password" :value="__('رمز عبور')" />
             <div class="relative">
@@ -49,7 +49,7 @@ use Illuminate\Support\Facades\Route;
             <x-input-error :messages="$errors->get('password')" />
         </div>
 
-        {{-- به خاطر سپردن + فراموشی رمز --}}
+        {{-- Remembering + forgetting password --}}
         <div class="flex items-center justify-between text-sm">
             <label for="remember_me" class="inline-flex items-center gap-2 cursor-pointer">
                 <input id="remember_me" type="checkbox" name="remember"
@@ -63,7 +63,7 @@ use Illuminate\Support\Facades\Route;
             @endif
         </div>
 
-        {{-- دکمه ورود --}}
+        {{-- Login button --}}
         <button type="submit"
                 class="w-full py-3 rounded-lg font-semibold text-sm transition-all duration-300
                    bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-[#1A1410]
