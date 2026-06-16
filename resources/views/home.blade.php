@@ -1,15 +1,3 @@
-{{--
-    صفحه اصلی سالن زیبایی راستا (Rasta)
-    این فایل صرفاً View است و هیچ منطق بک‌اند/روت/کنترلر تغییر نکرده.
-
-    TODO (برای HomeController):
-    - $services       => کالکشن خدمات ویژه. هر آیتم باید شامل: title, description, image, icon (svg path یا کلاس آیکون)
-    - $specialists    => کالکشن متخصصین. هر آیتم: name, role, image, instagram, telegram (اختیاری)
-    - $testimonials   => کالکشن نظرات مشتریان. هر آیتم: name, text, rating (1-5), image
-    - $galleryImages  => کالکشن تصاویر گالری. هر آیتم: image, instagram_link (اختیاری)
-    - $stats          => (اختیاری) آرایه شمارنده‌ها: ['customers' => 4500, 'specialists' => 18, 'years' => 9, 'rating' => 4.9]
-    اگر هرکدام پاس داده نشده باشند، در ادامه placeholder قرار گرفته است.
---}}
 @extends('layouts.app')
 
 @section('title', 'راستا | سالن زیبایی لوکس')
@@ -17,7 +5,7 @@
 @section('full-width', true)
 
 @section('content')
-    {{-- توجه: لایوت اصلی پروژه (layouts.app) دارای @stack('styles') نیست، به همین دلیل استایل‌ها به صورت inline در همین بخش قرار گرفته‌اند. --}}
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&family=Noto+Naskh+Arabic:wght@500;700&display=swap" rel="stylesheet">
@@ -174,7 +162,7 @@
     <div class="font-sans-fa bg-[#1A1410] text-[#F8F3E9] mx-[calc(50%-50vw)] w-screen -mt-8 -mb-8" dir="rtl">
 
         {{-- =========================================================
-             2) بخش هیرو (Hero)
+              (Hero)
         ========================================================= --}}
         <section class="hero-bg relative min-h-screen flex items-center justify-center text-center px-4">
             <div class="max-w-3xl mx-auto">
@@ -205,7 +193,7 @@
         </section>
 
         {{-- =========================================================
-             3) بخش آمار / شمارشگر اعتماد
+             3) Statistics section / Trust counter
         ========================================================= --}}
         <section id="stats" class="bg-[var(--rasta-brown)] py-14 fade-up">
             <div class="max-w-6xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
@@ -229,7 +217,7 @@
         </section>
 
         {{-- =========================================================
-             4) بخش خدمات ویژه
+             4) Special service department
         ========================================================= --}}
         <section id="services" class="py-20 px-4 max-w-7xl mx-auto">
             <div class="text-center mb-14 fade-up">
@@ -247,7 +235,7 @@
                         </div>
                         <div class="p-6">
                             <div class="w-12 h-12 rounded-full bg-[var(--rasta-gold)]/15 flex items-center justify-center mb-4 text-[var(--rasta-gold-light)]">
-                                {{-- آیکون پیش‌فرض - در صورت وجود $service->icon می‌توان جایگزین کرد --}}
+
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
                                 </svg>
@@ -286,7 +274,7 @@
         </section>
 
         {{-- =========================================================
-             5) بخش درباره ما
+             5) About us section
         ========================================================= --}}
         <section class="py-20 px-4 max-w-7xl mx-auto">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -318,7 +306,7 @@
         </section>
 
         {{-- =========================================================
-             6) بخش متخصصین
+             6) Experts section
         ========================================================= --}}
         <section id="specialists" class="py-20 px-4 max-w-7xl mx-auto">
             <div class="text-center mb-14 fade-up">
@@ -361,7 +349,7 @@
         </section>
 
         {{-- =========================================================
-             7) بخش نظرات مشتریان (Testimonials)
+             7) Customer comments section (Testimonials)
         ========================================================= --}}
         <section id="testimonials" class="py-20 px-4 bg-[var(--rasta-brown)]">
             <div class="max-w-3xl mx-auto text-center mb-12 fade-up">
@@ -374,7 +362,7 @@
                     @php
                         $testimonialList = ($testimonials ?? collect());
                         if (count($testimonialList) === 0) {
-                            // TODO: کنترلر باید متغیر $testimonials را به ویو ارسال کند
+
                             $testimonialList = [
                                 (object) ['name' => 'الهام صادقی', 'rating' => 5, 'text' => 'تجربه فوق‌العاده‌ای داشتم! کیفیت خدمات و برخورد تیم واقعاً عالی بود.', 'image' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop'],
                                 (object) ['name' => 'مهسا رستمی', 'rating' => 5, 'text' => 'فضای سالن خیلی آرامش‌بخش بود و نتیجه کار فوق‌العاده شد. حتماً بازخواهم گشت.', 'image' => 'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=200&auto=format&fit=crop'],
@@ -397,7 +385,7 @@
                     @endforeach
                 </div>
 
-                {{-- ناوبری و نشانگرها --}}
+
                 <div class="flex items-center justify-center gap-6 mt-8">
                     <button id="testimonial-prev" class="w-10 h-10 rounded-full border border-[var(--rasta-gold)]/40 flex items-center justify-center hover:bg-[var(--rasta-gold)]/15 transition-colors" aria-label="نظر قبلی">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
@@ -411,7 +399,7 @@
         </section>
 
         {{-- =========================================================
-             8) گالری
+             8) Gallery
         ========================================================= --}}
         <section id="gallery" class="py-20 px-4 max-w-7xl mx-auto">
             <div class="text-center mb-12 fade-up">
@@ -423,7 +411,7 @@
                 @php
                     $galleryList = $galleryImages ?? [];
                     if (count($galleryList) === 0) {
-                        // TODO: کنترلر باید متغیر $galleryImages را به ویو ارسال کند
+
                         $galleryList = array_map(fn($i) => (object)[
                             'image' => "https://images.unsplash.com/photo-15$i?q=80&w=400&auto=format&fit=crop",
                             'instagram_link' => null,
@@ -445,7 +433,7 @@
         </section>
 
         {{-- =========================================================
-             9) بخش CTA پایانی
+             9) Final CTA section
         ========================================================= --}}
         <section class="cta-bg py-28 px-4 text-center fade-up">
             <h2 class="font-serif-fa text-3xl md:text-5xl font-bold mb-6 text-[var(--rasta-cream)]">
@@ -467,7 +455,6 @@
         document.addEventListener('DOMContentLoaded', function () {
 
             /* ---------- Navbar scroll effect ---------- */
-            /* توجه: افکت اسکرول نوار بالا و منوی موبایل اکنون به‌صورت سراسری در layouts/app.blade.php مدیریت می‌شود */
 
             /* ---------- Fade-up on scroll (Intersection Observer) ---------- */
             const fadeEls = document.querySelectorAll('.fade-up');
@@ -541,7 +528,7 @@
             document.getElementById('testimonial-next')?.addEventListener('click', () => showSlide(current + 1));
             document.getElementById('testimonial-prev')?.addEventListener('click', () => showSlide(current - 1));
 
-            // اتو-پلی نظرات هر ۶ ثانیه
+            // Auto-play comments every 6 seconds
             if (slides.length > 1) {
                 setInterval(() => showSlide(current + 1), 6000);
             }
