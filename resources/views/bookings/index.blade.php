@@ -3,173 +3,184 @@
 @section('title', 'نوبت‌های من')
 
 @section('content')
+    <style>
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600;
+        }
+        .badge-pending    { background: rgba(251,191,36,0.15); color: #FCD34D; }
+        .badge-confirmed  { background: rgba(52,211,153,0.15); color: #6EE7B7; }
+        .badge-pending_payment { background: rgba(96,165,250,0.15); color: #93C5FD; }
+        .badge-cancelled  { background: rgba(248,113,113,0.15); color: #FCA5A5; }
+        .badge-paid       { background: rgba(52,211,153,0.15); color: #6EE7B7; }
+        .badge-unpaid     { background: rgba(248,113,113,0.15); color: #FCA5A5; }
+
+        .gold-select {
+            background: rgba(248,243,233,0.04); border: 1px solid rgba(201,162,75,0.2);
+            color: #F8F3E9; border-radius: 0.625rem; padding: 0.5rem 0.875rem;
+            font-size: 0.875rem; transition: border-color 0.2s; -webkit-appearance: none;
+        }
+        .gold-select:focus { outline: none; border-color: #C9A24B; }
+        .gold-select option { background: #2E2117; }
+
+        .gold-input {
+            background: rgba(248,243,233,0.04); border: 1px solid rgba(201,162,75,0.2);
+            color: #F8F3E9; border-radius: 0.625rem; padding: 0.5rem 0.875rem;
+            font-size: 0.875rem; transition: border-color 0.2s;
+        }
+        .gold-input:focus { outline: none; border-color: #C9A24B; }
+
+        .action-btn { transition: color 0.2s, transform 0.2s; }
+        .action-btn:hover { transform: scale(1.15); }
+    </style>
+
     <div class="max-w-7xl mx-auto fade-in">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">نوبت‌های من</h1>
+
+        {{-- Header --}}
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <div>
+                <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase mb-1">حساب کاربری</p>
+                <h1 class="text-2xl md:text-3xl font-bold text-[#E6CD8A]"
+                    style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">نوبت‌های من</h1>
+            </div>
             <a href="{{ route('bookings.create') }}"
-               class="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-5 py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center">
-                <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
+               class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
+                  bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-[#1A1410]
+                  hover:shadow-lg hover:shadow-[#C9A24B]/25 transition-all">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
                 رزرو نوبت جدید
             </a>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm hover-shadow">
-            <div class="p-4 border-b">
-                <form action="{{ route('bookings.index') }}" method="GET" class="flex flex-wrap gap-4">
-                    <select name="status" class="border rounded-lg px-3 py-2 focus:border-pink-500 focus:ring focus:ring-pink-200 transition-colors">
+        <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 overflow-hidden">
+
+            {{-- Filter --}}
+            <div class="px-5 py-4 border-b border-[#C9A24B]/10">
+                <form action="{{ route('bookings.index') }}" method="GET" class="flex flex-wrap gap-3 items-end">
+                    <select name="status" class="gold-select">
                         <option value="">همه وضعیت‌ها</option>
-                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>
-                            در انتظار تایید
-                        </option>
-                        <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>
-                            تایید شده
-                        </option>
-                        <option value="pending_payment" {{ request('status') == 'pending_payment' ? 'selected' : '' }}>
-                            در انتظار پرداخت
-                        </option>
-                        <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>
-                            لغو شده
-                        </option>
+                        @foreach([
+                            'pending' => 'در انتظار تایید',
+                            'confirmed' => 'تایید شده',
+                            'pending_payment' => 'در انتظار پرداخت',
+                            'cancelled' => 'لغو شده',
+                        ] as $val => $label)
+                            <option value="{{ $val }}" {{ request('status') == $val ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
                     </select>
 
-                    <input type="date" name="date" class="border rounded-lg px-3 py-2 focus:border-pink-500 focus:ring focus:ring-pink-200 transition-colors"
-                           value="{{ request('date') }}">
+                    <input type="text" name="date" id="date_filter" value="{{ request('date') }}"
+                           class="gold-input persian-number" placeholder="فیلتر تاریخ (مثلاً ۱۴۰۵/۰۳/۲۶)"
+                           dir="ltr" autocomplete="off">
 
-                    <button type="submit" class="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center">
-                        <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                        </svg>
-                        فیلتر
+                    <button type="submit"
+                            class="px-4 py-2 rounded-xl text-sm font-semibold transition-all
+                               bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-[#1A1410]
+                               hover:shadow-md hover:shadow-[#C9A24B]/20">
+                        اعمال فیلتر
                     </button>
+
+                    @if(request('status') || request('date'))
+                        <a href="{{ route('bookings.index') }}"
+                           class="text-sm text-[#F8F3E9]/50 hover:text-[#F8F3E9] transition-colors self-center">
+                            حذف فیلتر ×
+                        </a>
+                    @endif
                 </form>
             </div>
 
+            {{-- Table / Empty --}}
             @if($bookings->isEmpty())
-                <div class="p-12 text-center text-gray-500">
-                    <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                    <p>نوبتی یافت نشد.</p>
-                    <a href="{{ route('bookings.create') }}" class="mt-4 inline-block text-pink-500 hover:text-pink-600">
-                        رزرو نوبت جدید
+                <div class="py-20 text-center">
+                    <div class="w-16 h-16 rounded-full bg-[#C9A24B]/10 flex items-center justify-center mx-auto mb-5">
+                        <svg class="w-8 h-8 text-[#C9A24B]/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                    </div>
+                    <p class="text-[#F8F3E9]/50 mb-3">هنوز نوبتی ثبت نشده</p>
+                    <a href="{{ route('bookings.create') }}" class="text-sm text-[#E6CD8A] hover:underline">
+                        اولین نوبت خود را رزرو کنید ←
                     </a>
                 </div>
             @else
                 <div class="overflow-x-auto">
-                    <table class="w-full">
+                    <table class="w-full text-sm">
                         <thead>
-                        <tr class="bg-gray-50">
-                            <th class="px-6 py-3 text-right">خدمت</th>
-                            <th class="px-6 py-3 text-right">متخصص</th>
-                            <th class="px-6 py-3 text-right">تاریخ و ساعت</th>
-                            <th class="px-6 py-3 text-right">وضعیت پرداخت</th>
-                            <th class="px-6 py-3 text-right">وضعیت</th>
-                            <th class="px-6 py-3 text-right">عملیات</th>
+                        <tr class="border-b border-[#C9A24B]/10 bg-[#1A1410]/40">
+                            <th class="px-5 py-3.5 text-right text-xs font-semibold text-[#F8F3E9]/50 uppercase tracking-wider">خدمت</th>
+                            <th class="px-5 py-3.5 text-right text-xs font-semibold text-[#F8F3E9]/50 uppercase tracking-wider">متخصص</th>
+                            <th class="px-5 py-3.5 text-right text-xs font-semibold text-[#F8F3E9]/50 uppercase tracking-wider">تاریخ و ساعت</th>
+                            <th class="px-5 py-3.5 text-right text-xs font-semibold text-[#F8F3E9]/50 uppercase tracking-wider">پرداخت</th>
+                            <th class="px-5 py-3.5 text-right text-xs font-semibold text-[#F8F3E9]/50 uppercase tracking-wider">وضعیت</th>
+                            <th class="px-5 py-3.5 text-right text-xs font-semibold text-[#F8F3E9]/50 uppercase tracking-wider">عملیات</th>
                         </tr>
                         </thead>
-                        <tbody class="divide-y">
+                        <tbody class="divide-y divide-[#C9A24B]/8">
                         @foreach($bookings as $booking)
-                            <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4">{{ $booking->service->name }}</td>
-                                <td class="px-6 py-4">{{ $booking->specialist->name }}</td>
-                                <td class="px-6 py-4 persian-number" dir="ltr">
+                            <tr class="hover:bg-[#C9A24B]/5 transition-colors">
+                                <td class="px-5 py-4 font-medium text-[#F8F3E9]">{{ $booking->service->name }}</td>
+                                <td class="px-5 py-4 text-[#F8F3E9]/75">{{ $booking->specialist->name }}</td>
+                                <td class="px-5 py-4 persian-number text-[#F8F3E9]/75" dir="ltr">
                                     {{ verta($booking->booking_time)->format('Y/m/d H:i') }}
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-5 py-4">
                                     @if($booking->payment_status == 'paid')
-                                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs inline-flex items-center">
-                                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                            </svg>
-                                            پرداخت شده
-                                        </span>
+                                        <span class="status-badge badge-paid">✓ پرداخت شده</span>
                                     @else
-                                        <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs inline-flex items-center">
-                                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                            </svg>
-                                            پرداخت نشده
-                                        </span>
+                                        <span class="status-badge badge-unpaid">✗ پرداخت نشده</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4">
-                                    @switch($booking->status)
-                                        @case('pending')
-                                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs inline-flex items-center">
-                                                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                </svg>
-                                                در انتظار تایید
-                                            </span>
-                                            @break
-                                        @case('confirmed')
-                                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs inline-flex items-center">
-                                                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                </svg>
-                                                تایید شده
-                                            </span>
-                                            @break
-                                        @case('pending_payment')
-                                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs inline-flex items-center">
-                                                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                                                </svg>
-                                                در انتظار پرداخت
-                                            </span>
-                                            @break
-                                        @case('cancelled')
-                                            <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs inline-flex items-center">
-                                                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                </svg>
-                                                لغو شده
-                                            </span>
-                                            @break
-                                    @endswitch
+                                <td class="px-5 py-4">
+                                    @php
+                                        $statusMap = [
+                                            'pending' => ['class' => 'badge-pending', 'label' => 'در انتظار تایید'],
+                                            'confirmed' => ['class' => 'badge-confirmed', 'label' => 'تایید شده'],
+                                            'pending_payment' => ['class' => 'badge-pending_payment', 'label' => 'در انتظار پرداخت'],
+                                            'cancelled' => ['class' => 'badge-cancelled', 'label' => 'لغو شده'],
+                                        ];
+                                        $st = $statusMap[$booking->status] ?? ['class' => 'badge-pending', 'label' => $booking->status];
+                                    @endphp
+                                    <span class="status-badge {{ $st['class'] }}">{{ $st['label'] }}</span>
                                 </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center space-x-2 space-x-reverse">
+                                <td class="px-5 py-4">
+                                    <div class="flex items-center gap-3">
                                         <a href="{{ route('bookings.show', $booking) }}"
-                                           class="text-blue-500 hover:text-blue-700 transition-colors" title="مشاهده جزئیات">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                           class="action-btn text-[#E6CD8A]/70 hover:text-[#E6CD8A]" title="جزئیات">
+                                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                             </svg>
                                         </a>
 
                                         @if($booking->payment_status == 'unpaid' && in_array($booking->status, ['pending_payment', 'confirmed']))
                                             <a href="{{ route('payment.show', $booking) }}"
-                                               class="text-green-500 hover:text-green-700 transition-colors" title="پرداخت">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                               class="action-btn text-emerald-400 hover:text-emerald-300" title="پرداخت">
+                                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
                                                 </svg>
                                             </a>
                                         @endif
 
                                         @if($booking->status == 'confirmed' && $booking->booking_time > now())
                                             <a href="{{ route('bookings.reschedule', $booking) }}"
-                                               class="text-yellow-500 hover:text-yellow-700 transition-colors" title="تغییر زمان">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                               class="action-btn text-yellow-400 hover:text-yellow-300" title="تغییر زمان">
+                                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                                 </svg>
                                             </a>
                                         @endif
 
                                         @if(in_array($booking->status, ['pending', 'confirmed', 'pending_payment']) && $booking->booking_time > now()->addHours(24))
-                                            <form action="{{ route('bookings.cancel', $booking) }}" method="POST" class="inline">
-                                                @csrf
-                                                @method('PUT')
-                                                <button type="submit" class="text-red-500 hover:text-red-700 transition-colors" title="لغو نوبت"
-                                                        onclick="return confirm('آیا مطمئن هستید؟')">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            <form action="{{ route('bookings.cancel', $booking) }}" method="POST" class="inline"
+                                                  onsubmit="return confirm('آیا مطمئن هستید که می‌خواهید این نوبت را لغو کنید؟')">
+                                                @csrf @method('PUT')
+                                                <button type="submit" class="action-btn text-red-400/70 hover:text-red-400" title="لغو نوبت">
+                                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                                     </svg>
                                                 </button>
                                             </form>
@@ -182,10 +193,29 @@
                     </table>
                 </div>
 
-                <div class="p-4">
-                    {{ $bookings->links() }}
-                </div>
+                @if($bookings->hasPages())
+                    <div class="px-5 py-4 border-t border-[#C9A24B]/10">
+                        {{ $bookings->links() }}
+                    </div>
+                @endif
             @endif
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script src="https://unpkg.com/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://unpkg.com/persian-date@latest/dist/persian-date.min.js"></script>
+    <script src="https://unpkg.com/persian-datepicker@latest/dist/js/persian-datepicker.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#date_filter").persianDatepicker({
+                format: 'YYYY/MM/DD',
+                autoClose: true,
+                initialValue: false,
+                observer: true,
+                calendar: { persian: { locale: 'fa' } }
+            });
+        });
+    </script>
+@endpush

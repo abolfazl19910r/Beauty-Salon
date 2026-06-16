@@ -3,71 +3,96 @@
 @section('title', 'تأیید رزرو')
 
 @section('content')
-    <div class="max-w-3xl mx-auto fade-in">
-        <h1 class="text-2xl font-bold mb-6 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">تأیید رزرو نوبت</h1>
+    <div class="max-w-2xl mx-auto fade-in">
+        <div class="mb-8">
+            <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase mb-1">مرحله نهایی</p>
+            <h1 class="text-2xl md:text-3xl font-bold text-[#E6CD8A]"
+                style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">تأیید و پرداخت نوبت</h1>
+        </div>
 
-        <div class="bg-white rounded-lg shadow-sm p-6">
-            <div class="mb-8">
-                <h2 class="text-lg font-bold mb-4">اطلاعات نوبت</h2>
-                <div class="bg-gray-50 p-5 rounded-lg space-y-4">
-                    <div class="flex justify-between border-b pb-2">
-                        <span class="text-gray-600">خدمت:</span>
-                        <span class="font-medium">{{ $service->name }}</span>
-                    </div>
-                    <div class="flex justify-between border-b pb-2">
-                        <span class="text-gray-600">متخصص:</span>
-                        <span class="font-medium">{{ $specialist->name }}</span>
-                    </div>
-                    <div class="flex justify-between border-b pb-2">
-                        <span class="text-gray-600">تاریخ:</span>
-                        <span class="font-medium persian-number">{{ verta($bookingTime)->format('Y/m/d') }}</span>
-                    </div>
-                    <div class="flex justify-between border-b pb-2">
-                        <span class="text-gray-600">ساعت:</span>
-                        <span class="font-medium">{{ verta($bookingTime)->format('H:i') }}</span>
-                    </div>
-                    <div class="flex justify-between border-b pb-2">
-                        <span class="text-gray-600">مدت زمان:</span>
-                        <span class="font-medium persian-number">{{ $service->duration }} دقیقه</span>
-                    </div>
-                    <div class="flex justify-between font-bold pt-2 text-lg">
-                        <span>مبلغ پیش پرداخت:</span>
-                        <span class="text-pink-600 persian-number" id="final-price">{{ number_format($prepaymentAmount) }} تومان</span>
+        <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 p-6 md:p-8 space-y-6">
+
+            {{-- Appointment information --}}
+            <div>
+                <h2 class="text-base font-bold text-[#E6CD8A] mb-4 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                    اطلاعات نوبت
+                </h2>
+                <div class="bg-[#1A1410]/60 rounded-xl border border-[#C9A24B]/8 divide-y divide-[#C9A24B]/8">
+                    @foreach([
+                        ['label' => 'خدمت', 'value' => $service->name],
+                        ['label' => 'متخصص', 'value' => $specialist->name],
+                        ['label' => 'تاریخ', 'value' => verta($bookingTime)->format('Y/m/d'), 'persian' => true],
+                        ['label' => 'ساعت', 'value' => verta($bookingTime)->format('H:i')],
+                        ['label' => 'مدت زمان', 'value' => $service->duration . ' دقیقه', 'persian' => true],
+                    ] as $row)
+                        <div class="flex items-center justify-between px-5 py-3.5 text-sm">
+                            <span class="text-[#F8F3E9]/55">{{ $row['label'] }}</span>
+                            <span class="font-medium text-[#F8F3E9] {{ isset($row['persian']) ? 'persian-number' : '' }}">
+                            {{ $row['value'] }}
+                        </span>
+                        </div>
+                    @endforeach
+                    <div class="flex items-center justify-between px-5 py-4 text-sm">
+                        <span class="font-bold text-[#F8F3E9]">مبلغ پیش‌پرداخت</span>
+                        <span class="font-bold text-[#E6CD8A] text-lg persian-number" id="final-price">
+                        {{ number_format($prepaymentAmount) }} تومان
+                    </span>
                     </div>
                 </div>
             </div>
 
-            <div class="mb-4 bg-blue-50 p-4 rounded-lg">
-                <p class="text-blue-700 text-sm">با تأیید نهایی و پرداخت، نوبت شما ثبت خواهد شد. لطفاً اطلاعات بالا را با دقت بررسی کنید.</p>
+            {{-- Explanation --}}
+            <div class="flex items-start gap-3 bg-sky-900/20 border border-sky-700/30 rounded-xl px-4 py-3 text-sm text-sky-300">
+                <svg class="w-4 h-4 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                </svg>
+                با تأیید نهایی و پرداخت، نوبت شما ثبت خواهد شد. لطفاً اطلاعات بالا را با دقت بررسی کنید.
             </div>
 
-            <div class="border-t pt-4 mb-6">
-                <h3 class="font-bold mb-2">کد تخفیف</h3>
+            {{-- Discount code --}}
+            <div>
+                <h3 class="text-sm font-medium text-[#E6CD8A] mb-3 flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                    </svg>
+                    کد تخفیف
+                </h3>
                 <div class="flex gap-2">
-                    <input type="text" id="discount-code" name="discount_code" placeholder="کد تخفیف خود را وارد کنید"
-                           class="flex-1 border rounded-lg px-4 py-2 focus:border-pink-500 focus:ring focus:ring-pink-200">
+                    <input type="text" id="discount-code" placeholder="کد تخفیف خود را وارد کنید"
+                           class="flex-1 rounded-xl px-4 py-2.5 text-sm
+                              bg-white/5 border border-[#C9A24B]/20 text-[#F8F3E9] placeholder-[#F8F3E9]/30
+                              focus:outline-none focus:border-[#C9A24B] focus:ring-2 focus:ring-[#C9A24B]/15 transition-colors">
                     <button type="button" id="apply-discount"
-                            class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                            class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all
+                               bg-emerald-700/30 border border-emerald-600/40 text-emerald-300
+                               hover:bg-emerald-700/50">
                         اعمال
                     </button>
                 </div>
-                <div id="discount-message" class="mt-2 text-sm hidden"></div>
+                <div id="discount-message" class="mt-2 text-xs hidden"></div>
             </div>
 
-            <form action="{{ route('bookings.store') }}" method="POST" class="space-y-4">
+            {{-- Final form --}}
+            <form action="{{ route('bookings.store') }}" method="POST">
                 @csrf
                 <input type="hidden" name="service_id" value="{{ $service->id }}">
                 <input type="hidden" name="specialist_id" value="{{ $specialist->id }}">
                 <input type="hidden" name="booking_time" value="{{ $bookingTime }}">
                 <input type="hidden" name="discount_code" id="hidden-discount-code" value="">
 
-                <div class="flex gap-4">
+                <div class="flex gap-3 pt-2">
                     <a href="{{ route('bookings.create') }}"
-                       class="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors text-center">
+                       class="flex-1 text-center py-3 rounded-xl text-sm border border-[#C9A24B]/25
+                          text-[#F8F3E9]/70 hover:bg-[#C9A24B]/10 transition-colors">
                         بازگشت و ویرایش
                     </a>
                     <button type="submit"
-                            class="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 px-4 rounded-lg hover:opacity-90 transition-opacity">
+                            class="flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300
+                               bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-[#1A1410]
+                               hover:shadow-lg hover:shadow-[#C9A24B]/30 hover:-translate-y-0.5">
                         تأیید و رفتن به درگاه پرداخت
                     </button>
                 </div>
@@ -79,25 +104,24 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const applyDiscountBtn = document.getElementById('apply-discount');
-            const discountCodeInput = document.getElementById('discount-code');
-            const hiddenDiscountCode = document.getElementById('hidden-discount-code');
-            const discountMessage = document.getElementById('discount-message');
+            const applyBtn = document.getElementById('apply-discount');
+            const codeInput = document.getElementById('discount-code');
+            const hiddenCode = document.getElementById('hidden-discount-code');
+            const discountMsg = document.getElementById('discount-message');
             const finalPriceEl = document.getElementById('final-price');
 
-            applyDiscountBtn.addEventListener('click', async function() {
-                const code = discountCodeInput.value.trim();
+            applyBtn.addEventListener('click', async function() {
+                const code = codeInput.value.trim();
                 if (!code) {
-                    discountMessage.innerHTML = 'لطفا کد تخفیف را وارد کنید';
-                    discountMessage.className = 'mt-2 text-sm text-red-600';
-                    discountMessage.classList.remove('hidden');
+                    discountMsg.innerHTML = 'لطفاً کد تخفیف را وارد کنید';
+                    discountMsg.className = 'mt-2 text-xs text-red-400';
+                    discountMsg.classList.remove('hidden');
                     return;
                 }
-
                 try {
-                    discountMessage.innerHTML = 'در حال بررسی کد تخفیف...';
-                    discountMessage.className = 'mt-2 text-sm text-blue-600';
-                    discountMessage.classList.remove('hidden');
+                    discountMsg.innerHTML = 'در حال بررسی...';
+                    discountMsg.className = 'mt-2 text-xs text-[#E6CD8A]/70';
+                    discountMsg.classList.remove('hidden');
 
                     const response = await fetch('/api/check-discount', {
                         method: 'POST',
@@ -105,32 +129,25 @@
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                         },
-                        body: JSON.stringify({
-                            code: code,
-                            service_id: '{{ $service->id }}'
-                        })
+                        body: JSON.stringify({ code, service_id: '{{ $service->id }}' })
                     });
-
                     const result = await response.json();
 
                     if (response.ok && result.valid) {
-                        discountMessage.innerHTML = `✓ کد تخفیف معتبر است: ${result.discount_amount.toLocaleString()} تومان تخفیف`;
-                        discountMessage.className = 'mt-2 text-sm text-green-600';
-                        hiddenDiscountCode.value = code;
-
-                        if (result.final_price !== undefined) {
-                            finalPriceEl.innerHTML = `${result.final_price.toLocaleString()} تومان`;
-                        }
+                        discountMsg.innerHTML = `✓ کد معتبر: ${result.discount_amount.toLocaleString('fa-IR')} تومان تخفیف`;
+                        discountMsg.className = 'mt-2 text-xs text-emerald-400';
+                        hiddenCode.value = code;
+                        if (result.final_price !== undefined)
+                            finalPriceEl.innerHTML = `${result.final_price.toLocaleString('fa-IR')} تومان`;
                     } else {
-                        discountMessage.innerHTML = '✗ ' + (result.message || 'کد تخفیف نامعتبر است');
-                        discountMessage.className = 'mt-2 text-sm text-red-600';
-                        hiddenDiscountCode.value = '';
+                        discountMsg.innerHTML = '✗ ' + (result.message || 'کد تخفیف نامعتبر است');
+                        discountMsg.className = 'mt-2 text-xs text-red-400';
+                        hiddenCode.value = '';
                         finalPriceEl.innerHTML = '{{ number_format($prepaymentAmount) }} تومان';
                     }
-                } catch (error) {
-                    console.error('Error:', error);
-                    discountMessage.innerHTML = 'خطا در بررسی کد تخفیف';
-                    discountMessage.className = 'mt-2 text-sm text-red-600';
+                } catch (e) {
+                    discountMsg.innerHTML = 'خطا در بررسی کد تخفیف';
+                    discountMsg.className = 'mt-2 text-xs text-red-400';
                 }
             });
         });

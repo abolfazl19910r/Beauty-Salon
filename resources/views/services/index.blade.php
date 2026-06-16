@@ -3,96 +3,154 @@
 @section('title', 'خدمات')
 
 @section('content')
-    <div class="container mx-auto max-w-7xl">
-        <div class="mb-8 fade-in">
-            <h1 class="text-3xl font-bold mb-2 flex items-center">
-                <svg class="w-8 h-8 ml-2 text-pink-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                </svg>
-                خدمات ما
-            </h1>
-            <p class="text-gray-600">لیست کامل خدمات قابل ارائه در سالن زیبایی</p>
-        </div>
+    <style>
+        .card-hover { transition: transform 0.35s ease, box-shadow 0.35s ease; }
+        .card-hover:hover { transform: translateY(-6px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.4); }
+        .card-hover .img-zoom { transition: transform 0.55s ease; }
+        .card-hover:hover .img-zoom { transform: scale(1.07); }
 
-        <div class="bg-white rounded-lg shadow-sm p-4 mb-8 hover-shadow fade-in">
-            <h2 class="text-lg font-bold mb-3 flex items-center">
-                <svg class="w-5 h-5 ml-1 text-pink-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                </svg>
-                دسته‌بندی خدمات
-            </h2>
-            <div class="flex flex-wrap gap-2">
-                <a href="{{ route('services.index') }}"
-                   class="px-4 py-2 rounded-full transition-colors {{ !request('category') ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                    همه خدمات
+        .category-pill { transition: all 0.25s ease; }
+        .category-pill.active {
+            background: linear-gradient(135deg, #E6CD8A, #C9A24B);
+            color: #1A1410;
+            font-weight: 600;
+        }
+        .category-pill:not(.active) {
+            background: rgba(201,162,75,0.1);
+            color: rgba(248,243,233,0.75);
+            border: 1px solid rgba(201,162,75,0.2);
+        }
+        .category-pill:not(.active):hover {
+            background: rgba(201,162,75,0.2);
+            color: #E6CD8A;
+        }
+
+        /* override pagination links */
+        nav[role="navigation"] span[aria-current="page"] span,
+        nav[role="navigation"] a {
+            background: rgba(201,162,75,0.1) !important;
+            border-color: rgba(201,162,75,0.2) !important;
+            color: #E6CD8A !important;
+        }
+        nav[role="navigation"] span[aria-current="page"] span {
+            background: linear-gradient(135deg, #E6CD8A, #C9A24B) !important;
+            color: #1A1410 !important;
+            font-weight: 700 !important;
+        }
+    </style>
+
+    {{-- Page header --}}
+    <div class="mb-10 fade-in">
+        <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase mb-2">خدمات سالن راستا</p>
+        <h1 class="text-3xl md:text-4xl font-bold text-[#E6CD8A]" style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">
+            خدمات ویژه ما
+        </h1>
+        <p class="text-[#F8F3E9]/60 mt-2">بهترین خدمات زیبایی با متخصص‌ترین تیم</p>
+    </div>
+
+    {{-- Category filter --}}
+    <div class="mb-8 fade-in">
+        <div class="flex items-center gap-2 mb-4">
+            <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+            </svg>
+            <span class="text-sm font-medium text-[#F8F3E9]/70">دسته‌بندی خدمات</span>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('services.index') }}"
+               class="category-pill px-4 py-2 rounded-full text-sm {{ !request('category') ? 'active' : '' }}">
+                همه خدمات
+            </a>
+            @foreach($categories as $category)
+                <a href="{{ route('services.index', ['category' => $category->id]) }}"
+                   class="category-pill px-4 py-2 rounded-full text-sm {{ request('category') == $category->id ? 'active' : '' }}">
+                    {{ $category->name }}
                 </a>
-                @foreach($categories as $category)
-                    <a href="{{ route('services.index', ['category' => $category->id]) }}"
-                       class="px-4 py-2 rounded-full transition-colors {{ request('category') == $category->id ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                        {{ $category->name }}
-                    </a>
-                @endforeach
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 fade-in">
-            @forelse($services as $service)
-                <div class="bg-white rounded-lg shadow-sm hover-shadow transition-all">
-                    @if($service->image)
-                        <img src="{{ $service->image_url }}"
-                             alt="{{ $service->name }}"
-                             class="w-full h-48 object-cover rounded-t-lg">
-                    @else
-                        <div class="w-full h-48 bg-gradient-to-r from-pink-100 to-purple-100 rounded-t-lg flex items-center justify-center">
-                            <svg class="w-16 h-16 text-pink-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </div>
-                    @endif
-                    <div class="p-6">
-                        <h3 class="text-xl font-bold mb-2">{{ $service->name }}</h3>
-                        <p class="text-gray-600 mb-4 line-clamp-2">{{ $service->description }}</p>
-                        <div class="text-gray-500 text-sm mb-4 space-y-1">
-                            <div class="flex items-center">
-                                <svg class="w-4 h-4 ml-1 text-pink-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <polyline points="12 6 12 12 16 14"></polyline>
-                                </svg>
-                                <span>مدت زمان: {{ $service->duration }} دقیقه</span>
-                            </div>
-                            <div class="flex items-center">
-                                <svg class="w-4 h-4 ml-1 text-pink-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="12" y1="1" x2="12" y2="23"></line>
-                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                                </svg>
-                                <span class="persian-number">قیمت: {{ number_format($service->price) }} تومان</span>
-                            </div>
-                        </div>
-                        <div class="flex flex-col gap-2">
-                            <a href="{{ route('services.show', $service) }}"
-                               class="text-center text-pink-600 hover:text-pink-700 py-2 border border-pink-200 rounded-lg transition-colors hover:bg-pink-50">
-                                مشاهده جزئیات
-                            </a>
-                            <a href="{{ route('bookings.create', ['service' => $service->id]) }}"
-                               class="bg-gradient-to-r from-pink-500 to-purple-600 text-white text-center py-2 rounded-lg hover:opacity-90 transition-colors">
-                                رزرو نوبت
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            @empty
-                <div class="col-span-full text-center py-12 bg-gray-50 rounded-lg">
-                    <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="8" y1="12" x2="16" y2="12"></line>
-                    </svg>
-                    <p class="text-gray-500">هیچ خدمتی یافت نشد!</p>
-                </div>
-            @endforelse
-        </div>
-
-        <div class="mt-8">
-            {{ $services->links() }}
+            @endforeach
         </div>
     </div>
+
+    {{-- Service Grid --}}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @forelse($services as $index => $service)
+            <div class="card-hover bg-[#2E2117] rounded-2xl overflow-hidden border border-[#C9A24B]/10 flex flex-col fade-in">
+                {{-- Image --}}
+                <div class="overflow-hidden h-52 relative">
+                    @if($service->image)
+                        <img src="{{ $service->image_url }}" alt="{{ $service->name }}"
+                             loading="lazy" class="img-zoom w-full h-full object-cover">
+                    @else
+                        <img src="{{ asset('images/placeholder-service.svg') }}" alt="{{ $service->name }}"
+                             class="w-full h-full object-cover">
+                    @endif
+                    {{-- Category label --}}
+                    @if($service->category)
+                        <span class="absolute top-3 right-3 text-xs font-semibold px-3 py-1 rounded-full
+                                 bg-[#1A1410]/80 text-[#E6CD8A] border border-[#C9A24B]/30 backdrop-blur-sm">
+                        {{ $service->category->name }}
+                    </span>
+                    @endif
+                </div>
+
+                {{-- Content --}}
+                <div class="p-5 flex flex-col flex-grow">
+                    <h3 class="text-lg font-bold text-[#F8F3E9] mb-2"
+                        style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">
+                        {{ $service->name }}
+                    </h3>
+                    <p class="text-sm text-[#F8F3E9]/60 leading-7 line-clamp-2 mb-4 flex-grow">
+                        {{ $service->description }}
+                    </p>
+
+                    {{-- Duration and price --}}
+                    <div class="flex items-center justify-between text-sm border-t border-[#C9A24B]/10 pt-4 mb-4">
+                    <span class="flex items-center gap-1 text-[#F8F3E9]/60">
+                        <svg class="w-4 h-4 text-[#C9A24B]/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 6v6l4 2"/>
+                        </svg>
+                        <span class="persian-number">{{ $service->duration }} دقیقه</span>
+                    </span>
+                        <span class="text-[#E6CD8A] font-bold persian-number">
+                        {{ number_format($service->price) }} تومان
+                    </span>
+                    </div>
+
+                    {{-- Buttons --}}
+                    <div class="flex gap-2">
+                        <a href="{{ route('services.show', $service) }}"
+                           class="flex-1 text-center py-2.5 rounded-xl text-sm border border-[#C9A24B]/30
+                              text-[#E6CD8A] hover:bg-[#C9A24B]/10 transition-colors">
+                            جزئیات
+                        </a>
+                        <a href="{{ route('bookings.create', ['service' => $service->id]) }}"
+                           class="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold
+                              bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-[#1A1410]
+                              hover:shadow-lg hover:shadow-[#C9A24B]/25 transition-all">
+                            رزرو نوبت
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @empty
+            <div class="col-span-full text-center py-20 fade-in">
+                <div class="w-20 h-20 rounded-full bg-[#C9A24B]/10 flex items-center justify-center mx-auto mb-5">
+                    <svg class="w-10 h-10 text-[#C9A24B]/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+                <p class="text-[#F8F3E9]/50 text-lg">هیچ خدمتی در این دسته یافت نشد.</p>
+                <a href="{{ route('services.index') }}" class="mt-4 inline-block text-sm text-[#E6CD8A] hover:underline">
+                    مشاهده همه خدمات
+                </a>
+            </div>
+        @endforelse
+    </div>
+
+    {{-- Pagination --}}
+    @if($services->hasPages())
+        <div class="mt-10 flex justify-center fade-in">
+            {{ $services->links() }}
+        </div>
+    @endif
+
 @endsection

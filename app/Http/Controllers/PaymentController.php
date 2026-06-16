@@ -37,7 +37,7 @@ class PaymentController extends Controller
                         'payment_status' => 'paid',
                         'status' => $finalStatus,
                         'paid_at' => now(),
-                        'payment_ref' => 'FREE-DISCOUNT-' . $booking->id,
+                        'payment_reference' => 'FREE-DISCOUNT-' . $booking->id,
                         'payment_details' => [
                             'method' => 'full_discount',
                             'gateway_amount' => 0,
@@ -124,7 +124,7 @@ class PaymentController extends Controller
                         'payment_status' => 'paid',
                         'status' => $finalStatus,
                         'paid_at' => now(),
-                        'payment_ref' => 'WALLET-' . $booking->id . '-' . time(),
+                        'payment_reference' => 'WALLET-' . $booking->id . '-' . time(),
                         'payment_details' => [
                             'method' => 'wallet',
                             'wallet_amount' => $walletAmount,
@@ -220,7 +220,7 @@ class PaymentController extends Controller
                         $booking->update([
                             'payment_status' => 'paid',
                             'paid_at' => now(),
-                            'payment_ref' => $result['ref_id'] ?? $result['reference'],
+                            'payment_reference' => $result['ref_id'] ?? $result['reference'],
                             'status' => $newStatus,
                             'payment_details' => $paymentDetails
                         ]);
