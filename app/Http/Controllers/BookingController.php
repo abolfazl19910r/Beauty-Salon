@@ -253,6 +253,8 @@ class BookingController extends Controller
     public function index(Request $request): \Illuminate\View\View
     {
         $status = $request->query('status');
+        $dateFilter = $request->query('date');
+
         $query = Booking::with(['service', 'specialist'])
             ->where('user_id', Auth::id())
             ->orderBy('booking_time', 'desc');
@@ -261,7 +263,15 @@ class BookingController extends Controller
             $query->where('status', $status);
         }
 
-        $bookings = $query->paginate(10);
+        if ($dateFilter) {
+            try {
+                $gregorianDate = \Hekmatinasser\Verta\Verta::parse($dateFilter)->toCarbon()->format('Y-m-d');
+                $query->whereDate('booking_time', $gregorianDate);
+            } catch (\Exception $e) {
+            }
+        }
+
+        $bookings = $query->paginate(10)->withQueryString();
 
         return view('bookings.index', compact('bookings'));
     }
@@ -483,7 +493,7 @@ class BookingController extends Controller
             ]);
 
             $booking->update([
-                'payment_ref' => $result['ref_id']
+                'payment_reference' => $result['ref_id']
             ]);
 
             return redirect($result['payment_url']);
