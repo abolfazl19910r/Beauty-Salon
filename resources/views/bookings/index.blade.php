@@ -36,7 +36,7 @@
 
     <div class="max-w-7xl mx-auto fade-in">
 
-        {{-- هدر --}}
+        {{-- Header --}}
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
                 <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase mb-1">حساب کاربری</p>
@@ -56,7 +56,7 @@
 
         <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 overflow-hidden">
 
-            {{-- فیلتر --}}
+            {{-- Filter --}}
             <div class="px-5 py-4 border-b border-[#C9A24B]/10">
                 <form action="{{ route('bookings.index') }}" method="GET" class="flex flex-wrap gap-3 items-end">
                     <select name="status" class="gold-select">
@@ -71,8 +71,9 @@
                         @endforeach
                     </select>
 
-                    <input type="date" name="date" value="{{ request('date') }}"
-                           class="gold-input" placeholder="فیلتر تاریخ">
+                    <input type="text" name="date" id="date_filter" value="{{ request('date') }}"
+                           class="gold-input persian-number" placeholder="فیلتر تاریخ (مثلاً ۱۴۰۵/۰۳/۲۶)"
+                           dir="ltr" autocomplete="off">
 
                     <button type="submit"
                             class="px-4 py-2 rounded-xl text-sm font-semibold transition-all
@@ -90,7 +91,7 @@
                 </form>
             </div>
 
-            {{-- جدول / خالی --}}
+            {{-- Table / Empty --}}
             @if($bookings->isEmpty())
                 <div class="py-20 text-center">
                     <div class="w-16 h-16 rounded-full bg-[#C9A24B]/10 flex items-center justify-center mx-auto mb-5">
@@ -201,3 +202,20 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script src="https://unpkg.com/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://unpkg.com/persian-date@latest/dist/persian-date.min.js"></script>
+    <script src="https://unpkg.com/persian-datepicker@latest/dist/js/persian-datepicker.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#date_filter").persianDatepicker({
+                format: 'YYYY/MM/DD',
+                autoClose: true,
+                initialValue: false,
+                observer: true,
+                calendar: { persian: { locale: 'fa' } }
+            });
+        });
+    </script>
+@endpush

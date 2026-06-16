@@ -5,7 +5,7 @@
 @section('content')
     <div class="max-w-lg mx-auto fade-in text-center">
 
-        {{-- آیکون موفقیت --}}
+        {{-- Success icon --}}
         <div class="relative w-24 h-24 mx-auto mb-8">
             <div class="absolute inset-0 rounded-full bg-emerald-400/20 animate-ping"></div>
             <div class="relative w-24 h-24 rounded-full bg-emerald-900/40 border-2 border-emerald-500/40 flex items-center justify-center">
@@ -24,7 +24,7 @@
 
         <div class="grid grid-cols-1 gap-4 mb-8 text-right">
 
-            {{-- اطلاعات پرداخت --}}
+            {{-- Payment information --}}
             <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 overflow-hidden">
                 <div class="px-5 py-3 border-b border-[#C9A24B]/10 flex items-center gap-2">
                     <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -36,7 +36,7 @@
                 <div class="divide-y divide-[#C9A24B]/8">
                     <div class="flex justify-between items-center px-5 py-3.5 text-sm">
                         <span class="text-[#F8F3E9]/55">شماره پیگیری</span>
-                        <span class="font-medium text-[#E6CD8A] text-xs" dir="ltr">{{ $booking->payment_ref }}</span>
+                        <span class="font-medium text-[#E6CD8A] text-xs" dir="ltr">{{ $booking->payment_reference }}</span>
                     </div>
                     <div class="flex justify-between items-center px-5 py-3.5 text-sm">
                         <span class="text-[#F8F3E9]/55">مبلغ پرداختی</span>
@@ -49,7 +49,7 @@
                 </div>
             </div>
 
-            {{-- جزئیات نوبت --}}
+            {{-- Appointment details --}}
             <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 overflow-hidden">
                 <div class="px-5 py-3 border-b border-[#C9A24B]/10 flex items-center gap-2">
                     <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

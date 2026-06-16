@@ -4,7 +4,7 @@
 
 @section('content')
     <style>
-        /* Override Vue reactive classes برای تم لوکس */
+        /* Override Vue reactive classes for a luxury theme */
         .slot-btn {
             background: rgba(201,162,75,0.08);
             border: 1px solid rgba(201,162,75,0.2);
@@ -55,7 +55,7 @@
     </style>
 
     <div id="booking-app" class="max-w-3xl mx-auto fade-in">
-        {{-- هدر --}}
+        {{-- Header --}}
         <div class="mb-8">
             <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase mb-1">سالن راستا</p>
             <h1 class="text-2xl md:text-3xl font-bold text-[#E6CD8A]"
@@ -65,7 +65,7 @@
         <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 p-6 md:p-8">
             <form @submit.prevent="submitBooking" class="space-y-7">
 
-                {{-- انتخاب سرویس --}}
+                {{-- Select service --}}
                 <div>
                     <label class="block text-sm font-medium text-[#E6CD8A] mb-2">
                     <span class="flex items-center gap-1.5">
@@ -83,7 +83,7 @@
                     </select>
                 </div>
 
-                {{-- انتخاب متخصص --}}
+                {{-- Expert selection --}}
                 <div v-if="selectedService">
                     <label class="block text-sm font-medium text-[#E6CD8A] mb-2">
                     <span class="flex items-center gap-1.5">
@@ -101,7 +101,7 @@
                     </select>
                 </div>
 
-                {{-- loading تاریخ --}}
+                {{-- loading date --}}
                 <div v-if="loadingDates" class="flex items-center gap-3 py-4 text-sm text-[#F8F3E9]/60">
                     <svg class="spin w-5 h-5 text-[#C9A24B]" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -110,7 +110,7 @@
                     در حال بارگذاری تاریخ‌های موجود...
                 </div>
 
-                {{-- انتخاب تاریخ --}}
+                {{-- Select date --}}
                 <div v-if="availableDates.length > 0">
                     <label class="block text-sm font-medium text-[#E6CD8A] mb-3">
                     <span class="flex items-center gap-1.5">
@@ -132,7 +132,7 @@
                     </div>
                 </div>
 
-                {{-- loading ساعت --}}
+                {{-- loading hours --}}
                 <div v-if="loadingSlots" class="flex items-center gap-3 py-4 text-sm text-[#F8F3E9]/60">
                     <svg class="spin w-5 h-5 text-[#C9A24B]" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -141,7 +141,7 @@
                     در حال بارگذاری ساعت‌های موجود...
                 </div>
 
-                {{-- انتخاب ساعت --}}
+                {{-- Choose a watch --}}
                 <div v-if="selectedDate && availableTimeSlots.length > 0">
                     <label class="block text-sm font-medium text-[#E6CD8A] mb-3">
                     <span class="flex items-center gap-1.5">
@@ -168,7 +168,7 @@
                     </div>
                 </div>
 
-                {{-- خلاصه رزرو --}}
+                {{-- Reservation Summary --}}
                 <div v-if="selectedTime" class="summary-box p-5">
                     <h3 class="font-bold text-[#E6CD8A] mb-4 flex items-center gap-1.5"
                         style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">
@@ -209,7 +209,7 @@
                     </div>
                 </div>
 
-                {{-- دکمه‌ها --}}
+                {{-- Buttons --}}
                 <div class="flex gap-3 pt-2">
                     <a href="{{ route('services.index') }}"
                        class="flex-1 text-center py-3 rounded-xl text-sm border border-[#C9A24B]/25
@@ -239,7 +239,9 @@
 @endsection
 
 @push('scripts')
-    {{-- Vue logic کاملاً دست‌نخورده است --}}
+
+    <script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
+
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script>
         const { createApp } = Vue;

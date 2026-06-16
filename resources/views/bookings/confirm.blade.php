@@ -12,7 +12,7 @@
 
         <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 p-6 md:p-8 space-y-6">
 
-            {{-- اطلاعات نوبت --}}
+            {{-- Appointment information --}}
             <div>
                 <h2 class="text-base font-bold text-[#E6CD8A] mb-4 flex items-center gap-2">
                     <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -44,7 +44,7 @@
                 </div>
             </div>
 
-            {{-- توضیح --}}
+            {{-- Explanation --}}
             <div class="flex items-start gap-3 bg-sky-900/20 border border-sky-700/30 rounded-xl px-4 py-3 text-sm text-sky-300">
                 <svg class="w-4 h-4 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
@@ -52,7 +52,7 @@
                 با تأیید نهایی و پرداخت، نوبت شما ثبت خواهد شد. لطفاً اطلاعات بالا را با دقت بررسی کنید.
             </div>
 
-            {{-- کد تخفیف --}}
+            {{-- Discount code --}}
             <div>
                 <h3 class="text-sm font-medium text-[#E6CD8A] mb-3 flex items-center gap-1.5">
                     <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -75,7 +75,7 @@
                 <div id="discount-message" class="mt-2 text-xs hidden"></div>
             </div>
 
-            {{-- فرم نهایی --}}
+            {{-- Final form --}}
             <form action="{{ route('bookings.store') }}" method="POST">
                 @csrf
                 <input type="hidden" name="service_id" value="{{ $service->id }}">

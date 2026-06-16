@@ -5,7 +5,7 @@
 @section('content')
     <div class="max-w-lg mx-auto fade-in text-center">
 
-        {{-- آیکون خطا --}}
+        {{-- Error icon --}}
         <div class="relative w-24 h-24 mx-auto mb-8">
             <div class="absolute inset-0 rounded-full bg-red-400/15 animate-ping"></div>
             <div class="relative w-24 h-24 rounded-full bg-red-900/30 border-2 border-red-500/30 flex items-center justify-center">

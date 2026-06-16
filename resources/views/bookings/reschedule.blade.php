@@ -16,7 +16,7 @@
 
     <div class="max-w-2xl mx-auto fade-in" id="booking-app">
 
-        {{-- هدر --}}
+        {{--  header --}}
         <div class="flex items-center gap-3 mb-8">
             <a href="{{ route('bookings.show', $booking) }}"
                class="w-9 h-9 rounded-xl bg-[#2E2117] border border-[#C9A24B]/15 flex items-center justify-center
@@ -34,7 +34,7 @@
 
         <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 p-6 md:p-8 space-y-7">
 
-            {{-- خدمت فعلی --}}
+            {{-- Current service --}}
             <div class="flex items-center gap-3 bg-[#1A1410]/50 rounded-xl border border-[#C9A24B]/10 px-4 py-3 text-sm">
                 <svg class="w-4 h-4 text-[#C9A24B] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
@@ -43,7 +43,7 @@
                 <span class="font-medium text-[#F8F3E9]">{{ $booking->service->name }}</span>
             </div>
 
-            {{-- زمان فعلی --}}
+            {{-- Current time --}}
             <div class="bg-[#C9A24B]/10 border border-[#C9A24B]/20 rounded-xl px-5 py-4">
                 <p class="text-xs font-semibold text-[#C9A24B] mb-2 uppercase tracking-wider">زمان فعلی نوبت</p>
                 <p class="text-lg font-bold text-[#E6CD8A] persian-number" dir="ltr">
@@ -53,7 +53,7 @@
 
             <form @submit.prevent="submitReschedule" class="space-y-6">
 
-                {{-- انتخاب تاریخ جدید --}}
+                {{-- Choose a new date --}}
                 <div v-if="availableDates.length > 0">
                     <label class="block text-sm font-medium text-[#E6CD8A] mb-3 flex items-center gap-1.5">
                         <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -73,7 +73,7 @@
                     </div>
                 </div>
 
-                {{-- انتخاب ساعت جدید --}}
+                {{-- Choose a new watch --}}
                 <div v-if="selectedDate && availableTimeSlots.length > 0">
                     <label class="block text-sm font-medium text-[#E6CD8A] mb-3 flex items-center gap-1.5">
                         <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -91,7 +91,7 @@
                     </div>
                 </div>
 
-                {{-- مقایسه زمان --}}
+                {{-- Time comparison --}}
                 <div v-if="selectedTime" class="grid grid-cols-2 gap-3 text-sm">
                     <div class="bg-[#1A1410]/60 rounded-xl border border-[#C9A24B]/10 p-4">
                         <p class="text-[#F8F3E9]/50 text-xs mb-1">زمان فعلی</p>
@@ -105,7 +105,7 @@
                     </div>
                 </div>
 
-                {{-- دکمه‌ها --}}
+                {{-- Buttons --}}
                 <div class="flex gap-3 pt-2">
                     <a href="{{ route('bookings.show', $booking) }}"
                        class="flex-1 text-center py-3 rounded-xl text-sm border border-[#C9A24B]/25
@@ -132,7 +132,6 @@
         </div>
     </div>
 
-    {{-- Vue logic دست‌نخورده --}}
     <script>
         const { createApp } = Vue;
         createApp({

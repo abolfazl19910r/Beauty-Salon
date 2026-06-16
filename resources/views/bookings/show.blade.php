@@ -15,7 +15,7 @@
 
     <div class="max-w-3xl mx-auto fade-in">
 
-        {{-- هدر --}}
+        {{--  header --}}
         <div class="flex items-center gap-3 mb-8">
             <a href="{{ route('bookings.index') }}"
                class="w-9 h-9 rounded-xl bg-[#2E2117] border border-[#C9A24B]/15 flex items-center justify-center
@@ -33,7 +33,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
 
-            {{-- اطلاعات نوبت --}}
+            {{-- Appointment information --}}
             <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 overflow-hidden">
                 <div class="px-5 py-3.5 border-b border-[#C9A24B]/10 flex items-center gap-2">
                     <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -74,7 +74,7 @@
                 </div>
             </div>
 
-            {{-- اطلاعات پرداخت --}}
+            {{-- Payment information --}}
             <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 overflow-hidden">
                 <div class="px-5 py-3.5 border-b border-[#C9A24B]/10 flex items-center gap-2">
                     <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -100,17 +100,17 @@
                             <span class="status-badge" style="background:rgba(248,113,113,0.15);color:#FCA5A5">✗ پرداخت نشده</span>
                         @endif
                     </div>
-                    @if($booking->payment_ref)
+                    @if($booking->payment_reference)
                         <div class="flex items-center justify-between px-5 py-3.5 text-sm">
                             <span class="text-[#F8F3E9]/55">شماره پیگیری</span>
-                            <span class="font-medium text-[#F8F3E9] text-xs" dir="ltr">{{ $booking->payment_ref }}</span>
+                            <span class="font-medium text-[#F8F3E9] text-xs" dir="ltr">{{ $booking->payment_reference }}</span>
                         </div>
                     @endif
                 </div>
             </div>
         </div>
 
-        {{-- دکمه‌های عملیات --}}
+        {{-- Operation buttons --}}
         <div class="flex flex-wrap gap-3">
             <a href="{{ route('bookings.index') }}"
                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm border border-[#C9A24B]/25
