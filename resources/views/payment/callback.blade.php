@@ -1,56 +1,78 @@
 @extends('layouts.app')
-
 @section('title', 'نتیجه پرداخت')
 
 @section('content')
-    <div class="max-w-2xl mx-auto">
-        <div class="bg-white rounded-lg shadow-lg p-6 text-center hover-shadow">
-            @if($success)
-                <div class="text-green-500 mb-6">
-                    <svg class="w-20 h-20 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+    <div class="max-w-lg mx-auto fade-in text-center">
+
+        @if($success)
+            <div class="relative w-24 h-24 mx-auto mb-6">
+                <div class="absolute inset-0 rounded-full bg-emerald-400/20 animate-ping"></div>
+                <div class="relative w-24 h-24 rounded-full bg-emerald-900/40 border-2 border-emerald-500/40 flex items-center justify-center">
+                    <svg class="w-12 h-12 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                     </svg>
                 </div>
-                <h1 class="text-2xl font-bold mb-4">پرداخت با موفقیت انجام شد</h1>
-                <div class="bg-gray-50 p-5 rounded-lg mb-6">
-                    <p class="mb-3">شماره نوبت: <span class="font-medium">{{ $booking->id }}</span></p>
-                    <p class="mb-3">مبلغ پرداخت شده: <span class="font-medium">{{ number_format($booking->prepayment_amount) }} تومان</span></p>
-                    <p>شماره پیگیری: <span class="font-medium persian-number" dir="ltr">{{ $booking->payment_ref }}</span></p>
-                </div>
-                <p class="text-gray-600 mb-8">
-                    پیامک تاییدیه برای شما ارسال خواهد شد.
-                </p>
-            @else
-                <div class="text-red-500 mb-6">
-                    <svg class="w-20 h-20 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <h1 class="text-2xl font-bold mb-4">خطا در پرداخت</h1>
-                <p class="text-gray-600 mb-8">
-                    {{ $error_message ?? 'متاسفانه پرداخت با خطا مواجه شد.' }}
-                </p>
-            @endif
+            </div>
+            <h1 class="text-2xl md:text-3xl font-bold text-[#E6CD8A] mb-6"
+                style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">پرداخت با موفقیت انجام شد</h1>
 
-            <div class="space-x-4 space-x-reverse">
-                @if($success)
-                    <a href="{{ route('bookings.show', $booking) }}"
-                       class="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-lg inline-block hover:opacity-90 transition-colors">
-                        مشاهده جزئیات نوبت
-                    </a>
-                @else
-                    <a href="{{ route('payment.show', $booking) }}"
-                       class="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-lg inline-block hover:opacity-90 transition-colors">
-                        تلاش مجدد
-                    </a>
-                @endif
+            <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 p-5 mb-6 text-right space-y-3">
+                <div class="flex justify-between text-sm">
+                    <span class="text-[#F8F3E9]/55">شماره نوبت</span>
+                    <span class="font-medium text-[#F8F3E9] persian-number">{{ $booking->id }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-[#F8F3E9]/55">مبلغ پرداخت شده</span>
+                    <span class="font-bold text-emerald-400 persian-number">{{ number_format($booking->prepayment_amount) }} تومان</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-[#F8F3E9]/55">شماره پیگیری</span>
+                    <span class="font-medium text-[#E6CD8A] persian-number" dir="ltr">{{ $booking->payment_reference }}</span>
+                </div>
+            </div>
 
+            <p class="text-[#F8F3E9]/60 mb-8 text-sm">پیامک تأییدیه برای شما ارسال خواهد شد.</p>
+
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <a href="{{ route('bookings.show', $booking) }}"
+                   class="px-6 py-3 rounded-xl text-sm font-semibold transition-all
+                      bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-[#1A1410]
+                      hover:shadow-lg hover:shadow-[#C9A24B]/25">
+                    مشاهده جزئیات نوبت
+                </a>
                 <a href="{{ route('bookings.index') }}"
-                   class="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg inline-block hover:bg-gray-300 transition-colors">
+                   class="px-6 py-3 rounded-xl text-sm border border-[#C9A24B]/25
+                      text-[#F8F3E9]/70 hover:bg-[#C9A24B]/10 transition-colors">
                     لیست نوبت‌ها
                 </a>
             </div>
-        </div>
+
+        @else
+            <div class="relative w-24 h-24 mx-auto mb-6">
+                <div class="absolute inset-0 rounded-full bg-red-400/15 animate-ping"></div>
+                <div class="relative w-24 h-24 rounded-full bg-red-900/30 border-2 border-red-500/30 flex items-center justify-center">
+                    <svg class="w-12 h-12 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-bold text-[#E6CD8A] mb-3"
+                style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">خطا در پرداخت</h1>
+            <p class="text-[#F8F3E9]/60 mb-10 text-sm">{{ $error_message ?? 'متأسفانه پرداخت با خطا مواجه شد.' }}</p>
+
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <a href="{{ route('payment.show', $booking) }}"
+                   class="px-6 py-3 rounded-xl text-sm font-semibold transition-all
+                      bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-[#1A1410]
+                      hover:shadow-lg hover:shadow-[#C9A24B]/25">
+                    تلاش مجدد
+                </a>
+                <a href="{{ route('bookings.index') }}"
+                   class="px-6 py-3 rounded-xl text-sm border border-[#C9A24B]/25
+                      text-[#F8F3E9]/70 hover:bg-[#C9A24B]/10 transition-colors">
+                    لیست نوبت‌ها
+                </a>
+            </div>
+        @endif
     </div>
 @endsection
