@@ -97,7 +97,7 @@
 <body class="font-vazir min-h-screen flex flex-col" dir="rtl">
 
 {{-- =========================================================
-     هدر شیشه‌ای (Sticky Glass Navbar) - سراسری
+     (Sticky Glass Navbar)
 ========================================================= --}}
 <header id="main-navbar" class="fixed top-0 inset-x-0 z-50">
     <nav class="container mx-auto px-4 h-20 flex items-center justify-between">
@@ -239,7 +239,7 @@
 </main>
 
 {{-- =========================================================
-     فوتر - سراسری
+     National footer
 ========================================================= --}}
 <footer class="bg-[var(--rasta-brown)] border-t border-[var(--rasta-gold)]/10 mt-auto">
     <div class="container mx-auto px-4 py-12">

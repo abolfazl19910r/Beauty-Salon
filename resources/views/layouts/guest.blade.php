@@ -11,6 +11,7 @@
 
     <title>{{ config('app.name', 'راستا') }}</title>
 
+
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
