@@ -35,7 +35,6 @@ class EventServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        Booking::observe(BookingObserver::class);
         DiscountCode::observe(DiscountCodeObserver::class);
         if (config('app.register_reminder_schedule')) {
             $this->app->booted(function () {
