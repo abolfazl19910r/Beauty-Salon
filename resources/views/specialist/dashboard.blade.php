@@ -2,243 +2,202 @@
 
 @section('title', 'داشبورد')
 
+@php
+    $statusLabels = [
+        'pending'   => 'در انتظار تایید',
+        'confirmed' => 'تایید شده',
+        'completed' => 'انجام شده',
+        'cancelled' => 'لغو شده',
+    ];
+
+    $nextBooking = $todaySchedule->first() ?: $upcomingBookings->first();
+    $nextBookingIsToday = $todaySchedule->isNotEmpty()
+        && $nextBooking
+        && $todaySchedule->first()->id === $nextBooking->id;
+@endphp
+
 @section('content')
-    <div class="fade-in">
-        <div class="mt-8 mb-6">
+    <div class="fade-in space-y-6">
+
+        {{-- Welcome header --}}
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full specialist-cta flex items-center justify-center text-lg font-bold flex-shrink-0">
+                {{ mb_substr(optional(auth()->user())->name ?? 'متخصص', 0, 1) }}
+            </div>
+            <div>
+                <h2 class="text-lg font-bold text-[var(--specialist-text)]">سلام، {{ auth()->user()->name ?? 'متخصص' }}</h2>
+                <p class="text-sm text-[var(--specialist-plum-muted)] persian-number">{{ $todayPersian }}</p>
+            </div>
+        </div>
+
+        {{-- 3 key stat cards --}}
+        <div class="grid grid-cols-3 gap-3">
+            <div class="specialist-card p-4 text-center">
+                <p class="text-xs text-[var(--specialist-plum-muted)] mb-1">نوبت امروز</p>
+                <p class="text-xl font-bold text-[var(--specialist-text)] persian-number">{{ number_format($todayBookingsCount) }}</p>
+            </div>
+            <div class="specialist-card p-4 text-center">
+                <p class="text-xs text-[var(--specialist-plum-muted)] mb-1">درآمد ماه</p>
+                <p class="text-xl font-bold text-[var(--specialist-text)] persian-number">{{ number_format($monthRevenue) }}</p>
+            </div>
+            <div class="specialist-card p-4 text-center">
+                <p class="text-xs text-[var(--specialist-plum-muted)] mb-1">امتیاز</p>
+                <p class="text-xl font-bold text-[var(--specialist-text)] persian-number">{{ number_format($averageRating, 1) }}</p>
+            </div>
+        </div>
+
+        {{-- Next appointment --}}
+        <div class="specialist-card p-5 border" style="border-color: var(--specialist-border);">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-bold text-[var(--specialist-plum-light)] font-serif-fa">نوبت بعدی</h3>
+                @if($nextBooking)
+                    <span class="specialist-badge px-3 py-1 text-xs font-medium">{{ $statusLabels[$nextBooking->status] ?? 'نامشخص' }}</span>
+                @endif
+            </div>
+
+            @if($nextBooking)
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-semibold text-[var(--specialist-text)]">{{ $nextBooking->user->name }}</p>
+                        <p class="text-sm text-[var(--specialist-text-dim)]">{{ $nextBooking->service->name }}</p>
+                    </div>
+                    <div class="text-left">
+                        <p class="font-bold text-[var(--specialist-plum-mid)] persian-number" dir="ltr">{{ \Carbon\Carbon::parse($nextBooking->booking_time)->format('H:i') }}</p>
+                        <p class="text-xs text-[var(--specialist-text-dim)] persian-number">{{ $nextBookingIsToday ? 'امروز' : $nextBooking->booking_date_persian }}</p>
+                    </div>
+                </div>
+            @else
+                <p class="text-center text-[var(--specialist-text-dim)] py-3">نوبتی برای نمایش وجود ندارد</p>
+            @endif
+        </div>
+
+        {{-- Main CTA --}}
+        <a href="{{ route('specialist.bookings') }}" class="specialist-cta w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-opacity hover:opacity-90">
+            مدیریت نوبت‌ها
+        </a>
+
+        {{-- Overall stats --}}
+        <div>
             <div class="flex items-center mb-4">
-                <h2 class="text-xl font-bold text-gray-800">آمار کل</h2>
-                <div class="flex-grow mr-4 h-px bg-gray-200"></div>
+                <h2 class="text-base font-bold text-[var(--specialist-plum-light)] font-serif-fa">آمار کل</h2>
+                <div class="flex-grow mr-4 h-px" style="background-color: var(--specialist-border);"></div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm font-medium text-gray-500 mb-1">کل نوبت‌ها</p>
-                            <h3 class="text-2xl font-bold text-gray-800">{{ number_format($allBookingsCount) }}</h3>
-                        </div>
-                        <div class="p-2 bg-blue-50 rounded-lg text-blue-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                        </div>
-                    </div>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="specialist-card p-5">
+                    <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">کل نوبت‌ها</p>
+                    <h3 class="text-2xl font-bold text-[var(--specialist-text)] persian-number">{{ number_format($allBookingsCount) }}</h3>
                 </div>
-
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm font-medium text-gray-500 mb-1">تایید شده</p>
-                            <h3 class="text-2xl font-bold text-green-600">{{ number_format($confirmedBookingsCount) }}</h3>
-                        </div>
-                        <div class="p-2 bg-green-50 rounded-lg text-green-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                        </div>
-                    </div>
+                <div class="specialist-card p-5">
+                    <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">تایید شده</p>
+                    <h3 class="text-2xl font-bold text-emerald-400 persian-number">{{ number_format($confirmedBookingsCount) }}</h3>
                 </div>
-
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm font-medium text-gray-500 mb-1">در انتظار تایید</p>
-                            <h3 class="text-2xl font-bold text-orange-500">{{ number_format($pendingBookingsCount) }}</h3>
-                        </div>
-                        <div class="p-2 bg-orange-50 rounded-lg text-orange-500">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        </div>
-                    </div>
+                <div class="specialist-card p-5">
+                    <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">در انتظار تایید</p>
+                    <h3 class="text-2xl font-bold text-amber-400 persian-number">{{ number_format($pendingBookingsCount) }}</h3>
                 </div>
-
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm font-medium text-gray-500 mb-1">انجام شده</p>
-                            <h3 class="text-2xl font-bold text-purple-600">{{ number_format($completedBookingsCount) }}</h3>
-                        </div>
-                        <div class="p-2 bg-purple-50 rounded-lg text-purple-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                        </div>
-                    </div>
+                <div class="specialist-card p-5">
+                    <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">انجام شده</p>
+                    <h3 class="text-2xl font-bold text-[var(--specialist-plum-light)] persian-number">{{ number_format($completedBookingsCount) }}</h3>
                 </div>
             </div>
         </div>
 
-        <div class="flex-grow mr-4 h-px bg-gray-200"></div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
-            <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-                <div class="p-5 flex items-center gap-4">
-                    <div class="bg-blue-50 text-blue-600 rounded-lg p-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500">نوبت‌های امروز</p>
-                        <h3 class="text-2xl font-bold text-gray-800">{{ $todayBookingsCount }}</h3>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-                <div class="p-5 flex items-center gap-4">
-                    <div class="bg-green-50 text-green-600 rounded-lg p-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500">درآمد امروز (بیعانه)</p>
-                        <h3 class="text-2xl font-bold text-gray-800">{{ number_format($todayRevenue) }}</h3>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-                <div class="p-5 flex items-center gap-4">
-                    <div class="bg-purple-50 text-purple-600 rounded-lg p-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500">نوبت‌های این ماه</p>
-                        <h3 class="text-2xl font-bold text-gray-800">{{ $monthBookingsCount }}</h3>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-                <div class="p-5 flex items-center gap-4">
-                    <div class="bg-yellow-50 text-yellow-600 rounded-lg p-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500">امتیاز من</p>
-                        <h3 class="text-2xl font-bold text-gray-800">{{ number_format($averageRating, 1) }} / 5</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
-            <div class="xl:col-span-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-                <div class="p-5 border-b border-gray-100">
-                    <h2 class="text-lg font-semibold text-gray-800">برنامه کاری امروز</h2>
+        {{-- Today's schedule + upcoming + reviews --}}
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="xl:col-span-2 specialist-card overflow-hidden">
+                <div class="p-5 border-b" style="border-color: var(--specialist-border);">
+                    <h2 class="text-base font-semibold text-[var(--specialist-text)]">برنامه کاری امروز</h2>
                 </div>
                 <div class="p-5">
                     @if($todaySchedule->count() > 0)
                         <div class="space-y-4">
                             @foreach($todaySchedule as $booking)
-                                <div class="flex items-start gap-4 p-4 rounded-lg {{ $booking->status === 'completed' ? 'bg-gray-50' : 'bg-blue-50' }} hover:shadow-sm transition">
-                                    <div class="flex-shrink-0 text-center">
-                                        <div class="text-2xl font-bold text-blue-600">
-                                            {{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }}
-                                        </div>
-                                        <div class="text-xs text-gray-500">{{ $booking->service->duration }} دقیقه</div>
-                                    </div>
-                                    <div class="flex-1">
-                                        <h3 class="font-semibold text-gray-800">{{ $booking->service->name }}</h3>
-                                        <p class="text-sm text-gray-600 mt-1">
-                                            <i class="fas fa-user"></i> {{ $booking->user->name }}
-                                        </p>
-                                        <p class="text-sm text-gray-500">
-                                            <i class="fas fa-phone"></i> {{ $booking->user->phone }}
-                                        </p>
-                                        @if($booking->user_notes)
-                                            <p class="text-sm text-blue-600 mt-2">
-                                                <i class="fas fa-comment"></i> {{ $booking->user_notes }}
-                                            </p>
-                                        @endif
-                                    </div>
+                                <div class="flex justify-between items-start border-b pb-3" style="border-color: var(--specialist-border);">
                                     <div>
-                                        @if($booking->status === 'confirmed')
-                                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">تایید شده</span>
-                                        @elseif($booking->status === 'completed')
-                                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">انجام شده</span>
-                                        @else
-                                            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">در انتظار</span>
-                                        @endif
+                                        <p class="font-semibold text-[var(--specialist-text)]">{{ $booking->user->name }}</p>
+                                        <p class="text-sm text-[var(--specialist-text-dim)]">{{ $booking->service->name }}</p>
+                                    </div>
+                                    <div class="text-left">
+                                        <p class="font-bold text-[var(--specialist-plum-mid)] persian-number" dir="ltr">{{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }}</p>
+                                        <span class="specialist-badge px-2 py-0.5 text-xs">{{ $statusLabels[$booking->status] ?? 'نامشخص' }}</span>
                                     </div>
                                 </div>
                             @endforeach
                         </div>
                     @else
-                        <div class="text-center py-12">
-                            <svg class="mx-auto h-16 w-16 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div class="text-center py-10 text-[var(--specialist-inactive)]">
+                            <svg class="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <p class="mt-4 text-gray-500">برای امروز نوبتی ندارید</p>
+                            <p class="mt-4">برای امروز نوبتی ندارید</p>
                         </div>
                     @endif
                 </div>
             </div>
 
             <div class="space-y-6">
-                <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-                    <div class="p-5 border-b border-gray-100">
-                        <h2 class="text-lg font-semibold text-gray-800">7 روز آینده</h2>
+                <div class="specialist-card overflow-hidden">
+                    <div class="p-5 border-b" style="border-color: var(--specialist-border);">
+                        <h2 class="text-base font-semibold text-[var(--specialist-text)]">۷ روز آینده</h2>
                     </div>
                     <div class="p-5">
                         @if($upcomingBookings->count() > 0)
                             <div class="space-y-3">
                                 @foreach($upcomingBookings->take(5) as $booking)
-                                    <div class="flex justify-between items-start border-b pb-3">
+                                    <div class="flex justify-between items-start border-b pb-3" style="border-color: var(--specialist-border);">
                                         <div>
-                                            <p class="font-semibold text-sm">{{ $booking->booking_date_persian }}</p>
-                                            <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }} - {{ $booking->user->name }}</p>
-                                            <p class="text-xs text-gray-600">{{ $booking->service->name }}</p>
+                                            <p class="font-semibold text-sm text-[var(--specialist-text)] persian-number">{{ $booking->booking_date_persian }}</p>
+                                            <p class="text-xs text-[var(--specialist-text-dim)] persian-number" dir="ltr">{{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }} - {{ $booking->user->name }}</p>
+                                            <p class="text-xs text-[var(--specialist-text-dim)]">{{ $booking->service->name }}</p>
                                         </div>
-                                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-                                            {{ $booking->status_fa }}
-                                        </span>
+                                        <span class="specialist-badge px-2 py-1 text-xs">{{ $booking->status_fa }}</span>
                                     </div>
                                 @endforeach
                             </div>
                         @else
-                            <p class="text-center text-gray-500 py-4">نوبتی در 7 روز آینده ندارید</p>
+                            <p class="text-center text-[var(--specialist-inactive)] py-4">نوبتی در ۷ روز آینده ندارید</p>
                         @endif
                     </div>
                 </div>
 
-                <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-                    <div class="p-5 border-b border-gray-100">
-                        <h2 class="text-lg font-semibold text-gray-800">نظرات اخیر</h2>
+                <div class="specialist-card overflow-hidden">
+                    <div class="p-5 border-b" style="border-color: var(--specialist-border);">
+                        <h2 class="text-base font-semibold text-[var(--specialist-text)]">نظرات اخیر</h2>
                     </div>
                     <div class="p-5">
                         @if($recentReviews->count() > 0)
                             <div class="space-y-4">
                                 @foreach($recentReviews as $review)
-                                    <div class="border-b pb-3">
+                                    <div class="border-b pb-3" style="border-color: var(--specialist-border);">
                                         <div class="flex justify-between items-start mb-2">
-                                            <p class="font-semibold text-sm">{{ $review->user->name }}</p>
-                                            <div class="flex text-yellow-400">
+                                            <p class="font-semibold text-sm text-[var(--specialist-text)]">{{ $review->user->name }}</p>
+                                            <div class="flex text-amber-400">
                                                 @for($i = 1; $i <= 5; $i++)
                                                     @if($i <= $review->rating)
                                                         <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
                                                     @else
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                                                        <svg class="w-4 h-4 text-[var(--specialist-inactive)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
                                                     @endif
                                                 @endfor
                                             </div>
                                         </div>
-                                        <p class="text-sm text-gray-600">{{ Str::limit($review->review, 100) }}</p>
+                                        <p class="text-sm text-[var(--specialist-text-dim)]">{{ Str::limit($review->review, 100) }}</p>
                                     </div>
                                 @endforeach
                             </div>
                         @else
-                            <p class="text-center text-gray-500 py-4">هنوز نظری ثبت نشده</p>
+                            <p class="text-center text-[var(--specialist-inactive)] py-4">هنوز نظری ثبت نشده</p>
                         @endif
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-            <div class="p-5 border-b border-gray-100">
-                <h2 class="text-lg font-semibold text-gray-800">نمودار درآمد (7 روز گذشته)</h2>
+        {{-- Revenue chart --}}
+        <div class="specialist-card overflow-hidden">
+            <div class="p-5 border-b" style="border-color: var(--specialist-border);">
+                <h2 class="text-base font-semibold text-[var(--specialist-text)]">نمودار درآمد (۷ روز گذشته)</h2>
             </div>
             <div class="p-5">
                 <div id="revenue-chart" class="h-80"></div>
@@ -264,31 +223,40 @@
                     chart: {
                         type: 'area',
                         height: 320,
-                        fontFamily: 'Vazir, sans-serif',
-                        toolbar: { show: false }
+                        fontFamily: 'Vazirmatn, sans-serif',
+                        toolbar: { show: false },
+                        background: 'transparent'
                     },
-                    colors: ['#3B82F6'],
+                    colors: ['#D8AEE0'],
                     dataLabels: { enabled: false },
                     stroke: { curve: 'smooth', width: 2 },
                     fill: {
                         type: 'gradient',
                         gradient: {
                             shadeIntensity: 1,
-                            opacityFrom: 0.7,
-                            opacityTo: 0.3
+                            colorStops: [
+                                { offset: 0, color: '#D8AEE0', opacity: 0.5 },
+                                { offset: 100, color: '#2C1B32', opacity: 0.05 }
+                            ]
                         }
+                    },
+                    grid: {
+                        borderColor: '#3A2640'
                     },
                     xaxis: {
                         categories: categories,
-                        labels: { style: { fontFamily: 'Vazir, sans-serif' } }
+                        labels: { style: { fontFamily: 'Vazirmatn, sans-serif', colors: '#C9A6D1' } },
+                        axisBorder: { color: '#3A2640' },
+                        axisTicks: { color: '#3A2640' }
                     },
                     yaxis: {
                         labels: {
                             formatter: (val) => new Intl.NumberFormat('fa-IR').format(val),
-                            style: { fontFamily: 'Vazir, sans-serif' }
+                            style: { fontFamily: 'Vazirmatn, sans-serif', colors: '#C9A6D1' }
                         }
                     },
                     tooltip: {
+                        theme: 'dark',
                         y: {
                             formatter: (val) => new Intl.NumberFormat('fa-IR').format(val) + ' تومان'
                         }
