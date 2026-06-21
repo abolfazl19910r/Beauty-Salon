@@ -264,14 +264,36 @@ class SpecialistWalletController extends Controller
         }
 
         if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
+            try {
+                $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+                $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+                $dateFrom = str_replace($persianDigits, $englishDigits, $request->date_from);
+
+                $dateFrom = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $dateFrom)
+                    ->toCarbon()
+                    ->startOfDay();
+                $query->where('created_at', '>=', $dateFrom);
+            } catch (\Exception $e) {
+                Log::warning('خطا در تبدیل تاریخ از: ' . $e->getMessage());
+            }
         }
 
         if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
+            try {
+                $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+                $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+                $dateTo = str_replace($persianDigits, $englishDigits, $request->date_to);
+
+                $dateTo = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $dateTo)
+                    ->toCarbon()
+                    ->endOfDay();
+                $query->where('created_at', '<=', $dateTo);
+            } catch (\Exception $e) {
+                Log::warning('خطا در تبدیل تاریخ تا: ' . $e->getMessage());
+            }
         }
 
-        $transactions = $query->latest()->paginate(20);
+        $transactions = $query->latest()->paginate(20)->withQueryString();
 
         return view('specialist.wallet.transactions', compact('specialist', 'wallet', 'transactions'));
     }
