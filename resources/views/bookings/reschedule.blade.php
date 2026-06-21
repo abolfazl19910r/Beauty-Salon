@@ -3,178 +3,337 @@
 @section('title', 'تغییر زمان نوبت')
 
 @section('content')
-    <style>
-        .date-btn { background: rgba(201,162,75,0.08); border: 1px solid rgba(201,162,75,0.15); color: rgba(248,243,233,0.75); transition: all 0.25s; cursor: pointer; border-radius: 0.75rem; }
-        .date-btn:hover { background: rgba(201,162,75,0.18); color: #E6CD8A; }
-        .date-btn.selected { background: linear-gradient(135deg, #E6CD8A, #C9A24B); color: #1A1410; font-weight: 700; border-color: transparent; }
-        .slot-btn { background: rgba(201,162,75,0.08); border: 1px solid rgba(201,162,75,0.2); color: rgba(248,243,233,0.8); transition: all 0.25s; border-radius: 0.75rem; }
-        .slot-btn:hover { background: rgba(201,162,75,0.18); color: #E6CD8A; }
-        .slot-btn.selected { background: linear-gradient(135deg, #E6CD8A, #C9A24B); color: #1A1410; font-weight: 700; border-color: transparent; }
-        .spin { animation: spin 1s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    </style>
+    <div class="max-w-2xl mx-auto fade-in">
 
-    <div class="max-w-2xl mx-auto fade-in" id="booking-app">
-
-        {{--  header --}}
-        <div class="flex items-center gap-3 mb-8">
+        <div class="mb-6 flex items-center gap-3">
             <a href="{{ route('bookings.show', $booking) }}"
-               class="w-9 h-9 rounded-xl bg-[#2E2117] border border-[#C9A24B]/15 flex items-center justify-center
-                  text-[#F8F3E9]/60 hover:text-[#E6CD8A] transition-colors">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+               class="transition hover:opacity-70" style="color: var(--rasta-gold);">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
                 </svg>
             </a>
             <div>
-                <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase">نوبت #{{ $booking->id }}</p>
-                <h1 class="text-2xl font-bold text-[#E6CD8A]"
-                    style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">تغییر زمان نوبت</h1>
+                <p class="text-xs persian-number" style="color: var(--rasta-gold); opacity: 0.7;">نوبت #{{ $booking->id }}</p>
+                <h1 class="text-xl font-bold" style="color: var(--rasta-cream);">تغییر زمان نوبت</h1>
             </div>
         </div>
 
-        <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 p-6 md:p-8 space-y-7">
+        <div class="rounded-xl overflow-hidden" style="background-color: var(--rasta-brown); border: 1px solid rgba(201,162,75,0.2);">
 
-            {{-- Current service --}}
-            <div class="flex items-center gap-3 bg-[#1A1410]/50 rounded-xl border border-[#C9A24B]/10 px-4 py-3 text-sm">
-                <svg class="w-4 h-4 text-[#C9A24B] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                </svg>
-                <span class="text-[#F8F3E9]/60">خدمت:</span>
-                <span class="font-medium text-[#F8F3E9]">{{ $booking->service->name }}</span>
+            {{-- سرویس و زمان فعلی --}}
+            <div class="p-5 border-b" style="border-color: rgba(201,162,75,0.15);">
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                    <div>
+                        <p class="text-xs mb-1" style="color: var(--rasta-gold-light); opacity: 0.7;">خدمت</p>
+                        <p class="font-semibold" style="color: var(--rasta-cream);">{{ $booking->service->name }}</p>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-xs mb-1" style="color: var(--rasta-gold-light); opacity: 0.7;">زمان فعلی نوبت</p>
+                        <p class="font-semibold persian-number" dir="ltr" style="color: var(--rasta-gold-light);">
+                            {{ verta($booking->booking_time)->format('Y/m/d H:i') }}
+                        </p>
+                    </div>
+                </div>
             </div>
 
-            {{-- Current time --}}
-            <div class="bg-[#C9A24B]/10 border border-[#C9A24B]/20 rounded-xl px-5 py-4">
-                <p class="text-xs font-semibold text-[#C9A24B] mb-2 uppercase tracking-wider">زمان فعلی نوبت</p>
-                <p class="text-lg font-bold text-[#E6CD8A] persian-number" dir="ltr">
-                    {{ verta($booking->booking_time)->format('Y/m/d H:i') }}
-                </p>
-            </div>
+            <div class="p-6 space-y-6">
 
-            <form @submit.prevent="submitReschedule" class="space-y-6">
-
-                {{-- Choose a new date --}}
-                <div v-if="availableDates.length > 0">
-                    <label class="block text-sm font-medium text-[#E6CD8A] mb-3 flex items-center gap-1.5">
-                        <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-                            <line x1="3" y1="10" x2="21" y2="10"/>
+                {{-- انتخاب تاریخ --}}
+                <div>
+                    <label class="block mb-3 font-medium flex items-center gap-2" style="color: var(--rasta-cream);">
+                        <svg class="w-5 h-5" style="color: var(--rasta-gold);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
                         </svg>
                         انتخاب تاریخ جدید
                     </label>
-                    <div class="grid grid-cols-4 sm:grid-cols-7 gap-2">
-                        <div v-for="date in availableDates" :key="date"
-                             @click="selectDate(date)"
-                             class="date-btn text-center p-2.5 text-xs persian-number"
-                             :class="{ 'selected': selectedDate === date }">
-                            @{{ formatDate(date) }}
+
+                    <div id="dates-loading" class="text-center py-6">
+                        <div class="inline-block w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+                             style="border-color: var(--rasta-gold); border-top-color: transparent;"></div>
+                        <p class="text-sm mt-2" style="color: var(--rasta-cream); opacity: 0.6;">در حال بارگذاری تاریخ‌ها...</p>
+                    </div>
+
+                    <div id="dates-empty" class="hidden text-center py-6 rounded-lg" style="background-color: rgba(201,162,75,0.05); border: 1px dashed rgba(201,162,75,0.3);">
+                        <p class="text-sm" style="color: var(--rasta-cream); opacity: 0.6;">تاریخ خالی یافت نشد</p>
+                    </div>
+
+                    <div id="dates-grid" class="hidden grid grid-cols-4 sm:grid-cols-7 gap-2"></div>
+                </div>
+
+                {{-- انتخاب ساعت --}}
+                <div id="time-section" class="hidden">
+                    <label class="block mb-3 font-medium flex items-center gap-2" style="color: var(--rasta-cream);">
+                        <svg class="w-5 h-5" style="color: var(--rasta-gold);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        انتخاب ساعت جدید
+                    </label>
+
+                    <div id="times-loading" class="hidden text-center py-4">
+                        <div class="inline-block w-6 h-6 border-2 border-t-transparent rounded-full animate-spin"
+                             style="border-color: var(--rasta-gold); border-top-color: transparent;"></div>
+                    </div>
+
+                    <div id="times-empty" class="hidden text-center py-4 rounded-lg" style="background-color: rgba(201,162,75,0.05); border: 1px dashed rgba(201,162,75,0.3);">
+                        <p class="text-sm" style="color: var(--rasta-cream); opacity: 0.6;">ساعت خالی در این روز وجود ندارد</p>
+                    </div>
+
+                    <div id="times-grid" class="hidden grid grid-cols-4 gap-2"></div>
+                </div>
+
+                {{-- خلاصه تغییرات --}}
+                <div id="summary" class="hidden rounded-lg p-5" style="background-color: rgba(201,162,75,0.07); border: 1px solid rgba(201,162,75,0.2);">
+                    <h3 class="font-bold mb-4" style="color: var(--rasta-gold-light);">خلاصه تغییرات</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="rounded-lg p-3" style="background-color: var(--rasta-bg); border: 1px solid rgba(201,162,75,0.15);">
+                            <p class="text-xs mb-1" style="color: var(--rasta-cream); opacity: 0.6;">زمان فعلی:</p>
+                            <p class="font-medium persian-number" dir="ltr" style="color: var(--rasta-cream);">
+                                {{ verta($booking->booking_time)->format('Y/m/d H:i') }}
+                            </p>
+                        </div>
+                        <div class="rounded-lg p-3" style="background: linear-gradient(135deg, rgba(201,162,75,0.2), rgba(230,205,138,0.15)); border: 1px solid rgba(201,162,75,0.3);">
+                            <p class="text-xs mb-1" style="color: var(--rasta-gold-light); opacity: 0.8;">زمان جدید:</p>
+                            <p id="summary-new-time" class="font-bold persian-number" dir="ltr" style="color: var(--rasta-gold-light);">—</p>
                         </div>
                     </div>
                 </div>
 
-                {{-- Choose a new watch --}}
-                <div v-if="selectedDate && availableTimeSlots.length > 0">
-                    <label class="block text-sm font-medium text-[#E6CD8A] mb-3 flex items-center gap-1.5">
-                        <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 6v6l4 2"/>
-                        </svg>
-                        انتخاب ساعت جدید
-                    </label>
-                    <div class="grid grid-cols-4 gap-2">
-                        <button v-for="time in availableTimeSlots" :key="time"
-                                @click="selectTime(time)" type="button"
-                                class="slot-btn p-3 text-center text-sm font-medium"
-                                :class="{ 'selected': selectedTime === time }">
-                            @{{ time }}
-                        </button>
-                    </div>
-                </div>
-
-                {{-- Time comparison --}}
-                <div v-if="selectedTime" class="grid grid-cols-2 gap-3 text-sm">
-                    <div class="bg-[#1A1410]/60 rounded-xl border border-[#C9A24B]/10 p-4">
-                        <p class="text-[#F8F3E9]/50 text-xs mb-1">زمان فعلی</p>
-                        <p class="font-medium text-[#F8F3E9] persian-number" dir="ltr">
-                            {{ verta($booking->booking_time)->format('Y/m/d H:i') }}
-                        </p>
-                    </div>
-                    <div class="bg-[#C9A24B]/10 rounded-xl border border-[#C9A24B]/20 p-4">
-                        <p class="text-[#C9A24B] text-xs mb-1">زمان جدید</p>
-                        <p class="font-bold text-[#E6CD8A] persian-number" dir="ltr">@{{ formatDate(selectedDate) }} @{{ selectedTime }}</p>
-                    </div>
-                </div>
-
-                {{-- Buttons --}}
+                {{-- دکمه‌ها --}}
                 <div class="flex gap-3 pt-2">
+                    <button id="submit-btn"
+                            disabled
+                            class="flex-1 py-3 rounded-lg font-bold transition-opacity flex items-center justify-center gap-2"
+                            style="background: linear-gradient(135deg, var(--rasta-gold-light), var(--rasta-gold)); color: var(--rasta-dark); opacity: 0.4; cursor: not-allowed;">
+                        <svg id="submit-spinner" class="hidden w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span id="submit-label">ثبت تغییرات</span>
+                    </button>
                     <a href="{{ route('bookings.show', $booking) }}"
-                       class="flex-1 text-center py-3 rounded-xl text-sm border border-[#C9A24B]/25
-                          text-[#F8F3E9]/70 hover:bg-[#C9A24B]/10 transition-colors">
+                       class="px-6 py-3 rounded-lg font-medium transition hover:bg-white/5"
+                       style="border: 1px solid rgba(201,162,75,0.3); color: var(--rasta-cream); opacity: 0.7;">
                         انصراف
                     </a>
-                    <button type="submit"
-                            :disabled="!isFormValid || loading"
-                            class="flex-1 py-3 rounded-xl text-sm font-bold transition-all
-                               bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-[#1A1410]
-                               disabled:opacity-40 disabled:cursor-not-allowed
-                               hover:shadow-lg hover:shadow-[#C9A24B]/25">
-                    <span v-if="loading" class="flex items-center justify-center gap-2">
-                        <svg class="spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                        </svg>
-                        در حال پردازش...
-                    </span>
-                        <span v-else>ثبت تغییرات</span>
-                    </button>
                 </div>
-            </form>
+
+            </div>
         </div>
     </div>
-
-    <script>
-        const { createApp } = Vue;
-        createApp({
-            data() {
-                return { availableDates: [], availableTimeSlots: [], selectedDate: null, selectedTime: null, loading: false, bookingId: '{{ $booking->id }}' }
-            },
-            computed: {
-                isFormValid() { return this.selectedDate && this.selectedTime; }
-            },
-            methods: {
-                async loadAvailableDates() {
-                    try {
-                        this.loading = true;
-                        const r = await fetch(`/api/specialists/{{ $booking->specialist_id }}/available-dates`);
-                        this.availableDates = await r.json();
-                    } catch(e) { console.error(e); } finally { this.loading = false; }
-                },
-                async loadTimeSlots() {
-                    if (!this.selectedDate) return;
-                    try {
-                        this.loading = true;
-                        const r = await fetch(`/api/specialists/{{ $booking->specialist_id }}/time-slots/${this.selectedDate}`);
-                        this.availableTimeSlots = await r.json();
-                    } catch(e) { console.error(e); } finally { this.loading = false; }
-                },
-                formatDate(date) { return new persianDate(new Date(date)).format('YYYY/MM/DD'); },
-                selectDate(date) { this.selectedDate = date; this.selectedTime = null; this.loadTimeSlots(); },
-                selectTime(time) { this.selectedTime = time; },
-                async submitReschedule() {
-                    if (!this.isFormValid) return;
-                    try {
-                        this.loading = true;
-                        const response = await fetch(`/bookings/${this.bookingId}/reschedule`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
-                            body: JSON.stringify({ booking_date: this.selectedDate, booking_time: this.selectedTime })
-                        });
-                        if (response.ok) { window.location.href = `/bookings/${this.bookingId}?success=1`; }
-                        else { const e = await response.json(); alert(e.message || 'خطا در تغییر زمان نوبت'); }
-                    } catch(e) { console.error(e); alert('خطا در ارتباط با سرور'); } finally { this.loading = false; }
-                }
-            },
-            mounted() { this.loadAvailableDates(); }
-        }).mount('#booking-app');
-    </script>
 @endsection
+
+@push('scripts')
+    <script src="https://unpkg.com/persian-date@latest/dist/persian-date.min.js"></script>
+    <script>
+        (function() {
+            const SPECIALIST_ID = {{ $booking->specialist_id }};
+            const BOOKING_ID    = {{ $booking->id }};
+            const CSRF          = document.querySelector('meta[name="csrf-token"]').content;
+
+            let selectedDate = null;
+            let selectedTime = null;
+
+            // ---- helpers ----
+            function formatPersianDate(isoStr) {
+                try {
+                    return new persianDate(new Date(isoStr)).format('YYYY/MM/DD');
+                } catch(e) {
+                    return isoStr;
+                }
+            }
+
+            function formatDayLabel(isoStr) {
+                try {
+                    const pd = new persianDate(new Date(isoStr));
+                    const days = ['ی','د','س','چ','پ','ج','ش'];
+                    return '<span class="block text-xs opacity-60">' + days[pd.day()] + '</span>'
+                        + '<span class="block font-bold persian-number">' + pd.date() + '</span>';
+                } catch(e) {
+                    return isoStr;
+                }
+            }
+
+            function showEl(id)  { document.getElementById(id).classList.remove('hidden'); }
+            function hideEl(id)  { document.getElementById(id).classList.add('hidden'); }
+
+            function setSubmit(enabled) {
+                const btn = document.getElementById('submit-btn');
+                btn.disabled = !enabled;
+                btn.style.opacity = enabled ? '1' : '0.4';
+                btn.style.cursor  = enabled ? 'pointer' : 'not-allowed';
+            }
+
+            function updateSummary() {
+                if (selectedDate && selectedTime) {
+                    document.getElementById('summary-new-time').textContent =
+                        formatPersianDate(selectedDate) + ' ' + selectedTime;
+                    showEl('summary');
+                    setSubmit(true);
+                } else {
+                    hideEl('summary');
+                    setSubmit(false);
+                }
+            }
+
+            // ---- date grid ----
+            function renderDates(dates) {
+                hideEl('dates-loading');
+                if (!dates.length) { showEl('dates-empty'); return; }
+
+                const grid = document.getElementById('dates-grid');
+                grid.innerHTML = '';
+                dates.forEach(d => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.dataset.date = d;
+                    btn.innerHTML = formatDayLabel(d);
+                    btn.className = 'p-2 rounded-lg text-center transition';
+                    btn.style.cssText = 'border: 1px solid rgba(201,162,75,0.25); color: var(--rasta-cream);';
+
+                    btn.addEventListener('click', () => selectDate(d));
+                    grid.appendChild(btn);
+                });
+                showEl('dates-grid');
+            }
+
+            function selectDate(date) {
+                selectedDate = date;
+                selectedTime = null;
+                updateSummary();
+
+                document.querySelectorAll('#dates-grid button').forEach(btn => {
+                    const active = btn.dataset.date === date;
+                    btn.style.background = active
+                        ? 'linear-gradient(135deg, var(--rasta-gold-light), var(--rasta-gold))'
+                        : '';
+                    btn.style.color  = active ? 'var(--rasta-dark)' : 'var(--rasta-cream)';
+                    btn.style.border = active
+                        ? '1px solid var(--rasta-gold)'
+                        : '1px solid rgba(201,162,75,0.25)';
+                });
+
+                showEl('time-section');
+                hideEl('times-grid');
+                hideEl('times-empty');
+                showEl('times-loading');
+                loadTimeSlots(date);
+            }
+
+            // ---- time grid ----
+            function renderTimes(times) {
+                hideEl('times-loading');
+                if (!times.length) { showEl('times-empty'); return; }
+
+                const grid = document.getElementById('times-grid');
+                grid.innerHTML = '';
+                times.forEach(t => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.dataset.time = t;
+                    btn.textContent = t;
+                    btn.className = 'p-2 rounded-lg text-center transition font-medium';
+                    btn.style.cssText = 'border: 1px solid rgba(201,162,75,0.25); color: var(--rasta-cream);';
+
+                    btn.addEventListener('click', () => selectTime(t));
+                    grid.appendChild(btn);
+                });
+                showEl('times-grid');
+            }
+
+            function selectTime(time) {
+                selectedTime = time;
+                updateSummary();
+
+                document.querySelectorAll('#times-grid button').forEach(btn => {
+                    const active = btn.dataset.time === time;
+                    btn.style.background = active
+                        ? 'linear-gradient(135deg, var(--rasta-gold-light), var(--rasta-gold))'
+                        : '';
+                    btn.style.color  = active ? 'var(--rasta-dark)' : 'var(--rasta-cream)';
+                    btn.style.border = active
+                        ? '1px solid var(--rasta-gold)'
+                        : '1px solid rgba(201,162,75,0.25)';
+                });
+            }
+
+            // ---- API calls ----
+            async function loadAvailableDates() {
+                try {
+                    const res = await fetch(`/api/available-dates/${SPECIALIST_ID}`, {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    const data = await res.json();
+                    renderDates(Array.isArray(data) ? data : (data.dates || []));
+                } catch(e) {
+                    hideEl('dates-loading');
+                    showEl('dates-empty');
+                    console.error('Error loading dates:', e);
+                }
+            }
+
+            async function loadTimeSlots(date) {
+                try {
+                    const res = await fetch(`/api/time-slots/${SPECIALIST_ID}/${date}`, {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    const data = await res.json();
+                    renderTimes(Array.isArray(data) ? data : (data.slots || []));
+                } catch(e) {
+                    hideEl('times-loading');
+                    showEl('times-empty');
+                    console.error('Error loading time slots:', e);
+                }
+            }
+
+            // ---- submit ----
+            document.getElementById('submit-btn').addEventListener('click', async function() {
+                if (!selectedDate || !selectedTime) return;
+
+                const spinner = document.getElementById('submit-spinner');
+                const label   = document.getElementById('submit-label');
+                spinner.classList.remove('hidden');
+                label.textContent = 'در حال پردازش...';
+                setSubmit(false);
+
+                try {
+                    const res = await fetch(`/bookings/${BOOKING_ID}/reschedule`, {
+                        method : 'PUT',
+                        headers: {
+                            'Content-Type' : 'application/json',
+                            'Accept'       : 'application/json',
+                            'X-CSRF-TOKEN' : CSRF
+                        },
+                        body: JSON.stringify({
+                            booking_time: selectedDate + ' ' + selectedTime
+                        })
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json().catch(() => ({}));
+                        window.location.href = data.redirect || `/bookings/${BOOKING_ID}`;
+                    } else {
+                        const err = await res.json().catch(() => ({}));
+                        alert(err.message || 'خطا در تغییر زمان نوبت');
+                        spinner.classList.add('hidden');
+                        label.textContent = 'ثبت تغییرات';
+                        setSubmit(true);
+                    }
+                } catch(e) {
+                    console.error(e);
+                    alert('خطا در ارتباط با سرور');
+                    spinner.classList.add('hidden');
+                    label.textContent = 'ثبت تغییرات';
+                    setSubmit(true);
+                }
+            });
+
+            // ---- init ----
+            loadAvailableDates();
+        })();
+    </script>
+@endpush
