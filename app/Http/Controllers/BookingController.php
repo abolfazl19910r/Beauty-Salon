@@ -253,8 +253,6 @@ class BookingController extends Controller
     public function index(Request $request): \Illuminate\View\View
     {
         $status = $request->query('status');
-        $dateFilter = $request->query('date');
-
         $query = Booking::with(['service', 'specialist'])
             ->where('user_id', Auth::id())
             ->orderBy('booking_time', 'desc');
@@ -263,11 +261,20 @@ class BookingController extends Controller
             $query->where('status', $status);
         }
 
-        if ($dateFilter) {
+        if ($request->filled('date')) {
             try {
-                $gregorianDate = \Hekmatinasser\Verta\Verta::parse($dateFilter)->toCarbon()->format('Y-m-d');
-                $query->whereDate('booking_time', $gregorianDate);
-            } catch (\Exception $e) {
+                $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+                $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+                $dateInput = str_replace($persianDigits, $englishDigits, $request->query('date'));
+
+                $dayStart = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $dateInput)
+                    ->toCarbon()
+                    ->startOfDay();
+                $dayEnd = (clone $dayStart)->endOfDay();
+
+                $query->whereBetween('booking_time', [$dayStart, $dayEnd]);
+            } catch (Exception $e) {
+                // تاریخ نامعتبر؛ فیلتر نادیده گرفته می‌شود
             }
         }
 
@@ -690,57 +697,35 @@ class BookingController extends Controller
                 $specialistModel = Specialist::findOrFail($specialistId);
             }
 
-            // کش نتیجه به مدت ۳۰ دقیقه — چون تاریخ‌های موجود در طول روز تغییر نمی‌کنند
-            $cacheKey = "available_dates_{$specialistModel->id}_" . Carbon::today()->format('Y-m-d');
-            $dates = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes(30), function () use ($specialistModel) {
+            $dates = [];
+            $startDate = Carbon::today();
 
-                $startDate = Carbon::today();
-                $endDate   = $startDate->copy()->addDays(29);
+            for ($i = 0; $i < 30; $i++) {
+                $date = $startDate->copy()->addDays($i);
 
-                // ۱) همه schedule‌های فعال متخصص — یک query
-                $activeScheduleDays = $specialistModel->schedules()
+                $schedule = $specialistModel->schedules()
+                    ->where('day_of_week', $date->dayOfWeek)
                     ->where('is_active', true)
-                    ->pluck('day_of_week')
-                    ->flip()
-                    ->all();
+                    ->first();
 
-                // ۲) همه leave‌های تایید‌شده در بازه — یک query
-                $leaves = $specialistModel->leaves()
-                    ->where('status', 'approved')
-                    ->where('start_date', '<=', $endDate->format('Y-m-d'))
-                    ->where('end_date',   '>=', $startDate->format('Y-m-d'))
-                    ->get(['start_date', 'end_date']);
-
-                // ۳) همه تعطیلات در بازه — یک query
-                $holidays = $specialistModel->holidays()
-                    ->whereBetween(DB::raw('DATE(`date`)'), [
-                        $startDate->format('Y-m-d'),
-                        $endDate->format('Y-m-d'),
-                    ])
-                    ->pluck(DB::raw('DATE(`date`)'))
-                    ->flip()
-                    ->all();
-
-                $result = [];
-                for ($i = 0; $i < 30; $i++) {
-                    $date    = $startDate->copy()->addDays($i);
-                    $dateStr = $date->format('Y-m-d');
-
-                    if (!array_key_exists($date->dayOfWeek, $activeScheduleDays)) {
-                        continue;
-                    }
-                    if (array_key_exists($dateStr, $holidays)) {
-                        continue;
-                    }
-                    $hasLeave = $leaves->contains(function ($leave) use ($dateStr) {
-                        return $leave->start_date <= $dateStr && $leave->end_date >= $dateStr;
-                    });
-                    if (!$hasLeave) {
-                        $result[] = $dateStr;
-                    }
+                if (!$schedule) {
+                    continue;
                 }
-                return $result;
-            });
+
+                $hasLeave = $specialistModel->leaves()
+                    ->where('start_date', '<=', $date->format('Y-m-d'))
+                    ->where('end_date', '>=', $date->format('Y-m-d'))
+                    ->where('status', 'approved')
+                    ->exists();
+
+                $isHoliday = $specialistModel->holidays()
+                    ->whereDate('date', $date)
+                    ->exists();
+
+                if (!$hasLeave && !$isHoliday) {
+                    $dates[] = $date->format('Y-m-d');
+                }
+            }
 
             return response()->json($dates);
 
@@ -819,6 +804,24 @@ class BookingController extends Controller
         }
     }
 
+    public function showReschedule(Booking $booking)
+    {
+        try {
+            if ($booking->user_id !== auth()->id()) {
+                throw new Exception('دسترسی غیرمجاز');
+            }
+
+            if (!$booking->canBeRescheduled()) {
+                return back()->with('error', 'امکان تغییر زمان این نوبت وجود ندارد. لطفاً حداقل ۲۴ ساعت قبل از نوبت درخواست بدهید.');
+            }
+
+            return view('bookings.reschedule', compact('booking'));
+
+        } catch (Exception $e) {
+            return back()->with('error', 'خطا در نمایش فرم تغییر زمان: ' . $e->getMessage());
+        }
+    }
+
     public function reschedule(Booking $booking)
     {
         try {
@@ -865,27 +868,59 @@ class BookingController extends Controller
 
             DB::transaction(function() use ($booking, $bookingTime) {
                 $oldTime = $booking->booking_time;
+                $specialist = $booking->specialist;
+
+                $newStatus = ($specialist->auto_confirm_bookings) ? 'confirmed' : 'pending';
 
                 $booking->update([
-                    'booking_time' => $bookingTime
+                    'booking_time' => $bookingTime,
+                    'status'       => $newStatus,
                 ]);
 
                 $booking->specialist->notify(new BookingRescheduledNotification($booking, $oldTime));
 
+                $statusText = $newStatus === 'confirmed'
+                    ? 'و به‌صورت خودکار تایید شد'
+                    : 'و منتظر تایید مجدد متخصص است';
+
                 $message = sprintf(
-                    'زمان نوبت شما با موفقیت از %s به %s تغییر یافت.',
+                    'زمان نوبت شما با موفقیت از %s به %s تغییر یافت %s.',
                     verta($oldTime)->format('Y/m/d H:i'),
-                    verta($bookingTime)->format('Y/m/d H:i')
+                    verta($bookingTime)->format('Y/m/d H:i'),
+                    $statusText
                 );
                 $this->smsService->send($booking->user->phone, $message);
             });
 
+            $successMessage = 'زمان نوبت با موفقیت تغییر یافت.';
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success'  => true,
+                    'message'  => $successMessage,
+                    'redirect' => route('bookings.show', $booking),
+                ]);
+            }
+
             return redirect()->route('bookings.show', $booking)
-                ->with('success', 'زمان نوبت با موفقیت تغییر یافت.');
+                ->with('success', $successMessage);
 
         } catch (ValidationException $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => collect($e->errors())->flatten()->first(),
+                ], 422);
+            }
             return back()->withErrors($e->errors())->withInput();
+
         } catch (Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'خطا در تغییر زمان نوبت: ' . $e->getMessage(),
+                ], 500);
+            }
             return back()->with('error', 'خطا در تغییر زمان نوبت: ' . $e->getMessage());
         }
     }
@@ -914,14 +949,9 @@ class BookingController extends Controller
         try {
             $service = BeautyService::findOrFail($serviceId);
 
-            // کش نتیجه به مدت ۶۰ دقیقه — ارتباط متخصص با خدمت به‌ندرت تغییر می‌کند
-            $specialists = \Illuminate\Support\Facades\Cache::remember(
-                "specialists_by_service_{$serviceId}",
-                now()->addMinutes(60),
-                fn () => $service->specialists()
-                    ->select('specialists.id', 'specialists.name', 'specialists.email', 'specialists.phone')
-                    ->get()
-            );
+            $specialists = $service->specialists()
+                ->select('specialists.id', 'specialists.name', 'specialists.email', 'specialists.phone')
+                ->get();
 
             return response()->json($specialists);
         } catch (Exception $e) {

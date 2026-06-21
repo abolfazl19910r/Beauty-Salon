@@ -45,17 +45,7 @@ class PaymentController extends Controller
                         ]
                     ]);
 
-                    try {
-                        $this->loyaltyService->earnPointsFromBooking($booking->user_id, $booking->id);
-                    } catch (\Exception $e) {
-                        Log::warning('خطا در اعطای امتیاز وفاداری', [
-                            'booking_id' => $booking->id,
-                            'error' => $e->getMessage()
-                        ]);
-                    }
-
-                    return redirect()->route('bookings.success', ['id' => $booking->id])
-                        ->with('success', 'نوبت شما با موفقیت ثبت شد (تخفیف کامل).');
+                    // امتیاز وفاداری توسط BookingObserver هنگام تغییر payment_status به paid اعطا می‌شود
                 });
             }
             $result = $this->paymentService->createPayment($booking);
@@ -131,14 +121,7 @@ class PaymentController extends Controller
                             'gateway_amount' => 0
                         ]
                     ]);
-                    try {
-                        $this->loyaltyService->earnPointsFromBooking(auth()->id(), $booking->id);
-                    } catch (\Exception $e) {
-                        Log::warning('خطا در اعطای امتیاز وفاداری', [
-                            'booking_id' => $booking->id,
-                            'error' => $e->getMessage()
-                        ]);
-                    }
+                    // امتیاز وفاداری توسط BookingObserver هنگام تغییر payment_status به paid اعطا می‌شود
 
                     return redirect()->route('bookings.success', ['id' => $booking->id])
                         ->with('success', 'پرداخت از کیف پول با موفقیت انجام شد');
@@ -225,18 +208,8 @@ class PaymentController extends Controller
                             'payment_details' => $paymentDetails
                         ]);
 
-                        $specialist->getOrCreateWallet()->addIncome(
-                            $booking->prepayment_amount,
-                            $booking->id
-                        );
-                        try {
-                            $this->loyaltyService->earnPointsFromBooking($booking->user_id, $booking->id);
-                        } catch (\Exception $e) {
-                            Log::warning('⚠️ خطا در اعطای امتیاز وفاداری', [
-                                'booking_id' => $booking->id,
-                                'error' => $e->getMessage()
-                            ]);
-                        }
+                        // درآمد متخصص (پس از کسر کمیسیون) و امتیاز وفاداری هر دو توسط BookingObserver
+                        // هنگام تغییر payment_status به paid محاسبه و ثبت می‌شوند
                     });
                 }
 
