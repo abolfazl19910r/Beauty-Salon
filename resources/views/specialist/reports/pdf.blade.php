@@ -10,9 +10,9 @@
             font-style: normal;
         }
         @font-face {
-            font-family: 'vazir';
-            src: url('{{ storage_path("fonts/Vazirmatn-Regular.ttf") }}') format('truetype');
-            font-weight: normal;
+            font-family: 'vazir-bold';
+            src: url('{{ storage_path("fonts/Vazirmatn-Bold.ttf") }}') format('truetype');
+            font-weight: bold;
             font-style: normal;
         }
         body {
@@ -21,160 +21,201 @@
             text-align: right;
             unicode-bidi: bidi-override;
             font-size: 10pt;
-            color: #374151;
-            line-height: 1.6;
+            color: #2b2b2b;
+            line-height: 1.7;
             margin: 0;
             padding: 0;
         }
+
+        /* --- letterhead header --- */
         .report-header {
-            background-color: #db2777;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 30px;
+            border-bottom: 2px solid #2b2b2b;
+            padding-bottom: 14px;
+            margin-bottom: 24px;
+            overflow: hidden;
         }
-        .report-header h1 {
-            margin: 0;
-            font-size: 18pt;
+        .report-header .brand {
+            float: right;
+            font-family: 'vazir-bold', sans-serif;
+            font-size: 16pt;
+            color: #1a1a1a;
         }
-        .report-info {
-            font-size: 10pt;
-            margin-top: 5px;
-            opacity: 0.9;
+        .report-header .doc-title {
+            float: left;
+            text-align: left;
+            font-size: 9pt;
+            color: #555555;
+            margin-top: 4px;
         }
+        .report-header .doc-title strong {
+            display: block;
+            font-size: 11pt;
+            color: #1a1a1a;
+            margin-bottom: 2px;
+        }
+
+        .report-meta {
+            clear: both;
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 22px;
+            font-size: 9pt;
+        }
+        .report-meta td {
+            padding: 4px 0;
+            color: #444444;
+        }
+        .report-meta td.label {
+            color: #888888;
+            width: 18%;
+        }
+
+        /* --- summary stats --- */
         .stats-container {
             width: 100%;
-            margin-bottom: 30px;
+            margin-bottom: 26px;
             clear: both;
+            border-collapse: collapse;
         }
-        .stat-card {
-            float: right;
-            width: 21%;
-            margin-left: 2%;
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-right: 4px solid #db2777;
-            padding: 10px;
+        .stats-container td {
+            width: 25%;
+            border: 1px solid #d9d9d9;
+            padding: 12px 8px;
             text-align: center;
-            border-radius: 8px;
+            vertical-align: top;
         }
         .stat-label {
             font-size: 8pt;
-            color: #6b7280;
-            margin-bottom: 5px;
+            color: #777777;
+            margin-bottom: 6px;
         }
         .stat-value {
-            font-size: 12pt;
-            font-weight: bold;
-            color: #111827;
+            font-family: 'vazir-bold', sans-serif;
+            font-size: 13pt;
+            color: #1a1a1a;
         }
 
+        /* --- table --- */
         .table-container {
             clear: both;
-            margin-top: 20px;
+            margin-top: 10px;
         }
-        table {
+        table.data-table {
             width: 100%;
             border-collapse: collapse;
-            background-color: white;
+            background-color: #ffffff;
         }
-        th {
-            background-color: #fce7f3;
-            color: #9d174d;
-            padding: 12px 8px;
+        .data-table th {
+            background-color: #f2f2f2;
+            color: #1a1a1a;
+            padding: 9px 6px;
             text-align: center;
-            border-bottom: 2px solid #f9a8d4;
-            font-weight: bold;
+            border: 1px solid #d9d9d9;
+            font-family: 'vazir-bold', sans-serif;
+            font-size: 9pt;
         }
-        td {
-            padding: 10px 8px;
-            border-bottom: 1px solid #f3f4f6;
+        .data-table td {
+            padding: 8px 6px;
+            border: 1px solid #e6e6e6;
             text-align: center;
-            color: #4b5563;
+            color: #333333;
+            font-size: 9pt;
         }
-        tr:nth-child(even) {
+        .data-table tr:nth-child(even) td {
             background-color: #fafafa;
         }
+
         .badge {
-            padding: 3px 8px;
-            border-radius: 12px;
+            display: inline-block;
+            padding: 2px 9px;
+            border: 1px solid #999999;
+            border-radius: 3px;
             font-size: 8pt;
+            color: #333333;
         }
-        .status-completed { background-color: #dcfce7; color: #166534; }
-        .status-cancelled { background-color: #fee2e2; color: #991b1b; }
-        .status-pending { background-color: #fef9c3; color: #854d0e; }
+
         .footer {
             position: fixed;
-            bottom: 20px;
+            bottom: 16px;
             width: 100%;
             text-align: center;
-            font-size: 8pt;
-            color: #9ca3af;
-            border-top: 1px solid #eee;
-            padding-top: 10px;
-        }
-        .ltr {
-            direction: ltr !important;
-            display: inline-block;
+            font-size: 7.5pt;
+            color: #999999;
+            border-top: 1px solid #e6e6e6;
+            padding-top: 8px;
         }
     </style>
 </head>
 <body>
 
 <div class="report-header">
-    <h1>گزارش عملکرد تخصصی</h1>
-    <div class="report-info">
-        نام متخصص: {{ $specialist->name }} | بازه گزارش: {{ $startDate }} تا {{ $endDate }}
+    <div class="brand">راستا — سالن زیبایی</div>
+    <div class="doc-title">
+        <strong>گزارش عملکرد متخصص</strong>
+        صادر شده در: {{ \Morilog\Jalali\Jalalian::now()->format('Y/m/d H:i') }}
     </div>
 </div>
 
-<div class="stats-container">
-    <div class="stat-card" style="border-right-color: #10b981;">
-        <div class="stat-label">درآمد حاصله</div>
-        <div class="stat-value">{{ number_format($totalRevenue) }} <small style="font-size: 7pt">تومان</small></div>
-    </div>
-    <div class="stat-card" style="border-right-color: #3b82f6;">
-        <div class="stat-label">کل نوبت‌ها</div>
-        <div class="stat-value">{{ $totalBookings }}</div>
-    </div>
-    <div class="stat-card" style="border-right-color: #059669;">
-        <div class="stat-label">انجام شده</div>
-        <div class="stat-value">{{ $completedBookings }}</div>
-    </div>
-    <div class="stat-card" style="border-right-color: #ef4444; margin-left: 0;">
-        <div class="stat-label">لغو شده</div>
-        <div class="stat-value">{{ $cancelledBookings }}</div>
-    </div>
-</div>
+<table class="report-meta">
+    <tr>
+        <td class="label">نام متخصص:</td>
+        <td>{{ $specialist->name }}</td>
+        <td class="label">بازه گزارش:</td>
+        <td>{{ $startDate }} تا {{ $endDate }}</td>
+    </tr>
+</table>
+
+<table class="stats-container">
+    <tr>
+        <td>
+            <div class="stat-label">درآمد متخصص (پس از کسر کمیسیون)</div>
+            <div class="stat-value">{{ number_format($totalRevenue) }} <span style="font-size: 8pt; font-family: 'vazir';">تومان</span></div>
+        </td>
+        <td>
+            <div class="stat-label">کل نوبت‌ها</div>
+            <div class="stat-value">{{ $totalBookings }}</div>
+        </td>
+        <td>
+            <div class="stat-label">انجام شده</div>
+            <div class="stat-value">{{ $completedBookings }}</div>
+        </td>
+        <td>
+            <div class="stat-label">لغو شده</div>
+            <div class="stat-value">{{ $cancelledBookings }}</div>
+        </td>
+    </tr>
+</table>
 
 <div class="table-container">
-    <table>
+    <table class="data-table">
         <thead>
         <tr>
             <th style="width: 5%">ردیف</th>
             <th style="width: 20%">نام مشتری</th>
             <th style="width: 20%">خدمت</th>
             <th style="width: 20%">تاریخ و ساعت</th>
-            <th style="width: 20%">بیعانه (تومان)</th>
+            <th style="width: 20%">درآمد متخصص (تومان)</th>
             <th style="width: 15%">وضعیت</th>
         </tr>
         </thead>
         <tbody>
+        @php
+            $statusLabels = [
+                'completed'       => 'انجام شده',
+                'cancelled'       => 'لغو شده',
+                'confirmed'       => 'تایید شده',
+                'pending'         => 'در انتظار',
+                'pending_payment' => 'در انتظار پرداخت',
+            ];
+        @endphp
         @foreach($bookings as $index => $booking)
             <tr>
                 <td>{{ $index + 1 }}</td>
                 <td>{{ $booking->user->name }}</td>
                 <td>{{ $booking->service->name ?? '-' }}</td>
                 <td>{{ \Morilog\Jalali\Jalalian::fromCarbon($booking->booking_time)->format('Y/m/d H:i') }}</td>
-                <td>{{ number_format($booking->prepayment_amount) }}</td>
-                <td>
-                        <span class="badge status-{{ $booking->status }}">
-                            @if($booking->status == 'completed') انجام شده
-                            @elseif($booking->status == 'cancelled') لغو شده
-                            @elseif($booking->status == 'confirmed') تایید شده
-                            @else در انتظار @endif
-                        </span>
-                </td>
+                <td>{{ number_format($booking->prepayment_amount * (1 - ($commissionRate ?? 10) / 100)) }}</td>
+                <td><span class="badge">{{ $statusLabels[$booking->status] ?? $booking->status }}</span></td>
             </tr>
         @endforeach
         </tbody>
@@ -182,7 +223,7 @@
 </div>
 
 <div class="footer">
-    این گزارش توسط سیستم مدیریت آرایشگاه به صورت خودکار در تاریخ {{ \Morilog\Jalali\Jalalian::now()->format('Y/m/d H:i') }} صادر شده است.
+    این گزارش توسط سیستم مدیریت سالن زیبایی راستا به صورت خودکار صادر شده است.
 </div>
 
 </body>
