@@ -11,6 +11,9 @@ Route::prefix('wallet')->name('wallet.')->group(function () {
     Route::get('/transactions', [UserWalletController::class, 'transactions'])
         ->name('transactions');
 
+    Route::get('/transactions/{transaction}', [UserWalletController::class, 'showTransaction'])
+        ->name('transactions.show');
+
     Route::get('/charge', [UserWalletController::class, 'showCharge'])
         ->name('charge');
 
