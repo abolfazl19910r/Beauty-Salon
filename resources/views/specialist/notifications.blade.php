@@ -3,10 +3,11 @@
 @section('title', 'اعلانات')
 
 @section('content')
-    <div class="max-w-5xl mx-auto py-6">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold text-gray-800 flex items-center">
-                <svg class="w-6 h-6 ml-2 text-pink-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <div class="fade-in max-w-5xl mx-auto space-y-6">
+
+        <div class="flex justify-between items-center">
+            <h1 class="text-xl font-bold text-[var(--specialist-text)] font-serif-fa flex items-center">
+                <svg class="w-6 h-6 ml-2 text-[var(--specialist-plum-mid)]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                     <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                 </svg>
@@ -16,62 +17,107 @@
             @if($notifications->total() > 0)
                 <form method="POST" action="{{ route('specialist.notifications.mark-all-read') }}">
                     @csrf
-                    <button type="submit" class="text-sm text-pink-600 hover:text-pink-700 transition-colors">
+                    <button type="submit" class="text-sm text-[var(--specialist-plum-mid)] hover:text-[var(--specialist-plum-light)] transition-colors">
                         علامت‌گذاری همه به عنوان خوانده شده
                     </button>
                 </form>
             @endif
         </div>
 
-        <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="specialist-card overflow-hidden">
             @if($notifications->isEmpty())
-                <div class="text-center py-16">
-                    <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                <div class="text-center py-16 text-[var(--specialist-inactive)]">
+                    <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                         <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                     </svg>
-                    <p class="text-gray-500">هیچ اعلانی وجود ندارد</p>
+                    <p>هیچ اعلانی وجود ندارد</p>
                 </div>
             @else
-                <div class="divide-y divide-gray-100">
+                <div class="divide-y" style="border-color: var(--specialist-border);">
                     @foreach($notifications as $notification)
-                        <a href="{{ $notification->data['link'] ?? '#' }}"
-                           class="block px-6 py-4 hover:bg-gray-50 transition-colors {{ $notification->read_at ? 'bg-white' : 'bg-pink-50' }}">
-                            <div class="flex items-start">
-                                <div class="flex-shrink-0">
-                                    @if(!$notification->read_at)
-                                        <span class="inline-block w-2 h-2 bg-pink-500 rounded-full mt-2"></span>
-                                    @else
-                                        <span class="inline-block w-2 h-2 bg-gray-300 rounded-full mt-2"></span>
-                                    @endif
-                                </div>
+                        @php
+                            $data = $notification->data;
+                            $text = $data['message'] ?? $data['description'] ?? 'اعلان جدید';
 
-                                <div class="mr-3 flex-1">
-                                    <p class="text-sm {{ $notification->read_at ? 'text-gray-600' : 'text-gray-900 font-semibold' }}">
-                                        {{ $notification->data['message'] ?? 'اعلان جدید' }}
-                                    </p>
-                                    <p class="text-xs text-gray-500 mt-1">
-                                        {{ \Morilog\Jalali\Jalalian::fromCarbon($notification->created_at)->format('Y/m/d H:i') }}
-                                    </p>
-                                </div>
-
-                                @if(!$notification->read_at)
-                                    <form method="POST" action="{{ route('specialist.notifications.read', $notification->id) }}" class="mr-2">
-                                        @csrf
-                                        <button type="submit" class="text-xs text-pink-600 hover:text-pink-700">
-                                            خوانده شد
-                                        </button>
-                                    </form>
-                                @endif
+                            $link = '#';
+                            if ($notification->type === 'App\\Notifications\\PointsEarned') {
+                                // این اعلان مربوط به نوبتی است که خود متخصص به‌عنوان مشتری رزرو کرده
+                                $link = route('specialist.loyalty');
+                            } elseif (!empty($data['booking_id'])) {
+                                $link = route('specialist.bookings.show', $data['booking_id']);
+                            } elseif (!empty($data['leave_id'])) {
+                                $link = route('specialist.leaves');
+                            }
+                        @endphp
+                        <div id="notification-row-{{ $notification->id }}"
+                             class="flex items-start px-6 py-4 transition-colors hover:bg-white/5 {{ $notification->read_at ? '' : 'bg-[var(--specialist-plum-mid)]/5' }}">
+                            <div class="flex-shrink-0 mt-2">
+                                <span id="notification-dot-{{ $notification->id }}"
+                                      class="inline-block w-2 h-2 rounded-full"
+                                      style="background-color: {{ $notification->read_at ? 'var(--specialist-inactive)' : 'var(--specialist-plum-mid)' }};"></span>
                             </div>
-                        </a>
+
+                            <a href="{{ $link }}" class="mr-3 flex-1 block">
+                                <p id="notification-text-{{ $notification->id }}"
+                                   class="text-sm {{ $notification->read_at ? 'text-[var(--specialist-text-dim)]' : 'text-[var(--specialist-text)] font-semibold' }}">
+                                    {{ $text }}
+                                </p>
+                                <p class="text-xs text-[var(--specialist-plum-muted)] mt-1 persian-number">
+                                    {{ \Morilog\Jalali\Jalalian::fromCarbon($notification->created_at)->format('Y/m/d H:i') }}
+                                </p>
+                            </a>
+
+                            @if(!$notification->read_at)
+                                <button type="button"
+                                        id="notification-read-btn-{{ $notification->id }}"
+                                        onclick="markNotificationAsReadOnPage({{ $notification->id }})"
+                                        class="mr-2 text-xs text-[var(--specialist-plum-mid)] hover:text-[var(--specialist-plum-light)] flex-shrink-0">
+                                    خوانده شد
+                                </button>
+                            @endif
+                        </div>
                     @endforeach
                 </div>
 
-                <div class="px-6 py-4 bg-gray-50">
+                <div class="px-6 py-4 border-t" style="border-color: var(--specialist-border);">
                     {{ $notifications->links() }}
                 </div>
             @endif
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            function markNotificationAsReadOnPage(id) {
+                const url = window.SpecialistRoutes.notificationsRead.replace(':id', id);
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': window.SpecialistRoutes.csrfToken,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const dot = document.getElementById('notification-dot-' + id);
+                            const text = document.getElementById('notification-text-' + id);
+                            const row = document.getElementById('notification-row-' + id);
+                            const btn = document.getElementById('notification-read-btn-' + id);
+
+                            if (dot) dot.style.backgroundColor = 'var(--specialist-inactive)';
+                            if (text) {
+                                text.classList.remove('text-[var(--specialist-text)]', 'font-semibold');
+                                text.classList.add('text-[var(--specialist-text-dim)]');
+                            }
+                            if (row) row.classList.remove('bg-[var(--specialist-plum-mid)]/5');
+                            if (btn) btn.remove();
+                        }
+                    })
+                    .catch(error => console.error('خطا در علامت‌گذاری اعلان:', error));
+            }
+        </script>
+    @endpush
 @endsection

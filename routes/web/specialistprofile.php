@@ -41,6 +41,8 @@ Route::middleware(['auth', 'verified'])->name('specialist.')->group(function () 
 
     Route::get('/specialist/reports', [SpecialistReportController::class, 'index'])->name('reports.index');
 
+    Route::get('/specialist/loyalty', [SpecialistProfileController::class, 'loyalty'])->name('loyalty');
+
     Route::prefix('specialist/wallet')->name('wallet.')->group(function () {
         Route::get('/', [SpecialistWalletController::class, 'index'])->name('index');
         Route::get('/transactions', [SpecialistWalletController::class, 'transactions'])->name('transactions');
@@ -59,6 +61,7 @@ Route::middleware(['auth', 'verified'])->name('specialist.')->group(function () 
         Route::get('/notifications', [SpecialistProfileController::class, 'notifications'])->name('notifications.index');
         Route::get('/notifications/latest', [SpecialistProfileController::class, 'latestNotifications'])->name('notifications.latest');
         Route::get('/notifications/count', [SpecialistProfileController::class, 'notificationsCount'])->name('notifications.count');
+        Route::post('/notifications/mark-all-read', [SpecialistProfileController::class, 'markAllNotificationsAsRead'])->name('notifications.mark-all-read');
         Route::post('/notifications/{id}/read', [SpecialistProfileController::class, 'markNotificationAsRead'])->name('notifications.read');
     });
 

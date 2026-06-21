@@ -48,6 +48,8 @@ class SpecialistProfileController extends Controller
             ->orderBy('booking_time', 'asc')
             ->get();
 
+        $todayPersian = Jalalian::fromCarbon(Carbon::now())->format('l، j F Y');
+
         $todayBookingsCount = $todaySchedule->count();
 
         $todayRevenue = Booking::where('specialist_id', $specialist->id)
@@ -61,6 +63,13 @@ class SpecialistProfileController extends Controller
             ->whereYear('booking_time', Carbon::now()->year)
             ->where('payment_status', 'paid')
             ->count();
+
+        $monthRevenue = Booking::where('specialist_id', $specialist->id)
+            ->whereMonth('booking_time', Carbon::now()->month)
+            ->whereYear('booking_time', Carbon::now()->year)
+            ->where('payment_status', 'paid')
+            ->where('status', '!=', 'cancelled')
+            ->sum('prepayment_amount');
 
         $averageRating = Booking::where('specialist_id', $specialist->id)
             ->whereNotNull('rating')
@@ -130,9 +139,11 @@ class SpecialistProfileController extends Controller
         return view('specialist.dashboard', compact(
             'specialist',
             'todaySchedule',
+            'todayPersian',
             'todayBookingsCount',
             'todayRevenue',
             'monthBookingsCount',
+            'monthRevenue',
             'averageRating',
             'upcomingBookings',
             'recentReviews',
@@ -651,10 +662,22 @@ class SpecialistProfileController extends Controller
             ->limit(5)
             ->get()
             ->map(function ($notification) {
+                $data = $notification->data;
+                $text = $data['message'] ?? $data['description'] ?? 'اعلان جدید';
+
+                $link = route('specialist.my-dashboard');
+                if ($notification->type === 'App\\Notifications\\PointsEarned') {
+                    $link = route('specialist.loyalty');
+                } elseif (!empty($data['booking_id'])) {
+                    $link = route('specialist.bookings.show', $data['booking_id']);
+                } elseif (!empty($data['leave_id'])) {
+                    $link = route('specialist.leaves');
+                }
+
                 return [
                     'id' => $notification->id,
-                    'message' => $notification->data['message'] ?? 'اعلان جدید',
-                    'link' => $notification->data['link'] ?? route('specialist.my-dashboard'),
+                    'message' => $text,
+                    'link' => $link,
                     'read_at' => $notification->read_at,
                     'time_ago' => $this->timeAgo($notification->created_at),
                 ];
@@ -691,6 +714,15 @@ class SpecialistProfileController extends Controller
         ]);
     }
 
+    public function markAllNotificationsAsRead()
+    {
+        $user = auth()->user();
+
+        $user->unreadNotifications()->update(['read_at' => now()]);
+
+        return back()->with('success', 'تمام اعلانات به عنوان خوانده شده علامت‌گذاری شدند.');
+    }
+
     private function timeAgo($datetime)
     {
         $now = Carbon::now();
@@ -710,5 +742,29 @@ class SpecialistProfileController extends Controller
         } else {
             return Jalalian::fromCarbon($datetime)->format('Y/m/d');
         }
+    }
+
+    public function loyalty()
+    {
+        $user = auth()->user();
+
+        $specialist = Specialist::where('phone', $user->phone)->first();
+
+        if (!$specialist) {
+            return view('specialist.profile-not-found');
+        }
+
+        $currentBalance = \App\Models\LoyaltyPoint::getCurrentBalance($user->id);
+        $expiringPoints = \App\Models\LoyaltyPoint::getExpiringPoints($user->id, 30);
+
+        $history = \App\Models\LoyaltyPoint::where('user_id', $user->id)
+            ->with(['booking' => function ($query) {
+                $query->select('id', 'booking_time', 'service_id', 'specialist_id')
+                    ->with(['service:id,name', 'specialist:id,name']);
+            }])
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return view('specialist.loyalty', compact('specialist', 'currentBalance', 'expiringPoints', 'history'));
     }
 }
