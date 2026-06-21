@@ -29,7 +29,7 @@ class CustomerBookingNotification extends Notification
             'service_name' => $this->booking->service->name,
             'specialist_name' => $this->booking->specialist->name,
             'booking_time' => $this->booking->booking_time,
-            'payment_ref' => $this->booking->payment_ref
+            'payment_ref' => $this->booking->payment_reference
         ];
     }
 
@@ -47,7 +47,7 @@ class CustomerBookingNotification extends Notification
             $this->booking->service->name,
             $this->booking->specialist->name,
             number_format($this->booking->prepayment_amount),
-            $this->booking->payment_ref,
+            $this->booking->payment_reference,
             config('app.salon_address')
         );
 
