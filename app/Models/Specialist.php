@@ -135,7 +135,6 @@ class Specialist extends Model
                 return [];
             }
 
-            // ۱. بهینه‌سازی: استفاده از Relation Loaded برای مرخصی و تعطیلات (اگر قبلا در ایندکس لود شده باشند)
             $hasLeave = $this->leaves()
                 ->where('start_date', '<=', $date)
                 ->where('end_date', '>=', $date)
@@ -147,7 +146,6 @@ class Specialist extends Model
             $isHoliday = $this->holidays()->whereDate('date', $carbonDate)->exists();
             if ($isHoliday) return [];
 
-            // ۲. دریافت برنامه کاری
             $schedule = $this->schedules()
                 ->where('day_of_week', $carbonDate->dayOfWeek)
                 ->where('is_active', true)
@@ -157,7 +155,6 @@ class Specialist extends Model
 
             $duration = $serviceDuration ?? 30;
 
-            // ۳. دریافت رزروها با Eager Loading سرویس برای دانستن مدت زمان هر رزرو
             $existingBookings = $this->bookings()
                 ->whereDate('booking_time', $date)
                 ->where('status', '!=', 'cancelled')
@@ -176,33 +173,30 @@ class Specialist extends Model
                 $slotStart = $currentTime->copy();
                 $slotEnd = $slotStart->copy()->addMinutes($duration);
 
-                // بررسی زمان گذشته
                 if ($slotStart->lte($now)) {
                     $currentTime->addMinutes(30);
                     continue;
                 }
 
-                // بررسی تداخل با استراحت
                 $isInBreak = false;
                 if ($schedule->break_start && $schedule->break_end) {
                     $breakStart = Carbon::parse($date . ' ' . $schedule->break_start);
                     $breakEnd = Carbon::parse($date . ' ' . $schedule->break_end);
 
                     if ($slotStart->lt($breakEnd) && $slotEnd->gt($breakStart)) {
-                        $currentTime = $breakEnd->copy(); // پرش به بعد از استراحت
+                        $currentTime = $breakEnd->copy();
                         $isInBreak = true;
                     }
                 }
                 if ($isInBreak) continue;
 
-                // بررسی تداخل با رزروهای موجود
                 $conflict = $existingBookings->first(fn($b) => $slotStart->lt($b['end']) && $slotEnd->gt($b['start']));
 
                 if (!$conflict) {
                     $slots[] = $slotStart->format('H:i');
-                    $currentTime->addMinutes(30); // یا addMinutes($duration) بسته به مدل بیزنس شما
+                    $currentTime->addMinutes($duration);
+//                    $currentTime->addMinutes(30); // یا addMinutes($duration) بسته به مدل بیزنس شما
                 } else {
-                    // بهینه‌سازی: پرش به پایانِ رزروری که تداخل ایجاد کرده
                     $currentTime = $conflict['end']->copy();
                 }
             }

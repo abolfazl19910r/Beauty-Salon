@@ -13,9 +13,11 @@ use Morilog\Jalali\Jalalian;
 class SpecialistBookingsExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
 {
     protected $bookings;
+    protected $commissionRate;
 
-    public function __construct($bookings) {
+    public function __construct($bookings, float $commissionRate = 10) {
         $this->bookings = $bookings;
+        $this->commissionRate = $commissionRate;
     }
 
     public function collection() {
@@ -23,16 +25,18 @@ class SpecialistBookingsExport implements FromCollection, WithHeadings, WithMapp
     }
 
     public function headings(): array {
-        return ['شناسه نوبت', 'نام مشتری', 'خدمت', 'تاریخ و ساعت', 'مبلغ بیعانه (تومان)', 'وضعیت'];
+        return ['شناسه نوبت', 'نام مشتری', 'خدمت', 'تاریخ و ساعت', 'درآمد متخصص (تومان)', 'وضعیت'];
     }
 
     public function map($booking): array {
+        $income = $booking->prepayment_amount * (1 - $this->commissionRate / 100);
+
         return [
             $booking->id,
             $booking->user->name,
             $booking->service->name,
             Jalalian::fromCarbon($booking->booking_time)->format('Y/m/d H:i'),
-            number_format($booking->prepayment_amount),
+            number_format($income),
             $this->translateStatus($booking->status)
         ];
     }

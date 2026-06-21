@@ -252,7 +252,7 @@
                         <div class="space-y-3 mr-8">
                             <p class="flex items-center">
                                 <span class="inline-block w-32 text-gray-600">شماره پیگیری:</span>
-                                <span class="font-medium">{{ $booking->payment_ref ?? 'ندارد' }}</span>
+                                <span class="font-medium">{{ $booking->payment_reference ?? 'ندارد' }}</span>
                             </p>
                             @if($booking->discount_amount)
                                 <p class="flex items-center">

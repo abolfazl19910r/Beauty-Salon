@@ -61,16 +61,52 @@ class UserWalletController extends Controller
         }
 
         if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
+            try {
+                $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+                $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+                $dateFrom = str_replace($persianDigits, $englishDigits, $request->date_from);
+
+                $dateFrom = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $dateFrom)
+                    ->toCarbon()
+                    ->startOfDay();
+                $query->where('created_at', '>=', $dateFrom);
+            } catch (\Exception $e) {
+                // تاریخ نامعتبر؛ فیلتر نادیده گرفته می‌شود
+            }
         }
 
         if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
+            try {
+                $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+                $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+                $dateTo = str_replace($persianDigits, $englishDigits, $request->date_to);
+
+                $dateTo = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $dateTo)
+                    ->toCarbon()
+                    ->endOfDay();
+                $query->where('created_at', '<=', $dateTo);
+            } catch (\Exception $e) {
+                // تاریخ نامعتبر؛ فیلتر نادیده گرفته می‌شود
+            }
         }
 
-        $transactions = $query->latest()->paginate(20);
+        $transactions = $query->latest()->paginate(20)->withQueryString();
 
         return view('user.wallet.transactions', compact('user', 'wallet', 'transactions'));
+    }
+
+    public function showTransaction(\App\Models\UserWalletTransaction $transaction)
+    {
+        $user = auth()->user();
+        $wallet = $user->getOrCreateWallet();
+
+        if ($transaction->wallet_id !== $wallet->id) {
+            abort(403, 'دسترسی غیرمجاز');
+        }
+
+        $transaction->load('booking.service', 'booking.specialist');
+
+        return view('user.wallet.transaction-show', compact('user', 'wallet', 'transaction'));
     }
 
     public function showCharge()

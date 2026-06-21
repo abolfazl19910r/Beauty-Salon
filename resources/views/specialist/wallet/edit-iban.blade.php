@@ -3,63 +3,67 @@
 @section('title', 'تنظیم شماره شبا')
 
 @section('content')
-    <div class="max-w-2xl mx-auto">
-        <div class="bg-white rounded-xl shadow-md p-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">تنظیم اطلاعات حساب بانکی</h2>
+    <div class="fade-in max-w-2xl mx-auto space-y-6">
+        <div class="specialist-card p-6">
+            <h2 class="text-xl font-bold text-[var(--specialist-text)] font-serif-fa mb-6">تنظیم اطلاعات حساب بانکی</h2>
 
             <form action="{{ route('specialist.wallet.update-iban') }}" method="POST">
                 @csrf
                 @method('PUT')
 
                 <div class="mb-6">
-                    <label for="iban" class="block text-sm font-medium text-gray-700 mb-2">
-                        شماره شبا <span class="text-red-500">*</span>
+                    <label for="iban" class="block text-xs text-[var(--specialist-plum-muted)] mb-2">
+                        شماره شبا <span class="text-red-400">*</span>
                     </label>
                     <div class="relative">
-                        <span class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500 font-mono">IR</span>
+                        <span class="absolute inset-y-0 right-0 flex items-center pr-4 font-mono text-[var(--specialist-plum-muted)]">IR</span>
                         <input
                             type="text"
                             name="iban"
                             id="iban"
-                            class="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent font-mono persian-number"
+                            class="w-full pr-12 pl-4 py-3 rounded-lg font-mono persian-number text-[var(--specialist-text)] placeholder-[var(--specialist-inactive)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]"
+                            style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);"
                             value="{{ old('iban', $wallet->iban ? substr($wallet->iban, 2) : '') }}"
                             placeholder="000000000000000000000000"
                             maxlength="24"
+                            dir="ltr"
                             required
                         >
                     </div>
                     @error('iban')
-                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
                     @enderror
-                    <p class="text-xs text-gray-500 mt-1">شماره شبا 24 رقمی خود را بدون IR وارد کنید</p>
+                    <p class="text-xs text-[var(--specialist-text-dim)] mt-1">شماره شبا 24 رقمی خود را بدون IR وارد کنید</p>
                 </div>
 
                 <div class="mb-6">
-                    <label for="account_holder_name" class="block text-sm font-medium text-gray-700 mb-2">
-                        نام صاحب حساب <span class="text-red-500">*</span>
+                    <label for="account_holder_name" class="block text-xs text-[var(--specialist-plum-muted)] mb-2">
+                        نام صاحب حساب <span class="text-red-400">*</span>
                     </label>
                     <input
                         type="text"
                         name="account_holder_name"
                         id="account_holder_name"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                        class="w-full px-4 py-3 rounded-lg text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]"
+                        style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);"
                         value="{{ old('account_holder_name', $wallet->account_holder_name) }}"
                         required
                     >
                     @error('account_holder_name')
-                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
                     @enderror
-                    <p class="text-xs text-gray-500 mt-1">نام باید دقیقاً مطابق با نام روی کارت بانکی باشد</p>
+                    <p class="text-xs text-[var(--specialist-text-dim)] mt-1">نام باید دقیقاً مطابق با نام روی کارت بانکی باشد</p>
                 </div>
 
                 <div class="mb-6">
-                    <label for="bank_name" class="block text-sm font-medium text-gray-700 mb-2">
-                        نام بانک <span class="text-red-500">*</span>
+                    <label for="bank_name" class="block text-xs text-[var(--specialist-plum-muted)] mb-2">
+                        نام بانک <span class="text-red-400">*</span>
                     </label>
                     <select
                         name="bank_name"
                         id="bank_name"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                        class="w-full px-4 py-3 rounded-lg text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]"
+                        style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);"
                         required
                     >
                         <option value="">انتخاب کنید</option>
@@ -96,17 +100,17 @@
                         <option value="خاورمیانه" {{ old('bank_name', $wallet->bank_name) == 'خاورمیانه' ? 'selected' : '' }}>بانک خاورمیانه</option>
                     </select>
                     @error('bank_name')
-                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <div class="mb-6 bg-yellow-50 border-r-4 border-yellow-400 p-4 rounded-lg">
+                <div class="mb-6 rounded-lg p-4" style="background-color: rgba(251, 191, 36, 0.07); border: 1px solid var(--specialist-border);">
                     <div class="flex items-start">
-                        <svg class="w-5 h-5 text-yellow-600 ml-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        <svg class="w-5 h-5 text-amber-400 ml-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
-                        <div class="text-sm text-yellow-800">
-                            <p class="font-semibold mb-1">نکات مهم:</p>
+                        <div class="text-sm text-[var(--specialist-text-dim)]">
+                            <p class="font-semibold text-amber-300 mb-1">نکات مهم:</p>
                             <ul class="list-disc list-inside space-y-1 mr-2 text-xs">
                                 <li>اطلاعات باید دقیقاً مطابق با اطلاعات حساب بانکی شما باشد</li>
                                 <li>شماره شبا باید متعلق به شما باشد</li>
@@ -118,28 +122,24 @@
                 </div>
 
                 <div class="flex gap-3">
-                    <button
-                        type="submit"
-                        class="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center"
-                    >
-                        <svg class="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    <button type="submit" class="specialist-cta flex-1 font-bold py-3 px-6 rounded-lg transition-opacity hover:opacity-90 flex items-center justify-center">
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
                         ذخیره اطلاعات
                     </button>
-                    <a
-                        href="{{ route('specialist.wallet.index') }}"
-                        class="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
-                    >
+                    <a href="{{ route('specialist.wallet.index') }}"
+                       class="px-6 py-3 rounded-lg font-semibold transition-colors text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-text)]"
+                       style="border: 1px solid var(--specialist-border);">
                         انصراف
                     </a>
                 </div>
             </form>
         </div>
 
-        <div class="mt-6 bg-blue-50 rounded-xl p-6">
-            <h3 class="text-lg font-bold text-blue-900 mb-3">راهنمای یافتن شماره شبا</h3>
-            <div class="space-y-2 text-sm text-blue-800">
+        <div class="rounded-xl p-6" style="background-color: rgba(216, 174, 224, 0.08); border: 1px solid var(--specialist-border);">
+            <h3 class="text-sm font-bold text-[var(--specialist-plum-light)] font-serif-fa mb-3">راهنمای یافتن شماره شبا</h3>
+            <div class="space-y-2 text-sm text-[var(--specialist-text-dim)]">
                 <p>• از طریق اپلیکیشن موبایل بانک خود</p>
                 <p>• از طریق سیستم بانکداری اینترنتی</p>
                 <p>• با مراجعه به شعبه بانک</p>

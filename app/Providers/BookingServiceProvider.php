@@ -104,8 +104,6 @@ class BookingServiceProvider extends ServiceProvider
      */
     protected function registerObservers(): void
     {
-        Booking::observe(BookingObserver::class);
-
         DiscountCode::observe(DiscountCodeObserver::class);
     }
 }

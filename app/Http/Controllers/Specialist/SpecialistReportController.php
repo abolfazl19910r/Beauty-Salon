@@ -46,13 +46,19 @@ class SpecialistReportController extends Controller
         if ($status !== 'all') $query->where('status', $status);
 
         $totalBookings = (clone $query)->count();
-        $totalRevenue = (clone $query)->where('payment_status', 'paid')->sum('prepayment_amount');
         $completedBookings = (clone $query)->where('status', 'completed')->count();
         $cancelledBookings = (clone $query)->where('status', 'cancelled')->count();
 
+        // درآمد متخصص = بیعانه پس از کسر کمیسیون ادمین (همان مبلغی که در کیف پول ثبت می‌شود)
+        $commissionRate = \App\Models\WalletSetting::first()->admin_commission_percentage ?? 10;
+        $totalRawRevenue = (clone $query)->where('payment_status', 'paid')
+            ->where('status', '!=', 'cancelled')
+            ->sum('prepayment_amount');
+        $totalRevenue = $totalRawRevenue * (1 - $commissionRate / 100);
+
         if ($request->input('export') === 'excel') {
             $bookingsForExport = $query->with(['user', 'service'])->get();
-            return Excel::download(new SpecialistBookingsExport($bookingsForExport), 'Report.xlsx');
+            return Excel::download(new SpecialistBookingsExport($bookingsForExport, $commissionRate), 'Report.xlsx');
         }
 
         if ($request->input('export') === 'pdf') {
@@ -60,13 +66,14 @@ class SpecialistReportController extends Controller
 
             $data = [
                 'bookings'          => $bookingsForPdf,
-                'totalRevenue'      => $totalRevenue,
+                'totalRevenue'      => round($totalRevenue),
                 'totalBookings'     => $totalBookings,
                 'completedBookings' => $completedBookings,
                 'cancelledBookings' => $cancelledBookings,
                 'specialist'        => $specialist,
                 'startDate'         => $startDate ?? '30 روز اخیر',
                 'endDate'           => $endDate ?? 'امروز',
+                'commissionRate'    => $commissionRate,
             ];
 
             $mpdf = new \Mpdf\Mpdf([
@@ -94,7 +101,7 @@ class SpecialistReportController extends Controller
         return view('specialist.reports.index', compact(
             'specialist', 'bookings', 'totalRevenue', 'totalBookings',
             'completedBookings', 'cancelledBookings', 'startDate', 'endDate',
-            'status', 'specialistServices', 'serviceId'
+            'status', 'specialistServices', 'serviceId', 'commissionRate'
         ));
     }
 

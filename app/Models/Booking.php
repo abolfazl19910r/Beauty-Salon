@@ -15,6 +15,10 @@ class Booking extends Model
 
     protected $table = 'bookings';
 
+    protected $casts = [
+        'booking_time' => 'datetime',
+    ];
+
     protected $fillable = [
         'service_id',
         'specialist_id',
@@ -67,5 +71,16 @@ class Booking extends Model
 
         // یا اگر هر رزرو می‌تواند شامل چندین تراکنش امتیاز باشد:
         // return $this->hasMany(LoyaltyPoint::class);
+    }
+
+    public function canBeRescheduled(): bool
+    {
+        if (!in_array($this->status, ['pending', 'confirmed'])) {
+            return false;
+        }
+
+        // نوبت باید حداقل ۲۴ ساعت دیگر باشد
+        return \Carbon\Carbon::parse($this->booking_time)
+            ->gt(now()->addHours(24));
     }
 }
