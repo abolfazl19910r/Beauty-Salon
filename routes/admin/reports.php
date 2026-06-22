@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('reports')->name('reports.')->group(function () {
     Route::get('/', [AdminReportsController::class, 'index'])->name('index');
 
+    Route::get('/{period}', [AdminDashboardController::class, 'getDashboardByPeriod'])
+        ->where('period', 'today|week|month')
+        ->name('period');
+
     Route::get('/revenue', [AdminReportsController::class, 'revenueData'])->name('revenue');
 
     Route::get('/daily', [AdminReportsController::class, 'dailyRevenue'])->name('daily');

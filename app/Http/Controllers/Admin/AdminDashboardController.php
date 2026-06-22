@@ -161,6 +161,121 @@ class AdminDashboardController extends Controller
         return round(array_sum($scoreFactors) / 4, 1);
     }
 
+    public function getDashboardByPeriod(string $period)
+    {
+        try {
+            switch ($period) {
+                case 'today':
+                    $start = Carbon::today();
+                    $end   = Carbon::now();
+                    break;
+                case 'week':
+                    $start = Carbon::now()->subDays(6)->startOfDay();
+                    $end   = Carbon::now();
+                    break;
+                case 'month':
+                    $start = Carbon::now()->subDays(29)->startOfDay();
+                    $end   = Carbon::now();
+                    break;
+                default:
+                    return response()->json(['error' => 'Invalid period'], 400);
+            }
+
+            // آمار کلی بازه
+            $stats = [
+                'todayBookingsCount' => Booking::whereDate('booking_time', today())->count(),
+                'totalRevenue'       => Booking::where('payment_status', 'paid')
+                    ->whereBetween('created_at', [$start, $end])
+                    ->sum('prepayment_amount'),
+                'usersCount'         => User::count(),
+                'specialistsCount'   => Specialist::count(),
+            ];
+
+            // درآمد روزانه در بازه — با تاریخ شمسی
+            if ($period === 'today') {
+                // برای امروز: ساعت‌به‌ساعت
+                $rows = Booking::where('payment_status', 'paid')
+                    ->whereBetween('created_at', [$start, $end])
+                    ->groupBy(DB::raw('HOUR(created_at)'))
+                    ->select(
+                        DB::raw('HOUR(created_at) as hour'),
+                        DB::raw('SUM(prepayment_amount) as total'),
+                        DB::raw('COUNT(*) as bookings_count')
+                    )
+                    ->orderBy('hour')
+                    ->get();
+
+                $dailyRevenue = $rows->map(function ($item) use ($start) {
+                    $dt = $start->copy()->hour($item->hour);
+                    return [
+                        'date'           => verta($dt)->format('H:00'),
+                        'total'          => (int) $item->total,
+                        'bookings_count' => (int) $item->bookings_count,
+                    ];
+                })->values();
+            } else {
+                $rows = Booking::where('payment_status', 'paid')
+                    ->whereBetween('created_at', [$start, $end])
+                    ->groupBy(DB::raw('DATE(created_at)'))
+                    ->select(
+                        DB::raw('DATE(created_at) as date'),
+                        DB::raw('SUM(prepayment_amount) as total'),
+                        DB::raw('COUNT(*) as bookings_count')
+                    )
+                    ->orderBy('date')
+                    ->get();
+
+                $dailyRevenue = $rows->map(function ($item) {
+                    return [
+                        'date'           => verta($item->date)->format('Y/m/d'),
+                        'total'          => (int) $item->total,
+                        'bookings_count' => (int) $item->bookings_count,
+                    ];
+                })->values();
+            }
+
+            // محبوب‌ترین خدمات در بازه
+            $popularServices = BeautyService::withCount(['bookings' => function ($q) use ($start, $end) {
+                $q->whereBetween('created_at', [$start, $end]);
+            }])
+                ->withSum(['bookings' => function ($q) use ($start, $end) {
+                    $q->whereBetween('created_at', [$start, $end]);
+                }], 'prepayment_amount')
+                ->orderByDesc('bookings_count')
+                ->take(5)
+                ->get(['id', 'name'])
+                ->map(fn($s) => [
+                    'id'             => $s->id,
+                    'name'           => $s->name,
+                    'bookings_count' => $s->bookings_count,
+                    'revenue'        => (int) $s->bookings_sum_prepayment_amount,
+                ]);
+
+            // آخرین رزروها
+            $recentBookings = Booking::with(['user', 'service'])
+                ->whereBetween('created_at', [$start, $end])
+                ->latest()
+                ->take(5)
+                ->get()
+                ->map(fn($b) => [
+                    'id'           => $b->id,
+                    'user_name'    => optional($b->user)->name ?? '—',
+                    'service_name' => optional($b->service)->name ?? '—',
+                    'status'       => $b->status,
+                    'booking_time' => verta($b->booking_time)->format('Y/m/d H:i'),
+                ]);
+
+            return response()->json([
+                'stats'          => $stats,
+                'dailyRevenue'   => $dailyRevenue,
+                'popularServices'=> $popularServices,
+                'recentBookings' => $recentBookings,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     public function dashboard()
     {
         $todayBookingsCount = Booking::whereDate('booking_time', today())->count();
@@ -192,14 +307,19 @@ class AdminDashboardController extends Controller
             ->get();
 
         $weeklyRevenue = Booking::where('payment_status', 'paid')
-            ->whereBetween('created_at', [now()->subDays(6), now()])
+            ->whereBetween('created_at', [now()->subDays(6)->startOfDay(), now()])
             ->groupBy(DB::raw('DATE(created_at)'))
             ->select(
                 DB::raw('DATE(created_at) as date'),
-                DB::raw('SUM(prepayment_amount) as total')
+                DB::raw('SUM(prepayment_amount) as total'),
+                DB::raw('COUNT(*) as bookings_count')
             )
             ->orderBy('date')
-            ->get();
+            ->get()
+            ->map(function ($item) {
+                $item->date = verta($item->date)->format('Y/m/d');
+                return $item;
+            });
 
         return view('admin.dashboard', compact(
             'todayBookingsCount',
