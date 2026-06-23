@@ -591,35 +591,49 @@
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto p-4" style="background: var(--admin-bg);">
             @if(session('success'))
-                <div class="mb-4 border-r-4 border-green-500 p-4 fade-in rounded-lg shadow-sm"
+                <div id="flash-success" class="mb-4 border-r-4 border-green-500 p-4 fade-in rounded-lg shadow-sm flex items-center justify-between"
                      style="background: #F0FDF4; color: #166534;" role="alert">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                        </div>
-                        <div class="mr-3">
-                            <span>{{ session('success') }}</span>
-                        </div>
+                    <div class="flex items-center">
+                        <svg class="h-5 w-5 text-green-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="mr-3">{{ session('success') }}</span>
                     </div>
+                    <button onclick="document.getElementById('flash-success').remove()" class="mr-2 opacity-60 hover:opacity-100 transition-opacity">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
                 </div>
+                <script>
+                    setTimeout(function() {
+                        const el = document.getElementById('flash-success');
+                        if (el) { el.style.transition = 'opacity 0.5s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 500); }
+                    }, 4000);
+                </script>
             @endif
 
             @if(session('error'))
-                <div class="mb-4 border-r-4 border-red-500 p-4 fade-in rounded-lg shadow-sm"
+                <div id="flash-error" class="mb-4 border-r-4 border-red-500 p-4 fade-in rounded-lg shadow-sm flex items-center justify-between"
                      style="background: #FEF2F2; color: #991B1B;" role="alert">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                            </svg>
-                        </div>
-                        <div class="mr-3">
-                            <span>{{ session('error') }}</span>
-                        </div>
+                    <div class="flex items-center">
+                        <svg class="h-5 w-5 text-red-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="mr-3">{{ session('error') }}</span>
                     </div>
+                    <button onclick="document.getElementById('flash-error').remove()" class="mr-2 opacity-60 hover:opacity-100 transition-opacity">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
                 </div>
+                <script>
+                    setTimeout(function() {
+                        const el = document.getElementById('flash-error');
+                        if (el) { el.style.transition = 'opacity 0.5s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 500); }
+                    }, 5000);
+                </script>
             @endif
 
             <div class="fade-in">

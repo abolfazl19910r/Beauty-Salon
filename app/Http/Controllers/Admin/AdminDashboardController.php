@@ -181,7 +181,6 @@ class AdminDashboardController extends Controller
                     return response()->json(['error' => 'Invalid period'], 400);
             }
 
-            // آمار کلی بازه
             $stats = [
                 'todayBookingsCount' => Booking::whereDate('booking_time', today())->count(),
                 'totalRevenue'       => Booking::where('payment_status', 'paid')
@@ -191,9 +190,7 @@ class AdminDashboardController extends Controller
                 'specialistsCount'   => Specialist::count(),
             ];
 
-            // درآمد روزانه در بازه — با تاریخ شمسی
             if ($period === 'today') {
-                // برای امروز: ساعت‌به‌ساعت
                 $rows = Booking::where('payment_status', 'paid')
                     ->whereBetween('created_at', [$start, $end])
                     ->groupBy(DB::raw('HOUR(created_at)'))
@@ -234,12 +231,13 @@ class AdminDashboardController extends Controller
                 })->values();
             }
 
-            // محبوب‌ترین خدمات در بازه
-            $popularServices = BeautyService::withCount(['bookings' => function ($q) use ($start, $end) {
-                $q->whereBetween('created_at', [$start, $end]);
+            $dateColumn = $period === 'today' ? 'booking_time' : 'created_at';
+
+            $popularServices = BeautyService::withCount(['bookings' => function ($q) use ($start, $end, $dateColumn) {
+                $q->whereBetween($dateColumn, [$start, $end]);
             }])
-                ->withSum(['bookings' => function ($q) use ($start, $end) {
-                    $q->whereBetween('created_at', [$start, $end]);
+                ->withSum(['bookings' => function ($q) use ($start, $end, $dateColumn) {
+                    $q->whereBetween($dateColumn, [$start, $end]);
                 }], 'prepayment_amount')
                 ->orderByDesc('bookings_count')
                 ->take(5)
@@ -251,10 +249,9 @@ class AdminDashboardController extends Controller
                     'revenue'        => (int) $s->bookings_sum_prepayment_amount,
                 ]);
 
-            // آخرین رزروها
             $recentBookings = Booking::with(['user', 'service'])
-                ->whereBetween('created_at', [$start, $end])
-                ->latest()
+                ->whereBetween($dateColumn, [$start, $end])
+                ->latest($dateColumn)
                 ->take(5)
                 ->get()
                 ->map(fn($b) => [
