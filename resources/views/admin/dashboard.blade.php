@@ -119,7 +119,10 @@
                     </svg>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-xs mb-1" style="color:var(--admin-text-dim);">درآمد بازه</p>
+                    <p class="text-xs mb-1" style="color:var(--admin-text-dim);">
+                        درآمد سالن
+                        <span class="text-xs px-1.5 py-0.5 rounded mr-1" style="background:#DCFCE7; color:#166534;">%{{ $commissionRate ?? 10 }} کمیسیون</span>
+                    </p>
                     <p class="text-2xl font-bold persian-number" id="total-revenue" style="color:var(--admin-text);">{{ number_format($totalRevenue) }}</p>
                 </div>
                 <a href="{{ route('admin.reports.index') }}" class="text-xs px-2 py-1 rounded" style="color:#16A34A; background:#F0FDF4;">گزارش</a>

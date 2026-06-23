@@ -164,6 +164,9 @@ class AdminDashboardController extends Controller
     public function getDashboardByPeriod(string $period)
     {
         try {
+            $commissionRate = \App\Models\WalletSetting::first()->admin_commission_percentage ?? 10;
+            $commissionFactor = $commissionRate / 100;
+
             switch ($period) {
                 case 'today':
                     $start      = Carbon::today()->startOfDay();
@@ -184,11 +187,14 @@ class AdminDashboardController extends Controller
                     return response()->json(['error' => 'Invalid period'], 400);
             }
 
+            $rawRevenue = Booking::where('payment_status', 'paid')
+                ->whereBetween($dateColumn, [$start, $end])
+                ->sum('prepayment_amount');
+
             $stats = [
                 'todayBookingsCount' => Booking::whereDate('booking_time', today())->count(),
-                'totalRevenue'       => Booking::where('payment_status', 'paid')
-                    ->whereBetween($dateColumn, [$start, $end])
-                    ->sum('prepayment_amount'),
+                'totalRevenue'       => (int) ($rawRevenue * $commissionFactor),
+                'commissionRate'     => $commissionRate,
                 'usersCount'         => User::count(),
                 'specialistsCount'   => Specialist::count(),
             ];
@@ -205,11 +211,11 @@ class AdminDashboardController extends Controller
                     ->orderBy('hour')
                     ->get();
 
-                $dailyRevenue = $rows->map(function ($item) use ($start) {
+                $dailyRevenue = $rows->map(function ($item) use ($start, $commissionFactor) {
                     $dt = $start->copy()->hour($item->hour);
                     return [
                         'date'           => verta($dt)->format('H:00'),
-                        'total'          => (int) $item->total,
+                        'total'          => (int) ($item->total * $commissionFactor),
                         'bookings_count' => (int) $item->bookings_count,
                     ];
                 })->values();
@@ -225,10 +231,10 @@ class AdminDashboardController extends Controller
                     ->orderBy('date')
                     ->get();
 
-                $dailyRevenue = $rows->map(function ($item) {
+                $dailyRevenue = $rows->map(function ($item) use ($commissionFactor) {
                     return [
                         'date'           => verta($item->date)->format('Y/m/d'),
-                        'total'          => (int) $item->total,
+                        'total'          => (int) ($item->total * $commissionFactor),
                         'bookings_count' => (int) $item->bookings_count,
                     ];
                 })->values();
@@ -276,8 +282,12 @@ class AdminDashboardController extends Controller
 
     public function dashboard()
     {
+        $commissionRate = \App\Models\WalletSetting::first()->admin_commission_percentage ?? 10;
+        $commissionFactor = $commissionRate / 100;
+
         $todayBookingsCount = Booking::whereDate('booking_time', today())->count();
-        $totalRevenue = Booking::where('payment_status', 'paid')->sum('prepayment_amount');
+        $rawRevenue = Booking::where('payment_status', 'paid')->sum('prepayment_amount');
+        $totalRevenue = (int) ($rawRevenue * $commissionFactor);
         $usersCount = User::count();
         $specialistsCount = Specialist::count();
         $rolesCount = Role::count();
@@ -314,12 +324,14 @@ class AdminDashboardController extends Controller
             )
             ->orderBy('date')
             ->get()
-            ->map(function ($item) {
-                $item->date = verta($item->date)->format('Y/m/d');
+            ->map(function ($item) use ($commissionFactor) {
+                $item->date  = verta($item->date)->format('Y/m/d');
+                $item->total = (int) ($item->total * $commissionFactor);
                 return $item;
             });
 
         return view('admin.dashboard', compact(
+            'commissionRate',
             'todayBookingsCount',
             'totalRevenue',
             'usersCount',
