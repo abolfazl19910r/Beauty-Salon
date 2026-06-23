@@ -166,16 +166,19 @@ class AdminDashboardController extends Controller
         try {
             switch ($period) {
                 case 'today':
-                    $start = Carbon::today();
-                    $end   = Carbon::now();
+                    $start      = Carbon::today()->startOfDay();
+                    $end        = Carbon::today()->endOfDay();
+                    $dateColumn = 'booking_time';
                     break;
                 case 'week':
-                    $start = Carbon::now()->subDays(6)->startOfDay();
-                    $end   = Carbon::now();
+                    $start      = Carbon::now()->subDays(6)->startOfDay();
+                    $end        = Carbon::now()->endOfDay();
+                    $dateColumn = 'created_at';
                     break;
                 case 'month':
-                    $start = Carbon::now()->subDays(29)->startOfDay();
-                    $end   = Carbon::now();
+                    $start      = Carbon::now()->subDays(29)->startOfDay();
+                    $end        = Carbon::now()->endOfDay();
+                    $dateColumn = 'created_at';
                     break;
                 default:
                     return response()->json(['error' => 'Invalid period'], 400);
@@ -184,7 +187,7 @@ class AdminDashboardController extends Controller
             $stats = [
                 'todayBookingsCount' => Booking::whereDate('booking_time', today())->count(),
                 'totalRevenue'       => Booking::where('payment_status', 'paid')
-                    ->whereBetween('created_at', [$start, $end])
+                    ->whereBetween($dateColumn, [$start, $end])
                     ->sum('prepayment_amount'),
                 'usersCount'         => User::count(),
                 'specialistsCount'   => Specialist::count(),
@@ -192,10 +195,10 @@ class AdminDashboardController extends Controller
 
             if ($period === 'today') {
                 $rows = Booking::where('payment_status', 'paid')
-                    ->whereBetween('created_at', [$start, $end])
-                    ->groupBy(DB::raw('HOUR(created_at)'))
+                    ->whereBetween('booking_time', [$start, $end])
+                    ->groupBy(DB::raw('HOUR(booking_time)'))
                     ->select(
-                        DB::raw('HOUR(created_at) as hour'),
+                        DB::raw('HOUR(booking_time) as hour'),
                         DB::raw('SUM(prepayment_amount) as total'),
                         DB::raw('COUNT(*) as bookings_count')
                     )
@@ -230,8 +233,6 @@ class AdminDashboardController extends Controller
                     ];
                 })->values();
             }
-
-            $dateColumn = $period === 'today' ? 'booking_time' : 'created_at';
 
             $popularServices = BeautyService::withCount(['bookings' => function ($q) use ($start, $end, $dateColumn) {
                 $q->whereBetween($dateColumn, [$start, $end]);
