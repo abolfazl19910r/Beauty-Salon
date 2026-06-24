@@ -1,155 +1,163 @@
 @extends('layouts.admin')
+@section('title', 'برنامه کاری ' . $specialist->name)
 
-@section('title', 'مدیریت برنامه کاری')
+@push('styles')
+    <style>
+        .day-card {
+            border: 1px solid var(--admin-border);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .day-card.active { border-color: #86EFAC; }
+        .day-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--admin-border);
+        }
+        .day-card.active .day-header { background: #F0FDF4; }
+        .day-card:not(.active) .day-header { background: var(--admin-accent-light); }
+        .toggle-switch {
+            position: relative; width: 44px; height: 24px; display: inline-block;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute; cursor: pointer; inset: 0;
+            background: var(--admin-border); border-radius: 9999px;
+            transition: background 0.2s;
+        }
+        .toggle-slider:before {
+            content: ''; position: absolute;
+            width: 18px; height: 18px; border-radius: 50%;
+            background: #fff; top: 3px; right: 3px;
+            transition: transform 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .toggle-switch input:checked + .toggle-slider { background: #16A34A; }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(-20px); }
+        .time-input {
+            border: 1px solid var(--admin-border); border-radius: 8px;
+            padding: 7px 12px; font-size: 0.875rem;
+            background: var(--admin-bg); color: var(--admin-text);
+            outline: none; transition: border-color 0.15s;
+            width: 100%;
+        }
+        .time-input:focus { border-color: var(--admin-accent); }
+    </style>
+@endpush
 
 @section('content')
-    <div class="max-w-4xl mx-auto">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+    <div class="fade-in">
+
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
             <div>
-                <h1 class="text-2xl font-bold text-gray-800 mb-2">مدیریت برنامه کاری</h1>
-                <p class="text-sm text-gray-500">تنظیم ساعات کاری متخصص {{ $specialist->name }}</p>
+                <h1 class="text-xl font-bold" style="color:var(--admin-text);">برنامه کاری هفتگی</h1>
+                <p class="text-sm mt-0.5" style="color:var(--admin-text-dim);">{{ $specialist->name }}</p>
             </div>
             <a href="{{ route('admin.specialists.show', $specialist) }}"
-               class="mt-3 md:mt-0 flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                </svg>
+               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+               style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
+               onmouseover="this.style.background='var(--admin-border)'"
+               onmouseout="this.style.background='var(--admin-accent-light)'">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
                 بازگشت
             </a>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-            <div class="p-5 border-b border-gray-100">
-                <h2 class="text-lg font-semibold text-gray-800">ساعات کاری هفتگی</h2>
-                <p class="text-sm text-gray-500 mt-1">روزها و ساعات فعالیت متخصص را تنظیم کنید</p>
-            </div>
+        <form method="POST" action="{{ route('admin.specialists.schedules.update', $specialist) }}">
+            @csrf @method('PUT')
 
-            <form method="POST" action="{{ route('admin.specialists.schedules.update', $specialist) }}">
-                @csrf
-                @method('PUT')
-
-                <div class="p-5">
-                    <div class="grid gap-6">
-                        @php
-                            $days = [
-                                0 => 'یکشنبه',
-                                1 => 'دوشنبه',
-                                2 => 'سه‌شنبه',
-                                3 => 'چهارشنبه',
-                                4 => 'پنج‌شنبه',
-                                5 => 'جمعه',
-                                6 => 'شنبه'
-                            ];
-                        @endphp
-
-                        @foreach($days as $dayNumber => $dayName)
-                            <div class="border border-gray-200 rounded-lg hover:border-blue-300 transition-colors {{ isset($schedules[$dayNumber]) && isset($schedules[$dayNumber]->first()->is_active) && $schedules[$dayNumber]->first()->is_active ? 'bg-blue-50' : 'bg-white' }}">
-                                <div class="flex items-center justify-between p-4 border-b border-gray-100">
-                                    <h3 class="text-lg font-medium flex items-center">
-                                        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 ml-3">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
-                                            </svg>
-                                        </span>
-                                        {{ $dayName }}
-                                    </h3>
-                                    <label class="inline-flex items-center">
-                                        <input type="checkbox"
-                                               name="schedules[{{ $dayNumber }}][is_active]"
-                                               value="1"
-                                               class="form-checkbox h-5 w-5 text-blue-600 rounded transition duration-150 ease-in-out"
-                                            {{ isset($schedules[$dayNumber]) && isset($schedules[$dayNumber]->first()->is_active) && $schedules[$dayNumber]->first()->is_active ? 'checked' : '' }}>
-                                        <span class="mr-2 text-gray-700">فعال</span>
-                                    </label>
+            <div class="space-y-3 mb-5">
+                @php
+                    $days = [0=>'یکشنبه',1=>'دوشنبه',2=>'سه‌شنبه',3=>'چهارشنبه',4=>'پنج‌شنبه',5=>'جمعه',6=>'شنبه'];
+                @endphp
+                @foreach($days as $dayNum => $dayName)
+                    @php
+                        $schedule = isset($schedules[$dayNum]) ? $schedules[$dayNum]->first() : null;
+                        $isActive = $schedule && $schedule->is_active;
+                    @endphp
+                    <div class="day-card {{ $isActive ? 'active' : '' }}" id="day-card-{{ $dayNum }}">
+                        <div class="day-header">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold"
+                                     style="background:var(--admin-accent); color:#fff;">
+                                    {{ mb_substr($dayName, 0, 1) }}
                                 </div>
-
-                                <input type="hidden"
-                                       name="schedules[{{ $dayNumber }}][day_of_week]"
-                                       value="{{ $dayNumber }}">
-
-                                <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block mb-2 text-sm font-medium text-gray-700">ساعت شروع</label>
-                                        <div class="relative">
-                                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                            </div>
-                                            <input type="time"
-                                                   name="schedules[{{ $dayNumber }}][start_time]"
-                                                   value="{{ isset($schedules[$dayNumber]) && isset($schedules[$dayNumber]->first()->start_time) ? $schedules[$dayNumber]->first()->start_time : '' }}"
-                                                   class="w-full pr-10 border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-lg transition-colors"
-                                                   placeholder="انتخاب زمان">
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label class="block mb-2 text-sm font-medium text-gray-700">ساعت پایان</label>
-                                        <div class="relative">
-                                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                            </div>
-                                            <input type="time"
-                                                   name="schedules[{{ $dayNumber }}][end_time]"
-                                                   value="{{ isset($schedules[$dayNumber]) && isset($schedules[$dayNumber]->first()->end_time) ? $schedules[$dayNumber]->first()->end_time : '' }}"
-                                                   class="w-full pr-10 border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-lg transition-colors"
-                                                   placeholder="انتخاب زمان">
-                                        </div>
-                                    </div>
-                                </div>
+                                <span class="font-medium" style="color:var(--admin-text);">{{ $dayName }}</span>
                             </div>
-                        @endforeach
+                            <label class="toggle-switch">
+                                <input type="checkbox"
+                                       name="schedules[{{ $dayNum }}][is_active]"
+                                       value="1"
+                                       onchange="toggleDay({{ $dayNum }}, this.checked)"
+                                    {{ $isActive ? 'checked' : '' }}>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <input type="hidden" name="schedules[{{ $dayNum }}][day_of_week]" value="{{ $dayNum }}">
+                        <div class="grid grid-cols-2 gap-4 p-4" id="day-body-{{ $dayNum }}"
+                             style="{{ !$isActive ? 'opacity:0.4; pointer-events:none;' : '' }}">
+                            <div>
+                                <label class="block text-xs font-medium mb-1.5" style="color:var(--admin-text-dim);">ساعت شروع</label>
+                                <input type="time" name="schedules[{{ $dayNum }}][start_time]"
+                                       class="time-input"
+                                       value="{{ $schedule?->start_time ?? '09:00' }}">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium mb-1.5" style="color:var(--admin-text-dim);">ساعت پایان</label>
+                                <input type="time" name="schedules[{{ $dayNum }}][end_time]"
+                                       class="time-input"
+                                       value="{{ $schedule?->end_time ?? '18:00' }}">
+                            </div>
+                        </div>
                     </div>
-                </div>
-
-                <div class="p-5 bg-gray-50 border-t border-gray-100 flex justify-end">
-                    <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg shadow hover:shadow-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-                        <span class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                            </svg>
-                            ذخیره تغییرات
-                        </span>
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <div class="bg-white rounded-lg shadow-sm mt-6 p-5">
-            <div class="flex items-start">
-                <div class="flex-shrink-0 pt-0.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <div class="mr-3">
-                    <h3 class="text-sm font-medium text-gray-800">راهنمای تنظیم برنامه کاری</h3>
-                    <p class="mt-1 text-sm text-gray-600">
-                        برای فعال کردن هر روز کاری، تیک مربوط به آن روز را فعال کنید و ساعات شروع و پایان را تنظیم نمایید.
-                        روزهای غیرفعال به عنوان تعطیل در نظر گرفته می‌شوند.
-                    </p>
-                </div>
+                @endforeach
             </div>
-        </div>
+
+            <div class="rounded-xl p-4 mb-5 flex items-start gap-3 text-sm"
+                 style="background:#EFF6FF; border:1px solid #93C5FD; color:#1D4ED8;">
+                <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <p>روزهایی که toggle آن‌ها خاموش است به عنوان تعطیل در نظر گرفته می‌شوند و مشتریان نمی‌توانند برای آن روز نوبت بگیرند.</p>
+            </div>
+
+            <div class="flex items-center justify-between p-4 rounded-xl" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+                <button type="submit"
+                        class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-white transition-colors"
+                        style="background:var(--admin-accent);"
+                        onmouseover="this.style.background='var(--admin-accent-hover)'"
+                        onmouseout="this.style.background='var(--admin-accent)'">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                        <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+                    </svg>
+                    ذخیره برنامه کاری
+                </button>
+                <a href="{{ route('admin.specialists.show', $specialist) }}"
+                   class="inline-flex items-center px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                   style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
+                   onmouseover="this.style.background='var(--admin-border)'"
+                   onmouseout="this.style.background='var(--admin-accent-light)'">انصراف</a>
+            </div>
+        </form>
     </div>
 @endsection
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const container = this.closest('.border');
-                    if (this.checked) {
-                        container.classList.add('bg-blue-50');
-                    } else {
-                        container.classList.remove('bg-blue-50');
-                    }
-                });
-            });
-        });
+        function toggleDay(dayNum, isActive) {
+            const card = document.getElementById('day-card-' + dayNum);
+            const body = document.getElementById('day-body-' + dayNum);
+            if (isActive) {
+                card.classList.add('active');
+                body.style.opacity = '1';
+                body.style.pointerEvents = '';
+            } else {
+                card.classList.remove('active');
+                body.style.opacity = '0.4';
+                body.style.pointerEvents = 'none';
+            }
+        }
     </script>
 @endpush

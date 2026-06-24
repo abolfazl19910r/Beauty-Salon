@@ -1,141 +1,138 @@
 @extends('layouts.admin')
-
 @section('title', 'اطلاعات متخصص')
 
 @section('content')
-    <div class="max-w-4xl mx-auto">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-            <div class="flex items-center">
-                <div class="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center text-xl font-bold ml-3">
-                    {{ substr($specialist->name, 0, 1) }}
+    <div class="fade-in">
+
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0"
+                     style="background:var(--admin-accent); color:#fff;">
+                    {{ mb_substr($specialist->name, 0, 1) }}
                 </div>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-800 mb-1">{{ $specialist->name }}</h1>
-                    <p class="text-sm text-gray-500">متخصص زیبایی</p>
+                    <h1 class="text-xl font-bold" style="color:var(--admin-text);">{{ $specialist->name }}</h1>
+                    <p class="text-sm" style="color:var(--admin-text-dim);">متخصص زیبایی</p>
                 </div>
             </div>
-            <div class="mt-4 md:mt-0 flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-2">
+                @permission('edit-specialists')
                 <a href="{{ route('admin.specialists.edit', $specialist) }}"
-                   class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                   class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-white"
+                   style="background:var(--admin-accent);"
+                   onmouseover="this.style.background='var(--admin-accent-hover)'"
+                   onmouseout="this.style.background='var(--admin-accent)'">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
                     </svg>
-                    ویرایش اطلاعات
+                    ویرایش
                 </a>
+                @endpermission
                 <a href="{{ route('admin.schedule.index', $specialist) }}"
-                   class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                   class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium"
+                   style="background:#F0FDF4; color:#166534;"
+                   onmouseover="this.style.background='#DCFCE7'"
+                   onmouseout="this.style.background='#F0FDF4'">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
                     </svg>
                     برنامه کاری
                 </a>
                 <a href="{{ route('admin.specialists.leaves.index', $specialist) }}"
-                   class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                   class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium"
+                   style="background:#F5F3FF; color:#7C3AED;"
+                   onmouseover="this.style.background='#EDE9FE'"
+                   onmouseout="this.style.background='#F5F3FF'">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                     </svg>
                     مرخصی‌ها
+                </a>
+                <a href="{{ route('admin.specialists.index') }}"
+                   class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium"
+                   style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
+                   onmouseover="this.style.background='var(--admin-border)'"
+                   onmouseout="this.style.background='var(--admin-accent-light)'">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                    بازگشت
                 </a>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-1 space-y-6">
-                <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-                    <div class="p-4 border-b border-gray-100">
-                        <h2 class="text-lg font-semibold text-gray-800">اطلاعات تماس</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+            <div class="space-y-5">
+
+                <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+                    <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
+                        اطلاعات تماس
                     </div>
-                    <div class="p-4 space-y-3">
-                        <div>
-                            <div class="text-sm text-gray-500 mb-1">شماره تماس</div>
-                            <div class="flex items-center text-gray-800">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                </svg>
-                                <span dir="ltr">{{ $specialist->phone }}</span>
-                            </div>
+                    <div class="p-4 space-y-3 text-sm">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 flex-shrink-0" style="color:var(--admin-text-light);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                            </svg>
+                            <span dir="ltr" style="color:var(--admin-text);">{{ $specialist->phone }}</span>
                         </div>
-                        <div>
-                            <div class="text-sm text-gray-500 mb-1">ایمیل</div>
-                            <div class="flex items-center text-gray-800">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                </svg>
-                                <span dir="ltr">{{ $specialist->email }}</span>
-                            </div>
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 flex-shrink-0" style="color:var(--admin-text-light);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            <span dir="ltr" style="color:var(--admin-text);">{{ $specialist->email ?? '—' }}</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-                    <div class="p-4 border-b border-gray-100">
-                        <h2 class="text-lg font-semibold text-gray-800">خدمات قابل ارائه</h2>
+                <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+                    <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
+                        خدمات قابل ارائه
                     </div>
-                    <div class="p-4">
+                    <div class="divide-y" style="border-color:var(--admin-border);">
                         @forelse($specialist->services as $service)
-                            <div class="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
-                                <div class="flex items-center">
-                                    <span class="w-2 h-2 bg-green-500 rounded-full ml-2"></span>
-                                    <span>{{ $service->name }}</span>
+                            <div class="flex justify-between items-center px-4 py-2.5 text-sm">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full" style="background:#16A34A;"></span>
+                                    <span style="color:var(--admin-text);">{{ $service->name }}</span>
                                 </div>
-                                <span class="text-gray-600 text-sm">{{ number_format($service->price) }} تومان</span>
+                                <span class="persian-number" style="color:var(--admin-text-dim);">{{ number_format($service->price) }} تومان</span>
                             </div>
                         @empty
-                            <div class="py-8 text-center text-gray-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-300 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                </svg>
-                                <p>هیچ خدمتی ثبت نشده است</p>
-                            </div>
+                            <p class="px-4 py-8 text-center text-sm" style="color:var(--admin-text-dim);">هیچ خدمتی ثبت نشده</p>
                         @endforelse
                     </div>
                 </div>
             </div>
 
-            <div class="lg:col-span-2 space-y-6">
-                <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-                    <div class="p-4 border-b border-gray-100 flex justify-between items-center">
-                        <h2 class="text-lg font-semibold text-gray-800">برنامه کاری هفتگی</h2>
-                        <a href="{{ route('admin.schedule.index', $specialist) }}" class="text-blue-600 hover:text-blue-800 text-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                            </svg>
-                            ویرایش
-                        </a>
+            <div class="lg:col-span-2 space-y-5">
+
+                <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+                    <div class="px-4 py-3 flex justify-between items-center text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
+                        برنامه کاری هفتگی
+                        <a href="{{ route('admin.schedule.index', $specialist) }}" class="text-xs font-normal" style="color:var(--admin-accent);">ویرایش</a>
                     </div>
                     <div class="p-4">
                         <div class="grid grid-cols-7 gap-2">
-                            @php
-                                $days = [
-                                    'یکشنبه',
-                                    'دوشنبه',
-                                    'سه‌شنبه',
-                                    'چهارشنبه',
-                                    'پنج‌شنبه',
-                                    'جمعه',
-                                    'شنبه'
-                                ];
-                            @endphp
-
+                            @php $days = ['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنج‌شنبه','جمعه','شنبه']; @endphp
                             @foreach($days as $index => $day)
                                 @php
                                     $schedule = $specialist->schedules()
-                                        ->where('day_of_week', $index)
-                                        ->where('is_active', true)
-                                        ->first();
+                                        ->where('day_of_week', $index)->where('is_active', true)->first();
                                 @endphp
-                                <div class="p-3 {{ $schedule ? 'bg-green-50 border border-green-100' : 'bg-red-50 border border-red-100' }} rounded-lg text-center hover:shadow-sm transition-all duration-200">
-                                    <div class="font-semibold mb-2 text-sm">{{ $day }}</div>
+                                <div class="rounded-lg p-2 text-center text-xs"
+                                     style="{{ $schedule ? 'background:#F0FDF4; border:1px solid #86EFAC;' : 'background:#FEF2F2; border:1px solid #FCA5A5;' }}">
+                                    <div class="font-bold mb-1" style="color:var(--admin-text);">{{ $day }}</div>
                                     @if($schedule)
-                                        <div class="text-xs">
-                                            <div class="text-green-600 font-medium">
-                                                {{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }}
-                                                تا
-                                                {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}
-                                            </div>
+                                        <div class="persian-number" style="color:#166534;">
+                                            {{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }}
+                                            <br>تا<br>
+                                            {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}
                                         </div>
                                     @else
-                                        <div class="text-xs text-red-500 font-medium">تعطیل</div>
+                                        <div style="color:#991B1B;">تعطیل</div>
                                     @endif
                                 </div>
                             @endforeach
@@ -143,134 +140,94 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-                    <div class="p-4 border-b border-gray-100 flex justify-between items-center">
-                        <h2 class="text-lg font-semibold text-gray-800">مرخصی‌های فعلی</h2>
-                        <a href="{{ route('admin.specialists.leaves.index', $specialist) }}" class="text-blue-600 hover:text-blue-800 text-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                            </svg>
-                            مدیریت
-                        </a>
+                <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+                    <div class="px-4 py-3 flex justify-between items-center text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
+                        مرخصی‌های فعلی
+                        <a href="{{ route('admin.specialists.leaves.index', $specialist) }}" class="text-xs font-normal" style="color:var(--admin-accent);">مدیریت</a>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead>
-                            <tr class="text-sm text-gray-600 bg-gray-50">
-                                <th class="px-3 py-3 text-right font-medium">تاریخ شروع</th>
-                                <th class="px-3 py-3 text-right font-medium">تاریخ پایان</th>
-                                <th class="px-3 py-3 text-right font-medium">دلیل</th>
-                                <th class="px-3 py-3 text-right font-medium">وضعیت</th>
-                            </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100">
-                            @php
-                                $currentLeaves = $specialist->leaves()
-                                    ->where('end_date', '>=', now())
-                                    ->where('status', 'approved')
-                                    ->get();
-                            @endphp
-                            @forelse($currentLeaves as $leave)
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-3 py-3 text-sm">
-                                        {{ verta($leave->start_date)->format('Y/m/d') }}
-                                    </td>
-                                    <td class="px-3 py-3 text-sm">
-                                        {{ verta($leave->end_date)->format('Y/m/d') }}
-                                    </td>
-                                    <td class="px-3 py-3 text-sm">
-                                        {{ $leave->reason ?: 'بدون توضیحات' }}
-                                    </td>
-                                    <td class="px-3 py-3 text-sm">
-                                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                                            تایید شده
-                                        </span>
-                                    </td>
+                    @php
+                        $currentLeaves = $specialist->leaves()
+                            ->where('end_date', '>=', now())->where('status', 'approved')->get();
+                    @endphp
+                    @if($currentLeaves->isEmpty())
+                        <p class="px-4 py-6 text-center text-sm" style="color:var(--admin-text-dim);">هیچ مرخصی فعالی وجود ندارد</p>
+                    @else
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                <tr style="background:var(--admin-accent-light); color:var(--admin-text-dim);">
+                                    <th class="px-4 py-2.5 text-right font-medium">تاریخ شروع</th>
+                                    <th class="px-4 py-2.5 text-right font-medium">تاریخ پایان</th>
+                                    <th class="px-4 py-2.5 text-right font-medium">دلیل</th>
+                                    <th class="px-4 py-2.5 text-right font-medium">وضعیت</th>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="px-3 py-6 text-center text-gray-500">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-8 w-8 text-gray-300 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                        <p>هیچ مرخصی فعالی وجود ندارد</p>
-                                    </td>
-                                </tr>
-                            @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                @foreach($currentLeaves as $leave)
+                                    <tr style="border-top:1px solid var(--admin-border);">
+                                        <td class="px-4 py-2.5 persian-number" style="color:var(--admin-text);">{{ verta($leave->start_date)->format('Y/m/d') }}</td>
+                                        <td class="px-4 py-2.5 persian-number" style="color:var(--admin-text);">{{ verta($leave->end_date)->format('Y/m/d') }}</td>
+                                        <td class="px-4 py-2.5" style="color:var(--admin-text-dim);">{{ $leave->reason ?: '—' }}</td>
+                                        <td class="px-4 py-2.5">
+                                            <span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background:#F0FDF4; color:#166534;">تایید شده</span>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
                 </div>
 
-                <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-                    <div class="p-4 border-b border-gray-100">
-                        <h2 class="text-lg font-semibold text-gray-800">نوبت‌های امروز</h2>
+                <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+                    <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
+                        نوبت‌های امروز
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead>
-                            <tr class="text-sm text-gray-600 bg-gray-50">
-                                <th class="px-3 py-3 text-right font-medium">ساعت</th>
-                                <th class="px-3 py-3 text-right font-medium">مشتری</th>
-                                <th class="px-3 py-3 text-right font-medium">خدمت</th>
-                                <th class="px-3 py-3 text-right font-medium">وضعیت</th>
-                            </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100">
-                            @php
-                                $todayBookings = $specialist->bookings()
-                                    ->whereDate('booking_time', today())
-                                    ->with(['user', 'service'])
-                                    ->orderBy('booking_time')
-                                    ->get();
-                            @endphp
-                            @forelse($todayBookings as $booking)
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-3 py-3 text-sm font-medium">
-                                        {{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }}
-                                    </td>
-                                    <td class="px-3 py-3 text-sm">
-                                        <span class="flex items-center">
-                                            <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold ml-2">
-                                                {{ substr($booking->user->name, 0, 1) }}
-                                            </span>
-                                            {{ $booking->user->name }}
-                                        </span>
-                                    </td>
-                                    <td class="px-3 py-3 text-sm">{{ $booking->service->name }}</td>
-                                    <td class="px-3 py-3 text-sm">
-                                        @switch($booking->status)
-                                            @case('pending')
-                                                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">
-                                                    در انتظار تایید
-                                                </span>
-                                                @break
-                                            @case('confirmed')
-                                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                                                    تایید شده
-                                                </span>
-                                                @break
-                                            @case('cancelled')
-                                                <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
-                                                    لغو شده
-                                                </span>
-                                                @break
-                                        @endswitch
-                                    </td>
+                    @php
+                        $todayBookings = $specialist->bookings()
+                            ->whereDate('booking_time', today())
+                            ->with(['user','service'])->orderBy('booking_time')->get();
+                    @endphp
+                    @if($todayBookings->isEmpty())
+                        <p class="px-4 py-6 text-center text-sm" style="color:var(--admin-text-dim);">هیچ نوبتی برای امروز ثبت نشده</p>
+                    @else
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                <tr style="background:var(--admin-accent-light); color:var(--admin-text-dim);">
+                                    <th class="px-4 py-2.5 text-right font-medium">ساعت</th>
+                                    <th class="px-4 py-2.5 text-right font-medium">مشتری</th>
+                                    <th class="px-4 py-2.5 text-right font-medium">خدمت</th>
+                                    <th class="px-4 py-2.5 text-right font-medium">وضعیت</th>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="px-3 py-6 text-center text-gray-500">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-8 w-8 text-gray-300 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <p>هیچ نوبتی برای امروز ثبت نشده است</p>
-                                    </td>
-                                </tr>
-                            @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                @foreach($todayBookings as $booking)
+                                    @php
+                                        $sm=['pending'=>['در انتظار','#FFFBEB','#92400E'],'confirmed'=>['تایید شده','#F0FDF4','#166534'],'cancelled'=>['لغو شده','#FEF2F2','#991B1B'],'completed'=>['انجام شده','#EFF6FF','#1D4ED8']];
+                                        $bs=$sm[$booking->status]??[$booking->status,'#F1F5F9','#475569'];
+                                    @endphp
+                                    <tr style="border-top:1px solid var(--admin-border);">
+                                        <td class="px-4 py-2.5 persian-number font-medium" style="color:var(--admin-text);">{{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }}</td>
+                                        <td class="px-4 py-2.5">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                                                     style="background:var(--admin-accent-light); color:var(--admin-accent);">
+                                                    {{ mb_substr($booking->user->name??'?',0,1) }}
+                                                </div>
+                                                <span style="color:var(--admin-text);">{{ $booking->user->name??'—' }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-2.5" style="color:var(--admin-text-dim);">{{ $booking->service->name??'—' }}</td>
+                                        <td class="px-4 py-2.5">
+                                            <span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background:{{ $bs[1] }}; color:{{ $bs[2] }};">{{ $bs[0] }}</span>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

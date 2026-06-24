@@ -1,242 +1,243 @@
 @extends('layouts.admin')
+@section('title', 'مرخصی‌های ' . $specialist->name)
 
-@section('title', 'مدیریت مرخصی‌ها')
-
-@section('styles')
-    <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@latest/dist/css/persian-datepicker.min.css">
-@endsection
+@push('styles')
+    <style>
+        .jcal-wrapper { position:relative; }
+        .jcal-popup { display:none; position:absolute; top:calc(100% + 6px); right:0; z-index:9999; width:280px; background:var(--admin-surface); border:1px solid var(--admin-border); border-radius:10px; box-shadow:0 10px 25px -5px rgba(0,0,0,0.12); padding:12px; }
+        .jcal-popup.open { display:block; }
+        .jcal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+        .jcal-header button { background:none; border:none; color:var(--admin-text-dim); cursor:pointer; padding:4px 8px; border-radius:6px; }
+        .jcal-header button:hover { background:var(--admin-accent-light); }
+        .jcal-title { color:var(--admin-text); font-weight:bold; font-size:13px; }
+        .jcal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; text-align:center; }
+        .jcal-weekday { font-size:10px; color:var(--admin-text-light); padding:4px 0; }
+        .jcal-day { font-size:12px; color:var(--admin-text); padding:6px 0; border-radius:6px; cursor:pointer; }
+        .jcal-day:hover { background:var(--admin-accent-light); }
+        .jcal-day.empty { cursor:default; }
+        .jcal-day.empty:hover { background:transparent; }
+        .jcal-day.selected { background:var(--admin-accent); color:#fff; font-weight:bold; }
+        .jcal-day.today { border:1px solid var(--admin-accent); }
+        .form-input { width:100%; border:1px solid var(--admin-border); border-radius:8px; padding:8px 12px; font-size:0.875rem; background:var(--admin-bg); color:var(--admin-text); outline:none; transition:border-color 0.15s; font-family:inherit; }
+        .form-input:focus { border-color:var(--admin-accent); }
+    </style>
+@endpush
 
 @section('content')
-    <div class="max-w-6xl mx-auto">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+    <div class="fade-in">
+
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
             <div>
-                <h1 class="text-2xl font-bold text-gray-800 mb-2">مدیریت مرخصی‌ها</h1>
-                <p class="text-sm text-gray-500">مدیریت زمان‌های مرخصی {{ $specialist->name }}</p>
+                <h1 class="text-xl font-bold" style="color:var(--admin-text);">مدیریت مرخصی‌ها</h1>
+                <p class="text-sm mt-0.5" style="color:var(--admin-text-dim);">{{ $specialist->name }}</p>
             </div>
-            <button type="button"
-                    onclick="document.getElementById('new-leave-modal').classList.remove('hidden')"
-                    class="mt-3 md:mt-0 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow flex items-center transition-all duration-200">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                ثبت مرخصی جدید
-            </button>
+            <div class="flex gap-2">
+                <button type="button" onclick="document.getElementById('leave-modal').classList.remove('hidden')"
+                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white"
+                        style="background:var(--admin-accent);"
+                        onmouseover="this.style.background='var(--admin-accent-hover)'"
+                        onmouseout="this.style.background='var(--admin-accent)'">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    ثبت مرخصی جدید
+                </button>
+                <a href="{{ route('admin.specialists.show', $specialist) }}"
+                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                   style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
+                   onmouseover="this.style.background='var(--admin-border)'"
+                   onmouseout="this.style.background='var(--admin-accent-light)'">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                    بازگشت
+                </a>
+            </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-            <div class="p-5 border-b border-gray-100">
-                <h2 class="text-lg font-semibold text-gray-800">لیست مرخصی‌ها</h2>
-                <p class="text-sm text-gray-500 mt-1">مشاهده و مدیریت درخواست‌های مرخصی</p>
-            </div>
-
+        <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
             <div class="overflow-x-auto">
-                <table class="w-full">
+                <table class="w-full text-sm">
                     <thead>
-                    <tr class="bg-gray-50 text-gray-600 text-sm">
-                        <th class="px-4 py-3 text-right font-medium">تاریخ شروع</th>
-                        <th class="px-4 py-3 text-right font-medium">تاریخ پایان</th>
-                        <th class="px-4 py-3 text-right font-medium">دلیل</th>
-                        <th class="px-4 py-3 text-right font-medium">وضعیت</th>
-                        <th class="px-4 py-3 font-medium">عملیات</th>
+                    <tr style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border);">
+                        <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">تاریخ شروع</th>
+                        <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">تاریخ پایان</th>
+                        <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">دلیل</th>
+                        <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">وضعیت</th>
+                        <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">عملیات</th>
                     </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100">
+                    <tbody>
                     @forelse($leaves as $leave)
-                        <tr class="hover:bg-gray-50 transition-colors">
+                        <tr style="border-bottom:1px solid var(--admin-border);"
+                            onmouseover="this.style.background='var(--admin-accent-light)'"
+                            onmouseout="this.style.background=''">
+                            <td class="px-4 py-3 persian-number" style="color:var(--admin-text);">{{ verta($leave->start_date)->format('Y/m/d') }}</td>
+                            <td class="px-4 py-3 persian-number" style="color:var(--admin-text);">{{ verta($leave->end_date)->format('Y/m/d') }}</td>
+                            <td class="px-4 py-3" style="color:var(--admin-text-dim);">{{ $leave->reason ?: '—' }}</td>
                             <td class="px-4 py-3">
-                                <div class="flex items-center">
-                                    <span class="bg-blue-100 text-blue-600 rounded-full w-8 h-8 flex items-center justify-center ml-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                    </span>
-                                    {{ jdate($leave->start_date)->format('Y/m/d') }}
-                                </div>
-                            </td>
-                            <td class="px-4 py-3">{{ jdate($leave->end_date)->format('Y/m/d') }}</td>
-                            <td class="px-4 py-3">
-                                @if($leave->reason)
-                                    {{ $leave->reason }}
+                                @if($leave->status === 'pending')
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:#FFFBEB; color:#92400E;">در انتظار</span>
+                                @elseif($leave->status === 'approved')
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:#F0FDF4; color:#166534;">تایید شده</span>
                                 @else
-                                    <span class="text-gray-400 text-sm">بدون توضیحات</span>
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:#FEF2F2; color:#991B1B;">رد شده</span>
                                 @endif
                             </td>
                             <td class="px-4 py-3">
-                                @switch($leave->status)
-                                    @case('pending')
-                                        <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">
-                                            در انتظار تایید
-                                        </span>
-                                        @break
-                                    @case('approved')
-                                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                                            تایید شده
-                                        </span>
-                                        @break
-                                    @case('rejected')
-                                        <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
-                                            رد شده
-                                        </span>
-                                        @break
-                                @endswitch
-                            </td>
-                            <td class="px-4 py-3">
                                 @if($leave->status === 'pending')
-                                    <div class="flex space-x-2 space-x-reverse">
-                                        <form action="{{ route('admin.specialists.leaves.update', [$specialist, $leave]) }}"
-                                              method="POST" class="inline">
-                                            @csrf
-                                            @method('PUT')
+                                    <div class="flex items-center gap-2">
+                                        <form action="{{ route('admin.specialists.leaves.update', [$specialist, $leave]) }}" method="POST" class="inline">
+                                            @csrf @method('PUT')
                                             <input type="hidden" name="status" value="approved">
-                                            <button type="submit" class="text-green-600 hover:text-green-800 transition-colors" title="تایید">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                                </svg>
+                                            <button type="submit" title="تایید"
+                                                    class="w-7 h-7 rounded flex items-center justify-center transition-colors"
+                                                    style="color:#16A34A;"
+                                                    onmouseover="this.style.background='#F0FDF4'"
+                                                    onmouseout="this.style.background=''">
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                                             </button>
                                         </form>
-                                        <form action="{{ route('admin.specialists.leaves.update', [$specialist, $leave]) }}"
-                                              method="POST" class="inline">
-                                            @csrf
-                                            @method('PUT')
+                                        <form action="{{ route('admin.specialists.leaves.update', [$specialist, $leave]) }}" method="POST" class="inline">
+                                            @csrf @method('PUT')
                                             <input type="hidden" name="status" value="rejected">
-                                            <button type="submit" class="text-red-600 hover:text-red-800 transition-colors" title="رد">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            <button type="submit" title="رد"
+                                                    class="w-7 h-7 rounded flex items-center justify-center transition-colors"
+                                                    style="color:#DC2626;"
+                                                    onmouseover="this.style.background='#FEF2F2'"
+                                                    onmouseout="this.style.background=''">
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                                                 </svg>
                                             </button>
                                         </form>
                                     </div>
                                 @else
-                                    <span class="text-gray-400 text-sm">-</span>
+                                    <span style="color:var(--admin-text-light);">—</span>
                                 @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-4 py-6 text-center text-gray-500">
-                                <div class="flex flex-col items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-300 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    <p>هیچ درخواست مرخصی ثبت نشده است</p>
-                                </div>
-                            </td>
+                            <td colspan="5" class="px-4 py-12 text-center text-sm" style="color:var(--admin-text-dim);">هیچ مرخصی ثبت نشده</td>
                         </tr>
                     @endforelse
                     </tbody>
                 </table>
             </div>
-
             @if($leaves->hasPages())
-                <div class="p-4 border-t border-gray-100">
-                    {{ $leaves->links() }}
+                <div class="px-4 py-3" style="border-top:1px solid var(--admin-border);">
+                    {{ $leaves->withQueryString()->links() }}
                 </div>
             @endif
         </div>
     </div>
 
-    <div id="new-leave-modal" class="hidden fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-50 transition-all duration-200">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-md w-full transform transition-all">
-                <div class="p-5 border-b border-gray-100 flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-gray-800">ثبت مرخصی جدید</h2>
-                    <button type="button"
-                            onclick="document.getElementById('new-leave-modal').classList.add('hidden')"
-                            class="text-gray-400 hover:text-gray-600 focus:outline-none transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-
-                <form action="{{ route('admin.specialists.leaves.store', $specialist) }}" method="POST">
-                    @csrf
-                    <div class="p-5 space-y-4">
-                        <div>
-                            <label class="block mb-1 text-sm font-medium text-gray-700">تاریخ شروع</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                </div>
-                                <input type="text" id="start_date_jalali" name="start_date_jalali" required
-                                       class="w-full pr-10 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                       placeholder="انتخاب تاریخ شروع">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block mb-1 text-sm font-medium text-gray-700">تاریخ پایان</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                </div>
-                                <input type="text" id="end_date_jalali" name="end_date_jalali" required
-                                       class="w-full pr-10 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                       placeholder="انتخاب تاریخ پایان">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block mb-1 text-sm font-medium text-gray-700">دلیل</label>
-                            <textarea name="reason" rows="3"
-                                      class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                      placeholder="توضیحاتی درباره درخواست مرخصی..."></textarea>
-                        </div>
-                    </div>
-
-                    <div class="p-5 border-t border-gray-100 flex justify-end space-x-4 space-x-reverse">
-                        <button type="button"
-                                onclick="document.getElementById('new-leave-modal').classList.add('hidden')"
-                                class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400">
-                            انصراف
-                        </button>
-                        <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            ثبت مرخصی
-                        </button>
-                    </div>
-                </form>
+    <div id="leave-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center"
+         style="background:rgba(15,23,42,0.5);"
+         onclick="if(event.target===this)this.classList.add('hidden')">
+        <div class="rounded-xl shadow-xl w-full max-w-md mx-4 fade-in"
+             style="background:var(--admin-surface);">
+            <div class="flex items-center justify-between px-5 py-4" style="border-bottom:1px solid var(--admin-border);">
+                <h2 class="text-base font-bold" style="color:var(--admin-text);">ثبت مرخصی جدید</h2>
+                <button type="button" onclick="document.getElementById('leave-modal').classList.add('hidden')"
+                        class="w-7 h-7 rounded flex items-center justify-center transition-colors"
+                        style="color:var(--admin-text-dim);"
+                        onmouseover="this.style.background='var(--admin-accent-light)'"
+                        onmouseout="this.style.background=''">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
             </div>
+            <form action="{{ route('admin.specialists.leaves.store', $specialist) }}" method="POST">
+                @csrf
+                <div class="p-5 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1.5" style="color:var(--admin-text-dim);">تاریخ شروع</label>
+                        <div class="jcal-wrapper">
+                            <input type="text" id="start-display" readonly class="form-input cursor-pointer persian-number" placeholder="انتخاب تاریخ">
+                            <input type="hidden" name="start_date" id="start-hidden">
+                            <div class="jcal-popup" id="jcal-start"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1.5" style="color:var(--admin-text-dim);">تاریخ پایان</label>
+                        <div class="jcal-wrapper">
+                            <input type="text" id="end-display" readonly class="form-input cursor-pointer persian-number" placeholder="انتخاب تاریخ">
+                            <input type="hidden" name="end_date" id="end-hidden">
+                            <div class="jcal-popup" id="jcal-end"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1.5" style="color:var(--admin-text-dim);">دلیل (اختیاری)</label>
+                        <textarea name="reason" rows="3" class="form-input" placeholder="توضیحات مرخصی..."></textarea>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 px-5 py-4" style="border-top:1px solid var(--admin-border);">
+                    <button type="button" onclick="document.getElementById('leave-modal').classList.add('hidden')"
+                            class="px-4 py-2 rounded-lg text-sm transition-colors"
+                            style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
+                            onmouseover="this.style.background='var(--admin-border)'"
+                            onmouseout="this.style.background='var(--admin-accent-light)'">انصراف</button>
+                    <button type="submit"
+                            class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
+                            style="background:var(--admin-accent);"
+                            onmouseover="this.style.background='var(--admin-accent-hover)'"
+                            onmouseout="this.style.background='var(--admin-accent)'">ثبت مرخصی</button>
+                </div>
+            </form>
         </div>
     </div>
 @endsection
 
 @push('scripts')
-    <script src="https://unpkg.com/jquery@3.6.0/dist/jquery.min.js"></script>
-    <script src="https://unpkg.com/persian-date@latest/dist/persian-date.min.js"></script>
-    <script src="https://unpkg.com/persian-datepicker@latest/dist/js/persian-datepicker.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('new-leave-modal');
-            window.addEventListener('click', function(event) {
-                if (event.target === modal) {
-                    modal.classList.add('hidden');
-                }
-            });
+        (function(){
+            function div(a,b){return Math.trunc(a/b);}
+            function gregorianToJalali(gy,gm,gd){const g=[0,31,59,90,120,151,181,212,243,273,304,334];let jy;if(gy>1600){jy=979;gy-=1600;}else{jy=0;gy-=621;}const gy2=(gm>2)?(gy+1):gy;let days=(365*gy)+div(gy2+3,4)-div(gy2+99,100)+div(gy2+399,400)-80+gd+g[gm-1];jy+=33*div(days,12053);days%=12053;jy+=4*div(days,1461);days%=1461;if(days>365){jy+=div(days-1,365);days=(days-1)%365;}const jm=(days<186)?1+div(days,31):7+div(days-186,30);const jd=1+((days<186)?(days%31):((days-186)%30));return[jy,jm,jd];}
+            function jalaliToGregorian(jy,jm,jd){let gy;if(jy>979){gy=1600;jy-=979;}else{gy=621;}let days=(365*jy)+(div(jy,33)*8)+div((jy%33)+3,4)+78+jd+((jm<7)?(jm-1)*31:((jm-7)*30)+186);gy+=400*div(days,146097);days%=146097;if(days>36524){gy+=100*div(--days,36524);days%=36524;if(days>=365)days++;}gy+=4*div(days,1461);days%=1461;if(days>365){gy+=div(days-1,365);days=(days-1)%365;}const gd2=days+1;const isLeap=(gy%4===0&&gy%100!==0)||(gy%400===0);const sa=[0,31,isLeap?29:28,31,30,31,30,31,31,30,31,30,31];let gm2=0,rem=gd2;for(gm2=1;gm2<=12;gm2++){if(rem<=sa[gm2])break;rem-=sa[gm2];}return[gy,gm2,rem];}
+            const jM=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+            const jW=['ش','ی','د','س','چ','پ','ج'];
+            function jML(jy,jm){if(jm<=6)return 31;if(jm<=11)return 30;const g1=jalaliToGregorian(jy,jm,29);const g2=jalaliToGregorian(jy+1,1,1);return Math.round((new Date(g2[0],g2[1]-1,g2[2])-new Date(g1[0],g1[1]-1,g1[2]))/86400000)+28;}
+            function pad(n){return String(n).padStart(2,'0');}
 
-            $("#start_date_jalali").persianDatepicker({
-                format: 'YYYY/MM/DD',
-                minDate: new persianDate(),
-                autoClose: true,
-                initialValue: true,
-                onSelect: function(unix) {
-                    const pd = new persianDate(unix);
-                    $("#end_date_jalali").persianDatepicker({
-                        format: 'YYYY/MM/DD',
-                        minDate: pd,
-                        autoClose: true,
-                        initialValue: true
+            function buildCal(display, hidden, popup) {
+                const today = new Date();
+                const [tjy,tjm,tjd] = gregorianToJalali(today.getFullYear(),today.getMonth()+1,today.getDate());
+                let vy=tjy, vm=tjm;
+
+                function render() {
+                    const fd=jalaliToGregorian(vy,vm,1);
+                    const off=(new Date(fd[0],fd[1]-1,fd[2]).getDay()+1)%7;
+                    const ml=jML(vy,vm);
+                    let h=`<div class="jcal-header"><button type="button" data-p="prev">&#9658;</button><span class="jcal-title persian-number">${jM[vm-1]} ${vy}</span><button type="button" data-p="next">&#9664;</button></div><div class="jcal-grid">`;
+                    jW.forEach(w=>{h+=`<div class="jcal-weekday">${w}</div>`;});
+                    for(let i=0;i<off;i++)h+='<div class="jcal-day empty"></div>';
+                    const selJal=hidden.value?gregorianToJalali(...hidden.value.split('-').map(Number)):null;
+                    for(let d=1;d<=ml;d++){const isT=(vy===tjy&&vm===tjm&&d===tjd);const isS=selJal&&selJal[0]===vy&&selJal[1]===vm&&selJal[2]===d;h+=`<div class="jcal-day persian-number${isT?' today':''}${isS?' selected':''}" data-d="${d}">${d}</div>`;}
+                    h+='</div>';
+                    popup.innerHTML=h;
+                    popup.querySelector('[data-p="prev"]').addEventListener('click',e=>{e.stopPropagation();vm--;if(vm<1){vm=12;vy--;}render();});
+                    popup.querySelector('[data-p="next"]').addEventListener('click',e=>{e.stopPropagation();vm++;if(vm>12){vm=1;vy++;}render();});
+                    popup.querySelectorAll('.jcal-day[data-d]').forEach(el=>{
+                        el.addEventListener('click',e=>{
+                            e.stopPropagation();
+                            const [gy,gm,gd]=jalaliToGregorian(vy,vm,parseInt(el.dataset.d,10));
+                            hidden.value=`${gy}-${pad(gm)}-${pad(gd)}`;
+                            display.value=`${vy}/${pad(vm)}/${pad(parseInt(el.dataset.d,10))}`;
+                            popup.classList.remove('open');
+                        });
                     });
                 }
-            });
 
-            $("#end_date_jalali").persianDatepicker({
-                format: 'YYYY/MM/DD',
-                minDate: new persianDate(),
-                autoClose: true,
-                initialValue: true
+                display.addEventListener('click',e=>{e.stopPropagation();render();popup.classList.add('open');});
+                document.addEventListener('click',()=>popup.classList.remove('open'));
+                popup.addEventListener('click',e=>e.stopPropagation());
+            }
+
+            document.addEventListener('DOMContentLoaded',function(){
+                buildCal(document.getElementById('start-display'),document.getElementById('start-hidden'),document.getElementById('jcal-start'));
+                buildCal(document.getElementById('end-display'),document.getElementById('end-hidden'),document.getElementById('jcal-end'));
             });
-        });
+        })();
     </script>
 @endpush
