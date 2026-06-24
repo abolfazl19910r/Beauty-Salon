@@ -19,11 +19,23 @@ class AdminSpecialistController extends Controller
         $this->categoryService = $categoryService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $specialists = Specialist::whereNull('deleted_at')
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $search = $request->search;
+                $q->where(function ($q2) use ($search) {
+                    $q2->where('name', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%");
+                });
+            })
+            ->withCount(['bookings' => function ($q) {
+                $q->whereDate('booking_time', today());
+            }])
+            ->with('services:id,name')
             ->latest()
             ->paginate(10);
+
         return view('admin.specialists.index', compact('specialists'));
     }
 
