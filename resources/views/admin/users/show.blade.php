@@ -12,7 +12,7 @@
 @section('content')
     <div class="fade-in">
 
-        {{-- هدر --}}
+        {{-- Heather --}}
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
             <div class="flex items-center gap-3">
                 <div class="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold"
@@ -22,7 +22,7 @@
                 <div>
                     <h1 class="text-xl font-bold" style="color:var(--admin-text);">{{ $user->name }}</h1>
                     <div class="flex items-center gap-2 mt-0.5">
-                        @if($user->is_active)
+                        @if($user->phone_verified_at)
                             <span class="text-xs px-2 py-0.5 rounded-full" style="background:#F0FDF4; color:#166534;">فعال</span>
                         @else
                             <span class="text-xs px-2 py-0.5 rounded-full" style="background:#FEF2F2; color:#991B1B;">غیرفعال</span>
@@ -60,10 +60,10 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-            {{-- ستون راست: اطلاعات + نوبت‌ها --}}
+            {{-- Right column: Information + Turns --}}
             <div class="lg:col-span-2 space-y-5">
 
-                {{-- اطلاعات پایه --}}
+                {{-- Basic information --}}
                 <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">اطلاعات کاربر</h2>
                     <div class="grid grid-cols-2 gap-4 text-sm">
@@ -96,7 +96,7 @@
                     </div>
                 </div>
 
-                {{-- نوبت‌های اخیر --}}
+                {{-- Recent appointments --}}
                 <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
                         آخرین نوبت‌ها
@@ -146,10 +146,10 @@
                 </div>
             </div>
 
-            {{-- ستون چپ: عملیات --}}
+            {{-- Left column: Operations --}}
             <div class="space-y-5">
 
-                {{-- عملیات --}}
+                {{-- Operation --}}
                 <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">عملیات</h2>
                     <div class="space-y-2">
@@ -167,13 +167,13 @@
                         </a>
                         <form action="{{ route('admin.users.status.update', $user) }}" method="POST">
                             @csrf @method('PUT')
-                            <input type="hidden" name="is_active" value="{{ $user->is_active ? 0 : 1 }}">
+                            <input type="hidden" name="is_active" value="{{ $user->phone_verified_at ? 0 : 1 }}">
                             <button type="submit"
                                     class="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-colors"
-                                    style="background:{{ $user->is_active ? '#FEF2F2' : '#F0FDF4' }}; color:{{ $user->is_active ? '#991B1B' : '#166534' }};"
+                                    style="background:{{ $user->phone_verified_at ? '#FEF2F2' : '#F0FDF4' }}; color:{{ $user->phone_verified_at ? '#991B1B' : '#166534' }};"
                                     onmouseover="this.style.opacity='0.8'"
                                     onmouseout="this.style.opacity='1'">
-                                @if($user->is_active)
+                                @if($user->phone_verified_at)
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
                                     </svg>
@@ -206,7 +206,7 @@
                     </div>
                 </div>
 
-                {{-- تغییر رمز عبور --}}
+                {{--Change password --}}
                 <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">تغییر رمز عبور</h2>
                     <form action="{{ route('admin.users.password.reset', $user) }}" method="POST">
@@ -234,7 +234,7 @@
                     </form>
                 </div>
 
-                {{-- مدیریت نقش‌ها --}}
+                {{-- Role management --}}
                 <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">مدیریت نقش‌ها</h2>
                     <form action="{{ route('admin.users.roles.sync', $user) }}" method="POST">

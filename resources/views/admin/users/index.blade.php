@@ -28,7 +28,7 @@
             @endpermission
         </div>
 
-        {{-- فیلترها --}}
+        {{-- Filters --}}
         <div class="rounded-xl p-4 mb-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
             <form action="{{ route('admin.users.index') }}" method="GET" class="flex flex-wrap gap-3 items-end">
                 <div class="flex-1 min-w-40">
@@ -83,7 +83,7 @@
             </form>
         </div>
 
-        {{-- جدول --}}
+        {{-- Table --}}
         <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -124,7 +124,7 @@
                                 @endforelse
                             </td>
                             <td class="px-4 py-3">
-                                @if($user->is_active)
+                                @if($user->phone_verified_at)
                                     <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:#F0FDF4; color:#166534;">فعال</span>
                                 @else
                                     <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:#FEF2F2; color:#991B1B;">غیرفعال</span>
@@ -158,13 +158,13 @@
                                     {{-- تغییر وضعیت --}}
                                     <form action="{{ route('admin.users.status.update', $user) }}" method="POST" class="inline">
                                         @csrf @method('PUT')
-                                        <input type="hidden" name="is_active" value="{{ $user->is_active ? 0 : 1 }}">
-                                        <button type="submit" title="{{ $user->is_active ? 'غیرفعال کردن' : 'فعال کردن' }}"
+                                        <input type="hidden" name="is_active" value="{{ $user->phone_verified_at ? 0 : 1 }}">
+                                        <button type="submit" title="{{ $user->phone_verified_at ? 'غیرفعال کردن' : 'فعال کردن' }}"
                                                 class="w-7 h-7 rounded flex items-center justify-center transition-colors"
-                                                style="color:{{ $user->is_active ? '#DC2626' : '#16A34A' }};"
-                                                onmouseover="this.style.background='{{ $user->is_active ? '#FEF2F2' : '#F0FDF4' }}'"
+                                                style="color:{{ $user->phone_verified_at ? '#DC2626' : '#16A34A' }};"
+                                                onmouseover="this.style.background='{{ $user->phone_verified_at ? '#FEF2F2' : '#F0FDF4' }}'"
                                                 onmouseout="this.style.background=''">
-                                            @if($user->is_active)
+                                            @if($user->phone_verified_at)
                                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                     <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
                                                 </svg>
