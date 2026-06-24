@@ -98,7 +98,7 @@
                             <td class="px-4 py-3">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold persian-number"
                                   style="background:#EFF6FF; color:#1D4ED8;">
-                                {{ $specialist->bookings()->whereDate('booking_time', today())->count() }}
+                                {{ $specialist->bookings_count ?? 0 }}
                             </span>
                             </td>
                             <td class="px-4 py-3">
