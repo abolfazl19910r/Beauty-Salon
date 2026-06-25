@@ -28,11 +28,11 @@
                     <div class="space-y-3">
                         <div class="flex justify-between">
                             <span style="color: var(--rasta-cream); opacity: 0.6;">خدمت:</span>
-                            <span class="font-medium" style="color: var(--rasta-cream);">{{ $booking->service->name }}</span>
+                            <span class="font-medium" style="color: var(--rasta-cream);">{{ $booking->service?->name ?? '—' }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span style="color: var(--rasta-cream); opacity: 0.6;">متخصص:</span>
-                            <span class="font-medium" style="color: var(--rasta-cream);">{{ $booking->specialist->name }}</span>
+                            <span class="font-medium" style="color: var(--rasta-cream);">{{ $booking->specialist?->name ?? '—' }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span style="color: var(--rasta-cream); opacity: 0.6;">تاریخ و ساعت:</span>

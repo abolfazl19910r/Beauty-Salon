@@ -12,7 +12,7 @@
 @section('content')
     <div class="fade-in">
 
-        {{-- Heather --}}
+        {{-- هدر --}}
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
             <div class="flex items-center gap-3">
                 <div class="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold"
@@ -60,10 +60,10 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-            {{-- Right column: Information + Turns --}}
+            {{-- ستون راست: اطلاعات + نوبت‌ها --}}
             <div class="lg:col-span-2 space-y-5">
 
-                {{-- Basic information --}}
+                {{-- اطلاعات پایه --}}
                 <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">اطلاعات کاربر</h2>
                     <div class="grid grid-cols-2 gap-4 text-sm">
@@ -96,7 +96,7 @@
                     </div>
                 </div>
 
-                {{-- Recent appointments --}}
+                {{-- نوبت‌های اخیر --}}
                 <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
                         آخرین نوبت‌ها
@@ -127,8 +127,8 @@
                                         onmouseout="this.style.background=''">
                                         <td class="px-4 py-2.5 persian-number" style="color:var(--admin-text-dim);">{{ $booking->id }}</td>
                                         <td class="px-4 py-2.5 persian-number" style="color:var(--admin-text);">{{ verta($booking->booking_time)->format('Y/m/d H:i') }}</td>
-                                        <td class="px-4 py-2.5" style="color:var(--admin-text);">{{ $booking->service->name ?? '—' }}</td>
-                                        <td class="px-4 py-2.5" style="color:var(--admin-text-dim);">{{ $booking->specialist->name ?? '—' }}</td>
+                                        <td class="px-4 py-2.5" style="color:var(--admin-text);">{{ $booking->service?->name ?? '—' ?? '—' }}</td>
+                                        <td class="px-4 py-2.5" style="color:var(--admin-text-dim);">{{ $booking->specialist?->name ?? '—' ?? '—' }}</td>
                                         <td class="px-4 py-2.5">
                                             <span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background:{{ $bs[1] }}; color:{{ $bs[2] }};">{{ $bs[0] }}</span>
                                         </td>
@@ -146,10 +146,10 @@
                 </div>
             </div>
 
-            {{-- Left column: Operations --}}
+            {{-- ستون چپ: عملیات --}}
             <div class="space-y-5">
 
-                {{-- Operation --}}
+                {{-- عملیات --}}
                 <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">عملیات</h2>
                     <div class="space-y-2">
@@ -206,7 +206,7 @@
                     </div>
                 </div>
 
-                {{--Change password --}}
+                {{-- تغییر رمز عبور --}}
                 <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">تغییر رمز عبور</h2>
                     <form action="{{ route('admin.users.password.reset', $user) }}" method="POST">
@@ -234,7 +234,7 @@
                     </form>
                 </div>
 
-                {{-- Role management --}}
+                {{-- مدیریت نقش‌ها --}}
                 <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">مدیریت نقش‌ها</h2>
                     <form action="{{ route('admin.users.roles.sync', $user) }}" method="POST">

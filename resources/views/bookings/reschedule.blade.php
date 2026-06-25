@@ -26,7 +26,7 @@
                 <div class="flex items-center justify-between flex-wrap gap-3">
                     <div>
                         <p class="text-xs mb-1" style="color: var(--rasta-gold-light); opacity: 0.7;">خدمت</p>
-                        <p class="font-semibold" style="color: var(--rasta-cream);">{{ $booking->service->name }}</p>
+                        <p class="font-semibold" style="color: var(--rasta-cream);">{{ $booking->service?->name ?? '—' }}</p>
                     </div>
                     <div class="text-left">
                         <p class="text-xs mb-1" style="color: var(--rasta-gold-light); opacity: 0.7;">زمان فعلی نوبت</p>

@@ -116,7 +116,7 @@
                                 <div class="flex justify-between items-start border-b pb-3" style="border-color: var(--specialist-border);">
                                     <div>
                                         <p class="font-semibold text-[var(--specialist-text)]">{{ $booking->user->name }}</p>
-                                        <p class="text-sm text-[var(--specialist-text-dim)]">{{ $booking->service->name }}</p>
+                                        <p class="text-sm text-[var(--specialist-text-dim)]">{{ $booking->service?->name ?? '—' }}</p>
                                     </div>
                                     <div class="text-left">
                                         <p class="font-bold text-[var(--specialist-plum-mid)] persian-number" dir="ltr">{{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }}</p>
@@ -149,7 +149,7 @@
                                         <div>
                                             <p class="font-semibold text-sm text-[var(--specialist-text)] persian-number">{{ $booking->booking_date_persian }}</p>
                                             <p class="text-xs text-[var(--specialist-text-dim)] persian-number" dir="ltr">{{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }} - {{ $booking->user->name }}</p>
-                                            <p class="text-xs text-[var(--specialist-text-dim)]">{{ $booking->service->name }}</p>
+                                            <p class="text-xs text-[var(--specialist-text-dim)]">{{ $booking->service?->name ?? '—' }}</p>
                                         </div>
                                         <span class="specialist-badge px-2 py-1 text-xs">{{ $booking->status_fa }}</span>
                                     </div>

@@ -36,7 +36,7 @@
             <div class="px-6 py-4 border-b flex justify-between items-center" style="border-color: var(--specialist-border);">
                 <div>
                     <span class="text-xs text-[var(--specialist-plum-muted)] persian-number">شماره پیگیری: #{{ $booking->id }}</span>
-                    <h1 class="text-xl font-bold text-[var(--specialist-text)] mt-1 font-serif-fa">{{ $booking->service->name }}</h1>
+                    <h1 class="text-xl font-bold text-[var(--specialist-text)] mt-1 font-serif-fa">{{ $booking->service?->name ?? '—' }}</h1>
                 </div>
                 <span class="px-4 py-2 rounded-lg font-bold text-sm {{ $statusInfo['class'] }}">{{ $statusInfo['label'] }}</span>
             </div>
@@ -106,7 +106,7 @@
     <div id="cancelModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="specialist-card p-6 max-w-md w-full border" style="border-color: var(--specialist-border);">
             <h3 class="text-xl font-bold text-red-300 mb-2 font-serif-fa">لغو نوبت</h3>
-            <p class="text-[var(--specialist-text-dim)] mb-4">آیا از لغو نوبت "{{ $booking->service->name }}" اطمینان دارید؟</p>
+            <p class="text-[var(--specialist-text-dim)] mb-4">آیا از لغو نوبت "{{ $booking->service?->name ?? '—' }}" اطمینان دارید؟</p>
             <form action="{{ route('specialist.bookings.cancel', $booking->id) }}" method="POST">
                 @csrf @method('PUT')
                 <div class="mb-5">

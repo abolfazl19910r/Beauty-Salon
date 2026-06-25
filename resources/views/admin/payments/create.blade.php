@@ -28,8 +28,8 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <p class="text-gray-600">مشتری: <span class="font-medium">{{ $booking->user->name ?? 'نامشخص' }}</span></p>
-                            <p class="text-gray-600">خدمت: <span class="font-medium">{{ $booking->service->name ?? 'نامشخص' }}</span></p>
-                            <p class="text-gray-600">متخصص: <span class="font-medium">{{ $booking->specialist->name ?? 'نامشخص' }}</span></p>
+                            <p class="text-gray-600">خدمت: <span class="font-medium">{{ $booking->service?->name ?? '—' ?? 'نامشخص' }}</span></p>
+                            <p class="text-gray-600">متخصص: <span class="font-medium">{{ $booking->specialist?->name ?? '—' ?? 'نامشخص' }}</span></p>
                         </div>
                         <div>
                             <p class="text-gray-600">تاریخ نوبت: <span class="font-medium">{{ $booking->booking_time ? verta($booking->booking_time)->format('Y/m/d H:i') : 'نامشخص' }}</span></p>

@@ -232,7 +232,7 @@
                             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2 mb-2 flex-wrap">
-                                        <h3 class="font-bold text-[var(--specialist-text)]">{{ $booking->service->name }}</h3>
+                                        <h3 class="font-bold text-[var(--specialist-text)]">{{ $booking->service?->name ?? '—' }}</h3>
                                         <span class="text-xs px-3 py-1 rounded-full font-bold {{ $statusInfo['class'] }}">{{ $statusInfo['label'] }}</span>
                                     </div>
 
@@ -256,24 +256,24 @@
                                     @if(!in_array($status, ['completed', 'cancelled', 'pending_payment']))
 
                                         @if($status == 'pending')
-                                            <button onclick="confirmBooking('{{ route('specialist.bookings.complete', $booking->id) }}', '{{ addslashes($booking->user->name) }}', '{{ addslashes($booking->service->name) }}')"
+                                            <button onclick="confirmBooking('{{ route('specialist.bookings.complete', $booking->id) }}', '{{ addslashes($booking->user->name) }}', '{{ addslashes($booking->service?->name ?? '—') }}')"
                                                     class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-emerald-500 transition">
                                                 تایید
                                             </button>
 
-                                            <button onclick="showCancelModal({{ $booking->id }}, '{{ addslashes($booking->user->name) }}', '{{ addslashes($booking->service->name) }}')"
+                                            <button onclick="showCancelModal({{ $booking->id }}, '{{ addslashes($booking->user->name) }}', '{{ addslashes($booking->service?->name ?? '—') }}')"
                                                     class="bg-red-600/90 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-600 transition">
                                                 لغو
                                             </button>
                                         @endif
 
                                         @if($status == 'confirmed')
-                                            <button onclick="markCompleted({{ $booking->id }}, '{{ addslashes($booking->user->name) }}', '{{ addslashes($booking->service->name) }}')"
+                                            <button onclick="markCompleted({{ $booking->id }}, '{{ addslashes($booking->user->name) }}', '{{ addslashes($booking->service?->name ?? '—') }}')"
                                                     class="specialist-cta px-4 py-2 rounded-lg text-sm font-bold transition-opacity hover:opacity-90">
                                                 انجام شد
                                             </button>
 
-                                            <button onclick="showCancelModal({{ $booking->id }}, '{{ addslashes($booking->user->name) }}', '{{ addslashes($booking->service->name) }}')"
+                                            <button onclick="showCancelModal({{ $booking->id }}, '{{ addslashes($booking->user->name) }}', '{{ addslashes($booking->service?->name ?? '—') }}')"
                                                     class="bg-red-600/90 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-600 transition">
                                                 لغو نوبت
                                             </button>
