@@ -45,11 +45,11 @@
                 <div class="space-y-2">
                     <div class="flex justify-between items-center">
                         <span style="color: var(--rasta-cream); opacity: 0.6;">خدمت:</span>
-                        <span class="font-medium" style="color: var(--rasta-cream);">{{ $booking->service->name }}</span>
+                        <span class="font-medium" style="color: var(--rasta-cream);">{{ $booking->service?->name ?? '—' }}</span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span style="color: var(--rasta-cream); opacity: 0.6;">متخصص:</span>
-                        <span class="font-medium" style="color: var(--rasta-cream);">{{ $booking->specialist->name }}</span>
+                        <span class="font-medium" style="color: var(--rasta-cream);">{{ $booking->specialist?->name ?? '—' }}</span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span style="color: var(--rasta-cream); opacity: 0.6;">تاریخ:</span>

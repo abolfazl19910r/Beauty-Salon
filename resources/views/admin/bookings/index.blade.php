@@ -63,10 +63,14 @@
             @endpermission
         </div>
 
+        {{-- فیلتر + آمار --}}
         <div class="rounded-xl p-4 mb-5 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center"
              style="background:var(--admin-surface); border:1px solid var(--admin-border);">
 
+            {{-- فیلترها --}}
             <div class="flex flex-wrap items-center gap-3">
+                {{-- وضعیت --}}
+
                 <select onchange="window.location.href=this.value"
                         class="text-sm rounded-lg px-3 py-2 outline-none transition"
                         style="border:1px solid var(--admin-border); background:var(--admin-bg); color:var(--admin-text);"
@@ -175,6 +179,10 @@
                             </td>
 
                             <td class="px-4 py-3" style="color:var(--admin-text);">{{ $booking->service->name ?? '—' }}</td>
+
+                            <td class="px-4 py-3" style="color:var(--admin-text);">{{ $booking->specialist?->name ?? '—' }}</td>
+
+                            <td class="px-4 py-3" style="color:var(--admin-text);">{{ $booking->service?->name ?? '—' ?? '—' }}</td>
 
                             <td class="px-4 py-3" style="color:var(--admin-text);">{{ $booking->specialist?->name ?? '—' }}</td>
 

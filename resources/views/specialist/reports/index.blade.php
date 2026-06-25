@@ -184,7 +184,7 @@
                             <p class="text-sm font-medium text-[var(--specialist-text)]">{{ $booking->user->name }}</p>
                             <p class="text-xs text-[var(--specialist-plum-muted)]" dir="ltr">{{ $booking->user->phone }}</p>
                         </div>
-                        <span class="text-sm text-[var(--specialist-text-dim)]">{{ $booking->service->name ?? 'حذف شده' }}</span>
+                        <span class="text-sm text-[var(--specialist-text-dim)]">{{ $booking->service?->name ?? '—' ?? 'حذف شده' }}</span>
                     </div>
 
                     <div class="text-sm text-[var(--specialist-text-dim)] persian-number">

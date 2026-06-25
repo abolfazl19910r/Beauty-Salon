@@ -1,55 +1,42 @@
 @extends('layouts.admin')
-
 @section('title', 'مدیریت گالری')
 
 @section('content')
-    <div class="container px-6 mx-auto">
-        <div class="flex items-center justify-between mb-6">
-            <h1 class="text-2xl font-bold flex items-center">
-                <svg class="w-6 h-6 ml-2 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                    <polyline points="21 15 16 10 5 21"></polyline>
-                </svg>
-                مدیریت گالری
-            </h1>
-
+    <div class="fade-in">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
             <div>
-                <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-                    <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M19 12H5"></path>
-                        <path d="M12 19l-7-7 7-7"></path>
+                <h1 class="text-xl font-bold flex items-center gap-2" style="color:var(--admin-text);">
+                    <svg class="w-5 h-5" style="color:var(--admin-accent);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
                     </svg>
-                    بازگشت به داشبورد
-                </a>
+                    مدیریت گالری
+                </h1>
+                <p class="text-sm mt-0.5" style="color:var(--admin-text-dim);">تصاویر نمونه کارهای سالن</p>
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
-            <div class="p-6">
-                <div id="admin-gallery" class="fade-in">
-                    <div class="flex justify-center items-center min-h-[400px]">
-                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                        <span class="mr-2 text-gray-500">در حال بارگذاری...</span>
-                    </div>
+        <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+            <div id="admin-gallery" class="min-h-64">
+                <div class="flex items-center justify-center gap-3 py-16" style="color:var(--admin-text-dim);">
+                    <div class="w-6 h-6 rounded-full border-2 animate-spin"
+                         style="border-color:var(--admin-accent); border-top-color:transparent;"></div>
+                    <span class="text-sm">در حال بارگذاری...</span>
                 </div>
             </div>
         </div>
     </div>
 @endsection
 
-@push('styles')
-    @vite('resources/css/app.css')
-@endpush
-
 @push('scripts')
     <script>
         window.initialData = {
             routes: {
-                images: '{{ route('admin.gallery.images') }}',
-                upload: '{{ route('admin.gallery.store') }}',
+                images:  '{{ route('admin.gallery.images') }}',
+                upload:  '{{ route('admin.gallery.store') }}',
                 reorder: '{{ route('admin.gallery.reorder') }}',
-                stats: '{{ route('admin.gallery.stats') }}'
+                stats:   '{{ route('admin.gallery.stats') }}'
             }
         };
     </script>

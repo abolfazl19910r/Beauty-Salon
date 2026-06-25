@@ -66,14 +66,14 @@
                     @if($transaction->booking->service)
                         <div class="flex justify-between items-center pb-3 border-b" style="border-color: rgba(201,162,75,0.1);">
                             <span class="text-sm" style="color: var(--rasta-cream); opacity: 0.6;">خدمت</span>
-                            <span class="text-sm font-medium" style="color: var(--rasta-cream);">{{ $transaction->booking->service->name }}</span>
+                            <span class="text-sm font-medium" style="color: var(--rasta-cream);">{{ $transaction->booking?->service?->name ?? '—' }}</span>
                         </div>
                     @endif
 
                     @if($transaction->booking->specialist)
                         <div class="flex justify-between items-center">
                             <span class="text-sm" style="color: var(--rasta-cream); opacity: 0.6;">متخصص</span>
-                            <span class="text-sm font-medium" style="color: var(--rasta-cream);">{{ $transaction->booking->specialist->name }}</span>
+                            <span class="text-sm font-medium" style="color: var(--rasta-cream);">{{ $transaction->booking->specialist?->name ?? '—' }}</span>
                         </div>
                     @endif
                 @endif

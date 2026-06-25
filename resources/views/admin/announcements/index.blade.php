@@ -1,35 +1,31 @@
 @extends('layouts.admin')
-
-@section('title', 'مدیریت اطلاعیه ها')
+@section('title', 'مدیریت اطلاعیه‌ها')
 
 @section('content')
-    <div class="container px-6 mx-auto">
-
-        @if(session('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4 flex items-center" role="alert">
-                <svg class="w-5 h-5 ml-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
-                <span>{{ session('success') }}</span>
+    <div class="fade-in">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
+            <div>
+                <h1 class="text-xl font-bold flex items-center gap-2" style="color:var(--admin-text);">
+                    <svg class="w-5 h-5" style="color:var(--admin-accent);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                    مدیریت اطلاعیه‌ها
+                </h1>
+                <p class="text-sm mt-0.5" style="color:var(--admin-text-dim);">اطلاعیه‌های سیستم برای کاربران</p>
             </div>
-        @endif
+        </div>
 
-        @if(session('error'))
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4 flex items-center" role="alert">
-                <svg class="w-5 h-5 ml-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-                <span>{{ session('error') }}</span>
-            </div>
-        @endif
-
-        <div id="admin-announcements">
-            <div class="flex justify-center items-center min-h-[400px]">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                <span class="mr-2 text-gray-500">در حال بارگذاری...</span>
+        <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+            <div id="admin-announcements" class="min-h-64">
+                <div class="flex items-center justify-center gap-3 py-16" style="color:var(--admin-text-dim);">
+                    <div class="w-6 h-6 rounded-full border-2 animate-spin"
+                         style="border-color:var(--admin-accent); border-top-color:transparent;"></div>
+                    <span class="text-sm">در حال بارگذاری...</span>
+                </div>
             </div>
         </div>
     </div>
@@ -37,47 +33,18 @@
 
 @push('styles')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
-
     <style>
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .pwt-btn-today,
-        .pwt-btn-submit {
-            background-color: #3b82f6 !important;
+        .pwt-btn-today, .pwt-btn-submit {
+            background-color: var(--admin-accent) !important;
             color: white !important;
         }
-
-        .pwt-btn-today:hover,
-        .pwt-btn-submit:hover {
-            background-color: #2563eb !important;
-        }
     </style>
-
-    @vite('resources/css/app.css')
 @endpush
 
 @push('scripts')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
-
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-
     @viteReactRefresh
     @vite(['resources/js/admin.jsx'])
 @endpush

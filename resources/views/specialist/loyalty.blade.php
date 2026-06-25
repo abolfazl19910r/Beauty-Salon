@@ -78,7 +78,7 @@
                                         @if($point->booking)
                                             <span class="persian-number">نوبت #{{ $point->booking_id }}</span>
                                             @if($point->booking->service)
-                                                <span>{{ $point->booking->service->name }}</span>
+                                                <span>{{ $point->booking?->service?->name ?? '—' }}</span>
                                             @endif
                                         @endif
                                     </div>

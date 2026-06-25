@@ -91,11 +91,11 @@
                                             </svg>
                                         </div>
                                         <div>
-                                            <p class="text-sm font-medium" style="color: var(--rasta-cream);">{{ $booking->service->name }}</p>
+                                            <p class="text-sm font-medium" style="color: var(--rasta-cream);">{{ $booking->service?->name ?? '—' }}</p>
                                             <p class="text-xs persian-number" style="color: var(--rasta-cream); opacity: 0.6;">
                                                 {{ \Morilog\Jalali\Jalalian::forge($booking->booking_time)->format('Y/m/d H:i') }}
                                                 @if($booking->specialist)
-                                                    — {{ $booking->specialist->name }}
+                                                    — {{ $booking->specialist?->name ?? '—' }}
                                                 @endif
                                             </p>
                                         </div>
@@ -133,12 +133,12 @@
                             @foreach($upcomingBookings as $booking)
                                 <div class="p-4 flex items-center justify-between flex-wrap gap-3">
                                     <div>
-                                        <p class="text-sm font-medium" style="color: var(--rasta-cream);">{{ $booking->service->name }}</p>
+                                        <p class="text-sm font-medium" style="color: var(--rasta-cream);">{{ $booking->service?->name ?? '—' }}</p>
                                         <p class="text-xs persian-number mt-1" style="color: var(--rasta-gold-light); opacity: 0.8;">
                                             {{ \Morilog\Jalali\Jalalian::forge($booking->booking_time)->format('l، j F Y — H:i') }}
                                         </p>
                                         @if($booking->specialist)
-                                            <p class="text-xs mt-0.5" style="color: var(--rasta-cream); opacity: 0.6;">متخصص: {{ $booking->specialist->name }}</p>
+                                            <p class="text-xs mt-0.5" style="color: var(--rasta-cream); opacity: 0.6;">متخصص: {{ $booking->specialist?->name ?? '—' }}</p>
                                         @endif
                                     </div>
                                     <a href="{{ route('bookings.show', $booking->id) }}"

@@ -107,6 +107,7 @@
             border-right: 3px solid var(--admin-accent);
         }
 
+        /* دکمه‌های اصلی ادمین */
         .admin-btn-primary {
             background-color: var(--admin-accent);
             color: #fff;
@@ -116,6 +117,7 @@
             background-color: var(--admin-accent-hover);
         }
 
+        /* کارت ادمین */
         .admin-card {
             background: var(--admin-surface);
             border: 1px solid var(--admin-border);
@@ -495,7 +497,7 @@
                         </button>
 
                         <div id="notification-dropdown"
-                             class="hidden absolute left-0 z-50 mt-2 w-80 rounded-xl shadow-lg ring-1 focus:outline-none"
+                             class="hidden absolute right-0 z-50 mt-2 w-80 rounded-xl shadow-lg ring-1 focus:outline-none"
                              style="background: var(--admin-surface); border-color: var(--admin-border); border: 1px solid var(--admin-border);"
                              role="menu" aria-orientation="vertical" aria-labelledby="notification-button" tabindex="-1">
                             <div class="px-4 py-3 border-b" style="border-color: var(--admin-border);">
@@ -516,6 +518,7 @@
                         </div>
                     </div>
 
+                    <!-- منوی کاربر -->
                     <div class="relative inline-block text-left">
                         <button type="button"
                                 class="inline-flex items-center justify-center w-9 h-9 rounded-full font-medium text-sm focus:outline-none transition-colors"
@@ -525,7 +528,7 @@
                         </button>
 
                         <div id="user-menu-dropdown"
-                             class="hidden absolute left-0 z-50 mt-2 w-56 rounded-xl shadow-lg focus:outline-none"
+                             class="hidden absolute right-0 z-50 mt-2 w-56 rounded-xl shadow-lg focus:outline-none"
                              style="background: var(--admin-surface); border: 1px solid var(--admin-border);"
                              role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
                             <div class="py-1" role="none">
@@ -648,6 +651,7 @@
     </div>
 </div>
 
+<!-- مودال جستجو -->
 <div id="search-modal"
      class="fixed inset-0 z-[100] hidden flex items-start justify-center pt-16"
      style="background: rgba(15, 23, 42, 0.5);"
@@ -947,6 +951,7 @@
             });
         });
 
+        // بستن مودال جستجو با Escape
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 const modal = document.getElementById('search-modal');

@@ -4,6 +4,7 @@
 @section('content')
     <div class="fade-in">
 
+        {{-- هدر --}}
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
             <div class="flex items-center gap-3">
                 <div class="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0"
@@ -65,8 +66,10 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
+            {{-- ستون چپ --}}
             <div class="space-y-5">
 
+                {{-- اطلاعات تماس --}}
                 <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
                         اطلاعات تماس
@@ -87,6 +90,7 @@
                     </div>
                 </div>
 
+                {{-- خدمات --}}
                 <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
                         خدمات قابل ارائه
@@ -107,8 +111,10 @@
                 </div>
             </div>
 
+            {{-- ستون راست (۲/۳) --}}
             <div class="lg:col-span-2 space-y-5">
 
+                {{-- برنامه کاری هفتگی --}}
                 <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <div class="px-4 py-3 flex justify-between items-center text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
                         برنامه کاری هفتگی
@@ -140,6 +146,7 @@
                     </div>
                 </div>
 
+                {{-- مرخصی‌های فعلی --}}
                 <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <div class="px-4 py-3 flex justify-between items-center text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
                         مرخصی‌های فعلی
@@ -179,6 +186,7 @@
                     @endif
                 </div>
 
+                {{-- نوبت‌های امروز --}}
                 <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
                         نوبت‌های امروز
@@ -218,7 +226,7 @@
                                                 <span style="color:var(--admin-text);">{{ $booking->user->name??'—' }}</span>
                                             </div>
                                         </td>
-                                        <td class="px-4 py-2.5" style="color:var(--admin-text-dim);">{{ $booking->service->name??'—' }}</td>
+                                        <td class="px-4 py-2.5" style="color:var(--admin-text-dim);">{{ $booking->service?->name ?? '—'??'—' }}</td>
                                         <td class="px-4 py-2.5">
                                             <span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background:{{ $bs[1] }}; color:{{ $bs[2] }};">{{ $bs[0] }}</span>
                                         </td>

@@ -104,11 +104,11 @@
                                 <div class="specialist-card p-4" style="background-color: var(--specialist-bg);">
                                     <div class="flex justify-between items-start">
                                         <div class="flex-1">
-                                            <h3 class="font-semibold text-[var(--specialist-text)] mb-2">{{ $booking->service->name }}</h3>
+                                            <h3 class="font-semibold text-[var(--specialist-text)] mb-2">{{ $booking->service?->name ?? '—' }}</h3>
                                             <div class="space-y-1 text-sm text-[var(--specialist-text-dim)]">
                                                 <p class="flex items-center gap-1.5">
                                                     <svg class="w-4 h-4 text-[var(--specialist-inactive)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                                                    متخصص: {{ $booking->specialist->name }}
+                                                    متخصص: {{ $booking->specialist?->name ?? '—' }}
                                                 </p>
                                                 <p class="flex items-center gap-1.5 persian-number">
                                                     <svg class="w-4 h-4 text-[var(--specialist-inactive)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -167,11 +167,11 @@
                                     <div class="rounded-lg p-4" style="border: 1px solid var(--specialist-border);">
                                         <div class="flex justify-between items-start">
                                             <div class="flex-1">
-                                                <h3 class="font-semibold text-[var(--specialist-text)]">{{ $booking->service->name }}</h3>
+                                                <h3 class="font-semibold text-[var(--specialist-text)]">{{ $booking->service?->name ?? '—' }}</h3>
                                                 <div class="mt-2 space-y-1 text-sm text-[var(--specialist-text-dim)]">
                                                     <p class="flex items-center gap-1.5">
                                                         <svg class="w-4 h-4 text-[var(--specialist-inactive)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                                                        {{ $booking->specialist->name }}
+                                                        {{ $booking->specialist?->name ?? '—' }}
                                                     </p>
                                                     <p class="flex items-center gap-1.5 persian-number" dir="ltr">
                                                         <span dir="rtl" class="flex items-center gap-1.5">

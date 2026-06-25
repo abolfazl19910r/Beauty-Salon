@@ -136,7 +136,7 @@
                     </div>
                     <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
                         <span style="color:var(--admin-text-dim);">خدمت</span>
-                        <span class="font-medium" style="color:var(--admin-text);">{{ $booking->service->name ?? '—' }}</span>
+                        <span class="font-medium" style="color:var(--admin-text);">{{ $booking->service?->name ?? '—' ?? '—' }}</span>
                     </div>
                     @if($booking->service)
                         <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
@@ -153,7 +153,7 @@
                         <span class="font-medium" style="color:var(--admin-text);">
                         @if($booking->specialist)
                                 <a href="{{ route('admin.specialists.show', $booking->specialist) }}"
-                                   style="color:var(--admin-accent);">{{ $booking->specialist->name }}</a>
+                                   style="color:var(--admin-accent);">{{ $booking->specialist?->name ?? '—' }}</a>
                             @else
                                 <span style="color:var(--admin-text-light);">—</span>
                             @endif

@@ -71,11 +71,11 @@
                     <div class="space-y-3">
                         <div class="flex justify-between items-center py-2 border-b">
                             <span class="text-gray-600">خدمت:</span>
-                            <span class="font-medium text-gray-900">{{ $booking->service->name }}</span>
+                            <span class="font-medium text-gray-900">{{ $booking->service?->name ?? '—' }}</span>
                         </div>
                         <div class="flex justify-between items-center py-2 border-b">
                             <span class="text-gray-600">متخصص:</span>
-                            <span class="font-medium text-gray-900">{{ $booking->specialist->name }}</span>
+                            <span class="font-medium text-gray-900">{{ $booking->specialist?->name ?? '—' }}</span>
                         </div>
                         <div class="flex justify-between items-center py-2 border-b">
                             <span class="text-gray-600">تاریخ:</span>
@@ -178,11 +178,11 @@
                         <div class="space-y-2 text-sm">
                             <div class="flex justify-between">
                                 <span class="text-gray-600">خدمت:</span>
-                                <span class="font-medium">{{ $booking->service->name }}</span>
+                                <span class="font-medium">{{ $booking->service?->name ?? '—' }}</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">متخصص:</span>
-                                <span class="font-medium">{{ $booking->specialist->name }}</span>
+                                <span class="font-medium">{{ $booking->specialist?->name ?? '—' }}</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">تاریخ و ساعت:</span>

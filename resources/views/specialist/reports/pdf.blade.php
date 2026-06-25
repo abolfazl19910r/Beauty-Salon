@@ -212,7 +212,7 @@
             <tr>
                 <td>{{ $index + 1 }}</td>
                 <td>{{ $booking->user->name }}</td>
-                <td>{{ $booking->service->name ?? '-' }}</td>
+                <td>{{ $booking->service?->name ?? '—' ?? '-' }}</td>
                 <td>{{ \Morilog\Jalali\Jalalian::fromCarbon($booking->booking_time)->format('Y/m/d H:i') }}</td>
                 <td>{{ number_format($booking->prepayment_amount * (1 - ($commissionRate ?? 10) / 100)) }}</td>
                 <td><span class="badge">{{ $statusLabels[$booking->status] ?? $booking->status }}</span></td>

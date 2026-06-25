@@ -52,11 +52,11 @@
             <div class="divide-y divide-[#C9A24B]/8">
                 <div class="flex justify-between items-center px-5 py-3.5 text-sm">
                     <span class="text-[#F8F3E9]/55">خدمت</span>
-                    <span class="font-medium text-[#F8F3E9]">{{ $booking->service ? $booking->service->name : 'خدمت نامشخص' }}</span>
+                    <span class="font-medium text-[#F8F3E9]">{{ $booking->service ? $booking->service?->name ?? '—' : 'خدمت نامشخص' }}</span>
                 </div>
                 <div class="flex justify-between items-center px-5 py-3.5 text-sm">
                     <span class="text-[#F8F3E9]/55">متخصص</span>
-                    <span class="font-medium text-[#F8F3E9]">{{ $booking->specialist ? $booking->specialist->name : 'متخصص نامشخص' }}</span>
+                    <span class="font-medium text-[#F8F3E9]">{{ $booking->specialist ? $booking->specialist?->name ?? '—' : 'متخصص نامشخص' }}</span>
                 </div>
                 <div class="flex justify-between items-center px-5 py-3.5 text-sm">
                     <span class="text-[#F8F3E9]/55">تاریخ و ساعت</span>

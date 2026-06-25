@@ -45,8 +45,8 @@
 
             <div class="bg-[#1A1410]/60 rounded-xl border border-[#C9A24B]/8 p-5 flex items-center justify-between text-right">
                 <div>
-                    <h3 class="font-bold text-[#F8F3E9]">{{ $booking->service->name }}</h3>
-                    <p class="text-[#F8F3E9]/55 text-sm mt-1">متخصص: {{ $booking->specialist->name }}</p>
+                    <h3 class="font-bold text-[#F8F3E9]">{{ $booking->service?->name ?? '—' }}</h3>
+                    <p class="text-[#F8F3E9]/55 text-sm mt-1">متخصص: {{ $booking->specialist?->name ?? '—' }}</p>
                 </div>
                 <div class="text-left">
                     <p class="text-xs text-[#F8F3E9]/45">تاریخ خدمت</p>

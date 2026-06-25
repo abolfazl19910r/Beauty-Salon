@@ -1,13 +1,13 @@
 @extends('layouts.admin')
 
-@section('title', 'جزئیات کیف پول ' . $wallet->specialist->name)
+@section('title', 'جزئیات کیف پول ' . $wallet->specialist?->name ?? '—')
 
 @section('content')
     <div class="container-fluid px-4 py-5">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">مدیریت کیف پول</h1>
-                <p class="text-gray-500 mt-1">متخصص: {{ $wallet->specialist->name }} ({{ $wallet->specialist->phone }})</p>
+                <p class="text-gray-500 mt-1">متخصص: {{ $wallet->specialist?->name ?? '—' }} ({{ $wallet->specialist?->phone ?? '—' }})</p>
             </div>
             <div class="flex gap-3">
                 <a href="{{ route('admin.wallet.index') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">

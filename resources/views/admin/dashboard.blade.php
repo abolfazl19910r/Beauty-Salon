@@ -85,6 +85,7 @@
 @section('content')
     <div class="fade-in">
 
+        {{-- هدر صفحه + فیلتر --}}
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
                 <h1 class="text-xl font-bold" style="color: var(--admin-text);">داشبورد</h1>
@@ -97,8 +98,10 @@
             </div>
         </div>
 
+        {{-- کارت‌های آمار --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
 
+            {{-- نوبت‌های امروز --}}
             <div class="stat-card p-5 flex items-center gap-4">
                 <div class="stat-icon" style="background:#EFF6FF; color:#2563EB;">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -112,6 +115,7 @@
                 <a href="{{ route('admin.bookings.index') }}" class="text-xs px-2 py-1 rounded" style="color:var(--admin-accent); background:var(--admin-accent-light);">مشاهده</a>
             </div>
 
+            {{-- درآمد --}}
             <div class="stat-card p-5 flex items-center gap-4">
                 <div class="stat-icon" style="background:#F0FDF4; color:#16A34A;">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -128,6 +132,7 @@
                 <a href="{{ route('admin.reports.index') }}" class="text-xs px-2 py-1 rounded" style="color:#16A34A; background:#F0FDF4;">گزارش</a>
             </div>
 
+            {{-- کاربران --}}
             <div class="stat-card p-5 flex items-center gap-4">
                 <div class="stat-icon" style="background:#F5F3FF; color:#7C3AED;">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -141,6 +146,7 @@
                 <a href="{{ route('admin.users.index') }}" class="text-xs px-2 py-1 rounded" style="color:#7C3AED; background:#F5F3FF;">مشاهده</a>
             </div>
 
+            {{-- متخصصین --}}
             <div class="stat-card p-5 flex items-center gap-4">
                 <div class="stat-icon" style="background:#FFF7ED; color:#EA580C;">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -155,8 +161,10 @@
             </div>
         </div>
 
+        {{-- ردیف اول: نمودار + خدمات محبوب --}}
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-5">
 
+            {{-- نمودار درآمد --}}
             <div class="section-card xl:col-span-2">
                 <div class="section-header flex justify-between items-center">
                     <span>نمودار درآمد (<span id="revenue-chart-title">امروز</span>)</span>
@@ -168,6 +176,7 @@
                 </div>
             </div>
 
+            {{-- خدمات محبوب --}}
             <div class="section-card">
                 <div class="section-header">خدمات محبوب</div>
                 <div class="p-4 space-y-4" id="popular-services-container">
@@ -191,8 +200,10 @@
             </div>
         </div>
 
+        {{-- ردیف دوم: آمار متخصصین + نوبت‌های اخیر --}}
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-5">
 
+            {{-- جدول متخصصین --}}
             <div class="section-card xl:col-span-2">
                 <div class="section-header">آمار متخصصین</div>
                 <div class="overflow-x-auto">
@@ -258,6 +269,7 @@
                 </div>
             </div>
 
+            {{-- نوبت‌های اخیر --}}
             <div class="section-card">
                 <div class="section-header">نوبت‌های اخیر</div>
                 <div class="divide-y" id="recent-bookings-container" style="border-color:var(--admin-border);">
@@ -270,7 +282,7 @@
                                 </div>
                                 <div class="min-w-0">
                                     <p class="text-sm font-medium truncate" style="color:var(--admin-text);">{{ $booking->user->name ?? 'کاربر ناشناس' }}</p>
-                                    <p class="text-xs truncate" style="color:var(--admin-text-dim);">{{ $booking->service->name ?? '—' }}</p>
+                                    <p class="text-xs truncate" style="color:var(--admin-text-dim);">{{ $booking->service?->name ?? '—' ?? '—' }}</p>
                                 </div>
                             </div>
                             <span class="badge-status flex-shrink-0 mr-2
@@ -297,6 +309,7 @@
             </div>
         </div>
 
+        {{-- ردیف سوم: نقش‌های سیستم --}}
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
             <div class="section-card">
                 <div class="section-header">نقش‌های سیستم</div>
@@ -337,10 +350,13 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
 
+            // رندر اولیه با داده هفته (server-side)
             const initialData = @json($weeklyRevenue);
             renderChart(initialData);
 
+            // --- فیلتر بازه ---
             function updateTimeFilter(period) {
+                // تغییر دکمه فعال
                 ['today','week','month'].forEach(p => {
                     const btn = document.getElementById('filter-' + p);
                     btn.classList.toggle('active', p === period);
@@ -349,6 +365,7 @@
                 const titles = { today: 'امروز', week: '۷ روز گذشته', month: '۳۰ روز گذشته' };
                 document.getElementById('revenue-chart-title').textContent = titles[period];
 
+                // اسپینر نمودار
                 document.getElementById('revenue-chart').innerHTML =
                     '<div class="chart-spinner"><div class="chart-spinner-inner"></div></div>';
 
@@ -369,8 +386,10 @@
                     });
             }
 
+            // expose به global برای onclick
             window.updateTimeFilter = updateTimeFilter;
 
+            // --- رندر نمودار ApexCharts ---
             function renderChart(data) {
                 const el = document.getElementById('revenue-chart');
                 if (!data || !data.length) {
@@ -424,6 +443,7 @@
                 chart.render();
             }
 
+            // --- آپدیت کارت‌های آمار ---
             function updateStats(stats) {
                 const fmt = v => new Intl.NumberFormat('fa-IR').format(v);
                 if (stats.todayBookingsCount !== undefined)
@@ -436,6 +456,7 @@
                     document.getElementById('specialists-count').textContent = fmt(stats.specialistsCount);
             }
 
+            // --- آپدیت خدمات محبوب ---
             function updatePopularServices(services) {
                 const el = document.getElementById('popular-services-container');
                 if (!services || !services.length) {
@@ -458,6 +479,7 @@
                 }).join('');
             }
 
+            // --- آپدیت نوبت‌های اخیر ---
             function updateRecentBookings(bookings) {
                 const el = document.getElementById('recent-bookings-container');
                 if (!bookings || !bookings.length) {
@@ -494,6 +516,7 @@
                 }).join('');
             }
 
+            // اجرای خودکار امروز هنگام load
             updateTimeFilter('today');
         });
     </script>
