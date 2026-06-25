@@ -1,155 +1,186 @@
 @extends('layouts.admin')
-
 @section('title', 'ویرایش خدمت')
 
+@push('styles')
+    <style>
+        .form-label { display:block; font-size:0.875rem; font-weight:500; margin-bottom:6px; color:var(--admin-text-dim); }
+        .form-input,.form-select,.form-textarea { width:100%; border:1px solid var(--admin-border); border-radius:8px; padding:9px 14px; font-size:0.875rem; background:var(--admin-bg); color:var(--admin-text); outline:none; transition:border-color 0.15s; font-family:inherit; }
+        .form-input:focus,.form-select:focus,.form-textarea:focus { border-color:var(--admin-accent); }
+        .form-error { color:#DC2626; font-size:0.78rem; margin-top:4px; }
+        .upload-zone { border:2px dashed var(--admin-border); border-radius:10px; padding:1.5rem; text-align:center; cursor:pointer; transition:border-color 0.15s, background 0.15s; }
+        .upload-zone:hover { border-color:var(--admin-accent); background:var(--admin-accent-light); }
+    </style>
+@endpush
+
 @section('content')
-    <div class="max-w-4xl mx-auto">
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex items-center mb-6 pb-4 border-b">
-                <svg class="w-6 h-6 ml-2 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                </svg>
-                <h1 class="text-2xl font-bold">ویرایش خدمت</h1>
+    <div class="fade-in">
+        <div class="flex justify-between items-center mb-5">
+            <div>
+                <h1 class="text-xl font-bold" style="color:var(--admin-text);">ویرایش خدمت</h1>
+                <p class="text-sm mt-0.5" style="color:var(--admin-text-dim);">{{ $service->name }}</p>
+            </div>
+            <a href="{{ route('admin.services.index') }}"
+               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium"
+               style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
+               onmouseover="this.style.background='var(--admin-border)'"
+               onmouseout="this.style.background='var(--admin-accent-light)'">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                بازگشت
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div class="lg:col-span-2">
+                <form action="{{ route('admin.services.update', $service) }}" method="POST" enctype="multipart/form-data">
+                    @csrf @method('PUT')
+
+                    <div class="rounded-xl p-5 mb-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+                        <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">اطلاعات خدمت</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="form-label">نام خدمت <span style="color:#DC2626;">*</span></label>
+                                <input type="text" name="name" value="{{ old('name', $service->name) }}" class="form-input" required>
+                                @error('name') <p class="form-error">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label class="form-label">دسته‌بندی</label>
+                                <select name="category_id" class="form-select">
+                                    <option value="">بدون دسته‌بندی</option>
+                                    @foreach($categories as $id => $name)
+                                        <option value="{{ $id }}" {{ old('category_id', $service->category_id) == $id ? 'selected' : '' }}>{{ $name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('category_id') <p class="form-error">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label class="form-label">توضیحات</label>
+                                <textarea name="description" rows="4" class="form-textarea">{{ old('description', $service->description) }}</textarea>
+                                @error('description') <p class="form-error">{{ $message }}</p> @enderror
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="form-label">قیمت (تومان) <span style="color:#DC2626;">*</span></label>
+                                    <input type="number" name="price" value="{{ old('price', $service->price) }}" class="form-input" required min="0">
+                                    @error('price') <p class="form-error">{{ $message }}</p> @enderror
+                                </div>
+                                <div>
+                                    <label class="form-label">مدت زمان (دقیقه) <span style="color:#DC2626;">*</span></label>
+                                    <input type="number" name="duration" value="{{ old('duration', $service->duration) }}" class="form-input" required min="1">
+                                    @error('duration') <p class="form-error">{{ $message }}</p> @enderror
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-xl p-5 mb-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+                        <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">تصویر خدمت</h2>
+                        @if($service->image)
+                            <div class="mb-4 flex items-center gap-4">
+                                <img src="{{ $service->image_url }}" alt="{{ $service->name }}"
+                                     class="w-20 h-20 object-cover rounded-lg">
+                                <div class="text-sm" style="color:var(--admin-text-dim);">
+                                    <p>تصویر فعلی</p>
+                                    <p class="text-xs mt-1" style="color:var(--admin-text-light);">برای تغییر، تصویر جدید انتخاب کنید</p>
+                                </div>
+                            </div>
+                        @endif
+                        <label for="image" class="upload-zone block">
+                            <div id="preview-container" class="hidden mb-3">
+                                <img id="image-preview" src="" alt="پیش‌نمایش" class="w-24 h-24 object-cover rounded-lg mx-auto">
+                            </div>
+                            <svg class="w-8 h-8 mx-auto mb-2" id="upload-icon" style="color:var(--admin-text-light);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                            <p class="text-sm font-medium" style="color:var(--admin-accent);" id="file-name-display">
+                                {{ $service->image ? 'انتخاب تصویر جدید' : 'انتخاب تصویر' }}
+                            </p>
+                            <input type="file" id="image" name="image" class="hidden" accept="image/*">
+                        </label>
+                        @error('image') <p class="form-error mt-2">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="flex justify-between p-4 rounded-xl" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+                        <button type="submit"
+                                class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-white"
+                                style="background:var(--admin-accent);"
+                                onmouseover="this.style.background='var(--admin-accent-hover)'"
+                                onmouseout="this.style.background='var(--admin-accent)'">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                                <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+                            </svg>
+                            ذخیره تغییرات
+                        </button>
+                        <a href="{{ route('admin.services.index') }}"
+                           class="px-6 py-2.5 rounded-lg text-sm font-medium"
+                           style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
+                           onmouseover="this.style.background='var(--admin-border)'"
+                           onmouseout="this.style.background='var(--admin-accent-light)'">انصراف</a>
+                    </div>
+                </form>
             </div>
 
-            <form action="{{ route('admin.services.update', ['service' => $service->id]) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
-                @csrf
-                @method('PUT')
-
-                <div class="mb-4">
-                    <label for="name" class="block mb-2 text-sm font-medium text-gray-700">نام خدمت</label>
-                    <input type="text"
-                           id="name"
-                           name="name"
-                           value="{{ old('name', $service->name) }}"
-                           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                           required>
-                    @error('name')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div class="mb-4">
-                    <label for="category_id" class="block mb-2 text-sm font-medium text-gray-700">دسته‌بندی</label>
-                    <select id="category_id"
-                            name="category_id"
-                            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                        <option value="">بدون دسته‌بندی</option>
-                        @foreach($categories as $id => $name)
-                            <option value="{{ $id }}" {{ (old('category_id', $service->category_id) == $id) ? 'selected' : '' }}>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                    @error('category_id')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div class="mb-4">
-                    <label for="description" class="block mb-2 text-sm font-medium text-gray-700">توضیحات</label>
-                    <textarea id="description"
-                              name="description"
-                              rows="4"
-                              class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">{{ old('description', $service->description) }}</textarea>
-                    @error('description')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label for="price" class="block mb-2 text-sm font-medium text-gray-700">قیمت (تومان)</label>
-                        <input type="number"
-                               id="price"
-                               name="price"
-                               value="{{ old('price', $service->price) }}"
-                               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                               required>
-                        @error('price')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div>
-                        <label for="duration" class="block mb-2 text-sm font-medium text-gray-700">مدت زمان (دقیقه)</label>
-                        <input type="number"
-                               id="duration"
-                               name="duration"
-                               value="{{ old('duration', $service->duration) }}"
-                               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                               required>
-                        @error('duration')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-
-                <div class="mb-6">
-                    <label for="image" class="block mb-2 text-sm font-medium text-gray-700">تصویر</label>
-                    @if($service->image)
-                        <div class="mb-2">
-                            <img src="{{ $service->image_url }}"
-                                 alt="{{ $service->name }}"
-                                 class="w-32 h-32 object-cover rounded-lg shadow">
+            {{-- اطلاعات فعلی --}}
+            <div class="space-y-4">
+                <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+                    <h2 class="text-sm font-bold mb-3 pb-2" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">اطلاعات فعلی</h2>
+                    <div class="space-y-2.5 text-sm">
+                        <div class="flex justify-between">
+                            <span style="color:var(--admin-text-dim);">قیمت:</span>
+                            <span class="persian-number font-medium" style="color:#16A34A;">{{ number_format($service->price) }} تومان</span>
                         </div>
-                    @endif
-                    <div class="flex items-center">
-                        <label class="w-full flex flex-col items-center px-4 py-6 bg-white text-blue-500 rounded-lg border border-blue-200 border-dashed cursor-pointer hover:bg-blue-50 transition-colors">
-                            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                <polyline points="21 15 16 10 5 21"></polyline>
-                            </svg>
-                            <span id="file-name-display" class="mt-2 text-sm text-gray-600">انتخاب تصویر جدید</span>
-                            <input type="file"
-                                   id="image"
-                                   name="image"
-                                   class="hidden"
-                                   accept="image/*">
-                        </label>
+                        <div class="flex justify-between">
+                            <span style="color:var(--admin-text-dim);">مدت:</span>
+                            <span class="persian-number" style="color:var(--admin-text);">{{ $service->duration }} دقیقه</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span style="color:var(--admin-text-dim);">دسته‌بندی:</span>
+                            <span style="color:var(--admin-text);">{{ $service->category->name ?? '—' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span style="color:var(--admin-text-dim);">متخصصین:</span>
+                            <span class="persian-number font-bold" style="color:var(--admin-accent);">{{ $service->specialists()->count() }}</span>
+                        </div>
                     </div>
-                    @error('image')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
                 </div>
 
-                <div class="flex justify-between pt-4 border-t">
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:shadow-md transition-all duration-200 flex items-center">
-                        <svg class="w-5 h-5 ml-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                            <polyline points="7 3 7 8 15 8"></polyline>
-                        </svg>
-                        ذخیره تغییرات
-                    </button>
-                    <a href="{{ route('admin.services.index') }}"
-                       class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:shadow-md transition-all duration-200 flex items-center">
-                        <svg class="w-5 h-5 ml-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M19 12H5"></path>
-                            <path d="M12 19l-7-7 7-7"></path>
-                        </svg>
-                        انصراف
-                    </a>
+                @permission('delete-services')
+                <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+                    <h2 class="text-sm font-bold mb-3 pb-2" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">عملیات خطرناک</h2>
+                    <form action="{{ route('admin.services.destroy', $service) }}" method="POST">
+                        @csrf @method('DELETE')
+                        <button type="button" data-confirm-delete data-confirm-message="آیا از حذف خدمت «{{ $service->name }}» اطمینان دارید؟"
+                                class="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm"
+                                style="background:#FEF2F2; color:#991B1B;"
+                                onmouseover="this.style.background='#FEE2E2'"
+                                onmouseout="this.style.background='#FEF2F2'">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                            </svg>
+                            حذف این خدمت
+                        </button>
+                    </form>
                 </div>
-            </form>
+                @endpermission
+            </div>
         </div>
     </div>
 @endsection
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const fileInput = document.getElementById('image');
-            const fileNameDisplay = document.getElementById('file-name-display');
-
-            if (fileInput && fileNameDisplay) {
-                fileInput.addEventListener('change', function() {
-                    const fileName = this.files[0]?.name;
-                    if (fileName) {
-                        fileNameDisplay.textContent = fileName;
-                    }
-                });
-            }
+        document.getElementById('image')?.addEventListener('change', function() {
+            const file = this.files[0];
+            if (!file) return;
+            document.getElementById('file-name-display').textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = e => {
+                document.getElementById('image-preview').src = e.target.result;
+                document.getElementById('preview-container').classList.remove('hidden');
+                document.getElementById('upload-icon').classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
         });
     </script>
 @endpush
