@@ -15,23 +15,23 @@
             </a>
         </div>
 
-        {{--General cards --}}
+        {{-- General cards --}}
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل نظرات</p>
-                <p class="text-2xl font-bold persian-number" style="color:var(--admin-text);">{{ $stats['total'] ?? 0 }}</p>
+                <p class="text-2xl font-bold persian-number" style="color:var(--admin-text);">{{ $totalReviews ?? 0 }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">میانگین امتیاز</p>
-                <p class="text-2xl font-bold persian-number" style="color:#F59E0B;">{{ number_format($stats['average'] ?? 0, 1) }}</p>
+                <p class="text-2xl font-bold persian-number" style="color:#F59E0B;">{{ number_format($averageRating ?? 0, 1) }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">تایید شده</p>
-                <p class="text-2xl font-bold persian-number" style="color:#16A34A;">{{ $stats['approved'] ?? 0 }}</p>
+                <p class="text-2xl font-bold persian-number" style="color:#16A34A;">{{ $approvedReviews ?? 0 ?? 0 }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">ویژه</p>
-                <p class="text-2xl font-bold persian-number" style="color:#1D4ED8;">{{ $stats['featured'] ?? 0 }}</p>
+                <p class="text-2xl font-bold persian-number" style="color:#1D4ED8;">{{ $featuredReviews ?? 0 ?? 0 }}</p>
             </div>
         </div>
 
@@ -45,8 +45,8 @@
                 <div class="p-4 space-y-3">
                     @for($i=5; $i>=1; $i--)
                         @php
-                            $count = $stats['by_rating'][$i] ?? 0;
-                            $total = $stats['total'] ?? 1;
+                            $count = $ratingDistribution[$i] ?? 0 ?? 0;
+                            $total = $totalReviews ?? 1;
                             $pct   = $total > 0 ? ($count / $total) * 100 : 0;
                         @endphp
                         <div class="flex items-center gap-3 text-sm">
@@ -67,7 +67,7 @@
                     برترین متخصصین (بر اساس نظرات)
                 </div>
                 <div class="divide-y" style="border-color:var(--admin-border);">
-                    @forelse($stats['top_specialists'] ?? [] as $specialist)
+                    @forelse($topSpecialists ?? [] as $specialist)
                         <div class="flex items-center justify-between px-4 py-3 text-sm">
                             <div class="flex items-center gap-2">
                                 <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
