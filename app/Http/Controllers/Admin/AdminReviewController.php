@@ -211,16 +211,20 @@ class AdminReviewController extends Controller
             ->get()
             ->pluck('count', 'overall_rating');
 
-        $topSpecialists = Specialist::select('specialists.*')
-            ->join('reviews', 'specialists.id', '=', 'reviews.specialist_id')
-            ->where('reviews.is_approved', true)
-            ->groupBy('specialists.id')
-            ->selectRaw('AVG(reviews.overall_rating) as avg_rating')
-            ->selectRaw('COUNT(reviews.id) as review_count')
-            ->having('review_count', '>=', 3)
-            ->orderBy('avg_rating', 'desc')
+        $topSpecialists = Specialist::withCount(['reviews' => function ($q) {
+            $q->where('is_approved', true);
+        }])
+            ->withAvg(['reviews' => function ($q) {
+                $q->where('is_approved', true);
+            }], 'overall_rating')
+            ->having('reviews_count', '>=', 1)
+            ->orderByDesc('reviews_avg_overall_rating')
             ->limit(10)
-            ->get();
+            ->get()
+            ->map(function ($s) {
+                $s->reviews_avg_overall_rating = round($s->reviews_avg_overall_rating ?? 0, 1);
+                return $s;
+            });
 
         $recentNegativeReviews = Review::with(['user', 'specialist', 'service'])
             ->negative()
