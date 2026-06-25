@@ -69,12 +69,12 @@
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0 h-10 w-10">
                                         <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold">
-                                            {{ mb_substr($wallet->specialist->name, 0, 1) }}
+                                            {{ mb_substr($wallet->specialist?->name ?? '؟' ?? '—', 0, 1) }}
                                         </div>
                                     </div>
                                     <div class="mr-4">
-                                        <div class="text-sm font-medium text-gray-900">{{ $wallet->specialist->name }}</div>
-                                        <div class="text-sm text-gray-500">{{ $wallet->specialist->phone }}</div>
+                                        <div class="text-sm font-medium text-gray-900">{{ $wallet->specialist?->name ?? '—' }}</div>
+                                        <div class="text-sm text-gray-500">{{ $wallet->specialist?->phone ?? '—' }}</div>
                                     </div>
                                 </div>
                             </td>
