@@ -63,6 +63,11 @@ class Specialist extends Model
         return $this->hasMany(Booking::class, 'specialist_id');
     }
 
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(\App\Models\Review::class, 'specialist_id');
+    }
+
     public function services(): BelongsToMany
     {
         return $this->belongsToMany(BeautyService::class, 'specialist_services');
