@@ -85,7 +85,10 @@
                             </div>
                         @endif
                         <label for="image" class="upload-zone block">
-                            <svg class="w-8 h-8 mx-auto mb-2" style="color:var(--admin-text-light);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <div id="preview-container" class="hidden mb-3">
+                                <img id="image-preview" src="" alt="پیش‌نمایش" class="w-24 h-24 object-cover rounded-lg mx-auto">
+                            </div>
+                            <svg class="w-8 h-8 mx-auto mb-2" id="upload-icon" style="color:var(--admin-text-light);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                 <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
                             </svg>
                             <p class="text-sm font-medium" style="color:var(--admin-accent);" id="file-name-display">
@@ -168,8 +171,16 @@
 @push('scripts')
     <script>
         document.getElementById('image')?.addEventListener('change', function() {
-            const name = this.files[0]?.name;
-            if (name) document.getElementById('file-name-display').textContent = name;
+            const file = this.files[0];
+            if (!file) return;
+            document.getElementById('file-name-display').textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = e => {
+                document.getElementById('image-preview').src = e.target.result;
+                document.getElementById('preview-container').classList.remove('hidden');
+                document.getElementById('upload-icon').classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
         });
     </script>
 @endpush

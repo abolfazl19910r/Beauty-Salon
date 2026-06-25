@@ -52,7 +52,7 @@
                             </span>
                             </td>
                             <td class="px-4 py-3 text-sm" style="color:var(--admin-text-dim);">
-                                {{ Str::limit($category->description ?? '', 60) ?: '—' }}
+                                {{ \Illuminate\Support\Str::limit($category->description ?? '', 60) ?: '—' }}
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-1.5">

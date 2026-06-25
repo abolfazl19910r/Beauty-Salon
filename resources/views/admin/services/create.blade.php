@@ -76,7 +76,10 @@
                     <div class="rounded-xl p-5 mb-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                         <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">تصویر خدمت</h2>
                         <label for="image" class="upload-zone block">
-                            <svg class="w-10 h-10 mx-auto mb-3" style="color:var(--admin-text-light);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <div id="preview-container" class="hidden mb-3">
+                                <img id="image-preview" src="" alt="پیش‌نمایش" class="w-24 h-24 object-cover rounded-lg mx-auto">
+                            </div>
+                            <svg class="w-10 h-10 mx-auto mb-3" id="upload-icon" style="color:var(--admin-text-light);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                 <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
                             </svg>
                             <p class="text-sm font-medium" style="color:var(--admin-accent);" id="file-name-display">انتخاب تصویر</p>
@@ -140,8 +143,16 @@
 @push('scripts')
     <script>
         document.getElementById('image')?.addEventListener('change', function() {
-            const name = this.files[0]?.name;
-            if (name) document.getElementById('file-name-display').textContent = name;
+            const file = this.files[0];
+            if (!file) return;
+            document.getElementById('file-name-display').textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = e => {
+                document.getElementById('image-preview').src = e.target.result;
+                document.getElementById('preview-container').classList.remove('hidden');
+                document.getElementById('upload-icon').classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
         });
     </script>
 @endpush
