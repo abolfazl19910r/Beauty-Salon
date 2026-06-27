@@ -20,7 +20,7 @@
             </a>
         </div>
 
-        {{-- بنر وضعیت --}}
+        {{-- Status banner --}}
         @php
             $statusMap=['pending'=>['در انتظار بررسی','#FFFBEB','#92400E','#FCD34D'],'approved'=>['تایید شده','#EFF6FF','#1D4ED8','#93C5FD'],'paid'=>['پرداخت شده','#F0FDF4','#166534','#86EFAC'],'rejected'=>['رد شده','#FEF2F2','#991B1B','#FCA5A5']];
             $st=$statusMap[$withdrawal->status]??[$withdrawal->status,'#F1F5F9','#475569','#CBD5E1'];
@@ -36,7 +36,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-            {{-- اطلاعات درخواست --}}
+            {{-- Request information --}}
             <div class="lg:col-span-2 space-y-5">
                 <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">اطلاعات متخصص</h2>
@@ -88,13 +88,13 @@
                 </div>
             </div>
 
-            {{-- عملیات --}}
+            {{-- Operation --}}
             <div class="space-y-4">
                 @if($withdrawal->status === 'pending')
                     <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                         <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">عملیات</h2>
                         <div class="space-y-2">
-                            <form action="{{ route('admin.wallet.approve-withdrawal', $withdrawal) }}" method="POST">
+                            <form action="{{ route('admin.wallet.withdrawals.approve', $withdrawal) }}" method="POST">
                                 @csrf @method('PUT')
                                 <button type="submit"
                                         class="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-white"
@@ -105,7 +105,7 @@
                                     تایید و پردازش پرداخت
                                 </button>
                             </form>
-                            <form action="{{ route('admin.wallet.reject-withdrawal', $withdrawal) }}" method="POST">
+                            <form action="{{ route('admin.wallet.withdrawals.reject', $withdrawal) }}" method="POST">
                                 @csrf @method('PUT')
                                 <div class="mb-2">
                             <textarea name="rejection_reason" rows="2" placeholder="دلیل رد (اختیاری)"
@@ -129,7 +129,7 @@
                 @elseif($withdrawal->status === 'approved')
                     <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                         <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">تایید پرداخت</h2>
-                        <form action="{{ route('admin.wallet.mark-paid', $withdrawal) }}" method="POST">
+                        <form action="{{ route('admin.wallet.withdrawals.auto-payout', $withdrawal) }}" method="POST">
                             @csrf @method('PUT')
                             <div class="mb-3">
                                 <label class="block text-xs font-medium mb-1.5" style="color:var(--admin-text-dim);">شماره پیگیری</label>

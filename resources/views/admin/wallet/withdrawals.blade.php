@@ -20,7 +20,7 @@
             </a>
         </div>
 
-        {{-- آمار --}}
+        {{-- Statistics --}}
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid #F59E0B;">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">در انتظار تایید</p>
@@ -40,7 +40,7 @@
             </div>
         </div>
 
-        {{-- فیلتر وضعیت --}}
+        {{-- Status filter --}}
         <div class="flex flex-wrap gap-2 mb-4">
             @foreach(['all'=>'همه','pending'=>'در انتظار','approved'=>'تایید شده','paid'=>'پرداخت شده','rejected'=>'رد شده'] as $val => $label)
                 <a href="{{ route('admin.wallet.withdrawals', ['status'=>$val=='all'?'':$val]) }}"
@@ -51,7 +51,7 @@
             @endforeach
         </div>
 
-        {{-- جدول --}}
+        {{-- Table --}}
         <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -105,7 +105,7 @@
                                   style="background:{{ $st[1] }}; color:{{ $st[2] }};">{{ $st[0] }}</span>
                             </td>
                             <td class="px-4 py-3">
-                                <a href="{{ route('admin.wallet.withdrawal-show', $withdrawal) }}"
+                                <a href="{{ route('admin.wallet.withdrawals.show', $withdrawal) }}"
                                    class="text-xs px-2.5 py-1 rounded-lg"
                                    style="color:var(--admin-accent); background:var(--admin-accent-light);"
                                    onmouseover="this.style.background='var(--admin-border)'"
