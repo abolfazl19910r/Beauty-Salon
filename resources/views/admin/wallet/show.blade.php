@@ -1,157 +1,192 @@
 @extends('layouts.admin')
-
-@section('title', 'جزئیات کیف پول ' . $wallet->specialist?->name ?? '—')
+@section('title', 'کیف پول ' . ($wallet->specialist?->name ?? ''))
 
 @section('content')
-    <div class="container-fluid px-4 py-5">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div class="fade-in">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900">مدیریت کیف پول</h1>
-                <p class="text-gray-500 mt-1">متخصص: {{ $wallet->specialist?->name ?? '—' }} ({{ $wallet->specialist?->phone ?? '—' }})</p>
+                <h1 class="text-xl font-bold" style="color:var(--admin-text);">کیف پول متخصص</h1>
+                <p class="text-sm mt-0.5" style="color:var(--admin-text-dim);">{{ $wallet->specialist?->name ?? '—' }} — {{ $wallet->specialist?->phone ?? '—' }}</p>
             </div>
-            <div class="flex gap-3">
-                <a href="{{ route('admin.wallet.index') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-                    بازگشت به لیست
-                </a>
-                <button onclick="document.getElementById('adjustmentModal').classList.remove('hidden')" class="inline-flex items-center px-4 py-2 bg-pink-600 text-white rounded-lg text-sm font-medium hover:bg-pink-700 transition-colors">
-                    تعدیل دستی موجودی
+            <div class="flex gap-2">
+                <button onclick="document.getElementById('adjustmentModal').classList.remove('hidden')"
+                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white"
+                        style="background:#7C3AED;"
+                        onmouseover="this.style.background='#6D28D9'"
+                        onmouseout="this.style.background='#7C3AED'">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    تعدیل دستی
                 </button>
+                <a href="{{ route('admin.wallet.index') }}"
+                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium"
+                   style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
+                   onmouseover="this.style.background='var(--admin-border)'"
+                   onmouseout="this.style.background='var(--admin-accent-light)'">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                    بازگشت
+                </a>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <p class="text-sm text-gray-500 mb-1">موجودی فعلی</p>
-                <p class="text-2xl font-bold text-gray-900 persian-number">{{ number_format($wallet->balance) }} <span class="text-xs font-normal text-gray-500">تومان</span></p>
+        {{-- Statistics cards --}}
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid var(--admin-accent);">
+                <p class="text-xs mb-1" style="color:var(--admin-text-dim);">موجودی فعلی</p>
+                <p class="text-xl font-bold persian-number" style="color:var(--admin-text);">{{ number_format($wallet->balance) }}</p>
+                <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">تومان</p>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <p class="text-sm text-gray-500 mb-1">در انتظار تسویه</p>
-                <p class="text-2xl font-bold text-blue-600 persian-number">{{ number_format($wallet->pending_amount) }} <span class="text-xs font-normal text-gray-500">تومان</span></p>
+            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid #F59E0B;">
+                <p class="text-xs mb-1" style="color:var(--admin-text-dim);">در انتظار تسویه</p>
+                <p class="text-xl font-bold persian-number" style="color:#D97706;">{{ number_format($wallet->pending_amount) }}</p>
+                <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">تومان</p>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <p class="text-sm text-gray-500 mb-1">کل درآمد (ناخالص)</p>
-                <p class="text-2xl font-bold text-green-600 persian-number">{{ number_format($wallet->total_earned) }} <span class="text-xs font-normal text-gray-500">تومان</span></p>
+            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid #16A34A;">
+                <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل درآمد</p>
+                <p class="text-xl font-bold persian-number" style="color:#16A34A;">{{ number_format($wallet->total_earned) }}</p>
+                <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">تومان</p>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <p class="text-sm text-gray-500 mb-1">کل برداشت شده</p>
-                <p class="text-2xl font-bold text-orange-600 persian-number">{{ number_format($wallet->total_withdrawn) }} <span class="text-xs font-normal text-gray-500">تومان</span></p>
+            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid #DC2626;">
+                <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل برداشت شده</p>
+                <p class="text-xl font-bold persian-number" style="color:#DC2626;">{{ number_format($wallet->total_withdrawn) }}</p>
+                <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">تومان</p>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-1 space-y-6">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2">اطلاعات حساب بانکی</h3>
-                    <div class="space-y-4">
-                        <div>
-                            <p class="text-xs text-gray-500">شماره شبا</p>
-                            <p class="text-sm font-mono font-bold text-gray-800 dir-ltr text-right">{{ $wallet->formatted_iban ?? 'ثبت نشده' }}</p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-gray-500">صاحب حساب</p>
-                            <p class="text-sm font-medium text-gray-800">{{ $wallet->account_holder_name ?? '-' }}</p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-gray-500">نام بانک</p>
-                            <p class="text-sm font-medium text-gray-800">{{ $wallet->bank_name ?? '-' }}</p>
-                        </div>
-                        <div class="pt-2">
-                            @if($wallet->iban_verified)
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                تایید شده
-                            </span>
-                            @else
-                                <form action="{{ route('admin.wallet.verify-iban', $wallet) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="w-full py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors">
-                                        تایید دستی شماره شبا
-                                    </button>
-                                </form>
-                            @endif
-                        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+            {{-- Bank information --}}
+            <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+                <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">اطلاعات حساب بانکی</h2>
+                <div class="space-y-3 text-sm">
+                    <div>
+                        <p class="text-xs mb-1" style="color:var(--admin-text-dim);">شماره شبا</p>
+                        <p class="font-mono font-bold text-xs" dir="ltr" style="color:var(--admin-text);">{{ $wallet->formatted_iban ?? 'ثبت نشده' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs mb-1" style="color:var(--admin-text-dim);">صاحب حساب</p>
+                        <p style="color:var(--admin-text);">{{ $wallet->account_holder_name ?? '—' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs mb-1" style="color:var(--admin-text-dim);">نام بانک</p>
+                        <p style="color:var(--admin-text);">{{ $wallet->bank_name ?? '—' }}</p>
+                    </div>
+                    <div class="pt-2">
+                        @if($wallet->iban_verified)
+                            <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:#F0FDF4; color:#166534;">✓ تایید شده</span>
+                        @elseif($wallet->iban)
+                            <form action="{{ route('admin.wallet.verify-iban', $wallet) }}" method="POST">
+                                @csrf
+                                <button type="submit"
+                                        class="w-full py-2 rounded-lg text-xs font-bold transition-colors"
+                                        style="background:var(--admin-accent-light); color:var(--admin-accent);"
+                                        onmouseover="this.style.background='var(--admin-border)'"
+                                        onmouseout="this.style.background='var(--admin-accent-light)'">
+                                    تایید دستی شماره شبا
+                                </button>
+                            </form>
+                        @else
+                            <span class="text-xs" style="color:var(--admin-text-light);">شبایی ثبت نشده</span>
+                        @endif
                     </div>
                 </div>
             </div>
 
-            <div class="lg:col-span-2">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="p-6 border-b border-gray-100">
-                        <h3 class="text-lg font-bold text-gray-900">تراکنش‌های اخیر</h3>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-right">
-                            <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
-                            <tr>
-                                <th class="px-6 py-4 font-medium">تاریخ</th>
-                                <th class="px-6 py-4 font-medium">نوع</th>
-                                <th class="px-6 py-4 font-medium">مبلغ</th>
-                                <th class="px-6 py-4 font-medium">توضیحات</th>
-                                <th class="px-6 py-4 font-medium">موجودی بعد</th>
+            {{-- Recent transactions --}}
+            <div class="lg:col-span-2 rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+                <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
+                    تراکنش‌های اخیر
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                        <tr style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border);">
+                            <th class="px-4 py-2.5 text-right font-medium" style="color:var(--admin-text-dim);">تاریخ</th>
+                            <th class="px-4 py-2.5 text-right font-medium" style="color:var(--admin-text-dim);">نوع</th>
+                            <th class="px-4 py-2.5 text-right font-medium" style="color:var(--admin-text-dim);">مبلغ</th>
+                            <th class="px-4 py-2.5 text-right font-medium" style="color:var(--admin-text-dim);">توضیحات</th>
+                            <th class="px-4 py-2.5 text-right font-medium" style="color:var(--admin-text-dim);">موجودی بعد</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @forelse($wallet->transactions()->latest()->paginate(10) as $transaction)
+                            <tr style="border-top:1px solid var(--admin-border);"
+                                onmouseover="this.style.background='var(--admin-accent-light)'"
+                                onmouseout="this.style.background=''">
+                                <td class="px-4 py-2.5 persian-number text-xs" style="color:var(--admin-text-dim);">{{ verta($transaction->created_at)->format('Y/m/d H:i') }}</td>
+                                <td class="px-4 py-2.5">
+                                <span class="px-2 py-0.5 rounded-md text-xs font-medium"
+                                      style="{{ $transaction->type=='income' ? 'background:#F0FDF4; color:#166534;' : ($transaction->type=='withdrawal' ? 'background:#FEF2F2; color:#991B1B;' : 'background:var(--admin-accent-light); color:var(--admin-accent);') }}">
+                                    {{ $transaction->type_text }}
+                                </span>
+                                </td>
+                                <td class="px-4 py-2.5 font-bold persian-number" style="color:{{ $transaction->amount >= 0 ? '#16A34A' : '#DC2626' }};">
+                                    {{ number_format($transaction->amount) }}
+                                </td>
+                                <td class="px-4 py-2.5 max-w-xs truncate" style="color:var(--admin-text-dim);">{{ $transaction->description }}</td>
+                                <td class="px-4 py-2.5 persian-number text-xs" style="color:var(--admin-text-dim);">{{ number_format($transaction->balance_after) }}</td>
                             </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100">
-                            @forelse($wallet->transactions()->latest()->paginate(10) as $transaction)
-                                <tr class="hover:bg-gray-50 transition-colors text-sm">
-                                    <td class="px-6 py-4 whitespace-nowrap persian-number text-gray-600">
-                                        {{ jdate($transaction->created_at)->format('Y/m/d H:i') }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 py-1 rounded-md text-xs font-medium
-                                            @if($transaction->type == 'income') bg-green-50 text-green-700
-                                            @elseif($transaction->type == 'withdrawal') bg-red-50 text-red-700
-                                            @else bg-gray-100 text-gray-700 @endif">
-                                            {{ $transaction->type_text }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap font-bold persian-number {{ $transaction->amount >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                                        {{ number_format($transaction->amount) }}
-                                    </td>
-                                    <td class="px-6 py-4 text-gray-500 max-w-xs truncate">
-                                        {{ $transaction->description }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-gray-400 persian-number">
-                                        {{ number_format($transaction->balance_after) }}
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="px-6 py-10 text-center text-gray-400">تراکنشی یافت نشد.</td>
-                                </tr>
-                            @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                        @empty
+                            <tr><td colspan="5" class="px-4 py-8 text-center text-sm" style="color:var(--admin-text-dim);">تراکنشی یافت نشد</td></tr>
+                        @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="adjustmentModal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="this.parentElement.parentElement.classList.add('hidden')"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white rounded-lg text-right overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                <form action="{{ route('admin.wallet.adjust', $wallet) }}" method="POST">
-                    @csrf
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-bold text-gray-900 mb-4" id="modal-title">تعدیل دستی موجودی</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">مبلغ (تومان)</label>
-                                <input type="number" name="amount" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500" placeholder="مثلاً 50000 برای افزایش یا -50000 برای کاهش">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">علت تعدیل</label>
-                                <textarea name="description" required rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500" placeholder="دلیل این تغییر را بنویسید..."></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
-                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-pink-600 text-base font-medium text-white hover:bg-pink-700 focus:outline-none sm:w-auto sm:text-sm">ثبت تغییرات</button>
-                        <button type="button" onclick="document.getElementById('adjustmentModal').classList.add('hidden')" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm">انصراف</button>
-                    </div>
-                </form>
+    {{-- Modal modifier --}}
+    <div id="adjustmentModal" class="hidden fixed inset-0 z-50 flex items-center justify-center"
+         style="background:rgba(15,23,42,0.5);"
+         onclick="if(event.target===this)this.classList.add('hidden')">
+        <div class="rounded-xl shadow-xl w-full max-w-md mx-4 fade-in" style="background:var(--admin-surface);">
+            <div class="flex items-center justify-between px-5 py-4" style="border-bottom:1px solid var(--admin-border);">
+                <h2 class="text-base font-bold" style="color:var(--admin-text);">تعدیل دستی موجودی</h2>
+                <button type="button" onclick="document.getElementById('adjustmentModal').classList.add('hidden')"
+                        class="w-7 h-7 rounded flex items-center justify-center"
+                        style="color:var(--admin-text-dim);"
+                        onmouseover="this.style.background='var(--admin-accent-light)'"
+                        onmouseout="this.style.background=''">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
             </div>
+            <form action="{{ route('admin.wallet.adjust', $wallet) }}" method="POST">
+                @csrf
+                <div class="p-5 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1.5" style="color:var(--admin-text-dim);">مبلغ (تومان)</label>
+                        <input type="number" name="amount" required
+                               class="w-full rounded-lg px-3 py-2 text-sm outline-none transition"
+                               style="border:1px solid var(--admin-border); background:var(--admin-bg); color:var(--admin-text);"
+                               onfocus="this.style.borderColor='var(--admin-accent)'"
+                               onblur="this.style.borderColor='var(--admin-border)'"
+                               placeholder="مثبت برای افزایش، منفی برای کاهش">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1.5" style="color:var(--admin-text-dim);">علت تعدیل</label>
+                        <textarea name="description" required rows="3"
+                                  class="w-full rounded-lg px-3 py-2 text-sm outline-none transition font-inherit"
+                                  style="border:1px solid var(--admin-border); background:var(--admin-bg); color:var(--admin-text); font-family:inherit;"
+                                  onfocus="this.style.borderColor='var(--admin-accent)'"
+                                  onblur="this.style.borderColor='var(--admin-border)'"
+                                  placeholder="دلیل این تغییر را بنویسید..."></textarea>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 px-5 py-4" style="border-top:1px solid var(--admin-border);">
+                    <button type="button" onclick="document.getElementById('adjustmentModal').classList.add('hidden')"
+                            class="px-4 py-2 rounded-lg text-sm"
+                            style="background:var(--admin-accent-light); color:var(--admin-text-dim);">انصراف</button>
+                    <button type="submit"
+                            class="px-4 py-2 rounded-lg text-sm font-medium text-white"
+                            style="background:var(--admin-accent);"
+                            onmouseover="this.style.background='var(--admin-accent-hover)'"
+                            onmouseout="this.style.background='var(--admin-accent)'">ثبت تغییرات</button>
+                </div>
+            </form>
         </div>
     </div>
 @endsection
