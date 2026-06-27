@@ -1,136 +1,133 @@
 @extends('layouts.admin')
-
 @section('title', 'درخواست‌های برداشت')
 
 @section('content')
-    <div class="space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-white rounded-xl shadow-sm p-6 border-r-4 border-yellow-400">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="text-sm text-gray-500">درخواست‌های منتظر بررسی</p>
-                        <h3 class="text-2xl font-bold text-gray-800 mt-1 persian-number">{{ $pendingCount }}</h3>
-                    </div>
-                    <div class="p-3 bg-yellow-50 rounded-full text-yellow-600">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                </div>
-            </div>
+    <div class="fade-in">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
+            <h1 class="text-xl font-bold flex items-center gap-2" style="color:var(--admin-text);">
+                <svg class="w-5 h-5" style="color:var(--admin-accent);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                درخواست‌های برداشت
+            </h1>
+            <a href="{{ route('admin.wallet.index') }}"
+               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium"
+               style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
+               onmouseover="this.style.background='var(--admin-border)'"
+               onmouseout="this.style.background='var(--admin-accent-light)'">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                کیف پول‌ها
+            </a>
+        </div>
 
-            <div class="bg-white rounded-xl shadow-sm p-6 border-r-4 border-blue-500">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="text-sm text-gray-500">مجموع مبلغ در انتظار</p>
-                        <h3 class="text-2xl font-bold text-gray-800 mt-1 persian-number">{{ number_format($pendingAmount) }} <span class="text-xs font-normal">تومان</span></h3>
-                    </div>
-                    <div class="p-3 bg-blue-50 rounded-full text-blue-600">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                    </div>
-                </div>
+        {{-- Statistics --}}
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
+            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid #F59E0B;">
+                <p class="text-xs mb-1" style="color:var(--admin-text-dim);">در انتظار تایید</p>
+                <p class="text-2xl font-bold persian-number" style="color:#D97706;">{{ $pendingCount }}</p>
+                <p class="text-xs mt-0.5 persian-number" style="color:var(--admin-text-light);">{{ number_format($pendingAmount) }} تومان</p>
             </div>
-
-            <div class="bg-white rounded-xl shadow-sm p-6 border-r-4 border-green-500">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="text-sm text-gray-500">تسویه شده امروز</p>
-                        <h3 class="text-2xl font-bold text-gray-800 mt-1 persian-number">{{ $completedToday }} <span class="text-xs font-normal">مورد</span></h3>
-                    </div>
-                    <div class="p-3 bg-green-50 rounded-full text-green-600">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                </div>
+            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid #16A34A;">
+                <p class="text-xs mb-1" style="color:var(--admin-text-dim);">تکمیل شده امروز</p>
+                <p class="text-2xl font-bold persian-number" style="color:#16A34A;">{{ $completedToday }}</p>
+            </div>
+            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid var(--admin-accent);">
+                <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل درخواست‌ها</p>
+                <p class="text-2xl font-bold persian-number" style="color:var(--admin-text);">{{ $withdrawals->total() }}</p>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm p-4">
-            <form method="GET" action="{{ route('admin.wallet.withdrawals') }}" class="flex flex-col md:flex-row gap-4 items-end">
-                <div class="w-full md:w-1/4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">وضعیت</label>
-                    <select name="status" class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">همه وضعیت‌ها</option>
-                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>در انتظار بررسی</option>
-                        <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>تکمیل شده</option>
-                        <option value="failed" {{ request('status') == 'failed' ? 'selected' : '' }}>ناموفق/رد شده</option>
-                    </select>
-                </div>
-                <div class="w-full md:w-1/4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">روش واریز</label>
-                    <select name="method" class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">همه روش‌ها</option>
-                        <option value="iban" {{ request('method') == 'iban' ? 'selected' : '' }}>شبا</option>
-                        <option value="instant" {{ request('method') == 'instant' ? 'selected' : '' }}>فوری</option>
-                    </select>
-                </div>
-                <div class="w-full md:w-1/3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">جستجو</label>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="کد رهگیری، نام متخصص..." class="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div>
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">فیلتر</button>
-                </div>
-            </form>
+        {{-- Status filter --}}
+        <div class="flex flex-wrap gap-2 mb-4">
+            @foreach([
+                ''           => 'همه',
+                'pending'    => 'در انتظار',
+                'processing' => 'در حال پردازش',
+                'completed'  => 'تکمیل شده',
+                'failed'     => 'ناموفق',
+            ] as $val => $label)
+                <a href="{{ route('admin.wallet.withdrawals', array_filter(['status' => $val])) }}"
+                   class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                   style="{{ request('status', '') === $val ? 'background:var(--admin-accent);color:#fff;' : 'background:var(--admin-accent-light);color:var(--admin-text-dim);' }}">
+                    {{ $label }}
+                </a>
+            @endforeach
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+        {{-- Table  --}}
+        <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">کد پیگیری</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">متخصص</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">مبلغ خالص</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">روش</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">وضعیت</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">تاریخ</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">عملیات</th>
+                <table class="w-full text-sm">
+                    <thead>
+                    <tr style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border);">
+                        <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">#</th>
+                        <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">متخصص</th>
+                        <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">مبلغ</th>
+                        <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">شبا</th>
+                        <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">تاریخ</th>
+                        <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">وضعیت</th>
+                        <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">عملیات</th>
                     </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($withdrawals as $withdrawal)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">
-                                {{ $withdrawal->reference_code }}
+                    <tbody>
+                    @forelse($withdrawals as $item)
+                        @php
+                            $statusMap = [
+                                'pending'    => ['در انتظار',       '#FFFBEB', '#92400E'],
+                                'processing' => ['در حال پردازش',   '#EFF6FF', '#1D4ED8'],
+                                'completed'  => ['تکمیل شده',       '#F0FDF4', '#166534'],
+                                'failed'     => ['ناموفق',           '#FEF2F2', '#991B1B'],
+                            ];
+                            $st = $statusMap[$item->status] ?? [$item->status, '#F1F5F9', '#475569'];
+                        @endphp
+                        <tr style="border-bottom:1px solid var(--admin-border);"
+                            onmouseover="this.style.background='var(--admin-accent-light)'"
+                            onmouseout="this.style.background=''">
+                            <td class="px-4 py-3 text-xs persian-number" style="color:var(--admin-text-dim);">{{ $item->id }}</td>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                                         style="background:var(--admin-accent); color:#fff;">
+                                        {{ mb_substr($item->specialist?->name ?? '؟', 0, 1) }}
+                                    </div>
+                                    <span style="color:var(--admin-text);">{{ $item->specialist?->name ?? '—' }}</span>
+                                </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ $withdrawal->specialist->name }}</div>
-                                <div class="text-xs text-gray-500">{{ $withdrawal->specialist->phone }}</div>
+                            <td class="px-4 py-3 font-bold persian-number" style="color:var(--admin-text);">
+                                {{ number_format($item->amount) }}
+                                <span class="text-xs font-normal" style="color:var(--admin-text-light);"> ت</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-bold text-gray-900 persian-number">{{ number_format($withdrawal->net_amount) }}</span>
-                                <span class="text-xs text-gray-500">تومان</span>
+                            <td class="px-4 py-3 text-xs font-mono" dir="ltr" style="color:var(--admin-text-dim);">
+                                {{ $item->formatted_iban ?? $item->iban ?? '—' }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $withdrawal->method_text }}
+                            <td class="px-4 py-3 text-xs persian-number" style="color:var(--admin-text-dim);">
+                                {{ verta($item->created_at)->format('Y/m/d') }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-{{ $withdrawal->status_badge_color }}-100 text-{{ $withdrawal->status_badge_color }}-800">
-                                    {{ $withdrawal->status_text }}
-                                </span>
+                            <td class="px-4 py-3">
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                  style="background:{{ $st[1] }}; color:{{ $st[2] }};">{{ $st[0] }}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 persian-number">
-                                {{ verta($withdrawal->created_at)->format('Y/m/d H:i') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{{ route('admin.wallet.withdrawals.show', $withdrawal) }}" class="text-blue-600 hover:text-blue-900">بررسی</a>
+                            <td class="px-4 py-3">
+                                <a href="{{ route('admin.wallet.withdrawals.show', $item) }}"
+                                   class="text-xs px-2.5 py-1 rounded-lg"
+                                   style="color:var(--admin-accent); background:var(--admin-accent-light);"
+                                   onmouseover="this.style.background='var(--admin-border)'"
+                                   onmouseout="this.style.background='var(--admin-accent-light)'">بررسی</a>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-4 text-center text-gray-500">هیچ درخواست برداشتی یافت نشد.</td>
+                            <td colspan="7" class="px-4 py-12 text-center text-sm" style="color:var(--admin-text-dim);">درخواستی یافت نشد</td>
                         </tr>
                     @endforelse
                     </tbody>
                 </table>
             </div>
-            <div class="px-6 py-4 border-t border-gray-200">
-                {{ $withdrawals->links() }}
-            </div>
+            @if($withdrawals->hasPages())
+                <div class="px-4 py-3" style="border-top:1px solid var(--admin-border);">
+                    {{ $withdrawals->withQueryString()->links() }}
+                </div>
+            @endif
         </div>
     </div>
 @endsection
