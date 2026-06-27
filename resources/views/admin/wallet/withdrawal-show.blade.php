@@ -20,7 +20,7 @@
             </a>
         </div>
 
-        {{-- بنر وضعیت --}}
+        {{-- Status banner --}}
         @php
             $statusMap = [
                 'pending'    => ['در انتظار بررسی', '#FFFBEB', '#92400E', '#FCD34D'],
@@ -43,7 +43,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-            {{-- اطلاعات درخواست --}}
+            {{-- Request information --}}
             <div class="lg:col-span-2 space-y-5">
                 <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">اطلاعات متخصص</h2>
@@ -121,7 +121,7 @@
                 </div>
             </div>
 
-            {{-- عملیات --}}
+            {{-- Operation --}}
             <div class="space-y-4">
                 @if(in_array($withdrawalRequest->status, ['pending', 'processing']))
                     <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
@@ -196,7 +196,7 @@
                     </div>
                 @endif
 
-                {{-- اطلاعات پردازش‌کننده --}}
+                {{-- Processor information --}}
                 @if($withdrawalRequest->processedBy)
                     <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                         <p class="text-xs font-medium mb-1" style="color:var(--admin-text-dim);">پردازش شده توسط</p>
