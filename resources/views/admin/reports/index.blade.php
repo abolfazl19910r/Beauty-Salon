@@ -2,512 +2,472 @@
 
 @section('title', 'گزارشات مدیریتی')
 
+@push('styles')
+    <style>
+        /* ── jcal ── */
+        .jcal-wrapper { position: relative; }
+        .jcal-popup {
+            display: none; position: absolute; top: calc(100% + 6px); right: 0;
+            z-index: 9999; background: var(--admin-surface); border: 1px solid var(--admin-border);
+            border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,.12);
+            padding: 12px; width: 280px; direction: rtl;
+        }
+        .jcal-popup.open { display: block; }
+        .jcal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        .jcal-header button { background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 6px; font-size: 16px; color: var(--admin-text-dim); }
+        .jcal-header button:hover { background: var(--admin-accent-light); color: var(--admin-accent); }
+        .jcal-header span { font-size: .875rem; font-weight: 600; color: var(--admin-text); }
+        .jcal-weekdays { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; margin-bottom: 4px; }
+        .jcal-weekdays span { text-align: center; font-size: .7rem; color: var(--admin-text-light); padding: 4px 0; }
+        .jcal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+        .jcal-day { text-align: center; padding: 6px 2px; font-size: .8rem; border-radius: 6px; cursor: pointer; color: var(--admin-text); transition: background .15s; }
+        .jcal-day:hover { background: var(--admin-accent-light); color: var(--admin-accent); }
+        .jcal-day.selected { background: var(--admin-accent); color: #fff; font-weight: 600; }
+        .jcal-day.today { border: 1px solid var(--admin-accent); color: var(--admin-accent); font-weight: 600; }
+        .jcal-day.empty { cursor: default; }
+        .jcal-day.empty:hover { background: none; }
+        .jcal-today-btn { display: block; text-align: center; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--admin-border); }
+        .jcal-today-btn button { font-size: .75rem; padding: 3px 12px; border-radius: 6px; border: none; cursor: pointer; background: var(--admin-accent-light); color: var(--admin-accent); }
+
+        /* ── Statistics card ── */
+        .stat-card { background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: 12px; padding: 20px; }
+        .stat-card .label { font-size: .8rem; color: var(--admin-text-dim); margin-bottom: 6px; }
+        .stat-card .value { font-size: 1.5rem; font-weight: 700; color: var(--admin-text); }
+
+        /* ── Table ── */
+        .report-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+        .report-table th { background: var(--admin-accent); color: #fff; padding: 10px 14px; text-align: right; font-weight: 600; }
+        .report-table td { padding: 9px 14px; border-bottom: 1px solid var(--admin-border); color: var(--admin-text); }
+        .report-table tbody tr:nth-child(even) { background: var(--admin-bg); }
+        .report-table tbody tr:hover { background: var(--admin-accent-light); }
+
+        /* ── tab ── */
+        .rtab { padding: 10px 20px; font-size: .875rem; cursor: pointer; border-bottom: 2px solid transparent; color: var(--admin-text-dim); background: none; border-top: none; border-left: none; border-right: none; transition: all .15s; }
+        .rtab.active { color: var(--admin-accent); border-bottom-color: var(--admin-accent); font-weight: 600; }
+        .rtab:hover { color: var(--admin-accent); background: var(--admin-accent-light); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+@endpush
+
 @section('content')
     <div class="container px-6 mx-auto">
 
         {{-- Header --}}
         <div class="flex items-center justify-between mb-6">
-            <h1 class="text-2xl font-bold flex items-center" style="color: var(--admin-text);">
-                <svg class="w-6 h-6 ml-2" style="color: var(--admin-accent);" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
-                    <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
-                </svg>
+            <h1 class="text-2xl font-bold flex items-center gap-2" style="color: var(--admin-text);">
+                <svg class="w-6 h-6" style="color:var(--admin-accent)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
                 گزارشات مدیریتی
             </h1>
-
-            <div class="flex gap-2">
-                @permission('export-reports')
-                <a href="{{ route('admin.reports.export', ['format' => 'pdf', 'report_type' => 'daily']) }}"
-                   id="pdf-export-link"
-                   class="inline-flex items-center px-4 py-2 text-white rounded-lg transition-colors"
-                   style="background: #dc2626;">
-                    <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="12" y1="18" x2="12" y2="12"></line>
-                        <line x1="9" y1="15" x2="15" y2="15"></line>
-                    </svg>
-                    خروجی PDF
-                </a>
-
-                <a href="{{ route('admin.reports.export', ['format' => 'excel', 'report_type' => 'daily']) }}"
-                   id="excel-export-link"
-                   class="inline-flex items-center px-4 py-2 text-white rounded-lg transition-colors"
-                   style="background: #16a34a;">
-                    <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                    </svg>
-                    خروجی Excel
-                </a>
-                @endpermission
-
-                <a href="{{ route('admin.dashboard') }}"
-                   class="inline-flex items-center px-4 py-2 text-sm rounded-lg border transition-colors"
-                   style="color: var(--admin-text-dim); background: var(--admin-surface); border-color: var(--admin-border);">
-                    <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M19 12H5"></path>
-                        <path d="M12 19l-7-7 7-7"></path>
-                    </svg>
-                    بازگشت
-                </a>
-            </div>
+            <a href="{{ route('admin.dashboard') }}"
+               class="inline-flex items-center gap-1 px-4 py-2 text-sm rounded-lg border transition-colors"
+               style="color:var(--admin-text-dim);background:var(--admin-surface);border-color:var(--admin-border);">
+                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                بازگشت
+            </a>
         </div>
 
-        {{-- Report Type Cards --}}
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="report-type-card rounded-xl p-5 cursor-pointer transition-all duration-200"
-                 id="daily-report-card"
-                 onclick="selectReportType('daily')"
-                 style="background: var(--admin-surface); border: 2px solid var(--admin-border);">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-lg ml-4" style="background: var(--admin-accent-light);">
-                        <svg class="w-6 h-6" style="color: var(--admin-accent);" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                            <line x1="16" y1="2" x2="16" y2="6"></line>
-                            <line x1="8" y1="2" x2="8" y2="6"></line>
-                            <line x1="3" y1="10" x2="21" y2="10"></line>
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-xs mb-1" style="color: var(--admin-text-dim);">گزارش روزانه</p>
-                        <h2 class="font-bold" style="color: var(--admin-text);">نمای روزانه</h2>
-                    </div>
-                </div>
-            </div>
+        {{-- Filter --}}
+        <form method="GET" action="{{ route('admin.reports.index') }}"
+              class="rounded-xl p-5 mb-6" style="background:var(--admin-surface);border:1px solid var(--admin-border);">
+            <div class="flex flex-wrap items-end gap-4">
 
-            <div class="report-type-card rounded-xl p-5 cursor-pointer transition-all duration-200"
-                 id="weekly-report-card"
-                 onclick="selectReportType('weekly')"
-                 style="background: var(--admin-surface); border: 2px solid var(--admin-border);">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-lg ml-4" style="background: #f0fdf4;">
-                        <svg class="w-6 h-6" style="color: #16a34a;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                            <polyline points="2 17 12 22 22 17"></polyline>
-                            <polyline points="2 12 12 17 22 12"></polyline>
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-xs mb-1" style="color: var(--admin-text-dim);">گزارش هفتگی</p>
-                        <h2 class="font-bold" style="color: var(--admin-text);">نمای هفتگی</h2>
-                    </div>
-                </div>
-            </div>
-
-            <div class="report-type-card rounded-xl p-5 cursor-pointer transition-all duration-200"
-                 id="monthly-report-card"
-                 onclick="selectReportType('monthly')"
-                 style="background: var(--admin-surface); border: 2px solid var(--admin-border);">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-lg ml-4" style="background: #faf5ff;">
-                        <svg class="w-6 h-6" style="color: #7c3aed;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-xs mb-1" style="color: var(--admin-text-dim);">گزارش ماهانه</p>
-                        <h2 class="font-bold" style="color: var(--admin-text);">نمای ماهانه</h2>
-                    </div>
-                </div>
-            </div>
-
-            <div class="report-type-card rounded-xl p-5 cursor-pointer transition-all duration-200"
-                 id="custom-report-card"
-                 onclick="selectReportType('custom')"
-                 style="background: var(--admin-surface); border: 2px solid var(--admin-border);">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-lg ml-4" style="background: #fffbeb;">
-                        <svg class="w-6 h-6" style="color: #d97706;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="12" y1="8" x2="12" y2="12"></line>
-                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-xs mb-1" style="color: var(--admin-text-dim);">گزارش سفارشی</p>
-                        <h2 class="font-bold" style="color: var(--admin-text);">بازه دلخواه</h2>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Date Picker Section (custom) --}}
-        <div id="date-picker-section" class="rounded-xl p-6 mb-6 hidden" style="background: var(--admin-surface); border: 1px solid var(--admin-border);">
-            <h2 class="text-base font-semibold mb-4" style="color: var(--admin-text);">انتخاب بازه زمانی</h2>
-            <div class="flex flex-col md:flex-row gap-4 items-end">
-                <div class="flex-1">
-                    <label for="start-date" class="block mb-1 text-sm font-medium" style="color: var(--admin-text-dim);">از تاریخ</label>
-                    <div class="jcal-wrapper" id="start-date-wrapper">
-                        <div class="relative">
-                            <input type="text" id="start-date" placeholder="انتخاب تاریخ" readonly
-                                   class="w-full rounded-lg px-4 py-2 pr-10 text-sm cursor-pointer"
-                                   style="border: 1px solid var(--admin-border); background: var(--admin-bg); color: var(--admin-text);">
-                            <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style="color: var(--admin-text-light);">
-                                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            </span>
-                        </div>
-                        <div class="jcal-popup" id="start-date-popup"></div>
-                    </div>
-                </div>
-
-                <div class="flex-1">
-                    <label for="end-date" class="block mb-1 text-sm font-medium" style="color: var(--admin-text-dim);">تا تاریخ</label>
-                    <div class="jcal-wrapper" id="end-date-wrapper">
-                        <div class="relative">
-                            <input type="text" id="end-date" placeholder="انتخاب تاریخ" readonly
-                                   class="w-full rounded-lg px-4 py-2 pr-10 text-sm cursor-pointer"
-                                   style="border: 1px solid var(--admin-border); background: var(--admin-bg); color: var(--admin-text);">
-                            <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style="color: var(--admin-text-light);">
-                                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            </span>
-                        </div>
-                        <div class="jcal-popup" id="end-date-popup"></div>
-                    </div>
-                </div>
-
+                {{-- Report type --}}
                 <div>
-                    <button id="apply-date-range"
-                            class="inline-flex items-center px-5 py-2 text-sm font-medium text-white rounded-lg transition-colors"
-                            style="background: var(--admin-accent);"
-                            onmouseover="this.style.background='var(--admin-accent-hover)'"
-                            onmouseout="this.style.background='var(--admin-accent)'">
-                        <svg class="w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="9 11 12 14 22 4"></polyline>
-                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                        </svg>
-                        اعمال
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        {{-- React SPA mount point  --}}
-        <div class="rounded-xl overflow-hidden" style="background: var(--admin-surface); border: 1px solid var(--admin-border);">
-            <div class="p-6">
-                <div id="reports-panel"
-                     class="fade-in"
-                     data-base-url="{{ url('/') }}"
-                     data-routes="{{ json_encode([
-                            'revenueData'    => '/admin/reports/revenue',
-                            'dailyRevenue'   => '/admin/reports/daily',
-                            'weeklyRevenue'  => '/admin/reports/weekly',
-                            'monthlyRevenue' => '/admin/reports/monthly',
-                            'financialData'  => '/admin/reports/financial',
-                            'specialistsData'=> '/admin/reports/specialist-performance',
-                            'customersData'  => '/admin/reports/customer-satisfaction',
-                            'servicesData'   => '/admin/reports/popular-services',
-                            'export'         => '/admin/reports/export',
-                        ]) }}"
-                >
-                    <div class="flex justify-center items-center min-h-[400px]">
-                        <div class="animate-spin rounded-full h-8 w-8 border-b-2" style="border-color: var(--admin-accent);"></div>
-                        <span class="mr-3 text-sm" style="color: var(--admin-text-dim);">در حال بارگذاری...</span>
+                    <label class="block text-xs mb-2 font-medium" style="color:var(--admin-text-dim);">نوع گزارش</label>
+                    <div class="flex gap-2">
+                        @foreach(['daily'=>'روزانه','weekly'=>'هفتگی','monthly'=>'ماهانه'] as $val=>$label)
+                            <button type="button" onclick="setType('{{ $val }}')"
+                                    id="type-btn-{{ $val }}"
+                                    class="px-4 py-2 rounded-lg text-sm font-medium transition-colors type-btn"
+                                    style="{{ $type===$val ? 'background:var(--admin-accent);color:#fff' : 'background:var(--admin-accent-light);color:var(--admin-accent)' }}">
+                                {{ $label }}
+                            </button>
+                        @endforeach
+                        <input type="hidden" name="type" id="type-input" value="{{ $type }}">
                     </div>
                 </div>
+
+                {{-- From history --}}
+                <div>
+                    <label class="block text-xs mb-2 font-medium" style="color:var(--admin-text-dim);">از تاریخ</label>
+                    <div class="jcal-wrapper">
+                        <div class="relative">
+                            <input type="text" id="start-jalali" placeholder="انتخاب تاریخ" readonly
+                                   value="{{ $startDate ? jalali_date($startDate,'Y/m/d') : '' }}"
+                                   class="w-40 rounded-lg px-3 py-2 text-sm cursor-pointer"
+                                   style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
+                            <input type="hidden" name="start_date" id="start-date-val" value="{{ $startDate }}">
+                        </div>
+                        <div class="jcal-popup" id="start-popup"></div>
+                    </div>
+                </div>
+
+                {{-- to date --}}
+                <div>
+                    <label class="block text-xs mb-2 font-medium" style="color:var(--admin-text-dim);">تا تاریخ</label>
+                    <div class="jcal-wrapper">
+                        <div class="relative">
+                            <input type="text" id="end-jalali" placeholder="انتخاب تاریخ" readonly
+                                   value="{{ $endDate ? jalali_date($endDate,'Y/m/d') : '' }}"
+                                   class="w-40 rounded-lg px-3 py-2 text-sm cursor-pointer"
+                                   style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
+                            <input type="hidden" name="end_date" id="end-date-val" value="{{ $endDate }}">
+                        </div>
+                        <div class="jcal-popup" id="end-popup"></div>
+                    </div>
+                </div>
+
+                {{-- Buttons --}}
+                <div class="flex gap-2 mr-auto">
+                    <button type="submit"
+                            class="inline-flex items-center gap-1 px-5 py-2 text-sm font-medium text-white rounded-lg transition-colors"
+                            style="background:var(--admin-accent)">
+                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        اعمال فیلتر
+                    </button>
+
+                    @permission('export-reports')
+                    <a id="pdf-link"
+                       href="{{ route('admin.reports.export', ['format'=>'pdf','report_type'=>$type,'start_date'=>$startDate,'end_date'=>$endDate]) }}"
+                       class="inline-flex items-center gap-1 px-4 py-2 text-sm text-white rounded-lg transition-colors"
+                       style="background:#dc2626">
+                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        PDF
+                    </a>
+                    <a id="excel-link"
+                       href="{{ route('admin.reports.export', ['format'=>'excel','report_type'=>$type,'start_date'=>$startDate,'end_date'=>$endDate]) }}"
+                       class="inline-flex items-center gap-1 px-4 py-2 text-sm text-white rounded-lg transition-colors"
+                       style="background:#16a34a">
+                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        Excel
+                    </a>
+                    @endpermission
+                </div>
+            </div>
+        </form>
+
+        {{-- Statistics cards --}}
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+            @php
+                $cards = [
+                    ['label'=>'درآمد کل','value'=>number_format($summary['total_revenue']).' ت','color'=>'#16a34a'],
+                    ['label'=>'کل نوبت‌ها','value'=>number_format($summary['total_bookings']),'color'=>'#334155'],
+                    ['label'=>'انجام‌شده','value'=>number_format($summary['completed_bookings']),'color'=>'#0284c7'],
+                    ['label'=>'لغو شده','value'=>number_format($summary['cancelled_bookings']),'color'=>'#dc2626'],
+                    ['label'=>'درآمد معلق','value'=>number_format($summary['pending_payments']).' ت','color'=>'#d97706'],
+                    ['label'=>'میانگین نوبت','value'=>number_format($summary['average_booking_value']).' ت','color'=>'#7c3aed'],
+                ];
+            @endphp
+            @foreach($cards as $card)
+                <div class="stat-card">
+                    <div class="label">{{ $card['label'] }}</div>
+                    <div class="value" style="color:{{ $card['color'] }};font-size:1.1rem">{{ $card['value'] }}</div>
+                </div>
+            @endforeach
+        </div>
+
+        {{-- Fevers --}}
+        <div class="rounded-xl overflow-hidden mb-6" style="background:var(--admin-surface);border:1px solid var(--admin-border);">
+            <div class="flex border-b" style="border-color:var(--admin-border);">
+                <button class="rtab active" onclick="showTab('revenue',this)">📊 درآمد</button>
+                <button class="rtab" onclick="showTab('specialists',this)">👥 متخصصین</button>
+                <button class="rtab" onclick="showTab('services',this)">✂️ خدمات</button>
+                <button class="rtab" onclick="showTab('satisfaction',this)">⭐ رضایت</button>
+            </div>
+
+            {{-- Income fever --}}
+            <div id="tab-revenue" class="tab-content active p-6">
+                <h3 class="text-base font-semibold mb-4" style="color:var(--admin-text)">نمودار درآمد ({{ ['daily'=>'روزانه','weekly'=>'هفتگی','monthly'=>'ماهانه'][$type] }})</h3>
+                @if(count($revenueChart) > 0)
+                    <div style="height:300px"><canvas id="revenueChart"></canvas></div>
+                @else
+                    <p class="text-center py-12 text-sm" style="color:var(--admin-text-dim)">داده‌ای برای این بازه وجود ندارد</p>
+                @endif
+
+                {{-- Monthly turnover --}}
+                @if($monthlyBreakdown->count())
+                    <h3 class="text-base font-semibold mt-8 mb-4" style="color:var(--admin-text)">گردش مالی ماهانه (سال جاری)</h3>
+                    <div style="height:260px"><canvas id="monthlyChart"></canvas></div>
+                @endif
+            </div>
+
+            {{-- Experts' Fever --}}
+            <div id="tab-specialists" class="tab-content p-6">
+                <h3 class="text-base font-semibold mb-4" style="color:var(--admin-text)">عملکرد متخصصین</h3>
+                @if($specialists->count())
+                    <div style="height:300px" class="mb-6"><canvas id="specialistChart"></canvas></div>
+                    <table class="report-table">
+                        <thead><tr>
+                            <th>نام متخصص</th><th>تعداد نوبت</th><th>درآمد کل (تومان)</th>
+                            <th>نرخ تکمیل</th><th>نرخ بازگشت</th>
+                        </tr></thead>
+                        <tbody>
+                        @foreach($specialists as $sp)
+                            <tr>
+                                <td>{{ $sp['name'] }}</td>
+                                <td>{{ number_format($sp['total_bookings']) }}</td>
+                                <td>{{ number_format($sp['total_revenue']) }}</td>
+                                <td>{{ $sp['booking_completion_rate'] }}%</td>
+                                <td>{{ $sp['customer_return_rate'] }}%</td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <p class="text-center py-12 text-sm" style="color:var(--admin-text-dim)">داده‌ای برای این بازه وجود ندارد</p>
+                @endif
+            </div>
+
+            {{-- Service tab --}}
+            <div id="tab-services" class="tab-content p-6">
+                <h3 class="text-base font-semibold mb-4" style="color:var(--admin-text)">درآمد به تفکیک خدمات</h3>
+                @if($serviceRevenue->count())
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div style="height:280px"><canvas id="serviceChart"></canvas></div>
+                        <table class="report-table">
+                            <thead><tr><th>خدمت</th><th>نوبت</th><th>درآمد (تومان)</th></tr></thead>
+                            <tbody>
+                            @foreach($serviceRevenue as $svc)
+                                <tr>
+                                    <td>{{ $svc->name }}</td>
+                                    <td>{{ number_format($svc->bookings_count) }}</td>
+                                    <td>{{ number_format($svc->revenue) }}</td>
+                                </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <p class="text-center py-12 text-sm" style="color:var(--admin-text-dim)">داده‌ای برای این بازه وجود ندارد</p>
+                @endif
+
+                {{-- Popular service --}}
+                @if($popularServices->count())
+                    <h3 class="text-base font-semibold mt-8 mb-4" style="color:var(--admin-text)">خدمات محبوب (تعداد نوبت)</h3>
+                    <table class="report-table">
+                        <thead><tr><th>خدمت</th><th>تعداد نوبت</th><th>درآمد (تومان)</th></tr></thead>
+                        <tbody>
+                        @foreach($popularServices as $ps)
+                            <tr>
+                                <td>{{ $ps->name }}</td>
+                                <td>{{ number_format($ps->bookings_count) }}</td>
+                                <td>{{ number_format($ps->revenue ?? 0) }}</td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                @endif
+            </div>
+
+            {{-- Satisfaction fever --}}
+            <div id="tab-satisfaction" class="tab-content p-6">
+                <h3 class="text-base font-semibold mb-4" style="color:var(--admin-text)">رضایت مشتریان</h3>
+                @if($satisfaction->count())
+                    <table class="report-table">
+                        <thead><tr>
+                            <th>نام متخصص</th><th>میانگین امتیاز</th><th>تعداد نظر</th><th>درصد رضایت</th>
+                        </tr></thead>
+                        <tbody>
+                        @foreach($satisfaction as $sat)
+                            <tr>
+                                <td>{{ $sat['specialist_name'] }}</td>
+                                <td>{{ $sat['average_rating'] }} / 5</td>
+                                <td>{{ number_format($sat['total_ratings']) }}</td>
+                                <td>
+                                    <div class="flex items-center gap-2">
+                                        <div class="flex-1 rounded-full h-2" style="background:var(--admin-border)">
+                                            <div class="h-2 rounded-full" style="width:{{ $sat['satisfaction_rate'] }}%;background:#16a34a"></div>
+                                        </div>
+                                        <span class="text-xs">{{ $sat['satisfaction_rate'] }}%</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <p class="text-center py-12 text-sm" style="color:var(--admin-text-dim)">نظری برای این بازه ثبت نشده</p>
+                @endif
             </div>
         </div>
 
     </div>
 @endsection
 
-@push('styles')
-    @vite('resources/css/app.css')
-    <style>
-        /* ── jcal ── */
-        .jcal-wrapper { position: relative; }
-        .jcal-popup {
-            display: none;
-            position: absolute;
-            top: calc(100% + 6px);
-            right: 0;
-            z-index: 9999;
-            background: var(--admin-surface);
-            border: 1px solid var(--admin-border);
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0,0,0,.12);
-            padding: 12px;
-            width: 280px;
-            direction: rtl;
-        }
-        .jcal-popup.open { display: block; }
-        .jcal-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        .jcal-header button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 16px;
-            color: var(--admin-text-dim);
-            transition: background .15s;
-        }
-        .jcal-header button:hover { background: var(--admin-accent-light); color: var(--admin-accent); }
-        .jcal-header span {
-            font-size: .875rem;
-            font-weight: 600;
-            color: var(--admin-text);
-        }
-        .jcal-weekdays {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
-            margin-bottom: 4px;
-        }
-        .jcal-weekdays span {
-            text-align: center;
-            font-size: .7rem;
-            color: var(--admin-text-light);
-            padding: 4px 0;
-        }
-        .jcal-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
-        }
-        .jcal-day {
-            text-align: center;
-            padding: 6px 2px;
-            font-size: .8rem;
-            border-radius: 6px;
-            cursor: pointer;
-            color: var(--admin-text);
-            transition: background .15s, color .15s;
-        }
-        .jcal-day:hover { background: var(--admin-accent-light); color: var(--admin-accent); }
-        .jcal-day.selected { background: var(--admin-accent); color: #fff; font-weight: 600; }
-        .jcal-day.today { border: 1px solid var(--admin-accent); color: var(--admin-accent); font-weight: 600; }
-        .jcal-day.empty { cursor: default; }
-        .jcal-day.empty:hover { background: none; }
-
-        /* ── Report type card active state ── */
-        .report-type-card.active {
-            border-color: var(--admin-accent) !important;
-            background: var(--admin-accent-light) !important;
-        }
-    </style>
-@endpush
-
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
     <script>
-        window.initialData = {
-            baseUrl: '{{ url('/') }}',
-            routes: {
-                dailyRevenue:   '/admin/reports/daily',
-                weeklyRevenue:  '/admin/reports/weekly',
-                monthlyRevenue: '/admin/reports/monthly',
-                specialists:    '/admin/reports/specialist-performance',
-                financial:      '/admin/reports/financial',
-                customers:      '/admin/reports/customer-satisfaction',
-                services:       '/admin/reports/popular-services',
-                export:         '/admin/reports/export'
-            },
-            dateFormat: 'jYYYY/jMM/jDD'
-        };
+        /* ── Data from PHP ── */
+        const revenueData = @json($revenueChart);
+        const monthlyData = @json($monthlyBreakdown);
+        const specialistData = @json($specialists);
+        const serviceData  = @json($serviceRevenue->values());
 
+        const ACCENT = '#334155';
+        const COLORS  = ['#0088FE','#00C49F','#FFBB28','#FF8042','#8884D8','#82ca9d','#ffc658','#a4de6c'];
 
-        (function () {
-            /* Gregorian → Solar Conversion */
-            function toJalali(gy, gm, gd) {
-                var g_d_no, j_d_no, j_np, i, j_y, j_m, j_d;
-                var g_days_in_month = [31,28,31,30,31,30,31,31,30,31,30,31];
-                var j_days_in_month = [31,31,31,31,31,31,30,30,30,30,30,29];
-                gy -= 1600; gm -= 1; gd -= 1;
-                g_d_no = 365*gy + Math.floor((gy+3)/4) - Math.floor((gy+99)/100) + Math.floor((gy+399)/400);
-                for (i=0; i<gm; i++) g_d_no += g_days_in_month[i];
-                if (gm>1 && ((gy%4===0&&gy%100!==0)||(gy%400===0))) g_d_no++;
-                g_d_no += gd;
-                j_d_no = g_d_no - 79;
-                j_np = Math.floor(j_d_no/12053); j_d_no %= 12053;
-                j_y = 979 + 33*j_np + 4*Math.floor(j_d_no/1461);
-                j_d_no %= 1461;
-                if (j_d_no >= 366) { j_y += Math.floor((j_d_no-1)/365); j_d_no = (j_d_no-1)%365; }
-                for (i=0; i<11 && j_d_no>=j_days_in_month[i]; i++) j_d_no -= j_days_in_month[i];
-                j_m = i+1; j_d = j_d_no+1;
-                return [j_y, j_m, j_d];
-            }
-
-            /* Solar → Gregorian conversion */
-            function toGregorian(jy, jm, jd) {
-                var sal_a, gy, gm, gd, g_d_no, j_d_no, i;
-                var j_days_in_month = [31,31,31,31,31,31,30,30,30,30,30,29];
-                var g_days_in_month = [31,28,31,30,31,30,31,31,30,31,30,31];
-                jy -= 979; jm -= 1; jd -= 1;
-                j_d_no = 365*jy + Math.floor(jy/33)*8 + Math.floor((jy%33+3)/4);
-                for (i=0; i<jm; i++) j_d_no += j_days_in_month[i];
-                j_d_no += jd;
-                g_d_no = j_d_no + 79;
-                gy = 1600 + 400*Math.floor(g_d_no/146097); g_d_no %= 146097;
-                var leap = true;
-                if (g_d_no >= 36525) { g_d_no--; gy += 100*Math.floor(g_d_no/36524); g_d_no %= 36524; if (g_d_no >= 365) g_d_no++; else leap = false; }
-                gy += 4*Math.floor(g_d_no/1461); g_d_no %= 1461;
-                if (g_d_no >= 366) { leap = false; g_d_no--; gy += Math.floor(g_d_no/365); g_d_no %= 365; }
-                for (i=0; g_d_no>=g_days_in_month[i]+((i===1&&leap)?1:0); i++) g_d_no -= g_days_in_month[i]+((i===1&&leap)?1:0);
-                gm = i+1; gd = g_d_no+1;
-                return [gy, gm, gd];
-            }
-
-            var jMonthNames = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
-            var jDayNames   = ['ش','ی','د','س','چ','پ','ج'];
-
-            function pad(n) { return n < 10 ? '0'+n : ''+n; }
-
-            function buildCalendar(popup, inputEl, hiddenEl, year, month, onSelect) {
-                popup.innerHTML = '';
-
-                /* header */
-                var header = document.createElement('div');
-                header.className = 'jcal-header';
-                var btnPrev = document.createElement('button'); btnPrev.innerHTML = '&#8594;'; btnPrev.type='button';
-                var btnNext = document.createElement('button'); btnNext.innerHTML = '&#8592;'; btnNext.type='button';
-                var title   = document.createElement('span');
-                title.textContent = jMonthNames[month-1] + ' ' + year;
-                header.appendChild(btnPrev);
-                header.appendChild(title);
-                header.appendChild(btnNext);
-                popup.appendChild(header);
-
-                btnPrev.addEventListener('click', function(e){ e.stopPropagation(); var m=month-1,y=year; if(m<1){m=12;y--;} buildCalendar(popup,inputEl,hiddenEl,y,m,onSelect); });
-                btnNext.addEventListener('click', function(e){ e.stopPropagation(); var m=month+1,y=year; if(m>12){m=1;y++;} buildCalendar(popup,inputEl,hiddenEl,y,m,onSelect); });
-
-                /* weekday labels */
-                var wdRow = document.createElement('div'); wdRow.className = 'jcal-weekdays';
-                jDayNames.forEach(function(d){ var s=document.createElement('span'); s.textContent=d; wdRow.appendChild(s); });
-                popup.appendChild(wdRow);
-
-                /* days grid */
-                var grid = document.createElement('div'); grid.className = 'jcal-grid';
-                var firstDayGregorian = toGregorian(year, month, 1);
-                var fd = new Date(firstDayGregorian[0], firstDayGregorian[1]-1, firstDayGregorian[2]);
-                var startDow = (fd.getDay() + 1) % 7; // شنبه=0
-
-                /* Today */
-                var now = new Date();
-                var todayJ = toJalali(now.getFullYear(), now.getMonth()+1, now.getDate());
-
-                /* Current selection */
-                var selVal = inputEl.value; // e.g. "1403/06/15"
-                var selJ   = selVal ? selVal.split('/').map(Number) : null;
-
-                /* Days of the month */
-                var daysInMonth = [31,31,31,31,31,31,30,30,30,30,30,29];
-                var dim = daysInMonth[month-1];
-
-                for (var i=0; i<startDow; i++) {
-                    var empty = document.createElement('div'); empty.className='jcal-day empty'; grid.appendChild(empty);
+        /* ── Income chart ── */
+        if (revenueData.length && document.getElementById('revenueChart')) {
+            new Chart(document.getElementById('revenueChart'), {
+                data: {
+                    labels: revenueData.map(r => r.label),
+                    datasets: [
+                        { type:'bar',  label:'درآمد (تومان)', data: revenueData.map(r=>r.revenue),  backgroundColor:'rgba(51,65,85,.7)', yAxisID:'y' },
+                        { type:'line', label:'تعداد نوبت',    data: revenueData.map(r=>r.bookings), borderColor:'#16a34a', backgroundColor:'transparent', yAxisID:'y1', tension:.3 }
+                    ]
+                },
+                options: {
+                    responsive:true, maintainAspectRatio:false, direction:'rtl',
+                    scales: {
+                        y:  { position:'right', ticks:{ callback: v => v.toLocaleString('fa-IR') } },
+                        y1: { position:'left',  grid:{drawOnChartArea:false} }
+                    }
                 }
-                for (var d=1; d<=dim; d++) {
+            });
+        }
+
+        /* ── Monthly chart ── */
+        const MONTH_FA = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+        if (monthlyData.length && document.getElementById('monthlyChart')) {
+            new Chart(document.getElementById('monthlyChart'), {
+                data: {
+                    labels: monthlyData.map(r => MONTH_FA[r.month-1]),
+                    datasets: [
+                        { type:'bar',  label:'درآمد',       data: monthlyData.map(r=>r.revenue),  backgroundColor:'rgba(51,65,85,.7)', yAxisID:'y' },
+                        { type:'bar',  label:'تعداد نوبت',  data: monthlyData.map(r=>r.bookings), backgroundColor:'rgba(22,163,74,.6)', yAxisID:'y1' }
+                    ]
+                },
+                options: {
+                    responsive:true, maintainAspectRatio:false,
+                    scales: {
+                        y:  { position:'right' },
+                        y1: { position:'left', grid:{drawOnChartArea:false} }
+                    }
+                }
+            });
+        }
+
+        /* ── Experts Chart ── */
+        if (specialistData.length && document.getElementById('specialistChart')) {
+            new Chart(document.getElementById('specialistChart'), {
+                type:'bar',
+                data: {
+                    labels: specialistData.map(s => s.name),
+                    datasets: [
+                        { label:'تعداد نوبت', data: specialistData.map(s=>s.total_bookings), backgroundColor:'rgba(51,65,85,.7)' },
+                        { label:'نرخ تکمیل %', data: specialistData.map(s=>s.booking_completion_rate), backgroundColor:'rgba(22,163,74,.6)' },
+                        { label:'نرخ بازگشت %', data: specialistData.map(s=>s.customer_return_rate), backgroundColor:'rgba(124,58,237,.5)' },
+                    ]
+                },
+                options:{ responsive:true, maintainAspectRatio:false }
+            });
+        }
+
+        /* ── Service Chart (Pie) ── */
+        if (serviceData.length && document.getElementById('serviceChart')) {
+            const validSvc = serviceData.filter(s => s.revenue > 0).slice(0,6);
+            new Chart(document.getElementById('serviceChart'), {
+                type:'pie',
+                data: {
+                    labels: validSvc.map(s=>s.name),
+                    datasets:[{ data: validSvc.map(s=>s.revenue), backgroundColor: COLORS }]
+                },
+                options:{ responsive:true, maintainAspectRatio:false }
+            });
+        }
+
+        /* ── tab ── */
+        function showTab(id, btn) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.rtab').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-'+id).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        /* ── type buttons ── */
+        function setType(val) {
+            document.getElementById('type-input').value = val;
+            document.querySelectorAll('.type-btn').forEach(b => {
+                b.style.background = 'var(--admin-accent-light)';
+                b.style.color = 'var(--admin-accent)';
+            });
+            const active = document.getElementById('type-btn-'+val);
+            active.style.background = 'var(--admin-accent)';
+            active.style.color = '#fff';
+        }
+
+        /* ── jcal ── */
+        (function(){
+            function toJalali(gy,gm,gd){var g_d_no,j_d_no,j_np,i,j_y,j_m,j_d,g_days_in_month=[31,28,31,30,31,30,31,31,30,31,30,31],j_days_in_month=[31,31,31,31,31,31,30,30,30,30,30,29];gy-=1600;gm-=1;gd-=1;g_d_no=365*gy+Math.floor((gy+3)/4)-Math.floor((gy+99)/100)+Math.floor((gy+399)/400);for(i=0;i<gm;i++)g_d_no+=g_days_in_month[i];if(gm>1&&((gy%4===0&&gy%100!==0)||(gy%400===0)))g_d_no++;g_d_no+=gd;j_d_no=g_d_no-79;j_np=Math.floor(j_d_no/12053);j_d_no%=12053;j_y=979+33*j_np+4*Math.floor(j_d_no/1461);j_d_no%=1461;if(j_d_no>=366){j_y+=Math.floor((j_d_no-1)/365);j_d_no=(j_d_no-1)%365;}for(i=0;i<11&&j_d_no>=j_days_in_month[i];i++)j_d_no-=j_days_in_month[i];j_m=i+1;j_d=j_d_no+1;return[j_y,j_m,j_d];}
+            function toGregorian(jy,jm,jd){var sal_a,gy,gm,gd,g_d_no,j_d_no,i,j_days_in_month=[31,31,31,31,31,31,30,30,30,30,30,29],g_days_in_month=[31,28,31,30,31,30,31,31,30,31,30,31];jy-=979;jm-=1;jd-=1;j_d_no=365*jy+Math.floor(jy/33)*8+Math.floor((jy%33+3)/4);for(i=0;i<jm;i++)j_d_no+=j_days_in_month[i];j_d_no+=jd;g_d_no=j_d_no+79;gy=1600+400*Math.floor(g_d_no/146097);g_d_no%=146097;var leap=true;if(g_d_no>=36525){g_d_no--;gy+=100*Math.floor(g_d_no/36524);g_d_no%=36524;if(g_d_no>=365)g_d_no++;else leap=false;}gy+=4*Math.floor(g_d_no/1461);g_d_no%=1461;if(g_d_no>=366){leap=false;g_d_no--;gy+=Math.floor(g_d_no/365);g_d_no%=365;}for(i=0;g_d_no>=g_days_in_month[i]+((i===1&&leap)?1:0);i++)g_d_no-=g_days_in_month[i]+((i===1&&leap)?1:0);gm=i+1;gd=g_d_no+1;return[gy,gm,gd];}
+
+            var JM=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+            var JD=['ش','ی','د','س','چ','پ','ج'];
+            function pad(n){return n<10?'0'+n:''+n;}
+
+            var now=new Date(), todayJ=toJalali(now.getFullYear(),now.getMonth()+1,now.getDate());
+
+            function buildCal(popup,dispEl,hidEl,yr,mo){
+                popup.innerHTML='';
+                var hdr=document.createElement('div'); hdr.className='jcal-header';
+                var bp=document.createElement('button'); bp.innerHTML='&#8594;'; bp.type='button';
+                var bn=document.createElement('button'); bn.innerHTML='&#8592;'; bn.type='button';
+                var ti=document.createElement('span'); ti.textContent=JM[mo-1]+' '+yr;
+                hdr.appendChild(bp); hdr.appendChild(ti); hdr.appendChild(bn); popup.appendChild(hdr);
+                bp.onclick=function(e){e.stopPropagation(); var m=mo-1,y=yr; if(m<1){m=12;y--;} buildCal(popup,dispEl,hidEl,y,m);};
+                bn.onclick=function(e){e.stopPropagation(); var m=mo+1,y=yr; if(m>12){m=1;y++;} buildCal(popup,dispEl,hidEl,y,m);};
+                var wd=document.createElement('div'); wd.className='jcal-weekdays';
+                JD.forEach(function(d){var s=document.createElement('span');s.textContent=d;wd.appendChild(s);}); popup.appendChild(wd);
+                var grid=document.createElement('div'); grid.className='jcal-grid';
+                var fg=toGregorian(yr,mo,1); var fd=new Date(fg[0],fg[1]-1,fg[2]); var dow=(fd.getDay()+1)%7;
+                var dim=[31,31,31,31,31,31,30,30,30,30,30,29][mo-1];
+                var selVal=dispEl.value;
+                var selParts=selVal?selVal.split('/').map(Number):null;
+                for(var i=0;i<dow;i++){var e=document.createElement('div');e.className='jcal-day empty';grid.appendChild(e);}
+                for(var d=1;d<=dim;d++){
                     (function(day){
-                        var cell = document.createElement('div'); cell.className='jcal-day';
-                        cell.textContent = day;
-                        if (todayJ[0]===year && todayJ[1]===month && todayJ[2]===day) cell.classList.add('today');
-                        if (selJ && selJ[0]===year && selJ[1]===month && selJ[2]===day) cell.classList.add('selected');
-                        cell.addEventListener('click', function(e){
+                        var cell=document.createElement('div'); cell.className='jcal-day'; cell.textContent=day;
+                        if(todayJ[0]===yr&&todayJ[1]===mo&&todayJ[2]===day) cell.classList.add('today');
+                        if(selParts&&selParts[0]===yr&&selParts[1]===mo&&selParts[2]===day) cell.classList.add('selected');
+                        cell.onclick=function(e){
                             e.stopPropagation();
-                            var jalaliStr = year+'/'+pad(month)+'/'+pad(day);
-                            var greg = toGregorian(year, month, day);
-                            var gregStr = greg[0]+'-'+pad(greg[1])+'-'+pad(greg[2]);
-                            inputEl.value  = jalaliStr;
-                            if (hiddenEl) hiddenEl.value = gregStr;
+                            var jalStr=yr+'/'+pad(mo)+'/'+pad(day);
+                            var greg=toGregorian(yr,mo,day);
+                            var gregStr=greg[0]+'-'+pad(greg[1])+'-'+pad(greg[2]);
+                            dispEl.value=jalStr; hidEl.value=gregStr;
                             popup.classList.remove('open');
-                            if (onSelect) onSelect(jalaliStr, gregStr);
-                        });
+                        };
                         grid.appendChild(cell);
                     })(d);
                 }
                 popup.appendChild(grid);
+                var todayDiv=document.createElement('div'); todayDiv.className='jcal-today-btn';
+                var todayBtn=document.createElement('button'); todayBtn.type='button'; todayBtn.textContent='امروز';
+                todayBtn.onclick=function(e){e.stopPropagation(); buildCal(popup,dispEl,hidEl,todayJ[0],todayJ[1]);};
+                todayDiv.appendChild(todayBtn); popup.appendChild(todayDiv);
             }
 
-            function initJcal(inputId, popupId, hiddenId, onSelect) {
-                var inputEl  = document.getElementById(inputId);
-                var popup    = document.getElementById(popupId);
-                var hiddenEl = hiddenId ? document.getElementById(hiddenId) : null;
-                if (!inputEl || !popup) return;
-
-                /* Initial date = today */
-                var now = new Date();
-                var todayJ = toJalali(now.getFullYear(), now.getMonth()+1, now.getDate());
-                var curYear = todayJ[0], curMonth = todayJ[1];
-
-                inputEl.addEventListener('click', function(e) {
+            function initJcal(dispId,hidId,popupId){
+                var disp=document.getElementById(dispId), hid=document.getElementById(hidId), popup=document.getElementById(popupId);
+                if(!disp||!popup) return;
+                var curY=todayJ[0], curM=todayJ[1];
+                if(disp.value){var p=disp.value.split('/').map(Number); if(p.length===3){curY=p[0];curM=p[1];}}
+                disp.onclick=function(e){
                     e.stopPropagation();
-                    /* Close all other popups */
-                    document.querySelectorAll('.jcal-popup.open').forEach(function(p){ if(p!==popup) p.classList.remove('open'); });
-                    buildCalendar(popup, inputEl, hiddenEl, curYear, curMonth, function(j, g){
-                        if (onSelect) onSelect(j, g);
-                    });
+                    document.querySelectorAll('.jcal-popup.open').forEach(function(p){if(p!==popup)p.classList.remove('open');});
+                    buildCal(popup,disp,hid,curY,curM);
                     popup.classList.toggle('open');
-                });
-
-                /* Keep curYear/curMonth with scrolling */
-                popup.addEventListener('click', function(e){ e.stopPropagation(); });
-
-                document.addEventListener('click', function(){ popup.classList.remove('open'); });
+                };
+                popup.onclick=function(e){e.stopPropagation();};
+                document.addEventListener('click',function(){popup.classList.remove('open');});
             }
 
-            window.jcalInit = initJcal;
-        })();
-
-        /* ══════════════════════════════════════════
-           Page logic
-           ══════════════════════════════════════════ */
-        document.addEventListener('DOMContentLoaded', function () {
-            var activeReportType = 'daily';
-            var startDateGreg = '';
-            var endDateGreg   = '';
-
-            /* init jcal */
-            jcalInit('start-date', 'start-date-popup', null, function(j, g) { startDateGreg = g; updateExportLinks(); });
-            jcalInit('end-date',   'end-date-popup',   null, function(j, g) { endDateGreg   = g; updateExportLinks(); });
-
-            function updateExportLinks() {
-                var params = new URLSearchParams();
-                params.append('report_type', activeReportType);
-                if (startDateGreg && endDateGreg) {
-                    params.append('start_date', startDateGreg);
-                    params.append('end_date',   endDateGreg);
-                }
-                var base = "{{ route('admin.reports.export') }}";
-
-                var pdfLink = document.getElementById('pdf-export-link');
-                if (pdfLink) { params.set('format','pdf');   pdfLink.href   = base+'?'+params.toString(); }
-
-                var excelLink = document.getElementById('excel-export-link');
-                if (excelLink) { params.set('format','excel'); excelLink.href = base+'?'+params.toString(); }
-            }
-
-            window.selectReportType = function (type) {
-                document.querySelectorAll('.report-type-card').forEach(function(c){ c.classList.remove('active'); });
-                document.getElementById(type+'-report-card').classList.add('active');
-
-                var datePicker = document.getElementById('date-picker-section');
-                datePicker.classList.toggle('hidden', type !== 'custom');
-
-                activeReportType = type;
-                updateExportLinks();
-            };
-
-            document.getElementById('apply-date-range').addEventListener('click', function () {
-                var s = document.getElementById('start-date').value;
-                var e = document.getElementById('end-date').value;
-                if (s && e) {
-                    updateExportLinks();
-                } else {
-                    alert('لطفاً بازه زمانی را انتخاب کنید');
-                }
+            document.addEventListener('DOMContentLoaded',function(){
+                initJcal('start-jalali','start-date-val','start-popup');
+                initJcal('end-jalali','end-date-val','end-popup');
             });
-
-            updateExportLinks();
-            selectReportType('daily');
-        });
+        })();
     </script>
-    @viteReactRefresh
-    @vite(['resources/js/admin.jsx'])
 @endpush
