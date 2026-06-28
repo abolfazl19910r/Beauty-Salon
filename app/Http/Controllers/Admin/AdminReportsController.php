@@ -182,54 +182,56 @@ class AdminReportsController extends Controller
             }
 
             // ── PDF با mPDF ──────────────────────────────────────
-            if ($format === 'pdf') {
-                $defaultConfig     = (new \Mpdf\Config\ConfigVariables())->getDefaults();
-                $defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
+            $typeLabel = match($reportType) {
+                'weekly'  => 'هفتگی',
+                'monthly' => 'ماهانه',
+                default   => 'روزانه',
+            };
 
-                $mpdf = new \Mpdf\Mpdf([
-                    'mode'         => 'utf-8',
-                    'format'       => 'A4',
-                    'orientation'  => 'P',
-                    'fontDir'      => array_merge($defaultConfig['fontDir'], [storage_path('fonts')]),
-                    'fontdata'     => $defaultFontConfig['fontdata'] + [
-                            'vazir' => [
-                                'R' => 'Vazirmatn-Regular.ttf',
-                                'B' => 'Vazirmatn-Bold.ttf',
-                            ]
+            $exportData = $this->buildExportData($start, $end, $reportType);
+
+            $defaultConfig     = (new \Mpdf\Config\ConfigVariables())->getDefaults();
+            $defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
+
+            $mpdf = new \Mpdf\Mpdf([
+                'mode'              => 'utf-8',
+                'format'            => 'A4',
+                'orientation'       => 'P',
+                'fontDir'           => array_merge($defaultConfig['fontDir'], [storage_path('fonts')]),
+                'fontdata'          => $defaultFontConfig['fontdata'] + [
+                        'vazir' => [
+                            'R' => 'Vazirmatn-Regular.ttf',
+                            'B' => 'Vazirmatn-Bold.ttf',
                         ],
-                    'default_font' => 'vazir',
-                    'margin_left'  => 12,
-                    'margin_right' => 12,
-                    'margin_top'   => 15,
-                    'margin_bottom'=> 15,
-                    'tempDir'      => sys_get_temp_dir(),
-                ]);
+                    ],
+                'default_font'      => 'vazir',
+                'autoScriptToLang'  => true,
+                'autoLangToFont'    => true,
+                'margin_left'       => 12,
+                'margin_right'      => 12,
+                'margin_top'        => 15,
+                'margin_bottom'     => 20,
+                'tempDir'           => sys_get_temp_dir(),
+            ]);
 
-                $mpdf->SetDirectionality('rtl');
+            $mpdf->SetDirectionality('rtl');
 
-                $typeLabel = match($reportType) {
-                    'weekly'  => 'هفتگی',
-                    'monthly' => 'ماهانه',
-                    default   => 'روزانه',
-                };
+            $html = view('admin.reports.pdf-report', [
+                'data'      => $exportData,
+                'typeLabel' => $typeLabel,
+                'period'    => ['start' => $startDate, 'end' => $endDate],
+            ])->render();
 
-                $html = view('admin.reports.pdf-report', [
-                    'data'      => $exportData,
-                    'typeLabel' => $typeLabel,
-                    'period'    => ['start' => $startDate, 'end' => $endDate],
-                ])->render();
+            $mpdf->WriteHTML($html);
 
-                $mpdf->WriteHTML($html);
-
-                return response(
-                    $mpdf->Output("report-{$reportType}.pdf", \Mpdf\Output\Destination::STRING_RETURN),
-                    200,
-                    [
-                        'Content-Type'        => 'application/pdf',
-                        'Content-Disposition' => "attachment; filename=\"report-{$reportType}.pdf\"",
-                    ]
-                );
-            }
+            return response(
+                $mpdf->Output("report-{$reportType}.pdf", \Mpdf\Output\Destination::STRING_RETURN),
+                200,
+                [
+                    'Content-Type'        => 'application/pdf',
+                    'Content-Disposition' => "attachment; filename=\"report-{$reportType}.pdf\"",
+                ]
+            );
 
             return $this->errorResponse('فرمت نامعتبر');
 
