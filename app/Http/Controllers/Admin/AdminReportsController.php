@@ -17,10 +17,24 @@ class AdminReportsController extends Controller
 {
     public function index(Request $request)
     {
-        // Converting solar date to Gregorian date
-        $startDate = $request->input('start_date', now()->subDays(30)->format('Y-m-d'));
-        $endDate   = $request->input('end_date',   now()->format('Y-m-d'));
-        $type      = $request->input('type', 'daily'); // daily | weekly | monthly
+        $startDate = $request->input('start_date');
+        $endDate   = $request->input('end_date');
+        $type      = $request->input('type', 'daily');
+
+        if (!$startDate || !$endDate) {
+            return view('admin.reports.index', [
+                'startDate'       => null,
+                'endDate'         => null,
+                'type'            => $type,
+                'summary'         => [],
+                'revenueChart'    => [],
+                'popularServices' => collect(),
+                'specialists'     => collect(),
+                'satisfaction'    => collect(),
+                'monthlyBreakdown'=> collect(),
+                'serviceRevenue'  => collect(),
+            ]);
+        }
 
         if (!$this->validateDates($startDate, $endDate)) {
             $startDate = now()->subDays(30)->format('Y-m-d');
@@ -30,7 +44,6 @@ class AdminReportsController extends Controller
         $start = Carbon::parse($startDate)->startOfDay();
         $end   = Carbon::parse($endDate)->endOfDay();
 
-        // ── Financial Summary ──────────────────────────────
         $summary = [
             'total_revenue'         => Booking::where('payment_status', 'paid')
                 ->whereBetween('created_at', [$start, $end])
@@ -43,26 +56,25 @@ class AdminReportsController extends Controller
             'pending_payments'      => Booking::where('payment_status', 'unpaid')
                 ->whereBetween('created_at', [$start, $end])
                 ->sum('prepayment_amount'),
-            'average_booking_value' => Booking::where('payment_status', 'paid')
-                    ->whereBetween('created_at', [$start, $end])
-                    ->avg('prepayment_amount') ?? 0,
+            'average_booking_value' => (float)(Booking::where('payment_status', 'paid')
+                ->whereBetween('created_at', [$start, $end])
+                ->avg('prepayment_amount') ?? 0),
         ];
 
-        // ── Revenue chart (by type) ─────────────
         $revenueChart = $this->getRevenueChartData($start, $end, $type);
 
-        // ── Popular service ─────────────────────────────
         $popularServices = BeautyService::withCount(['bookings' => fn($q) =>
-        $q->whereBetween('created_at', [$start, $end])->where('status', '!=', 'cancelled')
+        $q->whereBetween('created_at', [$start, $end])
+            ->where('status', '!=', 'cancelled')
         ])
             ->withSum(['bookings as revenue' => fn($q) =>
-            $q->where('payment_status', 'paid')->whereBetween('created_at', [$start, $end])
+            $q->where('payment_status', 'paid')
+                ->whereBetween('created_at', [$start, $end])
             ], 'prepayment_amount')
             ->orderByDesc('bookings_count')
             ->limit(10)
             ->get();
 
-        // ── Performance of experts ───────────────────────────
         $specialists = Specialist::with(['bookings' => fn($q) =>
         $q->whereBetween('created_at', [$start, $end])
         ])
@@ -70,20 +82,20 @@ class AdminReportsController extends Controller
             $q->whereBetween('created_at', [$start, $end])
             ])
             ->withSum(['bookings as total_revenue' => fn($q) =>
-            $q->whereBetween('created_at', [$start, $end])->where('payment_status', 'paid')
+            $q->whereBetween('created_at', [$start, $end])
+                ->where('payment_status', 'paid')
             ], 'prepayment_amount')
             ->orderByDesc('total_bookings')
             ->get()
             ->map(fn($s) => [
                 'id'                     => $s->id,
                 'name'                   => $s->name,
-                'total_bookings'         => $s->total_bookings ?? 0,
-                'total_revenue'          => $s->total_revenue  ?? 0,
+                'total_bookings'         => $s->total_bookings  ?? 0,
+                'total_revenue'          => $s->total_revenue   ?? 0,
                 'booking_completion_rate'=> $this->calcCompletionRate($s->bookings),
                 'customer_return_rate'   => $this->calcReturnRate($s->bookings),
             ]);
 
-        // ── Customer satisfaction ────────────────────────────
         $satisfaction = Booking::whereBetween('created_at', [$start, $end])
             ->whereNotNull('rating')
             ->select(
@@ -104,9 +116,8 @@ class AdminReportsController extends Controller
                     : 0,
             ]);
 
-        // ── Monthly turnover (current year) ─────────────
         $monthlyBreakdown = Booking::where('payment_status', 'paid')
-            ->where('created_at', '>=', now()->startOfYear())
+            ->whereBetween('created_at', [$start, $end])
             ->groupBy(DB::raw('MONTH(created_at)'))
             ->select(
                 DB::raw('MONTH(created_at) as month'),
@@ -116,18 +127,17 @@ class AdminReportsController extends Controller
             ->orderBy('month')
             ->get();
 
-        // ── Revenue by service ────────────────────
         $serviceRevenue = BeautyService::withSum(['bookings as revenue' => fn($q) =>
-        $q->where('payment_status', 'paid')->whereBetween('created_at', [$start, $end])
+        $q->where('payment_status', 'paid')
+            ->whereBetween('created_at', [$start, $end])
         ], 'prepayment_amount')
             ->withCount(['bookings' => fn($q) =>
             $q->whereBetween('created_at', [$start, $end])
             ])
             ->orderByDesc('revenue')
-            ->having('revenue', '>', 0)
             ->limit(8)
             ->get()
-            ->filter(fn($s) => $s->revenue > 0);
+            ->filter(fn($s) => ($s->revenue ?? 0) > 0);
 
         return view('admin.reports.index', compact(
             'summary', 'revenueChart', 'popularServices',
@@ -136,36 +146,42 @@ class AdminReportsController extends Controller
         ));
     }
 
-    // ─────────────────────────────────────────────
-    //  Export (PDF + Excel) — server-side with mPDF
-    // ─────────────────────────────────────────────
     public function exportReport(Request $request)
     {
         try {
-            $format     = $request->input('format', 'excel');
-            $reportType = $request->input('report_type', $request->input('type', 'daily'));
-            $startDate  = $request->input('start_date', now()->subDays(30)->format('Y-m-d'));
-            $endDate    = $request->input('end_date',   now()->format('Y-m-d'));
+            $format = $request->input('format');
+            if (!$format && in_array($request->input('type'), ['excel', 'pdf'])) {
+                $format = $request->input('type');
+            }
+            if (!$format) $format = 'excel';
+
+            $reportType = $request->input('report_type');
+            if (!$reportType && in_array($request->input('type'), ['daily', 'weekly', 'monthly'])) {
+                $reportType = $request->input('type');
+            }
+            if (!$reportType) $reportType = 'daily';
+
+            $startDate = $request->input('start_date', now()->subDays(30)->format('Y-m-d'));
+            $endDate   = $request->input('end_date',   now()->format('Y-m-d'));
 
             if (!$this->validateDates($startDate, $endDate)) {
-                abort(400, 'تاریخ‌های ارسالی معتبر نیستند');
+                return $this->errorResponse('تاریخ‌های ارسالی معتبر نیستند');
             }
 
             $start = Carbon::parse($startDate)->startOfDay();
             $end   = Carbon::parse($endDate)->endOfDay();
 
-            // ── Data for export ─────────────────────
-            $data = $this->buildExportData($start, $end, $reportType);
+            $exportData = $this->buildExportData($start, $end, $reportType);
 
-            // ── Excel ────────────────────────────────
+            // ── Excel ────────────────────────────────────────────
             if ($format === 'excel') {
                 return Excel::download(
-                    new ReportsExport($data['rows'], $reportType),
+                    new ReportsExport($exportData['rows'], $reportType),
                     "report-{$reportType}.xlsx"
                 );
             }
 
-            // ── PDF with mPDF ──────────────────────────
+            // ── PDF با mPDF ──────────────────────────────────────
             if ($format === 'pdf') {
                 $defaultConfig     = (new \Mpdf\Config\ConfigVariables())->getDefaults();
                 $defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
@@ -197,8 +213,8 @@ class AdminReportsController extends Controller
                     default   => 'روزانه',
                 };
 
-                $html = view('admin.reports.pdf', [
-                    'data'      => $data,
+                $html = view('admin.reports.pdf-report', [
+                    'data'      => $exportData,
                     'typeLabel' => $typeLabel,
                     'period'    => ['start' => $startDate, 'end' => $endDate],
                 ])->render();
@@ -215,11 +231,14 @@ class AdminReportsController extends Controller
                 );
             }
 
-            abort(400, 'فرمت نامعتبر');
+            return $this->errorResponse('فرمت نامعتبر');
 
         } catch (\Exception $e) {
-            Log::error('Error exporting admin report', ['error' => $e->getMessage()]);
-            abort(500, 'خطا در خروجی گرفتن: ' . $e->getMessage());
+            Log::error('Error exporting admin report', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return $this->errorResponse('خطا در خروجی گرفتن: ' . $e->getMessage(), 500);
         }
     }
 
@@ -442,44 +461,77 @@ class AdminReportsController extends Controller
         return response()->json(['popularServices' => $services]);
     }
 
-    // ─────────────────────────────────────────────
-    //  Helper — Revenue Chart Data
-    // ─────────────────────────────────────────────
     private function getRevenueChartData(Carbon $start, Carbon $end, string $type): array
     {
-        $query = Booking::where('payment_status', 'paid')->whereBetween('created_at', [$start, $end]);
+        $jMonths = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+        $base = Booking::where('payment_status', 'paid')->whereBetween('created_at', [$start, $end]);
 
         if ($type === 'monthly') {
-            $rows = (clone $query)
+            return (clone $base)
                 ->groupBy(DB::raw('YEAR(created_at)'), DB::raw('MONTH(created_at)'))
-                ->select(DB::raw('YEAR(created_at) as year'), DB::raw('MONTH(created_at) as month'), DB::raw('SUM(prepayment_amount) as revenue'), DB::raw('COUNT(*) as total_bookings'))
-                ->orderBy('year')->orderBy('month')->get();
-
-            $months = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
-            return $rows->map(fn($r) => ['label' => ($months[$r->month - 1] ?? $r->month).' '.$r->year, 'revenue' => (int)$r->revenue, 'bookings' => $r->total_bookings])->toArray();
+                ->select(
+                    DB::raw('YEAR(created_at) as year'),
+                    DB::raw('MONTH(created_at) as month'),
+                    DB::raw('SUM(prepayment_amount) as revenue'),
+                    DB::raw('COUNT(*) as total_bookings')
+                )
+                ->orderBy('year')->orderBy('month')
+                ->get()
+                ->map(function ($r) use ($jMonths) {
+                    [$jy, $jm] = gregorian_to_jalali($r->year, $r->month, 1);
+                    return [
+                        'label'    => $jMonths[$jm - 1] . ' ' . $jy,
+                        'revenue'  => (int)$r->revenue,
+                        'bookings' => (int)$r->total_bookings,
+                    ];
+                })
+                ->toArray();
         }
 
         if ($type === 'weekly') {
-            $rows = (clone $query)
+            return (clone $base)
                 ->groupBy(DB::raw('YEARWEEK(created_at)'))
-                ->select(DB::raw('DATE(MIN(created_at)) as week_start'), DB::raw('SUM(prepayment_amount) as revenue'), DB::raw('COUNT(*) as total_bookings'))
-                ->orderBy('week_start')->get();
-
-            return $rows->map(fn($r) => ['label' => jalali_date(date('Y-m-d', strtotime($r->week_start)), 'j M'), 'revenue' => (int)$r->revenue, 'bookings' => $r->total_bookings])->toArray();
+                ->select(
+                    DB::raw('DATE(MIN(created_at)) as week_start'),
+                    DB::raw('SUM(prepayment_amount) as revenue'),
+                    DB::raw('COUNT(*) as total_bookings')
+                )
+                ->orderBy('week_start')
+                ->get()
+                ->map(function ($r) use ($jMonths) {
+                    $d = Carbon::parse($r->week_start);
+                    [$jy, $jm, $jd] = gregorian_to_jalali($d->year, $d->month, $d->day);
+                    return [
+                        'label'    => $jd . ' ' . $jMonths[$jm - 1],
+                        'revenue'  => (int)$r->revenue,
+                        'bookings' => (int)$r->total_bookings,
+                    ];
+                })
+                ->toArray();
         }
 
-        // daily (default)
-        $rows = (clone $query)
+        // daily
+        return (clone $base)
             ->groupBy(DB::raw('DATE(created_at)'))
-            ->select(DB::raw('DATE(created_at) as date'), DB::raw('SUM(prepayment_amount) as revenue'), DB::raw('COUNT(*) as total_bookings'))
-            ->orderBy('date')->get();
-
-        return $rows->map(fn($r) => ['label' => jalali_date($r->date, 'j M'), 'revenue' => (int)$r->revenue, 'bookings' => $r->total_bookings])->toArray();
+            ->select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('SUM(prepayment_amount) as revenue'),
+                DB::raw('COUNT(*) as total_bookings')
+            )
+            ->orderBy('date')
+            ->get()
+            ->map(function ($r) use ($jMonths) {
+                $d = Carbon::parse($r->date);
+                [$jy, $jm, $jd] = gregorian_to_jalali($d->year, $d->month, $d->day);
+                return [
+                    'label'    => $jd . ' ' . $jMonths[$jm - 1],
+                    'revenue'  => (int)$r->revenue,
+                    'bookings' => (int)$r->total_bookings,
+                ];
+            })
+            ->toArray();
     }
 
-    // ─────────────────────────────────────────────
-    //  Helper — data export
-    // ─────────────────────────────────────────────
     private function buildExportData(Carbon $start, Carbon $end, string $type): array
     {
         $summary = [
@@ -489,40 +541,67 @@ class AdminReportsController extends Controller
             'cancelled_bookings' => Booking::where('status', 'cancelled')->whereBetween('created_at', [$start, $end])->count(),
         ];
 
-        $specialists = Specialist::withCount(['bookings as total_bookings' => fn($q) => $q->whereBetween('created_at', [$start, $end])])
-            ->withSum(['bookings as total_revenue' => fn($q) => $q->whereBetween('created_at', [$start, $end])->where('payment_status', 'paid')], 'prepayment_amount')
-            ->orderByDesc('total_bookings')->get();
+        $specialists = Specialist::withCount(['bookings as total_bookings' => fn($q) =>
+        $q->whereBetween('created_at', [$start, $end])
+        ])
+            ->withSum(['bookings as total_revenue' => fn($q) =>
+            $q->whereBetween('created_at', [$start, $end])->where('payment_status', 'paid')
+            ], 'prepayment_amount')
+            ->orderByDesc('total_bookings')
+            ->get();
 
-        $services = BeautyService::withCount(['bookings' => fn($q) => $q->whereBetween('created_at', [$start, $end])])
-            ->withSum(['bookings as revenue' => fn($q) => $q->where('payment_status', 'paid')->whereBetween('created_at', [$start, $end])], 'prepayment_amount')
-            ->orderByDesc('bookings_count')->limit(10)->get();
+        $services = BeautyService::withCount(['bookings' => fn($q) =>
+        $q->whereBetween('created_at', [$start, $end])
+        ])
+            ->withSum(['bookings as revenue' => fn($q) =>
+            $q->where('payment_status', 'paid')->whereBetween('created_at', [$start, $end])
+            ], 'prepayment_amount')
+            ->orderByDesc('bookings_count')
+            ->limit(10)
+            ->get();
 
-        // rows for Excel (compatible with Report Export)
         $rows = match($type) {
-            'monthly' => Booking::where('payment_status', 'paid')->whereBetween('created_at', [$start, $end])
+            'monthly' => Booking::where('payment_status', 'paid')
+                ->whereBetween('created_at', [$start, $end])
                 ->groupBy(DB::raw('YEAR(created_at)'), DB::raw('MONTH(created_at)'))
-                ->select(DB::raw('YEAR(created_at) as year'), DB::raw('MONTH(created_at) as month'), DB::raw('COUNT(*) as total_bookings'), DB::raw('SUM(prepayment_amount) as revenue'))
+                ->select(
+                    DB::raw('YEAR(created_at) as year'),
+                    DB::raw('MONTH(created_at) as month'),
+                    DB::raw('COUNT(*) as total_bookings'),
+                    DB::raw('SUM(prepayment_amount) as revenue')
+                )
                 ->orderBy('year')->orderBy('month')->get(),
-            'weekly'  => Booking::where('payment_status', 'paid')->whereBetween('created_at', [$start, $end])
+
+            'weekly' => Booking::where('payment_status', 'paid')
+                ->whereBetween('created_at', [$start, $end])
                 ->groupBy(DB::raw('YEARWEEK(created_at)'))
-                ->select(DB::raw('DATE(MIN(created_at)) as week_start'), DB::raw('COUNT(*) as total_bookings'), DB::raw('SUM(prepayment_amount) as revenue'))
+                ->select(
+                    DB::raw('DATE(MIN(created_at)) as week_start'),
+                    DB::raw('COUNT(*) as total_bookings'),
+                    DB::raw('SUM(prepayment_amount) as revenue')
+                )
                 ->orderBy('week_start')->get(),
-            default   => Booking::where('payment_status', 'paid')->whereBetween('created_at', [$start, $end])
+
+            default => Booking::where('payment_status', 'paid')
+                ->whereBetween('created_at', [$start, $end])
                 ->groupBy(DB::raw('DATE(created_at)'))
-                ->select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as total_bookings'), DB::raw('SUM(prepayment_amount) as revenue'))
+                ->select(
+                    DB::raw('DATE(created_at) as date'),
+                    DB::raw('COUNT(*) as total_bookings'),
+                    DB::raw('SUM(prepayment_amount) as revenue')
+                )
                 ->orderBy('date')->get(),
         };
 
         return compact('summary', 'specialists', 'services', 'rows');
     }
 
-    // ─────────────────────────────────────────────
-    //  Internal Helpers
-    // ─────────────────────────────────────────────
     private function calcCompletionRate($bookings): float
     {
         $total = $bookings->count();
-        return $total > 0 ? round($bookings->where('status', 'completed')->count() / $total * 100, 1) : 0;
+        return $total > 0
+            ? round($bookings->where('status', 'completed')->count() / $total * 100, 1)
+            : 0;
     }
 
     private function calcReturnRate($bookings): float
