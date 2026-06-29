@@ -1,80 +1,60 @@
 @extends('layouts.admin')
-
-@section('title', 'اختصاص نقش به کاربران')
+@section('title', 'اختصاص نقش به کاربر')
 
 @section('content')
-    <div class="fade-in">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+    <div class="container px-6 mx-auto max-w-xl">
+
+        <div class="flex items-center justify-between mb-6">
             <div>
-                <h1 class="text-2xl font-bold text-gray-800 mb-2">اختصاص نقش "{{ $role->label }}" به کاربر</h1>
-                <p class="text-sm text-gray-500">از این قسمت می‌توانید نقش را به کاربران مختلف سیستم اختصاص دهید</p>
+                <h1 class="text-2xl font-bold" style="color:var(--admin-text)">اختصاص نقش</h1>
+                <p class="text-sm mt-1" style="color:var(--admin-text-dim)">اختصاص نقش «{{ $role->label }}» به کاربر</p>
             </div>
-            <div class="mt-4 md:mt-0">
-                <a href="{{ route('admin.roles.show', $role) }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200 inline-flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                    بازگشت
-                </a>
-            </div>
+            <a href="{{ route('admin.roles.show', $role) }}"
+               class="inline-flex items-center gap-1 px-4 py-2 text-sm rounded-lg border"
+               style="color:var(--admin-text-dim);background:var(--admin-surface);border-color:var(--admin-border)">
+                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                بازگشت
+            </a>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
-            <div class="p-6">
-                @if($users->isEmpty())
-                    <div class="py-12 text-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                        <p class="text-gray-500 mb-4">تمام کاربران سیستم این نقش را دارند!</p>
-                        <a href="{{ route('admin.roles.show', $role) }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 inline-flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                            </svg>
-                            بازگشت به صفحه نقش
+        <div class="rounded-xl p-6" style="background:var(--admin-surface);border:1px solid var(--admin-border)">
+            @if($users->isEmpty())
+                <div class="py-12 text-center" style="color:var(--admin-text-dim)">
+                    <svg class="w-12 h-12 mx-auto mb-3" style="color:var(--admin-border)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+                    <p>تمام کاربران سیستم این نقش را دارند</p>
+                </div>
+            @else
+                <form action="{{ route('admin.roles.assign', $role) }}" method="POST">
+                    @csrf
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium mb-2" style="color:var(--admin-text-dim)">انتخاب کاربر</label>
+                        <select name="user_id" required
+                                class="w-full rounded-lg px-3 py-2 text-sm"
+                                style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
+                            <option value="">انتخاب کنید...</option>
+                            @foreach($users as $user)
+                                <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->phone }})</option>
+                            @endforeach
+                        </select>
+                        @error('user_id')<p class="text-xs mt-1 text-red-500">{{ $message }}</p>@enderror
+                    </div>
+
+                    <div class="flex gap-3 pt-4" style="border-top:1px solid var(--admin-border)">
+                        <button type="submit"
+                                class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-lg"
+                                style="background:var(--admin-accent)">
+                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                            اختصاص نقش
+                        </button>
+                        <a href="{{ route('admin.roles.show', $role) }}"
+                           class="inline-flex items-center px-5 py-2 text-sm rounded-lg border"
+                           style="color:var(--admin-text-dim);background:var(--admin-surface);border-color:var(--admin-border)">
+                            انصراف
                         </a>
                     </div>
-                @else
-                    <form action="{{ route('admin.roles.assign', $role) }}" method="POST">
-                        @csrf
-
-                        <div class="mb-6">
-                            <label for="user_id" class="block text-sm font-medium text-gray-700 mb-2">انتخاب کاربر</label>
-                            <div class="relative rounded-md shadow-sm">
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                </div>
-                                <select name="user_id" id="user_id" class="focus:ring-blue-500 focus:border-blue-500 block w-full pr-10 sm:text-sm border-gray-300 rounded-md">
-                                    <option value="">انتخاب کنید...</option>
-                                    @foreach($users as $user)
-                                        <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->phone }})</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            @error('user_id')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                            <p class="mt-1 text-xs text-gray-500">کاربری که می‌خواهید این نقش را به او اختصاص دهید انتخاب کنید</p>
-                        </div>
-
-                        <div class="border-t border-gray-200 pt-4">
-                            <div class="flex justify-end space-x-3 space-x-reverse">
-                                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200 inline-flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                                    </svg>
-                                    اختصاص نقش
-                                </button>
-                                <a href="{{ route('admin.roles.show', $role) }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200 inline-flex items-center">
-                                    انصراف
-                                </a>
-                            </div>
-                        </div>
-                    </form>
-                @endif
-            </div>
+                </form>
+            @endif
         </div>
+
     </div>
 @endsection
