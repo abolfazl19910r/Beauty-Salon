@@ -1,142 +1,101 @@
 @extends('layouts.admin')
-
 @section('title', 'افزودن دسترسی جدید')
 
 @section('content')
-    <div class="fade-in">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+    <div class="container px-6 mx-auto max-w-2xl">
+
+        <div class="flex items-center justify-between mb-6">
             <div>
-                <h1 class="text-2xl font-bold text-gray-800 mb-2">افزودن دسترسی جدید</h1>
-                <p class="text-sm text-gray-500">تعریف دسترسی جدید در سیستم</p>
+                <h1 class="text-2xl font-bold" style="color:var(--admin-text)">افزودن دسترسی جدید</h1>
+                <p class="text-sm mt-1" style="color:var(--admin-text-dim)">تعریف دسترسی جدید در سیستم</p>
             </div>
-            <div class="mt-4 md:mt-0">
-                <a href="{{ route('admin.permissions.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200 inline-flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                    بازگشت به لیست
-                </a>
-            </div>
+            <a href="{{ route('admin.permissions.index') }}"
+               class="inline-flex items-center gap-1 px-4 py-2 text-sm rounded-lg border"
+               style="color:var(--admin-text-dim);background:var(--admin-surface);border-color:var(--admin-border)">
+                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                بازگشت
+            </a>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
-            <div class="p-6">
-                <form action="{{ route('admin.permissions.store') }}" method="POST">
-                    @csrf
+        <div class="rounded-xl p-6" style="background:var(--admin-surface);border:1px solid var(--admin-border)">
+            <form action="{{ route('admin.permissions.store') }}" method="POST">
+                @csrf
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-                                نام فنی (انگلیسی) <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text"
-                                   name="name"
-                                   id="name"
-                                   value="{{ old('name') }}"
-                                   dir="ltr"
-                                   class="focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                                   placeholder="view-users, create-bookings"
-                                   required>
-                            @error('name')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                            <p class="mt-1 text-xs text-gray-500">نام فنی باید به انگلیسی و بدون فاصله باشد (از - استفاده کنید)</p>
-                        </div>
-
-                        <div>
-                            <label for="label" class="block text-sm font-medium text-gray-700 mb-2">
-                                عنوان نمایشی (فارسی) <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text"
-                                   name="label"
-                                   id="label"
-                                   value="{{ old('label') }}"
-                                   class="focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                                   placeholder="مشاهده کاربران، ایجاد رزرو"
-                                   required>
-                            @error('label')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                            <p class="mt-1 text-xs text-gray-500">عنوان نمایشی که به کاربران نمایش داده می‌شود</p>
-                        </div>
-
-                        <div>
-                            <label for="group" class="block text-sm font-medium text-gray-700 mb-2">
-                                گروه <span class="text-red-500">*</span>
-                            </label>
-                            <div class="flex gap-2">
-                                <input type="text"
-                                       name="group"
-                                       id="group"
-                                       value="{{ old('group') }}"
-                                       list="groups-list"
-                                       class="focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                                       placeholder="کاربران، رزروها، تنظیمات"
-                                       required>
-                                <datalist id="groups-list">
-                                    @foreach($groups as $group)
-                                        <option value="{{ $group }}">
-                                    @endforeach
-                                </datalist>
-                            </div>
-                            @error('group')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                            <p class="mt-1 text-xs text-gray-500">گروه دسترسی (می‌توانید گروه جدید وارد کنید یا از لیست انتخاب کنید)</p>
-                        </div>
-
-                        <div>
-                            <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
-                                توضیحات
-                            </label>
-                            <textarea name="description"
-                                      id="description"
-                                      rows="3"
-                                      class="focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                                      placeholder="توضیحات کامل درباره این دسترسی...">{{ old('description') }}</textarea>
-                            @error('description')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                            <p class="mt-1 text-xs text-gray-500">توضیحات کوتاه درباره کاربرد این دسترسی</p>
-                        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                    <div>
+                        <label class="block text-sm font-medium mb-1" style="color:var(--admin-text-dim)">
+                            نام فنی (انگلیسی) <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="name" value="{{ old('name') }}" dir="ltr" required
+                               placeholder="view-users, create-bookings"
+                               class="w-full rounded-lg px-3 py-2 text-sm"
+                               style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
+                        @error('name')<p class="text-xs mt-1 text-red-500">{{ $message }}</p>@enderror
+                        <p class="text-xs mt-1" style="color:var(--admin-text-light)">به انگلیسی، بدون فاصله، با - جدا کنید</p>
                     </div>
 
-                    <div class="mt-6 p-4 bg-blue-50 border-r-4 border-blue-400 rounded">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <div class="mr-3">
-                                <h3 class="text-sm font-medium text-blue-800">نکات مهم:</h3>
-                                <div class="mt-2 text-sm text-blue-700">
-                                    <ul class="list-disc list-inside space-y-1">
-                                        <li>نام فنی باید یکتا باشد و از حروف انگلیسی و - استفاده کنید</li>
-                                        <li>از نام‌گذاری استاندارد استفاده کنید: <code class="bg-blue-100 px-1 rounded">view-</code>, <code class="bg-blue-100 px-1 rounded">create-</code>, <code class="bg-blue-100 px-1 rounded">edit-</code>, <code class="bg-blue-100 px-1 rounded">delete-</code>, <code class="bg-blue-100 px-1 rounded">manage-</code></li>
-                                        <li>گروه‌بندی منطقی دسترسی‌ها را رعایت کنید</li>
-                                        <li>بعد از ایجاد دسترسی، می‌توانید آن را به نقش‌ها اختصاص دهید</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1" style="color:var(--admin-text-dim)">
+                            عنوان نمایشی (فارسی) <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="label" value="{{ old('label') }}" required
+                               placeholder="مشاهده کاربران"
+                               class="w-full rounded-lg px-3 py-2 text-sm"
+                               style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
+                        @error('label')<p class="text-xs mt-1 text-red-500">{{ $message }}</p>@enderror
                     </div>
 
-                    <div class="border-t border-gray-200 pt-6 mt-6">
-                        <div class="flex justify-end space-x-3 space-x-reverse">
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-6 rounded-lg text-sm font-medium transition-colors duration-200 inline-flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                                ذخیره دسترسی
-                            </button>
-                            <a href="{{ route('admin.permissions.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-6 rounded-lg text-sm font-medium transition-colors duration-200 inline-flex items-center">
-                                انصراف
-                            </a>
-                        </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1" style="color:var(--admin-text-dim)">
+                            گروه <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="group" value="{{ old('group') }}" list="groups-list" required
+                               placeholder="کاربران، رزروها..."
+                               class="w-full rounded-lg px-3 py-2 text-sm"
+                               style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
+                        <datalist id="groups-list">
+                            @foreach($groups as $group)<option value="{{ $group }}">@endforeach
+                        </datalist>
+                        @error('group')<p class="text-xs mt-1 text-red-500">{{ $message }}</p>@enderror
+                        <p class="text-xs mt-1" style="color:var(--admin-text-light)">گروه موجود انتخاب یا گروه جدید تایپ کنید</p>
                     </div>
-                </form>
-            </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1" style="color:var(--admin-text-dim)">توضیحات</label>
+                        <textarea name="description" rows="3"
+                                  placeholder="توضیح کوتاه درباره این دسترسی..."
+                                  class="w-full rounded-lg px-3 py-2 text-sm"
+                                  style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">{{ old('description') }}</textarea>
+                    </div>
+                </div>
+
+                {{-- Help --}}
+                <div class="p-4 rounded-lg mb-5 text-sm"
+                     style="background:#eff6ff;border-right:3px solid #2563eb;color:#1e40af">
+                    <strong class="block mb-1">نکات نام‌گذاری:</strong>
+                    از پیشوندهای استاندارد استفاده کنید:
+                    <code class="px-1 rounded mx-0.5" style="background:#dbeafe">view-</code>
+                    <code class="px-1 rounded mx-0.5" style="background:#dbeafe">create-</code>
+                    <code class="px-1 rounded mx-0.5" style="background:#dbeafe">edit-</code>
+                    <code class="px-1 rounded mx-0.5" style="background:#dbeafe">delete-</code>
+                    <code class="px-1 rounded mx-0.5" style="background:#dbeafe">manage-</code>
+                </div>
+
+                <div class="flex gap-3 pt-4" style="border-top:1px solid var(--admin-border)">
+                    <button type="submit"
+                            class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-lg"
+                            style="background:var(--admin-accent)">
+                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                        ذخیره دسترسی
+                    </button>
+                    <a href="{{ route('admin.permissions.index') }}"
+                       class="inline-flex items-center px-5 py-2 text-sm rounded-lg border"
+                       style="color:var(--admin-text-dim);background:var(--admin-surface);border-color:var(--admin-border)">
+                        انصراف
+                    </a>
+                </div>
+            </form>
         </div>
+
     </div>
 @endsection
