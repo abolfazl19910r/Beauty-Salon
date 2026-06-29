@@ -1,158 +1,149 @@
 @extends('layouts.admin')
-
 @section('title', 'نمایش دسترسی')
 
 @section('content')
-    <div class="fade-in">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+    <div class="container px-6 mx-auto">
+
+        <div class="flex items-center justify-between mb-6">
             <div>
-                <h1 class="text-2xl font-bold text-gray-800 mb-2">نمایش جزئیات دسترسی</h1>
-                <p class="text-sm text-gray-500">جزئیات دسترسی «{{ $permission->label }}»</p>
+                <h1 class="text-2xl font-bold" style="color:var(--admin-text)">{{ $permission->label }}</h1>
+                <p class="text-sm mt-1" style="color:var(--admin-text-dim)">جزئیات دسترسی</p>
             </div>
-            <div class="mt-4 md:mt-0">
-                <a href="{{ route('admin.permissions.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200 inline-flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                    بازگشت به لیست
+            <div class="flex gap-2">
+                <a href="{{ route('admin.permissions.edit', $permission) }}"
+                   class="inline-flex items-center gap-1 px-4 py-2 text-sm text-white rounded-lg"
+                   style="background:var(--admin-accent)">
+                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    ویرایش
+                </a>
+                <a href="{{ route('admin.permissions.index') }}"
+                   class="inline-flex items-center gap-1 px-4 py-2 text-sm rounded-lg border"
+                   style="color:var(--admin-text-dim);background:var(--admin-surface);border-color:var(--admin-border)">
+                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                    بازگشت
                 </a>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6">
-            <div class="md:col-span-8">
-                <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 h-full">
-                    <div class="p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <h2 class="text-lg font-bold text-gray-800">اطلاعات دسترسی</h2>
-                            <div class="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                {{ $permission->group }}
-                            </div>
-                        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <div class="mb-4">
-                                    <div class="text-sm text-gray-500 mb-1">عنوان نمایشی:</div>
-                                    <div class="font-medium text-lg">{{ $permission->label }}</div>
-                                </div>
-                                <div class="mb-4">
-                                    <div class="text-sm text-gray-500 mb-1">نام فنی:</div>
-                                    <div class="font-medium font-mono bg-gray-50 px-3 py-2 rounded" dir="ltr">{{ $permission->name }}</div>
-                                </div>
-                            </div>
-                            <div>
-                                <div class="mb-4">
-                                    <div class="text-sm text-gray-500 mb-1">تاریخ ایجاد:</div>
-                                    <div class="font-medium" dir="ltr">{{ verta($permission->created_at)->formatDatetime() }}</div>
-                                </div>
-                                <div class="mb-4">
-                                    <div class="text-sm text-gray-500 mb-1">آخرین به‌روزرسانی:</div>
-                                    <div class="font-medium" dir="ltr">{{ verta($permission->updated_at)->formatDatetime() }}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        @if($permission->description)
-                            <div class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
-                                <div class="text-sm text-gray-500 mb-1">توضیحات:</div>
-                                <div class="text-gray-700">{{ $permission->description }}</div>
-                            </div>
-                        @endif
+            {{-- Information --}}
+            <div class="md:col-span-2 rounded-xl p-6" style="background:var(--admin-surface);border:1px solid var(--admin-border)">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-semibold" style="color:var(--admin-text)">اطلاعات دسترسی</h2>
+                    <span class="px-3 py-1 text-xs rounded-full font-medium" style="background:#faf5ff;color:#7c3aed">
+                    {{ $permission->group }}
+                </span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span class="block mb-1" style="color:var(--admin-text-dim)">عنوان نمایشی</span>
+                        <span class="font-medium text-base" style="color:var(--admin-text)">{{ $permission->label }}</span>
+                    </div>
+                    <div>
+                        <span class="block mb-1" style="color:var(--admin-text-dim)">نام فنی</span>
+                        <code class="px-2 py-1 rounded text-sm font-mono" dir="ltr"
+                              style="background:var(--admin-bg);color:var(--admin-text);border:1px solid var(--admin-border)">
+                            {{ $permission->name }}
+                        </code>
+                    </div>
+                    <div>
+                        <span class="block mb-1" style="color:var(--admin-text-dim)">تاریخ ایجاد</span>
+                        <span dir="ltr" style="color:var(--admin-text)">{{ verta($permission->created_at)->formatDatetime() }}</span>
+                    </div>
+                    <div>
+                        <span class="block mb-1" style="color:var(--admin-text-dim)">بروزرسانی</span>
+                        <span dir="ltr" style="color:var(--admin-text)">{{ verta($permission->updated_at)->formatDatetime() }}</span>
                     </div>
                 </div>
-            </div>
-
-            <div class="md:col-span-4">
-                <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 h-full">
-                    <div class="p-6">
-                        <h2 class="text-lg font-bold text-gray-800 mb-4">عملیات</h2>
-                        <div class="space-y-3">
-                            <a href="{{ route('admin.permissions.edit', $permission) }}" class="flex items-center w-full p-3 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 rounded-lg transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                                ویرایش دسترسی
-                            </a>
-
-                            <form action="{{ route('admin.permissions.destroy', $permission) }}" method="POST" class="w-full">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="flex items-center w-full p-3 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg transition-colors"
-                                        data-confirm-delete data-confirm-message="آیا از حذف این دسترسی اطمینان دارید؟ این عمل برگشت‌پذیر نیست!">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                    حذف دسترسی
-                                </button>
-                            </form>
-                        </div>
-
-                        <div class="mt-6 pt-6 border-t border-gray-100">
-                            <h3 class="text-sm font-semibold text-gray-700 mb-3">آمار</h3>
-                            <div class="space-y-2">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-sm text-gray-600">تعداد نقش‌ها:</span>
-                                    <span class="font-bold text-blue-600">{{ $roles->count() }}</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-sm text-gray-600">کل کاربران:</span>
-                                    <span class="font-bold text-green-600">{{ $roles->sum('users_count') }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
-            <div class="p-6">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-lg font-bold text-gray-800">نقش‌های دارای این دسترسی</h2>
-                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                        {{ $roles->count() }} نقش
-                    </span>
-                </div>
-
-                @if($roles->isEmpty())
-                    <div class="py-12 text-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                        </svg>
-                        <p class="text-gray-500 mb-4">هیچ نقشی این دسترسی را ندارد!</p>
-                        <p class="text-sm text-gray-400">می‌توانید از بخش مدیریت نقش‌ها، این دسترسی را به نقش‌ها اختصاص دهید.</p>
-                    </div>
-                @else
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        @foreach($roles as $role)
-                            <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-md transition-all">
-                                <div class="flex items-start justify-between">
-                                    <div class="flex-1">
-                                        <h3 class="font-semibold text-gray-900 mb-1">{{ $role->label }}</h3>
-                                        <p class="text-sm text-gray-500 font-mono" dir="ltr">{{ $role->name }}</p>
-                                    </div>
-                                    <a href="{{ route('admin.roles.show', $role) }}"
-                                       class="text-blue-600 hover:text-blue-800"
-                                       title="نمایش نقش">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                        </svg>
-                                    </a>
-                                </div>
-                                <div class="mt-3 pt-3 border-t border-gray-100">
-                                    <div class="flex items-center text-sm text-gray-600">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                        </svg>
-                                        <span>{{ $role->users_count }} کاربر</span>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
+                @if($permission->description)
+                    <div class="mt-4 p-4 rounded-lg" style="background:var(--admin-bg);border:1px solid var(--admin-border)">
+                        <span class="block text-xs mb-1" style="color:var(--admin-text-dim)">توضیحات</span>
+                        <p class="text-sm" style="color:var(--admin-text)">{{ $permission->description }}</p>
                     </div>
                 @endif
             </div>
+
+            {{-- Actions + Statistics --}}
+            <div class="rounded-xl p-6" style="background:var(--admin-surface);border:1px solid var(--admin-border)">
+                <h2 class="text-base font-semibold mb-4" style="color:var(--admin-text)">اقدامات</h2>
+                <div class="space-y-2 mb-6">
+                    <a href="{{ route('admin.permissions.edit', $permission) }}"
+                       class="flex items-center gap-2 p-3 rounded-lg text-sm"
+                       style="background:#fffbeb;color:#d97706">
+                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        ویرایش دسترسی
+                    </a>
+                    <form action="{{ route('admin.permissions.destroy', $permission) }}" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" data-confirm-delete data-confirm-message="آیا از حذف این دسترسی اطمینان دارید؟"
+                                class="flex items-center gap-2 w-full p-3 rounded-lg text-sm"
+                                style="background:#fef2f2;color:#dc2626">
+                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            حذف دسترسی
+                        </button>
+                    </form>
+                </div>
+
+                <div class="pt-4" style="border-top:1px solid var(--admin-border)">
+                    <h3 class="text-xs font-semibold mb-3" style="color:var(--admin-text-dim)">آمار</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span style="color:var(--admin-text-dim)">تعداد نقش‌ها</span>
+                            <span class="font-bold" style="color:var(--admin-accent)">{{ $roles->count() }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span style="color:var(--admin-text-dim)">کل کاربران</span>
+                            <span class="font-bold" style="color:#16a34a">{{ $roles->sum('users_count') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        {{-- Roles with this access --}}
+        <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface);border:1px solid var(--admin-border)">
+            <div class="px-6 py-4 flex items-center justify-between" style="border-bottom:1px solid var(--admin-border)">
+                <h2 class="text-base font-semibold" style="color:var(--admin-text)">
+                    نقش‌های دارای این دسترسی
+                    <span class="mr-2 px-2 py-0.5 text-xs rounded-full" style="background:var(--admin-accent-light);color:var(--admin-accent)">
+                    {{ $roles->count() }}
+                </span>
+                </h2>
+            </div>
+
+            @if($roles->isEmpty())
+                <div class="py-12 text-center" style="color:var(--admin-text-dim)">
+                    <p class="mb-2">هیچ نقشی این دسترسی را ندارد</p>
+                    <p class="text-xs">از بخش مدیریت نقش‌ها، این دسترسی را به نقش‌ها اختصاص دهید</p>
+                </div>
+            @else
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
+                    @foreach($roles as $role)
+                        <div class="rounded-xl p-4 transition-all"
+                             style="border:1px solid var(--admin-border)"
+                             onmouseover="this.style.borderColor='var(--admin-accent)';this.style.background='var(--admin-accent-light)'"
+                             onmouseout="this.style.borderColor='var(--admin-border)';this.style.background=''">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h3 class="font-semibold text-sm" style="color:var(--admin-text)">{{ $role->label }}</h3>
+                                    <p class="text-xs font-mono mt-1" dir="ltr" style="color:var(--admin-text-dim)">{{ $role->name }}</p>
+                                </div>
+                                <a href="{{ route('admin.roles.show', $role) }}"
+                                   class="p-1.5 rounded-lg" style="color:var(--admin-accent);background:var(--admin-accent-light)">
+                                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                </a>
+                            </div>
+                            <div class="mt-3 pt-3 text-xs flex items-center gap-1" style="border-top:1px solid var(--admin-border);color:var(--admin-text-dim)">
+                                <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                                {{ $role->users_count }} کاربر
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
     </div>
 @endsection

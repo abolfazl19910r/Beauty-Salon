@@ -1,106 +1,81 @@
 @extends('layouts.admin')
-
 @section('title', 'مدیریت نقش‌ها')
 
 @section('content')
-    <div class="fade-in">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+    <div class="container px-6 mx-auto">
+
+        <div class="flex items-center justify-between mb-6">
             <div>
-                <h1 class="text-2xl font-bold text-gray-800 mb-2">مدیریت نقش‌ها</h1>
-                <p class="text-sm text-gray-500">مدیریت نقش‌ها و دسترسی‌های کاربران سیستم</p>
+                <h1 class="text-2xl font-bold" style="color:var(--admin-text)">مدیریت نقش‌ها</h1>
+                <p class="text-sm mt-1" style="color:var(--admin-text-dim)">مدیریت نقش‌ها و دسترسی‌های کاربران سیستم</p>
             </div>
-            <div class="mt-4 md:mt-0">
-                @permission('manage-roles')
-                <a href="{{ route('admin.roles.create') }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1.5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-                    </svg>
-                    افزودن نقش جدید
-                </a>
-                @endpermission
-            </div>
+            @permission('manage-roles')
+            <a href="{{ route('admin.roles.create') }}"
+               class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-lg"
+               style="background:var(--admin-accent)">
+                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+                افزودن نقش جدید
+            </a>
+            @endpermission
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
+        <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface);border:1px solid var(--admin-border)">
             @if($roles->isEmpty())
-                <div class="p-12 text-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <p class="text-gray-500 mb-4">هیچ نقشی در سیستم تعریف نشده است!</p>
+                <div class="py-16 text-center" style="color:var(--admin-text-dim)">
+                    <svg class="w-14 h-14 mx-auto mb-4" style="color:var(--admin-border)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <p class="mb-4">هیچ نقشی تعریف نشده است</p>
                     @permission('manage-roles')
-                    <a href="{{ route('admin.roles.create') }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 inline-flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-                        </svg>
-                        ایجاد اولین نقش
-                    </a>
+                    <a href="{{ route('admin.roles.create') }}"
+                       class="inline-flex items-center gap-2 px-4 py-2 text-sm text-white rounded-lg"
+                       style="background:var(--admin-accent)">ایجاد اولین نقش</a>
                     @endpermission
                 </div>
             @else
                 <div class="overflow-x-auto">
                     <table class="w-full">
                         <thead>
-                        <tr class="bg-gray-50 text-gray-600 text-sm">
-                            <th class="py-3 px-6 text-right font-medium">عنوان نقش</th>
-                            <th class="py-3 px-6 text-right font-medium">نام فنی</th>
-                            <th class="py-3 px-6 text-right font-medium">تعداد کاربران</th>
-                            <th class="py-3 px-6 text-right font-medium">تاریخ ایجاد</th>
-                            <th class="py-3 px-6 text-right font-medium">عملیات</th>
+                        <tr style="background:var(--admin-bg)">
+                            <th class="py-3 px-6 text-right text-xs font-semibold" style="color:var(--admin-text-dim)">عنوان نقش</th>
+                            <th class="py-3 px-6 text-right text-xs font-semibold" style="color:var(--admin-text-dim)">نام فنی</th>
+                            <th class="py-3 px-6 text-right text-xs font-semibold" style="color:var(--admin-text-dim)">تعداد کاربران</th>
+                            <th class="py-3 px-6 text-right text-xs font-semibold" style="color:var(--admin-text-dim)">تاریخ ایجاد</th>
+                            <th class="py-3 px-6 text-right text-xs font-semibold" style="color:var(--admin-text-dim)">عملیات</th>
                         </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100">
+                        <tbody class="divide-y" style="border-color:var(--admin-border)">
                         @foreach($roles as $role)
-                            <tr class="hover:bg-gray-50 text-sm transition-colors">
+                            <tr class="transition-colors" onmouseover="this.style.background='var(--admin-accent-light)'" onmouseout="this.style.background=''">
+                                <td class="py-4 px-6 font-medium" style="color:var(--admin-text)">{{ $role->label }}</td>
+                                <td class="py-4 px-6 font-mono text-sm" dir="ltr" style="color:var(--admin-text-dim)">{{ $role->name }}</td>
                                 <td class="py-4 px-6">
-                                    <div class="font-medium text-gray-900">{{ $role->label }}</div>
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full" style="background:var(--admin-accent-light);color:var(--admin-accent)">
+                            {{ $role->users_count }}
+                        </span>
                                 </td>
-                                <td class="py-4 px-6 text-gray-500" dir="ltr">{{ $role->name }}</td>
-                                <td class="py-4 px-6">
-                                    <span class="inline-flex items-center justify-center px-2 py-1 text-xs font-medium leading-none text-blue-800 bg-blue-100 rounded-full">
-                                        {{ $role->users_count }}
-                                    </span>
-                                </td>
-                                <td class="py-4 px-6 text-gray-500" dir="ltr">
+                                <td class="py-4 px-6 text-sm" dir="ltr" style="color:var(--admin-text-dim)">
                                     {{ verta($role->created_at)->format('Y/m/d H:i') }}
                                 </td>
                                 <td class="py-4 px-6">
-                                    <div class="flex items-center space-x-3 space-x-reverse">
-                                        <a href="{{ route('admin.roles.show', $role) }}"
-                                           class="text-blue-600 hover:text-blue-800 transition-colors"
-                                           title="نمایش">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
+                                    <div class="flex items-center gap-2">
+                                        <a href="{{ route('admin.roles.show', $role) }}" title="نمایش"
+                                           class="p-1.5 rounded-lg transition-colors" style="color:var(--admin-accent);background:var(--admin-accent-light)">
+                                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                         </a>
-
                                         @permission('manage-roles')
-                                        <a href="{{ route('admin.roles.edit', $role) }}"
-                                           class="text-yellow-600 hover:text-yellow-800 transition-colors"
-                                           title="ویرایش">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                            </svg>
+                                        <a href="{{ route('admin.roles.edit', $role) }}" title="ویرایش"
+                                           class="p-1.5 rounded-lg transition-colors" style="color:#d97706;background:#fffbeb">
+                                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                         </a>
-                                        <a href="{{ route('admin.roles.assign.form', $role) }}"
-                                           class="text-green-600 hover:text-green-800 transition-colors"
-                                           title="اختصاص به کاربر">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                                            </svg>
+                                        <a href="{{ route('admin.roles.assign.form', $role) }}" title="اختصاص به کاربر"
+                                           class="p-1.5 rounded-lg transition-colors" style="color:#16a34a;background:#f0fdf4">
+                                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
                                         </a>
                                         <form action="{{ route('admin.roles.destroy', $role) }}" method="POST" class="inline-block">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit"
-                                                    class="text-red-600 hover:text-red-800 transition-colors"
-                                                    title="حذف"
-                                                    data-confirm-delete
-                                                    data-confirm-message="آیا از حذف این نقش اطمینان دارید؟">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
+                                            <button type="submit" data-confirm-delete data-confirm-message="آیا از حذف نقش «{{ $role->label }}» اطمینان دارید؟"
+                                                    class="p-1.5 rounded-lg transition-colors" style="color:#dc2626;background:#fef2f2">
+                                                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                                             </button>
                                         </form>
                                         @endpermission
@@ -111,10 +86,11 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="p-4 border-t border-gray-100">
+                <div class="p-4" style="border-top:1px solid var(--admin-border)">
                     {{ $roles->links() }}
                 </div>
             @endif
         </div>
+
     </div>
 @endsection
