@@ -4,26 +4,37 @@ namespace App\Exceptions;
 
 class InsufficientWalletBalanceException extends DomainException
 {
-    public float $required = 0;
+    protected int $httpStatus = 422;
 
-    public float $available = 0;
+    protected ?string $userMessage = 'موجودی کیف پول شما برای این پرداخت کافی نیست.';
 
-    public static function forAmount(float $required, float $available): self
+    /**
+     * @var array<string, mixed>
+     */
+    private array $contextData = [];
+
+    /**
+     * @param float $required مبلغ مورد نیاز
+     * @param float $available موجودی فعلی
+     * @param int|null $walletId آیدی کیف پول
+     */
+    public static function forAmount(float $required, float $available, ?int $walletId = null): self
     {
-        $exception = new self(sprintf(
-            'موجودی کیف پول کافی نیست. مبلغ مورد نیاز: %s تومان، موجودی فعلی: %s تومان.',
-            number_format($required),
-            number_format($available)
-        ));
+        $instance = new self(
+            "Insufficient wallet balance: required={$required}, available={$available}"
+        );
+        $instance->contextData = [
+            'required' => $required,
+            'available' => $available,
+            'shortfall' => round($required - $available, 2),
+            'wallet_id' => $walletId,
+        ];
 
-        $exception->required = $required;
-        $exception->available = $available;
-
-        return $exception;
+        return $instance;
     }
 
-    public function httpStatusCode(): int
+    public function context(): array
     {
-        return 422;
+        return $this->contextData;
     }
 }

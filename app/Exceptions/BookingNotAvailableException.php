@@ -4,28 +4,36 @@ namespace App\Exceptions;
 
 class BookingNotAvailableException extends DomainException
 {
-    public static function slotTaken(): self
-    {
-        return new self('این بازه‌ی زمانی قبلاً رزرو شده است. لطفاً زمان دیگری انتخاب کنید.');
+    protected int $httpStatus = 409; // Conflict
+
+    protected ?string $userMessage = 'زمان انتخابی شما دیگر در دسترس نیست. لطفاً زمان دیگری را انتخاب کنید.';
+
+    /**
+     * @var array<string, mixed>
+     */
+    private array $contextData = [];
+
+    /**
+     * @param string $technicalReason دلیل فنی برای log
+     * @param array<string, mixed> $context داده‌های اضافی (specialist_id, requested_time, ...)
+     * @param string|null $userMessage پیام کاربرپسند
+     */
+    public static function slotTaken(
+        string $technicalReason,
+        array $context = [],
+        ?string $userMessage = null
+    ): self {
+        $instance = new self($technicalReason);
+        if ($userMessage !== null) {
+            $instance->userMessage = $userMessage;
+        }
+        $instance->contextData = $context;
+
+        return $instance;
     }
 
-    public static function outsideWorkingHours(): self
+    public function context(): array
     {
-        return new self('این بازه‌ی زمانی خارج از ساعت کاری متخصص است.');
-    }
-
-    public static function specialistOnLeave(): self
-    {
-        return new self('متخصص در این تاریخ مرخصی است.');
-    }
-
-    public static function tooLateToReschedule(): self
-    {
-        return new self('امکان تغییر زمان این نوبت وجود ندارد (کمتر از ۲۴ ساعت تا زمان نوبت باقی مانده است).');
-    }
-
-    public function httpStatusCode(): int
-    {
-        return 409;
+        return $this->contextData;
     }
 }

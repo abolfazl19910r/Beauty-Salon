@@ -4,28 +4,54 @@ namespace App\Exceptions;
 
 class PaymentProcessingException extends DomainException
 {
-    public static function gatewayFailed(string $reason = ''): self
-    {
-        $message = 'پرداخت با خطا مواجه شد و درگاه پاسخ موفقی نداد.';
-        if ($reason !== '') {
-            $message .= " ({$reason})";
-        }
+    protected int $httpStatus = 502;
 
-        return new self($message);
+    protected ?string $userMessage = 'در حال حاضر امکان پرداخت وجود ندارد. لطفاً چند لحظه دیگر تلاش کنید.';
+
+    /**
+     * @var array<string, mixed>
+     */
+    private array $contextData = [];
+
+    /**
+     * @param string $gatewayMessage پیام فنی دریافتی از درگاه (برای log)
+     * @param string|null $userMessage پیام کاربرپسند (در صورت null از پیش‌فرض استفاده می‌شه)
+     * @param array<string, mixed> $context داده‌های اضافی برای log
+     */
+    public static function gatewayFailed(
+        string $gatewayMessage,
+        ?string $userMessage = null,
+        array $context = []
+    ): self {
+        $instance = new self($gatewayMessage);
+        if ($userMessage !== null) {
+            $instance->userMessage = $userMessage;
+        }
+        $instance->contextData = $context;
+
+        return $instance;
     }
 
     public static function transactionNotFound(string $reference): self
     {
-        return new self("تراکنش پرداخت با کد پیگیری «{$reference}» یافت نشد.");
+        $instance = new self("Payment transaction not found: {$reference}");
+        $instance->userMessage = "تراکنش پرداخت با کد پیگیری «{$reference}» یافت نشد.";
+        $instance->contextData = ['reference' => $reference];
+
+        return $instance;
     }
 
     public static function alreadyProcessed(): self
     {
-        return new self('این پرداخت قبلاً پردازش شده است.');
+        $instance = new self('Payment already processed.');
+        $instance->userMessage = 'این پرداخت قبلاً پردازش شده است.';
+        $instance->httpStatus = 409;
+
+        return $instance;
     }
 
-    public function httpStatusCode(): int
+    public function context(): array
     {
-        return 422;
+        return $this->contextData;
     }
 }

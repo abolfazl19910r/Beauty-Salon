@@ -2,17 +2,32 @@
 
 namespace App\Exceptions;
 
-use Exception;
+use RuntimeException;
+use Throwable;
 
-abstract class DomainException extends Exception
+abstract class DomainException extends RuntimeException
 {
-    public function httpStatusCode(): int
+    protected int $httpStatus = 400;
+
+    protected ?string $userMessage = null;
+
+    public function context(): array
     {
-        return 422;
+        return [];
     }
 
-    public function userMessage(): string
+    public function __construct(string $message = '', int $code = 0, ?Throwable $previous = null)
     {
-        return $this->getMessage();
+        parent::__construct($message, $code, $previous);
+    }
+
+    public function getHttpStatus(): int
+    {
+        return $this->httpStatus;
+    }
+
+    public function getUserMessage(): string
+    {
+        return $this->userMessage ?? $this->getMessage();
     }
 }
