@@ -30,7 +30,7 @@ class PaymentController extends Controller
                 return redirect()->route('payment.result')->with(['success' => true, 'booking' => $booking]);
             }
             if ($booking->prepayment_amount <= 0) {
-                return DB::transaction(function() use ($booking) {
+                DB::transaction(function() use ($booking) {
                     $specialist = $booking->specialist;
                     $finalStatus = $specialist->auto_confirm_bookings ? 'confirmed' : 'pending';
                     $booking->update([
@@ -45,8 +45,10 @@ class PaymentController extends Controller
                         ]
                     ]);
 
-                    // امتیاز وفاداری توسط BookingObserver هنگام تغییر payment_status به paid اعطا می‌شود
                 });
+
+                return redirect()->route('bookings.success', ['id' => $booking->id])
+                    ->with('success', 'نوبت شما با تخفیف کامل با موفقیت ثبت شد.');
             }
             $result = $this->paymentService->createPayment($booking);
 
