@@ -19,17 +19,15 @@ class Specialist extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'name',
-        'phone',
-        'user_id',
-        'email',
-        'auto_confirm_bookings'
+        'name', 'phone', 'user_id', 'email', 'auto_confirm_bookings',
+        'commission_rate',
     ];
 
     protected $dates = ['deleted_at'];
 
     protected $casts = [
         'auto_confirm_bookings' => 'boolean',
+        'commission_rate'       => 'float',
     ];
 
 
@@ -334,4 +332,15 @@ class Specialist extends Model
 
         return $this->wallet;
     }
+
+    public function getEffectiveCommissionRate(): float
+    {
+        if (!is_null($this->commission_rate)) {
+            return (float) $this->commission_rate;
+        }
+
+        $settings = \App\Models\WalletSetting::first();
+        return (float) ($settings->admin_commission_percentage ?? 10);
+    }
+
 }

@@ -91,14 +91,18 @@ class AdminSpecialistController extends Controller
     public function update(Request $request, Specialist $specialist)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:11|unique:specialists,phone,' . $specialist->id,
-            'email' => 'required|email|unique:specialists,email,' . $specialist->id,
-            'services' => ['required', 'array'],
-            'services.*' => ['exists:beauty_services,id']
+            'name'            => 'required|string|max:255',
+            'phone'           => 'required|string|max:11|unique:specialists,phone,' . $specialist->id,
+            'email'           => 'required|email|unique:specialists,email,' . $specialist->id,
+            'services'        => ['required', 'array'],
+            'services.*'      => ['exists:beauty_services,id'],
+            'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
 
         $services = $validated['services'];
+        $validated['commission_rate'] = $request->input('commission_rate') !== ''
+            ? (float) $request->input('commission_rate')
+            : null;
         unset($validated['services']);
 
         $specialist->update($validated);
