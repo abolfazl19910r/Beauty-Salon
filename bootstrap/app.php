@@ -1,10 +1,12 @@
 <?php
 
 use App\Events\ReminderScheduleEvent;
+use App\Exceptions\DomainException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -48,6 +50,17 @@ return Application::configure(basePath: dirname(__DIR__))
         event(new ReminderScheduleEvent());
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(function (DomainException $e, Request $request) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->userMessage(),
+                ], $e->httpStatusCode());
+            }
+
+            return back()
+                ->withInput()
+                ->with('error', $e->userMessage());
+        });
     })
     ->create();
