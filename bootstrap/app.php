@@ -1,10 +1,14 @@
 <?php
 
 use App\Events\ReminderScheduleEvent;
+use App\Exceptions\DomainException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -48,6 +52,40 @@ return Application::configure(basePath: dirname(__DIR__))
         event(new ReminderScheduleEvent());
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->renderable(function (DomainException $e, Request $request) {
+            $context = $e->context();
+            if (! empty($context)) {
+                Log::warning(get_class($e), array_merge($context, [
+                    'message' => $e->getMessage(),
+                    'url' => $request->fullUrl(),
+                    'user_id' => $request->user()?->id,
+                ]));
+            }
+
+            $payload = [
+                'success' => false,
+                'message' => $e->getUserMessage(),
+                'type' => class_basename($e),
+            ];
+
+            if ($request->expectsJson()) {
+                return response()->json($payload, $e->getHttpStatus());
+            }
+
+            return redirect()
+                ->back()
+                ->withInput($request->except(['password', 'password_confirmation']))
+                ->with('error', $e->getUserMessage());
+        });
+
+        $exceptions->renderable(function (HttpException $e, Request $request) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage() ?: __('http-statuses.'.$e->getStatusCode()),
+                    'status' => $e->getStatusCode(),
+                ], $e->getStatusCode());
+            }
+        });
     })
     ->create();
