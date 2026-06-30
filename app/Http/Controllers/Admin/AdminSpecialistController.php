@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Specialist;
+use App\Models\User;
 use App\Services\CategoryService;
 use App\Models\Category;
 use Illuminate\Http\Request;
@@ -54,26 +55,39 @@ class AdminSpecialistController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:11|unique:specialists,phone',
-            'email' => 'required|email|unique:specialists,email',
-            'services' => ['required', 'array'],
-            'services.*' => ['exists:beauty_services,id'],
+            'name'            => 'required|string|max:255',
+            'phone'           => 'required|string|max:11|unique:specialists,phone',
+            'email'           => 'required|email|unique:specialists,email',
+            'services'        => ['required', 'array'],
+            'services.*'      => ['exists:beauty_services,id'],
+            'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
 
         try {
-            return DB::transaction(function () use ($validated) {
+            return DB::transaction(function () use ($validated, $request) {
                 $services = $validated['services'];
                 unset($validated['services']);
 
-                $validated['user_id'] = auth()->id();
+                $validated['phone'] = $this->normalizePhone($validated['phone']);
+
+                $validated['commission_rate'] = $request->input('commission_rate') !== ''
+                    ? (float) $request->input('commission_rate')
+                    : null;
+
+                $matchedUser = User::where('phone', $validated['phone'])->first();
+                $validated['user_id'] = $matchedUser?->id;
 
                 $specialist = Specialist::create($validated);
                 $specialist->services()->attach($services);
 
+                $message = 'متخصص جدید با موفقیت ایجاد شد.';
+                if (!$matchedUser) {
+                    $message .= ' توجه: هنوز هیچ کاربری با این شماره موبایل ثبت‌نام نکرده — پس از ثبت‌نام متخصص با این شماره، پنل او فعال خواهد شد.';
+                }
+
                 return redirect()
                     ->route('admin.specialists.index')
-                    ->with('success', 'متخصص جدید با موفقیت ایجاد شد.');
+                    ->with('success', $message);
             });
         } catch (\Exception $e) {
             Log::error('Error storing specialist: ' . $e->getMessage());
@@ -100,10 +114,16 @@ class AdminSpecialistController extends Controller
         ]);
 
         $services = $validated['services'];
+        unset($validated['services']);
+
+        $validated['phone'] = $this->normalizePhone($validated['phone']);
+
         $validated['commission_rate'] = $request->input('commission_rate') !== ''
             ? (float) $request->input('commission_rate')
             : null;
-        unset($validated['services']);
+
+        $matchedUser = User::where('phone', $validated['phone'])->first();
+        $validated['user_id'] = $matchedUser?->id;
 
         $specialist->update($validated);
         $specialist->services()->sync($services);
@@ -132,5 +152,18 @@ class AdminSpecialistController extends Controller
             return redirect()->route('admin.specialists.index')
                 ->with('error', 'خطا در حذف متخصص');
         }
+    }
+
+    private function normalizePhone(string $phone): string
+    {
+        $digits = preg_replace('/\D/', '', $phone);
+
+        if (str_starts_with($digits, '0098') && strlen($digits) === 14) {
+            $digits = '0' . substr($digits, 4);
+        } elseif (str_starts_with($digits, '98') && strlen($digits) === 12) {
+            $digits = '0' . substr($digits, 2);
+        }
+
+        return $digits;
     }
 }

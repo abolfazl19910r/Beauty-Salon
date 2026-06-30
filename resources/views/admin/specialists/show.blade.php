@@ -4,7 +4,7 @@
 @section('content')
     <div class="fade-in">
 
-        {{-- هدر --}}
+        {{-- Heather --}}
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
             <div class="flex items-center gap-3">
                 <div class="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0"
@@ -66,10 +66,10 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-            {{-- ستون چپ --}}
+            {{-- Left column --}}
             <div class="space-y-5">
 
-                {{-- اطلاعات تماس --}}
+                {{-- Contact information --}}
                 <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
                         اطلاعات تماس
@@ -86,6 +86,33 @@
                                 <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                             </svg>
                             <span dir="ltr" style="color:var(--admin-text);">{{ $specialist->email ?? '—' }}</span>
+                        </div>
+
+                        {{-- Account connection status --}}
+                        @php
+                            $linkedUser = \App\Models\User::where('phone', $specialist->phone)->first();
+                        @endphp
+                        <div class="pt-2" style="border-top:1px solid var(--admin-border);">
+                            @if($linkedUser)
+                                <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium"
+                                     style="background:#F0FDF4; color:#166534;">
+                                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                    متصل به حساب کاربری «{{ $linkedUser->name }}»
+                                </div>
+                            @else
+                                <div class="flex items-start gap-2 px-3 py-2 rounded-lg text-xs"
+                                     style="background:#FFFBEB; color:#92400E;">
+                                    <svg class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                                        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                                    </svg>
+                                    <span>
+                                        هنوز هیچ کاربری با این شماره ثبت‌نام نکرده — متخصص تا ثبت‌نام با همین شماره، نمی‌تواند وارد پنل شود.
+                                    </span>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -111,10 +138,10 @@
                 </div>
             </div>
 
-            {{-- ستون راست (۲/۳) --}}
+            {{-- Right column (2/3) --}}
             <div class="lg:col-span-2 space-y-5">
 
-                {{-- برنامه کاری هفتگی --}}
+                {{-- Weekly work schedule --}}
                 <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <div class="px-4 py-3 flex justify-between items-center text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
                         برنامه کاری هفتگی
@@ -146,7 +173,7 @@
                     </div>
                 </div>
 
-                {{-- مرخصی‌های فعلی --}}
+                {{-- Current vacations --}}
                 <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <div class="px-4 py-3 flex justify-between items-center text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
                         مرخصی‌های فعلی
@@ -186,7 +213,7 @@
                     @endif
                 </div>
 
-                {{-- نوبت‌های امروز --}}
+                {{-- Today's shifts --}}
                 <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
                         نوبت‌های امروز
