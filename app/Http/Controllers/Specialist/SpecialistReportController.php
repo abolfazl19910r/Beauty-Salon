@@ -49,8 +49,7 @@ class SpecialistReportController extends Controller
         $completedBookings = (clone $query)->where('status', 'completed')->count();
         $cancelledBookings = (clone $query)->where('status', 'cancelled')->count();
 
-        // درآمد متخصص = بیعانه پس از کسر کمیسیون ادمین (همان مبلغی که در کیف پول ثبت می‌شود)
-        $commissionRate = \App\Models\WalletSetting::first()->admin_commission_percentage ?? 10;
+        $commissionRate = $specialist->getEffectiveCommissionRate();
         $totalRawRevenue = (clone $query)->where('payment_status', 'paid')
             ->where('status', '!=', 'cancelled')
             ->sum('prepayment_amount');

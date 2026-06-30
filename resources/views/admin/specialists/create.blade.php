@@ -88,6 +88,31 @@
                 </div>
             </div>
 
+            {{-- Dedicated commission --}}
+            <div class="rounded-xl p-5 mt-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+                <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">
+                    تنظیمات مالی
+                </h2>
+                <div>
+                    <label class="form-label">
+                        نرخ کمیسیون اختصاصی (%)
+                        <span class="text-xs font-normal mr-1" style="color:var(--admin-text-light)">— خالی بگذارید تا از تنظیمات global استفاده شود</span>
+                    </label>
+                    <div class="relative" style="max-width:240px;">
+                        <input type="number" name="commission_rate" value="{{ old('commission_rate') }}"
+                               min="0" max="100" step="0.01" placeholder="مثال: 15"
+                               class="form-input" dir="ltr">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none"
+                              style="color:var(--admin-text-dim)">%</span>
+                    </div>
+                    @error('commission_rate') <p class="form-error">{{ $message }}</p> @enderror
+                    @php
+                        $globalRate = \App\Models\WalletSetting::first()?->admin_commission_percentage ?? 10;
+                    @endphp
+                    <p class="text-xs mt-1" style="color:var(--admin-text-light)">نرخ global فعلی: <strong>{{ $globalRate }}%</strong></p>
+                </div>
+            </div>
+
             <div class="flex items-center justify-between mt-5 p-4 rounded-xl" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <button type="submit"
                         class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-white transition-colors"

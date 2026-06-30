@@ -98,6 +98,57 @@
                 </div>
             </div>
 
+
+            {{-- کمیسیون اختصاصی --}}
+            <div class="rounded-xl p-5 mt-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+                <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">
+                    تنظیمات مالی
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="form-label">
+                            نرخ کمیسیون اختصاصی (%)
+                            <span class="text-xs font-normal mr-1" style="color:var(--admin-text-light)">— خالی = استفاده از تنظیمات global</span>
+                        </label>
+                        <div class="relative">
+                            <input type="number"
+                                   name="commission_rate"
+                                   value="{{ old('commission_rate', $specialist->commission_rate) }}"
+                                   min="0" max="100" step="0.01"
+                                   placeholder="مثال: ۱۵"
+                                   class="form-input"
+                                   dir="ltr">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none"
+                                  style="color:var(--admin-text-dim)">%</span>
+                        </div>
+                        @error('commission_rate')
+                        <p class="form-error">{{ $message }}</p>
+                        @enderror
+                        @php
+                            $globalRate = \App\Models\WalletSetting::first()?->admin_commission_percentage ?? 10;
+                        @endphp
+                        <p class="text-xs mt-1" style="color:var(--admin-text-light)">
+                            نرخ global فعلی: <strong>{{ $globalRate }}%</strong>
+                            @if(!is_null($specialist->commission_rate))
+                                — این متخصص نرخ اختصاصی دارد
+                            @endif
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3 self-end pb-1">
+                        <button type="button"
+                                onclick="document.querySelector('[name=commission_rate]').value=''"
+                                class="inline-flex items-center gap-1 px-3 py-2 text-xs rounded-lg border transition-colors"
+                                style="color:var(--admin-text-dim);border-color:var(--admin-border);background:var(--admin-bg)">
+                            <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            بازگشت به global
+                        </button>
+                        <p class="text-xs" style="color:var(--admin-text-dim)">
+                            با کلیک روی این دکمه، نرخ اختصاصی حذف شده و از تنظیمات سیستم استفاده می‌شود
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <div class="flex items-center justify-between mt-5 p-4 rounded-xl" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <button type="submit"
                         class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-white transition-colors"

@@ -110,8 +110,7 @@ class BookingObserver
                 return;
             }
 
-            $settings = WalletSetting::first();
-            $adminCommissionPercentage = $settings->admin_commission_percentage ?? 10;
+            $adminCommissionPercentage = $specialist->getEffectiveCommissionRate();
 
             $totalAmount = $booking->prepayment_amount;
             $adminCommission = ($totalAmount * $adminCommissionPercentage) / 100;
