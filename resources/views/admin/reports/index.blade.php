@@ -218,6 +218,7 @@
                         <table class="report-table">
                             <thead><tr>
                                 <th>نام متخصص</th><th>تعداد نوبت</th><th>درآمد کل (تومان)</th>
+                                <th>نرخ کمیسیون</th><th>سهم متخصص (تومان)</th>
                                 <th>نرخ تکمیل</th><th>نرخ بازگشت</th>
                             </tr></thead>
                             <tbody>
@@ -226,6 +227,13 @@
                                     <td>{{ $sp['name'] }}</td>
                                     <td>{{ number_format($sp['total_bookings']) }}</td>
                                     <td>{{ number_format($sp['total_revenue']) }}</td>
+                                    <td>
+                        <span class="px-2 py-0.5 text-xs rounded-full font-medium"
+                              style="background:var(--admin-accent-light);color:var(--admin-accent)">
+                            {{ $sp['commission_rate'] }}%
+                        </span>
+                                    </td>
+                                    <td style="color:#16a34a;font-weight:600">{{ number_format($sp['specialist_share']) }}</td>
                                     <td>{{ $sp['booking_completion_rate'] }}%</td>
                                     <td>{{ $sp['customer_return_rate'] }}%</td>
                                 </tr>

@@ -87,14 +87,22 @@ class AdminReportsController extends Controller
             ], 'prepayment_amount')
             ->orderByDesc('total_bookings')
             ->get()
-            ->map(fn($s) => [
-                'id'                     => $s->id,
-                'name'                   => $s->name,
-                'total_bookings'         => $s->total_bookings  ?? 0,
-                'total_revenue'          => $s->total_revenue   ?? 0,
-                'booking_completion_rate'=> $this->calcCompletionRate($s->bookings),
-                'customer_return_rate'   => $this->calcReturnRate($s->bookings),
-            ]);
+            ->map(function ($s) {
+                $commissionRate = $s->getEffectiveCommissionRate();
+                $totalRevenue   = $s->total_revenue ?? 0;
+                $specialistShare = $totalRevenue * (1 - $commissionRate / 100);
+
+                return [
+                    'id'                      => $s->id,
+                    'name'                    => $s->name,
+                    'total_bookings'          => $s->total_bookings ?? 0,
+                    'total_revenue'           => $totalRevenue,
+                    'commission_rate'         => $commissionRate,
+                    'specialist_share'        => round($specialistShare),
+                    'booking_completion_rate' => $this->calcCompletionRate($s->bookings),
+                    'customer_return_rate'    => $this->calcReturnRate($s->bookings),
+                ];
+            });
 
         $satisfaction = Booking::whereBetween('created_at', [$start, $end])
             ->whereNotNull('rating')
