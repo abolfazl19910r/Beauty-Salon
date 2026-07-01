@@ -23,9 +23,7 @@ class PaymentController extends Controller
     public function process(Booking $booking)
     {
         try {
-            if ($booking->user_id !== auth()->id()) {
-                abort(403);
-            }
+            $this->authorize('pay', $booking);
             if ($booking->payment_status === 'paid') {
                 return redirect()->route('payment.result')->with(['success' => true, 'booking' => $booking]);
             }
@@ -78,9 +76,7 @@ class PaymentController extends Controller
     public function processWithWallet(Request $request, Booking $booking)
     {
         try {
-            if ($booking->user_id !== auth()->id()) {
-                abort(403, 'دسترسی غیرمجاز');
-            }
+            $this->authorize('pay', $booking);
 
             if ($booking->payment_status === 'paid') {
                 return redirect()->route('bookings.show', $booking)
@@ -123,8 +119,6 @@ class PaymentController extends Controller
                             'gateway_amount' => 0
                         ]
                     ]);
-                    // امتیاز وفاداری توسط BookingObserver هنگام تغییر payment_status به paid اعطا می‌شود
-
                     return redirect()->route('bookings.success', ['id' => $booking->id])
                         ->with('success', 'پرداخت از کیف پول با موفقیت انجام شد');
                 }
@@ -209,9 +203,6 @@ class PaymentController extends Controller
                             'status' => $newStatus,
                             'payment_details' => $paymentDetails
                         ]);
-
-                        // درآمد متخصص (پس از کسر کمیسیون) و امتیاز وفاداری هر دو توسط BookingObserver
-                        // هنگام تغییر payment_status به paid محاسبه و ثبت می‌شوند
                     });
                 }
 
@@ -263,9 +254,7 @@ class PaymentController extends Controller
 
     public function show(Booking $booking)
     {
-        if ($booking->user_id !== auth()->id()) {
-            abort(403, 'دسترسی غیرمجاز');
-        }
+        $this->authorize('pay', $booking);
 
         if ($booking->payment_status === 'paid') {
             return redirect()->route('bookings.show', ['booking' => $booking])

@@ -99,9 +99,7 @@ class SpecialistReviewController extends Controller
     {
         $user = auth()->user();
         $specialist = Specialist::where('phone', $user->phone)->firstOrFail();
-        if ($review->specialist_id !== $specialist->id) {
-            abort(403, 'شما اجازه دسترسی به این نظر را ندارید.');
-        }
+        $this->authorize('view', $review);
 
         $review->load(['user', 'service', 'booking']);
 
@@ -112,9 +110,7 @@ class SpecialistReviewController extends Controller
     {
         $user = auth()->user();
         $specialist = Specialist::where('phone', $user->phone)->firstOrFail();
-        if ($review->specialist_id !== $specialist->id) {
-            abort(403, 'شما اجازه پاسخ به این نظر را ندارید.');
-        }
+        $this->authorize('respond', $review);
 
         if ($review->hasResponse()) {
             return back()->with('error', 'شما قبلاً به این نظر پاسخ داده‌اید.');
@@ -148,7 +144,7 @@ class SpecialistReviewController extends Controller
         $specialist = Specialist::where('phone', $user->phone)->firstOrFail();
 
         if ($review->specialist_id !== $specialist->id) {
-            abort(403);
+            $this->authorize('respond', $review);
         }
 
         $validated = $request->validate([
@@ -179,7 +175,7 @@ class SpecialistReviewController extends Controller
         $specialist = Specialist::where('phone', $user->phone)->firstOrFail();
 
         if ($review->specialist_id !== $specialist->id) {
-            abort(403);
+            $this->authorize('respond', $review);
         }
 
         try {

@@ -71,7 +71,7 @@ class UserWalletController extends Controller
                     ->startOfDay();
                 $query->where('created_at', '>=', $dateFrom);
             } catch (\Exception $e) {
-                // تاریخ نامعتبر؛ فیلتر نادیده گرفته می‌شود
+
             }
         }
 
@@ -86,7 +86,7 @@ class UserWalletController extends Controller
                     ->endOfDay();
                 $query->where('created_at', '<=', $dateTo);
             } catch (\Exception $e) {
-                // تاریخ نامعتبر؛ فیلتر نادیده گرفته می‌شود
+
             }
         }
 
@@ -100,9 +100,7 @@ class UserWalletController extends Controller
         $user = auth()->user();
         $wallet = $user->getOrCreateWallet();
 
-        if ($transaction->wallet_id !== $wallet->id) {
-            abort(403, 'دسترسی غیرمجاز');
-        }
+        $this->authorize('viewTransaction', $transaction);
 
         $transaction->load('booking.service', 'booking.specialist');
 

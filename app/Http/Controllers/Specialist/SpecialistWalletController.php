@@ -201,9 +201,10 @@ class SpecialistWalletController extends Controller
         $user = auth()->user();
         $specialist = Specialist::where('phone', $user->phone)->first();
 
-        if (!$specialist || $withdrawalRequest->specialist_id !== $specialist->id) {
-            abort(403, 'شما مجاز به دسترسی به این درخواست نیستید.');
+        if (!$specialist) {
+            abort(404);
         }
+        $this->authorize('requestWithdrawal', $specialist->wallet);
 
         if (!$withdrawalRequest->canBeCancelled()) {
             return back()->with('error', 'این درخواست قابل لغو نیست.');
