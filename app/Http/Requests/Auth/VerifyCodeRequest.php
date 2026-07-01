@@ -4,7 +4,7 @@ namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class LoginRequest extends FormRequest
+class VerifyCodeRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -14,16 +14,15 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'phone'    => ['required', 'string'],
-            'password' => ['required', 'string'],
+            'code' => ['required', 'string', 'size:6'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'phone.required'    => 'شماره موبایل الزامی است.',
-            'password.required' => 'رمز عبور الزامی است.',
+            'code.required' => 'کد تأیید الزامی است.',
+            'code.size'     => 'کد تأیید باید ۶ رقم باشد.',
         ];
     }
 }

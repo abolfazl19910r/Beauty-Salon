@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Specialist;
 
+use App\Rules\ValidIban;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateIbanRequest extends FormRequest
@@ -14,18 +15,9 @@ class UpdateIbanRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'iban' => [
-                'required',
-                'string',
-                function ($attribute, $value, $fail) {
-                    $digits = str_replace(' ', '', $value);
-                    if (! preg_match('/^[0-9]{24}$/', $digits)) {
-                        $fail('لطفاً ۲۴ رقم شماره شبا را بدون IR وارد کنید.');
-                    }
-                },
-            ],
-            'account_holder_name' => 'required|string|min:3|max:255',
-            'bank_name'           => 'required|string',
+            'iban'                => ['required', 'string', new ValidIban],
+            'account_holder_name' => ['required', 'string', 'min:3', 'max:255'],
+            'bank_name'           => ['required', 'string'],
         ];
     }
 

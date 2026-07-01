@@ -4,7 +4,7 @@ namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class LoginRequest extends FormRequest
+class SendResetCodeRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -14,16 +14,15 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'phone'    => ['required', 'string'],
-            'password' => ['required', 'string'],
+            'phone' => ['required', 'string', 'regex:/^09[0-9]{9}$/'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'phone.required'    => 'شماره موبایل الزامی است.',
-            'password.required' => 'رمز عبور الزامی است.',
+            'phone.required' => 'شماره موبایل الزامی است.',
+            'phone.regex'    => 'شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد.',
         ];
     }
 }
