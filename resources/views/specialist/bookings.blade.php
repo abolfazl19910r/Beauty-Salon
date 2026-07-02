@@ -67,7 +67,7 @@
                 </button>
             </div>
 
-            <form method="GET" action="{{ route('specialist.bookings') }}" id="filterForm" class="hidden mt-4">
+            <form method="GET" action="{{ route('specialist.bookings.index') }}" id="filterForm" class="hidden mt-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                     <div>
                         <label class="block text-xs text-[var(--specialist-plum-muted)] mb-2">از تاریخ</label>
@@ -164,7 +164,7 @@
                         </svg>
                         اعمال فیلتر
                     </button>
-                    <a href="{{ route('specialist.bookings') }}" class="px-6 py-2 rounded-lg font-medium text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-text)] transition flex items-center gap-2" style="border: 1px solid var(--specialist-border);">
+                    <a href="{{ route('specialist.bookings.index') }}" class="px-6 py-2 rounded-lg font-medium text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-text)] transition flex items-center gap-2" style="border: 1px solid var(--specialist-border);">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>

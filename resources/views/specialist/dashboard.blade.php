@@ -72,7 +72,7 @@
         </div>
 
         {{-- Main CTA --}}
-        <a href="{{ route('specialist.bookings') }}" class="specialist-cta w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-opacity hover:opacity-90">
+        <a href="{{ route('specialist.bookings.index') }}" class="specialist-cta w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-opacity hover:opacity-90">
             مدیریت نوبت‌ها
         </a>
 
