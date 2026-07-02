@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Specialist;
 
 use App\Http\Controllers\Controller;
+use App\Traits\ResolvesSpecialist;
 use App\Http\Requests\Specialist\UpdateScheduleRequest;
 use App\Http\Requests\Specialist\UpdateSpecialistPasswordRequest;
 use App\Http\Requests\Specialist\UpdateSpecialistProfileRequest;
@@ -16,6 +17,8 @@ use Illuminate\Support\Facades\Log;
 
 class SpecialistProfileController extends Controller
 {
+    use ResolvesSpecialist;
+
     public function __construct(
         protected SpecialistDashboardService $dashboardService,
     ) {}
@@ -32,8 +35,6 @@ class SpecialistProfileController extends Controller
 
         return view('specialist.dashboard', array_merge(['specialist' => $specialist], $data));
     }
-
-    // ── پروفایل ────────────────────────────────────────────────────
 
     public function show()
     {
@@ -172,7 +173,6 @@ class SpecialistProfileController extends Controller
         }
     }
 
-
     public function loyalty()
     {
         $specialist = $this->resolveSpecialist();
@@ -194,22 +194,4 @@ class SpecialistProfileController extends Controller
         return view('specialist.loyalty', compact('specialist', 'currentBalance', 'expiringPoints', 'history'));
     }
 
-
-    private function resolveSpecialist(): ?Specialist
-    {
-        $user = auth()->user();
-
-        return Specialist::where('user_id', $user->id)
-            ->orWhere('phone', $user->phone)
-            ->first();
-    }
-
-    private function authorizeSpecialist(): void
-    {
-        $user = auth()->user();
-
-        if (! $user->hasRole('specialists') && ! $user->hasRole('specialist')) {
-            abort(403, 'شما به این بخش دسترسی ندارید.');
-        }
-    }
 }

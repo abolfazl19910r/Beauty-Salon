@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Specialist;
 
 use App\Http\Controllers\Controller;
+use App\Traits\ResolvesSpecialist;
 use App\Models\Specialist;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -11,6 +12,8 @@ use Morilog\Jalali\Jalalian;
 
 class SpecialistNotificationController extends Controller
 {
+    use ResolvesSpecialist;
+
     public function index()
     {
         $user = auth()->user();
