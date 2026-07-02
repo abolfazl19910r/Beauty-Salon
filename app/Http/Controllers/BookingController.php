@@ -2,148 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Booking\ApplyDiscountRequest;
-use App\Http\Requests\Booking\CheckDiscountRequest;
-use App\Http\Requests\Booking\ConfirmBookingRequest;
 use App\Http\Requests\Booking\RateBookingRequest;
-use App\Http\Requests\Booking\StoreBookingRequest;
-use App\Models\BeautyService;
 use App\Models\Booking;
-use App\Models\DiscountCode;
-use App\Models\Specialist;
-use App\Notifications\BookingNotification;
-use App\Notifications\BookingStatusUpdated;
-use App\Notifications\CustomerBookingNotification;
-use App\Notifications\SpecialistBookingCancelledNotification;
-use App\Services\PaymentService;
-use App\Services\SMSService;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * مسئول نمایش لیست و جزئیات نوبت‌ها، صفحات موفقیت/شکست پرداخت، و ثبت نظر.
+ *
+ * متدهای استخراج‌شده به کنترلرهای مجزا (فاز R3):
+ *  - create / confirm / store / cancel  → BookingReservationController
+ *  - checkDiscount / applyDiscount      → BookingDiscountController
+ *  - getAvailableTimeSlots / Dates / …  → BookingAvailabilityController
+ *  - show / update (reschedule)         → BookingRescheduleController
+ */
 class BookingController extends Controller
 {
-    public function __construct(
-        protected PaymentService $paymentService,
-        protected SMSService $smsService,
-    ) {}
-
-    public function create()
-    {
-        if (! auth()->check()) {
-            return redirect()->route('login')
-                ->with('message', 'برای رزرو نوبت ابتدا باید وارد شوید.');
-        }
-
-        $services = BeautyService::all();
-        $specialists = Specialist::all();
-
-        return view('bookings.create', compact('services', 'specialists'));
-    }
-
-    public function confirm(ConfirmBookingRequest $request)
-    {
-        try {
-            $service = BeautyService::findOrFail($request->service_id);
-            $specialist = Specialist::findOrFail($request->specialist_id);
-            $bookingTime = $request->booking_time;
-
-            $bookingDate = date('Y-m-d', strtotime($bookingTime));
-            $bookingTimeOnly = date('H:i', strtotime($bookingTime));
-            $availableSlots = $specialist->getAvailableSlots($bookingDate);
-
-            if (! in_array($bookingTimeOnly, $availableSlots)) {
-                return back()->with('error', 'متأسفانه این زمان دیگر در دسترس نیست. لطفاً زمان دیگری انتخاب کنید.');
-            }
-
-            $prepaymentAmount = 50000;
-
-            session([
-                'pending_booking' => [
-                    'service_id'    => $request->service_id,
-                    'specialist_id' => $request->specialist_id,
-                    'booking_time'  => $bookingTime,
-                ],
-            ]);
-
-            return view('bookings.confirm', compact('service', 'specialist', 'bookingTime', 'prepaymentAmount'));
-
-        } catch (Exception $e) {
-            return back()->with('error', 'خطایی رخ داد. لطفاً دوباره تلاش کنید.');
-        }
-    }
-
-    public function store(StoreBookingRequest $request)
-    {
-        try {
-            return DB::transaction(function () use ($request) {
-                $bookingTime = $request->booking_time;
-                $specialist = Specialist::find($request->specialist_id);
-                $bookingDate = date('Y-m-d', strtotime($bookingTime));
-                $bookingTimeOnly = date('H:i', strtotime($bookingTime));
-
-                $availableSlots = $specialist->getAvailableSlots($bookingDate);
-
-                if (! in_array($bookingTimeOnly, $availableSlots)) {
-                    return back()->with('error', 'این زمان قبلاً رزرو شده است. لطفاً زمان دیگری انتخاب کنید.');
-                }
-
-                $prepaymentAmount = 50000;
-                $discountAmount = 0;
-
-                if ($request->filled('discount_code')) {
-                    $discountCode = DiscountCode::where('code', $request->discount_code)->first();
-
-                    if ($discountCode && $discountCode->isValid()) {
-                        $discountAmount = $discountCode->type === 'percentage'
-                            ? ($prepaymentAmount * $discountCode->amount / 100)
-                            : $discountCode->amount;
-
-                        $discountCode->increment('used_count');
-                    }
-                }
-
-                $finalAmount = max(0, $prepaymentAmount - $discountAmount);
-
-                $booking = Booking::create([
-                    'service_id'      => $request->service_id,
-                    'specialist_id'   => $request->specialist_id,
-                    'user_id'         => auth()->id(),
-                    'booking_time'    => $bookingTime,
-                    'status'          => 'pending_payment',
-                    'prepayment_amount' => $finalAmount,
-                    'payment_status'  => 'unpaid',
-                    'discount_code'   => $request->discount_code,
-                    'discount_amount' => $discountAmount,
-                ]);
-
-                $booking->load(['service', 'specialist', 'user']);
-
-                if ($request->expectsJson()) {
-                    return response()->json([
-                        'message' => 'نوبت با موفقیت ثبت شد.',
-                        'booking' => $booking,
-                    ]);
-                }
-
-                return redirect()->route('payment.show', ['booking' => $booking->id]);
-            });
-
-        } catch (Exception $e) {
-            return back()->with('error', 'خطا در ثبت رزرو. لطفاً دوباره تلاش کنید.')
-                ->withInput();
-        }
-    }
-
     public function index(Request $request): \Illuminate\View\View
     {
         $user = auth()->user();
+
         $query = Booking::with(['service', 'specialist'])
             ->where('user_id', $user->id)
             ->orderBy('booking_time', 'desc');
@@ -153,8 +36,7 @@ class BookingController extends Controller
         }
 
         if ($request->filled('date')) {
-            $date = $request->date;
-            $query->whereDate('booking_time', $date);
+            $query->whereDate('booking_time', $request->date);
         }
 
         $bookings = $query->paginate(10)->withQueryString();
@@ -174,10 +56,11 @@ class BookingController extends Controller
                     ->with('error', 'اطلاعات سرویس برای این نوبت یافت نشد.');
             }
 
-            if ($booking->payment_status === 'unpaid' &&
+            if (
+                $booking->payment_status === 'unpaid' &&
                 $booking->status === 'pending_payment' &&
-                ! session()->has('from_payment_result')) {
-
+                ! session()->has('from_payment_result')
+            ) {
                 return redirect()->route('payment.show', ['booking' => $booking->id])
                     ->with('info', 'لطفاً ابتدا پرداخت را تکمیل کنید.');
             }
@@ -194,23 +77,6 @@ class BookingController extends Controller
 
             return redirect()->route('bookings.index')
                 ->with('error', 'خطا در نمایش جزئیات نوبت.');
-        }
-    }
-
-    public function cancel(Booking $booking): RedirectResponse
-    {
-        $this->authorize('cancel', $booking);
-
-        try {
-            $booking->update(['status' => 'cancelled']);
-
-            $booking->user?->notify(new BookingStatusUpdated($booking));
-            $booking->specialist?->notify(new SpecialistBookingCancelledNotification($booking));
-
-            return back()->with('success', 'نوبت با موفقیت لغو شد.');
-
-        } catch (Exception $e) {
-            return back()->with('error', 'خطا در لغو نوبت: ' . $e->getMessage());
         }
     }
 
@@ -243,62 +109,6 @@ class BookingController extends Controller
         return view('bookings.failed', compact('booking', 'errorMessage'));
     }
 
-    public function checkDiscount(CheckDiscountRequest $request): JsonResponse
-    {
-        $discountCode = DiscountCode::where('code', $request->code)->first();
-
-        if (! $discountCode || ! $discountCode->isValid()) {
-            return response()->json([
-                'valid'   => false,
-                'message' => 'کد تخفیف نامعتبر است یا منقضی شده.',
-            ]);
-        }
-
-        $prepaymentAmount = 50000;
-        $discountAmount = $discountCode->type === 'percentage'
-            ? ($prepaymentAmount * $discountCode->amount / 100)
-            : $discountCode->amount;
-
-        return response()->json([
-            'valid'           => true,
-            'discount_amount' => $discountAmount,
-            'final_amount'    => max(0, $prepaymentAmount - $discountAmount),
-            'message'         => 'کد تخفیف معتبر است.',
-        ]);
-    }
-
-    public function applyDiscount(ApplyDiscountRequest $request, Booking $booking): RedirectResponse
-    {
-        $this->authorize('update', $booking);
-
-        $discountCode = DiscountCode::where('code', $request->code)->first();
-
-        if (! $discountCode || ! $discountCode->isValid()) {
-            return back()->with('error', 'کد تخفیف نامعتبر است یا منقضی شده.');
-        }
-
-        if ($discountCode->user_id && $discountCode->user_id !== auth()->id()) {
-            return back()->with('error', 'این کد تخفیف متعلق به شما نیست.');
-        }
-
-        DB::transaction(function () use ($booking, $discountCode) {
-            $basePrepayment = 50000;
-            $discountAmount = $discountCode->type === 'percentage'
-                ? ($basePrepayment * $discountCode->amount / 100)
-                : $discountCode->amount;
-
-            $booking->update([
-                'discount_code'   => $discountCode->code,
-                'discount_amount' => $discountAmount,
-                'prepayment_amount' => max(0, $basePrepayment - $discountAmount),
-            ]);
-
-            $discountCode->increment('used_count');
-        });
-
-        return back()->with('success', 'کد تخفیف با موفقیت اعمال شد.');
-    }
-
     public function rate(RateBookingRequest $request, Booking $booking): RedirectResponse
     {
         $this->authorize('view', $booking);
@@ -317,10 +127,6 @@ class BookingController extends Controller
         }
     }
 
-    // ----------------------------------------------------------------
-    // متدهای API (استفاده‌شده در routes/api/user/bookings.php)
-    // ----------------------------------------------------------------
-
     public function getUserBookings(): Collection
     {
         return Booking::with(['service', 'specialist'])
@@ -329,10 +135,6 @@ class BookingController extends Controller
             ->get();
     }
 
-    /**
-     * نوبت‌های آینده — API endpoint.
-     * نام قدیمی: upcoming() — در API route به‌اشتباه getUpcomingBookings نام‌گذاری شده بود (فیکس شد).
-     */
     public function getUpcomingBookings(): JsonResponse
     {
         $bookings = Booking::with(['service', 'specialist'])
@@ -348,10 +150,6 @@ class BookingController extends Controller
         ]);
     }
 
-    /**
-     * نوبت‌های گذشته — API endpoint.
-     * نام قدیمی: past() — در API route به‌اشتباه getPastBookings نام‌گذاری شده بود (فیکس شد).
-     */
     public function getPastBookings(): JsonResponse
     {
         $bookings = Booking::with(['service', 'specialist'])
