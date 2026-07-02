@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers\Specialist;
 
-use App\Models\Specialist;
-use App\Models\LoyaltyPoint;
-use App\Traits\ResolvesSpecialist;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Http\RedirectResponse;
-use App\Services\SpecialistProfileService;
-use App\Services\SpecialistDashboardService;
+use App\Traits\ResolvesSpecialist;
 use App\Http\Requests\Specialist\UpdateScheduleRequest;
-use App\Http\Requests\Specialist\UpdateSpecialistProfileRequest;
 use App\Http\Requests\Specialist\UpdateSpecialistPasswordRequest;
+use App\Http\Requests\Specialist\UpdateSpecialistProfileRequest;
+use App\Models\LoyaltyPoint;
+use App\Models\Specialist;
+use App\Services\SpecialistDashboardService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class SpecialistProfileController extends Controller
 {
@@ -22,7 +21,6 @@ class SpecialistProfileController extends Controller
 
     public function __construct(
         protected SpecialistDashboardService $dashboardService,
-        protected SpecialistProfileService $profileService,
     ) {}
 
     public function dashboard()
@@ -41,20 +39,50 @@ class SpecialistProfileController extends Controller
     public function show()
     {
         $user = auth()->user();
-        $specialist = $this->resolveSpecialist(orFail: true);
+        $specialist = $this->resolveSpecialist();
 
-        $profileData = $this->profileService->getProfileShowData($user);
+        if (! $specialist) {
+            return view('specialist.profile-not-found');
+        }
 
-        return view('specialist.profile-show', array_merge(
-            compact('user', 'specialist'),
-            $profileData
+        // آمار نوبت‌های کاربر (به عنوان مشتری)
+        $totalBookings = $user->bookings()->count();
+        $completedBookings = $user->bookings()->where('status', 'completed')->count();
+        $cancelledBookings = $user->bookings()->where('status', 'cancelled')->count();
+
+        // نوبت‌های آینده کاربر
+        $upcomingBookings = $user->bookings()
+            ->where('booking_time', '>', now())
+            ->whereNotIn('status', ['cancelled', 'completed'])
+            ->with(['service', 'specialist'])
+            ->orderBy('booking_time', 'asc')
+            ->get();
+
+        // تاریخچه‌ی نوبت‌ها (با صفحه‌بندی)
+        $myBookings = $user->bookings()
+            ->with(['service', 'specialist'])
+            ->latest()
+            ->paginate(10);
+
+        return view('specialist.profile-show', compact(
+            'user',
+            'specialist',
+            'totalBookings',
+            'completedBookings',
+            'cancelledBookings',
+            'upcomingBookings',
+            'myBookings'
         ));
     }
 
     public function edit()
     {
         $user = auth()->user();
-        $specialist = $this->resolveSpecialist(orFail: true); // ✅ بسیار تمیز و خوانا
+        $specialist = $this->resolveSpecialist();
+
+        if (! $specialist) {
+            return view('specialist.profile-not-found');
+        }
 
         return view('specialist.profile-edit', compact('user', 'specialist'));
     }
@@ -93,8 +121,6 @@ class SpecialistProfileController extends Controller
 
     public function schedule()
     {
-        $this->authorizeSpecialist();
-
         $specialist = $this->resolveSpecialist();
 
         if (! $specialist) {

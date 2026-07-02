@@ -85,7 +85,7 @@ class SpecialistBookingManagementController extends Controller
 
     public function markAsCompleted(Booking $booking): RedirectResponse
     {
-        $specialist = $this->requireSpecialist();
+        $specialist = $this->resolveSpecialist();
 
         if ($booking->specialist_id !== $specialist->id) {
             abort(403, 'شما مجاز به تغییر وضعیت این نوبت نیستید.');
