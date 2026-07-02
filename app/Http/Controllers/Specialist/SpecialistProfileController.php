@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers\Specialist;
 
-use App\Http\Controllers\Controller;
-use App\Traits\ResolvesSpecialist;
-use App\Http\Requests\Specialist\UpdateScheduleRequest;
-use App\Http\Requests\Specialist\UpdateSpecialistPasswordRequest;
-use App\Http\Requests\Specialist\UpdateSpecialistProfileRequest;
-use App\Models\LoyaltyPoint;
 use App\Models\Specialist;
-use App\Services\SpecialistDashboardService;
-use Illuminate\Http\RedirectResponse;
+use App\Models\LoyaltyPoint;
+use App\Traits\ResolvesSpecialist;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\RedirectResponse;
+use App\Services\SpecialistProfileService;
+use App\Services\SpecialistDashboardService;
+use App\Http\Requests\Specialist\UpdateScheduleRequest;
+use App\Http\Requests\Specialist\UpdateSpecialistProfileRequest;
+use App\Http\Requests\Specialist\UpdateSpecialistPasswordRequest;
 
 class SpecialistProfileController extends Controller
 {
@@ -21,6 +22,7 @@ class SpecialistProfileController extends Controller
 
     public function __construct(
         protected SpecialistDashboardService $dashboardService,
+        protected SpecialistProfileService $profileService,
     ) {}
 
     public function dashboard()
@@ -38,20 +40,21 @@ class SpecialistProfileController extends Controller
 
     public function show()
     {
-        $this->authorizeSpecialist();
-
         $user = auth()->user();
-        $specialist = Specialist::where('phone', $user->phone)->first();
+        $specialist = $this->resolveSpecialist(orFail: true);
 
-        return view('specialist.profile-show', compact('user', 'specialist'));
+        $profileData = $this->profileService->getProfileShowData($user);
+
+        return view('specialist.profile-show', array_merge(
+            compact('user', 'specialist'),
+            $profileData
+        ));
     }
 
     public function edit()
     {
-        $this->authorizeSpecialist();
-
         $user = auth()->user();
-        $specialist = Specialist::where('phone', $user->phone)->first();
+        $specialist = $this->resolveSpecialist(orFail: true); // ✅ بسیار تمیز و خوانا
 
         return view('specialist.profile-edit', compact('user', 'specialist'));
     }
