@@ -7,20 +7,21 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 trait ResolvesSpecialist
 {
-    protected function resolveSpecialist(): ?Specialist
-    {
-        return auth()->user()?->specialist;
-    }
 
-    protected function requireSpecialist(): Specialist
+    protected function resolveSpecialist(bool $orFail = false): ?Specialist
     {
         $specialist = auth()->user()?->specialist;
 
-        if (! $specialist) {
+        if (! $specialist && $orFail) {
             abort(404, 'رکورد متخصص برای این حساب کاربری یافت نشد.');
         }
 
         return $specialist;
+    }
+
+    protected function requireSpecialist(): Specialist
+    {
+        return $this->resolveSpecialist(orFail: true);
     }
 
     protected function resolveSpecialistOrFail(): Specialist
