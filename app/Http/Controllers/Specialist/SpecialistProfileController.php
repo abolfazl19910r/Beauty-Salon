@@ -37,20 +37,48 @@ class SpecialistProfileController extends Controller
 
     public function show()
     {
-        $this->authorizeSpecialist();
-
         $user = auth()->user();
-        $specialist = Specialist::where('phone', $user->phone)->first();
+        $specialist = $this->resolveSpecialist();
 
-        return view('specialist.profile-show', compact('user', 'specialist'));
+        if (! $specialist) {
+            return view('specialist.profile-not-found');
+        }
+
+        $totalBookings = $user->bookings()->count();
+        $completedBookings = $user->bookings()->where('status', 'completed')->count();
+        $cancelledBookings = $user->bookings()->where('status', 'cancelled')->count();
+
+        $upcomingBookings = $user->bookings()
+            ->where('booking_time', '>', now())
+            ->whereNotIn('status', ['cancelled', 'completed'])
+            ->with(['service', 'specialist'])
+            ->orderBy('booking_time', 'asc')
+            ->get();
+
+        $myBookings = $user->bookings()
+            ->with(['service', 'specialist'])
+            ->latest()
+            ->paginate(10);
+
+        return view('specialist.profile-show', compact(
+            'user',
+            'specialist',
+            'totalBookings',
+            'completedBookings',
+            'cancelledBookings',
+            'upcomingBookings',
+            'myBookings'
+        ));
     }
 
     public function edit()
     {
-        $this->authorizeSpecialist();
-
         $user = auth()->user();
-        $specialist = Specialist::where('phone', $user->phone)->first();
+        $specialist = $this->resolveSpecialist();
+
+        if (! $specialist) {
+            return view('specialist.profile-not-found');
+        }
 
         return view('specialist.profile-edit', compact('user', 'specialist'));
     }
@@ -89,8 +117,6 @@ class SpecialistProfileController extends Controller
 
     public function schedule()
     {
-        $this->authorizeSpecialist();
-
         $specialist = $this->resolveSpecialist();
 
         if (! $specialist) {
