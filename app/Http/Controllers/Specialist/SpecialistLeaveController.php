@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Specialist;
 
 use App\Http\Controllers\Controller;
+use App\Traits\ResolvesSpecialist;
 use App\Http\Requests\Specialist\StoreLeaveRequest;
 use App\Models\Specialist;
 use App\Models\SpecialistLeave;
@@ -12,6 +13,8 @@ use Morilog\Jalali\Jalalian;
 
 class SpecialistLeaveController extends Controller
 {
+    use ResolvesSpecialist;
+
     public function index()
     {
         $specialist = $this->resolveSpecialist();
@@ -91,10 +94,4 @@ class SpecialistLeaveController extends Controller
             ->with('success', 'درخواست مرخصی با موفقیت حذف شد.');
     }
 
-    private function resolveSpecialist(): ?Specialist
-    {
-        $user = auth()->user();
-
-        return Specialist::where('phone', $user->phone)->first();
-    }
 }

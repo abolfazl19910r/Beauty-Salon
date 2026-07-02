@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Specialist;
 
 use App\Http\Controllers\Controller;
+use App\Traits\ResolvesSpecialist;
 use App\Models\Booking;
 use App\Models\Specialist;
 use App\Services\ReviewService;
@@ -15,6 +16,8 @@ use Morilog\Jalali\Jalalian;
 
 class SpecialistBookingManagementController extends Controller
 {
+    use ResolvesSpecialist;
+
     public function __construct(
         protected ReviewService $reviewService,
     ) {}
@@ -82,7 +85,7 @@ class SpecialistBookingManagementController extends Controller
 
     public function markAsCompleted(Booking $booking): RedirectResponse
     {
-        $specialist = $this->resolveSpecialist(orFail: true);
+        $specialist = $this->requireSpecialist();
 
         if ($booking->specialist_id !== $specialist->id) {
             abort(403, 'شما مجاز به تغییر وضعیت این نوبت نیستید.');
@@ -148,18 +151,6 @@ class SpecialistBookingManagementController extends Controller
 
             return back()->with('error', 'خطا در لغو نوبت: ' . $e->getMessage());
         }
-    }
-
-    private function resolveSpecialist(bool $orFail = false): ?Specialist
-    {
-        $user = auth()->user();
-        $specialist = Specialist::where('phone', $user->phone)->first();
-
-        if (! $specialist && $orFail) {
-            abort(404, 'رکورد متخصص یافت نشد.');
-        }
-
-        return $specialist;
     }
 
     private function applyFilters($query, Request $request): void
