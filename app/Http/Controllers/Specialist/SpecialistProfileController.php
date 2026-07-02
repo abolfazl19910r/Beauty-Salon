@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Specialist;
 
-use App\Models\Specialist;
 use App\Models\LoyaltyPoint;
+use App\Models\Specialist;
 use App\Traits\ResolvesSpecialist;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use App\Services\SpecialistProfileService;
 use App\Services\SpecialistDashboardService;
