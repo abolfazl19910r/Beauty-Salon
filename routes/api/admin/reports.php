@@ -4,7 +4,7 @@ use App\Http\Controllers\Admin\AdminReportRevenueController;
 use App\Http\Controllers\Admin\AdminReportSpecialistController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('admin/reports')->name('admin.reports.api.')->middleware(['auth:sanctum', 'admin'])->group(function () {
+Route::prefix('reports')->name('reports.api.')->middleware(['auth:sanctum', 'admin'])->group(function () {
 
     Route::get('/daily',     [AdminReportRevenueController::class, 'daily'])->name('daily');
     Route::get('/weekly',    [AdminReportRevenueController::class, 'weekly'])->name('weekly');
