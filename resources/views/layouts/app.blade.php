@@ -134,8 +134,14 @@
                         امتیازات من
                         @php
                             try {
+                                // active() scope: only unexpired points
+                                // (in line with getCurrentBalance() in the club model and page)
                                 $userPoints = \App\Models\LoyaltyPoint::where('user_id', auth()->id())
-                                    ->selectRaw('SUM(CASE WHEN type = "earned" THEN points ELSE -points END) as total')
+                                    ->where(function($q) {
+                                        $q->whereNull('expires_at')
+                                          ->orWhere('expires_at', '>', now());
+                                    })
+                                    ->selectRaw('COALESCE(SUM(CASE WHEN type = "earned" THEN points ELSE -points END), 0) as total')
                                     ->value('total') ?? 0;
                             } catch (\Exception $e) {
                                 $userPoints = 0;
