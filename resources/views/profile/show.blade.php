@@ -167,7 +167,7 @@
                                                 <a href="{{ route('bookings.show', $booking) }}"
                                                    class="text-[#E6CD8A]/70 hover:text-[#E6CD8A] transition-colors">جزئیات</a>
 
-                                                @if($booking->status != 'cancelled' && $booking->booking_time > now())
+                                                @if($booking->canBeRescheduled())
                                                     <span class="text-[#C9A24B]/30">|</span>
                                                     <a href="{{ route('bookings.reschedule', $booking) }}"
                                                        class="text-yellow-400/70 hover:text-yellow-400 transition-colors">تغییر زمان</a>
