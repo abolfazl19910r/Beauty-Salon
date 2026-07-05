@@ -134,9 +134,10 @@
                         امتیازات من
                         @php
                             try {
+                                // sum('points') directly — in line with LoyaltyService::getCurrentPoints()
+                                // Positive earned and negative spent points are stored
                                 $userPoints = \App\Models\LoyaltyPoint::where('user_id', auth()->id())
-                                    ->selectRaw('SUM(CASE WHEN type = "earned" THEN points ELSE -points END) as total')
-                                    ->value('total') ?? 0;
+                                    ->sum('points');
                             } catch (\Exception $e) {
                                 $userPoints = 0;
                             }

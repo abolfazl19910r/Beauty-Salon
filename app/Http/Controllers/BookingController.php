@@ -13,9 +13,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 /**
- * مسئول نمایش لیست و جزئیات نوبت‌ها، صفحات موفقیت/شکست پرداخت، و ثبت نظر.
- *
- * متدهای استخراج‌شده به کنترلرهای مجزا (فاز R3):
+ * Responsible for displaying the list and details of turns, payment success/failure pages, and comment registration.
+ * Methods extracted to separate controllers (phase R3):
  *  - create / confirm / store / cancel  → BookingReservationController
  *  - checkDiscount / applyDiscount      → BookingDiscountController
  *  - getAvailableTimeSlots / Dates / …  → BookingAvailabilityController
@@ -23,6 +22,8 @@ use Illuminate\Support\Facades\Log;
  */
 class BookingController extends Controller
 {
+    // ── Web ──────────────────────────────────────────────────────────
+
     public function index(Request $request): \Illuminate\View\View
     {
         $user = auth()->user();
@@ -36,7 +37,17 @@ class BookingController extends Controller
         }
 
         if ($request->filled('date')) {
-            $query->whereDate('booking_time', $request->date);
+            try {
+                $persianDigits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+                $englishDigits = ['0','1','2','3','4','5','6','7','8','9'];
+                $dateInput = str_replace($persianDigits, $englishDigits, $request->query('date'));
+                $gregorianDate = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $dateInput)
+                    ->toCarbon()
+                    ->toDateString();
+                $query->whereDate('booking_time', $gregorianDate);
+            } catch (\Exception $e) {
+                // Invalid date — filter not applied
+            }
         }
 
         $bookings = $query->paginate(10)->withQueryString();
@@ -82,9 +93,12 @@ class BookingController extends Controller
 
     public function success(Request $request)
     {
+        // PaymentController redirects with ?id=, so we check both
+        $bookingId = session('booking_id') ?? $request->query('id');
+
         $booking = null;
 
-        if ($bookingId = session('booking_id')) {
+        if ($bookingId) {
             $booking = Booking::with(['service', 'specialist'])
                 ->where('id', $bookingId)
                 ->where('user_id', auth()->id())
@@ -127,6 +141,8 @@ class BookingController extends Controller
         }
     }
 
+    // ── API ──────────────────────────────────────────────────────────
+
     public function getUserBookings(): Collection
     {
         return Booking::with(['service', 'specialist'])
@@ -135,6 +151,10 @@ class BookingController extends Controller
             ->get();
     }
 
+    /**
+     * Upcoming Turns — API endpoint.
+     * * Old name in controller: upcoming() — fixed to be consistent with route.
+ */
     public function getUpcomingBookings(): JsonResponse
     {
         $bookings = Booking::with(['service', 'specialist'])
@@ -150,6 +170,10 @@ class BookingController extends Controller
         ]);
     }
 
+    /**
+     * Past Turns — API endpoint.
+     * * Old name in controller: past() — fixed to be consistent with route.
+ */
     public function getPastBookings(): JsonResponse
     {
         $bookings = Booking::with(['service', 'specialist'])

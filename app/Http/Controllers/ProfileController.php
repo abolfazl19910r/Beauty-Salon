@@ -15,11 +15,16 @@ class ProfileController extends Controller
 
     public function show(): View
     {
+        // eager load and sort by booking_time (not created_at)
+        // so that the list of appointments is aligned with my appointments page
+        $bookings = \App\Models\Booking::with(['service', 'specialist'])
+            ->where('user_id', auth()->id())
+            ->orderBy('booking_time', 'desc')
+            ->paginate(10);
+
         return view('profile.show', [
-            'user' => auth()->user(),
-            'bookings' => auth()->user()->bookings()
-                ->latest()
-                ->paginate(10)
+            'user'     => auth()->user(),
+            'bookings' => $bookings,
         ]);
     }
 
@@ -43,12 +48,9 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
-    public function updatePassword(Request $request): RedirectResponse
+    public function updatePassword(\App\Http\Requests\Profile\UpdatePasswordRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'current_password' => ['required', 'current_password'],
-            'password' => ['required', 'confirmed', 'min:8'],
-        ]);
+        $validated = $request->validated();
 
         $request->user()->update([
             'password' => Hash::make($validated['password']),
