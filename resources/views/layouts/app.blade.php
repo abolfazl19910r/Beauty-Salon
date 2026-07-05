@@ -134,15 +134,10 @@
                         امتیازات من
                         @php
                             try {
-                                // active() scope: only unexpired points
-                                // (in line with getCurrentBalance() in the club model and page)
+                                // sum('points') directly — in line with LoyaltyService::getCurrentPoints()
+                                // Positive earned and negative spent points are stored
                                 $userPoints = \App\Models\LoyaltyPoint::where('user_id', auth()->id())
-                                    ->where(function($q) {
-                                        $q->whereNull('expires_at')
-                                          ->orWhere('expires_at', '>', now());
-                                    })
-                                    ->selectRaw('COALESCE(SUM(CASE WHEN type = "earned" THEN points ELSE -points END), 0) as total')
-                                    ->value('total') ?? 0;
+                                    ->sum('points');
                             } catch (\Exception $e) {
                                 $userPoints = 0;
                             }
