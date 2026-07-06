@@ -98,10 +98,10 @@
             </div>
         </div>
 
-        {{-- کارت‌های آمار --}}
+        {{-- Statistics cards --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
 
-            {{-- نوبت‌های امروز --}}
+            {{-- Today's shifts --}}
             <div class="stat-card p-5 flex items-center gap-4">
                 <div class="stat-icon" style="background:#EFF6FF; color:#2563EB;">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -115,7 +115,7 @@
                 <a href="{{ route('admin.bookings.index') }}" class="text-xs px-2 py-1 rounded" style="color:var(--admin-accent); background:var(--admin-accent-light);">مشاهده</a>
             </div>
 
-            {{-- درآمد --}}
+            {{-- Income --}}
             <div class="stat-card p-5 flex items-center gap-4">
                 <div class="stat-icon" style="background:#F0FDF4; color:#16A34A;">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -146,7 +146,7 @@
                 <a href="{{ route('admin.users.index') }}" class="text-xs px-2 py-1 rounded" style="color:#7C3AED; background:#F5F3FF;">مشاهده</a>
             </div>
 
-            {{-- متخصصین --}}
+            {{-- Experts --}}
             <div class="stat-card p-5 flex items-center gap-4">
                 <div class="stat-icon" style="background:#FFF7ED; color:#EA580C;">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -161,10 +161,10 @@
             </div>
         </div>
 
-        {{-- ردیف اول: نمودار + خدمات محبوب --}}
+        {{-- First row: chart + popular services --}}
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-5">
 
-            {{-- نمودار درآمد --}}
+            {{-- Income chart --}}
             <div class="section-card xl:col-span-2">
                 <div class="section-header flex justify-between items-center">
                     <span>نمودار درآمد (<span id="revenue-chart-title">امروز</span>)</span>
@@ -176,7 +176,7 @@
                 </div>
             </div>
 
-            {{-- خدمات محبوب --}}
+            {{-- Popular services --}}
             <div class="section-card">
                 <div class="section-header">خدمات محبوب</div>
                 <div class="p-4 space-y-4" id="popular-services-container">
@@ -200,10 +200,10 @@
             </div>
         </div>
 
-        {{-- ردیف دوم: آمار متخصصین + نوبت‌های اخیر --}}
+        {{-- Second row: statistics of specialists + recent appointments --}}
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-5">
 
-            {{-- جدول متخصصین --}}
+            {{-- Experts table --}}
             <div class="section-card xl:col-span-2">
                 <div class="section-header">آمار متخصصین</div>
                 <div class="overflow-x-auto">
@@ -269,7 +269,7 @@
                 </div>
             </div>
 
-            {{-- نوبت‌های اخیر --}}
+            {{-- Recent turns --}}
             <div class="section-card">
                 <div class="section-header">نوبت‌های اخیر</div>
                 <div class="divide-y" id="recent-bookings-container" style="border-color:var(--admin-border);">
@@ -309,7 +309,7 @@
             </div>
         </div>
 
-        {{-- ردیف سوم: نقش‌های سیستم --}}
+        {{-- Third row: System roles --}}
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
             <div class="section-card">
                 <div class="section-header">نقش‌های سیستم</div>
@@ -350,13 +350,17 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
 
-            // رندر اولیه با داده هفته (server-side)
-            const initialData = @json($weeklyRevenue);
+            // Keep a reference to the chart to destroy before re-rendering
+            let chartInstance = null;
+
+            // Initial rendering with week data (server-side)
+            // initialData format from PHP: [{date, total}]
+            const initialData = @json($weeklyRevenue ?? []);
             renderChart(initialData);
 
-            // --- فیلتر بازه ---
+            // --- Interval filter ---
             function updateTimeFilter(period) {
-                // تغییر دکمه فعال
+                // Change active button
                 ['today','week','month'].forEach(p => {
                     const btn = document.getElementById('filter-' + p);
                     btn.classList.toggle('active', p === period);
@@ -365,20 +369,26 @@
                 const titles = { today: 'امروز', week: '۷ روز گذشته', month: '۳۰ روز گذشته' };
                 document.getElementById('revenue-chart-title').textContent = titles[period];
 
-                // اسپینر نمودار
+                // Chart spinner
                 document.getElementById('revenue-chart').innerHTML =
                     '<div class="chart-spinner"><div class="chart-spinner-inner"></div></div>';
-
                 fetch('/admin/reports/' + period)
                     .then(res => {
                         if (!res.ok) throw new Error('HTTP ' + res.status);
                         return res.json();
                     })
-                    .then(data => {
-                        if (data.stats)          updateStats(data.stats);
-                        if (data.dailyRevenue)   renderChart(data.dailyRevenue);
-                        if (data.popularServices) updatePopularServices(data.popularServices);
-                        if (data.recentBookings) updateRecentBookings(data.recentBookings);
+                    .then(response => {
+                        // API format: {success, data: [{label, date, revenue, bookings}]}
+                        // normalize to {date, total} which renderChart expects
+                        if (response.success && Array.isArray(response.data)) {
+                            const chartData = response.data.map(d => ({
+                                date:  d.label   ?? d.date,
+                                total: d.revenue ?? d.total ?? 0,
+                            }));
+                            renderChart(chartData);
+                        } else {
+                            renderChart([]);
+                        }
                     })
                     .catch(() => {
                         document.getElementById('revenue-chart').innerHTML =
@@ -386,12 +396,19 @@
                     });
             }
 
-            // expose به global برای onclick
+            // ApexCharts chart rendering
             window.updateTimeFilter = updateTimeFilter;
 
-            // --- رندر نمودار ApexCharts ---
+            // --- ApexCharts chart rendering ---
             function renderChart(data) {
                 const el = document.getElementById('revenue-chart');
+
+                // Destroy previous chart before creating new one
+                if (chartInstance) {
+                    chartInstance.destroy();
+                    chartInstance = null;
+                }
+
                 if (!data || !data.length) {
                     el.innerHTML = '<div class="chart-spinner" style="color:var(--admin-text-dim);">اطلاعاتی برای نمایش وجود ندارد</div>';
                     return;
@@ -399,7 +416,7 @@
 
                 el.innerHTML = '';
 
-                const chart = new ApexCharts(el, {
+                chartInstance = new ApexCharts(el, {
                     chart: {
                         type: 'area',
                         height: 280,
@@ -440,10 +457,13 @@
                         y: { formatter: val => new Intl.NumberFormat('fa-IR').format(val) + ' تومان' },
                     },
                 });
-                chart.render();
+                chartInstance.render();
+                requestAnimationFrame(function() {
+                    window.dispatchEvent(new Event('resize'));
+                });
             }
 
-            // --- آپدیت کارت‌های آمار ---
+            // --- Update statistics cards ---
             function updateStats(stats) {
                 const fmt = v => new Intl.NumberFormat('fa-IR').format(v);
                 if (stats.todayBookingsCount !== undefined)
@@ -456,7 +476,7 @@
                     document.getElementById('specialists-count').textContent = fmt(stats.specialistsCount);
             }
 
-            // --- آپدیت خدمات محبوب ---
+            // --- Popular service updates ---
             function updatePopularServices(services) {
                 const el = document.getElementById('popular-services-container');
                 if (!services || !services.length) {
@@ -479,7 +499,7 @@
                 }).join('');
             }
 
-            // --- آپدیت نوبت‌های اخیر ---
+            // --- Recent turn updates ---
             function updateRecentBookings(bookings) {
                 const el = document.getElementById('recent-bookings-container');
                 if (!bookings || !bookings.length) {
@@ -516,7 +536,7 @@
                 }).join('');
             }
 
-            // اجرای خودکار امروز هنگام load
+            // Auto-run today on load
             updateTimeFilter('today');
         });
     </script>
