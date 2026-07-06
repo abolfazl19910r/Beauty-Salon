@@ -7,6 +7,11 @@ use App\Services\AdminReportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * API endpoints related to revenue and financial reports.
+ * * Derived from AdminReportsController (R-Reports).
+
+ */
 class AdminReportRevenueController extends Controller
 {
     public function __construct(
@@ -66,6 +71,52 @@ class AdminReportRevenueController extends Controller
                 'trends'           => $this->reportService->calcFinancialTrends($startDate, $endDate),
             ],
             'meta' => ['period' => ['start' => $startDate, 'end' => $endDate]],
+        ]);
+    }
+
+    // ── Web endpoints for Admin Dashboard chart ────────────────────
+    // These methods are called from web routes (not API)
+    // They work with session auth middleware — no need for auth:sanctum
+
+    public function today(): JsonResponse
+    {
+        ['start' => $start, 'end' => $end] = $this->reportService->parseDateRange([
+            'start_date' => today()->format('Y-m-d'),
+            'end_date' => today()->format('Y-m-d'),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $this->reportService->dailyRevenue($start, $end),
+            'meta'    => ['period' => 'today'],
+        ]);
+    }
+
+    public function week(): JsonResponse
+    {
+        ['start' => $start, 'end' => $end] = $this->reportService->parseDateRange([
+            'start_date' => now()->subDays(6)->format('Y-m-d'),
+            'end_date'   => today()->format('Y-m-d'),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $this->reportService->dailyRevenue($start, $end),
+            'meta'    => ['period' => 'week'],
+        ]);
+    }
+
+    public function month(): JsonResponse
+    {
+        ['start' => $start, 'end' => $end] = $this->reportService->parseDateRange([
+            'start_date' => now()->subDays(29)->format('Y-m-d'),
+            'end_date'   => today()->format('Y-m-d'),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $this->reportService->dailyRevenue($start, $end),
+            'meta'    => ['period' => 'month'],
         ]);
     }
 }
