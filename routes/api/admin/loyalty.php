@@ -1,26 +1,33 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminLoyaltyController;
+use App\Http\Controllers\Admin\Loyalty\AdminLoyaltySettingsController;
+use App\Http\Controllers\Admin\Loyalty\Point\AdminLoyaltyPointsController;
+use App\Http\Controllers\Admin\Loyalty\Reward\AdminLoyaltyRewardController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('loyalty')->group(function () {
-    Route::get('/rewards', [AdminLoyaltyController::class, 'getRewards']);
-    Route::post('/rewards', [AdminLoyaltyController::class, 'storeReward']);
-    Route::get('/rewards/{reward}', [AdminLoyaltyController::class, 'showReward']);
-    Route::put('/rewards/{reward}', [AdminLoyaltyController::class, 'updateReward']);
-    Route::delete('/rewards/{reward}', [AdminLoyaltyController::class, 'destroyReward']);
+Route::prefix('loyalty')->name('admin.loyalty.')->group(function () {
 
-    Route::get('/points', [AdminLoyaltyController::class, 'getPoints']);
-    Route::get('/history', [AdminLoyaltyController::class, 'getHistory']);
-    Route::get('/statistics', [AdminLoyaltyController::class, 'getStatistics']);
-    Route::get('/export', [AdminLoyaltyController::class, 'export']);
+    // امتیازات
+    Route::get('/points', [AdminLoyaltyPointsController::class, 'getPoints'])->name('points');
+    Route::get('/history', [AdminLoyaltyPointsController::class, 'getHistory'])->name('history');
+    Route::get('/statistics', [AdminLoyaltyPointsController::class, 'getStatistics'])->name('statistics');
+    Route::get('/export', [AdminLoyaltyPointsController::class, 'export'])->name('export');
 
-    Route::post('/rewards/{reward}/redeem', [AdminLoyaltyController::class, 'redeemReward']);
+    Route::prefix('users/{user}')->name('users.')->group(function () {
+        Route::get('/points', [AdminLoyaltyPointsController::class, 'getUserPoints'])->name('points');
+        Route::post('/points/add', [AdminLoyaltyPointsController::class, 'addUserPoints'])->name('add-points');
+        Route::post('/points/deduct', [AdminLoyaltyPointsController::class, 'deductUserPoints'])->name('deduct-points');
+    });
 
-    Route::get('/user/{user}/points', [AdminLoyaltyController::class, 'getUserPoints']);
-    Route::post('/user/{user}/points/add', [AdminLoyaltyController::class, 'addUserPoints']);
-    Route::post('/user/{user}/points/deduct', [AdminLoyaltyController::class, 'deductUserPoints']);
+    // پاداش‌ها (API)
+    Route::get('/rewards', [AdminLoyaltyRewardController::class, 'getRewards'])->name('rewards');
+    Route::post('/rewards', [AdminLoyaltyRewardController::class, 'storeReward'])->name('rewards.store');
+    Route::get('/rewards/{reward}', [AdminLoyaltyRewardController::class, 'showReward'])->name('rewards.show');
+    Route::put('/rewards/{reward}', [AdminLoyaltyRewardController::class, 'updateReward'])->name('rewards.update');
+    Route::delete('/rewards/{reward}', [AdminLoyaltyRewardController::class, 'destroyReward'])->name('rewards.destroy');
 
-    Route::get('/settings', [AdminLoyaltyController::class, 'getSettings']);
-    Route::post('/settings', [AdminLoyaltyController::class, 'updateSettings']);
+    // تنظیمات
+    Route::get('/settings', [AdminLoyaltySettingsController::class, 'getSettings'])->name('settings');
+    Route::put('/settings', [AdminLoyaltySettingsController::class, 'updateSettings'])->name('settings.update');
 });
+
