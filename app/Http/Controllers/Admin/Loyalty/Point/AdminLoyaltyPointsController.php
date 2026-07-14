@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Loyalty\Point;
 
+use App\Exceptions\InsufficientLoyaltyPointsException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Loyalty\Point\AddUserPointsRequest;
 use App\Http\Requests\Admin\Loyalty\Point\DeductUserPointsRequest;
@@ -13,8 +14,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * مسئول مدیریت امتیازات کاربران از پنل ادمین.
- * از AdminLoyaltyController استخراج شد (فاز R-AdminLoyalty).
+ * Responsible for managing user privileges from the admin panel.
+ * Derived from AdminLoyaltyController (R-AdminLoyalty phase).
  */
 class AdminLoyaltyPointsController extends Controller
 {
@@ -136,11 +137,11 @@ class AdminLoyaltyPointsController extends Controller
                 'data'    => $point,
             ]);
 
-        } catch (\App\Exceptions\InsufficientWalletBalanceException $e) {
+        } catch (InsufficientLoyaltyPointsException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'موجودی امتیاز کافی نیست.',
-            ], 422);
+                'message' => $e->getUserMessage(),
+            ], $e->getHttpStatus());
 
         } catch (Exception $e) {
             return response()->json([

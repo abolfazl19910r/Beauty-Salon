@@ -7,19 +7,28 @@ use App\Http\Requests\Admin\Loyalty\Reward\RedeemRewardRequest;
 use App\Http\Requests\Admin\Loyalty\Reward\StoreLoyaltyRewardRequest;
 use App\Http\Requests\Admin\Loyalty\Reward\UpdateLoyaltyRewardRequest;
 use App\Models\Reward;
-use Exception;
+use App\Services\Admin\Loyalty\LoyaltyAdminService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 /**
- * مسئول CRUD پاداش‌های برنامه‌ی وفاداری (web + API).
- * از AdminLoyaltyController استخراج شد (فاز R-AdminLoyalty).
+ * Responsible for CRUD of loyalty program rewards (web + API).
+ * Derived from AdminLoyaltyController (R-AdminLoyalty phase).
  */
 class AdminLoyaltyRewardController extends Controller
 {
-    // ── Web ──────────────────────────────────────────────────────
+    public function __construct(
+        private readonly LoyaltyAdminService $loyaltyAdminService,
+    ) {
+    }
 
-    public function create()
+    public function index(): View
+    {
+        return view('admin.loyalty.index', $this->loyaltyAdminService->getDashboardStats());
+    }
+
+    public function create(): View
     {
         return view('admin.loyalty.create');
     }
@@ -27,43 +36,36 @@ class AdminLoyaltyRewardController extends Controller
     public function store(StoreLoyaltyRewardRequest $request): RedirectResponse
     {
         try {
-            Reward::create($request->validated());
+            $this->loyaltyAdminService->createReward($request->validated());
 
             return redirect()->route('admin.loyalty.index')
-                ->with('success', 'پاداش با موفقیت ایجاد شد.');
-
-        } catch (Exception $e) {
+                ->with('success', 'پاداش با موفقیت ایجاد شد');
+        } catch (\Throwable $e) {
             return redirect()->route('admin.loyalty.index')
-                ->with('error', 'خطا در ایجاد پاداش: ' . $e->getMessage());
+                ->with('error', 'خطا در ایجاد پاداش: '.$e->getMessage());
         }
     }
 
-    public function show(Reward $reward)
+    public function show(Reward $reward): View
     {
         return view('admin.loyalty.show', compact('reward'));
     }
 
-    public function edit(Reward $reward)
+    public function edit(Reward $reward): View
     {
-        try {
-            return view('admin.loyalty.edit', compact('reward'));
-        } catch (Exception $e) {
-            return redirect()->route('admin.loyalty.index')
-                ->with('error', 'خطا در بارگذاری اطلاعات پاداش: ' . $e->getMessage());
-        }
+        return view('admin.loyalty.edit', compact('reward'));
     }
 
     public function update(UpdateLoyaltyRewardRequest $request, Reward $reward): RedirectResponse
     {
         try {
-            $reward->update($request->validated());
+            $this->loyaltyAdminService->updateReward($reward, $request->validated());
 
             return redirect()->route('admin.loyalty.index')
                 ->with('success', 'پاداش با موفقیت به‌روزرسانی شد.');
-
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             return redirect()->route('admin.loyalty.edit', $reward)
-                ->with('error', 'خطا در به‌روزرسانی پاداش: ' . $e->getMessage())
+                ->with('error', 'خطا در به‌روزرسانی پاداش: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -71,52 +73,39 @@ class AdminLoyaltyRewardController extends Controller
     public function destroy(Reward $reward): RedirectResponse
     {
         try {
-            if ($reward->used_count > 0) {
-                return redirect()->route('admin.loyalty.index')
-                    ->with('error', 'پاداش‌هایی که استفاده شده‌اند قابل حذف نیستند.');
-            }
-
-            $reward->delete();
+            $this->loyaltyAdminService->deleteReward($reward);
 
             return redirect()->route('admin.loyalty.index')
                 ->with('success', 'پاداش با موفقیت حذف شد.');
-
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             return redirect()->route('admin.loyalty.index')
-                ->with('error', 'خطا در حذف پاداش: ' . $e->getMessage());
+                ->with('error', $e->getMessage());
         }
     }
 
     public function redeemReward(RedeemRewardRequest $request, Reward $reward): RedirectResponse
     {
         try {
-            $loyaltyService = app(\App\Services\LoyaltyService::class);
-            $loyaltyService->redeemReward($request->validated()['user_id'], $reward);
+            $this->loyaltyAdminService->redeemRewardForUser($request->validated('user_id'), $reward);
 
             return redirect()->route('admin.loyalty.index')
                 ->with('success', 'پاداش با موفقیت برای کاربر فعال شد.');
-
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             return redirect()->route('admin.loyalty.index')
-                ->with('error', 'خطا در فعال‌سازی پاداش: ' . $e->getMessage());
+                ->with('error', 'خطا در فعال‌سازی پاداش: '.$e->getMessage());
         }
     }
 
-    // ── API ──────────────────────────────────────────────────────
+    // ---- JSON version — for resources/js/admin.jsx (SPA mount point in index.blade.php) ----
 
     public function getRewards(): JsonResponse
     {
         try {
-            $rewards = Reward::where('is_active', true)
-                ->orderBy('required_points')
-                ->get();
-
-            return response()->json($rewards);
-
-        } catch (Exception $e) {
+            return response()->json($this->loyaltyAdminService->getActiveRewards());
+        } catch (\Throwable $e) {
             return response()->json([
-                'success' => false,
-                'message' => 'خطا در دریافت لیست پاداش‌ها: ' . $e->getMessage(),
+                'message' => 'خطا در دریافت لیست پاداش‌ها',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -124,18 +113,17 @@ class AdminLoyaltyRewardController extends Controller
     public function storeReward(StoreLoyaltyRewardRequest $request): JsonResponse
     {
         try {
-            $reward = Reward::create($request->validated());
+            $reward = $this->loyaltyAdminService->createReward($request->validated());
 
             return response()->json([
                 'success' => true,
-                'message' => 'پاداش با موفقیت ایجاد شد.',
-                'data'    => $reward,
+                'message' => 'پاداش با موفقیت ایجاد شد',
+                'data' => $reward,
             ], 201);
-
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در ایجاد پاداش: ' . $e->getMessage(),
+                'message' => 'خطا در ایجاد پاداش: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -148,18 +136,17 @@ class AdminLoyaltyRewardController extends Controller
     public function updateReward(UpdateLoyaltyRewardRequest $request, Reward $reward): JsonResponse
     {
         try {
-            $reward->update($request->validated());
+            $updated = $this->loyaltyAdminService->updateReward($reward, $request->validated());
 
             return response()->json([
                 'success' => true,
-                'message' => 'پاداش با موفقیت به‌روزرسانی شد.',
-                'data'    => $reward,
+                'message' => 'پاداش با موفقیت بروزرسانی شد',
+                'data' => $updated,
             ]);
-
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در به‌روزرسانی پاداش: ' . $e->getMessage(),
+                'message' => 'خطا در بروزرسانی پاداش: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -167,25 +154,17 @@ class AdminLoyaltyRewardController extends Controller
     public function destroyReward(Reward $reward): JsonResponse
     {
         try {
-            if ($reward->used_count > 0) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'پاداش‌هایی که استفاده شده‌اند قابل حذف نیستند.',
-                ], 422);
-            }
-
-            $reward->delete();
+            $this->loyaltyAdminService->deleteReward($reward);
 
             return response()->json([
                 'success' => true,
-                'message' => 'پاداش با موفقیت حذف شد.',
+                'message' => 'پاداش با موفقیت حذف شد',
             ]);
-
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در حذف پاداش: ' . $e->getMessage(),
-            ], 500);
+                'message' => $e->getMessage(),
+            ], 422);
         }
     }
 }

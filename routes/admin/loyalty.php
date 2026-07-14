@@ -6,10 +6,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('loyalty')->name('loyalty.')->group(function () {
 
-    // صفحه‌ی اصلی
+    // Home page
     Route::get('/', [AdminLoyaltyController::class, 'index'])->name('index');
 
-    // پاداش‌ها (CRUD)
+    // Rewards (CRUD)
     Route::prefix('rewards')->name('rewards.')->group(function () {
         Route::get('/create', [AdminLoyaltyRewardController::class, 'create'])->name('create');
         Route::post('/', [AdminLoyaltyRewardController::class, 'store'])->name('store');

@@ -2,42 +2,58 @@
 
 namespace App\Services\Admin\Loyalty;
 
+use App\Exceptions\InsufficientLoyaltyPointsException;
 use App\Models\LoyaltyPoint;
-use App\Models\LoyaltyReward;
+use App\Models\Reward;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
- * منطق تجاری مدیریت برنامه‌ی وفاداری از پنل ادمین.
- * از AdminLoyaltyController استخراج شد (فاز R-AdminLoyalty).
+ * Business logic for managing the loyalty program from the admin panel.
+ * * Extracted from AdminLoyaltyController (R-AdminLoyalty phase).
  */
 class LoyaltyAdminService
 {
-    // ─── آمار کلی ────────────────────────────────────────────────
+    // ─── General statistics ────────────────────────────────────────────────
 
     public function getStatistics(): array
     {
         $totalPoints   = LoyaltyPoint::where('type', 'earned')->sum('points');
         $usedPoints    = abs(LoyaltyPoint::where('type', 'spent')->sum('points'));
         $activeUsers   = LoyaltyPoint::select('user_id')->distinct()->count('user_id');
-        $totalRewards  = LoyaltyReward::where('is_active', true)->count();
+        $totalRewards  = Reward::where('is_active', true)->count();
         $redeemedCount = LoyaltyPoint::where('type', 'spent')->count();
 
+        $topUsers = LoyaltyPoint::select('user_id', DB::raw('SUM(points) as total_points'))
+            ->groupBy('user_id')
+            ->orderByDesc('total_points')
+            ->limit(5)
+            ->with('user:id,name,phone')
+            ->get();
+
+        $recentRedemptions = LoyaltyPoint::where('type', 'spent')
+            ->with(['user:id,name', 'booking'])
+            ->orderByDesc('created_at')
+            ->limit(10)
+            ->get();
+
         return [
-            'total_points_earned'   => $totalPoints,
-            'total_points_used'     => $usedPoints,
-            'active_points'         => $totalPoints - $usedPoints,
-            'active_users'          => $activeUsers,
-            'total_active_rewards'  => $totalRewards,
-            'total_redemptions'     => $redeemedCount,
-            'avg_points_per_user'   => $activeUsers > 0
+            'total_points_earned'  => $totalPoints,
+            'total_points_used'    => $usedPoints,
+            'active_points'        => $totalPoints - $usedPoints,
+            'active_users'         => $activeUsers,
+            'total_active_rewards' => $totalRewards,
+            'total_redemptions'    => $redeemedCount,
+            'avg_points_per_user'  => $activeUsers > 0
                 ? round(($totalPoints - $usedPoints) / $activeUsers)
                 : 0,
+            'top_users'            => $topUsers,
+            'recent_redemptions'   => $recentRedemptions,
         ];
     }
 
-    // ─── امتیازات کاربر ──────────────────────────────────────────
+    // ─── User privileges ──────────────────────────────────────────
 
     public function getUserPoints(User $user): array
     {
@@ -53,18 +69,18 @@ class LoyaltyAdminService
             ->sum('points');
 
         return [
-            'user'          => $user->only(['id', 'name', 'phone', 'email']),
-            'total_earned'  => $earned,
-            'total_spent'   => $spent,
-            'current_balance' => $balance,
-            'expiring_soon' => $expiringSoon,
-            'history'       => LoyaltyPoint::where('user_id', $user->id)
+            'user'             => $user->only(['id', 'name', 'phone', 'email']),
+            'total_earned'     => $earned,
+            'total_spent'      => $spent,
+            'current_balance'  => $balance,
+            'expiring_soon'    => $expiringSoon,
+            'history'          => LoyaltyPoint::where('user_id', $user->id)
                 ->orderByDesc('created_at')
                 ->paginate(20),
         ];
     }
 
-    // ─── افزودن / کسر امتیاز ─────────────────────────────────────
+    // ─── Add/Subtract Points ─────────────────────────────────────
 
     public function addPoints(
         User $user,
@@ -81,14 +97,15 @@ class LoyaltyAdminService
         ]);
     }
 
+    /**
+     * @throws InsufficientLoyaltyPointsException When the balance of user points is insufficient
+     */
     public function deductPoints(User $user, int $points, string $description): LoyaltyPoint
     {
         $balance = LoyaltyPoint::where('user_id', $user->id)->sum('points');
 
         if ($balance < $points) {
-            throw new \App\Exceptions\InsufficientWalletBalanceException(
-                "User {$user->id} has insufficient loyalty points: balance={$balance}, required={$points}"
-            );
+            throw new InsufficientLoyaltyPointsException($user->id, (int) $balance, $points);
         }
 
         return LoyaltyPoint::create([
@@ -99,12 +116,12 @@ class LoyaltyAdminService
         ]);
     }
 
-    // ─── خروجی ───────────────────────────────────────────────────
+    // ─── Output ───────────────────────────────────────────────────
 
     public function getExportData(string $type = 'points'): array
     {
         if ($type === 'rewards') {
-            return LoyaltyReward::all()->toArray();
+            return Reward::all()->toArray();
         }
 
         return User::select('id', 'name', 'phone', 'email')
@@ -118,16 +135,16 @@ class LoyaltyAdminService
             ->orderByDesc('total_points')
             ->get()
             ->map(fn ($u) => [
-                'name'           => $u->name,
-                'phone'          => $u->phone,
-                'total_earned'   => $u->total_points ?? 0,
-                'total_spent'    => abs($u->used_points ?? 0),
-                'current_balance'=> ($u->total_points ?? 0) + ($u->used_points ?? 0),
+                'name'            => $u->name,
+                'phone'           => $u->phone,
+                'total_earned'    => $u->total_points ?? 0,
+                'total_spent'     => abs($u->used_points ?? 0),
+                'current_balance' => ($u->total_points ?? 0) + ($u->used_points ?? 0),
             ])
             ->toArray();
     }
 
-    // ─── تاریخچه ─────────────────────────────────────────────────
+    // ─── History ─────────────────────────────────────────────────
 
     public function getHistory(array $filters = [])
     {

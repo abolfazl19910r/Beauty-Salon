@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('loyalty')->name('admin.loyalty.')->group(function () {
 
-    // امتیازات
+    // Points
     Route::get('/points', [AdminLoyaltyPointsController::class, 'getPoints'])->name('points');
     Route::get('/history', [AdminLoyaltyPointsController::class, 'getHistory'])->name('history');
     Route::get('/statistics', [AdminLoyaltyPointsController::class, 'getStatistics'])->name('statistics');
@@ -19,14 +19,14 @@ Route::prefix('loyalty')->name('admin.loyalty.')->group(function () {
         Route::post('/points/deduct', [AdminLoyaltyPointsController::class, 'deductUserPoints'])->name('deduct-points');
     });
 
-    // پاداش‌ها (API)
+    // Rewards (API)
     Route::get('/rewards', [AdminLoyaltyRewardController::class, 'getRewards'])->name('rewards');
     Route::post('/rewards', [AdminLoyaltyRewardController::class, 'storeReward'])->name('rewards.store');
     Route::get('/rewards/{reward}', [AdminLoyaltyRewardController::class, 'showReward'])->name('rewards.show');
     Route::put('/rewards/{reward}', [AdminLoyaltyRewardController::class, 'updateReward'])->name('rewards.update');
     Route::delete('/rewards/{reward}', [AdminLoyaltyRewardController::class, 'destroyReward'])->name('rewards.destroy');
 
-    // تنظیمات
+    // Settings
     Route::get('/settings', [AdminLoyaltySettingsController::class, 'getSettings'])->name('settings');
     Route::put('/settings', [AdminLoyaltySettingsController::class, 'updateSettings'])->name('settings.update');
 });
