@@ -52,9 +52,18 @@ class LoyaltyPoint extends Model
         return $query->where('type', 'spent');
     }
 
+    /**
+     * ⚠️ Integration (R-AdminLoyalty phase): Previously this amount was hardcoded (10000)
+     * and the admin settings page had no effect on it. Now it is read from loyalty_settings
+     * (key points_per_amount); 10000 is only a fallback if
+     * the settings row was not available for any reason.
+     */
     public static function calculatePointsForBooking(Booking $booking): int
     {
-        return (int) floor($booking->prepayment_amount / 10000);
+        $pointsPerAmount = (int) LoyaltySetting::getValue('points_per_amount', 10000);
+        $pointsPerAmount = $pointsPerAmount > 0 ? $pointsPerAmount : 10000;
+
+        return (int) floor($booking->prepayment_amount / $pointsPerAmount);
     }
 
     public static function getCurrentBalance($userId): int

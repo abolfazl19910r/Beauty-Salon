@@ -200,6 +200,9 @@ class User extends Authenticatable
     }
 
     /**
+     * ⚠️ Integration (R-AdminLoyalty phase): Previously expires_at was always addYear()
+     * * hardcoded. Now it reads from loyalty_settings (key points_expiry_months)
+     * * — the same source that BookingObserver and LoyaltyService also read.
      *
      * @param int $points
      * @param string $description
@@ -209,13 +212,16 @@ class User extends Authenticatable
     public function addLoyaltyPoints(int $points, string $description = '', ?int $bookingId = null): void
     {
         try {
+            $expiryMonths = (int) LoyaltySetting::getValue('points_expiry_months', 12);
+            $expiryMonths = $expiryMonths > 0 ? $expiryMonths : 12;
+
             LoyaltyPoint::create([
                 'user_id' => $this->id,
                 'booking_id' => $bookingId,
                 'points' => $points,
                 'description' => $description,
                 'type' => 'earned',
-                'expires_at' => now()->addYear(),
+                'expires_at' => now()->addMonths($expiryMonths),
             ]);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('❌ Failed to add loyalty points', [

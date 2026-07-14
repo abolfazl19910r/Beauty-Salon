@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Booking;
+use App\Models\LoyaltySetting;
 use App\Models\WalletSetting;
 use App\Models\AdminWallet;
 use App\Notifications\BookingNotification;
@@ -319,6 +320,12 @@ class BookingObserver
         $this->smsService->send($booking->user->phone, $message);
     }
 
+    /**
+     * ⚠️ یکپارچه‌سازی (فاز R-AdminLoyalty): قبلاً «10000» hardcode بود و فرمول
+     * (5 + floor(prepayment/10000)) هیچ‌وقت به تنظیمات ادمین واکنش نشون نمی‌داد.
+     * جزء ثابت «5+» عمداً حفظ شد چون طبق مستندات پروژه رفتار درنظرگرفته‌شده‌ست؛
+     * فقط مخرج کسر از loyalty_settings (کلید points_per_amount) خونده می‌شه.
+     */
     protected function addLoyaltyPoints(Booking $booking): void
     {
         try {
@@ -327,7 +334,10 @@ class BookingObserver
                 return;
             }
 
-            $points = 5 + floor($booking->prepayment_amount / 10000);
+            $pointsPerAmount = (int) LoyaltySetting::getValue('points_per_amount', 10000);
+            $pointsPerAmount = $pointsPerAmount > 0 ? $pointsPerAmount : 10000;
+
+            $points = 5 + floor($booking->prepayment_amount / $pointsPerAmount);
             $user->addLoyaltyPoints($points, "رزرو نوبت #{$booking->id}", $booking->id);
         } catch (\Exception $e) {
             Log::error('❌ Loyalty Points Error', [
