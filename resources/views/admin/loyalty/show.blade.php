@@ -58,14 +58,14 @@
             <div class="rounded-xl p-6" style="background:var(--admin-surface);border:1px solid var(--admin-border)">
                 <h2 class="text-base font-semibold mb-4" style="color:var(--admin-text)">اقدامات</h2>
                 <div class="space-y-3">
-                    <a href="{{ route('admin.loyalty.edit', $reward) }}"
+                    <a href="{{ route('admin.loyalty.rewards.edit', $reward) }}"
                        class="inline-flex items-center gap-2 px-4 py-2 text-sm text-white rounded-lg transition-colors"
                        style="background:var(--admin-accent)">
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         ویرایش پاداش
                     </a>
 
-                    <form action="{{ route('admin.loyalty.destroy', $reward) }}" method="POST" class="inline-block">
+                    <form action="{{ route('admin.loyalty.rewards.destroy', $reward) }}" method="POST" class="inline-block">
                         @csrf
                         @method('DELETE')
                         <button type="submit" data-confirm-delete

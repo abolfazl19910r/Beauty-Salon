@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\LoyaltyPoint;
+use App\Models\LoyaltySetting;
 use App\Models\Reward;
 use App\Models\DiscountCode;
 use App\Notifications\RewardRedeemed;
@@ -95,13 +96,16 @@ class LoyaltyService
         $booking = Booking::findOrFail($bookingId);
         $points = $this->calculatePointsForBooking($booking);
 
+        $expiryMonths = (int) LoyaltySetting::getValue('points_expiry_months', 12);
+        $expiryMonths = $expiryMonths > 0 ? $expiryMonths : 12;
+
         $loyaltyPoint = LoyaltyPoint::create([
             'user_id' => $userId,
             'booking_id' => $bookingId,
             'points' => $points,
             'type' => 'earned',
             'description' => 'امتیاز کسب شده از رزرو',
-            'expires_at' => now()->addYear()
+            'expires_at' => now()->addMonths($expiryMonths)
         ]);
 
         auth()->user()->notify(new PointsEarned($loyaltyPoint));
@@ -109,8 +113,16 @@ class LoyaltyService
         return $loyaltyPoint;
     }
 
+    /**
+     * ⚠️ Integration (R-AdminLoyalty phase): Previously this amount was hardcoded (10000).
+     * Now it is read from loyalty_settings (key points_per_amount); the same
+     * source that App\Models\LoyaltyPoint::calculatePointsForBooking() also reads.
+     */
     protected function calculatePointsForBooking($booking): int
     {
-        return (int) floor($booking->prepayment_amount / 10000);
+        $pointsPerAmount = (int) LoyaltySetting::getValue('points_per_amount', 10000);
+        $pointsPerAmount = $pointsPerAmount > 0 ? $pointsPerAmount : 10000;
+
+        return (int) floor($booking->prepayment_amount / $pointsPerAmount);
     }
 }
