@@ -8,16 +8,18 @@ use App\Models\Specialist;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\WalletSetting;
-use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
 
 class AdminDashboardService
 {
     /**
-     * Complete dashboard home page data (controller dashboard() method).
-     */
+     * Full dashboard home page data (controller dashboard() method).
+     *
+     * Note: popularServices/topSpecialists come from the enriched methods (trend/performance_score)
+     * and their range is "last 30 days", not all-time like before — as per the project's decision to
+     * actually use this data instead of keeping it as dead code.
+ */
     public function getOverviewData(): array
     {
         [$commissionRate, $commissionFactor] = $this->getCommissionRateAndFactor();
@@ -31,20 +33,13 @@ class AdminDashboardService
 
         $roles = Role::withCount('users')->take(4)->get();
 
-        $popularServices = BeautyService::withCount('bookings')
-            ->orderBy('bookings_count', 'desc')
+        $popularServices = $this->getPopularServicesWithTrend()
             ->take(4)
-            ->get();
+            ->map(fn (array $item) => (object) $item);
 
-        $topSpecialists = Specialist::withCount(['bookings' => function ($query) {
-            $query->whereDate('booking_time', today());
-        }])
-            ->withSum(['bookings' => function ($query) {
-                $query->where('payment_status', 'paid');
-            }], 'prepayment_amount')
-            ->orderBy('bookings_count', 'desc')
+        $topSpecialists = $this->getActiveSpecialistsWithPerformance()
             ->take(3)
-            ->get();
+            ->map(fn (array $item) => (object) $item);
 
         $recentBookings = Booking::with(['user', 'service'])
             ->latest()
@@ -83,8 +78,8 @@ class AdminDashboardService
     }
 
     /**
-     * Raw aggregate statistics (Analytics controller getData() method).
-     */
+     * Raw overall statistics (getData() method of the Analytics controller).
+ */
     public function getSummaryStats(): array
     {
         return [
@@ -98,29 +93,9 @@ class AdminDashboardService
     }
 
     /**
-     * Daily revenue in a date range (method getDailyRevenue() of Analytics controller).
-     */
-    public function getDailyRevenueBetween($startDate, $endDate): Collection
-    {
-        return Booking::where('payment_status', 'paid')
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->groupBy(DB::raw('DATE(created_at)'))
-            ->select(
-                DB::raw('DATE(created_at) as date'),
-                DB::raw('SUM(prepayment_amount) as total'),
-                DB::raw('COUNT(*) as bookings_count')
-            )
-            ->orderBy('date')
-            ->get()
-            ->map(function ($item) {
-                $item->date = verta($item->date)->format('Y/m/d');
-                return $item;
-            });
-    }
-
-    /**
-     * Popular services with percentage change from the previous month (getPopularServices() method of the Analytics controller).
-     */
+     * Popular services with percentage change from the previous month (last 30 days vs. previous 30 days).
+     * Consumer: dashboard() (Popular Services card) and getPopularServices() (Analytics API).
+ */
     public function getPopularServicesWithTrend(): Collection
     {
         $lastMonth = now()->subDays(30);
@@ -158,8 +133,11 @@ class AdminDashboardService
     }
 
     /**
-     * Active Specialists with Performance Score (getActiveSpecialists() method of the Analytics controller).
-     */
+     * Active professionals with completion rate, score, and performance score — all on the same "last 30 days" time frame
+     * (Fixing the bug of the previous version of Blade that sets bookings_count as "today" but completion as "all-time"
+     * counted and had an additional N+1 query).
+     * Consumer: dashboard() (specialists table) and getActiveSpecialists() (analytics API).
+ */
     public function getActiveSpecialistsWithPerformance(): Collection
     {
         $lastMonth = now()->subDays(30);
@@ -199,125 +177,6 @@ class AdminDashboardService
             });
     }
 
-    /**
-     * Dashboard statistics by time period (Analytics controller getDashboardByPeriod() method).
-     *
-     * @throws InvalidArgumentException When $period is invalid
-     */
-    public function getStatsByPeriod(string $period): array
-    {
-        [$commissionRate, $commissionFactor] = $this->getCommissionRateAndFactor();
-
-        switch ($period) {
-            case 'today':
-                $start = Carbon::today()->startOfDay();
-                $end = Carbon::today()->endOfDay();
-                $dateColumn = 'booking_time';
-                break;
-            case 'week':
-                $start = Carbon::now()->subDays(6)->startOfDay();
-                $end = Carbon::now()->endOfDay();
-                $dateColumn = 'created_at';
-                break;
-            case 'month':
-                $start = Carbon::now()->subDays(29)->startOfDay();
-                $end = Carbon::now()->endOfDay();
-                $dateColumn = 'created_at';
-                break;
-            default:
-                throw new InvalidArgumentException('Invalid period');
-        }
-
-        $rawRevenue = Booking::where('payment_status', 'paid')
-            ->whereBetween($dateColumn, [$start, $end])
-            ->sum('prepayment_amount');
-
-        $stats = [
-            'todayBookingsCount' => Booking::whereDate('booking_time', today())->count(),
-            'totalRevenue' => (int) ($rawRevenue * $commissionFactor),
-            'commissionRate' => $commissionRate,
-            'usersCount' => User::count(),
-            'specialistsCount' => Specialist::count(),
-        ];
-
-        if ($period === 'today') {
-            $rows = Booking::where('payment_status', 'paid')
-                ->whereBetween('booking_time', [$start, $end])
-                ->groupBy(DB::raw('HOUR(booking_time)'))
-                ->select(
-                    DB::raw('HOUR(booking_time) as hour'),
-                    DB::raw('SUM(prepayment_amount) as total'),
-                    DB::raw('COUNT(*) as bookings_count')
-                )
-                ->orderBy('hour')
-                ->get();
-
-            $dailyRevenue = $rows->map(function ($item) use ($start, $commissionFactor) {
-                $dt = $start->copy()->hour($item->hour);
-                return [
-                    'date' => verta($dt)->format('H:00'),
-                    'total' => (int) ($item->total * $commissionFactor),
-                    'bookings_count' => (int) $item->bookings_count,
-                ];
-            })->values();
-        } else {
-            $rows = Booking::where('payment_status', 'paid')
-                ->whereBetween('created_at', [$start, $end])
-                ->groupBy(DB::raw('DATE(created_at)'))
-                ->select(
-                    DB::raw('DATE(created_at) as date'),
-                    DB::raw('SUM(prepayment_amount) as total'),
-                    DB::raw('COUNT(*) as bookings_count')
-                )
-                ->orderBy('date')
-                ->get();
-
-            $dailyRevenue = $rows->map(function ($item) use ($commissionFactor) {
-                return [
-                    'date' => verta($item->date)->format('Y/m/d'),
-                    'total' => (int) ($item->total * $commissionFactor),
-                    'bookings_count' => (int) $item->bookings_count,
-                ];
-            })->values();
-        }
-
-        $popularServices = BeautyService::withCount(['bookings' => function ($q) use ($start, $end, $dateColumn) {
-            $q->whereBetween($dateColumn, [$start, $end]);
-        }])
-            ->withSum(['bookings' => function ($q) use ($start, $end, $dateColumn) {
-                $q->whereBetween($dateColumn, [$start, $end]);
-            }], 'prepayment_amount')
-            ->orderByDesc('bookings_count')
-            ->take(5)
-            ->get(['id', 'name'])
-            ->map(fn ($s) => [
-                'id' => $s->id,
-                'name' => $s->name,
-                'bookings_count' => $s->bookings_count,
-                'revenue' => (int) $s->bookings_sum_prepayment_amount,
-            ]);
-
-        $recentBookings = Booking::with(['user', 'service'])
-            ->whereBetween($dateColumn, [$start, $end])
-            ->latest($dateColumn)
-            ->take(5)
-            ->get()
-            ->map(fn ($b) => [
-                'id' => $b->id,
-                'user_name' => optional($b->user)->name ?? '—',
-                'service_name' => optional($b->service)->name ?? '—',
-                'status' => $b->status,
-                'booking_time' => verta($b->booking_time)->format('Y/m/d H:i'),
-            ]);
-
-        return [
-            'stats' => $stats,
-            'dailyRevenue' => $dailyRevenue,
-            'popularServices' => $popularServices,
-            'recentBookings' => $recentBookings,
-        ];
-    }
-
     private function calculatePerformanceScore($specialist, float $completionRate): float
     {
         $scoreFactors = [
@@ -331,7 +190,6 @@ class AdminDashboardService
     }
 
     /**
-     * @return array{0: float, 1: float} [Commission rate (percentage), commission factor (0 to 1)]
      */
     private function getCommissionRateAndFactor(): array
     {
