@@ -85,7 +85,7 @@
 @section('content')
     <div class="fade-in">
 
-        {{-- هدر صفحه + فیلتر --}}
+        {{-- Page header + filter --}}
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
                 <h1 class="text-xl font-bold" style="color: var(--admin-text);">داشبورد</h1>
@@ -132,7 +132,7 @@
                 <a href="{{ route('admin.reports.index') }}" class="text-xs px-2 py-1 rounded" style="color:#16A34A; background:#F0FDF4;">گزارش</a>
             </div>
 
-            {{-- کاربران --}}
+            {{-- Users --}}
             <div class="stat-card p-5 flex items-center gap-4">
                 <div class="stat-icon" style="background:#F5F3FF; color:#7C3AED;">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -178,7 +178,7 @@
 
             {{-- Popular services --}}
             <div class="section-card">
-                <div class="section-header">خدمات محبوب</div>
+                <div class="section-header">خدمات محبوب (۳۰ روز اخیر)</div>
                 <div class="p-4 space-y-4" id="popular-services-container">
                     @forelse($popularServices as $service)
                         @php $pct = $popularServices->max('bookings_count') > 0
@@ -187,7 +187,12 @@
                         <div>
                             <div class="flex justify-between text-sm mb-1">
                                 <span style="color:var(--admin-text);">{{ $service->name }}</span>
-                                <span style="color:var(--admin-text-dim);">{{ $service->bookings_count }} نوبت</span>
+                                <span class="flex items-center gap-2">
+                                    <span style="color:var(--admin-text-dim);">{{ $service->bookings_count }} نوبت</span>
+                                    <span class="text-xs persian-number" style="color: {{ $service->trend >= 0 ? '#16A34A' : '#DC2626' }};">
+                                        {{ $service->trend >= 0 ? '▲' : '▼' }}{{ number_format(abs($service->trend), 0) }}٪
+                                    </span>
+                                </span>
                             </div>
                             <div class="progress-bar-track">
                                 <div class="progress-bar-fill" style="width:{{ $pct }}%;"></div>
@@ -205,27 +210,21 @@
 
             {{-- Experts table --}}
             <div class="section-card xl:col-span-2">
-                <div class="section-header">آمار متخصصین</div>
+                <div class="section-header">آمار متخصصین (۳۰ روز اخیر)</div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead>
                         <tr style="background:var(--admin-accent-light); color:var(--admin-text-dim);">
                             <th class="px-4 py-3 text-right font-medium">متخصص</th>
-                            <th class="px-4 py-3 text-right font-medium">نوبت‌های امروز</th>
+                            <th class="px-4 py-3 text-right font-medium">نوبت‌ها</th>
                             <th class="px-4 py-3 text-right font-medium">نرخ تکمیل</th>
+                            <th class="px-4 py-3 text-right font-medium">امتیاز</th>
                             <th class="px-4 py-3 text-right font-medium">درآمد (ت)</th>
                             <th class="px-4 py-3 text-right font-medium">عملکرد</th>
                         </tr>
                         </thead>
                         <tbody id="specialists-table-body" style="border-top:1px solid var(--admin-border);">
                         @forelse($topSpecialists as $specialist)
-                            @php
-                                $cr = 0;
-                                if ($specialist->bookings_count > 0) {
-                                    $done = $specialist->bookings()->where('status','completed')->count();
-                                    $cr = ($done / $specialist->bookings_count) * 100;
-                                }
-                            @endphp
                             <tr style="border-bottom:1px solid var(--admin-border);"
                                 onmouseover="this.style.background='var(--admin-accent-light)'"
                                 onmouseout="this.style.background=''">
@@ -242,16 +241,17 @@
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-2">
                                         <div class="progress-bar-track" style="width:64px;">
-                                            <div class="progress-bar-fill" style="width:{{ $cr }}%; background:#16A34A;"></div>
+                                            <div class="progress-bar-fill" style="width:{{ $specialist->completion_rate }}%; background:#16A34A;"></div>
                                         </div>
-                                        <span class="text-xs persian-number" style="color:var(--admin-text-dim);">{{ number_format($cr, 0) }}%</span>
+                                        <span class="text-xs persian-number" style="color:var(--admin-text-dim);">{{ number_format($specialist->completion_rate, 0) }}%</span>
                                     </div>
                                 </td>
-                                <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ number_format($specialist->bookings_sum_prepayment_amount ?? 0) }}</td>
+                                <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ $specialist->rating ?? '—' }}</td>
+                                <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ number_format($specialist->revenue ?? 0) }}</td>
                                 <td class="px-4 py-3">
-                                    @if($cr >= 80)
+                                    @if($specialist->completion_rate >= 80)
                                         <span class="badge-status" style="background:#F0FDF4;color:#166534;">عالی</span>
-                                    @elseif($cr >= 60)
+                                    @elseif($specialist->completion_rate >= 60)
                                         <span class="badge-status" style="background:#FFFBEB;color:#92400E;">خوب</span>
                                     @else
                                         <span class="badge-status" style="background:#FEF2F2;color:#991B1B;">ضعیف</span>
