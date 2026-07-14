@@ -6,14 +6,14 @@ use App\Rules\MaxPercentage;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * اعتبارسنجی ایجاد پاداش وفاداری — جایگزین validate inline در
- * AdminLoyaltyController::store() و AdminLoyaltyController::storeReward()
+ * Validate loyalty reward creation — replaces validate inline in
+ * AdminLoyaltyController::store() and AdminLoyaltyController::storeReward()
  */
 class StoreLoyaltyRewardRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->is_admin;
+        return auth()->check() && auth()->user()->hasPermission('access_admin_panel');
     }
 
     public function rules(): array
@@ -23,12 +23,7 @@ class StoreLoyaltyRewardRequest extends FormRequest
             'description'     => ['nullable', 'string'],
             'required_points' => ['required', 'integer', 'min:1'],
             'discount_type'   => ['required', 'in:fixed,percentage'],
-            'discount_amount' => [
-                'required',
-                'numeric',
-                'min:1',
-                new MaxPercentage,  // جایگزین closure inline: percentage > 100 check
-            ],
+            'discount_amount' => ['required', 'numeric', 'min:1', new MaxPercentage],
             'max_uses'        => ['required', 'integer', 'min:1'],
             'is_active'       => ['boolean'],
         ];

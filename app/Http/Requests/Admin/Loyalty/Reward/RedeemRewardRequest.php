@@ -8,7 +8,7 @@ class RedeemRewardRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->is_admin;
+        return auth()->check() && auth()->user()->hasPermission('access_admin_panel');
     }
 
     public function rules(): array
