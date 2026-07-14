@@ -7,11 +7,15 @@ use App\Models\LoyaltyPoint;
 use App\Models\Reward;
 
 /**
- * صفحه‌ی اصلی مدیریت برنامه‌ی وفاداری.
- * سایر متدها به کنترلرهای مجزا منتقل شدند (فاز R-AdminLoyalty):
- *  - Reward CRUD    → AdminLoyaltyRewardController
- *  - Points mgmt   → AdminLoyaltyPointsController
- *  - Settings       → AdminLoyaltySettingsController
+ * Loyalty program admin main page.
+ * Other methods moved to separate controllers (R-AdminLoyalty phase):
+ * - Reward CRUD → AdminLoyaltyRewardController
+ * - Points mgmt → AdminLoyaltyPointsController
+ * - Settings → AdminLoyaltySettingsController
+ *
+ * ⚠️ Architecture change (after SPA issues): This page is no longer a mount point for
+ * React. The rewards list is fetched directly here and rendered as Blade
+ * — no client-side fetch/AJAX calls.
  */
 class AdminLoyaltyController extends Controller
 {
@@ -24,11 +28,14 @@ class AdminLoyaltyController extends Controller
             : 0;
         $totalRedeemedRewards = Reward::sum('used_count');
 
+        $rewards = Reward::orderBy('required_points')->get();
+
         return view('admin.loyalty.index', compact(
             'totalActivePoints',
             'totalPointUsers',
             'averageUserPoints',
-            'totalRedeemedRewards'
+            'totalRedeemedRewards',
+            'rewards'
         ));
     }
 }

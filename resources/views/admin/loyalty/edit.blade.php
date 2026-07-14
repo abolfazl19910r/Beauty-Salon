@@ -18,7 +18,7 @@
         </div>
 
         <div class="rounded-xl p-6 max-w-2xl" style="background:var(--admin-surface);border:1px solid var(--admin-border)">
-            <form action="{{ route('admin.loyalty.update', $reward) }}" method="POST">
+            <form action="{{ route('admin.loyalty.rewards.update', $reward) }}" method="POST">
                 @csrf
                 @method('PUT')
 
