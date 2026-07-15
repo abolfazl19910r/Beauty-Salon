@@ -6,10 +6,11 @@ use App\Models\BlogCategory;
 use App\Models\BlogPost;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 
 class BlogController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $posts = BlogPost::with('category')
             ->when($request->category, function ($query, $category) {
@@ -18,77 +19,33 @@ class BlogController extends Controller
             ->where('is_published', true)
             ->where('published_at', '<=', now())
             ->latest('published_at')
-            ->paginate(12);
+            ->paginate(9)
+            ->withQueryString();
 
-        return response()->json($posts);
+        $categories = BlogCategory::withCount('posts')->orderBy('order')->orderBy('name')->get();
+
+        return view('blog.index', compact('posts', 'categories'));
     }
 
-    public function show(BlogPost $post)
+    public function show(BlogPost $post): View
     {
-        if (!$post->is_published || $post->published_at > now()) {
+        if (! $post->is_published || $post->published_at > now()) {
             abort(404);
         }
 
-        return response()->json($post->load('category'));
+        $post->load('category', 'author');
+        $post->increment('views');
+
+        $relatedPosts = BlogPost::with('category')
+            ->where('category_id', $post->category_id)
+            ->where('id', '!=', $post->id)
+            ->where('is_published', true)
+            ->where('published_at', '<=', now())
+            ->latest('published_at')
+            ->take(3)
+            ->get();
+
+        return view('blog.show', compact('post', 'relatedPosts'));
     }
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'excerpt' => 'nullable|string',
-            'category_id' => 'required|exists:blog_categories,id',
-            'image' => 'nullable|image|max:2048',
-            'is_published' => 'boolean',
-            'published_at' => 'nullable|date'
-        ]);
-
-        if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('blog', 'public');
-        }
-
-        $post = BlogPost::create($validated);
-
-        return response()->json($post, 201);
-    }
-
-    public function update(Request $request, BlogPost $post)
-    {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'excerpt' => 'nullable|string',
-            'category_id' => 'required|exists:blog_categories,id',
-            'image' => 'nullable|image|max:2048',
-            'is_published' => 'boolean',
-            'published_at' => 'nullable|date'
-        ]);
-
-        if ($request->hasFile('image')) {
-            if ($post->image) {
-                Storage::disk('public')->delete($post->image);
-            }
-            $validated['image'] = $request->file('image')->store('blog', 'public');
-        }
-
-        $post->update($validated);
-
-        return response()->json($post);
-    }
-
-    public function destroy(BlogPost $post)
-    {
-        if ($post->image) {
-            Storage::disk('public')->delete($post->image);
-        }
-
-        $post->delete();
-        return response()->json(['message' => 'مقاله با موفقیت حذف شد']);
-    }
-
-    public function getCategories()
-    {
-        return response()->json(BlogCategory::withCount('posts')->get());
-    }
 }
