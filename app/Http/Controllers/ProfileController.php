@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
+use App\Http\Requests\User\Profile\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -48,7 +48,7 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
-    public function updatePassword(\App\Http\Requests\Profile\UpdatePasswordRequest $request): RedirectResponse
+    public function updatePassword(\App\Http\Requests\User\Profile\UpdatePasswordRequest $request): RedirectResponse
     {
         $validated = $request->validated();
 

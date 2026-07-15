@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Booking\RateBookingRequest;
+use App\Http\Requests\User\Booking\RateBookingRequest;
 use App\Models\Booking;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;

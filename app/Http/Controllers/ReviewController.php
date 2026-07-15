@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreReviewRequest;
+use App\Http\Requests\User\Review\StoreReviewRequest;
 use App\Models\Booking;
 use App\Models\Review;
 use App\Models\ReviewToken;

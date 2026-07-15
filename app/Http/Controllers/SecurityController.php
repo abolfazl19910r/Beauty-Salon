@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Security\CheckPasswordStrengthRequest;
+use App\Http\Requests\User\Security\CheckPasswordStrengthRequest;
 use App\Services\SecurityLogService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class SecurityController extends Controller
 {

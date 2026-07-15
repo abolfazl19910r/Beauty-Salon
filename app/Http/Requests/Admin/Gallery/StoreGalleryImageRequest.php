@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Admin\Gallery;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateGalleryImageRequest extends FormRequest
+class StoreGalleryImageRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -16,7 +16,7 @@ class UpdateGalleryImageRequest extends FormRequest
         return [
             'title'       => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'image'       => ['nullable', 'image', 'max:2048'],
+            'image'       => ['required', 'image', 'max:2048'],
             'order'       => ['nullable', 'integer'],
         ];
     }
@@ -25,6 +25,7 @@ class UpdateGalleryImageRequest extends FormRequest
     {
         return [
             'title.required' => 'عنوان تصویر الزامی است.',
+            'image.required' => 'تصویر الزامی است.',
             'image.image'    => 'فایل باید تصویر باشد.',
             'image.max'      => 'حجم تصویر نباید بیشتر از ۲MB باشد.',
         ];

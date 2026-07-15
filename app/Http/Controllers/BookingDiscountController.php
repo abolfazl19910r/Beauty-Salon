@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\DiscountCodeInvalidException;
 use App\Http\Requests\Booking\ApplyDiscountRequest;
-use App\Http\Requests\Booking\CheckDiscountRequest;
+use App\Http\Requests\User\Booking\CheckDiscountRequest;
 use App\Models\Booking;
 use App\Services\BookingService;
 use Exception;

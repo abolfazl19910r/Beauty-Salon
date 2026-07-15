@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\BookingNotAvailableException;
-use App\Http\Requests\Booking\ConfirmBookingRequest;
-use App\Http\Requests\Booking\StoreBookingRequest;
+use App\Http\Requests\User\Booking\ConfirmBookingRequest;
+use App\Http\Requests\User\Booking\StoreBookingRequest;
 use App\Models\Booking;
 use App\Services\BookingService;
 use Exception;

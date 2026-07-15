@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Booking\UpdateRescheduleRequest;
+use App\Http\Requests\User\Booking\UpdateRescheduleRequest;
 use App\Models\Booking;
 use App\Notifications\BookingRescheduledNotification;
 use App\Services\SMSService;
