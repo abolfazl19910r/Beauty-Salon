@@ -7,19 +7,20 @@ use App\Http\Requests\Admin\Specialist\StoreSpecialistRequest;
 use App\Http\Requests\Admin\Specialist\UpdateSpecialistRequest;
 use App\Models\Category;
 use App\Models\Specialist;
-use App\Models\User;
+use App\Services\Admin\Specialist\AdminSpecialistService;
 use App\Services\CategoryService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class AdminSpecialistController extends Controller
 {
     protected CategoryService $categoryService;
+    protected AdminSpecialistService $specialistService;
 
-    public function __construct(CategoryService $categoryService)
+    public function __construct(CategoryService $categoryService, AdminSpecialistService $specialistService)
     {
         $this->categoryService = $categoryService;
+        $this->specialistService = $specialistService;
     }
 
     public function index(Request $request)
@@ -56,34 +57,20 @@ class AdminSpecialistController extends Controller
 
     public function store(StoreSpecialistRequest $request)
     {
-        $validated = $request->validated();
-
         try {
-            return DB::transaction(function () use ($validated, $request) {
-                $services = $validated['services'];
-                unset($validated['services']);
+            $result = $this->specialistService->create(
+                $request->validated(),
+                $request->input('commission_rate')
+            );
 
-                $validated['phone'] = $this->normalizePhone($validated['phone']);
+            $message = 'متخصص جدید با موفقیت ایجاد شد.';
+            if (!$result['matched_user']) {
+                $message .= ' توجه: هنوز هیچ کاربری با این شماره موبایل ثبت‌نام نکرده — پس از ثبت‌نام متخصص با این شماره، پنل او فعال خواهد شد.';
+            }
 
-                $validated['commission_rate'] = $request->input('commission_rate') !== ''
-                    ? (float) $request->input('commission_rate')
-                    : null;
-
-                $matchedUser = User::where('phone', $validated['phone'])->first();
-                $validated['user_id'] = $matchedUser?->id;
-
-                $specialist = Specialist::create($validated);
-                $specialist->services()->attach($services);
-
-                $message = 'متخصص جدید با موفقیت ایجاد شد.';
-                if (!$matchedUser) {
-                    $message .= ' توجه: هنوز هیچ کاربری با این شماره موبایل ثبت‌نام نکرده — پس از ثبت‌نام متخصص با این شماره، پنل او فعال خواهد شد.';
-                }
-
-                return redirect()
-                    ->route('admin.specialists.index')
-                    ->with('success', $message);
-            });
+            return redirect()
+                ->route('admin.specialists.index')
+                ->with('success', $message);
         } catch (\Exception $e) {
             Log::error('Error storing specialist: ' . $e->getMessage());
             return back()->with('error', 'خطایی در ثبت اطلاعات رخ داد.')->withInput();
@@ -99,22 +86,11 @@ class AdminSpecialistController extends Controller
 
     public function update(UpdateSpecialistRequest $request, Specialist $specialist)
     {
-        $validated = $request->validated();
-
-        $services = $validated['services'];
-        unset($validated['services']);
-
-        $validated['phone'] = $this->normalizePhone($validated['phone']);
-
-        $validated['commission_rate'] = $request->input('commission_rate') !== ''
-            ? (float) $request->input('commission_rate')
-            : null;
-
-        $matchedUser = User::where('phone', $validated['phone'])->first();
-        $validated['user_id'] = $matchedUser?->id;
-
-        $specialist->update($validated);
-        $specialist->services()->sync($services);
+        $this->specialistService->update(
+            $specialist,
+            $request->validated(),
+            $request->input('commission_rate')
+        );
 
         return redirect()->route('admin.specialists.index')
             ->with('success', 'اطلاعات متخصص با موفقیت بروزرسانی شد.');
@@ -123,35 +99,16 @@ class AdminSpecialistController extends Controller
     public function destroy(Specialist $specialist)
     {
         try {
-            DB::beginTransaction();
-
-            $specialist->services()->detach();
-            $specialist->delete();
-
-            DB::commit();
+            $this->specialistService->delete($specialist);
 
             return redirect()->route('admin.specialists.index')
                 ->with('success', 'متخصص با موفقیت حذف شد.');
 
         } catch (\Exception $e) {
-            DB::rollBack();
             Log::error('Error in destroy method: ' . $e->getMessage());
 
             return redirect()->route('admin.specialists.index')
                 ->with('error', 'خطا در حذف متخصص');
         }
-    }
-
-    private function normalizePhone(string $phone): string
-    {
-        $digits = preg_replace('/\D/', '', $phone);
-
-        if (str_starts_with($digits, '0098') && strlen($digits) === 14) {
-            $digits = '0' . substr($digits, 4);
-        } elseif (str_starts_with($digits, '98') && strlen($digits) === 12) {
-            $digits = '0' . substr($digits, 2);
-        }
-
-        return $digits;
     }
 }
