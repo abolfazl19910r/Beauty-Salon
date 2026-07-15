@@ -1,12 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin\Specialist;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\Specialist\StoreSpecialistRequest;
+use App\Http\Requests\Admin\Specialist\UpdateSpecialistRequest;
+use App\Models\Category;
 use App\Models\Specialist;
 use App\Models\User;
 use App\Services\CategoryService;
-use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -52,16 +54,9 @@ class AdminSpecialistController extends Controller
         return view('admin.specialists.create', compact('services'));
     }
 
-    public function store(Request $request)
+    public function store(StoreSpecialistRequest $request)
     {
-        $validated = $request->validate([
-            'name'            => 'required|string|max:255',
-            'phone'           => 'required|string|max:11|unique:specialists,phone',
-            'email'           => 'required|email|unique:specialists,email',
-            'services'        => ['required', 'array'],
-            'services.*'      => ['exists:beauty_services,id'],
-            'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
-        ]);
+        $validated = $request->validated();
 
         try {
             return DB::transaction(function () use ($validated, $request) {
@@ -102,16 +97,9 @@ class AdminSpecialistController extends Controller
         return view('admin.specialists.edit', compact('specialist', 'services', 'selectedServices'));
     }
 
-    public function update(Request $request, Specialist $specialist)
+    public function update(UpdateSpecialistRequest $request, Specialist $specialist)
     {
-        $validated = $request->validate([
-            'name'            => 'required|string|max:255',
-            'phone'           => 'required|string|max:11|unique:specialists,phone,' . $specialist->id,
-            'email'           => 'required|email|unique:specialists,email,' . $specialist->id,
-            'services'        => ['required', 'array'],
-            'services.*'      => ['exists:beauty_services,id'],
-            'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
-        ]);
+        $validated = $request->validated();
 
         $services = $validated['services'];
         unset($validated['services']);
