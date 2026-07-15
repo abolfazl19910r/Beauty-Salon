@@ -19,6 +19,7 @@ class WalletSetting extends Model
         'customer_cancellation_fee_percentage',
         'specialist_cancellation_penalty_percentage',
         'settlement_delay_days',
+        'admin_commission_percentage',
     ];
 
     protected $casts = [
@@ -31,6 +32,7 @@ class WalletSetting extends Model
         'specialist_cancellation_penalty_percentage' => 'decimal:2',
         'cancellation_before_hours' => 'integer',
         'settlement_delay_days' => 'integer',
+        'admin_commission_percentage' => 'decimal:2',
     ];
 
     public function calculateCustomerCancellationFee(float $amount, $bookingTime): float
