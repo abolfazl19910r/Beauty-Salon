@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\SecurityController;
+use App\Http\Controllers\User\SecurityController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('security')->name('security.')->group(function () {

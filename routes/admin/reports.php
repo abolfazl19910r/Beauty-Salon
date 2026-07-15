@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminReportExportController;
-use App\Http\Controllers\Admin\AdminReportRevenueController;
-use App\Http\Controllers\Admin\AdminReportsController;
+use App\Http\Controllers\Admin\Report\AdminReportExportController;
+use App\Http\Controllers\Admin\Report\AdminReportRevenueController;
+use App\Http\Controllers\Admin\Report\AdminReportsController;
 use Illuminate\Support\Facades\Route;
 
 

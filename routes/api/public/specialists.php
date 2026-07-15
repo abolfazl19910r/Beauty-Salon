@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\BookingAvailabilityController;
+use App\Http\Controllers\User\BookingAvailabilityController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/specialists/{serviceId}', [BookingAvailabilityController::class, 'getSpecialistsByService']);

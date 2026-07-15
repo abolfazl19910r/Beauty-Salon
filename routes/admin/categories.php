@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminCategoryController;
+use App\Http\Controllers\Admin\Category\AdminCategoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('categories')->name('categories.')->group(function () {

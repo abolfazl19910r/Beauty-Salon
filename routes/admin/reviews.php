@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminReviewController;
+use App\Http\Controllers\Admin\Review\AdminReviewController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('reviews')->name('reviews.')->group(function () {

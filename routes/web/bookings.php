@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\BookingAvailabilityController;
-use App\Http\Controllers\BookingController;
-use App\Http\Controllers\BookingDiscountController;
-use App\Http\Controllers\BookingReservationController;
-use App\Http\Controllers\BookingRescheduleController;
+use App\Http\Controllers\User\BookingAvailabilityController;
+use App\Http\Controllers\User\BookingController;
+use App\Http\Controllers\User\BookingDiscountController;
+use App\Http\Controllers\User\BookingRescheduleController;
+use App\Http\Controllers\User\BookingReservationController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('bookings')->name('bookings.')->group(function () {

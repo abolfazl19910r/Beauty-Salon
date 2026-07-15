@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminNotificationController;
+use App\Http\Controllers\Admin\Notification\AdminNotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('notifications')->name('notifications.')->group(function () {

@@ -1,15 +1,15 @@
 <?php
 
-use App\Http\Controllers\Specialist\SpecialistBookingManagementController;
-use App\Http\Controllers\Specialist\SpecialistLeaveController;
-use App\Http\Controllers\Specialist\SpecialistNotificationController;
-use App\Http\Controllers\Specialist\SpecialistProfileController;
-use App\Http\Controllers\Specialist\SpecialistReportController;
-use App\Http\Controllers\Specialist\SpecialistReviewController;
+use App\Http\Controllers\Specialist\Booking\SpecialistBookingManagementController;
+use App\Http\Controllers\Specialist\Leave\SpecialistLeaveController;
+use App\Http\Controllers\Specialist\Notification\SpecialistNotificationController;
+use App\Http\Controllers\Specialist\Profile\SpecialistProfileController;
+use App\Http\Controllers\Specialist\Report\SpecialistReportController;
+use App\Http\Controllers\Specialist\Review\SpecialistReviewController;
 use App\Http\Controllers\Specialist\Wallet\Iban\SpecialistIbanController;
 use App\Http\Controllers\Specialist\Wallet\SpecialistWalletController;
 use App\Http\Controllers\Specialist\Wallet\Withdrawal\SpecialistWithdrawalController;
-use App\Http\Controllers\SpecialistController;
+use App\Http\Controllers\User\SpecialistController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('specialists')->name('specialists.')->group(function () {

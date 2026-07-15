@@ -1,8 +1,7 @@
 <?php
 
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\SecurePaymentController;
-use App\Http\Controllers\LoyaltyController;
+use App\Http\Controllers\User\PaymentController;
+use App\Http\Controllers\User\SecurePaymentController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('payment')->name('payment.')->group(function () {
