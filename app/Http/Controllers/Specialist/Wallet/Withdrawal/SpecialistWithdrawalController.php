@@ -7,18 +7,21 @@ use App\Http\Requests\Specialist\StoreWithdrawalRequest;
 use App\Models\WalletSetting;
 use App\Models\WithdrawalRequest;
 use App\Services\Specialist\SpecialistWalletService;
+use App\Traits\ResolvesSpecialist;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
 class SpecialistWithdrawalController extends Controller
 {
+    use ResolvesSpecialist;
+
     public function __construct(private SpecialistWalletService $walletService)
     {
     }
 
     public function create()
     {
-        $specialist = $this->walletService->resolveSpecialist(auth()->user());
+        $specialist = $this->resolveSpecialist();
 
         if (! $specialist) {
             return view('specialist.profile-not-found');
@@ -39,11 +42,9 @@ class SpecialistWithdrawalController extends Controller
 
     public function store(StoreWithdrawalRequest $request)
     {
-        $specialist = $this->walletService->resolveSpecialist(auth()->user());
-
-        if (! $specialist) {
-            abort(404, 'رکورد متخصص یافت نشد');
-        }
+        // requireSpecialist(): equivalent to the previous behavior of abort(404) in old storeWithdrawal(),
+        // Only with a slightly more descriptive message text (from the project's central trait).
+        $specialist = $this->requireSpecialist();
 
         $wallet = $specialist->getOrCreateWallet();
         $this->authorize('requestWithdrawal', $wallet);
@@ -70,11 +71,7 @@ class SpecialistWithdrawalController extends Controller
 
     public function cancel(WithdrawalRequest $withdrawalRequest)
     {
-        $specialist = $this->walletService->resolveSpecialist(auth()->user());
-
-        if (! $specialist) {
-            abort(404);
-        }
+        $specialist = $this->requireSpecialist();
 
         $this->authorize('requestWithdrawal', $specialist->wallet);
 
