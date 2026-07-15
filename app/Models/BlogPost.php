@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
-use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Morilog\Jalali\Jalalian;
 
 class BlogPost extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'title',
@@ -22,48 +22,34 @@ class BlogPost extends Model
         'category_id',
         'author_id',
         'is_published',
-        'published_at'
+        'published_at',
     ];
 
     protected $casts = [
         'is_published' => 'boolean',
-        'published_at' => 'datetime'
+        'published_at' => 'datetime',
     ];
 
     /**
-     * @throws Exception
+     * چون جدول blog_posts ستون deleted_at (softDeletes) دارد ولی مدل قبلاً
+     * trait مربوطه را نداشت، هر «حذف» عملاً حذف دائمی و غیرقابل‌بازگشت بود.
+     * با اضافه شدن SoftDeletes، حذف مقاله از این پس واقعاً soft-delete است.
      */
-    public static function create(array $validated): static
-    {
-        $post = new static();
-        $post->fill($validated);
+    protected $appends = [
+        'image_url',
+        'published_at_jalali',
+    ];
 
-        if (!$post->slug && isset($validated['title'])) {
-            $post->slug = Str::slug($validated['title']);
-        }
-
-        if (!$post->author_id) {
-            $post->author_id = auth()->id();
-        }
-
-        try {
-            $saved = $post->save();
-            return $post;
-        } catch (Exception $e) {
-            throw $e;
-        }
-    }
-
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 
-        static::creating(function ($post) {
-            if (!$post->slug) {
+        static::creating(function (self $post) {
+            if (! $post->slug) {
                 $post->slug = Str::slug($post->title);
             }
 
-            if (!$post->author_id) {
+            if (! $post->author_id) {
                 $post->author_id = auth()->id();
             }
         });
@@ -82,7 +68,7 @@ class BlogPost extends Model
     public function getImageUrlAttribute(): ?string
     {
         return $this->image
-            ? asset('storage/' . $this->image)
+            ? asset('storage/'.$this->image)
             : null;
     }
 
