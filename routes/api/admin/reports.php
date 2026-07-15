@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminReportRevenueController;
-use App\Http\Controllers\Admin\AdminReportSpecialistController;
+use App\Http\Controllers\Admin\Report\AdminReportRevenueController;
+use App\Http\Controllers\Admin\Report\AdminReportSpecialistController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('reports')->name('reports.api.')->middleware(['auth:sanctum', 'admin'])->group(function () {

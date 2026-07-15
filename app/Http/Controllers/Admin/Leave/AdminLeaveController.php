@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin\Leave;
 
 use App\Http\Controllers\Controller;
 use App\Models\Leave;
 use App\Models\Specialist;
-use Illuminate\Http\Request;
 use App\Notifications\LeaveStatusNotification;
-use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class AdminLeaveController extends Controller
 {

@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin\Holiday;
 
 use App\Http\Controllers\Controller;
 use App\Models\Holiday;
 use App\Models\Specialist;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
 
 class AdminHolidayController extends Controller
 {

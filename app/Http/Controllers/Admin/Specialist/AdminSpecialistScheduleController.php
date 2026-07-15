@@ -1,10 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin\Specialist;
 
 use App\Http\Controllers\Controller;
 use App\Models\Specialist;
-use App\Models\SpecialistSchedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 

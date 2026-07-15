@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminPermissionController;
+use App\Http\Controllers\Admin\Permission\AdminPermissionController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('permissions')->name('permissions.')->middleware('permission:manage-roles')->group(function () {

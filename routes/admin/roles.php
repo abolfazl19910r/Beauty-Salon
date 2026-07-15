@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminRoleController;
+use App\Http\Controllers\Admin\Role\AdminRoleController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('roles')->name('roles.')->group(function () {

@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminSpecialistsWorkScheduleController;
-use App\Http\Controllers\Admin\AdminHolidayController;
+use App\Http\Controllers\Admin\Holiday\AdminHolidayController;
+use App\Http\Controllers\Admin\Specialist\AdminSpecialistsWorkScheduleController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('specialists')->group(function () {

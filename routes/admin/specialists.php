@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminSpecialistLeaveController;
-use App\Http\Controllers\Admin\AdminSpecialistScheduleController;
 use App\Http\Controllers\Admin\Specialist\AdminSpecialistController;
+use App\Http\Controllers\Admin\Specialist\AdminSpecialistLeaveController;
+use App\Http\Controllers\Admin\Specialist\AdminSpecialistScheduleController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('specialists')->name('specialists.')->group(function () {

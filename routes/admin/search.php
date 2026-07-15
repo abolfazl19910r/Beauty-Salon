@@ -1,7 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\Search\AdminSearchController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\AdminSearchController;
 
 Route::get('/search', [AdminSearchController::class, 'index'])->name('search.index');
 

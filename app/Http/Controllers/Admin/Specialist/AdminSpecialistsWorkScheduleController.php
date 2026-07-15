@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin\Specialist;
 
 use App\Http\Controllers\Controller;
-use App\Models\WorkSchedule;
 use App\Models\Specialist;
-use Illuminate\Http\Request;
+use App\Models\WorkSchedule;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class AdminSpecialistsWorkScheduleController extends Controller
 {

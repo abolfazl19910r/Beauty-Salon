@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin\Report;
 
+use App\Exports\ReportsExport;
 use App\Http\Controllers\Controller;
 use App\Services\AdminReportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\ReportsExport;
 
 class AdminReportExportController extends Controller
 {

@@ -1,15 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin\Search;
 
 use App\Http\Controllers\Controller;
-use App\Models\Booking;
-use App\Models\User;
 use App\Models\BeautyService;
-use App\Models\Specialist;
 use App\Models\BlogPost;
+use App\Models\Booking;
+use App\Models\Specialist;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Verta;
 
 class AdminSearchController extends Controller
