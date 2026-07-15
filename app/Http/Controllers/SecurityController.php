@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Security\CheckPasswordStrengthRequest;
 use App\Services\SecurityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -117,12 +118,8 @@ class SecurityController extends Controller
         return response()->json($history);
     }
 
-    public function checkPasswordStrength(Request $request)
+    public function checkPasswordStrength(CheckPasswordStrengthRequest $request)
     {
-        $request->validate([
-            'password' => 'required|string|min:8'
-        ]);
-
         $score = 0;
         $password = $request->password;
 
