@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\User;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\ApplyDiscountToBookingRequest;
 use App\Http\Requests\StoreDiscountCodeRequest;
 use App\Http\Requests\UpdateDiscountCodeRequest;

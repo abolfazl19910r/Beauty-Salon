@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\ServiceController;
-use App\Http\Controllers\SpecialistController;
+use App\Http\Controllers\User\ServiceController;
+use App\Http\Controllers\User\SpecialistController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {

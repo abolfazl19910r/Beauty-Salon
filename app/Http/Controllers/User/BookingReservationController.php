@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\User;
 
 use App\Exceptions\BookingNotAvailableException;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\User\Booking\ConfirmBookingRequest;
 use App\Http\Requests\User\Booking\StoreBookingRequest;
 use App\Models\Booking;

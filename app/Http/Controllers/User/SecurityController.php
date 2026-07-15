@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\User;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\User\Security\CheckPasswordStrengthRequest;
 use App\Services\SecurityLogService;
 use Carbon\Carbon;

@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\BookingAvailabilityController;
-use App\Http\Controllers\BookingController;
-use App\Http\Controllers\BookingRescheduleController;
+use App\Http\Controllers\User\BookingAvailabilityController;
+use App\Http\Controllers\User\BookingController;
+use App\Http\Controllers\User\BookingRescheduleController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('bookings')->middleware('auth:sanctum')->group(function () {

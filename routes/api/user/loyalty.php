@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\LoyaltyController;
+use App\Http\Controllers\User\LoyaltyController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('loyalty')->name('loyalty.')->group(function () {

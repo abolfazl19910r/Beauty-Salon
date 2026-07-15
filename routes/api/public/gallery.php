@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\User\GalleryController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('gallery')->name('gallery.')->group(function () {

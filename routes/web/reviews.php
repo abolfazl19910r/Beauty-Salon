@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\User\ReviewController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/review/create', [ReviewController::class, 'create'])->name('reviews.create');

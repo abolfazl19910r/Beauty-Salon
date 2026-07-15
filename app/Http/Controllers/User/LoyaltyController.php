@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\User;
 
+use App\Http\Controllers\Controller;
 use App\Models\LoyaltyPoint;
 use App\Models\Reward;
 use App\Models\DiscountCode;
