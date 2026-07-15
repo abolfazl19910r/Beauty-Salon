@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Admin\DiscountCode;
 
 use App\Rules\MaxPercentage;
 use Illuminate\Foundation\Http\FormRequest;
@@ -9,15 +9,21 @@ class StoreDiscountCodeRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->is_admin;
+        return auth()->check() && auth()->user()->hasPermission('access_admin_panel');
     }
 
     public function rules(): array
     {
+        $amountRules = ['required', 'numeric', 'min:1'];
+
+        if ($this->input('type') === 'percentage') {
+            $amountRules[] = new MaxPercentage;
+        }
+
         return [
             'code'       => ['required', 'string', 'unique:discount_codes,code'],
             'type'       => ['required', 'in:fixed,percentage'],
-            'amount'     => ['required', 'numeric', 'min:1', new MaxPercentage],
+            'amount'     => $amountRules,
             'max_uses'   => ['required', 'integer', 'min:1'],
             'expires_at' => ['nullable', 'date', 'after:today'],
             'user_id'    => ['nullable', 'exists:users,id'],

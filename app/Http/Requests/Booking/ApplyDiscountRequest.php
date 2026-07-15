@@ -4,7 +4,7 @@ namespace App\Http\Requests\Booking;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ApplyDiscountRequest extends FormRequest
+class ApplyDiscountToBookingRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -14,15 +14,8 @@ class ApplyDiscountRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => 'required|string|max:50',
-        ];
-    }
-
-    public function messages(): array
-    {
-        return [
-            'code.required' => 'لطفاً کد تخفیف را وارد کنید.',
-            'code.max'      => 'کد تخفیف نمی‌تواند بیشتر از ۵۰ کاراکتر باشد.',
+            'code'       => ['required', 'string'],
+            'service_id' => ['required', 'exists:beauty_services,id'],
         ];
     }
 }

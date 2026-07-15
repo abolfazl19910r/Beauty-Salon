@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ApplyDiscountToBookingRequest;
+use App\Http\Requests\StoreDiscountCodeRequest;
+use App\Http\Requests\UpdateDiscountCodeRequest;
 use App\Models\DiscountCode;
 use App\Models\Booking;
 use App\Http\Resources\DiscountCodeResource;
@@ -36,28 +39,10 @@ class DiscountCodeController extends Controller
         return view('loyalty.discounts.index', compact('discountCodes'));
     }
 
-    public function store(Request $request)
+    public function store(StoreDiscountCodeRequest $request)
     {
-        $validated = $request->validate([
-            'code' => 'required|string|unique:discount_codes,code',
-            'type' => 'required|in:fixed,percentage',
-            'amount' => [
-                'required',
-                'numeric',
-                'min:1',
-                function($attribute, $value, $fail) use ($request) {
-                    if ($request->type === 'percentage' && $value > 100) {
-                        $fail('درصد تخفیف نمی‌تواند بیشتر از 100 باشد.');
-                    }
-                }
-            ],
-            'max_uses' => 'required|integer|min:1',
-            'expires_at' => 'nullable|date|after:today',
-            'user_id' => 'nullable|exists:users,id'
-        ]);
-
         try {
-            $discountCode = $this->discountCodeService->create($validated);
+            $discountCode = $this->discountCodeService->create($request->validated());
 
             return redirect()->route('discount-codes.index')
                 ->with('success', 'کد تخفیف با موفقیت ایجاد شد.');
@@ -91,13 +76,10 @@ class DiscountCodeController extends Controller
         ]);
     }
 
-    public function applyToBooking(Request $request)
+    public function applyToBooking(ApplyDiscountToBookingRequest $request)
     {
         try {
-            $validated = $request->validate([
-                'code' => 'required|string',
-                'service_id' => 'required|exists:beauty_services,id'
-            ]);
+            $validated = $request->validated();
 
             $discountCode = DiscountCode::where('code', $validated['code'])->first();
 
@@ -147,16 +129,10 @@ class DiscountCodeController extends Controller
         }
     }
 
-    public function update(Request $request, DiscountCode $discountCode)
+    public function update(UpdateDiscountCodeRequest $request, DiscountCode $discountCode)
     {
-        $validated = $request->validate([
-            'is_active' => 'boolean',
-            'expires_at' => 'nullable|date|after:today',
-            'max_uses' => 'sometimes|integer|min:' . $discountCode->used_count
-        ]);
-
         try {
-            $this->discountCodeService->update($discountCode, $validated);
+            $this->discountCodeService->update($discountCode, $request->validated());
 
             return redirect()->route('discount-codes.index')
                 ->with('success', 'کد تخفیف با موفقیت بروزرسانی شد.');
