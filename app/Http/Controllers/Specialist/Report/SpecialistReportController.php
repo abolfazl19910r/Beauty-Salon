@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Specialist;
+namespace App\Http\Controllers\Specialist\Report;
 
+use App\Exports\SpecialistBookingsExport;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Specialist;

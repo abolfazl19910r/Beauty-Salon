@@ -1,20 +1,20 @@
 <?php
 
-namespace App\Http\Controllers\Specialist;
+namespace App\Http\Controllers\Specialist\Profile;
 
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Specialist\UpdateScheduleRequest;
+use App\Http\Requests\Specialist\UpdateSpecialistPasswordRequest;
+use App\Http\Requests\Specialist\UpdateSpecialistProfileRequest;
 use App\Models\LoyaltyPoint;
 use App\Models\Specialist;
-use App\Traits\ResolvesSpecialist;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Hash;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\RedirectResponse;
-use App\Services\SpecialistProfileService;
 use App\Services\SpecialistDashboardService;
-use App\Http\Requests\Specialist\UpdateScheduleRequest;
-use App\Http\Requests\Specialist\UpdateSpecialistProfileRequest;
-use App\Http\Requests\Specialist\UpdateSpecialistPasswordRequest;
+use App\Services\SpecialistProfileService;
+use App\Traits\ResolvesSpecialist;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class SpecialistProfileController extends Controller
 {

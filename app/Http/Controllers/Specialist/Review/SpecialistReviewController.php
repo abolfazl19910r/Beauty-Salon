@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Specialist;
+namespace App\Http\Controllers\Specialist\Review;
 
 use App\Http\Controllers\Controller;
 use App\Models\Review;

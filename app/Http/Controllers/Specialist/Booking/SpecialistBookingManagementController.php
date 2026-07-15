@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Specialist;
+namespace App\Http\Controllers\Specialist\Booking;
 
 use App\Http\Controllers\Controller;
 use App\Traits\ResolvesSpecialist;
