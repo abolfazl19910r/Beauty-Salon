@@ -8,13 +8,20 @@ use App\Http\Requests\Admin\User\StoreAdminUserRequest;
 use App\Http\Requests\Admin\User\UpdateAdminUserRequest;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\Admin\User\AdminUserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class AdminUserController extends Controller
 {
+    protected AdminUserService $userService;
+
+    public function __construct(AdminUserService $userService)
+    {
+        $this->userService = $userService;
+    }
+
     public function index(Request $request): View
     {
         $query = User::query();
@@ -56,17 +63,11 @@ class AdminUserController extends Controller
     public function store(StoreAdminUserRequest $request): RedirectResponse
     {
         try {
-            $user = User::create([
-                'name'              => $request->name,
-                'phone'             => $request->phone,
-                'password'          => Hash::make($request->password),
-                'is_admin'          => $request->boolean('is_admin'),
-                'phone_verified_at' => $request->boolean('is_active') ? now() : null,
+            $this->userService->create([
+                ...$request->validated(),
+                'is_admin'  => $request->boolean('is_admin'),
+                'is_active' => $request->boolean('is_active'),
             ]);
-
-            if ($request->filled('roles')) {
-                $user->roles()->sync($request->roles);
-            }
 
             return redirect()->route('admin.users.index')
                 ->with('success', 'کاربر جدید با موفقیت ایجاد شد.');
@@ -96,17 +97,11 @@ class AdminUserController extends Controller
     public function update(UpdateAdminUserRequest $request, User $user): RedirectResponse
     {
         try {
-            $user->update([
-                'name'              => $request->name,
-                'phone'             => $request->phone,
-                'is_admin'          => $request->boolean('is_admin'),
-                'phone_verified_at' => $request->boolean('is_active')
-                    ? ($user->phone_verified_at ?? now())
-                    : null,
+            $this->userService->update($user, [
+                ...$request->validated(),
+                'is_admin'  => $request->boolean('is_admin'),
+                'is_active' => $request->boolean('is_active'),
             ]);
-
-            $roles = $request->input('roles', []);
-            $user->roles()->sync($roles);
 
             return redirect()->route('admin.users.show', $user)
                 ->with('success', 'اطلاعات کاربر با موفقیت بروزرسانی شد.');
@@ -121,14 +116,12 @@ class AdminUserController extends Controller
     public function destroy(User $user): RedirectResponse
     {
         try {
-            $bookingsCount = $user->bookings()->count();
-            if ($bookingsCount > 0) {
-                return redirect()->back()
-                    ->with('error', "این کاربر دارای {$bookingsCount} نوبت ثبت شده است و قابل حذف نیست.");
-            }
+            $remainingBookings = $this->userService->delete($user);
 
-            $user->roles()->detach();
-            $user->delete();
+            if ($remainingBookings > 0) {
+                return redirect()->back()
+                    ->with('error', "این کاربر دارای {$remainingBookings} نوبت ثبت شده است و قابل حذف نیست.");
+            }
 
             return redirect()->route('admin.users.index')
                 ->with('success', 'کاربر با موفقیت حذف شد.');
@@ -143,10 +136,7 @@ class AdminUserController extends Controller
     {
         try {
             $activate = (bool) $request->input('is_active', 0);
-
-            $user->forceFill([
-                'phone_verified_at' => $activate ? ($user->phone_verified_at ?? now()) : null,
-            ])->save();
+            $this->userService->updateStatus($user, $activate);
 
             $status  = $activate ? 'فعال' : 'غیرفعال';
             $message = "وضعیت کاربر با موفقیت به «{$status}» تغییر یافت.";
@@ -162,7 +152,7 @@ class AdminUserController extends Controller
     public function resetPassword(ResetAdminUserPasswordRequest $request, User $user): RedirectResponse
     {
         try {
-            $user->forceFill(['password' => Hash::make($request->password)])->save();
+            $this->userService->resetPassword($user, $request->password);
             return redirect()->back()->with('success', 'رمز عبور با موفقیت بازنشانی شد.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'خطا در بازنشانی رمز عبور: ' . $e->getMessage());
@@ -172,7 +162,7 @@ class AdminUserController extends Controller
     public function syncRoles(Request $request, User $user): RedirectResponse
     {
         try {
-            $user->roles()->sync($request->input('roles', []));
+            $this->userService->syncRoles($user, $request->input('roles', []));
             return redirect()->back()->with('success', 'نقش‌های کاربر با موفقیت بروزرسانی شد.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'خطا در بروزرسانی نقش‌ها: ' . $e->getMessage());
