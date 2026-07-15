@@ -111,6 +111,7 @@
 
         <div class="hidden md:flex items-center gap-6 text-sm">
             <a href="{{ route('services.index') }}" class="nav-link">خدمات</a>
+            <a href="{{ route('blog.index') }}" class="nav-link">وبلاگ</a>
 
             @auth
                 @if(auth()->user()->hasRole('specialists'))
@@ -180,6 +181,7 @@
     <div id="mobile-menu" class="hidden md:hidden bg-[var(--rasta-dark)]/95 border-t border-[var(--rasta-gold)]/15">
         <div class="container mx-auto px-4 py-4 flex flex-col gap-1 text-sm">
             <a href="{{ route('services.index') }}" class="block py-2 nav-link">خدمات</a>
+            <a href="{{ route('blog.index') }}" class="block py-2 nav-link">وبلاگ</a>
             @auth
                 @if(auth()->user()->hasRole('specialists'))
                     <a href="{{ route('specialist.profile.show') }}" class="block py-2 nav-link">پروفایل من</a>
