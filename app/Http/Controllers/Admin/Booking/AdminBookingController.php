@@ -1,8 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin\Booking;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\Booking\StoreAdminBookingRequest;
+use App\Http\Requests\Admin\Booking\UpdateAdminBookingRequest;
 use App\Models\BeautyService;
 use App\Models\Booking;
 use App\Models\Specialist;
@@ -78,19 +80,9 @@ class AdminBookingController extends Controller
         return view('admin.bookings.create', compact('users', 'services', 'specialists'));
     }
 
-    public function store(Request $request)
+    public function store(StoreAdminBookingRequest $request)
     {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'service_id' => 'required|exists:beauty_services,id',
-            'specialist_id' => 'required|exists:specialists,id',
-            'booking_time' => 'required|date',
-            'status' => 'required|in:pending,confirmed,cancelled',
-            'payment_status' => 'required|in:paid,unpaid',
-            'notes' => 'nullable|string'
-        ]);
-
-        $booking = Booking::create($validated);
+        $booking = Booking::create($request->validated());
 
         return redirect()->route('admin.bookings.show', $booking)
             ->with('success', 'نوبت با موفقیت ایجاد شد.');
@@ -107,22 +99,17 @@ class AdminBookingController extends Controller
 
     public function show(Booking $booking)
     {
-        // Model قبلاً توسط Laravel load شده، فقط relation ها رو eager load میکنیم
         $booking->load(['service', 'user', 'specialist']);
         return view('admin.bookings.show', compact('booking'));
     }
 
-    public function update(Request $request, Booking $booking)
+    public function update(UpdateAdminBookingRequest $request, Booking $booking)
     {
-        if ($request->has('status') && !$request->has('user_id')) {
+        if ($request->isStatusOnly()) {
             $oldStatus = $booking->status;
 
-            $validated = $request->validate([
-                'status' => 'required|in:pending,confirmed,cancelled',
-            ]);
-
             try {
-                $booking->update(['status' => $validated['status']]);
+                $booking->update(['status' => $request->validated()['status']]);
 
                 if ($booking->status === 'cancelled' &&
                     $oldStatus !== 'cancelled' &&
@@ -151,56 +138,37 @@ class AdminBookingController extends Controller
                     ->with('error', 'خطایی در بروزرسانی وضعیت نوبت رخ داد. لطفا مجددا تلاش کنید.');
             }
         }
-        else {
-            if ($request->has('booking_time')) {
-                $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-                $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-                $request->merge([
-                    'booking_time' => str_replace($persianDigits, $englishDigits, $request->booking_time)
-                ]);
-            }
 
-            $validated = $request->validate([
-                'user_id' => 'required|exists:users,id',
-                'service_id' => 'required|exists:beauty_services,id',
-                'specialist_id' => 'required|exists:specialists,id',
-                'booking_time' => 'required|date',
-                'status' => 'required|in:pending,confirmed,cancelled',
-                'payment_status' => 'required|in:paid,unpaid',
-                'notes' => 'nullable|string'
-            ]);
+        $oldStatus = $booking->status;
 
-            $oldStatus = $booking->status;
+        try {
+            $booking->update($request->validated());
 
-            try {
-                $booking->update($validated);
+            if ($booking->status === 'cancelled' &&
+                $oldStatus !== 'cancelled' &&
+                $booking->payment_status === 'paid' &&
+                !$booking->refunded_at) {
 
-                if ($booking->status === 'cancelled' &&
-                    $oldStatus !== 'cancelled' &&
-                    $booking->payment_status === 'paid' &&
-                    !$booking->refunded_at) {
+                $refundResult = $this->refundService->processRefund($booking);
 
-                    $refundResult = $this->refundService->processRefund($booking);
-
-                    if (!$refundResult) {
-                        return redirect()->route('admin.bookings.show', ['booking' => $booking->id])
-                            ->with('warning', 'نوبت لغو شد اما در برگشت وجه مشکلی پیش آمد. تیکت پشتیبانی ایجاد شد.');
-                    }
+                if (!$refundResult) {
+                    return redirect()->route('admin.bookings.show', ['booking' => $booking->id])
+                        ->with('warning', 'نوبت لغو شد اما در برگشت وجه مشکلی پیش آمد. تیکت پشتیبانی ایجاد شد.');
                 }
-
-                $successMessage = match($booking->status) {
-                    'confirmed' => 'نوبت با موفقیت تایید شد.',
-                    'cancelled' => 'نوبت با موفقیت لغو شد.',
-                    default => 'وضعیت نوبت با موفقیت بروزرسانی شد.'
-                };
-
-                return redirect()->route('admin.bookings.show', ['booking' => $booking->id])
-                    ->with('success', $successMessage);
-
-            } catch (\Exception $e) {
-                return redirect()->route('admin.bookings.show', ['booking' => $booking->id])
-                    ->with('error', 'خطایی در بروزرسانی وضعیت نوبت رخ داد. لطفا مجددا تلاش کنید.');
             }
+
+            $successMessage = match($booking->status) {
+                'confirmed' => 'نوبت با موفقیت تایید شد.',
+                'cancelled' => 'نوبت با موفقیت لغو شد.',
+                default => 'وضعیت نوبت با موفقیت بروزرسانی شد.'
+            };
+
+            return redirect()->route('admin.bookings.show', ['booking' => $booking->id])
+                ->with('success', $successMessage);
+
+        } catch (\Exception $e) {
+            return redirect()->route('admin.bookings.show', ['booking' => $booking->id])
+                ->with('error', 'خطایی در بروزرسانی وضعیت نوبت رخ داد. لطفا مجددا تلاش کنید.');
         }
     }
 
