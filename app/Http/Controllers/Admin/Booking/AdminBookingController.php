@@ -9,31 +9,21 @@ use App\Models\BeautyService;
 use App\Models\Booking;
 use App\Models\Specialist;
 use App\Models\User;
-use App\Services\RefundService;
+use App\Services\Admin\Booking\AdminBookingService;
 use Illuminate\Http\Request;
 
 class AdminBookingController extends Controller
 {
-    protected RefundService $refundService;
+    protected AdminBookingService $bookingService;
 
-    public function __construct(RefundService $refundService)
+    public function __construct(AdminBookingService $bookingService)
     {
-        $this->refundService = $refundService;
+        $this->bookingService = $bookingService;
     }
 
     public function getStats(Request $request)
     {
-        $date = $request->date ? $request->date : today();
-
-        $stats = [
-            'total' => Booking::whereDate('booking_time', $date)->count(),
-            'confirmed' => Booking::whereDate('booking_time', $date)
-                ->where('status', 'confirmed')->count(),
-            'cancelled' => Booking::whereDate('booking_time', $date)
-                ->where('status', 'cancelled')->count(),
-        ];
-
-        return response()->json($stats);
+        return response()->json($this->bookingService->getStats($request->date));
     }
 
     public function index(Request $request)
@@ -105,69 +95,24 @@ class AdminBookingController extends Controller
 
     public function update(UpdateAdminBookingRequest $request, Booking $booking)
     {
-        if ($request->isStatusOnly()) {
-            $oldStatus = $booking->status;
-
-            try {
-                $booking->update(['status' => $request->validated()['status']]);
-
-                if ($booking->status === 'cancelled' &&
-                    $oldStatus !== 'cancelled' &&
-                    $booking->payment_status === 'paid' &&
-                    !$booking->refunded_at) {
-
-                    $refundResult = $this->refundService->processRefund($booking);
-
-                    if (!$refundResult) {
-                        return redirect()->route('admin.bookings.index')
-                            ->with('warning', 'نوبت لغو شد اما در برگشت وجه مشکلی پیش آمد. تیکت پشتیبانی ایجاد شد.');
-                    }
-                }
-
-                $successMessage = match($booking->status) {
-                    'confirmed' => 'نوبت با موفقیت تایید شد.',
-                    'cancelled' => 'نوبت با موفقیت لغو شد.',
-                    default => 'وضعیت نوبت با موفقیت بروزرسانی شد.'
-                };
-
-                return redirect()->route('admin.bookings.index')
-                    ->with('success', $successMessage);
-
-            } catch (\Exception $e) {
-                return redirect()->route('admin.bookings.index')
-                    ->with('error', 'خطایی در بروزرسانی وضعیت نوبت رخ داد. لطفا مجددا تلاش کنید.');
-            }
-        }
-
-        $oldStatus = $booking->status;
+        $redirectRoute  = $request->isStatusOnly() ? 'admin.bookings.index' : 'admin.bookings.show';
+        $redirectParams = $request->isStatusOnly() ? [] : ['booking' => $booking->id];
 
         try {
-            $booking->update($request->validated());
+            $result = $request->isStatusOnly()
+                ? $this->bookingService->updateStatus($booking, $request->validated()['status'])
+                : $this->bookingService->updateFull($booking, $request->validated());
 
-            if ($booking->status === 'cancelled' &&
-                $oldStatus !== 'cancelled' &&
-                $booking->payment_status === 'paid' &&
-                !$booking->refunded_at) {
-
-                $refundResult = $this->refundService->processRefund($booking);
-
-                if (!$refundResult) {
-                    return redirect()->route('admin.bookings.show', ['booking' => $booking->id])
-                        ->with('warning', 'نوبت لغو شد اما در برگشت وجه مشکلی پیش آمد. تیکت پشتیبانی ایجاد شد.');
-                }
+            if ($result['refund_warning']) {
+                return redirect()->route($redirectRoute, $redirectParams)
+                    ->with('warning', 'نوبت لغو شد اما در برگشت وجه مشکلی پیش آمد. تیکت پشتیبانی ایجاد شد.');
             }
 
-            $successMessage = match($booking->status) {
-                'confirmed' => 'نوبت با موفقیت تایید شد.',
-                'cancelled' => 'نوبت با موفقیت لغو شد.',
-                default => 'وضعیت نوبت با موفقیت بروزرسانی شد.'
-            };
-
-            return redirect()->route('admin.bookings.show', ['booking' => $booking->id])
-                ->with('success', $successMessage);
+            return redirect()->route($redirectRoute, $redirectParams)
+                ->with('success', $result['message']);
 
         } catch (\Exception $e) {
-            return redirect()->route('admin.bookings.show', ['booking' => $booking->id])
+            return redirect()->route($redirectRoute, $redirectParams)
                 ->with('error', 'خطایی در بروزرسانی وضعیت نوبت رخ داد. لطفا مجددا تلاش کنید.');
         }
     }
