@@ -4,17 +4,20 @@ namespace App\Http\Controllers\Specialist\Wallet;
 
 use App\Http\Controllers\Controller;
 use App\Services\Specialist\SpecialistWalletService;
+use App\Traits\ResolvesSpecialist;
 use Illuminate\Http\Request;
 
 class SpecialistWalletController extends Controller
 {
+    use ResolvesSpecialist;
+
     public function __construct(private SpecialistWalletService $walletService)
     {
     }
 
     public function index()
     {
-        $specialist = $this->walletService->resolveSpecialist(auth()->user());
+        $specialist = $this->resolveSpecialist();
 
         if (! $specialist) {
             return view('specialist.profile-not-found');
@@ -30,7 +33,7 @@ class SpecialistWalletController extends Controller
 
     public function transactions(Request $request)
     {
-        $specialist = $this->walletService->resolveSpecialist(auth()->user());
+        $specialist = $this->resolveSpecialist();
 
         if (! $specialist) {
             return view('specialist.profile-not-found');
@@ -49,7 +52,11 @@ class SpecialistWalletController extends Controller
 
     public function calculateFee(Request $request)
     {
-        $specialist = $this->walletService->resolveSpecialist(auth()->user());
+        // ⚠️ intentionally used resolveSpecialist() (not requireSpecialist()):
+        // This method is an endpoint called with fetch/AJAX and should always return JSON.
+        // requireSpecialist() returns Laravel's default HTML error page with abort(404)
+        // that breaks the JSON convention of this endpoint.
+        $specialist = $this->resolveSpecialist();
 
         if (! $specialist) {
             return response()->json(['error' => 'متخصص یافت نشد'], 404);

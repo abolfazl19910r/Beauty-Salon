@@ -5,17 +5,20 @@ namespace App\Http\Controllers\Specialist\Wallet\Iban;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Specialist\UpdateIbanRequest;
 use App\Services\Specialist\SpecialistWalletService;
+use App\Traits\ResolvesSpecialist;
 use Exception;
 
 class SpecialistIbanController extends Controller
 {
+    use ResolvesSpecialist;
+
     public function __construct(private SpecialistWalletService $walletService)
     {
     }
 
     public function edit()
     {
-        $specialist = $this->walletService->resolveSpecialist(auth()->user());
+        $specialist = $this->resolveSpecialist();
 
         if (! $specialist) {
             return view('specialist.profile-not-found');
@@ -29,7 +32,10 @@ class SpecialistIbanController extends Controller
 
     public function update(UpdateIbanRequest $request)
     {
-        $specialist = $this->walletService->resolveSpecialist(auth()->user());
+        // ⚠️ Bugfix: The old controller here had no null check on the specialist
+        // (unlike edit()); If a user reaches this route without an expert record,
+        // getOrCreateWallet() would give a fatal error on null. Now it is the same with edit().
+        $specialist = $this->resolveSpecialist();
 
         if (! $specialist) {
             return view('specialist.profile-not-found');

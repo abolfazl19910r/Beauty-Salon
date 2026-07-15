@@ -4,7 +4,6 @@ namespace App\Services\Specialist;
 
 use App\Models\Specialist;
 use App\Models\SpecialistWallet;
-use App\Models\User;
 use App\Models\WalletSetting;
 use App\Models\WithdrawalRequest;
 use Carbon\Carbon;
@@ -15,10 +14,10 @@ use Morilog\Jalali\Jalalian;
 
 class SpecialistWalletService
 {
-    public function resolveSpecialist(User $user): ?Specialist
-    {
-        return Specialist::where('phone', $user->phone)->first();
-    }
+// ⭐ Modified: Removed the resolveSpecialist() method that was here before.
+// App\Traits\ResolvesSpecialist already exists in the project and do the same (via
+// The relationship $user->specialist, which itself is defined based on phone match.
+// Controllers now use that trait directly.
 
     public function getWalletOverview(Specialist $specialist): array
     {
