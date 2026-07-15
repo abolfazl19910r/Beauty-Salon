@@ -1,8 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\User\ResetAdminUserPasswordRequest;
+use App\Http\Requests\Admin\User\StoreAdminUserRequest;
+use App\Http\Requests\Admin\User\UpdateAdminUserRequest;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -50,23 +53,8 @@ class AdminUserController extends Controller
         return view('admin.users.create', compact('roles'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreAdminUserRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name'     => 'required|string|max:255',
-            'phone'    => 'required|string|max:11|unique:users,phone',
-            'password' => 'required|string|min:8',
-            'roles'    => 'nullable|array',
-            'roles.*'  => 'exists:roles,id',
-            'is_admin' => 'nullable|boolean',
-        ], [
-            'name.required'    => 'نام کاربر الزامی است.',
-            'phone.required'   => 'شماره موبایل الزامی است.',
-            'phone.unique'     => 'این شماره موبایل قبلاً ثبت شده است.',
-            'password.required'=> 'رمز عبور الزامی است.',
-            'password.min'     => 'رمز عبور باید حداقل ۸ کاراکتر باشد.',
-        ]);
-
         try {
             $user = User::create([
                 'name'              => $request->name,
@@ -105,20 +93,8 @@ class AdminUserController extends Controller
         return view('admin.users.edit', compact('user', 'roles', 'userRoles'));
     }
 
-    public function update(Request $request, User $user): RedirectResponse
+    public function update(UpdateAdminUserRequest $request, User $user): RedirectResponse
     {
-        $request->validate([
-            'name'     => 'required|string|max:255',
-            'phone'    => 'required|string|max:11|unique:users,phone,' . $user->id,
-            'roles'    => 'nullable|array',
-            'roles.*'  => 'exists:roles,id',
-            'is_admin' => 'nullable|boolean',
-        ], [
-            'name.required'  => 'نام کاربر الزامی است.',
-            'phone.required' => 'شماره موبایل الزامی است.',
-            'phone.unique'   => 'این شماره موبایل قبلاً ثبت شده است.',
-        ]);
-
         try {
             $user->update([
                 'name'              => $request->name,
@@ -183,16 +159,8 @@ class AdminUserController extends Controller
         }
     }
 
-    public function resetPassword(Request $request, User $user): RedirectResponse
+    public function resetPassword(ResetAdminUserPasswordRequest $request, User $user): RedirectResponse
     {
-        $request->validate([
-            'password' => 'required|string|min:8|confirmed',
-        ], [
-            'password.required'  => 'رمز عبور جدید الزامی است.',
-            'password.min'       => 'رمز عبور باید حداقل ۸ کاراکتر باشد.',
-            'password.confirmed' => 'تکرار رمز عبور مطابقت ندارد.',
-        ]);
-
         try {
             $user->forceFill(['password' => Hash::make($request->password)])->save();
             return redirect()->back()->with('success', 'رمز عبور با موفقیت بازنشانی شد.');
