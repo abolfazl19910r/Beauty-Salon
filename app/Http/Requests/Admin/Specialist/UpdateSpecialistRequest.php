@@ -12,6 +12,15 @@ class UpdateSpecialistRequest extends FormRequest
         return auth()->check() && auth()->user()->hasPermission('access_admin_panel');
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->filled('phone')) {
+            $this->merge([
+                'phone' => $this->normalizePhone((string) $this->input('phone')),
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         $specialistId = $this->route('specialist')->id;
@@ -24,5 +33,18 @@ class UpdateSpecialistRequest extends FormRequest
             'services.*'      => ['exists:beauty_services,id'],
             'commission_rate' => ['nullable', 'numeric', 'min:0', new MaxPercentage],
         ];
+    }
+
+    private function normalizePhone(string $phone): string
+    {
+        $digits = preg_replace('/\D/', '', $phone) ?? '';
+
+        if (str_starts_with($digits, '0098') && strlen($digits) === 14) {
+            $digits = '0' . substr($digits, 4);
+        } elseif (str_starts_with($digits, '98') && strlen($digits) === 12) {
+            $digits = '0' . substr($digits, 2);
+        }
+
+        return $digits;
     }
 }
