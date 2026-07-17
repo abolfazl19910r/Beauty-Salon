@@ -13,7 +13,6 @@ Route::prefix('loyalty')->name('loyalty.')->group(function () {
     Route::post('/rewards/{reward}/redeem', [LoyaltyController::class, 'redeemReward'])->name('redeem-reward');
 
     Route::get('/discount-codes', [LoyaltyController::class, 'discountCodes'])->name('discount-codes');
-    Route::post('/discount-codes/validate', [LoyaltyController::class, 'validateDiscountCode'])->name('validate-discount');
 
     Route::get('/rewards/history', [LoyaltyController::class, 'rewardsHistory'])->name('rewards-history');
 
