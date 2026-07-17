@@ -131,11 +131,11 @@
             </a>
 
             <a href="{{ route('specialist.bookings.index') }}"
-               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.bookings*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-plum-light)]' }}">
+               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.bookings*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-plum-light)]' }}>
                 <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                نوبت‌ها
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            نوبت‌ها
             </a>
 
             <a href="{{ route('specialist.reviews.index') }}"
@@ -159,7 +159,16 @@
                 <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                ساعات کاری
+                ساعات کاری هفتگی
+            </a>
+
+            <a href="{{ route('specialist.work-schedule') }}"
+               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.work-schedule*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-plum-light)]' }}">
+                <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke-width="2"/>
+                    <path stroke-linecap="round" stroke-width="2" d="M16 2v4M8 2v4M3 10h18" />
+                </svg>
+                ساعات کاری (تکی)
             </a>
 
             <a href="{{ route('specialist.leaves.index') }}"

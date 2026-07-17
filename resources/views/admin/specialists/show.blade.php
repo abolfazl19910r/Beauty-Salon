@@ -39,7 +39,17 @@
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                         <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
                     </svg>
-                    برنامه کاری
+                    برنامه کاری هفتگی
+                </a>
+                <a href="{{ route('admin.specialists.work-schedule.index', $specialist) }}"
+                   class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium"
+                   style="background:#EFF6FF; color:#1D4ED8;"
+                   onmouseover="this.style.background='#DBEAFE'"
+                   onmouseout="this.style.background='#EFF6FF'">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    برنامه کاری (تکی)
                 </a>
                 <a href="{{ route('admin.specialists.leaves.index', $specialist) }}"
                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium"
@@ -170,6 +180,49 @@
                                 </div>
                             @endforeach
                         </div>
+                    </div>
+                </div>
+
+                {{-- Single work schedule (WorkSchedule) --}}
+                <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+                    <div class="px-4 py-3 flex justify-between items-center text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
+                        برنامه کاری (تکی)
+                        <a href="{{ route('admin.specialists.work-schedule.index', $specialist) }}" class="text-xs font-normal" style="color:var(--admin-accent);">ویرایش</a>
+                    </div>
+                    @php
+                        $workSchedule = $specialist->workSchedule;
+                        $wsDays = ['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنج‌شنبه','جمعه','شنبه'];
+                    @endphp
+                    <div class="p-4 text-sm">
+                        @if(!$workSchedule)
+                            <p class="text-center py-4" style="color:var(--admin-text-dim);">هنوز برنامه کاری تکی تعریف نشده</p>
+                        @else
+                            <div class="flex items-center justify-between mb-3">
+                                <span style="color:var(--admin-text-dim);">وضعیت</span>
+                                @if($workSchedule->is_active)
+                                    <span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background:#F0FDF4; color:#166534;">فعال</span>
+                                @else
+                                    <span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background:#FEF2F2; color:#991B1B;">غیرفعال</span>
+                                @endif
+                            </div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span style="color:var(--admin-text-dim);">ساعت</span>
+                                <span class="persian-number" style="color:var(--admin-text);">
+                                    {{ $workSchedule->start_time?->format('H:i') }} تا {{ $workSchedule->end_time?->format('H:i') }}
+                                </span>
+                            </div>
+                            <div>
+                                <span style="color:var(--admin-text-dim);">روزهای کاری</span>
+                                <div class="flex flex-wrap gap-1.5 mt-2">
+                                    @foreach($wsDays as $dayNum => $dayName)
+                                        <span class="px-2 py-1 rounded-md text-xs"
+                                              style="{{ in_array($dayNum, $workSchedule->work_days ?? []) ? 'background:#EFF6FF; color:#1D4ED8;' : 'background:var(--admin-accent-light); color:var(--admin-text-light);' }}">
+                                            {{ $dayName }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
 

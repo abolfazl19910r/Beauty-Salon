@@ -25,11 +25,6 @@ class WorkSchedule extends Model
         'end_time' => 'datetime:H:i'
     ];
 
-    public static function updateOrCreate(array $array, array $validated)
-    {
-        return parent::updateOrCreate($array, $validated);
-    }
-
     public function specialist(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Specialist::class);
@@ -41,10 +36,20 @@ class WorkSchedule extends Model
         return in_array($dayOfWeek, $this->work_days);
     }
 
+    /**
+     * Bugfix: Because start_time/end_time are stored with a cast of "datetime:H:i",
+     * $this->start_time returns a Carbon object, not a string. Direct comparison
+     * of $time (string "H:i") with a Carbon object with >=/<= operator does not behave correctly
+     * (PHP converts the object to the full format "Y-m-d H:i:s" with __toString and
+     * the result of the comparison is meaningless). Both sides must be explicitly formatted as "H:i".
+ */
     public function isWorkingTime($time): bool
     {
         $time = Carbon::parse($time)->format('H:i');
-        return $time >= $this->start_time && $time <= $this->end_time;
+        $start = $this->start_time?->format('H:i');
+        $end = $this->end_time?->format('H:i');
+
+        return $start !== null && $end !== null && $time >= $start && $time <= $end;
     }
 
     public function getAvailableTimeSlots($date): array
@@ -54,8 +59,8 @@ class WorkSchedule extends Model
         }
 
         $slots = [];
-        $start = Carbon::parse($this->start_time);
-        $end = Carbon::parse($this->end_time);
+        $start = Carbon::parse($this->start_time?->format('H:i'));
+        $end = Carbon::parse($this->end_time?->format('H:i'));
 
         while ($start <= $end) {
             $slots[] = $start->format('H:i');
