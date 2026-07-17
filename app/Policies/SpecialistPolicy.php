@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
+use App\Models\Leave;
 use App\Models\Specialist;
-use App\Models\SpecialistLeave;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
@@ -56,7 +56,14 @@ class SpecialistPolicy
             && $user->specialist?->id === $specialist->id;
     }
 
-    public function deleteLeave(User $user, SpecialistLeave $leave): bool
+    /**
+     * ⭐ Critical fix (SpecialistLeave→Leave migration): This method previously type-hinted
+     * SpecialistLeave $leave. After the migration,
+     * SpecialistLeaveController::destroy() passes an instance of Leave —
+     * Because Leave and SpecialistLeave are two completely separate classes (no parent/child relationship, just both on the leaves table), passing Leave as a parameter
+     * that SpecialistLeave expects would immediately throw a fatal TypeError.
+     */
+    public function deleteLeave(User $user, Leave $leave): bool
     {
         return $user->hasRole('specialist')
             && $user->specialist?->id === $leave->specialist_id;
