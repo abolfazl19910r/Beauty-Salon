@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Specialist\Leave;
 use App\Http\Controllers\Controller;
 use App\Traits\ResolvesSpecialist;
 use App\Http\Requests\Specialist\StoreLeaveRequest;
-use App\Models\Specialist;
-use App\Models\SpecialistLeave;
+use App\Models\Leave;
+use App\Services\Leave\LeaveService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 use Morilog\Jalali\Jalalian;
@@ -14,6 +14,11 @@ use Morilog\Jalali\Jalalian;
 class SpecialistLeaveController extends Controller
 {
     use ResolvesSpecialist;
+
+    public function __construct(
+        private readonly LeaveService $leaveService,
+    ) {
+    }
 
     public function index()
     {
@@ -43,6 +48,11 @@ class SpecialistLeaveController extends Controller
         return view('specialist.leaves-create', compact('specialist'));
     }
 
+    /**
+     * ⭐ Now checks for conflicts with other approved leaves and previously booked
+     * appointments before registering (via LeaveService shared with admin) —
+     * something the previous version (SpecialistLeave) did not have at all.
+ */
     public function store(StoreLeaveRequest $request): RedirectResponse
     {
         $specialist = $this->resolveSpecialist();
@@ -63,24 +73,23 @@ class SpecialistLeaveController extends Controller
             $startDate = Jalalian::fromFormat('Y/m/d', $startDateEn)->toCarbon()->toDateString();
             $endDate   = Jalalian::fromFormat('Y/m/d', $endDateEn)->toCarbon()->toDateString();
 
-            $specialist->leaves()->create([
+            $result = $this->leaveService->store($specialist, [
                 'start_date' => $startDate,
                 'end_date'   => $endDate,
                 'reason'     => $request->reason,
-                'status'     => 'pending',
             ]);
 
             return redirect()->route('specialist.leaves')
-                ->with('success', 'درخواست مرخصی با موفقیت ثبت شد و در انتظار تایید است.');
+                ->with($result['success'] ? 'success' : 'error', $result['message']);
 
         } catch (\Exception $e) {
             Log::error('خطا در ثبت مرخصی', ['error' => $e->getMessage()]);
 
-            return back()->with('error', 'خطا در ذخیره اطلاعات: ' . $e->getMessage());
+            return back()->with('error', 'خطا در ذخیره اطلاعات رخ داد.');
         }
     }
 
-    public function destroy(SpecialistLeave $leave): RedirectResponse
+    public function destroy(Leave $leave): RedirectResponse
     {
         $this->authorize('deleteLeave', $leave);
 

@@ -96,19 +96,16 @@
                                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                                             </button>
                                         </form>
-                                        <form action="{{ route('admin.specialists.leaves.update', [$specialist, $leave]) }}" method="POST" class="inline">
-                                            @csrf @method('PUT')
-                                            <input type="hidden" name="status" value="rejected">
-                                            <button type="submit" title="رد"
-                                                    class="w-7 h-7 rounded flex items-center justify-center transition-colors"
-                                                    style="color:#DC2626;"
-                                                    onmouseover="this.style.background='#FEF2F2'"
-                                                    onmouseout="this.style.background=''">
-                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                                                </svg>
-                                            </button>
-                                        </form>
+                                        <button type="button" title="رد"
+                                                onclick="openRejectModal('{{ route('admin.specialists.leaves.update', [$specialist, $leave]) }}')"
+                                                class="w-7 h-7 rounded flex items-center justify-center transition-colors"
+                                                style="color:#DC2626;"
+                                                onmouseover="this.style.background='#FEF2F2'"
+                                                onmouseout="this.style.background=''">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                                            </svg>
+                                        </button>
                                     </div>
                                 @else
                                     <span style="color:var(--admin-text-light);">—</span>
@@ -187,6 +184,45 @@
             </form>
         </div>
     </div>
+
+    {{-- Reject reason modal --}}
+    <div id="reject-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center"
+         style="background:rgba(15,23,42,0.5);"
+         onclick="if(event.target===this)document.getElementById('reject-modal').classList.add('hidden')">
+        <div class="rounded-xl shadow-xl w-full max-w-md mx-4 fade-in" style="background:var(--admin-surface);">
+            <div class="flex items-center justify-between px-5 py-4" style="border-bottom:1px solid var(--admin-border);">
+                <h2 class="text-base font-bold" style="color:#DC2626;">رد درخواست مرخصی</h2>
+                <button type="button" onclick="document.getElementById('reject-modal').classList.add('hidden')"
+                        class="w-7 h-7 rounded flex items-center justify-center transition-colors"
+                        style="color:var(--admin-text-dim);">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="reject-form" method="POST">
+                @csrf @method('PUT')
+                <input type="hidden" name="status" value="rejected">
+                <div class="p-5">
+                    <label class="block text-sm font-medium mb-1.5" style="color:var(--admin-text-dim);">دلیل رد (الزامی)</label>
+                    <textarea name="reject_reason" rows="3" required class="form-input" placeholder="دلیل رد درخواست مرخصی را بنویسید..."></textarea>
+                </div>
+                <div class="flex justify-end gap-2 px-5 py-4" style="border-top:1px solid var(--admin-border);">
+                    <button type="button" onclick="document.getElementById('reject-modal').classList.add('hidden')"
+                            class="px-4 py-2 rounded-lg text-sm transition-colors"
+                            style="background:var(--admin-accent-light); color:var(--admin-text-dim);">انصراف</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors" style="background:#DC2626;">رد درخواست</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openRejectModal(actionUrl) {
+            document.getElementById('reject-form').action = actionUrl;
+            document.getElementById('reject-modal').classList.remove('hidden');
+        }
+    </script>
 @endsection
 
 @push('scripts')
