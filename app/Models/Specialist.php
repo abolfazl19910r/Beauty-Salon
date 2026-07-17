@@ -46,9 +46,14 @@ class Specialist extends Model
         return $this->hasOne(WorkSchedule::class);
     }
 
+    /**
+     * ⭐ Migrated from SpecialistLeave to Leave (fuller version: approve/reject
+     * * with accurate time recording, rejection reason, and conflict check). SpecialistLeave/leaves table
+     * * Physically the same as before; only the model class has changed.
+ */
     public function leaves(): HasMany
     {
-        return $this->hasMany(SpecialistLeave::class);
+        return $this->hasMany(Leave::class);
     }
 
     public function holidays(): HasMany
@@ -198,7 +203,6 @@ class Specialist extends Model
                 if (!$conflict) {
                     $slots[] = $slotStart->format('H:i');
                     $currentTime->addMinutes($duration);
-//                    $currentTime->addMinutes(30); // یا addMinutes($duration) بسته به مدل بیزنس شما
                 } else {
                     $currentTime = $conflict['end']->copy();
                 }
@@ -211,12 +215,6 @@ class Specialist extends Model
         }
     }
 
-    /**
-     *
-     * @param string $dateTime
-     * @param int|null $serviceDuration
-     * @return bool
-     */
     public function isAvailable($dateTime, $serviceDuration = null): bool
     {
         $date = Carbon::parse($dateTime)->toDateString();

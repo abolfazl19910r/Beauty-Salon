@@ -3,64 +3,60 @@
 namespace App\Http\Controllers\Admin\Specialist;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\Leave\StoreLeaveRequest;
+use App\Http\Requests\Admin\Leave\UpdateLeaveStatusRequest;
+use App\Models\Leave;
 use App\Models\Specialist;
-use App\Models\SpecialistLeave;
-use Illuminate\Http\Request;
-use Morilog\Jalali\Jalalian;
+use App\Services\Leave\LeaveService;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class AdminSpecialistLeaveController extends Controller
 {
-    public function index(Specialist $specialist)
+    public function __construct(
+        private readonly LeaveService $leaveService,
+    ) {
+    }
+
+    public function index(Specialist $specialist): View
     {
+        /** @var LengthAwarePaginator $leaves */
         $leaves = $specialist->leaves()->latest()->paginate(10);
+
         return view('admin.specialists.leaves.index', compact('specialist', 'leaves'));
     }
 
-    public function store(Request $request, Specialist $specialist)
+    /**
+     * ⭐ Bug fixed: Previously this method expected start_date_jalali/end_date_jalali
+     * , while the Blade leave modal would already send the Gregorian date (start_date/
+     * end_date) — meaning that registering a leave from the admin panel would always fail with a
+     * validation error. Now Form Request is aligned with the actual Blade data format
+     * .
+ */
+    public function store(StoreLeaveRequest $request, Specialist $specialist): RedirectResponse
     {
-        try {
-            $validated = $request->validate([
-                'start_date_jalali' => 'required|string',
-                'end_date_jalali' => 'required|string',
-                'reason' => 'nullable|string|max:255'
-            ]);
+        $result = $this->leaveService->store($specialist, $request->validated());
 
-            $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-            $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-
-            $startDateEn = str_replace($persianDigits, $englishDigits, $validated['start_date_jalali']);
-            $endDateEn = str_replace($persianDigits, $englishDigits, $validated['end_date_jalali']);
-
-            $startDate = Jalalian::fromFormat('Y/m/d', $startDateEn)->toCarbon()->toDateString();
-            $endDate = Jalalian::fromFormat('Y/m/d', $endDateEn)->toCarbon()->toDateString();
-
-            $specialist->leaves()->create([
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-                'reason' => $validated['reason'] ?? null,
-                'status' => 'pending'
-            ]);
-
-            return redirect()->route('admin.specialists.leaves.index', $specialist)
-                ->with('success', 'مرخصی با موفقیت ثبت شد.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'خطا در ذخیره اطلاعات: ' . $e->getMessage());
-        }
+        return redirect()
+            ->route('admin.specialists.leaves.index', $specialist)
+            ->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
-    public function update(Request $request, Specialist $specialist, SpecialistLeave $leave)
+    public function update(UpdateLeaveStatusRequest $request, Specialist $specialist, Leave $leave): RedirectResponse
     {
-        try {
-            $validated = $request->validate([
-                'status' => 'required|in:approved,rejected'
-            ]);
-
-            $leave->update($validated);
-
-            return redirect()->route('admin.specialists.leaves.index', $specialist)
-                ->with('success', 'وضعیت مرخصی با موفقیت بروزرسانی شد.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'خطا در بروزرسانی اطلاعات: ' . $e->getMessage());
+        if ($leave->specialist_id !== $specialist->id) {
+            abort(403, 'شما اجازه ویرایش این درخواست را ندارید.');
         }
+
+        $result = $this->leaveService->updateStatus(
+            $leave,
+            $request->validated('status'),
+            $request->validated('reject_reason')
+        );
+
+        return redirect()
+            ->route('admin.specialists.leaves.index', $specialist)
+            ->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 }

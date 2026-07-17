@@ -34,11 +34,23 @@ Route::middleware(['auth', 'verified'])->name('specialist.')->group(function () 
         Route::get('/schedule', [SpecialistProfileController::class, 'schedule'])->name('schedule');
         Route::put('/schedule', [SpecialistProfileController::class, 'updateSchedule'])->name('schedule.update');
 
+        // ⭐ New: The expert can manage her own WorkSchedule (self-service)
+        // ⭐ New: The expert can manage his own WorkSchedule (self-service)
+        Route::get('/work-schedule', [SpecialistProfileController::class, 'workSchedule'])->name('work-schedule');
+        Route::put('/work-schedule', [SpecialistProfileController::class, 'updateWorkSchedule'])->name('work-schedule.update');
+        Route::delete('/work-schedule', [SpecialistProfileController::class, 'destroyWorkSchedule'])->name('work-schedule.destroy');
+
         Route::get('/loyalty', [SpecialistProfileController::class, 'loyalty'])->name('loyalty');
     });
 
+// ⭐ Fix: index must have the name "without dot" specialist.leaves because
+// SpecialistLeaveController(store/destroy) and leaves-create.blade.php
+// ("back" links) refer to this exact name. Previous mistake: the whole group
+// Wrapped with name('leaves.') this path to specialist.leaves.index
+// would convert and cause a RouteNotFoundException.
+    Route::get('/specialist/leaves', [SpecialistLeaveController::class, 'index'])->name('leaves');
+
     Route::prefix('specialist/leaves')->name('leaves.')->group(function () {
-        Route::get('/', [SpecialistLeaveController::class, 'index'])->name('index');
         Route::get('/create', [SpecialistLeaveController::class, 'create'])->name('create');
         Route::post('/', [SpecialistLeaveController::class, 'store'])->name('store');
         Route::delete('/{leave}', [SpecialistLeaveController::class, 'destroy'])->name('destroy');
