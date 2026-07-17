@@ -43,12 +43,15 @@ Route::middleware(['auth', 'verified'])->name('specialist.')->group(function () 
         Route::get('/loyalty', [SpecialistProfileController::class, 'loyalty'])->name('loyalty');
     });
 
-// ⭐ Fix: index must have the name "without dot" specialist.leaves because
-// SpecialistLeaveController(store/destroy) and leaves-create.blade.php
-// ("back" links) refer to this exact name. Previous mistake: the whole group
-// Wrapped with name('leaves.') this path to specialist.leaves.index
-// would convert and cause a RouteNotFoundException.
+    // ⭐ Final fix: Both names are registered at this path because the codebase uses two
+    // different conventions at once: the controller (store/destroy) and
+    // leaves-create.blade.php use the "without dots" name specialist.leaves
+    // , but layouts/specialist.blade.php (sidebar navigation) uses the
+    // "with dots" name specialist.leaves.index . Instead of hunting down
+    // each file, both names are registered directly here to end this bug
+    // forever.
     Route::get('/specialist/leaves', [SpecialistLeaveController::class, 'index'])->name('leaves');
+    Route::get('/specialist/leaves', [SpecialistLeaveController::class, 'index'])->name('leaves.index');
 
     Route::prefix('specialist/leaves')->name('leaves.')->group(function () {
         Route::get('/create', [SpecialistLeaveController::class, 'create'])->name('create');
