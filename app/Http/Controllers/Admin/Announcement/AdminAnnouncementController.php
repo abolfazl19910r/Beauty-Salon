@@ -3,18 +3,33 @@
 namespace App\Http\Controllers\Admin\Announcement;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\Announcement\StoreAnnouncementRequest;
+use App\Http\Requests\Admin\Announcement\UpdateAnnouncementRequest;
 use App\Models\Announcement;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
+/**
+ * Previously, this controller only passed counters to index.blade.php, and the actual CRUD
+ * (store/update/destroy) simply returned JSON for AnnouncementAdmin.jsx
+ * (React SPA) to consume. Since BlogAdmin.jsx was removed, its broken import
+ * in admin.jsx would have buried the entire admin bundle (not just the blog) — including this
+ * page. A full conversion to Blade both eliminates that risk and aligns with the project's decision
+ * ("React → Blade for simple admin pages").
+ */
 class AdminAnnouncementController extends Controller
 {
-    public function index()
+    public function index(): View
     {
+        $announcements = Announcement::orderBy('priority', 'desc')
+            ->orderBy('published_at', 'desc')
+            ->paginate(15);
+
         $totalAnnouncements = Announcement::count();
 
         $activeAnnouncements = Announcement::where('is_active', true)
             ->where('published_at', '<=', now())
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNull('expires_at')
                     ->orWhere('expires_at', '>', now());
             })
@@ -29,6 +44,7 @@ class AdminAnnouncementController extends Controller
             ->count();
 
         return view('admin.announcements.index', compact(
+            'announcements',
             'totalAnnouncements',
             'activeAnnouncements',
             'pendingAnnouncements',
@@ -36,77 +52,37 @@ class AdminAnnouncementController extends Controller
         ));
     }
 
-    public function stats()
+    public function create(): View
     {
-        $stats = [
-            'total' => Announcement::count(),
-            'active' => Announcement::where('is_active', true)
-                ->where('published_at', '<=', now())
-                ->where(function($q) {
-                    $q->whereNull('expires_at')
-                        ->orWhere('expires_at', '>', now());
-                })
-                ->count(),
-            'pending' => Announcement::where('is_active', true)
-                ->where('published_at', '>', now())
-                ->count(),
-            'expired' => Announcement::whereNotNull('expires_at')
-                ->where('expires_at', '<', now())
-                ->count()
-        ];
-
-        return response()->json($stats);
+        return view('admin.announcements.create');
     }
 
-    public function list()
+    public function store(StoreAnnouncementRequest $request): RedirectResponse
     {
-        $announcements = Announcement::orderBy('priority', 'desc')
-            ->orderBy('published_at', 'desc')
-            ->get();
+        Announcement::create($request->validated());
 
-        return response()->json($announcements);
+        return redirect()->route('admin.announcements.index')
+            ->with('success', 'اطلاعیه با موفقیت ایجاد شد.');
     }
 
-    public function store(Request $request)
+    public function edit(Announcement $announcement): View
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'is_active' => 'sometimes|boolean',
-            'type' => 'required|in:general,maintenance,promotion',
-            'priority' => 'required|integer|min:0',
-            'published_at' => 'nullable|date',
-            'expires_at' => 'nullable|date|after:published_at'
-        ]);
-
-        $announcement = Announcement::create($validated);
-
-        return response()->json($announcement, 201);
+        return view('admin.announcements.edit', compact('announcement'));
     }
 
-    public function update(Request $request, Announcement $announcement)
+    public function update(UpdateAnnouncementRequest $request, Announcement $announcement): RedirectResponse
     {
-        $validated = $request->validate([
-            'title' => 'sometimes|string|max:255',
-            'content' => 'sometimes|string',
-            'is_active' => 'sometimes|boolean',
-            'type' => 'sometimes|in:general,maintenance,promotion',
-            'priority' => 'sometimes|integer|min:0',
-            'published_at' => 'nullable|date',
-            'expires_at' => 'nullable|date|after:published_at'
-        ]);
+        $announcement->update($request->validated());
 
-        $announcement->update($validated);
-
-        return response()->json($announcement);
+        return redirect()->route('admin.announcements.index')
+            ->with('success', 'اطلاعیه با موفقیت به‌روزرسانی شد.');
     }
 
-    public function destroy(Announcement $announcement)
+    public function destroy(Announcement $announcement): RedirectResponse
     {
         $announcement->delete();
 
-        return response()->json([
-            'message' => 'اطلاعیه با موفقیت حذف شد'
-        ]);
+        return redirect()->route('admin.announcements.index')
+            ->with('success', 'اطلاعیه با موفقیت حذف شد.');
     }
 }
