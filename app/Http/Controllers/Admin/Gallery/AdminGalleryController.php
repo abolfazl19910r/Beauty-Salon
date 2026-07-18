@@ -3,39 +3,86 @@
 namespace App\Http\Controllers\Admin\Gallery;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\Gallery\StoreGalleryImageRequest;
 use App\Models\GalleryImage;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 
+/**
+ * Previously this controller just returned an empty index() view with statistics and all the real CRUD
+ * * (upload/delete/sort) just returns JSON for GalleryAdmin.jsx (React).
+ * * Full conversion to Blade — no complicated drag&drop, with a simple up/down button
+ * * for sorting, which can be used without any additional JS.
+ */
 class AdminGalleryController extends Controller
 {
-    public function index()
+    public function index(): View
     {
-        $stats = $this->getStats();
+        $images = GalleryImage::orderBy('order')->get();
 
         return view('admin.gallery.index', [
-            'imagesCount' => $stats['imagesCount'],
-            'albumsCount' => $stats['albumsCount'],
-            'usedSpace' => $stats['usedSpace']
+            'images'      => $images,
+            'imagesCount' => $images->count(),
+            'usedSpace'   => $this->calculateUsedSpace(),
         ]);
     }
 
-    public function stats()
+    public function store(StoreGalleryImageRequest $request): RedirectResponse
     {
-        return response()->json($this->getStats());
+        $path = $request->file('image')->store('gallery', 'public');
+
+        GalleryImage::create([
+            'title'       => $request->validated('title'),
+            'description' => $request->validated('description') ?? '',
+            'image_path'  => $path,
+            'order'       => GalleryImage::count() + 1,
+        ]);
+
+        return redirect()->route('admin.gallery.index')
+            ->with('success', 'تصویر با موفقیت اضافه شد.');
     }
 
-    private function getStats(): array
+    public function destroy(GalleryImage $image): RedirectResponse
     {
-        $imagesCount = GalleryImage::count();
-        $albumsCount = 0;
-        $usedSpace = $this->calculateUsedSpace();
+        Storage::disk('public')->delete($image->image_path);
+        $image->delete();
 
-        return [
-            'imagesCount' => $imagesCount,
-            'albumsCount' => $albumsCount,
-            'usedSpace' => $usedSpace
-        ];
+        return redirect()->route('admin.gallery.index')
+            ->with('success', 'تصویر با موفقیت حذف شد.');
+    }
+
+    public function moveUp(GalleryImage $image): RedirectResponse
+    {
+        $previous = GalleryImage::where('order', '<', $image->order)
+            ->orderByDesc('order')
+            ->first();
+
+        if ($previous) {
+            $this->swapOrder($image, $previous);
+        }
+
+        return redirect()->route('admin.gallery.index');
+    }
+
+    public function moveDown(GalleryImage $image): RedirectResponse
+    {
+        $next = GalleryImage::where('order', '>', $image->order)
+            ->orderBy('order')
+            ->first();
+
+        if ($next) {
+            $this->swapOrder($image, $next);
+        }
+
+        return redirect()->route('admin.gallery.index');
+    }
+
+    private function swapOrder(GalleryImage $a, GalleryImage $b): void
+    {
+        [$orderA, $orderB] = [$a->order, $b->order];
+        $a->update(['order' => $orderB]);
+        $b->update(['order' => $orderA]);
     }
 
     private function calculateUsedSpace(): float
@@ -52,67 +99,5 @@ class AdminGalleryController extends Controller
         }
 
         return round($totalSize / (1024 * 1024), 2);
-    }
-
-    public function getImages()
-    {
-        $images = GalleryImage::orderBy('order')->get()->map(function($image) {
-            return [
-                'id' => $image->id,
-                'title' => $image->title,
-                'description' => $image->description,
-                'image_url' => $image->image_url,
-                'order' => $image->order
-            ];
-        });
-
-        return response()->json($images);
-    }
-
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'image' => 'required|image|max:2048',
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
-
-        $path = $request->file('image')->store('gallery', 'public');
-
-        $image = GalleryImage::create([
-            'title' => $validated['title'],
-            'description' => $validated['description'] ?? '',
-            'image_path' => $path,
-            'order' => GalleryImage::count() + 1
-        ]);
-
-        return response()->json([
-            'id' => $image->id,
-            'title' => $image->title,
-            'description' => $image->description,
-            'image_url' => $image->image_url,
-            'order' => $image->order
-        ], 201);
-    }
-
-    public function destroy($id)
-    {
-        $image = GalleryImage::findOrFail($id);
-        Storage::disk('public')->delete($image->image_path);
-        $image->delete();
-
-        return response()->json(null, 204);
-    }
-
-    public function reorder(Request $request)
-    {
-        $images = $request->input('images');
-
-        foreach ($images as $imageData) {
-            GalleryImage::where('id', $imageData['id'])
-                ->update(['order' => $imageData['order']]);
-        }
-
-        return response()->json(['message' => 'ترتیب با موفقیت به‌روز شد']);
     }
 }
