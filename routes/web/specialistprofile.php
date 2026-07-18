@@ -12,14 +12,27 @@ use App\Http\Controllers\Specialist\Wallet\Withdrawal\SpecialistWithdrawalContro
 use App\Http\Controllers\User\SpecialistController;
 use Illuminate\Support\Facades\Route;
 
+    // ============================================
+    // PUBLIC ROUTES (no auth required)
+    // ============================================
+
 Route::prefix('specialists')->name('specialists.')->group(function () {
     Route::get('/search', [SpecialistController::class, 'search'])->name('search');
-    Route::get('/service/{service}', [SpecialistController::class, 'byService'])->name('by-service');
+
+    // ✅ FIX: I changed the name to by-service-web so there is no conflict
+    // Or if the API side is more important, remove this line completely
+    Route::get('/service/{service}', [SpecialistController::class, 'byService'])
+        ->name('by-service-web');  // ← Name changed
+
     Route::get('/top-rated', [SpecialistController::class, 'topRated'])->name('top-rated');
     Route::get('/{specialist}', [SpecialistController::class, 'show'])->name('show');
     Route::get('/{specialist}/availability', [SpecialistController::class, 'availability'])->name('availability');
     Route::get('/{specialist}/available-slots/{date}', [SpecialistController::class, 'availableSlots'])->name('available-slots');
 });
+
+    // ============================================
+    // AUTHENTICATED ROUTES (specialist panel)
+    // ============================================
 
 Route::middleware(['auth', 'verified'])->name('specialist.')->group(function () {
 
@@ -43,15 +56,11 @@ Route::middleware(['auth', 'verified'])->name('specialist.')->group(function () 
         Route::get('/loyalty', [SpecialistProfileController::class, 'loyalty'])->name('loyalty');
     });
 
-    // ⭐ Final fix: Both names are registered at this path because the codebase uses two
-    // different conventions at once: the controller (store/destroy) and
-    // leaves-create.blade.php use the "without dots" name specialist.leaves
-    // , but layouts/specialist.blade.php (sidebar navigation) uses the
-    // "with dots" name specialist.leaves.index . Instead of hunting down
-    // each file, both names are registered directly here to end this bug
-    // forever.
-    Route::get('/specialist/leaves', [SpecialistLeaveController::class, 'index'])->name('leaves');
-    Route::get('/specialist/leaves', [SpecialistLeaveController::class, 'index'])->name('leaves.index');
+    Route::get('/specialist/leaves', [SpecialistLeaveController::class, 'index'])
+        ->name('leaves');
+
+    Route::get('/specialist/leaves/index', [SpecialistLeaveController::class, 'index'])
+        ->name('leaves.index');
 
     Route::prefix('specialist/leaves')->name('leaves.')->group(function () {
         Route::get('/create', [SpecialistLeaveController::class, 'create'])->name('create');
@@ -73,6 +82,9 @@ Route::middleware(['auth', 'verified'])->name('specialist.')->group(function () 
         Route::get('/count', [SpecialistNotificationController::class, 'count'])->name('count');
         Route::post('/mark-all-read', [SpecialistNotificationController::class, 'markAllAsRead'])->name('mark-all-read');
         Route::post('/{id}/read', [SpecialistNotificationController::class, 'markAsRead'])->name('read');
+
+        // ✅ NEW: Route to redirect to notification link
+        Route::get('/{id}', [SpecialistNotificationController::class, 'showAndRedirect'])->name('show');
     });
 
     Route::get('/specialist/reports', [SpecialistReportController::class, 'index'])->name('reports.index');
