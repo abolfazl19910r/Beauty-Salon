@@ -34,9 +34,9 @@ class LeaveStatusNotification extends Notification
 
     /**
      * ⭐ Fix: Added 'message' key. It wasn't there before, so the expert dashboard
-     * * (which uses data['message'] to display the notification text)
-     * * always just showed the generic text "New Announcement", without saying
-     * * whether the leave was approved or rejected.
+     * (which uses data['message'] to display the notification text)
+     * always just showed the generic text "New Announcement", without saying
+     * whether the leave was approved or rejected.
      * @param mixed $notifiable
      * @return array
      */

@@ -8,6 +8,8 @@ use App\Models\Specialist;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Log;
 use Morilog\Jalali\Jalalian;
 
 class SpecialistNotificationController extends Controller
@@ -23,9 +25,29 @@ class SpecialistNotificationController extends Controller
             return view('specialist.profile-not-found');
         }
 
-        $notifications = $user->notifications()
+        $userNotifications = $user->notifications()
             ->orderBy('created_at', 'desc')
-            ->paginate(15);
+            ->get();
+
+        $specialistNotifications = $specialist->notifications()
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $allNotifications = $userNotifications->merge($specialistNotifications)
+            ->sortByDesc('created_at')
+            ->values();
+
+        $perPage = 15;
+        $currentPage = request()->get('page', 1);
+        $pagedData = $allNotifications->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+        $notifications = new LengthAwarePaginator(
+            $pagedData,
+            $allNotifications->count(),
+            $perPage,
+            $currentPage,
+            ['path' => request()->url()]
+        );
 
         return view('specialist.notifications', compact('specialist', 'notifications'));
     }
@@ -33,38 +55,66 @@ class SpecialistNotificationController extends Controller
     public function latest(): JsonResponse
     {
         $user = auth()->user();
+        $specialist = Specialist::where('phone', $user->phone)->first();
 
-        $notifications = $user->notifications()
+        $userNotifications = $user->notifications()
             ->orderBy('created_at', 'desc')
             ->limit(5)
-            ->get()
-            ->map(function ($notification) {
-                $data = $notification->data;
-                $text = $data['message'] ?? $data['description'] ?? 'اعلان جدید';
-                $link = $this->resolveNotificationLink($notification->type, $data);
+            ->get();
 
-                return [
-                    'id'       => $notification->id,
-                    'message'  => $text,
-                    'link'     => $link,
-                    'read_at'  => $notification->read_at,
-                    'time_ago' => $this->timeAgo($notification->created_at),
-                ];
-            });
+        $specialistNotifications = collect([]);
+        if ($specialist) {
+            $specialistNotifications = $specialist->notifications()
+                ->orderBy('created_at', 'desc')
+                ->limit(5)
+                ->get();
+        }
+
+        $allNotifications = $userNotifications->merge($specialistNotifications)
+            ->sortByDesc('created_at')
+            ->take(5)
+            ->values();
+
+        $notifications = $allNotifications->map(function ($notification) {
+            $data = $notification->data;
+            $text = $data['message'] ?? $data['description'] ?? 'اعلان جدید';
+            $link = $this->resolveNotificationLink($notification->type, $data);
+
+            return [
+                'id'       => $notification->id,
+                'message'  => $text,
+                'link'     => $link,
+                'read_at'  => $notification->read_at,
+                'time_ago' => $this->timeAgo($notification->created_at),
+            ];
+        });
 
         return response()->json(['notifications' => $notifications]);
     }
 
     public function count(): JsonResponse
     {
+        $user = auth()->user();
+        $specialist = Specialist::where('phone', $user->phone)->first();
+
+        $userUnread = $user->unreadNotifications()->count();
+        $specialistUnread = $specialist ? $specialist->unreadNotifications()->count() : 0;
+
         return response()->json([
-            'count' => auth()->user()->unreadNotifications()->count(),
+            'count' => $userUnread + $specialistUnread,
         ]);
     }
 
     public function markAsRead(string $id): JsonResponse
     {
-        $notification = auth()->user()->notifications()->find($id);
+        $user = auth()->user();
+        $specialist = Specialist::where('phone', $user->phone)->first();
+
+        $notification = $user->notifications()->find($id);
+
+        if (! $notification && $specialist) {
+            $notification = $specialist->notifications()->find($id);
+        }
 
         if ($notification && ! $notification->read_at) {
             $notification->markAsRead();
@@ -73,9 +123,47 @@ class SpecialistNotificationController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function showAndRedirect(string $id): RedirectResponse
+    {
+        $user = auth()->user();
+        $specialist = Specialist::where('phone', $user->phone)->first();
+
+        $notification = $user->notifications()->find($id);
+
+        if (! $notification && $specialist) {
+            $notification = $specialist->notifications()->find($id);
+        }
+
+        if ($notification) {
+            if (! $notification->read_at) {
+                $notification->markAsRead();
+            }
+
+            $data = $notification->data;
+            $link = $this->resolveNotificationLink($notification->type, $data);
+
+            if (empty($link) || $link === '#') {
+                return redirect()->route('specialist.my-dashboard')
+                    ->with('warning', 'لینک اعلان نامعتبر است.');
+            }
+
+            return redirect()->to($link);
+        }
+
+        return redirect()->route('specialist.my-dashboard')
+            ->with('error', 'اعلان مورد نظر یافت نشد.');
+    }
+
     public function markAllAsRead(): RedirectResponse
     {
-        auth()->user()->unreadNotifications()->update(['read_at' => now()]);
+        $user = auth()->user();
+        $specialist = Specialist::where('phone', $user->phone)->first();
+
+        $user->unreadNotifications()->update(['read_at' => now()]);
+
+        if ($specialist) {
+            $specialist->unreadNotifications()->update(['read_at' => now()]);
+        }
 
         return back()->with('success', 'تمام اعلانات به عنوان خوانده شده علامت‌گذاری شدند.');
     }
