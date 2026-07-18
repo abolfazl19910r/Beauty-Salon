@@ -1,12 +1,10 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import AdminDashboard from '@/Components/Admin/AdminDashboard';
-import LoyaltyAdmin from '@/Components/Admin/Loyalty/LoyaltyAdmin';
-import AnnouncementAdmin from '@/Components/Admin/Announcement/AnnouncementAdmin';
-import BlogAdmin from '@/Components/Admin/Blog/BlogAdmin';
-import GalleryAdmin from '@/Components/Admin/Gallery/GalleryAdmin';
-import ReportDashboard from '@/Components/Admin/Reports/ReportDashboard';
 import BookingStats from '@/Components/booking/BookingStats';
+
+/**
+ * ⚠️ Cleanup (R-Cleanup-DeadCode): This file previously mounted 6 admin panel components (AdminDashboard, ReportDashboard, LoyaltyAdmin, AnnouncementAdmin, BlogAdmin, GalleryAdmin). All 6 of these have now been converted to Blade — the first 4 already (according to the refactoring document), Announcement and Gallery now. The broken import of BlogAdmin (the file that was removed in the R-AdminBlog phase) caused Vite to reject the entire bundle, causing any admin page that @vite this file (not just the blog page) to fail with an import-analysis error. By removing these imports completely, that risk is gone. The only remaining mount (booking-stats) is for client-side pages, not the admin panel, and is not relevant to this cleanup.
+ */
 
 const LoadingComponent = () => (
     <div className="flex justify-center items-center min-h-screen">
@@ -18,23 +16,9 @@ const mountComponent = (elementId, Component, customProps = {}) => {
     const element = document.getElementById(elementId);
     if (!element) return;
 
-    console.log(`Mounting ${elementId}...`);
-
     let props = { ...customProps };
     if (element.dataset && Object.keys(element.dataset).length > 0) {
         props = { ...props, ...element.dataset };
-
-        if (props.routes) {
-            try {
-                props.routes = JSON.parse(props.routes);
-            } catch (e) {
-                console.error('Error parsing routes JSON:', e);
-            }
-        }
-    }
-
-    if (window.initialData) {
-        props = { ...props, ...window.initialData };
     }
 
     try {
@@ -46,7 +30,6 @@ const mountComponent = (elementId, Component, customProps = {}) => {
                 </React.Suspense>
             </React.StrictMode>
         );
-        console.log(`${elementId} mounted successfully`);
     } catch (error) {
         console.error(`Error mounting ${elementId}:`, error);
         element.innerHTML = `
@@ -77,10 +60,3 @@ if (document.getElementById('booking-stats')) {
 
     mountComponent('booking-stats', BookingStats, customProps);
 }
-
-mountComponent('admin-dashboard', AdminDashboard);
-mountComponent('reports-panel', ReportDashboard);
-mountComponent('admin-loyalty', LoyaltyAdmin);
-mountComponent('admin-announcements', AnnouncementAdmin);
-mountComponent('admin-blog', BlogAdmin);
-mountComponent('admin-gallery', GalleryAdmin);
