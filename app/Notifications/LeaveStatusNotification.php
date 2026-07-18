@@ -33,18 +33,39 @@ class LeaveStatusNotification extends Notification
     }
 
     /**
-     *
+     * ⭐ Fix: Added 'message' key. It wasn't there before, so the expert dashboard
+     * * (which uses data['message'] to display the notification text)
+     * * always just showed the generic text "New Announcement", without saying
+     * * whether the leave was approved or rejected.
      * @param mixed $notifiable
      * @return array
      */
     public function toDatabase(mixed $notifiable): array
     {
+        $statusText = match ($this->leave->status) {
+            'approved' => 'تایید شد',
+            'rejected' => 'رد شد',
+            default    => $this->leave->status,
+        };
+
+        $message = sprintf(
+            'درخواست مرخصی شما از %s تا %s %s.',
+            verta($this->leave->start_date)->format('Y/m/d'),
+            verta($this->leave->end_date)->format('Y/m/d'),
+            $statusText
+        );
+
+        if ($this->leave->status === 'rejected' && $this->leave->reject_reason) {
+            $message .= ' دلیل: ' . $this->leave->reject_reason;
+        }
+
         return [
-            'leave_id' => $this->leave->id,
-            'status' => $this->leave->status,
-            'start_date' => $this->leave->start_date,
-            'end_date' => $this->leave->end_date,
-            'reject_reason' => $this->leave->reject_reason
+            'message'       => $message,
+            'leave_id'      => $this->leave->id,
+            'status'        => $this->leave->status,
+            'start_date'    => $this->leave->start_date,
+            'end_date'      => $this->leave->end_date,
+            'reject_reason' => $this->leave->reject_reason,
         ];
     }
 
