@@ -27,7 +27,7 @@
 @section('content')
     <div class="fade-in max-w-4xl mx-auto space-y-6">
 
-        <a href="{{ route('specialist.bookings') }}" class="inline-flex items-center text-[var(--specialist-text-dim)] hover:text-[var(--specialist-plum-light)] transition-colors">
+        <a href="{{ route('specialist.bookings.index') }}" class="inline-flex items-center text-[var(--specialist-text-dim)] hover:text-[var(--specialist-plum-light)] transition-colors">
             <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
             بازگشت به لیست
         </a>
