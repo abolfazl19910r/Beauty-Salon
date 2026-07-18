@@ -40,15 +40,18 @@
                             $data = $notification->data;
                             $text = $data['message'] ?? $data['description'] ?? 'اعلان جدید';
 
-                            $link = '#';
+                            // ✅ Destination link
+                            $targetLink = route('specialist.my-dashboard');
                             if ($notification->type === 'App\\Notifications\\PointsEarned') {
-                                // این اعلان مربوط به نوبتی است که خود متخصص به‌عنوان مشتری رزرو کرده
-                                $link = route('specialist.loyalty');
+                                $targetLink = route('specialist.loyalty');
                             } elseif (!empty($data['booking_id'])) {
-                                $link = route('specialist.bookings.show', $data['booking_id']);
+                                $targetLink = route('specialist.bookings.show', $data['booking_id']);
                             } elseif (!empty($data['leave_id'])) {
-                                $link = route('specialist.leaves');
+                                $targetLink = route('specialist.leaves');
                             }
+
+                            // ✅ URL for mark as read
+                            $readUrl = route('specialist.notifications.read', $notification->id);
                         @endphp
                         <div id="notification-row-{{ $notification->id }}"
                              class="flex items-start px-6 py-4 transition-colors hover:bg-white/5 {{ $notification->read_at ? '' : 'bg-[var(--specialist-plum-mid)]/5' }}">
@@ -58,7 +61,11 @@
                                       style="background-color: {{ $notification->read_at ? 'var(--specialist-inactive)' : 'var(--specialist-plum-mid)' }};"></span>
                             </div>
 
-                            <a href="{{ $link }}" class="mr-3 flex-1 block">
+                            {{-- ✅ FIX: Direct href to destination link --}}
+                            <a href="{{ $targetLink }}"
+                               data-notification-id="{{ $notification->id }}"
+                               data-read-url="{{ $readUrl }}"
+                               class="notification-link mr-3 flex-1 block">
                                 <p id="notification-text-{{ $notification->id }}"
                                    class="text-sm {{ $notification->read_at ? 'text-[var(--specialist-text-dim)]' : 'text-[var(--specialist-text)] font-semibold' }}">
                                     {{ $text }}
@@ -89,13 +96,32 @@
 
     @push('scripts')
         <script>
+            // ✅ Mark as read when clicking on the link (without preventing redirect)
+            document.querySelectorAll('.notification-link').forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    const notificationId = this.dataset.notificationId;
+                    const readUrl = this.dataset.readUrl;
+
+                    fetch(readUrl, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json'
+                        }
+                    }).catch(function(err) {
+                        console.error('خطا در علامت‌گذاری:', err);
+                    });
+
+                });
+            });
+
             function markNotificationAsReadOnPage(id) {
-                const url = window.SpecialistRoutes.notificationsRead.replace(':id', id);
+                const url = '{{ route("specialist.notifications.read", ":id") }}'.replace(':id', id);
 
                 fetch(url, {
                     method: 'POST',
                     headers: {
-                        'X-CSRF-TOKEN': window.SpecialistRoutes.csrfToken,
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Content-Type': 'application/json'
                     }
                 })
