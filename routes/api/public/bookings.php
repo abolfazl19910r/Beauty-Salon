@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\User\BookingController;
+use App\Http\Controllers\User\BookingDiscountController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/check-discount', [BookingController::class, 'checkDiscount']);
+Route::post('/check-discount', [BookingDiscountController::class, 'check']);

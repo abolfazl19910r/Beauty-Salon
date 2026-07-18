@@ -65,22 +65,7 @@ class DiscountCode extends Model
         return true;
     }
 
-    public function calculateDiscount($amount)
-    {
-        if ($this->type === 'percentage') {
-            $discount = ($amount * $this->amount) / 100;
-        } else {
-            $discount = $this->amount;
-        }
-
-        if ($this->max_amount) {
-            $discount = min($discount, $this->max_amount);
-        }
-
-        return $discount;
-    }
-
-    public function incrementUsage()
+    public function incrementUsage(): void
     {
         $this->increment('used_count');
     }
@@ -90,7 +75,7 @@ class DiscountCode extends Model
         return $this->user_id !== null;
     }
 
-    public function canBeUsedBy($userId): bool
+    public function canBeUsedBy(?int $userId): bool
     {
         if ($this->user_id === null) {
             return true;

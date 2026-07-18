@@ -47,6 +47,17 @@ class BookingPolicy
         return $booking->user_id === $user->id && $booking->status === 'pending';
     }
 
+    /**
+     * A discount code can be applied only to the user's own unpaid booking.
+     * (Dedicated ability: `update` requires status 'pending', which excludes
+     * the 'pending_payment' bookings this action is meant for.)
+     */
+    public function applyDiscount(User $user, Booking $booking): bool
+    {
+        return $booking->user_id === $user->id
+            && $booking->payment_status === 'unpaid';
+    }
+
     public function pay(User $user, Booking $booking): bool
     {
         return $booking->user_id === $user->id;

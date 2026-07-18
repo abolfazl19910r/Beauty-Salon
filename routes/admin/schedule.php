@@ -1,16 +1,19 @@
 <?php
 
 use App\Http\Controllers\Admin\Holiday\AdminHolidayController;
-use App\Http\Controllers\Admin\Leave\AdminLeaveController;
 use App\Http\Controllers\Admin\Specialist\AdminSpecialistsWorkScheduleController;
 use Illuminate\Support\Facades\Route;
 
 /*
 * ⚠️ Note: The name of this group has been changed from 'schedule.' to 'specialists.work-schedule.'
-* to avoid conflict with the 'schedule.' group defined in routes/admin/specialists.php for the old system
-* (SpecialistSchedule). Previously, both names
-* were 'admin.schedule.index' and since this file was loaded after specialists.php
-* , it silently overrode the old registry.
+* to avoid a conflict with the 'schedule.' group defined in routes/admin/specialists.php for the old system
+* (SpecialistSchedule). Previously, both names were
+* 'admin.schedule.index' and since this file was loaded after specialists.php
+* it silently overrode the old registry.
+*
+* ⚠️ The line "Route::get('/leaves/pending', ...)" that was previously here has been moved to
+* routes/admin/leaves.php (the global leave page) so that the name
+* admin.leaves.pending is only registered once.
  */
 Route::prefix('specialists/{specialist}')->group(function () {
     Route::prefix('work-schedule')->name('specialists.work-schedule.')->group(function () {
@@ -31,5 +34,3 @@ Route::prefix('specialists/{specialist}')->group(function () {
     });
 
 });
-
-Route::get('/leaves/pending', [AdminLeaveController::class, 'pendingLeaves'])->name('leaves.pending');

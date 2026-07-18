@@ -250,20 +250,20 @@
             applyBtn.disabled = true;
             applyBtn.innerHTML = '...';
 
-            fetch('{{ route("bookings.check-discount") }}', {
+            fetch('{{ route("bookings.apply-discount", $booking) }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({ code: code, booking_id: {{ $booking->id }} })
+                body: JSON.stringify({ code: code })
             })
                 .then(r => r.json())
                 .then(data => {
-                    if (data.valid) {
+                    if (data.success) {
                         currentDiscount = data.discount_amount;
-                        bookingAmount = data.final_price;
+                        bookingAmount = data.final_amount;
 
                         const discountSummary = document.getElementById('discount-summary');
                         const discountAmountEl = document.getElementById('discount-amount');
@@ -285,14 +285,19 @@
                             paymentBtnText.textContent = 'پرداخت و نهایی کردن رزرو';
                         }
                         updatePaymentAmount();
+
+                        codeInput.disabled = true;
+                        applyBtn.disabled = true;
                     } else {
                         showMessage(messageDiv, '✗ ' + (data.message || 'کد تخفیف نامعتبر است.'), 'error');
                     }
                 })
                 .catch(() => showMessage(messageDiv, 'خطا در ارتباط با سرور.', 'error'))
                 .finally(() => {
-                    applyBtn.disabled = false;
                     applyBtn.innerHTML = originalBtnText;
+                    if (!codeInput.disabled) {
+                        applyBtn.disabled = false;
+                    }
                 });
         }
 

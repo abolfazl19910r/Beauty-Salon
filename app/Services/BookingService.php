@@ -4,13 +4,13 @@ namespace App\Services;
 
 use App\Exceptions\BookingNotAvailableException;
 use App\Exceptions\DiscountCodeInvalidException;
-use App\Models\BeautyService;
 use App\Models\Booking;
 use App\Models\DiscountCode;
 use App\Models\Specialist;
 use App\Notifications\BookingNotification;
 use App\Notifications\CustomerBookingNotification;
 use App\Notifications\SpecialistBookingCancelledNotification;
+use App\Services\Discount\DiscountCalculator;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
@@ -19,15 +19,23 @@ use Illuminate\Support\Facades\Log;
 
 class BookingService
 {
+    protected const MINIMUM_PREPAYMENT = 50000.0;
+
     protected Specialist $specialist;
     protected Booking $booking;
     protected DiscountCode $discountCode;
+    protected DiscountCalculator $discountCalculator;
 
-    public function __construct(Specialist $specialist, Booking $booking, DiscountCode $discountCode)
-    {
+    public function __construct(
+        Specialist $specialist,
+        Booking $booking,
+        DiscountCode $discountCode,
+        DiscountCalculator $discountCalculator
+    ) {
         $this->specialist = $specialist;
         $this->booking = $booking;
         $this->discountCode = $discountCode;
+        $this->discountCalculator = $discountCalculator;
     }
 
     public function isTimeAvailable(int $specialistId, string $bookingTime): bool
@@ -84,10 +92,10 @@ class BookingService
     }
 
     /**
-     *
+     * Check the validity of a discount code and preview its effect on a base amount, without persisting.
      * @throws DiscountCodeInvalidException
      */
-    public function validateDiscountCode(string $code, int $userId): array
+    public function validateDiscountCode(string $code, int $userId, ?float $baseAmount = null): array
     {
         $discountCode = $this->discountCode->where('code', $code)->first();
 
@@ -99,7 +107,7 @@ class BookingService
             );
         }
 
-        if ($discountCode->user_id && $discountCode->user_id !== $userId) {
+        if (! $discountCode->canBeUsedBy($userId)) {
             throw DiscountCodeInvalidException::because(
                 "Code '{$code}' belongs to another user.",
                 'این کد تخفیف متعلق به شما نیست.',
@@ -107,23 +115,26 @@ class BookingService
             );
         }
 
-        $prepaymentAmount = 50000;
-        $discountAmount = $discountCode->type === 'percentage'
-            ? ($prepaymentAmount * $discountCode->amount / 100)
-            : $discountCode->amount;
-
-        if (isset($discountCode->max_amount)) {
-            $discountAmount = min($discountAmount, $discountCode->max_amount);
-        }
+        $result = $this->discountCalculator->calculate($discountCode, $baseAmount ?? self::MINIMUM_PREPAYMENT);
 
         return [
             'valid'           => true,
-            'discount_amount' => $discountAmount,
-            'final_amount'    => max(0, $prepaymentAmount - $discountAmount),
+            'discount_amount' => $result['discount_amount'],
+            // Note: The key final_price (not final_amount) is intentional, because preview consumers have already opened an account on the same key name in the frontend.
+            'final_price'     => $result['final_amount'],
             'message'         => 'کد تخفیف معتبر است.',
         ];
     }
 
+    /**
+     * Persist the discount code on a specific order.
+     *
+     * Guards for this method (R-DiscountLogic):
+     * - Ownership: User-specific discount code can no longer be used (canBeUsedBy)
+     * - No re-apply: A order that already has a discount_code will not get a discount again
+     * - No application on paid order: After payment, the discount will no longer be applied
+     * - Atomicity: Update order + increment used_count in one transaction
+ */
     public function applyDiscountCode(Booking $booking, string $code): array
     {
         $discountCode = $this->discountCode->where('code', $code)->first();
@@ -132,35 +143,41 @@ class BookingService
             return ['success' => false, 'message' => 'کد تخفیف نامعتبر است.'];
         }
 
-        $discountAmount = $discountCode->type === 'percentage'
-            ? ($booking->prepayment_amount * $discountCode->amount / 100)
-            : $discountCode->amount;
-
-        if (isset($discountCode->max_amount)) {
-            $discountAmount = min($discountAmount, $discountCode->max_amount);
+        if (! $discountCode->canBeUsedBy($booking->user_id)) {
+            return ['success' => false, 'message' => 'این کد تخفیف متعلق به شما نیست.'];
         }
 
-        $finalAmount = max(0, $booking->prepayment_amount - $discountAmount);
+        if ($booking->discount_code) {
+            return ['success' => false, 'message' => 'کد تخفیف قبلاً برای این نوبت اعمال شده است.'];
+        }
 
-        $booking->update([
-            'discount_code'     => $code,
-            'discount_amount'   => $discountAmount,
-            'prepayment_amount' => $finalAmount,
-        ]);
+        if ($booking->payment_status === 'paid') {
+            return ['success' => false, 'message' => 'این نوبت قبلاً پرداخت شده است.'];
+        }
 
-        $discountCode->increment('used_count');
+        return DB::transaction(function () use ($booking, $discountCode, $code) {
+            $result = $this->discountCalculator->calculate($discountCode, (float) $booking->prepayment_amount);
 
-        return [
-            'success'         => true,
-            'discount_amount' => $discountAmount,
-            'final_amount'    => $finalAmount,
-            'message'         => 'کد تخفیف با موفقیت اعمال شد.',
-        ];
+            $booking->update([
+                'discount_code'     => $code,
+                'discount_amount'   => $result['discount_amount'],
+                'prepayment_amount' => $result['final_amount'],
+            ]);
+
+            $discountCode->incrementUsage();
+
+            return [
+                'success'         => true,
+                'discount_amount' => $result['discount_amount'],
+                'final_amount'    => $result['final_amount'],
+                'message'         => 'کد تخفیف با موفقیت اعمال شد.',
+            ];
+        });
     }
 
     public function calculatePrepayment(float $servicePrice, ?string $code = null): array
     {
-        $prepaymentAmount = max(50000, $servicePrice * 0.3);
+        $prepaymentAmount = max(self::MINIMUM_PREPAYMENT, $servicePrice * 0.3);
         $discountAmount = 0;
         $discountCode = null;
 
@@ -168,9 +185,8 @@ class BookingService
             $discountCode = $this->discountCode->where('code', $code)->first();
 
             if ($discountCode && $discountCode->isValid()) {
-                $discountAmount = $discountCode->type === 'percentage'
-                    ? ($prepaymentAmount * $discountCode->amount / 100)
-                    : $discountCode->amount;
+                $discountAmount = $this->discountCalculator
+                    ->calculate($discountCode, $prepaymentAmount)['discount_amount'];
             }
         }
 
@@ -183,7 +199,6 @@ class BookingService
     }
 
     /**
-     *
      * @throws BookingNotAvailableException
      */
     public function createBooking(
@@ -205,7 +220,7 @@ class BookingService
             );
         }
 
-        $prepaymentData = $this->calculatePrepayment(50000, $discountCode);
+        $prepaymentData = $this->calculatePrepayment(self::MINIMUM_PREPAYMENT, $discountCode);
 
         return DB::transaction(function () use (
             $userId, $serviceId, $specialistId, $bookingTime, $discountCode, $prepaymentData, $specialist
