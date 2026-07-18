@@ -3,19 +3,94 @@
 namespace App\Services\Admin\Loyalty;
 
 use App\Exceptions\InsufficientLoyaltyPointsException;
+use App\Models\DiscountCode;
 use App\Models\LoyaltyPoint;
 use App\Models\Reward;
 use App\Models\User;
+use App\Services\LoyaltyService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Business logic for managing the loyalty program from the admin panel.
- * * Extracted from AdminLoyaltyController (R-AdminLoyalty phase).
+ *
+ * Extracted from AdminLoyaltyController (R-AdminLoyalty phase).
+ *
+ * ⚠️ Bug fixed (discovered when reporting "adding reward not working"): This class
+ * did not have the methods getDashboardStats/createReward/updateReward/deleteReward/
+ * getActiveRewards/redeemRewardForUser that AdminLoyaltyRewardController
+ * called. Since PHP throws a non-existent method call on the object with
+ * \Error and the controller has catch(\Throwable $e) everywhere, this error
+ * would be silently swallowed and the user would only see a generic "error creating reward" message
+ * (or even no indication, depending on the path) — without leaving anything in the log or
+ * database.
  */
 class LoyaltyAdminService
 {
-    // ─── General statistics ────────────────────────────────────────────────
+    public function __construct(
+        private readonly LoyaltyService $loyaltyService,
+    ) {
+    }
+
+    // ─── Dashboard (admin.loyalty.index) ───────────────────────────────────
+
+    public function getDashboardStats(): array
+    {
+        $totalActivePoints = (int) LoyaltyPoint::where('type', 'earned')->sum('points');
+        $totalPointUsers = LoyaltyPoint::distinct('user_id')->count('user_id');
+        $totalRedeemedRewards = (int) Reward::sum('used_count');
+        $rewards = Reward::orderBy('required_points')->get();
+
+        return [
+            'totalActivePoints'    => $totalActivePoints,
+            'totalPointUsers'      => $totalPointUsers,
+            'averageUserPoints'    => $totalPointUsers > 0 ? round($totalActivePoints / $totalPointUsers) : 0,
+            'totalRedeemedRewards' => $totalRedeemedRewards,
+            'rewards'              => $rewards,
+        ];
+    }
+
+    public function getActiveRewards()
+    {
+        return Reward::where('is_active', true)
+            ->orderBy('required_points')
+            ->get();
+    }
+
+    // ─── Reward CRUD ────────────────────────────────────────────────────────
+
+    public function createReward(array $data): Reward
+    {
+        return Reward::create($data);
+    }
+
+    public function updateReward(Reward $reward, array $data): Reward
+    {
+        $reward->update($data);
+
+        return $reward;
+    }
+
+    public function deleteReward(Reward $reward): void
+    {
+        if ($reward->used_count > 0) {
+            throw new \Exception('پاداشی که قبلاً استفاده شده قابل حذف نیست.');
+        }
+
+        $reward->delete();
+    }
+
+    /**
+     * Activate/redeem Reward for a specific user from admin side.
+     * * Uses exactly the same logic as LoyaltyService::redeemReward() (customer route)
+     * * so that the points→discount code conversion formula is not repeated twice.
+ */
+    public function redeemRewardForUser(int $userId, Reward $reward): DiscountCode
+    {
+        return $this->loyaltyService->redeemReward($userId, $reward);
+    }
+
+    // ─── General statistics (Reports/history — No change) ─────────────────
 
     public function getStatistics(): array
     {
@@ -53,8 +128,6 @@ class LoyaltyAdminService
         ];
     }
 
-    // ─── User privileges ──────────────────────────────────────────
-
     public function getUserPoints(User $user): array
     {
         $earned  = LoyaltyPoint::where('user_id', $user->id)->where('type', 'earned')->sum('points');
@@ -79,8 +152,6 @@ class LoyaltyAdminService
                 ->paginate(20),
         ];
     }
-
-    // ─── Add/Subtract Points ─────────────────────────────────────
 
     public function addPoints(
         User $user,
@@ -116,8 +187,6 @@ class LoyaltyAdminService
         ]);
     }
 
-    // ─── Output ───────────────────────────────────────────────────
-
     public function getExportData(string $type = 'points'): array
     {
         if ($type === 'rewards') {
@@ -143,8 +212,6 @@ class LoyaltyAdminService
             ])
             ->toArray();
     }
-
-    // ─── History ─────────────────────────────────────────────────
 
     public function getHistory(array $filters = [])
     {

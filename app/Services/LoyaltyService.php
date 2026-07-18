@@ -7,6 +7,7 @@ use App\Models\LoyaltyPoint;
 use App\Models\LoyaltySetting;
 use App\Models\Reward;
 use App\Models\DiscountCode;
+use App\Models\User;
 use App\Notifications\RewardRedeemed;
 use App\Notifications\PointsEarned;
 use Illuminate\Support\Facades\DB;
@@ -49,46 +50,48 @@ class LoyaltyService
     }
 
     /**
+     * ⚠️ Bug fixed: Previously this method called isAvailableForUser/notify on auth()->user()
+     * , not on the actual user $userId. For the customer route (it redeems for itself
+     * ) these were the same, but the same method should be called exactly by the admin panel
+     * (LoyaltyAdminService::redeemRewardForUser) for a user other than the admin
+     * — in which case auth()->user() was wrong (admin):
+     * The points balance check was performed on the admin account and the notification was sent to the admin,
+     * not to the target user. Now it works completely based on $userId.
+ *
      * @throws \Exception
      */
-    public function redeemReward($userId, Reward $reward)
+    public function redeemReward(int $userId, Reward $reward): DiscountCode
     {
-        if (!$reward->isAvailableForUser(auth()->user())) {
+        $user = User::findOrFail($userId);
+
+        if (! $reward->isAvailableForUser($user)) {
             throw new \Exception('امتیاز کافی نیست یا پاداش در دسترس نیست');
         }
 
-        try {
-            DB::beginTransaction();
-
-            $loyaltyPoint = LoyaltyPoint::create([
-                'user_id' => $userId,
-                'points' => -$reward->required_points,
+        return DB::transaction(function () use ($userId, $reward, $user) {
+            LoyaltyPoint::create([
+                'user_id'     => $userId,
+                'points'      => -$reward->required_points,
                 'description' => "استفاده از پاداش: {$reward->title}",
-                'type' => 'spent'
+                'type'        => 'spent',
             ]);
 
             $discountCode = DiscountCode::create([
-                'code' => strtoupper(Str::random(8)),
-                'type' => $reward->discount_type,
-                'amount' => $reward->discount_amount,
-                'user_id' => $userId,
-                'max_uses' => 1,
+                'code'       => strtoupper(Str::random(8)),
+                'type'       => $reward->discount_type,
+                'amount'     => $reward->discount_amount,
+                'user_id'    => $userId,
+                'max_uses'   => 1,
                 'expires_at' => now()->addDays(30),
-                'is_active' => true
+                'is_active'  => true,
             ]);
 
             $reward->incrementUsage();
 
-            DB::commit();
-
-            auth()->user()->notify(new RewardRedeemed($reward, $discountCode));
+            $user->notify(new RewardRedeemed($reward, $discountCode));
 
             return $discountCode;
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
+        });
     }
 
     public function earnPointsFromBooking($userId, $bookingId)
