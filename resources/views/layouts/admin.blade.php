@@ -107,7 +107,7 @@
             border-right: 3px solid var(--admin-accent);
         }
 
-        /* دکمه‌های اصلی ادمین */
+        /* Main admin buttons */
         .admin-btn-primary {
             background-color: var(--admin-accent);
             color: #fff;
@@ -117,7 +117,7 @@
             background-color: var(--admin-accent-hover);
         }
 
-        /* کارت ادمین */
+        /* Admin card */
         .admin-card {
             background: var(--admin-surface);
             border: 1px solid var(--admin-border);
@@ -204,6 +204,22 @@
                         <circle cx="12" cy="7" r="4"></circle>
                     </svg>
                     متخصصین
+                </a>
+                @endpermission
+
+                @permission('view-specialists')
+                <a href="{{ route('admin.leaves.index') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.leaves*') ? 'sidebar-active' : '' }}"
+                   style="{{ request()->routeIs('admin.leaves*') ? '' : 'color: var(--admin-text-dim);' }}"
+                   onmouseover="{{ request()->routeIs('admin.leaves*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
+                   onmouseout="{{ request()->routeIs('admin.leaves*') ? '' : 'this.style.backgroundColor=\"\"' }}">
+                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    مرخصی‌ها
                 </a>
                 @endpermission
 
@@ -464,7 +480,7 @@
                 <h1 class="text-lg font-bold md:hidden" style="color: var(--admin-text);">@yield('title')</h1>
 
                 <div class="flex items-center space-x-3 space-x-reverse">
-                    <!-- دکمه جستجو -->
+                    <!-- Search button -->
                     <button type="button"
                             id="search-button"
                             class="p-2 rounded-lg focus:outline-none transition-colors"
@@ -478,7 +494,7 @@
                         </svg>
                     </button>
 
-                    <!-- دراپ‌داون اعلانات -->
+                    <!-- Announcements dropdown -->
                     <div class="relative inline-block text-left">
                         <button type="button"
                                 id="notification-button"
@@ -518,7 +534,7 @@
                         </div>
                     </div>
 
-                    <!-- منوی کاربر -->
+                    <!-- User menu -->
                     <div class="relative inline-block text-left">
                         <button type="button"
                                 class="inline-flex items-center justify-center w-9 h-9 rounded-full font-medium text-sm focus:outline-none transition-colors"
@@ -651,7 +667,7 @@
     </div>
 </div>
 
-<!-- مودال جستجو -->
+<!-- Search modal -->
 <div id="search-modal"
      class="fixed inset-0 z-[100] hidden flex items-start justify-center pt-16"
      style="background: rgba(15, 23, 42, 0.5);"
@@ -926,7 +942,7 @@
             });
         }
 
-        // SweetAlert2 — تایید حذف
+        // SweetAlert2 — Confirm deletion
         const deleteButtons = document.querySelectorAll('[data-confirm-delete]');
         deleteButtons.forEach(button => {
             button.addEventListener('click', (e) => {
@@ -951,7 +967,7 @@
             });
         });
 
-        // بستن مودال جستجو با Escape
+        // Close the search modal with Escape
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 const modal = document.getElementById('search-modal');
