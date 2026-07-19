@@ -2,6 +2,7 @@
 
 namespace App\Services\Admin\Booking;
 
+use App\Events\Booking\BookingCancelled;
 use App\Models\Booking;
 use App\Services\RefundService;
 
@@ -49,17 +50,25 @@ class AdminBookingService
         return $this->handlePostUpdateSideEffects($booking, $oldStatus);
     }
 
+    /**
+     * R-Events: For every real cancellation (status → cancelled, regardless of whether paid or
+     * not) an event notification is dispatched. Intentionally setting cancelled_by on the model
+     * is not possible — this column is read by the BookingObserver for the wallet refund branch
+     * ; if 'admin' is set here, both that branch (wallet) and
+     * RefundService will be executed together under the same method (real refund from the portal), which
+     * means a double refund. Admin refund is always only from the RefundService route.
+ */
     private function handlePostUpdateSideEffects(Booking $booking, string $oldStatus): array
     {
         $refundWarning = false;
 
-        if ($booking->status === 'cancelled' &&
-            $oldStatus !== 'cancelled' &&
-            $booking->payment_status === 'paid' &&
-            !$booking->refunded_at) {
+        if ($booking->status === 'cancelled' && $oldStatus !== 'cancelled') {
+            event(new BookingCancelled($booking, 'admin'));
 
-            $refundResult = $this->refundService->processRefund($booking);
-            $refundWarning = !$refundResult;
+            if ($booking->payment_status === 'paid' && !$booking->refunded_at) {
+                $refundResult = $this->refundService->processRefund($booking);
+                $refundWarning = !$refundResult;
+            }
         }
 
         return [

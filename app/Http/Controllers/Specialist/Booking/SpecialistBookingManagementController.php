@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Specialist\Booking;
 
+use App\Events\Booking\BookingCancelled;
 use App\Http\Controllers\Controller;
-use App\Traits\ResolvesSpecialist;
 use App\Models\Booking;
-use App\Models\Specialist;
-use App\Services\ReviewService;
+use App\Services\Review\ReviewService;
+use App\Traits\ResolvesSpecialist;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -143,6 +143,8 @@ class SpecialistBookingManagementController extends Controller
                 'cancelled_by'        => 'specialist',
                 'cancelled_at'        => now(),
             ]);
+
+            event(new BookingCancelled($booking, 'specialist'));
 
             return back()->with('success', '✓ نوبت لغو و به مشتری اطلاع‌رسانی شد.');
 
