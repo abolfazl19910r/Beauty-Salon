@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Providers;
+namespace App\Providers\Booking;
 
 use App\Models\Booking;
 use App\Models\DiscountCode;
 use App\Models\Specialist;
-use App\Observers\BookingObserver;
 use App\Observers\DiscountCodeObserver;
-use App\Services\BookingService;
+use App\Services\Booking\BookingService;
 use App\Services\PaymentService;
 use App\Services\SMSService;
 use Illuminate\Support\ServiceProvider;

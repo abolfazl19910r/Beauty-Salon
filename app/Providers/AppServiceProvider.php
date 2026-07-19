@@ -5,7 +5,7 @@ namespace App\Providers;
 use App\Channels\SmsChannel;
 use App\Models\Booking;
 use App\Models\DiscountCode;
-use App\Observers\BookingObserver;
+use App\Observers\Booking\BookingObserver;
 use App\Observers\DiscountCodeObserver;
 use App\Services\SecurePaymentService;
 use App\Services\TwoFactorAuthService;
