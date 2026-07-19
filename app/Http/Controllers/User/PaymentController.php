@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Events\Payment\PaymentSucceeded;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Services\PaymentService;
@@ -45,6 +46,8 @@ class PaymentController extends Controller
                     ]);
 
                 });
+
+                event(new PaymentSucceeded($booking));
 
                 return redirect()->route('bookings.success', ['id' => $booking->id])
                     ->with('success', 'نوبت شما با تخفیف کامل با موفقیت ثبت شد.');
@@ -99,7 +102,9 @@ class PaymentController extends Controller
             );
             $remainingAmount = $totalAmount - $walletAmount;
 
-            return DB::transaction(function() use ($booking, $wallet, $walletAmount, $remainingAmount, $totalAmount) {
+            $paidFully = false;
+
+            $response = DB::transaction(function() use ($booking, $wallet, $walletAmount, $remainingAmount, $totalAmount, &$paidFully) {
                 if ($remainingAmount <= 0) {
                     $wallet->deductPayment(
                         $walletAmount,
@@ -120,6 +125,7 @@ class PaymentController extends Controller
                             'gateway_amount' => 0
                         ]
                     ]);
+                    $paidFully = true;
                     return redirect()->route('bookings.success', ['id' => $booking->id])
                         ->with('success', 'پرداخت از کیف پول با موفقیت انجام شد');
                 }
@@ -158,6 +164,12 @@ class PaymentController extends Controller
 
                 throw new \Exception($result['message'] ?? 'خطا در اتصال به درگاه پرداخت');
             });
+
+            if ($paidFully) {
+                event(new PaymentSucceeded($booking));
+            }
+
+            return $response;
 
         } catch (\Exception $e) {
             Log::error('💥 خطا در پرداخت با کیف پول', [
@@ -205,6 +217,8 @@ class PaymentController extends Controller
                             'payment_details' => $paymentDetails
                         ]);
                     });
+
+                    event(new PaymentSucceeded($booking));
                 }
 
                 return redirect()->route('bookings.success', ['id' => $booking->id])
