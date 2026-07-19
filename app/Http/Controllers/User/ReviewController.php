@@ -7,7 +7,7 @@ use App\Http\Requests\User\Review\StoreReviewRequest;
 use App\Models\Booking;
 use App\Models\Review;
 use App\Models\ReviewToken;
-use App\Services\ReviewService;
+use App\Services\Review\ReviewService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
