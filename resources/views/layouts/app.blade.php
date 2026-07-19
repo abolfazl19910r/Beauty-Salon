@@ -135,10 +135,18 @@
                         امتیازات من
                         @php
                             try {
-                                // sum('points') directly — in line with LoyaltyService::getCurrentPoints()
-                                // Positive earned and negative spent points are stored
-                                $userPoints = \App\Models\LoyaltyPoint::where('user_id', auth()->id())
-                                    ->sum('points');
+                                // Performance fix: Previously, this SUM would hit the database directly on every single page that
+                                // the user viewed (according to Telescope, it was even
+                                // repeated in /services and /bookings/create).
+                                // Since loyalty points don't change instantaneously, they are cached for 5 minutes.
+                                // Whenever the user's points change (redeemReward, add points
+                                // new turn, etc.) Cache::forget("user:{id}:loyalty_points")
+                                // must be called to ensure that the cache is not invalidated.
+                                $userPoints = \Illuminate\Support\Facades\Cache::remember(
+                                    'user:' . auth()->id() . ':loyalty_points',
+                                    now()->addMinutes(5),
+                                    fn () => \App\Models\LoyaltyPoint::where('user_id', auth()->id())->sum('points')
+                                );
                             } catch (\Exception $e) {
                                 $userPoints = 0;
                             }

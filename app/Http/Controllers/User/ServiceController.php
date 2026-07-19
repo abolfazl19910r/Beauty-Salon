@@ -11,7 +11,10 @@ class ServiceController extends Controller
 {
     public function index()
     {
-        $services = BeautyService::paginate(12);
+        // ⚠️ N+1 fix: Without with('category'), each service on this page
+        // (12 rows) would have run a separate category query (11 duplicate queries in Telescope
+        // were observed). Now only a single query (where id in (...)) is run.
+        $services = BeautyService::with('category')->paginate(12);
         $categories = Category::all();
 
         return view('services.index', compact('services', 'categories'));
@@ -33,7 +36,7 @@ class ServiceController extends Controller
 
     public function list()
     {
-        // کش ۳۰ دقیقه‌ای — لیست خدمات به‌ندرت تغییر می‌کند
+        // 30-minute cache — service list changes infrequently
         $services = Cache::remember('all_beauty_services', now()->addMinutes(30), fn () => BeautyService::all());
         return response()->json($services);
     }
