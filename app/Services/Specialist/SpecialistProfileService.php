@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Specialist;
 
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 
 class SpecialistProfileService
 {

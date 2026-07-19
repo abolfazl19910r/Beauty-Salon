@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Specialist;
 
 use App\Models\Booking;
 use App\Models\Specialist;
