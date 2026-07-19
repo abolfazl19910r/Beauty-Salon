@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\SendLoginVerificationCodeJob;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -62,29 +63,16 @@ class PhoneVerificationService
             )
         ]);
 
-        $template = config('services.kavenegar.templates.login_verify');
-
-        Log::info('Sending login verification code', [
+        Log::info('Queued login verification code for sending', [
             'user_id' => $user->id,
             'phone' => $user->phone,
-            'template' => $template,
-            'code' => $code
+            'code' => $code,
+            'expires_at' => $user->login_verification_code_expire_at,
         ]);
 
-        $result = $this->smsService->sendTemplate(
-            $user->phone,
-            $template,
-            [(string)$code]
-        );
+        SendLoginVerificationCodeJob::dispatch($user->id, $code);
 
-        if (!$result) {
-            Log::error('Failed to send login verification code', [
-                'user_id' => $user->id,
-                'phone' => $user->phone
-            ]);
-        }
-
-        return $result;
+        return true;
     }
 
     public function verify(User $user, string $code): bool
