@@ -9,6 +9,7 @@ use App\Models\Reward;
 use App\Models\User;
 use App\Services\LoyaltyService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -84,7 +85,7 @@ class LoyaltyAdminService
      * Activate/redeem Reward for a specific user from admin side.
      * * Uses exactly the same logic as LoyaltyService::redeemReward() (customer route)
      * * so that the points→discount code conversion formula is not repeated twice.
- */
+     */
     public function redeemRewardForUser(int $userId, Reward $reward): DiscountCode
     {
         return $this->loyaltyService->redeemReward($userId, $reward);
@@ -159,13 +160,17 @@ class LoyaltyAdminService
         string $description,
         ?string $expiresAt = null
     ): LoyaltyPoint {
-        return LoyaltyPoint::create([
+        $loyaltyPoint = LoyaltyPoint::create([
             'user_id'     => $user->id,
             'points'      => $points,
             'type'        => 'earned',
             'description' => $description,
             'expires_at'  => $expiresAt ? Carbon::parse($expiresAt)->endOfDay() : null,
         ]);
+
+        Cache::forget("user:{$user->id}:loyalty_points");
+
+        return $loyaltyPoint;
     }
 
     /**
@@ -179,12 +184,16 @@ class LoyaltyAdminService
             throw new InsufficientLoyaltyPointsException($user->id, (int) $balance, $points);
         }
 
-        return LoyaltyPoint::create([
+        $loyaltyPoint = LoyaltyPoint::create([
             'user_id'     => $user->id,
             'points'      => -$points,
             'type'        => 'spent',
             'description' => $description,
         ]);
+
+        Cache::forget("user:{$user->id}:loyalty_points");
+
+        return $loyaltyPoint;
     }
 
     public function getExportData(string $type = 'points'): array

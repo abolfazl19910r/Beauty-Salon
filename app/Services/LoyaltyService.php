@@ -10,11 +10,21 @@ use App\Models\Reward;
 use App\Models\User;
 use App\Notifications\Loyalty\PointsEarned;
 use App\Notifications\Loyalty\RewardRedeemed;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class LoyaltyService
 {
+    /**
+     * Invalidates the cache for displaying points in the navigation bar (layouts/app.blade.php).
+     * * Should be called after every actual change to the user's points balance.
+     */
+    private function forgetPointsCache(int $userId): void
+    {
+        Cache::forget("user:{$userId}:loyalty_points");
+    }
+
     public function getCurrentPoints($userId): int
     {
         return LoyaltyPoint::where('user_id', $userId)->sum('points');
@@ -50,14 +60,14 @@ class LoyaltyService
     }
 
     /**
-     * ⚠️ Bug fixed: Previously this method called isAvailableForUser/notify on auth()->user()
+     * Bug fixed: Previously this method called isAvailableForUser/notify on auth()->user()
      * , not on the actual user $userId. For the customer route (it redeems for itself
      * ) these were the same, but the same method should be called exactly by the admin panel
      * (LoyaltyAdminService::redeemRewardForUser) for a user other than the admin
      * — in which case auth()->user() was wrong (admin):
      * The points balance check was performed on the admin account and the notification was sent to the admin,
      * not to the target user. Now it works completely based on $userId.
- *
+     *
      * @throws \Exception
      */
     public function redeemReward(int $userId, Reward $reward): DiscountCode
@@ -90,6 +100,8 @@ class LoyaltyService
 
             $user->notify(new RewardRedeemed($reward, $discountCode));
 
+            $this->forgetPointsCache($userId);
+
             return $discountCode;
         });
     }
@@ -112,6 +124,8 @@ class LoyaltyService
         ]);
 
         auth()->user()->notify(new PointsEarned($loyaltyPoint));
+
+        $this->forgetPointsCache($userId);
 
         return $loyaltyPoint;
     }

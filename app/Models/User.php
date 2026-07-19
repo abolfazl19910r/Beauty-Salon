@@ -223,6 +223,8 @@ class User extends Authenticatable
                 'type' => 'earned',
                 'expires_at' => now()->addMonths($expiryMonths),
             ]);
+
+            \Illuminate\Support\Facades\Cache::forget("user:{$this->id}:loyalty_points");
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('❌ Failed to add loyalty points', [
                 'user_id' => $this->id,
