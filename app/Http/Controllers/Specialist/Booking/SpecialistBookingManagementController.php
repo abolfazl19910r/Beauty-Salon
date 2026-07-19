@@ -71,7 +71,7 @@ class SpecialistBookingManagementController extends Controller
         try {
             DB::transaction(function () use ($booking) {
                 $booking->update(['status' => 'confirmed']);
-                $booking->user->notify(new \App\Notifications\BookingStatusUpdated($booking, 'confirmed'));
+                $booking->user->notify(new \App\Notifications\Booking\BookingStatusUpdated($booking, 'confirmed'));
             });
 
             return back()->with('success', '✓ نوبت تایید شد و پیامک اطلاع‌رسانی ارسال گردید.');
@@ -108,7 +108,7 @@ class SpecialistBookingManagementController extends Controller
                     ]);
                 }
 
-                $booking->user->notify(new \App\Notifications\BookingStatusUpdated($booking, 'completed'));
+                $booking->user->notify(new \App\Notifications\Booking\BookingStatusUpdated($booking, 'completed'));
             });
 
             return back()->with('success', '✅ نوبت به عنوان انجام شده علامت‌گذاری شد.');
