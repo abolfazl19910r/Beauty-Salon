@@ -41,7 +41,7 @@ class SendBookingCancellationNotifications implements ShouldQueue
         try {
             $booking->specialist?->notify(new SpecialistBookingCancelledNotification(
                 $booking,
-                $event->cancelledBy,
+                $this->mapToLegacyCancellerLabel($event->cancelledBy),
             ));
         } catch (\Throwable $e) {
             Log::warning('❌ خطا در ارسال نوتیفیکیشن لغو نوبت به متخصص', [
@@ -49,5 +49,13 @@ class SendBookingCancellationNotifications implements ShouldQueue
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    private function mapToLegacyCancellerLabel(string $cancelledBy): string
+    {
+        return match ($cancelledBy) {
+            'customer' => 'user',
+            default => $cancelledBy,
+        };
     }
 }
