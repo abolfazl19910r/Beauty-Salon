@@ -131,7 +131,7 @@ class BookingController extends Controller
         try {
             $booking->update($request->validated());
 
-            $booking->specialist->notify(new \App\Notifications\NewReviewNotification($booking));
+            $booking->specialist->notify(new \App\Notifications\Review\NewReviewNotification($booking));
 
             auth()->user()->addLoyaltyPoints(10, 'ثبت نظر برای نوبت #' . $booking->id);
 

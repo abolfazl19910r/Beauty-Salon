@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Notifications;
+namespace App\Notifications\Booking;
 
 use App\Services\SMSService;
 use Illuminate\Notifications\Notification;

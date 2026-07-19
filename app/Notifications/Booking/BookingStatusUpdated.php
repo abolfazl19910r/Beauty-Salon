@@ -1,10 +1,9 @@
 <?php
 
-namespace App\Notifications;
+namespace App\Notifications\Booking;
 
 use App\Models\Booking;
 use App\Services\SMSService;
-use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
 class BookingStatusUpdated extends Notification

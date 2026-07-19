@@ -1,26 +1,24 @@
 <?php
 
-namespace App\Notifications;
+namespace App\Notifications\Loyalty;
 
+use App\Models\LoyaltyPoint;
 use App\Services\SMSService;
 use Illuminate\Notifications\Notification;
 
-class RewardRedeemed extends Notification
+class PointsEarned extends Notification
 {
-    private mixed $reward;
-    private mixed $discountCode;
+    private LoyaltyPoint $loyaltyPoint;
     private SMSService $smsService;
 
     /**
      *
-     * @param mixed $reward
-     * @param mixed $discountCode
+     * @param LoyaltyPoint $loyaltyPoint
      * @return void
      */
-    public function __construct(mixed $reward, mixed $discountCode)
+    public function __construct(LoyaltyPoint $loyaltyPoint)
     {
-        $this->reward = $reward;
-        $this->discountCode = $discountCode;
+        $this->loyaltyPoint = $loyaltyPoint;
         $this->smsService = new SMSService();
     }
 
@@ -42,10 +40,10 @@ class RewardRedeemed extends Notification
     public function toDatabase(mixed $notifiable): array
     {
         return [
-            'reward_id' => $this->reward->id,
-            'reward_title' => $this->reward->title,
-            'discount_code' => $this->discountCode->code,
-            'expires_at' => $this->discountCode->expires_at
+            'points' => $this->loyaltyPoint->points,
+            'description' => $this->loyaltyPoint->description,
+            'booking_id' => $this->loyaltyPoint->booking_id,
+            'created_at' => $this->loyaltyPoint->created_at
         ];
     }
 
@@ -57,10 +55,9 @@ class RewardRedeemed extends Notification
     public function toSms(mixed $notifiable): bool
     {
         $message = sprintf(
-            "کد تخفیف %s برای پاداش %s صادر شد. مهلت استفاده تا %s",
-            $this->discountCode->code,
-            $this->reward->title,
-            verta($this->discountCode->expires_at)->format('Y/m/d')
+            "%d امتیاز به حساب کاربری شما اضافه شد. موجودی فعلی: %d",
+            $this->loyaltyPoint->points,
+            LoyaltyPoint::where('user_id', $notifiable->id)->sum('points')
         );
 
         return $this->smsService->send($notifiable->phone, $message);

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Notifications;
+namespace App\Notifications\Review;
 
 use App\Models\Review;
 use Illuminate\Bus\Queueable;

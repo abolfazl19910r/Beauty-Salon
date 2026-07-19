@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Notifications;
+namespace App\Notifications\Leave;
 
 use App\Models\Leave;
 use App\Services\SMSService;

@@ -1,20 +1,20 @@
 <?php
 
-namespace App\Events;
+namespace App\Events\User;
 
-use App\Models\Booking;
+use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class BookingCreated
+class NewUserRegistered
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public Booking $booking;
+    public User $user;
 
-    public function __construct(Booking $booking)
+    public function __construct(User $user)
     {
-        $this->booking = $booking;
+        $this->user = $user;
     }
 }

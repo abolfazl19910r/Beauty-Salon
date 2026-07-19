@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Events\User\NewUserRegistered;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\PhoneVerificationService;
@@ -42,6 +43,8 @@ class RegisteredUserController extends Controller
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
         ]);
+
+        event(new NewUserRegistered($user));
 
         $this->verificationService->sendCode($user);
 

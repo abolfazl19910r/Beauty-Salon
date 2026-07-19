@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Specialist\Notification;
 
 use App\Http\Controllers\Controller;
-use App\Traits\ResolvesSpecialist;
 use App\Models\Specialist;
+use App\Traits\ResolvesSpecialist;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Log;
 use Morilog\Jalali\Jalalian;
 
 class SpecialistNotificationController extends Controller
@@ -170,7 +169,7 @@ class SpecialistNotificationController extends Controller
 
     private function resolveNotificationLink(string $type, array $data): string
     {
-        if ($type === 'App\Notifications\PointsEarned') {
+        if ($type === 'App\Notifications\Loyalty\PointsEarned') {
             return route('specialist.loyalty');
         }
 
