@@ -2,6 +2,7 @@
 
 namespace App\Services\Specialist;
 
+use App\Events\Withdrawal\Requested\WithdrawalRequested;
 use App\Models\Specialist;
 use App\Models\SpecialistWallet;
 use App\Models\WalletSetting;
@@ -14,7 +15,7 @@ use Morilog\Jalali\Jalalian;
 
 class SpecialistWalletService
 {
-// ⭐ Modified: Removed the resolveSpecialist() method that was here before.
+// Modified: Removed the resolveSpecialist() method that was here before.
 // App\Traits\ResolvesSpecialist already exists in the project and do the same (via
 // The relationship $user->specialist, which itself is defined based on phone match.
 // Controllers now use that trait directly.
@@ -125,6 +126,8 @@ class SpecialistWalletService
 
             return $withdrawalRequest;
         });
+
+        event(new WithdrawalRequested($withdrawalRequest));
 
         return ['success' => true, 'withdrawal_request' => $withdrawalRequest];
     }
