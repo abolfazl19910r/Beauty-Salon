@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Notifications;
+namespace App\Notifications\Review;
 
 use App\Models\Review;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
-class NegativeReviewNotification extends Notification
+class NewReviewReceivedNotification extends Notification
 {
     use Queueable;
 
@@ -25,18 +25,17 @@ class NegativeReviewNotification extends Notification
     public function toArray($notifiable): array
     {
         return [
-            'title' => '⚠️ نظر منفی دریافت شد',
+            'title' => '⭐ نظر جدید دریافت شد',
             'message' => sprintf(
-                'نظر منفی (%d ستاره) از %s برای متخصص %s ثبت شد.',
-                $this->review->overall_rating,
+                '%s برای خدمت %s امتیاز %d ستاره به شما داد.',
                 $this->review->user->name,
-                $this->review->specialist->name
+                $this->review->service->name,
+                $this->review->overall_rating
             ),
-            'link' => route('admin.reviews.show', $this->review->id),
+            'link' => route('specialist.reviews.show', $this->review->id),
             'review_id' => $this->review->id,
             'rating' => $this->review->overall_rating,
-            'specialist_id' => $this->review->specialist_id,
-            'type' => 'negative_review'
+            'type' => 'new_review'
         ];
     }
 }

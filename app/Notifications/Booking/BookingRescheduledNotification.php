@@ -1,24 +1,28 @@
 <?php
 
-namespace App\Notifications;
+namespace App\Notifications\Booking;
 
 use App\Models\Booking;
 use App\Services\SMSService;
+use Carbon\Carbon;
 use Illuminate\Notifications\Notification;
 
-class NewReviewNotification extends Notification
+class BookingRescheduledNotification extends Notification
 {
     private Booking $booking;
+    private string|Carbon $oldTime;
     private SMSService $smsService;
 
     /**
      *
      * @param Booking $booking
+     * @param Carbon|string $oldTime
      * @return void
      */
-    public function __construct(Booking $booking)
+    public function __construct(Booking $booking, $oldTime)
     {
         $this->booking = $booking;
+        $this->oldTime = $oldTime;
         $this->smsService = new SMSService();
     }
 
@@ -31,25 +35,26 @@ class NewReviewNotification extends Notification
     {
         return [
             'booking_id' => $this->booking->id,
-            'message' => "یک نظر جدید با امتیاز {$this->booking->rating} ثبت شد",
+            'message' => 'زمان نوبت تغییر کرد',
             'user_name' => $this->booking->user->name,
             'service_name' => $this->booking->service->name,
-            'rating' => $this->booking->rating,
-            'review' => $this->booking->review
+            'old_time' => $this->oldTime,
+            'new_time' => $this->booking->booking_time
         ];
     }
 
     public function toSms($notifiable): bool
     {
         $message = sprintf(
-            'نظر جدید - %s:
-مشتری: %s
-امتیاز: %d/5
-%s',
+            'تغییر زمان نوبت:
+خدمت: %s
+زمان قبلی: %s
+زمان جدید: %s
+متخصص: %s',
             $this->booking->service->name,
-            $this->booking->user->name,
-            $this->booking->rating,
-            $this->booking->review ? "نظر: " . $this->booking->review : ""
+            verta($this->oldTime)->format('Y/m/d H:i'),
+            verta($this->booking->booking_time)->format('Y/m/d H:i'),
+            $this->booking->specialist->name
         );
 
         return $this->smsService->send($notifiable->phone, $message);

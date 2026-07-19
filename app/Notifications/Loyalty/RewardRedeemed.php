@@ -1,24 +1,26 @@
 <?php
 
-namespace App\Notifications;
+namespace App\Notifications\Loyalty;
 
-use App\Models\LoyaltyPoint;
 use App\Services\SMSService;
 use Illuminate\Notifications\Notification;
 
-class PointsEarned extends Notification
+class RewardRedeemed extends Notification
 {
-    private LoyaltyPoint $loyaltyPoint;
+    private mixed $reward;
+    private mixed $discountCode;
     private SMSService $smsService;
 
     /**
      *
-     * @param LoyaltyPoint $loyaltyPoint
+     * @param mixed $reward
+     * @param mixed $discountCode
      * @return void
      */
-    public function __construct(LoyaltyPoint $loyaltyPoint)
+    public function __construct(mixed $reward, mixed $discountCode)
     {
-        $this->loyaltyPoint = $loyaltyPoint;
+        $this->reward = $reward;
+        $this->discountCode = $discountCode;
         $this->smsService = new SMSService();
     }
 
@@ -40,10 +42,10 @@ class PointsEarned extends Notification
     public function toDatabase(mixed $notifiable): array
     {
         return [
-            'points' => $this->loyaltyPoint->points,
-            'description' => $this->loyaltyPoint->description,
-            'booking_id' => $this->loyaltyPoint->booking_id,
-            'created_at' => $this->loyaltyPoint->created_at
+            'reward_id' => $this->reward->id,
+            'reward_title' => $this->reward->title,
+            'discount_code' => $this->discountCode->code,
+            'expires_at' => $this->discountCode->expires_at
         ];
     }
 
@@ -55,9 +57,10 @@ class PointsEarned extends Notification
     public function toSms(mixed $notifiable): bool
     {
         $message = sprintf(
-            "%d امتیاز به حساب کاربری شما اضافه شد. موجودی فعلی: %d",
-            $this->loyaltyPoint->points,
-            LoyaltyPoint::where('user_id', $notifiable->id)->sum('points')
+            "کد تخفیف %s برای پاداش %s صادر شد. مهلت استفاده تا %s",
+            $this->discountCode->code,
+            $this->reward->title,
+            verta($this->discountCode->expires_at)->format('Y/m/d')
         );
 
         return $this->smsService->send($notifiable->phone, $message);
