@@ -2,6 +2,8 @@
 
 namespace App\Services\Admin\Wallet;
 
+use App\Events\Withdrawal\Approved\WithdrawalApproved;
+use App\Events\Withdrawal\Rejected\WithdrawalRejected;
 use App\Models\SpecialistWallet;
 use App\Models\WalletSetting;
 use App\Models\WithdrawalRequest;
@@ -12,7 +14,7 @@ class WalletAdminService
 {
     /**
      * Paginated list of expert wallets with search and sort filter.
- */
+     */
     public function getWalletsList(array $filters): LengthAwarePaginator
     {
         $query = SpecialistWallet::with('specialist');
@@ -36,7 +38,7 @@ class WalletAdminService
 
     /**
      * Aggregate statistics of all expert wallets (cards on the top of the index page).
- */
+     */
     public function getWalletTotals(): array
     {
         return [
@@ -49,7 +51,7 @@ class WalletAdminService
 
     /**
      * Details of a wallet with recent transactions (show page).
- */
+     */
     public function getWalletDetail(SpecialistWallet $wallet): array
     {
         $wallet->load('specialist', 'transactions', 'withdrawalRequests');
@@ -67,7 +69,7 @@ class WalletAdminService
 
     /**
      * Paginated list of withdrawal requests with status/method/search filter.
- */
+     */
     public function getWithdrawalsList(array $filters): LengthAwarePaginator
     {
         $query = WithdrawalRequest::with(['specialist', 'wallet']);
@@ -96,7 +98,7 @@ class WalletAdminService
 
     /**
      * Quick statistics on top of withdrawal requests page.
- */
+     */
     public function getWithdrawalStats(): array
     {
         return [
@@ -147,9 +149,9 @@ class WalletAdminService
             $withdrawalRequest->update([
                 'admin_note' => $data['admin_note'] ?? null,
             ]);
-
-            // TODO: ارسال SMS/Notification
         });
+
+        event(new WithdrawalApproved($withdrawalRequest));
     }
 
     public function rejectWithdrawal(WithdrawalRequest $withdrawalRequest, ?string $reason): void
@@ -175,9 +177,9 @@ class WalletAdminService
             ]);
 
             $withdrawalRequest->markAsFailed($reason);
-
-            // TODO: ارسال SMS/Notification
         });
+
+        event(new WithdrawalRejected($withdrawalRequest, $reason));
     }
 
     /**
