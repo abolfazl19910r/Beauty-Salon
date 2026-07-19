@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Admin\Report;
 
 use App\Models\BeautyService;
 use App\Models\Booking;
