@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Specialist\Booking;
 
 use App\Events\Booking\BookingCancelled;
+use App\Events\Booking\Completed\BookingCompleted;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
-use App\Services\Review\ReviewService;
 use App\Traits\ResolvesSpecialist;
 use Exception;
 use Illuminate\Http\RedirectResponse;
@@ -17,10 +17,6 @@ use Morilog\Jalali\Jalalian;
 class SpecialistBookingManagementController extends Controller
 {
     use ResolvesSpecialist;
-
-    public function __construct(
-        protected ReviewService $reviewService,
-    ) {}
 
     public function index(Request $request)
     {
@@ -98,18 +94,9 @@ class SpecialistBookingManagementController extends Controller
         try {
             DB::transaction(function () use ($booking) {
                 $booking->update(['status' => 'completed']);
-
-                try {
-                    $this->reviewService->sendReviewRequest($booking);
-                } catch (\Exception $e) {
-                    Log::error('خطا در ارسال درخواست نظرسنجی', [
-                        'booking_id' => $booking->id,
-                        'error'      => $e->getMessage(),
-                    ]);
-                }
-
-                $booking->user->notify(new \App\Notifications\Booking\BookingStatusUpdated($booking, 'completed'));
             });
+
+            event(new BookingCompleted($booking));
 
             return back()->with('success', '✅ نوبت به عنوان انجام شده علامت‌گذاری شد.');
 
