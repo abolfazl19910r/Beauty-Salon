@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\User\Booking\ConfirmBookingRequest;
 use App\Http\Requests\User\Booking\StoreBookingRequest;
 use App\Models\Booking;
-use App\Services\BookingService;
+use App\Services\Booking\BookingService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;

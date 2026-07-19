@@ -7,7 +7,8 @@
 
         <div class="flex justify-between items-center">
             <h1 class="text-xl font-bold text-[var(--specialist-text)] font-serif-fa flex items-center">
-                <svg class="w-6 h-6 ml-2 text-[var(--specialist-plum-mid)]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <svg class="w-6 h-6 ml-2 text-[var(--specialist-plum-mid)]" fill="none" stroke="currentColor"
+                     stroke-width="2" viewBox="0 0 24 24">
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                     <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                 </svg>
@@ -17,7 +18,8 @@
             @if($notifications->total() > 0)
                 <form method="POST" action="{{ route('specialist.notifications.mark-all-read') }}">
                     @csrf
-                    <button type="submit" class="text-sm text-[var(--specialist-plum-mid)] hover:text-[var(--specialist-plum-light)] transition-colors">
+                    <button type="submit"
+                            class="text-sm text-[var(--specialist-plum-mid)] hover:text-[var(--specialist-plum-light)] transition-colors">
                         علامت‌گذاری همه به عنوان خوانده شده
                     </button>
                 </form>
@@ -27,7 +29,8 @@
         <div class="specialist-card overflow-hidden">
             @if($notifications->isEmpty())
                 <div class="text-center py-16 text-[var(--specialist-inactive)]">
-                    <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" stroke-width="1.5"
+                         viewBox="0 0 24 24">
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                         <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                     </svg>
@@ -42,7 +45,10 @@
 
                             // ✅ Destination link
                             $targetLink = route('specialist.my-dashboard');
-                            if ($notification->type === 'App\\Notifications\\PointsEarned') {
+                            if (in_array($notification->type, [
+                                'App\\Notifications\\Loyalty\\PointsEarned',
+                                'App\\Notifications\\Loyalty\\PointsEarned',
+                            ], true)) {
                                 $targetLink = route('specialist.loyalty');
                             } elseif (!empty($data['booking_id'])) {
                                 $targetLink = route('specialist.bookings.show', $data['booking_id']);
@@ -97,8 +103,8 @@
     @push('scripts')
         <script>
             // ✅ Mark as read when clicking on the link (without preventing redirect)
-            document.querySelectorAll('.notification-link').forEach(function(link) {
-                link.addEventListener('click', function(e) {
+            document.querySelectorAll('.notification-link').forEach(function (link) {
+                link.addEventListener('click', function (e) {
                     const notificationId = this.dataset.notificationId;
                     const readUrl = this.dataset.readUrl;
 
@@ -108,7 +114,7 @@
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
                             'Content-Type': 'application/json'
                         }
-                    }).catch(function(err) {
+                    }).catch(function (err) {
                         console.error('خطا در علامت‌گذاری:', err);
                     });
 

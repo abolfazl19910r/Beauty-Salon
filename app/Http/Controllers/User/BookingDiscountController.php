@@ -8,7 +8,7 @@ use App\Http\Requests\User\Booking\ApplyDiscountRequest;
 use App\Http\Requests\User\Booking\CheckDiscountRequest;
 use App\Models\BeautyService;
 use App\Models\Booking;
-use App\Services\BookingService;
+use App\Services\Booking\BookingService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -30,7 +30,7 @@ class BookingDiscountController extends Controller
 
     /**
      * Preview (no persist). Used for both web and API.
- */
+     */
     public function check(CheckDiscountRequest $request): JsonResponse
     {
         try {
@@ -58,7 +58,7 @@ class BookingDiscountController extends Controller
     /**
      * Actual actions (persist) — for web forms (RedirectResponse) as well as
      * * API consumers that send an Accept: application/json header (JsonResponse).
- */
+     */
     public function apply(ApplyDiscountRequest $request, Booking $booking): RedirectResponse|JsonResponse
     {
         $this->authorize('applyDiscount', $booking);
@@ -97,7 +97,7 @@ class BookingDiscountController extends Controller
     /**
      * Guaranteed JSON version for API routes (e.g. future mobile app) where possible
      * * Do not always send the Accept: application/json header correctly.
- */
+     */
     public function applyApi(ApplyDiscountRequest $request, Booking $booking): JsonResponse
     {
         $this->authorize('applyDiscount', $booking);
@@ -122,7 +122,7 @@ class BookingDiscountController extends Controller
      * Actual base amount for discount preview: prepayment of an existing appointment,
      * * Calculated prepayment of a service, or minimum default prepayment.
      * * Previously this number was always hardcoded to 50,000 regardless of what was actually requested.
- */
+     */
     private function resolveBaseAmount(CheckDiscountRequest $request): float
     {
         if ($request->filled('booking_id')) {

@@ -1,6 +1,5 @@
 <?php
 
-use App\Events\ReminderScheduleEvent;
 use App\Exceptions\DomainException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -49,7 +48,17 @@ return Application::configure(basePath: dirname(__DIR__))
             ->onOneServer();
         $schedule->command('review-tokens:cleanup')
             ->daily();
-        event(new ReminderScheduleEvent());
+        // R-Events: already via event(new ReminderScheduleEvent()) +
+        // A listener that sets a config flag + a provider that sets that flag
+        // It was checking and it was scheduled. Because that provider (EventServiceProvider) never
+        // was not registered in bootstrap/providers.php, this whole chain from day one
+        // was ineffective and the queue reminder was never automatically sent. replaced with
+        // Direct settlement, like the wallet:settle-pending pattern above.
+        $schedule->command('bookings:send-reminders')
+            ->dailyAt('18:00')
+            ->timezone('Asia/Tehran')
+            ->withoutOverlapping()
+            ->onOneServer();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->renderable(function (DomainException $e, Request $request) {

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\Booking\UpdateRescheduleRequest;
 use App\Models\Booking;
-use App\Notifications\BookingRescheduledNotification;
+use App\Notifications\Booking\BookingRescheduledNotification;
 use App\Services\SMSService;
 use Exception;
 use Illuminate\Http\JsonResponse;

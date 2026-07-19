@@ -3,13 +3,13 @@
 namespace App\Services;
 
 use App\Models\Booking;
+use App\Models\DiscountCode;
 use App\Models\LoyaltyPoint;
 use App\Models\LoyaltySetting;
 use App\Models\Reward;
-use App\Models\DiscountCode;
 use App\Models\User;
-use App\Notifications\RewardRedeemed;
-use App\Notifications\PointsEarned;
+use App\Notifications\Loyalty\PointsEarned;
+use App\Notifications\Loyalty\RewardRedeemed;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 

@@ -4,11 +4,11 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\Models\Booking;
-use App\Notifications\AdminNewBookingNotification;
+use App\Notifications\Booking\AdminNewBookingNotification;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 class NotificationSeeder extends Seeder
 {

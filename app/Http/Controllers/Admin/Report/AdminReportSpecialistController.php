@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin\Report;
 
 use App\Http\Controllers\Controller;
-use App\Services\AdminReportService;
+use App\Services\Admin\Report\AdminReportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin\Report;
 
 use App\Exports\ReportsExport;
 use App\Http\Controllers\Controller;
-use App\Services\AdminReportService;
+use App\Services\Admin\Report\AdminReportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;

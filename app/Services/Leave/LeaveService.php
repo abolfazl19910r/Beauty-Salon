@@ -5,7 +5,7 @@ namespace App\Services\Leave;
 use App\Models\Leave;
 use App\Models\Specialist;
 use App\Models\User;
-use App\Notifications\LeaveStatusNotification;
+use App\Notifications\Leave\LeaveStatusNotification;
 
 class LeaveService
 {
