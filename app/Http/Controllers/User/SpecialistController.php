@@ -4,13 +4,8 @@ namespace App\Http\Controllers\User;
 
 use App\Models\Specialist;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Exception;
 use App\Models\BeautyService;
-use App\Models\SpecialistLeave;
-use App\Models\SpecialistSchedule;
-use App\Models\Booking;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class SpecialistController extends Controller
