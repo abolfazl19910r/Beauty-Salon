@@ -146,6 +146,10 @@
                             }
                             if (row) row.classList.remove('bg-[var(--specialist-plum-mid)]/5');
                             if (btn) btn.remove();
+
+                            if (typeof fetchUnreadCount === 'function') {
+                                fetchUnreadCount();
+                            }
                         }
                     })
                     .catch(error => console.error('خطا در علامت‌گذاری اعلان:', error));

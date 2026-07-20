@@ -8,7 +8,6 @@ use App\Exceptions\DiscountCodeInvalidException;
 use App\Models\Booking;
 use App\Models\DiscountCode;
 use App\Models\Specialist;
-use App\Notifications\Booking\BookingNotification;
 use App\Notifications\Booking\CustomerBookingNotification;
 use App\Services\Discount\DiscountCalculator;
 use Exception;
@@ -245,7 +244,6 @@ class BookingService
 
             try {
                 $booking->user?->notify(new CustomerBookingNotification($booking));
-                $booking->specialist?->notify(new BookingNotification($booking));
             } catch (Exception $e) {
                 Log::warning('خطا در ارسال نوتیفیکیشن ثبت نوبت', [
                     'booking_id' => $booking->id,
@@ -266,7 +264,7 @@ class BookingService
      * \ArgumentCountError was thrown because it is not \Exception by
      * catch(Exception $e) was not caught here in the controller — i.e. canceling the queue
      * It was always failed by the customer with 500 fatal and the transaction was rolled back).
- */
+     */
     public function cancelBooking(Booking $booking): bool
     {
         return DB::transaction(function () use ($booking) {

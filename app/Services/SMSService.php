@@ -18,9 +18,14 @@ class SMSService
 
     public function send(string $mobile, string $message): bool
     {
+        // ⭐ لاگ متمرکز: تمام پیامک‌های پروژه (بوکینگ، مرخصی، برداشت وجه و...)
+        // در نهایت از همین متد رد می‌شن (از طریق SmsChannel::send() → toSms())،
+        // پس یک لاگ اینجا کافیه برای دیدن محتوای واقعی هر پیامک در فایل لاگ،
+        // بدون نیاز به اتصال واقعی به Kavenegar.
+        Log::info('SMS: در حال ارسال', ['mobile' => $mobile, 'message' => $message]);
+
         try {
             if (app()->environment('local') && !config('services.kavenegar.send_in_local', false)) {
-                Log::info('SMS skipped in local', ['mobile' => $mobile, 'message' => $message]);
                 return true;
             }
 
@@ -49,6 +54,14 @@ class SMSService
 
     public function sendTemplate(string $mobile, string $templateName, array $tokens): bool
     {
+        // ⭐ همین‌جا کد OTP (اولین token) هم قابل مشاهده‌ست — چون sendLoginCode/sendCode
+        // هر دو نهایتاً از همین متد رد می‌شن.
+        Log::info('SMS Template: در حال ارسال', [
+            'mobile' => $mobile,
+            'template' => $templateName,
+            'tokens' => $tokens,
+        ]);
+
         try {
             if (app()->environment('local') && !config('services.kavenegar.send_in_local', false)) {
                 return true;
