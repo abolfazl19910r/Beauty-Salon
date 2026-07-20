@@ -182,7 +182,7 @@
                                                 @endfor
                                             </div>
                                         </div>
-                                        <p class="text-sm text-[var(--specialist-text-dim)]">{{ Str::limit($review->review, 100) }}</p>
+                                        <p class="text-sm text-[var(--specialist-text-dim)]">{{ \Illuminate\Support\Str::limit($review->review, 100) }}</p>
                                     </div>
                                 @endforeach
                             </div>
