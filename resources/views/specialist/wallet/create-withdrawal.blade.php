@@ -22,28 +22,45 @@
                 </div>
             </div>
 
-            <form action="{{ route('specialist.wallet.store-withdrawal') }}" method="POST" id="withdrawal-form">
+            <form action="{{ route('specialist.wallet.store-withdrawal') }}" method="POST" id="withdrawal-form" novalidate>
                 @csrf
 
                 <div class="mb-6">
                     <label for="amount" class="block text-xs text-[var(--specialist-plum-muted)] mb-2">
                         مبلغ درخواستی (تومان)
                     </label>
-                    <input
-                        type="number"
-                        name="amount"
-                        id="amount"
-                        class="w-full px-4 py-3 rounded-lg persian-number text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]"
-                        style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);"
-                        value="{{ old('amount') }}"
-                        min="{{ $settings->minimum_withdrawal_amount }}"
-                        max="{{ min($wallet->balance, $settings->maximum_withdrawal_amount) }}"
-                        step="1000"
-                        required
-                    >
+
+                    {{-- Low/High buttons --}}
+                    <div class="flex items-center gap-2">
+                        <button type="button" id="btn-minus" class="px-3 py-3 rounded-lg font-bold text-lg hover:opacity-80 transition-opacity"
+                                style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border); color: var(--specialist-text);">
+                            −
+                        </button>
+
+                        <input
+                            type="text"
+                            inputmode="numeric"
+                            name="amount"
+                            id="amount"
+                            class="flex-1 px-4 py-3 rounded-lg persian-number text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)] text-center"
+                            style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);"
+                            value="{{ old('amount') }}"
+                            data-min="{{ $settings->minimum_withdrawal_amount }}"
+                            data-max="{{ min($wallet->balance, $settings->maximum_withdrawal_amount) }}"
+                            data-step="10000"
+                            autocomplete="off"
+                        >
+
+                        <button type="button" id="btn-plus" class="px-3 py-3 rounded-lg font-bold text-lg hover:opacity-80 transition-opacity"
+                                style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border); color: var(--specialist-text);">
+                            +
+                        </button>
+                    </div>
+
                     @error('amount')
                     <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
                     @enderror
+
                     <p class="text-xs text-[var(--specialist-text-dim)] mt-1 persian-number">
                         حداقل: {{ number_format($settings->minimum_withdrawal_amount) }} تومان
                         | حداکثر: {{ number_format(min($wallet->balance, $settings->maximum_withdrawal_amount)) }} تومان
@@ -55,7 +72,7 @@
 
                     <div class="space-y-3">
                         <label class="block cursor-pointer">
-                            <input type="radio" name="method" value="iban" class="peer hidden" checked required>
+                            <input type="radio" name="method" value="iban" class="peer hidden" checked>
                             <div class="p-4 rounded-lg transition-colors peer-checked:border-[var(--specialist-plum-mid)]"
                                  style="border: 2px solid var(--specialist-border); background-color: var(--specialist-bg);">
                                 <div class="flex items-center justify-between mb-2">
@@ -167,14 +184,106 @@
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const amountInput = document.getElementById('amount');
+                const btnPlus = document.getElementById('btn-plus');
+                const btnMinus = document.getElementById('btn-minus');
                 const methodInputs = document.querySelectorAll('input[name="method"]');
                 const feeSummary = document.getElementById('fee-summary');
                 const grossAmountSpan = document.getElementById('gross-amount');
                 const feeAmountSpan = document.getElementById('fee-amount');
                 const netAmountSpan = document.getElementById('net-amount');
 
+                const MIN = parseInt(amountInput.dataset.min) || 0;
+                const MAX = parseInt(amountInput.dataset.max) || 0;
+                const STEP = parseInt(amountInput.dataset.step) || 10000;
+
+                function persianToEnglish(str) {
+                    const p = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+                    const a = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+                    let result = String(str ?? '');
+                    for (let i = 0; i < 10; i++) {
+                        result = result.replace(new RegExp(p[i], 'g'), i).replace(new RegExp(a[i], 'g'), i);
+                    }
+                    return result;
+                }
+
+                function englishToPersian(str) {
+                    const p = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+                    return String(str).replace(/\d/g, x => p[parseInt(x)]);
+                }
+
+                function rawAmount() {
+                    return persianToEnglish(amountInput.value).replace(/[^\d]/g, '');
+                }
+
+                function formatAmountInput() {
+                    const digits = rawAmount();
+                    amountInput.value = digits ? englishToPersian(Number(digits).toLocaleString('en-US')) : '';
+                }
+
+                function getNumericValue() {
+                    return parseInt(rawAmount()) || 0;
+                }
+
+                function setValue(value, shouldRound) {
+                    let v = Math.max(MIN, Math.min(MAX, value));
+
+                    if (shouldRound) {
+                        v = Math.round(v / STEP) * STEP;
+                        if (v > MAX) v = Math.floor(MAX / STEP) * STEP;
+                        if (v < MIN) v = MIN;
+                    }
+
+                    amountInput.value = v ? englishToPersian(v.toLocaleString('en-US')) : '';
+                    calculateFee();
+                }
+
+                // + button (with rounding to step)
+                btnPlus.addEventListener('click', function() {
+                    setValue(getNumericValue() + STEP, true);
+                });
+
+                // − button (with rounding to step)
+                btnMinus.addEventListener('click', function() {
+                    setValue(getNumericValue() - STEP, true);
+                });
+
+                // Manual entry (no rounding — any amount between MIN and MAX is acceptable)
+                amountInput.addEventListener('input', function() {
+                    formatAmountInput();
+                    calculateFee();
+                });
+
+                // Before submit: validation + sending raw number (without Persian format)
+                document.getElementById('withdrawal-form').addEventListener('submit', function(e) {
+                    const numericValue = getNumericValue();
+
+                    if (numericValue <= 0) {
+                        e.preventDefault();
+                        alert('لطفاً مبلغ را وارد کنید.');
+                        amountInput.focus();
+                        return;
+                    }
+
+                    if (numericValue < MIN) {
+                        e.preventDefault();
+                        alert('حداقل مبلغ برداشت ' + englishToPersian(MIN.toLocaleString('en-US')) + ' تومان است.');
+                        amountInput.focus();
+                        return;
+                    }
+
+                    if (numericValue > MAX) {
+                        e.preventDefault();
+                        alert('حداکثر مبلغ برداشت ' + englishToPersian(MAX.toLocaleString('en-US')) + ' تومان است.');
+                        amountInput.focus();
+                        return;
+                    }
+
+                    // Send raw number (without Persian/comma format)
+                    amountInput.value = numericValue;
+                });
+
                 function calculateFee() {
-                    const amount = parseFloat(amountInput.value) || 0;
+                    const amount = getNumericValue();
                     const method = document.querySelector('input[name="method"]:checked')?.value || 'iban';
 
                     if (amount > 0) {
@@ -201,12 +310,12 @@
                     }
                 }
 
-                amountInput.addEventListener('input', calculateFee);
                 methodInputs.forEach(input => {
                     input.addEventListener('change', calculateFee);
                 });
 
                 if (amountInput.value) {
+                    formatAmountInput();
                     calculateFee();
                 }
             });
