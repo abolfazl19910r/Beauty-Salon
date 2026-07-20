@@ -4,7 +4,6 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 use App\Jobs\CancelUnpaidBookings;
-use App\Console\Commands\SettlePendingWalletIncomes;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -16,8 +15,5 @@ Schedule::job(new CancelUnpaidBookings())
     ->withoutOverlapping()
     ->onOneServer();
 
-Schedule::command('wallet:settle-pending')
-    ->dailyAt('01:00')
-    ->name('wallet-settle-pending')
-    ->withoutOverlapping()
-    ->onOneServer();
+// Note: The actual wallet:settle-pending shedule is registered in bootstrap/app.php.
+// Previously this command was registered both here and in bootstrap/app.php (double execution every night at 01:00).
