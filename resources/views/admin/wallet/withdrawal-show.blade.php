@@ -129,6 +129,19 @@
                         <div class="space-y-2">
                             <form action="{{ route('admin.wallet.withdrawals.approve', $withdrawalRequest) }}" method="POST">
                                 @csrf @method('PUT')
+                                <div class="mb-2">
+                                    <label class="block text-xs mb-1" style="color:var(--admin-text-dim);">کد پیگیری واقعی تراکنش بانکی <span class="text-red-500">*</span></label>
+                                    <input type="text" name="payment_reference" required
+                                           value="{{ old('payment_reference') }}"
+                                           placeholder="مثلاً کد پیگیری ۱۲ رقمی حواله بانکی"
+                                           class="w-full rounded-lg px-3 py-2 text-sm outline-none"
+                                           style="border:1px solid {{ $errors->has('payment_reference') ? '#DC2626' : 'var(--admin-border)' }}; background:var(--admin-bg); color:var(--admin-text); font-family:inherit;"
+                                           onfocus="this.style.borderColor='var(--admin-accent)'"
+                                           onblur="this.style.borderColor='var(--admin-border)'">
+                                    @error('payment_reference')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
                                 <button type="submit"
                                         class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-white"
                                         style="background:#16A34A;"
