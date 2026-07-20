@@ -13,6 +13,19 @@ class StoreWithdrawalRequest extends FormRequest
         return auth()->check();
     }
 
+    protected function prepareForValidation(): void
+    {
+        $persian = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+        $english = ['0','1','2','3','4','5','6','7','8','9'];
+
+        $amount = str_replace($persian, $english, (string) $this->input('amount', ''));
+        // Remove commas (English and Persian) and spaces.
+        $amount = preg_replace('/[,\s٬]+/', '', $amount);
+        $amount = preg_replace('/[^0-9]/', '', $amount);
+
+        $this->merge(['amount' => $amount]);
+    }
+
     public function rules(): array
     {
         $minimum = $this->walletSettings()->minimum_withdrawal_amount ?? 0;
@@ -39,7 +52,7 @@ class StoreWithdrawalRequest extends FormRequest
      * used, not ::first() (which returns a single record). Because the configuration table has only one row,
      * Access to ->minimum_withdrawal_amount on a Collection was always null and the rule min: actually
      * would be converted to empty (no number) `min:`.
- */
+     */
     private function walletSettings(): WalletSetting
     {
         return WalletSetting::first();
