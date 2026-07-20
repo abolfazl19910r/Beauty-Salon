@@ -9,6 +9,18 @@
                 <p class="text-sm mt-0.5" style="color:var(--admin-text-dim);">{{ $wallet->specialist?->name ?? '—' }} — {{ $wallet->specialist?->phone ?? '—' }}</p>
             </div>
             <div class="flex gap-2">
+                @if($wallet->pending_amount > 0)
+                    <button onclick="document.getElementById('settlePendingModal').classList.remove('hidden')"
+                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white"
+                            style="background:#16A34A;"
+                            onmouseover="this.style.background='#15803D'"
+                            onmouseout="this.style.background='#16A34A'">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        تسویه‌ی دستی این متخصص
+                    </button>
+                @endif
                 <button onclick="document.getElementById('adjustmentModal').classList.remove('hidden')"
                         class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white"
                         style="background:#7C3AED;"
@@ -134,6 +146,53 @@
                     </table>
                 </div>
             </div>
+        </div>
+    </div>
+
+    {{-- Modal: manual settlement of pending amount for this specialist only --}}
+    <div id="settlePendingModal" class="hidden fixed inset-0 z-50 flex items-center justify-center"
+         style="background:rgba(15,23,42,0.5);"
+         onclick="if(event.target===this)this.classList.add('hidden')">
+        <div class="rounded-xl shadow-xl w-full max-w-md mx-4 fade-in" style="background:var(--admin-surface);">
+            <div class="flex items-center justify-between px-5 py-4" style="border-bottom:1px solid var(--admin-border);">
+                <h2 class="text-base font-bold" style="color:var(--admin-text);">تسویه‌ی دستی موجودی در انتظار</h2>
+                <button type="button" onclick="document.getElementById('settlePendingModal').classList.add('hidden')"
+                        class="w-7 h-7 rounded flex items-center justify-center"
+                        style="color:var(--admin-text-dim);"
+                        onmouseover="this.style.background='var(--admin-accent-light)'"
+                        onmouseout="this.style.background=''">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <form action="{{ route('admin.wallet.settle-pending-wallet', $wallet) }}" method="POST">
+                @csrf
+                <div class="p-5 space-y-3 text-sm">
+                    <p style="color:var(--admin-text-dim);">
+                        مبلغ در انتظار فعلی این متخصص:
+                        <span class="font-bold persian-number" style="color:#D97706;">{{ number_format($wallet->pending_amount) }}</span>
+                        تومان
+                    </p>
+                    <label class="flex items-center gap-2" style="color:var(--admin-text-dim);">
+                        <input type="checkbox" name="ignore_delay" value="1" class="rounded">
+                        نادیده گرفتن مهلت تسویه (حتی تراکنش‌های هنوز سررسیدنشده هم تسویه شوند)
+                    </label>
+                </div>
+                <div class="flex justify-end gap-2 px-5 py-4" style="border-top:1px solid var(--admin-border);">
+                    <button type="button" onclick="document.getElementById('settlePendingModal').classList.add('hidden')"
+                            class="px-4 py-2 rounded-lg text-sm"
+                            style="background:var(--admin-accent-light); color:var(--admin-text-dim);">انصراف</button>
+                    <button type="submit"
+                            data-confirm-action
+                            data-confirm-message="این عملیات مبلغ در انتظار این متخصص را به موجودی قابل‌برداشت او منتقل می‌کند. ادامه می‌دهید؟"
+                            data-confirm-text="بله، تسویه شود"
+                            class="px-4 py-2 rounded-lg text-sm font-medium text-white"
+                            style="background:#16A34A;"
+                            onmouseover="this.style.background='#15803D'"
+                            onmouseout="this.style.background='#16A34A'">تسویه شود</button>
+                </div>
+            </form>
         </div>
     </div>
 

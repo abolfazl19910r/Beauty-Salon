@@ -10,16 +10,40 @@
                 </svg>
                 مدیریت کیف پول‌ها
             </h1>
-            <a href="{{ route('admin.wallet.withdrawals') }}"
-               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium"
-               style="background:var(--admin-accent-light); color:var(--admin-accent);"
-               onmouseover="this.style.background='var(--admin-border)'"
-               onmouseout="this.style.background='var(--admin-accent-light)'">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-                </svg>
-                درخواست‌های برداشت
-            </a>
+            <div class="flex flex-wrap items-center gap-2">
+                <form action="{{ route('admin.wallet.settle-pending') }}" method="POST"
+                      class="flex items-center gap-2 rounded-lg px-3 py-1.5"
+                      style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+                    @csrf
+                    <label class="flex items-center gap-1.5 text-xs whitespace-nowrap" style="color:var(--admin-text-dim);">
+                        <input type="checkbox" name="ignore_delay" value="1" class="rounded">
+                        نادیده گرفتن مهلت تسویه
+                    </label>
+                    <button type="submit"
+                            data-confirm-action
+                            data-confirm-message="این عملیات درآمدهای سررسیدشده‌ی در انتظار تسویه‌ی همه‌ی متخصصین (یا در صورت انتخاب گزینه‌ی بالا، حتی سررسیدنشده‌ها) را به موجودی قابل‌برداشت منتقل می‌کند. ادامه می‌دهید؟"
+                            data-confirm-text="بله، تسویه شود"
+                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white whitespace-nowrap"
+                            style="background:#16A34A;"
+                            onmouseover="this.style.background='#15803D'"
+                            onmouseout="this.style.background='#16A34A'">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        تسویه‌ی دستی همه‌ی در‌انتظارها
+                    </button>
+                </form>
+                <a href="{{ route('admin.wallet.withdrawals') }}"
+                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium"
+                   style="background:var(--admin-accent-light); color:var(--admin-accent);"
+                   onmouseover="this.style.background='var(--admin-border)'"
+                   onmouseout="this.style.background='var(--admin-accent-light)'">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    درخواست‌های برداشت
+                </a>
+            </div>
         </div>
 
         {{-- Statistics cards --}}

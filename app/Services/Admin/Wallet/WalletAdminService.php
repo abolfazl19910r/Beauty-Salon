@@ -6,9 +6,12 @@ use App\Events\Withdrawal\Approved\WithdrawalApproved;
 use App\Events\Withdrawal\Rejected\WithdrawalRejected;
 use App\Models\SpecialistWallet;
 use App\Models\WalletSetting;
+use App\Models\WalletTransaction;
 use App\Models\WithdrawalRequest;
+use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class WalletAdminService
 {
@@ -226,5 +229,75 @@ class WalletAdminService
     {
         $settings = WalletSetting::first();
         $settings->update($data);
+    }
+
+    /**
+     * Settle "pending" revenue transactions and transfer them to the balance.
+     * *
+     * * The single source of this logic — both the `wallet:settle-pending` scheduled command (nightly, at 01:00)
+     * * and the ``Manual Settlement'' button in the admin panel (both for all specialists and for a specific specialist) use the same method.
+     * *
+     * * @param SpecialistWallet|null $wallet If null, all wallets will be checked; otherwise, only this one.
+     * * @param bool $ignoreDelay If true, the settlement delay (settlement_delay_days) will be ignored and all
+     * * pending transactions (even those that are not yet due) will be settled immediately.
+     * * @param string $source is recorded in the transaction metadata to indicate where the settlement came from: 'schedule' or 'admin_manual'.
+     * * @return array{settledCount: int, failedCount: int, settledAmount: float}
+     */
+    public function settlePendingIncomes(
+        ?SpecialistWallet $wallet = null,
+        bool $ignoreDelay = false,
+        string $source = 'schedule'
+    ): array {
+        $query = WalletTransaction::where('type', 'income')
+            ->whereJsonContains('metadata->status', 'pending');
+
+        if ($wallet) {
+            $query->where('wallet_id', $wallet->id);
+        }
+
+        $settledCount = 0;
+        $failedCount = 0;
+        $settledAmount = 0.0;
+
+        foreach ($query->get() as $transaction) {
+            $settlementDate = $transaction->metadata['settlement_date'] ?? null;
+
+            if (!$ignoreDelay && (!$settlementDate || !Carbon::parse($settlementDate)->isPast())) {
+                continue;
+            }
+
+            try {
+                DB::transaction(function () use ($transaction, $source) {
+                    $transactionWallet = $transaction->wallet;
+                    $amount = (float) $transaction->amount;
+
+                    $transactionWallet->settlePendingAmount($amount);
+
+                    $metadata = $transaction->metadata;
+                    $metadata['status'] = 'settled';
+                    $metadata['settled_at'] = now()->toDateTimeString();
+                    $metadata['settled_by'] = $source;
+                    $transaction->update(['metadata' => $metadata]);
+                    $transaction->update(['balance_after' => $transactionWallet->balance]);
+                });
+
+                $settledCount++;
+                $settledAmount += (float) $transaction->amount;
+            } catch (\Throwable $e) {
+                $failedCount++;
+
+                Log::error('خطا در تسویه‌ی تراکنش کیف‌پول', [
+                    'transaction_id' => $transaction->id,
+                    'source' => $source,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return [
+            'settledCount' => $settledCount,
+            'failedCount' => $failedCount,
+            'settledAmount' => $settledAmount,
+        ];
     }
 }

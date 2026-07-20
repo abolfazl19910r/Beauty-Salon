@@ -75,5 +75,68 @@ class AdminWalletController extends Controller
             return back()->with('error', 'خطا در تعدیل: ' . $e->getMessage());
         }
     }
-}
 
+    /**
+     * Manually settle "pending" earnings for all specialists (so they can request a withdrawal).
+     */
+    public function settlePending(Request $request): RedirectResponse
+    {
+        try {
+            $result = $this->walletAdminService->settlePendingIncomes(
+                wallet: null,
+                ignoreDelay: $request->boolean('ignore_delay'),
+                source: 'admin_manual'
+            );
+
+            return back()->with('success', $this->buildSettlementMessage($result));
+        } catch (Exception $e) {
+            Log::error('خطا در تسویه‌ی دستی کیف‌پول‌ها', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'خطا در تسویه: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Manual settlement of "pending" earnings by a specific specialist only.
+     */
+    public function settlePendingForWallet(Request $request, SpecialistWallet $wallet): RedirectResponse
+    {
+        try {
+            $result = $this->walletAdminService->settlePendingIncomes(
+                wallet: $wallet,
+                ignoreDelay: $request->boolean('ignore_delay'),
+                source: 'admin_manual'
+            );
+
+            return back()->with('success', $this->buildSettlementMessage($result));
+        } catch (Exception $e) {
+            Log::error('خطا در تسویه‌ی دستی کیف‌پول متخصص', [
+                'wallet_id' => $wallet->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'خطا در تسویه: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * @param  array{settledCount: int, failedCount: int, settledAmount: float}  $result
+     */
+    private function buildSettlementMessage(array $result): string
+    {
+        if ($result['settledCount'] === 0) {
+            return 'هیچ تراکنش قابل‌تسویه‌ای یافت نشد.';
+        }
+
+        $message = 'تسویه انجام شد — تعداد: ' . number_format($result['settledCount'])
+            . '، مبلغ کل: ' . number_format($result['settledAmount']) . ' تومان.';
+
+        if ($result['failedCount'] > 0) {
+            $message .= ' (' . number_format($result['failedCount']) . ' تراکنش با خطا مواجه شد، جزئیات در لاگ سرور)';
+        }
+
+        return $message;
+    }
+}

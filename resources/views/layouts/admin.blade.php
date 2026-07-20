@@ -967,6 +967,32 @@
             });
         });
 
+        // SweetAlert2 — Confirm sensitive but non-destructive actions (e.g. manual settlement)
+        const confirmActionButtons = document.querySelectorAll('[data-confirm-action]');
+        confirmActionButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                const message = button.getAttribute('data-confirm-message') || 'آیا از انجام این عملیات اطمینان دارید؟';
+                const confirmText = button.getAttribute('data-confirm-text') || 'بله، انجام شود';
+
+                Swal.fire({
+                    title: 'تایید عملیات',
+                    text: message,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#16A34A',
+                    cancelButtonColor: '#94A3B8',
+                    confirmButtonText: confirmText,
+                    cancelButtonText: 'انصراف'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const form = button.closest('form');
+                        if (form) form.submit();
+                    }
+                });
+            });
+        });
+
         // Close the search modal with Escape
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {

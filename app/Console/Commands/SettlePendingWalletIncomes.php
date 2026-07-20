@@ -2,12 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\WalletTransaction;
-use App\Models\WalletSetting;
+use App\Services\Admin\Wallet\WalletAdminService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class SettlePendingWalletIncomes extends Command
 {
@@ -25,69 +21,33 @@ class SettlePendingWalletIncomes extends Command
      */
     protected $description = 'انتقال درآمدهای pending به balance بعد از گذشت مدت تسویه';
 
+    public function __construct(
+        private readonly WalletAdminService $walletAdminService
+    ) {
+        parent::__construct();
+    }
+
     /**
      * Execute the console command.
+     *
+     * The actual settlement logic is in WalletAdminService::settlePendingIncomes() — the same method used by the admin panel's "Manual Settlement" button (so that this logic is only written and maintained once).
      */
-    public function handle()
+    public function handle(): int
     {
         $this->info('🔄 شروع تسویه درآمدهای در انتظار...');
 
-        $settings = WalletSetting::first();
-        $settlementDelay = $settings->settlement_delay_days ?? 2;
+        $result = $this->walletAdminService->settlePendingIncomes(
+            wallet: null,
+            ignoreDelay: false,
+            source: 'schedule'
+        );
 
-        $pendingTransactions = WalletTransaction::where('type', 'income')
-            ->whereJsonContains('metadata->status', 'pending')
-            ->get();
+        $this->info('✅ تسویه به پایان رسید');
+        $this->info("📊 تعداد تسویه شده: {$result['settledCount']}");
+        $this->info('💰 مبلغ کل تسویه‌شده: ' . number_format($result['settledAmount']));
 
-        $settledCount = 0;
-        $failedCount = 0;
-
-        foreach ($pendingTransactions as $transaction) {
-            try {
-                $settlementDate = $transaction->metadata['settlement_date'] ?? null;
-
-                if (!$settlementDate) {
-                    continue;
-                }
-
-                if (Carbon::parse($settlementDate)->isPast()) {
-                    DB::beginTransaction();
-
-                    $wallet = $transaction->wallet;
-                    $amount = $transaction->amount;
-
-                    $wallet->settlePendingAmount($amount);
-
-                    $metadata = $transaction->metadata;
-                    $metadata['status'] = 'settled';
-                    $metadata['settled_at'] = now()->toDateTimeString();
-                    $transaction->update(['metadata' => $metadata]);
-
-                    $transaction->update(['balance_after' => $wallet->balance]);
-
-                    DB::commit();
-
-                    $settledCount++;
-                    $this->info("✅ تراکنش #{$transaction->id} تسویه شد - مبلغ: " . number_format($amount));
-                }
-            } catch (\Exception $e) {
-                DB::rollBack();
-                $failedCount++;
-
-                Log::error('❌ خطا در تسویه تراکنش', [
-                    'transaction_id' => $transaction->id,
-                    'error' => $e->getMessage()
-                ]);
-
-                $this->error("❌ خطا در تسویه تراکنش #{$transaction->id}: {$e->getMessage()}");
-            }
-        }
-
-        $this->info("✅ تسویه به پایان رسید");
-        $this->info("📊 تعداد تسویه شده: {$settledCount}");
-
-        if ($failedCount > 0) {
-            $this->warn("⚠️ تعداد ناموفق: {$failedCount}");
+        if ($result['failedCount'] > 0) {
+            $this->warn("⚠️ تعداد ناموفق: {$result['failedCount']}");
         }
 
         return Command::SUCCESS;
