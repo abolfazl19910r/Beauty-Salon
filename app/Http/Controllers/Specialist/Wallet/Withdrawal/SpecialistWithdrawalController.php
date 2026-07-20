@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Specialist\Wallet\Withdrawal;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Specialist\StoreWithdrawalRequest;
+use App\Http\Requests\Specialist\Wallet\Withdrawal\StoreWithdrawalRequest;
 use App\Models\WalletSetting;
 use App\Models\WithdrawalRequest;
 use App\Services\Specialist\SpecialistWalletService;
