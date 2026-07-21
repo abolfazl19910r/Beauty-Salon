@@ -22,22 +22,6 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
-/**
- * R-Events (follow-up 2): PaymentSucceeded now has a real listener.
- * - PaymentSucceeded ← dispatched from all 3 payment-success paths in
- *   PaymentController (process, processWithWallet, callback).
- *   SendAdminPaymentNotification notifies every admin (database + SMS) with
- *   amount, payment method, reference code, customer/specialist name, and a
- *   link to the booking.
- *
- * This is purely additive: it does NOT touch or replace
- * BookingObserver::handlePaymentStatusChange() (commission / specialist
- * wallet / loyalty points), which stays wired to the implicit
- * wasChanged('payment_status') model event for the reasons documented on
- * the PaymentSucceeded event class itself.
- *
- * Everything else unchanged from the previous version of this file.
- */
 class EventServiceProvider extends ServiceProvider
 {
     protected $listen = [
@@ -73,5 +57,11 @@ class EventServiceProvider extends ServiceProvider
     public function shouldDiscoverEvents(): bool
     {
         return false;
+    }
+
+    public function boot(): void
+    {
+        static::disableEventDiscovery();
+        parent::boot();
     }
 }
