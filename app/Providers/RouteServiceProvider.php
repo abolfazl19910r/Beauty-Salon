@@ -74,18 +74,11 @@ class RouteServiceProvider extends ServiceProvider
 
         $this->configureMiddlewareGroups();
 
-        $this->routes(function () {
-            Route::middleware('api')
-                ->prefix('api')
-                ->group(base_path('routes/api.php'));
-
-            Route::middleware('web')
-                ->group(base_path('routes/web.php'));
-            Route::middleware('web')
-                ->prefix('admin')
-                ->name('admin.')
-                ->group(base_path('routes/admin/reports.php'));
-        });
+        // Note: routes/web.php, routes/api.php and admin/* routes are loaded via
+        // bootstrap/app.php -> withRouting(). Previously, here
+        // base_path('routes/web.php') and routes/admin/reports.php
+        // would be required again, which would result in duplicate entries of the same routes in the RouteCollection
+        // . This block has been removed intentionally.
     }
 
     protected function configureModelBindings(): void
