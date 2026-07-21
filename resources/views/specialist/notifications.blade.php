@@ -102,11 +102,14 @@
 
     @push('scripts')
         <script>
-            // ✅ Mark as read when clicking on the link (without preventing redirect)
+            // ✅ Mark as read (and wait for it) before navigating to the target link
             document.querySelectorAll('.notification-link').forEach(function (link) {
                 link.addEventListener('click', function (e) {
+                    e.preventDefault();
+
                     const notificationId = this.dataset.notificationId;
                     const readUrl = this.dataset.readUrl;
+                    const targetHref = this.getAttribute('href');
 
                     fetch(readUrl, {
                         method: 'POST',
@@ -114,10 +117,13 @@
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
                             'Content-Type': 'application/json'
                         }
-                    }).catch(function (err) {
-                        console.error('خطا در علامت‌گذاری:', err);
-                    });
-
+                    })
+                        .catch(function (err) {
+                            console.error('خطا در علامت‌گذاری:', err);
+                        })
+                        .finally(function () {
+                            window.location.href = targetHref;
+                        });
                 });
             });
 
