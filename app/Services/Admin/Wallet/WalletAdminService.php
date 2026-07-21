@@ -142,19 +142,37 @@ class WalletAdminService
 
     public function approveWithdrawal(WithdrawalRequest $withdrawalRequest, array $data): void
     {
-        DB::transaction(function () use ($withdrawalRequest, $data) {
-            $withdrawalRequest->markAsCompleted([
+        $shouldFireEvent = false;
+
+        DB::transaction(function () use ($withdrawalRequest, $data, &$shouldFireEvent) {
+            // Lock the row until this transaction is committed. If two simultaneous requests
+            // (double-click or network return) arrive here, the second one will wait behind this lock until the first one is committed
+            // and then see the actual status (completed).
+            $locked = WithdrawalRequest::whereKey($withdrawalRequest->id)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$locked || !in_array($locked->status, ['pending', 'processing'])) {
+                return;
+            }
+
+            $locked->markAsCompleted([
                 'payment_reference' => $data['payment_reference'],
                 'approved_by' => auth()->user()->name,
                 'approved_at' => now()->toDateTimeString(),
             ]);
 
-            $withdrawalRequest->update([
+            $locked->update([
                 'admin_note' => $data['admin_note'] ?? null,
             ]);
+
+            $withdrawalRequest->setRawAttributes($locked->getAttributes());
+            $shouldFireEvent = true;
         });
 
-        event(new WithdrawalApproved($withdrawalRequest));
+        if ($shouldFireEvent) {
+            event(new WithdrawalApproved($withdrawalRequest));
+        }
     }
 
     public function rejectWithdrawal(WithdrawalRequest $withdrawalRequest, ?string $reason): void
@@ -162,27 +180,42 @@ class WalletAdminService
         // If the admin has not entered a reason (the field is displayed in the optional Blade), a default value is recorded
         $reason = $reason ?: 'بدون ذکر دلیل توسط ادمین';
 
-        DB::transaction(function () use ($withdrawalRequest, $reason) {
-            $wallet = $withdrawalRequest->wallet;
+        $shouldFireEvent = false;
 
-            $wallet->increment('balance', $withdrawalRequest->amount);
-            $wallet->decrement('total_withdrawn', $withdrawalRequest->amount);
+        DB::transaction(function () use ($withdrawalRequest, $reason, &$shouldFireEvent) {
+            $locked = WithdrawalRequest::whereKey($withdrawalRequest->id)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$locked || !in_array($locked->status, ['pending', 'processing'])) {
+                return;
+            }
+
+            $wallet = $locked->wallet()->lockForUpdate()->first();
+
+            $wallet->increment('balance', $locked->amount);
+            $wallet->decrement('total_withdrawn', $locked->amount);
 
             $wallet->transactions()->create([
                 'type' => 'refund',
-                'amount' => $withdrawalRequest->amount,
+                'amount' => $locked->amount,
                 'balance_after' => $wallet->balance,
-                'description' => 'رد درخواست برداشت - کد: ' . $withdrawalRequest->reference_code,
+                'description' => 'رد درخواست برداشت - کد: ' . $locked->reference_code,
                 'metadata' => [
-                    'withdrawal_request_id' => $withdrawalRequest->id,
+                    'withdrawal_request_id' => $locked->id,
                     'rejection_reason' => $reason,
                 ],
             ]);
 
-            $withdrawalRequest->markAsFailed($reason);
+            $locked->markAsFailed($reason);
+
+            $withdrawalRequest->setRawAttributes($locked->getAttributes());
+            $shouldFireEvent = true;
         });
 
-        event(new WithdrawalRejected($withdrawalRequest, $reason));
+        if ($shouldFireEvent) {
+            event(new WithdrawalRejected($withdrawalRequest, $reason));
+        }
     }
 
     /**

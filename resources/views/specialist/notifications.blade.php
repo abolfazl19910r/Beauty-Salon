@@ -84,7 +84,7 @@
                             @if(!$notification->read_at)
                                 <button type="button"
                                         id="notification-read-btn-{{ $notification->id }}"
-                                        onclick="markNotificationAsReadOnPage({{ $notification->id }})"
+                                        onclick="markNotificationAsReadOnPage('{{ $notification->id }}')"
                                         class="mr-2 text-xs text-[var(--specialist-plum-mid)] hover:text-[var(--specialist-plum-light)] flex-shrink-0">
                                     خوانده شد
                                 </button>

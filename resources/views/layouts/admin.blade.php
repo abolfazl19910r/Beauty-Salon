@@ -947,6 +947,7 @@
         deleteButtons.forEach(button => {
             button.addEventListener('click', (e) => {
                 e.preventDefault();
+                if (button.disabled) return;
                 const message = button.getAttribute('data-confirm-message') || 'آیا از حذف این آیتم اطمینان دارید؟';
 
                 Swal.fire({
@@ -961,7 +962,11 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         const form = button.closest('form');
-                        if (form) form.submit();
+                        if (form && !form.dataset.submitted) {
+                            form.dataset.submitted = '1';
+                            button.disabled = true;
+                            form.submit();
+                        }
                     }
                 });
             });
@@ -972,6 +977,7 @@
         confirmActionButtons.forEach(button => {
             button.addEventListener('click', (e) => {
                 e.preventDefault();
+                if (button.disabled) return;
                 const message = button.getAttribute('data-confirm-message') || 'آیا از انجام این عملیات اطمینان دارید؟';
                 const confirmText = button.getAttribute('data-confirm-text') || 'بله، انجام شود';
 
@@ -987,7 +993,11 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         const form = button.closest('form');
-                        if (form) form.submit();
+                        if (form && !form.dataset.submitted) {
+                            form.dataset.submitted = '1';
+                            button.disabled = true;
+                            form.submit();
+                        }
                     }
                 });
             });

@@ -127,7 +127,8 @@
                     <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                         <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">عملیات</h2>
                         <div class="space-y-2">
-                            <form action="{{ route('admin.wallet.withdrawals.approve', $withdrawalRequest) }}" method="POST">
+                            <form action="{{ route('admin.wallet.withdrawals.approve', $withdrawalRequest) }}" method="POST"
+                                  onsubmit="if (this.dataset.submitted) { return false; } this.dataset.submitted = '1'; this.querySelector('button[type=submit]').disabled = true;">
                                 @csrf @method('PUT')
                                 <div class="mb-2">
                                     <label class="block text-xs mb-1" style="color:var(--admin-text-dim);">کد پیگیری واقعی تراکنش بانکی <span class="text-red-500">*</span></label>
@@ -152,7 +153,8 @@
                                 </button>
                             </form>
 
-                            <form action="{{ route('admin.wallet.withdrawals.reject', $withdrawalRequest) }}" method="POST">
+                            <form action="{{ route('admin.wallet.withdrawals.reject', $withdrawalRequest) }}" method="POST"
+                                  onsubmit="if (this.dataset.submitted) { return false; } this.dataset.submitted = '1'; this.querySelector('button[type=submit]').disabled = true;">
                                 @csrf @method('PUT')
                                 <div class="mb-2">
                             <textarea name="rejection_reason" rows="2"
