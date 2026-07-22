@@ -11,8 +11,10 @@ Route::prefix('reports')->name('reports.')->group(function () {
     // ── Reports Home Page ─────────────────────────────────────
     Route::get('/', [AdminReportsController::class, 'index'])->name('index');
 
-    // ── Export ──────────────────────────────────────────
-    Route::get('/export', [AdminReportExportController::class, 'export'])->name('export');
+    // ── Export (async — just creates a record and queues the Job) ──
+    Route::post('/export', [AdminReportExportController::class, 'export'])->name('export');
+    Route::get('/exports', [AdminReportExportController::class, 'index'])->name('exports.index');
+    Route::get('/exports/{reportExport}/download', [AdminReportExportController::class, 'download'])->name('exports.download');
 
     // ── Chart endpoints for Admin Dashboard ────────────────────────
     // dashboard.blade.php calls these with fetch('/admin/reports/today|week|month')

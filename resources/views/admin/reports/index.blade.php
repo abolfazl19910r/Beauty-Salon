@@ -71,6 +71,7 @@
         {{-- Filter --}}
         <form method="GET" action="{{ route('admin.reports.index') }}"
               class="rounded-xl p-5 mb-6" style="background:var(--admin-surface);border:1px solid var(--admin-border);">
+            @csrf
             <div class="flex flex-wrap items-end gap-4">
 
                 {{-- Report type --}}
@@ -134,18 +135,26 @@
 
                     @permission('export-reports')
                     @if($startDate && $endDate)
-                        <a href="{{ route('admin.reports.export', ['format'=>'pdf','report_type'=>$type??'daily','start_date'=>$startDate,'end_date'=>$endDate]) }}"
-                           class="inline-flex items-center gap-1 px-4 py-2 text-sm text-white rounded-lg"
-                           style="background:#dc2626">
+                        <a href="{{ route('admin.reports.exports.index') }}"
+                           class="inline-flex items-center gap-1 px-4 py-2 text-sm rounded-lg border"
+                           style="color:var(--admin-text-dim);background:var(--admin-surface);border-color:var(--admin-border);">
+                            📄 گزارش‌های من
+                        </a>
+                        {{-- ⚠️ These buttons are inside the same GET form as the filter at the top of the page (nested <form> is not allowed in HTML), so instead of a separate <form> , they override the destination/method with formaction/formmethod ; name="format" on the button itself also adds the format value to the submit (only the button that was actually clicked is sent in the body). --}}
+                        <button type="submit" name="format" value="pdf"
+                                formaction="{{ route('admin.reports.export') }}" formmethod="POST"
+                                class="inline-flex items-center gap-1 px-4 py-2 text-sm text-white rounded-lg"
+                                style="background:#dc2626">
                             <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                             PDF
-                        </a>
-                        <a href="{{ route('admin.reports.export', ['format'=>'excel','report_type'=>$type??'daily','start_date'=>$startDate,'end_date'=>$endDate]) }}"
-                           class="inline-flex items-center gap-1 px-4 py-2 text-sm text-white rounded-lg"
-                           style="background:#16a34a">
+                        </button>
+                        <button type="submit" name="format" value="excel"
+                                formaction="{{ route('admin.reports.export') }}" formmethod="POST"
+                                class="inline-flex items-center gap-1 px-4 py-2 text-sm text-white rounded-lg"
+                                style="background:#16a34a">
                             <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                             Excel
-                        </a>
+                        </button>
                     @endif
                     @endpermission
                 </div>
@@ -256,9 +265,9 @@
                                 <tbody>
                                 @foreach($serviceRevenue as $svc)
                                     <tr>
-                                        <td>{{ $svc->name }}</td>
-                                        <td>{{ number_format($svc->bookings_count) }}</td>
-                                        <td>{{ number_format($svc->revenue ?? 0) }}</td>
+                                        <td>{{ $svc['name'] }}</td>
+                                        <td>{{ number_format($svc['bookings'] ?? 0) }}</td>
+                                        <td>{{ number_format($svc['revenue'] ?? 0) }}</td>
                                     </tr>
                                 @endforeach
                                 </tbody>

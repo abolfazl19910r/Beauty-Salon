@@ -59,6 +59,10 @@ return Application::configure(basePath: dirname(__DIR__))
             ->timezone('Asia/Tehran')
             ->withoutOverlapping()
             ->onOneServer();
+        $schedule->command('reports:cleanup-exports')
+            ->daily()
+            ->withoutOverlapping()
+            ->onOneServer();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->renderable(function (DomainException $e, Request $request) {
