@@ -2,9 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\SendBookingReminderJob;
 use App\Models\Booking;
-use App\Services\SMSService;
-use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class SendBookingReminders extends Command
@@ -18,59 +17,22 @@ class SendBookingReminders extends Command
             ->where('booking_time', '<', now()->addDay())
             ->where('status', 'confirmed')
             ->where('reminder_sent', false)
-            ->with(['user', 'specialist', 'service'])
+            ->select('id')
             ->get();
 
-        $smsService = new SMSService();
         $reminderCount = 0;
 
         foreach ($bookings as $booking) {
-            $customerMessage = sprintf(
-                "%s عزیز، سلام 👋\n\n".
-                "⏰ یادآوری نوبت فردا:\n\n".
-                "📋 سرویس: %s\n".
-                "📅 تاریخ: %s\n".
-                "🕐 ساعت: %s\n".
-                "👤 متخصص: %s\n".
-                "🔢 کد پیگیری: #%s\n\n".
-                "⚠️ لطفاً 15 دقیقه قبل حضور داشته باشید.\n\n".
-                "📞 برای هرگونه تغییر با ما تماس بگیرید.",
-                $booking->user->name,
-                $booking->service->name,
-                verta($booking->booking_time)->format('Y/m/d'),
-                verta($booking->booking_time)->format('H:i'),
-                $booking->specialist->name,
-                $booking->id
-            );
-
-            $smsService->send($booking->user->phone, $customerMessage);
-
-            $specialistMessage = sprintf(
-                "%s عزیز، سلام 👋\n\n".
-                "⏰ یادآوری نوبت فردا:\n\n".
-                "👤 مشتری: %s\n".
-                "📱 تماس: %s\n".
-                "📋 سرویس: %s\n".
-                "📅 تاریخ: %s\n".
-                "🕐 ساعت: %s\n".
-                "🔢 کد پیگیری: #%s\n\n".
-                "🙏 منتظر حضور شما در زمان مقرر هستیم.",
-                $booking->specialist->name,
-                $booking->user->name,
-                $booking->user->phone,
-                $booking->service->name,
-                verta($booking->booking_time)->format('Y/m/d'),
-                verta($booking->booking_time)->format('H:i'),
-                $booking->id
-            );
-
-            $smsService->send($booking->specialist->phone, $specialistMessage);
-
+            // reminder_sent is set here (before dispatch), not inside the Job —
+            // so that the command is not re-selected/reminded on the next execution,
+            // even if the Job is still in the queue waiting to be executed.
             $booking->update(['reminder_sent' => true]);
+
+            SendBookingReminderJob::dispatch($booking->id);
             $reminderCount++;
         }
 
-        $this->info("✅ تعداد {$reminderCount} یادآوری ارسال شد.");
+        $this->info("✅ تعداد {$reminderCount} یادآوری به صف ارسال شد.");
         return 0;
     }
 }
