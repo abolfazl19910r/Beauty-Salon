@@ -57,6 +57,18 @@ return [
         'merchant_id' => env('ZARINPAL_MERCHANT_ID', '279ad21d-99e3-402d-b3c1-2981d375a604'),
         'api_key' => env('ZARINPAL_API_KEY'),
         'base_url' => env('ZARINPAL_BASE_URL', 'https://api.zarinpal.com/pg/v4'),
-        'sandbox' => env('ZARINPAL_SANDBOX', true)
+        'sandbox' => env('ZARINPAL_SANDBOX', true),
+
+        // ⭐ Payout (specialized automatic withdrawal settlement) — intentionally separate from merchant_id/api_key above:
+        // ZarrinPal provides a dedicated API Key for the Payout feature (which is only issued by separately activating
+        // this feature in the acceptor panel), not the same API Key for regular payments.
+        // This sandbox is also kept separate from the regular payments sandbox so that tests of
+        // Payout can be performed separately on the sandbox even when the regular payment gateway is in production.
+        'payout' => [
+            'api_key' => env('ZARINPAL_PAYOUT_API_KEY'),
+            'sandbox' => env('ZARINPAL_PAYOUT_SANDBOX', env('ZARINPAL_SANDBOX', true)),
+            'base_url' => env('ZARINPAL_PAYOUT_BASE_URL', 'https://api.zarinpal.com/pg/v4'),
+            'sandbox_base_url' => env('ZARINPAL_PAYOUT_SANDBOX_BASE_URL', 'https://sandbox.zarinpal.com/pg/v4'),
+        ],
     ],
 ];

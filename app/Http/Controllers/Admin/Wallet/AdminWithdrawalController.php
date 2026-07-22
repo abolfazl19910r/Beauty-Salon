@@ -98,7 +98,7 @@ class AdminWithdrawalController extends Controller
             if ($result['success']) {
                 return back()->with(
                     'success',
-                    'تسویه حساب آنلاین با موفقیت انجام شد. کد ارجاع: ' . $result['reference_code']
+                    'درخواست به صف پردازش تسویه‌ی آنلاین ارسال شد. نتیجه (موفق/ناموفق) پس از چند ثانیه در همین صفحه قابل مشاهده است.'
                 );
             }
 

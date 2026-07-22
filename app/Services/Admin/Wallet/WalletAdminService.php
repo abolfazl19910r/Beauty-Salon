@@ -4,6 +4,7 @@ namespace App\Services\Admin\Wallet;
 
 use App\Events\Withdrawal\Approved\WithdrawalApproved;
 use App\Events\Withdrawal\Rejected\WithdrawalRejected;
+use App\Jobs\ProcessWithdrawalJob;
 use App\Models\SpecialistWallet;
 use App\Models\WalletSetting;
 use App\Models\WalletTransaction;
@@ -219,42 +220,50 @@ class WalletAdminService
     }
 
     /**
-     * @return array{success: bool, message?: string, reference_code?: string}
+     * Starts the auto-payout of a withdrawal request — this method no longer
+     * connects to ZarrinPal itself (previous mock removed here; see "critical warning" above
+     * Rasta_unified_prompt.md). It just sets the request status to 'processing'
+     * and queues the actual processing (HTTP call to Payout API) to {@see \App\Jobs\ProcessWithdrawalJob}
+     * — as this call may be slow/timed out (same class of issue
+     * that caused synchronous login timeouts in the Telescope standalone phase).
+     *
+     * @return array{success: bool, message?: string, dispatched?: bool}
      */
     public function autoPayout(WithdrawalRequest $withdrawalRequest): array
     {
-        /*
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . config('services.zarinpal.api_key'),
-        ])->post('https://api.zarinpal.com/pg/v4/payout.json', [
-            'merchant_id' => config('services.zarinpal.merchant_id'),
-            'amount'      => $withdrawalRequest->net_amount * 10,
-            'description' => "تسویه حساب متخصص: " . $withdrawalRequest->specialist->name,
-            'destination_iban' => $withdrawalRequest->iban,
-        ]);
-        */
+        $dispatched = false;
 
-        $isSuccessful = true;
-        $referenceCode = 'ZRP-' . rand(100000, 999999);
+        DB::transaction(function () use ($withdrawalRequest, &$dispatched) {
+            $locked = WithdrawalRequest::whereKey($withdrawalRequest->id)
+                ->lockForUpdate()
+                ->first();
 
-        if (!$isSuccessful) {
+            if (!$locked || !in_array($locked->status, ['pending', 'processing'])) {
+                return;
+            }
+
+            // If it is already processing (e.g. it has been dispatched once before but the Job has not yet returned),
+            // Do not queue a new Job again — prevents the Payout port from being called twice at the same time.
+            if ($locked->status === 'processing') {
+                return;
+            }
+
+            $locked->update(['status' => 'processing']);
+            $dispatched = true;
+        });
+
+        if (!$dispatched) {
             return [
                 'success' => false,
-                'message' => 'خطا در اتصال به درگاه زرین‌پال یا عدم موجودی کافی در پنل زرین‌پال.',
+                'message' => 'این درخواست در حال حاضر قابل ارسال به صف پردازش نیست (یا قبلاً ارسال شده).',
             ];
         }
 
-        DB::transaction(function () use ($withdrawalRequest, $referenceCode) {
-            $withdrawalRequest->markAsCompleted([
-                'payment_method' => 'zarinpal_auto',
-                'payment_reference' => $referenceCode,
-                'payout_id' => 'PAY-' . uniqid(),
-            ]);
-        });
+        ProcessWithdrawalJob::dispatch($withdrawalRequest->id);
 
         return [
             'success' => true,
-            'reference_code' => $referenceCode,
+            'dispatched' => true,
         ];
     }
 
@@ -266,15 +275,15 @@ class WalletAdminService
 
     /**
      * Settle "pending" revenue transactions and transfer them to the balance.
-     * *
-     * * The single source of this logic — both the `wallet:settle-pending` scheduled command (nightly, at 01:00)
-     * * and the ``Manual Settlement'' button in the admin panel (both for all specialists and for a specific specialist) use the same method.
-     * *
-     * * @param SpecialistWallet|null $wallet If null, all wallets will be checked; otherwise, only this one.
-     * * @param bool $ignoreDelay If true, the settlement delay (settlement_delay_days) will be ignored and all
-     * * pending transactions (even those that are not yet due) will be settled immediately.
-     * * @param string $source is recorded in the transaction metadata to indicate where the settlement came from: 'schedule' or 'admin_manual'.
-     * * @return array{settledCount: int, failedCount: int, settledAmount: float}
+     *
+     * The single source of this logic — both the `wallet:settle-pending` scheduled command (nightly, at 01:00)
+     * and the ``Manual Settlement'' button in the admin panel (both for all specialists and for a specific specialist) use the same method.
+     *
+     * @param SpecialistWallet|null $wallet If null, all wallets will be checked; otherwise, only this one.
+     * @param bool $ignoreDelay If true, the settlement delay (settlement_delay_days) will be ignored and all
+     * pending transactions (even those that are not yet due) will be settled immediately.
+     * @param string $source is recorded in the transaction metadata to indicate where the settlement came from: 'schedule' or 'admin_manual'.
+     * @return array{settledCount: int, failedCount: int, settledAmount: float}
      */
     public function settlePendingIncomes(
         ?SpecialistWallet $wallet = null,

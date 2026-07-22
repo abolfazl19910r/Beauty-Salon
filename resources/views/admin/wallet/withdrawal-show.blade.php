@@ -123,7 +123,7 @@
 
             {{-- Operation --}}
             <div class="space-y-4">
-                @if(in_array($withdrawalRequest->status, ['pending', 'processing']))
+                @if($withdrawalRequest->status === 'pending')
                     <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                         <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">عملیات</h2>
                         <div class="space-y-2">
@@ -178,11 +178,15 @@
                             </form>
                         </div>
                     </div>
-                @elseif($withdrawalRequest->status === 'processing')
-                    <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
-                        <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">پردازش پرداخت</h2>
-                        <form action="{{ route('admin.wallet.withdrawals.auto-payout', $withdrawalRequest) }}" method="POST">
-                            @csrf @method('POST')
+                    <div class="rounded-xl p-5 mt-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+                        <h2 class="text-sm font-bold mb-3 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">یا تسویه‌ی آنلاین خودکار</h2>
+                        <p class="text-xs mb-3" style="color:var(--admin-text-dim);">
+                            به‌جای وارد کردن دستی کد پیگیری، می‌توانید تسویه را مستقیم از طریق درگاه Payout زرین‌پال انجام دهید.
+                            این عملیات در پس‌زمینه پردازش می‌شود و نتیجه (موفق/ناموفق) پس از چند ثانیه در همین صفحه قابل مشاهده است.
+                        </p>
+                        <form action="{{ route('admin.wallet.withdrawals.auto-payout', $withdrawalRequest) }}" method="POST"
+                              data-confirm-action data-confirm-message="آیا از تسویه‌ی آنلاین خودکار این درخواست اطمینان دارید؟">
+                            @csrf
                             <button type="submit"
                                     class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-white"
                                     style="background:var(--admin-accent);"
@@ -191,9 +195,17 @@
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
                                 </svg>
-                                تایید پرداخت
+                                تسویه‌ی آنلاین خودکار (زرین‌پال)
                             </button>
                         </form>
+                    </div>
+                @elseif($withdrawalRequest->status === 'processing')
+                    <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+                        <h2 class="text-sm font-bold mb-3 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">در حال پردازش تسویه‌ی آنلاین</h2>
+                        <p class="text-sm" style="color:var(--admin-text-dim);">
+                            درخواست تسویه در صف پردازش قرار گرفته و به زودی نتیجه‌ی آن (تکمیل‌شده یا ناموفق) مشخص می‌شود.
+                            این صفحه را دوباره بارگذاری کنید تا وضعیت به‌روز را ببینید.
+                        </p>
                     </div>
                 @else
                     <div class="rounded-xl p-4" style="background:var(--admin-accent-light); border:1px solid var(--admin-border);">
