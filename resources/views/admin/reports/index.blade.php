@@ -69,7 +69,7 @@
         </div>
 
         {{-- Filter --}}
-        <form method="GET" action="{{ route('admin.reports.index') }}"
+        <form method="GET" action="{{ route('admin.reports.index') }}" id="report-filter-form"
               class="rounded-xl p-5 mb-6" style="background:var(--admin-surface);border:1px solid var(--admin-border);">
             @csrf
             <div class="flex flex-wrap items-end gap-4">
@@ -161,172 +161,159 @@
             </div>
         </form>
 
-        {{-- When the filter is not yet selected --}}
-        @if(!$startDate && !$endDate)
-            <div class="rounded-xl p-16 text-center" style="background:var(--admin-surface);border:1px solid var(--admin-border);">
-                <svg class="w-16 h-16 mx-auto mb-4" style="color:var(--admin-border)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-                <p class="text-lg font-medium mb-2" style="color:var(--admin-text)">بازه زمانی انتخاب نشده</p>
-                <p class="text-sm" style="color:var(--admin-text-dim)">برای مشاهده گزارش، تاریخ شروع و پایان را انتخاب کرده و فیلتر را اعمال کنید.</p>
+        {{-- Statistics cards --}}
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+            @php
+                $statCards = [
+                    ['label'=>'درآمد کل','value'=>number_format($summary['total_revenue']).' ت','color'=>'#16a34a'],
+                    ['label'=>'کل نوبت‌ها','value'=>number_format($summary['total_bookings']),'color'=>'#334155'],
+                    ['label'=>'انجام‌شده','value'=>number_format($summary['completed_bookings']),'color'=>'#0284c7'],
+                    ['label'=>'لغو شده','value'=>number_format($summary['cancelled_bookings']),'color'=>'#dc2626'],
+                    ['label'=>'درآمد معلق','value'=>number_format($summary['pending_payments']).' ت','color'=>'#d97706'],
+                    ['label'=>'میانگین نوبت','value'=>number_format($summary['average_booking_value']).' ت','color'=>'#7c3aed'],
+                ];
+            @endphp
+            @foreach($statCards as $card)
+                <div class="stat-card">
+                    <div class="label">{{ $card['label'] }}</div>
+                    <div class="value" style="color:{{ $card['color'] }}">{{ $card['value'] }}</div>
+                </div>
+            @endforeach
+        </div>
+
+        {{-- Fevers --}}
+        <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface);border:1px solid var(--admin-border);">
+            <div class="flex border-b" style="border-color:var(--admin-border);">
+                <button class="rtab active" onclick="showTab('revenue',this)">📊 درآمد</button>
+                <button class="rtab" onclick="showTab('specialists',this)">👥 متخصصین</button>
+                <button class="rtab" onclick="showTab('services',this)">✂️ خدمات</button>
+                <button class="rtab" onclick="showTab('satisfaction',this)">⭐ رضایت</button>
             </div>
 
-        @else
+            {{-- Income fever --}}
+            <div id="tab-revenue" class="tab-content active p-6">
+                <h3 class="text-base font-semibold mb-4" style="color:var(--admin-text)">
+                    نمودار درآمد — {{ ['daily'=>'روزانه','weekly'=>'هفتگی','monthly'=>'ماهانه'][$type??'daily'] }}
+                </h3>
+                @if(count($revenueChart) > 0)
+                    <div style="height:300px"><canvas id="revenueChart"></canvas></div>
+                @else
+                    <div class="empty-state">داده‌ای برای این بازه زمانی وجود ندارد</div>
+                @endif
 
-            {{-- Statistics cards --}}
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-                @php
-                    $statCards = [
-                        ['label'=>'درآمد کل','value'=>number_format($summary['total_revenue']).' ت','color'=>'#16a34a'],
-                        ['label'=>'کل نوبت‌ها','value'=>number_format($summary['total_bookings']),'color'=>'#334155'],
-                        ['label'=>'انجام‌شده','value'=>number_format($summary['completed_bookings']),'color'=>'#0284c7'],
-                        ['label'=>'لغو شده','value'=>number_format($summary['cancelled_bookings']),'color'=>'#dc2626'],
-                        ['label'=>'درآمد معلق','value'=>number_format($summary['pending_payments']).' ت','color'=>'#d97706'],
-                        ['label'=>'میانگین نوبت','value'=>number_format($summary['average_booking_value']).' ت','color'=>'#7c3aed'],
-                    ];
-                @endphp
-                @foreach($statCards as $card)
-                    <div class="stat-card">
-                        <div class="label">{{ $card['label'] }}</div>
-                        <div class="value" style="color:{{ $card['color'] }}">{{ $card['value'] }}</div>
-                    </div>
-                @endforeach
+                @if($monthlyBreakdown->count())
+                    <h3 class="text-base font-semibold mt-8 mb-4" style="color:var(--admin-text)">گردش مالی ماهانه (بر اساس بازه انتخابی)</h3>
+                    <div style="height:260px"><canvas id="monthlyChart"></canvas></div>
+                @endif
             </div>
 
-            {{-- Fevers --}}
-            <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface);border:1px solid var(--admin-border);">
-                <div class="flex border-b" style="border-color:var(--admin-border);">
-                    <button class="rtab active" onclick="showTab('revenue',this)">📊 درآمد</button>
-                    <button class="rtab" onclick="showTab('specialists',this)">👥 متخصصین</button>
-                    <button class="rtab" onclick="showTab('services',this)">✂️ خدمات</button>
-                    <button class="rtab" onclick="showTab('satisfaction',this)">⭐ رضایت</button>
-                </div>
-
-                {{-- Income fever --}}
-                <div id="tab-revenue" class="tab-content active p-6">
-                    <h3 class="text-base font-semibold mb-4" style="color:var(--admin-text)">
-                        نمودار درآمد — {{ ['daily'=>'روزانه','weekly'=>'هفتگی','monthly'=>'ماهانه'][$type??'daily'] }}
-                    </h3>
-                    @if(count($revenueChart) > 0)
-                        <div style="height:300px"><canvas id="revenueChart"></canvas></div>
-                    @else
-                        <div class="empty-state">داده‌ای برای این بازه زمانی وجود ندارد</div>
-                    @endif
-
-                    @if($monthlyBreakdown->count())
-                        <h3 class="text-base font-semibold mt-8 mb-4" style="color:var(--admin-text)">گردش مالی ماهانه (بر اساس بازه انتخابی)</h3>
-                        <div style="height:260px"><canvas id="monthlyChart"></canvas></div>
-                    @endif
-                </div>
-
-                {{-- Experts' Fever --}}
-                <div id="tab-specialists" class="tab-content p-6">
-                    <h3 class="text-base font-semibold mb-4" style="color:var(--admin-text)">عملکرد متخصصین</h3>
-                    @if($specialists->count())
-                        <div style="height:300px" class="mb-6"><canvas id="specialistChart"></canvas></div>
-                        <table class="report-table">
-                            <thead><tr>
-                                <th>نام متخصص</th><th>تعداد نوبت</th><th>درآمد کل (تومان)</th>
-                                <th>نرخ کمیسیون</th><th>سهم متخصص (تومان)</th>
-                                <th>نرخ تکمیل</th><th>نرخ بازگشت</th>
-                            </tr></thead>
-                            <tbody>
-                            @foreach($specialists as $sp)
-                                <tr>
-                                    <td>{{ $sp['name'] }}</td>
-                                    <td>{{ number_format($sp['total_bookings']) }}</td>
-                                    <td>{{ number_format($sp['total_revenue']) }}</td>
-                                    <td>
+            {{-- Experts' Fever --}}
+            <div id="tab-specialists" class="tab-content p-6">
+                <h3 class="text-base font-semibold mb-4" style="color:var(--admin-text)">عملکرد متخصصین</h3>
+                @if($specialists->count())
+                    <div style="height:300px" class="mb-6"><canvas id="specialistChart"></canvas></div>
+                    <table class="report-table">
+                        <thead><tr>
+                            <th>نام متخصص</th><th>تعداد نوبت</th><th>درآمد کل (تومان)</th>
+                            <th>نرخ کمیسیون</th><th>سهم متخصص (تومان)</th>
+                            <th>نرخ تکمیل</th><th>نرخ بازگشت</th>
+                        </tr></thead>
+                        <tbody>
+                        @foreach($specialists as $sp)
+                            <tr>
+                                <td>{{ $sp['name'] }}</td>
+                                <td>{{ number_format($sp['total_bookings']) }}</td>
+                                <td>{{ number_format($sp['total_revenue']) }}</td>
+                                <td>
                         <span class="px-2 py-0.5 text-xs rounded-full font-medium"
                               style="background:var(--admin-accent-light);color:var(--admin-accent)">
                             {{ $sp['commission_rate'] }}%
                         </span>
-                                    </td>
-                                    <td style="color:#16a34a;font-weight:600">{{ number_format($sp['specialist_share']) }}</td>
-                                    <td>{{ $sp['booking_completion_rate'] }}%</td>
-                                    <td>{{ $sp['customer_return_rate'] }}%</td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                    @else
-                        <div class="empty-state">داده‌ای برای این بازه زمانی وجود ندارد</div>
-                    @endif
-                </div>
-
-                {{-- Services tab --}}
-                <div id="tab-services" class="tab-content p-6">
-                    <h3 class="text-base font-semibold mb-4" style="color:var(--admin-text)">درآمد به تفکیک خدمات</h3>
-                    @if($serviceRevenue->count())
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div style="height:280px"><canvas id="serviceChart"></canvas></div>
-                            <table class="report-table">
-                                <thead><tr><th>خدمت</th><th>نوبت</th><th>درآمد (تومان)</th></tr></thead>
-                                <tbody>
-                                @foreach($serviceRevenue as $svc)
-                                    <tr>
-                                        <td>{{ $svc['name'] }}</td>
-                                        <td>{{ number_format($svc['bookings'] ?? 0) }}</td>
-                                        <td>{{ number_format($svc['revenue'] ?? 0) }}</td>
-                                    </tr>
-                                @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @else
-                        <div class="empty-state">داده‌ای برای این بازه زمانی وجود ندارد</div>
-                    @endif
-
-                    @if($popularServices->count())
-                        <h3 class="text-base font-semibold mt-4 mb-4" style="color:var(--admin-text)">خدمات محبوب (تعداد نوبت)</h3>
-                        <table class="report-table">
-                            <thead><tr><th>خدمت</th><th>تعداد نوبت</th><th>درآمد (تومان)</th></tr></thead>
-                            <tbody>
-                            @foreach($popularServices as $ps)
-                                <tr>
-                                    <td>{{ $ps->name }}</td>
-                                    <td>{{ number_format($ps->bookings_count) }}</td>
-                                    <td>{{ number_format($ps->revenue ?? 0) }}</td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                    @endif
-                </div>
-
-                {{-- Satisfaction fever --}}
-                <div id="tab-satisfaction" class="tab-content p-6">
-                    <h3 class="text-base font-semibold mb-4" style="color:var(--admin-text)">رضایت مشتریان</h3>
-                    @if($satisfaction->count())
-                        <table class="report-table">
-                            <thead><tr>
-                                <th>نام متخصص</th><th>میانگین امتیاز</th><th>تعداد نظر</th><th>درصد رضایت</th>
-                            </tr></thead>
-                            <tbody>
-                            @foreach($satisfaction as $sat)
-                                <tr>
-                                    <td>{{ $sat['specialist_name'] }}</td>
-                                    <td>{{ $sat['average_rating'] }} / 5</td>
-                                    <td>{{ number_format($sat['total_ratings']) }}</td>
-                                    <td>
-                                        <div class="flex items-center gap-2">
-                                            <div class="flex-1 rounded-full h-2" style="background:var(--admin-border)">
-                                                <div class="h-2 rounded-full" style="width:{{ $sat['satisfaction_rate'] }}%;background:#16a34a"></div>
-                                            </div>
-                                            <span class="text-xs font-medium">{{ $sat['satisfaction_rate'] }}%</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                    @else
-                        <div class="empty-state">نظری برای این بازه زمانی ثبت نشده</div>
-                    @endif
-                </div>
+                                </td>
+                                <td style="color:#16a34a;font-weight:600">{{ number_format($sp['specialist_share']) }}</td>
+                                <td>{{ $sp['booking_completion_rate'] }}%</td>
+                                <td>{{ $sp['customer_return_rate'] }}%</td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <div class="empty-state">داده‌ای برای این بازه زمانی وجود ندارد</div>
+                @endif
             </div>
 
-        @endif {{-- end if $startDate --}}
+            {{-- Services tab --}}
+            <div id="tab-services" class="tab-content p-6">
+                <h3 class="text-base font-semibold mb-4" style="color:var(--admin-text)">درآمد به تفکیک خدمات</h3>
+                @if($serviceRevenue->count())
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div style="height:280px"><canvas id="serviceChart"></canvas></div>
+                        <table class="report-table">
+                            <thead><tr><th>خدمت</th><th>نوبت</th><th>درآمد (تومان)</th></tr></thead>
+                            <tbody>
+                            @foreach($serviceRevenue as $svc)
+                                <tr>
+                                    <td>{{ $svc['name'] }}</td>
+                                    <td>{{ number_format($svc['bookings'] ?? 0) }}</td>
+                                    <td>{{ number_format($svc['revenue'] ?? 0) }}</td>
+                                </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="empty-state">داده‌ای برای این بازه زمانی وجود ندارد</div>
+                @endif
+
+                @if($popularServices->count())
+                    <h3 class="text-base font-semibold mt-4 mb-4" style="color:var(--admin-text)">خدمات محبوب (تعداد نوبت)</h3>
+                    <table class="report-table">
+                        <thead><tr><th>خدمت</th><th>تعداد نوبت</th><th>درآمد (تومان)</th></tr></thead>
+                        <tbody>
+                        @foreach($popularServices as $ps)
+                            <tr>
+                                <td>{{ $ps->name }}</td>
+                                <td>{{ number_format($ps->bookings_count) }}</td>
+                                <td>{{ number_format($ps->revenue ?? 0) }}</td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                @endif
+            </div>
+
+            {{-- Satisfaction fever --}}
+            <div id="tab-satisfaction" class="tab-content p-6">
+                <h3 class="text-base font-semibold mb-4" style="color:var(--admin-text)">رضایت مشتریان</h3>
+                @if($satisfaction->count())
+                    <table class="report-table">
+                        <thead><tr>
+                            <th>نام متخصص</th><th>میانگین امتیاز</th><th>تعداد نظر</th><th>درصد رضایت</th>
+                        </tr></thead>
+                        <tbody>
+                        @foreach($satisfaction as $sat)
+                            <tr>
+                                <td>{{ $sat['specialist_name'] }}</td>
+                                <td>{{ $sat['average_rating'] }} / 5</td>
+                                <td>{{ number_format($sat['total_ratings']) }}</td>
+                                <td>
+                                    <div class="flex items-center gap-2">
+                                        <div class="flex-1 rounded-full h-2" style="background:var(--admin-border)">
+                                            <div class="h-2 rounded-full" style="width:{{ $sat['satisfaction_rate'] }}%;background:#16a34a"></div>
+                                        </div>
+                                        <span class="text-xs font-medium">{{ $sat['satisfaction_rate'] }}%</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <div class="empty-state">نظری برای این بازه زمانی ثبت نشده</div>
+                @endif
+            </div>
+        </div>
+
 
     </div>
 @endsection
@@ -485,7 +472,12 @@
             btn.classList.add('active');
         }
 
-        /* ── type buttons ── */
+        /* ── shared jalali/gregorian conversion (For both the quick interval buttons and jcal) ── */
+        function pad2(n){return n<10?'0'+n:''+n;}
+        function toJalaliShared(gy,gm,gd){var g_d_no,j_d_no,j_np,i,j_y,j_m,j_d,g_days_in_month=[31,28,31,30,31,30,31,31,30,31,30,31],j_days_in_month=[31,31,31,31,31,31,30,30,30,30,30,29];gy-=1600;gm-=1;gd-=1;g_d_no=365*gy+Math.floor((gy+3)/4)-Math.floor((gy+99)/100)+Math.floor((gy+399)/400);for(i=0;i<gm;i++)g_d_no+=g_days_in_month[i];if(gm>1&&((gy%4===0&&gy%100!==0)||(gy%400===0)))g_d_no++;g_d_no+=gd;j_d_no=g_d_no-79;j_np=Math.floor(j_d_no/12053);j_d_no%=12053;j_y=979+33*j_np+4*Math.floor(j_d_no/1461);j_d_no%=1461;if(j_d_no>=366){j_y+=Math.floor((j_d_no-1)/365);j_d_no=(j_d_no-1)%365;}for(i=0;i<11&&j_d_no>=j_days_in_month[i];i++)j_d_no-=j_days_in_month[i];j_m=i+1;j_d=j_d_no+1;return[j_y,j_m,j_d];}
+        function toGregorianShared(jy,jm,jd){var gy,gm,gd,g_d_no,j_d_no,i,j_days_in_month=[31,31,31,31,31,31,30,30,30,30,30,29],g_days_in_month=[31,28,31,30,31,30,31,31,30,31,30,31];jy-=979;jm-=1;jd-=1;j_d_no=365*jy+Math.floor(jy/33)*8+Math.floor((jy%33+3)/4);for(i=0;i<jm;i++)j_d_no+=j_days_in_month[i];j_d_no+=jd;g_d_no=j_d_no+79;gy=1600+400*Math.floor(g_d_no/146097);g_d_no%=146097;var leap=true;if(g_d_no>=36525){g_d_no--;gy+=100*Math.floor(g_d_no/36524);g_d_no%=36524;if(g_d_no>=365)g_d_no++;else leap=false;}gy+=4*Math.floor(g_d_no/1461);g_d_no%=1461;if(g_d_no>=366){leap=false;g_d_no--;gy+=Math.floor(g_d_no/365);g_d_no%=365;}for(i=0;g_d_no>=g_days_in_month[i]+((i===1&&leap)?1:0);i++)g_d_no-=g_days_in_month[i]+((i===1&&leap)?1:0);gm=i+1;gd=g_d_no+1;return[gy,gm,gd];}
+
+        /* ── type buttons — They both change the chart's category type and determine the date range themselves. ── */
         (function() {
             var current = document.getElementById('type-input').value || 'daily';
             function applyStyle(val) {
@@ -497,19 +489,66 @@
                 if (a) { a.style.background = 'var(--admin-accent)'; a.style.color = '#fff'; }
             }
             applyStyle(current);
+
+            function setRange(startG, endG, startJ, endJ) {
+                document.getElementById('start-date-val').value = startG;
+                document.getElementById('end-date-val').value = endG;
+                document.getElementById('start-jalali').value = startJ;
+                document.getElementById('end-jalali').value = endJ;
+            }
+
+            // Real bug: controller (`AdminReportsController::index`) no start_date/end_date
+            // Always return a blank "no time range selected" page - even if `type`
+            // have a value; `type' is only the category type of the income chart, not the time period. already
+            // These buttons only change ``type'' and do not submit the form, so click on
+            // "today/week/month" (without manually selecting a date from the calendar) had virtually no effect.
             window.setType = function(val) {
                 document.getElementById('type-input').value = val;
                 applyStyle(val);
+
+                var now = new Date();
+                var todayJ = toJalaliShared(now.getFullYear(), now.getMonth() + 1, now.getDate());
+                var todayG = now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-' + pad2(now.getDate());
+                var todayJStr = todayJ[0] + '/' + pad2(todayJ[1]) + '/' + pad2(todayJ[2]);
+
+                if (val === 'weekly') {
+                    var weekAgo = new Date(now);
+                    weekAgo.setDate(weekAgo.getDate() - 6);
+                    var weekAgoJ = toJalaliShared(weekAgo.getFullYear(), weekAgo.getMonth() + 1, weekAgo.getDate());
+                    setRange(
+                        weekAgo.getFullYear() + '-' + pad2(weekAgo.getMonth() + 1) + '-' + pad2(weekAgo.getDate()),
+                        todayG,
+                        weekAgoJ[0] + '/' + pad2(weekAgoJ[1]) + '/' + pad2(weekAgoJ[2]),
+                        todayJStr
+                    );
+                } else if (val === 'monthly') {
+                    // Intentionally from the beginning of the "previous" solar month to today (not just the beginning of the current month):
+                    // If only the current month is considered, on the first days of each month (for example, today,
+                    // August 1st) the range is practically limited to one day and the report remains almost empty.
+                    // Even when the entire previous month is included, the "Monthly" button always has a meaningful range full of data.
+                    var prevY = todayJ[0], prevM = todayJ[1] - 1;
+                    if (prevM < 1) { prevM = 12; prevY -= 1; }
+                    var firstOfMonthG = toGregorianShared(prevY, prevM, 1);
+                    setRange(
+                        firstOfMonthG[0] + '-' + pad2(firstOfMonthG[1]) + '-' + pad2(firstOfMonthG[2]),
+                        todayG,
+                        prevY + '/' + pad2(prevM) + '/01',
+                        todayJStr
+                    );
+                } else {
+                    // daily: Just today
+                    setRange(todayG, todayG, todayJStr, todayJStr);
+                }
+
+                document.getElementById('report-filter-form').submit();
             };
         })();
 
         /* ── jcal ── */
         (function(){
-            function toJalali(gy,gm,gd){var g_d_no,j_d_no,j_np,i,j_y,j_m,j_d,g_days_in_month=[31,28,31,30,31,30,31,31,30,31,30,31],j_days_in_month=[31,31,31,31,31,31,30,30,30,30,30,29];gy-=1600;gm-=1;gd-=1;g_d_no=365*gy+Math.floor((gy+3)/4)-Math.floor((gy+99)/100)+Math.floor((gy+399)/400);for(i=0;i<gm;i++)g_d_no+=g_days_in_month[i];if(gm>1&&((gy%4===0&&gy%100!==0)||(gy%400===0)))g_d_no++;g_d_no+=gd;j_d_no=g_d_no-79;j_np=Math.floor(j_d_no/12053);j_d_no%=12053;j_y=979+33*j_np+4*Math.floor(j_d_no/1461);j_d_no%=1461;if(j_d_no>=366){j_y+=Math.floor((j_d_no-1)/365);j_d_no=(j_d_no-1)%365;}for(i=0;i<11&&j_d_no>=j_days_in_month[i];i++)j_d_no-=j_days_in_month[i];j_m=i+1;j_d=j_d_no+1;return[j_y,j_m,j_d];}
-            function toGregorian(jy,jm,jd){var gy,gm,gd,g_d_no,j_d_no,i,j_days_in_month=[31,31,31,31,31,31,30,30,30,30,30,29],g_days_in_month=[31,28,31,30,31,30,31,31,30,31,30,31];jy-=979;jm-=1;jd-=1;j_d_no=365*jy+Math.floor(jy/33)*8+Math.floor((jy%33+3)/4);for(i=0;i<jm;i++)j_d_no+=j_days_in_month[i];j_d_no+=jd;g_d_no=j_d_no+79;gy=1600+400*Math.floor(g_d_no/146097);g_d_no%=146097;var leap=true;if(g_d_no>=36525){g_d_no--;gy+=100*Math.floor(g_d_no/36524);g_d_no%=36524;if(g_d_no>=365)g_d_no++;else leap=false;}gy+=4*Math.floor(g_d_no/1461);g_d_no%=1461;if(g_d_no>=366){leap=false;g_d_no--;gy+=Math.floor(g_d_no/365);g_d_no%=365;}for(i=0;g_d_no>=g_days_in_month[i]+((i===1&&leap)?1:0);i++)g_d_no-=g_days_in_month[i]+((i===1&&leap)?1:0);gm=i+1;gd=g_d_no+1;return[gy,gm,gd];}
+            var toJalali = toJalaliShared, toGregorian = toGregorianShared, pad = pad2;
             var JM=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
             var JD=['ش','ی','د','س','چ','پ','ج'];
-            function pad(n){return n<10?'0'+n:''+n;}
             var now=new Date(), todayJ=toJalali(now.getFullYear(),now.getMonth()+1,now.getDate());
 
             function buildCal(popup,dispEl,hidEl,yr,mo){

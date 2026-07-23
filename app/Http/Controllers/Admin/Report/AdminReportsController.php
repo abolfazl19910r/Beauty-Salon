@@ -14,24 +14,14 @@ class AdminReportsController extends Controller
 
     public function index(Request $request)
     {
-        $startDate = $request->input('start_date');
-        $endDate   = $request->input('end_date');
+        // Previously, without start_date/end_date in the URL, the page would just show the message "No time range selected
+        //" and the admin would have to manually select a
+        // range before seeing any report. Now, the default of "Today" is applied (in conjunction with the
+        // "Daily" button, which was already enabled by default) so that the report
+        // would be visible immediately upon opening the page.
+        $startDate = $request->input('start_date') ?: now()->format('Y-m-d');
+        $endDate   = $request->input('end_date') ?: now()->format('Y-m-d');
         $type      = $request->input('type', 'daily');
-
-        if (! $startDate || ! $endDate) {
-            return view('admin.reports.index', [
-                'startDate'        => null,
-                'endDate'          => null,
-                'type'             => $type,
-                'summary'          => [],
-                'revenueChart'     => [],
-                'popularServices'  => collect(),
-                'specialists'      => collect(),
-                'satisfaction'     => collect(),
-                'monthlyBreakdown' => collect(),
-                'serviceRevenue'   => collect(),
-            ]);
-        }
 
         ['start' => $start, 'end' => $end] = $this->reportService->parseDateRange(
             ['start_date' => $startDate, 'end_date' => $endDate]
