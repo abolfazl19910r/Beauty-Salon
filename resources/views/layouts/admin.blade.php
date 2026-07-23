@@ -759,6 +759,20 @@
             .catch(error => console.error('Error fetching notification count:', error));
     }
 
+    // ⭐ The admin/notifications/index.blade.php and Show.blade.php pages already called
+    // window.refreshNotificationCount() after each operation (read/toggle) to update the header counter badge without requiring a full page refresh — but this
+    // function was not defined anywhere in the project, so the badge update only happened on a full page refresh (or the 60-second timer
+    // below). It is now connected to fetchUnreadCount with an alias.
+    window.refreshNotificationCount = fetchUnreadCount;
+
+    // ⭐ The same pages also used a localStorage.setItem('notification_updated', ...)
+    // (presumably to coordinate between multiple open browser tabs) but no listener was defined for this
+    // key — this section was also completed so that if the admin has multiple open tabs,
+    // marking a tab will update the badge in other tabs as well.
+    window.addEventListener('storage', function (e) {
+        if (e.key === 'notification_updated') fetchUnreadCount();
+    });
+
     function fetchLatestNotifications() {
         const listContainer = document.getElementById('notification-list-container');
         const noMessage = document.getElementById('no-notifications-message');

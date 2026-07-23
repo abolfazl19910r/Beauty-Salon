@@ -72,7 +72,7 @@
                         <span class="selected-rating hidden" id="{{ str_replace('_rating','',$cat['name']) }}-text"></span>
                     </div>
                     <div class="star-rating" data-rating-name="{{ $cat['name'] }}">
-                        @for ($i = 1; $i <= 5; $i++)
+                        @for ($i = 5; $i >= 1; $i--)
                             <input type="radio" name="{{ $cat['name'] }}" id="{{ $cat['name'] }}_{{ $i }}" value="{{ $i }}" required>
                             <label for="{{ $cat['name'] }}_{{ $i }}">★</label>
                         @endfor
