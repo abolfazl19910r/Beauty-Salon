@@ -31,7 +31,7 @@ class ReportExportReadyNotification extends Notification implements ShouldQueue
             'message' => $isReady
                 ? "گزارش {$this->reportExport->report_type_text} ({$this->reportExport->format}) شما آماده‌ی دانلود است."
                 : "تولید گزارش {$this->reportExport->report_type_text} شما با خطا مواجه شد.",
-            'link' => route('admin.reports.exports.index'),
+            'link' => route('admin.reports.exports.index', [], false),
         ];
     }
 }

@@ -32,7 +32,7 @@ class NegativeReviewNotification extends Notification
                 $this->review->user->name,
                 $this->review->specialist->name
             ),
-            'link' => route('admin.reviews.show', $this->review->id),
+            'link' => route('admin.reviews.show', $this->review->id, false),
             'review_id' => $this->review->id,
             'rating' => $this->review->overall_rating,
             'specialist_id' => $this->review->specialist_id,

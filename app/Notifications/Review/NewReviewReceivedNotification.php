@@ -32,7 +32,7 @@ class NewReviewReceivedNotification extends Notification
                 $this->review->service->name,
                 $this->review->overall_rating
             ),
-            'link' => route('specialist.reviews.show', $this->review->id),
+            'link' => route('specialist.reviews.show', $this->review->id, false),
             'review_id' => $this->review->id,
             'rating' => $this->review->overall_rating,
             'type' => 'new_review'

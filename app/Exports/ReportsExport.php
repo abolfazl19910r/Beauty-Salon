@@ -24,37 +24,34 @@ class ReportsExport implements FromCollection, WithHeadings, WithMapping
 
     public function headings(): array
     {
-        return match($this->type) {
-            'daily' => ['تاریخ', 'تعداد نوبت', 'درآمد'],
-            'weekly' => ['شروع هفته', 'پایان هفته', 'تعداد نوبت', 'درآمد', 'میانگین نوبت'],
-            'monthly' => ['سال', 'ماه', 'تعداد نوبت', 'درآمد', 'میانگین نوبت'],
-            default => array_keys((array) $this->data[0] ?? [])
+        return match ($this->type) {
+            'daily'   => ['تاریخ', 'تعداد نوبت', 'درآمد', 'میانگین نوبت'],
+            'weekly'  => ['هفته', 'تعداد نوبت', 'درآمد', 'میانگین نوبت'],
+            'monthly' => ['ماه', 'تعداد نوبت', 'درآمد', 'میانگین نوبت'],
+            default   => array_keys((array) ($this->data[0] ?? [])),
         };
     }
 
+    /**
+     * Note: The output of the AdminReportService methods (dailyRevenue/weeklyRevenue/monthlyRevenue)
+     * are associative arrays with keys label, date (daily only), revenue, bookings —
+     * not objects with properties date/total_bookings/week_start/... . The previous map() did not match
+     * this and would have resulted in the Excel output being completely empty/zero.
+     */
     public function map($row): array
     {
-        return match($this->type) {
-            'daily' => [
-                $row->date,
-                $row->total_bookings,
-                $row->revenue
-            ],
-            'weekly' => [
-                $row->week_start,
-                $row->week_end,
-                $row->total_bookings,
-                $row->revenue,
-                $row->average_booking_value
-            ],
-            'monthly' => [
-                $row->year,
-                $row->month,
-                $row->total_bookings,
-                $row->revenue,
-                $row->average_booking_value
-            ],
-            default => (array) $row
-        };
+        $row = (array) $row;
+
+        $label    = $row['label'] ?? ($row['date'] ?? '');
+        $bookings = (int) ($row['bookings'] ?? 0);
+        $revenue  = (int) ($row['revenue'] ?? 0);
+        $average  = $bookings > 0 ? (int) round($revenue / $bookings) : 0;
+
+        return [
+            $label,
+            $bookings,
+            $revenue,
+            $average,
+        ];
     }
 }

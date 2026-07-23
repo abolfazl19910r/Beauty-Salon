@@ -32,7 +32,7 @@ class AdminNewWithdrawalRequestNotification extends Notification implements Shou
             'type' => 'new_withdrawal_request_admin',
             'withdrawal_request_id' => $this->withdrawalRequest->id,
             'message' => "درخواست برداشت جدید: {$amount} تومان توسط {$specialistName}",
-            'link' => route('admin.wallet.withdrawals.show', $this->withdrawalRequest->id),
+            'link' => route('admin.wallet.withdrawals.show', $this->withdrawalRequest->id, false),
         ];
     }
 }

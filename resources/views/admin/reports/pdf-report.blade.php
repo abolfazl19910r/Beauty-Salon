@@ -225,8 +225,7 @@
         <thead>
         <tr>
             @if(isset($rows[0]['date']))<th>تاریخ</th>@endif
-            @if(isset($rows[0]['week_start']))<th>هفته از</th>@endif
-            @if(isset($rows[0]['month']))<th>ماه</th>@endif
+            @if($type !== 'daily')<th>دوره</th>@endif
             <th>تعداد نوبت</th>
             <th>درآمد (تومان)</th>
         </tr>
@@ -240,13 +239,10 @@
                 @if(isset($row['date']))
                     <td>{{ jalali_date($row['date'], 'Y/m/d') }}</td>
                 @endif
-                @if(isset($row['week_start']))
-                    <td>{{ jalali_date($row['week_start'], 'Y/m/d') }}</td>
+                @if($type !== 'daily')
+                    <td>{{ $row['label'] ?? '' }}</td>
                 @endif
-                @if(isset($row['month']))
-                    <td>{{ $jm[($row['month'] - 1)] ?? '' }}</td>
-                @endif
-                <td>{{ number_format($row['total_bookings'] ?? 0) }}</td>
+                <td>{{ number_format($row['bookings'] ?? 0) }}</td>
                 <td>{{ number_format($row['revenue'] ?? 0) }}</td>
             </tr>
         @endforeach

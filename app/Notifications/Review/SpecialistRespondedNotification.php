@@ -31,7 +31,7 @@ class SpecialistRespondedNotification extends Notification
                 $this->review->specialist->name,
                 $this->review->service->name
             ),
-            'link' => route('bookings.show', $this->review->booking_id),
+            'link' => route('bookings.show', $this->review->booking_id, false),
             'review_id' => $this->review->id,
             'specialist_id' => $this->review->specialist_id,
             'type' => 'specialist_response'

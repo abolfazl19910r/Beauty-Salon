@@ -44,7 +44,7 @@ class AdminPaymentReceivedNotification extends Notification implements ShouldQue
             'reference_code' => $this->referenceCode(),
             'customer_name' => $this->customerName(),
             'specialist_name' => $this->specialistName(),
-            'link' => route('admin.bookings.show', $this->booking->id),
+            'link' => route('admin.bookings.show', $this->booking->id, false),
         ];
     }
 
