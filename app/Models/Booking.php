@@ -17,6 +17,8 @@ class Booking extends Model
 
     protected $casts = [
         'booking_time' => 'datetime',
+        'payment_details' => 'array',
+        'refund_details' => 'array',
     ];
 
     protected $fillable = [
@@ -69,7 +71,7 @@ class Booking extends Model
     {
         return $this->hasOne(LoyaltyPoint::class);
 
-        // یا اگر هر رزرو می‌تواند شامل چندین تراکنش امتیاز باشد:
+        // or if each reservation can contain multiple points transactions:
         // return $this->hasMany(LoyaltyPoint::class);
     }
 
@@ -79,7 +81,7 @@ class Booking extends Model
             return false;
         }
 
-        // نوبت باید حداقل ۲۴ ساعت دیگر باشد
+        // The appointment must be at least 24 hours away.
         return \Carbon\Carbon::parse($this->booking_time)
             ->gt(now()->addHours(24));
     }
