@@ -214,9 +214,18 @@
                                 <span class="persian-number" style="color:#DC2626;">- {{ number_format($booking->discount_amount) }} تومان</span>
                             </div>
                         @endif
+                        @php
+                            $paymentMethodLabels = [
+                                'wallet'         => 'کیف پول',
+                                'gateway'        => 'درگاه بانکی',
+                                'wallet_gateway' => 'ترکیبی (کیف پول + درگاه)',
+                                'full_discount'  => 'تخفیف کامل',
+                            ];
+                            $paymentMethodKey = $booking->payment_details['method'] ?? null;
+                        @endphp
                         <div class="flex justify-between py-1">
                             <span style="color:var(--admin-text-dim);">نوع پرداخت</span>
-                            <span style="color:var(--admin-text);">{{ $booking->payment_method ?? 'آنلاین' }}</span>
+                            <span style="color:var(--admin-text);">{{ $paymentMethodLabels[$paymentMethodKey] ?? 'آنلاین' }}</span>
                         </div>
                     </div>
                 </div>
