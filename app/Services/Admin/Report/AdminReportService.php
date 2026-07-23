@@ -88,8 +88,8 @@ class AdminReportService
             'cancelled_bookings'     => (clone $base)->where('status', 'cancelled')->count(),
             'pending_payments'       => (clone $base)->where('payment_status', 'unpaid')->sum('prepayment_amount'),
             'average_booking_value'  => (float) ((clone $base)->where('payment_status', 'paid')->avg('prepayment_amount') ?? 0),
-            'wallet_payments'        => (clone $base)->where('payment_method', 'wallet')->where('payment_status', 'paid')->sum('prepayment_amount'),
-            'gateway_payments'       => (clone $base)->where('payment_method', '!=', 'wallet')->where('payment_status', 'paid')->sum('prepayment_amount'),
+            'wallet_payments'        => (clone $base)->where('payment_details->method', 'wallet')->where('payment_status', 'paid')->sum('prepayment_amount'),
+            'gateway_payments'       => (clone $base)->where('payment_details->method', '!=', 'wallet')->where('payment_status', 'paid')->sum('prepayment_amount'),
             'total_discounts'        => (clone $base)->sum('discount_amount'),
         ];
     }
@@ -212,9 +212,9 @@ class AdminReportService
         }
 
         $gateway = Booking::where('payment_status', 'paid')
-            ->where('payment_method', '!=', 'wallet')->count();
+            ->where('payment_details->method', '!=', 'wallet')->count();
         $wallet  = Booking::where('payment_status', 'paid')
-            ->where('payment_method', 'wallet')->count();
+            ->where('payment_details->method', 'wallet')->count();
 
         return [
             'gateway'          => $gateway,
