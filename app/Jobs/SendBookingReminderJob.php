@@ -49,7 +49,7 @@ class SendBookingReminderJob implements ShouldQueue
 
         $customerMessage = sprintf(
             "%s عزیز، سلام 👋\n\n".
-            "⏰ یادآوری نوبت فردا:\n\n".
+            "⏰ یادآوری نوبت:\n\n".
             "📋 سرویس: %s\n".
             "📅 تاریخ: %s\n".
             "🕐 ساعت: %s\n".
@@ -67,7 +67,7 @@ class SendBookingReminderJob implements ShouldQueue
 
         $specialistMessage = sprintf(
             "%s عزیز، سلام 👋\n\n".
-            "⏰ یادآوری نوبت فردا:\n\n".
+            "⏰ یادآوری نوبت:\n\n".
             "👤 مشتری: %s\n".
             "📱 تماس: %s\n".
             "📋 سرویس: %s\n".
