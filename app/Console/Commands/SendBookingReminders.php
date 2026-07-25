@@ -13,8 +13,16 @@ class SendBookingReminders extends Command
 
     public function handle()
     {
-        $bookings = Booking::where('booking_time', '>', now())
-            ->where('booking_time', '<', now()->addDay())
+        // Update (2026-07-25): Previously, this command would run once a day (18:00)
+        // and would remind all shifts for the next 24 hours — i.e. for morning shifts
+        // that day, there would be no reminder at all (because by the time the command was run, they would have expired).
+        // Now this command runs every few minutes (look at the bootstrap schedule) and
+        // only picks shifts that are "55-65 minutes away" — i.e. each shift
+        // gets a reminder just once, exactly 1 hour before it. The 10-minute interval was intentionally
+        // chosen to overlap with the command's execution interval (every 5 or 10 minutes) and
+        // no shifts are missed between two consecutive runs.
+        $bookings = Booking::where('booking_time', '>=', now()->addMinutes(55))
+            ->where('booking_time', '<=', now()->addMinutes(65))
             ->where('status', 'confirmed')
             ->where('reminder_sent', false)
             ->select('id')

@@ -54,9 +54,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // was not registered in bootstrap/providers.php, this whole chain from day one
         // was ineffective and the queue reminder was never automatically sent. replaced with
         // Direct settlement, like the wallet:settle-pending pattern above.
+        // Update (2026-07-25): Changed from dailyAt('18:00') (once a day, for all
+        // shifts in the next 24 hours) to every 10 minutes to align with the new logic of the command
+        // (55-65 minute window before each shift) — meaning each shift will get a reminder exactly
+        // about 1 hour before, not just once a day for all shifts tomorrow.
         $schedule->command('bookings:send-reminders')
-            ->dailyAt('18:00')
-            ->timezone('Asia/Tehran')
+            ->everyTenMinutes()
             ->withoutOverlapping()
             ->onOneServer();
         $schedule->command('reports:cleanup-exports')
