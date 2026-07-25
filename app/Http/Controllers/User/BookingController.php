@@ -31,6 +31,18 @@ class BookingController extends Controller
 
         $query = Booking::with(['service', 'specialist'])
             ->where('user_id', $user->id)
+            // Prioritize by status: Approved/Completed (1) → Awaiting payment/approval (2) → Canceled (3)
+            // Within each group, the most recent appointment (based on appointment time) is placed higher.
+            ->orderByRaw("
+                CASE `status`
+                    WHEN 'confirmed' THEN 1
+                    WHEN 'completed' THEN 1
+                    WHEN 'pending' THEN 2
+                    WHEN 'pending_payment' THEN 2
+                    WHEN 'cancelled' THEN 3
+                    ELSE 4
+                END
+            ")
             ->orderBy('booking_time', 'desc');
 
         if ($request->filled('status')) {
@@ -155,7 +167,7 @@ class BookingController extends Controller
     /**
      * Upcoming Turns — API endpoint.
      * * Old name in controller: upcoming() — fixed to be consistent with route.
- */
+     */
     public function getUpcomingBookings(): JsonResponse
     {
         $bookings = Booking::with(['service', 'specialist'])
@@ -174,7 +186,7 @@ class BookingController extends Controller
     /**
      * Past Turns — API endpoint.
      * * Old name in controller: past() — fixed to be consistent with route.
- */
+     */
     public function getPastBookings(): JsonResponse
     {
         $bookings = Booking::with(['service', 'specialist'])
