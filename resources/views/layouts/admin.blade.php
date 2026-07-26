@@ -759,7 +759,7 @@
             .catch(error => console.error('Error fetching notification count:', error));
     }
 
-    // ⭐ The admin/notifications/index.blade.php and Show.blade.php pages already called
+    // ⭐ The admin/notifications/index.blade.php and show.blade.php pages already called
     // window.refreshNotificationCount() after each operation (read/toggle) to update the header counter badge without requiring a full page refresh — but this
     // function was not defined anywhere in the project, so the badge update only happened on a full page refresh (or the 60-second timer
     // below). It is now connected to fetchUnreadCount with an alias.
