@@ -89,7 +89,21 @@ class AdminReportService
             'pending_payments'       => (clone $base)->where('payment_status', 'unpaid')->sum('prepayment_amount'),
             'average_booking_value'  => (float) ((clone $base)->where('payment_status', 'paid')->avg('prepayment_amount') ?? 0),
             'wallet_payments'        => (clone $base)->where('payment_details->method', 'wallet')->where('payment_status', 'paid')->sum('prepayment_amount'),
-            'gateway_payments'       => (clone $base)->where('payment_details->method', '!=', 'wallet')->where('payment_status', 'paid')->sum('prepayment_amount'),
+            /**
+             * R-Observers: previously this summed everything with method != 'wallet' as "gateway
+             * revenue" — including 'full_discount' (zero real money moved) and, after the
+             * AdminPaymentController fix in this same phase, admin-manually-recorded cash/card/
+             * transfer payments too. None of those went through the actual bank gateway. Since this
+             * finding was discovered while payment_details->method was already being populated
+             * correctly elsewhere, gateway_payments now only counts the real online-gateway method,
+             * and admin-manual payments get their own bucket so reports don't misrepresent them as
+             * gateway revenue (this endpoint isn't currently wired into any Blade/JS consumer, but
+             * the field should be correct regardless of whether it's rendered yet).
+             */
+            'gateway_payments'       => (clone $base)->whereIn('payment_details->method', ['gateway', 'wallet_gateway'])
+                ->where('payment_status', 'paid')->sum('prepayment_amount'),
+            'admin_manual_payments'  => (clone $base)->where('payment_details->admin_recorded', true)
+                ->where('payment_status', 'paid')->sum('prepayment_amount'),
             'total_discounts'        => (clone $base)->sum('discount_amount'),
         ];
     }
@@ -203,24 +217,27 @@ class AdminReportService
             });
     }
 
-    public function paymentBreakdown(): array
+    public function paymentBreakdown(Carbon $start, Carbon $end): array
     {
-        $total = Booking::where('payment_status', 'paid')->count();
+        $base = Booking::whereBetween('created_at', [$start, $end])->where('payment_status', 'paid');
+
+        $total = (clone $base)->count();
 
         if ($total === 0) {
-            return ['gateway' => 0, 'wallet' => 0, 'mixed' => 0, 'total' => 0];
+            return ['gateway' => 0, 'wallet' => 0, 'admin_manual' => 0, 'mixed' => 0, 'total' => 0];
         }
 
-        $gateway = Booking::where('payment_status', 'paid')
-            ->where('payment_details->method', '!=', 'wallet')->count();
-        $wallet  = Booking::where('payment_status', 'paid')
-            ->where('payment_details->method', 'wallet')->count();
+        $gateway = (clone $base)->whereIn('payment_details->method', ['gateway', 'wallet_gateway'])->count();
+        $wallet  = (clone $base)->where('payment_details->method', 'wallet')->count();
+        $adminManual = (clone $base)->where('payment_details->admin_recorded', true)->count();
 
         return [
             'gateway'          => $gateway,
             'gateway_percent'  => round($gateway / $total * 100, 1),
             'wallet'           => $wallet,
             'wallet_percent'   => round($wallet / $total * 100, 1),
+            'admin_manual'         => $adminManual,
+            'admin_manual_percent' => round($adminManual / $total * 100, 1),
             'total'            => $total,
         ];
     }
