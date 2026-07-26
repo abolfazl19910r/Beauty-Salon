@@ -388,7 +388,7 @@ class AdminReportService
             'full_discount'  => 'تخفیف کامل (بدون پرداخت)',
         ];
 
-        return Booking::with(['user:id,name,phone', 'specialist:id,name', 'service:id,name'])
+        return Booking::with(['user:id,name,phone', 'specialist:id,name,commission_rate', 'service:id,name'])
             ->whereBetween('created_at', [$start, $end])
             ->orderBy('created_at')
             ->get()
@@ -396,20 +396,35 @@ class AdminReportService
                 $method = $booking->payment_details['method'] ?? null;
                 $isAdminManual = (bool) ($booking->payment_details['admin_recorded'] ?? false);
 
+                $specialistShare = null;
+                if ($booking->payment_status === 'paid' && $booking->specialist) {
+                    $rate = $booking->specialist->getEffectiveCommissionRate();
+                    $specialistShare = (int) round($booking->prepayment_amount * (1 - $rate / 100));
+                }
+
                 return [
-                    'created_date'   => jalali_date($booking->created_at, 'Y/m/d'),
-                    'created_time'   => $booking->created_at->format('H:i'),
-                    'customer'       => $booking->user->name ?? '—',
-                    'service'        => $booking->service->name ?? '—',
-                    'specialist'     => $booking->specialist->name ?? '—',
-                    'status'         => $statusLabels[$booking->status] ?? $booking->status,
-                    'payment_status' => $paymentStatusLabels[$booking->payment_status] ?? $booking->payment_status,
-                    'payment_method' => $isAdminManual
+                    'created_date'      => jalali_date($booking->created_at, 'Y/m/d'),
+                    'created_time'      => $booking->created_at->format('H:i'),
+                    'booking_date'      => $booking->booking_time ? jalali_date($booking->booking_time, 'Y/m/d') : '—',
+                    'booking_time'      => $booking->booking_time ? $booking->booking_time->format('H:i') : '—',
+                    'customer'          => $booking->user->name ?? '—',
+                    'customer_phone'    => $booking->user->phone ?? '—',
+                    'service'           => $booking->service->name ?? '—',
+                    'specialist'        => $booking->specialist->name ?? '—',
+                    'status'            => $statusLabels[$booking->status] ?? $booking->status,
+                    'payment_status'    => $paymentStatusLabels[$booking->payment_status] ?? $booking->payment_status,
+                    'payment_method'    => $isAdminManual
                         ? 'ثبت دستی ادمین'
                         : ($paymentMethodLabels[$method] ?? '—'),
-                    'amount'         => (int) $booking->prepayment_amount,
-                    'discount_code'  => $booking->discount_code ?? '—',
-                    'discount_amount' => (int) $booking->discount_amount,
+                    'amount'            => (int) $booking->prepayment_amount,
+                    'specialist_share'  => $specialistShare,
+                    'discount_code'     => $booking->discount_code ?? '—',
+                    'discount_amount'   => (int) $booking->discount_amount,
+                    'payment_reference' => $booking->payment_reference ?? '—',
+                    'rating'            => $booking->rating ?? '—',
+                    'cancellation_reason' => $booking->status === 'cancelled' ? ($booking->cancellation_reason ?? '—') : '—',
+                    'refund_status'     => $booking->refund_status ?? '—',
+                    'refunded_amount'   => $booking->refunded_amount !== null ? (int) $booking->refunded_amount : null,
                 ];
             });
     }

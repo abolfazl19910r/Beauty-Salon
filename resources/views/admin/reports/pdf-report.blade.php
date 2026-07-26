@@ -151,6 +151,19 @@
             direction: rtl;
         }
 
+        /* ── Raw bookings appendix (compact, landscape) ── */
+        table.raw-table th {
+            padding: 5px 6px;
+            font-size: 7.5pt;
+        }
+        table.raw-table td {
+            padding: 4px 6px;
+            font-size: 7.5pt;
+        }
+        .status-bad  { background: #fef2f2 !important; color: #991b1b !important; }
+        .status-warn { background: #fffbeb !important; color: #92400e !important; }
+        .status-good { background: #f0fdf4 !important; color: #166534 !important; }
+
         /* ── Footer ── */
         .footer {
             position: fixed;
@@ -332,6 +345,84 @@
     <div class="f-right">سیستم مدیریت سالن زیبایی راستا</div>
     <div class="f-left">صفحه {PAGENO} از {nbpg}</div>
 </div>
+
+{{--
+    Raw bookings appendix — every booking in the period, any status (matches the Excel "جزئیات خام
+    نوبت‌ها" sheet exactly), so numbers in the summary sections above (e.g. کل نوبت‌ها vs. paid-only
+    breakdowns) can be manually reconciled against real rows instead of trusted blindly. Landscape
+    orientation + compact font because 20 columns don't fit a portrait A4 page at readable size.
+--}}
+@php $rawBookings = $data['rawBookings'] ?? collect(); @endphp
+@if($rawBookings->count())
+    <pagebreak orientation="L" />
+    <div class="section-title">جزئیات خام نوبت‌ها (پیوست)</div>
+    <table class="data-table raw-table">
+        <thead>
+        <tr>
+            <th>تاریخ ثبت</th>
+            <th>ساعت ثبت</th>
+            <th>تاریخ نوبت</th>
+            <th>ساعت نوبت</th>
+            <th>مشتری</th>
+            <th>شماره تماس</th>
+            <th>خدمت</th>
+            <th>متخصص</th>
+            <th>وضعیت نوبت</th>
+            <th>وضعیت پرداخت</th>
+            <th>روش پرداخت</th>
+            <th>مبلغ (تومان)</th>
+            <th>سهم متخصص (تومان)</th>
+            <th>کد تخفیف</th>
+            <th>مبلغ تخفیف</th>
+            <th>کد پیگیری</th>
+            <th>امتیاز</th>
+            <th>دلیل لغو</th>
+            <th>بازگشت وجه</th>
+            <th>مبلغ بازگشتی</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach($rawBookings as $b)
+            @php
+                $b = (array) $b;
+                $statusClass = match ($b['status'] ?? '') {
+                    'در انتظار پرداخت', 'لغو شده' => 'status-bad',
+                    'در انتظار' => 'status-warn',
+                    'تایید شده', 'انجام شده' => 'status-good',
+                    default => '',
+                };
+                $paymentStatusClass = match ($b['payment_status'] ?? '') {
+                    'پرداخت‌نشده' => 'status-bad',
+                    'پرداخت‌شده' => 'status-good',
+                    default => '',
+                };
+            @endphp
+            <tr>
+                <td>{{ $b['created_date'] ?? '' }}</td>
+                <td>{{ $b['created_time'] ?? '' }}</td>
+                <td>{{ $b['booking_date'] ?? '' }}</td>
+                <td>{{ $b['booking_time'] ?? '' }}</td>
+                <td>{{ $b['customer'] ?? '' }}</td>
+                <td>{{ $b['customer_phone'] ?? '' }}</td>
+                <td>{{ $b['service'] ?? '' }}</td>
+                <td>{{ $b['specialist'] ?? '' }}</td>
+                <td class="{{ $statusClass }}">{{ $b['status'] ?? '' }}</td>
+                <td class="{{ $paymentStatusClass }}">{{ $b['payment_status'] ?? '' }}</td>
+                <td>{{ $b['payment_method'] ?? '' }}</td>
+                <td>{{ number_format($b['amount'] ?? 0) }}</td>
+                <td>{{ $b['specialist_share'] !== null ? number_format($b['specialist_share']) : '—' }}</td>
+                <td>{{ $b['discount_code'] ?? '' }}</td>
+                <td>{{ number_format($b['discount_amount'] ?? 0) }}</td>
+                <td>{{ $b['payment_reference'] ?? '' }}</td>
+                <td>{{ $b['rating'] ?? '' }}</td>
+                <td>{{ $b['cancellation_reason'] ?? '' }}</td>
+                <td>{{ $b['refund_status'] ?? '' }}</td>
+                <td>{{ $b['refunded_amount'] !== null ? number_format($b['refunded_amount']) : '—' }}</td>
+            </tr>
+        @endforeach
+        </tbody>
+    </table>
+@endif
 
 </body>
 </html>

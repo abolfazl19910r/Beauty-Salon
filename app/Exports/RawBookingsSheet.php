@@ -42,24 +42,35 @@ class RawBookingsSheet implements FromCollection, WithColumnWidths, WithEvents, 
         return [
             $row['created_date'] ?? '',
             $row['created_time'] ?? '',
+            $row['booking_date'] ?? '',
+            $row['booking_time'] ?? '',
             $row['customer'] ?? '',
+            $row['customer_phone'] ?? '',
             $row['service'] ?? '',
             $row['specialist'] ?? '',
             $row['status'] ?? '',
             $row['payment_status'] ?? '',
             $row['payment_method'] ?? '',
             $row['amount'] ?? 0,
+            $row['specialist_share'] ?? '—',
             $row['discount_code'] ?? '',
             $row['discount_amount'] ?? 0,
+            $row['payment_reference'] ?? '',
+            $row['rating'] ?? '',
+            $row['cancellation_reason'] ?? '',
+            $row['refund_status'] ?? '',
+            $row['refunded_amount'] ?? '—',
         ];
     }
 
     public function headings(): array
     {
         return [
-            'تاریخ ثبت', 'ساعت', 'مشتری', 'خدمت', 'متخصص',
+            'تاریخ ثبت', 'ساعت ثبت', 'تاریخ نوبت', 'ساعت نوبت',
+            'مشتری', 'شماره تماس', 'خدمت', 'متخصص',
             'وضعیت نوبت', 'وضعیت پرداخت', 'روش پرداخت',
-            'مبلغ (تومان)', 'کد تخفیف', 'مبلغ تخفیف (تومان)',
+            'مبلغ (تومان)', 'سهم متخصص (تومان)', 'کد تخفیف', 'مبلغ تخفیف (تومان)',
+            'کد پیگیری پرداخت', 'امتیاز', 'دلیل لغو', 'وضعیت بازگشت وجه', 'مبلغ بازگشتی (تومان)',
         ];
     }
 
@@ -71,8 +82,11 @@ class RawBookingsSheet implements FromCollection, WithColumnWidths, WithEvents, 
     public function columnWidths(): array
     {
         return [
-            'A' => 13, 'B' => 9, 'C' => 18, 'D' => 18, 'E' => 14,
-            'F' => 16, 'G' => 16, 'H' => 18, 'I' => 14, 'J' => 13, 'K' => 16,
+            'A' => 13, 'B' => 10, 'C' => 13, 'D' => 10,
+            'E' => 18, 'F' => 14, 'G' => 18, 'H' => 14,
+            'I' => 16, 'J' => 16, 'K' => 18,
+            'L' => 14, 'M' => 16, 'N' => 13, 'O' => 16,
+            'P' => 16, 'Q' => 9, 'R' => 20, 'S' => 16, 'T' => 16,
         ];
     }
 
@@ -83,7 +97,7 @@ class RawBookingsSheet implements FromCollection, WithColumnWidths, WithEvents, 
                 $sheet = $event->sheet->getDelegate();
                 $lastRow = 1 + $this->bookings->count();
 
-                $this->styleReportSheet($sheet, 11, $lastRow);
+                $this->styleReportSheet($sheet, 20, $lastRow);
 
                 // Status highlight map: [background hex, text hex]
                 $statusColors = [
@@ -104,11 +118,11 @@ class RawBookingsSheet implements FromCollection, WithColumnWidths, WithEvents, 
 
                     if (isset($statusColors[$booking['status'] ?? ''])) {
                         [$bg, $text] = $statusColors[$booking['status']];
-                        $this->highlightCells($sheet, "F{$row}", $bg, $text);
+                        $this->highlightCells($sheet, "I{$row}", $bg, $text);
                     }
                     if (isset($paymentStatusColors[$booking['payment_status'] ?? ''])) {
                         [$bg, $text] = $paymentStatusColors[$booking['payment_status']];
-                        $this->highlightCells($sheet, "G{$row}", $bg, $text);
+                        $this->highlightCells($sheet, "J{$row}", $bg, $text);
                     }
                 }
             },
