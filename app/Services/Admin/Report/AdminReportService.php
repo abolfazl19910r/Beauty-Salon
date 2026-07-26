@@ -337,7 +337,8 @@ class AdminReportService
     public function buildExportData(Carbon $start, Carbon $end, string $type): array
     {
         return [
-            'summary'     => $this->getFinancialSummary($start, $end),
+            'summary'          => $this->getFinancialSummary($start, $end),
+            'paymentBreakdown' => $this->paymentBreakdown($start, $end),
             'specialists' => Specialist::withCount(['bookings as total_bookings' => fn ($q) => $q->whereBetween('created_at', [$start, $end])])
                 ->withSum(['bookings as total_revenue' => fn ($q) =>
                 $q->whereBetween('created_at', [$start, $end])->where('payment_status', 'paid')

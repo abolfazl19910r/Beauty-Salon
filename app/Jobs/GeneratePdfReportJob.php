@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Exports\ReportsExport;
+use App\Exports\AdminReportExport;
 use App\Models\ReportExport;
 use App\Notifications\Admin\Report\Export\ReportExportReadyNotification;
 use App\Services\Admin\Report\AdminReportService;
@@ -103,7 +103,12 @@ class GeneratePdfReportJob implements ShouldQueue
         $relativePath = "report-exports/{$reportExport->id}.xlsx";
 
         Excel::store(
-            new ReportsExport($exportData['rows'], $reportExport->report_type),
+            new AdminReportExport(
+                $exportData['rows'],
+                $reportExport->report_type,
+                $exportData['summary'],
+                $exportData['paymentBreakdown'],
+            ),
             $relativePath,
             'local'
         );

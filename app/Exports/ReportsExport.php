@@ -5,8 +5,9 @@ namespace App\Exports;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithTitle;
 
-class ReportsExport implements FromCollection, WithHeadings, WithMapping
+class ReportsExport implements FromCollection, WithHeadings, WithMapping, WithTitle
 {
     protected $data;
     protected $type;
@@ -53,5 +54,10 @@ class ReportsExport implements FromCollection, WithHeadings, WithMapping
             $revenue,
             $average,
         ];
+    }
+
+    public function title(): string
+    {
+        return 'روند درآمد';
     }
 }

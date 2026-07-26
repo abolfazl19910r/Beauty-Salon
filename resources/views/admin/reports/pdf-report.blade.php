@@ -217,6 +217,31 @@
     </table>
 @endif
 
+{{-- Payment method breakdown (wallet / gateway / admin-manual) — same data now shown in admin/reports/index.blade.php --}}
+@php $pb = $data['paymentBreakdown'] ?? []; @endphp
+@if(!empty($pb) && ($pb['total'] ?? 0) > 0)
+    <div class="section-title">نحوه‌ی پرداخت نوبت‌های پرداخت‌شده</div>
+    <table class="stats-table">
+        <tr>
+            <td>
+                <span class="stat-label">کیف پول</span>
+                <span class="stat-value">{{ number_format($pb['wallet']) }}</span>
+                <span class="stat-unit">نوبت ({{ $pb['wallet_percent'] }}٪)</span>
+            </td>
+            <td>
+                <span class="stat-label">درگاه بانکی</span>
+                <span class="stat-value">{{ number_format($pb['gateway']) }}</span>
+                <span class="stat-unit">نوبت ({{ $pb['gateway_percent'] }}٪)</span>
+            </td>
+            <td>
+                <span class="stat-label">ثبت دستی ادمین</span>
+                <span class="stat-value">{{ number_format($pb['admin_manual']) }}</span>
+                <span class="stat-unit">نوبت ({{ $pb['admin_manual_percent'] }}٪)</span>
+            </td>
+        </tr>
+    </table>
+@endif
+
 {{-- Income table --}}
 @php $rows = $data['rows'] ?? collect(); @endphp
 @if($rows->count())
