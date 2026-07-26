@@ -67,7 +67,7 @@ class AdminReportRevenueController extends Controller
                     now()->startOfYear(), now()->endOfDay()
                 ),
                 'service_revenue'  => $this->reportService->serviceRevenue($start, $end),
-                'payment_breakdown'=> $this->reportService->paymentBreakdown(),
+                'payment_breakdown'=> $this->reportService->paymentBreakdown($start, $end),
                 'trends'           => $this->reportService->calcFinancialTrends($startDate, $endDate),
             ],
             'meta' => ['period' => ['start' => $startDate, 'end' => $endDate]],

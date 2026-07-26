@@ -205,6 +205,39 @@
                     <h3 class="text-base font-semibold mt-8 mb-4" style="color:var(--admin-text)">گردش مالی ماهانه (بر اساس بازه انتخابی)</h3>
                     <div style="height:260px"><canvas id="monthlyChart"></canvas></div>
                 @endif
+
+                {{-- Payment method breakdown (wallet / gateway / admin-manual) — R-Observers --}}
+                <h3 class="text-base font-semibold mt-8 mb-4" style="color:var(--admin-text)">نحوه‌ی پرداخت نوبت‌های پرداخت‌شده (بازه‌ی انتخابی)</h3>
+                @if(($paymentBreakdown['total'] ?? 0) > 0)
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div class="stat-card">
+                            <div class="label">کیف پول</div>
+                            <div class="value" style="color:#0284c7">
+                                {{ number_format($paymentBreakdown['wallet']) }} نوبت
+                                <span class="text-xs font-normal" style="color:var(--admin-text-dim)">({{ $paymentBreakdown['wallet_percent'] }}٪)</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="label">درگاه بانکی</div>
+                            <div class="value" style="color:#16a34a">
+                                {{ number_format($paymentBreakdown['gateway']) }} نوبت
+                                <span class="text-xs font-normal" style="color:var(--admin-text-dim)">({{ $paymentBreakdown['gateway_percent'] }}٪)</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="label">ثبت دستی توسط ادمین</div>
+                            <div class="value" style="color:#d97706">
+                                {{ number_format($paymentBreakdown['admin_manual']) }} نوبت
+                                <span class="text-xs font-normal" style="color:var(--admin-text-dim)">({{ $paymentBreakdown['admin_manual_percent'] }}٪)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs mt-2" style="color:var(--admin-text-dim)">
+                        نوبت‌های پرداخت‌شده با تخفیف کامل (۱۰۰٪) در این تفکیک شمرده نمی‌شوند، چون هیچ مبلغی واقعاً جابه‌جا نشده است.
+                    </p>
+                @else
+                    <div class="empty-state">داده‌ای برای این بازه زمانی وجود ندارد</div>
+                @endif
             </div>
 
             {{-- Experts' Fever --}}

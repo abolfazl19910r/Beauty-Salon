@@ -35,6 +35,7 @@ class AdminReportsController extends Controller
             'satisfaction'     => $this->reportService->customerSatisfaction($start, $end),
             'monthlyBreakdown' => $this->reportService->monthlyBreakdown($start, $end),
             'serviceRevenue'   => $this->reportService->serviceRevenue($start, $end),
+            'paymentBreakdown' => $this->reportService->paymentBreakdown($start, $end),
             'startDate'        => $startDate,
             'endDate'          => $endDate,
             'type'             => $type,
