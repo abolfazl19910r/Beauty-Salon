@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Events\Payment\PaymentSucceeded;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Services\PaymentService;
@@ -46,8 +45,6 @@ class PaymentController extends Controller
                     ]);
 
                 });
-
-                event(new PaymentSucceeded($booking));
 
                 return redirect()->route('bookings.success', ['id' => $booking->id])
                     ->with('success', 'نوبت شما با تخفیف کامل با موفقیت ثبت شد.');
@@ -165,10 +162,6 @@ class PaymentController extends Controller
                 throw new \Exception($result['message'] ?? 'خطا در اتصال به درگاه پرداخت');
             });
 
-            if ($paidFully) {
-                event(new PaymentSucceeded($booking));
-            }
-
             return $response;
 
         } catch (\Exception $e) {
@@ -217,8 +210,6 @@ class PaymentController extends Controller
                             'payment_details' => $paymentDetails
                         ]);
                     });
-
-                    event(new PaymentSucceeded($booking));
                 }
 
                 return redirect()->route('bookings.success', ['id' => $booking->id])

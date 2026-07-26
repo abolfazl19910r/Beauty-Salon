@@ -3,6 +3,7 @@
 namespace App\Observers\Booking;
 
 use App\Events\Booking\BookingCreated;
+use App\Events\Payment\PaymentSucceeded;
 use App\Models\AdminWallet;
 use App\Models\Booking;
 use App\Models\LoyaltySetting;
@@ -33,7 +34,7 @@ class BookingObserver
      * first. By putting dispatch here
      * (not in the controller/service), both bookings from the customer and manual booking creation by
      * the admin (AdminBookingController::store()) are covered equally.
- */
+     */
     public function created(Booking $booking): void
     {
         try {
@@ -78,6 +79,26 @@ class BookingObserver
         }
 
         Cache::put($cacheKey, true, 180);
+
+        /**
+         * R-Observers: Previously `event(new PaymentSucceeded($booking))` was dispatched manually
+         * from 3 separate call sites inside PaymentController (process/processWithWallet/callback).
+         * A 4th real payment path — SecurePaymentController::verify() (routed under payments/secure,
+         * 2FA-protected) — also marks the booking as paid but never dispatched this event, so the
+         * admin "new payment received" notification (SendAdminPaymentNotification) was silently
+         * skipped for that path. Since this idempotent cache guard already fires exactly once per
+         * payment regardless of which controller triggered it, dispatching here (not in each
+         * controller) is the single source of truth — the same reasoning already applied to
+         * BookingCreated in R-Events — and closes the gap for every current and future payment path.
+         */
+        try {
+            event(new PaymentSucceeded($booking));
+        } catch (\Exception $e) {
+            Log::error('❌ Failed to dispatch PaymentSucceeded event', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         $this->addIncomeAndCommission($booking);
 
@@ -347,7 +368,7 @@ class BookingObserver
      * (5 + floor(prepayment/10000)) never reacted to admin settings.
      * The constant component "5+" was intentionally kept because it is considered behavior according to the project documentation;
      * Only the denominator is read from loyalty_settings (points_per_amount key).
- */
+     */
     protected function addLoyaltyPoints(Booking $booking): void
     {
         try {
