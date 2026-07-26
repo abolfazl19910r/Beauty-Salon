@@ -17,9 +17,6 @@ Route::name('api.')->group(function () {
     if (file_exists(__DIR__.'/api/public/announcements.php')) {
         require __DIR__.'/api/public/announcements.php';
     }
-    if (file_exists(__DIR__.'/api/public/blog.php')) {
-        require __DIR__.'/api/public/blog.php';
-    }
 
     Route::middleware(app()->environment('production') ? 'auth:sanctum' : [])->group(function () {
         if (file_exists(__DIR__.'/api/auth/security.php')) {
