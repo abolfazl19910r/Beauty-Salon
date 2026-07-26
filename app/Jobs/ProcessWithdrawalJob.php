@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Events\Withdrawal\Approved\WithdrawalApproved;
+use App\Events\Withdrawal\Rejected\WithdrawalRejected;
 use App\Models\WithdrawalRequest;
 use App\Services\Payment\ZarinpalPayoutService;
 use Illuminate\Bus\Queueable;
@@ -99,6 +100,19 @@ class ProcessWithdrawalJob implements ShouldQueue
                 'withdrawal_request_id' => $withdrawalRequest->id,
                 'message' => $result['message'] ?? null,
             ]);
+
+            /**
+             * R-Observers: Previously this branch set the request to 'failed' and logged the error,
+             * but never told the specialist — unlike the manual reject path in
+             * WalletAdminService::rejectWithdrawal(), which always dispatches WithdrawalRejected.
+             * The specialist would only discover the auto-payout had failed by refreshing the wallet
+             * page themselves. Dispatching the same event here reuses the existing notification/SMS
+             * listener (SendWithdrawalRejectedNotification) without any new class.
+             */
+            event(new WithdrawalRejected(
+                $withdrawalRequest,
+                $result['message'] ?? 'خطای نامشخص در تسویه‌ی آنلاین'
+            ));
         });
     }
 
