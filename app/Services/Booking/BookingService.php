@@ -154,8 +154,26 @@ class BookingService
             return ['success' => false, 'message' => 'این نوبت قبلاً پرداخت شده است.'];
         }
 
-        return DB::transaction(function () use ($booking, $discountCode, $code) {
-            $result = $this->discountCalculator->calculate($discountCode, (float) $booking->prepayment_amount);
+        /**
+         * R-Observers: the checks above (isValid/canBeUsedBy) are only a fast pre-check outside
+         * the transaction — two concurrent requests for the same near-exhausted code could both
+         * pass them before either increments used_count, pushing it past max_uses (the exact
+         * "used_count overflow" scenario flagged for review in this phase). The row is re-locked
+         * and re-validated here, inside the transaction, right before incrementing, so only one
+         * of two concurrent requests can actually consume the last remaining use.
+         */
+        return DB::transaction(function () use ($booking, $code) {
+            $lockedDiscountCode = $this->discountCode->where('code', $code)->lockForUpdate()->first();
+
+            if (! $lockedDiscountCode || ! $lockedDiscountCode->isValid()) {
+                return ['success' => false, 'message' => 'کد تخفیف نامعتبر است.'];
+            }
+
+            if (! $lockedDiscountCode->canBeUsedBy($booking->user_id)) {
+                return ['success' => false, 'message' => 'این کد تخفیف متعلق به شما نیست.'];
+            }
+
+            $result = $this->discountCalculator->calculate($lockedDiscountCode, (float) $booking->prepayment_amount);
 
             $booking->update([
                 'discount_code'     => $code,
@@ -163,7 +181,7 @@ class BookingService
                 'prepayment_amount' => $result['final_amount'],
             ]);
 
-            $discountCode->incrementUsage();
+            $lockedDiscountCode->incrementUsage();
 
             return [
                 'success'         => true,
@@ -237,7 +255,20 @@ class BookingService
             ]);
 
             if ($discountCode && $prepaymentData['discount_code']) {
-                $this->discountCode->where('code', $discountCode)->increment('used_count');
+                $lockedDiscountCode = $this->discountCode->where('code', $discountCode)->lockForUpdate()->first();
+
+                if ($lockedDiscountCode && $lockedDiscountCode->isValid()) {
+                    $lockedDiscountCode->incrementUsage();
+                } else {
+                    // Extremely rare race: the code was exhausted by a concurrent request between the
+                    // pre-transaction calculatePrepayment() check and this lock. The booking keeps the
+                    // discount amount already calculated (so the customer isn't punished for a race
+                    // they didn't cause), but we deliberately do not push used_count past max_uses.
+                    Log::warning('⚠️ کد تخفیف بین محاسبه و رزرو نهایی به حداکثر استفاده رسید', [
+                        'discount_code' => $discountCode,
+                        'booking_id'    => $booking->id,
+                    ]);
+                }
             }
 
             $booking->load(['service', 'specialist', 'user']);
