@@ -2,9 +2,14 @@
 
 namespace App\Exports;
 
+use App\Exports\Concerns\AppliesReportSheetStyle;
 use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use Maatwebsite\Excel\Events\AfterSheet;
 
 /**
  * R-Observers: previously the Excel export only contained the revenue trend rows (date/bookings/
@@ -13,9 +18,18 @@ use Maatwebsite\Excel\Concerns\WithTitle;
  * incorrectly before this phase's fix) surfaced via an API endpoint nothing actually called.
  * This sheet mirrors the same breakdown now shown on admin/reports/index.blade.php and in the PDF
  * export, so all three surfaces (page, PDF, Excel) stay consistent.
+ *
+ * WithStrictNullComparison: without this, PhpSpreadsheet's fromArray() uses loose (==) comparison
+ * against null when deciding whether a cell is "empty" — and in PHP, `0 == null` is true. So any
+ * category that genuinely has zero bookings (e.g. "ثبت دستی ادمین" on a day with no admin-recorded
+ * payments) had its count/amount cells silently rendered blank instead of showing 0, indistinguishable
+ * from missing data. This is a documented upstream behavior (see Laravel Excel's "strict null
+ * comparisons" docs / PHPOffice/PhpSpreadsheet#449), not something specific to this sheet's data.
  */
-class PaymentBreakdownSheet implements FromArray, WithHeadings, WithTitle
+class PaymentBreakdownSheet implements FromArray, WithColumnWidths, WithEvents, WithHeadings, WithStrictNullComparison, WithTitle
 {
+    use AppliesReportSheetStyle;
+
     public function __construct(protected array $summary, protected array $paymentBreakdown)
     {
     }
@@ -49,5 +63,28 @@ class PaymentBreakdownSheet implements FromArray, WithHeadings, WithTitle
     public function title(): string
     {
         return 'نحوه پرداخت';
+    }
+
+    public function columnWidths(): array
+    {
+        return [
+            'A' => 22,
+            'B' => 14,
+            'C' => 12,
+            'D' => 18,
+        ];
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $hasData = ($this->paymentBreakdown['total'] ?? 0) > 0;
+                $lastRow = $hasData ? 5 : 2;
+                $totalRow = $hasData ? 5 : null;
+
+                $this->styleReportSheet($event->sheet->getDelegate(), 4, $lastRow, $totalRow);
+            },
+        ];
     }
 }

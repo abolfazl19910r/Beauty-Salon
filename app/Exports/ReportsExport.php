@@ -2,13 +2,20 @@
 
 namespace App\Exports;
 
+use App\Exports\Concerns\AppliesReportSheetStyle;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use Maatwebsite\Excel\Events\AfterSheet;
 
-class ReportsExport implements FromCollection, WithHeadings, WithMapping, WithTitle
+class ReportsExport implements FromCollection, WithColumnWidths, WithEvents, WithHeadings, WithMapping, WithStrictNullComparison, WithTitle
 {
+    use AppliesReportSheetStyle;
+
     protected $data;
     protected $type;
 
@@ -59,5 +66,25 @@ class ReportsExport implements FromCollection, WithHeadings, WithMapping, WithTi
     public function title(): string
     {
         return 'روند درآمد';
+    }
+
+    public function columnWidths(): array
+    {
+        return [
+            'A' => 16,
+            'B' => 14,
+            'C' => 18,
+            'D' => 20,
+        ];
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $lastRow = 1 + $this->collection()->count();
+                $this->styleReportSheet($event->sheet->getDelegate(), 4, $lastRow);
+            },
+        ];
     }
 }
