@@ -6,10 +6,10 @@ use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
 /**
- * R-Observers: composes the existing single-sheet revenue export (ReportsExport) with the new
- * PaymentBreakdownSheet into one workbook, so the Excel export gained a second sheet instead of
- * needing a second download/route. GeneratePdfReportJob now builds this instead of ReportsExport
- * directly; the underlying ReportsExport/PaymentBreakdownSheet classes are unchanged otherwise.
+ * R-Observers: composes the revenue trend sheet (ReportsExport), the payment breakdown sheet
+ * (PaymentBreakdownSheet), and the raw per-booking sheet (RawBookingsSheet) into one workbook, so
+ * the Excel export gained these without needing a second download/route. GeneratePdfReportJob now
+ * builds this instead of ReportsExport directly; the underlying sheet classes are unchanged otherwise.
  */
 class AdminReportExport implements WithMultipleSheets
 {
@@ -18,6 +18,7 @@ class AdminReportExport implements WithMultipleSheets
         protected string $type,
         protected array $summary,
         protected array $paymentBreakdown,
+        protected Collection $rawBookings,
     ) {
     }
 
@@ -26,6 +27,7 @@ class AdminReportExport implements WithMultipleSheets
         return [
             new ReportsExport($this->rows, $this->type),
             new PaymentBreakdownSheet($this->summary, $this->paymentBreakdown),
+            new RawBookingsSheet($this->rawBookings),
         ];
     }
 }

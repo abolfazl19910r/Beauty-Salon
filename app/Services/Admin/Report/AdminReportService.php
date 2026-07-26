@@ -339,6 +339,7 @@ class AdminReportService
         return [
             'summary'          => $this->getFinancialSummary($start, $end),
             'paymentBreakdown' => $this->paymentBreakdown($start, $end),
+            'rawBookings'      => $this->getRawBookingsForExport($start, $end),
             'specialists' => Specialist::withCount(['bookings as total_bookings' => fn ($q) => $q->whereBetween('created_at', [$start, $end])])
                 ->withSum(['bookings as total_revenue' => fn ($q) =>
                 $q->whereBetween('created_at', [$start, $end])->where('payment_status', 'paid')
@@ -354,6 +355,63 @@ class AdminReportService
                 ->get(),
             'rows'        => $this->getRowsForType($start, $end, $type),
         ];
+    }
+
+    /**
+     * R-Observers (addendum): the aggregated sheets/PDF blocks (paid-only daily revenue, payment
+     * breakdown) never reconcile against "total_bookings" (which counts every booking regardless of
+     * status) without a raw listing — a user comparing "کل نوبت‌ها: 8" against the 7 rows shown in
+     * "جزئیات درآمد" had no way to see which booking(s) accounted for the difference (unpaid/pending
+     * bookings are counted in total_bookings but excluded from every paid-only breakdown). This
+     * returns one row per real booking in the range, any status, so every aggregated number above it
+     * can be manually cross-checked instead of trusted blindly.
+     */
+    public function getRawBookingsForExport(Carbon $start, Carbon $end): Collection
+    {
+        $statusLabels = [
+            'pending'         => 'در انتظار',
+            'pending_payment' => 'در انتظار پرداخت',
+            'confirmed'       => 'تایید شده',
+            'completed'       => 'انجام شده',
+            'cancelled'       => 'لغو شده',
+        ];
+
+        $paymentStatusLabels = [
+            'paid'   => 'پرداخت‌شده',
+            'unpaid' => 'پرداخت‌نشده',
+        ];
+
+        $paymentMethodLabels = [
+            'wallet'         => 'کیف پول',
+            'gateway'        => 'درگاه بانکی',
+            'wallet_gateway' => 'ترکیبی',
+            'full_discount'  => 'تخفیف کامل (بدون پرداخت)',
+        ];
+
+        return Booking::with(['user:id,name,phone', 'specialist:id,name', 'service:id,name'])
+            ->whereBetween('created_at', [$start, $end])
+            ->orderBy('created_at')
+            ->get()
+            ->map(function (Booking $booking) use ($statusLabels, $paymentStatusLabels, $paymentMethodLabels) {
+                $method = $booking->payment_details['method'] ?? null;
+                $isAdminManual = (bool) ($booking->payment_details['admin_recorded'] ?? false);
+
+                return [
+                    'created_date'   => jalali_date($booking->created_at, 'Y/m/d'),
+                    'created_time'   => $booking->created_at->format('H:i'),
+                    'customer'       => $booking->user->name ?? '—',
+                    'service'        => $booking->service->name ?? '—',
+                    'specialist'     => $booking->specialist->name ?? '—',
+                    'status'         => $statusLabels[$booking->status] ?? $booking->status,
+                    'payment_status' => $paymentStatusLabels[$booking->payment_status] ?? $booking->payment_status,
+                    'payment_method' => $isAdminManual
+                        ? 'ثبت دستی ادمین'
+                        : ($paymentMethodLabels[$method] ?? '—'),
+                    'amount'         => (int) $booking->prepayment_amount,
+                    'discount_code'  => $booking->discount_code ?? '—',
+                    'discount_amount' => (int) $booking->discount_amount,
+                ];
+            });
     }
 
     private function getRowsForType(Carbon $start, Carbon $end, string $type): Collection

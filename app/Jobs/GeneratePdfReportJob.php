@@ -108,6 +108,7 @@ class GeneratePdfReportJob implements ShouldQueue
                 $reportExport->report_type,
                 $exportData['summary'],
                 $exportData['paymentBreakdown'],
+                $exportData['rawBookings'],
             ),
             $relativePath,
             'local'
