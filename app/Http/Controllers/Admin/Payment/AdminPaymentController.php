@@ -30,10 +30,22 @@ class AdminPaymentController extends Controller
 
         $booking = Booking::findOrFail($request->booking_id);
 
+        /**
+         * R-Observers: payment_method is not a real column on `bookings` (see payment_details JSON
+         * column instead — every other payment path in the project, e.g. PaymentController, stores
+         * the method under payment_details->method). This was previously documented as fixed, but
+         * the fix was never actually applied here: $booking->update(['payment_method' => ...]) was
+         * silently dropped by mass-assignment because the key isn't in Booking::$fillable, so manual
+         * admin-recorded payments never actually stored which method was used.
+         */
         $booking->update([
             'payment_status' => 'paid',
             'prepayment_amount' => $request->amount,
-            'payment_method' => $request->payment_method,
+            'payment_details' => [
+                'method' => $request->payment_method,
+                'admin_recorded' => true,
+                'notes' => $request->notes,
+            ],
             'payment_reference' => $request->reference,
             'paid_at' => now(),
             'status' => 'confirmed'

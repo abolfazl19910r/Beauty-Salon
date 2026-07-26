@@ -220,6 +220,10 @@
                                 'gateway'        => 'درگاه بانکی',
                                 'wallet_gateway' => 'ترکیبی (کیف پول + درگاه)',
                                 'full_discount'  => 'تخفیف کامل',
+                                'cash'           => 'نقدی (ثبت دستی ادمین)',
+                                'card'           => 'کارت‌خوان (ثبت دستی ادمین)',
+                                'online'         => 'آنلاین (ثبت دستی ادمین)',
+                                'transfer'       => 'انتقال وجه (ثبت دستی ادمین)',
                             ];
                             $paymentMethodKey = $booking->payment_details['method'] ?? null;
                         @endphp
