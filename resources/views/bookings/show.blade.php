@@ -161,7 +161,7 @@
                         </a>
                     @endif
 
-                    @if(in_array($booking->status, ['pending', 'confirmed']))
+                    @can('cancel', $booking)
                         <form action="{{ route('bookings.cancel', $booking) }}" method="POST"
                               onsubmit="return confirm('آیا از لغو این نوبت اطمینان دارید؟');">
                             @csrf
@@ -176,7 +176,11 @@
                                 لغو نوبت
                             </button>
                         </form>
-                    @endif
+                    @elseif(in_array($booking->status, ['pending', 'confirmed']))
+                        <p class="text-xs" style="color:var(--rasta-text-dim,#9a8f7f)">
+                            کمتر از ۲۴ ساعت به زمان نوبت مانده؛ امکان لغو توسط شما وجود ندارد. برای لغو با پشتیبانی تماس بگیرید.
+                        </p>
+                    @endcan
 
                     @if($booking->status === 'completed')
                         <a href="{{ route('reviews.create', $booking) }}"
