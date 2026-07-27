@@ -103,11 +103,6 @@ class AdminBookingController extends Controller
                 ? $this->bookingService->updateStatus($booking, $request->validated()['status'])
                 : $this->bookingService->updateFull($booking, $request->validated());
 
-            if ($result['refund_warning']) {
-                return redirect()->route($redirectRoute, $redirectParams)
-                    ->with('warning', 'نوبت لغو شد اما در برگشت وجه مشکلی پیش آمد. تیکت پشتیبانی ایجاد شد.');
-            }
-
             return redirect()->route($redirectRoute, $redirectParams)
                 ->with('success', $result['message']);
 

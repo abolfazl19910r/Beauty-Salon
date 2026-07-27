@@ -75,6 +75,35 @@ class SpecialistWallet extends Model
         $this->increment('balance', $amount);
     }
 
+    /**
+     * R-Observers addendum: previously cancelling a paid booking refunded the customer but never
+     * clawed back the specialist's income that was credited at payment time (addIncome() above),
+     * meaning the salon effectively paid out twice per cancelled-after-paid booking. This reverses
+     * that original credit — from pending_amount if it hadn't settled yet, or from balance if it
+     * had (balance can legitimately go negative here if the specialist already withdrew it; the
+     * caller logs this case so an admin can follow up).
+     *
+     * Uses the 'adjustment' enum value (not a new one) since wallet_transactions.type is a fixed
+     * DB enum — adding a dedicated type would need a migration for something this narrow.
+     */
+    public function reverseIncome(float $amount, int $bookingId, bool $wasSettled, string $description = null): WalletTransaction
+    {
+        if ($wasSettled) {
+            $this->decrement('balance', $amount);
+        } else {
+            $this->decrement('pending_amount', $amount);
+        }
+        $this->decrement('total_earned', $amount);
+
+        return $this->transactions()->create([
+            'booking_id' => $bookingId,
+            'type' => 'adjustment',
+            'amount' => -$amount,
+            'balance_after' => $this->balance,
+            'description' => $description ?? "برگشت سهم به‌خاطر لغو نوبت #{$bookingId}",
+        ]);
+    }
+
     public function deductCancellationFee(float $amount, int $bookingId, string $description = null): WalletTransaction
     {
         $this->decrement('balance', $amount);

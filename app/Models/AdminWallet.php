@@ -55,9 +55,28 @@ class AdminWallet extends Model
         return $transaction;
     }
 
+    /**
+     * R-Observers addendum: reverses the platform's commission cut for a booking that was paid
+     * and later cancelled — see SpecialistWallet::reverseIncome() for the matching specialist-side
+     * reversal and the full reasoning. Uses 'adjustment' (existing enum value) rather than a new
+     * commission_reversal type, since admin_wallet_transactions.type is a fixed DB enum.
+     */
+    public function deductCommission(float $amount, int $bookingId, string $description = null): AdminWalletTransaction
+    {
+        $this->decrement('balance', $amount);
+        $this->decrement('total_earned', $amount);
+
+        return $this->transactions()->create([
+            'booking_id' => $bookingId,
+            'type' => 'adjustment',
+            'amount' => -$amount,
+            'balance_after' => $this->balance,
+            'description' => $description ?? "برگشت کمیسیون به‌خاطر لغو نوبت #{$bookingId}",
+        ]);
+    }
+
     public function getFormattedBalanceAttribute(): string
     {
         return number_format($this->balance) . ' تومان';
     }
 }
-

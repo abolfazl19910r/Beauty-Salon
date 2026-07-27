@@ -211,14 +211,16 @@ class BookingObserver
                     return;
                 }
 
+                $refundAmount = 0.0;
+
                 if ($cancelledBy === 'specialist') {
+                    $refundAmount = (float) $booking->prepayment_amount;
                     $customerWallet = $booking->user->getOrCreateWallet();
                     $customerWallet->addRefund(
-                        $booking->prepayment_amount,
+                        $refundAmount,
                         $booking->id,
                         "بازگشت وجه از نوبت #{$booking->id} - لغو توسط متخصص"
                     );
-
                 }
                 elseif ($cancelledBy === 'customer') {
                     $customerFee = $settings->calculateCustomerCancellationFee(
@@ -226,7 +228,7 @@ class BookingObserver
                         $booking->booking_time
                     );
 
-                    $refundAmount = $booking->prepayment_amount - $customerFee;
+                    $refundAmount = max(0, $booking->prepayment_amount - $customerFee);
 
                     if ($refundAmount > 0) {
                         $customerWallet = $booking->user->getOrCreateWallet();
@@ -249,12 +251,32 @@ class BookingObserver
                     }
                 }
                 elseif ($cancelledBy === 'admin') {
+                    $refundAmount = (float) $booking->prepayment_amount;
                     $customerWallet = $booking->user->getOrCreateWallet();
                     $customerWallet->addRefund(
-                        $booking->prepayment_amount,
+                        $refundAmount,
                         $booking->id,
                         "بازگشت وجه از نوبت #{$booking->id} - لغو توسط مدیر"
                     );
+                }
+
+                /**
+                 * R-Observers addendum: previously the specialist's original income and the
+                 * admin's original commission (both credited in addIncomeAndCommission() when
+                 * the booking was paid) were never reversed here — meaning every cancelled-after
+                 * -paid booking cost the salon the customer refund AND the specialist's income,
+                 * without recovering the specialist's/admin's share. Reversed for every actor
+                 * (including 'system'), since the underlying booking is no longer a valid paid
+                 * service regardless of who cancelled it.
+                 */
+                $this->reverseOriginalPayout($booking, $specialist);
+
+                if ($refundAmount > 0) {
+                    $booking->update([
+                        'refund_status'   => 'refunded',
+                        'refunded_amount' => $refundAmount,
+                        'refunded_at'     => now(),
+                    ]);
                 }
             });
 
@@ -263,6 +285,49 @@ class BookingObserver
                 'booking_id' => $booking->id,
                 'error' => $e->getMessage()
             ]);
+        }
+    }
+
+    private function reverseOriginalPayout(Booking $booking, $specialist): void
+    {
+        $specialistWallet = $specialist->getOrCreateWallet();
+
+        $incomeTransaction = $specialistWallet->transactions()
+            ->where('booking_id', $booking->id)
+            ->where('type', 'income')
+            ->first();
+
+        if ($incomeTransaction) {
+            $wasSettled = ($incomeTransaction->metadata['status'] ?? null) === 'settled';
+
+            $specialistWallet->reverseIncome(
+                (float) $incomeTransaction->amount,
+                $booking->id,
+                $wasSettled,
+                "برگشت سهم به‌خاطر لغو نوبت #{$booking->id}"
+            );
+
+            if ($wasSettled) {
+                Log::warning('⚠️ سهم متخصص از موجودی واقعی (نه در انتظار) کسر شد — اگر قبلاً برداشت شده باشد موجودی منفی می‌شود', [
+                    'booking_id' => $booking->id,
+                    'specialist_wallet_id' => $specialistWallet->id,
+                    'amount' => $incomeTransaction->amount,
+                ]);
+            }
+        }
+
+        $adminWallet = AdminWallet::getWallet();
+        $commissionTransaction = $adminWallet->transactions()
+            ->where('booking_id', $booking->id)
+            ->where('type', 'commission')
+            ->first();
+
+        if ($commissionTransaction) {
+            $adminWallet->deductCommission(
+                (float) $commissionTransaction->amount,
+                $booking->id,
+                "برگشت کمیسیون به‌خاطر لغو نوبت #{$booking->id}"
+            );
         }
     }
 
