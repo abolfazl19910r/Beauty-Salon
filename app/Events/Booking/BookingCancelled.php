@@ -13,13 +13,13 @@ use Illuminate\Queue\SerializesModels;
  * - SpecialistBookingManagementController::cancel()           (cancelledBy = 'specialist')
  * - AdminBookingService::handlePostUpdateSideEffects()        (cancelledBy = 'admin')
  *
- * NOTE: $cancelledBy here is only used for notification wording — it is
- * deliberately NOT written back into $booking->cancelled_by for the admin
- * path, because that column already drives BookingObserver's wallet-refund
- * branches. Admin cancellations are refunded through the gateway via
- * RefundService instead; setting cancelled_by='admin' on the model would
- * make BOTH the observer's wallet-credit AND RefundService's gateway
- * refund fire for the same cancellation (double refund).
+ * R-Observers addendum: admin cancellations now set cancelled_by='admin' on the model itself
+ * (previously deliberately withheld — see git history — because RefundService attempted a real
+ * gateway refund and setting cancelled_by='admin' would have ALSO triggered the observer's
+ * wallet-credit branch, double-refunding). RefundService's gateway-refund call was found to be
+ * completely broken (called a PaymentService::refund() method that doesn't exist, an uncaught
+ * \Error on every admin cancellation of a paid booking) and is no longer used; admin
+ * cancellations now go through the same wallet-credit path as customer/specialist ones.
  */
 class BookingCancelled
 {

@@ -96,9 +96,22 @@ class SecurePaymentController extends Controller
                 $payment = Payment::where('reference_id', $reference)->firstOrFail();
                 $booking = $payment->booking;
 
+                /**
+                 * R-Observers addendum: previously only the Payment model got gateway_reference —
+                 * the Booking itself (payment_reference/payment_details) was left untouched, unlike
+                 * every other payment path in the project. This meant bookings paid through this
+                 * secure-checkout flow showed no payment reference on booking detail pages and were
+                 * invisible to payment_details->method-based reports (paymentBreakdown() /
+                 * getFinancialSummary()), silently excluded from all three method buckets.
+                 */
                 $booking->update([
                     'payment_status' => 'paid',
-                    'paid_at' => now()
+                    'paid_at' => now(),
+                    'payment_reference' => $result['transaction_id'] ?? $reference,
+                    'payment_details' => [
+                        'method' => 'gateway',
+                        'gateway_ref' => $result['transaction_id'] ?? $reference,
+                    ],
                 ]);
 
                 $payment->update([
