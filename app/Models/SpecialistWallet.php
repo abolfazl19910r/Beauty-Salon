@@ -86,21 +86,38 @@ class SpecialistWallet extends Model
      * Uses the 'adjustment' enum value (not a new one) since wallet_transactions.type is a fixed
      * DB enum — adding a dedicated type would need a migration for something this narrow.
      */
-    public function reverseIncome(float $amount, int $bookingId, bool $wasSettled, string $description = null): WalletTransaction
+    public function reverseIncome(WalletTransaction $originalTransaction, string $description = null): WalletTransaction
     {
+        $amount = (float) $originalTransaction->amount;
+        $wasSettled = ($originalTransaction->metadata['status'] ?? null) === 'settled';
+
         if ($wasSettled) {
             $this->decrement('balance', $amount);
         } else {
             $this->decrement('pending_amount', $amount);
+
+            /**
+             * R-Observers addendum (critical fix): without this, a still-pending income
+             * transaction reversed here would keep metadata.status = 'pending' — meaning the
+             * scheduled wallet:settle-pending command would later find it, see its
+             * settlement_date has passed, and "settle" it AGAIN (moving the same amount from
+             * pending_amount to balance a second time), crediting the specialist for a booking
+             * that was already cancelled and refunded. Marking it 'reversed' here excludes it
+             * from settlePendingIncomes()'s `metadata->status = 'pending'` query permanently.
+             */
+            $metadata = $originalTransaction->metadata ?? [];
+            $metadata['status'] = 'reversed';
+            $metadata['reversed_at'] = now()->toDateTimeString();
+            $originalTransaction->update(['metadata' => $metadata]);
         }
         $this->decrement('total_earned', $amount);
 
         return $this->transactions()->create([
-            'booking_id' => $bookingId,
+            'booking_id' => $originalTransaction->booking_id,
             'type' => 'adjustment',
             'amount' => -$amount,
             'balance_after' => $this->balance,
-            'description' => $description ?? "برگشت سهم به‌خاطر لغو نوبت #{$bookingId}",
+            'description' => $description ?? "برگشت سهم به‌خاطر لغو نوبت #{$originalTransaction->booking_id}",
         ]);
     }
 

@@ -308,6 +308,21 @@ class WalletAdminService
                 continue;
             }
 
+            /**
+             * R-Observers addendum: settlement_date was purely "payment time + fixed delay",
+             * completely disconnected from whether the booked service had actually happened yet.
+             * A booking made 2 weeks in advance and paid immediately would settle (become real,
+             * withdrawable balance) in as little as settlement_delay_days — long before the
+             * appointment itself occurred — meaning a specialist could withdraw real money for a
+             * service that hadn't been rendered yet, then have the booking cancelled afterward
+             * (pushing their balance negative, see reverseIncome()). Even with --ignore-delay,
+             * a booking whose appointment hasn't happened yet is never settled.
+             */
+            $booking = $transaction->booking;
+            if ($booking && $booking->booking_time && $booking->booking_time->isFuture()) {
+                continue;
+            }
+
             try {
                 DB::transaction(function () use ($transaction, $source) {
                     $transactionWallet = $transaction->wallet;
