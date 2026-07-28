@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Admin\Notification;
 
 use App\Http\Controllers\Controller;
+use App\Traits\HandlesApiResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class AdminNotificationController extends Controller
 {
+    use HandlesApiResponse;
+
     public function index()
     {
         $user = Auth::user();
@@ -35,10 +38,10 @@ class AdminNotificationController extends Controller
 
         if ($notification && is_null($notification->read_at)) {
             $notification->markAsRead();
-            return response()->json(['success' => true]);
+            return $this->successResponse();
         }
 
-        return response()->json(['success' => true, 'message' => 'اعلان قبلاً خوانده شده بود یا یافت نشد.'], 200);
+        return $this->successResponse('اعلان قبلاً خوانده شده بود یا یافت نشد.');
     }
 
     public function delete($id)
@@ -46,16 +49,10 @@ class AdminNotificationController extends Controller
         $deleted = Auth::user()->notifications()->where('id', $id)->delete();
 
         if ($deleted) {
-            return response()->json([
-                'success' => true,
-                'message' => 'اعلان با موفقیت حذف شد.'
-            ]);
+            return $this->successResponse('اعلان با موفقیت حذف شد.');
         }
 
-        return response()->json([
-            'success' => false,
-            'message' => 'اعلان پیدا نشد یا حذف با شکست مواجه شد.'
-        ], 404);
+        return $this->errorResponse('اعلان پیدا نشد یا حذف با شکست مواجه شد.', 404);
     }
 
     public function toggleRead($id)
@@ -71,14 +68,10 @@ class AdminNotificationController extends Controller
                 $notification->markAsRead();
                 $status = 'read';
             }
-            return response()->json([
-                'success' => true,
-                'status' => $status,
-                'message' => 'وضعیت اعلان با موفقیت به‌روز شد.'
-            ]);
+            return $this->successResponse('وضعیت اعلان با موفقیت به‌روز شد.', ['status' => $status]);
         }
 
-        return response()->json(['success' => false, 'message' => 'اعلان پیدا نشد.'], 404);
+        return $this->errorResponse('اعلان پیدا نشد.', 404);
     }
 
     public function markAllAsRead()

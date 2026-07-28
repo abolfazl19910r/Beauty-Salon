@@ -9,6 +9,7 @@ use App\Http\Requests\User\Booking\CheckDiscountRequest;
 use App\Models\BeautyService;
 use App\Models\Booking;
 use App\Services\Booking\BookingService;
+use App\Traits\HandlesApiResponse;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -24,6 +25,8 @@ use Illuminate\Support\Facades\Log;
  */
 class BookingDiscountController extends Controller
 {
+    use HandlesApiResponse;
+
     public function __construct(
         protected BookingService $bookingService
     ) {}
@@ -87,7 +90,7 @@ class BookingDiscountController extends Controller
             ]);
 
             if ($request->expectsJson()) {
-                return response()->json(['success' => false, 'message' => 'خطا در اعمال کد تخفیف.'], 500);
+                return $this->errorResponse('خطا در اعمال کد تخفیف.', 500);
             }
 
             return back()->with('error', 'خطا در اعمال کد تخفیف.');
@@ -114,7 +117,7 @@ class BookingDiscountController extends Controller
                 'error'      => $e->getMessage(),
             ]);
 
-            return response()->json(['success' => false, 'message' => 'خطا در اعمال کد تخفیف.'], 500);
+            return $this->errorResponse('خطا در اعمال کد تخفیف.', 500);
         }
     }
 

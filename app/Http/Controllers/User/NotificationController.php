@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Traits\HandlesApiResponse;
 use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
+    use HandlesApiResponse;
+
     public function index()
     {
         $notifications = auth()->user()
@@ -24,7 +27,7 @@ class NotificationController extends Controller
 
         $notification->markAsRead();
 
-        return response()->json(['success' => true]);
+        return $this->successResponse();
     }
 
     public function markAllAsRead(): \Illuminate\Http\RedirectResponse
