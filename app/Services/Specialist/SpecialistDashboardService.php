@@ -4,16 +4,18 @@ namespace App\Services\Specialist;
 
 use App\Models\Booking;
 use App\Models\Specialist;
+use App\Traits\HasJalaliDates;
 use Carbon\Carbon;
-use Morilog\Jalali\Jalalian;
 
 class SpecialistDashboardService
 {
+    use HasJalaliDates;
+
     public function getDashboardData(Specialist $specialist): array
     {
         return [
             'todaySchedule'          => $this->getTodaySchedule($specialist),
-            'todayPersian'           => Jalalian::fromCarbon(Carbon::now())->format('l، j F Y'),
+            'todayPersian'           => $this->toJalali(Carbon::now(), 'l، j F Y'),
             'todayBookingsCount'     => $this->getTodayBookingsCount($specialist),
             'todayRevenue'           => $this->getTodayRevenue($specialist),
             'monthBookingsCount'     => $this->getMonthBookingsCount($specialist),
@@ -93,7 +95,7 @@ class SpecialistDashboardService
             ->get();
 
         return $bookings->each(function ($booking) {
-            $booking->booking_date_persian = Jalalian::fromCarbon($booking->booking_time)->format('Y/m/d');
+            $booking->booking_date_persian = $this->toJalali($booking->booking_time);
             $booking->status_fa = match ($booking->status) {
                 'pending'   => 'در انتظار تایید',
                 'confirmed' => 'تایید شده',
@@ -126,7 +128,7 @@ class SpecialistDashboardService
                 ->sum('prepayment_amount');
 
             $weeklyRevenue[] = [
-                'date'  => Jalalian::fromCarbon($date)->format('m/d'),
+                'date'  => $this->toJalali($date, 'm/d'),
                 'total' => $revenue,
             ];
         }

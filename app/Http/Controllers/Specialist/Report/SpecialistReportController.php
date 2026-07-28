@@ -5,15 +5,17 @@ namespace App\Http\Controllers\Specialist\Report;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Specialist;
+use App\Traits\HasJalaliDates;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
-use Morilog\Jalali\Jalalian;
 use Carbon\Carbon;
 use App\Exports\SpecialistBookingsExport;
 
 class SpecialistReportController extends Controller
 {
+    use HasJalaliDates;
+
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -33,11 +35,9 @@ class SpecialistReportController extends Controller
         $query = Booking::where('specialist_id', $specialist->id);
 
         if ($startDate && $endDate) {
-            try {
-                $startCarbon = $this->convertJalaliToCarbon($startDate)->startOfDay();
-                $endCarbon = $this->convertJalaliToCarbon($endDate)->endOfDay();
-                $query->whereBetween('booking_time', [$startCarbon, $endCarbon]);
-            } catch (\Exception $e) {}
+            $startCarbon = $this->parseJalali($startDate)?->startOfDay() ?? now()->startOfDay();
+            $endCarbon = $this->parseJalali($endDate)?->endOfDay() ?? now()->endOfDay();
+            $query->whereBetween('booking_time', [$startCarbon, $endCarbon]);
         } else {
             $query->where('booking_time', '>=', now()->subDays(30));
         }
@@ -104,12 +104,4 @@ class SpecialistReportController extends Controller
         ));
     }
 
-    private function convertJalaliToCarbon($jalaliDate)
-    {
-        $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-        $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-        $jalaliDate = str_replace($persianDigits, $englishDigits, $jalaliDate);
-        $parts = explode('/', $jalaliDate);
-        return (count($parts) === 3) ? (new Jalalian($parts[0], $parts[1], $parts[2]))->toCarbon() : now();
-    }
 }

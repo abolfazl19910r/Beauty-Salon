@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\Booking\RateBookingRequest;
 use App\Models\Booking;
+use App\Traits\HasJalaliDates;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
@@ -23,6 +24,8 @@ use Illuminate\Support\Facades\Log;
  */
 class BookingController extends Controller
 {
+    use HasJalaliDates;
+
     // ── Web ──────────────────────────────────────────────────────────
 
     public function index(Request $request): \Illuminate\View\View
@@ -50,16 +53,8 @@ class BookingController extends Controller
         }
 
         if ($request->filled('date')) {
-            try {
-                $persianDigits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
-                $englishDigits = ['0','1','2','3','4','5','6','7','8','9'];
-                $dateInput = str_replace($persianDigits, $englishDigits, $request->query('date'));
-                $gregorianDate = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $dateInput)
-                    ->toCarbon()
-                    ->toDateString();
-                $query->whereDate('booking_time', $gregorianDate);
-            } catch (\Exception $e) {
-                // Invalid date — filter not applied
+            if ($gregorianDate = $this->parseJalali($request->query('date'))) {
+                $query->whereDate('booking_time', $gregorianDate->toDateString());
             }
         }
 

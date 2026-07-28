@@ -5,22 +5,20 @@ namespace App\Services\Admin\Report;
 use App\Models\BeautyService;
 use App\Models\Booking;
 use App\Models\Specialist;
+use App\Traits\HasJalaliDates;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class AdminReportService
 {
-    private array $jMonths = [
-        'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
-        'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند',
-    ];
+    use HasJalaliDates;
 
     /**
-     * تبدیل start_date/end_date از input به Carbon و string.
+     * Convert start_date/end_date from input to Carbon and string.
      *
      * @param array $input ['start_date' => ..., 'end_date' => ...]
-     * @param int $defaultSubDays تعداد روز پیش‌فرض اگه تاریخی نباشد
+     * @param int $defaultSubDays Default number of days if not a date
      * @return array{start: Carbon, end: Carbon, startDate: string, endDate: string}
      */
     public function parseDateRange(array $input, int $defaultSubDays = 30): array
@@ -122,10 +120,10 @@ class AdminReportService
             ->get()
             ->map(function ($r) {
                 $d = Carbon::parse($r->date);
-                [$jy, $jm, $jd] = gregorian_to_jalali($d->year, $d->month, $d->day);
+                [$jy, $jm, $jd] = $this->toJalaliParts($d);
 
                 return [
-                    'label'    => $jd . ' ' . $this->jMonths[$jm - 1],
+                    'label'    => $jd . ' ' . $this->jalaliMonthName($jm),
                     'date'     => $r->date,
                     'revenue'  => (int) $r->revenue,
                     'bookings' => (int) $r->total_bookings,
@@ -147,10 +145,10 @@ class AdminReportService
             ->get()
             ->map(function ($r) {
                 $d = Carbon::parse($r->week_start);
-                [$jy, $jm, $jd] = gregorian_to_jalali($d->year, $d->month, $d->day);
+                [$jy, $jm, $jd] = $this->toJalaliParts($d);
 
                 return [
-                    'label'    => $jd . ' ' . $this->jMonths[$jm - 1],
+                    'label'    => $jd . ' ' . $this->jalaliMonthName($jm),
                     'revenue'  => (int) $r->revenue,
                     'bookings' => (int) $r->total_bookings,
                 ];
@@ -171,10 +169,10 @@ class AdminReportService
             ->orderBy('year')->orderBy('month')
             ->get()
             ->map(function ($r) {
-                [$jy, $jm] = gregorian_to_jalali($r->year, $r->month, 1);
+                [$jy, $jm] = $this->toJalaliParts(Carbon::create($r->year, $r->month, 1));
 
                 return [
-                    'label'    => $this->jMonths[$jm - 1] . ' ' . $jy,
+                    'label'    => $this->jalaliMonthName($jm) . ' ' . $jy,
                     'revenue'  => (int) $r->revenue,
                     'bookings' => (int) $r->total_bookings,
                 ];
@@ -205,10 +203,10 @@ class AdminReportService
             ->orderBy('year')->orderBy('month')
             ->get()
             ->map(function ($r) {
-                [$jy, $jm] = gregorian_to_jalali($r->year, $r->month, 1);
+                [$jy, $jm] = $this->toJalaliParts(Carbon::create($r->year, $r->month, 1));
 
                 return [
-                    'label'           => $this->jMonths[$jm - 1] . ' ' . $jy,
+                    'label'           => $this->jalaliMonthName($jm) . ' ' . $jy,
                     'total_bookings'  => (int) $r->total_bookings,
                     'revenue'         => (int) $r->revenue,
                     'cancelled_count' => (int) $r->cancelled_count,
@@ -388,45 +386,62 @@ class AdminReportService
             'full_discount'  => 'تخفیف کامل (بدون پرداخت)',
         ];
 
-        return Booking::with(['user:id,name,phone', 'specialist:id,name,commission_rate', 'service:id,name'])
+        $discountTypeLabels = [
+            'percentage' => 'درصدی',
+            'fixed'      => 'مبلغ ثابت',
+        ];
+
+        $bookings = Booking::with(['user:id,name,phone', 'specialist:id,name,phone,commission_rate', 'service:id,name'])
             ->whereBetween('created_at', [$start, $end])
             ->orderBy('created_at')
-            ->get()
-            ->map(function (Booking $booking) use ($statusLabels, $paymentStatusLabels, $paymentMethodLabels) {
-                $method = $booking->payment_details['method'] ?? null;
-                $isAdminManual = (bool) ($booking->payment_details['admin_recorded'] ?? false);
+            ->get();
 
-                $specialistShare = null;
-                if ($booking->payment_status === 'paid' && $booking->specialist) {
-                    $rate = $booking->specialist->getEffectiveCommissionRate();
-                    $specialistShare = (int) round($booking->prepayment_amount * (1 - $rate / 100));
-                }
+        // Batch-fetch discount code types (avoids one query per booking for the discount type column)
+        $discountCodeTypes = \App\Models\DiscountCode::whereIn('code', $bookings->pluck('discount_code')->filter()->unique())
+            ->pluck('type', 'code');
 
-                return [
-                    'created_date'      => jalali_date($booking->created_at, 'Y/m/d'),
-                    'created_time'      => $booking->created_at->format('H:i'),
-                    'booking_date'      => $booking->booking_time ? jalali_date($booking->booking_time, 'Y/m/d') : '—',
-                    'booking_time'      => $booking->booking_time ? $booking->booking_time->format('H:i') : '—',
-                    'customer'          => $booking->user->name ?? '—',
-                    'customer_phone'    => $booking->user->phone ?? '—',
-                    'service'           => $booking->service->name ?? '—',
-                    'specialist'        => $booking->specialist->name ?? '—',
-                    'status'            => $statusLabels[$booking->status] ?? $booking->status,
-                    'payment_status'    => $paymentStatusLabels[$booking->payment_status] ?? $booking->payment_status,
-                    'payment_method'    => $isAdminManual
-                        ? 'ثبت دستی ادمین'
-                        : ($paymentMethodLabels[$method] ?? '—'),
-                    'amount'            => (int) $booking->prepayment_amount,
-                    'specialist_share'  => $specialistShare,
-                    'discount_code'     => $booking->discount_code ?? '—',
-                    'discount_amount'   => (int) $booking->discount_amount,
-                    'payment_reference' => $booking->payment_reference ?? '—',
-                    'rating'            => $booking->rating ?? '—',
-                    'cancellation_reason' => $booking->status === 'cancelled' ? ($booking->cancellation_reason ?? '—') : '—',
-                    'refund_status'     => $booking->refund_status ?? '—',
-                    'refunded_amount'   => $booking->refunded_amount !== null ? (int) $booking->refunded_amount : null,
-                ];
-            });
+        return $bookings->map(function (Booking $booking) use ($statusLabels, $paymentStatusLabels, $paymentMethodLabels, $discountTypeLabels, $discountCodeTypes) {
+            $method = $booking->payment_details['method'] ?? null;
+            $isAdminManual = (bool) ($booking->payment_details['admin_recorded'] ?? false);
+
+            $specialistShare = null;
+            if ($booking->payment_status === 'paid' && $booking->specialist) {
+                $rate = $booking->specialist->getEffectiveCommissionRate();
+                $specialistShare = (int) round($booking->prepayment_amount * (1 - $rate / 100));
+            }
+
+            $discountType = $booking->discount_code
+                ? ($discountTypeLabels[$discountCodeTypes[$booking->discount_code] ?? ''] ?? '—')
+                : '—';
+
+            return [
+                'created_date'      => $this->toJalaliDateString($booking->created_at),
+                'created_time'      => $booking->created_at->format('H:i'),
+                'booking_date'      => $booking->booking_time ? $this->toJalaliDateString($booking->booking_time) : '—',
+                'booking_time'      => $booking->booking_time ? $booking->booking_time->format('H:i') : '—',
+                'customer'          => $booking->user->name ?? '—',
+                'customer_phone'    => $booking->user->phone ?? '—',
+                'service'           => $booking->service->name ?? '—',
+                'specialist'        => $booking->specialist->name ?? '—',
+                'specialist_phone'  => $booking->specialist->phone ?? '—',
+                'status'            => $statusLabels[$booking->status] ?? $booking->status,
+                'payment_status'    => $paymentStatusLabels[$booking->payment_status] ?? $booking->payment_status,
+                'payment_method'    => $isAdminManual
+                    ? 'ثبت دستی ادمین'
+                    : ($paymentMethodLabels[$method] ?? '—'),
+                'amount'            => (int) $booking->prepayment_amount,
+                'specialist_share'  => $specialistShare,
+                'discount_code'     => $booking->discount_code ?? '—',
+                'discount_type'     => $discountType,
+                'discount_amount'   => (int) $booking->discount_amount,
+                'payment_reference' => $booking->payment_reference ?? '—',
+                'rating'            => $booking->rating ?? '—',
+                'review'            => $booking->review ?? '—',
+                'cancellation_reason' => $booking->status === 'cancelled' ? ($booking->cancellation_reason ?? '—') : '—',
+                'refund_status'     => $booking->refund_status ?? '—',
+                'refunded_amount'   => $booking->refunded_amount !== null ? (int) $booking->refunded_amount : null,
+            ];
+        });
     }
 
     private function getRowsForType(Carbon $start, Carbon $end, string $type): Collection

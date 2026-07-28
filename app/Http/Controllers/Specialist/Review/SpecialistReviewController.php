@@ -6,11 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Review;
 use App\Models\Specialist;
 use App\Services\Review\ReviewService;
+use App\Traits\HasJalaliDates;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class SpecialistReviewController extends Controller
 {
+    use HasJalaliDates;
+
     protected ReviewService $reviewService;
 
     public function __construct(ReviewService $reviewService)
@@ -39,32 +42,14 @@ class SpecialistReviewController extends Controller
         }
 
         if ($request->filled('date_from')) {
-            try {
-                $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-                $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-                $dateFrom = str_replace($persianDigits, $englishDigits, $request->date_from);
-
-                $dateFrom = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $dateFrom)
-                    ->toCarbon()
-                    ->startOfDay();
-                $query->where('reviewed_at', '>=', $dateFrom);
-            } catch (\Exception $e) {
-                Log::warning('خطا در تبدیل تاریخ از: ' . $e->getMessage());
+            if ($dateFrom = $this->parseJalali($request->date_from, context: 'تاریخ از')) {
+                $query->where('reviewed_at', '>=', $dateFrom->startOfDay());
             }
         }
 
         if ($request->filled('date_to')) {
-            try {
-                $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-                $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-                $dateTo = str_replace($persianDigits, $englishDigits, $request->date_to);
-
-                $dateTo = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $dateTo)
-                    ->toCarbon()
-                    ->endOfDay();
-                $query->where('reviewed_at', '<=', $dateTo);
-            } catch (\Exception $e) {
-                Log::warning('خطا در تبدیل تاریخ تا: ' . $e->getMessage());
+            if ($dateTo = $this->parseJalali($request->date_to, context: 'تاریخ تا')) {
+                $query->where('reviewed_at', '<=', $dateTo->endOfDay());
             }
         }
 

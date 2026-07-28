@@ -2,16 +2,18 @@
 
 namespace App\Exports;
 
+use App\Traits\HasJalaliDates;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Morilog\Jalali\Jalalian;
 
 class SpecialistBookingsExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
 {
+    use HasJalaliDates;
+
     protected $bookings;
     protected $commissionRate;
 
@@ -35,7 +37,7 @@ class SpecialistBookingsExport implements FromCollection, WithHeadings, WithMapp
             $booking->id,
             $booking->user->name,
             $booking->service->name,
-            Jalalian::fromCarbon($booking->booking_time)->format('Y/m/d H:i'),
+            $this->toJalali($booking->booking_time, 'Y/m/d H:i'),
             number_format($income),
             $this->translateStatus($booking->status)
         ];

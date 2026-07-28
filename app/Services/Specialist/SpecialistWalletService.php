@@ -7,14 +7,14 @@ use App\Models\Specialist;
 use App\Models\SpecialistWallet;
 use App\Models\WalletSetting;
 use App\Models\WithdrawalRequest;
-use Carbon\Carbon;
+use App\Traits\HasJalaliDates;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Morilog\Jalali\Jalalian;
 
 class SpecialistWalletService
 {
+    use HasJalaliDates;
+
 // Modified: Removed the resolveSpecialist() method that was here before.
 // App\Traits\ResolvesSpecialist already exists in the project and do the same (via
 // The relationship $user->specialist, which itself is defined based on phone match.
@@ -67,14 +67,14 @@ class SpecialistWalletService
         }
 
         if (! empty($filters['date_from'])) {
-            $dateFrom = $this->parseJalaliDate($filters['date_from'])?->startOfDay();
+            $dateFrom = $this->parseJalali($filters['date_from'], context: 'تاریخ از فیلتر تراکنش‌های کیف پول')?->startOfDay();
             if ($dateFrom) {
                 $query->where('created_at', '>=', $dateFrom);
             }
         }
 
         if (! empty($filters['date_to'])) {
-            $dateTo = $this->parseJalaliDate($filters['date_to'])?->endOfDay();
+            $dateTo = $this->parseJalali($filters['date_to'], context: 'تاریخ تا فیلتر تراکنش‌های کیف پول')?->endOfDay();
             if ($dateTo) {
                 $query->where('created_at', '<=', $dateTo);
             }
@@ -161,18 +161,4 @@ class SpecialistWalletService
         return $wallet->calculateWithdrawalFee($amount, $method);
     }
 
-    private function parseJalaliDate(string $value): ?Carbon
-    {
-        try {
-            $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-            $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-            $normalized = str_replace($persianDigits, $englishDigits, $value);
-
-            return Jalalian::fromFormat('Y/m/d', $normalized)->toCarbon();
-        } catch (\Exception $e) {
-            Log::warning('خطا در تبدیل تاریخ فیلتر تراکنش‌های کیف پول: '.$e->getMessage());
-
-            return null;
-        }
-    }
 }

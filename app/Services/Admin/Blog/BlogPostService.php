@@ -4,16 +4,18 @@ namespace App\Services\Admin\Blog;
 
 use App\Models\BlogCategory;
 use App\Models\BlogPost;
+use App\Traits\HasJalaliDates;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Morilog\Jalali\Jalalian;
 
 class BlogPostService
 {
+    use HasJalaliDates;
+
     public function getIndexData(): array
     {
         return [
@@ -112,7 +114,7 @@ class BlogPostService
      * Previously, this key was not explicitly normalized in update(), i.e. removed
      * The "published" tick had no effect when editing, because the is_published key does not work at all
      * $post->update() was not passed. Now always set to true/false explicitly.
- */
+     */
     private function normalizeIsPublished(mixed $value): bool
     {
         if ($value === null || $value === '') {
@@ -136,11 +138,11 @@ class BlogPostService
      * - If published and has no previous publication date (first time), now.
      * - Otherwise previous date is left untouched (whether published or draft)
      * — Similar behavior to togglePublish which does not clear date when drafting.
- */
+     */
     private function resolvePublishedAt(array $data, bool $isPublished, ?BlogPost $existing): ?Carbon
     {
         if (! empty($data['published_at_jalali'])) {
-            return Jalalian::fromFormat('Y/m/d H:i', $data['published_at_jalali'])->toCarbon();
+            return $this->parseJalaliOrFail($data['published_at_jalali'], 'Y/m/d H:i');
         }
 
         if ($isPublished && ! $existing?->published_at) {

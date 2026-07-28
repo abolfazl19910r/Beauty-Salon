@@ -5,12 +5,15 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\PaymentService;
+use App\Traits\HasJalaliDates;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
 class UserWalletController extends Controller
 {
+    use HasJalaliDates;
+
     protected PaymentService $paymentService;
 
     public function __construct(PaymentService $paymentService)
@@ -62,32 +65,14 @@ class UserWalletController extends Controller
         }
 
         if ($request->filled('date_from')) {
-            try {
-                $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-                $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-                $dateFrom = str_replace($persianDigits, $englishDigits, $request->date_from);
-
-                $dateFrom = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $dateFrom)
-                    ->toCarbon()
-                    ->startOfDay();
-                $query->where('created_at', '>=', $dateFrom);
-            } catch (\Exception $e) {
-
+            if ($dateFrom = $this->parseJalali($request->date_from)) {
+                $query->where('created_at', '>=', $dateFrom->startOfDay());
             }
         }
 
         if ($request->filled('date_to')) {
-            try {
-                $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-                $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-                $dateTo = str_replace($persianDigits, $englishDigits, $request->date_to);
-
-                $dateTo = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $dateTo)
-                    ->toCarbon()
-                    ->endOfDay();
-                $query->where('created_at', '<=', $dateTo);
-            } catch (\Exception $e) {
-
+            if ($dateTo = $this->parseJalali($request->date_to)) {
+                $query->where('created_at', '<=', $dateTo->endOfDay());
             }
         }
 

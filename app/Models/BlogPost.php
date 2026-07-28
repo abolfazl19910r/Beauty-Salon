@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\HasJalaliDates;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
-use Morilog\Jalali\Jalalian;
 
 class BlogPost extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasJalaliDates;
 
     protected $fillable = [
         'title',
@@ -31,10 +31,11 @@ class BlogPost extends Model
     ];
 
     /**
-     * چون جدول blog_posts ستون deleted_at (softDeletes) دارد ولی مدل قبلاً
-     * trait مربوطه را نداشت، هر «حذف» عملاً حذف دائمی و غیرقابل‌بازگشت بود.
-     * با اضافه شدن SoftDeletes، حذف مقاله از این پس واقعاً soft-delete است.
+     * Because the blog_posts table has a deleted_at (softDeletes) column, but the model didn't already
+     * have the corresponding trait, every "delete" was effectively a permanent, irreversible delete.
+     * With the addition of SoftDeletes, deleting a post is now truly a soft-delete.
      */
+
     protected $appends = [
         'image_url',
         'published_at_jalali',
@@ -75,7 +76,7 @@ class BlogPost extends Model
     public function getPublishedAtJalaliAttribute(): ?string
     {
         return $this->published_at
-            ? Jalalian::fromCarbon($this->published_at)->format('Y/m/d H:i')
+            ? $this->toJalali($this->published_at, 'Y/m/d H:i')
             : null;
     }
 }

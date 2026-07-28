@@ -4,15 +4,18 @@ namespace App\Http\Controllers\Specialist\Notification;
 
 use App\Http\Controllers\Controller;
 use App\Models\Specialist;
+use App\Traits\HandlesApiResponse;
+use App\Traits\HasJalaliDates;
 use App\Traits\ResolvesSpecialist;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Morilog\Jalali\Jalalian;
 
 class SpecialistNotificationController extends Controller
 {
+    use HandlesApiResponse;
+    use HasJalaliDates;
     use ResolvesSpecialist;
 
     public function index()
@@ -119,7 +122,7 @@ class SpecialistNotificationController extends Controller
             $notification->markAsRead();
         }
 
-        return response()->json(['success' => true]);
+        return $this->successResponse();
     }
 
     public function showAndRedirect(string $id): RedirectResponse
@@ -193,7 +196,7 @@ class SpecialistNotificationController extends Controller
             $diff < 3600    => floor($diff / 60) . ' دقیقه پیش',
             $diff < 86400   => floor($diff / 3600) . ' ساعت پیش',
             $diff < 604800  => floor($diff / 86400) . ' روز پیش',
-            default         => Jalalian::fromCarbon($datetime)->format('Y/m/d'),
+            default         => $this->toJalali($datetime),
         };
     }
 }

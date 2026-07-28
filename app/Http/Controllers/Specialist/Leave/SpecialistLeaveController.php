@@ -3,16 +3,17 @@
 namespace App\Http\Controllers\Specialist\Leave;
 
 use App\Http\Controllers\Controller;
+use App\Traits\HasJalaliDates;
 use App\Traits\ResolvesSpecialist;
 use App\Http\Requests\Specialist\StoreLeaveRequest;
 use App\Models\Leave;
 use App\Services\Leave\LeaveService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
-use Morilog\Jalali\Jalalian;
 
 class SpecialistLeaveController extends Controller
 {
+    use HasJalaliDates;
     use ResolvesSpecialist;
 
     public function __construct(
@@ -52,7 +53,7 @@ class SpecialistLeaveController extends Controller
      * ⭐ Now checks for conflicts with other approved leaves and previously booked
      * appointments before registering (via LeaveService shared with admin) —
      * something the previous version (SpecialistLeave) did not have at all.
- */
+     */
     public function store(StoreLeaveRequest $request): RedirectResponse
     {
         $specialist = $this->resolveSpecialist();
@@ -64,14 +65,8 @@ class SpecialistLeaveController extends Controller
         $this->authorize('manageLeaves', $specialist);
 
         try {
-            $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-            $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-
-            $startDateEn = str_replace($persianDigits, $englishDigits, $request->start_date_jalali);
-            $endDateEn   = str_replace($persianDigits, $englishDigits, $request->end_date_jalali);
-
-            $startDate = Jalalian::fromFormat('Y/m/d', $startDateEn)->toCarbon()->toDateString();
-            $endDate   = Jalalian::fromFormat('Y/m/d', $endDateEn)->toCarbon()->toDateString();
+            $startDate = $this->parseJalaliOrFail($request->start_date_jalali)->toDateString();
+            $endDate   = $this->parseJalaliOrFail($request->end_date_jalali)->toDateString();
 
             $result = $this->leaveService->store($specialist, [
                 'start_date' => $startDate,

@@ -6,16 +6,17 @@ use App\Events\Booking\BookingCancelled;
 use App\Events\Booking\Completed\BookingCompleted;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Traits\HasJalaliDates;
 use App\Traits\ResolvesSpecialist;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Morilog\Jalali\Jalalian;
 
 class SpecialistBookingManagementController extends Controller
 {
+    use HasJalaliDates;
     use ResolvesSpecialist;
 
     public function index(Request $request)
@@ -144,24 +145,15 @@ class SpecialistBookingManagementController extends Controller
 
     private function applyFilters($query, Request $request): void
     {
-        $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-        $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-
         if ($request->filled('date_from')) {
-            try {
-                $dateFrom = str_replace($persianDigits, $englishDigits, $request->date_from);
-                $query->where('booking_time', '>=', Jalalian::fromFormat('Y/m/d', $dateFrom)->toCarbon()->startOfDay());
-            } catch (\Exception $e) {
-                Log::warning('خطا در تبدیل تاریخ از: ' . $e->getMessage());
+            if ($dateFrom = $this->parseJalali($request->date_from, context: 'تاریخ از')) {
+                $query->where('booking_time', '>=', $dateFrom->startOfDay());
             }
         }
 
         if ($request->filled('date_to')) {
-            try {
-                $dateTo = str_replace($persianDigits, $englishDigits, $request->date_to);
-                $query->where('booking_time', '<=', Jalalian::fromFormat('Y/m/d', $dateTo)->toCarbon()->endOfDay());
-            } catch (\Exception $e) {
-                Log::warning('خطا در تبدیل تاریخ تا: ' . $e->getMessage());
+            if ($dateTo = $this->parseJalali($request->date_to, context: 'تاریخ تا')) {
+                $query->where('booking_time', '<=', $dateTo->endOfDay());
             }
         }
 

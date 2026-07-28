@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin\Booking;
 
+use App\Traits\HasJalaliDates;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -15,6 +16,8 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class UpdateAdminBookingRequest extends FormRequest
 {
+    use HasJalaliDates;
+
     public function authorize(): bool
     {
         return auth()->check() && auth()->user()->hasPermission('access_admin_panel');
@@ -23,11 +26,8 @@ class UpdateAdminBookingRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         if ($this->has('booking_time')) {
-            $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-            $englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-
             $this->merge([
-                'booking_time' => str_replace($persianDigits, $englishDigits, $this->input('booking_time')),
+                'booking_time' => $this->normalizeToEnglishDigits($this->input('booking_time')),
             ]);
         }
     }
