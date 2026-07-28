@@ -212,15 +212,18 @@ class BookingObserver
                 }
 
                 $refundAmount = 0.0;
+                $refundTransaction = null;
+                $refundDetails = [];
 
                 if ($cancelledBy === 'specialist') {
                     $refundAmount = (float) $booking->prepayment_amount;
                     $customerWallet = $booking->user->getOrCreateWallet();
-                    $customerWallet->addRefund(
+                    $refundTransaction = $customerWallet->addRefund(
                         $refundAmount,
                         $booking->id,
                         "بازگشت وجه از نوبت #{$booking->id} - لغو توسط متخصص"
                     );
+                    $refundDetails = ['method' => 'wallet', 'cancelled_by' => 'specialist'];
                 }
                 elseif ($cancelledBy === 'customer') {
                     $customerFee = $settings->calculateCustomerCancellationFee(
@@ -232,11 +235,16 @@ class BookingObserver
 
                     if ($refundAmount > 0) {
                         $customerWallet = $booking->user->getOrCreateWallet();
-                        $customerWallet->addRefund(
+                        $refundTransaction = $customerWallet->addRefund(
                             $refundAmount,
                             $booking->id,
                             "بازگشت وجه از نوبت #{$booking->id} - با جریمه لغو"
                         );
+                        $refundDetails = [
+                            'method' => 'wallet',
+                            'cancelled_by' => 'customer',
+                            'cancellation_fee' => $customerFee,
+                        ];
                     }
 
                     if ($customerFee > 0) {
@@ -253,11 +261,12 @@ class BookingObserver
                 elseif ($cancelledBy === 'admin') {
                     $refundAmount = (float) $booking->prepayment_amount;
                     $customerWallet = $booking->user->getOrCreateWallet();
-                    $customerWallet->addRefund(
+                    $refundTransaction = $customerWallet->addRefund(
                         $refundAmount,
                         $booking->id,
                         "بازگشت وجه از نوبت #{$booking->id} - لغو توسط مدیر"
                     );
+                    $refundDetails = ['method' => 'wallet', 'cancelled_by' => 'admin'];
                 }
 
                 /**
@@ -271,11 +280,13 @@ class BookingObserver
                  */
                 $this->reverseOriginalPayout($booking, $specialist);
 
-                if ($refundAmount > 0) {
+                if ($refundAmount > 0 && $refundTransaction) {
                     $booking->update([
-                        'refund_status'   => 'refunded',
-                        'refunded_amount' => $refundAmount,
-                        'refunded_at'     => now(),
+                        'refund_status'    => 'refunded',
+                        'refunded_amount'  => $refundAmount,
+                        'refunded_at'      => now(),
+                        'refund_reference' => 'WALLET-REFUND-' . $refundTransaction->id,
+                        'refund_details'   => $refundDetails,
                     ]);
                 }
             });
@@ -301,9 +312,7 @@ class BookingObserver
             $wasSettled = ($incomeTransaction->metadata['status'] ?? null) === 'settled';
 
             $specialistWallet->reverseIncome(
-                (float) $incomeTransaction->amount,
-                $booking->id,
-                $wasSettled,
+                $incomeTransaction,
                 "برگشت سهم به‌خاطر لغو نوبت #{$booking->id}"
             );
 
