@@ -108,10 +108,11 @@ class SecurePaymentController extends Controller
                     'payment_status' => 'paid',
                     'paid_at' => now(),
                     'payment_reference' => $result['transaction_id'] ?? $reference,
-                    'payment_details' => [
+                    'payment_details' => array_merge($booking->payment_details ?? [], [
                         'method' => 'gateway',
                         'gateway_ref' => $result['transaction_id'] ?? $reference,
-                    ],
+                        'secure_payment' => true,
+                    ]),
                 ]);
 
                 $payment->update([
