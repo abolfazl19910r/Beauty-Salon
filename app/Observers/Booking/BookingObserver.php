@@ -216,14 +216,56 @@ class BookingObserver
                 $refundDetails = [];
 
                 if ($cancelledBy === 'specialist') {
-                    $refundAmount = (float) $booking->prepayment_amount;
-                    $customerWallet = $booking->user->getOrCreateWallet();
-                    $refundTransaction = $customerWallet->addRefund(
-                        $refundAmount,
-                        $booking->id,
-                        "بازگشت وجه از نوبت #{$booking->id} - لغو توسط متخصص"
+                    /**
+                     * ⭐ Modified by explicit user decision: Specialist cancellation penalty is not a *separate* deduction from
+                     * Specialist wallet — but is deducted from the amount that was supposed to be returned in full to the client
+                     * . That is, the client always gets back (prepayment - penalty),
+                     * and only the penalty amount remains in the admin wallet (not the client, not the specialist). The specialist's original share from this turn is also returned in full
+                     * (without restrictions) as before by reverseOriginalPayout() — that is, the specialist always remains in this net zero
+                     * state, regardless of the amount of the penalty.
+                     *
+                     * ⭐ Added (suggestion 1): Now, like the client, it has a separate time threshold
+                     * (specialist_cancellation_before_hours) — cancellation much earlier than the turn
+                     * is no longer penalized.
+                     * ⭐ Added (Proposal 4): Increased penalty for repeated cancellations — the number of
+                     * cancellations by this specialist (by himself) in the last specialist_repeat_cancellation_window_days
+                     * (including this cancellation) is counted and passed to calculateSpecialistCancellationPenalty()
+                     * ; if specialist_repeat_cancellation_threshold is exceeded,
+                     * specialist_repeat_cancellation_extra_percentage is added to the base percentage.
+                     */
+                    $recentSpecialistCancellations = Booking::where('specialist_id', $specialist->id)
+                        ->where('cancelled_by', 'specialist')
+                        ->where('cancelled_at', '>=', now()->subDays($settings->specialist_repeat_cancellation_window_days))
+                        ->count();
+
+                    $specialistPenalty = $settings->calculateSpecialistCancellationPenalty(
+                        $booking->prepayment_amount,
+                        $booking->booking_time,
+                        $recentSpecialistCancellations
                     );
-                    $refundDetails = ['method' => 'wallet', 'cancelled_by' => 'specialist'];
+                    $refundAmount = max(0, $booking->prepayment_amount - $specialistPenalty);
+
+                    if ($refundAmount > 0) {
+                        $customerWallet = $booking->user->getOrCreateWallet();
+                        $refundTransaction = $customerWallet->addRefund(
+                            $refundAmount,
+                            $booking->id,
+                            "بازگشت وجه از نوبت #{$booking->id} - لغو توسط متخصص"
+                        );
+                        $refundDetails = [
+                            'method' => 'wallet',
+                            'cancelled_by' => 'specialist',
+                            'specialist_penalty' => $specialistPenalty,
+                        ];
+                    }
+
+                    if ($specialistPenalty > 0) {
+                        AdminWallet::getWallet()->addCommission(
+                            $specialistPenalty,
+                            $booking->id,
+                            "جریمه لغو نوبت #{$booking->id} توسط متخصص"
+                        );
+                    }
                 }
                 elseif ($cancelledBy === 'customer') {
                     $customerFee = $settings->calculateCustomerCancellationFee(
@@ -248,11 +290,15 @@ class BookingObserver
                     }
 
                     if ($customerFee > 0) {
-                        $wallet = $specialist->getOrCreateWallet();
-                        $specialistShare = $customerFee * 0.8;
-
-                        $wallet->addIncome(
-                            $specialistShare,
+                        /**
+                         * ⭐ Modified by explicit user decision: Previously, 80% of this penalty was added as
+                         * "compensation" to the expert's wallet (addIncome), and the remaining 20%
+                         * was not explicitly recorded anywhere. Now the entire penalty (100%) is explicitly added to the
+                         * admin's wallet — the expert does not receive any share of this penalty (just like
+                         * he always loses the main share of his turn, no more, no less).
+                         */
+                        AdminWallet::getWallet()->addCommission(
+                            $customerFee,
                             $booking->id,
                             "جریمه لغو نوبت #{$booking->id} توسط مشتری"
                         );
@@ -372,14 +418,39 @@ class BookingObserver
         $persianDate = verta($booking->booking_time)->format('Y/m/d');
         $persianTime = verta($booking->booking_time)->format('H:i');
 
+        /**
+         * ⭐ Added (Suggestion 3): Previously, only the prepayment_amount was always shown
+         * , even when it was returned to the wallet for a lower penalty — the customer
+         * did not understand exactly how much was charged. Because the handleCancellation() method was executed before
+         * this method (same instance of the model), refunded_amount/refund_details were already
+         * set to $booking.
+         */
+        $refundedAmount = $booking->refunded_amount !== null
+            ? (float) $booking->refunded_amount
+            : (float) $booking->prepayment_amount;
+
+        $fee = (float) (($booking->refund_details['cancellation_fee'] ?? null)
+            ?? ($booking->refund_details['specialist_penalty'] ?? 0));
+
+        if ($fee > 0) {
+            $amountLine = sprintf(
+                "💰 مبلغ نوبت: %s تومان\n➖ جریمه لغو: %s تومان\n✅ مبلغ بازگشتی: %s تومان",
+                number_format($booking->prepayment_amount),
+                number_format($fee),
+                number_format($refundedAmount)
+            );
+        } else {
+            $amountLine = sprintf('💰 پیش‌پرداخت: %s تومان', number_format($refundedAmount));
+        }
+
         $message = sprintf(
-            "سلام %s، نوبت شما لغو شد.\n👤 متخصص: %s\n💇 سرویس: %s\n📅 تاریخ: %s\n⏰ زمان: %s\n💰 پیش‌پرداخت: %s تومان\n🔢 پیگیری: #%s\n🏠 آدرس: تهران، خیابان ... \n❌ دلیل: %s",
+            "سلام %s، نوبت شما لغو شد.\n👤 متخصص: %s\n💇 سرویس: %s\n📅 تاریخ: %s\n⏰ زمان: %s\n%s\n🔢 پیگیری: #%s\n🏠 آدرس: تهران، خیابان ... \n❌ دلیل: %s",
             $booking->user->name,
             $booking->specialist->name,
             $booking->service->name,
             $persianDate,
             $persianTime,
-            number_format($booking->prepayment_amount),
+            $amountLine,
             $booking->id,
             $booking->cancellation_reason ?? 'ذکر نشده'
         );
@@ -405,6 +476,17 @@ class BookingObserver
         $message .= "📞 تماس: {$user->phone}\n";
         $message .= "💇 سرویس: {$booking->service->name}\n";
         $message .= "📅 تاریخ: " . verta($booking->booking_time)->format('Y/m/d') . " - ساعت " . verta($booking->booking_time)->format('H:i');
+
+        /**
+         * ⭐ Added (Suggestion 3): If the expert has canceled and is being charged a penalty
+         * , let them know explicitly - not just keep quiet and deduct from the account.
+         */
+        if ($cancelledBy === 'specialist') {
+            $penalty = (float) ($booking->refund_details['specialist_penalty'] ?? 0);
+            if ($penalty > 0) {
+                $message .= "\n\n⚠️ به‌خاطر لغو این نوبت، مبلغ " . number_format($penalty) . " تومان از حساب شما به‌عنوان جریمه کسر شد.";
+            }
+        }
 
         $this->smsService->send($specialist->phone, $message);
     }
