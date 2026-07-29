@@ -85,11 +85,11 @@
                     </div>
                     <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div class="sm:col-span-2">
-                            <label class="form-label">بازه زمانی جریمه لغو (ساعت)</label>
+                            <label class="form-label">بازه زمانی جریمه لغو مشتری (ساعت)</label>
                             <input type="number" name="cancellation_before_hours"
                                    value="{{ $settings->cancellation_before_hours }}"
                                    class="form-input persian-number max-w-xs">
-                            <p class="form-hint">اگر کمتر از این مقدار مانده به نوبت لغو شود، جریمه اعمال می‌شود.</p>
+                            <p class="form-hint">اگر مشتری کمتر از این مقدار مانده به نوبت لغو کند، جریمه اعمال می‌شود. این آستانه فقط برای مشتری است؛ آستانه‌ی متخصص جدا و پایین‌تر تنظیم می‌شود.</p>
                         </div>
                         <div>
                             <label class="form-label">درصد جریمه کاربر</label>
@@ -99,6 +99,7 @@
                                        class="form-input persian-number" style="padding-left:2.5rem;">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style="color:var(--admin-text-dim);">%</span>
                             </div>
+                            <p class="form-hint">کل این مبلغ به کیف‌پول ادمین اضافه می‌شود؛ مابقی به مشتری برمی‌گردد.</p>
                         </div>
                         <div>
                             <label class="form-label">درصد جریمه متخصص</label>
@@ -108,7 +109,39 @@
                                        class="form-input persian-number" style="padding-left:2.5rem;">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style="color:var(--admin-text-dim);">%</span>
                             </div>
-                            <p class="form-hint">در صورت لغو نوبت توسط متخصص.</p>
+                            <p class="form-hint">در صورت لغو نوبت توسط متخصص؛ از مبلغی که قرار بود به مشتری برگردد کسر و به کیف‌پول ادمین اضافه می‌شود.</p>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="form-label">بازه زمانی جریمه لغو متخصص (ساعت)</label>
+                            <input type="number" name="specialist_cancellation_before_hours"
+                                   value="{{ $settings->specialist_cancellation_before_hours }}"
+                                   class="form-input persian-number max-w-xs">
+                            <p class="form-hint">اگر متخصص زودتر از این مقدار قبل از نوبت لغو کند، جریمه‌ای اعمال نمی‌شود؛ فقط لغو نزدیک به زمان نوبت جریمه دارد.</p>
+                        </div>
+                        <div class="sm:col-span-2 pt-2" style="border-top:1px dashed var(--admin-border);">
+                            <p class="text-sm font-bold mb-3" style="color:var(--admin-text);">جریمه‌ی تشدیدی برای لغو مکرر متخصص (اختیاری)</p>
+                        </div>
+                        <div>
+                            <label class="form-label">آستانه‌ی تعداد لغو</label>
+                            <input type="number" name="specialist_repeat_cancellation_threshold"
+                                   value="{{ $settings->specialist_repeat_cancellation_threshold }}"
+                                   class="form-input persian-number max-w-xs">
+                            <p class="form-hint">اگر متخصص در بازه‌ی زیر به این تعداد یا بیشتر نوبت لغو کند، جریمه‌ی همان لغو افزایش می‌یابد. مقدار ۰ یعنی این قابلیت غیرفعال است.</p>
+                        </div>
+                        <div>
+                            <label class="form-label">بازه‌ی زمانی شمارش (روز)</label>
+                            <input type="number" name="specialist_repeat_cancellation_window_days"
+                                   value="{{ $settings->specialist_repeat_cancellation_window_days }}"
+                                   class="form-input persian-number max-w-xs">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="form-label">درصد جریمه‌ی اضافه (روی درصد جریمه‌ی معمولی متخصص)</label>
+                            <div class="relative max-w-xs">
+                                <input type="number" step="0.1" name="specialist_repeat_cancellation_extra_percentage"
+                                       value="{{ $settings->specialist_repeat_cancellation_extra_percentage }}"
+                                       class="form-input persian-number" style="padding-left:2.5rem;">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style="color:var(--admin-text-dim);">%</span>
+                            </div>
                         </div>
                     </div>
                 </div>
