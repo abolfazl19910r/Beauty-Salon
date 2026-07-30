@@ -7,16 +7,18 @@ use App\Models\BeautyService;
 use App\Services\CategoryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class AdminServiceController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         $services = BeautyService::with('category')->latest()->paginate(10);
         return view('admin.services.index', compact('services'));
     }
 
-    public function create()
+    public function create(): View
     {
         $categoryService = app(CategoryService::class);
         $categories = $categoryService->getCategorySelectOptions();
@@ -24,7 +26,7 @@ class AdminServiceController extends Controller
         return view('admin.services.create', compact('categories'));
     }
 
-    public function edit(BeautyService $service)
+    public function edit(BeautyService $service): View
     {
         $categoryService = app(CategoryService::class);
         $categories = $categoryService->getCategorySelectOptions();
@@ -32,7 +34,7 @@ class AdminServiceController extends Controller
         return view('admin.services.edit', compact('service', 'categories'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -53,7 +55,7 @@ class AdminServiceController extends Controller
             ->with('success', 'خدمت جدید با موفقیت ایجاد شد.');
     }
 
-    public function update(Request $request, BeautyService $service)
+    public function update(Request $request, BeautyService $service): RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -77,7 +79,7 @@ class AdminServiceController extends Controller
             ->with('success', 'خدمت با موفقیت بروزرسانی شد.');
     }
 
-    public function destroy(BeautyService $service)
+    public function destroy(BeautyService $service): RedirectResponse
     {
         try {
             $service->delete();

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Report;
 use App\Http\Controllers\Controller;
 use App\Services\Admin\Report\AdminReportService;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class AdminReportsController extends Controller
 {
@@ -12,7 +13,7 @@ class AdminReportsController extends Controller
         protected AdminReportService $reportService,
     ) {}
 
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         // Previously, without start_date/end_date in the URL, the page would just show the message "No time range selected
         //" and the admin would have to manually select a

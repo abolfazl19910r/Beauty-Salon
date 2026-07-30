@@ -9,11 +9,8 @@ use Illuminate\Support\Facades\Log;
 
 class PhoneVerificationService
 {
-    protected SMSService $smsService;
-
-    public function __construct(SMSService $smsService)
+    public function __construct(protected readonly SMSService $smsService)
     {
-        $this->smsService = $smsService;
     }
 
     public function sendCode(User $user): bool

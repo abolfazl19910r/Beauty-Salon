@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 
 class SecurePaymentService
 {
-    public function createPayment($booking)
+    public function createPayment($booking): Payment
     {
         $referenceId = $this->generateSecureReference();
 

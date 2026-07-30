@@ -8,17 +8,16 @@ use App\Services\CategoryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class AdminCategoryController extends Controller
 {
-    protected CategoryService $categoryService;
-
-    public function __construct(CategoryService $categoryService)
+    public function __construct(protected readonly CategoryService $categoryService)
     {
-        $this->categoryService = $categoryService;
     }
 
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $query = Category::with('parent');
 
@@ -42,13 +41,13 @@ class AdminCategoryController extends Controller
         return view('admin.categories.index', compact('categories', 'parentCategories'));
     }
 
-    public function create()
+    public function create(): View
     {
         $parentCategories = Category::parents()->get(['id', 'name']);
         return view('admin.categories.create', compact('parentCategories'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:categories',
@@ -78,7 +77,7 @@ class AdminCategoryController extends Controller
         }
     }
 
-    public function show($id)
+    public function show($id): View
     {
         $category = Category::findOrFail($id);
 
@@ -90,7 +89,7 @@ class AdminCategoryController extends Controller
         return view('admin.categories.show', compact('category', 'childrenCount', 'servicesCount'));
     }
 
-    public function edit($id)
+    public function edit($id): View
     {
         $category = Category::findOrFail($id);
 
@@ -100,7 +99,7 @@ class AdminCategoryController extends Controller
         return view('admin.categories.edit', compact('category', 'categories'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id): RedirectResponse
     {
         $category = Category::findOrFail($id);
 
@@ -149,7 +148,7 @@ class AdminCategoryController extends Controller
         }
     }
 
-    public function toggleStatus($id)
+    public function toggleStatus($id): RedirectResponse
     {
         $category = Category::findOrFail($id);
 
@@ -165,7 +164,7 @@ class AdminCategoryController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy($id): RedirectResponse
     {
         $category = Category::findOrFail($id);
 

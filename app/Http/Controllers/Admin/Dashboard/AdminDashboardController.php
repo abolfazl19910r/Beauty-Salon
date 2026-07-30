@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Services\Admin\Dashboard\AdminDashboardService;
+use Illuminate\View\View;
 
 class AdminDashboardController extends Controller
 {
@@ -11,7 +12,7 @@ class AdminDashboardController extends Controller
     {
     }
 
-    public function dashboard()
+    public function dashboard(): View
     {
         return view('admin.dashboard', $this->dashboardService->getOverviewData());
     }

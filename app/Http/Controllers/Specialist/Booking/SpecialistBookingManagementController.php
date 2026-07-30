@@ -13,13 +13,14 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 
 class SpecialistBookingManagementController extends Controller
 {
     use HasJalaliDates;
     use ResolvesSpecialist;
 
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $specialist = $this->resolveSpecialist();
 
@@ -40,7 +41,7 @@ class SpecialistBookingManagementController extends Controller
         return view('specialist.bookings', compact('specialist', 'bookings'));
     }
 
-    public function show(Booking $booking)
+    public function show(Booking $booking): View
     {
         $specialist = $this->resolveSpecialist();
 

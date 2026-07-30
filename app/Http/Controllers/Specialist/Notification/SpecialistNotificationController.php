@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\View\View;
 
 class SpecialistNotificationController extends Controller
 {
@@ -18,7 +19,7 @@ class SpecialistNotificationController extends Controller
     use HasJalaliDates;
     use ResolvesSpecialist;
 
-    public function index()
+    public function index(): View
     {
         $user = auth()->user();
         $specialist = Specialist::where('phone', $user->phone)->first();

@@ -57,7 +57,7 @@ class AdminReportExportController extends Controller
         return view('admin.reports.exports.index', compact('exports'));
     }
 
-    public function download(ReportExport $reportExport)
+    public function download(ReportExport $reportExport): RedirectResponse
     {
         if (!$reportExport->isDownloadable()) {
             return back()->with('error', 'این فایل هنوز آماده نیست یا در دسترس نیست.');

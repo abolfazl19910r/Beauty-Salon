@@ -13,6 +13,8 @@ use App\Notifications\Loyalty\RewardRedeemed;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class LoyaltyService
 {
@@ -39,7 +41,7 @@ class LoyaltyService
             ->sum('points');
     }
 
-    public function getHistory($userId, $perPage = 10)
+    public function getHistory($userId, $perPage = 10): LengthAwarePaginator
     {
         return LoyaltyPoint::where('user_id', $userId)
             ->with(['booking' => function($query) {
@@ -50,7 +52,7 @@ class LoyaltyService
             ->paginate($perPage);
     }
 
-    public function getAvailableRewards($userId)
+    public function getAvailableRewards($userId): Collection
     {
         $userPoints = $this->getCurrentPoints($userId);
 
@@ -106,7 +108,7 @@ class LoyaltyService
         });
     }
 
-    public function earnPointsFromBooking($userId, $bookingId)
+    public function earnPointsFromBooking($userId, $bookingId): LoyaltyPoint
     {
         $booking = Booking::findOrFail($bookingId);
         $points = $this->calculatePointsForBooking($booking);

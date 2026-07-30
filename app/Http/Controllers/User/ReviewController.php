@@ -10,17 +10,16 @@ use App\Models\ReviewToken;
 use App\Services\Review\ReviewService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class ReviewController extends Controller
 {
-    protected ReviewService $reviewService;
-
-    public function __construct(ReviewService $reviewService)
+    public function __construct(protected readonly ReviewService $reviewService)
     {
-        $this->reviewService = $reviewService;
     }
 
-    public function create(Request $request)
+    public function create(Request $request): View|RedirectResponse
     {
         try {
             $token = $request->query('token');
@@ -75,7 +74,7 @@ class ReviewController extends Controller
         }
     }
 
-    public function store(StoreReviewRequest $request)
+    public function store(StoreReviewRequest $request): RedirectResponse
     {
         try {
             $token = $request->input('token');
@@ -115,12 +114,12 @@ class ReviewController extends Controller
         }
     }
 
-    public function thankYou()
+    public function thankYou(): View
     {
         return view('reviews.thank-you');
     }
 
-    public function specialistReviews($specialistId)
+    public function specialistReviews($specialistId): View
     {
         $specialist = \App\Models\Specialist::findOrFail($specialistId);
 

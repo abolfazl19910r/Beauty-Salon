@@ -9,19 +9,16 @@ use App\Services\LoyaltyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class PaymentController extends Controller
 {
-    protected PaymentService $paymentService;
-    protected LoyaltyService $loyaltyService;
-
-    public function __construct(PaymentService $paymentService, LoyaltyService $loyaltyService)
+    public function __construct(protected readonly PaymentService $paymentService, protected readonly LoyaltyService $loyaltyService)
     {
-        $this->paymentService = $paymentService;
-        $this->loyaltyService = $loyaltyService;
     }
 
-    public function process(Booking $booking)
+    public function process(Booking $booking): RedirectResponse
     {
         try {
             $this->authorize('pay', $booking);
@@ -74,7 +71,7 @@ class PaymentController extends Controller
         }
     }
 
-    public function processWithWallet(Request $request, Booking $booking)
+    public function processWithWallet(Request $request, Booking $booking): RedirectResponse
     {
         try {
             $this->authorize('pay', $booking);
@@ -174,7 +171,7 @@ class PaymentController extends Controller
         }
     }
 
-    public function callback(Request $request)
+    public function callback(Request $request): RedirectResponse
     {
         try {
             $result = $this->paymentService->verifyPayment($request);
@@ -247,7 +244,7 @@ class PaymentController extends Controller
         }
     }
 
-    public function result()
+    public function result(): View|RedirectResponse
     {
         $success = session('success', false);
         $booking = session('booking');
@@ -258,7 +255,7 @@ class PaymentController extends Controller
         return view('payment.result', compact('success', 'booking', 'error_message'));
     }
 
-    public function show(Booking $booking)
+    public function show(Booking $booking): View|RedirectResponse
     {
         $this->authorize('pay', $booking);
 

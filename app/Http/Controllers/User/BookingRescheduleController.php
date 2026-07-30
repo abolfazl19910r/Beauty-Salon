@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 
 class BookingRescheduleController extends Controller
 {
@@ -19,7 +20,7 @@ class BookingRescheduleController extends Controller
         protected SMSService $smsService,
     ) {}
 
-    public function show(Booking $booking)
+    public function show(Booking $booking): View
     {
         $this->authorize('reschedule', $booking);
 

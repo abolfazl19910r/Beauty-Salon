@@ -6,10 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\GalleryImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\JsonResponse;
 
 class GalleryController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         $images = GalleryImage::orderBy('order')
             ->orderBy('created_at', 'desc')
@@ -18,7 +19,7 @@ class GalleryController extends Controller
         return response()->json($images);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -34,7 +35,7 @@ class GalleryController extends Controller
         return response()->json($image, 201);
     }
 
-    public function update(Request $request, GalleryImage $image)
+    public function update(Request $request, GalleryImage $image): JsonResponse
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -53,7 +54,7 @@ class GalleryController extends Controller
         return response()->json($image);
     }
 
-    public function destroy(GalleryImage $image)
+    public function destroy(GalleryImage $image): JsonResponse
     {
         Storage::disk('public')->delete($image->image_path);
         $image->delete();
@@ -61,7 +62,7 @@ class GalleryController extends Controller
         return response()->json(['message' => 'تصویر با موفقیت حذف شد']);
     }
 
-    public function reorder(Request $request)
+    public function reorder(Request $request): JsonResponse
     {
         $request->validate([
             'images' => 'required|array',

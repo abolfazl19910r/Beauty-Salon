@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Admin\Payment;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class AdminPaymentController extends Controller
 {
-    public function create(Request $request)
+    public function create(Request $request): View
     {
         $booking = null;
         if ($request->has('booking_id')) {
@@ -18,7 +20,7 @@ class AdminPaymentController extends Controller
         return view('admin.payments.create', compact('booking'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'booking_id' => 'required|exists:bookings,id',

@@ -7,11 +7,13 @@ use App\Http\Controllers\Controller;
 use App\Models\BeautyService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
 
 class SpecialistController extends Controller
 {
 
-    public function search(Request $request)
+    public function search(Request $request): View|JsonResponse
     {
         $query = Specialist::whereNull('deleted_at');
 
@@ -51,7 +53,7 @@ class SpecialistController extends Controller
         ]);
     }
 
-    public function byService(BeautyService $service)
+    public function byService(BeautyService $service): View|JsonResponse
     {
         $specialists = $service->specialists()
             ->whereNull('specialists.deleted_at')
@@ -71,7 +73,7 @@ class SpecialistController extends Controller
         ]);
     }
 
-    public function availableSlots(Specialist $specialist, $date, Request $request)
+    public function availableSlots(Specialist $specialist, $date, Request $request): JsonResponse
     {
         $duration = $request->service_duration;
         $slots = $specialist->getAvailableSlots($date, $duration);
@@ -89,7 +91,7 @@ class SpecialistController extends Controller
         ]);
     }
 
-    public function availability(Specialist $specialist, Request $request)
+    public function availability(Specialist $specialist, Request $request): View|JsonResponse
     {
         $month = $request->month ?? date('m');
         $year = $request->year ?? date('Y');
@@ -109,7 +111,7 @@ class SpecialistController extends Controller
         return view('specialists.availability', compact('specialist', 'availabilityData', 'year', 'month'));
     }
 
-    public function getAvailableDates(Specialist $specialist)
+    public function getAvailableDates(Specialist $specialist): JsonResponse
     {
         try {
             $startDate = Carbon::today();
@@ -142,7 +144,7 @@ class SpecialistController extends Controller
         }
     }
 
-    public function topRated()
+    public function topRated(): View|JsonResponse
     {
         $specialists = Specialist::whereNull('deleted_at')
             ->withCount(['bookings as completed_bookings' => function($query) {
@@ -168,7 +170,7 @@ class SpecialistController extends Controller
         ]);
     }
 
-    public function show(Specialist $specialist)
+    public function show(Specialist $specialist): View|JsonResponse
     {
         if ($specialist->deleted_at) {
             abort(404);

@@ -10,17 +10,16 @@ use App\Models\DiscountCode;
 use App\Models\Reward;
 use App\Services\LoyaltyService;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class LoyaltyController extends Controller
 {
-    protected LoyaltyService $loyaltyService;
-
-    public function __construct(LoyaltyService $loyaltyService)
+    public function __construct(protected readonly LoyaltyService $loyaltyService)
     {
-        $this->loyaltyService = $loyaltyService;
     }
 
-    public function overview()
+    public function overview(): JsonResponse
     {
         $userId = auth()->id();
         $currentPoints = $this->loyaltyService->getCurrentPoints($userId);
@@ -38,19 +37,19 @@ class LoyaltyController extends Controller
         ]);
     }
 
-    public function history(Request $request): \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+    public function history(Request $request): AnonymousResourceCollection
     {
         $history = $this->loyaltyService->getHistory(auth()->id(), $request->per_page);
         return LoyaltyPointResource::collection($history);
     }
 
-    public function rewards(): \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+    public function rewards(): AnonymousResourceCollection
     {
         $rewards = $this->loyaltyService->getAvailableRewards(auth()->id());
         return RewardResource::collection($rewards);
     }
 
-    public function redeemReward(Request $request, Reward $reward)
+    public function redeemReward(Request $request, Reward $reward): JsonResponse
     {
         try {
             $discountCode = $this->loyaltyService->redeemReward(auth()->id(), $reward);
@@ -67,7 +66,7 @@ class LoyaltyController extends Controller
         }
     }
 
-    public function discountCodes(): \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+    public function discountCodes(): AnonymousResourceCollection
     {
         $codes = DiscountCode::where('user_id', auth()->id())
             ->where('is_active', true)

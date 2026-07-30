@@ -10,6 +10,8 @@ use App\Services\Specialist\SpecialistWalletService;
 use App\Traits\ResolvesSpecialist;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class SpecialistWithdrawalController extends Controller
 {
@@ -19,7 +21,7 @@ class SpecialistWithdrawalController extends Controller
     {
     }
 
-    public function create()
+    public function create(): View|RedirectResponse
     {
         $specialist = $this->resolveSpecialist();
 
@@ -40,7 +42,7 @@ class SpecialistWithdrawalController extends Controller
         return view('specialist.wallet.create-withdrawal', compact('specialist', 'wallet', 'settings'));
     }
 
-    public function store(StoreWithdrawalRequest $request)
+    public function store(StoreWithdrawalRequest $request): RedirectResponse
     {
         // requireSpecialist(): equivalent to the previous behavior of abort(404) in old storeWithdrawal(),
         // Only with a slightly more descriptive message text (from the project's central trait).
@@ -69,7 +71,7 @@ class SpecialistWithdrawalController extends Controller
         }
     }
 
-    public function cancel(WithdrawalRequest $withdrawalRequest)
+    public function cancel(WithdrawalRequest $withdrawalRequest): RedirectResponse
     {
         $specialist = $this->requireSpecialist();
 

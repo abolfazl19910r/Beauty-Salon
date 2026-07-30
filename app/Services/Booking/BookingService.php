@@ -20,21 +20,8 @@ class BookingService
 {
     protected const MINIMUM_PREPAYMENT = 50000.0;
 
-    protected Specialist $specialist;
-    protected Booking $booking;
-    protected DiscountCode $discountCode;
-    protected DiscountCalculator $discountCalculator;
-
-    public function __construct(
-        Specialist $specialist,
-        Booking $booking,
-        DiscountCode $discountCode,
-        DiscountCalculator $discountCalculator
-    ) {
-        $this->specialist = $specialist;
-        $this->booking = $booking;
-        $this->discountCode = $discountCode;
-        $this->discountCalculator = $discountCalculator;
+    public function __construct(protected readonly Specialist $specialist, protected readonly Booking $booking, protected readonly DiscountCode $discountCode, protected readonly DiscountCalculator $discountCalculator)
+    {
     }
 
     public function isTimeAvailable(int $specialistId, string $bookingTime): bool

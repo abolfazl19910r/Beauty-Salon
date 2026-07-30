@@ -10,10 +10,12 @@ use App\Models\Specialist;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Verta;
+use Illuminate\View\View;
+use Illuminate\Http\JsonResponse;
 
 class AdminSearchController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $query = $request->input('q');
         $results = [];
@@ -49,7 +51,7 @@ class AdminSearchController extends Controller
         return view('admin.search.index', compact('query', 'results'));
     }
 
-    public function apiSearch(Request $request)
+    public function apiSearch(Request $request): JsonResponse
     {
         $query = $request->input('q');
         if (empty($query) || strlen($query) < 2) {
@@ -190,7 +192,7 @@ class AdminSearchController extends Controller
             ->toArray();
     }
 
-    public function suggestions(Request $request)
+    public function suggestions(Request $request): JsonResponse
     {
         $query = $request->input('q');
 

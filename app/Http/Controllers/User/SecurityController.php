@@ -9,17 +9,17 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Collection;
 
 class SecurityController extends Controller
 {
-    protected SecurityLogService $securityLogService;
-
-    public function __construct(SecurityLogService $securityLogService)
+    public function __construct(protected readonly SecurityLogService $securityLogService)
     {
-        $this->securityLogService = $securityLogService;
     }
 
-    public function dashboard()
+    public function dashboard(): View
     {
         $user = auth()->user();
 
@@ -35,7 +35,7 @@ class SecurityController extends Controller
         return view('security.dashboard', $data);
     }
 
-    public function getActiveSessions()
+    public function getActiveSessions(): Collection
     {
         return DB::table('sessions')
             ->where('user_id', auth()->id())
@@ -48,7 +48,7 @@ class SecurityController extends Controller
             });
     }
 
-    public function terminateSession($id)
+    public function terminateSession($id): JsonResponse
     {
         if ($id === session()->getId()) {
             return response()->json([
@@ -70,7 +70,7 @@ class SecurityController extends Controller
         ]);
     }
 
-    public function terminateAllSessions()
+    public function terminateAllSessions(): JsonResponse
     {
         DB::table('sessions')
             ->where('user_id', auth()->id())
@@ -84,7 +84,7 @@ class SecurityController extends Controller
         ]);
     }
 
-    public function getSecurityLogs(Request $request)
+    public function getSecurityLogs(Request $request): View|JsonResponse
     {
         $logs = DB::table('security_logs')
             ->where('user_id', auth()->id())
@@ -107,7 +107,7 @@ class SecurityController extends Controller
         return view('security.logs', compact('logs'));
     }
 
-    public function getLoginHistory()
+    public function getLoginHistory(): JsonResponse
     {
         $history = DB::table('security_logs')
             ->where('user_id', auth()->id())
@@ -119,7 +119,7 @@ class SecurityController extends Controller
         return response()->json($history);
     }
 
-    public function checkPasswordStrength(CheckPasswordStrengthRequest $request)
+    public function checkPasswordStrength(CheckPasswordStrengthRequest $request): JsonResponse
     {
         $score = 0;
         $password = $request->password;
@@ -196,7 +196,7 @@ class SecurityController extends Controller
         return $suggestions;
     }
 
-    protected function getRecentActivities(): \Illuminate\Support\Collection
+    protected function getRecentActivities(): Collection
     {
         return DB::table('security_logs')
             ->where('user_id', auth()->id())

@@ -6,21 +6,19 @@ use App\Models\Booking;
 use App\Models\BeautyService;
 use App\Models\ScheduledReport;
 use App\Models\Specialist;
-use App\Observers\DiscountCodeObserver;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
 
 class ReportService
 {
-    protected DiscountCodeObserver $cacheService;
     protected int $cacheDuration = 3600;
-    public function __construct(DiscountCodeObserver $cacheService)
+    public function __construct(protected readonly ReportCacheService $cacheService)
     {
-        $this->cacheService = $cacheService;
     }
 
-    public function getRevenueReport($type, $startDate = null, $endDate = null, $compareWith = null)
+    public function getRevenueReport($type, $startDate = null, $endDate = null, $compareWith = null): array|Collection
     {
         $params = compact('type', 'startDate', 'endDate', 'compareWith');
 
@@ -67,7 +65,7 @@ class ReportService
         });
     }
 
-    public function getSpecialistPerformance($startDate = null, $endDate = null)
+    public function getSpecialistPerformance($startDate = null, $endDate = null): Collection
     {
         $params = compact('startDate', 'endDate');
 
@@ -188,7 +186,7 @@ class ReportService
         ];
     }
 
-    public function scheduleReport($userId, $reportType, array $params = [])
+    public function scheduleReport($userId, $reportType, array $params = []): ScheduledReport
     {
         return ScheduledReport::create([
             'user_id' => $userId,

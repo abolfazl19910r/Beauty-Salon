@@ -15,11 +15,8 @@ use Illuminate\View\View;
 
 class AdminUserController extends Controller
 {
-    protected AdminUserService $userService;
-
-    public function __construct(AdminUserService $userService)
+    public function __construct(protected readonly AdminUserService $userService)
     {
-        $this->userService = $userService;
     }
 
     public function index(Request $request): View

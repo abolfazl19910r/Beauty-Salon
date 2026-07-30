@@ -5,12 +5,15 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Traits\HandlesApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 
 class NotificationController extends Controller
 {
     use HandlesApiResponse;
 
-    public function index()
+    public function index(): View
     {
         $notifications = auth()->user()
             ->notifications()
@@ -19,7 +22,7 @@ class NotificationController extends Controller
         return view('notifications.index', compact('notifications'));
     }
 
-    public function markAsRead(Request $request, $id)
+    public function markAsRead(Request $request, $id): JsonResponse
     {
         $notification = auth()->user()
             ->notifications()
@@ -30,14 +33,14 @@ class NotificationController extends Controller
         return $this->successResponse();
     }
 
-    public function markAllAsRead(): \Illuminate\Http\RedirectResponse
+    public function markAllAsRead(): RedirectResponse
     {
         auth()->user()->unreadNotifications->markAsRead();
 
         return back()->with('success', 'همه اعلان‌ها خوانده شدند.');
     }
 
-    public function destroy($id): \Illuminate\Http\RedirectResponse
+    public function destroy($id): RedirectResponse
     {
         auth()->user()
             ->notifications()

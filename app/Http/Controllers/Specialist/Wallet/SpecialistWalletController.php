@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Services\Specialist\SpecialistWalletService;
 use App\Traits\ResolvesSpecialist;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Http\JsonResponse;
 
 class SpecialistWalletController extends Controller
 {
@@ -15,7 +17,7 @@ class SpecialistWalletController extends Controller
     {
     }
 
-    public function index()
+    public function index(): View
     {
         $specialist = $this->resolveSpecialist();
 
@@ -31,7 +33,7 @@ class SpecialistWalletController extends Controller
         return view('specialist.wallet.index', array_merge(compact('specialist'), $data));
     }
 
-    public function transactions(Request $request)
+    public function transactions(Request $request): View
     {
         $specialist = $this->resolveSpecialist();
 
@@ -50,7 +52,7 @@ class SpecialistWalletController extends Controller
         return view('specialist.wallet.transactions', compact('specialist', 'wallet', 'transactions'));
     }
 
-    public function calculateFee(Request $request)
+    public function calculateFee(Request $request): JsonResponse
     {
         // ⚠️ intentionally used resolveSpecialist() (not requireSpecialist()):
         // This method is an endpoint called with fetch/AJAX and should always return JSON.

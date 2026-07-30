@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 
 /**
  * Responsible for displaying the list and details of turns, payment success/failure pages, and comment registration.
@@ -28,7 +29,7 @@ class BookingController extends Controller
 
     // ── Web ──────────────────────────────────────────────────────────
 
-    public function index(Request $request): \Illuminate\View\View
+    public function index(Request $request): View
     {
         $user = auth()->user();
 
@@ -63,7 +64,7 @@ class BookingController extends Controller
         return view('bookings.index', compact('bookings'));
     }
 
-    public function show(Booking $booking)
+    public function show(Booking $booking): View|RedirectResponse
     {
         $this->authorize('view', $booking);
 
@@ -99,7 +100,7 @@ class BookingController extends Controller
         }
     }
 
-    public function success(Request $request)
+    public function success(Request $request): View
     {
         // PaymentController redirects with ?id=, so we check both
         $bookingId = session('booking_id') ?? $request->query('id');
@@ -116,7 +117,7 @@ class BookingController extends Controller
         return view('bookings.success', compact('booking'));
     }
 
-    public function failed(Request $request)
+    public function failed(Request $request): View
     {
         $booking = null;
 

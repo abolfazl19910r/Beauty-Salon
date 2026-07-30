@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Loyalty;
 use App\Http\Controllers\Controller;
 use App\Models\LoyaltyPoint;
 use App\Models\Reward;
+use Illuminate\View\View;
 
 /**
  * Loyalty program admin main page.
@@ -19,7 +20,7 @@ use App\Models\Reward;
  */
 class AdminLoyaltyController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         $totalActivePoints    = LoyaltyPoint::where('type', 'earned')->sum('points');
         $totalPointUsers      = LoyaltyPoint::distinct('user_id')->count('user_id');

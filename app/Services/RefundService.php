@@ -10,13 +10,8 @@ use Illuminate\Support\Facades\Log;
 
 class RefundService
 {
-    protected SMSService $smsService;
-    protected PaymentService $paymentService;
-
-    public function __construct(SMSService $smsService, PaymentService $paymentService)
+    public function __construct(protected readonly SMSService $smsService, protected readonly PaymentService $paymentService)
     {
-        $this->smsService = $smsService;
-        $this->paymentService = $paymentService;
     }
 
     public function processRefund(Booking $booking): bool

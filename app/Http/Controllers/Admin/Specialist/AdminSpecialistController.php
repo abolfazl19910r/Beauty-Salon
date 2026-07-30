@@ -11,19 +11,16 @@ use App\Services\Admin\Specialist\AdminSpecialistService;
 use App\Services\CategoryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class AdminSpecialistController extends Controller
 {
-    protected CategoryService $categoryService;
-    protected AdminSpecialistService $specialistService;
-
-    public function __construct(CategoryService $categoryService, AdminSpecialistService $specialistService)
+    public function __construct(protected readonly CategoryService $categoryService, protected readonly AdminSpecialistService $specialistService)
     {
-        $this->categoryService = $categoryService;
-        $this->specialistService = $specialistService;
     }
 
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $specialists = Specialist::whereNull('deleted_at')
             ->when($request->filled('search'), function ($q) use ($request) {
@@ -43,19 +40,19 @@ class AdminSpecialistController extends Controller
         return view('admin.specialists.index', compact('specialists'));
     }
 
-    public function show(Specialist $specialist)
+    public function show(Specialist $specialist): View
     {
         return view('admin.specialists.show', compact('specialist'));
     }
 
-    public function create()
+    public function create(): View
     {
         $services = Category::with('services')->get();
 
         return view('admin.specialists.create', compact('services'));
     }
 
-    public function store(StoreSpecialistRequest $request)
+    public function store(StoreSpecialistRequest $request): RedirectResponse
     {
         try {
             $result = $this->specialistService->create(
@@ -77,14 +74,14 @@ class AdminSpecialistController extends Controller
         }
     }
 
-    public function edit(Specialist $specialist)
+    public function edit(Specialist $specialist): View
     {
         $services = Category::with('services')->get();
         $selectedServices = $specialist->services->pluck('id')->toArray();
         return view('admin.specialists.edit', compact('specialist', 'services', 'selectedServices'));
     }
 
-    public function update(UpdateSpecialistRequest $request, Specialist $specialist)
+    public function update(UpdateSpecialistRequest $request, Specialist $specialist): RedirectResponse
     {
         $this->specialistService->update(
             $specialist,
@@ -96,7 +93,7 @@ class AdminSpecialistController extends Controller
             ->with('success', 'اطلاعات متخصص با موفقیت بروزرسانی شد.');
     }
 
-    public function destroy(Specialist $specialist)
+    public function destroy(Specialist $specialist): RedirectResponse
     {
         try {
             $this->specialistService->delete($specialist);

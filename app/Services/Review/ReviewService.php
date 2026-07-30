@@ -13,11 +13,8 @@ use Illuminate\Support\Facades\Log;
 
 class ReviewService
 {
-    protected SMSService $smsService;
-
-    public function __construct(SMSService $smsService)
+    public function __construct(protected readonly SMSService $smsService)
     {
-        $this->smsService = $smsService;
     }
 
     public function sendReviewRequest(Booking $booking): bool

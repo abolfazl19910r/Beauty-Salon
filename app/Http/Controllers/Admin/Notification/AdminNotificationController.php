@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Traits\HandlesApiResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 
 class AdminNotificationController extends Controller
 {
     use HandlesApiResponse;
 
-    public function index()
+    public function index(): View
     {
         $user = Auth::user();
 
@@ -20,7 +23,7 @@ class AdminNotificationController extends Controller
         return view('admin.notifications.index', compact('notifications'));
     }
 
-    public function show($id)
+    public function show($id): View
     {
         $user = Auth::user();
         $notification = $user->notifications()->findOrFail($id);
@@ -32,7 +35,7 @@ class AdminNotificationController extends Controller
         return view('admin.notifications.show', compact('notification'));
     }
 
-    public function markAsRead($id)
+    public function markAsRead($id): JsonResponse
     {
         $notification = Auth::user()->notifications()->find($id);
 
@@ -44,7 +47,7 @@ class AdminNotificationController extends Controller
         return $this->successResponse('اعلان قبلاً خوانده شده بود یا یافت نشد.');
     }
 
-    public function delete($id)
+    public function delete($id): JsonResponse
     {
         $deleted = Auth::user()->notifications()->where('id', $id)->delete();
 
@@ -55,7 +58,7 @@ class AdminNotificationController extends Controller
         return $this->errorResponse('اعلان پیدا نشد یا حذف با شکست مواجه شد.', 404);
     }
 
-    public function toggleRead($id)
+    public function toggleRead($id): JsonResponse
     {
         $notification = Auth::user()->notifications()->find($id);
 
@@ -74,7 +77,7 @@ class AdminNotificationController extends Controller
         return $this->errorResponse('اعلان پیدا نشد.', 404);
     }
 
-    public function markAllAsRead()
+    public function markAllAsRead(): RedirectResponse
     {
         Auth::user()->unreadNotifications->markAsRead();
 
@@ -82,7 +85,7 @@ class AdminNotificationController extends Controller
             ->with('success', 'تمام اعلانات به عنوان خوانده‌شده علامت‌گذاری شدند.');
     }
 
-    public function deleteAll()
+    public function deleteAll(): RedirectResponse
     {
         $deleted = DB::table('user_notifications')
             ->where('user_id', Auth::id())
@@ -92,7 +95,7 @@ class AdminNotificationController extends Controller
             ->with('success', 'تمام اعلانات با موفقیت حذف شدند.');
     }
 
-    public function unreadCount()
+    public function unreadCount(): JsonResponse
     {
         $user = Auth::user();
         return response()->json([
@@ -100,7 +103,7 @@ class AdminNotificationController extends Controller
         ]);
     }
 
-    public function latest()
+    public function latest(): JsonResponse
     {
         $user = Auth::user();
         $notifications = $user->unreadNotifications()

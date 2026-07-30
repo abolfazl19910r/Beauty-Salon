@@ -10,19 +10,17 @@ use App\Services\SecurityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 
 class SecurePaymentController extends Controller
 {
-    protected SecurePaymentService $paymentService;
-    protected SecurityLogService $securityLogService;
-
-    public function __construct(SecurePaymentService $paymentService, SecurityLogService $securityLogService)
+    public function __construct(protected readonly SecurePaymentService $paymentService, protected readonly SecurityLogService $securityLogService)
     {
-        $this->paymentService = $paymentService;
-        $this->securityLogService = $securityLogService;
     }
 
-    public function showCheckout(Booking $booking)
+    public function showCheckout(Booking $booking): View|RedirectResponse
     {
         if ($booking->payment_status === 'paid') {
             return redirect()->route('bookings.show', $booking)
@@ -32,7 +30,7 @@ class SecurePaymentController extends Controller
         return view('payments.secure.checkout', compact('booking'));
     }
 
-    public function initiate(Request $request, Booking $booking)
+    public function initiate(Request $request, Booking $booking): JsonResponse
     {
         try {
             DB::beginTransaction();
@@ -78,14 +76,14 @@ class SecurePaymentController extends Controller
         }
     }
 
-    public function showVerification(string $reference)
+    public function showVerification(string $reference): View
     {
         $payment = Payment::where('reference_id', $reference)->firstOrFail();
 
         return view('payments.secure.verify', compact('payment'));
     }
 
-    public function verify(Request $request, string $reference)
+    public function verify(Request $request, string $reference): RedirectResponse
     {
         try {
             DB::beginTransaction();
@@ -160,7 +158,7 @@ class SecurePaymentController extends Controller
         }
     }
 
-    public function showResult(Request $request)
+    public function showResult(Request $request): View
     {
         $success = $request->status === 'success';
         $reference = $request->reference;
@@ -171,7 +169,7 @@ class SecurePaymentController extends Controller
         return view('payments.secure.result', compact('success', 'payment', 'message'));
     }
 
-    public function checkStatus(string $reference)
+    public function checkStatus(string $reference): JsonResponse
     {
         $payment = Payment::where('reference_id', $reference)
             ->with('booking')

@@ -9,19 +9,19 @@ use App\Services\Review\ReviewService;
 use App\Traits\HasJalaliDates;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 
 class SpecialistReviewController extends Controller
 {
     use HasJalaliDates;
 
-    protected ReviewService $reviewService;
-
-    public function __construct(ReviewService $reviewService)
+    public function __construct(protected readonly ReviewService $reviewService)
     {
-        $this->reviewService = $reviewService;
     }
 
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $user = auth()->user();
         $specialist = Specialist::where('phone', $user->phone)->firstOrFail();
@@ -80,7 +80,7 @@ class SpecialistReviewController extends Controller
         ));
     }
 
-    public function show(Review $review)
+    public function show(Review $review): View
     {
         $user = auth()->user();
         $specialist = Specialist::where('phone', $user->phone)->firstOrFail();
@@ -91,7 +91,7 @@ class SpecialistReviewController extends Controller
         return view('specialist.reviews.show', compact('review', 'specialist'));
     }
 
-    public function respond(Request $request, Review $review)
+    public function respond(Request $request, Review $review): RedirectResponse
     {
         $user = auth()->user();
         $specialist = Specialist::where('phone', $user->phone)->firstOrFail();
@@ -123,7 +123,7 @@ class SpecialistReviewController extends Controller
         }
     }
 
-    public function updateResponse(Request $request, Review $review)
+    public function updateResponse(Request $request, Review $review): RedirectResponse
     {
         $user = auth()->user();
         $specialist = Specialist::where('phone', $user->phone)->firstOrFail();
@@ -154,7 +154,7 @@ class SpecialistReviewController extends Controller
         }
     }
 
-    public function deleteResponse(Review $review)
+    public function deleteResponse(Review $review): RedirectResponse
     {
         $user = auth()->user();
         $specialist = Specialist::where('phone', $user->phone)->firstOrFail();
@@ -176,7 +176,7 @@ class SpecialistReviewController extends Controller
         }
     }
 
-    public function stats()
+    public function stats(): JsonResponse
     {
         $user = auth()->user();
         $specialist = Specialist::where('phone', $user->phone)->firstOrFail();

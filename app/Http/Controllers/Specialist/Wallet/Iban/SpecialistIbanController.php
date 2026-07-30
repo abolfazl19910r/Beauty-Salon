@@ -7,6 +7,8 @@ use App\Http\Requests\Specialist\UpdateIbanRequest;
 use App\Services\Specialist\SpecialistWalletService;
 use App\Traits\ResolvesSpecialist;
 use Exception;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class SpecialistIbanController extends Controller
 {
@@ -16,7 +18,7 @@ class SpecialistIbanController extends Controller
     {
     }
 
-    public function edit()
+    public function edit(): View
     {
         $specialist = $this->resolveSpecialist();
 
@@ -30,7 +32,7 @@ class SpecialistIbanController extends Controller
         return view('specialist.wallet.edit-iban', compact('specialist', 'wallet'));
     }
 
-    public function update(UpdateIbanRequest $request)
+    public function update(UpdateIbanRequest $request): View|RedirectResponse
     {
         // ⚠️ Bugfix: The old controller here had no null check on the specialist
         // (unlike edit()); If a user reaches this route without an expert record,

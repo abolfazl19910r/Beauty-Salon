@@ -11,6 +11,8 @@ use App\Services\LoyaltyService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
  * Business logic for managing the loyalty program from the admin panel.
@@ -51,7 +53,7 @@ class LoyaltyAdminService
         ];
     }
 
-    public function getActiveRewards()
+    public function getActiveRewards(): Collection
     {
         return Reward::where('is_active', true)
             ->orderBy('required_points')
@@ -222,7 +224,7 @@ class LoyaltyAdminService
             ->toArray();
     }
 
-    public function getHistory(array $filters = [])
+    public function getHistory(array $filters = []): LengthAwarePaginator
     {
         $query = LoyaltyPoint::with('user:id,name,phone')
             ->orderByDesc('created_at');

@@ -9,19 +9,18 @@ use App\Traits\HasJalaliDates;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class UserWalletController extends Controller
 {
     use HasJalaliDates;
 
-    protected PaymentService $paymentService;
-
-    public function __construct(PaymentService $paymentService)
+    public function __construct(protected readonly PaymentService $paymentService)
     {
-        $this->paymentService = $paymentService;
     }
 
-    public function index()
+    public function index(): View
     {
         $user = auth()->user();
         $wallet = $user->getOrCreateWallet();
@@ -53,7 +52,7 @@ class UserWalletController extends Controller
         ));
     }
 
-    public function transactions(Request $request)
+    public function transactions(Request $request): View
     {
         $user = auth()->user();
         $wallet = $user->getOrCreateWallet();
@@ -81,7 +80,7 @@ class UserWalletController extends Controller
         return view('user.wallet.transactions', compact('user', 'wallet', 'transactions'));
     }
 
-    public function showTransaction(\App\Models\UserWalletTransaction $transaction)
+    public function showTransaction(\App\Models\UserWalletTransaction $transaction): View
     {
         $user = auth()->user();
         $wallet = $user->getOrCreateWallet();
@@ -93,7 +92,7 @@ class UserWalletController extends Controller
         return view('user.wallet.transaction-show', compact('user', 'wallet', 'transaction'));
     }
 
-    public function showCharge()
+    public function showCharge(): View
     {
         $user = auth()->user();
         $wallet = $user->getOrCreateWallet();
@@ -103,7 +102,7 @@ class UserWalletController extends Controller
         return view('user.wallet.charge', compact('user', 'wallet', 'suggestedAmounts'));
     }
 
-    public function processCharge(Request $request)
+    public function processCharge(Request $request): RedirectResponse
     {
         try {
             $amountInput = $request->input('amount');
@@ -193,7 +192,7 @@ class UserWalletController extends Controller
         return $string;
     }
 
-    public function chargeCallback(Request $request)
+    public function chargeCallback(Request $request): RedirectResponse
     {
         try {
             $chargePending = session('wallet_charge_pending');
@@ -258,7 +257,7 @@ class UserWalletController extends Controller
         }
     }
 
-    public function chargeSuccess()
+    public function chargeSuccess(): View|RedirectResponse
     {
         if (!session('success')) {
             return redirect()->route('wallet.index');

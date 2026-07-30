@@ -17,6 +17,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 
 class SpecialistProfileController extends Controller
 {
@@ -28,7 +29,7 @@ class SpecialistProfileController extends Controller
         protected WorkScheduleService $workScheduleService,
     ) {}
 
-    public function dashboard()
+    public function dashboard(): View
     {
         $specialist = $this->resolveSpecialist();
 
@@ -41,7 +42,7 @@ class SpecialistProfileController extends Controller
         return view('specialist.dashboard', array_merge(['specialist' => $specialist], $data));
     }
 
-    public function show()
+    public function show(): View
     {
         $user = auth()->user();
         $specialist = $this->resolveSpecialist(orFail: true);
@@ -54,7 +55,7 @@ class SpecialistProfileController extends Controller
         ));
     }
 
-    public function edit()
+    public function edit(): View
     {
         $user = auth()->user();
         $specialist = $this->resolveSpecialist(orFail: true);
@@ -93,7 +94,7 @@ class SpecialistProfileController extends Controller
         return back()->with('success', 'رمز عبور با موفقیت تغییر کرد.');
     }
 
-    public function schedule()
+    public function schedule(): View
     {
         $specialist = $this->resolveSpecialist();
 
@@ -154,7 +155,7 @@ class SpecialistProfileController extends Controller
      * Show WorkSchedule for self-service.
      * * Uses the same Service as admin — DRY.
  */
-    public function workSchedule()
+    public function workSchedule(): View
     {
         $specialist = $this->resolveSpecialist();
 
@@ -207,7 +208,7 @@ class SpecialistProfileController extends Controller
             ->with('success', 'برنامه کاری حذف شد.');
     }
 
-    public function loyalty()
+    public function loyalty(): View
     {
         $specialist = $this->resolveSpecialist();
 

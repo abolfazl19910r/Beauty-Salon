@@ -6,10 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Holiday;
 use App\Models\Specialist;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class AdminHolidayController extends Controller
 {
-    public function index(Specialist $specialist)
+    public function index(Specialist $specialist): JsonResponse
     {
         $holidays = $specialist->holidays()
             ->orderBy('date')
@@ -17,7 +18,7 @@ class AdminHolidayController extends Controller
         return response()->json($holidays);
     }
 
-    public function store(Request $request, Specialist $specialist)
+    public function store(Request $request, Specialist $specialist): JsonResponse
     {
         $validated = $request->validate([
             'date' => [
@@ -63,7 +64,7 @@ class AdminHolidayController extends Controller
         return response()->json($holiday, 201);
     }
 
-    public function destroy(Specialist $specialist, Holiday $holiday)
+    public function destroy(Specialist $specialist, Holiday $holiday): JsonResponse
     {
         if ($holiday->specialist_id !== $specialist->id) {
             return response()->json([
@@ -84,7 +85,7 @@ class AdminHolidayController extends Controller
         ]);
     }
 
-    public function upcomingHolidays(Specialist $specialist)
+    public function upcomingHolidays(Specialist $specialist): JsonResponse
     {
         $holidays = $specialist->holidays()
             ->upcoming()
@@ -93,7 +94,7 @@ class AdminHolidayController extends Controller
         return response()->json($holidays);
     }
 
-    public function checkDate(Request $request, Specialist $specialist)
+    public function checkDate(Request $request, Specialist $specialist): JsonResponse
     {
         $request->validate([
             'date' => 'required|date_format:Y-m-d'

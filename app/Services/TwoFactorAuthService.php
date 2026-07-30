@@ -7,11 +7,8 @@ use Illuminate\Support\Facades\Log;
 
 class TwoFactorAuthService
 {
-    protected SMSService $smsService;
-
-    public function __construct(SMSService $smsService)
+    public function __construct(protected readonly SMSService $smsService)
     {
-        $this->smsService = $smsService;
     }
 
     public function generateCode(User $user): string

@@ -11,6 +11,8 @@ use App\Services\Booking\BookingService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
+use Illuminate\Http\JsonResponse;
 
 class BookingReservationController extends Controller
 {
@@ -18,7 +20,7 @@ class BookingReservationController extends Controller
         protected BookingService $bookingService
     ) {}
 
-    public function create()
+    public function create(): View|RedirectResponse
     {
         if (! auth()->check()) {
             return redirect()->route('login')
@@ -31,7 +33,7 @@ class BookingReservationController extends Controller
         return view('bookings.create', compact('services', 'specialists'));
     }
 
-    public function confirm(ConfirmBookingRequest $request)
+    public function confirm(ConfirmBookingRequest $request): View|RedirectResponse
     {
         try {
             $service = \App\Models\BeautyService::findOrFail($request->service_id);
@@ -61,7 +63,7 @@ class BookingReservationController extends Controller
         }
     }
 
-    public function store(StoreBookingRequest $request)
+    public function store(StoreBookingRequest $request): JsonResponse|RedirectResponse
     {
         try {
             $booking = $this->bookingService->createBooking(

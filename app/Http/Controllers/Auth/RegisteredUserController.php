@@ -15,11 +15,8 @@ use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
 {
-    protected PhoneVerificationService $verificationService;
-
-    public function __construct(PhoneVerificationService $verificationService)
+    public function __construct(protected readonly PhoneVerificationService $verificationService)
     {
-        $this->verificationService = $verificationService;
     }
 
     public function create(): View

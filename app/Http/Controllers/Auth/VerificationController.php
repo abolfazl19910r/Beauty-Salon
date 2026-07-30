@@ -6,23 +6,22 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\PhoneVerificationService;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class VerificationController extends Controller
 {
-    protected PhoneVerificationService $verificationService;
-
-    public function __construct(PhoneVerificationService $verificationService)
+    public function __construct(protected readonly PhoneVerificationService $verificationService)
     {
         $this->middleware('auth');
-        $this->verificationService = $verificationService;
     }
 
-    public function show()
+    public function show(): View
     {
         return view('auth.verify');
     }
 
-    public function verify(Request $request)
+    public function verify(Request $request): RedirectResponse
     {
         $request->validate([
             'code' => ['required', 'string', 'size:6'],
@@ -37,7 +36,7 @@ class VerificationController extends Controller
         ]);
     }
 
-    public function resend(Request $request)
+    public function resend(Request $request): RedirectResponse
     {
         if ($request->user()->hasVerifiedPhone()) {
             return redirect()->route('home');

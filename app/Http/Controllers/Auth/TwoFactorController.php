@@ -6,24 +6,24 @@ use App\Http\Controllers\Controller;
 use App\Services\TwoFactorAuthService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 
 class TwoFactorController extends Controller
 {
-    protected TwoFactorAuthService $twoFactorService;
-
-    public function __construct(TwoFactorAuthService $twoFactorService)
+    public function __construct(protected readonly TwoFactorAuthService $twoFactorService)
     {
-        $this->twoFactorService = $twoFactorService;
     }
 
-    public function show()
+    public function show(): View
     {
         return view('auth.2fa.index', [
             'enabled' => $this->twoFactorService->isEnabled(auth()->user())
         ]);
     }
 
-    public function showSetup()
+    public function showSetup(): View|RedirectResponse
     {
         if ($this->twoFactorService->isEnabled(auth()->user())) {
             return redirect()->route('security.2fa')
@@ -34,12 +34,12 @@ class TwoFactorController extends Controller
         return view('auth.2fa.setup', compact('code'));
     }
 
-    public function showConfirmation()
+    public function showConfirmation(): View
     {
         return view('auth.2fa.confirm');
     }
 
-    public function enable(Request $request)
+    public function enable(Request $request): JsonResponse
     {
         try {
             $request->validate([
@@ -74,7 +74,7 @@ class TwoFactorController extends Controller
         }
     }
 
-    public function disable(Request $request)
+    public function disable(Request $request): JsonResponse
     {
         try {
             $request->validate([
@@ -109,7 +109,7 @@ class TwoFactorController extends Controller
         }
     }
 
-    public function verify(Request $request)
+    public function verify(Request $request): JsonResponse
     {
         try {
             $request->validate([
@@ -144,7 +144,7 @@ class TwoFactorController extends Controller
         }
     }
 
-    public function resend()
+    public function resend(): JsonResponse
     {
         try {
             $code = $this->twoFactorService->generateCode(auth()->user());

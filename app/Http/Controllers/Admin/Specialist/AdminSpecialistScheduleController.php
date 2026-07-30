@@ -6,15 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\Specialist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class AdminSpecialistScheduleController extends Controller
 {
-    public function index(Specialist $specialist)
+    public function index(Specialist $specialist): View
     {
         return $this->edit($specialist);
     }
 
-    public function edit(Specialist $specialist)
+    public function edit(Specialist $specialist): View
     {
         $schedules = $specialist->schedules()
             ->get()
@@ -26,7 +28,7 @@ class AdminSpecialistScheduleController extends Controller
         ]);
     }
 
-    public function update(Request $request, Specialist $specialist)
+    public function update(Request $request, Specialist $specialist): RedirectResponse
     {
         try {
             $request->validate([

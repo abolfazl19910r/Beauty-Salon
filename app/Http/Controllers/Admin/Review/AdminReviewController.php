@@ -8,10 +8,12 @@ use App\Models\Specialist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class AdminReviewController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $query = Review::with(['user', 'specialist', 'service', 'booking']);
 
@@ -85,14 +87,14 @@ class AdminReviewController extends Controller
         ));
     }
 
-    public function show(Review $review)
+    public function show(Review $review): View
     {
         $review->load(['user', 'specialist', 'service', 'booking']);
 
         return view('admin.reviews.show', compact('review'));
     }
 
-    public function approve(Review $review)
+    public function approve(Review $review): RedirectResponse
     {
         try {
             $review->update(['is_approved' => true]);
@@ -114,7 +116,7 @@ class AdminReviewController extends Controller
         }
     }
 
-    public function reject(Review $review)
+    public function reject(Review $review): RedirectResponse
     {
         try {
             $review->update(['is_approved' => false]);
@@ -131,7 +133,7 @@ class AdminReviewController extends Controller
         }
     }
 
-    public function toggleFeatured(Review $review)
+    public function toggleFeatured(Review $review): RedirectResponse
     {
         try {
             $review->update(['is_featured' => !$review->is_featured]);
@@ -147,7 +149,7 @@ class AdminReviewController extends Controller
         }
     }
 
-    public function destroy(Review $review)
+    public function destroy(Review $review): RedirectResponse
     {
         try {
             $review->delete();
@@ -169,7 +171,7 @@ class AdminReviewController extends Controller
         }
     }
 
-    public function restore($id)
+    public function restore($id): RedirectResponse
     {
         try {
             $review = Review::withTrashed()->findOrFail($id);
@@ -182,7 +184,7 @@ class AdminReviewController extends Controller
         }
     }
 
-    public function forceDelete($id)
+    public function forceDelete($id): RedirectResponse
     {
         try {
             $review = Review::withTrashed()->findOrFail($id);
@@ -200,7 +202,7 @@ class AdminReviewController extends Controller
         }
     }
 
-    public function stats()
+    public function stats(): View
     {
         $totalReviews = Review::count();
         $averageRating = round(Review::avg('overall_rating') ?? 0, 1);
@@ -252,7 +254,7 @@ class AdminReviewController extends Controller
         ));
     }
 
-    public function trashed()
+    public function trashed(): View
     {
         $reviews = Review::onlyTrashed()
             ->with(['user', 'specialist', 'service'])

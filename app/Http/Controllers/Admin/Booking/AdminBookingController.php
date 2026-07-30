@@ -11,22 +11,22 @@ use App\Models\Specialist;
 use App\Models\User;
 use App\Services\Admin\Booking\AdminBookingService;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class AdminBookingController extends Controller
 {
-    protected AdminBookingService $bookingService;
-
-    public function __construct(AdminBookingService $bookingService)
+    public function __construct(protected readonly AdminBookingService $bookingService)
     {
-        $this->bookingService = $bookingService;
     }
 
-    public function getStats(Request $request)
+    public function getStats(Request $request): JsonResponse
     {
         return response()->json($this->bookingService->getStats($request->date));
     }
 
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $query = Booking::with(['user', 'specialist', 'service'])->latest();
 
@@ -61,7 +61,7 @@ class AdminBookingController extends Controller
         ));
     }
 
-    public function create()
+    public function create(): View
     {
         $users = User::all();
         $services = BeautyService::all();
@@ -70,7 +70,7 @@ class AdminBookingController extends Controller
         return view('admin.bookings.create', compact('users', 'services', 'specialists'));
     }
 
-    public function store(StoreAdminBookingRequest $request)
+    public function store(StoreAdminBookingRequest $request): RedirectResponse
     {
         $booking = Booking::create($request->validated());
 
@@ -78,7 +78,7 @@ class AdminBookingController extends Controller
             ->with('success', 'نوبت با موفقیت ایجاد شد.');
     }
 
-    public function edit(Booking $booking)
+    public function edit(Booking $booking): View
     {
         $users = User::all();
         $services = BeautyService::all();
@@ -87,13 +87,13 @@ class AdminBookingController extends Controller
         return view('admin.bookings.edit', compact('booking', 'users', 'services', 'specialists'));
     }
 
-    public function show(Booking $booking)
+    public function show(Booking $booking): View
     {
         $booking->load(['service', 'user', 'specialist']);
         return view('admin.bookings.show', compact('booking'));
     }
 
-    public function update(UpdateAdminBookingRequest $request, Booking $booking)
+    public function update(UpdateAdminBookingRequest $request, Booking $booking): RedirectResponse
     {
         $redirectRoute  = $request->isStatusOnly() ? 'admin.bookings.index' : 'admin.bookings.show';
         $redirectParams = $request->isStatusOnly() ? [] : ['booking' => $booking->id];
@@ -112,7 +112,7 @@ class AdminBookingController extends Controller
         }
     }
 
-    public function destroy(Booking $booking)
+    public function destroy(Booking $booking): RedirectResponse
     {
         if ($booking->payment_status === 'paid') {
             return redirect()->route('admin.bookings.index')

@@ -10,22 +10,21 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class PasswordResetController extends Controller
 {
-    protected SMSService $smsService;
-
-    public function __construct(SMSService $smsService)
+    public function __construct(protected readonly SMSService $smsService)
     {
-        $this->smsService = $smsService;
     }
 
-    public function create()
+    public function create(): View
     {
         return view('auth.forgot-password');
     }
 
-    public function sendCode(Request $request)
+    public function sendCode(Request $request): RedirectResponse
     {
         $request->validate([
             'phone' => ['required', 'regex:/^09[0-9]{9}$/'],
@@ -65,7 +64,7 @@ class PasswordResetController extends Controller
             ->with('success', 'کد تایید ارسال شد.');
     }
 
-    public function showReset(Request $request)
+    public function showReset(Request $request): View|RedirectResponse
     {
         $token = $request->token;
 
@@ -82,7 +81,7 @@ class PasswordResetController extends Controller
         return view('auth.reset-password', compact('token'));
     }
 
-    public function reset(Request $request)
+    public function reset(Request $request): RedirectResponse
     {
         $request->validate([
             'token' => 'required',

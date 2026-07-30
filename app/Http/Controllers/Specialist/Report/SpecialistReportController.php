@@ -11,12 +11,13 @@ use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Carbon\Carbon;
 use App\Exports\SpecialistBookingsExport;
+use Illuminate\View\View;
 
 class SpecialistReportController extends Controller
 {
     use HasJalaliDates;
 
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $user = auth()->user();
         $specialist = Specialist::where('phone', $user->phone)->first();

@@ -10,17 +10,17 @@ use App\Services\LoyaltyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 
 class LoyaltyController extends Controller
 {
-    protected LoyaltyService $loyaltyService;
-
-    public function __construct(LoyaltyService $loyaltyService)
+    public function __construct(protected readonly LoyaltyService $loyaltyService)
     {
-        $this->loyaltyService = $loyaltyService;
     }
 
-    public function index()
+    public function index(): View|RedirectResponse
     {
         try {
             $userId = auth()->id();
@@ -58,7 +58,7 @@ class LoyaltyController extends Controller
         }
     }
 
-    public function redeemReward(Request $request, Reward $reward)
+    public function redeemReward(Request $request, Reward $reward): RedirectResponse
     {
         try {
             $userId = auth()->id();
@@ -89,13 +89,13 @@ class LoyaltyController extends Controller
         }
     }
 
-    public function getPoints()
+    public function getPoints(): JsonResponse
     {
         $points = $this->loyaltyService->getCurrentPoints(auth()->id());
         return response()->json(['points' => $points]);
     }
 
-    public function getHistory(Request $request)
+    public function getHistory(Request $request): JsonResponse
     {
         $perPage = $request->input('per_page', 10);
         $history = $this->loyaltyService->getHistory(auth()->id(), $perPage);
@@ -103,7 +103,7 @@ class LoyaltyController extends Controller
         return response()->json($history);
     }
 
-    public function getRewards()
+    public function getRewards(): JsonResponse
     {
         $rewards = $this->loyaltyService->getAvailableRewards(auth()->id());
         $userPoints = $this->loyaltyService->getCurrentPoints(auth()->id());
@@ -114,7 +114,7 @@ class LoyaltyController extends Controller
         ]);
     }
 
-    public function getProgress()
+    public function getProgress(): JsonResponse
     {
         $userPoints = $this->loyaltyService->getCurrentPoints(auth()->id());
         $nextReward = $this->getNextReward($userPoints);
@@ -129,7 +129,7 @@ class LoyaltyController extends Controller
         ]);
     }
 
-    public function discountCodes()
+    public function discountCodes(): JsonResponse
     {
         $codes = DiscountCode::where('user_id', auth()->id())
             ->where('is_active', true)
@@ -164,7 +164,7 @@ class LoyaltyController extends Controller
             ->first();
     }
 
-    public function overview()
+    public function overview(): JsonResponse
     {
         $user = auth()->user();
         $userPoints = $this->loyaltyService->getCurrentPoints($user->id);
@@ -190,7 +190,7 @@ class LoyaltyController extends Controller
         ]);
     }
 
-    public function myCodes()
+    public function myCodes(): View
     {
         return view('loyalty.my-codes');
     }

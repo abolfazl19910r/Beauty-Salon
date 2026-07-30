@@ -10,6 +10,7 @@ use App\Models\Leave;
 use App\Services\Leave\LeaveService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 
 class SpecialistLeaveController extends Controller
 {
@@ -21,7 +22,7 @@ class SpecialistLeaveController extends Controller
     ) {
     }
 
-    public function index()
+    public function index(): View
     {
         $specialist = $this->resolveSpecialist();
 
@@ -36,7 +37,7 @@ class SpecialistLeaveController extends Controller
         return view('specialist.leaves', compact('specialist', 'leaves'));
     }
 
-    public function create()
+    public function create(): View
     {
         $specialist = $this->resolveSpecialist();
 

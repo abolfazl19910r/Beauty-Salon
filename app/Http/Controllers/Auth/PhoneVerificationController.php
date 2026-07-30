@@ -5,22 +5,21 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Services\PhoneVerificationService;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class PhoneVerificationController extends Controller
 {
-    protected PhoneVerificationService $verificationService;
-
-    public function __construct(PhoneVerificationService $verificationService)
+    public function __construct(protected readonly PhoneVerificationService $verificationService)
     {
-        $this->verificationService = $verificationService;
     }
 
-    public function notice()
+    public function notice(): View
     {
         return view('auth.verify-phone');
     }
 
-    public function verify(Request $request)
+    public function verify(Request $request): RedirectResponse
     {
         $request->validate([
             'code' => 'required|string|size:6'
@@ -36,7 +35,7 @@ class PhoneVerificationController extends Controller
         ]);
     }
 
-    public function resend(Request $request): \Illuminate\Http\RedirectResponse
+    public function resend(Request $request): RedirectResponse
     {
         $this->verificationService->sendCode($request->user());
 

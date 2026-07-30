@@ -8,22 +8,21 @@ use App\Services\PhoneVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class RegisterController extends Controller
 {
-    protected PhoneVerificationService $verificationService;
-
-    public function __construct(PhoneVerificationService $verificationService)
+    public function __construct(protected readonly PhoneVerificationService $verificationService)
     {
-        $this->verificationService = $verificationService;
     }
 
-    public function showRegistrationForm()
+    public function showRegistrationForm(): View
     {
         return view('auth.register');
     }
 
-    public function register(Request $request)
+    public function register(Request $request): RedirectResponse
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],

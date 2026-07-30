@@ -7,10 +7,11 @@ use App\Models\BeautyService;
 use App\Models\Booking;
 use App\Models\Specialist;
 use App\Models\Announcement;
+use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         $popularServices = BeautyService::withCount('bookings')
             ->orderByDesc('bookings_count')

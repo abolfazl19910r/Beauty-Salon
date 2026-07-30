@@ -6,10 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\BeautyService;
 use App\Models\Specialist;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\View\View;
 
 class HomeController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         $services = Cache::remember('home_services', 1800, function () {
             return BeautyService::latest()
