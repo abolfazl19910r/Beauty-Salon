@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Leave;
 use App\Models\Specialist;
 use App\Models\SpecialistSchedule;
-use App\Models\SpecialistLeave;
 use Illuminate\Database\Seeder;
 
 class SpecialistSeeder extends Seeder
@@ -24,7 +24,7 @@ class SpecialistSeeder extends Seeder
             'end_time' => '17:00:00',
         ]);
 
-        SpecialistLeave::factory()->approved()->create([
+        Leave::factory()->approved()->create([
             'specialist_id' => $manager->id,
             'start_date' => now()->addDays(10),
             'end_date' => now()->addDays(12),
@@ -34,7 +34,7 @@ class SpecialistSeeder extends Seeder
             SpecialistSchedule::factory(3)->create([
                 'specialist_id' => $specialist->id,
             ]);
-            SpecialistLeave::factory()->create([
+            Leave::factory()->create([
                 'specialist_id' => $specialist->id,
                 'status' => 'pending'
             ]);

@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
 
 class Leave extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'specialist_id',
         'start_date',
