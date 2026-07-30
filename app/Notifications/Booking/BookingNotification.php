@@ -2,18 +2,16 @@
 
 namespace App\Notifications\Booking;
 
+use App\Models\Booking;
 use App\Services\SMSService;
 use Illuminate\Notifications\Notification;
 
 class BookingNotification extends Notification
 {
-    private $booking;
-    private $needsApproval;
-
-    public function __construct($booking, $needsApproval = false)
-    {
-        $this->booking = $booking;
-        $this->needsApproval = $needsApproval;
+    public function __construct(
+        private readonly Booking $booking,
+        private readonly bool $needsApproval = false
+    ) {
     }
 
     public function via($notifiable): array

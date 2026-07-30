@@ -12,11 +12,8 @@ class NewUserRegisteredNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    private User $newUser;
-
-    public function __construct(User $newUser)
+    public function __construct(private readonly User $newUser)
     {
-        $this->newUser = $newUser;
     }
 
     public function via(object $notifiable): array

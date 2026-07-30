@@ -11,10 +11,7 @@ class BookingCreated
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public Booking $booking;
-
-    public function __construct(Booking $booking)
+    public function __construct(public readonly Booking $booking)
     {
-        $this->booking = $booking;
     }
 }

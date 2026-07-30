@@ -16,13 +16,10 @@ class ReportsExport implements FromCollection, WithColumnWidths, WithEvents, Wit
 {
     use AppliesReportSheetStyle;
 
-    protected $data;
-    protected $type;
-
-    public function __construct($data, $type)
-    {
-        $this->data = $data;
-        $this->type = $type;
+    public function __construct(
+        private readonly array $data,
+        private readonly string $type
+    ) {
     }
 
     public function collection(): \Illuminate\Support\Collection

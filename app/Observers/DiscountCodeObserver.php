@@ -8,13 +8,8 @@ use App\Services\SMSService;
 
 class DiscountCodeObserver
 {
-    protected ReportCacheService $cacheService;
-    protected SMSService $smsService;
-
-    public function __construct(ReportCacheService $cacheService, SMSService $smsService)
+    public function __construct(protected readonly ReportCacheService $cacheService, protected readonly SMSService $smsService)
     {
-        $this->cacheService = $cacheService;
-        $this->smsService = $smsService;
     }
 
     public function created(DiscountCode $discountCode): void

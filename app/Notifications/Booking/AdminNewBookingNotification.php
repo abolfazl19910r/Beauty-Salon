@@ -11,11 +11,8 @@ class AdminNewBookingNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    private Booking $booking;
-
-    public function __construct(Booking $booking)
+    public function __construct(private readonly Booking $booking)
     {
-        $this->booking = $booking;
     }
 
     public function via(object $notifiable): array

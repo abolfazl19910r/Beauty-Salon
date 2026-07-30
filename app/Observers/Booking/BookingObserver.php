@@ -17,13 +17,8 @@ use Illuminate\Support\Facades\Log;
 
 class BookingObserver
 {
-    protected ReportCacheService $cacheService;
-    protected SMSService $smsService;
-
-    public function __construct(ReportCacheService $cacheService, SMSService $smsService)
+    public function __construct(protected readonly ReportCacheService $cacheService, protected readonly SMSService $smsService)
     {
-        $this->cacheService = $cacheService;
-        $this->smsService = $smsService;
     }
 
     /**

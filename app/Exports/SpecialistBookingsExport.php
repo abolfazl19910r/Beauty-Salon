@@ -9,17 +9,16 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Illuminate\Support\Collection;
 
 class SpecialistBookingsExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
 {
     use HasJalaliDates;
 
-    protected $bookings;
-    protected $commissionRate;
-
-    public function __construct($bookings, float $commissionRate = 10) {
-        $this->bookings = $bookings;
-        $this->commissionRate = $commissionRate;
+    public function __construct(
+        private readonly Collection $bookings,
+        private readonly float $commissionRate = 10
+    ) {
     }
 
     public function collection() {

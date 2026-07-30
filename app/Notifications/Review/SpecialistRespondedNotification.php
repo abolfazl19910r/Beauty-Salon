@@ -10,11 +10,8 @@ class SpecialistRespondedNotification extends Notification
 {
     use Queueable;
 
-    protected Review $review;
-
-    public function __construct(Review $review)
+    public function __construct(protected readonly Review $review)
     {
-        $this->review = $review;
     }
 
     public function via($notifiable): array

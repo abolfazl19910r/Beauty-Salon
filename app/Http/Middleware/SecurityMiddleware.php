@@ -9,11 +9,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class SecurityMiddleware
 {
-    protected RateLimiter $rateLimiter;
-
-    public function __construct(RateLimiter $rateLimiter)
+    public function __construct(protected readonly RateLimiter $rateLimiter)
     {
-        $this->rateLimiter = $rateLimiter;
     }
 
     public function handle(Request $request, Closure $next): Response
