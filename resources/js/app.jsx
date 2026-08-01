@@ -27,11 +27,6 @@ const mountComponent = (elementId, importFn, getProps = () => ({})) => {
 };
 
 mountComponent(
-    'two-factor-auth',
-    () => import('./Components/Auth/TwoFactorAuth')
-);
-
-mountComponent(
     'announcement-banner',
     () => import('./Components/Announcement/AnnouncementBanner')
 );
