@@ -20,8 +20,25 @@ class SecurePaymentController extends Controller
     {
     }
 
+    public function showOtp(): View|RedirectResponse
+    {
+        $user = auth()->user();
+
+        if (session('2fa_verified')) {
+            return redirect()->to(session('secure_payment_intended_url', route('bookings.index')));
+        }
+
+        if (!$user->two_factor_enabled) {
+            return redirect()->route('security.2fa');
+        }
+
+        return view('payments.secure.otp');
+    }
+
     public function showCheckout(Booking $booking): View|RedirectResponse
     {
+        $this->authorize('pay', $booking);
+
         if ($booking->payment_status === 'paid') {
             return redirect()->route('bookings.show', $booking)
                 ->with('error', 'این نوبت قبلاً پرداخت شده است.');
@@ -32,14 +49,19 @@ class SecurePaymentController extends Controller
 
     public function initiate(Request $request, Booking $booking): JsonResponse
     {
+        $this->authorize('pay', $booking);
+
+        if ($booking->payment_status === 'paid') {
+            return response()->json([
+                'success' => false,
+                'message' => 'این نوبت قبلاً پرداخت شده است.',
+            ], 422);
+        }
+
         try {
             DB::beginTransaction();
 
             $payment = $this->paymentService->createPayment($booking);
-
-            if (!$payment) {
-                throw new \Exception('خطا در ایجاد تراکنش');
-            }
 
             $this->securityLogService->logPaymentAttempt(
                 $payment->id,
@@ -57,7 +79,7 @@ class SecurePaymentController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Payment initiation failed', [
+            Log::error('Secure payment initiation failed', [
                 'booking_id' => $booking->id,
                 'error' => $e->getMessage()
             ]);
@@ -76,22 +98,45 @@ class SecurePaymentController extends Controller
         }
     }
 
-    public function showVerification(string $reference): View
+    public function showVerification(string $reference): View|RedirectResponse
     {
-        $payment = Payment::where('reference_id', $reference)->firstOrFail();
+        $payment = Payment::where('reference_id', $reference)->with('booking')->firstOrFail();
 
-        return view('payments.secure.verify', compact('payment'));
+        $this->authorize('pay', $payment->booking);
+
+        if ($payment->isCompleted()) {
+            return redirect()->route('payments.secure.result', [
+                'reference' => $reference,
+                'status' => 'success',
+            ]);
+        }
+
+        if ($payment->isFailed() || $payment->isExpired()) {
+            return redirect()->route('payments.secure.result', [
+                'reference' => $reference,
+                'status' => 'failed',
+                'message' => 'مهلت این تراکنش به پایان رسیده یا قبلاً ناموفق اعلام شده است.',
+            ]);
+        }
+
+        return view('payments.secure.verify', [
+            'payment' => $payment,
+            'booking' => $payment->booking,
+        ]);
     }
 
     public function verify(Request $request, string $reference): RedirectResponse
     {
+        $payment = Payment::where('reference_id', $reference)->with('booking')->firstOrFail();
+
+        $this->authorize('pay', $payment->booking);
+
         try {
             DB::beginTransaction();
 
-            $result = $this->paymentService->verifyPayment($reference, $request->all());
+            $result = $this->paymentService->verifyPayment($reference);
 
             if ($result['success']) {
-                $payment = Payment::where('reference_id', $reference)->firstOrFail();
                 $booking = $payment->booking;
 
                 /**
@@ -113,11 +158,14 @@ class SecurePaymentController extends Controller
                     ]),
                 ]);
 
-                $payment->update([
-                    'status' => 'completed',
-                    'gateway_response' => $result,
-                    'gateway_reference' => $result['transaction_id']
-                ]);
+                if (!$payment->isCompleted()) {
+                    $payment->update([
+                        'status' => 'completed',
+                        'gateway_response' => $result,
+                        'gateway_reference' => $result['transaction_id'] ?? $reference,
+                        'paid_at' => now(),
+                    ]);
+                }
 
                 $this->securityLogService->logPaymentAttempt(
                     $payment->id,
@@ -134,17 +182,30 @@ class SecurePaymentController extends Controller
                 ]);
             }
 
-            throw new \Exception($result['message'] ?? 'خطا در تایید پرداخت');
+            DB::commit();
+
+            $this->securityLogService->logPaymentAttempt(
+                $payment->id,
+                $payment->amount,
+                false,
+                $result
+            );
+
+            return redirect()->route('payments.secure.result', [
+                'reference' => $reference,
+                'status' => 'failed',
+                'message' => $result['message'] ?? 'خطا در تایید پرداخت',
+            ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Payment verification failed', [
+            Log::error('Secure payment verification failed', [
                 'reference' => $reference,
                 'error' => $e->getMessage()
             ]);
 
             $this->securityLogService->logPaymentAttempt(
-                null,
+                $payment->id,
                 0,
                 false,
                 ['error' => $e->getMessage()]
@@ -164,9 +225,15 @@ class SecurePaymentController extends Controller
         $reference = $request->reference;
         $message = $request->message;
 
-        $payment = Payment::where('reference_id', $reference)->first();
+        $payment = Payment::where('reference_id', $reference)->with('booking')->first();
 
-        return view('payments.secure.result', compact('success', 'payment', 'message'));
+        if ($payment) {
+            $this->authorize('pay', $payment->booking);
+        }
+
+        $booking = $payment?->booking;
+
+        return view('payments.secure.result', compact('success', 'payment', 'booking', 'message'));
     }
 
     public function checkStatus(string $reference): JsonResponse
@@ -175,41 +242,14 @@ class SecurePaymentController extends Controller
             ->with('booking')
             ->firstOrFail();
 
+        $this->authorize('pay', $payment->booking);
+
         return response()->json([
             'status' => $payment->status,
             'paid_at' => $payment->paid_at?->format('Y-m-d H:i:s'),
             'gateway_reference' => $payment->gateway_reference,
+            'remaining_seconds' => $payment->getRemainingTime(),
             'booking_status' => $payment->booking->status
         ]);
-    }
-
-    protected function handlePaymentError(\Exception $e, ?Payment $payment = null)
-    {
-        Log::error('Payment processing error', [
-            'payment_id' => $payment?->id,
-            'error' => $e->getMessage()
-        ]);
-
-        if ($payment) {
-            $payment->update([
-                'status' => 'failed',
-                'gateway_response' => [
-                    'error' => $e->getMessage(),
-                    'timestamp' => now()->toDateTimeString()
-                ]
-            ]);
-        }
-
-        $this->securityLogService->logPaymentAttempt(
-            $payment?->id,
-            $payment?->amount ?? 0,
-            false,
-            ['error' => $e->getMessage()]
-        );
-
-        return response()->json([
-            'success' => false,
-            'message' => 'خطا در پردازش پرداخت. لطفا مجددا تلاش کنید.'
-        ], 500);
     }
 }

@@ -52,6 +52,25 @@
             </div>
 
             {{-- Delete account --}}
+            {{-- Two-factor authentication --}}
+            <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 overflow-hidden">
+                <div class="px-6 py-4 border-b border-[#C9A24B]/10 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <h2 class="font-bold text-sm text-[#E6CD8A]">احراز هویت دو مرحله‌ای</h2>
+                    <p class="text-xs text-[#F8F3E9]/45 mr-auto">برای استفاده از «پرداخت امن» فعال کنید</p>
+                </div>
+                <div class="p-6 flex items-center justify-between">
+                    <p class="text-sm text-[#F8F3E9]/60">وضعیت: <span class="{{ auth()->user()->two_factor_enabled ? 'text-emerald-400' : 'text-[#F8F3E9]/50' }} font-semibold">{{ auth()->user()->two_factor_enabled ? 'فعال' : 'غیرفعال' }}</span></p>
+                    <a href="{{ route('security.2fa') }}"
+                       class="px-5 py-2 rounded-xl text-sm font-semibold border border-[#C9A24B]/25 text-[#F8F3E9]/85 hover:bg-white/5 transition-colors">
+                        مدیریت تنظیمات
+                    </a>
+                </div>
+            </div>
+
             <div class="bg-[#2E2117] rounded-2xl border border-red-500/15 overflow-hidden">
                 <div class="px-6 py-4 border-b border-red-500/10 flex items-center gap-2">
                     <svg class="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

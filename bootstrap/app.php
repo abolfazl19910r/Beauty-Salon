@@ -34,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'permission' => \App\Http\Middleware\PermissionMiddleware::class,
+            '2fa.enabled' => \App\Http\Middleware\EnsureTwoFactorVerifiedForPayment::class,
         ]);
 
         $middleware->group('admin', [

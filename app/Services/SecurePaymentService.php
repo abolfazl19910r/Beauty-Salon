@@ -1,6 +1,8 @@
 <?php
+
 namespace App\Services;
 
+use App\Models\Booking;
 use App\Models\Payment;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
@@ -8,7 +10,9 @@ use Illuminate\Support\Str;
 
 class SecurePaymentService
 {
-    public function createPayment($booking): Payment
+    protected const EXPIRY_MINUTES = 15;
+
+    public function createPayment(Booking $booking): Payment
     {
         $referenceId = $this->generateSecureReference();
 
@@ -16,6 +20,8 @@ class SecurePaymentService
             'booking_id' => $booking->id,
             'amount' => $booking->prepayment_amount,
             'reference_id' => $referenceId,
+            'status' => 'pending',
+            'expired_at' => now()->addMinutes(self::EXPIRY_MINUTES),
             'card_data' => $this->encryptSensitiveData([
                 'amount' => $booking->prepayment_amount,
                 'user_id' => $booking->user_id,
@@ -23,7 +29,7 @@ class SecurePaymentService
             ])
         ]);
 
-        Log::info('Payment initiated', [
+        Log::info('Secure payment initiated', [
             'payment_id' => $payment->id,
             'booking_id' => $booking->id,
             'reference' => $referenceId
@@ -32,41 +38,84 @@ class SecurePaymentService
         return $payment;
     }
 
-    public function verifyPayment($referenceId, $amount): bool
+    /**
+     * Verifies a secure-checkout payment reference and, on success, completes the transaction.
+     *
+     * The amount is intentionally NOT taken as an input parameter here (it previously came from
+     * the client's request body, an amount a user could freely tamper with before this check ever
+     * ran) — it is always read from the server-side Payment record created in createPayment(),
+     * and cross-checked against the encrypted card_data blob purely as a tamper-evidence signature.
+     */
+    public function verifyPayment(string $referenceId): array
     {
         $payment = Payment::where('reference_id', $referenceId)->first();
 
         if (!$payment) {
-            Log::warning('Payment verification failed - Payment not found', [
+            Log::warning('Secure payment verification failed - payment not found', [
                 'reference' => $referenceId
             ]);
-            return false;
+
+            return ['success' => false, 'message' => 'تراکنش یافت نشد.'];
         }
 
-        $decryptedData = $this->decryptSensitiveData($payment->card_data);
+        if ($payment->isCompleted()) {
+            return [
+                'success' => true,
+                'transaction_id' => $payment->gateway_reference ?? $referenceId,
+                'already_completed' => true,
+            ];
+        }
 
-        if ($decryptedData['amount'] !== $amount) {
-            Log::warning('Payment verification failed - Amount mismatch', [
+        if ($payment->isFailed()) {
+            return ['success' => false, 'message' => 'این تراکنش قبلاً ناموفق اعلام شده است.'];
+        }
+
+        if ($payment->isExpired()) {
+            $payment->markAsFailed();
+
+            Log::warning('Secure payment verification failed - expired', [
                 'payment_id' => $payment->id,
-                'expected' => $decryptedData['amount'],
-                'received' => $amount
             ]);
-            return false;
+
+            return ['success' => false, 'message' => 'مهلت پرداخت به پایان رسیده است. لطفاً دوباره تلاش کنید.'];
         }
 
-        if (now()->timestamp - $decryptedData['timestamp'] > 900) {
-            Log::warning('Payment verification failed - Time expired', [
+        try {
+            $decryptedData = $this->decryptSensitiveData($payment->card_data);
+        } catch (\Exception $e) {
+            Log::warning('Secure payment verification failed - could not decrypt reference data', [
+                'payment_id' => $payment->id,
+            ]);
+
+            return ['success' => false, 'message' => 'خطا در تایید تراکنش.'];
+        }
+
+        if ((float) ($decryptedData['amount'] ?? 0) !== (float) $payment->amount) {
+            Log::warning('Secure payment verification failed - amount mismatch', [
+                'payment_id' => $payment->id,
+                'expected' => $payment->amount,
+                'signed' => $decryptedData['amount'] ?? null,
+            ]);
+
+            return ['success' => false, 'message' => 'مبلغ تراکنش نامعتبر است.'];
+        }
+
+        if (now()->timestamp - ($decryptedData['timestamp'] ?? 0) > self::EXPIRY_MINUTES * 60) {
+            $payment->markAsFailed();
+
+            Log::warning('Secure payment verification failed - time expired', [
                 'payment_id' => $payment->id
             ]);
-            return false;
+
+            return ['success' => false, 'message' => 'مهلت پرداخت به پایان رسیده است. لطفاً دوباره تلاش کنید.'];
         }
 
-        Log::info('Payment verified successfully', [
+        Log::info('Secure payment verified successfully', [
             'payment_id' => $payment->id,
             'reference' => $referenceId
         ]);
 
-        return true;
+        return ['success' => true, 'transaction_id' => $referenceId];
     }
 
     protected function generateSecureReference(): string

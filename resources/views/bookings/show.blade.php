@@ -220,15 +220,22 @@
                     </a>
 
                     @if($booking->payment_status == 'unpaid')
-                        <a href="{{ route('payment.show', $booking) }}"
-                           class="px-5 py-2 rounded-lg transition-opacity hover:opacity-90 inline-flex items-center font-bold"
-                           style="background: linear-gradient(135deg, var(--rasta-gold-light), var(--rasta-gold)); color: var(--rasta-dark);">
-                            <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                                <line x1="1" y1="10" x2="23" y2="10"></line>
-                            </svg>
-                            پرداخت نوبت
-                        </a>
+                        <div class="flex flex-col items-end gap-1.5">
+                            <a href="{{ route('payment.show', $booking) }}"
+                               class="px-5 py-2 rounded-lg transition-opacity hover:opacity-90 inline-flex items-center font-bold"
+                               style="background: linear-gradient(135deg, var(--rasta-gold-light), var(--rasta-gold)); color: var(--rasta-dark);">
+                                <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                                    <line x1="1" y1="10" x2="23" y2="10"></line>
+                                </svg>
+                                پرداخت نوبت
+                            </a>
+                            <a href="{{ route('payments.secure.checkout', $booking) }}"
+                               class="text-xs transition-colors"
+                               style="color: var(--rasta-cream); opacity: 0.55;">
+                                یا پرداخت امن با تایید دو مرحله‌ای
+                            </a>
+                        </div>
                     @endif
                 </div>
             </div>
