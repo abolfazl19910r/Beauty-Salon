@@ -27,22 +27,11 @@ const mountComponent = (elementId, importFn, getProps = () => ({})) => {
 };
 
 mountComponent(
-    'booking-actions',
-    () => import('./Components/BookingActions'),
-    (el) => ({ booking: JSON.parse(el.dataset.booking || '{}') })
-);
-
-mountComponent(
     'two-factor-auth',
     () => import('./Components/Auth/TwoFactorAuth')
 );
 
 mountComponent(
-    'secure-form',
-    () => import('./Components/Common/SecureForm')
-);
-
-mountComponent(
     'announcement-banner',
-    () => import('./components/Announcement/AnnouncementBanner')
+    () => import('./Components/Announcement/AnnouncementBanner')
 );
