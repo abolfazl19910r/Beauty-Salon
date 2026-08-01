@@ -109,6 +109,8 @@ class GeneratePdfReportJob implements ShouldQueue
                 $exportData['summary'],
                 $exportData['paymentBreakdown'],
                 $exportData['rawBookings'],
+                $exportData['specialists'],
+                $exportData['services'],
             ),
             $relativePath,
             'local'
