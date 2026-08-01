@@ -26,6 +26,8 @@ class User extends Authenticatable
         'login_verification_code',
         'login_verification_code_expire_at',
         'two_factor_enabled',
+        'two_factor_code',
+        'two_factor_code_expires_at',
     ];
 
     protected $hidden = [
@@ -42,6 +44,7 @@ class User extends Authenticatable
         'verification_code_expire_at' => 'datetime',
         'login_verification_code_expire_at' => 'datetime',
         'two_factor_enabled' => 'boolean',
+        'two_factor_code_expires_at' => 'datetime',
     ];
 
     public function receivesBroadcastNotificationsOn()
