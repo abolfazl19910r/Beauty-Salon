@@ -44,6 +44,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_a
     require __DIR__.'/admin/loyalty.php';
     require __DIR__.'/admin/blog.php';
     require __DIR__.'/admin/announcements.php';
+    require __DIR__.'/admin/discount-codes.php';
 
     require __DIR__.'/admin/notifications.php';
 
