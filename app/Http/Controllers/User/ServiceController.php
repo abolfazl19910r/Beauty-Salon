@@ -16,7 +16,16 @@ class ServiceController extends Controller
         // ⚠️ N+1 fix: Without with('category'), each service on this page
         // (12 rows) would have run a separate category query (11 duplicate queries in Telescope
         // were observed). Now only a single query (where id in (...)) is run.
-        $services = BeautyService::with('category')->paginate(12);
+        //
+        // ⚠️ Bug fix (documented in the project prompt as a known gap): clicking a category pill
+        // in resources/views/services/index.blade.php changed the URL (?category=ID) and the
+        // pill's "active" styling (via request('category')), but this method never actually read
+        // that value — every click showed the exact same unfiltered list. Now applies where
+        // category_id when present.
+        $services = BeautyService::with('category')
+            ->when(request('category'), fn ($query, $categoryId) => $query->where('category_id', $categoryId))
+            ->paginate(12)
+            ->withQueryString();
         $categories = Category::all();
 
         return view('services.index', compact('services', 'categories'));
