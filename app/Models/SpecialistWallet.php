@@ -121,21 +121,6 @@ class SpecialistWallet extends Model
         ]);
     }
 
-    public function deductCancellationFee(float $amount, int $bookingId, string $description = null): WalletTransaction
-    {
-        $this->decrement('balance', $amount);
-
-        $transaction = $this->transactions()->create([
-            'booking_id' => $bookingId,
-            'type' => 'cancellation_fee',
-            'amount' => -$amount,
-            'balance_after' => $this->balance,
-            'description' => $description ?? "جریمه لغو نوبت #{$bookingId}",
-        ]);
-
-        return $transaction;
-    }
-
     public function recordWithdrawal(float $amount, int $withdrawalRequestId): WalletTransaction
     {
         $this->decrement('balance', $amount);
