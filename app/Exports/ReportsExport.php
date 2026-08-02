@@ -24,8 +24,19 @@ class ReportsExport implements FromCollection, WithCharts, WithColumnWidths, Wit
 {
     use AppliesReportSheetStyle;
 
+    /**
+     * $data is typed Collection, not array: AdminReportService::getRowsForType()/dailyRevenue()/
+     * weeklyRevenue()/monthlyRevenue() all return a Collection, and AdminReportExport passes it
+     * straight through (its own $rows property is Collection-typed too) — a type mismatch here
+     * made every Excel export fail with a TypeError before it ever reached the styling/sub-table
+     * code below, confirmed via a real laravel.log the user sent (GeneratePdfReportJob caught and
+     * logged it; the report_export row was left as 'failed'). Pre-existing bug, not introduced by
+     * the sub-table/chart work above — collection() previously wrapped it in collect() as if it
+     * might be a plain array, which papered over the type-hint mismatch right up until PHP's own
+     * strict argument-type enforcement on __construct() rejected the Collection outright.
+     */
     public function __construct(
-        private readonly array $data,
+        private readonly Collection $data,
         private readonly string $type,
         private readonly Collection $specialists,
         private readonly Collection $services,
@@ -34,7 +45,7 @@ class ReportsExport implements FromCollection, WithCharts, WithColumnWidths, Wit
 
     public function collection(): Collection
     {
-        return collect($this->data);
+        return $this->data;
     }
 
     public function headings(): array
@@ -43,7 +54,7 @@ class ReportsExport implements FromCollection, WithCharts, WithColumnWidths, Wit
             'daily'   => ['تاریخ', 'تعداد نوبت', 'درآمد', 'میانگین نوبت'],
             'weekly'  => ['هفته', 'تعداد نوبت', 'درآمد', 'میانگین نوبت'],
             'monthly' => ['ماه', 'تعداد نوبت', 'درآمد', 'میانگین نوبت'],
-            default   => array_keys((array) ($this->data[0] ?? [])),
+            default   => array_keys((array) ($this->data->first() ?? [])),
         };
     }
 

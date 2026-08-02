@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminReportExportController extends Controller
 {
@@ -57,7 +58,15 @@ class AdminReportExportController extends Controller
         return view('admin.reports.exports.index', compact('exports'));
     }
 
-    public function download(ReportExport $reportExport): RedirectResponse
+    /**
+     * Return type is a union, not just RedirectResponse: the "not ready" branch below returns a
+     * redirect (back()), but the actual successful download path returns whatever
+     * Storage::disk()->download() gives back — a StreamedResponse on the local driver. The
+     * previous RedirectResponse-only type-hint made every successful PDF/Excel download a fatal
+     * TypeError (confirmed via a real laravel.log the user sent), even though the file itself was
+     * generated correctly and sat ready on disk.
+     */
+    public function download(ReportExport $reportExport): RedirectResponse|StreamedResponse
     {
         if (!$reportExport->isDownloadable()) {
             return back()->with('error', 'این فایل هنوز آماده نیست یا در دسترس نیست.');
