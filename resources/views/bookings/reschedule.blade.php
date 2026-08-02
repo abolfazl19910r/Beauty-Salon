@@ -128,9 +128,38 @@
 @endsection
 
 @push('scripts')
-    <script src="https://unpkg.com/persian-date@latest/dist/persian-date.min.js"></script>
     <script>
         (function() {
+            // --------------------------------------------------------------
+            // Self-contained Gregorian↔solar conversion — no external libraries/CDN
+            // (same jcal algorithm already used in bookings/create.blade.php,
+            // bookings/index.blade.php, and admin/reports/index.blade.php).
+            // Replaces the previous unpkg.com/persian-date CDN dependency, which —
+            // unlike the rest of the project's pages — this file hadn't migrated away
+            // from yet, and which silently broke this page whenever the local
+            // environment had no access to the outside internet (documented in this
+            // project alongside the same-root-cause Kavenegar SMS timeout).
+            // --------------------------------------------------------------
+            function div(a, b) { return Math.trunc(a / b); }
+
+            function gregorianToJalali(gy, gm, gd) {
+                const g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+                let jy;
+                if (gy > 1600) { jy = 979; gy -= 1600; } else { jy = 0; gy -= 621; }
+                const gy2 = (gm > 2) ? (gy + 1) : gy;
+                let days = (365 * gy) + div(gy2 + 3, 4) - div(gy2 + 99, 100) + div(gy2 + 399, 400) - 80 + gd + g_d_m[gm - 1];
+                jy += 33 * div(days, 12053);
+                days %= 12053;
+                jy += 4 * div(days, 1461);
+                days %= 1461;
+                if (days > 365) { jy += div(days - 1, 365); days = (days - 1) % 365; }
+                const jm = (days < 186) ? 1 + div(days, 31) : 7 + div(days - 186, 30);
+                const jd = 1 + ((days < 186) ? (days % 31) : ((days - 186) % 30));
+                return [jy, jm, jd];
+            }
+
+            const jWeekdays = ['ی', 'د', 'س', 'چ', 'پ', 'ج', 'ش']; // According to JavaScript getDay() (0=Sunday)
+
             const SPECIALIST_ID = {{ $booking->specialist_id }};
             const BOOKING_ID    = {{ $booking->id }};
             const CSRF          = document.querySelector('meta[name="csrf-token"]').content;
@@ -141,7 +170,9 @@
             // ---- helpers ----
             function formatPersianDate(isoStr) {
                 try {
-                    return new persianDate(new Date(isoStr)).format('YYYY/MM/DD');
+                    const d = new Date(isoStr + 'T00:00:00');
+                    const [jy, jm, jd] = gregorianToJalali(d.getFullYear(), d.getMonth() + 1, d.getDate());
+                    return jy + '/' + String(jm).padStart(2, '0') + '/' + String(jd).padStart(2, '0');
                 } catch(e) {
                     return isoStr;
                 }
@@ -149,10 +180,10 @@
 
             function formatDayLabel(isoStr) {
                 try {
-                    const pd = new persianDate(new Date(isoStr));
-                    const days = ['ی','د','س','چ','پ','ج','ش'];
-                    return '<span class="block text-xs opacity-60">' + days[pd.day()] + '</span>'
-                        + '<span class="block font-bold persian-number">' + pd.date() + '</span>';
+                    const d = new Date(isoStr + 'T00:00:00');
+                    const [, , jd] = gregorianToJalali(d.getFullYear(), d.getMonth() + 1, d.getDate());
+                    return '<span class="block text-xs opacity-60">' + jWeekdays[d.getDay()] + '</span>'
+                        + '<span class="block font-bold persian-number">' + jd + '</span>';
                 } catch(e) {
                     return isoStr;
                 }
