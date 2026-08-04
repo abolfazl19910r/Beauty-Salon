@@ -34,6 +34,10 @@
                         <span class="font-medium" style="color: var(--rasta-cream);">{{ number_format($booking->prepayment_amount) }} تومان</span>
                     </div>
                     <div class="flex justify-between items-center">
+                        <span style="color: var(--rasta-cream); opacity: 0.6;">باقی‌مانده (موقع نوبت به متخصص می‌دهید):</span>
+                        <span class="font-medium" style="color: var(--rasta-cream); opacity: 0.85;">{{ number_format($booking->remaining_amount) }} تومان</span>
+                    </div>
+                    <div class="flex justify-between items-center">
                         <span style="color: var(--rasta-cream); opacity: 0.6;">تاریخ پرداخت:</span>
                         <span class="font-medium" dir="ltr" style="color: var(--rasta-cream);">{{ verta($booking->paid_at)->format('Y/m/d H:i') }}</span>
                     </div>

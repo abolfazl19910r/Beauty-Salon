@@ -187,9 +187,17 @@
                             <span class="text-[#F8F3E9]/60">ساعت پایان (تقریبی)</span>
                             <span id="summary-end-time" class="font-medium text-[#F8F3E9]"></span>
                         </div>
+                        <div class="summary-row flex justify-between pb-3">
+                            <span class="text-[#F8F3E9]/60">قیمت کل خدمت</span>
+                            <span id="summary-total-price" class="font-medium text-[#F8F3E9] persian-number">—</span>
+                        </div>
                         <div class="flex justify-between pt-1">
                             <span class="font-bold text-[#F8F3E9]">مبلغ پیش‌پرداخت</span>
-                            <span class="font-bold text-[#E6CD8A] persian-number">۵۰٬۰۰۰ تومان</span>
+                            <span id="summary-prepayment" class="font-bold text-[#E6CD8A] persian-number">—</span>
+                        </div>
+                        <div class="flex justify-between pt-1">
+                            <span class="text-[#F8F3E9]/60">باقی‌مانده (موقع نوبت به متخصص می‌دهید)</span>
+                            <span id="summary-remaining" class="font-medium text-[#F8F3E9]/80 persian-number">—</span>
                         </div>
                     </div>
                 </div>
@@ -314,6 +322,18 @@
                 document.getElementById('summary-specialist').textContent = specialist.name;
                 document.getElementById('summary-date').textContent = formatJalaliFull(selectedDate);
                 document.getElementById('summary-time').textContent = selectedTime;
+                // prepayment_amount comes from the server (ServiceController::list(), computed via
+                // WalletSetting::calculatePrepaymentAmount()) — was previously a hardcoded ۵۰٬۰۰۰
+                // placeholder here regardless of the actual service price/admin settings.
+                const totalPrice = Number(service.price || 0);
+                const prepayment = Number(service.prepayment_amount || 0);
+                const remaining = Math.max(0, totalPrice - prepayment);
+                document.getElementById('summary-total-price').textContent =
+                    totalPrice.toLocaleString('fa-IR') + ' تومان';
+                document.getElementById('summary-prepayment').textContent =
+                    prepayment.toLocaleString('fa-IR') + ' تومان';
+                document.getElementById('summary-remaining').textContent =
+                    remaining.toLocaleString('fa-IR') + ' تومان';
 
                 if (service.duration) {
                     document.getElementById('summary-duration').textContent = service.duration + ' دقیقه';

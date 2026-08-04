@@ -490,9 +490,6 @@ class BookingObserver
     {
         $persianDate = verta($booking->booking_time)->format('Y/m/d');
         $persianTime = verta($booking->booking_time)->format('H:i');
-        $totalPrice = (float) $booking->service->price;
-        $prepayment = (float) $booking->prepayment_amount;
-        $remaining = max(0, $totalPrice - $prepayment);
 
         $message = sprintf(
             "سلام %s، نوبت شما تایید شد.\n👤 متخصص: %s\n💇 سرویس: %s\n📅 تاریخ: %s\n⏰ زمان: %s\n💰 قیمت کل خدمت: %s تومان\n✅ پیش‌پرداخت: %s تومان\n💵 باقی‌مانده (موقع نوبت): %s تومان\n🔢 پیگیری: #%s\n🏠 آدرس: تهران، خیابان ... \n✅ لطفا ۱۵ دقیقه زودتر در محل حضور داشته باشید.",
@@ -501,9 +498,9 @@ class BookingObserver
             $booking->service->name,
             $persianDate,
             $persianTime,
-            number_format($totalPrice),
-            number_format($prepayment),
-            number_format($remaining),
+            number_format((float) $booking->service->price),
+            number_format((float) $booking->prepayment_amount),
+            number_format($booking->remaining_amount),
             $booking->id
         );
 
@@ -512,16 +509,12 @@ class BookingObserver
 
     protected function sendCustomerPendingSMS(Booking $booking): void
     {
-        $totalPrice = (float) $booking->service->price;
-        $prepayment = (float) $booking->prepayment_amount;
-        $remaining = max(0, $totalPrice - $prepayment);
-
         $message = sprintf(
             "سلام %s، نوبت شما با موفقیت ثبت شد و در انتظار تایید نهایی متخصص است.\n💰 قیمت کل خدمت: %s تومان\n✅ پیش‌پرداخت: %s تومان\n💵 باقی‌مانده (موقع نوبت): %s تومان\nنتیجه به زودی اطلاع‌رسانی می‌شود.",
             $booking->user->name,
-            number_format($totalPrice),
-            number_format($prepayment),
-            number_format($remaining)
+            number_format((float) $booking->service->price),
+            number_format((float) $booking->prepayment_amount),
+            number_format($booking->remaining_amount)
         );
         $this->smsService->send($booking->user->phone, $message);
     }

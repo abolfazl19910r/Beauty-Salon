@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\BeautyService;
 use App\Models\Category;
+use App\Models\WalletSetting;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 use Illuminate\Http\JsonResponse;
@@ -47,8 +48,20 @@ class ServiceController extends Controller
 
     public function list(): JsonResponse
     {
-        // 30-minute cache — service list changes infrequently
+        // 30-minute cache — service list changes infrequently. prepayment_amount is computed
+        // AFTER the cached collection is retrieved (not baked into the cached payload itself), so
+        // it always reflects the current admin-configured wallet_settings.prepayment_percentage/
+        // minimum_prepayment_amount on every request, regardless of how stale the underlying
+        // service-price cache is — no cache invalidation wiring needed for settings changes.
         $services = Cache::remember('all_beauty_services', now()->addMinutes(30), fn () => BeautyService::all());
+
+        $settings = WalletSetting::get();
+        $services = $services->map(function (BeautyService $service) use ($settings) {
+            $service->prepayment_amount = $settings->calculatePrepaymentAmount((float) $service->price);
+
+            return $service;
+        });
+
         return response()->json($services);
     }
 

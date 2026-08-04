@@ -23,9 +23,6 @@ class CustomerBookingNotification extends Notification
 
     public function toArray($notifiable): array
     {
-        $totalPrice = (float) $this->booking->service->price;
-        $prepayment = (float) $this->booking->prepayment_amount;
-
         return [
             'booking_id' => $this->booking->id,
             'message' => 'رزرو شما با موفقیت ثبت و تأیید شد',
@@ -33,18 +30,14 @@ class CustomerBookingNotification extends Notification
             'specialist_name' => $this->booking->specialist->name,
             'booking_time' => $this->booking->booking_time,
             'payment_ref' => $this->booking->payment_reference,
-            'total_price' => $totalPrice,
-            'prepayment_amount' => $prepayment,
-            'remaining_amount' => max(0, $totalPrice - $prepayment),
+            'total_price' => (float) $this->booking->service->price,
+            'prepayment_amount' => (float) $this->booking->prepayment_amount,
+            'remaining_amount' => $this->booking->remaining_amount,
         ];
     }
 
     public function toSms($notifiable): bool
     {
-        $totalPrice = (float) $this->booking->service->price;
-        $prepayment = (float) $this->booking->prepayment_amount;
-        $remaining = max(0, $totalPrice - $prepayment);
-
         $message = sprintf(
             'نوبت شما با موفقیت ثبت و پرداخت شد:
 تاریخ: %s
@@ -58,9 +51,9 @@ class CustomerBookingNotification extends Notification
             verta($this->booking->booking_time)->format('Y/m/d H:i'),
             $this->booking->service->name,
             $this->booking->specialist->name,
-            number_format($totalPrice),
-            number_format($prepayment),
-            number_format($remaining),
+            number_format((float) $this->booking->service->price),
+            number_format((float) $this->booking->prepayment_amount),
+            number_format($this->booking->remaining_amount),
             $this->booking->payment_reference,
             config('app.salon_address')
         );
