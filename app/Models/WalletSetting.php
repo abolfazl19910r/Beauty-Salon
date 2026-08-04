@@ -24,6 +24,8 @@ class WalletSetting extends Model
         'specialist_repeat_cancellation_extra_percentage',
         'settlement_delay_days',
         'admin_commission_percentage',
+        'prepayment_percentage',
+        'minimum_prepayment_amount',
     ];
 
     protected $casts = [
@@ -41,6 +43,8 @@ class WalletSetting extends Model
         'specialist_repeat_cancellation_extra_percentage' => 'decimal:2',
         'settlement_delay_days' => 'integer',
         'admin_commission_percentage' => 'decimal:2',
+        'prepayment_percentage' => 'decimal:2',
+        'minimum_prepayment_amount' => 'decimal:2',
     ];
 
     public function calculateCustomerCancellationFee(float $amount, $bookingTime): float
@@ -82,6 +86,21 @@ class WalletSetting extends Model
         $percentage = min($percentage, 100);
 
         return ($amount * $percentage) / 100;
+    }
+
+    /**
+     * Admin-configurable prepayment: percentage of the service price, with a floor
+     * (minimum_prepayment_amount) and a ceiling (never more than the service's own total price —
+     * fixes a real edge case where a cheap service's price could otherwise be less than the
+     * configured minimum, which would make the customer's "prepayment" exceed the actual cost of
+     * the service).
+     */
+    public function calculatePrepaymentAmount(float $servicePrice): float
+    {
+        $percentageBased = $servicePrice * ((float) $this->prepayment_percentage / 100);
+        $amount = max((float) $this->minimum_prepayment_amount, $percentageBased);
+
+        return min($servicePrice, $amount);
     }
 
     public static function get(): self

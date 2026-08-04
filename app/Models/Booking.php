@@ -67,6 +67,23 @@ class Booking extends Model
         return $this->hasMany(Payment::class);
     }
 
+    /**
+     * The amount the customer still owes the specialist directly at the appointment
+     * (service price minus the prepayment collected through the platform). Display-only —
+     * never used in any wallet/commission calculation (BookingObserver::addIncomeAndCommission()
+     * only ever operates on prepayment_amount, the actual money collected through the platform).
+     */
+    public function getRemainingAmountAttribute(): float
+    {
+        if (! $this->service) {
+            return 0.0;
+        }
+
+        $remaining = (float) $this->service->price - (float) $this->prepayment_amount - (float) $this->discount_amount;
+
+        return max(0.0, $remaining);
+    }
+
     public function loyaltyPoints(): Booking|HasOne
     {
         return $this->hasOne(LoyaltyPoint::class);

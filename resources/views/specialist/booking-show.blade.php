@@ -57,6 +57,20 @@
                             <span class="text-[var(--specialist-plum-muted)]">وضعیت پرداخت:</span>
                             <span class="font-bold {{ $paymentInfo['class'] }}">{{ $paymentInfo['label'] }}</span>
                         </p>
+                        @if($booking->service)
+                            <p class="text-[var(--specialist-text-dim)] persian-number">
+                                <span class="text-[var(--specialist-plum-muted)]">قیمت کل خدمت:</span>
+                                {{ number_format($booking->service->price) }} تومان
+                            </p>
+                            <p class="text-[var(--specialist-text-dim)] persian-number">
+                                <span class="text-[var(--specialist-plum-muted)]">پیش‌پرداخت مشتری (از طریق سایت):</span>
+                                {{ number_format($booking->prepayment_amount) }} تومان
+                            </p>
+                            <p class="text-[var(--specialist-plum-light)] font-bold persian-number">
+                                <span class="text-[var(--specialist-plum-muted)] font-normal">باقی‌مانده (موقع نوبت مستقیماً از مشتری دریافت کنید):</span>
+                                {{ number_format($booking->remaining_amount) }} تومان
+                            </p>
+                        @endif
                     </div>
                 </div>
 

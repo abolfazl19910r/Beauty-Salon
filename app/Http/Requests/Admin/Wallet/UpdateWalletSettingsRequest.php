@@ -29,6 +29,8 @@ class UpdateWalletSettingsRequest extends FormRequest
             'specialist_repeat_cancellation_extra_percentage' => ['required', 'numeric', 'min:0', new MaxPercentage()],
             'settlement_delay_days' => ['required', 'integer', 'min:0', 'max:30'],
             'admin_commission_percentage' => ['required', 'numeric', 'min:0', new MaxPercentage()],
+            'prepayment_percentage' => ['required', 'numeric', 'min:0', new MaxPercentage()],
+            'minimum_prepayment_amount' => ['required', 'numeric', 'min:0'],
         ];
     }
 }

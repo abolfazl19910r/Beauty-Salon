@@ -78,8 +78,8 @@ class BookingDiscountController extends Controller
             }
 
             return back()->with('success', sprintf(
-                'کد تخفیف اعمال شد. مبلغ قابل پرداخت: %s تومان',
-                number_format($result['final_amount'])
+                'کد تخفیف اعمال شد. %s تومان از باقی‌مانده‌ای که موقع نوبت پرداخت می‌کنید کسر شد.',
+                number_format($result['discount_amount'])
             ));
 
         } catch (Exception $e) {

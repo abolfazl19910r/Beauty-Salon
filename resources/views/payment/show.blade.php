@@ -165,24 +165,31 @@
                         <span class="text-[#F8F3E9]/55">مبلغ کل خدمت</span>
                         <span class="text-[#F8F3E9]/80 persian-number">{{ number_format($booking->service->price) }} تومان</span>
                     </div>
+                    <div class="flex justify-between border-b border-[#C9A24B]/8 pb-3">
+                        <span class="text-[#F8F3E9]/55">باقی‌مانده (موقع نوبت به متخصص می‌دهید)</span>
+                        <span class="text-[#F8F3E9]/70 persian-number" id="remaining-amount">{{ number_format($booking->remaining_amount) }} تومان</span>
+                    </div>
+                    @if($booking->discount_amount > 0)
+                        <div class="flex justify-between border-b border-[#C9A24B]/8 pb-3 text-emerald-400">
+                            <span>تخفیف اعمال‌شده ({{ $booking->discount_code }}) — از باقی‌مانده کسر شد</span>
+                            <span class="persian-number">- {{ number_format($booking->discount_amount) }} تومان</span>
+                        </div>
+                    @endif
+                    <div id="discount-summary" class="hidden flex justify-between border-b border-[#C9A24B]/8 pb-3 text-emerald-400">
+                        <span>تخفیف اعمال‌شده — از باقی‌مانده کسر شد</span>
+                        <span class="font-semibold persian-number" id="discount-amount">0 تومان</span>
+                    </div>
                 @endif
                 <div class="flex justify-between border-b border-[#C9A24B]/8 pb-3">
                     <span class="text-[#F8F3E9]/55">مبلغ پیش‌پرداخت</span>
                     <span class="font-bold text-[#F8F3E9] persian-number" id="original-amount">{{ number_format($booking->prepayment_amount) }} تومان</span>
                 </div>
 
-                @if($booking->discount_amount > 0)
-                    <div class="flex justify-between border-b border-[#C9A24B]/8 pb-3 text-emerald-400">
-                        <span>تخفیف اعمال‌شده ({{ $booking->discount_code }})</span>
-                        <span class="persian-number">- {{ number_format($booking->discount_amount) }} تومان</span>
-                    </div>
-                @endif
-
-                <div id="discount-summary" class="hidden flex justify-between border-b border-[#C9A24B]/8 pb-3 text-emerald-400">
-                    <span>تخفیف</span>
-                    <span class="font-semibold persian-number" id="discount-amount">0 تومان</span>
-                </div>
-
+                {{-- ⭐ Business decision: a discount code reduces the "remaining" amount settled
+                     with the specialist in person (above), never the amount actually charged
+                     online here — so this section (wallet/gateway split, "مبلغ قابل پرداخت")
+                     always reflects the unchanged, undiscounted prepayment amount, whether or not
+                     a discount has been applied. --}}
                 <div id="wallet-payment-summary" class="hidden">
                     <div class="flex justify-between border-b border-[#C9A24B]/8 pb-3 text-emerald-400">
                         <span>پرداخت از کیف پول</span>
@@ -230,9 +237,14 @@
 
     <script>
         const bookingId = {{ $booking->id }};
-        let bookingAmount = {{ $booking->prepayment_amount }};
+        // ⭐ bookingAmount is the amount actually charged online (gateway/wallet) — a discount code
+        // never changes it (see Booking::getRemainingAmountAttribute() / BookingService::
+        // applyDiscountCode() for why: reducing it here would just grow "remaining" by the same
+        // amount, netting the customer zero real savings). It only ever reflects the fixed
+        // prepayment_amount from the server.
+        const bookingAmount = {{ $booking->prepayment_amount }};
+        const servicePrice = {{ (int) ($booking->service->price ?? 0) }};
         const walletBalance = {{ $wallet->balance }};
-        let currentDiscount = {{ $booking->discount_amount ?? 0 }};
 
         function applyDiscount() {
             const codeInput = document.getElementById('discount_code');
@@ -262,29 +274,17 @@
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) {
-                        currentDiscount = data.discount_amount;
-                        bookingAmount = data.final_amount;
-
                         const discountSummary = document.getElementById('discount-summary');
                         const discountAmountEl = document.getElementById('discount-amount');
                         discountSummary.classList.remove('hidden');
-                        discountAmountEl.textContent = '- ' + new Intl.NumberFormat('fa-IR').format(currentDiscount) + ' تومان';
+                        discountAmountEl.textContent = '- ' + new Intl.NumberFormat('fa-IR').format(data.discount_amount) + ' تومان';
+
+                        if (typeof data.remaining_amount === 'number') {
+                            document.getElementById('remaining-amount').textContent =
+                                data.remaining_amount.toLocaleString('fa-IR') + ' تومان';
+                        }
 
                         showMessage(messageDiv, '✓ ' + data.message, 'success');
-
-                        const paymentBtnText = document.getElementById('payment-button-text');
-                        const walletOptions = document.getElementById('wallet-options');
-                        const walletToggle = document.getElementById('wallet-toggle');
-
-                        if (bookingAmount === 0) {
-                            paymentBtnText.textContent = 'تایید نهایی نوبت (رایگان)';
-                            walletOptions.classList.add('hidden');
-                            walletToggle.classList.remove('active');
-                            document.getElementById('payment-form').action = '{{ route("payment.process", $booking) }}';
-                        } else {
-                            paymentBtnText.textContent = 'پرداخت و نهایی کردن رزرو';
-                        }
-                        updatePaymentAmount();
 
                         codeInput.disabled = true;
                         applyBtn.disabled = true;
@@ -365,11 +365,5 @@
             }
             paymentForm.action = '{{ route("payment.wallet", $booking) }}';
         }
-
-        @if($booking->discount_code)
-        document.getElementById('discount-summary').classList.remove('hidden');
-        document.getElementById('discount-amount').textContent = '- ' + Number({{ $booking->discount_amount }}).toLocaleString('fa-IR') + ' تومان';
-        bookingAmount = {{ $booking->prepayment_amount }};
-        @endif
     </script>
 @endsection

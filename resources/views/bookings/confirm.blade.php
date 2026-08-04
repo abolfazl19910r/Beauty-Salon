@@ -27,6 +27,7 @@
                         ['label' => 'تاریخ', 'value' => verta($bookingTime)->format('Y/m/d'), 'persian' => true],
                         ['label' => 'ساعت', 'value' => verta($bookingTime)->format('H:i')],
                         ['label' => 'مدت زمان', 'value' => $service->duration . ' دقیقه', 'persian' => true],
+                        ['label' => 'قیمت کل خدمت', 'value' => number_format($service->price) . ' تومان', 'persian' => true],
                     ] as $row)
                         <div class="flex items-center justify-between px-5 py-3.5 text-sm">
                             <span class="text-[#F8F3E9]/55">{{ $row['label'] }}</span>
@@ -41,7 +42,25 @@
                         {{ number_format($prepaymentAmount) }} تومان
                     </span>
                     </div>
+                    <div class="flex items-center justify-between px-5 py-3.5 text-sm">
+                        <span class="text-[#F8F3E9]/55">
+                            باقی‌مانده (موقع نوبت به متخصص پرداخت می‌کنید)
+                        </span>
+                        <span class="font-medium text-[#F8F3E9]/80 persian-number" id="remaining-amount">
+                            {{ number_format(max(0, $service->price - $prepaymentAmount)) }} تومان
+                        </span>
+                    </div>
                 </div>
+            </div>
+
+            {{-- Informational note: the remaining-amount split above is purely for the customer's
+                 own planning — it is never part of any wallet/commission calculation. Only the
+                 prepayment amount is ever actually charged through the platform. --}}
+            <div class="flex items-start gap-3 bg-amber-900/15 border border-amber-700/25 rounded-xl px-4 py-3 text-xs text-amber-300/90">
+                <svg class="w-4 h-4 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.72-1.36 3.486 0l6.518 11.6c.75 1.334-.213 2.99-1.743 2.99H3.482c-1.53 0-2.493-1.656-1.743-2.99l6.518-11.6zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                فقط مبلغ «پیش‌پرداخت» از طریق درگاه پرداخت می‌شود؛ مابقی مبلغ خدمت را موقع حضور در سالن، طبق توافق با متخصص، به‌صورت مستقیم پرداخت خواهید کرد.
             </div>
 
             {{-- Explanation --}}
@@ -108,7 +127,20 @@
             const codeInput = document.getElementById('discount-code');
             const hiddenCode = document.getElementById('hidden-discount-code');
             const discountMsg = document.getElementById('discount-message');
-            const finalPriceEl = document.getElementById('final-price');
+            const remainingEl = document.getElementById('remaining-amount');
+            const servicePrice = {{ (int) $service->price }};
+            const prepaymentAmount = {{ (int) $prepaymentAmount }};
+
+            // ⭐ Business decision: a discount code never changes the prepayment charged online
+            // (finalPriceEl) — it only reduces the "remaining" amount settled with the specialist in
+            // person. Reducing the prepayment instead would have made discounts a wash: remaining =
+            // price - prepayment, so shrinking the prepayment would grow remaining by the exact same
+            // amount, leaving the customer's total payment (prepayment + remaining) completely
+            // unchanged. finalPriceEl is therefore never rewritten below; only remainingEl is.
+            function updateRemaining(discountAmount) {
+                const remaining = Math.max(0, servicePrice - prepaymentAmount - discountAmount);
+                remainingEl.innerHTML = `${remaining.toLocaleString('fa-IR')} تومان`;
+            }
 
             applyBtn.addEventListener('click', async function() {
                 const code = codeInput.value.trim();
@@ -134,16 +166,15 @@
                     const result = await response.json();
 
                     if (response.ok && result.valid) {
-                        discountMsg.innerHTML = `✓ کد معتبر: ${result.discount_amount.toLocaleString('fa-IR')} تومان تخفیف`;
+                        discountMsg.innerHTML = `✓ کد معتبر: ${result.discount_amount.toLocaleString('fa-IR')} تومان تخفیف (از باقی‌مانده کسر می‌شود)`;
                         discountMsg.className = 'mt-2 text-xs text-emerald-400';
                         hiddenCode.value = code;
-                        if (result.final_price !== undefined)
-                            finalPriceEl.innerHTML = `${result.final_price.toLocaleString('fa-IR')} تومان`;
+                        updateRemaining(result.discount_amount);
                     } else {
                         discountMsg.innerHTML = '✗ ' + (result.message || 'کد تخفیف نامعتبر است');
                         discountMsg.className = 'mt-2 text-xs text-red-400';
                         hiddenCode.value = '';
-                        finalPriceEl.innerHTML = '{{ number_format($prepaymentAmount) }} تومان';
+                        updateRemaining(0);
                     }
                 } catch (e) {
                     discountMsg.innerHTML = 'خطا در بررسی کد تخفیف';

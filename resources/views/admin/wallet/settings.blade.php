@@ -31,6 +31,35 @@
             @csrf @method('PUT')
             <div class="space-y-5">
 
+                {{-- ⭐ Prepayment rules — added by explicit business decision: prepayment is a
+                     percentage of the service price (with a floor and a price-ceiling), not a flat
+                     amount, so the cancellation-fee system (itself a percentage of the prepayment)
+                     stays meaningful for expensive bookings too. --}}
+                <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+                    <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
+                        پیش‌پرداخت نوبت
+                    </div>
+                    <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                            <label class="form-label">درصد پیش‌پرداخت از قیمت خدمت</label>
+                            <div class="relative">
+                                <input type="number" step="0.01" name="prepayment_percentage"
+                                       value="{{ $settings->prepayment_percentage }}"
+                                       class="form-input persian-number" style="padding-left:2.5rem;">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style="color:var(--admin-text-dim);">%</span>
+                            </div>
+                            <p class="form-hint">مشتری هنگام رزرو، همین درصد از قیمت کل خدمت را آنلاین پیش‌پرداخت می‌کند؛ باقی‌مانده موقع نوبت مستقیماً به متخصص پرداخت می‌شود.</p>
+                        </div>
+                        <div>
+                            <label class="form-label">حداقل مبلغ پیش‌پرداخت (تومان)</label>
+                            <input type="number" step="1000" name="minimum_prepayment_amount"
+                                   value="{{ $settings->minimum_prepayment_amount }}"
+                                   class="form-input persian-number">
+                            <p class="form-hint">برای خدمات ارزان، پیش‌پرداخت هیچ‌وقت از این مقدار کمتر نمی‌شود (ولی هیچ‌وقت هم از قیمت کل خدمت بیشتر نمی‌شود).</p>
+                        </div>
+                    </div>
+                </div>
+
                 {{-- Withdrawal rules --}}
                 <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">

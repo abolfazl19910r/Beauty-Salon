@@ -5,9 +5,11 @@ namespace App\Services\Booking;
 use App\Events\Booking\BookingCancelled;
 use App\Exceptions\BookingNotAvailableException;
 use App\Exceptions\DiscountCodeInvalidException;
+use App\Models\BeautyService;
 use App\Models\Booking;
 use App\Models\DiscountCode;
 use App\Models\Specialist;
+use App\Models\WalletSetting;
 use App\Notifications\Booking\CustomerBookingNotification;
 use App\Services\Discount\DiscountCalculator;
 use Exception;
@@ -18,9 +20,7 @@ use Illuminate\Support\Facades\Log;
 
 class BookingService
 {
-    protected const MINIMUM_PREPAYMENT = 50000.0;
-
-    public function __construct(protected readonly Specialist $specialist, protected readonly Booking $booking, protected readonly DiscountCode $discountCode, protected readonly DiscountCalculator $discountCalculator)
+    public function __construct(protected readonly Specialist $specialist, protected readonly Booking $booking, protected readonly DiscountCode $discountCode, protected readonly DiscountCalculator $discountCalculator, protected readonly BeautyService $beautyService)
     {
     }
 
@@ -101,7 +101,7 @@ class BookingService
             );
         }
 
-        $result = $this->discountCalculator->calculate($discountCode, $baseAmount ?? self::MINIMUM_PREPAYMENT);
+        $result = $this->discountCalculator->calculate($discountCode, $baseAmount ?? (float) WalletSetting::get()->minimum_prepayment_amount);
 
         return [
             'valid'           => true,
@@ -162,26 +162,29 @@ class BookingService
 
             $result = $this->discountCalculator->calculate($lockedDiscountCode, (float) $booking->prepayment_amount);
 
+            // ⭐ Same business decision as createBooking(): discount reduces what's owed to the
+            // specialist in person (remaining_amount), never the amount actually charged online
+            // (prepayment_amount stays untouched here).
             $booking->update([
-                'discount_code'     => $code,
-                'discount_amount'   => $result['discount_amount'],
-                'prepayment_amount' => $result['final_amount'],
+                'discount_code'   => $code,
+                'discount_amount' => $result['discount_amount'],
             ]);
 
             $lockedDiscountCode->incrementUsage();
 
             return [
-                'success'         => true,
-                'discount_amount' => $result['discount_amount'],
-                'final_amount'    => $result['final_amount'],
-                'message'         => 'کد تخفیف با موفقیت اعمال شد.',
+                'success'           => true,
+                'discount_amount'   => $result['discount_amount'],
+                'prepayment_amount' => (float) $booking->prepayment_amount,
+                'remaining_amount'  => $booking->fresh(['service'])->remaining_amount,
+                'message'           => 'کد تخفیف اعمال شد؛ این مبلغ از باقی‌مانده‌ای که موقع نوبت پرداخت می‌کنید کسر شد.',
             ];
         });
     }
 
     public function calculatePrepayment(float $servicePrice, ?string $code = null): array
     {
-        $prepaymentAmount = max(self::MINIMUM_PREPAYMENT, $servicePrice * 0.3);
+        $prepaymentAmount = WalletSetting::get()->calculatePrepaymentAmount($servicePrice);
         $discountAmount = 0;
         $discountCode = null;
 
@@ -224,7 +227,11 @@ class BookingService
             );
         }
 
-        $prepaymentData = $this->calculatePrepayment(self::MINIMUM_PREPAYMENT, $discountCode);
+        // ⚠️ Real service price must be used here (BeautyService was never fetched in this method
+        // before): passing the flat minimum/constant here would silently ignore the actual service
+        // price for every booking's prepayment, regardless of the discount question below.
+        $service = $this->beautyService->findOrFail($serviceId);
+        $prepaymentData = $this->calculatePrepayment((float) $service->price, $discountCode);
 
         return DB::transaction(function () use (
             $userId, $serviceId, $specialistId, $bookingTime, $discountCode, $prepaymentData, $specialist
@@ -235,7 +242,16 @@ class BookingService
                 'user_id'           => $userId,
                 'booking_time'      => $bookingTime,
                 'status'            => $specialist->auto_confirm_bookings ? 'confirmed' : 'pending_payment',
-                'prepayment_amount' => $prepaymentData['final_amount'],
+                // ⭐ By explicit business decision: a discount code never reduces the amount actually
+                // charged online (prepayment) — it only reduces the "remaining" amount the customer
+                // settles with the specialist in person (see Booking::getRemainingAmountAttribute()).
+                // This keeps the prepayment/wallet/commission math completely untouched by discounts
+                // (which only ever affected the true charged amount previously) while still giving
+                // the customer a real, non-circular discount instead of a wash (see the numeric
+                // walkthrough that motivated this: discounting the prepayment while remaining =
+                // price - prepayment meant remaining grew by the same amount the prepayment shrank,
+                // netting the customer zero actual savings).
+                'prepayment_amount' => $prepaymentData['original_amount'],
                 'payment_status'    => 'unpaid',
                 'discount_code'     => $discountCode,
                 'discount_amount'   => $prepaymentData['discount_amount'],

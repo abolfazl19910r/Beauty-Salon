@@ -105,6 +105,10 @@
                             <span style="color: var(--rasta-cream); opacity: 0.6;">پیش پرداخت:</span>
                             <span class="font-medium persian-number" style="color: var(--rasta-cream);">{{ number_format($booking->prepayment_amount) }} تومان</span>
                         </div>
+                        <div class="flex justify-between">
+                            <span style="color: var(--rasta-cream); opacity: 0.6;">باقی‌مانده (موقع نوبت به متخصص می‌دهید):</span>
+                            <span class="font-medium persian-number" style="color: var(--rasta-cream); opacity: 0.85;">{{ number_format($booking->remaining_amount) }} تومان</span>
+                        </div>
                         @if($booking->discount_code)
                             <div class="flex justify-between">
                                 <span style="color: var(--rasta-cream); opacity: 0.6;">کد تخفیف اعمال‌شده:</span>

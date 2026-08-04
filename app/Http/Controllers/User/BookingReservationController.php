@@ -44,7 +44,7 @@ class BookingReservationController extends Controller
                 return back()->with('error', 'متأسفانه این زمان دیگر در دسترس نیست. لطفاً زمان دیگری انتخاب کنید.');
             }
 
-            $prepaymentAmount = 50000;
+            $prepaymentAmount = $this->bookingService->calculatePrepayment((float) $service->price)['original_amount'];
 
             session([
                 'pending_booking' => [
