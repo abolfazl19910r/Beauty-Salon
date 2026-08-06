@@ -11,7 +11,6 @@ use App\Models\Specialist;
 use App\Models\User;
 use App\Services\Admin\Booking\AdminBookingService;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 
@@ -19,11 +18,6 @@ class AdminBookingController extends Controller
 {
     public function __construct(protected readonly AdminBookingService $bookingService)
     {
-    }
-
-    public function getStats(Request $request): JsonResponse
-    {
-        return response()->json($this->bookingService->getStats($request->date));
     }
 
     public function index(Request $request): View

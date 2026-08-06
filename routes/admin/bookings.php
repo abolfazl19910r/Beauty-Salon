@@ -4,7 +4,6 @@ use App\Http\Controllers\Admin\Booking\AdminBookingController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('bookings')->name('bookings.')->group(function () {
-    Route::get('/stats', [AdminBookingController::class, 'getStats'])->name('stats');
     Route::get('/', [AdminBookingController::class, 'index'])->name('index');
     Route::get('/create', [AdminBookingController::class, 'create'])->name('create');
     Route::post('/', [AdminBookingController::class, 'store'])->name('store');

@@ -7,19 +7,6 @@ use App\Models\Booking;
 
 class AdminBookingService
 {
-    public function getStats(?string $date): array
-    {
-        $date = $date ?: today();
-
-        return [
-            'total' => Booking::whereDate('booking_time', $date)->count(),
-            'confirmed' => Booking::whereDate('booking_time', $date)
-                ->where('status', 'confirmed')->count(),
-            'cancelled' => Booking::whereDate('booking_time', $date)
-                ->where('status', 'cancelled')->count(),
-        ];
-    }
-
     /**
      * @return array{message: string}
      */

@@ -46,9 +46,6 @@ Route::name('api.')->group(function () {
             if (file_exists(__DIR__.'/api/admin/specialists.php')) {
                 require __DIR__.'/api/admin/specialists.php';
             }
-            if (file_exists(__DIR__.'/api/admin/bookings.php')) {
-                require __DIR__.'/api/admin/bookings.php';
-            }
         });
     });
 });
