@@ -2,12 +2,20 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Log;
+use App\Models\SecurityLog;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
+/**
+ * قبلاً این سرویس فقط به فایل لاگ (Log::channel('security')) می‌نوشت؛ SecurityController
+ * از یک جدول DB هم‌نام می‌خوند که هیچ‌وقت وجود نداشت و هیچ‌جا هم پر نمی‌شد — یعنی حتی
+ * با ساختن جدول، همیشه خالی می‌موند. الان هر متد هم به فایل (برای دیباگ خام سرور) هم
+ * به جدول security_logs (برای نمایش واقعی در داشبورد/تاریخچه‌ی امنیتی) می‌نویسه.
+ */
 class SecurityLogService
 {
-    public function logLogin($success, $username): void
+    public function logLogin(bool $success, string $username, ?User $user = null): void
     {
         $data = [
             'event' => 'login_attempt',
@@ -15,7 +23,7 @@ class SecurityLogService
             'username' => $username,
             'ip' => request()->ip(),
             'user_agent' => request()->userAgent(),
-            'timestamp' => now()
+            'timestamp' => now(),
         ];
 
         if (!$success) {
@@ -23,22 +31,31 @@ class SecurityLogService
         } else {
             Log::channel('security')->info('Successful login', $data);
         }
+
+        $this->persist(
+            event: 'login_attempt',
+            level: $success ? 'info' : 'warning',
+            userId: $user?->id ?? Auth::id(),
+            context: ['success' => $success, 'username' => $username],
+        );
     }
 
-    public function logSuspiciousActivity($event, $details = []): void
+    public function logSuspiciousActivity(string $event, array $details = []): void
     {
         $data = array_merge([
             'event' => $event,
             'user_id' => Auth::id(),
             'ip' => request()->ip(),
             'user_agent' => request()->userAgent(),
-            'timestamp' => now()
+            'timestamp' => now(),
         ], $details);
 
         Log::channel('security')->warning('Suspicious activity detected', $data);
+
+        $this->persist(event: $event, level: 'warning', context: $details);
     }
 
-    public function logPaymentAttempt($paymentId, $amount, $success, $details = []): void
+    public function logPaymentAttempt(string $paymentId, $amount, bool $success, array $details = []): void
     {
         $data = array_merge([
             'event' => 'payment_attempt',
@@ -47,16 +64,22 @@ class SecurityLogService
             'success' => $success,
             'user_id' => Auth::id(),
             'ip' => request()->ip(),
-            'timestamp' => now()
+            'timestamp' => now(),
         ], $details);
 
         Log::channel($success ? 'payments' : 'security')->info(
             $success ? 'Successful payment' : 'Failed payment attempt',
             $data
         );
+
+        $this->persist(
+            event: 'payment_attempt',
+            level: $success ? 'info' : 'warning',
+            context: array_merge(['payment_id' => $paymentId, 'amount' => $amount, 'success' => $success], $details),
+        );
     }
 
-    public function logProfileChange($field, $oldValue, $newValue): void
+    public function logProfileChange(string $field, $oldValue, $newValue): void
     {
         $data = [
             'event' => 'profile_change',
@@ -65,9 +88,27 @@ class SecurityLogService
             'old_value' => $oldValue,
             'new_value' => $newValue,
             'ip' => request()->ip(),
-            'timestamp' => now()
+            'timestamp' => now(),
         ];
 
         Log::channel('security')->info('Profile information changed', $data);
+
+        $this->persist(
+            event: 'profile_change',
+            level: 'info',
+            context: ['field' => $field, 'old_value' => $oldValue, 'new_value' => $newValue],
+        );
+    }
+
+    private function persist(string $event, string $level, array $context = [], ?int $userId = null): void
+    {
+        SecurityLog::create([
+            'user_id' => $userId ?? Auth::id(),
+            'event' => $event,
+            'level' => $level,
+            'ip_address' => request()->ip(),
+            'user_agent' => (string) request()->userAgent(),
+            'context' => $context,
+        ]);
     }
 }

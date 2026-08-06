@@ -28,6 +28,8 @@ class User extends Authenticatable
         'two_factor_enabled',
         'two_factor_code',
         'two_factor_code_expires_at',
+        'password_changed_at',
+        'password_strength_score',
     ];
 
     protected $hidden = [
@@ -45,7 +47,14 @@ class User extends Authenticatable
         'login_verification_code_expire_at' => 'datetime',
         'two_factor_enabled' => 'boolean',
         'two_factor_code_expires_at' => 'datetime',
+        'password_changed_at' => 'datetime',
+        'password_strength_score' => 'integer',
     ];
+
+    public function securityLogs(): HasMany
+    {
+        return $this->hasMany(SecurityLog::class);
+    }
 
     public function receivesBroadcastNotificationsOn()
     {

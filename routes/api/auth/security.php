@@ -10,4 +10,5 @@ Route::prefix('security')->group(function () {
 
     Route::get('/logs', [SecurityController::class, 'getSecurityLogs']);
     Route::get('/login-history', [SecurityController::class, 'getLoginHistory']);
+    Route::post('/check-password-strength', [SecurityController::class, 'checkPasswordStrength']);
 });

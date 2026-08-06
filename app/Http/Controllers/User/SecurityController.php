@@ -4,14 +4,16 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\Security\CheckPasswordStrengthRequest;
+use App\Models\SecurityLog;
+use App\Models\SecuritySetting;
 use App\Services\SecurityLogService;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Collection;
 
 class SecurityController extends Controller
 {
@@ -23,16 +25,30 @@ class SecurityController extends Controller
     {
         $user = auth()->user();
 
-        $data = [
+        return view('security.dashboard', [
             'two_factor_enabled' => $user->two_factor_enabled,
-            'active_sessions' => $this->getActiveSessions(),
+            'active_sessions_count' => $this->getActiveSessions()->count(),
             'recent_activities' => $this->getRecentActivities(),
             'security_score' => $this->calculateSecurityScore(),
             'last_password_change' => $user->password_changed_at,
-            'login_attempts' => $this->getLoginAttempts()
-        ];
+            'login_attempts_today' => $this->getLoginAttempts(),
+        ]);
+    }
 
-        return view('security.dashboard', $data);
+    public function sessions(): View
+    {
+        return view('security.sessions', [
+            'sessions' => $this->getActiveSessions(),
+        ]);
+    }
+
+    public function activity(): View
+    {
+        $logs = SecurityLog::where('user_id', auth()->id())
+            ->orderByDesc('created_at')
+            ->paginate(20);
+
+        return view('security.activity', compact('logs'));
     }
 
     public function getActiveSessions(): Collection
@@ -44,11 +60,12 @@ class SecurityController extends Controller
             ->get()
             ->map(function ($session) {
                 $session->last_activity = Carbon::createFromTimestamp($session->last_activity);
+                $session->is_current_device = $session->id === session()->getId();
                 return $session;
             });
     }
 
-    public function terminateSession($id): JsonResponse
+    public function terminateSession(string $id): JsonResponse
     {
         if ($id === session()->getId()) {
             return response()->json([
@@ -62,7 +79,7 @@ class SecurityController extends Controller
             ->delete();
 
         $this->securityLogService->logSuspiciousActivity('session_terminated', [
-            'session_id' => $id
+            'session_id' => $id,
         ]);
 
         return response()->json([
@@ -84,35 +101,23 @@ class SecurityController extends Controller
         ]);
     }
 
-    public function getSecurityLogs(Request $request): View|JsonResponse
+    public function getSecurityLogs(Request $request): JsonResponse
     {
-        $logs = DB::table('security_logs')
-            ->where('user_id', auth()->id())
-            ->when($request->type, function ($query, $type) {
-                return $query->where('event', $type);
-            })
-            ->when($request->date_from, function ($query, $date) {
-                return $query->where('created_at', '>=', Carbon::parse($date));
-            })
-            ->when($request->date_to, function ($query, $date) {
-                return $query->where('created_at', '<=', Carbon::parse($date));
-            })
-            ->orderBy('created_at', 'desc')
+        $logs = SecurityLog::where('user_id', auth()->id())
+            ->when($request->type, fn ($query, $type) => $query->where('event', $type))
+            ->when($request->date_from, fn ($query, $date) => $query->where('created_at', '>=', Carbon::parse($date)))
+            ->when($request->date_to, fn ($query, $date) => $query->where('created_at', '<=', Carbon::parse($date)))
+            ->orderByDesc('created_at')
             ->paginate(20);
 
-        if ($request->wantsJson()) {
-            return response()->json($logs);
-        }
-
-        return view('security.logs', compact('logs'));
+        return response()->json($logs);
     }
 
     public function getLoginHistory(): JsonResponse
     {
-        $history = DB::table('security_logs')
-            ->where('user_id', auth()->id())
+        $history = SecurityLog::where('user_id', auth()->id())
             ->where('event', 'login_attempt')
-            ->orderBy('created_at', 'desc')
+            ->orderByDesc('created_at')
             ->take(10)
             ->get();
 
@@ -141,30 +146,36 @@ class SecurityController extends Controller
         ]);
     }
 
-    protected function calculateSecurityScore()
+    protected function calculateSecurityScore(): int
     {
         $user = auth()->user();
         $score = 0;
 
-        if ($user->two_factor_enabled) $score += 30;
+        if ($user->two_factor_enabled) {
+            $score += 30;
+        }
 
-        $passwordScore = Cache::remember('password_strength_'.$user->id, 60*24, function() use ($user) {
-            return $this->calculatePasswordStrength($user->password);
-        });
-        $score += $passwordScore * 5;
+        // ⚠️ قبلاً اینجا از روی هش رمز عبور (نه خود رمز) دوباره محاسبه می‌شد که همیشه
+        // امتیاز بالا می‌داد. الان از امتیازی که لحظه‌ی ثبت‌نام/تغییر رمز (روی رمز خام،
+        // قبل از هش‌شدن) ذخیره شده استفاده می‌شه؛ برای کاربران قدیمی‌تر که این ستون
+        // هنوز برایشان پر نشده، سهم این بخش صفر می‌مونه (نه یک عدد ساختگی).
+        $score += ($user->password_strength_score ?? 0) * 5;
 
-        if ($user->password_changed_at && $user->password_changed_at->gt(now()->subDays(90))) {
+        $expiryDays = SecuritySetting::get()->password_expiry_days;
+        if ($user->password_changed_at && $user->password_changed_at->gt(now()->subDays($expiryDays))) {
             $score += 20;
         }
 
-        $suspiciousActivities = DB::table('security_logs')
-            ->where('user_id', $user->id)
+        $suspiciousActivities = SecurityLog::where('user_id', $user->id)
             ->where('created_at', '>=', now()->subDays(30))
             ->where('level', 'warning')
             ->count();
 
-        if ($suspiciousActivities === 0) $score += 20;
-        elseif ($suspiciousActivities <= 2) $score += 10;
+        if ($suspiciousActivities === 0) {
+            $score += 20;
+        } elseif ($suspiciousActivities <= 2) {
+            $score += 10;
+        }
 
         return min($score, 100);
     }
@@ -198,65 +209,17 @@ class SecurityController extends Controller
 
     protected function getRecentActivities(): Collection
     {
-        return DB::table('security_logs')
-            ->where('user_id', auth()->id())
-            ->orderBy('created_at', 'desc')
+        return SecurityLog::where('user_id', auth()->id())
+            ->orderByDesc('created_at')
             ->take(5)
             ->get();
     }
 
     protected function getLoginAttempts(): int
     {
-        return DB::table('security_logs')
-            ->where('user_id', auth()->id())
+        return SecurityLog::where('user_id', auth()->id())
             ->where('event', 'login_attempt')
             ->where('created_at', '>=', now()->subDay())
             ->count();
-    }
-
-    private function calculatePasswordStrength($password): int
-    {
-        $score = 0;
-
-        $length = strlen($password);
-        if ($length >= 12) {
-            $score += 3;
-        } elseif ($length >= 10) {
-            $score += 2;
-        } elseif ($length >= 8) {
-            $score += 1;
-        }
-
-        if (preg_match('/[A-Z]/', $password)) {
-            $score += 2;
-        }
-        if (preg_match('/[a-z]/', $password)) {
-            $score += 2;
-        }
-        if (preg_match('/[0-9]/', $password)) {
-            $score += 2;
-        }
-        if (preg_match('/[^A-Za-z0-9]/', $password)) {
-            $score += 3;
-        }
-
-        $uniqueChars = count(array_unique(str_split($password)));
-        if ($uniqueChars >= 8) {
-            $score += 2;
-        }
-
-        if (preg_match('/(.)\1{2,}/', $password)) {
-            $score -= 2;
-        }
-        if (preg_match('/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[^A-Za-z0-9]).{8,}$/', $password)) {
-            $score += 2;
-        }
-
-        $commonPasswords = ['password', '123456', 'qwerty', 'admin', '123456789', '12345'];
-        if (in_array(strtolower($password), $commonPasswords)) {
-            $score = 0;
-        }
-
-        return max(0, min(10, $score));
     }
 }

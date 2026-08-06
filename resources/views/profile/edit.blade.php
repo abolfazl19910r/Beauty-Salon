@@ -51,6 +51,25 @@
                 </div>
             </div>
 
+            {{-- Security dashboard --}}
+            <a href="{{ route('security.dashboard') }}"
+               class="block bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 overflow-hidden hover:border-[#C9A24B]/25 transition-colors">
+                <div class="p-6 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                        <div>
+                            <h2 class="font-bold text-sm text-[#E6CD8A]">امنیت حساب کاربری</h2>
+                            <p class="text-xs text-[#F8F3E9]/45">امتیاز امنیتی، نشست‌های فعال و فعالیت‌های اخیر</p>
+                        </div>
+                    </div>
+                    <svg class="w-4 h-4 text-[#F8F3E9]/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </div>
+            </a>
+
             {{-- Delete account --}}
             {{-- Two-factor authentication --}}
             <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 overflow-hidden">

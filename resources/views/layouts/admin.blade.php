@@ -360,6 +360,19 @@
                     کدهای تخفیف
                 </a>
                 @endpermission
+
+                @permission('view-security-logs')
+                <a href="{{ route('admin.security.logs') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.security*') ? 'sidebar-active' : '' }}"
+                   style="{{ request()->routeIs('admin.security*') ? '' : 'color: var(--admin-text-dim);' }}"
+                   onmouseover="{{ request()->routeIs('admin.security*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
+                   onmouseout="{{ request()->routeIs('admin.security*') ? '' : 'this.style.backgroundColor=\"\"' }}">
+                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                    امنیت
+                </a>
+                @endpermission
             </div>
 
             <div class="py-2">

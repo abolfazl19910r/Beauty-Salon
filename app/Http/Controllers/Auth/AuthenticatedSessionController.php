@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Services\PhoneVerificationService;
+use App\Services\SecurityLogService;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,8 +16,10 @@ use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
 {
-    public function __construct(protected readonly PhoneVerificationService $verificationService)
-    {
+    public function __construct(
+        protected readonly PhoneVerificationService $verificationService,
+        protected readonly SecurityLogService $securityLogService,
+    ) {
     }
 
     public function create(): View
@@ -34,6 +37,8 @@ class AuthenticatedSessionController extends Controller
         $user = User::where('phone', $credentials['phone'])->first();
 
         if (!$user || !Hash::check($credentials['password'], $user->password)) {
+            $this->securityLogService->logLogin(false, $credentials['phone'], $user);
+
             return back()->withErrors([
                 'phone' => 'اطلاعات وارد شده صحیح نمی‌باشد.',
             ])->withInput($request->only('phone'));
@@ -106,9 +111,13 @@ class AuthenticatedSessionController extends Controller
             Auth::login($user);
             $request->session()->regenerate();
 
+            $this->securityLogService->logLogin(true, $user->phone, $user);
+
             return redirect()->intended($this->redirectPath())
                 ->with('success', 'خوش آمدید!');
         }
+
+        $this->securityLogService->logLogin(false, $user->phone, $user);
 
         return back()->withErrors([
             'code' => 'کد وارد شده نامعتبر یا منقضی شده است.'
