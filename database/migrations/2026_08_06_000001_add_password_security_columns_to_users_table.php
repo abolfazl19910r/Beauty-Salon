@@ -7,16 +7,15 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * password_changed_at: از قبل توسط SecurityController خونده می‌شد ولی هیچ‌وقت
-     * ستونی براش وجود نداشت (و هیچ‌جا هم نوشته نمی‌شد).
+     * password_changed_at: was already read by SecurityController but never
+     * had a column for it (and was never written anywhere).
      *
-     * password_strength_score: باگ واقعی کشف‌شده حین این فاز — امتیاز امنیتی قبلاً
-     * قدرت رمز عبور رو مستقیم از روی HASH ذخیره‌شده (نه خود رمز) دوباره محاسبه می‌کرد؛
-     * چون هش bcrypt همیشه ۶۰ کاراکتری و پر از حروف بزرگ/کوچک/عدد/کاراکتر خاصه، این
-     * محاسبه همیشه تقریباً بیشترین امتیاز ممکن رو می‌داد، فارغ از قدرت واقعی رمز کاربر.
-     * راه‌حل درست: امتیاز فقط یک‌بار، لحظه‌ی ثبت‌نام/تغییر رمز (وقتی خود رمز خام هنوز
-     * در دسترسه، قبل از هش شدن) محاسبه و همینجا ذخیره می‌شه؛ دیگه هیچ‌وقت از روی هش
-     * بازسازی نمی‌شه.
+     * password_strength_score: The real bug discovered during this phase — the security score used to
+     * recalculate the password strength directly from the stored HASH (not the password itself);
+     * Since the bcrypt hash is always 60 characters long and full of uppercase/lowercase letters/numbers/special characters, this
+     * calculation always gave almost the highest possible score, regardless of the actual strength of the user's password.
+     * Correct solution: the score is calculated only once, at the moment of registration/password change (when the raw password itself is still
+     * available, before it is hashed) and stored there; it is never rebuilt from the hash.
      */
     public function up(): void
     {

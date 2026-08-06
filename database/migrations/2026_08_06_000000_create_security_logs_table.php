@@ -7,10 +7,10 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * قبلاً SecurityLogService فقط به فایل لاگ (Log::channel('security')) می‌نوشت،
-     * ولی SecurityController از یک جدول DB با همین نام (که هیچ‌وقت وجود نداشت) می‌خوند.
-     * این جدول همون نقطه‌ی واقعی ذخیره‌سازی رو فراهم می‌کنه تا داشبورد امنیتی/تاریخچه
-     * واقعاً داده‌ی واقعی نشون بده.
+     * Previously, SecurityLogService only wrote to the log file (Log::channel('security')),
+     * but SecurityController reads from a DB table with the same name (which never existed).
+     * This table provides the actual storage point so that the security dashboard/history
+     * actually shows real data.
      */
     public function up(): void
     {

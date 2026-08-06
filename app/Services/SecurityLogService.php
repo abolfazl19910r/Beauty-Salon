@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 /**
- * قبلاً این سرویس فقط به فایل لاگ (Log::channel('security')) می‌نوشت؛ SecurityController
- * از یک جدول DB هم‌نام می‌خوند که هیچ‌وقت وجود نداشت و هیچ‌جا هم پر نمی‌شد — یعنی حتی
- * با ساختن جدول، همیشه خالی می‌موند. الان هر متد هم به فایل (برای دیباگ خام سرور) هم
- * به جدول security_logs (برای نمایش واقعی در داشبورد/تاریخچه‌ی امنیتی) می‌نویسه.
+ * Previously, this service only wrote to the log file (Log::channel('security')); SecurityController
+ * read from a DB table of the same name that never existed and was never populated anywhere — meaning that even
+ * when the table was created, it was always empty. Now every method writes to both the file (for raw server debugging) and
+ * the security_logs table (for actual display in the security dashboard/history).
  */
 class SecurityLogService
 {

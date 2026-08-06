@@ -15,7 +15,7 @@ class SecuritySetting extends Model
     ];
 
     /**
-     * همیشه یک نمونه‌ی واقعی برمی‌گردونه (نه Collection)، هم‌الگو با WalletSetting::get().
+     * Always returns a real instance (not a Collection), similar to WalletSetting::get().
      */
     public static function get(): self
     {

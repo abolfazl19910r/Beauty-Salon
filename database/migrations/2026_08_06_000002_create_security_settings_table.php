@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * تک‌ردیفی، هم‌الگو با wallet_settings — قبلاً مهلت «تازگی رمز عبور» (۹۰ روز) در
-     * SecurityController::calculateSecurityScore() هاردکد بود و هیچ‌جا توسط ادمین
-     * قابل‌تنظیم نبود، با اینکه صفحه‌ی تنظیمات امنیتی ادمین برای همین منظور روت شده بود.
+     * Single-line, consistent with wallet_settings — Previously, the "password freshness" period (90 days) was hardcoded in
+     * SecurityController::calculateSecurityScore() and was not configurable by the admin
+     * anywhere, even though the admin security settings page was routed for this purpose.
      */
     public function up(): void
     {

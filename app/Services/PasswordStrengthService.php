@@ -3,18 +3,17 @@
 namespace App\Services;
 
 /**
- * قبلاً این محاسبه داخل SecurityController بود و هر بار امتیاز امنیتی محاسبه می‌شد،
- * روی خود هش ذخیره‌شده‌ی رمز عبور (نه رمز خام) دوباره اجرا می‌شد — چون هش همیشه رشته‌ای
- * ثابت‌طول و پر از تنوع کاراکتره، این همیشه امتیاز بالا می‌داد، فارغ از قدرت واقعی رمز.
+ * Previously, this calculation was inside the SecurityController and each time the security score was calculated,
+ * it was rerun on the stored hash of the password itself (not the raw password) — since the hash is always a string
+ * of fixed length and full of character variations, this always gave a high score, regardless of the actual strength of the password.
  *
- * این سرویس فقط باید لحظه‌ی ثبت‌نام/تغییر رمز، روی خود رمز خام (قبل از Hash::make)
- * صدا زده بشه؛ نتیجه در ستون users.password_strength_score ذخیره و از اون به بعد
- * همیشه از همون ستون خونده می‌شه، نه دوباره از روی هش بازسازی.
+ * This service should only be called at the moment of registration/change of password, on the raw password itself (before Hash::make); the result is stored in the column users.password_strength_score and from then on
+ * it is always read from that column, not reconstructed from the hash.
  */
 class PasswordStrengthService
 {
     /**
-     * @return int امتیاز ۰ تا ۱۰
+     * @return int score 0 to 10
      */
     public function score(string $password): int
     {

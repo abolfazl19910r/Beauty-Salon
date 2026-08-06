@@ -155,10 +155,10 @@ class SecurityController extends Controller
             $score += 30;
         }
 
-        // ⚠️ قبلاً اینجا از روی هش رمز عبور (نه خود رمز) دوباره محاسبه می‌شد که همیشه
-        // امتیاز بالا می‌داد. الان از امتیازی که لحظه‌ی ثبت‌نام/تغییر رمز (روی رمز خام،
-        // قبل از هش‌شدن) ذخیره شده استفاده می‌شه؛ برای کاربران قدیمی‌تر که این ستون
-        // هنوز برایشان پر نشده، سهم این بخش صفر می‌مونه (نه یک عدد ساختگی).
+        // ⚠️ Previously, this was recalculated from the password hash (not the password itself), which always
+        // gave a high score. Now, the score stored at the time of registration/password change (on the raw password,
+        // before hashing) is used; for older users for whom this column
+        // has not yet been filled in, the share of this section remains zero (not a dummy number).
         $score += ($user->password_strength_score ?? 0) * 5;
 
         $expiryDays = SecuritySetting::get()->password_expiry_days;
