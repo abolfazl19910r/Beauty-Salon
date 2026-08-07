@@ -47,12 +47,6 @@ Route::middleware(['auth', 'verified'])->name('specialist.')->group(function () 
         Route::get('/schedule', [SpecialistProfileController::class, 'schedule'])->name('schedule');
         Route::put('/schedule', [SpecialistProfileController::class, 'updateSchedule'])->name('schedule.update');
 
-        // ⭐ New: The expert can manage her own WorkSchedule (self-service)
-        // ⭐ New: The expert can manage his own WorkSchedule (self-service)
-        Route::get('/work-schedule', [SpecialistProfileController::class, 'workSchedule'])->name('work-schedule');
-        Route::put('/work-schedule', [SpecialistProfileController::class, 'updateWorkSchedule'])->name('work-schedule.update');
-        Route::delete('/work-schedule', [SpecialistProfileController::class, 'destroyWorkSchedule'])->name('work-schedule.destroy');
-
         Route::get('/loyalty', [SpecialistProfileController::class, 'loyalty'])->name('loyalty');
     });
 

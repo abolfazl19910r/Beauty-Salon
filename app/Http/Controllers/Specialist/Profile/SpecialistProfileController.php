@@ -6,12 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Specialist\UpdateScheduleRequest;
 use App\Http\Requests\Specialist\UpdateSpecialistPasswordRequest;
 use App\Http\Requests\Specialist\UpdateSpecialistProfileRequest;
-use App\Http\Requests\Specialist\UpdateWorkScheduleRequest;
 use App\Models\LoyaltyPoint;
 use App\Models\Specialist;
 use App\Services\Specialist\SpecialistDashboardService;
 use App\Services\Specialist\SpecialistProfileService;
-use App\Services\Specialist\WorkScheduleService;
 use App\Traits\ResolvesSpecialist;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +24,6 @@ class SpecialistProfileController extends Controller
     public function __construct(
         protected SpecialistDashboardService $dashboardService,
         protected SpecialistProfileService $profileService,
-        protected WorkScheduleService $workScheduleService,
     ) {}
 
     public function dashboard(): View
@@ -149,63 +146,6 @@ class SpecialistProfileController extends Controller
 
             return back()->with('error', 'خطا در ذخیره اطلاعات: ' . $e->getMessage());
         }
-    }
-
-    /**
-     * Show WorkSchedule for self-service.
-     * * Uses the same Service as admin — DRY.
- */
-    public function workSchedule(): View
-    {
-        $specialist = $this->resolveSpecialist();
-
-        if (! $specialist) {
-            return view('specialist.profile-not-found');
-        }
-
-        $this->authorize('manageSchedule', $specialist);
-
-        $schedule = $specialist->workSchedule;
-
-        return view('specialist.work-schedule', compact('specialist', 'schedule'));
-    }
-
-    public function updateWorkSchedule(UpdateWorkScheduleRequest $request): RedirectResponse
-    {
-        $specialist = $this->resolveSpecialist();
-
-        if (! $specialist) {
-            abort(404, 'رکورد متخصص یافت نشد.');
-        }
-
-        $this->authorize('manageSchedule', $specialist);
-
-        try {
-            $this->workScheduleService->upsert($specialist, $request->validated());
-
-            return redirect()->route('specialist.work-schedule')
-                ->with('success', 'برنامه کاری با موفقیت ذخیره شد.');
-        } catch (\Exception $e) {
-            Log::error('خطا در بروزرسانی برنامه کاری (WorkSchedule)', ['error' => $e->getMessage()]);
-
-            return back()->with('error', 'خطا در ذخیره اطلاعات رخ داد.');
-        }
-    }
-
-    public function destroyWorkSchedule(): RedirectResponse
-    {
-        $specialist = $this->resolveSpecialist();
-
-        if (! $specialist) {
-            abort(404, 'رکورد متخصص یافت نشد.');
-        }
-
-        $this->authorize('manageSchedule', $specialist);
-
-        $this->workScheduleService->delete($specialist);
-
-        return redirect()->route('specialist.work-schedule')
-            ->with('success', 'برنامه کاری حذف شد.');
     }
 
     public function loyalty(): View

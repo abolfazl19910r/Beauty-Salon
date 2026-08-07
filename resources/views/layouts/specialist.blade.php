@@ -162,15 +162,6 @@
                 ساعات کاری هفتگی
             </a>
 
-            <a href="{{ route('specialist.work-schedule') }}"
-               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.work-schedule*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-plum-light)]' }}">
-                <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke-width="2"/>
-                    <path stroke-linecap="round" stroke-width="2" d="M16 2v4M8 2v4M3 10h18" />
-                </svg>
-                ساعات کاری (تکی)
-            </a>
-
             <a href="{{ route('specialist.leaves.index') }}"
                class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.leaves*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-plum-light)]' }}">
                 <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">

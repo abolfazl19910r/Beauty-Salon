@@ -41,11 +41,6 @@ class Specialist extends Model
         return $this->hasMany(SpecialistSchedule::class);
     }
 
-    public function workSchedule(): HasOne
-    {
-        return $this->hasOne(WorkSchedule::class);
-    }
-
     /**
      * ⭐ Migrated from SpecialistLeave to Leave (fuller version: approve/reject
      * * with accurate time recording, rejection reason, and conflict check). SpecialistLeave/leaves table
