@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Services\CategoryService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +15,7 @@ class BeautyService extends Model
     protected $table = 'beauty_services';
 
     use HasFactory;
+
     protected $fillable = [
         'name',
         'slug',
@@ -23,7 +23,7 @@ class BeautyService extends Model
         'price',
         'duration',
         'image',
-        'category_id'
+        'category_id',
     ];
 
     protected static function boot()
@@ -31,14 +31,14 @@ class BeautyService extends Model
         parent::boot();
 
         static::creating(function ($service) {
-            if (!$service->slug) {
+            if (! $service->slug) {
                 $service->slug = Str::slug($service->name);
             }
         });
 
-        static::deleting(function($service) {
+        static::deleting(function ($service) {
             $activeBookings = $service->bookings()
-                ->where(function($query) {
+                ->where(function ($query) {
                     $query->whereIn('status', ['pending', 'confirmed'])
                         ->orWhere('payment_status', 'paid');
                 })
@@ -51,7 +51,7 @@ class BeautyService extends Model
             $service->specialists()->detach();
 
             $service->bookings()->update([
-                'status' => 'cancelled'
+                'status' => 'cancelled',
             ]);
 
             if ($service->image) {
@@ -67,7 +67,7 @@ class BeautyService extends Model
 
     public function getImageUrlAttribute(): ?string
     {
-        return $this->image ? asset('storage/' . $this->image) : null;
+        return $this->image ? asset('storage/'.$this->image) : null;
     }
 
     public static function latest()

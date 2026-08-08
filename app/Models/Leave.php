@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Leave extends Model
 {
@@ -16,14 +16,14 @@ class Leave extends Model
         'end_date',
         'status',
         'reason',
-        'reject_reason'
+        'reject_reason',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
         'approved_at' => 'datetime',
-        'rejected_at' => 'datetime'
+        'rejected_at' => 'datetime',
     ];
 
     public function specialist(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -37,7 +37,7 @@ class Leave extends Model
             'status' => 'approved',
             'approved_at' => now(),
             'rejected_at' => null,
-            'reject_reason' => null
+            'reject_reason' => null,
         ]);
     }
 
@@ -47,7 +47,7 @@ class Leave extends Model
             'status' => 'rejected',
             'rejected_at' => now(),
             'approved_at' => null,
-            'reject_reason' => $reason
+            'reject_reason' => $reason,
         ]);
     }
 
@@ -68,10 +68,10 @@ class Leave extends Model
 
     public function scopeOverlapping($query, $startDate, $endDate)
     {
-        return $query->where(function($q) use ($startDate, $endDate) {
+        return $query->where(function ($q) use ($startDate, $endDate) {
             $q->whereBetween('start_date', [$startDate, $endDate])
                 ->orWhereBetween('end_date', [$startDate, $endDate])
-                ->orWhere(function($q) use ($startDate, $endDate) {
+                ->orWhere(function ($q) use ($startDate, $endDate) {
                     $q->where('start_date', '<=', $startDate)
                         ->where('end_date', '>=', $endDate);
                 });
@@ -81,6 +81,7 @@ class Leave extends Model
     public function isDuringLeave($date): bool
     {
         $date = Carbon::parse($date);
+
         return $date->between($this->start_date, $this->end_date);
     }
 
@@ -91,7 +92,7 @@ class Leave extends Model
 
     public function getStatusTextAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'pending' => 'در انتظار تایید',
             'approved' => 'تایید شده',
             'rejected' => 'رد شده',

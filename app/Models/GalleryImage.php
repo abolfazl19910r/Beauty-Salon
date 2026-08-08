@@ -13,7 +13,7 @@ class GalleryImage extends Model
         'order',
         'is_active',
         'imageable_id',
-        'imageable_type'
+        'imageable_type',
     ];
 
     protected $casts = [
@@ -22,7 +22,7 @@ class GalleryImage extends Model
 
     public function getImageUrlAttribute(): string
     {
-        return asset('storage/' . $this->image_path);
+        return asset('storage/'.$this->image_path);
     }
 
     public function imageable()

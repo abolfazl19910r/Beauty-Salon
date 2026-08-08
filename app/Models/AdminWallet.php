@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
-use App\Models\AdminWalletTransaction;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class AdminWallet extends Model
 {
@@ -39,7 +38,7 @@ class AdminWallet extends Model
         ]);
     }
 
-    public function addCommission(float $amount, int $bookingId, string $description = null): AdminWalletTransaction
+    public function addCommission(float $amount, int $bookingId, ?string $description = null): AdminWalletTransaction
     {
         $this->increment('balance', $amount);
         $this->increment('total_earned', $amount);
@@ -61,7 +60,7 @@ class AdminWallet extends Model
      * reversal and the full reasoning. Uses 'adjustment' (existing enum value) rather than a new
      * commission_reversal type, since admin_wallet_transactions.type is a fixed DB enum.
      */
-    public function deductCommission(float $amount, int $bookingId, string $description = null): AdminWalletTransaction
+    public function deductCommission(float $amount, int $bookingId, ?string $description = null): AdminWalletTransaction
     {
         $this->decrement('balance', $amount);
         $this->decrement('total_earned', $amount);
@@ -77,6 +76,6 @@ class AdminWallet extends Model
 
     public function getFormattedBalanceAttribute(): string
     {
-        return number_format($this->balance) . ' تومان';
+        return number_format($this->balance).' تومان';
     }
 }

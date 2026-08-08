@@ -22,7 +22,7 @@ class PasswordResetLinkRequest extends FormRequest
     {
         return [
             'email.required' => 'ایمیل الزامی است.',
-            'email.email'    => 'فرمت ایمیل معتبر نیست.',
+            'email.email' => 'فرمت ایمیل معتبر نیست.',
         ];
     }
 }

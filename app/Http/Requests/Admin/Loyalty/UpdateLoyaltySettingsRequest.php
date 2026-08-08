@@ -14,8 +14,8 @@ class UpdateLoyaltySettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'points_per_amount'           => ['sometimes', 'required', 'numeric', 'min:1'],
-            'points_expiry_months'        => ['sometimes', 'required', 'integer', 'min:1'],
+            'points_per_amount' => ['sometimes', 'required', 'numeric', 'min:1'],
+            'points_expiry_months' => ['sometimes', 'required', 'integer', 'min:1'],
             'minimum_points_for_discount' => ['sometimes', 'required', 'integer', 'min:0'],
         ];
     }
@@ -23,10 +23,10 @@ class UpdateLoyaltySettingsRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'points_per_amount.required'           => 'مبلغ به ازای هر امتیاز الزامی است.',
-            'points_per_amount.min'                 => 'مبلغ باید حداقل ۱ تومان باشد.',
-            'points_expiry_months.required'         => 'مدت اعتبار امتیاز (ماه) الزامی است.',
-            'minimum_points_for_discount.required'  => 'حداقل امتیاز برای دریافت تخفیف الزامی است.',
+            'points_per_amount.required' => 'مبلغ به ازای هر امتیاز الزامی است.',
+            'points_per_amount.min' => 'مبلغ باید حداقل ۱ تومان باشد.',
+            'points_expiry_months.required' => 'مدت اعتبار امتیاز (ماه) الزامی است.',
+            'minimum_points_for_discount.required' => 'حداقل امتیاز برای دریافت تخفیف الزامی است.',
         ];
     }
 }

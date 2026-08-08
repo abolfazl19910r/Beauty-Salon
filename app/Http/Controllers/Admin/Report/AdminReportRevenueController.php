@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 /**
  * API endpoints related to revenue and financial reports.
  * * Derived from AdminReportsController (R-Reports).
-
  */
 class AdminReportRevenueController extends Controller
 {
@@ -25,8 +24,8 @@ class AdminReportRevenueController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $this->reportService->dailyRevenue($start, $end),
-            'meta'    => ['period' => ['start' => $startDate, 'end' => $endDate, 'type' => 'daily']],
+            'data' => $this->reportService->dailyRevenue($start, $end),
+            'meta' => ['period' => ['start' => $startDate, 'end' => $endDate, 'type' => 'daily']],
         ]);
     }
 
@@ -37,8 +36,8 @@ class AdminReportRevenueController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $this->reportService->weeklyRevenue($start, $end),
-            'meta'    => ['period' => ['start' => $startDate, 'end' => $endDate, 'type' => 'weekly']],
+            'data' => $this->reportService->weeklyRevenue($start, $end),
+            'meta' => ['period' => ['start' => $startDate, 'end' => $endDate, 'type' => 'weekly']],
         ]);
     }
 
@@ -49,8 +48,8 @@ class AdminReportRevenueController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $this->reportService->monthlyRevenue($start, $end),
-            'meta'    => ['period' => ['start' => $startDate, 'end' => $endDate, 'type' => 'monthly']],
+            'data' => $this->reportService->monthlyRevenue($start, $end),
+            'meta' => ['period' => ['start' => $startDate, 'end' => $endDate, 'type' => 'monthly']],
         ]);
     }
 
@@ -61,14 +60,14 @@ class AdminReportRevenueController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => [
-                'summary'          => $this->reportService->getFinancialSummary($start, $end),
-                'monthly_breakdown'=> $this->reportService->monthlyBreakdown(
+            'data' => [
+                'summary' => $this->reportService->getFinancialSummary($start, $end),
+                'monthly_breakdown' => $this->reportService->monthlyBreakdown(
                     now()->startOfYear(), now()->endOfDay()
                 ),
-                'service_revenue'  => $this->reportService->serviceRevenue($start, $end),
-                'payment_breakdown'=> $this->reportService->paymentBreakdown($start, $end),
-                'trends'           => $this->reportService->calcFinancialTrends($startDate, $endDate),
+                'service_revenue' => $this->reportService->serviceRevenue($start, $end),
+                'payment_breakdown' => $this->reportService->paymentBreakdown($start, $end),
+                'trends' => $this->reportService->calcFinancialTrends($startDate, $endDate),
             ],
             'meta' => ['period' => ['start' => $startDate, 'end' => $endDate]],
         ]);
@@ -87,8 +86,8 @@ class AdminReportRevenueController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $this->reportService->dailyRevenue($start, $end),
-            'meta'    => ['period' => 'today'],
+            'data' => $this->reportService->dailyRevenue($start, $end),
+            'meta' => ['period' => 'today'],
         ]);
     }
 
@@ -96,13 +95,13 @@ class AdminReportRevenueController extends Controller
     {
         ['start' => $start, 'end' => $end] = $this->reportService->parseDateRange([
             'start_date' => now()->subDays(6)->format('Y-m-d'),
-            'end_date'   => today()->format('Y-m-d'),
+            'end_date' => today()->format('Y-m-d'),
         ]);
 
         return response()->json([
             'success' => true,
-            'data'    => $this->reportService->dailyRevenue($start, $end),
-            'meta'    => ['period' => 'week'],
+            'data' => $this->reportService->dailyRevenue($start, $end),
+            'meta' => ['period' => 'week'],
         ]);
     }
 
@@ -110,13 +109,13 @@ class AdminReportRevenueController extends Controller
     {
         ['start' => $start, 'end' => $end] = $this->reportService->parseDateRange([
             'start_date' => now()->subDays(29)->format('Y-m-d'),
-            'end_date'   => today()->format('Y-m-d'),
+            'end_date' => today()->format('Y-m-d'),
         ]);
 
         return response()->json([
             'success' => true,
-            'data'    => $this->reportService->dailyRevenue($start, $end),
-            'meta'    => ['period' => 'month'],
+            'data' => $this->reportService->dailyRevenue($start, $end),
+            'meta' => ['period' => 'month'],
         ]);
     }
 }

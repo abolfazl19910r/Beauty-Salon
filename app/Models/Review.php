@@ -43,10 +43,10 @@ class Review extends Model
         parent::boot();
 
         static::creating(function ($review) {
-            if (!$review->review_token) {
+            if (! $review->review_token) {
                 $review->review_token = Str::random(64);
             }
-            if (!$review->reviewed_at) {
+            if (! $review->reviewed_at) {
                 $review->reviewed_at = now();
             }
         });
@@ -100,12 +100,12 @@ class Review extends Model
     public function getAverageRating(): float
     {
         return round((
-                $this->overall_rating +
-                $this->quality_rating +
-                $this->behavior_rating +
-                $this->cleanliness_rating +
-                $this->speed_rating
-            ) / 5, 1);
+            $this->overall_rating +
+            $this->quality_rating +
+            $this->behavior_rating +
+            $this->cleanliness_rating +
+            $this->speed_rating
+        ) / 5, 1);
     }
 
     public function isNegative(): bool
@@ -115,7 +115,7 @@ class Review extends Model
 
     public function hasResponse(): bool
     {
-        return !empty($this->specialist_response);
+        return ! empty($this->specialist_response);
     }
 
     public function canBeEdited(): bool
@@ -125,7 +125,7 @@ class Review extends Model
 
     public function getRatingTextAttribute(): string
     {
-        return match($this->overall_rating) {
+        return match ($this->overall_rating) {
             5 => 'عالی',
             4 => 'خوب',
             3 => 'متوسط',
@@ -137,7 +137,7 @@ class Review extends Model
 
     public function getRatingColorAttribute(): string
     {
-        return match($this->overall_rating) {
+        return match ($this->overall_rating) {
             5 => 'green',
             4 => 'blue',
             3 => 'yellow',

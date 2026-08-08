@@ -14,9 +14,9 @@ class PaymentProcessingException extends DomainException
     private array $contextData = [];
 
     /**
-     * @param string $gatewayMessage پیام فنی دریافتی از درگاه (برای log)
-     * @param string|null $userMessage پیام کاربرپسند (در صورت null از پیش‌فرض استفاده می‌شه)
-     * @param array<string, mixed> $context داده‌های اضافی برای log
+     * @param  string  $gatewayMessage  پیام فنی دریافتی از درگاه (برای log)
+     * @param  string|null  $userMessage  پیام کاربرپسند (در صورت null از پیش‌فرض استفاده می‌شه)
+     * @param  array<string, mixed>  $context  داده‌های اضافی برای log
      */
     public static function gatewayFailed(
         string $gatewayMessage,

@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Payment extends Model
 {
@@ -20,14 +20,14 @@ class Payment extends Model
         'gateway_response',
         'payment_details',
         'paid_at',
-        'expired_at'
+        'expired_at',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
         'payment_details' => 'json',
         'paid_at' => 'datetime',
-        'expired_at' => 'datetime'
+        'expired_at' => 'datetime',
     ];
 
     public function booking(): BelongsTo
@@ -59,14 +59,14 @@ class Payment extends Model
     {
         return $this->update([
             'status' => 'completed',
-            'paid_at' => now()
+            'paid_at' => now(),
         ]);
     }
 
     public function markAsFailed(): bool
     {
         return $this->update([
-            'status' => 'failed'
+            'status' => 'failed',
         ]);
     }
 
@@ -74,22 +74,23 @@ class Payment extends Model
     {
         return $this->update([
             'gateway_reference' => $reference,
-            'gateway_response' => json_encode($response)
+            'gateway_response' => json_encode($response),
         ]);
     }
 
     public function getFormattedAmount(): string
     {
-        return number_format($this->amount) . ' تومان';
+        return number_format($this->amount).' تومان';
     }
 
     public function getRemainingTime(): ?int
     {
-        if (!$this->expired_at) {
+        if (! $this->expired_at) {
             return null;
         }
 
         $remaining = $this->expired_at->diffInSeconds(now(), false);
+
         return $remaining > 0 ? $remaining : 0;
     }
 

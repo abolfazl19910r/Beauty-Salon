@@ -15,8 +15,8 @@ class NewPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'token'    => ['required'],
-            'email'    => ['required', 'email'],
+            'token' => ['required'],
+            'email' => ['required', 'email'],
             'password' => ['required', 'confirmed', Password::defaults()],
         ];
     }
@@ -24,11 +24,11 @@ class NewPasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'token.required'    => 'توکن بازیابی الزامی است.',
-            'email.required'    => 'ایمیل الزامی است.',
-            'email.email'       => 'فرمت ایمیل معتبر نیست.',
+            'token.required' => 'توکن بازیابی الزامی است.',
+            'email.required' => 'ایمیل الزامی است.',
+            'email.email' => 'فرمت ایمیل معتبر نیست.',
             'password.required' => 'رمز عبور جدید الزامی است.',
-            'password.confirmed'=> 'تکرار رمز عبور مطابقت ندارد.',
+            'password.confirmed' => 'تکرار رمز عبور مطابقت ندارد.',
         ];
     }
 }

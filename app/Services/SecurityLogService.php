@@ -26,7 +26,7 @@ class SecurityLogService
             'timestamp' => now(),
         ];
 
-        if (!$success) {
+        if (! $success) {
             Log::channel('security')->warning('Failed login attempt', $data);
         } else {
             Log::channel('security')->info('Successful login', $data);

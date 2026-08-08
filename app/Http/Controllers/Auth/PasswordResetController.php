@@ -5,19 +5,17 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\SMSService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Carbon;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 
 class PasswordResetController extends Controller
 {
-    public function __construct(protected readonly SMSService $smsService)
-    {
-    }
+    public function __construct(protected readonly SMSService $smsService) {}
 
     public function create(): View
     {
@@ -32,7 +30,7 @@ class PasswordResetController extends Controller
 
         $user = User::where('phone', $request->phone)->first();
 
-        if (!$user) {
+        if (! $user) {
             return back()->withErrors(['phone' => 'کاربری با این شماره یافت نشد.']);
         }
 
@@ -41,7 +39,7 @@ class PasswordResetController extends Controller
 
         $user->update([
             'verification_code' => $verificationCode,
-            'verification_code_expire_at' => now()->addMinutes(2)
+            'verification_code_expire_at' => now()->addMinutes(2),
         ]);
 
         DB::table('password_reset_tokens')->updateOrInsert(
@@ -49,13 +47,13 @@ class PasswordResetController extends Controller
             [
                 'phone' => $request->phone,
                 'token' => $token,
-                'created_at' => now()
+                'created_at' => now(),
             ]
         );
 
         try {
             $template = config('services.kavenegar.templates.reset_password', 'verification');
-            $this->smsService->sendTemplate($user->phone, $template, [(string)$verificationCode]);
+            $this->smsService->sendTemplate($user->phone, $template, [(string) $verificationCode]);
         } catch (\Exception $e) {
             return back()->withErrors(['phone' => 'خطا در ارسال پیامک.']);
         }
@@ -72,7 +70,7 @@ class PasswordResetController extends Controller
             ->where('token', $token)
             ->first();
 
-        if (!$resetRecord || Carbon::parse($resetRecord->created_at)->addHour()->isPast()) {
+        if (! $resetRecord || Carbon::parse($resetRecord->created_at)->addHour()->isPast()) {
             return redirect()
                 ->route('password.request')
                 ->withErrors(['phone' => 'لینک بازیابی نامعتبر یا منقضی شده است. لطفا مجدد درخواست دهید.']);
@@ -93,13 +91,13 @@ class PasswordResetController extends Controller
             ->where('token', $request->token)
             ->first();
 
-        if (!$resetRecord) {
+        if (! $resetRecord) {
             return back()->withErrors(['code' => 'درخواست نامعتبر است.']);
         }
 
         $user = User::where('phone', $resetRecord->phone)->first();
 
-        if (!$user) {
+        if (! $user) {
             return back()->withErrors(['code' => 'کاربر یافت نشد.']);
         }
 
@@ -110,7 +108,7 @@ class PasswordResetController extends Controller
         $user->update([
             'password' => Hash::make($request->password),
             'verification_code' => null,
-            'verification_code_expire_at' => null
+            'verification_code_expire_at' => null,
         ]);
 
         DB::table('password_reset_tokens')->where('phone', $user->phone)->delete();

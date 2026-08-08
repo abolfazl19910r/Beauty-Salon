@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\SpecialistSchedule;
 use App\Models\Specialist;
+use App\Models\SpecialistSchedule;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class SpecialistScheduleFactory extends Factory
 {

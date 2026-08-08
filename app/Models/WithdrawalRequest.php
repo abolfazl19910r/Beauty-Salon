@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Str;
 
 class WithdrawalRequest extends Model
@@ -42,8 +42,8 @@ class WithdrawalRequest extends Model
         parent::boot();
 
         static::creating(function ($model) {
-            if (!$model->reference_code) {
-                $model->reference_code = 'WD-' . strtoupper(Str::random(10));
+            if (! $model->reference_code) {
+                $model->reference_code = 'WD-'.strtoupper(Str::random(10));
             }
         });
     }
@@ -65,7 +65,7 @@ class WithdrawalRequest extends Model
 
     public function getStatusTextAttribute(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             'pending' => 'در انتظار بررسی',
             'processing' => 'در حال پردازش',
             'completed' => 'تکمیل شده',
@@ -77,7 +77,7 @@ class WithdrawalRequest extends Model
 
     public function getStatusBadgeColorAttribute(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             'pending' => 'yellow',
             'processing' => 'blue',
             'completed' => 'green',
@@ -89,12 +89,13 @@ class WithdrawalRequest extends Model
 
     public function getMethodTextAttribute(): string
     {
-        return match($this->method) {
+        return match ($this->method) {
             'instant' => 'فوری',
             'iban' => 'شبا',
             default => 'نامشخص'
         };
     }
+
     public function canBeCancelled(): bool
     {
         return in_array($this->status, ['pending', 'processing']);
@@ -109,6 +110,7 @@ class WithdrawalRequest extends Model
             'payment_details' => $paymentDetails,
         ]);
     }
+
     public function markAsFailed(string $reason): bool
     {
         return $this->update([
@@ -131,6 +133,6 @@ class WithdrawalRequest extends Model
 
     public function getFormattedIbanAttribute(): string
     {
-        return 'IR' . chunk_split(substr($this->iban, 2), 4, ' ');
+        return 'IR'.chunk_split(substr($this->iban, 2), 4, ' ');
     }
 }

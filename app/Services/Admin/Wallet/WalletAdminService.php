@@ -23,7 +23,7 @@ class WalletAdminService
     {
         $query = SpecialistWallet::with('specialist');
 
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $search = $filters['search'];
             $query->whereHas('specialist', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
@@ -78,15 +78,15 @@ class WalletAdminService
     {
         $query = WithdrawalRequest::with(['specialist', 'wallet']);
 
-        if (!empty($filters['status'])) {
+        if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
         }
 
-        if (!empty($filters['method'])) {
+        if (! empty($filters['method'])) {
             $query->where('method', $filters['method']);
         }
 
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
                 $q->where('reference_code', 'like', "%{$search}%")
@@ -132,7 +132,7 @@ class WalletAdminService
                 'type' => 'adjustment',
                 'amount' => $amount,
                 'balance_after' => $wallet->balance,
-                'description' => 'تعدیل دستی توسط ادمین: ' . $description,
+                'description' => 'تعدیل دستی توسط ادمین: '.$description,
                 'metadata' => [
                     'admin_id' => auth()->id(),
                     'admin_name' => auth()->user()->name,
@@ -153,7 +153,7 @@ class WalletAdminService
                 ->lockForUpdate()
                 ->first();
 
-            if (!$locked || !in_array($locked->status, ['pending', 'processing'])) {
+            if (! $locked || ! in_array($locked->status, ['pending', 'processing'])) {
                 return;
             }
 
@@ -188,7 +188,7 @@ class WalletAdminService
                 ->lockForUpdate()
                 ->first();
 
-            if (!$locked || !in_array($locked->status, ['pending', 'processing'])) {
+            if (! $locked || ! in_array($locked->status, ['pending', 'processing'])) {
                 return;
             }
 
@@ -201,7 +201,7 @@ class WalletAdminService
                 'type' => 'refund',
                 'amount' => $locked->amount,
                 'balance_after' => $wallet->balance,
-                'description' => 'رد درخواست برداشت - کد: ' . $locked->reference_code,
+                'description' => 'رد درخواست برداشت - کد: '.$locked->reference_code,
                 'metadata' => [
                     'withdrawal_request_id' => $locked->id,
                     'rejection_reason' => $reason,
@@ -238,7 +238,7 @@ class WalletAdminService
                 ->lockForUpdate()
                 ->first();
 
-            if (!$locked || !in_array($locked->status, ['pending', 'processing'])) {
+            if (! $locked || ! in_array($locked->status, ['pending', 'processing'])) {
                 return;
             }
 
@@ -252,7 +252,7 @@ class WalletAdminService
             $dispatched = true;
         });
 
-        if (!$dispatched) {
+        if (! $dispatched) {
             return [
                 'success' => false,
                 'message' => 'این درخواست در حال حاضر قابل ارسال به صف پردازش نیست (یا قبلاً ارسال شده).',
@@ -279,10 +279,10 @@ class WalletAdminService
      * The single source of this logic — both the `wallet:settle-pending` scheduled command (nightly, at 01:00)
      * and the ``Manual Settlement'' button in the admin panel (both for all specialists and for a specific specialist) use the same method.
      *
-     * @param SpecialistWallet|null $wallet If null, all wallets will be checked; otherwise, only this one.
-     * @param bool $ignoreDelay If true, the settlement delay (settlement_delay_days) will be ignored and all
-     * pending transactions (even those that are not yet due) will be settled immediately.
-     * @param string $source is recorded in the transaction metadata to indicate where the settlement came from: 'schedule' or 'admin_manual'.
+     * @param  SpecialistWallet|null  $wallet  If null, all wallets will be checked; otherwise, only this one.
+     * @param  bool  $ignoreDelay  If true, the settlement delay (settlement_delay_days) will be ignored and all
+     *                             pending transactions (even those that are not yet due) will be settled immediately.
+     * @param  string  $source  is recorded in the transaction metadata to indicate where the settlement came from: 'schedule' or 'admin_manual'.
      * @return array{settledCount: int, failedCount: int, settledAmount: float}
      */
     public function settlePendingIncomes(
@@ -304,7 +304,7 @@ class WalletAdminService
         foreach ($query->get() as $transaction) {
             $settlementDate = $transaction->metadata['settlement_date'] ?? null;
 
-            if (!$ignoreDelay && (!$settlementDate || !Carbon::parse($settlementDate)->isPast())) {
+            if (! $ignoreDelay && (! $settlementDate || ! Carbon::parse($settlementDate)->isPast())) {
                 continue;
             }
 

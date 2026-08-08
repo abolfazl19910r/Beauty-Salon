@@ -15,10 +15,10 @@ class SpecialistWalletService
 {
     use HasJalaliDates;
 
-// Modified: Removed the resolveSpecialist() method that was here before.
-// App\Traits\ResolvesSpecialist already exists in the project and do the same (via
-// The relationship $user->specialist, which itself is defined based on phone match.
-// Controllers now use that trait directly.
+    // Modified: Removed the resolveSpecialist() method that was here before.
+    // App\Traits\ResolvesSpecialist already exists in the project and do the same (via
+    // The relationship $user->specialist, which itself is defined based on phone match.
+    // Controllers now use that trait directly.
 
     public function getWalletOverview(Specialist $specialist): array
     {
@@ -160,5 +160,4 @@ class SpecialistWalletService
 
         return $wallet->calculateWithdrawalFee($amount, $method);
     }
-
 }

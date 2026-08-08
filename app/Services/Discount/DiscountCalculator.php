@@ -33,7 +33,7 @@ final class DiscountCalculator
 
         return [
             'discount_amount' => $discount,
-            'final_amount'    => max(0, $baseAmount - $discount),
+            'final_amount' => max(0, $baseAmount - $discount),
         ];
     }
 }

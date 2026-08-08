@@ -77,7 +77,7 @@ class SpecialistBookingManagementController extends Controller
         } catch (Exception $e) {
             Log::error('خطا در تایید نوبت', ['booking_id' => $booking->id, 'error' => $e->getMessage()]);
 
-            return back()->with('error', 'خطا در تایید نوبت: ' . $e->getMessage());
+            return back()->with('error', 'خطا در تایید نوبت: '.$e->getMessage());
         }
     }
 
@@ -105,7 +105,7 @@ class SpecialistBookingManagementController extends Controller
         } catch (\Exception $e) {
             Log::error('خطا در علامت‌گذاری نوبت', ['booking_id' => $booking->id, 'error' => $e->getMessage()]);
 
-            return back()->with('error', 'خطا در علامت‌گذاری نوبت: ' . $e->getMessage());
+            return back()->with('error', 'خطا در علامت‌گذاری نوبت: '.$e->getMessage());
         }
     }
 
@@ -127,10 +127,10 @@ class SpecialistBookingManagementController extends Controller
 
         try {
             $booking->update([
-                'status'              => 'cancelled',
+                'status' => 'cancelled',
                 'cancellation_reason' => $request->input('cancel_reason', 'دلیل مشخص نشده'),
-                'cancelled_by'        => 'specialist',
-                'cancelled_at'        => now(),
+                'cancelled_by' => 'specialist',
+                'cancelled_at' => now(),
             ]);
 
             event(new BookingCancelled($booking, 'specialist'));
@@ -140,7 +140,7 @@ class SpecialistBookingManagementController extends Controller
         } catch (Exception $e) {
             Log::error('خطا در لغو نوبت توسط متخصص', ['booking_id' => $booking->id, 'error' => $e->getMessage()]);
 
-            return back()->with('error', 'خطا در لغو نوبت: ' . $e->getMessage());
+            return back()->with('error', 'خطا در لغو نوبت: '.$e->getMessage());
         }
     }
 
@@ -165,11 +165,11 @@ class SpecialistBookingManagementController extends Controller
         }
 
         if ($request->filled('phone')) {
-            $query->whereHas('user', fn ($q) => $q->where('phone', 'like', '%' . $request->phone . '%'));
+            $query->whereHas('user', fn ($q) => $q->where('phone', 'like', '%'.$request->phone.'%'));
         }
 
         if ($request->filled('customer_name')) {
-            $query->whereHas('user', fn ($q) => $q->where('name', 'like', '%' . $request->customer_name . '%'));
+            $query->whereHas('user', fn ($q) => $q->where('name', 'like', '%'.$request->customer_name.'%'));
         }
     }
 
@@ -177,8 +177,8 @@ class SpecialistBookingManagementController extends Controller
     {
         match ($sortBy) {
             'oldest', 'date_asc' => $query->orderBy('booking_time', 'asc'),
-            'date_desc'          => $query->orderBy('booking_time', 'desc'),
-            default              => $query->latest(),
+            'date_desc' => $query->orderBy('booking_time', 'desc'),
+            default => $query->latest(),
         };
     }
 }

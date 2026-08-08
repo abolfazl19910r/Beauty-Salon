@@ -10,9 +10,7 @@ class NegativeReviewNotification extends Notification
 {
     use Queueable;
 
-    public function __construct(protected readonly Review $review)
-    {
-    }
+    public function __construct(protected readonly Review $review) {}
 
     public function via($notifiable): array
     {
@@ -33,7 +31,7 @@ class NegativeReviewNotification extends Notification
             'review_id' => $this->review->id,
             'rating' => $this->review->overall_rating,
             'specialist_id' => $this->review->specialist_id,
-            'type' => 'negative_review'
+            'type' => 'negative_review',
         ];
     }
 }

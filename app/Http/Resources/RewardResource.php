@@ -22,8 +22,8 @@ class RewardResource extends JsonResource
             'is_achievable' => $userPoints >= $this->required_points,
             'points_needed' => max(0, $this->required_points - $userPoints),
             'remaining_uses' => $this->when($this->max_uses !== null,
-                fn() => $this->max_uses - $this->used_count
-            )
+                fn () => $this->max_uses - $this->used_count
+            ),
         ];
     }
 }

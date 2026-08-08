@@ -12,9 +12,9 @@ use App\Http\Controllers\Specialist\Wallet\Withdrawal\SpecialistWithdrawalContro
 use App\Http\Controllers\User\SpecialistController;
 use Illuminate\Support\Facades\Route;
 
-    // ============================================
-    // PUBLIC ROUTES (no auth required)
-    // ============================================
+// ============================================
+// PUBLIC ROUTES (no auth required)
+// ============================================
 
 Route::prefix('specialists')->name('specialists.')->group(function () {
     Route::get('/search', [SpecialistController::class, 'search'])->name('search');
@@ -30,9 +30,9 @@ Route::prefix('specialists')->name('specialists.')->group(function () {
     Route::get('/{specialist}/available-slots/{date}', [SpecialistController::class, 'availableSlots'])->name('available-slots');
 });
 
-    // ============================================
-    // AUTHENTICATED ROUTES (specialist panel)
-    // ============================================
+// ============================================
+// AUTHENTICATED ROUTES (specialist panel)
+// ============================================
 
 Route::middleware(['auth', 'verified'])->name('specialist.')->group(function () {
 

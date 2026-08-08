@@ -2,7 +2,6 @@
 
 namespace App\Exceptions;
 
-
 class DiscountCodeInvalidException extends DomainException
 {
     protected int $httpStatus = 422; // Unprocessable Entity
@@ -15,9 +14,9 @@ class DiscountCodeInvalidException extends DomainException
     private array $contextData = [];
 
     /**
-     * @param string $reason دلیل فنی نامعتبری (برای log)
-     * @param string|null $userMessage پیام کاربرپسند فارسی
-     * @param array<string, mixed> $context
+     * @param  string  $reason  دلیل فنی نامعتبری (برای log)
+     * @param  string|null  $userMessage  پیام کاربرپسند فارسی
+     * @param  array<string, mixed>  $context
      */
     public static function because(
         string $reason,

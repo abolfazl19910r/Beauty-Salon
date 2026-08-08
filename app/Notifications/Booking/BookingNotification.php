@@ -11,8 +11,7 @@ class BookingNotification extends Notification
     public function __construct(
         private readonly Booking $booking,
         private readonly bool $needsApproval = false
-    ) {
-    }
+    ) {}
 
     public function via($notifiable): array
     {
@@ -51,11 +50,11 @@ class BookingNotification extends Notification
         );
 
         if ($this->needsApproval) {
-            $message .= "\n\n⏳ نیاز به تایید شما\n🔗 جهت تایید کلیک کنید:\n" . $confirmationLink;
+            $message .= "\n\n⏳ نیاز به تایید شما\n🔗 جهت تایید کلیک کنید:\n".$confirmationLink;
         } else {
             $message .= "\n\n✅ تایید خودکار";
         }
 
-        return (new SMSService())->send($notifiable->phone, $message);
+        return (new SMSService)->send($notifiable->phone, $message);
     }
 }

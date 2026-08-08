@@ -18,7 +18,7 @@ class DiscountCode extends Model
         'expires_at',
         'is_active',
         'user_id',
-        'max_amount'
+        'max_amount',
     ];
 
     protected $casts = [
@@ -27,7 +27,7 @@ class DiscountCode extends Model
         'max_amount' => 'decimal:2',
         'used_count' => 'integer',
         'max_uses' => 'integer',
-        'expires_at' => 'datetime'
+        'expires_at' => 'datetime',
     ];
 
     public function bookings(): \Illuminate\Database\Eloquent\Relations\HasMany
@@ -42,7 +42,7 @@ class DiscountCode extends Model
 
     public function isValid(): bool
     {
-        if (!$this->is_active) {
+        if (! $this->is_active) {
             return false;
         }
 

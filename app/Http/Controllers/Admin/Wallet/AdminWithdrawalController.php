@@ -17,8 +17,7 @@ class AdminWithdrawalController extends Controller
 {
     public function __construct(
         private readonly WalletAdminService $walletAdminService
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View
     {
@@ -43,7 +42,7 @@ class AdminWithdrawalController extends Controller
 
     public function approve(ApproveWithdrawalRequest $request, WithdrawalRequest $withdrawalRequest): RedirectResponse
     {
-        if (!in_array($withdrawalRequest->status, ['pending', 'processing'])) {
+        if (! in_array($withdrawalRequest->status, ['pending', 'processing'])) {
             return back()->with('error', 'این درخواست قابل تایید نیست.');
         }
 
@@ -58,13 +57,13 @@ class AdminWithdrawalController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->with('error', 'خطا در تایید درخواست: ' . $e->getMessage());
+            return back()->with('error', 'خطا در تایید درخواست: '.$e->getMessage());
         }
     }
 
     public function reject(RejectWithdrawalRequest $request, WithdrawalRequest $withdrawalRequest): RedirectResponse
     {
-        if (!in_array($withdrawalRequest->status, ['pending', 'processing'])) {
+        if (! in_array($withdrawalRequest->status, ['pending', 'processing'])) {
             return back()->with('error', 'این درخواست قابل رد نیست.');
         }
 
@@ -82,13 +81,13 @@ class AdminWithdrawalController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->with('error', 'خطا در رد درخواست: ' . $e->getMessage());
+            return back()->with('error', 'خطا در رد درخواست: '.$e->getMessage());
         }
     }
 
     public function autoPayout(WithdrawalRequest $withdrawalRequest): RedirectResponse
     {
-        if (!in_array($withdrawalRequest->status, ['pending', 'processing'])) {
+        if (! in_array($withdrawalRequest->status, ['pending', 'processing'])) {
             return back()->with('error', 'این درخواست قبلاً پردازش شده است.');
         }
 
@@ -104,9 +103,9 @@ class AdminWithdrawalController extends Controller
 
             return back()->with('error', $result['message']);
         } catch (Exception $e) {
-            Log::error('Zarinpal Payout Error: ' . $e->getMessage());
+            Log::error('Zarinpal Payout Error: '.$e->getMessage());
 
-            return back()->with('error', 'خطای سیستمی: ' . $e->getMessage());
+            return back()->with('error', 'خطای سیستمی: '.$e->getMessage());
         }
     }
 }

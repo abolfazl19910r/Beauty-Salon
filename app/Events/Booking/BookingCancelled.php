@@ -28,6 +28,5 @@ class BookingCancelled
     public function __construct(
         public Booking $booking,
         public string $cancelledBy,
-    ) {
-    }
+    ) {}
 }

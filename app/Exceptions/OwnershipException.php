@@ -14,16 +14,16 @@ class OwnershipException extends DomainException
     private array $contextData = [];
 
     /**
-     * @param string $resourceType نوع منبع (مثل 'booking', 'wallet')
-     * @param int|string|null $resourceId آیدی منبع
-     * @param int|string|null $ownerId آیدی مالک واقعی
-     * @param int|string|null $actorId آیدی کاربری که سعی کرده دسترسی پیدا کنه
+     * @param  string  $resourceType  نوع منبع (مثل 'booking', 'wallet')
+     * @param  int|string|null  $resourceId  آیدی منبع
+     * @param  int|string|null  $ownerId  آیدی مالک واقعی
+     * @param  int|string|null  $actorId  آیدی کاربری که سعی کرده دسترسی پیدا کنه
      */
     public static function for(
         string $resourceType,
-               $resourceId = null,
-               $ownerId = null,
-               $actorId = null
+        $resourceId = null,
+        $ownerId = null,
+        $actorId = null
     ): self {
         $instance = new self(
             "Ownership violation on {$resourceType}#{$resourceId}: owner={$ownerId}, actor={$actorId}"

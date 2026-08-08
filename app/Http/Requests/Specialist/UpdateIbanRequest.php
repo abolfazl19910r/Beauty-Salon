@@ -15,19 +15,19 @@ class UpdateIbanRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'iban'                => ['required', 'string', new ValidIban],
+            'iban' => ['required', 'string', new ValidIban],
             'account_holder_name' => ['required', 'string', 'min:3', 'max:255'],
-            'bank_name'           => ['required', 'string'],
+            'bank_name' => ['required', 'string'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'iban.required'                => 'شماره شبا الزامی است.',
+            'iban.required' => 'شماره شبا الزامی است.',
             'account_holder_name.required' => 'نام صاحب حساب الزامی است.',
-            'account_holder_name.min'      => 'نام صاحب حساب باید حداقل ۳ کاراکتر باشد.',
-            'bank_name.required'           => 'نام بانک الزامی است.',
+            'account_holder_name.min' => 'نام صاحب حساب باید حداقل ۳ کاراکتر باشد.',
+            'bank_name.required' => 'نام بانک الزامی است.',
         ];
     }
 }

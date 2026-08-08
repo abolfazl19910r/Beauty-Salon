@@ -16,10 +16,10 @@ class UpdateAdminUserRequest extends FormRequest
         $userId = $this->route('user')->id;
 
         return [
-            'name'     => ['required', 'string', 'max:255'],
-            'phone'    => ['required', 'string', 'max:11', 'unique:users,phone,' . $userId],
-            'roles'    => ['nullable', 'array'],
-            'roles.*'  => ['exists:roles,id'],
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:11', 'unique:users,phone,'.$userId],
+            'roles' => ['nullable', 'array'],
+            'roles.*' => ['exists:roles,id'],
             'is_admin' => ['nullable', 'boolean'],
         ];
     }
@@ -27,9 +27,9 @@ class UpdateAdminUserRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required'  => 'نام کاربر الزامی است.',
+            'name.required' => 'نام کاربر الزامی است.',
             'phone.required' => 'شماره موبایل الزامی است.',
-            'phone.unique'   => 'این شماره موبایل قبلاً ثبت شده است.',
+            'phone.unique' => 'این شماره موبایل قبلاً ثبت شده است.',
         ];
     }
 }

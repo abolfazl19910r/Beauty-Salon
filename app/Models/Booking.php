@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use App\Models\LoyaltyPoint;
 
 class Booking extends Model
 {
@@ -44,7 +43,7 @@ class Booking extends Model
         'refunded_at',
         'refunded_amount',
         'refund_reference',
-        'refund_details'
+        'refund_details',
     ];
 
     public function user(): BelongsTo
@@ -94,7 +93,7 @@ class Booking extends Model
 
     public function canBeRescheduled(): bool
     {
-        if (!in_array($this->status, ['pending', 'confirmed'])) {
+        if (! in_array($this->status, ['pending', 'confirmed'])) {
             return false;
         }
 

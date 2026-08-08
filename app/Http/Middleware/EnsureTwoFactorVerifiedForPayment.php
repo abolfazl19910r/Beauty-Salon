@@ -22,19 +22,17 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class EnsureTwoFactorVerifiedForPayment
 {
-    public function __construct(protected readonly TwoFactorAuthService $twoFactorService)
-    {
-    }
+    public function __construct(protected readonly TwoFactorAuthService $twoFactorService) {}
 
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             return redirect()->route('login');
         }
 
-        if (!$user->two_factor_enabled) {
+        if (! $user->two_factor_enabled) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -46,7 +44,7 @@ class EnsureTwoFactorVerifiedForPayment
                 ->with('error', 'برای استفاده از پرداخت امن، ابتدا باید احراز هویت دو مرحله‌ای را در تنظیمات امنیتی فعال کنید.');
         }
 
-        if (!session('2fa_verified')) {
+        if (! session('2fa_verified')) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -56,7 +54,7 @@ class EnsureTwoFactorVerifiedForPayment
                 ], 428);
             }
 
-            if (!session('secure_payment_2fa_code_sent')) {
+            if (! session('secure_payment_2fa_code_sent')) {
                 $this->twoFactorService->generateCode($user);
                 session(['secure_payment_2fa_code_sent' => true]);
             }

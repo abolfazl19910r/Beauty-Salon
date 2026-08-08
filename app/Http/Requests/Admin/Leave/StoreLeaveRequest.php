@@ -15,8 +15,8 @@ class StoreLeaveRequest extends FormRequest
     {
         return [
             'start_date' => ['required', 'date_format:Y-m-d', 'after:yesterday'],
-            'end_date'   => ['required', 'date_format:Y-m-d', 'after_or_equal:start_date'],
-            'reason'     => ['nullable', 'string', 'max:255'],
+            'end_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:start_date'],
+            'reason' => ['nullable', 'string', 'max:255'],
         ];
     }
 
@@ -24,9 +24,9 @@ class StoreLeaveRequest extends FormRequest
     {
         return [
             'start_date.required' => 'تاریخ شروع مرخصی الزامی است.',
-            'end_date.required'   => 'تاریخ پایان مرخصی الزامی است.',
+            'end_date.required' => 'تاریخ پایان مرخصی الزامی است.',
             'end_date.after_or_equal' => 'تاریخ پایان باید بعد یا مساوی تاریخ شروع باشد.',
-            'reason.max'          => 'دلیل مرخصی نباید بیشتر از ۲۵۵ کاراکتر باشد.',
+            'reason.max' => 'دلیل مرخصی نباید بیشتر از ۲۵۵ کاراکتر باشد.',
         ];
     }
 }

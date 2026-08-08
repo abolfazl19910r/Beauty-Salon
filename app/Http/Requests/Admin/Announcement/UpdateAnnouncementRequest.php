@@ -21,23 +21,23 @@ class UpdateAnnouncementRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title'        => ['required', 'string', 'max:255'],
-            'content'      => ['required', 'string'],
-            'is_active'    => ['sometimes', 'boolean'],
-            'type'         => ['required', 'in:general,maintenance,promotion'],
-            'priority'     => ['required', 'integer', 'min:0'],
+            'title' => ['required', 'string', 'max:255'],
+            'content' => ['required', 'string'],
+            'is_active' => ['sometimes', 'boolean'],
+            'type' => ['required', 'in:general,maintenance,promotion'],
+            'priority' => ['required', 'integer', 'min:0'],
             'published_at' => ['nullable', 'date'],
-            'expires_at'   => ['nullable', 'date', 'after:published_at'],
+            'expires_at' => ['nullable', 'date', 'after:published_at'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'title.required'   => 'عنوان اطلاعیه الزامی است.',
+            'title.required' => 'عنوان اطلاعیه الزامی است.',
             'content.required' => 'متن اطلاعیه الزامی است.',
-            'type.required'    => 'نوع اطلاعیه الزامی است.',
-            'type.in'          => 'نوع اطلاعیه معتبر نیست.',
+            'type.required' => 'نوع اطلاعیه الزامی است.',
+            'type.in' => 'نوع اطلاعیه معتبر نیست.',
             'priority.required' => 'اولویت الزامی است.',
             'expires_at.after' => 'تاریخ انقضا باید بعد از تاریخ انتشار باشد.',
         ];

@@ -4,19 +4,17 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
-use App\Services\PaymentService;
 use App\Services\LoyaltyService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
+use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class PaymentController extends Controller
 {
-    public function __construct(protected readonly PaymentService $paymentService, protected readonly LoyaltyService $loyaltyService)
-    {
-    }
+    public function __construct(protected readonly PaymentService $paymentService, protected readonly LoyaltyService $loyaltyService) {}
 
     public function process(Booking $booking): RedirectResponse
     {
@@ -26,19 +24,19 @@ class PaymentController extends Controller
                 return redirect()->route('payment.result')->with(['success' => true, 'booking' => $booking]);
             }
             if ($booking->prepayment_amount <= 0) {
-                DB::transaction(function() use ($booking) {
+                DB::transaction(function () use ($booking) {
                     $specialist = $booking->specialist;
                     $finalStatus = $specialist->auto_confirm_bookings ? 'confirmed' : 'pending';
                     $booking->update([
                         'payment_status' => 'paid',
                         'status' => $finalStatus,
                         'paid_at' => now(),
-                        'payment_reference' => 'FREE-DISCOUNT-' . $booking->id,
+                        'payment_reference' => 'FREE-DISCOUNT-'.$booking->id,
                         'payment_details' => [
                             'method' => 'full_discount',
                             'gateway_amount' => 0,
-                            'discount_code' => $booking->discount_code
-                        ]
+                            'discount_code' => $booking->discount_code,
+                        ],
                     ]);
 
                 });
@@ -56,18 +54,19 @@ class PaymentController extends Controller
             Log::error('❌ Payment Gateway Error', [
                 'booking_id' => $booking->id,
                 'error' => $errorMessage,
-                'full_result' => $result
+                'full_result' => $result,
             ]);
 
-            return back()->with('error', 'خطای بانک: ' . $errorMessage);
+            return back()->with('error', 'خطای بانک: '.$errorMessage);
 
         } catch (\Exception $e) {
             Log::error('💥 Payment Process Exception', [
                 'booking_id' => $booking->id,
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            return back()->with('error', 'خطایی سیستمی در فرآیند پرداخت: ' . $e->getMessage());
+
+            return back()->with('error', 'خطایی سیستمی در فرآیند پرداخت: '.$e->getMessage());
         }
     }
 
@@ -98,7 +97,7 @@ class PaymentController extends Controller
 
             $paidFully = false;
 
-            $response = DB::transaction(function() use ($booking, $wallet, $walletAmount, $remainingAmount, $totalAmount, &$paidFully) {
+            $response = DB::transaction(function () use ($booking, $wallet, $walletAmount, $remainingAmount, &$paidFully) {
                 if ($remainingAmount <= 0) {
                     $wallet->deductPayment(
                         $walletAmount,
@@ -112,14 +111,15 @@ class PaymentController extends Controller
                         'payment_status' => 'paid',
                         'status' => $finalStatus,
                         'paid_at' => now(),
-                        'payment_reference' => 'WALLET-' . $booking->id . '-' . time(),
+                        'payment_reference' => 'WALLET-'.$booking->id.'-'.time(),
                         'payment_details' => [
                             'method' => 'wallet',
                             'wallet_amount' => $walletAmount,
-                            'gateway_amount' => 0
-                        ]
+                            'gateway_amount' => 0,
+                        ],
                     ]);
                     $paidFully = true;
+
                     return redirect()->route('bookings.success', ['id' => $booking->id])
                         ->with('success', 'پرداخت از کیف پول با موفقیت انجام شد');
                 }
@@ -132,10 +132,10 @@ class PaymentController extends Controller
                     );
 
                     session([
-                        'partial_payment_' . $booking->id => [
+                        'partial_payment_'.$booking->id => [
                             'wallet_amount' => $walletAmount,
-                            'remaining_amount' => $remainingAmount
-                        ]
+                            'remaining_amount' => $remainingAmount,
+                        ],
                     ]);
                 }
 
@@ -164,10 +164,10 @@ class PaymentController extends Controller
         } catch (\Exception $e) {
             Log::error('💥 خطا در پرداخت با کیف پول', [
                 'booking_id' => $booking->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
-            return back()->with('error', 'خطا در پرداخت: ' . $e->getMessage());
+            return back()->with('error', 'خطا در پرداخت: '.$e->getMessage());
         }
     }
 
@@ -185,8 +185,8 @@ class PaymentController extends Controller
                     $isAutoConfirm = $specialist->auto_confirm_bookings ?? false;
                     $newStatus = $isAutoConfirm ? 'confirmed' : 'pending';
 
-                    DB::transaction(function () use ($booking, $result, $newStatus, $specialist) {
-                        $partialPayment = session('partial_payment_' . $booking->id);
+                    DB::transaction(function () use ($booking, $result, $newStatus) {
+                        $partialPayment = session('partial_payment_'.$booking->id);
                         $paymentDetails = [
                             'method' => $partialPayment ? 'wallet_gateway' : 'gateway',
                             'gateway_ref' => $result['ref_id'] ?? $result['reference'],
@@ -196,7 +196,7 @@ class PaymentController extends Controller
                         if ($partialPayment) {
                             $paymentDetails['wallet_amount'] = $partialPayment['wallet_amount'];
                             $paymentDetails['gateway_amount'] = $partialPayment['remaining_amount'];
-                            session()->forget('partial_payment_' . $booking->id);
+                            session()->forget('partial_payment_'.$booking->id);
                         }
 
                         $booking->update([
@@ -204,7 +204,7 @@ class PaymentController extends Controller
                             'paid_at' => now(),
                             'payment_reference' => $result['ref_id'] ?? $result['reference'],
                             'status' => $newStatus,
-                            'payment_details' => $paymentDetails
+                            'payment_details' => $paymentDetails,
                         ]);
                     });
                 }
@@ -213,7 +213,7 @@ class PaymentController extends Controller
                     ->with('success', 'پرداخت با موفقیت انجام شد و نوبت شما ثبت شد.');
             }
 
-            $partialPayment = session('partial_payment_' . $booking->id);
+            $partialPayment = session('partial_payment_'.$booking->id);
             if ($partialPayment && isset($partialPayment['wallet_amount'])) {
                 $wallet = $booking->user->getOrCreateWallet();
                 $wallet->increment('balance', $partialPayment['wallet_amount']);
@@ -225,7 +225,7 @@ class PaymentController extends Controller
                     'description' => "بازگشت وجه به دلیل عدم موفقیت پرداخت - نوبت #{$booking->id}",
                 ]);
 
-                session()->forget('partial_payment_' . $booking->id);
+                session()->forget('partial_payment_'.$booking->id);
             }
 
             $booking->update(['status' => 'cancelled', 'cancellation_reason' => 'پرداخت ناموفق']);
@@ -236,7 +236,7 @@ class PaymentController extends Controller
         } catch (\Exception $e) {
             Log::error('💥 Payment Callback Exception', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return redirect()->route('bookings.failed')
@@ -250,7 +250,9 @@ class PaymentController extends Controller
         $booking = session('booking');
         $error_message = session('error_message');
 
-        if (!$booking) return redirect()->route('home');
+        if (! $booking) {
+            return redirect()->route('home');
+        }
 
         return view('payment.result', compact('success', 'booking', 'error_message'));
     }
@@ -268,7 +270,7 @@ class PaymentController extends Controller
 
         return view('payment.show', [
             'booking' => $booking,
-            'wallet' => $wallet
+            'wallet' => $wallet,
         ]);
     }
 }

@@ -10,11 +10,11 @@ use App\Models\Reward;
 use App\Models\User;
 use App\Notifications\Loyalty\PointsEarned;
 use App\Notifications\Loyalty\RewardRedeemed;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
 
 class LoyaltyService
 {
@@ -44,7 +44,7 @@ class LoyaltyService
     public function getHistory($userId, $perPage = 10): LengthAwarePaginator
     {
         return LoyaltyPoint::where('user_id', $userId)
-            ->with(['booking' => function($query) {
+            ->with(['booking' => function ($query) {
                 $query->select('id', 'booking_time', 'service_id', 'specialist_id')
                     ->with(['service:id,name', 'specialist:id,name']);
             }])
@@ -82,20 +82,20 @@ class LoyaltyService
 
         return DB::transaction(function () use ($userId, $reward, $user) {
             LoyaltyPoint::create([
-                'user_id'     => $userId,
-                'points'      => -$reward->required_points,
+                'user_id' => $userId,
+                'points' => -$reward->required_points,
                 'description' => "استفاده از پاداش: {$reward->title}",
-                'type'        => 'spent',
+                'type' => 'spent',
             ]);
 
             $discountCode = DiscountCode::create([
-                'code'       => strtoupper(Str::random(8)),
-                'type'       => $reward->discount_type,
-                'amount'     => $reward->discount_amount,
-                'user_id'    => $userId,
-                'max_uses'   => 1,
+                'code' => strtoupper(Str::random(8)),
+                'type' => $reward->discount_type,
+                'amount' => $reward->discount_amount,
+                'user_id' => $userId,
+                'max_uses' => 1,
                 'expires_at' => now()->addDays(30),
-                'is_active'  => true,
+                'is_active' => true,
             ]);
 
             $reward->incrementUsage();
@@ -122,7 +122,7 @@ class LoyaltyService
             'points' => $points,
             'type' => 'earned',
             'description' => 'امتیاز کسب شده از رزرو',
-            'expires_at' => now()->addMonths($expiryMonths)
+            'expires_at' => now()->addMonths($expiryMonths),
         ]);
 
         auth()->user()->notify(new PointsEarned($loyaltyPoint));

@@ -12,9 +12,7 @@ use Illuminate\View\View;
 
 class AdminSecurityController extends Controller
 {
-    public function __construct(protected readonly AdminSecurityService $service)
-    {
-    }
+    public function __construct(protected readonly AdminSecurityService $service) {}
 
     public function logs(Request $request): View
     {

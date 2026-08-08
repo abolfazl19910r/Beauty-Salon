@@ -20,8 +20,7 @@ class AdminLoyaltyRewardController extends Controller
 {
     public function __construct(
         private readonly LoyaltyAdminService $loyaltyAdminService,
-    ) {
-    }
+    ) {}
 
     public function index(): View
     {

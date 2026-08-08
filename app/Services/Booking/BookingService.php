@@ -20,9 +20,7 @@ use Illuminate\Support\Facades\Log;
 
 class BookingService
 {
-    public function __construct(protected readonly Specialist $specialist, protected readonly Booking $booking, protected readonly DiscountCode $discountCode, protected readonly DiscountCalculator $discountCalculator, protected readonly BeautyService $beautyService)
-    {
-    }
+    public function __construct(protected readonly Specialist $specialist, protected readonly Booking $booking, protected readonly DiscountCode $discountCode, protected readonly DiscountCalculator $discountCalculator, protected readonly BeautyService $beautyService) {}
 
     public function isTimeAvailable(int $specialistId, string $bookingTime): bool
     {
@@ -45,8 +43,8 @@ class BookingService
             return $specialist->getMonthAvailability($yearMonth);
         } catch (Exception $e) {
             return [
-                'available_days'    => [],
-                'holiday_days'      => [],
+                'available_days' => [],
+                'holiday_days' => [],
                 'fully_booked_days' => [],
             ];
         }
@@ -79,6 +77,7 @@ class BookingService
 
     /**
      * Check the validity of a discount code and preview its effect on a base amount, without persisting.
+     *
      * @throws DiscountCodeInvalidException
      */
     public function validateDiscountCode(string $code, int $userId, ?float $baseAmount = null): array
@@ -104,11 +103,11 @@ class BookingService
         $result = $this->discountCalculator->calculate($discountCode, $baseAmount ?? (float) WalletSetting::get()->minimum_prepayment_amount);
 
         return [
-            'valid'           => true,
+            'valid' => true,
             'discount_amount' => $result['discount_amount'],
             // Note: The key final_price (not final_amount) is intentional, because preview consumers have already opened an account on the same key name in the frontend.
-            'final_price'     => $result['final_amount'],
-            'message'         => 'کد تخفیف معتبر است.',
+            'final_price' => $result['final_amount'],
+            'message' => 'کد تخفیف معتبر است.',
         ];
     }
 
@@ -166,18 +165,18 @@ class BookingService
             // specialist in person (remaining_amount), never the amount actually charged online
             // (prepayment_amount stays untouched here).
             $booking->update([
-                'discount_code'   => $code,
+                'discount_code' => $code,
                 'discount_amount' => $result['discount_amount'],
             ]);
 
             $lockedDiscountCode->incrementUsage();
 
             return [
-                'success'           => true,
-                'discount_amount'   => $result['discount_amount'],
+                'success' => true,
+                'discount_amount' => $result['discount_amount'],
                 'prepayment_amount' => (float) $booking->prepayment_amount,
-                'remaining_amount'  => $booking->fresh(['service'])->remaining_amount,
-                'message'           => 'کد تخفیف اعمال شد؛ این مبلغ از باقی‌مانده‌ای که موقع نوبت پرداخت می‌کنید کسر شد.',
+                'remaining_amount' => $booking->fresh(['service'])->remaining_amount,
+                'message' => 'کد تخفیف اعمال شد؛ این مبلغ از باقی‌مانده‌ای که موقع نوبت پرداخت می‌کنید کسر شد.',
             ];
         });
     }
@@ -200,8 +199,8 @@ class BookingService
         return [
             'original_amount' => $prepaymentAmount,
             'discount_amount' => $discountAmount,
-            'final_amount'    => max(0, $prepaymentAmount - $discountAmount),
-            'discount_code'   => $discountCode?->code,
+            'final_amount' => max(0, $prepaymentAmount - $discountAmount),
+            'discount_code' => $discountCode?->code,
         ];
     }
 
@@ -237,11 +236,11 @@ class BookingService
             $userId, $serviceId, $specialistId, $bookingTime, $discountCode, $prepaymentData, $specialist
         ) {
             $booking = Booking::create([
-                'service_id'        => $serviceId,
-                'specialist_id'     => $specialistId,
-                'user_id'           => $userId,
-                'booking_time'      => $bookingTime,
-                'status'            => $specialist->auto_confirm_bookings ? 'confirmed' : 'pending_payment',
+                'service_id' => $serviceId,
+                'specialist_id' => $specialistId,
+                'user_id' => $userId,
+                'booking_time' => $bookingTime,
+                'status' => $specialist->auto_confirm_bookings ? 'confirmed' : 'pending_payment',
                 // ⭐ By explicit business decision: a discount code never reduces the amount actually
                 // charged online (prepayment) — it only reduces the "remaining" amount the customer
                 // settles with the specialist in person (see Booking::getRemainingAmountAttribute()).
@@ -252,9 +251,9 @@ class BookingService
                 // price - prepayment meant remaining grew by the same amount the prepayment shrank,
                 // netting the customer zero actual savings).
                 'prepayment_amount' => $prepaymentData['original_amount'],
-                'payment_status'    => 'unpaid',
-                'discount_code'     => $discountCode,
-                'discount_amount'   => $prepaymentData['discount_amount'],
+                'payment_status' => 'unpaid',
+                'discount_code' => $discountCode,
+                'discount_amount' => $prepaymentData['discount_amount'],
             ]);
 
             if ($discountCode && $prepaymentData['discount_code']) {
@@ -269,7 +268,7 @@ class BookingService
                     // they didn't cause), but we deliberately do not push used_count past max_uses.
                     Log::warning('⚠️ کد تخفیف بین محاسبه و رزرو نهایی به حداکثر استفاده رسید', [
                         'discount_code' => $discountCode,
-                        'booking_id'    => $booking->id,
+                        'booking_id' => $booking->id,
                     ]);
                 }
             }
@@ -281,7 +280,7 @@ class BookingService
             } catch (Exception $e) {
                 Log::warning('خطا در ارسال نوتیفیکیشن ثبت نوبت', [
                     'booking_id' => $booking->id,
-                    'error'      => $e->getMessage(),
+                    'error' => $e->getMessage(),
                 ]);
             }
 
@@ -303,7 +302,7 @@ class BookingService
     {
         return DB::transaction(function () use ($booking) {
             $booking->update([
-                'status'       => 'cancelled',
+                'status' => 'cancelled',
                 'cancelled_by' => 'customer',
                 'cancelled_at' => now(),
             ]);

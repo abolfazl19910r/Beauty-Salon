@@ -31,11 +31,11 @@ class ReviewToken extends Model
         parent::boot();
 
         static::creating(function ($reviewToken) {
-            if (!$reviewToken->token) {
+            if (! $reviewToken->token) {
                 $reviewToken->token = (string) Str::uuid();
             }
 
-            if (!$reviewToken->expires_at) {
+            if (! $reviewToken->expires_at) {
                 $reviewToken->expires_at = now()->addDays(7);
             }
         });
@@ -69,7 +69,7 @@ class ReviewToken extends Model
 
     public function isValid(): bool
     {
-        return !$this->is_used && $this->expires_at->isFuture();
+        return ! $this->is_used && $this->expires_at->isFuture();
     }
 
     public function isExpired(): bool

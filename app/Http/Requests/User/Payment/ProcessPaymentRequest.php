@@ -14,7 +14,7 @@ class ProcessPaymentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'use_wallet'    => 'required|boolean',
+            'use_wallet' => 'required|boolean',
             'wallet_amount' => 'nullable|numeric|min:0',
         ];
     }
@@ -23,9 +23,9 @@ class ProcessPaymentRequest extends FormRequest
     {
         return [
             'use_wallet.required' => 'انتخاب روش پرداخت الزامی است.',
-            'use_wallet.boolean'  => 'مقدار استفاده از کیف پول معتبر نیست.',
+            'use_wallet.boolean' => 'مقدار استفاده از کیف پول معتبر نیست.',
             'wallet_amount.numeric' => 'مبلغ کیف پول باید عدد باشد.',
-            'wallet_amount.min'     => 'مبلغ کیف پول نمی‌تواند منفی باشد.',
+            'wallet_amount.min' => 'مبلغ کیف پول نمی‌تواند منفی باشد.',
         ];
     }
 }

@@ -8,8 +8,11 @@ use Illuminate\Support\Facades\Log;
 class PaymentService
 {
     protected string $merchantId;
+
     protected string $apiUrl;
+
     protected string $gatewayUrl;
+
     protected bool $sandbox;
 
     public function __construct()
@@ -40,8 +43,8 @@ class PaymentService
                 'description' => sprintf('پیش پرداخت نوبت سالن زیبایی - شماره %d', $booking->id),
                 'metadata' => [
                     'mobile' => $booking->user->phone ?? '',
-                    'email' => $booking->user->email ?? ''
-                ]
+                    'email' => $booking->user->email ?? '',
+                ],
             ];
 
             $response = Http::timeout(30)
@@ -49,19 +52,19 @@ class PaymentService
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json',
                 ])
-                ->post($this->apiUrl . '/request.json', $requestData);
+                ->post($this->apiUrl.'/request.json', $requestData);
 
             $statusCode = $response->status();
             $result = $response->json();
 
             if ($response->successful() && isset($result['data']['code']) && $result['data']['code'] == 100) {
                 $authority = $result['data']['authority'];
-                $paymentUrl = $this->gatewayUrl . '/' . $authority;
+                $paymentUrl = $this->gatewayUrl.'/'.$authority;
 
                 return [
                     'success' => true,
                     'payment_url' => $paymentUrl,
-                    'reference' => $authority
+                    'reference' => $authority,
                 ];
             }
 
@@ -72,12 +75,12 @@ class PaymentService
                 'booking_id' => $booking->id,
                 'error_code' => $errorCode,
                 'message' => $errorMessage,
-                'full_response' => $result
+                'full_response' => $result,
             ]);
 
             return [
                 'success' => false,
-                'message' => $errorMessage
+                'message' => $errorMessage,
             ];
 
         } catch (\Exception $e) {
@@ -86,12 +89,12 @@ class PaymentService
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return [
                 'success' => false,
-                'message' => 'خطا در اتصال به درگاه پرداخت. لطفاً دوباره تلاش کنید.'
+                'message' => 'خطا در اتصال به درگاه پرداخت. لطفاً دوباره تلاش کنید.',
             ];
         }
     }
@@ -104,24 +107,26 @@ class PaymentService
 
             if ($status === 'NOK' || $status === 'cancel') {
                 Log::warning('⚠️ Payment Cancelled by User', ['authority' => $authority]);
+
                 return [
                     'success' => false,
-                    'message' => 'پرداخت توسط کاربر لغو شد'
+                    'message' => 'پرداخت توسط کاربر لغو شد',
                 ];
             }
 
             $bookingId = $request->booking ?? null;
 
-            if (!$bookingId) {
+            if (! $bookingId) {
                 Log::error('❌ Booking ID not found in callback');
+
                 return [
                     'success' => false,
-                    'message' => 'شناسه رزرو یافت نشد'
+                    'message' => 'شناسه رزرو یافت نشد',
                 ];
             }
 
             $booking = \App\Models\Booking::findOrFail($bookingId);
-            $partialPayment = session('partial_payment_' . $booking->id);
+            $partialPayment = session('partial_payment_'.$booking->id);
             $verifyAmount = $partialPayment
                 ? $partialPayment['remaining_amount']
                 : $booking->prepayment_amount;
@@ -131,7 +136,7 @@ class PaymentService
             $requestData = [
                 'merchant_id' => $this->merchantId,
                 'authority' => $authority,
-                'amount' => $amount
+                'amount' => $amount,
             ];
 
             $response = Http::timeout(30)
@@ -139,7 +144,7 @@ class PaymentService
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json',
                 ])
-                ->post($this->apiUrl . '/verify.json', $requestData);
+                ->post($this->apiUrl.'/verify.json', $requestData);
 
             $result = $response->json();
 
@@ -155,7 +160,7 @@ class PaymentService
                         'reference' => $authority,
                         'ref_id' => $refId,
                         'card_pan' => $result['data']['card_pan'] ?? null,
-                        'fee' => $result['data']['fee'] ?? null
+                        'fee' => $result['data']['fee'] ?? null,
                     ];
                 }
             }
@@ -167,26 +172,26 @@ class PaymentService
                 'booking_id' => $booking->id,
                 'authority' => $authority,
                 'error_code' => $errorCode,
-                'message' => $errorMessage
+                'message' => $errorMessage,
             ]);
 
             return [
                 'status' => 'failed',
                 'success' => false,
                 'booking_id' => $booking->id,
-                'message' => $errorMessage
+                'message' => $errorMessage,
             ];
 
         } catch (\Exception $e) {
             Log::error('💥 Payment Verification Exception', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return [
                 'status' => 'failed',
                 'success' => false,
-                'message' => 'خطا در تایید پرداخت'
+                'message' => 'خطا در تایید پرداخت',
             ];
         }
     }
@@ -204,8 +209,8 @@ class PaymentService
                 'description' => sprintf('شارژ کیف پول - کاربر: %s', $user->name ?? $user->phone),
                 'metadata' => [
                     'mobile' => $user->phone ?? '',
-                    'email' => $user->email ?? ''
-                ]
+                    'email' => $user->email ?? '',
+                ],
             ];
 
             $response = Http::timeout(30)
@@ -213,18 +218,18 @@ class PaymentService
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json',
                 ])
-                ->post($this->apiUrl . '/request.json', $requestData);
+                ->post($this->apiUrl.'/request.json', $requestData);
 
             $result = $response->json();
 
             if ($response->successful() && isset($result['data']['code']) && $result['data']['code'] == 100) {
                 $authority = $result['data']['authority'];
-                $paymentUrl = $this->gatewayUrl . '/' . $authority;
+                $paymentUrl = $this->gatewayUrl.'/'.$authority;
 
                 return [
                     'success' => true,
                     'payment_url' => $paymentUrl,
-                    'reference' => $authority
+                    'reference' => $authority,
                 ];
             }
 
@@ -240,7 +245,7 @@ class PaymentService
 
             return [
                 'success' => false,
-                'message' => $errorMessage
+                'message' => $errorMessage,
             ];
 
         } catch (\Exception $e) {
@@ -252,7 +257,7 @@ class PaymentService
 
             return [
                 'success' => false,
-                'message' => 'خطا در اتصال به درگاه پرداخت.'
+                'message' => 'خطا در اتصال به درگاه پرداخت.',
             ];
         }
     }
@@ -266,7 +271,7 @@ class PaymentService
             if ($status === 'NOK' || $status === 'cancel') {
                 return [
                     'success' => false,
-                    'message' => 'پرداخت توسط کاربر لغو شد'
+                    'message' => 'پرداخت توسط کاربر لغو شد',
                 ];
             }
 
@@ -275,7 +280,7 @@ class PaymentService
             $requestData = [
                 'merchant_id' => $this->merchantId,
                 'authority' => $authority,
-                'amount' => $amount
+                'amount' => $amount,
             ];
 
             $response = Http::timeout(30)
@@ -283,7 +288,7 @@ class PaymentService
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json',
                 ])
-                ->post($this->apiUrl . '/verify.json', $requestData);
+                ->post($this->apiUrl.'/verify.json', $requestData);
 
             $result = $response->json();
 
@@ -303,7 +308,7 @@ class PaymentService
 
             return [
                 'success' => false,
-                'message' => $errorMessage
+                'message' => $errorMessage,
             ];
 
         } catch (\Exception $e) {
@@ -313,7 +318,7 @@ class PaymentService
 
             return [
                 'success' => false,
-                'message' => 'خطا در تایید پرداخت'
+                'message' => 'خطا در تایید پرداخت',
             ];
         }
     }
@@ -349,7 +354,7 @@ class PaymentService
             -54 => 'درخواست مورد نظر آرشیو شده است',
             100 => 'عملیات با موفقیت انجام شد',
             101 => 'عملیات پرداخت موفق بوده و قبلاً PaymentVerification تراکنش انجام شده است',
-            default => 'خطایی نامشخص در درگاه پرداخت (کد: ' . $code . ')'
+            default => 'خطایی نامشخص در درگاه پرداخت (کد: '.$code.')'
         };
     }
 }

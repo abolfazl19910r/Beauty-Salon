@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Admin\Specialist;
 
 use App\Http\Controllers\Controller;
 use App\Models\Specialist;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 
 class AdminSpecialistScheduleController extends Controller
 {
@@ -24,7 +24,7 @@ class AdminSpecialistScheduleController extends Controller
 
         return view('admin.specialists.schedules.edit', [
             'specialist' => $specialist,
-            'schedules' => $schedules
+            'schedules' => $schedules,
         ]);
     }
 
@@ -62,7 +62,8 @@ class AdminSpecialistScheduleController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'خطا در ذخیره اطلاعات: ' . $e->getMessage());
+
+            return back()->with('error', 'خطا در ذخیره اطلاعات: '.$e->getMessage());
         }
     }
 }

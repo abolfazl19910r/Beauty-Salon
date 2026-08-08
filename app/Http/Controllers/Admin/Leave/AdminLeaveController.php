@@ -7,8 +7,8 @@ use App\Http\Requests\Admin\Leave\UpdateLeaveStatusRequest;
 use App\Models\Leave;
 use App\Services\Leave\LeaveService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -16,14 +16,13 @@ class AdminLeaveController extends Controller
 {
     public function __construct(
         private readonly LeaveService $leaveService,
-    ) {
-    }
+    ) {}
 
     /**
      * Global Leave Page — All leave requests for all specialists in one
      * * table, without having to open each specialist's page. Optional filter on
      * * status (default: all).
- */
+     */
     public function index(Request $request): View
     {
         /** @var LengthAwarePaginator $leaves */
@@ -52,7 +51,7 @@ class AdminLeaveController extends Controller
     /**
      * JSON style endpoint (optional for future dashboard widget) — List
      * * Leave pending approval.
- */
+     */
     public function pendingLeaves(): JsonResponse
     {
         $leaves = Leave::with('specialist')

@@ -22,7 +22,7 @@ class SendResetCodeRequest extends FormRequest
     {
         return [
             'phone.required' => 'شماره موبایل الزامی است.',
-            'phone.regex'    => 'شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد.',
+            'phone.regex' => 'شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد.',
         ];
     }
 }

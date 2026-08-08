@@ -8,6 +8,7 @@ use Illuminate\Console\Command;
 class CleanupExpiredReviewTokens extends Command
 {
     protected $signature = 'review-tokens:cleanup';
+
     protected $description = 'حذف توکن‌های منقضی شده نظرسنجی';
 
     public function handle()

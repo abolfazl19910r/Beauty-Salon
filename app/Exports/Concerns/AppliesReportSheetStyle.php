@@ -18,9 +18,13 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 trait AppliesReportSheetStyle
 {
     private const HEADER_BG = '1F4E78';
+
     private const HEADER_TEXT = 'FFFFFF';
+
     private const BORDER_COLOR = 'D9E2EC';
+
     private const ZEBRA_BG = 'F2F7FC';
+
     private const TOTAL_BG = 'E7EEF5';
 
     /**

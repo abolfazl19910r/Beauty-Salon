@@ -15,18 +15,18 @@ class UpdatePasswordRequest extends FormRequest
     {
         return [
             'current_password' => ['required', 'current_password'],
-            'password'         => ['required', 'confirmed', 'min:8'],
+            'password' => ['required', 'confirmed', 'min:8'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'current_password.required'         => 'رمز عبور فعلی الزامی است.',
+            'current_password.required' => 'رمز عبور فعلی الزامی است.',
             'current_password.current_password' => 'رمز عبور فعلی اشتباه است.',
-            'password.required'                 => 'رمز عبور جدید الزامی است.',
-            'password.confirmed'                => 'تکرار رمز عبور مطابقت ندارد.',
-            'password.min'                      => 'رمز عبور باید حداقل ۸ کاراکتر باشد.',
+            'password.required' => 'رمز عبور جدید الزامی است.',
+            'password.confirmed' => 'تکرار رمز عبور مطابقت ندارد.',
+            'password.min' => 'رمز عبور باید حداقل ۸ کاراکتر باشد.',
         ];
     }
 }

@@ -27,9 +27,9 @@ class PreviewDiscountCodeRequest extends FormRequest
         }
 
         return [
-            'type'        => ['required', 'in:fixed,percentage'],
-            'amount'      => $amountRules,
-            'max_amount'  => ['nullable', 'numeric', 'min:0'],
+            'type' => ['required', 'in:fixed,percentage'],
+            'amount' => $amountRules,
+            'max_amount' => ['nullable', 'numeric', 'min:0'],
             'base_amount' => ['required', 'numeric', 'min:0'],
         ];
     }

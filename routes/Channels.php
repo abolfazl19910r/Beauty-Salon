@@ -16,11 +16,13 @@ Broadcast::channel('App.TwoFactor.{userId}', function ($user, $userId) {
 
 Broadcast::channel('App.Payments.Status.{paymentId}', function ($user, $paymentId) {
     $payment = \App\Models\Payment::find($paymentId);
+
     return $payment && $payment->booking->user_id === $user->id;
 });
 
 Broadcast::channel('App.Bookings.Updates.{bookingId}', function ($user, $bookingId) {
     $booking = \App\Models\Booking::find($bookingId);
+
     return $booking && ($booking->user_id === $user->id || $user->isAdmin());
 });
 

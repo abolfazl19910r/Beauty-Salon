@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Leave;
 use App\Models\Specialist;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\Leave;
 
 class LeaveFactory extends Factory
 {
@@ -23,7 +23,7 @@ class LeaveFactory extends Factory
             'reason' => fake()->sentence(),
             'reject_reason' => null,
             'approved_at' => null,
-            'rejected_at' => null
+            'rejected_at' => null,
         ];
     }
 

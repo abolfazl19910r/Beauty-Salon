@@ -84,10 +84,10 @@ class SpecialistNotificationController extends Controller
             $link = $this->resolveNotificationLink($notification->type, $data);
 
             return [
-                'id'       => $notification->id,
-                'message'  => $text,
-                'link'     => $link,
-                'read_at'  => $notification->read_at,
+                'id' => $notification->id,
+                'message' => $text,
+                'link' => $link,
+                'read_at' => $notification->read_at,
                 'time_ago' => $this->timeAgo($notification->created_at),
             ];
         });
@@ -193,11 +193,11 @@ class SpecialistNotificationController extends Controller
         $diff = $datetime->diffInSeconds(Carbon::now());
 
         return match (true) {
-            $diff < 60      => 'لحظاتی پیش',
-            $diff < 3600    => floor($diff / 60) . ' دقیقه پیش',
-            $diff < 86400   => floor($diff / 3600) . ' ساعت پیش',
-            $diff < 604800  => floor($diff / 86400) . ' روز پیش',
-            default         => $this->toJalali($datetime),
+            $diff < 60 => 'لحظاتی پیش',
+            $diff < 3600 => floor($diff / 60).' دقیقه پیش',
+            $diff < 86400 => floor($diff / 3600).' ساعت پیش',
+            $diff < 604800 => floor($diff / 86400).' روز پیش',
+            default => $this->toJalali($datetime),
         };
     }
 }

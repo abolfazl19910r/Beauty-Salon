@@ -22,7 +22,7 @@ class RespondReviewRequest extends FormRequest
     {
         return [
             'response.required' => 'لطفاً پاسخ خود را وارد کنید.',
-            'response.max'      => 'پاسخ شما نباید بیشتر از ۱۰۰۰ کاراکتر باشد.',
+            'response.max' => 'پاسخ شما نباید بیشتر از ۱۰۰۰ کاراکتر باشد.',
         ];
     }
 }

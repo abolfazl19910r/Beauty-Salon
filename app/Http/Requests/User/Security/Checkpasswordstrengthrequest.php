@@ -22,7 +22,7 @@ class CheckPasswordStrengthRequest extends FormRequest
     {
         return [
             'password.required' => 'رمز عبور الزامی است.',
-            'password.min'      => 'رمز عبور باید حداقل ۸ کاراکتر باشد.',
+            'password.min' => 'رمز عبور باید حداقل ۸ کاراکتر باشد.',
         ];
     }
 }

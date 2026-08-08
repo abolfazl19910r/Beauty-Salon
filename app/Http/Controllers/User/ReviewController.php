@@ -8,32 +8,30 @@ use App\Models\Booking;
 use App\Models\Review;
 use App\Models\ReviewToken;
 use App\Services\Review\ReviewService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 
 class ReviewController extends Controller
 {
-    public function __construct(protected readonly ReviewService $reviewService)
-    {
-    }
+    public function __construct(protected readonly ReviewService $reviewService) {}
 
     public function create(Request $request): View|RedirectResponse
     {
         try {
             $token = $request->query('token');
 
-            if (!$token) {
+            if (! $token) {
                 return redirect()->route('home')
                     ->with('error', 'لینک نظرسنجی معتبر نیست.');
             }
 
             $reviewToken = ReviewToken::findValidToken($token);
 
-            if (!$reviewToken) {
+            if (! $reviewToken) {
                 Log::warning('❌ Token not found or invalid', [
-                    'token' => $token
+                    'token' => $token,
                 ]);
 
                 return redirect()->route('home')
@@ -52,12 +50,13 @@ class ReviewController extends Controller
                 return redirect()->route('home')
                     ->with('info', 'شما قبلاً برای این نوبت نظر ثبت کرده‌اید.');
             }
+
             return view('reviews.create', compact('booking', 'token'));
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             Log::error('❌ Booking not found', [
                 'token' => $request->query('token'),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return redirect()->route('home')
@@ -66,7 +65,7 @@ class ReviewController extends Controller
         } catch (\Exception $e) {
             Log::error('❌ Error loading review form', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return redirect()->route('home')
@@ -81,7 +80,7 @@ class ReviewController extends Controller
 
             $tokenData = $this->reviewService->validateToken($token);
 
-            if (!$tokenData) {
+            if (! $tokenData) {
                 return back()->with('error', 'لینک نظرسنجی معتبر نیست.');
             }
 
@@ -105,7 +104,7 @@ class ReviewController extends Controller
         } catch (\Exception $e) {
             Log::error('Error storing review', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return back()

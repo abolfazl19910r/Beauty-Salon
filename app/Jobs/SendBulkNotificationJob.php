@@ -36,30 +36,30 @@ class SendBulkNotificationJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $timeout = 120;
 
     /**
-     * @param class-string<\Illuminate\Notifications\Notification> $notificationClass
-     * @param array<int, mixed> $notificationArgs The arguments to the notification class constructor, in that order
-     * @param class-string<\Illuminate\Database\Eloquent\Model> $notifiableModel The model that receives the notification (User::class, Specialist::class, etc.)
-     * @param array<int, int|string> $notifiableIds The IDs of this chunk (not the whole list)
+     * @param  class-string<\Illuminate\Notifications\Notification>  $notificationClass
+     * @param  array<int, mixed>  $notificationArgs  The arguments to the notification class constructor, in that order
+     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $notifiableModel  The model that receives the notification (User::class, Specialist::class, etc.)
+     * @param  array<int, int|string>  $notifiableIds  The IDs of this chunk (not the whole list)
      */
     public function __construct(
         protected string $notificationClass,
         protected array $notificationArgs,
         protected string $notifiableModel,
         protected array $notifiableIds,
-    ) {
-    }
+    ) {}
 
     /**
      * Suggested entry point for future features — chunks the large list itself
      * * and dispatches several lighter jobs instead of one heavy job with thousands of records in memory.
      *
-     * @param class-string<\Illuminate\Notifications\Notification> $notificationClass
-     * @param array<int, mixed> $notificationArgs
-     * @param class-string<\Illuminate\Database\Eloquent\Model> $notifiableModel
-     * @param \Illuminate\Support\Collection<int, int|string>|array<int, int|string> $notifiableIds
+     * @param  class-string<\Illuminate\Notifications\Notification>  $notificationClass
+     * @param  array<int, mixed>  $notificationArgs
+     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $notifiableModel
+     * @param  \Illuminate\Support\Collection<int, int|string>|array<int, int|string>  $notifiableIds
      */
     public static function dispatchForModel(
         string $notificationClass,
@@ -82,6 +82,7 @@ class SendBulkNotificationJob implements ShouldQueue
             Log::error('SendBulkNotificationJob: کلاس نوتیفیکیشن نامعتبر است', [
                 'notification_class' => $this->notificationClass,
             ]);
+
             return;
         }
 
@@ -94,6 +95,7 @@ class SendBulkNotificationJob implements ShouldQueue
                 'notifiable_model' => $this->notifiableModel,
                 'ids' => $this->notifiableIds,
             ]);
+
             return;
         }
 

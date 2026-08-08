@@ -14,9 +14,9 @@ class InsufficientWalletBalanceException extends DomainException
     private array $contextData = [];
 
     /**
-     * @param float $required مبلغ مورد نیاز
-     * @param float $available موجودی فعلی
-     * @param int|null $walletId آیدی کیف پول
+     * @param  float  $required  مبلغ مورد نیاز
+     * @param  float  $available  موجودی فعلی
+     * @param  int|null  $walletId  آیدی کیف پول
      */
     public static function forAmount(float $required, float $available, ?int $walletId = null): self
     {

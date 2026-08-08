@@ -30,20 +30,19 @@ class SendBookingReminderJob implements ShouldQueue
 
     public int $tries = 2;
 
-// Job's own time limit — even if Kavenegar responds slowly, the Worker will not wait for this Job    public int $timeout = 15;
+    // Job's own time limit — even if Kavenegar responds slowly, the Worker will not wait for this Job    public int $timeout = 15;
 
-    public function __construct(protected int $bookingId)
-    {
-    }
+    public function __construct(protected int $bookingId) {}
 
     public function handle(SMSService $smsService): void
     {
         $booking = Booking::with(['user', 'specialist', 'service'])->find($this->bookingId);
 
-        if (!$booking || !$booking->user || !$booking->specialist || !$booking->service) {
+        if (! $booking || ! $booking->user || ! $booking->specialist || ! $booking->service) {
             Log::warning('SendBookingReminderJob: booking/related model not found, skipping', [
                 'booking_id' => $this->bookingId,
             ]);
+
             return;
         }
 
@@ -56,7 +55,7 @@ class SendBookingReminderJob implements ShouldQueue
             "👤 متخصص: %s\n".
             "🔢 کد پیگیری: #%s\n\n".
             "⚠️ لطفاً 15 دقیقه قبل حضور داشته باشید.\n\n".
-            "📞 برای هرگونه تغییر با ما تماس بگیرید.",
+            '📞 برای هرگونه تغییر با ما تماس بگیرید.',
             $booking->user->name,
             $booking->service->name,
             verta($booking->booking_time)->format('Y/m/d'),
@@ -74,7 +73,7 @@ class SendBookingReminderJob implements ShouldQueue
             "📅 تاریخ: %s\n".
             "🕐 ساعت: %s\n".
             "🔢 کد پیگیری: #%s\n\n".
-            "🙏 منتظر حضور شما در زمان مقرر هستیم.",
+            '🙏 منتظر حضور شما در زمان مقرر هستیم.',
             $booking->specialist->name,
             $booking->user->name,
             $booking->user->phone,
@@ -87,7 +86,7 @@ class SendBookingReminderJob implements ShouldQueue
         $customerSent = $smsService->send($booking->user->phone, $customerMessage);
         $specialistSent = $smsService->send($booking->specialist->phone, $specialistMessage);
 
-        if (!$customerSent || !$specialistSent) {
+        if (! $customerSent || ! $specialistSent) {
             Log::error('SendBookingReminderJob: یکی از دو پیامک یادآوری ارسال نشد', [
                 'booking_id' => $booking->id,
                 'customer_sent' => $customerSent,

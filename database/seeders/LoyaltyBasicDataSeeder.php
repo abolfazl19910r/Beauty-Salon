@@ -38,14 +38,14 @@ class LoyaltyBasicDataSeeder extends Seeder
                 'description' => 'قابل استفاده برای تمام خدمات',
                 'required_points' => 500,
                 'discount_type' => 'fixed',
-                'discount_amount' => 50000
+                'discount_amount' => 50000,
             ],
             [
                 'title' => 'تخفیف ۱۰ درصدی',
                 'description' => 'تا سقف ۲۰۰ هزار تومان',
                 'required_points' => 1000,
                 'discount_type' => 'percentage',
-                'discount_amount' => 10
+                'discount_amount' => 10,
             ],
         ];
 

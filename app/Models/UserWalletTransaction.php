@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Booking;
-use App\Models\UserWallet;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -40,7 +38,7 @@ class UserWalletTransaction extends Model
 
     public function getTypeTextAttribute(): string
     {
-        return match($this->type) {
+        return match ($this->type) {
             'deposit' => 'واریز',
             'payment' => 'پرداخت',
             'refund' => 'بازگشت وجه',
@@ -51,7 +49,7 @@ class UserWalletTransaction extends Model
 
     public function getTypeBadgeColorAttribute(): string
     {
-        return match($this->type) {
+        return match ($this->type) {
             'deposit' => 'green',
             'refund' => 'blue',
             'payment' => 'red',
@@ -63,6 +61,7 @@ class UserWalletTransaction extends Model
     public function getFormattedAmountAttribute(): string
     {
         $prefix = $this->amount >= 0 ? '+' : '';
-        return $prefix . number_format($this->amount) . ' تومان';
+
+        return $prefix.number_format($this->amount).' تومان';
     }
 }

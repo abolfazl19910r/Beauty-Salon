@@ -52,12 +52,12 @@ trait HasJalaliDates
      * In case of invalid format, `null` is returned instead of throwing an exception — exactly
      * the same "silence + no filtering" behavior that was previously inline in most controllers.
      *
-     * @param string|null $context If passed, Pars failure is logged with Log::warning
-     * (previous behavior of SpecialistReviewController/
-     * SpecialistBookingManagementController/
-     * SpecialistWalletService); if null, it is completely
-     * silent (previous behavior of BookingController/
-     * UserWalletController).
+     * @param  string|null  $context  If passed, Pars failure is logged with Log::warning
+     *                                (previous behavior of SpecialistReviewController/
+     *                                SpecialistBookingManagementController/
+     *                                SpecialistWalletService); if null, it is completely
+     *                                silent (previous behavior of BookingController/
+     *                                UserWalletController).
      */
     protected function parseJalali(?string $value, string $format = 'Y/m/d', ?string $context = null): ?Carbon
     {

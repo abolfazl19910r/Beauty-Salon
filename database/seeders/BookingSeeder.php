@@ -40,7 +40,7 @@ class BookingSeeder extends Seeder
                 'used_count' => 10,
                 'is_active' => true,
                 'expires_at' => now()->subDay(),
-            ]
+            ],
         ];
 
         foreach ($discountCodesData as $data) {
@@ -54,8 +54,9 @@ class BookingSeeder extends Seeder
         $specialists = Specialist::limit(3)->get();
         $discountCode = DiscountCode::where('code', 'WELCOME')->first();
 
-        if ($users->isEmpty() || $services->isEmpty() || $specialists->isEmpty() || !$discountCode) {
+        if ($users->isEmpty() || $services->isEmpty() || $specialists->isEmpty() || ! $discountCode) {
             echo "Skipping BookingSeeder: Not enough Users, Services, Specialists or the WELCOME DiscountCode.\n";
+
             return;
         }
 
@@ -105,9 +106,9 @@ class BookingSeeder extends Seeder
                 Payment::create([
                     'booking_id' => $booking->id,
                     'amount' => $prepayment,
-                    'reference_id' => 'PAY-' . Str::upper(Str::random(8)),
+                    'reference_id' => 'PAY-'.Str::upper(Str::random(8)),
                     'status' => 'completed',
-                    'gateway_reference' => 'TRX' . rand(10000000, 99999999),
+                    'gateway_reference' => 'TRX'.rand(10000000, 99999999),
                     'paid_at' => $booking->paid_at,
                 ]);
             }

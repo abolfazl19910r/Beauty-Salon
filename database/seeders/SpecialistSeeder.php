@@ -36,7 +36,7 @@ class SpecialistSeeder extends Seeder
             ]);
             Leave::factory()->create([
                 'specialist_id' => $specialist->id,
-                'status' => 'pending'
+                'status' => 'pending',
             ]);
         });
 

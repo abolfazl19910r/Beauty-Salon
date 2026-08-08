@@ -14,7 +14,7 @@ class UpdateLeaveStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status'        => ['required', 'in:approved,rejected'],
+            'status' => ['required', 'in:approved,rejected'],
             'reject_reason' => ['nullable', 'required_if:status,rejected', 'string', 'max:255'],
         ];
     }
@@ -22,8 +22,8 @@ class UpdateLeaveStatusRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'status.required'        => 'وضعیت الزامی است.',
-            'status.in'              => 'وضعیت نامعتبر است.',
+            'status.required' => 'وضعیت الزامی است.',
+            'status.in' => 'وضعیت نامعتبر است.',
             'reject_reason.required_if' => 'برای رد درخواست، ذکر دلیل الزامی است.',
         ];
     }

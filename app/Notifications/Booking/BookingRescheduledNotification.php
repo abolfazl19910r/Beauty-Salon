@@ -10,20 +10,20 @@ use Illuminate\Notifications\Notification;
 class BookingRescheduledNotification extends Notification
 {
     private Booking $booking;
+
     private string|Carbon $oldTime;
+
     private SMSService $smsService;
 
     /**
-     *
-     * @param Booking $booking
-     * @param Carbon|string $oldTime
+     * @param  Carbon|string  $oldTime
      * @return void
      */
     public function __construct(Booking $booking, $oldTime)
     {
         $this->booking = $booking;
         $this->oldTime = $oldTime;
-        $this->smsService = new SMSService();
+        $this->smsService = new SMSService;
     }
 
     public function via($notifiable): array
@@ -39,7 +39,7 @@ class BookingRescheduledNotification extends Notification
             'user_name' => $this->booking->user->name,
             'service_name' => $this->booking->service->name,
             'old_time' => $this->oldTime,
-            'new_time' => $this->booking->booking_time
+            'new_time' => $this->booking->booking_time,
         ];
     }
 

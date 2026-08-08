@@ -2,11 +2,11 @@
 
 namespace App\Services\Admin\Dashboard;
 
-use App\Models\Booking;
 use App\Models\BeautyService;
+use App\Models\Booking;
+use App\Models\Role;
 use App\Models\Specialist;
 use App\Models\User;
-use App\Models\Role;
 use App\Models\WalletSetting;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +19,7 @@ class AdminDashboardService
      * Note: popularServices/topSpecialists come from the enriched methods (trend/performance_score)
      * and their range is "last 30 days", not all-time like before — as per the project's decision to
      * actually use this data instead of keeping it as dead code.
- */
+     */
     public function getOverviewData(): array
     {
         [$commissionRate, $commissionFactor] = $this->getCommissionRateAndFactor();
@@ -59,6 +59,7 @@ class AdminDashboardService
             ->map(function ($item) use ($commissionFactor) {
                 $item->date = verta($item->date)->format('Y/m/d');
                 $item->total = (int) ($item->total * $commissionFactor);
+
                 return $item;
             });
 
@@ -79,7 +80,7 @@ class AdminDashboardService
 
     /**
      * Raw overall statistics (getData() method of the Analytics controller).
- */
+     */
     public function getSummaryStats(): array
     {
         return [
@@ -95,7 +96,7 @@ class AdminDashboardService
     /**
      * Popular services with percentage change from the previous month (last 30 days vs. previous 30 days).
      * Consumer: dashboard() (Popular Services card) and getPopularServices() (Analytics API).
- */
+     */
     public function getPopularServicesWithTrend(): Collection
     {
         $lastMonth = now()->subDays(30);
@@ -137,7 +138,7 @@ class AdminDashboardService
      * (Fixing the bug of the previous version of Blade that sets bookings_count as "today" but completion as "all-time"
      * counted and had an additional N+1 query).
      * Consumer: dashboard() (specialists table) and getActiveSpecialists() (analytics API).
- */
+     */
     public function getActiveSpecialistsWithPerformance(): Collection
     {
         $lastMonth = now()->subDays(30);
@@ -189,8 +190,6 @@ class AdminDashboardService
         return round(array_sum($scoreFactors) / 4, 1);
     }
 
-    /**
-     */
     private function getCommissionRateAndFactor(): array
     {
         $commissionRate = WalletSetting::first()->admin_commission_percentage ?? 10;

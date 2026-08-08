@@ -14,9 +14,9 @@ class BookingNotAvailableException extends DomainException
     private array $contextData = [];
 
     /**
-     * @param string $technicalReason دلیل فنی برای log
-     * @param array<string, mixed> $context داده‌های اضافی (specialist_id, requested_time, ...)
-     * @param string|null $userMessage پیام کاربرپسند
+     * @param  string  $technicalReason  دلیل فنی برای log
+     * @param  array<string, mixed>  $context  داده‌های اضافی (specialist_id, requested_time, ...)
+     * @param  string|null  $userMessage  پیام کاربرپسند
      */
     public static function slotTaken(
         string $technicalReason,

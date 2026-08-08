@@ -8,16 +8,17 @@ use Illuminate\Notifications\Notification;
 
 class SpecialistBookingCancelledNotification extends Notification
 {
-
     protected Booking $booking;
+
     protected SMSService $smsService;
+
     protected string $cancelledBy;
 
     public function __construct(Booking $booking, string $cancelledBy)
     {
         $this->booking = $booking;
         $this->cancelledBy = $cancelledBy;
-        $this->smsService = new SMSService();
+        $this->smsService = new SMSService;
     }
 
     /**

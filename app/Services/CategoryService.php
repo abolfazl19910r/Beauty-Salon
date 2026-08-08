@@ -9,11 +9,6 @@ use Illuminate\Support\Facades\Log;
 
 class CategoryService
 {
-    /**
-     *
-     * @param array $data
-     * @return Category
-     */
     public function create(array $data): Category
     {
         return DB::transaction(function () use ($data) {
@@ -30,12 +25,6 @@ class CategoryService
         });
     }
 
-    /**
-     *
-     * @param Category $category
-     * @param array $data
-     * @return Category
-     */
     public function update(Category $category, array $data): Category
     {
         return DB::transaction(function () use ($category, $data) {
@@ -54,37 +43,24 @@ class CategoryService
         });
     }
 
-    /**
-     *
-     * @param Category $category
-     * @return Category
-     */
     public function toggleStatus(Category $category): Category
     {
         $category->update([
-            'is_active' => !$category->is_active
+            'is_active' => ! $category->is_active,
         ]);
 
         return $category->fresh();
     }
 
-    /**
-     *
-     * @param Category $category
-     * @return bool
-     */
     public function delete(Category $category): bool
     {
         return DB::transaction(function () use ($category) {
             Log::info('دسته‌بندی حذف شد', ['category_id' => $category->id]);
+
             return $category->delete();
         });
     }
 
-    /**
-     *
-     * @return Collection
-     */
     public function getCategoryTree(): Collection
     {
         return Category::with('children')
@@ -93,13 +69,9 @@ class CategoryService
             ->get();
     }
 
-    /**
-     *
-     * @return Collection
-     */
     public function getActiveCategories(): Collection
     {
-        return Category::with(['children' => function($query) {
+        return Category::with(['children' => function ($query) {
             $query->where('is_active', true)->orderBy('order');
         }])
             ->parents()
@@ -108,11 +80,6 @@ class CategoryService
             ->get();
     }
 
-    /**
-     *
-     * @param array $orderedIds
-     * @return bool
-     */
     public function reorderCategories(array $orderedIds): bool
     {
         try {
@@ -130,17 +97,13 @@ class CategoryService
             DB::rollBack();
             Log::error('خطا در مرتب‌سازی دسته‌بندی‌ها', [
                 'error' => $e->getMessage(),
-                'orderedIds' => $orderedIds
+                'orderedIds' => $orderedIds,
             ]);
 
             return false;
         }
     }
 
-    /**
-     *
-     * @return array
-     */
     public function getCategorySelectOptions(): array
     {
         $categories = $this->getCategoryTree();

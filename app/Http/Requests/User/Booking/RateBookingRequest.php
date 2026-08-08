@@ -22,10 +22,10 @@ class RateBookingRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'rating.required'  => 'لطفاً امتیاز نوبت را وارد کنید.',
-            'rating.integer'   => 'امتیاز باید عدد صحیح باشد.',
-            'rating.between'   => 'امتیاز باید بین ۱ تا ۵ باشد.',
-            'review.max'       => 'نظر شما نباید بیشتر از ۵۰۰ کاراکتر باشد.',
+            'rating.required' => 'لطفاً امتیاز نوبت را وارد کنید.',
+            'rating.integer' => 'امتیاز باید عدد صحیح باشد.',
+            'rating.between' => 'امتیاز باید بین ۱ تا ۵ باشد.',
+            'review.max' => 'نظر شما نباید بیشتر از ۵۰۰ کاراکتر باشد.',
         ];
     }
 }

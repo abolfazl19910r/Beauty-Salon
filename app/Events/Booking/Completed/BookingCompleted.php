@@ -13,6 +13,5 @@ class BookingCompleted
 
     public function __construct(
         public Booking $booking,
-    ) {
-    }
+    ) {}
 }

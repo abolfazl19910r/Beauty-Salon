@@ -15,8 +15,8 @@ class StoreWithdrawalRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $persian = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
-        $english = ['0','1','2','3','4','5','6','7','8','9'];
+        $persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+        $english = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
         $amount = str_replace($persian, $english, (string) $this->input('amount', ''));
         // Remove commas (English and Persian) and spaces.

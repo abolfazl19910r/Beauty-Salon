@@ -16,12 +16,14 @@ class AdminRoleController extends Controller
     public function index(): View
     {
         $roles = Role::withCount('users')->paginate(10);
+
         return view('admin.roles.index', compact('roles'));
     }
 
     public function create(): View
     {
         $permissions = Permission::all()->groupBy('group');
+
         return view('admin.roles.create', compact('permissions'));
     }
 
@@ -61,6 +63,7 @@ class AdminRoleController extends Controller
     {
         $users = $role->users()->paginate(10);
         $permissions = $role->permissions->groupBy('group');
+
         return view('admin.roles.show', compact('role', 'users', 'permissions'));
     }
 
@@ -75,7 +78,7 @@ class AdminRoleController extends Controller
     public function update(Request $request, Role $role): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
+            'name' => 'required|string|max:255|unique:roles,name,'.$role->id,
             'label' => 'required|string|max:255',
             'permissions' => 'array',
             'permissions.*' => 'exists:permissions,id',

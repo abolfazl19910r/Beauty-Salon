@@ -22,6 +22,7 @@ class AdminPermissionController extends Controller
     public function create(): View
     {
         $groups = Permission::select('group')->distinct()->pluck('group');
+
         return view('admin.permissions.create', compact('groups'));
     }
 
@@ -54,19 +55,21 @@ class AdminPermissionController extends Controller
     public function show(Permission $permission): View
     {
         $roles = $permission->roles()->withCount('users')->get();
+
         return view('admin.permissions.show', compact('permission', 'roles'));
     }
 
     public function edit(Permission $permission): View
     {
         $groups = Permission::select('group')->distinct()->pluck('group');
+
         return view('admin.permissions.edit', compact('permission', 'groups'));
     }
 
     public function update(Request $request, Permission $permission): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:permissions,name,' . $permission->id,
+            'name' => 'required|string|max:255|unique:permissions,name,'.$permission->id,
             'label' => 'required|string|max:255',
             'group' => 'required|string|max:255',
             'description' => 'nullable|string|max:500',
@@ -94,7 +97,7 @@ class AdminPermissionController extends Controller
         $criticalPermissions = [
             'access_admin_panel',
             'manage-roles',
-            'manage-settings'
+            'manage-settings',
         ];
 
         if (in_array($permission->name, $criticalPermissions)) {
@@ -119,7 +122,7 @@ class AdminPermissionController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('label', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%");

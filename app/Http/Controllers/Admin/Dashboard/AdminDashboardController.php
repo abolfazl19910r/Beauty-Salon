@@ -8,9 +8,7 @@ use Illuminate\View\View;
 
 class AdminDashboardController extends Controller
 {
-    public function __construct(private readonly AdminDashboardService $dashboardService)
-    {
-    }
+    public function __construct(private readonly AdminDashboardService $dashboardService) {}
 
     public function dashboard(): View
     {

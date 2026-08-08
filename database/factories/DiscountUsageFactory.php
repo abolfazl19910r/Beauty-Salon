@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\DiscountUsage;
-use App\Models\DiscountCode;
 use App\Models\Booking;
+use App\Models\DiscountCode;
+use App\Models\DiscountUsage;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class DiscountUsageFactory extends Factory

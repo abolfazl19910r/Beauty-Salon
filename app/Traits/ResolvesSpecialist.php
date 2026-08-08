@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 trait ResolvesSpecialist
 {
-
     protected function resolveSpecialist(bool $orFail = false): ?Specialist
     {
         $specialist = auth()->user()?->specialist;
@@ -29,7 +28,7 @@ trait ResolvesSpecialist
         $specialist = auth()->user()?->specialist;
 
         if (! $specialist) {
-            throw (new ModelNotFoundException())->setModel(Specialist::class);
+            throw (new ModelNotFoundException)->setModel(Specialist::class);
         }
 
         return $specialist;

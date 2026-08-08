@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\AdminWallet;
-use App\Models\Booking;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -39,7 +37,7 @@ class AdminWalletTransaction extends Model
 
     public function getTypeTextAttribute(): string
     {
-        return match($this->type) {
+        return match ($this->type) {
             'commission' => 'کمیسیون',
             'withdrawal' => 'برداشت',
             'adjustment' => 'تعدیل',
@@ -50,6 +48,7 @@ class AdminWalletTransaction extends Model
     public function getFormattedAmountAttribute(): string
     {
         $prefix = $this->amount >= 0 ? '+' : '';
-        return $prefix . number_format($this->amount) . ' تومان';
+
+        return $prefix.number_format($this->amount).' تومان';
     }
 }

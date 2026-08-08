@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class UserWallet extends Model
 {
@@ -34,7 +34,7 @@ class UserWallet extends Model
         return $this->hasMany(UserWalletTransaction::class, 'wallet_id');
     }
 
-    public function addRefund(float $amount, int $bookingId, string $description = null): UserWalletTransaction
+    public function addRefund(float $amount, int $bookingId, ?string $description = null): UserWalletTransaction
     {
         $this->increment('balance', $amount);
 
@@ -49,7 +49,7 @@ class UserWallet extends Model
         return $transaction;
     }
 
-    public function deductPayment(float $amount, int $bookingId, string $description = null): UserWalletTransaction
+    public function deductPayment(float $amount, int $bookingId, ?string $description = null): UserWalletTransaction
     {
         if ($amount > $this->balance) {
             throw new \Exception('موجودی کافی نیست');
@@ -71,6 +71,6 @@ class UserWallet extends Model
 
     public function getFormattedBalanceAttribute(): string
     {
-        return number_format($this->balance) . ' تومان';
+        return number_format($this->balance).' تومان';
     }
 }

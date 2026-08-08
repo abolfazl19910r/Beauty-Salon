@@ -11,9 +11,7 @@ use Illuminate\Validation\Rules\Password;
 
 class PasswordController extends Controller
 {
-    public function __construct(protected readonly PasswordStrengthService $passwordStrengthService)
-    {
-    }
+    public function __construct(protected readonly PasswordStrengthService $passwordStrengthService) {}
 
     /**
      * Update the user's password.

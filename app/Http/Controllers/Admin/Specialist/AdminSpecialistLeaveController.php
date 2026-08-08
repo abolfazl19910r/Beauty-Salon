@@ -16,8 +16,7 @@ class AdminSpecialistLeaveController extends Controller
 {
     public function __construct(
         private readonly LeaveService $leaveService,
-    ) {
-    }
+    ) {}
 
     public function index(Specialist $specialist): View
     {
@@ -33,7 +32,7 @@ class AdminSpecialistLeaveController extends Controller
      * end_date) — meaning that registering a leave from the admin panel would always fail with a
      * validation error. Now Form Request is aligned with the actual Blade data format
      * .
- */
+     */
     public function store(StoreLeaveRequest $request, Specialist $specialist): RedirectResponse
     {
         $result = $this->leaveService->store($specialist, $request->validated());

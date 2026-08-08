@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\ScheduledReport;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\ScheduledReport;
 
 class ScheduledReportFactory extends Factory
 {
@@ -18,7 +18,7 @@ class ScheduledReportFactory extends Factory
             'parameters' => [
                 'type' => fake()->randomElement(['revenue', 'bookings', 'specialists']),
                 'start_date' => now()->subDays(30)->format('Y-m-d'),
-                'end_date' => now()->format('Y-m-d')
+                'end_date' => now()->format('Y-m-d'),
             ],
             'frequency' => fake()->randomElement(['daily', 'weekly', 'monthly']),
             'next_run' => fake()->dateTimeBetween('now', '+1 week'),

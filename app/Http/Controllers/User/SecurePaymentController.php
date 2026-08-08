@@ -7,18 +7,16 @@ use App\Models\Booking;
 use App\Models\Payment;
 use App\Services\SecurePaymentService;
 use App\Services\SecurityLogService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\JsonResponse;
 
 class SecurePaymentController extends Controller
 {
-    public function __construct(protected readonly SecurePaymentService $paymentService, protected readonly SecurityLogService $securityLogService)
-    {
-    }
+    public function __construct(protected readonly SecurePaymentService $paymentService, protected readonly SecurityLogService $securityLogService) {}
 
     public function showOtp(): View|RedirectResponse
     {
@@ -28,7 +26,7 @@ class SecurePaymentController extends Controller
             return redirect()->to(session('secure_payment_intended_url', route('bookings.index')));
         }
 
-        if (!$user->two_factor_enabled) {
+        if (! $user->two_factor_enabled) {
             return redirect()->route('security.2fa');
         }
 
@@ -74,14 +72,14 @@ class SecurePaymentController extends Controller
 
             return response()->json([
                 'success' => true,
-                'redirect_url' => route('payments.secure.verify', $payment->reference_id)
+                'redirect_url' => route('payments.secure.verify', $payment->reference_id),
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Secure payment initiation failed', [
                 'booking_id' => $booking->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             $this->securityLogService->logPaymentAttempt(
@@ -93,7 +91,7 @@ class SecurePaymentController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در ایجاد تراکنش. لطفا مجددا تلاش کنید.'
+                'message' => 'خطا در ایجاد تراکنش. لطفا مجددا تلاش کنید.',
             ], 500);
         }
     }
@@ -158,7 +156,7 @@ class SecurePaymentController extends Controller
                     ]),
                 ]);
 
-                if (!$payment->isCompleted()) {
+                if (! $payment->isCompleted()) {
                     $payment->update([
                         'status' => 'completed',
                         'gateway_response' => $result,
@@ -178,7 +176,7 @@ class SecurePaymentController extends Controller
 
                 return redirect()->route('payments.secure.result', [
                     'reference' => $reference,
-                    'status' => 'success'
+                    'status' => 'success',
                 ]);
             }
 
@@ -201,7 +199,7 @@ class SecurePaymentController extends Controller
             DB::rollBack();
             Log::error('Secure payment verification failed', [
                 'reference' => $reference,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             $this->securityLogService->logPaymentAttempt(
@@ -214,7 +212,7 @@ class SecurePaymentController extends Controller
             return redirect()->route('payments.secure.result', [
                 'reference' => $reference,
                 'status' => 'failed',
-                'message' => 'خطا در تایید پرداخت. لطفا با پشتیبانی تماس بگیرید.'
+                'message' => 'خطا در تایید پرداخت. لطفا با پشتیبانی تماس بگیرید.',
             ]);
         }
     }
@@ -249,7 +247,7 @@ class SecurePaymentController extends Controller
             'paid_at' => $payment->paid_at?->format('Y-m-d H:i:s'),
             'gateway_reference' => $payment->gateway_reference,
             'remaining_seconds' => $payment->getRemainingTime(),
-            'booking_status' => $payment->booking->status
+            'booking_status' => $payment->booking->status,
         ]);
     }
 }

@@ -17,7 +17,7 @@ class DiscountCodeResource extends JsonResource
             'expires_at' => $this->expires_at?->format('Y-m-d H:i:s'),
             'is_active' => $this->is_active,
             'remaining_uses' => $this->max_uses ? ($this->max_uses - $this->used_count) : null,
-            'created_at' => $this->created_at->format('Y-m-d H:i:s')
+            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
         ];
     }
 }

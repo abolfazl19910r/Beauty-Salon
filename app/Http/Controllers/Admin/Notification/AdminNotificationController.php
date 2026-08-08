@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Admin\Notification;
 
 use App\Http\Controllers\Controller;
 use App\Traits\HandlesApiResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\JsonResponse;
 
 class AdminNotificationController extends Controller
 {
@@ -41,6 +41,7 @@ class AdminNotificationController extends Controller
 
         if ($notification && is_null($notification->read_at)) {
             $notification->markAsRead();
+
             return $this->successResponse();
         }
 
@@ -71,6 +72,7 @@ class AdminNotificationController extends Controller
                 $notification->markAsRead();
                 $status = 'read';
             }
+
             return $this->successResponse('وضعیت اعلان با موفقیت به‌روز شد.', ['status' => $status]);
         }
 
@@ -98,8 +100,9 @@ class AdminNotificationController extends Controller
     public function unreadCount(): JsonResponse
     {
         $user = Auth::user();
+
         return response()->json([
-            'count' => $user->unreadNotifications->count()
+            'count' => $user->unreadNotifications->count(),
         ]);
     }
 
@@ -132,5 +135,4 @@ class AdminNotificationController extends Controller
             'notifications' => $notifications,
         ]);
     }
-
 }

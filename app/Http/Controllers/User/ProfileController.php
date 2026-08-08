@@ -13,7 +13,6 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-
     public function show(): View
     {
         // eager load and sort by booking_time (not created_at)
@@ -24,7 +23,7 @@ class ProfileController extends Controller
             ->paginate(10);
 
         return view('profile.show', [
-            'user'     => auth()->user(),
+            'user' => auth()->user(),
             'bookings' => $bookings,
         ]);
     }

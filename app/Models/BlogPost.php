@@ -3,15 +3,15 @@
 namespace App\Models;
 
 use App\Traits\HasJalaliDates;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class BlogPost extends Model
 {
-    use HasFactory, SoftDeletes, HasJalaliDates;
+    use HasFactory, HasJalaliDates, SoftDeletes;
 
     protected $fillable = [
         'title',
@@ -35,7 +35,6 @@ class BlogPost extends Model
      * have the corresponding trait, every "delete" was effectively a permanent, irreversible delete.
      * With the addition of SoftDeletes, deleting a post is now truly a soft-delete.
      */
-
     protected $appends = [
         'image_url',
         'published_at_jalali',

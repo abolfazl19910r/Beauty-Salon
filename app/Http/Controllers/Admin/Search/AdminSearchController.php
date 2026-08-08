@@ -8,10 +8,10 @@ use App\Models\BlogPost;
 use App\Models\Booking;
 use App\Models\Specialist;
 use App\Models\User;
-use Illuminate\Http\Request;
-use Verta;
-use Illuminate\View\View;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Verta;
 
 class AdminSearchController extends Controller
 {
@@ -57,7 +57,7 @@ class AdminSearchController extends Controller
         if (empty($query) || strlen($query) < 2) {
             return response()->json([
                 'success' => false,
-                'message' => 'لطفاً حداقل 2 کاراکتر وارد کنید'
+                'message' => 'لطفاً حداقل 2 کاراکتر وارد کنید',
             ], 422);
         }
 
@@ -75,35 +75,35 @@ class AdminSearchController extends Controller
             'success' => true,
             'query' => $query,
             'total' => $totalResults,
-            'results' => $results
+            'results' => $results,
         ]);
     }
 
     private function searchBookings($query)
     {
         return Booking::with(['user', 'service', 'specialist'])
-            ->where(function($q) use ($query) {
+            ->where(function ($q) use ($query) {
                 $q->where('id', 'like', "%{$query}%")
                     ->orWhere('payment_reference', 'like', "%{$query}%")
-                    ->orWhereHas('user', function($userQuery) use ($query) {
+                    ->orWhereHas('user', function ($userQuery) use ($query) {
                         $userQuery->where('name', 'like', "%{$query}%")
                             ->orWhere('phone', 'like', "%{$query}%");
                     })
-                    ->orWhereHas('service', function($serviceQuery) use ($query) {
+                    ->orWhereHas('service', function ($serviceQuery) use ($query) {
                         $serviceQuery->where('name', 'like', "%{$query}%");
                     });
             })
             ->limit(5)
             ->get()
-            ->map(function($booking) {
+            ->map(function ($booking) {
                 return [
                     'id' => $booking->id,
                     'type' => 'booking',
                     'title' => "رزرو #{$booking->id} - {$booking->user->name}",
-                    'subtitle' => $booking->service->name . ' | ' . Verta::instance($booking->booking_time)->format('Y/m/d H:i'),
+                    'subtitle' => $booking->service->name.' | '.Verta::instance($booking->booking_time)->format('Y/m/d H:i'),
                     'status' => $booking->status,
                     'url' => route('admin.bookings.show', $booking->id),
-                    'icon' => 'calendar'
+                    'icon' => 'calendar',
                 ];
             })
             ->toArray();
@@ -111,22 +111,22 @@ class AdminSearchController extends Controller
 
     private function searchUsers($query)
     {
-        return User::where(function($q) use ($query) {
+        return User::where(function ($q) use ($query) {
             $q->where('name', 'like', "%{$query}%")
                 ->orWhere('phone', 'like', "%{$query}%")
                 ->orWhere('email', 'like', "%{$query}%");
         })
             ->limit(5)
             ->get()
-            ->map(function($user) {
+            ->map(function ($user) {
                 return [
                     'id' => $user->id,
                     'type' => 'user',
                     'title' => $user->name,
-                    'subtitle' => $user->phone . ($user->email ? " | {$user->email}" : ''),
+                    'subtitle' => $user->phone.($user->email ? " | {$user->email}" : ''),
                     'status' => $user->is_active ? 'active' : 'inactive',
                     'url' => route('admin.users.show', $user->id),
-                    'icon' => 'user'
+                    'icon' => 'user',
                 ];
             })
             ->toArray();
@@ -139,14 +139,14 @@ class AdminSearchController extends Controller
             ->orWhere('description', 'like', "%{$query}%")
             ->limit(5)
             ->get()
-            ->map(function($service) {
+            ->map(function ($service) {
                 return [
                     'id' => $service->id,
                     'type' => 'service',
                     'title' => $service->name,
-                    'subtitle' => ($service->category ? $service->category->name . ' | ' : '') . number_format($service->price) . ' تومان',
+                    'subtitle' => ($service->category ? $service->category->name.' | ' : '').number_format($service->price).' تومان',
                     'url' => route('admin.services.edit', $service->id),
-                    'icon' => 'briefcase'
+                    'icon' => 'briefcase',
                 ];
             })
             ->toArray();
@@ -159,14 +159,14 @@ class AdminSearchController extends Controller
             ->orWhere('email', 'like', "%{$query}%")
             ->limit(5)
             ->get()
-            ->map(function($specialist) {
+            ->map(function ($specialist) {
                 return [
                     'id' => $specialist->id,
                     'type' => 'specialist',
                     'title' => $specialist->name,
                     'subtitle' => $specialist->phone,
                     'url' => route('admin.specialists.show', $specialist->id),
-                    'icon' => 'user-check'
+                    'icon' => 'user-check',
                 ];
             })
             ->toArray();
@@ -179,14 +179,14 @@ class AdminSearchController extends Controller
             ->orWhere('content', 'like', "%{$query}%")
             ->limit(5)
             ->get()
-            ->map(function($post) {
+            ->map(function ($post) {
                 return [
                     'id' => $post->id,
                     'type' => 'blog',
                     'title' => $post->title,
                     'subtitle' => $post->category ? $post->category->name : 'بدون دسته‌بندی',
                     'url' => route('admin.blog.edit', $post->id),
-                    'icon' => 'file-text'
+                    'icon' => 'file-text',
                 ];
             })
             ->toArray();
@@ -198,7 +198,7 @@ class AdminSearchController extends Controller
 
         if (empty($query) || strlen($query) < 2) {
             return response()->json([
-                'suggestions' => []
+                'suggestions' => [],
             ]);
         }
 
@@ -220,7 +220,7 @@ class AdminSearchController extends Controller
         $suggestions = $suggestions->merge($specialists);
 
         return response()->json([
-            'suggestions' => $suggestions->unique()->values()->take(10)
+            'suggestions' => $suggestions->unique()->values()->take(10),
         ]);
     }
 }

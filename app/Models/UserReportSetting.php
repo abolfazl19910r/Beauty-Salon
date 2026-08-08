@@ -9,11 +9,11 @@ class UserReportSetting extends Model
 {
     protected $fillable = [
         'user_id',
-        'settings'
+        'settings',
     ];
 
     protected $casts = [
-        'settings' => 'array'
+        'settings' => 'array',
     ];
 
     public function user(): BelongsTo
@@ -30,6 +30,7 @@ class UserReportSetting extends Model
     {
         $settings = $this->settings;
         $settings[$key] = $value;
+
         return $this->update(['settings' => $settings]);
     }
 
@@ -37,6 +38,7 @@ class UserReportSetting extends Model
     {
         $settings = $this->settings;
         unset($settings[$key]);
+
         return $this->update(['settings' => $settings]);
     }
 
@@ -54,20 +56,20 @@ class UserReportSetting extends Model
             'chart_colors' => [
                 'primary' => '#4299e1',
                 'secondary' => '#48bb78',
-                'accent' => '#ed8936'
+                'accent' => '#ed8936',
             ],
             'notifications' => [
                 'email' => true,
-                'browser' => true
+                'browser' => true,
             ],
             'export_settings' => [
                 'include_charts' => true,
-                'preferred_format' => 'excel'
+                'preferred_format' => 'excel',
             ],
             'scheduled_reports' => [
                 'send_empty' => false,
-                'include_comparison' => true
-            ]
+                'include_comparison' => true,
+            ],
         ];
     }
 
@@ -79,6 +81,7 @@ class UserReportSetting extends Model
     public function mergeSettings(array $newSettings): bool
     {
         $settings = array_merge($this->settings ?? [], $newSettings);
+
         return $this->update(['settings' => $settings]);
     }
 
@@ -92,7 +95,7 @@ class UserReportSetting extends Model
         return $this->settings['chart_colors'] ?? [
             'primary' => '#4299e1',
             'secondary' => '#48bb78',
-            'accent' => '#ed8936'
+            'accent' => '#ed8936',
         ];
     }
 
@@ -100,7 +103,7 @@ class UserReportSetting extends Model
     {
         return $this->settings['notifications'] ?? [
             'email' => true,
-            'browser' => true
+            'browser' => true,
         ];
     }
 
@@ -108,7 +111,7 @@ class UserReportSetting extends Model
     {
         return $this->settings['export_settings'] ?? [
             'include_charts' => true,
-            'preferred_format' => 'excel'
+            'preferred_format' => 'excel',
         ];
     }
 }

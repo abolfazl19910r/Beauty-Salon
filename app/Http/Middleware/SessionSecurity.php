@@ -15,12 +15,14 @@ class SessionSecurity
 
             if (time() - session('last_activity', 0) > 1800) {
                 Auth::logout();
+
                 return redirect()->route('login')
                     ->with('message', 'جلسه شما به دلیل عدم فعالیت منقضی شد. لطفا مجددا وارد شوید.');
             }
 
             if (session('user_ip') !== $request->ip()) {
                 Auth::logout();
+
                 return redirect()->route('login')
                     ->with('message', 'جلسه شما به دلیل تغییر IP منقضی شد.');
             }

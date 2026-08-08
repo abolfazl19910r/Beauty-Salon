@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Payment;
 use App\Models\Booking;
+use App\Models\Payment;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -23,9 +23,9 @@ class PaymentFactory extends Factory
             'booking_id' => $booking->id,
             'amount' => $booking->prepayment_amount ?? fake()->numberBetween(10000, 500000),
             'reference_id' => Str::random(12),
-            'card_data' => fake()->optional(0.5)->numberBetween(1000, 9999) . '****',
+            'card_data' => fake()->optional(0.5)->numberBetween(1000, 9999).'****',
             'status' => $status,
-            'gateway_reference' => $status === 'completed' ? 'TRX' . Str::random(8) : null,
+            'gateway_reference' => $status === 'completed' ? 'TRX'.Str::random(8) : null,
             'gateway_response' => $status === 'failed' ? json_encode(['error' => 'Connection failed']) : null,
             'payment_details' => null,
             'paid_at' => $paidAt,
@@ -38,7 +38,7 @@ class PaymentFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'status' => 'completed',
             'paid_at' => now(),
-            'gateway_reference' => 'TRX' . Str::upper(Str::random(8)),
+            'gateway_reference' => 'TRX'.Str::upper(Str::random(8)),
             'gateway_response' => json_encode(['message' => 'Payment successful']),
         ])->afterCreating(function (Payment $payment) {
             $payment->booking()->update(['payment_status' => 'paid', 'paid_at' => $payment->paid_at]);

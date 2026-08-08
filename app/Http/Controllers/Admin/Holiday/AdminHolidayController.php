@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin\Holiday;
 use App\Http\Controllers\Controller;
 use App\Models\Holiday;
 use App\Models\Specialist;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class AdminHolidayController extends Controller
 {
@@ -15,6 +15,7 @@ class AdminHolidayController extends Controller
         $holidays = $specialist->holidays()
             ->orderBy('date')
             ->get();
+
         return response()->json($holidays);
     }
 
@@ -25,7 +26,7 @@ class AdminHolidayController extends Controller
                 'required',
                 'date_format:Y-m-d',
                 'after:yesterday',
-                function($attribute, $value, $fail) use ($specialist) {
+                function ($attribute, $value, $fail) use ($specialist) {
                     $hasLeave = $specialist->leaves()
                         ->where('status', 'approved')
                         ->where('start_date', '<=', $value)
@@ -44,9 +45,9 @@ class AdminHolidayController extends Controller
                     if ($hasBooking) {
                         $fail('در این تاریخ نوبت ثبت شده است.');
                     }
-                }
+                },
             ],
-            'description' => 'nullable|string|max:255'
+            'description' => 'nullable|string|max:255',
         ]);
 
         $existingHoliday = $specialist->holidays()
@@ -55,7 +56,7 @@ class AdminHolidayController extends Controller
 
         if ($existingHoliday) {
             return response()->json([
-                'message' => 'این تاریخ قبلاً به عنوان تعطیلی ثبت شده است.'
+                'message' => 'این تاریخ قبلاً به عنوان تعطیلی ثبت شده است.',
             ], 422);
         }
 
@@ -68,20 +69,20 @@ class AdminHolidayController extends Controller
     {
         if ($holiday->specialist_id !== $specialist->id) {
             return response()->json([
-                'message' => 'شما اجازه حذف این تعطیلی را ندارید.'
+                'message' => 'شما اجازه حذف این تعطیلی را ندارید.',
             ], 403);
         }
 
         if ($holiday->isPastHoliday()) {
             return response()->json([
-                'message' => 'امکان حذف تعطیلی‌های گذشته وجود ندارد.'
+                'message' => 'امکان حذف تعطیلی‌های گذشته وجود ندارد.',
             ], 422);
         }
 
         $holiday->delete();
 
         return response()->json([
-            'message' => 'تعطیلی با موفقیت حذف شد.'
+            'message' => 'تعطیلی با موفقیت حذف شد.',
         ]);
     }
 
@@ -97,7 +98,7 @@ class AdminHolidayController extends Controller
     public function checkDate(Request $request, Specialist $specialist): JsonResponse
     {
         $request->validate([
-            'date' => 'required|date_format:Y-m-d'
+            'date' => 'required|date_format:Y-m-d',
         ]);
 
         $isHoliday = $specialist->holidays()
@@ -105,7 +106,7 @@ class AdminHolidayController extends Controller
             ->exists();
 
         return response()->json([
-            'is_holiday' => $isHoliday
+            'is_holiday' => $isHoliday,
         ]);
     }
 }

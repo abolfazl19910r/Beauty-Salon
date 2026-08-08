@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -58,7 +57,7 @@ class User extends Authenticatable
 
     public function receivesBroadcastNotificationsOn()
     {
-        return 'users.' . $this->id;
+        return 'users.'.$this->id;
     }
 
     public function notifications()
@@ -80,7 +79,7 @@ class User extends Authenticatable
             return $this->roles->contains('name', $role);
         }
 
-        return !! $role->intersect($this->roles)->count();
+        return (bool) $role->intersect($this->roles)->count();
     }
 
     public function hasAnyRole($roles)
@@ -105,7 +104,7 @@ class User extends Authenticatable
         }
 
         foreach ($roles as $role) {
-            if (!$this->hasRole($role)) {
+            if (! $this->hasRole($role)) {
                 return false;
             }
         }
@@ -142,7 +141,7 @@ class User extends Authenticatable
 
     public function hasVerifiedPhone(): bool
     {
-        return !is_null($this->phone_verified_at);
+        return ! is_null($this->phone_verified_at);
     }
 
     public function markPhoneAsVerified(): bool
@@ -172,6 +171,7 @@ class User extends Authenticatable
     public function getAvailableRewards()
     {
         $currentPoints = $this->getCurrentPoints();
+
         return Reward::where('is_active', true)
             ->where('required_points', '<=', $currentPoints)
             ->orderBy('required_points')
@@ -217,11 +217,6 @@ class User extends Authenticatable
      * ⚠️ Integration (R-AdminLoyalty phase): Previously expires_at was always addYear()
      * * hardcoded. Now it reads from loyalty_settings (key points_expiry_months)
      * * — the same source that BookingObserver and LoyaltyService also read.
-     *
-     * @param int $points
-     * @param string $description
-     * @param int|null $bookingId
-     * @return void
      */
     public function addLoyaltyPoints(int $points, string $description = '', ?int $bookingId = null): void
     {
@@ -243,20 +238,16 @@ class User extends Authenticatable
             \Illuminate\Support\Facades\Log::error('❌ Failed to add loyalty points', [
                 'user_id' => $this->id,
                 'points' => $points,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
 
-    /**
-     *
-     * @return int
-     */
     public function getTotalLoyaltyPoints(): int
     {
         try {
             return \App\Models\LoyaltyPoint::where('user_id', $this->id)
-                ->where(function($query) {
+                ->where(function ($query) {
                     $query->whereNull('expires_at')
                         ->orWhere('expires_at', '>', now());
                 })
@@ -273,7 +264,7 @@ class User extends Authenticatable
 
     public function getOrCreateWallet(): UserWallet
     {
-        if (!$this->wallet) {
+        if (! $this->wallet) {
             $this->wallet()->create([
                 'balance' => 0,
                 'total_deposited' => 0,
@@ -288,6 +279,7 @@ class User extends Authenticatable
     public function hasBalance(float $amount): bool
     {
         $wallet = $this->getOrCreateWallet();
+
         return $wallet->balance >= $amount;
     }
 }

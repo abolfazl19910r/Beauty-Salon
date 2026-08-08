@@ -20,8 +20,8 @@ class AdminReportSpecialistController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => ['specialists' => $this->reportService->specialistPerformance($start, $end)],
-            'meta'    => ['period' => ['start' => $startDate, 'end' => $endDate]],
+            'data' => ['specialists' => $this->reportService->specialistPerformance($start, $end)],
+            'meta' => ['period' => ['start' => $startDate, 'end' => $endDate]],
         ]);
     }
 
@@ -32,8 +32,8 @@ class AdminReportSpecialistController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => ['satisfaction' => $this->reportService->customerSatisfaction($start, $end)],
-            'meta'    => ['period' => ['start' => $startDate, 'end' => $endDate]],
+            'data' => ['satisfaction' => $this->reportService->customerSatisfaction($start, $end)],
+            'meta' => ['period' => ['start' => $startDate, 'end' => $endDate]],
         ]);
     }
 
@@ -43,8 +43,8 @@ class AdminReportSpecialistController extends Controller
             = $this->reportService->parseDateRange($request->only('start_date', 'end_date'), defaultSubDays: 90);
 
         return response()->json([
-            'success'        => true,
-            'popularServices'=> $this->reportService->popularServices($start, $end, limit: 5),
+            'success' => true,
+            'popularServices' => $this->reportService->popularServices($start, $end, limit: 5),
         ]);
     }
 }

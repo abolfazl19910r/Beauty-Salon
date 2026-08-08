@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
 
 class Holiday extends Model
 {
@@ -13,11 +13,11 @@ class Holiday extends Model
     protected $fillable = [
         'specialist_id',
         'date',
-        'description'
+        'description',
     ];
 
     protected $casts = [
-        'date' => 'date'
+        'date' => 'date',
     ];
 
     public function specialist(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -34,7 +34,7 @@ class Holiday extends Model
     {
         return $query->whereBetween('date', [
             Carbon::parse($startDate),
-            Carbon::parse($endDate)
+            Carbon::parse($endDate),
         ]);
     }
 

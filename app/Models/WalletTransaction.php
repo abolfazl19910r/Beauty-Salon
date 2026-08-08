@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class WalletTransaction extends Model
 {
@@ -38,7 +38,7 @@ class WalletTransaction extends Model
 
     public function getTypeTextAttribute(): string
     {
-        return match($this->type) {
+        return match ($this->type) {
             'income' => 'درآمد',
             'withdrawal' => 'برداشت',
             'cancellation_fee' => 'جریمه لغو',
@@ -50,7 +50,7 @@ class WalletTransaction extends Model
 
     public function getTypeBadgeColorAttribute(): string
     {
-        return match($this->type) {
+        return match ($this->type) {
             'income' => 'green',
             'withdrawal' => 'blue',
             'cancellation_fee' => 'red',
@@ -63,7 +63,8 @@ class WalletTransaction extends Model
     public function getFormattedAmountAttribute(): string
     {
         $prefix = $this->amount >= 0 ? '+' : '';
-        return $prefix . number_format($this->amount) . ' تومان';
+
+        return $prefix.number_format($this->amount).' تومان';
     }
 
     public function scopeOfType($query, string $type)

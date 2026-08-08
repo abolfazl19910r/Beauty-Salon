@@ -20,8 +20,7 @@ class SendBookingCompletionNotifications implements ShouldQueue
 
     public function __construct(
         private readonly ReviewService $reviewService,
-    ) {
-    }
+    ) {}
 
     public function handle(BookingCompleted $event): void
     {

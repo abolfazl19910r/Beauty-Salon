@@ -3,22 +3,20 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\DiscountCode;
 use App\Models\LoyaltyPoint;
 use App\Models\Reward;
-use App\Models\DiscountCode;
 use App\Services\LoyaltyService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\JsonResponse;
 
 class LoyaltyController extends Controller
 {
-    public function __construct(protected readonly LoyaltyService $loyaltyService)
-    {
-    }
+    public function __construct(protected readonly LoyaltyService $loyaltyService) {}
 
     public function index(): View|RedirectResponse
     {
@@ -31,7 +29,7 @@ class LoyaltyController extends Controller
             $nextReward = $this->getNextReward($userPoints);
             $activeCodes = DiscountCode::where('user_id', $userId)
                 ->where('is_active', true)
-                ->where(function($q) {
+                ->where(function ($q) {
                     $q->whereNull('expires_at')
                         ->orWhere('expires_at', '>', now());
                 })
@@ -51,7 +49,7 @@ class LoyaltyController extends Controller
         } catch (\Exception $e) {
             Log::error('خطا در بارگذاری پنل امتیازات', [
                 'user_id' => auth()->id(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return back()->with('error', 'خطا در بارگذاری اطلاعات امتیازات. لطفاً دوباره تلاش کنید.');
@@ -63,7 +61,7 @@ class LoyaltyController extends Controller
         try {
             $userId = auth()->id();
 
-            if (!$reward->isAvailableForUser(auth()->user())) {
+            if (! $reward->isAvailableForUser(auth()->user())) {
                 return back()->with('error', 'امتیاز کافی ندارید یا این پاداش در دسترس نیست.');
             }
 
@@ -82,16 +80,17 @@ class LoyaltyController extends Controller
             Log::error('خطا در تبدیل امتیاز به پاداش', [
                 'user_id' => auth()->id(),
                 'reward_id' => $reward->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
-            return back()->with('error', 'خطا در دریافت پاداش: ' . $e->getMessage());
+            return back()->with('error', 'خطا در دریافت پاداش: '.$e->getMessage());
         }
     }
 
     public function getPoints(): JsonResponse
     {
         $points = $this->loyaltyService->getCurrentPoints(auth()->id());
+
         return response()->json(['points' => $points]);
     }
 
@@ -110,7 +109,7 @@ class LoyaltyController extends Controller
 
         return response()->json([
             'rewards' => $rewards,
-            'user_points' => $userPoints
+            'user_points' => $userPoints,
         ]);
     }
 
@@ -124,8 +123,8 @@ class LoyaltyController extends Controller
             'next_reward' => $nextReward ? [
                 'title' => $nextReward->title,
                 'points_needed' => $nextReward->required_points - $userPoints,
-                'progress_percentage' => min(($userPoints / $nextReward->required_points) * 100, 100)
-            ] : null
+                'progress_percentage' => min(($userPoints / $nextReward->required_points) * 100, 100),
+            ] : null,
         ]);
     }
 
@@ -133,26 +132,26 @@ class LoyaltyController extends Controller
     {
         $codes = DiscountCode::where('user_id', auth()->id())
             ->where('is_active', true)
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNull('expires_at')
                     ->orWhere('expires_at', '>', now());
             })
             ->where('used_count', '<', DB::raw('max_uses'))
             ->latest()
             ->get()
-            ->map(function($code) {
+            ->map(function ($code) {
                 return [
                     'code' => $code->code,
                     'type' => $code->type,
                     'amount' => $code->amount,
                     'expires_at' => $code->expires_at,
                     'remaining_uses' => $code->max_uses - $code->used_count,
-                    'max_uses' => $code->max_uses
+                    'max_uses' => $code->max_uses,
                 ];
             });
 
         return response()->json([
-            'discount_codes' => $codes
+            'discount_codes' => $codes,
         ]);
     }
 
@@ -180,13 +179,13 @@ class LoyaltyController extends Controller
                     ->sum('points'),
                 'total_spent' => abs(LoyaltyPoint::where('user_id', $user->id)
                     ->where('type', 'spent')
-                    ->sum('points'))
+                    ->sum('points')),
             ],
             'next_reward' => $nextReward ? [
                 'title' => $nextReward->title,
                 'points_needed' => $nextReward->required_points - $userPoints,
-                'progress_percentage' => min(($userPoints / $nextReward->required_points) * 100, 100)
-            ] : null
+                'progress_percentage' => min(($userPoints / $nextReward->required_points) * 100, 100),
+            ] : null,
         ]);
     }
 

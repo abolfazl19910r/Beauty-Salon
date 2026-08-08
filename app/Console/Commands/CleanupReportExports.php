@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 class CleanupReportExports extends Command
 {
     protected $signature = 'reports:cleanup-exports {--days=7 : تعداد روزهایی که یک خروجی ready/failed نگه داشته می‌شود}';
+
     protected $description = 'حذف فایل‌ها و رکوردهای قدیمی report_exports (ready/failed) تا از تجمیع فایل روی دیسک جلوگیری شود';
 
     public function handle(): int

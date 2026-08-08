@@ -8,18 +8,16 @@ use App\Services\SMSService;
 
 class DiscountCodeObserver
 {
-    public function __construct(protected readonly ReportCacheService $cacheService, protected readonly SMSService $smsService)
-    {
-    }
+    public function __construct(protected readonly ReportCacheService $cacheService, protected readonly SMSService $smsService) {}
 
     public function created(DiscountCode $discountCode): void
     {
         if ($discountCode->user_id && $discountCode->user && $discountCode->user->phone) {
             $message = sprintf(
-                "یک کد تخفیف جدید برای شما ایجاد شد:
+                'یک کد تخفیف جدید برای شما ایجاد شد:
 کد: %s
 مقدار: %s%s
-مهلت استفاده: %s",
+مهلت استفاده: %s',
                 $discountCode->code,
                 $discountCode->amount,
                 $discountCode->type === 'percentage' ? '%' : ' تومان',
@@ -42,7 +40,7 @@ class DiscountCodeObserver
 
             if ($discountCode->user_id && $discountCode->user && $discountCode->user->phone) {
                 $message = sprintf(
-                    "کد تخفیف %s به حداکثر استفاده رسید و منقضی شد.",
+                    'کد تخفیف %s به حداکثر استفاده رسید و منقضی شد.',
                     $discountCode->code
                 );
 

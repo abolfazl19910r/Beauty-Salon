@@ -9,17 +9,15 @@ use App\Models\WithdrawalRequest;
 use App\Services\Specialist\SpecialistWalletService;
 use App\Traits\ResolvesSpecialist;
 use Exception;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 
 class SpecialistWithdrawalController extends Controller
 {
     use ResolvesSpecialist;
 
-    public function __construct(private SpecialistWalletService $walletService)
-    {
-    }
+    public function __construct(private SpecialistWalletService $walletService) {}
 
     public function create(): View|RedirectResponse
     {

@@ -14,7 +14,7 @@ class CategorySeeder extends Seeder
             'مو' => ['رنگ مو', 'کوتاهی مو', 'شینیون', 'براشینگ', 'صاف کردن مو'],
             'ناخن' => ['مانیکور', 'پدیکور', 'کاشت ناخن', 'ترمیم ناخن'],
             'صورت' => ['پاکسازی پوست', 'میکرودرم', 'لیزر', 'اصلاح صورت'],
-            'ابرو' => ['اصلاح ابرو', 'میکروبلیدینگ', 'تاتو ابرو', 'هاشور ابرو']
+            'ابرو' => ['اصلاح ابرو', 'میکروبلیدینگ', 'تاتو ابرو', 'هاشور ابرو'],
         ];
 
         $orderCounter = 1;
@@ -24,10 +24,10 @@ class CategorySeeder extends Seeder
                 ['slug' => Str::slug($main)],
                 [
                     'name' => $main,
-                    'description' => 'دسته‌بندی خدمات ' . $main,
+                    'description' => 'دسته‌بندی خدمات '.$main,
                     'is_active' => true,
                     'order' => $orderCounter++,
-                    'icon' => 'icon-' . Str::slug($main),
+                    'icon' => 'icon-'.Str::slug($main),
                 ]
             );
 
@@ -36,7 +36,7 @@ class CategorySeeder extends Seeder
                     ['slug' => Str::slug($subCategory)],
                     [
                         'name' => $subCategory,
-                        'description' => 'زیر دسته ' . $main,
+                        'description' => 'زیر دسته '.$main,
                         'parent_id' => $mainCategory->id,
                         'is_active' => true,
                         'order' => $index + 1,

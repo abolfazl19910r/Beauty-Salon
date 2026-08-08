@@ -33,21 +33,22 @@ class GeneratePdfReportJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 2;
+
     public int $timeout = 60;
 
     public function __construct(
         protected int $reportExportId,
-    ) {
-    }
+    ) {}
 
     public function handle(AdminReportService $reportService): void
     {
         $reportExport = ReportExport::find($this->reportExportId);
 
-        if (!$reportExport) {
+        if (! $reportExport) {
             Log::warning('GeneratePdfReportJob: رکورد ReportExport یافت نشد', [
                 'report_export_id' => $this->reportExportId,
             ]);
+
             return;
         }
 
@@ -58,6 +59,7 @@ class GeneratePdfReportJob implements ShouldQueue
                 'report_export_id' => $reportExport->id,
                 'current_status' => $reportExport->status,
             ]);
+
             return;
         }
 
@@ -127,16 +129,16 @@ class GeneratePdfReportJob implements ShouldQueue
             default => 'روزانه',
         };
 
-        $defaultConfig = (new \Mpdf\Config\ConfigVariables())->getDefaults();
-        $defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
+        $defaultConfig = (new \Mpdf\Config\ConfigVariables)->getDefaults();
+        $defaultFontConfig = (new \Mpdf\Config\FontVariables)->getDefaults();
 
         $mpdf = new \Mpdf\Mpdf([
             'mode' => 'utf-8',
             'format' => 'A4',
             'fontDir' => array_merge($defaultConfig['fontDir'], [storage_path('fonts')]),
             'fontdata' => $defaultFontConfig['fontdata'] + [
-                    'vazir' => ['R' => 'Vazirmatn-Regular.ttf', 'B' => 'Vazirmatn-Bold.ttf'],
-                ],
+                'vazir' => ['R' => 'Vazirmatn-Regular.ttf', 'B' => 'Vazirmatn-Bold.ttf'],
+            ],
             'default_font' => 'vazir',
             'autoScriptToLang' => true,
             'autoLangToFont' => true,

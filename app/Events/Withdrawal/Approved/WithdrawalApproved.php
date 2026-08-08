@@ -13,6 +13,5 @@ class WithdrawalApproved
 
     public function __construct(
         public WithdrawalRequest $withdrawalRequest,
-    ) {
-    }
+    ) {}
 }

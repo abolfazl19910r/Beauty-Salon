@@ -9,11 +9,6 @@ use Illuminate\Support\Facades\DB;
 trait DatabaseTransaction
 {
     /**
-     *
-     * @param Closure $callback
-     * @param string $errorMessage
-     * @param int $attempts
-     * @return mixed
      * @throws Exception
      */
     protected function executeInTransaction(Closure $callback, string $errorMessage = 'خطا در اجرای عملیات', int $attempts = 3): mixed
@@ -22,7 +17,7 @@ trait DatabaseTransaction
 
         while ($attempt <= $attempts) {
             try {
-                return DB::transaction(function() use ($callback) {
+                return DB::transaction(function () use ($callback) {
                     return $callback();
                 });
             } catch (Exception $e) {
@@ -31,19 +26,15 @@ trait DatabaseTransaction
                     usleep($backoff * 1000);
 
                     $attempt++;
+
                     continue;
                 }
 
-                throw new Exception($errorMessage . ': ' . $e->getMessage(), 0, $e);
+                throw new Exception($errorMessage.': '.$e->getMessage(), 0, $e);
             }
         }
     }
 
-    /**
-     *
-     * @param Exception $e
-     * @return bool
-     */
     protected function shouldRetryTransaction(Exception $e): bool
     {
         $retryableErrors = [

@@ -9,16 +9,14 @@ use App\Models\Category;
 use App\Models\Specialist;
 use App\Services\Admin\Specialist\AdminSpecialistService;
 use App\Services\CategoryService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 
 class AdminSpecialistController extends Controller
 {
-    public function __construct(protected readonly CategoryService $categoryService, protected readonly AdminSpecialistService $specialistService)
-    {
-    }
+    public function __construct(protected readonly CategoryService $categoryService, protected readonly AdminSpecialistService $specialistService) {}
 
     public function index(Request $request): View
     {
@@ -61,7 +59,7 @@ class AdminSpecialistController extends Controller
             );
 
             $message = 'متخصص جدید با موفقیت ایجاد شد.';
-            if (!$result['matched_user']) {
+            if (! $result['matched_user']) {
                 $message .= ' توجه: هنوز هیچ کاربری با این شماره موبایل ثبت‌نام نکرده — پس از ثبت‌نام متخصص با این شماره، پنل او فعال خواهد شد.';
             }
 
@@ -69,7 +67,8 @@ class AdminSpecialistController extends Controller
                 ->route('admin.specialists.index')
                 ->with('success', $message);
         } catch (\Exception $e) {
-            Log::error('Error storing specialist: ' . $e->getMessage());
+            Log::error('Error storing specialist: '.$e->getMessage());
+
             return back()->with('error', 'خطایی در ثبت اطلاعات رخ داد.')->withInput();
         }
     }
@@ -78,6 +77,7 @@ class AdminSpecialistController extends Controller
     {
         $services = Category::with('services')->get();
         $selectedServices = $specialist->services->pluck('id')->toArray();
+
         return view('admin.specialists.edit', compact('specialist', 'services', 'selectedServices'));
     }
 
@@ -102,7 +102,7 @@ class AdminSpecialistController extends Controller
                 ->with('success', 'متخصص با موفقیت حذف شد.');
 
         } catch (\Exception $e) {
-            Log::error('Error in destroy method: ' . $e->getMessage());
+            Log::error('Error in destroy method: '.$e->getMessage());
 
             return redirect()->route('admin.specialists.index')
                 ->with('error', 'خطا در حذف متخصص');

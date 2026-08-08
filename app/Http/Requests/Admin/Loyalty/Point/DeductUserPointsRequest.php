@@ -14,7 +14,7 @@ class DeductUserPointsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'points'      => ['required', 'integer', 'min:1'],
+            'points' => ['required', 'integer', 'min:1'],
             'description' => ['required', 'string', 'max:255'],
         ];
     }
@@ -22,8 +22,8 @@ class DeductUserPointsRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'points.required'      => 'تعداد امتیاز الزامی است.',
-            'points.min'           => 'تعداد امتیاز باید حداقل ۱ باشد.',
+            'points.required' => 'تعداد امتیاز الزامی است.',
+            'points.min' => 'تعداد امتیاز باید حداقل ۱ باشد.',
             'description.required' => 'توضیحات الزامی است.',
         ];
     }

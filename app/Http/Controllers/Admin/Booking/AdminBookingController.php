@@ -10,15 +10,13 @@ use App\Models\Booking;
 use App\Models\Specialist;
 use App\Models\User;
 use App\Services\Admin\Booking\AdminBookingService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 
 class AdminBookingController extends Controller
 {
-    public function __construct(protected readonly AdminBookingService $bookingService)
-    {
-    }
+    public function __construct(protected readonly AdminBookingService $bookingService) {}
 
     public function index(Request $request): View
     {
@@ -84,12 +82,13 @@ class AdminBookingController extends Controller
     public function show(Booking $booking): View
     {
         $booking->load(['service', 'user', 'specialist']);
+
         return view('admin.bookings.show', compact('booking'));
     }
 
     public function update(UpdateAdminBookingRequest $request, Booking $booking): RedirectResponse
     {
-        $redirectRoute  = $request->isStatusOnly() ? 'admin.bookings.index' : 'admin.bookings.show';
+        $redirectRoute = $request->isStatusOnly() ? 'admin.bookings.index' : 'admin.bookings.show';
         $redirectParams = $request->isStatusOnly() ? [] : ['booking' => $booking->id];
 
         try {
@@ -114,6 +113,7 @@ class AdminBookingController extends Controller
         }
 
         $booking->delete();
+
         return redirect()->route('admin.bookings.index')
             ->with('success', 'نوبت با موفقیت حذف شد.');
     }

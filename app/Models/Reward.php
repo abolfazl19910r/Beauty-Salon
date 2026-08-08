@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Reward extends Model
 {
@@ -18,7 +18,7 @@ class Reward extends Model
         'discount_amount',
         'is_active',
         'max_uses',
-        'used_count'
+        'used_count',
     ];
 
     protected $casts = [
@@ -26,16 +26,21 @@ class Reward extends Model
         'required_points' => 'integer',
         'discount_amount' => 'decimal:2',
         'max_uses' => 'integer',
-        'used_count' => 'integer'
+        'used_count' => 'integer',
     ];
 
     public function isAvailableForUser(User $user): bool
     {
-        if (!$this->is_active) return false;
+        if (! $this->is_active) {
+            return false;
+        }
 
-        if ($this->max_uses && $this->used_count >= $this->max_uses) return false;
+        if ($this->max_uses && $this->used_count >= $this->max_uses) {
+            return false;
+        }
 
         $userPoints = LoyaltyPoint::where('user_id', $user->id)->sum('points');
+
         return $userPoints >= $this->required_points;
     }
 

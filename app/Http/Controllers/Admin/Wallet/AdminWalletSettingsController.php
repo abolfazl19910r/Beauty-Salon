@@ -15,8 +15,7 @@ class AdminWalletSettingsController extends Controller
 {
     public function __construct(
         private readonly WalletAdminService $walletAdminService
-    ) {
-    }
+    ) {}
 
     public function index(): View
     {
@@ -36,7 +35,7 @@ class AdminWalletSettingsController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->with('error', 'خطا در ذخیره تنظیمات: ' . $e->getMessage());
+            return back()->with('error', 'خطا در ذخیره تنظیمات: '.$e->getMessage());
         }
     }
 }

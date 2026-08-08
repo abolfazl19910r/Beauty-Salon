@@ -7,16 +7,14 @@ use App\Http\Requests\Specialist\UpdateIbanRequest;
 use App\Services\Specialist\SpecialistWalletService;
 use App\Traits\ResolvesSpecialist;
 use Exception;
-use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class SpecialistIbanController extends Controller
 {
     use ResolvesSpecialist;
 
-    public function __construct(private SpecialistWalletService $walletService)
-    {
-    }
+    public function __construct(private SpecialistWalletService $walletService) {}
 
     public function edit(): View
     {

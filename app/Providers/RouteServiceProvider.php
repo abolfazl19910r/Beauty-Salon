@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use App\Models\BeautyService;
 use App\Models\Booking;
-use App\Models\Service;
 use App\Models\Specialist;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -16,13 +15,11 @@ use Illuminate\Support\Facades\Route;
 class RouteServiceProvider extends ServiceProvider
 {
     /**
-     *
      * @var string
      */
     public const HOME = '/admin/dashboard';
 
     /**
-     *
      * @var string
      */
     public const USER_HOME = '/dashboard';
@@ -30,7 +27,6 @@ class RouteServiceProvider extends ServiceProvider
     public const SPECIALIST_HOME = '/my-dashboard';
 
     /**
-     *
      * @var array
      */
     protected $routes = [
@@ -63,7 +59,7 @@ class RouteServiceProvider extends ServiceProvider
             'api/admin/reports.php',
             'api/admin/services.php',
             'api/admin/specialists.php',
-        ]
+        ],
     ];
 
     public function boot(): void
@@ -139,16 +135,12 @@ class RouteServiceProvider extends ServiceProvider
         if ($user->is_admin) {
             return static::HOME;
         }
+
         return static::USER_HOME;
     }
 
-    /**
-     *
-     * @param string $path
-     * @return void
-     */
     public static function loadRouteFile(string $path): void
     {
-        require base_path('routes/' . $path);
+        require base_path('routes/'.$path);
     }
 }

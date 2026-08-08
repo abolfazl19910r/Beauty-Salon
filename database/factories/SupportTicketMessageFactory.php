@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class SupportTicketMessageFactory extends Factory
 {
     use HasFactory;
+
     protected $model = SupportTicketMessage::class;
 
     public function definition(): array
@@ -29,7 +30,7 @@ class SupportTicketMessageFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'user_id' => User::factory(),
             'is_staff_reply' => true,
-            'message' => 'پاسخ کارشناس: ' . fake()->sentence(),
+            'message' => 'پاسخ کارشناس: '.fake()->sentence(),
         ]);
     }
 
@@ -37,8 +38,8 @@ class SupportTicketMessageFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'attachments' => json_encode([
-                ['path' => 'attachments/screenshot-' . fake()->randomNumber(4) . '.png'],
-                ['path' => 'attachments/receipt-' . fake()->randomNumber(4) . '.pdf']
+                ['path' => 'attachments/screenshot-'.fake()->randomNumber(4).'.png'],
+                ['path' => 'attachments/receipt-'.fake()->randomNumber(4).'.pdf'],
             ]),
         ]);
     }

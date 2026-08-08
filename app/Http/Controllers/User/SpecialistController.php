@@ -2,23 +2,22 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Models\Specialist;
 use App\Http\Controllers\Controller;
 use App\Models\BeautyService;
-use Illuminate\Http\Request;
+use App\Models\Specialist;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class SpecialistController extends Controller
 {
-
     public function search(Request $request): View|JsonResponse
     {
         $query = Specialist::whereNull('deleted_at');
 
         if ($request->has('name')) {
-            $query->where('name', 'like', '%' . $request->name . '%');
+            $query->where('name', 'like', '%'.$request->name.'%');
         }
 
         if ($request->has('service_id')) {
@@ -29,7 +28,7 @@ class SpecialistController extends Controller
 
         if ($request->has('sort')) {
             if ($request->sort == 'rating') {
-                $query->withCount(['bookings as total_ratings' => function($q) {
+                $query->withCount(['bookings as total_ratings' => function ($q) {
                     $q->whereNotNull('rating');
                 }])
                     ->withAvg('bookings', 'rating')
@@ -49,7 +48,7 @@ class SpecialistController extends Controller
 
         return view('specialists.search', [
             'specialists' => $specialists,
-            'search' => $request->name
+            'search' => $request->name,
         ]);
     }
 
@@ -69,7 +68,7 @@ class SpecialistController extends Controller
 
         return view('specialists.by-service', [
             'specialists' => $specialists,
-            'service' => $service
+            'service' => $service,
         ]);
     }
 
@@ -81,13 +80,13 @@ class SpecialistController extends Controller
         if (empty($slots)) {
             return response()->json([
                 'available_slots' => [],
-                'message' => 'در این تاریخ زمانی برای رزرو یافت نشد.'
+                'message' => 'در این تاریخ زمانی برای رزرو یافت نشد.',
             ]);
         }
 
         return response()->json([
             'date' => $date,
-            'available_slots' => $slots
+            'available_slots' => $slots,
         ]);
     }
 
@@ -104,7 +103,7 @@ class SpecialistController extends Controller
                 'specialist' => $specialist,
                 'availability' => $availabilityData,
                 'year' => $year,
-                'month' => $month
+                'month' => $month,
             ]);
         }
 
@@ -130,7 +129,7 @@ class SpecialistController extends Controller
                 if ($hasSchedule) {
                     $availableSlots = $specialist->getAvailableSlots($dateString);
 
-                    if (!empty($availableSlots)) {
+                    if (! empty($availableSlots)) {
                         $availableDates[] = $dateString;
                     }
                 }
@@ -147,10 +146,10 @@ class SpecialistController extends Controller
     public function topRated(): View|JsonResponse
     {
         $specialists = Specialist::whereNull('deleted_at')
-            ->withCount(['bookings as completed_bookings' => function($query) {
+            ->withCount(['bookings as completed_bookings' => function ($query) {
                 $query->where('status', 'completed');
             }])
-            ->withCount(['bookings as rating_count' => function($query) {
+            ->withCount(['bookings as rating_count' => function ($query) {
                 $query->whereNotNull('rating');
             }])
             ->withAvg('bookings', 'rating')
@@ -166,7 +165,7 @@ class SpecialistController extends Controller
         }
 
         return view('specialists.top-rated', [
-            'specialists' => $specialists
+            'specialists' => $specialists,
         ]);
     }
 
@@ -197,25 +196,25 @@ class SpecialistController extends Controller
             ->orderByDesc('created_at')
             ->take(5)
             ->get()
-            ->map(function($booking) {
+            ->map(function ($booking) {
                 return [
                     'user_name' => $booking->user->name,
                     'rating' => $booking->rating,
                     'review' => $booking->review,
-                    'date' => $booking->created_at->format('Y-m-d')
+                    'date' => $booking->created_at->format('Y-m-d'),
                 ];
             });
 
         if (request()->wantsJson()) {
             return response()->json([
                 'specialist' => $specialist,
-                'reviews' => $reviews
+                'reviews' => $reviews,
             ]);
         }
 
         return view('specialists.show', [
             'specialist' => $specialist,
-            'reviews' => $reviews
+            'reviews' => $reviews,
         ]);
     }
 }

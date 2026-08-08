@@ -3,9 +3,9 @@
 namespace Database\Factories;
 
 use App\Models\BeautyService;
+use App\Models\Booking;
 use App\Models\Specialist;
 use App\Models\User;
-use App\Models\Booking;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class BookingFactory extends Factory

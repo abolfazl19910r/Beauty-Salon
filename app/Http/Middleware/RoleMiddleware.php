@@ -10,21 +10,16 @@ class RoleMiddleware
 {
     /**
      * Handle an incoming request.
-     *
-     * @param Request $request
-     * @param Closure $next
-     * @param $role
-     * @return Response
      */
     public function handle(Request $request, Closure $next, $role): Response
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return redirect()->route('login');
         }
 
         $roles = is_array($role) ? $role : explode('|', $role);
 
-        if (!auth()->user()->hasAnyRole($roles)) {
+        if (! auth()->user()->hasAnyRole($roles)) {
             abort(403, 'این عملیات برای شما مجاز نیست.');
         }
 

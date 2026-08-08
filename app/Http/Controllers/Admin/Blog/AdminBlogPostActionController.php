@@ -15,9 +15,7 @@ use Throwable;
 
 class AdminBlogPostActionController extends Controller
 {
-    public function __construct(private readonly BlogPostService $blogPostService)
-    {
-    }
+    public function __construct(private readonly BlogPostService $blogPostService) {}
 
     public function create(): View
     {

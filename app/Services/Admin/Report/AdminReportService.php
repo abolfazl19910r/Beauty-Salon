@@ -17,25 +17,25 @@ class AdminReportService
     /**
      * Convert start_date/end_date from input to Carbon and string.
      *
-     * @param array $input ['start_date' => ..., 'end_date' => ...]
-     * @param int $defaultSubDays Default number of days if not a date
+     * @param  array  $input  ['start_date' => ..., 'end_date' => ...]
+     * @param  int  $defaultSubDays  Default number of days if not a date
      * @return array{start: Carbon, end: Carbon, startDate: string, endDate: string}
      */
     public function parseDateRange(array $input, int $defaultSubDays = 30): array
     {
         $startDate = $input['start_date'] ?? now()->subDays($defaultSubDays)->format('Y-m-d');
-        $endDate   = $input['end_date']   ?? now()->format('Y-m-d');
+        $endDate = $input['end_date'] ?? now()->format('Y-m-d');
 
         if (! $this->validateDates($startDate, $endDate)) {
             $startDate = now()->subDays($defaultSubDays)->format('Y-m-d');
-            $endDate   = now()->format('Y-m-d');
+            $endDate = now()->format('Y-m-d');
         }
 
         return [
-            'start'     => Carbon::parse($startDate)->startOfDay(),
-            'end'       => Carbon::parse($endDate)->endOfDay(),
+            'start' => Carbon::parse($startDate)->startOfDay(),
+            'end' => Carbon::parse($endDate)->endOfDay(),
             'startDate' => $startDate,
-            'endDate'   => $endDate,
+            'endDate' => $endDate,
         ];
     }
 
@@ -80,13 +80,13 @@ class AdminReportService
         $base = Booking::whereBetween('created_at', [$start, $end]);
 
         return [
-            'total_revenue'          => (clone $base)->where('payment_status', 'paid')->sum('prepayment_amount'),
-            'total_bookings'         => (clone $base)->count(),
-            'completed_bookings'     => (clone $base)->where('status', 'completed')->count(),
-            'cancelled_bookings'     => (clone $base)->where('status', 'cancelled')->count(),
-            'pending_payments'       => (clone $base)->where('payment_status', 'unpaid')->sum('prepayment_amount'),
-            'average_booking_value'  => (float) ((clone $base)->where('payment_status', 'paid')->avg('prepayment_amount') ?? 0),
-            'wallet_payments'        => (clone $base)->where('payment_details->method', 'wallet')->where('payment_status', 'paid')->sum('prepayment_amount'),
+            'total_revenue' => (clone $base)->where('payment_status', 'paid')->sum('prepayment_amount'),
+            'total_bookings' => (clone $base)->count(),
+            'completed_bookings' => (clone $base)->where('status', 'completed')->count(),
+            'cancelled_bookings' => (clone $base)->where('status', 'cancelled')->count(),
+            'pending_payments' => (clone $base)->where('payment_status', 'unpaid')->sum('prepayment_amount'),
+            'average_booking_value' => (float) ((clone $base)->where('payment_status', 'paid')->avg('prepayment_amount') ?? 0),
+            'wallet_payments' => (clone $base)->where('payment_details->method', 'wallet')->where('payment_status', 'paid')->sum('prepayment_amount'),
             /**
              * R-Observers: previously this summed everything with method != 'wallet' as "gateway
              * revenue" — including 'full_discount' (zero real money moved) and, after the
@@ -98,11 +98,11 @@ class AdminReportService
              * gateway revenue (this endpoint isn't currently wired into any Blade/JS consumer, but
              * the field should be correct regardless of whether it's rendered yet).
              */
-            'gateway_payments'       => (clone $base)->whereIn('payment_details->method', ['gateway', 'wallet_gateway'])
+            'gateway_payments' => (clone $base)->whereIn('payment_details->method', ['gateway', 'wallet_gateway'])
                 ->where('payment_status', 'paid')->sum('prepayment_amount'),
-            'admin_manual_payments'  => (clone $base)->where('payment_details->admin_recorded', true)
+            'admin_manual_payments' => (clone $base)->where('payment_details->admin_recorded', true)
                 ->where('payment_status', 'paid')->sum('prepayment_amount'),
-            'total_discounts'        => (clone $base)->sum('discount_amount'),
+            'total_discounts' => (clone $base)->sum('discount_amount'),
         ];
     }
 
@@ -123,9 +123,9 @@ class AdminReportService
                 [$jy, $jm, $jd] = $this->toJalaliParts($d);
 
                 return [
-                    'label'    => $jd . ' ' . $this->jalaliMonthName($jm),
-                    'date'     => $r->date,
-                    'revenue'  => (int) $r->revenue,
+                    'label' => $jd.' '.$this->jalaliMonthName($jm),
+                    'date' => $r->date,
+                    'revenue' => (int) $r->revenue,
                     'bookings' => (int) $r->total_bookings,
                 ];
             });
@@ -148,8 +148,8 @@ class AdminReportService
                 [$jy, $jm, $jd] = $this->toJalaliParts($d);
 
                 return [
-                    'label'    => $jd . ' ' . $this->jalaliMonthName($jm),
-                    'revenue'  => (int) $r->revenue,
+                    'label' => $jd.' '.$this->jalaliMonthName($jm),
+                    'revenue' => (int) $r->revenue,
                     'bookings' => (int) $r->total_bookings,
                 ];
             });
@@ -172,8 +172,8 @@ class AdminReportService
                 [$jy, $jm] = $this->toJalaliParts(Carbon::create($r->year, $r->month, 1));
 
                 return [
-                    'label'    => $this->jalaliMonthName($jm) . ' ' . $jy,
-                    'revenue'  => (int) $r->revenue,
+                    'label' => $this->jalaliMonthName($jm).' '.$jy,
+                    'revenue' => (int) $r->revenue,
                     'bookings' => (int) $r->total_bookings,
                 ];
             });
@@ -183,8 +183,8 @@ class AdminReportService
     {
         return match ($type) {
             'monthly' => $this->monthlyRevenue($start, $end)->toArray(),
-            'weekly'  => $this->weeklyRevenue($start, $end)->toArray(),
-            default   => $this->dailyRevenue($start, $end)->toArray(),
+            'weekly' => $this->weeklyRevenue($start, $end)->toArray(),
+            default => $this->dailyRevenue($start, $end)->toArray(),
         };
     }
 
@@ -206,9 +206,9 @@ class AdminReportService
                 [$jy, $jm] = $this->toJalaliParts(Carbon::create($r->year, $r->month, 1));
 
                 return [
-                    'label'           => $this->jalaliMonthName($jm) . ' ' . $jy,
-                    'total_bookings'  => (int) $r->total_bookings,
-                    'revenue'         => (int) $r->revenue,
+                    'label' => $this->jalaliMonthName($jm).' '.$jy,
+                    'total_bookings' => (int) $r->total_bookings,
+                    'revenue' => (int) $r->revenue,
                     'cancelled_count' => (int) $r->cancelled_count,
                     'completed_count' => (int) $r->completed_count,
                 ];
@@ -226,35 +226,33 @@ class AdminReportService
         }
 
         $gateway = (clone $base)->whereIn('payment_details->method', ['gateway', 'wallet_gateway'])->count();
-        $wallet  = (clone $base)->where('payment_details->method', 'wallet')->count();
+        $wallet = (clone $base)->where('payment_details->method', 'wallet')->count();
         $adminManual = (clone $base)->where('payment_details->admin_recorded', true)->count();
 
         return [
-            'gateway'          => $gateway,
-            'gateway_percent'  => round($gateway / $total * 100, 1),
-            'wallet'           => $wallet,
-            'wallet_percent'   => round($wallet / $total * 100, 1),
-            'admin_manual'         => $adminManual,
+            'gateway' => $gateway,
+            'gateway_percent' => round($gateway / $total * 100, 1),
+            'wallet' => $wallet,
+            'wallet_percent' => round($wallet / $total * 100, 1),
+            'admin_manual' => $adminManual,
             'admin_manual_percent' => round($adminManual / $total * 100, 1),
-            'total'            => $total,
+            'total' => $total,
         ];
     }
 
     public function serviceRevenue(Carbon $start, Carbon $end, int $limit = 8): Collection
     {
-        return BeautyService::withCount(['bookings' => fn ($q) =>
-        $q->whereBetween('created_at', [$start, $end])->where('status', '!=', 'cancelled')
+        return BeautyService::withCount(['bookings' => fn ($q) => $q->whereBetween('created_at', [$start, $end])->where('status', '!=', 'cancelled'),
         ])
-            ->withSum(['bookings as revenue' => fn ($q) =>
-            $q->where('payment_status', 'paid')->whereBetween('created_at', [$start, $end])
+            ->withSum(['bookings as revenue' => fn ($q) => $q->where('payment_status', 'paid')->whereBetween('created_at', [$start, $end]),
             ], 'prepayment_amount')
             ->orderByDesc('revenue')
             ->limit($limit)
             ->get()
             ->map(fn ($s) => [
-                'name'     => $s->name,
+                'name' => $s->name,
                 'bookings' => $s->bookings_count ?? 0,
-                'revenue'  => (int) ($s->revenue ?? 0),
+                'revenue' => (int) ($s->revenue ?? 0),
             ]);
     }
 
@@ -270,11 +268,9 @@ class AdminReportService
 
     public function popularServices(Carbon $start, Carbon $end, int $limit = 5): Collection
     {
-        return BeautyService::withCount(['bookings' => fn ($q) =>
-        $q->whereBetween('created_at', [$start, $end])->where('status', '!=', 'cancelled')
+        return BeautyService::withCount(['bookings' => fn ($q) => $q->whereBetween('created_at', [$start, $end])->where('status', '!=', 'cancelled'),
         ])
-            ->withSum(['bookings as revenue' => fn ($q) =>
-            $q->where('payment_status', 'paid')->whereBetween('created_at', [$start, $end])
+            ->withSum(['bookings as revenue' => fn ($q) => $q->where('payment_status', 'paid')->whereBetween('created_at', [$start, $end]),
             ], 'prepayment_amount')
             ->orderByDesc('bookings_count')
             ->limit($limit)
@@ -285,26 +281,25 @@ class AdminReportService
     {
         return Specialist::with(['bookings' => fn ($q) => $q->whereBetween('created_at', [$start, $end])])
             ->withCount(['bookings as total_bookings' => fn ($q) => $q->whereBetween('created_at', [$start, $end])])
-            ->withSum(['bookings as total_revenue' => fn ($q) =>
-            $q->whereBetween('created_at', [$start, $end])->where('payment_status', 'paid')
+            ->withSum(['bookings as total_revenue' => fn ($q) => $q->whereBetween('created_at', [$start, $end])->where('payment_status', 'paid'),
             ], 'prepayment_amount')
             ->orderByDesc('total_bookings')
             ->get()
             ->map(function ($s) {
-                $commissionRate  = $s->getEffectiveCommissionRate();
-                $totalRevenue    = (float) ($s->total_revenue ?? 0);
+                $commissionRate = $s->getEffectiveCommissionRate();
+                $totalRevenue = (float) ($s->total_revenue ?? 0);
                 $specialistShare = $totalRevenue * (1 - $commissionRate / 100);
 
                 return [
-                    'id'                      => $s->id,
-                    'name'                    => $s->name,
-                    'total_bookings'          => $s->total_bookings ?? 0,
-                    'total_revenue'           => $totalRevenue,
-                    'commission_rate'         => $commissionRate,
-                    'specialist_share'        => round($specialistShare),
+                    'id' => $s->id,
+                    'name' => $s->name,
+                    'total_bookings' => $s->total_bookings ?? 0,
+                    'total_revenue' => $totalRevenue,
+                    'commission_rate' => $commissionRate,
+                    'specialist_share' => round($specialistShare),
                     'booking_completion_rate' => $this->calcCompletionRate($s->bookings),
-                    'customer_return_rate'    => $this->calcReturnRate($s->bookings),
-                    'performance_score'       => $this->calcSpecialistScore($s),
+                    'customer_return_rate' => $this->calcReturnRate($s->bookings),
+                    'performance_score' => $this->calcSpecialistScore($s),
                 ];
             });
     }
@@ -323,9 +318,9 @@ class AdminReportService
             ->with('specialist:id,name')
             ->get()
             ->map(fn ($item) => [
-                'specialist_name'   => $item->specialist->name ?? '—',
-                'average_rating'    => $item->average_rating,
-                'total_ratings'     => $item->total_ratings,
+                'specialist_name' => $item->specialist->name ?? '—',
+                'average_rating' => $item->average_rating,
+                'total_ratings' => $item->total_ratings,
                 'satisfaction_rate' => $item->total_ratings > 0
                     ? round(($item->positive_ratings / $item->total_ratings) * 100, 1)
                     : 0,
@@ -335,23 +330,21 @@ class AdminReportService
     public function buildExportData(Carbon $start, Carbon $end, string $type): array
     {
         return [
-            'summary'          => $this->getFinancialSummary($start, $end),
+            'summary' => $this->getFinancialSummary($start, $end),
             'paymentBreakdown' => $this->paymentBreakdown($start, $end),
-            'rawBookings'      => $this->getRawBookingsForExport($start, $end),
+            'rawBookings' => $this->getRawBookingsForExport($start, $end),
             'specialists' => Specialist::withCount(['bookings as total_bookings' => fn ($q) => $q->whereBetween('created_at', [$start, $end])])
-                ->withSum(['bookings as total_revenue' => fn ($q) =>
-                $q->whereBetween('created_at', [$start, $end])->where('payment_status', 'paid')
+                ->withSum(['bookings as total_revenue' => fn ($q) => $q->whereBetween('created_at', [$start, $end])->where('payment_status', 'paid'),
                 ], 'prepayment_amount')
                 ->orderByDesc('total_bookings')
                 ->get(),
-            'services'    => BeautyService::withCount(['bookings' => fn ($q) => $q->whereBetween('created_at', [$start, $end])])
-                ->withSum(['bookings as revenue' => fn ($q) =>
-                $q->where('payment_status', 'paid')->whereBetween('created_at', [$start, $end])
+            'services' => BeautyService::withCount(['bookings' => fn ($q) => $q->whereBetween('created_at', [$start, $end])])
+                ->withSum(['bookings as revenue' => fn ($q) => $q->where('payment_status', 'paid')->whereBetween('created_at', [$start, $end]),
                 ], 'prepayment_amount')
                 ->orderByDesc('bookings_count')
                 ->limit(10)
                 ->get(),
-            'rows'        => $this->getRowsForType($start, $end, $type),
+            'rows' => $this->getRowsForType($start, $end, $type),
         ];
     }
 
@@ -367,28 +360,28 @@ class AdminReportService
     public function getRawBookingsForExport(Carbon $start, Carbon $end): Collection
     {
         $statusLabels = [
-            'pending'         => 'در انتظار',
+            'pending' => 'در انتظار',
             'pending_payment' => 'در انتظار پرداخت',
-            'confirmed'       => 'تایید شده',
-            'completed'       => 'انجام شده',
-            'cancelled'       => 'لغو شده',
+            'confirmed' => 'تایید شده',
+            'completed' => 'انجام شده',
+            'cancelled' => 'لغو شده',
         ];
 
         $paymentStatusLabels = [
-            'paid'   => 'پرداخت‌شده',
+            'paid' => 'پرداخت‌شده',
             'unpaid' => 'پرداخت‌نشده',
         ];
 
         $paymentMethodLabels = [
-            'wallet'         => 'کیف پول',
-            'gateway'        => 'درگاه بانکی',
+            'wallet' => 'کیف پول',
+            'gateway' => 'درگاه بانکی',
             'wallet_gateway' => 'ترکیبی',
-            'full_discount'  => 'تخفیف کامل (بدون پرداخت)',
+            'full_discount' => 'تخفیف کامل (بدون پرداخت)',
         ];
 
         $discountTypeLabels = [
             'percentage' => 'درصدی',
-            'fixed'      => 'مبلغ ثابت',
+            'fixed' => 'مبلغ ثابت',
         ];
 
         $bookings = Booking::with(['user:id,name,phone', 'specialist:id,name,phone,commission_rate', 'service:id,name'])
@@ -415,31 +408,31 @@ class AdminReportService
                 : '—';
 
             return [
-                'created_date'      => $this->toJalaliDateString($booking->created_at),
-                'created_time'      => $booking->created_at->format('H:i'),
-                'booking_date'      => $booking->booking_time ? $this->toJalaliDateString($booking->booking_time) : '—',
-                'booking_time'      => $booking->booking_time ? $booking->booking_time->format('H:i') : '—',
-                'customer'          => $booking->user->name ?? '—',
-                'customer_phone'    => $booking->user->phone ?? '—',
-                'service'           => $booking->service->name ?? '—',
-                'specialist'        => $booking->specialist->name ?? '—',
-                'specialist_phone'  => $booking->specialist->phone ?? '—',
-                'status'            => $statusLabels[$booking->status] ?? $booking->status,
-                'payment_status'    => $paymentStatusLabels[$booking->payment_status] ?? $booking->payment_status,
-                'payment_method'    => $isAdminManual
+                'created_date' => $this->toJalaliDateString($booking->created_at),
+                'created_time' => $booking->created_at->format('H:i'),
+                'booking_date' => $booking->booking_time ? $this->toJalaliDateString($booking->booking_time) : '—',
+                'booking_time' => $booking->booking_time ? $booking->booking_time->format('H:i') : '—',
+                'customer' => $booking->user->name ?? '—',
+                'customer_phone' => $booking->user->phone ?? '—',
+                'service' => $booking->service->name ?? '—',
+                'specialist' => $booking->specialist->name ?? '—',
+                'specialist_phone' => $booking->specialist->phone ?? '—',
+                'status' => $statusLabels[$booking->status] ?? $booking->status,
+                'payment_status' => $paymentStatusLabels[$booking->payment_status] ?? $booking->payment_status,
+                'payment_method' => $isAdminManual
                     ? 'ثبت دستی ادمین'
                     : ($paymentMethodLabels[$method] ?? '—'),
-                'amount'            => (int) $booking->prepayment_amount,
-                'specialist_share'  => $specialistShare,
-                'discount_code'     => $booking->discount_code ?? '—',
-                'discount_type'     => $discountType,
-                'discount_amount'   => (int) $booking->discount_amount,
+                'amount' => (int) $booking->prepayment_amount,
+                'specialist_share' => $specialistShare,
+                'discount_code' => $booking->discount_code ?? '—',
+                'discount_type' => $discountType,
+                'discount_amount' => (int) $booking->discount_amount,
                 'payment_reference' => $booking->payment_reference ?? '—',
-                'rating'            => $booking->rating ?? '—',
-                'review'            => $booking->review ?? '—',
+                'rating' => $booking->rating ?? '—',
+                'review' => $booking->review ?? '—',
                 'cancellation_reason' => $booking->status === 'cancelled' ? ($booking->cancellation_reason ?? '—') : '—',
-                'refund_status'     => $booking->refund_status ?? '—',
-                'refunded_amount'   => $booking->refunded_amount !== null ? (int) $booking->refunded_amount : null,
+                'refund_status' => $booking->refund_status ?? '—',
+                'refunded_amount' => $booking->refunded_amount !== null ? (int) $booking->refunded_amount : null,
             ];
         });
     }
@@ -448,28 +441,28 @@ class AdminReportService
     {
         return match ($type) {
             'monthly' => $this->monthlyRevenue($start, $end),
-            'weekly'  => $this->weeklyRevenue($start, $end),
-            default   => $this->dailyRevenue($start, $end),
+            'weekly' => $this->weeklyRevenue($start, $end),
+            default => $this->dailyRevenue($start, $end),
         };
     }
 
     public function calcFinancialTrends(string $startDate, string $endDate): array
     {
-        $s       = Carbon::parse($startDate);
-        $e       = Carbon::parse($endDate);
-        $days    = $s->diffInDays($e);
+        $s = Carbon::parse($startDate);
+        $e = Carbon::parse($endDate);
+        $days = $s->diffInDays($e);
         $prevEnd = $s->copy()->subDay();
-        $prevSt  = $prevEnd->copy()->subDays($days);
+        $prevSt = $prevEnd->copy()->subDays($days);
 
-        $curRev  = Booking::where('payment_status', 'paid')->whereBetween('created_at', [$s, $e])->sum('prepayment_amount');
+        $curRev = Booking::where('payment_status', 'paid')->whereBetween('created_at', [$s, $e])->sum('prepayment_amount');
         $prevRev = Booking::where('payment_status', 'paid')->whereBetween('created_at', [$prevSt, $prevEnd])->sum('prepayment_amount');
 
         return [
-            'revenue_change'  => $prevRev > 0
+            'revenue_change' => $prevRev > 0
                 ? round(($curRev - $prevRev) / $prevRev * 100, 2)
                 : ($curRev > 0 ? 100 : 0),
             'previous_period' => ['start' => $prevSt->toDateString(), 'end' => $prevEnd->toDateString(), 'revenue' => $prevRev],
-            'current_period'  => ['start' => $startDate, 'end' => $endDate, 'revenue' => $curRev],
+            'current_period' => ['start' => $startDate, 'end' => $endDate, 'revenue' => $curRev],
         ];
     }
 

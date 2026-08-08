@@ -23,17 +23,17 @@ class Send2faVerificationCodeJob implements ShouldQueue
     public function __construct(
         protected int $userId,
         protected string $code
-    ) {
-    }
+    ) {}
 
     public function handle(SMSService $smsService): void
     {
         $user = User::find($this->userId);
 
-        if (!$user) {
+        if (! $user) {
             Log::warning('Send2faVerificationCodeJob: user not found, skipping SMS', [
                 'user_id' => $this->userId,
             ]);
+
             return;
         }
 
@@ -41,10 +41,10 @@ class Send2faVerificationCodeJob implements ShouldQueue
 
         $result = $smsService->sendTemplate($user->phone, $template, [$this->code]);
 
-        if (!$result) {
+        if (! $result) {
             Log::error('Send2faVerificationCodeJob: failed to send 2FA verification code', [
                 'user_id' => $user->id,
-                'phone'   => $user->phone,
+                'phone' => $user->phone,
             ]);
         }
     }

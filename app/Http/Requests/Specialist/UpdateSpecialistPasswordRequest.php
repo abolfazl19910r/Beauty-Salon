@@ -16,17 +16,17 @@ class UpdateSpecialistPasswordRequest extends FormRequest
     {
         return [
             'current_password' => ['required', 'current_password'],
-            'password'         => ['required', 'confirmed', Password::defaults()],
+            'password' => ['required', 'confirmed', Password::defaults()],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'current_password.required'       => 'رمز عبور فعلی الزامی است.',
+            'current_password.required' => 'رمز عبور فعلی الزامی است.',
             'current_password.current_password' => 'رمز عبور فعلی اشتباه است.',
-            'password.required'               => 'رمز عبور جدید الزامی است.',
-            'password.confirmed'              => 'تکرار رمز عبور جدید مطابقت ندارد.',
+            'password.required' => 'رمز عبور جدید الزامی است.',
+            'password.confirmed' => 'تکرار رمز عبور جدید مطابقت ندارد.',
         ];
     }
 }

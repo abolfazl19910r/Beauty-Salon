@@ -17,9 +17,9 @@ class UpdateDiscountCodeRequest extends FormRequest
         $minUses = $discountCode?->used_count ?? 0;
 
         return [
-            'is_active'  => ['boolean'],
+            'is_active' => ['boolean'],
             'expires_at' => ['nullable', 'date', 'after:today'],
-            'max_uses'   => ['sometimes', 'integer', "min:{$minUses}"],
+            'max_uses' => ['sometimes', 'integer', "min:{$minUses}"],
         ];
     }
 
@@ -27,7 +27,7 @@ class UpdateDiscountCodeRequest extends FormRequest
     {
         return [
             'expires_at.after' => 'تاریخ انقضا باید بعد از امروز باشد.',
-            'max_uses.min'     => 'حداکثر استفاده نمی‌تواند کمتر از تعداد استفاده‌های فعلی باشد.',
+            'max_uses.min' => 'حداکثر استفاده نمی‌تواند کمتر از تعداد استفاده‌های فعلی باشد.',
         ];
     }
 }

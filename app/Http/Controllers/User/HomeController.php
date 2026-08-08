@@ -21,7 +21,7 @@ class HomeController extends Controller
 
         $specialists = Cache::remember('home_specialists', 1800, function () {
             return Specialist::latest()
-                ->with(['schedules' => fn($q) => $q->where('is_active', true)->orderBy('day_of_week')])
+                ->with(['schedules' => fn ($q) => $q->where('is_active', true)->orderBy('day_of_week')])
                 ->select('id', 'name', 'email', 'phone', 'user_id')
                 ->take(4)
                 ->get();

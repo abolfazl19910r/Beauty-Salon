@@ -14,19 +14,19 @@ class SpecialistDashboardService
     public function getDashboardData(Specialist $specialist): array
     {
         return [
-            'todaySchedule'          => $this->getTodaySchedule($specialist),
-            'todayPersian'           => $this->toJalali(Carbon::now(), 'l، j F Y'),
-            'todayBookingsCount'     => $this->getTodayBookingsCount($specialist),
-            'todayRevenue'           => $this->getTodayRevenue($specialist),
-            'monthBookingsCount'     => $this->getMonthBookingsCount($specialist),
-            'monthRevenue'           => $this->getMonthRevenue($specialist),
-            'averageRating'          => $this->getAverageRating($specialist),
-            'upcomingBookings'       => $this->getUpcomingBookings($specialist),
-            'recentReviews'          => $this->getRecentReviews($specialist),
-            'weeklyRevenue'          => $this->getWeeklyRevenue($specialist),
-            'allBookingsCount'       => $this->countByStatus($specialist, null),
+            'todaySchedule' => $this->getTodaySchedule($specialist),
+            'todayPersian' => $this->toJalali(Carbon::now(), 'l، j F Y'),
+            'todayBookingsCount' => $this->getTodayBookingsCount($specialist),
+            'todayRevenue' => $this->getTodayRevenue($specialist),
+            'monthBookingsCount' => $this->getMonthBookingsCount($specialist),
+            'monthRevenue' => $this->getMonthRevenue($specialist),
+            'averageRating' => $this->getAverageRating($specialist),
+            'upcomingBookings' => $this->getUpcomingBookings($specialist),
+            'recentReviews' => $this->getRecentReviews($specialist),
+            'weeklyRevenue' => $this->getWeeklyRevenue($specialist),
+            'allBookingsCount' => $this->countByStatus($specialist, null),
             'confirmedBookingsCount' => $this->countByStatus($specialist, 'confirmed'),
-            'pendingBookingsCount'   => $this->countByStatus($specialist, 'pending'),
+            'pendingBookingsCount' => $this->countByStatus($specialist, 'pending'),
             'completedBookingsCount' => $this->countByStatus($specialist, 'completed'),
         ];
     }
@@ -97,11 +97,11 @@ class SpecialistDashboardService
         return $bookings->each(function ($booking) {
             $booking->booking_date_persian = $this->toJalali($booking->booking_time);
             $booking->status_fa = match ($booking->status) {
-                'pending'   => 'در انتظار تایید',
+                'pending' => 'در انتظار تایید',
                 'confirmed' => 'تایید شده',
                 'completed' => 'انجام شده',
                 'cancelled' => 'لغو شده',
-                default     => 'نامشخص',
+                default => 'نامشخص',
             };
         });
     }
@@ -128,7 +128,7 @@ class SpecialistDashboardService
                 ->sum('prepayment_amount');
 
             $weeklyRevenue[] = [
-                'date'  => $this->toJalali($date, 'm/d'),
+                'date' => $this->toJalali($date, 'm/d'),
                 'total' => $revenue,
             ];
         }

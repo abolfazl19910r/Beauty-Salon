@@ -59,6 +59,7 @@ class SpecialistProfileController extends Controller
 
         return view('specialist.profile-edit', compact('user', 'specialist'));
     }
+
     public function update(UpdateSpecialistProfileRequest $request): RedirectResponse
     {
         $user = auth()->user();
@@ -74,7 +75,7 @@ class SpecialistProfileController extends Controller
 
         $specialist = Specialist::where('phone', $validated['phone'])->first();
         $specialist?->update([
-            'name'  => $validated['name'],
+            'name' => $validated['name'],
             'phone' => $validated['phone'],
         ]);
 
@@ -126,9 +127,9 @@ class SpecialistProfileController extends Controller
                     if (! empty($schedule['is_active'])) {
                         $specialist->schedules()->create([
                             'day_of_week' => $schedule['day_of_week'],
-                            'start_time'  => $schedule['start_time'],
-                            'end_time'    => $schedule['end_time'],
-                            'is_active'   => true,
+                            'start_time' => $schedule['start_time'],
+                            'end_time' => $schedule['end_time'],
+                            'is_active' => true,
                         ]);
                     }
                 }
@@ -144,7 +145,7 @@ class SpecialistProfileController extends Controller
         } catch (\Exception $e) {
             Log::error('خطا در بروزرسانی برنامه کاری', ['error' => $e->getMessage()]);
 
-            return back()->with('error', 'خطا در ذخیره اطلاعات: ' . $e->getMessage());
+            return back()->with('error', 'خطا در ذخیره اطلاعات: '.$e->getMessage());
         }
     }
 
@@ -157,8 +158,8 @@ class SpecialistProfileController extends Controller
         }
 
         $user = auth()->user();
-        $currentBalance  = LoyaltyPoint::getCurrentBalance($user->id);
-        $expiringPoints  = LoyaltyPoint::getExpiringPoints($user->id, 30);
+        $currentBalance = LoyaltyPoint::getCurrentBalance($user->id);
+        $expiringPoints = LoyaltyPoint::getExpiringPoints($user->id, 30);
 
         $history = LoyaltyPoint::where('user_id', $user->id)
             ->with(['booking' => fn ($q) => $q->select('id', 'booking_time', 'service_id', 'specialist_id')
@@ -168,5 +169,4 @@ class SpecialistProfileController extends Controller
 
         return view('specialist.loyalty', compact('specialist', 'currentBalance', 'expiringPoints', 'history'));
     }
-
 }

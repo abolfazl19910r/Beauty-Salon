@@ -10,13 +10,15 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CancelUnpaidBookings implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
     public $tries = 3;
+
     public $backoff = 60;
 
     public function handle(SMSService $smsService): void
@@ -31,12 +33,12 @@ class CancelUnpaidBookings implements ShouldQueue
 
         foreach ($expiredBookings as $booking) {
             try {
-                DB::transaction(function() use ($booking, $smsService, &$cancelledCount) {
+                DB::transaction(function () use ($booking, $smsService, &$cancelledCount) {
                     $booking->update([
                         'status' => 'cancelled',
                         'cancelled_by' => 'system',
                         'cancelled_at' => now(),
-                        'cancellation_reason' => 'عدم تکمیل پرداخت در زمان مقرر (30 دقیقه)'
+                        'cancellation_reason' => 'عدم تکمیل پرداخت در زمان مقرر (30 دقیقه)',
                     ]);
 
                     if ($booking->user && $booking->user->phone) {
@@ -51,7 +53,7 @@ class CancelUnpaidBookings implements ShouldQueue
                         } catch (\Exception $smsException) {
                             Log::warning('Failed to send SMS for cancelled booking', [
                                 'booking_id' => $booking->id,
-                                'error' => $smsException->getMessage()
+                                'error' => $smsException->getMessage(),
                             ]);
                         }
                     }
@@ -64,7 +66,7 @@ class CancelUnpaidBookings implements ShouldQueue
                 Log::error('Error cancelling unpaid booking', [
                     'booking_id' => $booking->id,
                     'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                    'trace' => $e->getTraceAsString(),
                 ]);
             }
         }
@@ -74,7 +76,7 @@ class CancelUnpaidBookings implements ShouldQueue
     {
         Log::error('CancelUnpaidBookings job failed completely', [
             'error' => $exception->getMessage(),
-            'trace' => $exception->getTraceAsString()
+            'trace' => $exception->getTraceAsString(),
         ]);
     }
 }

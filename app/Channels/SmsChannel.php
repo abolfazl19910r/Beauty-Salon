@@ -7,9 +7,7 @@ use Illuminate\Notifications\Notification;
 
 class SmsChannel
 {
-    public function __construct(protected readonly SMSService $smsService)
-    {
-    }
+    public function __construct(protected readonly SMSService $smsService) {}
 
     public function send($notifiable, Notification $notification)
     {

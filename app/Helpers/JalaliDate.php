@@ -1,6 +1,6 @@
 <?php
 
-if (!function_exists('jalali_date')) {
+if (! function_exists('jalali_date')) {
     function jalali_date($date, $format = 'Y/m/d'): array|string
     {
         $date = is_string($date) ? \Carbon\Carbon::parse($date) : $date;
@@ -9,7 +9,7 @@ if (!function_exists('jalali_date')) {
         $gregorian_month = $date->month;
         $gregorian_day = $date->day;
 
-        list($jalali_year, $jalali_month, $jalali_day) = gregorian_to_jalali($gregorian_year, $gregorian_month, $gregorian_day);
+        [$jalali_year, $jalali_month, $jalali_day] = gregorian_to_jalali($gregorian_year, $gregorian_month, $gregorian_day);
 
         $result = $format;
         $result = str_replace('Y', $jalali_year, $result);
@@ -20,7 +20,7 @@ if (!function_exists('jalali_date')) {
     }
 }
 
-if (!function_exists('gregorian_to_jalali')) {
+if (! function_exists('gregorian_to_jalali')) {
     function gregorian_to_jalali($g_y, $g_m, $g_d): array
     {
         $g_days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
@@ -32,7 +32,7 @@ if (!function_exists('gregorian_to_jalali')) {
 
         $g_day_no = 365 * $gy + intdiv($gy + 3, 4) - intdiv($gy + 99, 100) + intdiv($gy + 399, 400);
 
-        for ($i = 0; $i < $gm; ++$i) {
+        for ($i = 0; $i < $gm; $i++) {
             $g_day_no += $g_days_in_month[$i];
         }
 
@@ -56,7 +56,7 @@ if (!function_exists('gregorian_to_jalali')) {
             $j_day_no = ($j_day_no - 1) % 365;
         }
 
-        for ($i = 0; $i < 11 && $j_day_no >= $j_days_in_month[$i]; ++$i) {
+        for ($i = 0; $i < 11 && $j_day_no >= $j_days_in_month[$i]; $i++) {
             $j_day_no -= $j_days_in_month[$i];
         }
 
@@ -67,11 +67,12 @@ if (!function_exists('gregorian_to_jalali')) {
     }
 }
 
-if (!function_exists('to_persian_num')) {
+if (! function_exists('to_persian_num')) {
     function to_persian_num($number): string
     {
         $persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
         $english = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
         return str_replace($english, $persian, $number);
     }
 }

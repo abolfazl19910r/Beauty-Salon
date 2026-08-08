@@ -37,6 +37,7 @@ class CleanupPendingBookings extends Command
 
         if ($expiredBookings->isEmpty()) {
             $this->info('✅ نوبتی برای لغو یافت نشد.');
+
             return self::SUCCESS;
         }
 
@@ -44,23 +45,25 @@ class CleanupPendingBookings extends Command
 
         $this->table(
             ['ID', 'کاربر', 'زمان ایجاد', 'دقیقه گذشته'],
-            $expiredBookings->map(function($booking) {
+            $expiredBookings->map(function ($booking) {
                 return [
                     $booking->id,
                     $booking->user->name ?? 'نامشخص',
                     $booking->created_at->format('Y-m-d H:i:s'),
-                    $booking->created_at->diffInMinutes(now())
+                    $booking->created_at->diffInMinutes(now()),
                 ];
             })
         );
 
         if ($dryRun) {
             $this->comment('🧪 حالت Dry Run: هیچ تغییری اعمال نشد.');
+
             return self::SUCCESS;
         }
 
-        if (!$this->confirm('آیا مطمئن هستید که می‌خواهید این نوبت‌ها را لغو کنید؟', true)) {
+        if (! $this->confirm('آیا مطمئن هستید که می‌خواهید این نوبت‌ها را لغو کنید؟', true)) {
             $this->info('❌ عملیات لغو شد.');
+
             return self::SUCCESS;
         }
 
@@ -73,7 +76,7 @@ class CleanupPendingBookings extends Command
                     'status' => 'cancelled',
                     'cancelled_by' => 'system',
                     'cancelled_at' => now(),
-                    'cancellation_reason' => 'عدم تکمیل پرداخت در زمان مقرر'
+                    'cancellation_reason' => 'عدم تکمیل پرداخت در زمان مقرر',
                 ]);
                 $cancelled++;
                 $this->line("✓ نوبت #{$booking->id} لغو شد");

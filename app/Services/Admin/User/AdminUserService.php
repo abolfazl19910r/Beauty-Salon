@@ -10,14 +10,14 @@ class AdminUserService
     public function create(array $data): User
     {
         $user = User::create([
-            'name'              => $data['name'],
-            'phone'             => $data['phone'],
-            'password'          => Hash::make($data['password']),
-            'is_admin'          => $data['is_admin'],
+            'name' => $data['name'],
+            'phone' => $data['phone'],
+            'password' => Hash::make($data['password']),
+            'is_admin' => $data['is_admin'],
             'phone_verified_at' => $data['is_active'] ? now() : null,
         ]);
 
-        if (!empty($data['roles'])) {
+        if (! empty($data['roles'])) {
             $user->roles()->sync($data['roles']);
         }
 
@@ -27,9 +27,9 @@ class AdminUserService
     public function update(User $user, array $data): User
     {
         $user->update([
-            'name'              => $data['name'],
-            'phone'             => $data['phone'],
-            'is_admin'          => $data['is_admin'],
+            'name' => $data['name'],
+            'phone' => $data['phone'],
+            'is_admin' => $data['is_admin'],
             'phone_verified_at' => $data['is_active']
                 ? ($user->phone_verified_at ?? now())
                 : null,
@@ -42,7 +42,7 @@ class AdminUserService
 
     /**
      * @return int Number of available turns; if zero, it means the deletion was done
- */
+     */
     public function delete(User $user): int
     {
         $bookingsCount = $user->bookings()->count();

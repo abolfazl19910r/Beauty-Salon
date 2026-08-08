@@ -42,14 +42,15 @@ class BeautyServiceSeeder extends Seeder
                 'اصلاح ساده ابرو' => [80000, 30],
                 'اصلاح تخصصی ابرو' => [120000, 45],
                 'اصلاح و رنگ ابرو' => [150000, 60],
-            ]
+            ],
         ];
 
         foreach ($servicesData as $categoryName => $items) {
             $category = Category::where('name', $categoryName)->first();
 
-            if (!$category) {
+            if (! $category) {
                 echo "Warning: Category '{$categoryName}' not found. Skipping services for this category.\n";
+
                 continue;
             }
 
@@ -61,7 +62,7 @@ class BeautyServiceSeeder extends Seeder
                     ['slug' => Str::slug($serviceName)],
                     [
                         'name' => $serviceName,
-                        'description' => 'شرحی مختصر برای سرویس ' . $serviceName,
+                        'description' => 'شرحی مختصر برای سرویس '.$serviceName,
                         'price' => $price,
                         'duration' => $duration,
                         'category_id' => $category->id,

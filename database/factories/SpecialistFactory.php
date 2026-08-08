@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Models\Role;
 use App\Models\Specialist;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\Role;
 
 class SpecialistFactory extends Factory
 {

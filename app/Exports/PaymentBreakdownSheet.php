@@ -30,9 +30,7 @@ class PaymentBreakdownSheet implements FromArray, WithColumnWidths, WithEvents, 
 {
     use AppliesReportSheetStyle;
 
-    public function __construct(protected array $summary, protected array $paymentBreakdown)
-    {
-    }
+    public function __construct(protected array $summary, protected array $paymentBreakdown) {}
 
     public function array(): array
     {
@@ -48,9 +46,9 @@ class PaymentBreakdownSheet implements FromArray, WithColumnWidths, WithEvents, 
         $adminManualAmount = $s['admin_manual_payments'] ?? 0;
 
         return [
-            ['کیف پول', $pb['wallet'], $pb['wallet_percent'] . '٪', $walletAmount],
-            ['درگاه بانکی', $pb['gateway'], $pb['gateway_percent'] . '٪', $gatewayAmount],
-            ['ثبت دستی ادمین', $pb['admin_manual'], $pb['admin_manual_percent'] . '٪', $adminManualAmount],
+            ['کیف پول', $pb['wallet'], $pb['wallet_percent'].'٪', $walletAmount],
+            ['درگاه بانکی', $pb['gateway'], $pb['gateway_percent'].'٪', $gatewayAmount],
+            ['ثبت دستی ادمین', $pb['admin_manual'], $pb['admin_manual_percent'].'٪', $adminManualAmount],
             ['جمع سه دسته‌ی بالا', $pb['wallet'] + $pb['gateway'] + $pb['admin_manual'], '', $walletAmount + $gatewayAmount + $adminManualAmount],
         ];
     }

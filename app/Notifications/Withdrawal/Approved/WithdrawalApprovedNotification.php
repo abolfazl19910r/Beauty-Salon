@@ -9,12 +9,13 @@ use Illuminate\Notifications\Notification;
 class WithdrawalApprovedNotification extends Notification
 {
     private WithdrawalRequest $withdrawalRequest;
+
     private SMSService $smsService;
 
     public function __construct(WithdrawalRequest $withdrawalRequest)
     {
         $this->withdrawalRequest = $withdrawalRequest;
-        $this->smsService = new SMSService();
+        $this->smsService = new SMSService;
     }
 
     public function via(mixed $notifiable): array

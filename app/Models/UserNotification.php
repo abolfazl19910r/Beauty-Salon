@@ -11,7 +11,9 @@ class UserNotification extends DatabaseNotification
     use HasFactory;
 
     protected $table = 'user_notifications';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [
@@ -21,7 +23,7 @@ class UserNotification extends DatabaseNotification
         'notifiable_type',
         'notifiable_id',
         'data',
-        'read_at'
+        'read_at',
     ];
 
     protected $casts = [

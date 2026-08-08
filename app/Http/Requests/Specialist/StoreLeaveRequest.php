@@ -15,8 +15,8 @@ class StoreLeaveRequest extends FormRequest
     {
         return [
             'start_date_jalali' => 'required|string',
-            'end_date_jalali'   => 'required|string',
-            'reason'            => 'nullable|string|max:255',
+            'end_date_jalali' => 'required|string',
+            'reason' => 'nullable|string|max:255',
         ];
     }
 
@@ -24,8 +24,8 @@ class StoreLeaveRequest extends FormRequest
     {
         return [
             'start_date_jalali.required' => 'تاریخ شروع مرخصی الزامی است.',
-            'end_date_jalali.required'   => 'تاریخ پایان مرخصی الزامی است.',
-            'reason.max'                 => 'دلیل مرخصی نباید بیشتر از ۲۵۵ کاراکتر باشد.',
+            'end_date_jalali.required' => 'تاریخ پایان مرخصی الزامی است.',
+            'reason.max' => 'دلیل مرخصی نباید بیشتر از ۲۵۵ کاراکتر باشد.',
         ];
     }
 }

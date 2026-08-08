@@ -2,22 +2,21 @@
 
 namespace App\Http\Controllers\Admin\Wallet;
 
-use Exception;
-use Illuminate\View\View;
-use Illuminate\Http\Request;
-use App\Models\SpecialistWallet;
-use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\RedirectResponse;
-use App\Services\Admin\Wallet\WalletAdminService;
 use App\Http\Requests\Admin\Wallet\AdjustWalletRequest;
+use App\Models\SpecialistWallet;
+use App\Services\Admin\Wallet\WalletAdminService;
+use Exception;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 
 class AdminWalletController extends Controller
 {
     public function __construct(
         private readonly WalletAdminService $walletAdminService
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View
     {
@@ -50,7 +49,7 @@ class AdminWalletController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->with('error', 'خطا در تایید شماره شبا: ' . $e->getMessage());
+            return back()->with('error', 'خطا در تایید شماره شبا: '.$e->getMessage());
         }
     }
 
@@ -72,7 +71,7 @@ class AdminWalletController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->with('error', 'خطا در تعدیل: ' . $e->getMessage());
+            return back()->with('error', 'خطا در تعدیل: '.$e->getMessage());
         }
     }
 
@@ -94,7 +93,7 @@ class AdminWalletController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->with('error', 'خطا در تسویه: ' . $e->getMessage());
+            return back()->with('error', 'خطا در تسویه: '.$e->getMessage());
         }
     }
 
@@ -117,7 +116,7 @@ class AdminWalletController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->with('error', 'خطا در تسویه: ' . $e->getMessage());
+            return back()->with('error', 'خطا در تسویه: '.$e->getMessage());
         }
     }
 
@@ -130,11 +129,11 @@ class AdminWalletController extends Controller
             return 'هیچ تراکنش قابل‌تسویه‌ای یافت نشد.';
         }
 
-        $message = 'تسویه انجام شد — تعداد: ' . number_format($result['settledCount'])
-            . '، مبلغ کل: ' . number_format($result['settledAmount']) . ' تومان.';
+        $message = 'تسویه انجام شد — تعداد: '.number_format($result['settledCount'])
+            .'، مبلغ کل: '.number_format($result['settledAmount']).' تومان.';
 
         if ($result['failedCount'] > 0) {
-            $message .= ' (' . number_format($result['failedCount']) . ' تراکنش با خطا مواجه شد، جزئیات در لاگ سرور)';
+            $message .= ' ('.number_format($result['failedCount']).' تراکنش با خطا مواجه شد، جزئیات در لاگ سرور)';
         }
 
         return $message;

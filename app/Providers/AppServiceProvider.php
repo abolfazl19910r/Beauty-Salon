@@ -10,13 +10,13 @@ use App\Observers\DiscountCodeObserver;
 use App\Services\SecurePaymentService;
 use App\Services\TwoFactorAuthService;
 use App\View\Composers\ViewComposer;
+use Illuminate\Notifications\ChannelManager;
+use Illuminate\Notifications\Channels\DatabaseChannel as BaseDatabaseChannel;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Pagination\Paginator;
-use Illuminate\Notifications\ChannelManager;
-use Illuminate\Notifications\Channels\DatabaseChannel as BaseDatabaseChannel;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -52,7 +52,8 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->extend(ChannelManager::class, function ($manager) {
             $manager->extend('database', function ($app) {
-                return new class($app->make('db'), $app->make('events')) extends BaseDatabaseChannel {
+                return new class($app->make('db'), $app->make('events')) extends BaseDatabaseChannel
+                {
                     protected function buildPayload($notifiable, $notification)
                     {
                         $payload = parent::buildPayload($notifiable, $notification);

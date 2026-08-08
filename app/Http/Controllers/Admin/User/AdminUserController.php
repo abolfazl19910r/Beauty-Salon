@@ -15,9 +15,7 @@ use Illuminate\View\View;
 
 class AdminUserController extends Controller
 {
-    public function __construct(protected readonly AdminUserService $userService)
-    {
-    }
+    public function __construct(protected readonly AdminUserService $userService) {}
 
     public function index(Request $request): View
     {
@@ -54,6 +52,7 @@ class AdminUserController extends Controller
     public function create(): View
     {
         $roles = Role::all();
+
         return view('admin.users.create', compact('roles'));
     }
 
@@ -62,7 +61,7 @@ class AdminUserController extends Controller
         try {
             $this->userService->create([
                 ...$request->validated(),
-                'is_admin'  => $request->boolean('is_admin'),
+                'is_admin' => $request->boolean('is_admin'),
                 'is_active' => $request->boolean('is_active'),
             ]);
 
@@ -71,23 +70,25 @@ class AdminUserController extends Controller
 
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'خطا در ایجاد کاربر: ' . $e->getMessage())
+                ->with('error', 'خطا در ایجاد کاربر: '.$e->getMessage())
                 ->withInput();
         }
     }
 
     public function show(User $user): View
     {
-        $roles    = Role::all();
-        $userRoles= $user->roles()->pluck('roles.id')->toArray();
+        $roles = Role::all();
+        $userRoles = $user->roles()->pluck('roles.id')->toArray();
         $bookings = $user->bookings()->with(['service', 'specialist'])->latest()->take(5)->get();
+
         return view('admin.users.show', compact('user', 'roles', 'userRoles', 'bookings'));
     }
 
     public function edit(User $user): View
     {
-        $roles     = Role::all();
+        $roles = Role::all();
         $userRoles = $user->roles()->pluck('roles.id')->toArray();
+
         return view('admin.users.edit', compact('user', 'roles', 'userRoles'));
     }
 
@@ -96,7 +97,7 @@ class AdminUserController extends Controller
         try {
             $this->userService->update($user, [
                 ...$request->validated(),
-                'is_admin'  => $request->boolean('is_admin'),
+                'is_admin' => $request->boolean('is_admin'),
                 'is_active' => $request->boolean('is_active'),
             ]);
 
@@ -105,7 +106,7 @@ class AdminUserController extends Controller
 
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'خطا در بروزرسانی کاربر: ' . $e->getMessage())
+                ->with('error', 'خطا در بروزرسانی کاربر: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -125,7 +126,7 @@ class AdminUserController extends Controller
 
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'خطا در حذف کاربر: ' . $e->getMessage());
+                ->with('error', 'خطا در حذف کاربر: '.$e->getMessage());
         }
     }
 
@@ -135,14 +136,14 @@ class AdminUserController extends Controller
             $activate = (bool) $request->input('is_active', 0);
             $this->userService->updateStatus($user, $activate);
 
-            $status  = $activate ? 'فعال' : 'غیرفعال';
+            $status = $activate ? 'فعال' : 'غیرفعال';
             $message = "وضعیت کاربر با موفقیت به «{$status}» تغییر یافت.";
 
             return redirect()->back()->with('success', $message);
 
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'خطا در تغییر وضعیت کاربر: ' . $e->getMessage());
+                ->with('error', 'خطا در تغییر وضعیت کاربر: '.$e->getMessage());
         }
     }
 
@@ -150,9 +151,10 @@ class AdminUserController extends Controller
     {
         try {
             $this->userService->resetPassword($user, $request->password);
+
             return redirect()->back()->with('success', 'رمز عبور با موفقیت بازنشانی شد.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'خطا در بازنشانی رمز عبور: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'خطا در بازنشانی رمز عبور: '.$e->getMessage());
         }
     }
 
@@ -160,9 +162,10 @@ class AdminUserController extends Controller
     {
         try {
             $this->userService->syncRoles($user, $request->input('roles', []));
+
             return redirect()->back()->with('success', 'نقش‌های کاربر با موفقیت بروزرسانی شد.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'خطا در بروزرسانی نقش‌ها: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'خطا در بروزرسانی نقش‌ها: '.$e->getMessage());
         }
     }
 }

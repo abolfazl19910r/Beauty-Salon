@@ -5,23 +5,21 @@ namespace App\Http\Controllers\Admin\Category;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Services\CategoryService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 
 class AdminCategoryController extends Controller
 {
-    public function __construct(protected readonly CategoryService $categoryService)
-    {
-    }
+    public function __construct(protected readonly CategoryService $categoryService) {}
 
     public function index(Request $request): View
     {
         $query = Category::with('parent');
 
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $search = $request->search;
             $query->where('name', 'like', "%{$search}%");
         }
@@ -31,7 +29,7 @@ class AdminCategoryController extends Controller
             $query->where('is_active', $isActive);
         }
 
-        if ($request->has('parent_id') && !empty($request->parent_id)) {
+        if ($request->has('parent_id') && ! empty($request->parent_id)) {
             $query->where('parent_id', $request->parent_id);
         }
 
@@ -44,6 +42,7 @@ class AdminCategoryController extends Controller
     public function create(): View
     {
         $parentCategories = Category::parents()->get(['id', 'name']);
+
         return view('admin.categories.create', compact('parentCategories'));
     }
 
@@ -56,7 +55,7 @@ class AdminCategoryController extends Controller
             'is_active' => 'boolean',
             'icon' => 'nullable|string|max:50',
             'order' => 'nullable|integer',
-            'image' => 'nullable|image|max:2048'
+            'image' => 'nullable|image|max:2048',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
@@ -104,14 +103,14 @@ class AdminCategoryController extends Controller
         $category = Category::findOrFail($id);
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
+            'name' => 'required|string|max:255|unique:categories,name,'.$category->id,
             'description' => 'nullable|string',
             'parent_id' => 'nullable|exists:categories,id',
             'is_active' => 'boolean',
             'icon' => 'nullable|string|max:50',
             'order' => 'nullable|integer',
             'image' => 'nullable|image|max:2048',
-            'remove_image' => 'nullable|boolean'
+            'remove_image' => 'nullable|boolean',
         ]);
 
         if ($category->name !== $validated['name']) {
@@ -123,8 +122,7 @@ class AdminCategoryController extends Controller
                 Storage::disk('public')->delete($category->image);
                 $validated['image'] = null;
             }
-        }
-        elseif ($request->hasFile('image')) {
+        } elseif ($request->hasFile('image')) {
             if ($category->image) {
                 Storage::disk('public')->delete($category->image);
             }

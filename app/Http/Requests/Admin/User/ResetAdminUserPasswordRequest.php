@@ -21,8 +21,8 @@ class ResetAdminUserPasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'password.required'  => 'رمز عبور جدید الزامی است.',
-            'password.min'       => 'رمز عبور باید حداقل ۸ کاراکتر باشد.',
+            'password.required' => 'رمز عبور جدید الزامی است.',
+            'password.min' => 'رمز عبور باید حداقل ۸ کاراکتر باشد.',
             'password.confirmed' => 'تکرار رمز عبور مطابقت ندارد.',
         ];
     }

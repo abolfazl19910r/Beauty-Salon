@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class LoyaltyPoint extends Model
 {
@@ -16,7 +16,7 @@ class LoyaltyPoint extends Model
         'points',
         'type',
         'description',
-        'expires_at'
+        'expires_at',
     ];
 
     protected $casts = [
@@ -36,7 +36,7 @@ class LoyaltyPoint extends Model
 
     public function scopeActive($query)
     {
-        return $query->where(function($q) {
+        return $query->where(function ($q) {
             $q->whereNull('expires_at')
                 ->orWhere('expires_at', '>', now());
         });
@@ -90,7 +90,10 @@ class LoyaltyPoint extends Model
 
     public function getRemainingDays(): ?int
     {
-        if (!$this->expires_at) return null;
+        if (! $this->expires_at) {
+            return null;
+        }
+
         return max(0, now()->diffInDays($this->expires_at, false));
     }
 }

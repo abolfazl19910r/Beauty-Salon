@@ -44,7 +44,7 @@ class SettlePendingWalletIncomes extends Command
 
         $this->info('✅ تسویه به پایان رسید');
         $this->info("📊 تعداد تسویه شده: {$result['settledCount']}");
-        $this->info('💰 مبلغ کل تسویه‌شده: ' . number_format($result['settledAmount']));
+        $this->info('💰 مبلغ کل تسویه‌شده: '.number_format($result['settledAmount']));
 
         if ($result['failedCount'] > 0) {
             $this->warn("⚠️ تعداد ناموفق: {$result['failedCount']}");

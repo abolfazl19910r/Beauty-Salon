@@ -14,8 +14,8 @@ class ResetPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'token'    => ['required'],
-            'code'     => ['required', 'string', 'size:6'],
+            'token' => ['required'],
+            'code' => ['required', 'string', 'size:6'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ];
     }
@@ -23,12 +23,12 @@ class ResetPasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'token.required'    => 'توکن بازیابی الزامی است.',
-            'code.required'     => 'کد تأیید الزامی است.',
-            'code.size'         => 'کد تأیید باید ۶ رقم باشد.',
+            'token.required' => 'توکن بازیابی الزامی است.',
+            'code.required' => 'کد تأیید الزامی است.',
+            'code.size' => 'کد تأیید باید ۶ رقم باشد.',
             'password.required' => 'رمز عبور جدید الزامی است.',
-            'password.min'      => 'رمز عبور باید حداقل ۸ کاراکتر باشد.',
-            'password.confirmed'=> 'تکرار رمز عبور مطابقت ندارد.',
+            'password.min' => 'رمز عبور باید حداقل ۸ کاراکتر باشد.',
+            'password.confirmed' => 'تکرار رمز عبور مطابقت ندارد.',
         ];
     }
 }

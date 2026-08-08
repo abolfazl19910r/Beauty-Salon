@@ -11,9 +11,7 @@ class AdminNewWithdrawalRequestNotification extends Notification implements Shou
 {
     use Queueable;
 
-    public function __construct(private readonly WithdrawalRequest $withdrawalRequest)
-    {
-    }
+    public function __construct(private readonly WithdrawalRequest $withdrawalRequest) {}
 
     public function via(object $notifiable): array
     {

@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Providers\RouteServiceProvider;
 use App\Services\PhoneVerificationService;
 use App\Services\SecurityLogService;
-use App\Providers\RouteServiceProvider;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
@@ -19,8 +19,7 @@ class AuthenticatedSessionController extends Controller
     public function __construct(
         protected readonly PhoneVerificationService $verificationService,
         protected readonly SecurityLogService $securityLogService,
-    ) {
-    }
+    ) {}
 
     public function create(): View
     {
@@ -36,7 +35,7 @@ class AuthenticatedSessionController extends Controller
 
         $user = User::where('phone', $credentials['phone'])->first();
 
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             $this->securityLogService->logLogin(false, $credentials['phone'], $user);
 
             return back()->withErrors([
@@ -49,7 +48,7 @@ class AuthenticatedSessionController extends Controller
         } catch (\Exception $e) {
             Log::error('Failed to send login code', [
                 'user_id' => $user->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return back()->withErrors([
@@ -59,7 +58,7 @@ class AuthenticatedSessionController extends Controller
 
         session([
             'login_user_id' => $user->id,
-            'login_attempt_time' => now()
+            'login_attempt_time' => now(),
         ]);
 
         return redirect()->route('login.verify.show')
@@ -68,15 +67,16 @@ class AuthenticatedSessionController extends Controller
 
     public function showVerify(): View|RedirectResponse
     {
-        if (!session('login_user_id')) {
+        if (! session('login_user_id')) {
             return redirect()->route('login')
                 ->withErrors(['error' => 'لطفا ابتدا وارد شوید.']);
         }
 
         $user = User::find(session('login_user_id'));
 
-        if (!$user) {
+        if (! $user) {
             session()->forget(['login_user_id', 'login_attempt_time']);
+
             return redirect()->route('login')
                 ->withErrors(['error' => 'کاربر یافت نشد.']);
         }
@@ -92,15 +92,16 @@ class AuthenticatedSessionController extends Controller
 
         $userId = session('login_user_id');
 
-        if (!$userId) {
+        if (! $userId) {
             return redirect()->route('login')
                 ->withErrors(['error' => 'جلسه شما منقضی شده است. لطفا دوباره تلاش کنید.']);
         }
 
         $user = User::find($userId);
 
-        if (!$user) {
+        if (! $user) {
             session()->forget(['login_user_id', 'login_attempt_time']);
+
             return redirect()->route('login')
                 ->withErrors(['error' => 'کاربر یافت نشد.']);
         }
@@ -120,7 +121,7 @@ class AuthenticatedSessionController extends Controller
         $this->securityLogService->logLogin(false, $user->phone, $user);
 
         return back()->withErrors([
-            'code' => 'کد وارد شده نامعتبر یا منقضی شده است.'
+            'code' => 'کد وارد شده نامعتبر یا منقضی شده است.',
         ]);
     }
 
@@ -128,13 +129,13 @@ class AuthenticatedSessionController extends Controller
     {
         $userId = session('login_user_id');
 
-        if (!$userId) {
+        if (! $userId) {
             return back()->withErrors(['error' => 'جلسه شما منقضی شده است.']);
         }
 
         $user = User::find($userId);
 
-        if (!$user) {
+        if (! $user) {
             return back()->withErrors(['error' => 'کاربر یافت نشد.']);
         }
 

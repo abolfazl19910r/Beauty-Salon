@@ -9,7 +9,7 @@ class PermissionMiddleware
 {
     public function handle(Request $request, Closure $next, $permission)
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return redirect()->route('login');
         }
 

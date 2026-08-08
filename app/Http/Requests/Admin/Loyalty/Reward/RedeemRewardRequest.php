@@ -22,7 +22,7 @@ class RedeemRewardRequest extends FormRequest
     {
         return [
             'user_id.required' => 'کاربر الزامی است.',
-            'user_id.exists'   => 'کاربر انتخابی معتبر نیست.',
+            'user_id.exists' => 'کاربر انتخابی معتبر نیست.',
         ];
     }
 }

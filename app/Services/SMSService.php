@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
-use Kavenegar\KavenegarApi;
+use Illuminate\Support\Facades\Log;
 use Kavenegar\Exceptions\ApiException;
 use Kavenegar\Exceptions\HttpException;
-use Illuminate\Support\Facades\Log;
+use Kavenegar\KavenegarApi;
 
 class SMSService
 {
@@ -25,7 +25,7 @@ class SMSService
         Log::info('SMS: در حال ارسال', ['mobile' => $mobile, 'message' => $message]);
 
         try {
-            if (app()->environment('local') && !config('services.kavenegar.send_in_local', false)) {
+            if (app()->environment('local') && ! config('services.kavenegar.send_in_local', false)) {
                 return true;
             }
 
@@ -38,16 +38,19 @@ class SMSService
             return true;
 
         } catch (ApiException $e) {
-            Log::error("Kavenegar API Error (Send): " . $e->getMessage(), [
+            Log::error('Kavenegar API Error (Send): '.$e->getMessage(), [
                 'mobile' => $mobile,
-                'code' => $e->getCode()
+                'code' => $e->getCode(),
             ]);
+
             return false;
         } catch (HttpException $e) {
-            Log::error("Kavenegar HTTP Error (Send): " . $e->getMessage(), ['mobile' => $mobile]);
+            Log::error('Kavenegar HTTP Error (Send): '.$e->getMessage(), ['mobile' => $mobile]);
+
             return false;
         } catch (\Exception $e) {
-            Log::error("General SMS Send Error: " . $e->getMessage());
+            Log::error('General SMS Send Error: '.$e->getMessage());
+
             return false;
         }
     }
@@ -63,7 +66,7 @@ class SMSService
         ]);
 
         try {
-            if (app()->environment('local') && !config('services.kavenegar.send_in_local', false)) {
+            if (app()->environment('local') && ! config('services.kavenegar.send_in_local', false)) {
                 return true;
             }
 
@@ -79,57 +82,61 @@ class SMSService
                 $templateName,
                 'sms'
             );
+
             return true;
 
         } catch (ApiException $e) {
-            Log::error("Kavenegar API Error (Lookup): " . $e->getMessage(), [
+            Log::error('Kavenegar API Error (Lookup): '.$e->getMessage(), [
                 'mobile' => $mobile,
                 'template' => $templateName,
-                'code' => $e->getCode()
+                'code' => $e->getCode(),
             ]);
+
             return false;
 
         } catch (HttpException $e) {
-            Log::error("Kavenegar HTTP Error (Lookup): " . $e->getMessage(), [
+            Log::error('Kavenegar HTTP Error (Lookup): '.$e->getMessage(), [
                 'mobile' => $mobile,
-                'template' => $templateName
+                'template' => $templateName,
             ]);
+
             return false;
 
         } catch (\Exception $e) {
-            Log::error("General SMS Lookup Error: " . $e->getMessage());
+            Log::error('General SMS Lookup Error: '.$e->getMessage());
+
             return false;
         }
     }
 
-//    public function sendVerificationCode(string $mobile, string $code, string $type = 'login'): bool
-//    {
-//        $templateMap = [
-//            'login'    => config('services.kavenegar.templates.login_verify'),
-//            'register' => config('services.kavenegar.templates.register_verify'),
-//            'reset'    => config('services.kavenegar.templates.reset_password'),
-//            '2fa'      => config('services.kavenegar.templates.two_factor_auth'),
-//        ];
-//
-//        $template = $templateMap[$type] ?? config('services.kavenegar.templates.login_verify');
-//
-//        return $this->sendTemplate($mobile, $template, [$code]);
-//    }
-
+    //    public function sendVerificationCode(string $mobile, string $code, string $type = 'login'): bool
+    //    {
+    //        $templateMap = [
+    //            'login'    => config('services.kavenegar.templates.login_verify'),
+    //            'register' => config('services.kavenegar.templates.register_verify'),
+    //            'reset'    => config('services.kavenegar.templates.reset_password'),
+    //            '2fa'      => config('services.kavenegar.templates.two_factor_auth'),
+    //        ];
+    //
+    //        $template = $templateMap[$type] ?? config('services.kavenegar.templates.login_verify');
+    //
+    //        return $this->sendTemplate($mobile, $template, [$code]);
+    //    }
 
     public function sendVerificationCode(string $mobile, string $code, string $type = 'login'): bool
     {
         $messages = [
-            'login'    => "سالن زیبایی\nکد تایید ورود شما: {$code}\nاین کد تا ۲ دقیقه اعتبار دارد.\nلغو۱۱",
+            'login' => "سالن زیبایی\nکد تایید ورود شما: {$code}\nاین کد تا ۲ دقیقه اعتبار دارد.\nلغو۱۱",
             'register' => "سالن زیبایی\nکد تایید ثبت‌نام: {$code}\nاین کد تا ۲ دقیقه اعتبار دارد.\nلغو۱۱",
-            'reset'    => "سالن زیبایی\nکد بازیابی رمز عبور: {$code}\nاین کد تا ۵ دقیقه اعتبار دارد.\nلغو۱۱",
-            '2fa'      => "سالن زیبایی\nکد احراز هویت دو مرحله‌ای: {$code}\nاین کد تا ۲ دقیقه اعتبار دارد.\nلغو۱۱",
+            'reset' => "سالن زیبایی\nکد بازیابی رمز عبور: {$code}\nاین کد تا ۵ دقیقه اعتبار دارد.\nلغو۱۱",
+            '2fa' => "سالن زیبایی\nکد احراز هویت دو مرحله‌ای: {$code}\nاین کد تا ۲ دقیقه اعتبار دارد.\nلغو۱۱",
         ];
 
         $message = $messages[$type] ?? $messages['login'];
 
         return $this->send($mobile, $message);
     }
+
     public function sendBookingConfirmation(string $mobile, array $data): bool
     {
         $message = sprintf(

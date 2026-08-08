@@ -9,17 +9,16 @@ use Illuminate\Notifications\Notification;
 class NewReviewNotification extends Notification
 {
     private Booking $booking;
+
     private SMSService $smsService;
 
     /**
-     *
-     * @param Booking $booking
      * @return void
      */
     public function __construct(Booking $booking)
     {
         $this->booking = $booking;
-        $this->smsService = new SMSService();
+        $this->smsService = new SMSService;
     }
 
     public function via($notifiable): array
@@ -35,7 +34,7 @@ class NewReviewNotification extends Notification
             'user_name' => $this->booking->user->name,
             'service_name' => $this->booking->service->name,
             'rating' => $this->booking->rating,
-            'review' => $this->booking->review
+            'review' => $this->booking->review,
         ];
     }
 
@@ -49,7 +48,7 @@ class NewReviewNotification extends Notification
             $this->booking->service->name,
             $this->booking->user->name,
             $this->booking->rating,
-            $this->booking->review ? "نظر: " . $this->booking->review : ""
+            $this->booking->review ? 'نظر: '.$this->booking->review : ''
         );
 
         return $this->smsService->send($notifiable->phone, $message);

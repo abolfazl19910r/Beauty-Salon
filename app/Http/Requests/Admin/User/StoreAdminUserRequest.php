@@ -14,11 +14,11 @@ class StoreAdminUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'     => ['required', 'string', 'max:255'],
-            'phone'    => ['required', 'string', 'max:11', 'unique:users,phone'],
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:11', 'unique:users,phone'],
             'password' => ['required', 'string', 'min:8'],
-            'roles'    => ['nullable', 'array'],
-            'roles.*'  => ['exists:roles,id'],
+            'roles' => ['nullable', 'array'],
+            'roles.*' => ['exists:roles,id'],
             'is_admin' => ['nullable', 'boolean'],
         ];
     }
@@ -26,11 +26,11 @@ class StoreAdminUserRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required'     => 'نام کاربر الزامی است.',
-            'phone.required'    => 'شماره موبایل الزامی است.',
-            'phone.unique'      => 'این شماره موبایل قبلاً ثبت شده است.',
+            'name.required' => 'نام کاربر الزامی است.',
+            'phone.required' => 'شماره موبایل الزامی است.',
+            'phone.unique' => 'این شماره موبایل قبلاً ثبت شده است.',
             'password.required' => 'رمز عبور الزامی است.',
-            'password.min'      => 'رمز عبور باید حداقل ۸ کاراکتر باشد.',
+            'password.min' => 'رمز عبور باید حداقل ۸ کاراکتر باشد.',
         ];
     }
 }

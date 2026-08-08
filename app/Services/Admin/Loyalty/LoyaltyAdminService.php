@@ -9,10 +9,10 @@ use App\Models\Reward;
 use App\Models\User;
 use App\Services\LoyaltyService;
 use Carbon\Carbon;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Collection;
-use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
  * Business logic for managing the loyalty program from the admin panel.
@@ -32,8 +32,7 @@ class LoyaltyAdminService
 {
     public function __construct(
         private readonly LoyaltyService $loyaltyService,
-    ) {
-    }
+    ) {}
 
     // ─── Dashboard (admin.loyalty.index) ───────────────────────────────────
 
@@ -45,11 +44,11 @@ class LoyaltyAdminService
         $rewards = Reward::orderBy('required_points')->get();
 
         return [
-            'totalActivePoints'    => $totalActivePoints,
-            'totalPointUsers'      => $totalPointUsers,
-            'averageUserPoints'    => $totalPointUsers > 0 ? round($totalActivePoints / $totalPointUsers) : 0,
+            'totalActivePoints' => $totalActivePoints,
+            'totalPointUsers' => $totalPointUsers,
+            'averageUserPoints' => $totalPointUsers > 0 ? round($totalActivePoints / $totalPointUsers) : 0,
             'totalRedeemedRewards' => $totalRedeemedRewards,
-            'rewards'              => $rewards,
+            'rewards' => $rewards,
         ];
     }
 
@@ -97,10 +96,10 @@ class LoyaltyAdminService
 
     public function getStatistics(): array
     {
-        $totalPoints   = LoyaltyPoint::where('type', 'earned')->sum('points');
-        $usedPoints    = abs(LoyaltyPoint::where('type', 'spent')->sum('points'));
-        $activeUsers   = LoyaltyPoint::select('user_id')->distinct()->count('user_id');
-        $totalRewards  = Reward::where('is_active', true)->count();
+        $totalPoints = LoyaltyPoint::where('type', 'earned')->sum('points');
+        $usedPoints = abs(LoyaltyPoint::where('type', 'spent')->sum('points'));
+        $activeUsers = LoyaltyPoint::select('user_id')->distinct()->count('user_id');
+        $totalRewards = Reward::where('is_active', true)->count();
         $redeemedCount = LoyaltyPoint::where('type', 'spent')->count();
 
         $topUsers = LoyaltyPoint::select('user_id', DB::raw('SUM(points) as total_points'))
@@ -117,24 +116,24 @@ class LoyaltyAdminService
             ->get();
 
         return [
-            'total_points_earned'  => $totalPoints,
-            'total_points_used'    => $usedPoints,
-            'active_points'        => $totalPoints - $usedPoints,
-            'active_users'         => $activeUsers,
+            'total_points_earned' => $totalPoints,
+            'total_points_used' => $usedPoints,
+            'active_points' => $totalPoints - $usedPoints,
+            'active_users' => $activeUsers,
             'total_active_rewards' => $totalRewards,
-            'total_redemptions'    => $redeemedCount,
-            'avg_points_per_user'  => $activeUsers > 0
+            'total_redemptions' => $redeemedCount,
+            'avg_points_per_user' => $activeUsers > 0
                 ? round(($totalPoints - $usedPoints) / $activeUsers)
                 : 0,
-            'top_users'            => $topUsers,
-            'recent_redemptions'   => $recentRedemptions,
+            'top_users' => $topUsers,
+            'recent_redemptions' => $recentRedemptions,
         ];
     }
 
     public function getUserPoints(User $user): array
     {
-        $earned  = LoyaltyPoint::where('user_id', $user->id)->where('type', 'earned')->sum('points');
-        $spent   = abs(LoyaltyPoint::where('user_id', $user->id)->where('type', 'spent')->sum('points'));
+        $earned = LoyaltyPoint::where('user_id', $user->id)->where('type', 'earned')->sum('points');
+        $spent = abs(LoyaltyPoint::where('user_id', $user->id)->where('type', 'spent')->sum('points'));
         $balance = $earned - $spent;
 
         $expiringSoon = LoyaltyPoint::where('user_id', $user->id)
@@ -145,12 +144,12 @@ class LoyaltyAdminService
             ->sum('points');
 
         return [
-            'user'             => $user->only(['id', 'name', 'phone', 'email']),
-            'total_earned'     => $earned,
-            'total_spent'      => $spent,
-            'current_balance'  => $balance,
-            'expiring_soon'    => $expiringSoon,
-            'history'          => LoyaltyPoint::where('user_id', $user->id)
+            'user' => $user->only(['id', 'name', 'phone', 'email']),
+            'total_earned' => $earned,
+            'total_spent' => $spent,
+            'current_balance' => $balance,
+            'expiring_soon' => $expiringSoon,
+            'history' => LoyaltyPoint::where('user_id', $user->id)
                 ->orderByDesc('created_at')
                 ->paginate(20),
         ];
@@ -163,11 +162,11 @@ class LoyaltyAdminService
         ?string $expiresAt = null
     ): LoyaltyPoint {
         $loyaltyPoint = LoyaltyPoint::create([
-            'user_id'     => $user->id,
-            'points'      => $points,
-            'type'        => 'earned',
+            'user_id' => $user->id,
+            'points' => $points,
+            'type' => 'earned',
             'description' => $description,
-            'expires_at'  => $expiresAt ? Carbon::parse($expiresAt)->endOfDay() : null,
+            'expires_at' => $expiresAt ? Carbon::parse($expiresAt)->endOfDay() : null,
         ]);
 
         Cache::forget("user:{$user->id}:loyalty_points");
@@ -187,9 +186,9 @@ class LoyaltyAdminService
         }
 
         $loyaltyPoint = LoyaltyPoint::create([
-            'user_id'     => $user->id,
-            'points'      => -$points,
-            'type'        => 'spent',
+            'user_id' => $user->id,
+            'points' => -$points,
+            'type' => 'spent',
             'description' => $description,
         ]);
 
@@ -205,20 +204,18 @@ class LoyaltyAdminService
         }
 
         return User::select('id', 'name', 'phone', 'email')
-            ->withSum(['loyaltyPoints as total_points' => fn ($q) =>
-            $q->where('type', 'earned')
+            ->withSum(['loyaltyPoints as total_points' => fn ($q) => $q->where('type', 'earned'),
             ], 'points')
-            ->withSum(['loyaltyPoints as used_points' => fn ($q) =>
-            $q->where('type', 'spent')
+            ->withSum(['loyaltyPoints as used_points' => fn ($q) => $q->where('type', 'spent'),
             ], 'points')
             ->having(DB::raw('COALESCE(total_points, 0)'), '>', 0)
             ->orderByDesc('total_points')
             ->get()
             ->map(fn ($u) => [
-                'name'            => $u->name,
-                'phone'           => $u->phone,
-                'total_earned'    => $u->total_points ?? 0,
-                'total_spent'     => abs($u->used_points ?? 0),
+                'name' => $u->name,
+                'phone' => $u->phone,
+                'total_earned' => $u->total_points ?? 0,
+                'total_spent' => abs($u->used_points ?? 0),
                 'current_balance' => ($u->total_points ?? 0) + ($u->used_points ?? 0),
             ])
             ->toArray();

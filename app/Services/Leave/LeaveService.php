@@ -12,6 +12,7 @@ class LeaveService
     /**
      * Registering a new leave request — before registering, conflicts with other approved leaves and already booked appointments are checked (something that was not possible in the old version of
      * * SpecialistLeave)
+     *
      * @return array{success: bool, message: string, leave: ?Leave}
      */
     public function store(Specialist $specialist, array $data): array
@@ -24,21 +25,22 @@ class LeaveService
 
         $leave = $specialist->leaves()->create([
             'start_date' => $data['start_date'],
-            'end_date'   => $data['end_date'],
-            'reason'     => $data['reason'] ?? null,
-            'status'     => 'pending',
+            'end_date' => $data['end_date'],
+            'reason' => $data['reason'] ?? null,
+            'status' => 'pending',
         ]);
 
         return [
             'success' => true,
             'message' => 'درخواست مرخصی با موفقیت ثبت شد.',
-            'leave'   => $leave,
+            'leave' => $leave,
         ];
     }
 
     /**
      * Approve or reject a leave. On approval, a conflict check is performed again (since
      * another leave or appointment may have been registered between the time the request was registered and its approval). In both cases, a notification (database + SMS) is sent to the specialist
+     *
      * @return array{success: bool, message: string}
      */
     public function updateStatus(Leave $leave, string $status, ?string $rejectReason = null): array
@@ -74,7 +76,7 @@ class LeaveService
      * , although it was actually created in the database (confirmed with
      * Telescope). Fix: The user associated with the specialist (with the same match-by-phone pattern
      * used throughout the project) is found and notified.
- */
+     */
     private function notifySpecialistUser(Leave $leave): void
     {
         $specialist = $leave->specialist;

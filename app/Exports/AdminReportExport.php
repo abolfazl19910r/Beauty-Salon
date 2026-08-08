@@ -26,8 +26,7 @@ class AdminReportExport implements WithMultipleSheets
         protected Collection $rawBookings,
         protected Collection $specialists,
         protected Collection $services,
-    ) {
-    }
+    ) {}
 
     public function sheets(): array
     {

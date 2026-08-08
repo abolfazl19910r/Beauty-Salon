@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class SpecialistWallet extends Model
 {
@@ -46,7 +46,7 @@ class SpecialistWallet extends Model
         return $this->hasMany(WithdrawalRequest::class, 'wallet_id');
     }
 
-    public function addIncome(float $amount, int $bookingId, string $description = null): WalletTransaction
+    public function addIncome(float $amount, int $bookingId, ?string $description = null): WalletTransaction
     {
         $settings = WalletSetting::first();
         $settlementDelay = $settings->settlement_delay_days ?? 2;
@@ -62,8 +62,8 @@ class SpecialistWallet extends Model
             'description' => $description ?? "درآمد از نوبت #{$bookingId}",
             'metadata' => [
                 'settlement_date' => now()->addDays($settlementDelay)->toDateString(),
-                'status' => 'pending'
-            ]
+                'status' => 'pending',
+            ],
         ]);
 
         return $transaction;
@@ -86,7 +86,7 @@ class SpecialistWallet extends Model
      * Uses the 'adjustment' enum value (not a new one) since wallet_transactions.type is a fixed
      * DB enum — adding a dedicated type would need a migration for something this narrow.
      */
-    public function reverseIncome(WalletTransaction $originalTransaction, string $description = null): WalletTransaction
+    public function reverseIncome(WalletTransaction $originalTransaction, ?string $description = null): WalletTransaction
     {
         $amount = (float) $originalTransaction->amount;
         $wasSettled = ($originalTransaction->metadata['status'] ?? null) === 'settled';
@@ -132,8 +132,8 @@ class SpecialistWallet extends Model
             'balance_after' => $this->balance,
             'description' => "برداشت وجه - کد پیگیری: {$withdrawalRequestId}",
             'metadata' => [
-                'withdrawal_request_id' => $withdrawalRequestId
-            ]
+                'withdrawal_request_id' => $withdrawalRequestId,
+            ],
         ]);
 
         return $transaction;
@@ -146,28 +146,28 @@ class SpecialistWallet extends Model
         if ($amount < $settings->minimum_withdrawal_amount) {
             return [
                 'success' => false,
-                'message' => "حداقل مبلغ برداشت " . number_format($settings->minimum_withdrawal_amount) . " تومان است."
+                'message' => 'حداقل مبلغ برداشت '.number_format($settings->minimum_withdrawal_amount).' تومان است.',
             ];
         }
 
         if ($amount > $settings->maximum_withdrawal_amount) {
             return [
                 'success' => false,
-                'message' => "حداکثر مبلغ برداشت " . number_format($settings->maximum_withdrawal_amount) . " تومان است."
+                'message' => 'حداکثر مبلغ برداشت '.number_format($settings->maximum_withdrawal_amount).' تومان است.',
             ];
         }
 
         if ($amount > $this->balance) {
             return [
                 'success' => false,
-                'message' => "موجودی کیف پول شما کافی نیست."
+                'message' => 'موجودی کیف پول شما کافی نیست.',
             ];
         }
 
-        if (!$this->iban) {
+        if (! $this->iban) {
             return [
                 'success' => false,
-                'message' => "لطفاً ابتدا شماره شبا خود را ثبت کنید."
+                'message' => 'لطفاً ابتدا شماره شبا خود را ثبت کنید.',
             ];
         }
 
@@ -196,7 +196,7 @@ class SpecialistWallet extends Model
 
     public function getFormattedBalanceAttribute(): string
     {
-        return number_format($this->balance) . ' تومان';
+        return number_format($this->balance).' تومان';
     }
 
     public function getAvailableBalanceAttribute(): float
@@ -211,7 +211,10 @@ class SpecialistWallet extends Model
 
     public function getFormattedIbanAttribute()
     {
-        if (!$this->iban) return null;
+        if (! $this->iban) {
+            return null;
+        }
+
         return implode(' ', str_split($this->iban, 4));
     }
 }

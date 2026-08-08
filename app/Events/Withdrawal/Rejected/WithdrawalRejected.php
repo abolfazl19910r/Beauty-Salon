@@ -14,6 +14,5 @@ class WithdrawalRejected
     public function __construct(
         public WithdrawalRequest $withdrawalRequest,
         public string $reason,
-    ) {
-    }
+    ) {}
 }

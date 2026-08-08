@@ -8,9 +8,7 @@ use Illuminate\Http\JsonResponse;
 
 class AdminDashboardAnalyticsController extends Controller
 {
-    public function __construct(private readonly AdminDashboardService $dashboardService)
-    {
-    }
+    public function __construct(private readonly AdminDashboardService $dashboardService) {}
 
     public function getData(): JsonResponse
     {

@@ -22,7 +22,7 @@ class TwoFactorVerifyRequest extends FormRequest
     {
         return [
             'code.required' => 'کد احراز هویت دو مرحله‌ای الزامی است.',
-            'code.size'     => 'کد باید دقیقاً ۶ رقم باشد.',
+            'code.size' => 'کد باید دقیقاً ۶ رقم باشد.',
         ];
     }
 }

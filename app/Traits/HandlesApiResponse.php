@@ -21,7 +21,7 @@ use Illuminate\Http\JsonResponse;
 trait HandlesApiResponse
 {
     /**
-     * @param array<string,mixed> $extra Extra keys (e.g. ['status' => 'read'])
+     * @param  array<string,mixed>  $extra  Extra keys (e.g. ['status' => 'read'])
      */
     protected function successResponse(?string $message = null, array $extra = [], int $status = 200): JsonResponse
     {
@@ -33,7 +33,7 @@ trait HandlesApiResponse
     }
 
     /**
-     * @param array<string,mixed> $extra Extra keys
+     * @param  array<string,mixed>  $extra  Extra keys
      */
     protected function errorResponse(string $message, int $status = 422, array $extra = []): JsonResponse
     {

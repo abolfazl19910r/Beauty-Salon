@@ -11,15 +11,12 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class SecurityController extends Controller
 {
-    public function __construct(protected readonly SecurityLogService $securityLogService)
-    {
-    }
+    public function __construct(protected readonly SecurityLogService $securityLogService) {}
 
     public function dashboard(): View
     {
@@ -61,6 +58,7 @@ class SecurityController extends Controller
             ->map(function ($session) {
                 $session->last_activity = Carbon::createFromTimestamp($session->last_activity);
                 $session->is_current_device = $session->id === session()->getId();
+
                 return $session;
             });
     }
@@ -69,7 +67,7 @@ class SecurityController extends Controller
     {
         if ($id === session()->getId()) {
             return response()->json([
-                'error' => 'نمی‌توانید نشست فعلی را پایان دهید.'
+                'error' => 'نمی‌توانید نشست فعلی را پایان دهید.',
             ], 422);
         }
 
@@ -83,7 +81,7 @@ class SecurityController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'نشست با موفقیت پایان یافت.'
+            'message' => 'نشست با موفقیت پایان یافت.',
         ]);
     }
 
@@ -97,7 +95,7 @@ class SecurityController extends Controller
         $this->securityLogService->logSuspiciousActivity('all_sessions_terminated');
 
         return response()->json([
-            'message' => 'تمام نشست‌های دیگر با موفقیت پایان یافتند.'
+            'message' => 'تمام نشست‌های دیگر با موفقیت پایان یافتند.',
         ]);
     }
 
@@ -129,20 +127,31 @@ class SecurityController extends Controller
         $score = 0;
         $password = $request->password;
 
-        if (strlen($password) >= 12) $score += 2;
-        elseif (strlen($password) >= 8) $score += 1;
+        if (strlen($password) >= 12) {
+            $score += 2;
+        } elseif (strlen($password) >= 8) {
+            $score += 1;
+        }
 
-        if (preg_match('/[A-Z]/', $password)) $score += 1;
-        if (preg_match('/[a-z]/', $password)) $score += 1;
+        if (preg_match('/[A-Z]/', $password)) {
+            $score += 1;
+        }
+        if (preg_match('/[a-z]/', $password)) {
+            $score += 1;
+        }
 
-        if (preg_match('/[0-9]/', $password)) $score += 1;
+        if (preg_match('/[0-9]/', $password)) {
+            $score += 1;
+        }
 
-        if (preg_match('/[^A-Za-z0-9]/', $password)) $score += 1;
+        if (preg_match('/[^A-Za-z0-9]/', $password)) {
+            $score += 1;
+        }
 
         return response()->json([
             'score' => $score,
             'strength' => $this->getPasswordStrengthLabel($score),
-            'suggestions' => $this->getPasswordSuggestions($score)
+            'suggestions' => $this->getPasswordSuggestions($score),
         ]);
     }
 
@@ -182,7 +191,7 @@ class SecurityController extends Controller
 
     protected function getPasswordStrengthLabel($score): string
     {
-        return match(true) {
+        return match (true) {
             $score >= 5 => 'قوی',
             $score >= 3 => 'متوسط',
             default => 'ضعیف'

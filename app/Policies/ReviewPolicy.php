@@ -39,7 +39,7 @@ class ReviewPolicy
 
     public function update(User $user, Review $review): bool
     {
-        return $review->user_id === $user->id && !$review->is_approved;
+        return $review->user_id === $user->id && ! $review->is_approved;
     }
 
     public function delete(User $user, Review $review): bool

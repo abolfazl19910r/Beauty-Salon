@@ -5,17 +5,15 @@ namespace App\Http\Controllers\Specialist\Wallet;
 use App\Http\Controllers\Controller;
 use App\Services\Specialist\SpecialistWalletService;
 use App\Traits\ResolvesSpecialist;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Illuminate\Http\JsonResponse;
 
 class SpecialistWalletController extends Controller
 {
     use ResolvesSpecialist;
 
-    public function __construct(private SpecialistWalletService $walletService)
-    {
-    }
+    public function __construct(private SpecialistWalletService $walletService) {}
 
     public function index(): View
     {

@@ -17,6 +17,7 @@ class UserNotificationSeeder extends Seeder
 
         if ($users->isEmpty()) {
             $this->command->info('No users found to attach notifications via UserNotificationSeeder.');
+
             return;
         }
 

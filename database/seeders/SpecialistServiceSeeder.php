@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Specialist;
 use App\Models\BeautyService;
+use App\Models\Specialist;
 use Illuminate\Database\Seeder;
 
 class SpecialistServiceSeeder extends Seeder

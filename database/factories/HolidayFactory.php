@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Holiday;
 use App\Models\Specialist;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\Holiday;
 
 class HolidayFactory extends Factory
 {
@@ -15,7 +15,7 @@ class HolidayFactory extends Factory
         return [
             'specialist_id' => Specialist::factory(),
             'date' => fake()->dateTimeBetween('now', '+2 months'),
-            'description' => fake()->optional()->sentence()
+            'description' => fake()->optional()->sentence(),
         ];
     }
 }

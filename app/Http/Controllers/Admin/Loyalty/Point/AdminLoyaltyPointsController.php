@@ -44,7 +44,7 @@ class AdminLoyaltyPointsController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در دریافت امتیازات: ' . $e->getMessage(),
+                'message' => 'خطا در دریافت امتیازات: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -61,7 +61,7 @@ class AdminLoyaltyPointsController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در دریافت تاریخچه: ' . $e->getMessage(),
+                'message' => 'خطا در دریافت تاریخچه: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -71,13 +71,13 @@ class AdminLoyaltyPointsController extends Controller
         try {
             return response()->json([
                 'success' => true,
-                'data'    => $this->loyaltyService->getStatistics(),
+                'data' => $this->loyaltyService->getStatistics(),
             ]);
 
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در دریافت آمار: ' . $e->getMessage(),
+                'message' => 'خطا در دریافت آمار: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -87,13 +87,13 @@ class AdminLoyaltyPointsController extends Controller
         try {
             return response()->json([
                 'success' => true,
-                'data'    => $this->loyaltyService->getUserPoints($user),
+                'data' => $this->loyaltyService->getUserPoints($user),
             ]);
 
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در دریافت امتیازات کاربر: ' . $e->getMessage(),
+                'message' => 'خطا در دریافت امتیازات کاربر: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -111,13 +111,13 @@ class AdminLoyaltyPointsController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'امتیاز با موفقیت اضافه شد.',
-                'data'    => $point,
+                'data' => $point,
             ], 201);
 
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در افزودن امتیاز: ' . $e->getMessage(),
+                'message' => 'خطا در افزودن امتیاز: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -134,7 +134,7 @@ class AdminLoyaltyPointsController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'امتیاز با موفقیت کسر شد.',
-                'data'    => $point,
+                'data' => $point,
             ]);
 
         } catch (InsufficientLoyaltyPointsException $e) {
@@ -146,7 +146,7 @@ class AdminLoyaltyPointsController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در کسر امتیاز: ' . $e->getMessage(),
+                'message' => 'خطا در کسر امتیاز: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -160,13 +160,13 @@ class AdminLoyaltyPointsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data'    => $data,
+                'data' => $data,
             ]);
 
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'خطا در خروجی گرفتن: ' . $e->getMessage(),
+                'message' => 'خطا در خروجی گرفتن: '.$e->getMessage(),
             ], 500);
         }
     }

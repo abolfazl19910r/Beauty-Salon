@@ -6,7 +6,6 @@ use App\Models\BlogCategory;
 use App\Models\BlogPost;
 use App\Traits\HasJalaliDates;
 use Carbon\Carbon;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -40,7 +39,7 @@ class BlogPostService
                 $attributes['image'] = $image->store('blog', 'public');
             }
 
-            $post = new BlogPost();
+            $post = new BlogPost;
             $post->fill($attributes);
             $post->save();
 

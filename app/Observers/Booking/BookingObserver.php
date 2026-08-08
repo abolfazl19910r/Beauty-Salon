@@ -17,9 +17,7 @@ use Illuminate\Support\Facades\Log;
 
 class BookingObserver
 {
-    public function __construct(protected readonly ReportCacheService $cacheService, protected readonly SMSService $smsService)
-    {
-    }
+    public function __construct(protected readonly ReportCacheService $cacheService, protected readonly SMSService $smsService) {}
 
     /**
      * R-Events: Previously, BookingCreated was not dispatched anywhere (not here, not in
@@ -111,7 +109,7 @@ class BookingObserver
         } catch (\Exception $e) {
             Log::error('❌ Failed to send payment notifications', [
                 'booking_id' => $booking->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
 
@@ -120,7 +118,7 @@ class BookingObserver
         } catch (\Exception $e) {
             Log::error('❌ Failed to add loyalty points', [
                 'booking_id' => $booking->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -144,8 +142,9 @@ class BookingObserver
     {
         try {
             $specialist = $booking->specialist;
-            if (!$specialist) {
+            if (! $specialist) {
                 Log::warning('⚠️ Specialist not found', ['booking_id' => $booking->id]);
+
                 return;
             }
 
@@ -155,7 +154,7 @@ class BookingObserver
             $adminCommission = ($totalAmount * $adminCommissionPercentage) / 100;
             $specialistIncome = $totalAmount - $adminCommission;
 
-            DB::transaction(function() use ($specialist, $specialistIncome, $adminCommission, $booking) {
+            DB::transaction(function () use ($specialist, $specialistIncome, $adminCommission, $booking) {
                 $wallet = $specialist->getOrCreateWallet();
                 $wallet->addIncome(
                     $specialistIncome,
@@ -174,7 +173,7 @@ class BookingObserver
         } catch (\Exception $e) {
             Log::error('❌ Failed to add income and commission', [
                 'booking_id' => $booking->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -187,14 +186,15 @@ class BookingObserver
             }
 
             $specialist = $booking->specialist;
-            if (!$specialist) {
+            if (! $specialist) {
                 Log::warning('⚠️ Specialist not found for cancellation', ['booking_id' => $booking->id]);
+
                 return;
             }
 
             $cancelledBy = $booking->cancelled_by ?? 'system';
 
-            DB::transaction(function() use ($booking, $specialist, $cancelledBy) {
+            DB::transaction(function () use ($booking, $specialist, $cancelledBy) {
                 $settings = WalletSetting::get();
 
                 $existingRefund = \App\Models\UserWalletTransaction::where('booking_id', $booking->id)
@@ -203,6 +203,7 @@ class BookingObserver
 
                 if ($existingRefund) {
                     Log::warning('⚠️ Refund already exists', ['booking_id' => $booking->id]);
+
                     return;
                 }
 
@@ -261,8 +262,7 @@ class BookingObserver
                             "جریمه لغو نوبت #{$booking->id} توسط متخصص"
                         );
                     }
-                }
-                elseif ($cancelledBy === 'customer') {
+                } elseif ($cancelledBy === 'customer') {
                     $customerFee = $settings->calculateCustomerCancellationFee(
                         $booking->prepayment_amount,
                         $booking->booking_time
@@ -298,8 +298,7 @@ class BookingObserver
                             "جریمه لغو نوبت #{$booking->id} توسط مشتری"
                         );
                     }
-                }
-                elseif ($cancelledBy === 'admin') {
+                } elseif ($cancelledBy === 'admin') {
                     $refundAmount = (float) $booking->prepayment_amount;
                     $customerWallet = $booking->user->getOrCreateWallet();
                     $refundTransaction = $customerWallet->addRefund(
@@ -323,11 +322,11 @@ class BookingObserver
 
                 if ($refundAmount > 0 && $refundTransaction) {
                     $booking->update([
-                        'refund_status'    => 'refunded',
-                        'refunded_amount'  => $refundAmount,
-                        'refunded_at'      => now(),
-                        'refund_reference' => 'WALLET-REFUND-' . $refundTransaction->id,
-                        'refund_details'   => $refundDetails,
+                        'refund_status' => 'refunded',
+                        'refunded_amount' => $refundAmount,
+                        'refunded_at' => now(),
+                        'refund_reference' => 'WALLET-REFUND-'.$refundTransaction->id,
+                        'refund_details' => $refundDetails,
                     ]);
                 }
             });
@@ -335,7 +334,7 @@ class BookingObserver
         } catch (\Exception $e) {
             Log::error('❌ Failed to handle cancellation', [
                 'booking_id' => $booking->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -403,7 +402,7 @@ class BookingObserver
         } catch (\Exception $e) {
             Log::error('❌ Failed to send cancellation SMS', [
                 'booking_id' => $booking->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -458,7 +457,7 @@ class BookingObserver
         $specialist = $booking->specialist;
         $user = $booking->user;
 
-        $title = match($cancelledBy) {
+        $title = match ($cancelledBy) {
             'specialist' => 'نوبت توسط شما لغو شد',
             'admin' => 'نوبت توسط مدیر سیستم لغو شد',
             'customer' => 'نوبت توسط مشتری لغو شد',
@@ -470,7 +469,7 @@ class BookingObserver
         $message .= "👤 مشتری: {$user->name}\n";
         $message .= "📞 تماس: {$user->phone}\n";
         $message .= "💇 سرویس: {$booking->service->name}\n";
-        $message .= "📅 تاریخ: " . verta($booking->booking_time)->format('Y/m/d') . " - ساعت " . verta($booking->booking_time)->format('H:i');
+        $message .= '📅 تاریخ: '.verta($booking->booking_time)->format('Y/m/d').' - ساعت '.verta($booking->booking_time)->format('H:i');
 
         /**
          * ⭐ Added (Suggestion 3): If the expert has canceled and is being charged a penalty
@@ -479,7 +478,7 @@ class BookingObserver
         if ($cancelledBy === 'specialist') {
             $penalty = (float) ($booking->refund_details['specialist_penalty'] ?? 0);
             if ($penalty > 0) {
-                $message .= "\n\n⚠️ به‌خاطر لغو این نوبت، مبلغ " . number_format($penalty) . " تومان از حساب شما به‌عنوان جریمه کسر شد.";
+                $message .= "\n\n⚠️ به‌خاطر لغو این نوبت، مبلغ ".number_format($penalty).' تومان از حساب شما به‌عنوان جریمه کسر شد.';
             }
         }
 
@@ -529,7 +528,7 @@ class BookingObserver
     {
         try {
             $user = $booking->user;
-            if (!$user || !method_exists($user, 'addLoyaltyPoints')) {
+            if (! $user || ! method_exists($user, 'addLoyaltyPoints')) {
                 return;
             }
 
@@ -541,7 +540,7 @@ class BookingObserver
         } catch (\Exception $e) {
             Log::error('❌ Loyalty Points Error', [
                 'booking_id' => $booking->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -553,7 +552,7 @@ class BookingObserver
         } catch (\Exception $e) {
             Log::error('❌ Error in deleted observer', [
                 'booking_id' => $booking->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }

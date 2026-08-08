@@ -131,5 +131,5 @@ return [
         'PDF' => Barryvdh\DomPDF\Facade\Pdf::class,
         'Verta' => \Hekmatinasser\Verta\Verta::class,
         'Kavenegar' => Kavenegar\Laravel\Facade::class,
-    ]
+    ],
 ];

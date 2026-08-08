@@ -18,8 +18,7 @@ class AdminDiscountCodeController extends Controller
 {
     public function __construct(
         private readonly AdminDiscountCodeService $service,
-    ) {
-    }
+    ) {}
 
     public function index(): View
     {

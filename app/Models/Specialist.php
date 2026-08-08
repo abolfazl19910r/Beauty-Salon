@@ -3,19 +3,19 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Log;
 
 class Specialist extends Model
 {
-    use Notifiable;
     use HasFactory;
+    use Notifiable;
     use SoftDeletes;
 
     protected $fillable = [
@@ -27,9 +27,8 @@ class Specialist extends Model
 
     protected $casts = [
         'auto_confirm_bookings' => 'boolean',
-        'commission_rate'       => 'float',
+        'commission_rate' => 'float',
     ];
-
 
     public static function latest()
     {
@@ -45,7 +44,7 @@ class Specialist extends Model
      * ⭐ Migrated from SpecialistLeave to Leave (fuller version: approve/reject
      * * with accurate time recording, rejection reason, and conflict check). SpecialistLeave/leaves table
      * * Physically the same as before; only the model class has changed.
- */
+     */
     public function leaves(): HasMany
     {
         return $this->hasMany(Leave::class);
@@ -98,7 +97,7 @@ class Specialist extends Model
             6 => 'شنبه',
         ];
 
-        $workDays = $activeSchedules->map(function($schedule) use ($persianDays) {
+        $workDays = $activeSchedules->map(function ($schedule) use ($persianDays) {
             return $persianDays[$schedule->day_of_week] ?? '';
         })->filter()->values();
 
@@ -116,7 +115,7 @@ class Specialist extends Model
             ->where('is_active', true)
             ->first();
 
-        if (!$schedule) {
+        if (! $schedule) {
             return null;
         }
 
@@ -144,17 +143,23 @@ class Specialist extends Model
                 ->where('status', 'approved')
                 ->exists();
 
-            if ($hasLeave) return [];
+            if ($hasLeave) {
+                return [];
+            }
 
             $isHoliday = $this->holidays()->whereDate('date', $carbonDate)->exists();
-            if ($isHoliday) return [];
+            if ($isHoliday) {
+                return [];
+            }
 
             $schedule = $this->schedules()
                 ->where('day_of_week', $carbonDate->dayOfWeek)
                 ->where('is_active', true)
                 ->first();
 
-            if (!$schedule) return [];
+            if (! $schedule) {
+                return [];
+            }
 
             $duration = $serviceDuration ?? 30;
 
@@ -163,14 +168,14 @@ class Specialist extends Model
                 ->where('status', '!=', 'cancelled')
                 ->with('service')
                 ->get()
-                ->map(fn($b) => [
+                ->map(fn ($b) => [
                     'start' => Carbon::parse($b->booking_time),
-                    'end' => Carbon::parse($b->booking_time)->addMinutes($b->service->duration ?? 30)
+                    'end' => Carbon::parse($b->booking_time)->addMinutes($b->service->duration ?? 30),
                 ]);
 
             $slots = [];
-            $currentTime = Carbon::parse($date . ' ' . $schedule->start_time);
-            $endTime = Carbon::parse($date . ' ' . $schedule->end_time);
+            $currentTime = Carbon::parse($date.' '.$schedule->start_time);
+            $endTime = Carbon::parse($date.' '.$schedule->end_time);
 
             while ($currentTime->copy()->addMinutes($duration)->lte($endTime)) {
                 $slotStart = $currentTime->copy();
@@ -178,24 +183,27 @@ class Specialist extends Model
 
                 if ($slotStart->lte($now)) {
                     $currentTime->addMinutes(30);
+
                     continue;
                 }
 
                 $isInBreak = false;
                 if ($schedule->break_start && $schedule->break_end) {
-                    $breakStart = Carbon::parse($date . ' ' . $schedule->break_start);
-                    $breakEnd = Carbon::parse($date . ' ' . $schedule->break_end);
+                    $breakStart = Carbon::parse($date.' '.$schedule->break_start);
+                    $breakEnd = Carbon::parse($date.' '.$schedule->break_end);
 
                     if ($slotStart->lt($breakEnd) && $slotEnd->gt($breakStart)) {
                         $currentTime = $breakEnd->copy();
                         $isInBreak = true;
                     }
                 }
-                if ($isInBreak) continue;
+                if ($isInBreak) {
+                    continue;
+                }
 
-                $conflict = $existingBookings->first(fn($b) => $slotStart->lt($b['end']) && $slotEnd->gt($b['start']));
+                $conflict = $existingBookings->first(fn ($b) => $slotStart->lt($b['end']) && $slotEnd->gt($b['start']));
 
-                if (!$conflict) {
+                if (! $conflict) {
                     $slots[] = $slotStart->format('H:i');
                     $currentTime->addMinutes($duration);
                 } else {
@@ -205,7 +213,8 @@ class Specialist extends Model
 
             return $slots;
         } catch (\Exception $e) {
-            Log::error("Slot calculation error: " . $e->getMessage());
+            Log::error('Slot calculation error: '.$e->getMessage());
+
             return [];
         }
     }
@@ -229,7 +238,7 @@ class Specialist extends Model
         $result = [
             'available_days' => [],
             'fully_booked_days' => [],
-            'holiday_days' => []
+            'holiday_days' => [],
         ];
 
         $schedules = $this->schedules()->where('is_active', true)->get()->keyBy('day_of_week');
@@ -241,15 +250,15 @@ class Specialist extends Model
         $holidays = $this->holidays()
             ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
             ->pluck('date')
-            ->map(fn($date) => Carbon::parse($date)->toDateString())
+            ->map(fn ($date) => Carbon::parse($date)->toDateString())
             ->toArray();
 
         $leaves = $this->leaves()
             ->where('status', 'approved')
-            ->where(function($query) use ($startDate, $endDate) {
+            ->where(function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('start_date', [$startDate, $endDate])
                     ->orWhereBetween('end_date', [$startDate, $endDate])
-                    ->orWhere(function($q) use ($startDate, $endDate) {
+                    ->orWhere(function ($q) use ($startDate, $endDate) {
                         $q->where('start_date', '<=', $startDate)
                             ->where('end_date', '>=', $endDate);
                     });
@@ -261,20 +270,23 @@ class Specialist extends Model
 
             if (in_array($dateString, $holidays)) {
                 $result['holiday_days'][] = $dateString;
+
                 continue;
             }
 
-            $isOnLeave = $leaves->contains(function($leave) use ($currentDate) {
+            $isOnLeave = $leaves->contains(function ($leave) use ($currentDate) {
                 return $currentDate->between($leave->start_date, $leave->end_date);
             });
 
             if ($isOnLeave) {
                 $result['holiday_days'][] = $dateString;
+
                 continue;
             }
 
-            if (!$schedules->has($currentDate->dayOfWeek)) {
+            if (! $schedules->has($currentDate->dayOfWeek)) {
                 $result['fully_booked_days'][] = $dateString;
+
                 continue;
             }
 
@@ -285,7 +297,7 @@ class Specialist extends Model
             } else {
                 $result['available_days'][] = [
                     'date' => $dateString,
-                    'slots_count' => count($availableSlots)
+                    'slots_count' => count($availableSlots),
                 ];
             }
         }
@@ -313,7 +325,7 @@ class Specialist extends Model
 
     public function getOrCreateWallet(): SpecialistWallet
     {
-        if (!$this->wallet) {
+        if (! $this->wallet) {
             $this->wallet()->create([
                 'balance' => 0,
                 'total_earned' => 0,
@@ -328,12 +340,12 @@ class Specialist extends Model
 
     public function getEffectiveCommissionRate(): float
     {
-        if (!is_null($this->commission_rate)) {
+        if (! is_null($this->commission_rate)) {
             return (float) $this->commission_rate;
         }
 
         $settings = \App\Models\WalletSetting::first();
+
         return (float) ($settings->admin_commission_percentage ?? 10);
     }
-
 }

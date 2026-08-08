@@ -44,7 +44,7 @@ class SupportTicketSeeder extends Seeder
             ))
             ->create();
 
-        $tickets->each(function (SupportTicket $ticket) use ($admin, $allUsers) {
+        $tickets->each(function (SupportTicket $ticket) use ($admin) {
             $messageCount = rand(1, 5);
 
             for ($i = 0; $i < $messageCount; $i++) {

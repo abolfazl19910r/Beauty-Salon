@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\ScheduledReport;
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\ScheduledReportRun;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ScheduledReportRunFactory extends Factory
 {
@@ -24,7 +24,7 @@ class ScheduledReportRunFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => 'success',
-            'result_file' => 'reports/report_' . now()->format('Y_m_d_H_i_s') . '.xlsx',
+            'result_file' => 'reports/report_'.now()->format('Y_m_d_H_i_s').'.xlsx',
             'error_message' => null,
         ]);
     }

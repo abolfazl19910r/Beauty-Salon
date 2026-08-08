@@ -9,9 +9,7 @@ use Illuminate\View\View;
 
 class AdminBlogController extends Controller
 {
-    public function __construct(private readonly BlogPostService $blogPostService)
-    {
-    }
+    public function __construct(private readonly BlogPostService $blogPostService) {}
 
     public function index(): View
     {

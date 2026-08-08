@@ -12,7 +12,7 @@ class ScheduledReportRun extends Model
         'scheduled_report_id',
         'status',
         'result_file',
-        'error_message'
+        'error_message',
     ];
 
     public function report(): BelongsTo
@@ -27,15 +27,17 @@ class ScheduledReportRun extends Model
 
     public function getResultFilePath(): ?string
     {
-        return $this->result_file ? storage_path('app/public/' . $this->result_file) : null;
+        return $this->result_file ? storage_path('app/public/'.$this->result_file) : null;
     }
 
     public function deleteResultFile(): bool
     {
-        if ($this->result_file && Storage::exists('public/' . $this->result_file)) {
-            Storage::delete('public/' . $this->result_file);
+        if ($this->result_file && Storage::exists('public/'.$this->result_file)) {
+            Storage::delete('public/'.$this->result_file);
+
             return $this->update(['result_file' => null]);
         }
+
         return true;
     }
 }

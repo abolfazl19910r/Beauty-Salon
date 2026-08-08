@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Booking;
 use App\Models\LoyaltyPoint;
-use App\Models\Reward;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -13,7 +12,7 @@ class LoyaltySimulationSeeder extends Seeder
     public function run(): void
     {
         $bookings = Booking::doesntHave('loyaltyPoints')
-        ->where('payment_status', 'paid')
+            ->where('payment_status', 'paid')
             ->take(50)
             ->get();
 
@@ -25,7 +24,7 @@ class LoyaltySimulationSeeder extends Seeder
                     'booking_id' => $booking->id,
                     'points' => $points,
                     'type' => 'earned',
-                    'description' => 'امتیاز سیستمی از رزرو #' . $booking->id,
+                    'description' => 'امتیاز سیستمی از رزرو #'.$booking->id,
                     'expires_at' => now()->addYear(),
                 ]);
             }
@@ -34,7 +33,7 @@ class LoyaltySimulationSeeder extends Seeder
         User::factory(10)->create()->each(function ($user) {
             LoyaltyPoint::factory(3)->create([
                 'user_id' => $user->id,
-                'type' => 'earned'
+                'type' => 'earned',
             ]);
 
             if (rand(0, 1)) {

@@ -9,6 +9,7 @@ use Illuminate\Console\Command;
 class SendBookingReminders extends Command
 {
     protected $signature = 'bookings:send-reminders';
+
     protected $description = 'Send SMS reminders for upcoming bookings to customers and specialists';
 
     public function handle()
@@ -41,6 +42,7 @@ class SendBookingReminders extends Command
         }
 
         $this->info("✅ تعداد {$reminderCount} یادآوری به صف ارسال شد.");
+
         return 0;
     }
 }

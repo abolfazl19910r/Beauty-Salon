@@ -44,8 +44,7 @@ class ProcessWithdrawalJob implements ShouldQueue
 
     public function __construct(
         protected int $withdrawalRequestId,
-    ) {
-    }
+    ) {}
 
     public function handle(ZarinpalPayoutService $payoutService): void
     {
@@ -54,10 +53,11 @@ class ProcessWithdrawalJob implements ShouldQueue
                 ->lockForUpdate()
                 ->first();
 
-            if (!$withdrawalRequest) {
+            if (! $withdrawalRequest) {
                 Log::warning('ProcessWithdrawalJob: درخواست برداشت یافت نشد', [
                     'withdrawal_request_id' => $this->withdrawalRequestId,
                 ]);
+
                 return;
             }
 
@@ -68,6 +68,7 @@ class ProcessWithdrawalJob implements ShouldQueue
                     'withdrawal_request_id' => $withdrawalRequest->id,
                     'current_status' => $withdrawalRequest->status,
                 ]);
+
                 return;
             }
 

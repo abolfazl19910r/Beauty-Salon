@@ -2,18 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class SupportTicket extends Model
 {
-    use SoftDeletes;
     use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
         'user_id',
@@ -25,13 +24,13 @@ class SupportTicket extends Model
         'assigned_to',
         'metadata',
         'resolved_at',
-        'closed_at'
+        'closed_at',
     ];
 
     protected $casts = [
         'metadata' => 'json',
         'resolved_at' => 'datetime',
-        'closed_at' => 'datetime'
+        'closed_at' => 'datetime',
     ];
 
     public function user(): BelongsTo
@@ -115,7 +114,7 @@ class SupportTicket extends Model
             'user_id' => $userId,
             'message' => $message,
             'is_staff_reply' => $isStaffReply,
-            'attachments' => $attachments
+            'attachments' => $attachments,
         ]);
     }
 
@@ -123,12 +122,12 @@ class SupportTicket extends Model
     {
         $this->update([
             'assigned_to' => $userId,
-            'status' => 'in_progress'
+            'status' => 'in_progress',
         ]);
 
         $this->logActivity('Ticket assigned', [
             'assigned_to' => $userId,
-            'assigned_by' => auth()->id()
+            'assigned_by' => auth()->id(),
         ]);
     }
 
@@ -136,11 +135,11 @@ class SupportTicket extends Model
     {
         $this->update([
             'status' => 'resolved',
-            'resolved_at' => now()
+            'resolved_at' => now(),
         ]);
 
         $this->logActivity('Ticket resolved', [
-            'resolved_by' => auth()->id()
+            'resolved_by' => auth()->id(),
         ]);
     }
 
@@ -148,11 +147,11 @@ class SupportTicket extends Model
     {
         $this->update([
             'status' => 'closed',
-            'closed_at' => now()
+            'closed_at' => now(),
         ]);
 
         $this->logActivity('Ticket closed', [
-            'closed_by' => auth()->id()
+            'closed_by' => auth()->id(),
         ]);
     }
 
@@ -161,17 +160,17 @@ class SupportTicket extends Model
         $this->update([
             'status' => 'open',
             'resolved_at' => null,
-            'closed_at' => null
+            'closed_at' => null,
         ]);
 
         $this->logActivity('Ticket reopened', [
-            'reopened_by' => auth()->id()
+            'reopened_by' => auth()->id(),
         ]);
     }
 
     public function getStatusTextAttribute(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             'open' => 'باز',
             'in_progress' => 'در حال بررسی',
             'resolved' => 'حل شده',
@@ -182,7 +181,7 @@ class SupportTicket extends Model
 
     public function getPriorityTextAttribute(): string
     {
-        return match($this->priority) {
+        return match ($this->priority) {
             'low' => 'کم',
             'medium' => 'متوسط',
             'high' => 'زیاد',
@@ -193,7 +192,7 @@ class SupportTicket extends Model
 
     public function getPriorityColorAttribute(): string
     {
-        return match($this->priority) {
+        return match ($this->priority) {
             'low' => 'gray',
             'medium' => 'blue',
             'high' => 'yellow',

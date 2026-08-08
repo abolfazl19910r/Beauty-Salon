@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class SupportTicketMessage extends Model
 {
@@ -15,12 +15,12 @@ class SupportTicketMessage extends Model
         'user_id',
         'message',
         'is_staff_reply',
-        'attachments'
+        'attachments',
     ];
 
     protected $casts = [
         'is_staff_reply' => 'boolean',
-        'attachments' => 'json'
+        'attachments' => 'json',
     ];
 
     public function ticket(): BelongsTo
@@ -40,16 +40,16 @@ class SupportTicketMessage extends Model
 
     public function hasAttachments(): bool
     {
-        return !empty($this->attachments);
+        return ! empty($this->attachments);
     }
 
     public function getAttachmentUrlsAttribute(): array
     {
-        if (!$this->hasAttachments()) {
+        if (! $this->hasAttachments()) {
             return [];
         }
 
-        return array_map(function($attachment) {
+        return array_map(function ($attachment) {
             return Storage::url($attachment['path']);
         }, $this->attachments);
     }

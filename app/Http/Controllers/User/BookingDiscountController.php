@@ -47,10 +47,9 @@ class BookingDiscountController extends Controller
 
         } catch (DiscountCodeInvalidException $e) {
             throw $e;
-
         } catch (Exception $e) {
             Log::error('خطا در بررسی کد تخفیف', [
-                'code'  => $request->code,
+                'code' => $request->code,
                 'error' => $e->getMessage(),
             ]);
 
@@ -85,8 +84,8 @@ class BookingDiscountController extends Controller
         } catch (Exception $e) {
             Log::error('خطا در اعمال کد تخفیف', [
                 'booking_id' => $booking->id,
-                'code'       => $request->code,
-                'error'      => $e->getMessage(),
+                'code' => $request->code,
+                'error' => $e->getMessage(),
             ]);
 
             if ($request->expectsJson()) {
@@ -113,8 +112,8 @@ class BookingDiscountController extends Controller
         } catch (Exception $e) {
             Log::error('خطا در اعمال کد تخفیف (API)', [
                 'booking_id' => $booking->id,
-                'code'       => $request->code,
-                'error'      => $e->getMessage(),
+                'code' => $request->code,
+                'error' => $e->getMessage(),
             ]);
 
             return $this->errorResponse('خطا در اعمال کد تخفیف.', 500);

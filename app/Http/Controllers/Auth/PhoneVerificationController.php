@@ -4,15 +4,13 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Services\PhoneVerificationService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 
 class PhoneVerificationController extends Controller
 {
-    public function __construct(protected readonly PhoneVerificationService $verificationService)
-    {
-    }
+    public function __construct(protected readonly PhoneVerificationService $verificationService) {}
 
     public function notice(): View
     {
@@ -22,7 +20,7 @@ class PhoneVerificationController extends Controller
     public function verify(Request $request): RedirectResponse
     {
         $request->validate([
-            'code' => 'required|string|size:6'
+            'code' => 'required|string|size:6',
         ]);
 
         if ($this->verificationService->verify($request->user(), $request->code)) {
@@ -31,7 +29,7 @@ class PhoneVerificationController extends Controller
         }
 
         return back()->withErrors([
-            'code' => 'کد وارد شده نامعتبر است.'
+            'code' => 'کد وارد شده نامعتبر است.',
         ]);
     }
 

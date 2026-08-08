@@ -4,8 +4,8 @@ namespace Database\Factories;
 
 use App\Models\BeautyService;
 use App\Models\Specialist;
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\SpecialistService;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class SpecialistServiceFactory extends Factory
 {

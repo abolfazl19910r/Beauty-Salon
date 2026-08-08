@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Specialist\Leave;
 
 use App\Http\Controllers\Controller;
-use App\Traits\HasJalaliDates;
-use App\Traits\ResolvesSpecialist;
 use App\Http\Requests\Specialist\StoreLeaveRequest;
 use App\Models\Leave;
 use App\Services\Leave\LeaveService;
+use App\Traits\HasJalaliDates;
+use App\Traits\ResolvesSpecialist;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
@@ -19,8 +19,7 @@ class SpecialistLeaveController extends Controller
 
     public function __construct(
         private readonly LeaveService $leaveService,
-    ) {
-    }
+    ) {}
 
     public function index(): View
     {
@@ -67,12 +66,12 @@ class SpecialistLeaveController extends Controller
 
         try {
             $startDate = $this->parseJalaliOrFail($request->start_date_jalali)->toDateString();
-            $endDate   = $this->parseJalaliOrFail($request->end_date_jalali)->toDateString();
+            $endDate = $this->parseJalaliOrFail($request->end_date_jalali)->toDateString();
 
             $result = $this->leaveService->store($specialist, [
                 'start_date' => $startDate,
-                'end_date'   => $endDate,
-                'reason'     => $request->reason,
+                'end_date' => $endDate,
+                'reason' => $request->reason,
             ]);
 
             return redirect()->route('specialist.leaves')
@@ -98,5 +97,4 @@ class SpecialistLeaveController extends Controller
         return redirect()->route('specialist.leaves')
             ->with('success', 'درخواست مرخصی با موفقیت حذف شد.');
     }
-
 }

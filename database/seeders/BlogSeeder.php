@@ -60,14 +60,14 @@ class BlogSeeder extends Seeder
                         'author_id' => $admin->id,
                         'is_published' => true,
                         'published_at' => now()->subDays(rand(1, 30)),
-                        'views' => rand(10, 500)
+                        'views' => rand(10, 500),
                     ]
                 );
             }
         }
 
         BlogPost::factory(20)->create([
-            'author_id' => $admin->id
+            'author_id' => $admin->id,
         ]);
 
         BlogPost::factory(3)->scheduled()->create(['author_id' => $admin->id]);

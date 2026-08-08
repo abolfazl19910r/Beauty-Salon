@@ -7,19 +7,17 @@ use App\Models\Review;
 use App\Models\Specialist;
 use App\Services\Review\ReviewService;
 use App\Traits\HasJalaliDates;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\JsonResponse;
 
 class SpecialistReviewController extends Controller
 {
     use HasJalaliDates;
 
-    public function __construct(protected readonly ReviewService $reviewService)
-    {
-    }
+    public function __construct(protected readonly ReviewService $reviewService) {}
 
     public function index(Request $request): View
     {
@@ -102,10 +100,10 @@ class SpecialistReviewController extends Controller
         }
 
         $validated = $request->validate([
-            'response' => 'required|string|max:1000'
+            'response' => 'required|string|max:1000',
         ], [
             'response.required' => 'لطفاً پاسخ خود را وارد کنید.',
-            'response.max' => 'پاسخ شما نباید بیشتر از 1000 کاراکتر باشد.'
+            'response.max' => 'پاسخ شما نباید بیشتر از 1000 کاراکتر باشد.',
         ]);
 
         try {
@@ -116,7 +114,7 @@ class SpecialistReviewController extends Controller
         } catch (\Exception $e) {
             Log::error('خطا در ثبت پاسخ به نظر', [
                 'review_id' => $review->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return back()->with('error', 'خطا در ثبت پاسخ. لطفاً دوباره تلاش کنید.');
@@ -133,7 +131,7 @@ class SpecialistReviewController extends Controller
         }
 
         $validated = $request->validate([
-            'response' => 'required|string|max:1000'
+            'response' => 'required|string|max:1000',
         ]);
 
         try {
@@ -147,7 +145,7 @@ class SpecialistReviewController extends Controller
         } catch (\Exception $e) {
             Log::error('خطا در ویرایش پاسخ', [
                 'review_id' => $review->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return back()->with('error', 'خطا در ویرایش پاسخ.');

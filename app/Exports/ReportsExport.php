@@ -40,8 +40,7 @@ class ReportsExport implements FromCollection, WithCharts, WithColumnWidths, Wit
         private readonly string $type,
         private readonly Collection $specialists,
         private readonly Collection $services,
-    ) {
-    }
+    ) {}
 
     public function collection(): Collection
     {
@@ -51,10 +50,10 @@ class ReportsExport implements FromCollection, WithCharts, WithColumnWidths, Wit
     public function headings(): array
     {
         return match ($this->type) {
-            'daily'   => ['تاریخ', 'تعداد نوبت', 'درآمد', 'میانگین نوبت'],
-            'weekly'  => ['هفته', 'تعداد نوبت', 'درآمد', 'میانگین نوبت'],
+            'daily' => ['تاریخ', 'تعداد نوبت', 'درآمد', 'میانگین نوبت'],
+            'weekly' => ['هفته', 'تعداد نوبت', 'درآمد', 'میانگین نوبت'],
             'monthly' => ['ماه', 'تعداد نوبت', 'درآمد', 'میانگین نوبت'],
-            default   => array_keys((array) ($this->data->first() ?? [])),
+            default => array_keys((array) ($this->data->first() ?? [])),
         };
     }
 
@@ -68,10 +67,10 @@ class ReportsExport implements FromCollection, WithCharts, WithColumnWidths, Wit
     {
         $row = (array) $row;
 
-        $label    = $row['label'] ?? ($row['date'] ?? '');
+        $label = $row['label'] ?? ($row['date'] ?? '');
         $bookings = (int) ($row['bookings'] ?? 0);
-        $revenue  = (int) ($row['revenue'] ?? 0);
-        $average  = $bookings > 0 ? (int) round($revenue / $bookings) : 0;
+        $revenue = (int) ($row['revenue'] ?? 0);
+        $average = $bookings > 0 ? (int) round($revenue / $bookings) : 0;
 
         return [
             $label,
@@ -170,8 +169,8 @@ class ReportsExport implements FromCollection, WithCharts, WithColumnWidths, Wit
         $sheetRef = "'{$this->title()}'";
 
         $seriesLabel = [new DataSeriesValues('String', "{$sheetRef}!\$C\$1", null, 1)];
-        $categories  = [new DataSeriesValues('String', "{$sheetRef}!\$A\$2:\$A\${$lastRow}", null, $count)];
-        $values      = [new DataSeriesValues('Number', "{$sheetRef}!\$C\$2:\$C\${$lastRow}", null, $count)];
+        $categories = [new DataSeriesValues('String', "{$sheetRef}!\$A\$2:\$A\${$lastRow}", null, $count)];
+        $values = [new DataSeriesValues('Number', "{$sheetRef}!\$C\$2:\$C\${$lastRow}", null, $count)];
 
         $series = new DataSeries(
             DataSeries::TYPE_BARCHART,

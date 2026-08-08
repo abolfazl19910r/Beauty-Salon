@@ -22,9 +22,9 @@ class AdminLoyaltyController extends Controller
 {
     public function index(): View
     {
-        $totalActivePoints    = LoyaltyPoint::where('type', 'earned')->sum('points');
-        $totalPointUsers      = LoyaltyPoint::distinct('user_id')->count('user_id');
-        $averageUserPoints    = $totalPointUsers > 0
+        $totalActivePoints = LoyaltyPoint::where('type', 'earned')->sum('points');
+        $totalPointUsers = LoyaltyPoint::distinct('user_id')->count('user_id');
+        $averageUserPoints = $totalPointUsers > 0
             ? round($totalActivePoints / $totalPointUsers)
             : 0;
         $totalRedeemedRewards = Reward::sum('used_count');

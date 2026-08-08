@@ -42,6 +42,7 @@ class Role extends Model
         }
 
         $this->permissions()->syncWithoutDetaching($permission);
+
         return $this;
     }
 
@@ -62,6 +63,7 @@ class Role extends Model
                     return true;
                 }
             }
+
             return false;
         }
 

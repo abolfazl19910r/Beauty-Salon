@@ -20,4 +20,3 @@ Route::prefix('loyalty')->name('loyalty.')->group(function () {
         Route::post('/{reward}/redeem', [AdminLoyaltyRewardController::class, 'redeemReward'])->name('redeem');
     });
 });
-

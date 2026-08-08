@@ -5,7 +5,6 @@ use App\Http\Controllers\Admin\Report\AdminReportRevenueController;
 use App\Http\Controllers\Admin\Report\AdminReportsController;
 use Illuminate\Support\Facades\Route;
 
-
 Route::prefix('reports')->name('reports.')->group(function () {
 
     // ── Reports Home Page ─────────────────────────────────────
@@ -20,6 +19,6 @@ Route::prefix('reports')->name('reports.')->group(function () {
     // dashboard.blade.php calls these with fetch('/admin/reports/today|week|month')
     // are web routes → session auth works (without auth:sanctum)
     Route::get('/today', [AdminReportRevenueController::class, 'today'])->name('today');
-    Route::get('/week',  [AdminReportRevenueController::class, 'week'])->name('week');
+    Route::get('/week', [AdminReportRevenueController::class, 'week'])->name('week');
     Route::get('/month', [AdminReportRevenueController::class, 'month'])->name('month');
 });

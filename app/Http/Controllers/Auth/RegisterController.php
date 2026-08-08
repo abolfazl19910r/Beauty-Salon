@@ -5,17 +5,15 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\PhoneVerificationService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 
 class RegisterController extends Controller
 {
-    public function __construct(protected readonly PhoneVerificationService $verificationService)
-    {
-    }
+    public function __construct(protected readonly PhoneVerificationService $verificationService) {}
 
     public function showRegistrationForm(): View
     {

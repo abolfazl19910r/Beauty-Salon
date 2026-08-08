@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\BeautyService;
 use App\Models\Category;
 use App\Models\WalletSetting;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
-use Illuminate\Http\JsonResponse;
 
 class ServiceController extends Controller
 {
@@ -35,7 +35,7 @@ class ServiceController extends Controller
     public function show(BeautyService $service): View
     {
         $specialists = $service->specialists()
-            ->with(['schedules' => fn($q) => $q->where('is_active', true)->orderBy('day_of_week')])
+            ->with(['schedules' => fn ($q) => $q->where('is_active', true)->orderBy('day_of_week')])
             ->get();
 
         $relatedServices = BeautyService::where('category_id', $service->category_id)
@@ -69,5 +69,4 @@ class ServiceController extends Controller
     {
         return response()->json($beautyService->specialists);
     }
-
 }

@@ -8,10 +8,12 @@ use Illuminate\Notifications\Notification;
 
 class BookingStatusUpdated extends Notification
 {
-
     protected Booking $booking;
+
     protected string $status;
+
     protected ?string $reason;
+
     protected SMSService $smsService;
 
     public function __construct(Booking $booking, string $status, ?string $reason = null)
@@ -19,7 +21,7 @@ class BookingStatusUpdated extends Notification
         $this->booking = $booking;
         $this->status = $status;
         $this->reason = $reason;
-        $this->smsService = new SMSService();
+        $this->smsService = new SMSService;
     }
 
     public function via($notifiable): array
@@ -40,6 +42,7 @@ class BookingStatusUpdated extends Notification
     public function toSms($notifiable): bool
     {
         $message = $this->getSmsMessage($notifiable);
+
         return $this->smsService->send($notifiable->phone, $message);
     }
 
@@ -48,7 +51,7 @@ class BookingStatusUpdated extends Notification
         $persianDate = verta($this->booking->booking_time)->format('Y/m/d');
         $persianTime = verta($this->booking->booking_time)->format('H:i');
 
-        $amountLabel = $this->status === 'completed' ? "مبلغ کل" : "پیش‌پرداخت";
+        $amountLabel = $this->status === 'completed' ? 'مبلغ کل' : 'پیش‌پرداخت';
         $amountValue = $this->status === 'completed'
             ? number_format($this->booking->service->price)
             : number_format($this->booking->prepayment_amount);
@@ -66,15 +69,15 @@ class BookingStatusUpdated extends Notification
 
         if ($this->status === 'completed') {
             return "سلام {$notifiable->name} عزیز، نوبت شما انجام شد و به پایان رسید."
-                . $baseInfo
-                . "\n✔️ از اینکه ما را انتخاب کردید سپاسگزاریم.🌹";
+                .$baseInfo
+                ."\n✔️ از اینکه ما را انتخاب کردید سپاسگزاریم.🌹";
         }
 
         return match ($this->status) {
-            'confirmed' => "سلام {$notifiable->name}، نوبت شما تایید شد." . $baseInfo . "\n✅ لطفا ۱۵ دقیقه زودتر در محل حضور داشته باشید.",
-            'pending_specialist' => "سلام {$notifiable->name}، نوبت شما با موفقیت ثبت شد و در انتظار تایید نهایی متخصص است. نتیجه به زودی اطلاع‌رسانی می‌شود." . $baseInfo,
-            'cancelled' => "سلام {$notifiable->name}، نوبت شما لغو شد." . $baseInfo . "\n❌ دلیل: " . ($this->reason ?? 'ذکر نشده'),
-            default => "سلام {$notifiable->name}، وضعیت نوبت شما به " . $this->status . " تغییر یافت." . $baseInfo
+            'confirmed' => "سلام {$notifiable->name}، نوبت شما تایید شد.".$baseInfo."\n✅ لطفا ۱۵ دقیقه زودتر در محل حضور داشته باشید.",
+            'pending_specialist' => "سلام {$notifiable->name}، نوبت شما با موفقیت ثبت شد و در انتظار تایید نهایی متخصص است. نتیجه به زودی اطلاع‌رسانی می‌شود.".$baseInfo,
+            'cancelled' => "سلام {$notifiable->name}، نوبت شما لغو شد.".$baseInfo."\n❌ دلیل: ".($this->reason ?? 'ذکر نشده'),
+            default => "سلام {$notifiable->name}، وضعیت نوبت شما به ".$this->status.' تغییر یافت.'.$baseInfo
         };
     }
 

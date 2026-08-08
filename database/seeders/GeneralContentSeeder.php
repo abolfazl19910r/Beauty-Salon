@@ -52,8 +52,8 @@ class GeneralContentSeeder extends Seeder
             GalleryImage::updateOrCreate(
                 ['title' => $title],
                 [
-                    'description' => 'توضیحات تصویر ' . $title,
-                    'image_path' => 'gallery/image' . ($index + 1) . '.jpg',
+                    'description' => 'توضیحات تصویر '.$title,
+                    'image_path' => 'gallery/image'.($index + 1).'.jpg',
                     'order' => $index + 1,
                     'is_active' => true,
                 ]

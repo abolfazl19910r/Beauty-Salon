@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use App\Models\Role;
+use App\Models\User;
 use App\Models\UserNotification;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -21,7 +21,7 @@ class UserSeeder extends Seeder
                 'name' => 'مدیر سیستم',
                 'password' => Hash::make('admin'),
                 'is_admin' => true,
-                'phone_verified_at' => now()
+                'phone_verified_at' => now(),
             ]
         );
         if ($adminRole) {
@@ -33,7 +33,7 @@ class UserSeeder extends Seeder
             ->state([
                 'user_id' => $admin->id,
                 'notifiable_id' => $admin->id,
-                'notifiable_type' => User::class
+                'notifiable_type' => User::class,
             ])
             ->create();
 
@@ -43,7 +43,7 @@ class UserSeeder extends Seeder
                 'name' => 'کاربر تست عادی',
                 'password' => Hash::make('password'),
                 'is_admin' => false,
-                'phone_verified_at' => now()
+                'phone_verified_at' => now(),
             ]
         );
         if ($userRole) {
@@ -58,7 +58,7 @@ class UserSeeder extends Seeder
                 ->state([
                     'user_id' => $user->id,
                     'notifiable_id' => $user->id,
-                    'notifiable_type' => User::class
+                    'notifiable_type' => User::class,
                 ])
                 ->read()
                 ->create();

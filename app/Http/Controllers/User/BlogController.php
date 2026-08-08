@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\BlogCategory;
 use App\Models\BlogPost;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class BlogController extends Controller
@@ -48,5 +47,4 @@ class BlogController extends Controller
 
         return view('blog.show', compact('post', 'relatedPosts'));
     }
-
 }

@@ -68,7 +68,7 @@ class AdminReportExportController extends Controller
      */
     public function download(ReportExport $reportExport): RedirectResponse|StreamedResponse
     {
-        if (!$reportExport->isDownloadable()) {
+        if (! $reportExport->isDownloadable()) {
             return back()->with('error', 'این فایل هنوز آماده نیست یا در دسترس نیست.');
         }
 

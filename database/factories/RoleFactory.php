@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Role;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class RoleFactory extends Factory
 {
@@ -12,6 +12,7 @@ class RoleFactory extends Factory
     public function definition(): array
     {
         $name = fake()->unique()->word();
+
         return [
             'name' => $name,
             'label' => fake()->sentence(2),

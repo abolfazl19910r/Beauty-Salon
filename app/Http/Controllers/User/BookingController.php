@@ -92,7 +92,7 @@ class BookingController extends Controller
         } catch (Exception $e) {
             Log::error('خطا در نمایش جزئیات نوبت', [
                 'booking_id' => $booking->id,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return redirect()->route('bookings.index')
@@ -141,12 +141,12 @@ class BookingController extends Controller
 
             $booking->specialist->notify(new \App\Notifications\Review\NewReviewNotification($booking));
 
-            auth()->user()->addLoyaltyPoints(10, 'ثبت نظر برای نوبت #' . $booking->id);
+            auth()->user()->addLoyaltyPoints(10, 'ثبت نظر برای نوبت #'.$booking->id);
 
             return back()->with('success', 'نظر شما با موفقیت ثبت شد.');
 
         } catch (Exception $e) {
-            return back()->with('error', 'خطا در ثبت نظر: ' . $e->getMessage());
+            return back()->with('error', 'خطا در ثبت نظر: '.$e->getMessage());
         }
     }
 
@@ -175,7 +175,7 @@ class BookingController extends Controller
 
         return response()->json([
             'bookings' => $bookings,
-            'count'    => $bookings->count(),
+            'count' => $bookings->count(),
         ]);
     }
 
@@ -193,7 +193,7 @@ class BookingController extends Controller
 
         return response()->json([
             'bookings' => $bookings,
-            'count'    => $bookings->count(),
+            'count' => $bookings->count(),
         ]);
     }
 

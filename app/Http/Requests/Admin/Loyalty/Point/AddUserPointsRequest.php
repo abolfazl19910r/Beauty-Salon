@@ -14,20 +14,20 @@ class AddUserPointsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'points'      => ['required', 'integer', 'min:1', 'max:10000'],
+            'points' => ['required', 'integer', 'min:1', 'max:10000'],
             'description' => ['required', 'string', 'max:255'],
-            'expires_at'  => ['nullable', 'date', 'after:today'],
+            'expires_at' => ['nullable', 'date', 'after:today'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'points.required'      => 'تعداد امتیاز الزامی است.',
-            'points.min'           => 'تعداد امتیاز باید حداقل ۱ باشد.',
-            'points.max'           => 'حداکثر ۱۰٬۰۰۰ امتیاز در یک بار اضافه می‌شود.',
+            'points.required' => 'تعداد امتیاز الزامی است.',
+            'points.min' => 'تعداد امتیاز باید حداقل ۱ باشد.',
+            'points.max' => 'حداکثر ۱۰٬۰۰۰ امتیاز در یک بار اضافه می‌شود.',
             'description.required' => 'توضیحات الزامی است.',
-            'expires_at.after'     => 'تاریخ انقضا باید بعد از امروز باشد.',
+            'expires_at.after' => 'تاریخ انقضا باید بعد از امروز باشد.',
         ];
     }
 }

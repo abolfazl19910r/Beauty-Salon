@@ -4,9 +4,9 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\GalleryImage;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Http\JsonResponse;
 
 class GalleryController extends Controller
 {
@@ -25,7 +25,7 @@ class GalleryController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'image' => 'required|image|max:2048',
-            'order' => 'nullable|integer'
+            'order' => 'nullable|integer',
         ]);
 
         $validated['image_path'] = $request->file('image')->store('gallery', 'public');
@@ -41,7 +41,7 @@ class GalleryController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'image' => 'nullable|image|max:2048',
-            'order' => 'nullable|integer'
+            'order' => 'nullable|integer',
         ]);
 
         if ($request->hasFile('image')) {
@@ -67,7 +67,7 @@ class GalleryController extends Controller
         $request->validate([
             'images' => 'required|array',
             'images.*.id' => 'required|exists:gallery_images,id',
-            'images.*.order' => 'required|integer'
+            'images.*.order' => 'required|integer',
         ]);
 
         foreach ($request->images as $imageData) {

@@ -19,8 +19,7 @@ class RegisteredUserController extends Controller
     public function __construct(
         protected readonly PhoneVerificationService $verificationService,
         protected readonly PasswordStrengthService $passwordStrengthService,
-    ) {
-    }
+    ) {}
 
     public function create(): View
     {
@@ -52,7 +51,7 @@ class RegisteredUserController extends Controller
 
         session([
             'register_user_id' => $user->id,
-            'register_attempt_time' => now()
+            'register_attempt_time' => now(),
         ]);
 
         return redirect()->route('register.verify.show')
@@ -61,15 +60,16 @@ class RegisteredUserController extends Controller
 
     public function showVerify(): View|RedirectResponse
     {
-        if (!session('register_user_id')) {
+        if (! session('register_user_id')) {
             return redirect()->route('register')
                 ->withErrors(['error' => 'لطفا ابتدا ثبت نام کنید.']);
         }
 
         $user = User::find(session('register_user_id'));
 
-        if (!$user) {
+        if (! $user) {
             session()->forget(['register_user_id', 'register_attempt_time']);
+
             return redirect()->route('register')
                 ->withErrors(['error' => 'کاربر یافت نشد. لطفا دوباره ثبت نام کنید.']);
         }
@@ -85,15 +85,16 @@ class RegisteredUserController extends Controller
 
         $userId = session('register_user_id');
 
-        if (!$userId) {
+        if (! $userId) {
             return redirect()->route('register')
                 ->withErrors(['error' => 'جلسه شما منقضی شده است. لطفا دوباره ثبت نام کنید.']);
         }
 
         $user = User::find($userId);
 
-        if (!$user) {
+        if (! $user) {
             session()->forget(['register_user_id', 'register_attempt_time']);
+
             return redirect()->route('register')
                 ->withErrors(['error' => 'کاربر یافت نشد.']);
         }
@@ -109,7 +110,7 @@ class RegisteredUserController extends Controller
         }
 
         return back()->withErrors([
-            'code' => 'کد وارد شده نامعتبر یا منقضی شده است.'
+            'code' => 'کد وارد شده نامعتبر یا منقضی شده است.',
         ]);
     }
 
@@ -117,13 +118,13 @@ class RegisteredUserController extends Controller
     {
         $userId = session('register_user_id');
 
-        if (!$userId) {
+        if (! $userId) {
             return back()->withErrors(['error' => 'جلسه شما منقضی شده است.']);
         }
 
         $user = User::find($userId);
 
-        if (!$user) {
+        if (! $user) {
             return back()->withErrors(['error' => 'کاربر یافت نشد.']);
         }
 

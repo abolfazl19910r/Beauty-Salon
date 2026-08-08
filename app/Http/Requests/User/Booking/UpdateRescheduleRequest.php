@@ -22,8 +22,8 @@ class UpdateRescheduleRequest extends FormRequest
     {
         return [
             'booking_time.required' => 'لطفاً زمان جدید نوبت را انتخاب کنید.',
-            'booking_time.date'     => 'فرمت تاریخ معتبر نیست.',
-            'booking_time.after'    => 'زمان جدید باید بعد از لحظه‌ی فعلی باشد.',
+            'booking_time.date' => 'فرمت تاریخ معتبر نیست.',
+            'booking_time.after' => 'زمان جدید باید بعد از لحظه‌ی فعلی باشد.',
         ];
     }
 }

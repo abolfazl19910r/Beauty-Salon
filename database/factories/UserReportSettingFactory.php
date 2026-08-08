@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\User;
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\UserReportSetting;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class UserReportSettingFactory extends Factory
 {
@@ -21,16 +21,16 @@ class UserReportSettingFactory extends Factory
                 'chart_colors' => [
                     'primary' => fake()->hexColor(),
                     'secondary' => fake()->hexColor(),
-                    'accent' => fake()->hexColor()
+                    'accent' => fake()->hexColor(),
                 ],
                 'notifications' => [
                     'email' => fake()->boolean(),
-                    'browser' => fake()->boolean()
+                    'browser' => fake()->boolean(),
                 ],
                 'export_settings' => [
                     'include_charts' => fake()->boolean(),
-                    'preferred_format' => fake()->randomElement(['excel', 'pdf', 'csv'])
-                ]
+                    'preferred_format' => fake()->randomElement(['excel', 'pdf', 'csv']),
+                ],
             ],
         ];
     }

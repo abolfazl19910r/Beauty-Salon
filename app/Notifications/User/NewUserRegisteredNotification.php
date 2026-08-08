@@ -12,9 +12,7 @@ class NewUserRegisteredNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(private readonly User $newUser)
-    {
-    }
+    public function __construct(private readonly User $newUser) {}
 
     public function via(object $notifiable): array
     {
@@ -35,7 +33,7 @@ class NewUserRegisteredNotification extends Notification implements ShouldQueue
             'type' => 'new_user_registered',
             'user_id' => $this->newUser->id,
             'name' => $this->newUser->name,
-            'message' => 'یک کاربر جدید ثبت‌نام کرد: ' . $this->newUser->name,
+            'message' => 'یک کاربر جدید ثبت‌نام کرد: '.$this->newUser->name,
             'link' => $link,
         ];
     }

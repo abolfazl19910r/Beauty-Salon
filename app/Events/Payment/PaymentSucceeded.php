@@ -34,6 +34,5 @@ class PaymentSucceeded
 
     public function __construct(
         public Booking $booking,
-    ) {
-    }
+    ) {}
 }

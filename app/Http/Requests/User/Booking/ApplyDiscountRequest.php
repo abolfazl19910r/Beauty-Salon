@@ -27,7 +27,7 @@ class ApplyDiscountRequest extends FormRequest
     {
         return [
             'code.required' => 'لطفاً کد تخفیف را وارد کنید.',
-            'code.max'      => 'کد تخفیف نمی‌تواند بیشتر از ۵۰ کاراکتر باشد.',
+            'code.max' => 'کد تخفیف نمی‌تواند بیشتر از ۵۰ کاراکتر باشد.',
         ];
     }
 }

@@ -18,8 +18,7 @@ class AdminDiscountCodeService
 {
     public function __construct(
         private readonly DiscountCalculator $calculator,
-    ) {
-    }
+    ) {}
 
     public function paginate(int $perPage = 15): LengthAwarePaginator
     {

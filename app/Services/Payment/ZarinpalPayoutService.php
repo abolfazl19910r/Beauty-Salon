@@ -22,8 +22,11 @@ use Illuminate\Support\Facades\Log;
 class ZarinpalPayoutService
 {
     protected string $apiKey;
+
     protected string $merchantId;
+
     protected string $apiUrl;
+
     protected bool $sandbox;
 
     public function __construct()
@@ -47,7 +50,7 @@ class ZarinpalPayoutService
      */
     public function payout(WithdrawalRequest $withdrawalRequest): array
     {
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             Log::error('ZarinpalPayoutService: پیکربندی ناقص — ZARINPAL_PAYOUT_API_KEY تنظیم نشده', [
                 'withdrawal_request_id' => $withdrawalRequest->id,
             ]);
@@ -74,18 +77,18 @@ class ZarinpalPayoutService
         try {
             $response = Http::timeout(30)
                 ->withHeaders([
-                    'Authorization' => 'Bearer ' . $this->apiKey,
+                    'Authorization' => 'Bearer '.$this->apiKey,
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json',
                 ])
-                ->post($this->apiUrl . '/payout.json', $payload);
+                ->post($this->apiUrl.'/payout.json', $payload);
 
             $result = $response->json();
 
             if ($response->successful() && (($result['data']['code'] ?? null) == 100)) {
                 return [
                     'success' => true,
-                    'reference_code' => $result['data']['payout_id'] ?? $result['data']['track_id'] ?? ('ZRP-' . $withdrawalRequest->id . '-' . now()->timestamp),
+                    'reference_code' => $result['data']['payout_id'] ?? $result['data']['track_id'] ?? ('ZRP-'.$withdrawalRequest->id.'-'.now()->timestamp),
                     'payout_id' => $result['data']['payout_id'] ?? null,
                     'raw' => $result,
                 ];

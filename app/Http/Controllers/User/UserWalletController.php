@@ -6,19 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\PaymentService;
 use App\Traits\HasJalaliDates;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
-use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 
 class UserWalletController extends Controller
 {
     use HasJalaliDates;
 
-    public function __construct(protected readonly PaymentService $paymentService)
-    {
-    }
+    public function __construct(protected readonly PaymentService $paymentService) {}
 
     public function index(): View
     {
@@ -134,11 +132,11 @@ class UserWalletController extends Controller
                 'wallet_charge_pending' => [
                     'user_id' => $user->id,
                     'amount' => $amount,
-                    'created_at' => now()->timestamp
-                ]
+                    'created_at' => now()->timestamp,
+                ],
             ]);
 
-            $chargeId = 'CHARGE-' . $user->id . '-' . time();
+            $chargeId = 'CHARGE-'.$user->id.'-'.time();
 
             session(['wallet_charge_id' => $chargeId]);
 
@@ -152,17 +150,17 @@ class UserWalletController extends Controller
 
             Log::error('❌ خطا در دریافت URL درگاه', [
                 'user_id' => $user->id,
-                'result' => $result
+                'result' => $result,
             ]);
 
             return back()
-                ->withErrors(['amount' => 'خطا در اتصال به درگاه پرداخت: ' . ($result['message'] ?? 'خطای نامشخص')])
+                ->withErrors(['amount' => 'خطا در اتصال به درگاه پرداخت: '.($result['message'] ?? 'خطای نامشخص')])
                 ->withInput();
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::warning('⚠️ خطای اعتبارسنجی شارژ', [
                 'errors' => $e->errors(),
-                'input' => $request->all()
+                'input' => $request->all(),
             ]);
 
             return back()->withErrors($e->errors())->withInput();
@@ -171,11 +169,11 @@ class UserWalletController extends Controller
             Log::error('💥 خطا در پردازش شارژ کیف پول', [
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return back()
-                ->withErrors(['amount' => 'خطا در پردازش درخواست: ' . $e->getMessage()])
+                ->withErrors(['amount' => 'خطا در پردازش درخواست: '.$e->getMessage()])
                 ->withInput();
         }
     }
@@ -197,7 +195,7 @@ class UserWalletController extends Controller
         try {
             $chargePending = session('wallet_charge_pending');
 
-            if (!$chargePending) {
+            if (! $chargePending) {
                 return redirect()->route('wallet.index')
                     ->with('error', 'اطلاعات شارژ یافت نشد.');
             }
@@ -205,7 +203,7 @@ class UserWalletController extends Controller
             $result = $this->paymentService->verifyWalletChargePayment($request, $chargePending['amount']);
 
             if ($result['success']) {
-                return DB::transaction(function() use ($chargePending, $result) {
+                return DB::transaction(function () use ($chargePending, $result) {
                     $user = User::findOrFail($chargePending['user_id']);
                     $wallet = $user->getOrCreateWallet();
                     $wallet->increment('balance', $chargePending['amount']);
@@ -214,21 +212,22 @@ class UserWalletController extends Controller
                         'type' => 'deposit',
                         'amount' => $chargePending['amount'],
                         'balance_after' => $wallet->balance,
-                        'description' => 'شارژ کیف پول - کد پیگیری: ' . ($result['ref_id'] ?? 'نامشخص'),
+                        'description' => 'شارژ کیف پول - کد پیگیری: '.($result['ref_id'] ?? 'نامشخص'),
                         'metadata' => [
                             'payment_method' => 'gateway',
                             'gateway_ref' => $result['ref_id'] ?? null,
                             'card_pan' => $result['card_pan'] ?? null,
-                        ]
+                        ],
                     ]);
 
                     session()->forget(['wallet_charge_pending', 'wallet_charge_id']);
+
                     return redirect()->route('wallet.charge.success')
                         ->with([
                             'success' => true,
                             'amount' => $chargePending['amount'],
                             'ref_id' => $result['ref_id'] ?? 'نامشخص',
-                            'new_balance' => $wallet->balance
+                            'new_balance' => $wallet->balance,
                         ]);
                 });
             }
@@ -238,28 +237,28 @@ class UserWalletController extends Controller
             Log::warning('⚠️ شارژ کیف پول ناموفق', [
                 'user_id' => $chargePending['user_id'],
                 'amount' => $chargePending['amount'],
-                'message' => $result['message'] ?? 'نامشخص'
+                'message' => $result['message'] ?? 'نامشخص',
             ]);
 
             return redirect()->route('wallet.index')
-                ->with('error', 'پرداخت ناموفق: ' . ($result['message'] ?? 'خطای نامشخص'));
+                ->with('error', 'پرداخت ناموفق: '.($result['message'] ?? 'خطای نامشخص'));
 
         } catch (\Exception $e) {
             session()->forget(['wallet_charge_pending', 'wallet_charge_id']);
 
             Log::error('💥 خطا در callback شارژ کیف پول', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return redirect()->route('wallet.index')
-                ->with('error', 'خطا در تایید پرداخت: ' . $e->getMessage());
+                ->with('error', 'خطا در تایید پرداخت: '.$e->getMessage());
         }
     }
 
     public function chargeSuccess(): View|RedirectResponse
     {
-        if (!session('success')) {
+        if (! session('success')) {
             return redirect()->route('wallet.index');
         }
 

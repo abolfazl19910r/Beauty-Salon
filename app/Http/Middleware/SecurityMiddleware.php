@@ -1,32 +1,31 @@
 <?php
+
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Http\Request;
 use Illuminate\Cache\RateLimiter;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class SecurityMiddleware
 {
-    public function __construct(protected readonly RateLimiter $rateLimiter)
-    {
-    }
+    public function __construct(protected readonly RateLimiter $rateLimiter) {}
 
     public function handle(Request $request, Closure $next): Response
     {
-        $key = 'security:' . $request->ip();
+        $key = 'security:'.$request->ip();
 
         if ($this->rateLimiter->tooManyAttempts($key, 60)) {
             Log::warning('Rate limit exceeded', [
                 'ip' => $request->ip(),
                 'user_id' => auth()->id(),
-                'path' => $request->path()
+                'path' => $request->path(),
             ]);
 
             return response()->json([
                 'error' => 'Too many requests',
-                'retry_after' => $this->rateLimiter->availableIn($key)
+                'retry_after' => $this->rateLimiter->availableIn($key),
             ], 429);
         }
 
@@ -37,7 +36,7 @@ class SecurityMiddleware
                 'user_id' => auth()->id(),
                 'operation' => $request->route()->getName(),
                 'ip' => $request->ip(),
-                'user_agent' => $request->userAgent()
+                'user_agent' => $request->userAgent(),
             ]);
         }
 
@@ -60,7 +59,7 @@ class SecurityMiddleware
             'password/*',
             'profile/*',
             'payment/*',
-            'admin/*'
+            'admin/*',
         ];
 
         return $request->is($sensitivePaths);

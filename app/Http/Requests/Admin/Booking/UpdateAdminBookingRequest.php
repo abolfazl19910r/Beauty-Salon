@@ -34,7 +34,7 @@ class UpdateAdminBookingRequest extends FormRequest
 
     public function isStatusOnly(): bool
     {
-        return $this->has('status') && !$this->has('user_id');
+        return $this->has('status') && ! $this->has('user_id');
     }
 
     public function rules(): array
@@ -46,13 +46,13 @@ class UpdateAdminBookingRequest extends FormRequest
         }
 
         return [
-            'user_id'        => ['required', 'exists:users,id'],
-            'service_id'     => ['required', 'exists:beauty_services,id'],
-            'specialist_id'  => ['required', 'exists:specialists,id'],
-            'booking_time'   => ['required', 'date'],
-            'status'         => ['required', 'in:pending,confirmed,cancelled'],
+            'user_id' => ['required', 'exists:users,id'],
+            'service_id' => ['required', 'exists:beauty_services,id'],
+            'specialist_id' => ['required', 'exists:specialists,id'],
+            'booking_time' => ['required', 'date'],
+            'status' => ['required', 'in:pending,confirmed,cancelled'],
             'payment_status' => ['required', 'in:paid,unpaid'],
-            'notes'          => ['nullable', 'string'],
+            'notes' => ['nullable', 'string'],
         ];
     }
 }

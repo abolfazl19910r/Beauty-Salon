@@ -21,7 +21,7 @@ class TwoFactorAuthService
 
         Log::info('2FA code generated', [
             'user_id' => $user->id,
-            'phone' => $user->phone
+            'phone' => $user->phone,
         ]);
 
         Send2faVerificationCodeJob::dispatch($user->id, $code);
@@ -36,10 +36,11 @@ class TwoFactorAuthService
         // previous request -- always read the current DB state before comparing.
         $user->refresh();
 
-        if (!$user->two_factor_code || !$user->two_factor_code_expires_at || $user->two_factor_code_expires_at->isPast()) {
+        if (! $user->two_factor_code || ! $user->two_factor_code_expires_at || $user->two_factor_code_expires_at->isPast()) {
             Log::warning('2FA code expired or not found', [
-                'user_id' => $user->id
+                'user_id' => $user->id,
             ]);
+
             return false;
         }
 
@@ -51,11 +52,11 @@ class TwoFactorAuthService
                 'two_factor_code_expires_at' => null,
             ]);
             Log::info('2FA verified successfully', [
-                'user_id' => $user->id
+                'user_id' => $user->id,
             ]);
         } else {
             Log::warning('2FA verification failed', [
-                'user_id' => $user->id
+                'user_id' => $user->id,
             ]);
         }
 
@@ -70,22 +71,22 @@ class TwoFactorAuthService
     public function enable(User $user): void
     {
         $user->update([
-            'two_factor_enabled' => true
+            'two_factor_enabled' => true,
         ]);
 
         Log::info('2FA enabled', [
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
     }
 
     public function disable(User $user): void
     {
         $user->update([
-            'two_factor_enabled' => false
+            'two_factor_enabled' => false,
         ]);
 
         Log::info('2FA disabled', [
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
     }
 }

@@ -7,6 +7,7 @@ use App\Models\Role;
 trait HasRoles
 {
     protected $permissionsCache = null;
+
     public function roles()
     {
         return $this->belongsToMany(Role::class);
@@ -18,7 +19,7 @@ trait HasRoles
             return $this->roles->contains('name', $role);
         }
 
-        return !! $role->intersect($this->roles)->count();
+        return (bool) $role->intersect($this->roles)->count();
     }
 
     public function hasAnyRole($roles)
@@ -43,7 +44,7 @@ trait HasRoles
         }
 
         foreach ($roles as $role) {
-            if (!$this->hasRole($role)) {
+            if (! $this->hasRole($role)) {
                 return false;
             }
         }
@@ -86,22 +87,18 @@ trait HasRoles
 
     public function getAllPermissions()
     {
-        if (!is_null($this->permissionsCache)) {
+        if (! is_null($this->permissionsCache)) {
             return $this->permissionsCache;
         }
 
         $this->permissionsCache = $this->roles->load('permissions')
-        ->flatMap(fn ($role) => $role->permissions)
+            ->flatMap(fn ($role) => $role->permissions)
             ->pluck('name')
             ->unique();
 
         return $this->permissionsCache;
     }
 
-    /**
-     * @param string $permissionName
-     * @return bool
-     */
     public function hasPermissionTo(string $permissionName): bool
     {
         if ($this->is_admin) {

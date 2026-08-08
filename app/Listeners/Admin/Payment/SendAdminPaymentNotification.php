@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Listeners\Admin\Payment;
 
 use App\Events\Payment\PaymentSucceeded;

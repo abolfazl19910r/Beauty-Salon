@@ -14,9 +14,7 @@ use Throwable;
 
 class AdminBlogCategoryController extends Controller
 {
-    public function __construct(private readonly BlogCategoryService $blogCategoryService)
-    {
-    }
+    public function __construct(private readonly BlogCategoryService $blogCategoryService) {}
 
     public function index(): View
     {

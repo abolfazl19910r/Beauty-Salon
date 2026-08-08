@@ -14,6 +14,7 @@ class DiscountCodeFactory extends Factory
     public function definition(): array
     {
         $type = fake()->randomElement(['fixed', 'percentage']);
+
         return [
             'code' => strtoupper(Str::random(8)),
             'type' => $type,
@@ -28,7 +29,7 @@ class DiscountCodeFactory extends Factory
         ];
     }
 
-    public function percentage(int $amount = null): static
+    public function percentage(?int $amount = null): static
     {
         return $this->state(fn (array $attributes) => [
             'type' => 'percentage',
@@ -36,7 +37,7 @@ class DiscountCodeFactory extends Factory
         ]);
     }
 
-    public function fixed(int $amount = null): static
+    public function fixed(?int $amount = null): static
     {
         return $this->state(fn (array $attributes) => [
             'type' => 'fixed',
@@ -52,7 +53,7 @@ class DiscountCodeFactory extends Factory
         ]);
     }
 
-    public function personal(User|callable $user = null): static
+    public function personal(User|callable|null $user = null): static
     {
         return $this->state(fn (array $attributes) => [
             'user_id' => $user ?? User::factory(),

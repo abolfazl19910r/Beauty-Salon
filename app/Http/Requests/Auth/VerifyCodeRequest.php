@@ -22,7 +22,7 @@ class VerifyCodeRequest extends FormRequest
     {
         return [
             'code.required' => 'کد تأیید الزامی است.',
-            'code.size'     => 'کد تأیید باید ۶ رقم باشد.',
+            'code.size' => 'کد تأیید باید ۶ رقم باشد.',
         ];
     }
 }

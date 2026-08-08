@@ -11,7 +11,6 @@ class DiscountUsage extends Model
     use HasFactory;
 
     /**
-     *
      * @var array<int, string>
      */
     protected $fillable = [
@@ -22,7 +21,6 @@ class DiscountUsage extends Model
     ];
 
     /**
-     *
      * @var array<string, string>
      */
     protected $casts = [

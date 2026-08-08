@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\Announcement;
 use App\Models\BeautyService;
 use App\Models\Booking;
 use App\Models\Specialist;
-use App\Models\Announcement;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -36,7 +36,7 @@ class DashboardController extends Controller
 
         $topSpecialists = Specialist::withAvg('bookings', 'rating')
             ->orderByDesc('bookings_avg_rating')
-            ->whereHas('bookings', function($query) {
+            ->whereHas('bookings', function ($query) {
                 $query->whereNotNull('rating');
             })
             ->take(3)
@@ -65,7 +65,7 @@ class DashboardController extends Controller
             return BeautyService::latest()->take(3)->get();
         }
 
-        return BeautyService::whereIn('category_id', function($query) use ($userServiceIds) {
+        return BeautyService::whereIn('category_id', function ($query) use ($userServiceIds) {
             $query->select('category_id')
                 ->from('beauty_services')
                 ->whereIn('id', $userServiceIds);

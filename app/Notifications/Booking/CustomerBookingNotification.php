@@ -8,12 +8,13 @@ use Illuminate\Notifications\Notification;
 class CustomerBookingNotification extends Notification
 {
     private $booking;
+
     private SMSService $smsService;
 
     public function __construct($booking)
     {
         $this->booking = $booking;
-        $this->smsService = new SMSService();
+        $this->smsService = new SMSService;
     }
 
     public function via($notifiable): array

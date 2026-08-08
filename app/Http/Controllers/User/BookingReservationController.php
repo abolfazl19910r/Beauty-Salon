@@ -9,10 +9,10 @@ use App\Http\Requests\User\Booking\StoreBookingRequest;
 use App\Models\Booking;
 use App\Services\Booking\BookingService;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
-use Illuminate\Http\JsonResponse;
 
 class BookingReservationController extends Controller
 {
@@ -48,9 +48,9 @@ class BookingReservationController extends Controller
 
             session([
                 'pending_booking' => [
-                    'service_id'    => $request->service_id,
+                    'service_id' => $request->service_id,
                     'specialist_id' => $request->specialist_id,
-                    'booking_time'  => $bookingTime,
+                    'booking_time' => $bookingTime,
                 ],
             ]);
 
@@ -86,7 +86,6 @@ class BookingReservationController extends Controller
         } catch (BookingNotAvailableException $e) {
 
             throw $e;
-
         } catch (Exception $e) {
             Log::error('خطا در ثبت نوبت', ['error' => $e->getMessage()]);
 

@@ -13,21 +13,21 @@ class Announcement extends Model
         'published_at',
         'expires_at',
         'priority',
-        'type'
+        'type',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'published_at' => 'datetime',
         'expires_at' => 'datetime',
-        'priority' => 'integer'
+        'priority' => 'integer',
     ];
 
     public function scopeActive($query)
     {
         return $query->where('is_active', true)
             ->where('published_at', '<=', now())
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNull('expires_at')
                     ->orWhere('expires_at', '>', now());
             });
@@ -46,9 +46,16 @@ class Announcement extends Model
 
     public function getStatusAttribute(): string
     {
-        if (!$this->is_active) return 'غیرفعال';
-        if ($this->published_at > now()) return 'در انتظار انتشار';
-        if ($this->expires_at && $this->expires_at < now()) return 'منقضی شده';
+        if (! $this->is_active) {
+            return 'غیرفعال';
+        }
+        if ($this->published_at > now()) {
+            return 'در انتظار انتشار';
+        }
+        if ($this->expires_at && $this->expires_at < now()) {
+            return 'منقضی شده';
+        }
+
         return 'فعال';
     }
 

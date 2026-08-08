@@ -13,8 +13,7 @@ class ReportExportReadyNotification extends Notification implements ShouldQueue
 
     public function __construct(
         private readonly ReportExport $reportExport,
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {
@@ -26,7 +25,7 @@ class ReportExportReadyNotification extends Notification implements ShouldQueue
         $isReady = $this->reportExport->status === 'ready';
 
         return [
-            'type' => 'report_export_' . $this->reportExport->status,
+            'type' => 'report_export_'.$this->reportExport->status,
             'report_export_id' => $this->reportExport->id,
             'message' => $isReady
                 ? "گزارش {$this->reportExport->report_type_text} ({$this->reportExport->format}) شما آماده‌ی دانلود است."

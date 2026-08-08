@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Admin\Payment;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 
 class AdminPaymentController extends Controller
 {
@@ -50,7 +50,7 @@ class AdminPaymentController extends Controller
             ],
             'payment_reference' => $request->reference,
             'paid_at' => now(),
-            'status' => 'confirmed'
+            'status' => 'confirmed',
         ]);
 
         return redirect()->route('admin.bookings.show', $booking)

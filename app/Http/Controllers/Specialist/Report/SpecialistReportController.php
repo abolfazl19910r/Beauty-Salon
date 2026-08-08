@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers\Specialist\Report;
 
+use App\Exports\SpecialistBookingsExport;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Specialist;
 use App\Traits\HasJalaliDates;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
-use Carbon\Carbon;
-use App\Exports\SpecialistBookingsExport;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SpecialistReportController extends Controller
 {
@@ -22,7 +20,7 @@ class SpecialistReportController extends Controller
         $user = auth()->user();
         $specialist = Specialist::where('phone', $user->phone)->first();
 
-        if (!$specialist) {
+        if (! $specialist) {
             return view('specialist.profile-not-found');
         }
 
@@ -43,8 +41,12 @@ class SpecialistReportController extends Controller
             $query->where('booking_time', '>=', now()->subDays(30));
         }
 
-        if ($serviceId !== 'all') $query->where('service_id', $serviceId);
-        if ($status !== 'all') $query->where('status', $status);
+        if ($serviceId !== 'all') {
+            $query->where('service_id', $serviceId);
+        }
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
 
         $totalBookings = (clone $query)->count();
         $completedBookings = (clone $query)->where('status', 'completed')->count();
@@ -58,6 +60,7 @@ class SpecialistReportController extends Controller
 
         if ($request->input('export') === 'excel') {
             $bookingsForExport = $query->with(['user', 'service'])->get();
+
             return Excel::download(new SpecialistBookingsExport($bookingsForExport, $commissionRate), 'Report.xlsx');
         }
 
@@ -65,15 +68,15 @@ class SpecialistReportController extends Controller
             $bookingsForPdf = $query->with(['user', 'service'])->get();
 
             $data = [
-                'bookings'          => $bookingsForPdf,
-                'totalRevenue'      => round($totalRevenue),
-                'totalBookings'     => $totalBookings,
+                'bookings' => $bookingsForPdf,
+                'totalRevenue' => round($totalRevenue),
+                'totalBookings' => $totalBookings,
                 'completedBookings' => $completedBookings,
                 'cancelledBookings' => $cancelledBookings,
-                'specialist'        => $specialist,
-                'startDate'         => $startDate ?? '30 روز اخیر',
-                'endDate'           => $endDate ?? 'امروز',
-                'commissionRate'    => $commissionRate,
+                'specialist' => $specialist,
+                'startDate' => $startDate ?? '30 روز اخیر',
+                'endDate' => $endDate ?? 'امروز',
+                'commissionRate' => $commissionRate,
             ];
 
             $mpdf = new \Mpdf\Mpdf([
@@ -84,7 +87,7 @@ class SpecialistReportController extends Controller
                 'margin_right' => 10,
                 'margin_top' => 10,
                 'margin_bottom' => 10,
-                'default_font' => 'vazir'
+                'default_font' => 'vazir',
             ]);
 
             $html = view('specialist.reports.pdf', $data)->render();
@@ -104,5 +107,4 @@ class SpecialistReportController extends Controller
             'status', 'specialistServices', 'serviceId', 'commissionRate'
         ));
     }
-
 }

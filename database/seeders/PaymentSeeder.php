@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Payment;
 use App\Models\Booking;
+use App\Models\Payment;
 use Illuminate\Database\Seeder;
 
 class PaymentSeeder extends Seeder
@@ -25,7 +25,7 @@ class PaymentSeeder extends Seeder
         Payment::factory(2)
             ->pending()
             ->create([
-                'expired_at' => now()->subMinutes(10)
+                'expired_at' => now()->subMinutes(10),
             ])->each(function (Payment $payment) {
                 $payment->booking->update(['status' => 'cancelled']);
             });
@@ -36,7 +36,7 @@ class PaymentSeeder extends Seeder
                 ->pending()
                 ->create([
                     'booking_id' => $unpaidBooking->id,
-                    'amount' => $unpaidBooking->prepayment_amount
+                    'amount' => $unpaidBooking->prepayment_amount,
                 ]);
         }
     }

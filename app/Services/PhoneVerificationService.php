@@ -9,9 +9,7 @@ use Illuminate\Support\Facades\Log;
 
 class PhoneVerificationService
 {
-    public function __construct(protected readonly SMSService $smsService)
-    {
-    }
+    public function __construct(protected readonly SMSService $smsService) {}
 
     public function sendCode(User $user): bool
     {
@@ -21,7 +19,7 @@ class PhoneVerificationService
             'verification_code' => $code,
             'verification_code_expire_at' => Carbon::now()->addMinutes(
                 config('auth.verification_code_expire_minutes', 2)
-            )
+            ),
         ]);
 
         $template = config('services.kavenegar.templates.register_verify');
@@ -30,19 +28,19 @@ class PhoneVerificationService
             'user_id' => $user->id,
             'phone' => $user->phone,
             'template' => $template,
-            'code' => $code
+            'code' => $code,
         ]);
 
         $result = $this->smsService->sendTemplate(
             $user->phone,
             $template,
-            [(string)$code]
+            [(string) $code]
         );
 
-        if (!$result) {
+        if (! $result) {
             Log::error('Failed to send registration verification code', [
                 'user_id' => $user->id,
-                'phone' => $user->phone
+                'phone' => $user->phone,
             ]);
         }
 
@@ -57,7 +55,7 @@ class PhoneVerificationService
             'login_verification_code' => $code,
             'login_verification_code_expire_at' => Carbon::now()->addMinutes(
                 config('auth.verification_code_expire_minutes', 2)
-            )
+            ),
         ]);
 
         Log::info('Queued login verification code for sending', [
@@ -78,16 +76,18 @@ class PhoneVerificationService
             Log::warning('Invalid verification code', [
                 'user_id' => $user->id,
                 'expected' => $user->verification_code,
-                'received' => $code
+                'received' => $code,
             ]);
+
             return false;
         }
 
         if (Carbon::now()->isAfter($user->verification_code_expire_at)) {
             Log::warning('Verification code expired', [
                 'user_id' => $user->id,
-                'expired_at' => $user->verification_code_expire_at
+                'expired_at' => $user->verification_code_expire_at,
             ]);
+
             return false;
         }
 
@@ -100,16 +100,18 @@ class PhoneVerificationService
             Log::warning('Invalid login verification code', [
                 'user_id' => $user->id,
                 'expected' => $user->login_verification_code,
-                'received' => $code
+                'received' => $code,
             ]);
+
             return false;
         }
 
         if (Carbon::now()->isAfter($user->login_verification_code_expire_at)) {
             Log::warning('Login verification code expired', [
                 'user_id' => $user->id,
-                'expired_at' => $user->login_verification_code_expire_at
+                'expired_at' => $user->login_verification_code_expire_at,
             ]);
+
             return false;
         }
 
@@ -117,6 +119,7 @@ class PhoneVerificationService
             'login_verification_code' => null,
             'login_verification_code_expire_at' => null,
         ]);
+
         return true;
     }
 

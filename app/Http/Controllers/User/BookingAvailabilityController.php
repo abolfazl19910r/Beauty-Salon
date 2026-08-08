@@ -50,20 +50,20 @@ class BookingAvailabilityController extends Controller
             }
 
             return response()->json([
-                'slots'            => $availableSlots,
+                'slots' => $availableSlots,
                 'service_duration' => $serviceDuration,
-                'schedule'         => [
-                    'start_time'  => $schedule->start_time,
-                    'end_time'    => $schedule->end_time,
+                'schedule' => [
+                    'start_time' => $schedule->start_time,
+                    'end_time' => $schedule->end_time,
                     'break_start' => $schedule->break_start ?? null,
-                    'break_end'   => $schedule->break_end ?? null,
+                    'break_end' => $schedule->break_end ?? null,
                 ],
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             Log::error('متخصص یافت نشد در getAvailableTimeSlots', [
                 'specialist_param' => is_object($specialist) ? get_class($specialist) : $specialist,
-                'date'  => $date,
+                'date' => $date,
                 'error' => $e->getMessage(),
             ]);
 
@@ -72,9 +72,9 @@ class BookingAvailabilityController extends Controller
         } catch (Exception $e) {
             Log::error('خطا در دریافت اسلات‌های زمانی', [
                 'specialist_param' => is_object($specialist) ? get_class($specialist) : $specialist,
-                'date'       => $date,
+                'date' => $date,
                 'service_id' => $request->query('service_id'),
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return response()->json(['error' => 'خطا در دریافت ساعت‌های در دسترس'], 500);
@@ -150,7 +150,7 @@ class BookingAvailabilityController extends Controller
         } catch (Exception $e) {
             Log::error('خطا در دریافت متخصصین', [
                 'service_id' => $serviceId,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return response()->json(['error' => 'خطا در دریافت متخصصین'], 500);

@@ -15,14 +15,14 @@ class ScheduledReport extends Model
         'frequency',
         'next_run',
         'recipients',
-        'is_active'
+        'is_active',
     ];
 
     protected $casts = [
         'parameters' => 'array',
         'recipients' => 'array',
         'next_run' => 'datetime',
-        'is_active' => 'boolean'
+        'is_active' => 'boolean',
     ];
 
     public function user(): BelongsTo
@@ -79,10 +79,12 @@ class ScheduledReport extends Model
     public function addRecipient(string $email): bool
     {
         $recipients = $this->recipients ?? [];
-        if (!in_array($email, $recipients)) {
+        if (! in_array($email, $recipients)) {
             $recipients[] = $email;
+
             return $this->update(['recipients' => $recipients]);
         }
+
         return true;
     }
 
@@ -90,6 +92,7 @@ class ScheduledReport extends Model
     {
         $recipients = $this->recipients ?? [];
         $recipients = array_diff($recipients, [$email]);
+
         return $this->update(['recipients' => array_values($recipients)]);
     }
 }

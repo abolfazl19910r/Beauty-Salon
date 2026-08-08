@@ -26,9 +26,7 @@ class RawBookingsSheet implements FromCollection, WithColumnWidths, WithEvents, 
 {
     use AppliesReportSheetStyle;
 
-    public function __construct(protected Collection $bookings)
-    {
-    }
+    public function __construct(protected Collection $bookings) {}
 
     public function collection(): Collection
     {
@@ -101,14 +99,14 @@ class RawBookingsSheet implements FromCollection, WithColumnWidths, WithEvents, 
 
                 // Status highlight map: [background hex, text hex]
                 $statusColors = [
-                    'در انتظار'         => ['FDE9C8', '8A5300'],
-                    'در انتظار پرداخت'   => ['FCE4E4', 'A32D2D'],
-                    'تایید شده'         => ['D7F0DE', '0F6E3E'],
-                    'انجام شده'         => ['D7F0DE', '0F6E3E'],
-                    'لغو شده'           => ['FCE4E4', 'A32D2D'],
+                    'در انتظار' => ['FDE9C8', '8A5300'],
+                    'در انتظار پرداخت' => ['FCE4E4', 'A32D2D'],
+                    'تایید شده' => ['D7F0DE', '0F6E3E'],
+                    'انجام شده' => ['D7F0DE', '0F6E3E'],
+                    'لغو شده' => ['FCE4E4', 'A32D2D'],
                 ];
                 $paymentStatusColors = [
-                    'پرداخت‌شده'  => ['D7F0DE', '0F6E3E'],
+                    'پرداخت‌شده' => ['D7F0DE', '0F6E3E'],
                     'پرداخت‌نشده' => ['FCE4E4', 'A32D2D'],
                 ];
 

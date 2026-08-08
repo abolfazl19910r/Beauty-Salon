@@ -13,9 +13,7 @@ use Illuminate\Support\Facades\Log;
 
 class ReviewService
 {
-    public function __construct(protected readonly SMSService $smsService)
-    {
-    }
+    public function __construct(protected readonly SMSService $smsService) {}
 
     public function sendReviewRequest(Booking $booking): bool
     {
@@ -48,6 +46,7 @@ class ReviewService
                 'booking_id' => $booking->id,
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -74,7 +73,7 @@ class ReviewService
                 'reviewed_at' => now(),
             ]);
 
-            Cache::forget('specialist_avg_rating_' . $booking->specialist_id);
+            Cache::forget('specialist_avg_rating_'.$booking->specialist_id);
 
             $booking->specialist->notify(new NewReviewReceivedNotification($review));
 
@@ -91,15 +90,16 @@ class ReviewService
             } catch (\Exception $e) {
                 Log::warning('Failed to add loyalty points for review', [
                     'review_id' => $review->id,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
+
             return $review;
 
         } catch (\Exception $e) {
             Log::error('❌ Failed to create review', [
                 'booking_id' => $booking->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
             throw $e;
         }
@@ -114,13 +114,15 @@ class ReviewService
             ]);
 
             $review->user->notify(new \App\Notifications\Review\SpecialistRespondedNotification($review));
+
             return true;
 
         } catch (\Exception $e) {
             Log::error('❌ Failed to respond to review', [
                 'review_id' => $review->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -128,7 +130,7 @@ class ReviewService
     public function getSpecialistAverageRating(int $specialistId): float
     {
         return Cache::remember(
-            'specialist_avg_rating_' . $specialistId,
+            'specialist_avg_rating_'.$specialistId,
             now()->addHours(6),
             function () use ($specialistId) {
                 return Review::calculateSpecialistAverage($specialistId);
@@ -152,7 +154,7 @@ class ReviewService
         } catch (\Exception $e) {
             Log::error('Failed to notify admin about negative review', [
                 'review_id' => $review->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -161,8 +163,9 @@ class ReviewService
     {
         $reviewToken = ReviewToken::findValidToken($token);
 
-        if (!$reviewToken) {
+        if (! $reviewToken) {
             Log::warning('❌ Invalid or expired token', ['token' => $token]);
+
             return null;
         }
 

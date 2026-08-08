@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use App\Models\Booking;
+use App\Models\User;
 use App\Notifications\Booking\AdminNewBookingNotification;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
@@ -30,32 +30,32 @@ class NotificationSeeder extends Seeder
                 'type' => 'BookingConfirmed',
                 'title' => 'رزرو تایید شد',
                 'message' => 'نوبت شما با موفقیت تایید شد.',
-                'icon' => 'success'
+                'icon' => 'success',
             ],
             [
                 'type' => 'BookingCancelled',
                 'title' => 'رزرو لغو شد',
                 'message' => 'متأسفانه نوبت شما لغو شده است.',
-                'icon' => 'warning'
+                'icon' => 'warning',
             ],
             [
                 'type' => 'PaymentReceived',
                 'title' => 'پرداخت دریافت شد',
                 'message' => 'پرداخت شما با موفقیت انجام شد.',
-                'icon' => 'success'
+                'icon' => 'success',
             ],
             [
                 'type' => 'AppointmentReminder',
                 'title' => 'یادآوری نوبت',
                 'message' => 'نوبت شما فردا است.',
-                'icon' => 'info'
+                'icon' => 'info',
             ],
             [
                 'type' => 'LoyaltyPointsEarned',
                 'title' => 'امتیاز دریافت کردید',
                 'message' => 'شما امتیاز جدید دریافت کردید.',
-                'icon' => 'success'
-            ]
+                'icon' => 'success',
+            ],
         ];
 
         foreach ($users as $user) {
@@ -69,8 +69,8 @@ class NotificationSeeder extends Seeder
                     'notifiable_type' => 'App\\Models\\User',
                     'notifiable_id' => $user->id,
                     'data' => json_encode([
-                        'message' => $notificationType['message'] . ' (خوانده شده)',
-                        'link' => fake()->optional(0.5)->url()
+                        'message' => $notificationType['message'].' (خوانده شده)',
+                        'link' => fake()->optional(0.5)->url(),
                     ]),
                     'read_at' => Carbon::now()->subDays(fake()->numberBetween(1, 10)),
                     'created_at' => Carbon::now()->subDays(fake()->numberBetween(10, 20)),
@@ -88,8 +88,8 @@ class NotificationSeeder extends Seeder
                     'notifiable_type' => 'App\\Models\\User',
                     'notifiable_id' => $user->id,
                     'data' => json_encode([
-                        'message' => $notificationType['message'] . ' (خوانده نشده)',
-                        'link' => fake()->optional(0.5)->url()
+                        'message' => $notificationType['message'].' (خوانده نشده)',
+                        'link' => fake()->optional(0.5)->url(),
                     ]),
                     'read_at' => null,
                     'created_at' => Carbon::now()->subMinutes(fake()->numberBetween(1, 60)),
@@ -102,7 +102,7 @@ class NotificationSeeder extends Seeder
             foreach ($admins as $admin) {
                 $admin->notify(new AdminNewBookingNotification($booking));
             }
-            $this->command->info('Admin-specific notifications sent to ' . $admins->count() . ' admin(s).');
+            $this->command->info('Admin-specific notifications sent to '.$admins->count().' admin(s).');
         }
 
         $this->command->info('*** Notifications seeded successfully for all users (read and unread). ***');

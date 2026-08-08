@@ -10,9 +10,7 @@ class SpecialistRespondedNotification extends Notification
 {
     use Queueable;
 
-    public function __construct(protected readonly Review $review)
-    {
-    }
+    public function __construct(protected readonly Review $review) {}
 
     public function via($notifiable): array
     {
@@ -31,7 +29,7 @@ class SpecialistRespondedNotification extends Notification
             'link' => route('bookings.show', $this->review->booking_id, false),
             'review_id' => $this->review->id,
             'specialist_id' => $this->review->specialist_id,
-            'type' => 'specialist_response'
+            'type' => 'specialist_response',
         ];
     }
 }

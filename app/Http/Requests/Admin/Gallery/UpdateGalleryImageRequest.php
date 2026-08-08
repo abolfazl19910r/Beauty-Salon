@@ -14,10 +14,10 @@ class UpdateGalleryImageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title'       => ['required', 'string', 'max:255'],
+            'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'image'       => ['nullable', 'image', 'max:2048'],
-            'order'       => ['nullable', 'integer'],
+            'image' => ['nullable', 'image', 'max:2048'],
+            'order' => ['nullable', 'integer'],
         ];
     }
 
@@ -25,8 +25,8 @@ class UpdateGalleryImageRequest extends FormRequest
     {
         return [
             'title.required' => 'عنوان تصویر الزامی است.',
-            'image.image'    => 'فایل باید تصویر باشد.',
-            'image.max'      => 'حجم تصویر نباید بیشتر از ۲MB باشد.',
+            'image.image' => 'فایل باید تصویر باشد.',
+            'image.max' => 'حجم تصویر نباید بیشتر از ۲MB باشد.',
         ];
     }
 }

@@ -58,7 +58,7 @@ class BookingRescheduleController extends Controller
 
                 $booking->update([
                     'booking_time' => $bookingTime,
-                    'status'       => $newStatus,
+                    'status' => $newStatus,
                 ]);
 
                 $booking->specialist->notify(new BookingRescheduledNotification($booking, $oldTime));
@@ -81,8 +81,8 @@ class BookingRescheduleController extends Controller
 
             if ($request->expectsJson()) {
                 return response()->json([
-                    'success'  => true,
-                    'message'  => $successMessage,
+                    'success' => true,
+                    'message' => $successMessage,
                     'redirect' => route('bookings.show', $booking),
                 ]);
             }
@@ -93,7 +93,7 @@ class BookingRescheduleController extends Controller
         } catch (Exception $e) {
             Log::error('خطا در تغییر زمان نوبت', [
                 'booking_id' => $booking->id,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             if ($request->expectsJson()) {

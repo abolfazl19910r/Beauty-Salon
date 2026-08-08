@@ -22,9 +22,9 @@ class AdminGalleryController extends Controller
         $images = GalleryImage::orderBy('order')->get();
 
         return view('admin.gallery.index', [
-            'images'      => $images,
+            'images' => $images,
             'imagesCount' => $images->count(),
-            'usedSpace'   => $this->calculateUsedSpace(),
+            'usedSpace' => $this->calculateUsedSpace(),
         ]);
     }
 
@@ -33,10 +33,10 @@ class AdminGalleryController extends Controller
         $path = $request->file('image')->store('gallery', 'public');
 
         GalleryImage::create([
-            'title'       => $request->validated('title'),
+            'title' => $request->validated('title'),
             'description' => $request->validated('description') ?? '',
-            'image_path'  => $path,
-            'order'       => GalleryImage::count() + 1,
+            'image_path' => $path,
+            'order' => GalleryImage::count() + 1,
         ]);
 
         return redirect()->route('admin.gallery.index')

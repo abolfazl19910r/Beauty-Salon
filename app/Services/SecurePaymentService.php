@@ -25,14 +25,14 @@ class SecurePaymentService
             'card_data' => $this->encryptSensitiveData([
                 'amount' => $booking->prepayment_amount,
                 'user_id' => $booking->user_id,
-                'timestamp' => now()->timestamp
-            ])
+                'timestamp' => now()->timestamp,
+            ]),
         ]);
 
         Log::info('Secure payment initiated', [
             'payment_id' => $payment->id,
             'booking_id' => $booking->id,
-            'reference' => $referenceId
+            'reference' => $referenceId,
         ]);
 
         return $payment;
@@ -50,9 +50,9 @@ class SecurePaymentService
     {
         $payment = Payment::where('reference_id', $referenceId)->first();
 
-        if (!$payment) {
+        if (! $payment) {
             Log::warning('Secure payment verification failed - payment not found', [
-                'reference' => $referenceId
+                'reference' => $referenceId,
             ]);
 
             return ['success' => false, 'message' => 'تراکنش یافت نشد.'];
@@ -104,7 +104,7 @@ class SecurePaymentService
             $payment->markAsFailed();
 
             Log::warning('Secure payment verification failed - time expired', [
-                'payment_id' => $payment->id
+                'payment_id' => $payment->id,
             ]);
 
             return ['success' => false, 'message' => 'مهلت پرداخت به پایان رسیده است. لطفاً دوباره تلاش کنید.'];
@@ -112,7 +112,7 @@ class SecurePaymentService
 
         Log::info('Secure payment verified successfully', [
             'payment_id' => $payment->id,
-            'reference' => $referenceId
+            'reference' => $referenceId,
         ]);
 
         return ['success' => true, 'transaction_id' => $referenceId];

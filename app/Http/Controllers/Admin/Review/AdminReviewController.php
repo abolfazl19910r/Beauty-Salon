@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Admin\Review;
 use App\Http\Controllers\Controller;
 use App\Models\Review;
 use App\Models\Specialist;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 
 class AdminReviewController extends Controller
 {
@@ -43,13 +43,13 @@ class AdminReviewController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('comment', 'like', "%{$search}%")
-                    ->orWhereHas('user', function($userQuery) use ($search) {
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
                         $userQuery->where('name', 'like', "%{$search}%")
                             ->orWhere('phone', 'like', "%{$search}%");
                     })
-                    ->orWhereHas('specialist', function($specQuery) use ($search) {
+                    ->orWhereHas('specialist', function ($specQuery) use ($search) {
                         $specQuery->where('name', 'like', "%{$search}%");
                     });
             });
@@ -101,7 +101,7 @@ class AdminReviewController extends Controller
 
             Log::info('Review approved by admin', [
                 'review_id' => $review->id,
-                'admin_id' => auth()->id()
+                'admin_id' => auth()->id(),
             ]);
 
             return back()->with('success', '✅ نظر تایید شد.');
@@ -109,7 +109,7 @@ class AdminReviewController extends Controller
         } catch (\Exception $e) {
             Log::error('خطا در تایید نظر', [
                 'review_id' => $review->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return back()->with('error', 'خطا در تایید نظر.');
@@ -123,7 +123,7 @@ class AdminReviewController extends Controller
 
             Log::info('Review rejected by admin', [
                 'review_id' => $review->id,
-                'admin_id' => auth()->id()
+                'admin_id' => auth()->id(),
             ]);
 
             return back()->with('success', 'نظر رد شد.');
@@ -136,7 +136,7 @@ class AdminReviewController extends Controller
     public function toggleFeatured(Review $review): RedirectResponse
     {
         try {
-            $review->update(['is_featured' => !$review->is_featured]);
+            $review->update(['is_featured' => ! $review->is_featured]);
 
             $message = $review->is_featured
                 ? '⭐ نظر به عنوان ویژه علامت‌گذاری شد.'
@@ -156,7 +156,7 @@ class AdminReviewController extends Controller
 
             Log::warning('Review soft deleted by admin', [
                 'review_id' => $review->id,
-                'admin_id' => auth()->id()
+                'admin_id' => auth()->id(),
             ]);
 
             return back()->with('success', '🗑️ نظر حذف شد.');
@@ -164,7 +164,7 @@ class AdminReviewController extends Controller
         } catch (\Exception $e) {
             Log::error('خطا در حذف نظر', [
                 'review_id' => $review->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return back()->with('error', 'خطا در حذف نظر.');
@@ -192,7 +192,7 @@ class AdminReviewController extends Controller
 
             Log::warning('Review permanently deleted by admin', [
                 'review_id' => $id,
-                'admin_id' => auth()->id()
+                'admin_id' => auth()->id(),
             ]);
 
             return back()->with('success', '⚠️ نظر به طور دائمی حذف شد.');
@@ -225,6 +225,7 @@ class AdminReviewController extends Controller
             ->get()
             ->map(function ($s) {
                 $s->reviews_avg_overall_rating = round($s->reviews_avg_overall_rating ?? 0, 1);
+
                 return $s;
             });
 

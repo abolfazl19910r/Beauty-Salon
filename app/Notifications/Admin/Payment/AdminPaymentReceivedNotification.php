@@ -13,12 +13,13 @@ class AdminPaymentReceivedNotification extends Notification implements ShouldQue
     use Queueable;
 
     private Booking $booking;
+
     private SMSService $smsService;
 
     public function __construct(Booking $booking)
     {
         $this->booking = $booking;
-        $this->smsService = new SMSService();
+        $this->smsService = new SMSService;
     }
 
     public function via(object $notifiable): array
