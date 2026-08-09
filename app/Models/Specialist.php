@@ -138,8 +138,8 @@ class Specialist extends Model
             }
 
             $hasLeave = $this->leaves()
-                ->where('start_date', '<=', $date)
-                ->where('end_date', '>=', $date)
+                ->whereDate('start_date', '<=', $date)
+                ->whereDate('end_date', '>=', $date)
                 ->where('status', 'approved')
                 ->exists();
 
