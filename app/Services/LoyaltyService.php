@@ -125,7 +125,7 @@ class LoyaltyService
             'expires_at' => now()->addMonths($expiryMonths),
         ]);
 
-        auth()->user()->notify(new PointsEarned($loyaltyPoint));
+        $loyaltyPoint->user->notify(new PointsEarned($loyaltyPoint));
 
         $this->forgetPointsCache($userId);
 
