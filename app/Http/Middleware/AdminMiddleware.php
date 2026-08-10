@@ -24,12 +24,12 @@ class AdminMiddleware
             abort(403, 'شما دسترسی به پنل مدیریت ندارید.');
         }
 
-        if ($user->hasRole('specialists')) {
+        if ($user->hasRole('specialist')) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'متخصصین نمی‌توانند به پنل مدیریت دسترسی داشته باشند.'], 403);
             }
 
-            return redirect()->route('specialist.dashboard')
+            return redirect()->route('specialist.my-dashboard')
                 ->with('error', 'شما باید از پنل متخصص استفاده کنید.');
         }
 
