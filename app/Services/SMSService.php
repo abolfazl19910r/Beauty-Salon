@@ -25,7 +25,7 @@ class SMSService
         Log::info('SMS: در حال ارسال', ['mobile' => $mobile, 'message' => $message]);
 
         try {
-            if (app()->environment('local') && ! config('services.kavenegar.send_in_local', false)) {
+            if (app()->environment(['local', 'testing']) && ! config('services.kavenegar.send_in_local', false)) {
                 return true;
             }
 
@@ -66,7 +66,7 @@ class SMSService
         ]);
 
         try {
-            if (app()->environment('local') && ! config('services.kavenegar.send_in_local', false)) {
+            if (app()->environment(['local', 'testing']) && ! config('services.kavenegar.send_in_local', false)) {
                 return true;
             }
 
