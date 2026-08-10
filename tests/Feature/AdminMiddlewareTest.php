@@ -77,6 +77,20 @@ class AdminMiddlewareTest extends TestCase
         $response->assertJson(['message' => 'متخصصین نمی‌توانند به پنل مدیریت دسترسی داشته باشند.']);
     }
 
+    public function test_an_admin_who_is_also_a_specialist_is_redirected_on_a_non_json_request(): void
+    {
+        // Same scenario as above, but through the non-JSON (regular browser navigation) branch —
+        // this exercises the redirect()->route('specialist.my-dashboard') call specifically, which
+        // would have thrown a RouteNotFoundException before the route-name part of this fix (the
+        // old, dead code referenced a route named 'specialist.dashboard' that doesn't exist).
+        $admin = User::factory()->create(['is_admin' => true]);
+        $admin->roles()->attach(Role::factory()->create(['name' => 'specialist']));
+
+        $response = $this->actingAs($admin)->get('/api/admin/dashboard');
+
+        $response->assertRedirect(route('specialist.my-dashboard'));
+    }
+
     public function test_a_guest_receives_a_401_from_the_admin_api(): void
     {
         $response = $this->getJson('/api/admin/dashboard');
