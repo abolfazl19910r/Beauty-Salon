@@ -32,7 +32,7 @@ Route::name('api.')->group(function () {
             require __DIR__.'/api/user/loyalty.php';
         }
 
-        Route::middleware('admin')->prefix('admin')->group(function () {
+        Route::middleware('admin-api')->prefix('admin')->group(function () {
             if (file_exists(__DIR__.'/api/admin/dashboard.php')) {
                 require __DIR__.'/api/admin/dashboard.php';
             }

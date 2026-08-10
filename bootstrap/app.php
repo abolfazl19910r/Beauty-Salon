@@ -37,7 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
             '2fa.enabled' => \App\Http\Middleware\EnsureTwoFactorVerifiedForPayment::class,
         ]);
 
-        $middleware->group('admin', [
+        $middleware->group('admin-api', [
             'auth',
             'admin',
         ]);
