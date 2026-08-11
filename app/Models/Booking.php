@@ -18,6 +18,7 @@ class Booking extends Model
         'booking_time' => 'datetime',
         'payment_details' => 'array',
         'refund_details' => 'array',
+        'reminder_sent' => 'boolean',
     ];
 
     protected $fillable = [
