@@ -130,13 +130,13 @@ return [
         'security' => [
             'driver' => 'daily',
             'path' => storage_path('logs/security.log'),
-            'level' => env('SECURITY_LOG_LEVEL', 'warning'),
+            'level' => env('SECURITY_LOG_LEVEL') ?: 'warning',
             'days' => 90,
         ],
         'payments' => [
             'driver' => 'daily',
             'path' => storage_path('logs/payments.log'),
-            'level' => env('PAYMENTS_LOG_LEVEL', 'info'),
+            'level' => env('PAYMENTS_LOG_LEVEL') ?: 'info',
             'days' => 365,
         ],
     ],
