@@ -138,9 +138,19 @@ class AdminReportExportTest extends TestCase
 
     public function test_job_marks_export_as_failed_and_notifies_when_generation_throws(): void
     {
-        // The pdf-report font files are not present in this environment (mPDF needs a real
-        // storage/fonts/*.ttf that is deployed separately, not committed to the repo) — this
-        // reliably exercises the job's catch branch with a genuine exception, not a mock.
+        // Deterministic failure, independent of environment (e.g. whether mPDF font files happen
+        // to be deployed): force AdminReportService::buildExportData() to throw, so this exercises
+        // the job's catch/notify branch the same way regardless of PDF/Excel toolchain specifics.
+        $this->mock(\App\Services\Admin\Report\AdminReportService::class, function ($mock) {
+            $mock->shouldReceive('parseDateRange')->andReturn([
+                'start' => now()->startOfDay(),
+                'end' => now()->endOfDay(),
+                'startDate' => now()->format('Y-m-d'),
+                'endDate' => now()->format('Y-m-d'),
+            ]);
+            $mock->shouldReceive('buildExportData')->andThrow(new \RuntimeException('خطای تست تولید گزارش'));
+        });
+
         $export = ReportExport::factory()->for($this->admin, 'adminUser')->create([
             'format' => 'pdf',
             'report_type' => 'daily',
