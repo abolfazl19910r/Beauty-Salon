@@ -18,12 +18,22 @@ class StoreLoyaltyRewardRequest extends FormRequest
 
     public function rules(): array
     {
+        $discountAmountRules = ['required', 'numeric', 'min:1'];
+
+        // MaxPercentage only makes sense for percentage-type rewards; a 'fixed' discount_amount
+        // is a toman value (typically tens of thousands) and must not be capped at 100. Applying
+        // it unconditionally is the exact same regression documented for StoreDiscountCodeRequest
+        // in R-AdminForms — it was fixed there but never carried over to this sibling Form Request.
+        if ($this->input('discount_type') === 'percentage') {
+            $discountAmountRules[] = new MaxPercentage;
+        }
+
         return [
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'required_points' => ['required', 'integer', 'min:1'],
             'discount_type' => ['required', 'in:fixed,percentage'],
-            'discount_amount' => ['required', 'numeric', 'min:1', new MaxPercentage],
+            'discount_amount' => $discountAmountRules,
             'max_uses' => ['required', 'integer', 'min:1'],
             'is_active' => ['boolean'],
         ];

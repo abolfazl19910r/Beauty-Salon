@@ -16,12 +16,20 @@ class UpdateLoyaltyRewardRequest extends FormRequest
     {
         $reward = $this->route('reward');
 
+        $discountAmountRules = ['required', 'numeric', 'min:1'];
+
+        // Same fix as StoreLoyaltyRewardRequest: MaxPercentage must only apply to percentage-type
+        // discounts, not fixed-toman-amount discounts (which are routinely > 100).
+        if ($this->input('discount_type') === 'percentage') {
+            $discountAmountRules[] = new MaxPercentage;
+        }
+
         return [
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'required_points' => ['required', 'integer', 'min:1'],
             'discount_type' => ['required', 'in:fixed,percentage'],
-            'discount_amount' => ['required', 'numeric', 'min:1', new MaxPercentage],
+            'discount_amount' => $discountAmountRules,
             'max_uses' => ['required', 'integer', 'min:'.($reward?->used_count ?? 0)],
             'is_active' => ['boolean'],
         ];
