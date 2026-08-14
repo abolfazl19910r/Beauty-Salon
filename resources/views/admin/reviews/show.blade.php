@@ -98,7 +98,7 @@
                                 </button>
                             </form>
                         @endif
-                        <form action="{{ route('admin.reviews.feature', $review->id) }}" method="POST">
+                        <form action="{{ route('admin.reviews.toggle-featured', $review->id) }}" method="POST">
                             @csrf @method('PUT')
                             <button type="submit"
                                     class="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium"
