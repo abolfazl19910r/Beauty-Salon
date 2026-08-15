@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BeautyService;
 use App\Models\Specialist;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
