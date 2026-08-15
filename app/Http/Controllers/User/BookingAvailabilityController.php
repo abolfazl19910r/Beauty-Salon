@@ -139,7 +139,7 @@ class BookingAvailabilityController extends Controller
     public function getSpecialistsByService($serviceId): JsonResponse
     {
         try {
-            $service = BeautyService::findOrFail($serviceId);
+            $service = $this->resolveService($serviceId);
 
             $specialists = $service->specialists()
                 ->select('specialists.id', 'specialists.name', 'specialists.email', 'specialists.phone')
@@ -166,6 +166,25 @@ class BookingAvailabilityController extends Controller
         $specialistId = is_numeric($specialist) ? (int) $specialist : $specialist;
 
         return Specialist::findOrFail($specialistId);
+    }
+
+    private function resolveService($service): BeautyService
+    {
+        // Route::bind('service', ...) in RouteServiceProvider globally intercepts any route
+        // parameter literally named {service} across the whole app and resolves it into an
+        // already-loaded BeautyService instance before the controller even runs — regardless
+        // of whether this method's own parameter is type-hinted as a model. Without this check,
+        // BeautyService::findOrFail($serviceId) would receive an object instead of a raw id and
+        // always throw "No query results", even for a perfectly valid, existing service — which
+        // is exactly what was happening on the two routes registered with {service} (the third,
+        // registered with {serviceId}, was unaffected since only the literal name 'service'
+        // triggers the global binder). Mirrors the existing resolveSpecialist() pattern in this
+        // same file, which already handles the identical situation for {specialist}.
+        if ($service instanceof BeautyService) {
+            return $service;
+        }
+
+        return BeautyService::findOrFail($service);
     }
 
     private function resolveServiceDuration(?string $serviceId): ?int
