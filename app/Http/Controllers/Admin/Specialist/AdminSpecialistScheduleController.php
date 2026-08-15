@@ -7,6 +7,7 @@ use App\Models\Specialist;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class AdminSpecialistScheduleController extends Controller
@@ -60,6 +61,14 @@ class AdminSpecialistScheduleController extends Controller
             return redirect()->route('admin.specialists.show', $specialist)
                 ->with('success', 'برنامه کاری با موفقیت بروزرسانی شد.');
 
+        } catch (ValidationException $e) {
+            // ValidationException extends \Exception, so the broad catch below would otherwise
+            // swallow it too — turning a normal per-field validation redirect into a confusing
+            // flash message containing the raw, untranslated rule key (e.g. "validation.after")
+            // instead of the actual translated error. It must be re-thrown so Laravel's default
+            // handling (redirect back with $errors in session) takes over, same as it would for
+            // any Form Request-based validation elsewhere in the project.
+            throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
 
