@@ -17,6 +17,8 @@ class Leave extends Model
         'status',
         'reason',
         'reject_reason',
+        'approved_at',
+        'rejected_at',
     ];
 
     protected $casts = [
