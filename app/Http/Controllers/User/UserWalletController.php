@@ -107,6 +107,16 @@ class UserWalletController extends Controller
             $amountInput = $this->convertPersianNumbers($amountInput);
             $amountInput = preg_replace('/[^0-9]/', '', $amountInput);
 
+            // ⭐ Fix (test-writing session 6, 2026-08-16): the sanitized value above was
+            // computed but never merged back into the request before validate() ran —
+            // validation always ran against the original raw input, so a Persian-digit
+            // or comma-formatted amount (e.g. "۱۰۰,۰۰۰", a completely normal expected
+            // input pattern, matching how the specialist withdrawal amount field
+            // already handles this elsewhere in this project) always failed with
+            // "amount must be a number", even though the code clearly intended to
+            // support it.
+            $request->merge(['amount' => $amountInput]);
+
             $validated = $request->validate([
                 'amount' => 'required|numeric|min:10000|max:50000000',
             ], [
