@@ -65,12 +65,11 @@ class SpecialistProfileController extends Controller
         $user = auth()->user();
         $validated = $request->validated();
 
+        // ⭐ Fix (test-writing session 6): 'email' was dropped from the validation rules
+        // (see UpdateSpecialistProfileRequest) since users has no email column; the
+        // isDirty('email')/email_verified_at block below was dead code that could never
+        // run (email is not in User::$fillable, so fill() never sets it), so it was removed.
         $user->fill($validated);
-
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-        }
-
         $user->save();
 
         $specialist = Specialist::where('phone', $validated['phone'])->first();

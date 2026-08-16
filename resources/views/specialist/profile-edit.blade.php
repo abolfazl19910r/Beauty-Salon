@@ -61,15 +61,11 @@
                             @error('phone') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
                         </div>
 
-                        <div>
-                            <label for="email" class="block text-xs text-[var(--specialist-plum-muted)] mb-2">ایمیل (اختیاری)</label>
-                            <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}"
-                                   class="w-full rounded-lg px-4 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]"
-                                   style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);"
-                                   dir="ltr">
-                            @error('email') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
-                        </div>
                     </div>
+                    {{-- ⭐ Fix (test-writing session 6): removed the "email" input — the users
+                         table has no email column at all, so this field was purely cosmetic
+                         and submitting a value into it crashed the request with a fatal SQL
+                         error (unique:users,email against a non-existent column). --}}
 
                     <div class="mt-6">
                         <button type="submit" class="specialist-cta w-full justify-center px-6 py-2 rounded-lg transition-opacity hover:opacity-90 flex items-center font-bold">
