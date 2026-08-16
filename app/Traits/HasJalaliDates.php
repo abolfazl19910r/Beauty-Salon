@@ -66,7 +66,7 @@ trait HasJalaliDates
         }
 
         try {
-            return Jalalian::fromFormat($format, $this->normalizeToEnglishDigits($value))->toCarbon();
+            return Carbon::instance(Jalalian::fromFormat($format, $this->normalizeToEnglishDigits($value))->toCarbon());
         } catch (\Throwable $e) {
             if ($context !== null) {
                 \Illuminate\Support\Facades\Log::warning("خطا در تبدیل تاریخ شمسی ({$context}): ".$e->getMessage());
@@ -84,7 +84,23 @@ trait HasJalaliDates
      */
     protected function parseJalaliOrFail(string $value, string $format = 'Y/m/d'): Carbon
     {
-        return Jalalian::fromFormat($format, $this->normalizeToEnglishDigits($value))->toCarbon();
+        // ⭐ Fix (test-writing session 6): Jalalian::toCarbon() returns a plain
+        // \Carbon\Carbon (the base nesbot/carbon class it imports directly), not
+        // \Illuminate\Support\Carbon. Since Illuminate\Support\Carbon *extends*
+        // \Carbon\Carbon (not the other way around), returning the base-class
+        // instance here violated this method's declared return type and threw a
+        // real TypeError on every successful parse — not just on failure. This was
+        // completely masked everywhere else in the project because parseJalali()
+        // (the non-throwing sibling) has a broad `catch (\Throwable $e)` that
+        // silently swallowed the very same TypeError and treated it as an ordinary
+        // parse failure. It only surfaced as a real, live bug at the two call sites
+        // that intentionally use this fail-fast variant to NOT swallow errors:
+        // SpecialistLeaveController::store() (always fatal 500) and
+        // BlogPostService::resolvePublishedAt() (silently swallowed again one layer
+        // up, by the controller's own `catch (Throwable $e)`, so an admin editing a
+        // blog post's publish date always saw a generic error with the date change
+        // never actually applied).
+        return Carbon::instance(Jalalian::fromFormat($format, $this->normalizeToEnglishDigits($value))->toCarbon());
     }
 
     /**
