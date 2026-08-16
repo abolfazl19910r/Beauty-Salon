@@ -118,17 +118,30 @@ class ReviewController extends Controller
         return view('reviews.thank-you');
     }
 
+    /**
+     * ⭐ Fix (test-writing session 6, 2026-08-16): Route::bind('specialist', ...) in
+     * RouteServiceProvider globally intercepts any route parameter literally named
+     * {specialist} and resolves it into an already-loaded Specialist instance before
+     * this method even runs — regardless of the parameter's own name here
+     * ($specialistId) or type hint. Without this check, Specialist::findOrFail()
+     * received a full model object instead of a raw id and always threw "No query
+     * results", so this page 404'd for every specialist. Same root cause and same
+     * fix pattern as resolveSpecialist()/resolveService() in
+     * BookingAvailabilityController.
+     */
     public function specialistReviews($specialistId): View
     {
-        $specialist = \App\Models\Specialist::findOrFail($specialistId);
+        $specialist = $specialistId instanceof \App\Models\Specialist
+            ? $specialistId
+            : \App\Models\Specialist::findOrFail($specialistId);
 
         $reviews = Review::with(['user', 'service'])
-            ->where('specialist_id', $specialistId)
+            ->where('specialist_id', $specialist->id)
             ->approved()
             ->recent()
             ->paginate(10);
 
-        $stats = Review::getSpecialistStats($specialistId);
+        $stats = Review::getSpecialistStats($specialist->id);
 
         return view('reviews.specialist-reviews', compact('specialist', 'reviews', 'stats'));
     }
