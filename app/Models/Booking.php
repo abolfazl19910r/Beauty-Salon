@@ -19,6 +19,7 @@ class Booking extends Model
         'payment_details' => 'array',
         'refund_details' => 'array',
         'reminder_sent' => 'boolean',
+        'reviewed_at' => 'datetime',
     ];
 
     protected $fillable = [
@@ -40,6 +41,7 @@ class Booking extends Model
         'cancellation_reason',
         'cancelled_at',
         'reminder_sent',
+        'reviewed_at',
         'refund_status',
         'refunded_at',
         'refunded_amount',

@@ -69,7 +69,20 @@ class ReviewService
 
             $booking->update([
                 'rating' => $data['overall_rating'],
-                'review' => $data['comment'],
+                // ⭐ Fix (test-writing session 6, 2026-08-16): 'comment' is a genuinely
+                // optional field (StoreReviewRequest: nullable|string|max:500). When
+                // omitted, $request->validated() simply doesn't include the key at
+                // all (not present-with-null), so accessing $data['comment'] directly
+                // threw "Undefined array key" — converted by this app's exception
+                // handler into a real \Exception that aborted the request mid-way
+                // through, right after the Review row had already been inserted. That
+                // left a broken half-completed state on every comment-less review
+                // submission: the Review row existed, but the booking was never
+                // marked reviewed_at, the specialist was never notified, and the
+                // customer never received their loyalty points — while the customer
+                // just saw a generic "error submitting review" message and could
+                // even resubmit the same token, since reviewed_at was never set.
+                'review' => $data['comment'] ?? null,
                 'reviewed_at' => now(),
             ]);
 
