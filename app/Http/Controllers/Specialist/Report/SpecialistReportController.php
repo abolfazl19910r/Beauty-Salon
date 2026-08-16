@@ -15,7 +15,14 @@ class SpecialistReportController extends Controller
 {
     use HasJalaliDates;
 
-    public function index(Request $request): View
+    /**
+     * ⭐ Fix (test-writing session 6, 2026-08-16): declared return type was View, but
+     * this method also returns Excel::download() (a BinaryFileResponse) and mPDF's
+     * Output() call (which returns null in 'D'/download mode) — both violated the
+     * declared type and threw a real TypeError, meaning the Excel/PDF export links on
+     * this page were completely broken for every specialist.
+     */
+    public function index(Request $request): View|\Symfony\Component\HttpFoundation\BinaryFileResponse|string|null
     {
         $user = auth()->user();
         $specialist = Specialist::where('phone', $user->phone)->first();
