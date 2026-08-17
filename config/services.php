@@ -42,14 +42,22 @@ return [
 
     'kavenegar' => [
         'api_key' => env('KAVENEGAR_API_KEY'),
-        'sender' => env('KAVENEGAR_SENDER', '2000660110'),
+        // ⭐ Fix (test-writing session 7): env('KEY', 'default') only falls back when the
+        // key is entirely undefined, not when .env defines it but leaves it empty — and
+        // .env.example ships every one of these keys empty. A fresh deployment that
+        // copies .env.example without filling these in would silently send real SMS
+        // requests to Kavenegar with an empty sender/template name instead of the
+        // intended default, rather than falling back safely. Same root cause and fix
+        // pattern already applied to SECURITY_LOG_LEVEL/PAYMENTS_LOG_LEVEL in
+        // config/logging.php.
+        'sender' => env('KAVENEGAR_SENDER') ?: '2000660110',
         'send_in_local' => env('KAVENEGAR_SEND_IN_LOCAL', false),
 
         'templates' => [
-            'login_verify' => env('KAVENEGAR_TEMPLATE_LOGIN', 'login-verify'),
-            'register_verify' => env('KAVENEGAR_TEMPLATE_REGISTER', 'register-verify'),
-            'reset_password' => env('KAVENEGAR_TEMPLATE_RESET', 'reset-password'),
-            'two_factor_auth' => env('KAVENEGAR_TEMPLATE_2FA', 'two-factor-auth'),
+            'login_verify' => env('KAVENEGAR_TEMPLATE_LOGIN') ?: 'login-verify',
+            'register_verify' => env('KAVENEGAR_TEMPLATE_REGISTER') ?: 'register-verify',
+            'reset_password' => env('KAVENEGAR_TEMPLATE_RESET') ?: 'reset-password',
+            'two_factor_auth' => env('KAVENEGAR_TEMPLATE_2FA') ?: 'two-factor-auth',
         ],
     ],
 
