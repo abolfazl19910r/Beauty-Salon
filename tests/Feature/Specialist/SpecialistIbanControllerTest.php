@@ -183,13 +183,14 @@ class SpecialistIbanControllerTest extends TestCase
         $this->put(route('specialist.wallet.update-iban'), [])->assertRedirect(route('login'));
     }
 
-    public function test_dead_nested_form_request_is_never_wired_to_the_controller(): void
+    public function test_the_controller_uses_the_real_root_level_form_request(): void
     {
-        // Documents the duplicate: App\Http\Requests\Specialist\Wallet\Iban\UpdateIbanRequest
-        // exists on disk but the controller imports the root-level
-        // App\Http\Requests\Specialist\UpdateIbanRequest instead. Both currently have
-        // equivalent (already-fixed) authorize() logic, so this isn't a live bug — but
-        // if the root-level one ever regresses, the nested twin won't save it.
+        // ⭐ Removed in test-writing session 7 (2026-08-18): a duplicate, completely
+        // dead App\Http\Requests\Specialist\Wallet\Iban\UpdateIbanRequest used to exist
+        // on disk alongside this one, never wired to any controller. It was deleted as
+        // part of R-Cleanup-DeadCode housekeeping. This just pins that the controller
+        // still uses the real, root-level UpdateIbanRequest (with its correct
+        // auth()->check() fix from session 6).
         $reflection = new \ReflectionClass(\App\Http\Controllers\Specialist\Wallet\Iban\SpecialistIbanController::class);
         $updateMethod = $reflection->getMethod('update');
         $params = $updateMethod->getParameters();
