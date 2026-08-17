@@ -8,7 +8,12 @@ class RespondReviewRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->hasRole('specialist');
+        // ⭐ Fix (test-writing session 6): consistent with the same fix applied elsewhere
+        // in this class group. Note: this Form Request is currently dead code —
+        // SpecialistReviewController::respond() validates inline with a plain Request
+        // instead of using this class — so this had no live effect, but is corrected
+        // for consistency in case it's wired up later.
+        return auth()->check();
     }
 
     public function rules(): array

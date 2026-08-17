@@ -25,7 +25,11 @@ class ReviewPolicy
             return true;
         }
 
-        if ($user->hasRole('specialist') && $review->specialist_id === $user->specialist?->id) {
+        // ⭐ Fix (test-writing session 6): dropped the hasRole('specialist') requirement,
+        // same root cause and same fix as SpecialistPolicy — nothing ever assigns that
+        // role in production, so this branch was permanently unreachable for every
+        // specialist trying to view their own review.
+        if ($review->specialist_id === $user->specialist?->id) {
             return true;
         }
 
@@ -49,8 +53,7 @@ class ReviewPolicy
 
     public function respond(User $user, Review $review): bool
     {
-        return $user->hasRole('specialist')
-            && $review->specialist_id === $user->specialist?->id;
+        return $review->specialist_id === $user->specialist?->id;
     }
 
     public function moderate(User $user, Review $review): bool

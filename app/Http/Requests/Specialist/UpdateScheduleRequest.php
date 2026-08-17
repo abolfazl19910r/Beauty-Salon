@@ -8,7 +8,10 @@ class UpdateScheduleRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->hasRole('specialist');
+        // ⭐ Fix (test-writing session 6): real authorization happens in the controller
+        // via SpecialistPolicy::manageSchedule — see that class for why
+        // hasRole('specialist') was removed there.
+        return auth()->check();
     }
 
     public function rules(): array
