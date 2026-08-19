@@ -63,21 +63,31 @@ class SecurityController extends Controller
             });
     }
 
-    public function terminateSession(string $id): JsonResponse
+    /**
+     * ⭐ Fix (test-writing session 8): the route parameter used to be named {id}, which
+     * fell under the global `Route::pattern('id', '[0-9a-f-]+')` constraint in
+     * RouteServiceProvider (designed for lowercase-hex UUIDs like notification ids).
+     * Laravel's real session IDs are `Str::random(40)` — mixed-case alphanumeric — so
+     * virtually every real session ID contains an uppercase letter or a non-hex lowercase
+     * letter (g-z) and would never match that pattern. The route 404'd for essentially
+     * every real session, meaning "end this session" never actually worked. Renaming the
+     * parameter to {sessionId} takes it out from under the global `id` pattern.
+     */
+    public function terminateSession(string $sessionId): JsonResponse
     {
-        if ($id === session()->getId()) {
+        if ($sessionId === session()->getId()) {
             return response()->json([
                 'error' => 'نمی‌توانید نشست فعلی را پایان دهید.',
             ], 422);
         }
 
         DB::table('sessions')
-            ->where('id', $id)
+            ->where('id', $sessionId)
             ->where('user_id', auth()->id())
             ->delete();
 
         $this->securityLogService->logSuspiciousActivity('session_terminated', [
-            'session_id' => $id,
+            'session_id' => $sessionId,
         ]);
 
         return response()->json([

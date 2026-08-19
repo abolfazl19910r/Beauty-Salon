@@ -17,6 +17,6 @@ Route::prefix('security')->name('security.')->group(function () {
     Route::get('/sessions', [SecurityController::class, 'sessions'])->name('sessions');
     Route::get('/activity', [SecurityController::class, 'activity'])->name('activity');
 
-    Route::post('/sessions/{id}/terminate', [SecurityController::class, 'terminateSession'])->name('sessions.terminate');
+    Route::post('/sessions/{sessionId}/terminate', [SecurityController::class, 'terminateSession'])->name('sessions.terminate');
     Route::post('/sessions/terminate-all', [SecurityController::class, 'terminateAllSessions'])->name('sessions.terminate-all');
 });
