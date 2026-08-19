@@ -37,6 +37,7 @@ class Booking extends Model
         'paid_at',
         'rating',
         'review',
+        'notes',
         'cancelled_by',
         'cancellation_reason',
         'cancelled_at',
