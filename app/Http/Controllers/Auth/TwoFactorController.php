@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class TwoFactorController extends Controller
@@ -61,6 +62,8 @@ class TwoFactorController extends Controller
                 'error' => 'کد وارد شده نامعتبر است.',
             ], 422);
 
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('2FA enable failed', [
                 'user_id' => auth()->id(),
@@ -96,6 +99,8 @@ class TwoFactorController extends Controller
                 'error' => 'کد وارد شده نامعتبر است.',
             ], 422);
 
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('2FA disable failed', [
                 'user_id' => auth()->id(),
@@ -131,6 +136,8 @@ class TwoFactorController extends Controller
                 'error' => 'کد وارد شده نامعتبر است.',
             ], 422);
 
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('2FA verification failed', [
                 'user_id' => auth()->id(),
