@@ -5,73 +5,24 @@ namespace App\Http\Controllers\Admin\Report;
 use App\Http\Controllers\Controller;
 use App\Services\Admin\Report\AdminReportService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 /**
  * API endpoints related to revenue and financial reports.
  * * Derived from AdminReportsController (R-Reports).
+ *
+ * ⭐ Note (test-writing session 9): daily()/weekly()/monthly()/financial() used to live
+ * here, reachable only via routes/api/admin/reports.php. That whole routes/api/admin/*
+ * group was removed per explicit project decision (unused React-SPA-era JSON API,
+ * confirmed zero consumers in resources/js or resources/views). Those four methods were
+ * removed along with it; the underlying AdminReportService methods they called
+ * (dailyRevenue/weeklyRevenue/monthlyRevenue/getFinancialSummary/etc.) are untouched and
+ * still exercised by AdminReportsController::index() and AdminReportServiceTest.
  */
 class AdminReportRevenueController extends Controller
 {
     public function __construct(
         protected AdminReportService $reportService,
     ) {}
-
-    public function daily(Request $request): JsonResponse
-    {
-        ['start' => $start, 'end' => $end, 'startDate' => $startDate, 'endDate' => $endDate]
-            = $this->reportService->parseDateRange($request->only('start_date', 'end_date'));
-
-        return response()->json([
-            'success' => true,
-            'data' => $this->reportService->dailyRevenue($start, $end),
-            'meta' => ['period' => ['start' => $startDate, 'end' => $endDate, 'type' => 'daily']],
-        ]);
-    }
-
-    public function weekly(Request $request): JsonResponse
-    {
-        ['start' => $start, 'end' => $end, 'startDate' => $startDate, 'endDate' => $endDate]
-            = $this->reportService->parseDateRange($request->only('start_date', 'end_date'), defaultSubDays: 84);
-
-        return response()->json([
-            'success' => true,
-            'data' => $this->reportService->weeklyRevenue($start, $end),
-            'meta' => ['period' => ['start' => $startDate, 'end' => $endDate, 'type' => 'weekly']],
-        ]);
-    }
-
-    public function monthly(Request $request): JsonResponse
-    {
-        ['start' => $start, 'end' => $end, 'startDate' => $startDate, 'endDate' => $endDate]
-            = $this->reportService->parseDateRange($request->only('start_date', 'end_date'), defaultSubDays: 365);
-
-        return response()->json([
-            'success' => true,
-            'data' => $this->reportService->monthlyRevenue($start, $end),
-            'meta' => ['period' => ['start' => $startDate, 'end' => $endDate, 'type' => 'monthly']],
-        ]);
-    }
-
-    public function financial(Request $request): JsonResponse
-    {
-        ['start' => $start, 'end' => $end, 'startDate' => $startDate, 'endDate' => $endDate]
-            = $this->reportService->parseDateRange($request->only('start_date', 'end_date'));
-
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'summary' => $this->reportService->getFinancialSummary($start, $end),
-                'monthly_breakdown' => $this->reportService->monthlyBreakdown(
-                    now()->startOfYear(), now()->endOfDay()
-                ),
-                'service_revenue' => $this->reportService->serviceRevenue($start, $end),
-                'payment_breakdown' => $this->reportService->paymentBreakdown($start, $end),
-                'trends' => $this->reportService->calcFinancialTrends($startDate, $endDate),
-            ],
-            'meta' => ['period' => ['start' => $startDate, 'end' => $endDate]],
-        ]);
-    }
 
     // ── Web endpoints for Admin Dashboard chart ────────────────────
     // These methods are called from web routes (not API)

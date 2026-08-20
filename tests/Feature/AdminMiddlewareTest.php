@@ -6,6 +6,7 @@ use App\Models\Role;
 use App\Models\Specialist;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 /**
@@ -21,46 +22,62 @@ use Tests\TestCase;
  * consumed ~4GB of RAM before being OOM-killed by the OS, and crashed even with a 512MB
  * memory_limit override, dying inside MiddlewareNameResolver.php itself.
  *
- * Fix: the group was renamed to 'admin-api' (bootstrap/app.php + its one consumer in
- * routes/api.php) so it no longer collides with the single-middleware 'admin' alias it contains.
+ * Original fix: the group was renamed to 'admin-api' (bootstrap/app.php + its one consumer in
+ * routes/api.php) so it no longer collided with the single-middleware 'admin' alias it contains.
  *
- * Also covers a second, independent bug found in the same file: AdminMiddleware checked
- * hasRole('specialists') (plural) while the only role ever seeded/checked anywhere else in the
- * project is 'specialist' (singular) — so an account that was both an admin AND a specialist was
- * never redirected to their own dashboard and incorrectly kept full admin-panel access.
- *
- * These tests hit two different underlying /api/admin/* routes (dashboard and specialists) to
- * confirm the fix is at the group-resolution level, not specific to one endpoint.
+ * ⭐ Update (test-writing session 9): the entire routes/api/admin/* group (the 'admin-api'
+ * group's only consumer) was later removed per an explicit project decision — confirmed zero
+ * live consumers in resources/js or resources/views (unused React-SPA-era JSON API). The
+ * 'admin-api' middleware group definition was removed along with it. AdminMiddleware itself
+ * (aliased as 'admin') is still registered and still guards the real admin web panel indirectly
+ * through role/permission checks elsewhere, so its behavior — the exact thing this test
+ * actually verifies — still matters and is still live code, even though no production route
+ * currently applies the bare 'admin' alias directly. Rather than deleting this regression
+ * coverage along with the now-gone routes, the tests below register their own throwaway route
+ * (applying ['auth', 'admin'] directly, the same way the removed group did) so
+ * AdminMiddleware's real behavior — plain-admin access, non-admin rejection, the
+ * admin-who-is-also-a-specialist redirect, and guest rejection — stays covered independently of
+ * which production routes happen to use it.
  */
 class AdminMiddlewareTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_a_plain_admin_can_access_the_admin_api(): void
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Two separate throwaway routes (not tied to any single production endpoint) — both
+        // apply the 'admin' alias directly, exactly like the removed 'admin-api' group did.
+        Route::middleware(['auth', 'admin'])->get('/__test/admin-only', fn () => response()->json(['ok' => true]));
+        Route::middleware(['auth', 'admin'])->get('/__test/admin-only-2', fn () => response()->json(['ok' => true]));
+    }
+
+    public function test_a_plain_admin_can_access_an_admin_only_route(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);
 
-        $response = $this->actingAs($admin)->getJson('/api/admin/dashboard');
+        $response = $this->actingAs($admin)->getJson('/__test/admin-only');
 
         $response->assertOk();
     }
 
-    public function test_a_plain_admin_can_access_a_second_unrelated_admin_api_endpoint(): void
+    public function test_a_plain_admin_can_access_a_second_unrelated_admin_only_route(): void
     {
-        // A different controller/action under the same 'admin-api' group — proves the fix is at
-        // the group-resolution level, not a one-off patch for a single route.
+        // A different route under the same middleware — proves the fix is at the
+        // alias/group-resolution level, not a one-off patch for a single route.
         $admin = User::factory()->create(['is_admin' => true]);
 
-        $response = $this->actingAs($admin)->getJson('/api/admin/dashboard/popular-services');
+        $response = $this->actingAs($admin)->getJson('/__test/admin-only-2');
 
         $response->assertOk();
     }
 
-    public function test_a_non_admin_cannot_access_the_admin_api(): void
+    public function test_a_non_admin_cannot_access_an_admin_only_route(): void
     {
         $user = User::factory()->create(['is_admin' => false]);
 
-        $response = $this->actingAs($user)->getJson('/api/admin/dashboard');
+        $response = $this->actingAs($user)->getJson('/__test/admin-only');
 
         $response->assertForbidden();
     }
@@ -71,7 +88,7 @@ class AdminMiddlewareTest extends TestCase
         Specialist::factory()->create(['phone' => $admin->phone]);
         $admin->roles()->attach(Role::factory()->create(['name' => 'specialist']));
 
-        $response = $this->actingAs($admin)->getJson('/api/admin/dashboard');
+        $response = $this->actingAs($admin)->getJson('/__test/admin-only');
 
         $response->assertForbidden();
         $response->assertJson(['message' => 'متخصصین نمی‌توانند به پنل مدیریت دسترسی داشته باشند.']);
@@ -86,14 +103,14 @@ class AdminMiddlewareTest extends TestCase
         $admin = User::factory()->create(['is_admin' => true]);
         $admin->roles()->attach(Role::factory()->create(['name' => 'specialist']));
 
-        $response = $this->actingAs($admin)->get('/api/admin/dashboard');
+        $response = $this->actingAs($admin)->get('/__test/admin-only');
 
         $response->assertRedirect(route('specialist.my-dashboard'));
     }
 
-    public function test_a_guest_receives_a_401_from_the_admin_api(): void
+    public function test_a_guest_receives_a_401_from_an_admin_only_route(): void
     {
-        $response = $this->getJson('/api/admin/dashboard');
+        $response = $this->getJson('/__test/admin-only');
 
         $response->assertUnauthorized();
     }

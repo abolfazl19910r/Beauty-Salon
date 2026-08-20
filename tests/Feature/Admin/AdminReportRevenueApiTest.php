@@ -3,12 +3,22 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\Booking;
-use App\Models\Review;
-use App\Models\Specialist;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * ⭐ Trimmed (test-writing session 9): this file used to also cover
+ * /api/admin/reports/{daily,specialists/performance,specialists/satisfaction,services/popular}
+ * — those routes (and the AdminReportSpecialistController class + the daily()/weekly()/
+ * monthly()/financial() methods on AdminReportRevenueController) were removed along with
+ * the whole routes/api/admin/* group per an explicit project decision (unused
+ * React-SPA-era JSON API, confirmed zero consumers). The underlying AdminReportService
+ * logic those methods called is untouched and still covered by AdminReportServiceTest and
+ * AdminReportsControllerTest (which exercises specialistPerformance/customerSatisfaction/
+ * popularServices indirectly through the real admin/reports page). Only the
+ * still-live /admin/reports/{today,week,month} web-chart endpoints remain here.
+ */
 class AdminReportRevenueApiTest extends TestCase
 {
     use RefreshDatabase;
@@ -32,69 +42,16 @@ class AdminReportRevenueApiTest extends TestCase
         }
     }
 
-    public function test_daily_revenue_api_returns_todays_paid_bookings(): void
-    {
-        Booking::factory()->create([
-            'payment_status' => 'paid', 'created_at' => now(), 'prepayment_amount' => 75000,
-        ]);
-
-        $response = $this->actingAs($this->admin)->getJson('/api/admin/reports/daily?start_date='.now()->format('Y-m-d').'&end_date='.now()->format('Y-m-d'));
-
-        $response->assertOk();
-        $response->assertJson(['success' => true]);
-    }
-
-    public function test_specialist_performance_api_reflects_a_completed_paid_booking(): void
-    {
-        $specialist = Specialist::factory()->create();
-        Booking::factory()->create([
-            'specialist_id' => $specialist->id,
-            'payment_status' => 'paid',
-            'status' => 'completed',
-            'created_at' => now(),
-            'prepayment_amount' => 100000,
-        ]);
-
-        $response = $this->actingAs($this->admin)->getJson(
-            '/api/admin/reports/specialists/performance?start_date='.now()->subDay()->format('Y-m-d').'&end_date='.now()->format('Y-m-d')
-        );
-
-        $response->assertOk();
-        $response->assertJson(['success' => true]);
-        $this->assertNotEmpty($response->json('data.specialists'));
-    }
-
-    public function test_satisfaction_api_returns_review_stats(): void
-    {
-        Review::factory()->create(['overall_rating' => 5, 'created_at' => now()]);
-
-        $response = $this->actingAs($this->admin)->getJson('/api/admin/reports/specialists/satisfaction');
-
-        $response->assertOk();
-        $response->assertJson(['success' => true]);
-    }
-
-    public function test_popular_services_api_orders_by_booking_count(): void
-    {
-        $response = $this->actingAs($this->admin)->getJson('/api/admin/reports/services/popular');
-
-        $response->assertOk();
-        $response->assertJsonStructure(['success', 'popularServices']);
-    }
-
-    public function test_non_admin_gets_401_or_403_on_report_api(): void
+    public function test_non_admin_is_forbidden_from_the_web_chart_endpoints(): void
     {
         $user = User::factory()->create(['is_admin' => false]);
 
-        $response = $this->actingAs($user)->getJson('/api/admin/reports/daily');
-
-        $this->assertContains($response->status(), [401, 403]);
+        $this->actingAs($user)->get('/admin/reports/today')->assertForbidden();
     }
 
-    public function test_guest_is_rejected_from_report_api(): void
+    public function test_guest_is_redirected_to_login(): void
     {
-        $response = $this->getJson('/api/admin/reports/daily');
-
-        $this->assertContains($response->status(), [401, 403]);
+        $this->get('/admin/reports/today')->assertRedirect(route('login'));
     }
 }
+

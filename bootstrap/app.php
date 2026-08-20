@@ -37,10 +37,13 @@ return Application::configure(basePath: dirname(__DIR__))
             '2fa.enabled' => \App\Http\Middleware\EnsureTwoFactorVerifiedForPayment::class,
         ]);
 
-        $middleware->group('admin-api', [
-            'auth',
-            'admin',
-        ]);
+        // Note: the 'admin-api' middleware group (auth + admin, previously guarding
+        // routes/api/admin/*) was removed in test-writing session 9 along with that whole
+        // route group — it had zero live consumers in resources/js or resources/views
+        // (confirmed React-SPA-era JSON API, migrated to Blade across several refactor
+        // phases). See Rasta_unified_prompt.md for full history, including the critical
+        // middleware-recursion bug this group's original name ('admin', self-referential)
+        // caused before being renamed to 'admin-api' in an earlier session.
     })
     ->withSchedule(function (Schedule $schedule) {
         $schedule->command('wallet:settle-pending')

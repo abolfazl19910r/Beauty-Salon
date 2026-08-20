@@ -31,20 +31,5 @@ Route::name('api.')->group(function () {
         if (file_exists(__DIR__.'/api/user/loyalty.php')) {
             require __DIR__.'/api/user/loyalty.php';
         }
-
-        Route::middleware('admin-api')->prefix('admin')->group(function () {
-            if (file_exists(__DIR__.'/api/admin/dashboard.php')) {
-                require __DIR__.'/api/admin/dashboard.php';
-            }
-            if (file_exists(__DIR__.'/api/admin/reports.php')) {
-                require __DIR__.'/api/admin/reports.php';
-            }
-            if (file_exists(__DIR__.'/api/admin/services.php')) {
-                require __DIR__.'/api/admin/services.php';
-            }
-            if (file_exists(__DIR__.'/api/admin/specialists.php')) {
-                require __DIR__.'/api/admin/specialists.php';
-            }
-        });
     });
 });

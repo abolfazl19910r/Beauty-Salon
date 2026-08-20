@@ -11,6 +11,11 @@ use Tests\TestCase;
  * AdminDashboardController/AdminDashboardAnalyticsController had no dedicated HTTP test —
  * AdminDashboardService itself was never unit-tested either. Both routes are the very
  * first page an admin sees after login (/admin/).
+ *
+ * ⭐ Updated (test-writing session 9): getPopularServices()/getActiveSpecialists() and
+ * their routes/api/admin/dashboard.php endpoints were removed per an explicit project
+ * decision (whole routes/api/admin/* group was unused React-SPA-era JSON API). getData()
+ * survives via its web route (/admin/dashboard/data) instead of the removed API one.
  */
 class AdminDashboardControllerTest extends TestCase
 {
@@ -39,7 +44,7 @@ class AdminDashboardControllerTest extends TestCase
     {
         Booking::factory()->count(2)->create(['payment_status' => 'paid', 'prepayment_amount' => 100000]);
 
-        $response = $this->actingAs($this->admin)->getJson('/api/admin/dashboard');
+        $response = $this->actingAs($this->admin)->getJson('/admin/dashboard/data');
 
         $response->assertOk();
         $response->assertJsonStructure(['stats' => [
@@ -47,22 +52,6 @@ class AdminDashboardControllerTest extends TestCase
             'totalSpecialists', 'totalUsers', 'totalRevenue',
         ]]);
         $response->assertJsonPath('stats.totalBookings', 2);
-    }
-
-    public function test_get_popular_services_returns_json(): void
-    {
-        $response = $this->actingAs($this->admin)->getJson('/api/admin/dashboard/popular-services');
-
-        $response->assertOk();
-        $response->assertJsonStructure(['popularServices']);
-    }
-
-    public function test_get_active_specialists_returns_json(): void
-    {
-        $response = $this->actingAs($this->admin)->getJson('/api/admin/dashboard/active-specialists');
-
-        $response->assertOk();
-        $response->assertJsonStructure(['activeSpecialists']);
     }
 
     public function test_non_admin_is_forbidden(): void
