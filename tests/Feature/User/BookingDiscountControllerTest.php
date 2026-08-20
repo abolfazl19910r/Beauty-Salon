@@ -69,25 +69,26 @@ class BookingDiscountControllerTest extends TestCase
         $response->assertStatus(422);
     }
 
-    public function test_check_requires_authentication_via_its_own_authorize_even_on_the_public_route(): void
+    public function test_check_requires_authentication_on_the_sanctum_guarded_api_route(): void
     {
-        // Route::post('/check-discount', ...) in routes/api/public/bookings.php has no auth
-        // middleware, but CheckDiscountRequest::authorize() itself requires auth()->check()
-        // — so despite living in the "public" routes file, this endpoint fails closed (403)
-        // for guests rather than actually being usable without login. Documenting the real
-        // behavior here rather than assuming the file name implies it's guest-accessible.
+        // ⭐ Updated (test-writing session 9): the misleading "public" registration
+        // (/api/check-discount, no middleware, but silently 403'd by
+        // CheckDiscountRequest::authorize() anyway) was removed per an explicit project
+        // decision that this preview genuinely requires login. The only remaining API
+        // route is /api/bookings/check-discount, properly guarded by auth:sanctum.
         $code = DiscountCode::factory()->create(['is_active' => true]);
 
-        $response = $this->postJson('/api/check-discount', ['code' => $code->code]);
+        $response = $this->postJson('/api/bookings/check-discount', ['code' => $code->code]);
 
-        $response->assertForbidden();
+        $response->assertUnauthorized();
     }
 
-    public function test_check_works_via_the_public_route_once_authenticated(): void
+    public function test_check_works_via_the_sanctum_guarded_api_route_once_authenticated(): void
     {
         $code = DiscountCode::factory()->create(['is_active' => true]);
 
-        $response = $this->actingAs($this->user)->postJson('/api/check-discount', ['code' => $code->code]);
+        Sanctum::actingAs($this->user);
+        $response = $this->postJson('/api/bookings/check-discount', ['code' => $code->code]);
 
         $response->assertOk();
         $response->assertJson(['valid' => true]);
