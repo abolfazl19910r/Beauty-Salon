@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\User\BlogController;
-use App\Http\Controllers\User\GalleryController;
 use App\Http\Controllers\User\HomeController;
 use App\Http\Controllers\User\ServiceController;
 use Illuminate\Support\Facades\Route;
@@ -13,5 +12,3 @@ Route::get('/services/{service}', [ServiceController::class, 'show'])->name('ser
 
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{post:slug}', [BlogController::class, 'show'])->name('blog.show');
-
-Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');

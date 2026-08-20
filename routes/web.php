@@ -14,7 +14,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     require __DIR__.'/web/services.php';
     require __DIR__.'/web/bookings.php';
-    require __DIR__.'/web/gallery.php';
     require __DIR__.'/web/payments.php';
     require __DIR__.'/web/loyalty.php';
 
