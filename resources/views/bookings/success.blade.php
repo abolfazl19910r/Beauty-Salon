@@ -16,6 +16,13 @@
             <p class="mb-2" style="color: var(--rasta-cream); opacity: 0.85;">رزرو شما با موفقیت ثبت شد.</p>
             <p class="mb-6" style="color: var(--rasta-cream); opacity: 0.6;">پیامک تاییدیه برای شما ارسال خواهد شد.</p>
 
+            {{-- ⭐ Fix (test-writing session 9): $booking can legitimately be null here
+                 (BookingController::success() falls back to session('booking_id')/?id=,
+                 and looks it up scoped to the authenticated user — no match, guest with a
+                 stale/foreign id, or an expired session all leave it null). Every field
+                 below used to be read unconditionally, so any of those cases threw a fatal
+                 "Attempt to read property on null" instead of showing a graceful message. --}}
+            @if($booking)
             <div class="rounded-lg p-5 mb-5 text-right" style="background-color: var(--rasta-dark); border: 1px solid rgba(201,162,75,0.15);">
                 <h2 class="font-bold mb-4 text-center" style="color: var(--rasta-gold-light);">اطلاعات پرداخت</h2>
                 <div class="space-y-2 persian-number">
@@ -71,13 +78,16 @@
                     @endif
                 </div>
             </div>
+            @endif
 
             <div class="flex gap-3 justify-center flex-wrap">
+                @if($booking)
                 <a href="{{ route('bookings.show', $booking) }}"
                    class="inline-block px-6 py-3 rounded-lg font-bold transition-opacity hover:opacity-90"
                    style="background: linear-gradient(135deg, var(--rasta-gold-light), var(--rasta-gold)); color: var(--rasta-dark);">
                     مشاهده جزئیات نوبت
                 </a>
+                @endif
                 <a href="{{ route('home') }}"
                    class="inline-block px-6 py-3 rounded-lg transition hover:bg-white/5"
                    style="border: 1px solid rgba(201,162,75,0.25); color: var(--rasta-cream); opacity: 0.85;">
