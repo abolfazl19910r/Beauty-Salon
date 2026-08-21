@@ -10,12 +10,20 @@
                 <svg class="w-6 h-6" style="color:var(--admin-accent)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 مدیریت امتیازات
             </h1>
-            <a href="{{ route('admin.dashboard') }}"
-               class="inline-flex items-center gap-1 px-4 py-2 text-sm rounded-lg border transition-colors"
-               style="color:var(--admin-text-dim);background:var(--admin-surface);border-color:var(--admin-border)">
-                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-                بازگشت
-            </a>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('admin.loyalty.points.index') }}"
+                   class="inline-flex items-center gap-1 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors"
+                   style="background:var(--admin-accent)">
+                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    مدیریت امتیاز کاربران
+                </a>
+                <a href="{{ route('admin.dashboard') }}"
+                   class="inline-flex items-center gap-1 px-4 py-2 text-sm rounded-lg border transition-colors"
+                   style="color:var(--admin-text-dim);background:var(--admin-surface);border-color:var(--admin-border)">
+                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                    بازگشت
+                </a>
+            </div>
         </div>
 
         {{-- Statistics cards --}}

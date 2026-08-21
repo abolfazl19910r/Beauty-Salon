@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\Loyalty\AdminLoyaltyController;
+use App\Http\Controllers\Admin\Loyalty\Point\AdminLoyaltyPointsController;
 use App\Http\Controllers\Admin\Loyalty\Reward\AdminLoyaltyRewardController;
 use Illuminate\Support\Facades\Route;
 
@@ -18,5 +19,12 @@ Route::prefix('loyalty')->name('loyalty.')->group(function () {
         Route::put('/{reward}', [AdminLoyaltyRewardController::class, 'update'])->name('update');
         Route::delete('/{reward}', [AdminLoyaltyRewardController::class, 'destroy'])->name('destroy');
         Route::post('/{reward}/redeem', [AdminLoyaltyRewardController::class, 'redeemReward'])->name('redeem');
+    });
+
+    // Manual points management (search a user, view balance/history, add or deduct points)
+    Route::prefix('points')->name('points.')->group(function () {
+        Route::get('/', [AdminLoyaltyPointsController::class, 'index'])->name('index');
+        Route::post('/{user}/add', [AdminLoyaltyPointsController::class, 'addPoints'])->name('add');
+        Route::post('/{user}/deduct', [AdminLoyaltyPointsController::class, 'deductPoints'])->name('deduct');
     });
 });
