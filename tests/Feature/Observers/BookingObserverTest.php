@@ -35,6 +35,17 @@ class BookingObserverTest extends TestCase
             'status' => 'pending',
             'payment_status' => 'unpaid',
             'prepayment_amount' => 75000,
+            // Explicitly pinned far outside any cancellation-fee window (default
+            // WalletSetting::cancellation_before_hours is 24h). BookingFactory's
+            // default 'booking_time' is random between +1 day and +2 months with the
+            // hour-of-day separately randomized to 9-17 — that hour override can
+            // legitimately push the effective time to LESS than 24h from now
+            // (e.g. "+1 day" landing at 09:00 when 'now' is already past 09:00 the
+            // day before), which made customer-cancellation-fee tests that don't care
+            // about the fee window flaky depending on the time of day the suite runs.
+            // Tests that specifically exercise the fee-window boundary already pass
+            // their own explicit 'booking_time' override, which still wins here.
+            'booking_time' => now()->addDays(10),
         ], $overrides));
 
         // Trigger the 'updated' observer path exactly like a real payment does.
