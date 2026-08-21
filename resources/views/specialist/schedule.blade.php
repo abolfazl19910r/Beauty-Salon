@@ -166,6 +166,22 @@
                                                class="w-full rounded-lg px-4 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]"
                                                style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);">
                                     </div>
+                                    <div>
+                                        <label class="block mb-2 text-sm text-[var(--specialist-plum-muted)]">شروع استراحت (اختیاری)</label>
+                                        <input type="time"
+                                               name="schedules[{{ $dayNumber }}][break_start]"
+                                               value="{{ isset($schedules[$dayNumber]) ? $schedules[$dayNumber]->first()->break_start : '' }}"
+                                               class="w-full rounded-lg px-4 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]"
+                                               style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);">
+                                    </div>
+                                    <div>
+                                        <label class="block mb-2 text-sm text-[var(--specialist-plum-muted)]">پایان استراحت (اختیاری)</label>
+                                        <input type="time"
+                                               name="schedules[{{ $dayNumber }}][break_end]"
+                                               value="{{ isset($schedules[$dayNumber]) ? $schedules[$dayNumber]->first()->break_end : '' }}"
+                                               class="w-full rounded-lg px-4 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]"
+                                               style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);">
+                                    </div>
                                 </div>
                             </div>
                         @endforeach

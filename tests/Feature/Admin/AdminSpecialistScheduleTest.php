@@ -112,4 +112,73 @@ class AdminSpecialistScheduleTest extends TestCase
 
         $this->actingAs($user)->get("/admin/specialists/{$this->specialist->id}/schedules/edit")->assertStatus(403);
     }
+
+    // ── break_start/break_end (schema completed in test-writing session 9) ─────────────
+
+    public function test_update_persists_an_optional_break_time(): void
+    {
+        $response = $this->actingAs($this->admin)->put("/admin/specialists/{$this->specialist->id}/schedules", [
+            'schedules' => [
+                0 => [
+                    'day_of_week' => 6, 'is_active' => '1',
+                    'start_time' => '09:00', 'end_time' => '18:00',
+                    'break_start' => '13:00', 'break_end' => '14:00',
+                ],
+            ],
+        ]);
+
+        $response->assertRedirect(route('admin.specialists.show', $this->specialist));
+        $this->assertDatabaseHas('specialist_schedules', [
+            'specialist_id' => $this->specialist->id,
+            'break_start' => '13:00',
+            'break_end' => '14:00',
+        ]);
+    }
+
+    public function test_update_allows_omitting_the_break_time_entirely(): void
+    {
+        $response = $this->actingAs($this->admin)->put("/admin/specialists/{$this->specialist->id}/schedules", [
+            'schedules' => [
+                0 => ['day_of_week' => 6, 'is_active' => '1', 'start_time' => '09:00', 'end_time' => '18:00'],
+            ],
+        ]);
+
+        $response->assertRedirect(route('admin.specialists.show', $this->specialist));
+        $this->assertDatabaseHas('specialist_schedules', [
+            'specialist_id' => $this->specialist->id,
+            'break_start' => null,
+            'break_end' => null,
+        ]);
+    }
+
+    public function test_update_rejects_a_break_end_without_a_break_start(): void
+    {
+        $response = $this->actingAs($this->admin)->put("/admin/specialists/{$this->specialist->id}/schedules", [
+            'schedules' => [
+                0 => [
+                    'day_of_week' => 6, 'is_active' => '1',
+                    'start_time' => '09:00', 'end_time' => '18:00',
+                    'break_end' => '14:00',
+                ],
+            ],
+        ]);
+
+        $response->assertSessionHasErrors();
+        $this->assertDatabaseMissing('specialist_schedules', ['specialist_id' => $this->specialist->id]);
+    }
+
+    public function test_update_rejects_a_break_period_outside_the_working_hours(): void
+    {
+        $response = $this->actingAs($this->admin)->put("/admin/specialists/{$this->specialist->id}/schedules", [
+            'schedules' => [
+                0 => [
+                    'day_of_week' => 6, 'is_active' => '1',
+                    'start_time' => '09:00', 'end_time' => '12:00',
+                    'break_start' => '13:00', 'break_end' => '14:00',
+                ],
+            ],
+        ]);
+
+        $response->assertSessionHasErrors();
+    }
 }

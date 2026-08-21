@@ -37,6 +37,8 @@ class AdminSpecialistScheduleController extends Controller
                 'schedules.*.is_active' => 'nullable',
                 'schedules.*.start_time' => 'nullable|required_if:schedules.*.is_active,1',
                 'schedules.*.end_time' => 'nullable|required_if:schedules.*.is_active,1|after:schedules.*.start_time',
+                'schedules.*.break_start' => 'nullable|required_with:schedules.*.break_end|after:schedules.*.start_time|before:schedules.*.end_time',
+                'schedules.*.break_end' => 'nullable|required_with:schedules.*.break_start|after:schedules.*.break_start|before_or_equal:schedules.*.end_time',
             ]);
 
             DB::beginTransaction();
@@ -50,6 +52,8 @@ class AdminSpecialistScheduleController extends Controller
                             'day_of_week' => $schedule['day_of_week'],
                             'start_time' => $schedule['start_time'],
                             'end_time' => $schedule['end_time'],
+                            'break_start' => $schedule['break_start'] ?? null,
+                            'break_end' => $schedule['break_end'] ?? null,
                             'is_active' => true,
                         ]);
                     }

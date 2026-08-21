@@ -95,19 +95,35 @@
                             </label>
                         </div>
                         <input type="hidden" name="schedules[{{ $dayNum }}][day_of_week]" value="{{ $dayNum }}">
-                        <div class="grid grid-cols-2 gap-4 p-4" id="day-body-{{ $dayNum }}"
+                        <div class="p-4" id="day-body-{{ $dayNum }}"
                              style="{{ !$isActive ? 'opacity:0.4; pointer-events:none;' : '' }}">
-                            <div>
-                                <label class="block text-xs font-medium mb-1.5" style="color:var(--admin-text-dim);">ساعت شروع</label>
-                                <input type="time" name="schedules[{{ $dayNum }}][start_time]"
-                                       class="time-input"
-                                       value="{{ $schedule?->start_time ?? '09:00' }}">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium mb-1.5" style="color:var(--admin-text-dim);">ساعت شروع</label>
+                                    <input type="time" name="schedules[{{ $dayNum }}][start_time]"
+                                           class="time-input"
+                                           value="{{ $schedule?->start_time ?? '09:00' }}">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium mb-1.5" style="color:var(--admin-text-dim);">ساعت پایان</label>
+                                    <input type="time" name="schedules[{{ $dayNum }}][end_time]"
+                                           class="time-input"
+                                           value="{{ $schedule?->end_time ?? '18:00' }}">
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-xs font-medium mb-1.5" style="color:var(--admin-text-dim);">ساعت پایان</label>
-                                <input type="time" name="schedules[{{ $dayNum }}][end_time]"
-                                       class="time-input"
-                                       value="{{ $schedule?->end_time ?? '18:00' }}">
+                            <div class="grid grid-cols-2 gap-4 mt-4">
+                                <div>
+                                    <label class="block text-xs font-medium mb-1.5" style="color:var(--admin-text-dim);">شروع استراحت (اختیاری)</label>
+                                    <input type="time" name="schedules[{{ $dayNum }}][break_start]"
+                                           class="time-input"
+                                           value="{{ $schedule?->break_start }}">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium mb-1.5" style="color:var(--admin-text-dim);">پایان استراحت (اختیاری)</label>
+                                    <input type="time" name="schedules[{{ $dayNum }}][break_end]"
+                                           class="time-input"
+                                           value="{{ $schedule?->break_end }}">
+                                </div>
                             </div>
                         </div>
                     </div>

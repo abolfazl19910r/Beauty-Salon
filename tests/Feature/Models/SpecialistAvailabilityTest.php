@@ -170,11 +170,64 @@ class SpecialistAvailabilityTest extends TestCase
         $this->assertContains('09:00', $slots);
     }
 
-    // NOTE: SpecialistSchedule::break_start/break_end are read by getAvailableSlots() but these
-    // columns do not exist anywhere in the schema (confirmed via a full grep across migrations,
-    // the model, and admin views) — the "break time" branch is entirely inert/unreachable dead
-    // code, not a live feature. No test is written for it here since there's nothing to exercise;
-    // flagged in Rasta_unified_prompt.md as a cleanup candidate rather than "fixed" in this phase.
+    public function test_a_break_period_removes_its_overlapping_slots(): void
+    {
+        // ⭐ Feature completion (test-writing session 9): break_start/break_end used to be
+        // read by getAvailableSlots() with no matching schema columns, making this branch
+        // permanently inert. Now that the columns exist, this is the first real test of it.
+        $specialist = Specialist::factory()->create();
+        $date = $this->futureDateOnDayOfWeek(6);
+        SpecialistSchedule::factory()->create([
+            'specialist_id' => $specialist->id, 'day_of_week' => 6,
+            'start_time' => '09:00', 'end_time' => '12:00',
+            'break_start' => '10:00', 'break_end' => '11:00',
+            'is_active' => true,
+        ]);
+
+        $slots = $specialist->getAvailableSlots($date, 30);
+
+        $this->assertContains('09:00', $slots);
+        $this->assertContains('09:30', $slots);
+        $this->assertNotContains('10:00', $slots);
+        $this->assertNotContains('10:30', $slots);
+        $this->assertContains('11:00', $slots);
+        $this->assertContains('11:30', $slots);
+    }
+
+    public function test_a_slot_partially_overlapping_the_start_of_a_break_is_excluded(): void
+    {
+        $specialist = Specialist::factory()->create();
+        $service = BeautyService::factory()->create(['duration' => 45]);
+        $date = $this->futureDateOnDayOfWeek(6);
+        SpecialistSchedule::factory()->create([
+            'specialist_id' => $specialist->id, 'day_of_week' => 6,
+            'start_time' => '09:00', 'end_time' => '12:00',
+            'break_start' => '10:00', 'break_end' => '11:00',
+            'is_active' => true,
+        ]);
+
+        // A 45-minute slot starting at 09:30 would run until 10:15, overlapping the first
+        // 15 minutes of the 10:00-11:00 break — it must be excluded, not just the exact
+        // break_start time.
+        $slots = $specialist->getAvailableSlots($date, $service->duration);
+
+        $this->assertNotContains('09:30', $slots);
+    }
+
+    public function test_no_break_columns_set_behaves_exactly_like_before_the_schema_completion(): void
+    {
+        $specialist = Specialist::factory()->create();
+        $date = $this->futureDateOnDayOfWeek(6);
+        SpecialistSchedule::factory()->create([
+            'specialist_id' => $specialist->id, 'day_of_week' => 6,
+            'start_time' => '09:00', 'end_time' => '11:00',
+            'is_active' => true,
+        ]);
+
+        $slots = $specialist->getAvailableSlots($date, 30);
+
+        $this->assertSame(['09:00', '09:30', '10:00', '10:30'], $slots);
+    }
 
     public function test_a_past_date_always_returns_no_slots(): void
     {

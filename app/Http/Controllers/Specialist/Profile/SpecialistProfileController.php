@@ -128,6 +128,8 @@ class SpecialistProfileController extends Controller
                             'day_of_week' => $schedule['day_of_week'],
                             'start_time' => $schedule['start_time'],
                             'end_time' => $schedule['end_time'],
+                            'break_start' => $schedule['break_start'] ?? null,
+                            'break_end' => $schedule['break_end'] ?? null,
                             'is_active' => true,
                         ]);
                     }
