@@ -14,11 +14,10 @@ use Tests\TestCase;
  * This goes through the full stack: routing, PermissionMiddleware/is_admin gate, Form Request
  * validation, controller, service, view.
  *
- * Note: AdminLoyaltySettingsController and AdminLoyaltyPointsController exist in
- * app/Http/Controllers/Admin/Loyalty/ but are not wired to any route in routes/admin/loyalty.php
- * (confirmed with a full-project grep — no web or api route references either class). They are
- * currently unreachable dead code, so no HTTP-level test is possible for them; this is a new
- * finding, candidate for R-Cleanup-DeadCode.
+ * Note: AdminLoyaltySettingsController was fully orphaned dead code and was removed in
+ * test-writing session 9 (R-Cleanup-DeadCode decision). AdminLoyaltyPointsController was
+ * also removed at that time for the same reason, but was later rebuilt with a real route/UI
+ * — see AdminLoyaltyPointsControllerTest for its HTTP-level coverage.
  */
 class AdminLoyaltyRewardHttpTest extends TestCase
 {
