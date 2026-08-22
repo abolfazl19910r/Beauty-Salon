@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\Auth\PhoneVerificationController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use Illuminate\Support\Facades\Route;
 
@@ -30,4 +31,11 @@ Route::middleware('auth')->group(function () {
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
+
+    // ⭐ Fix (test-writing session 10, option A): real phone-verification page for the
+    // 'verified' middleware's failure path — deliberately outside any 'verified'-gated
+    // group (that would be circular). See App\Http\Middleware\EnsurePhoneIsVerified.
+    Route::get('verify-phone', [PhoneVerificationController::class, 'notice'])->name('verification.notice');
+    Route::post('verify-phone/verify', [PhoneVerificationController::class, 'verify'])->name('verification.verify');
+    Route::post('verify-phone/resend', [PhoneVerificationController::class, 'resend'])->name('verification.resend');
 });

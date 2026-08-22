@@ -31,7 +31,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth' => \App\Http\Middleware\Authenticate::class,
             'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
             'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-            'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+            // ⭐ Fix (test-writing session 10): was Illuminate's own EnsureEmailIsVerified,
+            // which was a permanent silent no-op for this project (App\Models\User has no
+            // 'email' column and never implemented MustVerifyEmail, so
+            // EnsureEmailIsVerified's hasVerifiedEmail() check was never actually reached).
+            // Now bound to the project's own phone-based equivalent. See
+            // App\Http\Middleware\EnsurePhoneIsVerified for the full history/rationale.
+            'verified' => \App\Http\Middleware\EnsurePhoneIsVerified::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'permission' => \App\Http\Middleware\PermissionMiddleware::class,
             '2fa.enabled' => \App\Http\Middleware\EnsureTwoFactorVerifiedForPayment::class,

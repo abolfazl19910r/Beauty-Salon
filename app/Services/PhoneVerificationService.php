@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Jobs\SendLoginVerificationCodeJob;
+use App\Jobs\SendPhoneVerificationCodeJob;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -11,6 +12,16 @@ class PhoneVerificationService
 {
     public function __construct(protected readonly SMSService $smsService) {}
 
+    /**
+     * ⭐ Fix (test-writing session 10): the actual SMS send is now dispatched
+     * asynchronously (SendPhoneVerificationCodeJob), matching the pattern already
+     * established for sendLoginCode()/SendLoginVerificationCodeJob — code
+     * generation/storage stays synchronous and fast, only the Kavenegar HTTP call
+     * (which can legitimately take 20-30+ seconds when the API is slow/unreachable)
+     * moves to the queue. This method is used both by registration
+     * (RegisteredUserController) and by the post-auth phone-verification-notice flow
+     * (PhoneVerificationController), so both benefit from the same fix.
+     */
     public function sendCode(User $user): bool
     {
         $code = $this->generateCode();
@@ -22,29 +33,16 @@ class PhoneVerificationService
             ),
         ]);
 
-        $template = config('services.kavenegar.templates.register_verify');
-
-        Log::info('Sending registration verification code', [
+        Log::info('Queued phone verification code for sending', [
             'user_id' => $user->id,
             'phone' => $user->phone,
-            'template' => $template,
             'code' => $code,
+            'expires_at' => $user->verification_code_expire_at,
         ]);
 
-        $result = $this->smsService->sendTemplate(
-            $user->phone,
-            $template,
-            [(string) $code]
-        );
+        SendPhoneVerificationCodeJob::dispatch($user->id, $code);
 
-        if (! $result) {
-            Log::error('Failed to send registration verification code', [
-                'user_id' => $user->id,
-                'phone' => $user->phone,
-            ]);
-        }
-
-        return $result;
+        return true;
     }
 
     public function sendLoginCode(User $user): bool
