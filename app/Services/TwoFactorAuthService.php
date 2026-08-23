@@ -8,15 +8,14 @@ use Illuminate\Support\Facades\Log;
 
 class TwoFactorAuthService
 {
-    protected const CODE_EXPIRY_MINUTES = 2;
-
     public function generateCode(User $user): string
     {
-        $code = (string) random_int(100000, 999999);
+        $codeLength = max(4, (int) config('services.two_factor.code_length', 6));
+        $code = $this->generateNumericCode($codeLength);
 
         $user->update([
             'two_factor_code' => $code,
-            'two_factor_code_expires_at' => now()->addMinutes(self::CODE_EXPIRY_MINUTES),
+            'two_factor_code_expires_at' => now()->addMinutes($this->timeoutMinutes()),
         ]);
 
         Log::info('2FA code generated', [
@@ -88,5 +87,26 @@ class TwoFactorAuthService
         Log::info('2FA disabled', [
             'user_id' => $user->id,
         ]);
+    }
+
+    /**
+     * Minutes a generated 2FA code stays valid for, read from TWO_FACTOR_TIMEOUT
+     * (services.two_factor.timeout_minutes), defaulting to 2 (the previous hardcoded value).
+     */
+    protected function timeoutMinutes(): int
+    {
+        return max(1, (int) config('services.two_factor.timeout_minutes', 2));
+    }
+
+    /**
+     * Generates a random numeric code with exactly $length digits (no leading zero,
+     * matching the previous fixed-6-digit random_int(100000, 999999) behavior).
+     */
+    protected function generateNumericCode(int $length): string
+    {
+        $min = (int) ('1'.str_repeat('0', $length - 1));
+        $max = (int) str_repeat('9', $length);
+
+        return (string) random_int($min, $max);
     }
 }

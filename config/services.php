@@ -79,4 +79,14 @@ return [
             'sandbox_base_url' => env('ZARINPAL_PAYOUT_SANDBOX_BASE_URL', 'https://sandbox.zarinpal.com/pg/v4'),
         ],
     ],
+
+    // ⭐ Wired up (test-writing session 11): TWO_FACTOR_TIMEOUT/TWO_FACTOR_CODE_LENGTH used to be
+    // present in .env.example but never actually read anywhere in the app — TwoFactorAuthService
+    // hardcoded a 2-minute expiry and a fixed 6-digit code. Both are now read from here, with the
+    // exact same effective defaults so existing behavior/tests are unchanged unless an operator
+    // explicitly sets these in .env.
+    'two_factor' => [
+        'timeout_minutes' => (int) (env('TWO_FACTOR_TIMEOUT') ?: 2),
+        'code_length' => (int) (env('TWO_FACTOR_CODE_LENGTH') ?: 6),
+    ],
 ];
