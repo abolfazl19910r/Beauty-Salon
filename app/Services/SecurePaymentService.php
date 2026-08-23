@@ -10,8 +10,6 @@ use Illuminate\Support\Str;
 
 class SecurePaymentService
 {
-    protected const EXPIRY_MINUTES = 15;
-
     public function createPayment(Booking $booking): Payment
     {
         $referenceId = $this->generateSecureReference();
@@ -21,7 +19,7 @@ class SecurePaymentService
             'amount' => $booking->prepayment_amount,
             'reference_id' => $referenceId,
             'status' => 'pending',
-            'expired_at' => now()->addMinutes(self::EXPIRY_MINUTES),
+            'expired_at' => now()->addMinutes($this->expiryMinutes()),
             'card_data' => $this->encryptSensitiveData([
                 'amount' => $booking->prepayment_amount,
                 'user_id' => $booking->user_id,
@@ -100,7 +98,7 @@ class SecurePaymentService
             return ['success' => false, 'message' => 'مبلغ تراکنش نامعتبر است.'];
         }
 
-        if (now()->timestamp - ($decryptedData['timestamp'] ?? 0) > self::EXPIRY_MINUTES * 60) {
+        if (now()->timestamp - ($decryptedData['timestamp'] ?? 0) > $this->expiryMinutes() * 60) {
             $payment->markAsFailed();
 
             Log::warning('Secure payment verification failed - time expired', [
@@ -131,5 +129,15 @@ class SecurePaymentService
     protected function decryptSensitiveData(string $encryptedData): array
     {
         return json_decode(Crypt::decryptString($encryptedData), true);
+    }
+
+    /**
+     * Minutes a secure-checkout payment window stays valid for, read from
+     * PAYMENT_EXPIRY_MINUTES (services.secure_payment.expiry_minutes), defaulting to 15
+     * (the previous hardcoded value).
+     */
+    protected function expiryMinutes(): int
+    {
+        return max(1, (int) config('services.secure_payment.expiry_minutes', 15));
     }
 }

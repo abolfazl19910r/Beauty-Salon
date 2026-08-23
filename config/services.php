@@ -89,4 +89,11 @@ return [
         'timeout_minutes' => (int) (env('TWO_FACTOR_TIMEOUT') ?: 2),
         'code_length' => (int) (env('TWO_FACTOR_CODE_LENGTH') ?: 6),
     ],
+
+    // ⭐ Wired up (test-writing session 11): PAYMENT_EXPIRY_MINUTES was another .env.example-only
+    // placeholder — SecurePaymentService hardcoded a 15-minute checkout window. Same default (15)
+    // preserved.
+    'secure_payment' => [
+        'expiry_minutes' => (int) (env('PAYMENT_EXPIRY_MINUTES') ?: 15),
+    ],
 ];
