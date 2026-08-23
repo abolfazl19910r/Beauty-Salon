@@ -71,7 +71,10 @@ class RouteServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('auth', function (Request $request) {
-            return Limit::perMinute(5)->by($request->ip());
+            return Limit::perMinute(
+                (int) config('auth.max_login_attempts', 5),
+                (int) config('auth.login_throttle_minutes', 1)
+            )->by($request->ip());
         });
 
         RateLimiter::for('sensitive', function (Request $request) {

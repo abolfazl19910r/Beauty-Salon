@@ -125,4 +125,20 @@ return [
 
     'verification_code_expire_minutes' => (int) (env('VERIFICATION_CODE_EXPIRE_MINUTES') ?: 2),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Login Throttling
+    |--------------------------------------------------------------------------
+    |
+    | ⭐ Wired up (test-writing session 11): MAX_LOGIN_ATTEMPTS/LOGIN_THROTTLE_MINUTES
+    | were .env.example-only placeholders — the 'auth' rate limiter in
+    | RouteServiceProvider hardcoded Limit::perMinute(5) (5 attempts / 1 minute decay).
+    | Same effective defaults preserved here.
+    |
+    */
+
+    'max_login_attempts' => (int) (env('MAX_LOGIN_ATTEMPTS') ?: 5),
+
+    'login_throttle_minutes' => (int) (env('LOGIN_THROTTLE_MINUTES') ?: 1),
+
 ];
