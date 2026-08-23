@@ -107,4 +107,26 @@ class PasswordResetTest extends TestCase
 
         $this->assertDatabaseMissing('password_reset_tokens', ['phone' => $user->phone]);
     }
+
+    /**
+     * Regression guard (test-writing session 11): sendCode() used to hardcode
+     * now()->addMinutes(2) regardless of the RESET_CODE_EXPIRE_MINUTES env key. It now reads
+     * auth.reset_code_expire_minutes, so overriding that config at runtime should be reflected
+     * in the persisted expiry timestamp.
+     */
+    public function test_reset_code_expiry_respects_the_configured_expire_minutes(): void
+    {
+        config(['auth.reset_code_expire_minutes' => 20]);
+        $user = User::factory()->create();
+
+        $this->post('/forgot-password', ['phone' => $user->phone]);
+
+        $expiresAt = $user->fresh()->verification_code_expire_at;
+        $this->assertNotNull($expiresAt);
+        $this->assertEqualsWithDelta(
+            now()->addMinutes(20)->timestamp,
+            $expiresAt->timestamp,
+            5
+        );
+    }
 }

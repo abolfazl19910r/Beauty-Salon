@@ -141,4 +141,17 @@ return [
 
     'login_throttle_minutes' => (int) (env('LOGIN_THROTTLE_MINUTES') ?: 1),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Password Reset Code Expiry
+    |--------------------------------------------------------------------------
+    |
+    | ⭐ Wired up (test-writing session 11): RESET_CODE_EXPIRE_MINUTES was another
+    | .env.example-only placeholder — PasswordResetController::sendCode() hardcoded
+    | now()->addMinutes(2). Same default (2) preserved.
+    |
+    */
+
+    'reset_code_expire_minutes' => (int) (env('RESET_CODE_EXPIRE_MINUTES') ?: 2),
+
 ];

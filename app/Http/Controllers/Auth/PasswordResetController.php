@@ -39,7 +39,7 @@ class PasswordResetController extends Controller
 
         $user->update([
             'verification_code' => $verificationCode,
-            'verification_code_expire_at' => now()->addMinutes(2),
+            'verification_code_expire_at' => now()->addMinutes((int) config('auth.reset_code_expire_minutes', 2)),
         ]);
 
         DB::table('password_reset_tokens')->updateOrInsert(
