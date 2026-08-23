@@ -112,4 +112,17 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Phone Verification Code Expiry
+    |--------------------------------------------------------------------------
+    |
+    | Number of minutes a phone-verification OTP code (sent during
+    | registration/login OTP flows via PhoneVerificationService) remains
+    | valid before it expires.
+    |
+    */
+
+    'verification_code_expire_minutes' => (int) (env('VERIFICATION_CODE_EXPIRE_MINUTES') ?: 2),
+
 ];

@@ -16,7 +16,10 @@ return [
     |
     */
 
-    'enabled' => env('TELESCOPE_ENABLED', env('APP_ENV') === 'local'),
+    'enabled' => match (true) {
+        env('TELESCOPE_ENABLED') === null || env('TELESCOPE_ENABLED') === '' => env('APP_ENV') === 'local',
+        default => env('TELESCOPE_ENABLED'),
+    },
 
     /*
     |--------------------------------------------------------------------------
@@ -42,7 +45,7 @@ return [
     |
     */
 
-    'path' => env('TELESCOPE_PATH', 'telescope'),
+    'path' => env('TELESCOPE_PATH') ?: 'telescope',
 
     /*
     |--------------------------------------------------------------------------
