@@ -99,6 +99,23 @@
     </div>
 
     <div class="w-full sm:max-w-md mt-6 px-6 py-8 auth-card shadow-2xl overflow-hidden sm:rounded-2xl hover-shadow fade-in">
+        {{-- ⭐ Wired up (post-test-writing-phase): every other layout in the project
+             (layouts/app.blade.php, layouts/admin.blade.php, layouts/specialist.blade.php)
+             already shows a session('error') flash banner; this guest layout — used by
+             login/register/forgot-password/reset-password/login-verify/register-verify —
+             was the only one missing it. Needed so a general, non-field-specific message
+             (like a throttle:auth 429 "too many attempts" notice, which isn't tied to any
+             single form field on these pages) is actually visible to the user, instead of
+             silently doing nothing. --}}
+        @if(session('error'))
+            <div class="bg-red-900/30 border-r-4 border-red-500 p-4 text-red-200 rounded mb-5 flex items-start text-sm">
+                <svg class="h-5 w-5 ml-2 text-red-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                </svg>
+                <div>{{ session('error') }}</div>
+            </div>
+        @endif
+
         {{ $slot }}
     </div>
 

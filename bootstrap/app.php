@@ -78,6 +78,27 @@ return Application::configure(basePath: dirname(__DIR__))
             ->onOneServer();
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        // ⭐ Wired up (post-test-writing-phase): must be registered before the generic
+        // HttpException renderable below. Laravel tries render callbacks in registration
+        // order and stops at the first one that returns a non-null response; since
+        // ThrottleRequestsException extends HttpException, if the generic handler below ran
+        // first it would already return a (plain English "Too Many Attempts.") JSON payload
+        // for API-style requests, and this specific handler would never be reached for those.
+        $exceptions->renderable(function (\Illuminate\Http\Exceptions\ThrottleRequestsException $e, Request $request) {
+            $message = 'تعداد تلاش‌های شما بیش از حد مجاز است. لطفاً چند دقیقه دیگر دوباره تلاش کنید.';
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $message,
+                ], 429, $e->getHeaders());
+            }
+
+            return back()
+                ->withInput($request->except(['password', 'password_confirmation', 'code']))
+                ->with('error', $message);
+        });
+
         $exceptions->renderable(function (DomainException $e, Request $request) {
             $context = $e->context();
             if (! empty($context)) {
