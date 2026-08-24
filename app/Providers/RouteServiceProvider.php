@@ -77,6 +77,38 @@ class RouteServiceProvider extends ServiceProvider
             )->by($request->ip());
         });
 
+        // ⭐ Wired up (post-test-writing-phase, follow-up to throttle:auth): three independent
+        // limiters — deliberately NOT sharing the 'auth' limiter above or each other, for the
+        // same reason 'auth' itself was scoped to only the login flow: Laravel's named rate
+        // limiter shares one cache key per limiter name + ->by() value regardless of which
+        // route hit it, so sharing a bucket across unrelated flows (e.g. failed logins
+        // counting against a registration attempt) would be confusing and semantically wrong.
+        //
+        // Hardcoded (not env-configurable, matching the existing 'sensitive' limiter's style
+        // just below) rather than adding three more pairs of .env.example keys — these are new,
+        // narrower-purpose limiters, not a general-purpose "auth attempts" concept like
+        // MAX_LOGIN_ATTEMPTS was, and multiplying env surface area for values with no immediate
+        // operational need to tune wasn't asked for.
+        //
+        // Both real threats these close: (1) SMS abuse — forgot-password/register-resend/
+        // phone-verification-resend each trigger a real Kavenegar SMS; unthrottled, an attacker
+        // could bombard a victim's phone with codes (harassment, or draining SMS credit) without
+        // needing to guess anything. (2) OTP brute-force — reset-password and
+        // verify-phone/verify both check a 6-digit code with a plain equality check and no
+        // per-code attempt limit; within the code's short validity window, an unthrottled
+        // attacker could script-guess it.
+        RateLimiter::for('registration', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip());
+        });
+
+        RateLimiter::for('password-reset', function (Request $request) {
+            return Limit::perMinute(3)->by($request->ip());
+        });
+
+        RateLimiter::for('phone-verification', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip());
+        });
+
         RateLimiter::for('sensitive', function (Request $request) {
             return Limit::perMinute(10)->by($request->user()->id);
         });

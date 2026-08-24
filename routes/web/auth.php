@@ -9,11 +9,15 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
+    // ⭐ Wired up (post-test-writing-phase, throttle:registration): independent from
+    // throttle:auth (login) — see RouteServiceProvider::configureRateLimiting() for why these
+    // don't share a bucket. Covers both an SMS-spam vector (resend) and a registration/phone-
+    // enumeration spam vector (store).
     Route::get('register', [RegisteredUserController::class, 'create'])->name('register');
-    Route::post('register', [RegisteredUserController::class, 'store']);
+    Route::post('register', [RegisteredUserController::class, 'store'])->middleware('throttle:registration');
     Route::get('register/verify', [RegisteredUserController::class, 'showVerify'])->name('register.verify.show');
-    Route::post('register/verify', [RegisteredUserController::class, 'verify'])->name('register.verify');
-    Route::post('register/resend', [RegisteredUserController::class, 'resendCode'])->name('register.resend');
+    Route::post('register/verify', [RegisteredUserController::class, 'verify'])->name('register.verify')->middleware('throttle:registration');
+    Route::post('register/resend', [RegisteredUserController::class, 'resendCode'])->name('register.resend')->middleware('throttle:registration');
     Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
     // ⭐ Wired up (post-test-writing-phase, throttle:auth): these three routes are the actual
     // credential/OTP-guessing surface of the login flow — password check (store), OTP code
@@ -31,9 +35,13 @@ Route::middleware('guest')->group(function () {
     Route::post('login/verify', [AuthenticatedSessionController::class, 'verify'])->name('login.verify')->middleware('throttle:auth');
     Route::post('login/resend', [AuthenticatedSessionController::class, 'resendCode'])->name('login.resend')->middleware('throttle:auth');
     Route::get('forgot-password', [PasswordResetController::class, 'create'])->name('password.request');
-    Route::post('forgot-password', [PasswordResetController::class, 'sendCode'])->name('password.send');
+    // ⭐ Wired up (post-test-writing-phase, throttle:password-reset): the most sensitive of the
+    // three new limiters — sendCode() sends a real SMS per hit (spam/cost vector) and reset()
+    // checks a 6-digit code with a plain equality check and no per-code attempt limit
+    // (brute-force vector within the code's validity window). Independent bucket, see above.
+    Route::post('forgot-password', [PasswordResetController::class, 'sendCode'])->name('password.send')->middleware('throttle:password-reset');
     Route::get('reset-password/{token}', [PasswordResetController::class, 'showReset'])->name('password.verify');
-    Route::post('reset-password', [PasswordResetController::class, 'reset'])->name('password.store');
+    Route::post('reset-password', [PasswordResetController::class, 'reset'])->name('password.store')->middleware('throttle:password-reset');
 });
 
 Route::middleware('auth')->group(function () {
@@ -47,6 +55,10 @@ Route::middleware('auth')->group(function () {
     // 'verified' middleware's failure path — deliberately outside any 'verified'-gated
     // group (that would be circular). See App\Http\Middleware\EnsurePhoneIsVerified.
     Route::get('verify-phone', [PhoneVerificationController::class, 'notice'])->name('verification.notice');
-    Route::post('verify-phone/verify', [PhoneVerificationController::class, 'verify'])->name('verification.verify');
-    Route::post('verify-phone/resend', [PhoneVerificationController::class, 'resend'])->name('verification.resend');
+    // ⭐ Wired up (post-test-writing-phase, throttle:phone-verification): same 6-digit-code
+    // brute-force/SMS-spam concern as password-reset above, on an independent bucket. This flow
+    // is behind 'auth' (the attacker would already need a valid session), but that only lowers
+    // the threat, it doesn't eliminate the OTP-guessing/SMS-spam surface.
+    Route::post('verify-phone/verify', [PhoneVerificationController::class, 'verify'])->name('verification.verify')->middleware('throttle:phone-verification');
+    Route::post('verify-phone/resend', [PhoneVerificationController::class, 'resend'])->name('verification.resend')->middleware('throttle:phone-verification');
 });
