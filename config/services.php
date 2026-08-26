@@ -96,4 +96,21 @@ return [
     'secure_payment' => [
         'expiry_minutes' => (int) (env('PAYMENT_EXPIRY_MINUTES') ?: 15),
     ],
+
+    // Telegram bots/Yes for events that the admin has enabled from the "Notification Settings" page of their "bot" channel
+    //. Both Bot APIs are compatible with the Telegram format (yes they implement the same endpoint with a different
+    // domain), so a single TelegramChannel covers both. If the token/chatID
+    // is not set, silent sending (with just a Log::info) is ignored — no request
+    // is required.
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'chat_id' => env('TELEGRAM_CHAT_ID'),
+        'api_base' => env('TELEGRAM_API_BASE') ?: 'https://api.telegram.org',
+    ],
+
+    'bale' => [
+        'bot_token' => env('BALE_BOT_TOKEN'),
+        'chat_id' => env('BALE_CHAT_ID'),
+        'api_base' => env('BALE_API_BASE') ?: 'https://tapi.bale.ai',
+    ],
 ];

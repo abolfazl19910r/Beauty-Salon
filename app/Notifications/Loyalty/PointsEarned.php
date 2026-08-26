@@ -4,10 +4,14 @@ namespace App\Notifications\Loyalty;
 
 use App\Models\LoyaltyPoint;
 use App\Services\SMSService;
+use App\Support\Notifications\NotificationEvents;
+use App\Traits\RespectsNotificationSettings;
 use Illuminate\Notifications\Notification;
 
 class PointsEarned extends Notification
 {
+    use RespectsNotificationSettings;
+
     private LoyaltyPoint $loyaltyPoint;
 
     private SMSService $smsService;
@@ -23,7 +27,7 @@ class PointsEarned extends Notification
 
     public function via(mixed $notifiable): array
     {
-        return ['database', 'sms'];
+        return $this->gatedChannels(NotificationEvents::LOYALTY_POINTS_EARNED_CUSTOMER, ['database', 'sms']);
     }
 
     public function toDatabase(mixed $notifiable): array

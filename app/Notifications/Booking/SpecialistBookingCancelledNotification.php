@@ -4,10 +4,14 @@ namespace App\Notifications\Booking;
 
 use App\Models\Booking;
 use App\Services\SMSService;
+use App\Support\Notifications\NotificationEvents;
+use App\Traits\RespectsNotificationSettings;
 use Illuminate\Notifications\Notification;
 
 class SpecialistBookingCancelledNotification extends Notification
 {
+    use RespectsNotificationSettings;
+
     protected Booking $booking;
 
     protected SMSService $smsService;

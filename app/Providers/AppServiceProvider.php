@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Channels\SmsChannel;
+use App\Channels\TelegramChannel;
 use App\Models\Booking;
 use App\Models\DiscountCode;
 use App\Observers\Booking\BookingObserver;
@@ -70,6 +71,10 @@ class AppServiceProvider extends ServiceProvider
 
         Notification::extend('sms', function ($app) {
             return $app->make(SmsChannel::class);
+        });
+
+        Notification::extend('telegram', function ($app) {
+            return $app->make(TelegramChannel::class);
         });
     }
 }

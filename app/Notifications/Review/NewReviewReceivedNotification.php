@@ -3,18 +3,21 @@
 namespace App\Notifications\Review;
 
 use App\Models\Review;
+use App\Support\Notifications\NotificationEvents;
+use App\Traits\RespectsNotificationSettings;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
 class NewReviewReceivedNotification extends Notification
 {
     use Queueable;
+    use RespectsNotificationSettings;
 
     public function __construct(protected readonly Review $review) {}
 
     public function via($notifiable): array
     {
-        return ['database'];
+        return $this->gatedChannels(NotificationEvents::REVIEW_NEW_SPECIALIST, ['database']);
     }
 
     public function toArray($notifiable): array

@@ -3,18 +3,21 @@
 namespace App\Notifications\Review;
 
 use App\Models\Review;
+use App\Support\Notifications\NotificationEvents;
+use App\Traits\RespectsNotificationSettings;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
 class NegativeReviewNotification extends Notification
 {
     use Queueable;
+    use RespectsNotificationSettings;
 
     public function __construct(protected readonly Review $review) {}
 
     public function via($notifiable): array
     {
-        return ['database'];
+        return $this->gatedChannels(NotificationEvents::REVIEW_NEGATIVE_ADMIN, ['database']);
     }
 
     public function toArray($notifiable): array

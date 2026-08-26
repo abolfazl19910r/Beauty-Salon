@@ -4,10 +4,14 @@ namespace App\Notifications\Booking;
 
 use App\Models\Booking;
 use App\Services\SMSService;
+use App\Support\Notifications\NotificationEvents;
+use App\Traits\RespectsNotificationSettings;
 use Illuminate\Notifications\Notification;
 
 class BookingNotification extends Notification
 {
+    use RespectsNotificationSettings;
+
     public function __construct(
         private readonly Booking $booking,
         private readonly bool $needsApproval = false
@@ -15,7 +19,7 @@ class BookingNotification extends Notification
 
     public function via($notifiable): array
     {
-        return ['database', 'sms'];
+        return $this->gatedChannels(NotificationEvents::BOOKING_CREATED_SPECIALIST, ['database', 'sms']);
     }
 
     public function toArray($notifiable): array

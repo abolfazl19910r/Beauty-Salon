@@ -4,10 +4,14 @@ namespace App\Notifications\Withdrawal\Rejected;
 
 use App\Models\WithdrawalRequest;
 use App\Services\SMSService;
+use App\Support\Notifications\NotificationEvents;
+use App\Traits\RespectsNotificationSettings;
 use Illuminate\Notifications\Notification;
 
 class WithdrawalRejectedNotification extends Notification
 {
+    use RespectsNotificationSettings;
+
     private WithdrawalRequest $withdrawalRequest;
 
     private string $reason;
@@ -23,7 +27,7 @@ class WithdrawalRejectedNotification extends Notification
 
     public function via(mixed $notifiable): array
     {
-        return ['database', 'sms'];
+        return $this->gatedChannels(NotificationEvents::WITHDRAWAL_REJECTED_SPECIALIST, ['database', 'sms']);
     }
 
     public function toDatabase(mixed $notifiable): array

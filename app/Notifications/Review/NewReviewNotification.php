@@ -4,10 +4,14 @@ namespace App\Notifications\Review;
 
 use App\Models\Booking;
 use App\Services\SMSService;
+use App\Support\Notifications\NotificationEvents;
+use App\Traits\RespectsNotificationSettings;
 use Illuminate\Notifications\Notification;
 
 class NewReviewNotification extends Notification
 {
+    use RespectsNotificationSettings;
+
     private Booking $booking;
 
     private SMSService $smsService;
@@ -23,7 +27,7 @@ class NewReviewNotification extends Notification
 
     public function via($notifiable): array
     {
-        return ['database', 'sms'];
+        return $this->gatedChannels(NotificationEvents::REVIEW_NEW_SPECIALIST, ['database', 'sms']);
     }
 
     public function toArray($notifiable): array

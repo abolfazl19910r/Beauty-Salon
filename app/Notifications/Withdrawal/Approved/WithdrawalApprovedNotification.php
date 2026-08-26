@@ -4,10 +4,14 @@ namespace App\Notifications\Withdrawal\Approved;
 
 use App\Models\WithdrawalRequest;
 use App\Services\SMSService;
+use App\Support\Notifications\NotificationEvents;
+use App\Traits\RespectsNotificationSettings;
 use Illuminate\Notifications\Notification;
 
 class WithdrawalApprovedNotification extends Notification
 {
+    use RespectsNotificationSettings;
+
     private WithdrawalRequest $withdrawalRequest;
 
     private SMSService $smsService;
@@ -20,7 +24,7 @@ class WithdrawalApprovedNotification extends Notification
 
     public function via(mixed $notifiable): array
     {
-        return ['database', 'sms'];
+        return $this->gatedChannels(NotificationEvents::WITHDRAWAL_APPROVED_SPECIALIST, ['database', 'sms']);
     }
 
     public function toDatabase(mixed $notifiable): array

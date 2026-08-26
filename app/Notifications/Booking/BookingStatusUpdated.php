@@ -4,10 +4,14 @@ namespace App\Notifications\Booking;
 
 use App\Models\Booking;
 use App\Services\SMSService;
+use App\Support\Notifications\NotificationEvents;
+use App\Traits\RespectsNotificationSettings;
 use Illuminate\Notifications\Notification;
 
 class BookingStatusUpdated extends Notification
 {
+    use RespectsNotificationSettings;
+
     protected Booking $booking;
 
     protected string $status;
@@ -24,9 +28,34 @@ class BookingStatusUpdated extends Notification
         $this->smsService = new SMSService;
     }
 
+    /**
+     * ⭐ Fix (item 2/3 from the notification-cost review):
+     * - status='completed': previously this also sent 'sms', duplicating the review-request SMS that
+     *   ReviewService::sendReviewRequest() already sends (with the review link) from the very same
+     *   BookingCompleted event/listener (SendBookingCompletionNotifications). Routed through
+     *   NotificationEvents::BOOKING_COMPLETED_CUSTOMER, whose SMS default is OFF (admin can re-enable).
+     * - status='cancelled': same duplicate-SMS bug — BookingObserver::sendCustomerCancellationSMS()
+     *   already sends the cancellation SMS to the customer for every cancellation (regardless of who
+     *   cancelled it); this class's own toSms() for 'cancelled' would fire a *second*, different-text
+     *   cancellation SMS. The listener that calls ->notify() here (SendBookingCancellationNotifications)
+     *   already documents this intent in its own comment — the code just never actually matched it.
+     *   Structurally hard-disabled here (not settings-gated) since re-enabling it would always
+     *   reintroduce the duplicate; the real cancellation-SMS toggle lives on the raw send call in
+     *   BookingObserver (NotificationEvents::BOOKING_CANCELLED_CUSTOMER).
+     * - status='confirmed' (specialist approves the booking): the one case that was always correct
+     *   (single SMS) — now settings-gated via BOOKING_CONFIRMED_CUSTOMER so admin can still turn it off.
+     */
     public function via($notifiable): array
     {
-        return ['database', 'sms'];
+        if ($this->status === 'completed') {
+            return $this->gatedChannels(NotificationEvents::BOOKING_COMPLETED_CUSTOMER, ['database', 'sms']);
+        }
+
+        if ($this->status === 'cancelled') {
+            return $this->gatedChannels(NotificationEvents::BOOKING_CANCELLED_CUSTOMER, ['database']);
+        }
+
+        return $this->gatedChannels(NotificationEvents::BOOKING_CONFIRMED_CUSTOMER, ['database', 'sms']);
     }
 
     public function toDatabase($notifiable): array

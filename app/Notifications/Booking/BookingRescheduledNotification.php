@@ -4,11 +4,15 @@ namespace App\Notifications\Booking;
 
 use App\Models\Booking;
 use App\Services\SMSService;
+use App\Support\Notifications\NotificationEvents;
+use App\Traits\RespectsNotificationSettings;
 use Carbon\Carbon;
 use Illuminate\Notifications\Notification;
 
 class BookingRescheduledNotification extends Notification
 {
+    use RespectsNotificationSettings;
+
     private Booking $booking;
 
     private string|Carbon $oldTime;
@@ -28,7 +32,7 @@ class BookingRescheduledNotification extends Notification
 
     public function via($notifiable): array
     {
-        return ['database', 'sms'];
+        return $this->gatedChannels(NotificationEvents::BOOKING_RESCHEDULED_CUSTOMER, ['database', 'sms']);
     }
 
     public function toArray($notifiable): array

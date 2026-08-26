@@ -3,6 +3,8 @@
 namespace App\Notifications\Admin\Withdrawal\Request;
 
 use App\Models\WithdrawalRequest;
+use App\Support\Notifications\NotificationEvents;
+use App\Traits\RespectsNotificationSettings;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
@@ -10,12 +12,13 @@ use Illuminate\Notifications\Notification;
 class AdminNewWithdrawalRequestNotification extends Notification implements ShouldQueue
 {
     use Queueable;
+    use RespectsNotificationSettings;
 
     public function __construct(private readonly WithdrawalRequest $withdrawalRequest) {}
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return $this->gatedChannels(NotificationEvents::WITHDRAWAL_REQUESTED_ADMIN, ['database']);
     }
 
     public function toArray(object $notifiable): array

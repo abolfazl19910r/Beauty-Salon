@@ -4,6 +4,8 @@ namespace App\Notifications\Admin\Payment;
 
 use App\Models\Booking;
 use App\Services\SMSService;
+use App\Support\Notifications\NotificationEvents;
+use App\Traits\RespectsNotificationSettings;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
@@ -11,6 +13,7 @@ use Illuminate\Notifications\Notification;
 class AdminPaymentReceivedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
+    use RespectsNotificationSettings;
 
     private Booking $booking;
 
@@ -24,7 +27,7 @@ class AdminPaymentReceivedNotification extends Notification implements ShouldQue
 
     public function via(object $notifiable): array
     {
-        return ['database', 'sms'];
+        return $this->gatedChannels(NotificationEvents::PAYMENT_RECEIVED_ADMIN, ['database', 'sms']);
     }
 
     public function toArray(object $notifiable): array

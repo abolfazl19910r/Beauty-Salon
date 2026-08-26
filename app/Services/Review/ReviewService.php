@@ -7,18 +7,24 @@ use App\Models\Review;
 use App\Models\ReviewToken;
 use App\Notifications\Review\NegativeReviewNotification;
 use App\Notifications\Review\NewReviewReceivedNotification;
+use App\Services\Notification\NotificationSettingService;
 use App\Services\SMSService;
+use App\Support\Notifications\NotificationEvents;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class ReviewService
 {
-    public function __construct(protected readonly SMSService $smsService) {}
+    public function __construct(protected readonly SMSService $smsService, protected readonly NotificationSettingService $notificationSettings) {}
 
     public function sendReviewRequest(Booking $booking): bool
     {
         try {
             if ($booking->review_sent_at) {
+                return false;
+            }
+
+            if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_COMPLETED_REVIEW_REQUEST, 'sms')) {
                 return false;
             }
 

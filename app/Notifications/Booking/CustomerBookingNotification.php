@@ -3,10 +3,14 @@
 namespace App\Notifications\Booking;
 
 use App\Services\SMSService;
+use App\Support\Notifications\NotificationEvents;
+use App\Traits\RespectsNotificationSettings;
 use Illuminate\Notifications\Notification;
 
 class CustomerBookingNotification extends Notification
 {
+    use RespectsNotificationSettings;
+
     private $booking;
 
     private SMSService $smsService;
@@ -17,16 +21,28 @@ class CustomerBookingNotification extends Notification
         $this->smsService = new SMSService;
     }
 
+    /**
+     * ⭐ Fix: previously this notification also sent 'sms', duplicating the SMS the customer
+     * receives moments later from BookingObserver::handlePaymentStatusChange() (sendCustomerConfirmationSMS/
+     * sendCustomerPendingSMS) once payment_status actually becomes 'paid'. That second SMS is the accurate
+     * one (correct status branch, real tracking code); this notification fires from
+     * BookingService::createBooking() right when the booking row is created — i.e. before any payment has
+     * happened — so its old SMS text ("با موفقیت ثبت و پرداخت شد") was also factually wrong at send time.
+     * Kept as a 'database' (in-app) record only by default; the specialist side was never duplicated
+     * this way (BookingNotification is only ever sent once, from the observer).
+     * ⭐ Now routed through NotificationSettingService (admin can re-enable SMS/telegram for this
+     * event from «تنظیمات اطلاع‌رسانی» if they explicitly want it, even though it's off by default).
+     */
     public function via($notifiable): array
     {
-        return ['database', 'sms'];
+        return $this->gatedChannels(NotificationEvents::BOOKING_CREATED_CUSTOMER, ['database', 'sms']);
     }
 
     public function toArray($notifiable): array
     {
         return [
             'booking_id' => $this->booking->id,
-            'message' => 'رزرو شما با موفقیت ثبت و تأیید شد',
+            'message' => 'رزرو شما ثبت شد',
             'service_name' => $this->booking->service->name,
             'specialist_name' => $this->booking->specialist->name,
             'booking_time' => $this->booking->booking_time,

@@ -4,10 +4,14 @@ namespace App\Notifications\Leave;
 
 use App\Models\Leave;
 use App\Services\SMSService;
+use App\Support\Notifications\NotificationEvents;
+use App\Traits\RespectsNotificationSettings;
 use Illuminate\Notifications\Notification;
 
 class LeaveStatusNotification extends Notification
 {
+    use RespectsNotificationSettings;
+
     private Leave $leave;
 
     private SMSService $smsService;
@@ -23,7 +27,7 @@ class LeaveStatusNotification extends Notification
 
     public function via(mixed $notifiable): array
     {
-        return ['database', 'sms'];
+        return $this->gatedChannels(NotificationEvents::LEAVE_STATUS_SPECIALIST, ['database', 'sms']);
     }
 
     /**

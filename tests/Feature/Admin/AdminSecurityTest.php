@@ -58,6 +58,34 @@ class AdminSecurityTest extends TestCase
         $this->assertCount(1, $response->viewData('logs'));
     }
 
+    /**
+     * ⭐ Fix: previously this page used the browser's native <input type="date">, unlike every
+     * other date-filter page in the admin panel (reports, announcements, discount codes, ...),
+     * which all use the project's self-contained jcal (Jalali calendar) widget. Now it must render
+     * the same jcal markup/script and readonly Jalali display inputs instead of native date pickers.
+     */
+    public function test_logs_page_renders_the_project_jcal_widget_not_native_date_inputs(): void
+    {
+        $response = $this->actingAs($this->admin)->get('/admin/security/logs');
+
+        $response->assertOk();
+        $response->assertSee('jcal-wrapper', false);
+        $response->assertSee('id="date-from-jalali"', false);
+        $response->assertSee('id="date-to-jalali"', false);
+        $response->assertSee('name="date_from"', false);
+        $response->assertSee('name="date_to"', false);
+        $response->assertDontSee('type="date"', false);
+    }
+
+    public function test_logs_page_jcal_prefills_the_jalali_display_value_from_the_gregorian_query(): void
+    {
+        $response = $this->actingAs($this->admin)->get('/admin/security/logs?date_from=2026-01-01&date_to=2026-01-31');
+
+        $response->assertOk();
+        $response->assertSee(jalali_date('2026-01-01', 'Y/m/d'));
+        $response->assertSee(jalali_date('2026-01-31', 'Y/m/d'));
+    }
+
     public function test_stats_counts_failed_logins_within_the_last_24_hours_only(): void
     {
         SecurityLog::factory()->create(['event' => 'login_attempt', 'level' => 'warning', 'created_at' => now()->subHours(2)]);

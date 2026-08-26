@@ -3,6 +3,8 @@
 namespace App\Notifications\User;
 
 use App\Models\User;
+use App\Support\Notifications\NotificationEvents;
+use App\Traits\RespectsNotificationSettings;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
@@ -11,12 +13,13 @@ use Illuminate\Support\Facades\Log;
 class NewUserRegisteredNotification extends Notification implements ShouldQueue
 {
     use Queueable;
+    use RespectsNotificationSettings;
 
     public function __construct(private readonly User $newUser) {}
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return $this->gatedChannels(NotificationEvents::USER_REGISTERED_ADMIN, ['database']);
     }
 
     public function toArray(object $notifiable): array

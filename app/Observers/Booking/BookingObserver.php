@@ -9,15 +9,17 @@ use App\Models\Booking;
 use App\Models\LoyaltySetting;
 use App\Models\WalletSetting;
 use App\Notifications\Booking\BookingNotification;
+use App\Services\Notification\NotificationSettingService;
 use App\Services\ReportCacheService;
 use App\Services\SMSService;
+use App\Support\Notifications\NotificationEvents;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class BookingObserver
 {
-    public function __construct(protected readonly ReportCacheService $cacheService, protected readonly SMSService $smsService) {}
+    public function __construct(protected readonly ReportCacheService $cacheService, protected readonly SMSService $smsService, protected readonly NotificationSettingService $notificationSettings) {}
 
     /**
      * R-Events: Previously, BookingCreated was not dispatched anywhere (not here, not in
@@ -409,6 +411,10 @@ class BookingObserver
 
     protected function sendCustomerCancellationSMS(Booking $booking): void
     {
+        if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_CANCELLED_CUSTOMER, 'sms')) {
+            return;
+        }
+
         $persianDate = verta($booking->booking_time)->format('Y/m/d');
         $persianTime = verta($booking->booking_time)->format('H:i');
 
@@ -454,6 +460,10 @@ class BookingObserver
 
     protected function sendSpecialistCancellationSMS(Booking $booking, string $cancelledBy): void
     {
+        if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_CANCELLED_SPECIALIST, 'sms')) {
+            return;
+        }
+
         $specialist = $booking->specialist;
         $user = $booking->user;
 
@@ -487,6 +497,10 @@ class BookingObserver
 
     protected function sendCustomerConfirmationSMS(Booking $booking): void
     {
+        if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_CONFIRMED_CUSTOMER, 'sms')) {
+            return;
+        }
+
         $persianDate = verta($booking->booking_time)->format('Y/m/d');
         $persianTime = verta($booking->booking_time)->format('H:i');
 
@@ -508,6 +522,10 @@ class BookingObserver
 
     protected function sendCustomerPendingSMS(Booking $booking): void
     {
+        if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_PAID_PENDING_APPROVAL_CUSTOMER, 'sms')) {
+            return;
+        }
+
         $message = sprintf(
             "سلام %s، نوبت شما با موفقیت ثبت شد و در انتظار تایید نهایی متخصص است.\n💰 قیمت کل خدمت: %s تومان\n✅ پیش‌پرداخت: %s تومان\n💵 باقی‌مانده (موقع نوبت): %s تومان\nنتیجه به زودی اطلاع‌رسانی می‌شود.",
             $booking->user->name,
