@@ -35,14 +35,13 @@ class NotificationSettingServiceTest extends TestCase
     }
 
     /**
-     * ⭐ These two are the exact duplicate-SMS bugs fixed in this session: booking creation (before
-     * payment) and the post-completion "thank you" SMS. Both must default to SMS OFF so the fix
-     * takes effect immediately on a fresh install, without any manual admin action.
+     * ⭐ Withdrawal-request-to-admin and negative-review-to-admin are the two remaining
+     * DEFAULT_OVERRIDES entries that keep SMS off by default (never had SMS historically).
      */
-    public function test_known_duplicate_sms_events_default_to_sms_disabled(): void
+    public function test_known_sms_off_by_default_events(): void
     {
-        $this->assertFalse($this->service->isEnabled(NotificationEvents::BOOKING_CREATED_CUSTOMER, 'sms'));
-        $this->assertFalse($this->service->isEnabled(NotificationEvents::BOOKING_COMPLETED_CUSTOMER, 'sms'));
+        $this->assertFalse($this->service->isEnabled(NotificationEvents::WITHDRAWAL_REQUESTED_ADMIN, 'sms'));
+        $this->assertFalse($this->service->isEnabled(NotificationEvents::REVIEW_NEGATIVE_ADMIN, 'sms'));
     }
 
     public function test_channels_filters_out_disabled_channels_from_the_notifications_own_base_set(): void

@@ -32,7 +32,7 @@ class AdminNotificationSettingControllerTest extends TestCase
 
     public function test_update_persists_checked_and_unchecked_state_correctly(): void
     {
-        $key = NotificationEvents::BOOKING_CREATED_CUSTOMER;
+        $key = NotificationEvents::BOOKING_CREATED_SPECIALIST;
         $safeKey = str_replace('.', '__', $key);
 
         $response = $this->actingAs($this->admin)->post('/admin/notification-settings', [

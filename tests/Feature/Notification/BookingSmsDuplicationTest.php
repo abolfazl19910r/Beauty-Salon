@@ -18,20 +18,20 @@ use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 /**
- * Test coverage to fix two duplicate SMS bugs (appointment registration time and appointment completion time) + a third bug discovered
- * during the same review (duplicate SMS on appointment cancellation time) + new notification channel settings system that admin
- * can turn on/off each one again from the settings panel.
+ * پوشش تست برای رفع دو باگ پیامک تکراری (زمان ثبت نوبت و زمان تکمیل نوبت) + یک باگ سومِ کشف‌شده
+ * حین همین بررسی (پیامک تکراری زمان لغو نوبت) + سیستم جدید تنظیمات کانال اطلاع‌رسانی که ادمین
+ * می‌تواند از پنل تنظیمات هرکدام را دوباره روشن/خاموش کند.
  *
- * ⭐ Important technical note: `App\Notifications\Booking\*` (CustomerBookingNotification, BookingNotification,
- * BookingStatusUpdated, ...) create `new SMSService` directly in their constructor (not via
- * container) — this pattern already exists in the project. `tests/TestCase.php` binds a global mock for
- * `SMSService::class` in the container so that no tests actually connect to Kavenegar; This mock
- * only works where the SMSService is resolved via the container (like `BookingObserver`/`ReviewService`
- * which are injected with constructor injection), not where `new SMSService` is called directly. For
- * this, the exact count of the actual sending of these raw SMS messages is done by overriding the same global mock
- * (`$this->mock(SMSService::class, ...)`); for Notification classes that create `new SMSService`
- * , the correctness of the behavior is verified by directly checking the output of via() (which is what decides
- * whether toSms() is called by SmsChannel at all).
+ * ⭐ نکته‌ی فنی مهم: `App\Notifications\Booking\*` (CustomerBookingNotification, BookingNotification,
+ * BookingStatusUpdated, ...) در سازنده‌ی خودشان مستقیماً `new SMSService` می‌سازند (نه از طریق
+ * container) — این الگوی از قبل در پروژه وجود دارد. `tests/TestCase.php` یک mock سراسری برای
+ * `SMSService::class` در container بایند می‌کند تا هیچ تستی واقعاً به Kavenegar وصل نشود؛ این mock
+ * فقط جایی اثر دارد که SMSService از طریق container resolve بشه (مثل `BookingObserver`/`ReviewService`
+ * که با constructor injection تزریق می‌شن)، نه جاهایی که مستقیم `new SMSService` صدا زده می‌شه. برای
+ * همین، شمارش دقیق ارسال واقعی این پیامک‌های خام (raw) با override کردن همان mock سراسری
+ * (`$this->mock(SMSService::class, ...)`) انجام می‌شود؛ برای کلاس‌های Notification که `new SMSService`
+ * می‌سازند، صحت رفتار از طریق بررسی مستقیم خروجی via() تأیید می‌شود (که خودِ همان چیزی‌ست که تصمیم
+ * می‌گیرد آیا toSms() اصلاً توسط SmsChannel صدا زده شود یا نه).
  */
 class BookingSmsDuplicationTest extends TestCase
 {
@@ -54,9 +54,9 @@ class BookingSmsDuplicationTest extends TestCase
         ], $overrides));
     }
 
-    // ── Item 2: Repeated SMS when registering an appointment ─
+    // ── آیتم ۱: حذف کامل «ثبت نوبت جدید — اطلاع به مشتری» (نه فقط پیش‌فرض خاموش) ────
 
-    public function test_customer_booking_notification_no_longer_sends_sms_by_default(): void
+    public function test_customer_booking_notification_never_sends_sms_and_has_no_settings_toggle(): void
     {
         $booking = $this->makeBooking();
 
@@ -65,12 +65,14 @@ class BookingSmsDuplicationTest extends TestCase
         $this->assertSame(['database'], $via);
     }
 
-    public function test_customer_booking_notification_sends_sms_only_if_admin_re_enables_it(): void
+    public function test_customer_booking_notification_ignores_stray_settings_rows_for_its_old_removed_key(): void
     {
         $booking = $this->makeBooking();
 
+        // Even if a stray row exists in the DB for the old (now-removed-from-the-registry) event key,
+        // the notification class itself no longer reads it at all — via() is hardcoded.
         NotificationSetting::create([
-            'event_key' => NotificationEvents::BOOKING_CREATED_CUSTOMER,
+            'event_key' => 'booking.created.customer',
             'sms_enabled' => true,
             'database_enabled' => true,
             'telegram_enabled' => false,
@@ -78,8 +80,7 @@ class BookingSmsDuplicationTest extends TestCase
 
         $via = (new CustomerBookingNotification($booking))->via($booking->user);
 
-        $this->assertContains('sms', $via);
-        $this->assertContains('database', $via);
+        $this->assertSame(['database'], $via);
     }
 
     public function test_paying_for_a_booking_sends_exactly_one_raw_sms_to_the_customer_by_default(): void
@@ -122,9 +123,9 @@ class BookingSmsDuplicationTest extends TestCase
         Notification::assertSentToTimes($booking->specialist, \App\Notifications\Booking\BookingNotification::class, 1);
     }
 
-    // ── Item 3: Repeated SMS when the turn is completed ─
+    // ── آیتم ۲: ادغام «تشکر» با «لینک نظرسنجی» — پیام تشکر جداگانه کاملاً حذف شد ──
 
-    public function test_booking_status_updated_completed_no_longer_sends_sms_by_default(): void
+    public function test_booking_status_updated_completed_never_sends_sms_and_has_no_settings_toggle(): void
     {
         $booking = $this->makeBooking(['status' => 'completed', 'payment_status' => 'paid']);
 
@@ -143,12 +144,12 @@ class BookingSmsDuplicationTest extends TestCase
         $this->assertContains('database', $via);
     }
 
-    public function test_admin_can_re_enable_the_completed_thank_you_sms(): void
+    public function test_booking_status_updated_completed_ignores_stray_settings_rows_for_its_old_removed_key(): void
     {
         $booking = $this->makeBooking(['status' => 'completed', 'payment_status' => 'paid']);
 
         NotificationSetting::create([
-            'event_key' => NotificationEvents::BOOKING_COMPLETED_CUSTOMER,
+            'event_key' => 'booking.completed.customer',
             'sms_enabled' => true,
             'database_enabled' => true,
             'telegram_enabled' => false,
@@ -156,7 +157,7 @@ class BookingSmsDuplicationTest extends TestCase
 
         $via = (new BookingStatusUpdated($booking, 'completed'))->via($booking->user);
 
-        $this->assertContains('sms', $via);
+        $this->assertSame(['database'], $via);
     }
 
     public function test_completing_a_booking_sends_exactly_one_raw_review_request_sms_by_default(): void
@@ -193,7 +194,7 @@ class BookingSmsDuplicationTest extends TestCase
         event(new BookingCompleted($booking));
     }
 
-    // ── Side discovery: Repeated SMS when canceling an appointment ─
+    // ── کشف جانبی: پیامک تکراری زمان لغو نوبت ────────────────────────────
 
     public function test_booking_status_updated_cancelled_never_sends_sms_even_if_admin_tries_to_enable_it(): void
     {
@@ -238,7 +239,7 @@ class BookingSmsDuplicationTest extends TestCase
         event(new BookingCancelled($booking, 'customer'));
     }
 
-    // ── System Settings: The database channel can also be turned off ─
+    // ── سیستم تنظیمات: کانال database هم قابل خاموش‌کردن است ────────────
 
     public function test_disabling_database_channel_prevents_the_in_app_notification_from_being_created(): void
     {

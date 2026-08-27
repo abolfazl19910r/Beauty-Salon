@@ -155,7 +155,7 @@
                     discountMsg.className = 'mt-2 text-xs text-[#E6CD8A]/70';
                     discountMsg.classList.remove('hidden');
 
-                    const response = await fetch('/api/check-discount', {
+                    const response = await fetch('{{ route('bookings.check-discount') }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

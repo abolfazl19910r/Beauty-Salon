@@ -30,10 +30,15 @@ class BookingStatusUpdated extends Notification
 
     /**
      * ⭐ Fix (item 2/3 from the notification-cost review):
-     * - status='completed': previously this also sent 'sms', duplicating the review-request SMS that
-     *   ReviewService::sendReviewRequest() already sends (with the review link) from the very same
-     *   BookingCompleted event/listener (SendBookingCompletionNotifications). Routed through
-     *   NotificationEvents::BOOKING_COMPLETED_CUSTOMER, whose SMS default is OFF (admin can re-enable).
+     * - status='completed': previously this also sent 'sms' (either always, or — after an earlier
+     *   fix — behind an admin-configurable toggle). Per explicit user decision, the separate
+     *   "thank you" SMS has been removed entirely (not merely defaulted off, and no longer
+     *   toggle-able), because ReviewService::sendReviewRequest()'s own message already says
+     *   "با موفقیت انجام شد" (successfully completed) *and* includes the review link — merging both
+     *   facts into a single message. Sending this notification's own duplicate "thank you" text on
+     *   top of that was pure redundancy, from the very same BookingCompleted event/listener
+     *   (SendBookingCompletionNotifications). Structurally hard-disabled (not settings-gated), same
+     *   treatment as 'cancelled' below.
      * - status='cancelled': same duplicate-SMS bug — BookingObserver::sendCustomerCancellationSMS()
      *   already sends the cancellation SMS to the customer for every cancellation (regardless of who
      *   cancelled it); this class's own toSms() for 'cancelled' would fire a *second*, different-text
@@ -47,12 +52,8 @@ class BookingStatusUpdated extends Notification
      */
     public function via($notifiable): array
     {
-        if ($this->status === 'completed') {
-            return $this->gatedChannels(NotificationEvents::BOOKING_COMPLETED_CUSTOMER, ['database', 'sms']);
-        }
-
-        if ($this->status === 'cancelled') {
-            return $this->gatedChannels(NotificationEvents::BOOKING_CANCELLED_CUSTOMER, ['database']);
+        if ($this->status === 'completed' || $this->status === 'cancelled') {
+            return ['database'];
         }
 
         return $this->gatedChannels(NotificationEvents::BOOKING_CONFIRMED_CUSTOMER, ['database', 'sms']);

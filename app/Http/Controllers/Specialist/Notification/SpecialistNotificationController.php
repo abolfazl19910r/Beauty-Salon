@@ -19,6 +19,31 @@ class SpecialistNotificationController extends Controller
     use HasJalaliDates;
     use ResolvesSpecialist;
 
+    /**
+     * ⭐ نگاشت هر کلاس Notification به یک دسته‌ی قابل‌فیلتر — برای پاسخ به درخواست «مشاهده‌ی جداگانه‌ی
+     * اعلانات» در صفحه‌ی اعلانات متخصص.
+     */
+    private const CATEGORY_MAP = [
+        'App\\Notifications\\Booking\\BookingNotification' => 'booking',
+        'App\\Notifications\\Booking\\BookingStatusUpdated' => 'booking',
+        'App\\Notifications\\Booking\\SpecialistBookingCancelledNotification' => 'booking',
+        'App\\Notifications\\Booking\\BookingRescheduledNotification' => 'booking',
+        'App\\Notifications\\Withdrawal\\Approved\\WithdrawalApprovedNotification' => 'withdrawal',
+        'App\\Notifications\\Withdrawal\\Rejected\\WithdrawalRejectedNotification' => 'withdrawal',
+        'App\\Notifications\\Leave\\LeaveStatusNotification' => 'leave',
+        'App\\Notifications\\Review\\NewReviewNotification' => 'review',
+        'App\\Notifications\\Review\\NewReviewReceivedNotification' => 'review',
+        'App\\Notifications\\Loyalty\\PointsEarned' => 'loyalty',
+    ];
+
+    public const CATEGORIES = [
+        'booking' => 'نوبت‌ها',
+        'withdrawal' => 'برداشت وجه',
+        'leave' => 'مرخصی',
+        'review' => 'نظرات',
+        'loyalty' => 'وفاداری',
+    ];
+
     public function index(): View
     {
         $user = auth()->user();
@@ -40,6 +65,21 @@ class SpecialistNotificationController extends Controller
             ->sortByDesc('created_at')
             ->values();
 
+        // ⭐ Fix (item 9): specialist can now filter/view notifications separately by category
+        // (booking/withdrawal/leave/review/loyalty), instead of only ever seeing one combined stream.
+        $counts = $allNotifications
+            ->groupBy(fn ($n) => self::CATEGORY_MAP[$n->type] ?? 'other')
+            ->map->count();
+        $counts['all'] = $allNotifications->count();
+
+        $selectedCategory = request('category', 'all');
+
+        if ($selectedCategory !== 'all') {
+            $allNotifications = $allNotifications->filter(
+                fn ($n) => (self::CATEGORY_MAP[$n->type] ?? 'other') === $selectedCategory
+            )->values();
+        }
+
         $perPage = 15;
         $currentPage = request()->get('page', 1);
         $pagedData = $allNotifications->slice(($currentPage - 1) * $perPage, $perPage)->values();
@@ -49,10 +89,10 @@ class SpecialistNotificationController extends Controller
             $allNotifications->count(),
             $perPage,
             $currentPage,
-            ['path' => request()->url()]
+            ['path' => request()->url(), 'query' => request()->query()]
         );
 
-        return view('specialist.notifications', compact('specialist', 'notifications'));
+        return view('specialist.notifications', compact('specialist', 'notifications', 'counts', 'selectedCategory'));
     }
 
     public function latest(): JsonResponse
@@ -171,10 +211,24 @@ class SpecialistNotificationController extends Controller
         return back()->with('success', 'تمام اعلانات به عنوان خوانده شده علامت‌گذاری شدند.');
     }
 
-    private function resolveNotificationLink(string $type, array $data): string
+    /**
+     * ⭐ public (not private) so the Blade view can call it directly instead of maintaining its own
+     * separate, duplicated copy of this same link-resolution logic — that duplication is exactly
+     * what caused the 'review_id' branch to be missing from the Blade's copy even after other code
+     * paths already handled similar cases correctly.
+     */
+    public function resolveNotificationLink(string $type, array $data): string
     {
         if ($type === 'App\Notifications\Loyalty\PointsEarned') {
             return route('specialist.loyalty');
+        }
+
+        // ⭐ Fix (item 8): NewReviewReceivedNotification's payload has 'review_id' (not
+        // 'booking_id') — this branch was missing entirely, so clicking a "new review received"
+        // notification always fell through to the generic dashboard fallback below, instead of
+        // landing on the actual review's page where the specialist can respond to it.
+        if (! empty($data['review_id'])) {
+            return route('specialist.reviews.show', $data['review_id']);
         }
 
         if (! empty($data['booking_id'])) {

@@ -84,6 +84,46 @@ class ProcessWithdrawalJobTest extends TestCase
         });
     }
 
+    /**
+     * ⭐ Fix: previously this branch marked the request 'failed' and dispatched the SMS claiming
+     * "مبلغ به کیف پول شما بازگشت" (the amount was returned to your wallet), but never actually
+     * credited the wallet back — the amount was already deducted at request-creation time
+     * (SpecialistWalletService::createWithdrawal → SpecialistWallet::recordWithdrawal), so a failed
+     * auto-payout meant the specialist permanently lost that money. This test mirrors the real
+     * production flow: the wallet balance/total_withdrawn are decremented up front (as
+     * recordWithdrawal() does), then the failed payout must restore them exactly.
+     */
+    public function test_a_failed_payout_actually_refunds_the_wallet_balance(): void
+    {
+        Event::fake([WithdrawalRejected::class]);
+
+        $withdrawal = $this->makeProcessingWithdrawal(100000);
+        $wallet = $withdrawal->wallet;
+        $wallet->update([
+            'balance' => 400000, // 500000 - 100000, mirroring recordWithdrawal() already having run
+            'total_withdrawn' => 100000,
+        ]);
+
+        $this->mock(ZarinpalPayoutService::class, function ($mock) {
+            $mock->shouldReceive('payout')->once()->andReturn([
+                'success' => false,
+                'message' => 'خطای درگاه',
+            ]);
+        });
+
+        (new ProcessWithdrawalJob($withdrawal->id))->handle(app(ZarinpalPayoutService::class));
+
+        $wallet->refresh();
+        $this->assertSame(500000.0, (float) $wallet->balance);
+        $this->assertSame(0.0, (float) $wallet->total_withdrawn);
+
+        $this->assertDatabaseHas('wallet_transactions', [
+            'wallet_id' => $wallet->id,
+            'type' => 'refund',
+            'amount' => 100000,
+        ]);
+    }
+
     public function test_a_withdrawal_no_longer_in_processing_status_is_skipped(): void
     {
         // Simulates the race where a manual admin approve/reject already finalized this

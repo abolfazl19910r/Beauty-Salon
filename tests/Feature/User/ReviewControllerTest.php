@@ -105,6 +105,62 @@ class ReviewControllerTest extends TestCase
         ]);
     }
 
+    /**
+     * ⭐ Fix (item 5 from the follow-up review): submitting a review awards loyalty points via the
+     * raw User::addLoyaltyPoints() entry point, which never dispatched any notification at all —
+     * customers had no idea they'd earned points for leaving a review. Fixed at the single shared
+     * choke point (User::addLoyaltyPoints()) so this also covers the other two real callers
+     * (BookingObserver's normal booking-completion points, and BookingController::rate()'s
+     * quick-star-rating bonus), not just the review flow.
+     */
+    public function test_store_notifies_the_booking_owner_that_they_earned_points(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create();
+        $booking = Booking::factory()->create(['user_id' => $user->id]);
+        $token = ReviewToken::createForBooking($booking);
+
+        $this->post(route('reviews.store'), [
+            'token' => $token->token,
+            'overall_rating' => 4,
+            'quality_rating' => 4,
+            'behavior_rating' => 4,
+            'cleanliness_rating' => 4,
+            'speed_rating' => 4,
+        ]);
+
+        Notification::assertSentTo($user, \App\Notifications\Loyalty\PointsEarned::class);
+    }
+
+    /**
+     * ⭐ Fix (item 7 from the follow-up review): the specialist is notified via
+     * NewReviewReceivedNotification (not the unrelated, unused-in-this-flow NewReviewNotification
+     * class), which previously had no SMS capability at all — its via() base channel array never
+     * included 'sms', so no admin toggle could ever make it fire. Now it must include 'sms' in the
+     * channels actually sent through, by default.
+     */
+    public function test_store_sends_the_specialist_an_sms_capable_notification(): void
+    {
+        Notification::fake();
+        $booking = Booking::factory()->create();
+        $token = ReviewToken::createForBooking($booking);
+
+        $this->post(route('reviews.store'), [
+            'token' => $token->token,
+            'overall_rating' => 4,
+            'quality_rating' => 4,
+            'behavior_rating' => 4,
+            'cleanliness_rating' => 4,
+            'speed_rating' => 4,
+        ]);
+
+        Notification::assertSentTo(
+            $booking->specialist,
+            \App\Notifications\Review\NewReviewReceivedNotification::class,
+            fn ($notification, $channels) => in_array('sms', $channels, true)
+        );
+    }
+
     public function test_store_notifies_admins_for_a_negative_review(): void
     {
         Notification::fake();

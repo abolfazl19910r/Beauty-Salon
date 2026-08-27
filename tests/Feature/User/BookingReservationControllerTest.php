@@ -77,6 +77,28 @@ class BookingReservationControllerTest extends TestCase
         ], array_map('strval', session('pending_booking')));
     }
 
+    /**
+     * ⭐ Fix (item 4 from the follow-up review): confirm.blade.php's discount-code JS was still
+     * calling the dead '/api/check-discount' endpoint (removed in an earlier session's cleanup of
+     * routes/api/public/bookings.php) instead of the real web route 'bookings.check-discount'.
+     * Applying a discount code on this page always failed with "خطا در بررسی کد تخفیف" even for a
+     * perfectly valid code, while the same code worked fine on the payment page (which correctly
+     * used route('bookings.apply-discount', ...)). This is a rendering-level regression guard so a
+     * future change can't silently reintroduce a reference to the removed endpoint.
+     */
+    public function test_confirm_page_uses_the_real_check_discount_route_not_the_removed_api_endpoint(): void
+    {
+        $response = $this->actingAs($this->user)->post('/bookings/confirm', [
+            'service_id' => $this->service->id,
+            'specialist_id' => $this->specialist->id,
+            'booking_time' => $this->bookingTime,
+        ]);
+
+        $response->assertOk();
+        $response->assertSee(route('bookings.check-discount'), false);
+        $response->assertDontSee('/api/check-discount', false);
+    }
+
     public function test_confirm_rejects_an_unavailable_time_slot(): void
     {
         // Someone else already booked this exact slot.

@@ -91,10 +91,29 @@ class ProcessWithdrawalJob implements ShouldQueue
                 return;
             }
 
-            $withdrawalRequest->update([
-                'status' => 'failed',
-                'processed_at' => now(),
-                'rejection_reason' => $result['message'] ?? 'خطای نامشخص در تسویه‌ی آنلاین',
+            $withdrawalRequest->markAsFailed($result['message'] ?? 'خطای نامشخص در تسویه‌ی آنلاین');
+
+            // ⭐ Fix (باگ مالی واقعی): این شاخه فقط وضعیت درخواست را 'failed' می‌کرد و SMS مربوطه
+            // (از طریق WithdrawalRejected/SendWithdrawalRejectedNotification) صراحتاً به متخصص
+            // می‌گفت «مبلغ به کیف پول شما بازگشت»، ولی هیچ‌وقت واقعاً موجودی کیف‌پول را برنمی‌گرداند —
+            // مبلغ همان لحظه‌ی ثبت درخواست از کیف‌پول کسر شده بود
+            // (SpecialistWalletService::createWithdrawal → SpecialistWallet::recordWithdrawal)، و اگر
+            // بعداً auto-payout زرین‌پال fail می‌شد، آن پول برای همیشه گم می‌شد. دقیقاً همان منطق
+            // برگشت‌وجهی که مسیر رد دستی ادمین (WalletAdminService::rejectWithdrawal) از قبل داشت،
+            // این‌جا هم اعمال شد.
+            $wallet = $withdrawalRequest->wallet()->lockForUpdate()->first();
+            $wallet->increment('balance', $withdrawalRequest->amount);
+            $wallet->decrement('total_withdrawn', $withdrawalRequest->amount);
+
+            $wallet->transactions()->create([
+                'type' => 'refund',
+                'amount' => $withdrawalRequest->amount,
+                'balance_after' => $wallet->balance,
+                'description' => 'بازگشت وجه به‌دلیل شکست تسویه‌ی آنلاین - کد: '.$withdrawalRequest->reference_code,
+                'metadata' => [
+                    'withdrawal_request_id' => $withdrawalRequest->id,
+                    'rejection_reason' => $result['message'] ?? 'خطای نامشخص در تسویه‌ی آنلاین',
+                ],
             ]);
 
             Log::error('ProcessWithdrawalJob: تسویه‌ی آنلاین ناموفق بود', [

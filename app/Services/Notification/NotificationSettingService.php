@@ -7,24 +7,22 @@ use App\Support\Notifications\NotificationEvents;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * The single central point for deciding which channels (SMS/In-App Notification/Telegram Bot or yes) a notification event (e.g. "New Appointment Registration for a
- * Customer") should actually be sent through.
- * Used by both the standard Laravel Notification classes (via the via() method) and direct
- * SMS submissions (e.g. several methods inside BookingObserver that call SMSService::send() directly, not via the
- * Notification system).
+ * تنها نقطه‌ی مرکزی تصمیم‌گیری برای اینکه یک رویداد اطلاع‌رسانی (مثلاً «ثبت نوبت جدید برای
+ * مشتری») واقعاً از چه کانال‌هایی (پیامک/نوتیفیکیشن داخل‌برنامه‌ای/ربات تلگرام یا بله) ارسال شود.
+ * هم توسط کلاس‌های Notification استاندارد لاراول (از طریق متد via()) و هم توسط ارسال‌های مستقیم
+ * SMS (مثل چند متد داخل BookingObserver که مستقیماً SMSService::send() را صدا می‌زنند، نه از طریق
+ * سیستم Notification) استفاده می‌شود.
  */
 class NotificationSettingService
 {
     private const CACHE_KEY = 'notification_settings:all';
 
     /**
-     * Informed defaults that align with the "correct" behavior discovered/documented in this project —
-     * For example, the recurring SMS upon appointment registration (before payment) and the recurring thank you SMS upon appointment completion are both
-     * off by default, but admins can turn them back on from the settings panel.
+     * پیش‌فرض‌های آگاهانه‌ای که با رفتار «درست»ی که در این پروژه کشف/مستند شده هم‌راستا هستن —
+     * مثلاً پیامک تکراری زمان ثبت نوبت (قبل از پرداخت) و پیامک تشکر تکراری زمان تکمیل نوبت هر دو
+     * به‌صورت پیش‌فرض خاموش هستن، ولی ادمین می‌تونه از پنل تنظیمات دوباره روشنشون کنه.
      */
     private const DEFAULT_OVERRIDES = [
-        NotificationEvents::BOOKING_CREATED_CUSTOMER => ['sms_enabled' => false],
-        NotificationEvents::BOOKING_COMPLETED_CUSTOMER => ['sms_enabled' => false],
         NotificationEvents::WITHDRAWAL_REQUESTED_ADMIN => ['sms_enabled' => false],
         NotificationEvents::REVIEW_NEGATIVE_ADMIN => ['sms_enabled' => false],
         NotificationEvents::REVIEW_RESPONDED_CUSTOMER => ['sms_enabled' => false],
@@ -46,10 +44,10 @@ class NotificationSettingService
     }
 
     /**
-     * From the "default channels this notification natively supports" ($base, e.g.
-     * ['database','sms']), return only those that are enabled in the current configuration, and if enabled
-     * also add 'telegram' (since all events have the potential to be sent via the bot
-     * regardless of whether it is listed in $base or not).
+     * از میان کانال‌های «پیش‌فرضی که این نوتیفیکیشن ذاتاً پشتیبانی می‌کند» ($base، مثلاً
+     * ['database','sms'])، فقط آن‌هایی که در تنظیمات فعلی فعال هستند را برمی‌گرداند و در صورت فعال
+     * بودن، 'telegram' را هم اضافه می‌کند (چون همه‌ی رویدادها بالقوه قابلیت ارسال از طریق ربات را
+     * دارند، صرف‌نظر از اینکه در $base ذکر شده باشد یا نه).
      */
     public function channels(string $eventKey, array $base): array
     {

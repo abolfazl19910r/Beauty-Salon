@@ -224,7 +224,7 @@ class User extends Authenticatable
             $expiryMonths = (int) LoyaltySetting::getValue('points_expiry_months', 12);
             $expiryMonths = $expiryMonths > 0 ? $expiryMonths : 12;
 
-            LoyaltyPoint::create([
+            $loyaltyPoint = LoyaltyPoint::create([
                 'user_id' => $this->id,
                 'booking_id' => $bookingId,
                 'points' => $points,
@@ -234,6 +234,16 @@ class User extends Authenticatable
             ]);
 
             \Illuminate\Support\Facades\Cache::forget("user:{$this->id}:loyalty_points");
+
+            // ⭐ Fix: this raw entry point (used by BookingObserver for normal booking points,
+            // BookingController::rate() for quick-rating bonus points, and ReviewService::createReview()
+            // for full-review bonus points) never actually notified the customer that they earned
+            // points — only LoyaltyService::earnPointsFromBooking() (a completely different, unused
+            // code path) had that notification wired. Customers submitting a review, in particular,
+            // never found out they'd been awarded points. Dispatching it here covers all three
+            // real call sites at once, through the same PointsEarned notification/event key already
+            // used elsewhere (LOYALTY_POINTS_EARNED_CUSTOMER, settings-gated, admin can toggle it).
+            $this->notify(new \App\Notifications\Loyalty\PointsEarned($loyaltyPoint));
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('❌ Failed to add loyalty points', [
                 'user_id' => $this->id,

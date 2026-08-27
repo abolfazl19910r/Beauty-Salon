@@ -30,7 +30,16 @@ class ReviewService
 
             $reviewToken = ReviewToken::createForBooking($booking);
 
-            $reviewUrl = route('reviews.create', ['token' => $reviewToken->token]);
+            // ⭐ Fix: route(..., absolute:true) resolves the host from config('app.url'), which in
+            // most local dev setups (XAMPP etc.) is left at the Laravel default (http://localhost)
+            // while the site is actually being served from a different host/port (e.g.
+            // http://127.0.0.1:8000) — the customer then receives an SMS link pointing at a host
+            // they can never reach. Since this method always runs inside the real HTTP request that
+            // triggered it (the specialist marking the booking complete), the actual visited host is
+            // available and far more reliable than a possibly-stale .env value; config('app.url') is
+            // kept only as a fallback for console/queued contexts where no request is bound.
+            $baseUrl = request()?->getSchemeAndHttpHost() ?: rtrim(config('app.url'), '/');
+            $reviewUrl = $baseUrl.route('reviews.create', ['token' => $reviewToken->token], false);
 
             $message = sprintf(
                 "سلام %s، خدمت %s با موفقیت انجام شد. لطفاً نظر خود را ثبت کنید:\n%s",

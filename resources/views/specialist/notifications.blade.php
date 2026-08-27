@@ -26,6 +26,22 @@
             @endif
         </div>
 
+        <div class="flex gap-2 overflow-x-auto pb-1">
+            @php
+                $tabs = ['all' => 'همه'] + \App\Http\Controllers\Specialist\Notification\SpecialistNotificationController::CATEGORIES;
+            @endphp
+            @foreach($tabs as $key => $label)
+                <a href="{{ route('specialist.notifications.index', $key === 'all' ? [] : ['category' => $key]) }}"
+                   class="px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors {{ $selectedCategory === $key ? 'specialist-cta' : 'text-[var(--specialist-text-dim)] hover:bg-white/5' }}"
+                   style="{{ $selectedCategory === $key ? '' : 'border: 1px solid var(--specialist-border);' }}">
+                    {{ $label }}
+                    @if(($counts[$key] ?? 0) > 0)
+                        <span class="mr-1 persian-number">({{ $counts[$key] }})</span>
+                    @endif
+                </a>
+            @endforeach
+        </div>
+
         <div class="specialist-card overflow-hidden">
             @if($notifications->isEmpty())
                 <div class="text-center py-16 text-[var(--specialist-inactive)]">
@@ -43,18 +59,11 @@
                             $data = $notification->data;
                             $text = $data['message'] ?? $data['description'] ?? 'اعلان جدید';
 
-                            // ✅ Destination link
-                            $targetLink = route('specialist.my-dashboard');
-                            if (in_array($notification->type, [
-                                'App\\Notifications\\Loyalty\\PointsEarned',
-                                'App\\Notifications\\Loyalty\\PointsEarned',
-                            ], true)) {
-                                $targetLink = route('specialist.loyalty');
-                            } elseif (!empty($data['booking_id'])) {
-                                $targetLink = route('specialist.bookings.show', $data['booking_id']);
-                            } elseif (!empty($data['leave_id'])) {
-                                $targetLink = route('specialist.leaves');
-                            }
+                            // ⭐ Fix (item 8): از منطق مرکزی خود کنترلر استفاده می‌شود، نه یک کپی
+                            // جداگانه که قبلاً کلید review_id را نمی‌شناخت (و در نتیجه کلیک روی اعلان
+                            // «نظر جدید» همیشه به داشبورد هدایت می‌شد، نه به صفحه‌ی واقعی نظر).
+                            $targetLink = app(\App\Http\Controllers\Specialist\Notification\SpecialistNotificationController::class)
+                                ->resolveNotificationLink($notification->type, $data);
 
                             // ✅ URL for mark as read
                             $readUrl = route('specialist.notifications.read', $notification->id);

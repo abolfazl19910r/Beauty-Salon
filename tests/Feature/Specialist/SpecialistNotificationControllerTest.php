@@ -136,6 +136,29 @@ class SpecialistNotificationControllerTest extends TestCase
         $this->assertNotNull($notification->fresh()->read_at);
     }
 
+    /**
+     * ⭐ Fix (item 8): NewReviewReceivedNotification's payload uses 'review_id' — this branch was
+     * entirely missing, so clicking a "new review" notification always fell through to the
+     * dashboard fallback below instead of landing on the actual review, where the specialist can
+     * respond to it.
+     */
+    public function test_show_and_redirect_goes_to_the_review_show_page_when_data_has_a_review_id(): void
+    {
+        $review = \App\Models\Review::factory()->create(['specialist_id' => $this->specialist->id]);
+        $notification = UserNotification::factory()->create([
+            'notifiable_type' => Specialist::class,
+            'notifiable_id' => $this->specialist->id,
+            'type' => 'App\\Notifications\\Review\\NewReviewReceivedNotification',
+            'data' => ['review_id' => $review->id, 'message' => 'یک نظر جدید'],
+            'read_at' => null,
+        ]);
+
+        $response = $this->actingAs($this->user())->get("/specialist/notifications/{$notification->id}");
+
+        $response->assertRedirect(route('specialist.reviews.show', $review->id));
+        $this->assertNotNull($notification->fresh()->read_at);
+    }
+
     public function test_show_and_redirect_falls_back_to_dashboard_when_notification_is_not_found(): void
     {
         $response = $this->actingAs($this->user())->get('/specialist/notifications/'.Str::uuid());
