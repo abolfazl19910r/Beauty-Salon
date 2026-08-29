@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToSalon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class DiscountCode extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToSalon;
 
     protected $fillable = [
         'code',

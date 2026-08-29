@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToSalon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Booking extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToSalon;
 
     protected $table = 'bookings';
 
@@ -28,6 +29,7 @@ class Booking extends Model
         'user_id',
         'booking_time',
         'status',
+        'source',
         'discount_code',
         'discount_amount',
         'prepayment_amount',

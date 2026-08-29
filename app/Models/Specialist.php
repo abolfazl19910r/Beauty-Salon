@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToSalon;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,6 +18,7 @@ class Specialist extends Model
     use HasFactory;
     use Notifiable;
     use SoftDeletes;
+    use BelongsToSalon;
 
     protected $fillable = [
         'name', 'phone', 'user_id', 'email', 'auto_confirm_bookings',
@@ -127,7 +129,16 @@ class Specialist extends Model
         ];
     }
 
-    public function getAvailableSlots($date, $serviceDuration = null): array
+    /**
+     * @param  int|null  $excludeBookingId  ⭐ Fix (fix/admin-booking-slot-conflict, commit 4):
+     *      when re-checking availability for a booking that ALREADY occupies this specialist's
+     *      calendar (i.e. editing an existing booking rather than creating a new one), that
+     *      booking's own row must be excluded from the "existing bookings" query below —
+     *      otherwise a booking always collides with itself and every edit that doesn't change
+     *      the time would be incorrectly rejected as "slot taken". Left null (default) for the
+     *      normal create-flow callers, which are unaffected by this addition.
+     */
+    public function getAvailableSlots($date, $serviceDuration = null, ?int $excludeBookingId = null): array
     {
         try {
             $carbonDate = Carbon::parse($date);
@@ -166,6 +177,7 @@ class Specialist extends Model
             $existingBookings = $this->bookings()
                 ->whereDate('booking_time', $date)
                 ->where('status', '!=', 'cancelled')
+                ->when($excludeBookingId, fn ($q) => $q->where('id', '!=', $excludeBookingId))
                 ->with('service')
                 ->get()
                 ->map(fn ($b) => [
