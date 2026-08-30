@@ -55,4 +55,33 @@ class UpdateAdminBookingRequest extends FormRequest
             'notes' => ['nullable', 'string'],
         ];
     }
+
+    /**
+     * ⭐ Fix (fix/admin-booking-slot-conflict, commit 4): a booking that's already been paid has
+     * financial/discount/notification history tied to its current customer — changing user_id
+     * afterward would leave that history pointing at the wrong person. Locked here rather than
+     * in the service layer so the admin sees the rejection as an ordinary validation error next
+     * to the field, before anything is touched.
+     */
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            if ($this->isStatusOnly()) {
+                return;
+            }
+
+            $booking = $this->route('booking');
+
+            if (
+                $booking
+                && $booking->payment_status === 'paid'
+                && (int) $this->input('user_id') !== (int) $booking->user_id
+            ) {
+                $validator->errors()->add(
+                    'user_id',
+                    'این نوبت پرداخت شده است — تغییر مشتری روی نوبت پرداخت‌شده ممکن نیست.'
+                );
+            }
+        });
+    }
 }
