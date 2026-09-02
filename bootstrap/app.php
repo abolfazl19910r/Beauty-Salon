@@ -41,6 +41,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'permission' => \App\Http\Middleware\PermissionMiddleware::class,
             '2fa.enabled' => \App\Http\Middleware\EnsureTwoFactorVerifiedForPayment::class,
+            // ⭐ Phase 1 SaaS multi-tenant (feat/saas-multi-tenant-salons, commit 3).
+            'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
+            'salon.active' => \App\Http\Middleware\EnsureAdminSalonActive::class,
+            'salon.resolve' => \App\Http\Middleware\ResolveSalonFromRoute::class,
+            'salon.customer' => \App\Http\Middleware\EnsureCustomerBelongsToSalon::class,
+            'salon.specialist' => \App\Http\Middleware\EnsureSpecialistSalonActive::class,
         ]);
 
         // Note: the 'admin-api' middleware group (auth + admin, previously guarding
