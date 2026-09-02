@@ -9,32 +9,24 @@ use App\Http\Controllers\Specialist\Review\SpecialistReviewController;
 use App\Http\Controllers\Specialist\Wallet\Iban\SpecialistIbanController;
 use App\Http\Controllers\Specialist\Wallet\SpecialistWalletController;
 use App\Http\Controllers\Specialist\Wallet\Withdrawal\SpecialistWithdrawalController;
-use App\Http\Controllers\User\SpecialistController;
 use Illuminate\Support\Facades\Route;
 
-// ============================================
-// PUBLIC ROUTES (no auth required)
-// ============================================
-
-Route::prefix('specialists')->name('specialists.')->group(function () {
-    Route::get('/search', [SpecialistController::class, 'search'])->name('search');
-
-    // ✅ FIX: I changed the name to by-service-web so there is no conflict
-    // Or if the API side is more important, remove this line completely
-    Route::get('/service/{service}', [SpecialistController::class, 'byService'])
-        ->name('by-service-web');  // ← Name changed
-
-    Route::get('/top-rated', [SpecialistController::class, 'topRated'])->name('top-rated');
-    Route::get('/{specialist}', [SpecialistController::class, 'show'])->name('show');
-    Route::get('/{specialist}/availability', [SpecialistController::class, 'availability'])->name('availability');
-    Route::get('/{specialist}/available-slots/{date}', [SpecialistController::class, 'availableSlots'])->name('available-slots');
-});
+// ⭐ Commit 4b-3 (feat/saas-multi-tenant-salons): the "PUBLIC ROUTES" block that used to sit
+// above this one was moved out to routes/web/public-specialists.php — it was never actually
+// public in practice (nested inside the old global auth group in web.php), and even once fixed
+// it belongs under /s/{slug} with customers, not here with the specialist's own staff dashboard.
+// This file is now ONLY the specialist's own panel — global, not salon-slug-prefixed, same
+// shape as /admin. 'salon.specialist' (EnsureSpecialistSalonActive) is new here too: without it,
+// CurrentSalon was never set for any of these routes at all, so BelongsToSalon's scope was
+// silently inactive for anything here that doesn't already filter by specialist_id explicitly
+// (WalletSetting::first() in SpecialistWalletController, for one — a genuine latent leak, not
+// hypothetical, caught while doing this split).
 
 // ============================================
 // AUTHENTICATED ROUTES (specialist panel)
 // ============================================
 
-Route::middleware(['auth', 'verified'])->name('specialist.')->group(function () {
+Route::middleware(['auth', 'verified', 'salon.specialist'])->name('specialist.')->group(function () {
 
     Route::get('/my-dashboard', [SpecialistProfileController::class, 'dashboard'])->name('my-dashboard');
 
