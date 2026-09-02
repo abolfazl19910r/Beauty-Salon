@@ -14,6 +14,26 @@ class UserSeeder extends Seeder
     {
         $adminRole = Role::where('name', 'admin')->first();
         $userRole = Role::where('name', 'user')->first();
+        $superAdminRole = Role::where('name', 'super-admin')->first();
+
+        // ⭐ SaaS multi-tenant (2026-08-30): temporary seeded super-admin so /superadmin can be
+        // tested end-to-end before `php artisan superadmin:create` (commit 7) exists. Not
+        // linked to salon_admins at all — a super admin isn't the owner of any one salon (see
+        // EnsureSuperAdmin/EnsureAdminSalonActive: both bypass entirely on hasRole('super-admin')
+        // rather than resolving a salon for them).
+        $superAdmin = User::firstOrCreate(
+            ['phone' => '09399999999'],
+            [
+                'name' => 'سوپر ادمین (تست)',
+                'password' => Hash::make('superadmin'),
+                'is_admin' => true,
+                'phone_verified_at' => now(),
+                'user_type' => 'staff',
+            ]
+        );
+        if ($superAdminRole) {
+            $superAdmin->roles()->syncWithoutDetaching([$superAdminRole->id]);
+        }
 
         $admin = User::firstOrCreate(
             ['phone' => '09399717435'],
@@ -22,6 +42,13 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('admin'),
                 'is_admin' => true,
                 'phone_verified_at' => now(),
+                // ⭐ Customer identity redesign (2026-08-30): without this, the seeded admin's
+                // user_type defaults to 'customer' (the users table's column default) and
+                // AuthenticatedSessionController's login lookup — now filtered to
+                // user_type='staff' precisely because customer phones aren't globally unique
+                // anymore — would never find them. Discovered while wiring the seeders to work
+                // under the new salon_id NOT NULL constraint.
+                'user_type' => 'staff',
             ]
         );
         if ($adminRole) {
