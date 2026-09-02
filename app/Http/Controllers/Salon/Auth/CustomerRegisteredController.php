@@ -1,53 +1,66 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Salon\Auth;
 
 use App\Events\User\NewUserRegistered;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\PasswordStrengthService;
 use App\Services\PhoneVerificationService;
+use App\Support\CurrentSalon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
-class RegisteredUserController extends Controller
+/**
+ * ⭐ Customer identity redesign (confirmed 2026-08-30 — see "🔴 بازطراحی هویت مشتری" in
+ * Rasta_unified_prompt.md). Deliberately a SEPARATE controller/namespace from
+ * App\Http\Controllers\Auth\RegisteredUserController rather than a modified version of it —
+ * that one stays exactly as-is for admin/specialist accounts (globally unique phone, no salon
+ * awareness at all). Mirrors its OTP flow closely (same PhoneVerificationService, same session-
+ * based two-step register→verify pattern) with three differences: the phone-uniqueness check is
+ * scoped to the current salon, `salon_id`+`user_type='customer'` are set explicitly at creation,
+ * and post-verification lands on the salon's own home page rather than a global /dashboard.
+ *
+ * ⚠️ Known gap, not fixed here: after successful verification there is no salon-scoped customer
+ * dashboard/booking flow to redirect to yet — web/bookings.php, web/profiles.php, web/wallet.php
+ * etc. are still deliberately un-migrated (see commit 4b-2 in Rasta_unified_prompt.md), so this
+ * redirects to the salon home page instead. Once those routes move under /s/{slug}, this should
+ * redirect there instead.
+ */
+class CustomerRegisteredController extends Controller
 {
     public function __construct(
         protected readonly PhoneVerificationService $verificationService,
         protected readonly PasswordStrengthService $passwordStrengthService,
+        protected readonly CurrentSalon $currentSalon,
     ) {}
 
-    /**
-     * ⭐ Customer identity redesign (confirmed 2026-08-30): self-registration through this
-     * controller was, in practice, always customer signup — nothing else in this codebase
-     * creates an admin (App\Services\Admin\User\AdminUserService, via /admin/users) or specialist
-     * (App\Services\Admin\Specialist\AdminSpecialistService, matched by phone) account through a
-     * public registration form. Redirecting here rather than deleting the route keeps
-     * route('register') working everywhere it's already referenced across the codebase — it now
-     * just lands on the default salon's own registration page
-     * (CustomerRegisteredController::create()) instead of rendering a form itself. store()/
-     * verify()/resendCode() below are unreached through normal navigation now that create() never
-     * renders the form that would POST to them; left in place rather than removed since deleting
-     * them isn't necessary for this fix and it's a shared controller other flows may still touch.
-     */
-    public function create(): RedirectResponse
+    public function create(): View
     {
-        return redirect()->route('salon.register', ['salon_slug' => 'rasta']);
+        return view('salon.auth.register', ['salon' => $this->currentSalon->get()]);
     }
 
     public function store(Request $request): RedirectResponse
     {
+        $salon = $this->currentSalon->get();
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'regex:/^09[0-9]{9}$/', 'unique:users'],
+            'phone' => [
+                'required', 'string', 'regex:/^09[0-9]{9}$/',
+                Rule::unique('users', 'phone')->where(fn ($query) => $query
+                    ->where('salon_id', $salon->id)
+                    ->where('user_type', 'customer')),
+            ],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ], [
             'phone.regex' => 'شماره موبایل باید با 09 شروع شود و 11 رقم باشد',
-            'phone.unique' => 'این شماره موبایل قبلاً ثبت شده است',
+            'phone.unique' => 'این شماره موبایل قبلاً در همین سالن ثبت شده است',
         ]);
 
         $user = User::create([
@@ -56,6 +69,8 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
             'password_changed_at' => now(),
             'password_strength_score' => $this->passwordStrengthService->score($request->password),
+            'salon_id' => $salon->id,
+            'user_type' => 'customer',
         ]);
 
         event(new NewUserRegistered($user));
@@ -63,31 +78,31 @@ class RegisteredUserController extends Controller
         $this->verificationService->sendCode($user);
 
         session([
-            'register_user_id' => $user->id,
-            'register_attempt_time' => now(),
+            'customer_register_user_id' => $user->id,
+            'customer_register_attempt_time' => now(),
         ]);
 
-        return redirect()->route('register.verify.show')
+        return redirect()->route('salon.register.verify.show')
             ->with('success', 'کد تایید به شماره موبایل شما ارسال شد.');
     }
 
     public function showVerify(): View|RedirectResponse
     {
-        if (! session('register_user_id')) {
-            return redirect()->route('register')
+        if (! session('customer_register_user_id')) {
+            return redirect()->route('salon.register')
                 ->withErrors(['error' => 'لطفا ابتدا ثبت نام کنید.']);
         }
 
-        $user = User::find(session('register_user_id'));
+        $user = User::find(session('customer_register_user_id'));
 
         if (! $user) {
-            session()->forget(['register_user_id', 'register_attempt_time']);
+            session()->forget(['customer_register_user_id', 'customer_register_attempt_time']);
 
-            return redirect()->route('register')
+            return redirect()->route('salon.register')
                 ->withErrors(['error' => 'کاربر یافت نشد. لطفا دوباره ثبت نام کنید.']);
         }
 
-        return view('auth.register-verify', compact('user'));
+        return view('salon.auth.register-verify', ['user' => $user, 'salon' => $this->currentSalon->get()]);
     }
 
     public function verify(Request $request): RedirectResponse
@@ -96,29 +111,29 @@ class RegisteredUserController extends Controller
             'code' => ['required', 'string', 'size:6'],
         ]);
 
-        $userId = session('register_user_id');
+        $userId = session('customer_register_user_id');
 
         if (! $userId) {
-            return redirect()->route('register')
+            return redirect()->route('salon.register')
                 ->withErrors(['error' => 'جلسه شما منقضی شده است. لطفا دوباره ثبت نام کنید.']);
         }
 
         $user = User::find($userId);
 
         if (! $user) {
-            session()->forget(['register_user_id', 'register_attempt_time']);
+            session()->forget(['customer_register_user_id', 'customer_register_attempt_time']);
 
-            return redirect()->route('register')
+            return redirect()->route('salon.register')
                 ->withErrors(['error' => 'کاربر یافت نشد.']);
         }
 
         if ($this->verificationService->verify($user, $request->code)) {
-            session()->forget(['register_user_id', 'register_attempt_time']);
+            session()->forget(['customer_register_user_id', 'customer_register_attempt_time']);
 
             Auth::login($user);
             $request->session()->regenerate();
 
-            return redirect('/dashboard')
+            return redirect()->route('home', ['salon_slug' => $this->currentSalon->get()->slug])
                 ->with('success', 'ثبت نام شما با موفقیت انجام شد. خوش آمدید!');
         }
 
@@ -129,7 +144,7 @@ class RegisteredUserController extends Controller
 
     public function resendCode(Request $request): RedirectResponse
     {
-        $userId = session('register_user_id');
+        $userId = session('customer_register_user_id');
 
         if (! $userId) {
             return back()->withErrors(['error' => 'جلسه شما منقضی شده است.']);
