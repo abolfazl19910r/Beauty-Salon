@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Booking;
 
 use App\Http\Controllers\Controller;
+use App\Exceptions\BookingNotAvailableException;
 use App\Http\Requests\Admin\Booking\StoreAdminBookingRequest;
 use App\Http\Requests\Admin\Booking\UpdateAdminBookingRequest;
 use App\Models\BeautyService;
@@ -10,13 +11,20 @@ use App\Models\Booking;
 use App\Models\Specialist;
 use App\Models\User;
 use App\Services\Admin\Booking\AdminBookingService;
+use App\Services\Booking\BookingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class AdminBookingController extends Controller
 {
-    public function __construct(protected readonly AdminBookingService $bookingService) {}
+    public function __construct(
+        protected readonly AdminBookingService $bookingService,
+        // ⭐ Fix (fix/admin-booking-slot-conflict, commit 2): shared with the online booking flow
+        // specifically so both paths run through the exact same availability check — see
+        // BookingService::createManualBooking().
+        protected readonly BookingService $sharedBookingService,
+    ) {}
 
     public function index(Request $request): View
     {
@@ -55,16 +63,30 @@ class AdminBookingController extends Controller
 
     public function create(): View
     {
-        $users = User::all();
+        // ⭐ Fix (fix/admin-booking-slot-conflict, commit 3): $users (User::all()) removed —
+        // it loaded every user in the system into one <select>, and had no path at all for a
+        // walk-in/phone customer with no existing account. The view now uses an AJAX
+        // search/quick-create widget (AdminBookingCustomerController) instead.
         $services = BeautyService::all();
         $specialists = Specialist::all();
 
-        return view('admin.bookings.create', compact('users', 'services', 'specialists'));
+        return view('admin.bookings.create', compact('services', 'specialists'));
     }
 
     public function store(StoreAdminBookingRequest $request): RedirectResponse
     {
-        $booking = Booking::create($request->validated());
+        // ⭐ Fix (fix/admin-booking-slot-conflict, commit 2): previously this was a bare
+        // Booking::create($request->validated()) with no availability check at all — a manually
+        // entered phone/walk-in booking could silently collide with an online booking (or another
+        // manual one) for the same specialist+time. createManualBooking() runs the same slot
+        // check the online flow uses, plus a DB-level unique-index fallback for the race-condition
+        // case (see migration 2026_08_29_000001_add_active_slot_key_to_bookings_table).
+        try {
+            $booking = $this->sharedBookingService->createManualBooking($request->validated());
+        } catch (BookingNotAvailableException $e) {
+            return back()->withInput()
+                ->with('error', 'این ساعت برای این متخصص قبلاً رزرو شده است. لطفاً ساعت دیگری انتخاب کنید.');
+        }
 
         return redirect()->route('admin.bookings.show', $booking)
             ->with('success', 'نوبت با موفقیت ایجاد شد.');
@@ -99,6 +121,12 @@ class AdminBookingController extends Controller
             return redirect()->route($redirectRoute, $redirectParams)
                 ->with('success', $result['message']);
 
+        } catch (BookingNotAvailableException $e) {
+            // ⭐ Fix (fix/admin-booking-slot-conflict, commit 4): caught ahead of the generic
+            // \Exception below so a slot conflict gets its own clear Persian message instead of
+            // the generic "خطایی...رخ داد" — same wording used on the create form (commit 2).
+            return redirect()->route($redirectRoute, $redirectParams)
+                ->with('error', 'این ساعت برای این متخصص قبلاً رزرو شده است. لطفاً ساعت دیگری انتخاب کنید.');
         } catch (\Exception $e) {
             return redirect()->route($redirectRoute, $redirectParams)
                 ->with('error', 'خطایی در بروزرسانی وضعیت نوبت رخ داد. لطفا مجددا تلاش کنید.');

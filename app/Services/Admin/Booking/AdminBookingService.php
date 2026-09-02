@@ -3,10 +3,16 @@
 namespace App\Services\Admin\Booking;
 
 use App\Events\Booking\BookingCancelled;
+use App\Exceptions\BookingNotAvailableException;
 use App\Models\Booking;
+use App\Notifications\Booking\BookingRescheduledNotification;
+use App\Services\Booking\BookingService;
+use Illuminate\Support\Facades\DB;
 
 class AdminBookingService
 {
+    public function __construct(protected readonly BookingService $bookingService) {}
+
     /**
      * @return array{message: string}
      */
@@ -20,14 +26,57 @@ class AdminBookingService
     }
 
     /**
+     * ⭐ Fix (fix/admin-booking-slot-conflict, commit 4): previously this method updated
+     * specialist_id/booking_time with zero availability check — the exact same gap the
+     * create-flow fix (commit 2) closed for new bookings. Also previously silent about a
+     * schedule change: the customer never learned their appointment moved, unlike the dedicated
+     * self-service reschedule flow (BookingRescheduleController) which does SMS them.
+     *
      * @return array{message: string}
+     *
+     * @throws BookingNotAvailableException
      */
     public function updateFull(Booking $booking, array $validated): array
     {
         $oldStatus = $booking->status;
         $newStatus = $validated['status'] ?? $booking->status;
 
-        $booking->update($this->buildUpdatePayload($validated, $newStatus, $oldStatus));
+        $newSpecialistId = (int) ($validated['specialist_id'] ?? $booking->specialist_id);
+        $newBookingTime = $validated['booking_time'] ?? (string) $booking->booking_time;
+        $scheduleChanged = $newSpecialistId !== (int) $booking->specialist_id
+            || strtotime($newBookingTime) !== strtotime((string) $booking->booking_time);
+
+        if ($scheduleChanged) {
+            $this->bookingService->assertManualRescheduleAvailable($booking, $newSpecialistId, $newBookingTime);
+        }
+
+        $oldBookingTime = $booking->booking_time;
+
+        DB::transaction(function () use ($booking, $validated, $newStatus, $oldStatus) {
+            try {
+                $booking->update($this->buildUpdatePayload($validated, $newStatus, $oldStatus));
+            } catch (\Illuminate\Database\QueryException $e) {
+                if ($this->bookingService->isDuplicateActiveSlotError($e)) {
+                    throw BookingNotAvailableException::slotTaken(
+                        "Race condition: slot taken concurrently while editing booking #{$booking->id}.",
+                        ['booking_id' => $booking->id]
+                    );
+                }
+
+                throw $e;
+            }
+        });
+
+        if ($scheduleChanged) {
+            // ⭐ The event key below is literally named "...CUSTOMER" (see
+            // NotificationEvents::BOOKING_RESCHEDULED_CUSTOMER — "تغییر زمان نوبت — اطلاع به
+            // مشتری"), yet BookingRescheduleController::update() sends this same notification to
+            // $booking->specialist, not $booking->user. That mismatch is a separate, pre-existing
+            // issue outside this branch's scope — flagged here rather than silently copied;
+            // this admin-edit path notifies the customer, matching what the event name and
+            // gate label both say it's for.
+            $booking->user->notify(new BookingRescheduledNotification($booking, $oldBookingTime));
+        }
 
         return $this->handlePostUpdateSideEffects($booking, $oldStatus);
     }

@@ -78,13 +78,28 @@
 
                     <div>
                         <label for="user_id" class="form-label">مشتری</label>
-                        <select id="user_id" name="user_id" class="form-select">
-                            @foreach($users as $user)
-                                <option value="{{ $user->id }}" {{ (old('user_id', $booking->user_id) == $user->id) ? 'selected' : '' }}>
-                                    {{ $user->name }} ({{ $user->phone }})
-                                </option>
-                            @endforeach
-                        </select>
+                        @if($booking->payment_status === 'paid')
+                            {{-- ⭐ Fix (fix/admin-booking-slot-conflict, commit 4): server-side is now
+                                 enforced in UpdateAdminBookingRequest::withValidator() — this disabled
+                                 select is just the matching UI cue so the admin doesn't fill out a
+                                 change that's guaranteed to be rejected. disabled fields aren't
+                                 submitted, so a hidden input keeps the current user_id in the payload. --}}
+                            <select id="user_id" class="form-select" disabled>
+                                <option>{{ $booking->user->name }} ({{ $booking->user->phone }})</option>
+                            </select>
+                            <input type="hidden" name="user_id" value="{{ $booking->user_id }}">
+                            <p style="font-size:0.75rem; color:var(--admin-text-dim); margin-top:4px;">
+                                این نوبت پرداخت شده — تغییر مشتری امکان‌پذیر نیست.
+                            </p>
+                        @else
+                            <select id="user_id" name="user_id" class="form-select">
+                                @foreach($users as $user)
+                                    <option value="{{ $user->id }}" {{ (old('user_id', $booking->user_id) == $user->id) ? 'selected' : '' }}>
+                                        {{ $user->name }} ({{ $user->phone }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        @endif
                         @error('user_id') <p class="form-error">{{ $message }}</p> @enderror
                     </div>
 
