@@ -19,6 +19,15 @@ class User extends Authenticatable
         'phone',
         'password',
         'is_admin',
+        // ⭐ Customer identity redesign (confirmed 2026-08-30): salon_id/user_type only ever set
+        // explicitly at the two creation points that matter (CustomerRegisteredController::store()
+        // sets both; admin/specialist creation leaves both at their defaults — null salon_id,
+        // 'customer' user_type default is overwritten to 'staff' only by the backfill migration
+        // for existing rows, per-request logic doesn't need to set it going forward since neither
+        // AdminSpecialistService nor the staff RegisteredUserController assign salon_id/user_type
+        // themselves).
+        'salon_id',
+        'user_type',
         'verification_code',
         'verification_code_expire_at',
         'phone_verified_at',
@@ -71,6 +80,19 @@ class User extends Authenticatable
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class);
+    }
+
+    /**
+     * ⭐ Phase 1 SaaS multi-tenant (feat/saas-multi-tenant-salons, commit 2): v1 always has at
+     * most one row here per admin user (SuperAdminService::createSalonWithAdmin() enforces
+     * "at most one owner per salon", and a user is only ever owner of one salon in v1) — phase 2
+     * ("چند ادمین روی یک سالن") is what actually uses the many-to-many shape this enables.
+     */
+    public function salons(): BelongsToMany
+    {
+        return $this->belongsToMany(Salon::class, 'salon_admins')
+            ->withPivot('role')
+            ->withTimestamps();
     }
 
     public function hasRole($role): bool
