@@ -102,16 +102,55 @@
                 @csrf
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-                    <div>
-                        <label for="user_id" class="form-label">مشتری</label>
-                        <select id="user_id" name="user_id" class="form-select">
-                            @foreach($users as $user)
-                                <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
-                                    {{ $user->name }} ({{ $user->phone }})
-                                </option>
-                            @endforeach
-                        </select>
+                    <div class="md:col-span-2">
+                        <label class="form-label">مشتری</label>
+                        <div id="customer-search-wrapper" style="position:relative;">
+                            <input type="text" id="customer_search_input" class="form-input"
+                                   placeholder="جستجو با نام یا شماره موبایل مشتری..." autocomplete="off">
+                            <div id="customer-search-results" class="jcal-popup"
+                                 style="width:100%; max-height:220px; overflow-y:auto;"></div>
+                        </div>
+
+                        <div id="customer-selected" class="hidden" style="margin-top:8px; padding:8px 12px; border-radius:8px; background:var(--admin-accent-light); font-size:0.8rem; display:flex; justify-content:space-between; align-items:center;">
+                            <span id="customer-selected-label" style="color:var(--admin-text);"></span>
+                            <button type="button" id="customer-clear"
+                                    style="background:none;border:none;color:var(--admin-text-dim);cursor:pointer;font-size:0.78rem;">
+                                تغییر مشتری
+                            </button>
+                        </div>
+
+                        <div id="customer-quick-create" class="hidden" style="margin-top:10px; padding:12px; border:1px dashed var(--admin-border); border-radius:8px;">
+                            <p style="font-size:0.78rem; color:var(--admin-text-dim); margin-bottom:8px;">
+                                مشتری‌ای پیدا نشد — می‌توانید همین‌جا ثبتش کنید:
+                            </p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <input type="text" id="quick_customer_name" class="form-input" placeholder="نام مشتری">
+                                <input type="text" id="quick_customer_phone" class="form-input" placeholder="۰۹xxxxxxxxx" maxlength="11">
+                            </div>
+                            <button type="button" id="quick_customer_submit"
+                                    class="jcal-confirm" style="margin-top:8px; width:auto; padding:8px 20px;">
+                                ثبت مشتری جدید
+                            </button>
+                            <p id="quick_customer_error" class="form-error" style="display:none;"></p>
+                        </div>
+
+                        <input type="hidden" name="user_id" id="user_id" value="{{ old('user_id') }}">
                         @error('user_id') <p class="form-error">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="form-label">نحوه‌ی دریافت نوبت</label>
+                        <div style="display:flex; gap:20px; align-items:center; height:38px;">
+                            <label style="display:flex; align-items:center; gap:6px; font-size:0.85rem; color:var(--admin-text); cursor:pointer;">
+                                <input type="radio" name="source" value="phone" {{ old('source', 'phone') == 'phone' ? 'checked' : '' }}>
+                                تلفنی
+                            </label>
+                            <label style="display:flex; align-items:center; gap:6px; font-size:0.85rem; color:var(--admin-text); cursor:pointer;">
+                                <input type="radio" name="source" value="walk_in" {{ old('source') == 'walk_in' ? 'checked' : '' }}>
+                                حضوری
+                            </label>
+                        </div>
+                        @error('source') <p class="form-error">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
@@ -295,6 +334,126 @@
                     document.getElementById('jcal-create'),
                     '{{ old('booking_time') }}'
                 );
+            });
+        })();
+    </script>
+
+    {{-- ⭐ Fix (fix/admin-booking-slot-conflict, commit 3): customer search / quick-create widget --}}
+    <script>
+        (function() {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const searchInput   = document.getElementById('customer_search_input');
+            const resultsBox    = document.getElementById('customer-search-results');
+            const userIdInput   = document.getElementById('user_id');
+            const selectedBox   = document.getElementById('customer-selected');
+            const selectedLabel = document.getElementById('customer-selected-label');
+            const clearBtn      = document.getElementById('customer-clear');
+            const quickCreateBox   = document.getElementById('customer-quick-create');
+            const quickNameInput   = document.getElementById('quick_customer_name');
+            const quickPhoneInput  = document.getElementById('quick_customer_phone');
+            const quickSubmitBtn   = document.getElementById('quick_customer_submit');
+            const quickErrorLabel  = document.getElementById('quick_customer_error');
+
+            let searchTimer = null;
+
+            function selectCustomer(customer) {
+                userIdInput.value = customer.id;
+                selectedLabel.textContent = customer.name + ' (' + customer.phone + ')';
+                selectedBox.classList.remove('hidden');
+                searchInput.closest('#customer-search-wrapper').classList.add('hidden');
+                resultsBox.classList.remove('open');
+                resultsBox.innerHTML = '';
+                quickCreateBox.classList.add('hidden');
+            }
+
+            function resetSelection() {
+                userIdInput.value = '';
+                selectedBox.classList.add('hidden');
+                searchInput.closest('#customer-search-wrapper').classList.remove('hidden');
+                searchInput.value = '';
+                searchInput.focus();
+            }
+
+            clearBtn.addEventListener('click', resetSelection);
+
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+                clearTimeout(searchTimer);
+                quickCreateBox.classList.add('hidden');
+
+                if (query.length < 3) {
+                    resultsBox.classList.remove('open');
+                    resultsBox.innerHTML = '';
+                    return;
+                }
+
+                searchTimer = setTimeout(function() {
+                    fetch(`{{ route('admin.bookings.customers.search') }}?phone=${encodeURIComponent(query)}`, {
+                        headers: {'X-Requested-With': 'XMLHttpRequest'},
+                    })
+                        .then(r => r.json())
+                        .then(data => {
+                            const customers = data.customers || [];
+                            resultsBox.innerHTML = '';
+
+                            if (customers.length === 0) {
+                                resultsBox.innerHTML = '<div style="padding:10px 12px; font-size:0.8rem; color:var(--admin-text-dim);">مشتری‌ای یافت نشد</div>';
+                                quickPhoneInput.value = /^09\d{0,9}$/.test(query) ? query : '';
+                                quickCreateBox.classList.remove('hidden');
+                            } else {
+                                customers.forEach(c => {
+                                    const row = document.createElement('div');
+                                    row.className = 'jcal-day';
+                                    row.style.cssText = 'text-align:right; padding:8px 12px; border-radius:6px; cursor:pointer; font-size:0.82rem;';
+                                    row.textContent = c.name + ' (' + c.phone + ')';
+                                    row.addEventListener('click', () => selectCustomer(c));
+                                    resultsBox.appendChild(row);
+                                });
+                            }
+
+                            resultsBox.classList.add('open');
+                        })
+                        .catch(() => {
+                            resultsBox.innerHTML = '<div style="padding:10px 12px; font-size:0.8rem; color:#DC2626;">خطا در جستجو</div>';
+                            resultsBox.classList.add('open');
+                        });
+                }, 350);
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('#customer-search-wrapper')) {
+                    resultsBox.classList.remove('open');
+                }
+            });
+
+            quickSubmitBtn.addEventListener('click', function() {
+                quickErrorLabel.style.display = 'none';
+                const name = quickNameInput.value.trim();
+                const phone = quickPhoneInput.value.trim();
+
+                fetch(`{{ route('admin.bookings.customers.quick-create') }}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify({name, phone}),
+                })
+                    .then(async r => {
+                        const data = await r.json();
+                        if (!r.ok) {
+                            const firstError = data.errors ? Object.values(data.errors)[0][0] : (data.message || 'خطا در ثبت مشتری');
+                            throw new Error(firstError);
+                        }
+                        return data;
+                    })
+                    .then(data => selectCustomer(data.customer))
+                    .catch(err => {
+                        quickErrorLabel.textContent = err.message;
+                        quickErrorLabel.style.display = 'block';
+                    });
             });
         })();
     </script>
