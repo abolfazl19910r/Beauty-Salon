@@ -2,13 +2,12 @@
 
 namespace App\Models;
 
-use App\Traits\BelongsToSalon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class LoyaltySetting extends Model
 {
-    use HasFactory, BelongsToSalon;
+    use HasFactory;
 
     protected $table = 'loyalty_settings';
 

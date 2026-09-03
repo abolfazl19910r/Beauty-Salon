@@ -10,7 +10,6 @@ use App\Observers\Booking\BookingObserver;
 use App\Observers\DiscountCodeObserver;
 use App\Services\SecurePaymentService;
 use App\Services\TwoFactorAuthService;
-use App\Support\CurrentSalon;
 use App\View\Composers\ViewComposer;
 use Illuminate\Notifications\ChannelManager;
 use Illuminate\Notifications\Channels\DatabaseChannel as BaseDatabaseChannel;
@@ -29,9 +28,6 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(TwoFactorAuthService::class);
         $this->app->singleton(SecurePaymentService::class);
-        // ⭐ Phase 1 SaaS multi-tenant (feat/saas-multi-tenant-salons, commit 2): one instance per
-        // request — see CurrentSalon's own docblock for why it must never persist across requests.
-        $this->app->singleton(CurrentSalon::class);
     }
 
     /**

@@ -73,19 +73,6 @@ class User extends Authenticatable
         return $this->belongsToMany(Role::class);
     }
 
-    /**
-     * ⭐ Phase 1 SaaS multi-tenant (feat/saas-multi-tenant-salons, commit 2): v1 always has at
-     * most one row here per admin user (SuperAdminService::createSalonWithAdmin() enforces
-     * "at most one owner per salon", and a user is only ever owner of one salon in v1) — phase 2
-     * ("چند ادمین روی یک سالن") is what actually uses the many-to-many shape this enables.
-     */
-    public function salons(): BelongsToMany
-    {
-        return $this->belongsToMany(Salon::class, 'salon_admins')
-            ->withPivot('role')
-            ->withTimestamps();
-    }
-
     public function hasRole($role): bool
     {
         if (is_string($role)) {
