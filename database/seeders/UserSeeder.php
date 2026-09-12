@@ -55,6 +55,23 @@ class UserSeeder extends Seeder
             $admin->roles()->syncWithoutDetaching([$adminRole->id]);
         }
 
+        // ⭐ SaaS multi-tenant (rediscovered 2026-09-10): EnsureAdminSalonActive — wired to the
+        // whole /admin/* route group — requires every non-super-admin to have exactly one row in
+        // salon_admins (see User::salons(), a belongsToMany through that pivot). Without this,
+        // $user->salons()->first() is null the instant this admin hits any /admin/* route, and
+        // the middleware treats "never linked to a salon" identically to "suspended/expired": it
+        // force-logs them out with "اشتراک سالن شما پایان یافته یا غیرفعال شده است" before the
+        // request ever reaches a controller. This seeder was written/updated across several SaaS
+        // sessions but this attach() call was never actually added — a live, reproducible gap
+        // (confirmed with a real HTTP request through the full kernel, not just by reading code).
+        // Uses Salon::admins()->attach() (the same relation SuperAdminService::createSalonWithAdmin()
+        // uses), not a raw DB::table() insert, to stay consistent with the one real code path that
+        // creates this link correctly.
+        $defaultSalon = \App\Models\Salon::where('slug', 'rasta')->first();
+        if ($defaultSalon && ! $defaultSalon->admins()->where('users.id', $admin->id)->exists()) {
+            $defaultSalon->admins()->attach($admin->id, ['role' => 'owner']);
+        }
+
         UserNotification::factory()
             ->count(3)
             ->state([
