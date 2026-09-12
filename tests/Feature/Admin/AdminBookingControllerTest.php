@@ -397,9 +397,18 @@ class AdminBookingControllerTest extends TestCase
 
     public function test_full_update_without_schedule_change_does_not_notify(): void
     {
-        Notification::fake();
-
         $booking = Booking::factory()->create(['status' => 'pending', 'payment_status' => 'unpaid']);
+
+        // ⭐ Fix (pre-existing test bug, confirmed present since before this session started —
+        // unrelated to the SaaS/salon work): Notification::fake() used to be called BEFORE
+        // Booking::factory()->create() above, which itself legitimately fires
+        // BookingObserver::created() -> BookingCreated -> AdminNewBookingNotification to every
+        // admin. assertNothingSent() below was therefore always failing on that setup-time
+        // notification, never actually testing what its name says (whether the *update* itself
+        // avoids notifying when only the status changes, not the schedule). Faking right before
+        // the PUT call — after the booking that legitimately should notify has already been
+        // created — makes the assertion test what it was meant to.
+        Notification::fake();
 
         $this->actingAs($this->admin)->put("/admin/bookings/{$booking->id}", [
             'user_id' => $booking->user_id,

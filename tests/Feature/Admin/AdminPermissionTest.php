@@ -127,6 +127,16 @@ class AdminPermissionTest extends TestCase
         $user = User::factory()->create(['is_admin' => false]);
         $user->assignRole($role);
 
+        // ⭐ Fix: this user gets admin-panel access purely through a role/permission, not the
+        // `is_admin` flag — UserFactory's salon-linking hook (see its docblock) only fires for
+        // is_admin=true, matching the one real production entry point that grants /admin access
+        // that way (AdminUserController's "دسترسی ادمین" checkbox). A permission-only grant like
+        // this one is a different, legitimate path to the same access, so it needs the same
+        // salon_admins link EnsureAdminSalonActive requires — done explicitly here since it's the
+        // only test in the whole suite exercising this specific combination.
+        $salon = app(\App\Support\CurrentSalon::class)->get();
+        $salon->admins()->attach($user->id, ['role' => 'owner']);
+
         $this->actingAs($user)->get('/admin/permissions')->assertOk();
     }
 }
