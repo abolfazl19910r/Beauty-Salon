@@ -62,12 +62,36 @@ class BookingSeeder extends Seeder
 
         $statuses = ['pending', 'confirmed', 'cancelled'];
 
+        // ⭐ fix/admin-booking-slot-conflict added a DB-level unique index (active_slot_key) so
+        // no two non-cancelled bookings can share the same (specialist_id, booking_time). This
+        // seeder was never updated for that: with only 3 specialists and 20 random draws across
+        // just 30 days × 9 hours, a collision is common enough that `php artisan db:seed` was
+        // confirmed (by actually running migrate:fresh --seed 5 times in a row) to hard-crash
+        // with a real UniqueConstraintViolationException about 40% of the time. Tracking taken
+        // slots here and redrawing on a collision (bounded, so it can't loop forever) fixes that
+        // without touching the constraint itself or BookingFactory (used by ~900 other tests).
+        $activeSlotKeys = Booking::whereIn('specialist_id', $specialists->pluck('id'))
+            ->where('status', '!=', 'cancelled')
+            ->get(['specialist_id', 'booking_time'])
+            ->mapWithKeys(fn ($b) => [$b->specialist_id.'|'.$b->booking_time->format('Y-m-d H:i:s') => true])
+            ->all();
+
         for ($i = 0; $i < 20; $i++) {
             $user = $users->random();
             $service = $services->random();
             $specialist = $specialists->random();
             $status = $statuses[array_rand($statuses)];
-            $bookingTime = now()->addDays(rand(1, 30))->addHours(rand(9, 17));
+
+            $attempts = 0;
+            do {
+                $bookingTime = now()->addDays(rand(1, 30))->addHours(rand(9, 17));
+                $slotKey = $specialist->id.'|'.$bookingTime->format('Y-m-d H:i:s');
+                $attempts++;
+            } while ($status !== 'cancelled' && isset($activeSlotKeys[$slotKey]) && $attempts < 30);
+
+            if ($status !== 'cancelled') {
+                $activeSlotKeys[$slotKey] = true;
+            }
 
             $booking = Booking::firstOrCreate(
                 [
@@ -122,6 +146,29 @@ class BookingSeeder extends Seeder
             }
         }
 
-        Booking::factory(10)->create();
+        $this->createRandomFactoryBookingsWithoutSlotCollisions(10);
+    }
+
+    /**
+     * @see run() docblock above the $activeSlotKeys tracking — same active_slot_key collision
+     * risk applies here too, since BookingFactory also picks a random specialist + hour-rounded
+     * time with no awareness of what's already taken. BookingFactory itself is deliberately left
+     * untouched (it's used directly by ~900 other tests); each attempt is simply retried with a
+     * freshly randomized set of factory attributes on a collision.
+     */
+    private function createRandomFactoryBookingsWithoutSlotCollisions(int $count): void
+    {
+        for ($i = 0; $i < $count; $i++) {
+            for ($attempt = 0; $attempt < 10; $attempt++) {
+                try {
+                    Booking::factory()->create();
+                    break;
+                } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+                    if ($attempt === 9) {
+                        throw $e;
+                    }
+                }
+            }
+        }
     }
 }

@@ -17,16 +17,16 @@ class BookingFactory extends Factory
         $service = BeautyService::inRandomOrder()->first() ?? BeautyService::factory()->create();
         $specialist = Specialist::inRandomOrder()->first() ?? Specialist::factory()->create();
         $user = User::inRandomOrder()->first() ?? User::factory()->create();
+        $status = fake()->randomElement(['pending', 'confirmed', 'cancelled']);
 
-        $bookingTime = fake()->dateTimeBetween('+1 day', '+2 months');
-        $bookingTime->setTime(fake()->numberBetween(9, 17), 0, 0);
+        $bookingTime = $this->drawNonCollidingBookingTime($specialist->id, $status);
 
         return [
             'service_id' => $service->id,
             'specialist_id' => $specialist->id,
             'user_id' => $user->id,
             'booking_time' => $bookingTime,
-            'status' => fake()->randomElement(['pending', 'confirmed', 'cancelled']),
+            'status' => $status,
             'prepayment_amount' => 50000,
             'payment_status' => 'unpaid',
             'rating' => fake()->optional(0.3)->numberBetween(1, 5),
@@ -38,6 +38,44 @@ class BookingFactory extends Factory
             'cancellation_reason' => null,
             'cancelled_at' => null,
         ];
+    }
+
+    /**
+     * ⭐ fix/admin-booking-slot-conflict added a DB-level unique index (active_slot_key) so no
+     * two non-cancelled bookings can share the same (specialist_id, booking_time). This factory
+     * used to draw both values completely at random, with no awareness of what's already taken —
+     * fine on its own in most single-booking tests, but any seeder or test that creates several
+     * bookings in a loop (only a handful of specialists exist, so the pool of distinct slots is
+     * small) could randomly collide and crash with a real UniqueConstraintViolationException.
+     * Confirmed by actually running `php artisan migrate:fresh --seed` repeatedly: real,
+     * intermittent crashes in BookingSeeder/LoyaltySimulationSeeder before this fix. Explicit
+     * overrides passed to create(['specialist_id' => ..., 'booking_time' => ...]) always replace
+     * whatever this draws anyway, so tests that deliberately construct a collision (see
+     * AdminBookingSlotConflictTest) are unaffected.
+     */
+    private function drawNonCollidingBookingTime(int $specialistId, string $status): \DateTime
+    {
+        $bookingTime = null;
+
+        for ($attempt = 0; $attempt < 20; $attempt++) {
+            $bookingTime = fake()->dateTimeBetween('+1 day', '+2 months');
+            $bookingTime->setTime(fake()->numberBetween(9, 17), 0, 0);
+
+            if ($status === 'cancelled') {
+                break;
+            }
+
+            $collides = Booking::where('specialist_id', $specialistId)
+                ->where('booking_time', $bookingTime)
+                ->where('status', '!=', 'cancelled')
+                ->exists();
+
+            if (! $collides) {
+                break;
+            }
+        }
+
+        return $bookingTime;
     }
 
     public function paid(): static
