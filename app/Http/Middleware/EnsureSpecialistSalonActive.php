@@ -35,11 +35,22 @@ class EnsureSpecialistSalonActive
 
         $specialist = $user->specialist;
 
-        if (! $specialist) {
-            abort(404, 'رکورد متخصص برای این حساب کاربری یافت نشد.');
+        // ⭐ Fix (real bug, pre-existing in this middleware, not introduced this session):
+        // aborting outright here broke every specialist-panel controller's own designed
+        // "no specialist record yet" handling — SpecialistWalletController (and siblings) use
+        // ResolvesSpecialist::resolveSpecialist() (nullable, non-throwing) specifically so they
+        // can gracefully render 'specialist.profile-not-found' with a normal 200, instead of a
+        // hard failure. This middleware ran first and always aborted with 404 before any of that
+        // controller logic had a chance to run, turning a friendly "please complete your profile"
+        // page into an unconditional 404 for every specialist-panel page. Simply not setting
+        // CurrentSalon when there's no specialist preserves the original cross-tenant-safety
+        // reasoning this middleware exists for (nothing salon-scoped should run without a
+        // specialist to scope it to) while letting the request continue exactly as it did before
+        // this middleware was added — routes that truly require a specialist already call
+        // resolveSpecialistOrFail()/requireSpecialist() themselves and 404 on their own.
+        if ($specialist) {
+            app(CurrentSalon::class)->set($specialist->salon);
         }
-
-        app(CurrentSalon::class)->set($specialist->salon);
 
         return $next($request);
     }
