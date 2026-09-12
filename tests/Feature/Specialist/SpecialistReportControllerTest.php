@@ -97,8 +97,14 @@ class SpecialistReportControllerTest extends TestCase
         Booking::factory()->create([
             'specialist_id' => $specialist->id, 'booking_time' => now()->subDay(), 'status' => 'completed',
         ]);
+        // ⭐ Fix (fix/admin-booking-slot-conflict regression): these two bookings used to share
+        // the exact same specialist_id + booking_time on purpose (only status differs). The new
+        // active_slot_key unique index (no two non-cancelled bookings may share a slot) now
+        // rejects that at the DB level — confirmed with a real UniqueConstraintViolationException
+        // when actually running the suite, not just by reading the migration. A few minutes apart
+        // is enough; the test only cares about status filtering, not exact timing.
         Booking::factory()->create([
-            'specialist_id' => $specialist->id, 'booking_time' => now()->subDay(), 'status' => 'pending',
+            'specialist_id' => $specialist->id, 'booking_time' => now()->subDay()->addMinutes(30), 'status' => 'pending',
         ]);
 
         $response = $this->actingAs($user)->get(route('specialist.reports.index', ['status' => 'completed']));
@@ -116,8 +122,11 @@ class SpecialistReportControllerTest extends TestCase
         Booking::factory()->create([
             'specialist_id' => $specialist->id, 'service_id' => $serviceA->id, 'booking_time' => now()->subDay(),
         ]);
+        // ⭐ Fix (fix/admin-booking-slot-conflict regression): same reasoning as
+        // test_index_filters_by_status() above — the active_slot_key unique index now rejects
+        // two non-cancelled bookings for the same specialist at the exact same booking_time.
         Booking::factory()->create([
-            'specialist_id' => $specialist->id, 'service_id' => $serviceB->id, 'booking_time' => now()->subDay(),
+            'specialist_id' => $specialist->id, 'service_id' => $serviceB->id, 'booking_time' => now()->subDay()->addMinutes(30),
         ]);
 
         $response = $this->actingAs($user)->get(route('specialist.reports.index', ['service_id' => $serviceA->id]));
