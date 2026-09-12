@@ -54,7 +54,7 @@ class BookingControllerTest extends TestCase
             'booking_time' => now()->addDays(8),
         ]);
 
-        $response = $this->actingAs($this->user)->get('/bookings');
+        $response = $this->actingAs($this->user)->get(route('bookings.index'));
 
         $response->assertOk();
         $ids = collect($response->viewData('bookings')->items())->pluck('id')->all();
@@ -73,7 +73,7 @@ class BookingControllerTest extends TestCase
         Booking::factory()->create(['user_id' => $this->user->id, 'status' => 'pending']);
         Booking::factory()->create(['user_id' => $this->user->id, 'status' => 'cancelled']);
 
-        $response = $this->actingAs($this->user)->get('/bookings?status=cancelled');
+        $response = $this->actingAs($this->user)->get(route('bookings.index', ['status' => 'cancelled']));
 
         $this->assertCount(1, $response->viewData('bookings'));
     }
@@ -84,7 +84,7 @@ class BookingControllerTest extends TestCase
         $other = User::factory()->create();
         Booking::factory()->create(['user_id' => $other->id]);
 
-        $response = $this->actingAs($this->user)->get('/bookings');
+        $response = $this->actingAs($this->user)->get(route('bookings.index'));
 
         $this->assertCount(1, $response->viewData('bookings'));
     }
@@ -97,7 +97,7 @@ class BookingControllerTest extends TestCase
             'payment_status' => 'paid',
         ]);
 
-        $response = $this->actingAs($this->user)->get("/bookings/{$booking->id}");
+        $response = $this->actingAs($this->user)->get(route('bookings.show', ['booking' => $booking->id]));
 
         $response->assertOk();
         $response->assertViewHas('booking');
@@ -111,7 +111,7 @@ class BookingControllerTest extends TestCase
             'payment_status' => 'unpaid',
         ]);
 
-        $response = $this->actingAs($this->user)->get("/bookings/{$booking->id}");
+        $response = $this->actingAs($this->user)->get(route('bookings.show', ['booking' => $booking->id]));
 
         $response->assertRedirect(route('payment.show', ['booking' => $booking->id]));
     }
@@ -121,7 +121,7 @@ class BookingControllerTest extends TestCase
         $other = User::factory()->create();
         $booking = Booking::factory()->create(['user_id' => $other->id]);
 
-        $this->actingAs($this->user)->get("/bookings/{$booking->id}")->assertForbidden();
+        $this->actingAs($this->user)->get(route('bookings.show', ['booking' => $booking->id]))->assertForbidden();
     }
 
     public function test_success_shows_the_booking_from_the_session(): void
@@ -130,7 +130,7 @@ class BookingControllerTest extends TestCase
 
         $response = $this->actingAs($this->user)
             ->withSession(['booking_id' => $booking->id])
-            ->get('/bookings/success');
+            ->get(route('bookings.success'));
 
         $response->assertOk();
         $response->assertViewHas('booking', function ($viewBooking) use ($booking) {
@@ -142,7 +142,7 @@ class BookingControllerTest extends TestCase
     {
         $booking = Booking::factory()->create(['user_id' => $this->user->id]);
 
-        $response = $this->actingAs($this->user)->get("/bookings/success?id={$booking->id}");
+        $response = $this->actingAs($this->user)->get(route('bookings.success', ['id' => $booking->id]));
 
         $response->assertOk();
         $response->assertViewHas('booking', function ($viewBooking) use ($booking) {
@@ -160,7 +160,7 @@ class BookingControllerTest extends TestCase
         $other = User::factory()->create();
         $booking = Booking::factory()->create(['user_id' => $other->id]);
 
-        $response = $this->actingAs($this->user)->get("/bookings/success?id={$booking->id}");
+        $response = $this->actingAs($this->user)->get(route('bookings.success', ['id' => $booking->id]));
 
         $response->assertOk();
         $response->assertViewHas('booking', null);
@@ -172,7 +172,7 @@ class BookingControllerTest extends TestCase
 
         $response = $this->actingAs($this->user)
             ->withSession(['booking_id' => $booking->id, 'error' => 'پرداخت رد شد'])
-            ->get('/bookings/failed');
+            ->get(route('bookings.failed'));
 
         $response->assertOk();
         $response->assertViewHas('errorMessage', 'پرداخت رد شد');
@@ -186,7 +186,7 @@ class BookingControllerTest extends TestCase
         ]);
         $before = $this->user->fresh()->loyalty_points ?? 0;
 
-        $response = $this->actingAs($this->user)->post("/bookings/{$booking->id}/rate", [
+        $response = $this->actingAs($this->user)->post(route('bookings.rate', ['booking' => $booking->id]), [
             'rating' => 5,
             'review' => 'عالی بود',
         ]);
@@ -202,7 +202,7 @@ class BookingControllerTest extends TestCase
     {
         $booking = Booking::factory()->create(['user_id' => $this->user->id]);
 
-        $response = $this->actingAs($this->user)->post("/bookings/{$booking->id}/rate", [
+        $response = $this->actingAs($this->user)->post(route('bookings.rate', ['booking' => $booking->id]), [
             'rating' => 9,
         ]);
 
@@ -215,12 +215,12 @@ class BookingControllerTest extends TestCase
         $booking = Booking::factory()->create(['user_id' => $other->id]);
 
         $this->actingAs($this->user)
-            ->post("/bookings/{$booking->id}/rate", ['rating' => 4])
+            ->post(route('bookings.rate', ['booking' => $booking->id]), ['rating' => 4])
             ->assertForbidden();
     }
 
     public function test_guest_is_redirected_to_login(): void
     {
-        $this->get('/bookings')->assertRedirect(route('login'));
+        $this->get(route('bookings.index'))->assertRedirect(route('login'));
     }
 }

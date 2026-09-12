@@ -46,14 +46,14 @@ class BookingReservationControllerTest extends TestCase
 
     public function test_create_redirects_guests_to_login(): void
     {
-        $response = $this->get('/bookings/create');
+        $response = $this->get(route('bookings.create'));
 
         $response->assertRedirect(route('login'));
     }
 
     public function test_create_renders_the_form_for_authenticated_users(): void
     {
-        $response = $this->actingAs($this->user)->get('/bookings/create');
+        $response = $this->actingAs($this->user)->get(route('bookings.create'));
 
         $response->assertOk();
         $response->assertViewHas('services');
@@ -62,7 +62,7 @@ class BookingReservationControllerTest extends TestCase
 
     public function test_confirm_renders_the_confirmation_page_with_prepayment(): void
     {
-        $response = $this->actingAs($this->user)->post('/bookings/confirm', [
+        $response = $this->actingAs($this->user)->post(route('bookings.confirm'), [
             'service_id' => $this->service->id,
             'specialist_id' => $this->specialist->id,
             'booking_time' => $this->bookingTime,
@@ -88,7 +88,7 @@ class BookingReservationControllerTest extends TestCase
      */
     public function test_confirm_page_uses_the_real_check_discount_route_not_the_removed_api_endpoint(): void
     {
-        $response = $this->actingAs($this->user)->post('/bookings/confirm', [
+        $response = $this->actingAs($this->user)->post(route('bookings.confirm'), [
             'service_id' => $this->service->id,
             'specialist_id' => $this->specialist->id,
             'booking_time' => $this->bookingTime,
@@ -109,7 +109,7 @@ class BookingReservationControllerTest extends TestCase
             'status' => 'confirmed',
         ]);
 
-        $response = $this->actingAs($this->user)->post('/bookings/confirm', [
+        $response = $this->actingAs($this->user)->post(route('bookings.confirm'), [
             'service_id' => $this->service->id,
             'specialist_id' => $this->specialist->id,
             'booking_time' => $this->bookingTime,
@@ -120,7 +120,7 @@ class BookingReservationControllerTest extends TestCase
 
     public function test_confirm_requires_a_future_booking_time(): void
     {
-        $response = $this->actingAs($this->user)->post('/bookings/confirm', [
+        $response = $this->actingAs($this->user)->post(route('bookings.confirm'), [
             'service_id' => $this->service->id,
             'specialist_id' => $this->specialist->id,
             'booking_time' => now()->subDay()->format('Y-m-d H:i:s'),
@@ -131,7 +131,7 @@ class BookingReservationControllerTest extends TestCase
 
     public function test_store_creates_a_booking_and_redirects_to_payment(): void
     {
-        $response = $this->actingAs($this->user)->post('/bookings', [
+        $response = $this->actingAs($this->user)->post(route('bookings.store'), [
             'service_id' => $this->service->id,
             'specialist_id' => $this->specialist->id,
             'booking_time' => $this->bookingTime,
@@ -145,7 +145,7 @@ class BookingReservationControllerTest extends TestCase
 
     public function test_store_returns_json_when_the_client_expects_json(): void
     {
-        $response = $this->actingAs($this->user)->postJson('/bookings', [
+        $response = $this->actingAs($this->user)->postJson(route('bookings.store'), [
             'service_id' => $this->service->id,
             'specialist_id' => $this->specialist->id,
             'booking_time' => $this->bookingTime,
@@ -157,7 +157,7 @@ class BookingReservationControllerTest extends TestCase
 
     public function test_store_requires_authentication(): void
     {
-        $response = $this->post('/bookings', [
+        $response = $this->post(route('bookings.store'), [
             'service_id' => $this->service->id,
             'specialist_id' => $this->specialist->id,
             'booking_time' => $this->bookingTime,
@@ -174,7 +174,7 @@ class BookingReservationControllerTest extends TestCase
             'booking_time' => now()->addDays(2),
         ]);
 
-        $response = $this->actingAs($this->user)->put("/bookings/{$booking->id}/cancel");
+        $response = $this->actingAs($this->user)->put(route('bookings.cancel', ['booking' => $booking->id]));
 
         $response->assertRedirect();
         $response->assertSessionHas('success');
@@ -191,7 +191,7 @@ class BookingReservationControllerTest extends TestCase
             'booking_time' => now()->addDays(2),
         ]);
 
-        $this->actingAs($this->user)->put("/bookings/{$booking->id}/cancel")->assertForbidden();
+        $this->actingAs($this->user)->put(route('bookings.cancel', ['booking' => $booking->id]))->assertForbidden();
     }
 
     public function test_cancel_is_refused_within_24_hours_of_the_booking(): void
@@ -202,7 +202,7 @@ class BookingReservationControllerTest extends TestCase
             'booking_time' => now()->addHours(2),
         ]);
 
-        $this->actingAs($this->user)->put("/bookings/{$booking->id}/cancel")->assertForbidden();
+        $this->actingAs($this->user)->put(route('bookings.cancel', ['booking' => $booking->id]))->assertForbidden();
         $this->assertSame('confirmed', $booking->fresh()->status);
     }
 }

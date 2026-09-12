@@ -44,7 +44,7 @@ class BookingAvailabilityControllerTest extends TestCase
         $date = now()->addDays(3)->format('Y-m-d');
 
         $response = $this->actingAs($this->user)
-            ->getJson("/bookings/specialists/{$this->specialist->id}/slots/{$date}");
+            ->getJson(route('bookings.available-slots', ['specialist' => $this->specialist->id, 'date' => $date]));
 
         $response->assertOk();
         $this->assertNotEmpty($response->json('slots'));
@@ -55,7 +55,7 @@ class BookingAvailabilityControllerTest extends TestCase
         $date = now()->addDays(3)->format('Y-m-d');
 
         $response = $this->actingAs($this->user)
-            ->getJson("/bookings/specialists/{$this->specialist->id}/slots/{$date}");
+            ->getJson(route('bookings.available-slots', ['specialist' => $this->specialist->id, 'date' => $date]));
 
         $response->assertOk();
         $response->assertJson(['slots' => []]);
@@ -73,7 +73,7 @@ class BookingAvailabilityControllerTest extends TestCase
         Holiday::factory()->create(['specialist_id' => $this->specialist->id, 'date' => $date]);
 
         $response = $this->actingAs($this->user)
-            ->getJson("/bookings/specialists/{$this->specialist->id}/slots/{$date->format('Y-m-d')}");
+            ->getJson(route('bookings.available-slots', ['specialist' => $this->specialist->id, 'date' => $date->format('Y-m-d')]));
 
         $response->assertOk();
         $response->assertJson(['slots' => [], 'message' => 'این روز تعطیل است']);
@@ -95,7 +95,7 @@ class BookingAvailabilityControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->getJson("/bookings/specialists/{$this->specialist->id}/slots/{$date->format('Y-m-d')}");
+            ->getJson(route('bookings.available-slots', ['specialist' => $this->specialist->id, 'date' => $date->format('Y-m-d')]));
 
         $response->assertOk();
         $this->assertStringContainsString('مرخصی', $response->json('message'));
@@ -105,7 +105,7 @@ class BookingAvailabilityControllerTest extends TestCase
     {
         $date = now()->addDays(3)->format('Y-m-d');
 
-        $response = $this->actingAs($this->user)->getJson("/bookings/specialists/999999/slots/{$date}");
+        $response = $this->actingAs($this->user)->getJson(route('bookings.available-slots', ['specialist' => 999999, 'date' => $date]));
 
         $response->assertStatus(404);
     }
@@ -120,7 +120,7 @@ class BookingAvailabilityControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->getJson("/bookings/specialists/{$this->specialist->id}/dates");
+            ->getJson(route('bookings.available-dates', ['specialist' => $this->specialist->id]));
 
         $response->assertOk();
         $dates = $response->json();
@@ -138,7 +138,7 @@ class BookingAvailabilityControllerTest extends TestCase
         Holiday::factory()->create(['specialist_id' => $this->specialist->id, 'date' => $day]);
 
         $response = $this->actingAs($this->user)
-            ->getJson("/bookings/specialists/{$this->specialist->id}/dates");
+            ->getJson(route('bookings.available-dates', ['specialist' => $this->specialist->id]));
 
         $this->assertNotContains($day->format('Y-m-d'), $response->json());
     }
@@ -150,7 +150,7 @@ class BookingAvailabilityControllerTest extends TestCase
         $unrelatedSpecialist = Specialist::factory()->create();
 
         $response = $this->actingAs($this->user)
-            ->getJson("/bookings/services/{$service->id}/specialists");
+            ->getJson(route('bookings.service-specialists', ['service' => $service->id]));
 
         $response->assertOk();
         $ids = collect($response->json())->pluck('id');
@@ -164,7 +164,7 @@ class BookingAvailabilityControllerTest extends TestCase
         // controller ever runs, so an invalid id 404s at the routing layer, not inside the
         // controller's own try/catch (which only handles genuinely unexpected failures now
         // that resolveService() no longer double-resolves an already-resolved model).
-        $response = $this->actingAs($this->user)->getJson('/bookings/services/999999/specialists');
+        $response = $this->actingAs($this->user)->getJson(route('bookings.service-specialists', ['service' => 999999]));
 
         $response->assertStatus(404);
     }

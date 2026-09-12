@@ -38,7 +38,7 @@ class BookingDiscountControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($this->user)->postJson('/bookings/check-discount', [
+        $response = $this->actingAs($this->user)->postJson(route('bookings.check-discount'), [
             'code' => $code->code,
             'service_id' => $service->id,
         ]);
@@ -52,7 +52,7 @@ class BookingDiscountControllerTest extends TestCase
     {
         $code = DiscountCode::factory()->create(['type' => 'fixed', 'amount' => 20000, 'is_active' => true]);
 
-        $response = $this->actingAs($this->user)->postJson('/bookings/check-discount', [
+        $response = $this->actingAs($this->user)->postJson(route('bookings.check-discount'), [
             'code' => $code->code,
         ]);
 
@@ -62,7 +62,7 @@ class BookingDiscountControllerTest extends TestCase
 
     public function test_check_reports_a_422_for_an_unknown_code(): void
     {
-        $response = $this->actingAs($this->user)->postJson('/bookings/check-discount', [
+        $response = $this->actingAs($this->user)->postJson(route('bookings.check-discount'), [
             'code' => 'DOESNOTEXIST',
         ]);
 
@@ -107,7 +107,7 @@ class BookingDiscountControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($this->user)->post("/bookings/{$booking->id}/apply-discount", [
+        $response = $this->actingAs($this->user)->post(route('bookings.apply-discount', ['booking' => $booking->id]), [
             'code' => $code->code,
         ]);
 
@@ -124,7 +124,7 @@ class BookingDiscountControllerTest extends TestCase
         $code = DiscountCode::factory()->create(['is_active' => true]);
 
         $this->actingAs($this->user)
-            ->post("/bookings/{$booking->id}/apply-discount", ['code' => $code->code])
+            ->post(route('bookings.apply-discount', ['booking' => $booking->id]), ['code' => $code->code])
             ->assertForbidden();
     }
 
@@ -135,7 +135,7 @@ class BookingDiscountControllerTest extends TestCase
         $code = DiscountCode::factory()->create(['is_active' => true, 'user_id' => $owner->id]);
 
         $response = $this->actingAs($this->user)
-            ->post("/bookings/{$booking->id}/apply-discount", ['code' => $code->code]);
+            ->post(route('bookings.apply-discount', ['booking' => $booking->id]), ['code' => $code->code]);
 
         $response->assertSessionHas('error');
         $this->assertNull($booking->fresh()->discount_code);
@@ -153,7 +153,7 @@ class BookingDiscountControllerTest extends TestCase
         $code = DiscountCode::factory()->create(['is_active' => true]);
 
         $this->actingAs($this->user)
-            ->post("/bookings/{$booking->id}/apply-discount", ['code' => $code->code])
+            ->post(route('bookings.apply-discount', ['booking' => $booking->id]), ['code' => $code->code])
             ->assertForbidden();
     }
 
@@ -167,7 +167,7 @@ class BookingDiscountControllerTest extends TestCase
         $code = DiscountCode::factory()->create(['is_active' => true]);
 
         $response = $this->actingAs($this->user)
-            ->post("/bookings/{$booking->id}/apply-discount", ['code' => $code->code]);
+            ->post(route('bookings.apply-discount', ['booking' => $booking->id]), ['code' => $code->code]);
 
         $response->assertSessionHas('error');
         $this->assertSame('ALREADY-APPLIED', $booking->fresh()->discount_code);
@@ -212,7 +212,7 @@ class BookingDiscountControllerTest extends TestCase
         $booking = Booking::factory()->create(['payment_status' => 'unpaid']);
         $code = DiscountCode::factory()->create(['is_active' => true]);
 
-        $this->post("/bookings/{$booking->id}/apply-discount", ['code' => $code->code])
+        $this->post(route('bookings.apply-discount', ['booking' => $booking->id]), ['code' => $code->code])
             ->assertRedirect(route('login'));
     }
 }

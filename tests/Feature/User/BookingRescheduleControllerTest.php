@@ -59,7 +59,7 @@ class BookingRescheduleControllerTest extends TestCase
     {
         $booking = $this->makeBooking();
 
-        $response = $this->actingAs($this->user)->get("/bookings/{$booking->id}/reschedule");
+        $response = $this->actingAs($this->user)->get(route('bookings.reschedule', ['booking' => $booking->id]));
 
         $response->assertOk();
         $response->assertViewHas('booking');
@@ -70,14 +70,14 @@ class BookingRescheduleControllerTest extends TestCase
         $other = User::factory()->create();
         $booking = $this->makeBooking(['user_id' => $other->id]);
 
-        $this->actingAs($this->user)->get("/bookings/{$booking->id}/reschedule")->assertForbidden();
+        $this->actingAs($this->user)->get(route('bookings.reschedule', ['booking' => $booking->id]))->assertForbidden();
     }
 
     public function test_update_moves_the_booking_to_pending_when_specialist_does_not_auto_confirm(): void
     {
         $booking = $this->makeBooking(['status' => 'confirmed']);
 
-        $response = $this->actingAs($this->user)->put("/bookings/{$booking->id}/reschedule", [
+        $response = $this->actingAs($this->user)->put(route('bookings.update-reschedule', ['booking' => $booking->id]), [
             'booking_time' => $this->newTime,
         ]);
 
@@ -93,7 +93,7 @@ class BookingRescheduleControllerTest extends TestCase
         $this->specialist->update(['auto_confirm_bookings' => true]);
         $booking = $this->makeBooking(['status' => 'confirmed']);
 
-        $this->actingAs($this->user)->put("/bookings/{$booking->id}/reschedule", [
+        $this->actingAs($this->user)->put(route('bookings.update-reschedule', ['booking' => $booking->id]), [
             'booking_time' => $this->newTime,
         ]);
 
@@ -111,7 +111,7 @@ class BookingRescheduleControllerTest extends TestCase
             'status' => 'confirmed',
         ]);
 
-        $response = $this->actingAs($this->user)->put("/bookings/{$booking->id}/reschedule", [
+        $response = $this->actingAs($this->user)->put(route('bookings.update-reschedule', ['booking' => $booking->id]), [
             'booking_time' => $this->newTime,
         ]);
 
@@ -129,7 +129,7 @@ class BookingRescheduleControllerTest extends TestCase
             'status' => 'confirmed',
         ]);
 
-        $response = $this->actingAs($this->user)->putJson("/bookings/{$booking->id}/reschedule", [
+        $response = $this->actingAs($this->user)->putJson(route('bookings.update-reschedule', ['booking' => $booking->id]), [
             'booking_time' => $this->newTime,
         ]);
 
@@ -141,7 +141,7 @@ class BookingRescheduleControllerTest extends TestCase
     {
         $booking = $this->makeBooking();
 
-        $response = $this->actingAs($this->user)->putJson("/bookings/{$booking->id}/reschedule", [
+        $response = $this->actingAs($this->user)->putJson(route('bookings.update-reschedule', ['booking' => $booking->id]), [
             'booking_time' => $this->newTime,
         ]);
 
@@ -157,7 +157,7 @@ class BookingRescheduleControllerTest extends TestCase
         $booking = $this->makeBooking(['booking_time' => now()->addHours(2)]);
 
         $this->actingAs($this->user)
-            ->put("/bookings/{$booking->id}/reschedule", ['booking_time' => $this->newTime])
+            ->put(route('bookings.update-reschedule', ['booking' => $booking->id]), ['booking_time' => $this->newTime])
             ->assertForbidden();
     }
 
@@ -167,7 +167,7 @@ class BookingRescheduleControllerTest extends TestCase
         $booking = $this->makeBooking(['user_id' => $other->id]);
 
         $this->actingAs($this->user)
-            ->put("/bookings/{$booking->id}/reschedule", ['booking_time' => $this->newTime])
+            ->put(route('bookings.update-reschedule', ['booking' => $booking->id]), ['booking_time' => $this->newTime])
             ->assertForbidden();
     }
 }
