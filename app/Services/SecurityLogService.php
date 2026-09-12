@@ -55,7 +55,17 @@ class SecurityLogService
         $this->persist(event: $event, level: 'warning', context: $details);
     }
 
-    public function logPaymentAttempt(string $paymentId, $amount, bool $success, array $details = []): void
+    /**
+     * ⭐ Fix (real bug, confirmed by actually running the test suite — not just reading code):
+     * SecurePaymentController::initiate()'s catch block deliberately calls this with a null
+     * $paymentId when PaymentService::createPayment() itself throws (there's no Payment row yet
+     * to reference), but this was strictly typed `string` with no `?` — every payment-initiation
+     * failure crashed with an uncaught TypeError from inside the *error-logging* call itself,
+     * instead of the graceful "پرداخت با مشکل مواجه شد" response the controller intended. Nothing
+     * in this method actually requires a non-null string; it's only ever used as a log/context
+     * value.
+     */
+    public function logPaymentAttempt(?string $paymentId, $amount, bool $success, array $details = []): void
     {
         $data = array_merge([
             'event' => 'payment_attempt',
