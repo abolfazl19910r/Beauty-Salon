@@ -15,7 +15,8 @@ class SecurityLogLoginTest extends TestCase
         // Regression guard: logLogin() previously silently dropped a 3rd ($user) argument
         // (2-param signature vs 3-arg call sites), so Auth::id() — which is null pre-auth — was
         // always used, meaning failed-login security logs never attributed to the actual user.
-        $user = User::factory()->create(['password' => bcrypt('password123')]);
+        // ⭐ Fix: /login only accepts user_type='staff' accounts (customer-identity redesign).
+        $user = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);
 
         $this->post('/login', ['phone' => $user->phone, 'password' => 'wrong-password']);
 
@@ -28,7 +29,8 @@ class SecurityLogLoginTest extends TestCase
 
     public function test_successful_login_after_otp_verification_logs_the_correct_user_id(): void
     {
-        $user = User::factory()->create(['password' => bcrypt('password123')]);
+        // ⭐ Fix: /login only accepts user_type='staff' accounts (customer-identity redesign).
+        $user = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);
         $this->post('/login', ['phone' => $user->phone, 'password' => 'password123']);
         $user->refresh();
 

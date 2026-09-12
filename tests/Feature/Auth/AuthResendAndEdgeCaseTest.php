@@ -107,7 +107,7 @@ class AuthResendAndEdgeCaseTest extends TestCase
 
     public function test_login_with_wrong_password_logs_a_failed_attempt_with_the_correct_user_id(): void
     {
-        $user = User::factory()->create(['phone' => '09121234567', 'password' => bcrypt('correct-password')]);
+        $user = User::factory()->create(['phone' => '09121234567', 'password' => bcrypt('correct-password'), 'user_type' => 'staff']);
 
         $this->post('/login', ['phone' => '09121234567', 'password' => 'wrong-password']);
 
@@ -130,7 +130,7 @@ class AuthResendAndEdgeCaseTest extends TestCase
     public function test_login_with_correct_credentials_dispatches_the_otp_job_and_does_not_log_in_yet(): void
     {
         Queue::fake();
-        $user = User::factory()->create(['phone' => '09121234567', 'password' => bcrypt('correct-password')]);
+        $user = User::factory()->create(['phone' => '09121234567', 'password' => bcrypt('correct-password'), 'user_type' => 'staff']);
 
         $response = $this->post('/login', ['phone' => '09121234567', 'password' => 'correct-password']);
 

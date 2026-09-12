@@ -12,9 +12,13 @@ class RegistrationTest extends TestCase
 
     public function test_registration_screen_can_be_rendered(): void
     {
+        // ⭐ Fix: the global /register route deliberately redirects to the default salon's own
+        // registration page now (see RegisteredUserController::create()) — old bookmarked/shared
+        // /register links still work, they just land on /s/rasta/register instead of rendering
+        // directly. This test predates that redirect and expected a plain 200.
         $response = $this->get('/register');
 
-        $response->assertStatus(200);
+        $response->assertRedirect(route('salon.register', ['salon_slug' => 'rasta']));
     }
 
     public function test_new_users_can_register_and_are_redirected_to_otp_verification(): void

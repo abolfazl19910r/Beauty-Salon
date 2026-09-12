@@ -27,7 +27,7 @@ class TwoFactorControllerTest extends TestCase
 
     public function test_show_renders_the_2fa_status_page(): void
     {
-        $response = $this->actingAs($this->user)->get('/security/2fa');
+        $response = $this->actingAs($this->user)->get(route('security.2fa'));
 
         $response->assertOk();
         $response->assertViewHas('enabled', false);
@@ -35,7 +35,7 @@ class TwoFactorControllerTest extends TestCase
 
     public function test_show_setup_generates_a_code_and_persists_it(): void
     {
-        $response = $this->actingAs($this->user)->get('/security/2fa/setup');
+        $response = $this->actingAs($this->user)->get(route('security.2fa.setup'));
 
         $response->assertOk();
         $this->assertNotNull($this->user->fresh()->two_factor_code);
@@ -46,7 +46,7 @@ class TwoFactorControllerTest extends TestCase
     {
         $this->user->update(['two_factor_enabled' => true]);
 
-        $response = $this->actingAs($this->user)->get('/security/2fa/setup');
+        $response = $this->actingAs($this->user)->get(route('security.2fa.setup'));
 
         $response->assertRedirect(route('security.2fa'));
         $response->assertSessionHas('error');
@@ -59,7 +59,7 @@ class TwoFactorControllerTest extends TestCase
             'two_factor_code_expires_at' => now()->addMinutes(2),
         ]);
 
-        $response = $this->actingAs($this->user)->postJson('/security/2fa/enable', [
+        $response = $this->actingAs($this->user)->postJson(route('security.2fa.enable'), [
             'code' => '123456',
         ]);
 
@@ -76,7 +76,7 @@ class TwoFactorControllerTest extends TestCase
             'two_factor_code_expires_at' => now()->addMinutes(2),
         ]);
 
-        $response = $this->actingAs($this->user)->postJson('/security/2fa/enable', [
+        $response = $this->actingAs($this->user)->postJson(route('security.2fa.enable'), [
             'code' => '000000',
         ]);
 
@@ -91,7 +91,7 @@ class TwoFactorControllerTest extends TestCase
             'two_factor_code_expires_at' => now()->subMinute(),
         ]);
 
-        $response = $this->actingAs($this->user)->postJson('/security/2fa/enable', [
+        $response = $this->actingAs($this->user)->postJson(route('security.2fa.enable'), [
             'code' => '123456',
         ]);
 
@@ -106,7 +106,7 @@ class TwoFactorControllerTest extends TestCase
             'two_factor_code_expires_at' => now()->addMinutes(2),
         ]);
 
-        $response = $this->actingAs($this->user)->postJson('/security/2fa/disable', [
+        $response = $this->actingAs($this->user)->postJson(route('security.2fa.disable'), [
             'code' => '654321',
         ]);
 
@@ -121,7 +121,7 @@ class TwoFactorControllerTest extends TestCase
             'two_factor_code_expires_at' => now()->addMinutes(2),
         ]);
 
-        $response = $this->actingAs($this->user)->postJson('/security/2fa/verify', [
+        $response = $this->actingAs($this->user)->postJson(route('security.2fa.verify'), [
             'code' => '111222',
         ]);
 
@@ -136,7 +136,7 @@ class TwoFactorControllerTest extends TestCase
             'two_factor_code_expires_at' => now()->addMinutes(2),
         ]);
 
-        $this->actingAs($this->user)->postJson('/security/2fa/verify', [
+        $this->actingAs($this->user)->postJson(route('security.2fa.verify'), [
             'code' => '999999',
         ]);
 
@@ -150,7 +150,7 @@ class TwoFactorControllerTest extends TestCase
             'two_factor_code_expires_at' => now()->addMinutes(2),
         ]);
 
-        $response = $this->actingAs($this->user)->postJson('/security/2fa/resend');
+        $response = $this->actingAs($this->user)->postJson(route('security.2fa.resend'));
 
         $response->assertOk();
         $this->assertNotSame('111111', $this->user->fresh()->two_factor_code);
@@ -164,7 +164,7 @@ class TwoFactorControllerTest extends TestCase
         // normal 422 with field errors into a generic 500 "system error" response. This is
         // the same bug fingerprint documented for AdminSpecialistScheduleController::update()
         // in a previous test-writing session, this time in TwoFactorController.
-        $response = $this->actingAs($this->user)->postJson('/security/2fa/verify', []);
+        $response = $this->actingAs($this->user)->postJson(route('security.2fa.verify'), []);
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors('code');
@@ -172,6 +172,6 @@ class TwoFactorControllerTest extends TestCase
 
     public function test_guest_is_redirected_to_login(): void
     {
-        $this->get('/security/2fa')->assertRedirect(route('login'));
+        $this->get(route('security.2fa'))->assertRedirect(route('login'));
     }
 }

@@ -25,7 +25,7 @@ class LoginThrottlingTest extends TestCase
     public function test_login_attempts_under_the_configured_limit_are_not_throttled(): void
     {
         config(['auth.max_login_attempts' => 5]);
-        $user = User::factory()->create(['password' => bcrypt('password123')]);
+        $user = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);
 
         for ($i = 0; $i < 4; $i++) {
             $response = $this->post('/login', [
@@ -40,7 +40,7 @@ class LoginThrottlingTest extends TestCase
     public function test_the_attempt_that_exceeds_the_configured_limit_is_throttled(): void
     {
         config(['auth.max_login_attempts' => 3]);
-        $user = User::factory()->create(['password' => bcrypt('password123')]);
+        $user = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);
 
         for ($i = 0; $i < 3; $i++) {
             $this->post('/login', ['phone' => $user->phone, 'password' => 'wrong-password']);
@@ -59,7 +59,7 @@ class LoginThrottlingTest extends TestCase
     public function test_a_throttled_login_does_not_reveal_whether_the_password_was_actually_correct(): void
     {
         config(['auth.max_login_attempts' => 2]);
-        $user = User::factory()->create(['password' => bcrypt('password123')]);
+        $user = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);
 
         $this->post('/login', ['phone' => $user->phone, 'password' => 'wrong-password']);
         $this->post('/login', ['phone' => $user->phone, 'password' => 'wrong-password']);
@@ -75,7 +75,7 @@ class LoginThrottlingTest extends TestCase
     public function test_a_throttled_login_returns_a_json_429_response_for_json_requests(): void
     {
         config(['auth.max_login_attempts' => 1]);
-        $user = User::factory()->create(['password' => bcrypt('password123')]);
+        $user = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);
 
         $this->post('/login', ['phone' => $user->phone, 'password' => 'wrong-password']);
 
@@ -89,7 +89,7 @@ class LoginThrottlingTest extends TestCase
     public function test_login_verify_shares_the_same_attempt_budget_as_login(): void
     {
         config(['auth.max_login_attempts' => 3]);
-        $user = User::factory()->create(['password' => bcrypt('password123')]);
+        $user = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);
 
         // 2 failed attempts on /login, then 1 more on /login/verify — together they exhaust
         // the shared 3-attempt 'auth' bucket for this IP.
@@ -105,7 +105,7 @@ class LoginThrottlingTest extends TestCase
     public function test_login_resend_counts_against_the_same_budget(): void
     {
         config(['auth.max_login_attempts' => 2]);
-        $user = User::factory()->create(['password' => bcrypt('password123')]);
+        $user = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);
         $this->withSession(['login_user_id' => $user->id]);
 
         $this->post('/login/resend');
@@ -119,7 +119,7 @@ class LoginThrottlingTest extends TestCase
     public function test_the_throttle_window_respects_a_configured_login_throttle_minutes(): void
     {
         config(['auth.max_login_attempts' => 1, 'auth.login_throttle_minutes' => 1]);
-        $user = User::factory()->create(['password' => bcrypt('password123')]);
+        $user = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);
 
         $this->post('/login', ['phone' => $user->phone, 'password' => 'wrong-password']);
         $throttled = $this->post('/login', ['phone' => $user->phone, 'password' => 'password123']);
@@ -135,7 +135,7 @@ class LoginThrottlingTest extends TestCase
     public function test_registration_is_not_affected_by_the_login_throttle_bucket(): void
     {
         config(['auth.max_login_attempts' => 2]);
-        $user = User::factory()->create(['password' => bcrypt('password123')]);
+        $user = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);
 
         // Exhaust the login bucket for this IP...
         $this->post('/login', ['phone' => $user->phone, 'password' => 'wrong-password']);
@@ -157,7 +157,7 @@ class LoginThrottlingTest extends TestCase
     public function test_the_guest_layout_renders_the_flashed_throttle_message(): void
     {
         config(['auth.max_login_attempts' => 1]);
-        $user = User::factory()->create(['password' => bcrypt('password123')]);
+        $user = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);
 
         $this->post('/login', ['phone' => $user->phone, 'password' => 'wrong-password']);
         $response = $this->post('/login', ['phone' => $user->phone, 'password' => 'wrong-password']);

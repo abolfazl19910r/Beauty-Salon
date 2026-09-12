@@ -19,7 +19,7 @@ class AuthenticationTest extends TestCase
 
     public function test_users_with_correct_password_are_sent_to_otp_verification_not_logged_in_yet(): void
     {
-        $user = User::factory()->create(['password' => bcrypt('password123')]);
+        $user = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);
 
         $response = $this->post('/login', [
             'phone' => $user->phone,
@@ -33,7 +33,7 @@ class AuthenticationTest extends TestCase
 
     public function test_users_cannot_authenticate_with_an_invalid_password(): void
     {
-        $user = User::factory()->create(['password' => bcrypt('password123')]);
+        $user = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);
 
         $response = $this->from('/login')->post('/login', [
             'phone' => $user->phone,
@@ -57,7 +57,7 @@ class AuthenticationTest extends TestCase
 
     public function test_user_can_complete_login_with_the_correct_otp_code(): void
     {
-        $user = User::factory()->create(['password' => bcrypt('password123')]);
+        $user = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);
         $this->post('/login', ['phone' => $user->phone, 'password' => 'password123']);
         $user->refresh();
 
@@ -69,7 +69,7 @@ class AuthenticationTest extends TestCase
 
     public function test_login_verification_fails_with_the_wrong_otp_code(): void
     {
-        $user = User::factory()->create(['password' => bcrypt('password123')]);
+        $user = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);
         $this->post('/login', ['phone' => $user->phone, 'password' => 'password123']);
 
         $response = $this->post('/login/verify', ['code' => '000000']);
@@ -80,7 +80,7 @@ class AuthenticationTest extends TestCase
 
     public function test_login_otp_code_is_single_use_and_cleared_after_successful_verification(): void
     {
-        $user = User::factory()->create(['password' => bcrypt('password123')]);
+        $user = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);
         $this->post('/login', ['phone' => $user->phone, 'password' => 'password123']);
         $user->refresh();
         $code = $user->login_verification_code;

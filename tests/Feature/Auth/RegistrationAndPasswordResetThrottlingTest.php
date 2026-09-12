@@ -64,7 +64,10 @@ class RegistrationAndPasswordResetThrottlingTest extends TestCase
 
     public function test_registration_throttling_does_not_affect_login(): void
     {
-        $user = User::factory()->create(['password' => bcrypt('password123')]);
+        // ⭐ Fix: the global /login route (used below) only accepts user_type='staff' accounts
+        // (per the customer-identity redesign — plain customers log in via /s/{slug}/login
+        // instead); this bare factory call defaults to 'customer' and so /login always failed.
+        $user = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);
 
         for ($i = 0; $i < 5; $i++) {
             $this->post('/register', [
@@ -140,7 +143,10 @@ class RegistrationAndPasswordResetThrottlingTest extends TestCase
 
     public function test_password_reset_throttling_does_not_affect_login(): void
     {
-        $user = User::factory()->create(['password' => bcrypt('password123')]);
+        // ⭐ Fix: the global /login route (used below) only accepts user_type='staff' accounts
+        // (per the customer-identity redesign — plain customers log in via /s/{slug}/login
+        // instead); this bare factory call defaults to 'customer' and so /login always failed.
+        $user = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);
 
         for ($i = 0; $i < 3; $i++) {
             $this->post('/forgot-password', ['phone' => $user->phone]);
@@ -184,7 +190,10 @@ class RegistrationAndPasswordResetThrottlingTest extends TestCase
     public function test_phone_verification_throttling_does_not_affect_login(): void
     {
         $verifyingUser = User::factory()->create(['phone_verified_at' => null]);
-        $loginUser = User::factory()->create(['password' => bcrypt('password123')]);
+        // ⭐ Fix: /login only accepts user_type='staff' accounts (see the other two tests in
+        // this file for the same fix, applied by an earlier find/replace that missed this
+        // differently-named variable).
+        $loginUser = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);
 
         for ($i = 0; $i < 5; $i++) {
             $this->actingAs($verifyingUser)->postJson('/verify-phone/verify', ['code' => '000000']);
