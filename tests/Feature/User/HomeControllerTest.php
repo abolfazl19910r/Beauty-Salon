@@ -17,7 +17,7 @@ class HomeControllerTest extends TestCase
         BeautyService::factory()->count(8)->create();
         Specialist::factory()->count(6)->create();
 
-        $response = $this->get('/');
+        $response = $this->get(route('home'));
 
         $response->assertOk();
         $this->assertCount(6, $response->viewData('services'));
@@ -29,7 +29,7 @@ class HomeControllerTest extends TestCase
         Cache::flush();
         BeautyService::factory()->count(2)->create();
 
-        $this->get('/');
+        $this->get(route('home'));
 
         $this->assertTrue(Cache::has('home_services'));
         $this->assertTrue(Cache::has('home_specialists'));
@@ -37,6 +37,6 @@ class HomeControllerTest extends TestCase
 
     public function test_index_is_publicly_accessible_without_authentication(): void
     {
-        $this->get('/')->assertOk();
+        $this->get(route('home'))->assertOk();
     }
 }

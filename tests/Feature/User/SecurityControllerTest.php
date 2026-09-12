@@ -46,7 +46,7 @@ class SecurityControllerTest extends TestCase
         $this->seedSession($this->user, session()->getId());
         SecurityLog::factory()->create(['user_id' => $this->user->id, 'level' => 'info']);
 
-        $response = $this->actingAs($this->user)->get('/security/dashboard');
+        $response = $this->actingAs($this->user)->get(route('security.dashboard'));
 
         $response->assertOk();
         $response->assertViewHas('active_sessions_count', 1);
@@ -59,7 +59,7 @@ class SecurityControllerTest extends TestCase
         $other = User::factory()->create();
         $this->seedSession($other);
 
-        $response = $this->actingAs($this->user)->get('/security/sessions');
+        $response = $this->actingAs($this->user)->get(route('security.sessions'));
 
         $response->assertOk();
         $this->assertCount(1, $response->viewData('sessions'));
@@ -71,7 +71,7 @@ class SecurityControllerTest extends TestCase
         $other = User::factory()->create();
         SecurityLog::factory()->create(['user_id' => $other->id]);
 
-        $response = $this->actingAs($this->user)->get('/security/activity');
+        $response = $this->actingAs($this->user)->get(route('security.activity'));
 
         $response->assertOk();
         $this->assertCount(3, $response->viewData('logs'));
@@ -82,7 +82,7 @@ class SecurityControllerTest extends TestCase
         $otherSessionId = $this->seedSession($this->user);
 
         $response = $this->actingAs($this->user)
-            ->postJson("/security/sessions/{$otherSessionId}/terminate");
+            ->postJson(route('security.sessions.terminate', ['sessionId' => $otherSessionId]));
 
         $response->assertOk();
         $this->assertDatabaseMissing('sessions', ['id' => $otherSessionId]);
@@ -113,7 +113,7 @@ class SecurityControllerTest extends TestCase
         $otherSessionId = $this->seedSession($other);
 
         $this->actingAs($this->user)
-            ->postJson("/security/sessions/{$otherSessionId}/terminate");
+            ->postJson(route('security.sessions.terminate', ['sessionId' => $otherSessionId]));
 
         // The query is scoped to auth()->id(), so another user's session must survive.
         $this->assertDatabaseHas('sessions', ['id' => $otherSessionId]);
@@ -137,6 +137,6 @@ class SecurityControllerTest extends TestCase
 
     public function test_guest_is_redirected_to_login(): void
     {
-        $this->get('/security/dashboard')->assertRedirect(route('login'));
+        $this->get(route('security.dashboard'))->assertRedirect(route('login'));
     }
 }

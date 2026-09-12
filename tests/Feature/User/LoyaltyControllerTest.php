@@ -30,7 +30,7 @@ class LoyaltyControllerTest extends TestCase
     {
         LoyaltyPoint::factory()->create(['user_id' => $this->user->id, 'points' => 200]);
 
-        $response = $this->actingAs($this->user)->get('/loyalty');
+        $response = $this->actingAs($this->user)->get(route('loyalty.index'));
 
         $response->assertOk();
         $response->assertViewHas('userPoints', 200);
@@ -41,7 +41,7 @@ class LoyaltyControllerTest extends TestCase
         LoyaltyPoint::factory()->create(['user_id' => $this->user->id, 'points' => 500]);
         $reward = Reward::factory()->create(['required_points' => 300, 'is_active' => true]);
 
-        $response = $this->actingAs($this->user)->post("/loyalty/rewards/{$reward->id}/redeem");
+        $response = $this->actingAs($this->user)->post(route('loyalty.redeem', ['reward' => $reward->id]));
 
         $response->assertRedirect(route('loyalty.index'));
         $response->assertSessionHas('success');
@@ -57,7 +57,7 @@ class LoyaltyControllerTest extends TestCase
         LoyaltyPoint::factory()->create(['user_id' => $this->user->id, 'points' => 100]);
         $reward = Reward::factory()->create(['required_points' => 300, 'is_active' => true]);
 
-        $response = $this->actingAs($this->user)->post("/loyalty/rewards/{$reward->id}/redeem");
+        $response = $this->actingAs($this->user)->post(route('loyalty.redeem', ['reward' => $reward->id]));
 
         $response->assertSessionHas('error');
         $this->assertDatabaseMissing('loyalty_points', [
@@ -70,7 +70,7 @@ class LoyaltyControllerTest extends TestCase
     {
         LoyaltyPoint::factory()->create(['user_id' => $this->user->id, 'points' => 150]);
 
-        $response = $this->actingAs($this->user)->getJson('/loyalty/points');
+        $response = $this->actingAs($this->user)->getJson(route('loyalty.points'));
 
         $response->assertOk();
         $response->assertJson(['points' => 150]);
@@ -80,7 +80,7 @@ class LoyaltyControllerTest extends TestCase
     {
         LoyaltyPoint::factory()->count(3)->create(['user_id' => $this->user->id]);
 
-        $response = $this->actingAs($this->user)->getJson('/loyalty/history');
+        $response = $this->actingAs($this->user)->getJson(route('loyalty.history'));
 
         $response->assertOk();
         $response->assertJsonStructure(['data', 'current_page']);
@@ -91,7 +91,7 @@ class LoyaltyControllerTest extends TestCase
         LoyaltyPoint::factory()->create(['user_id' => $this->user->id, 'points' => 400]);
         Reward::factory()->create(['is_active' => true]);
 
-        $response = $this->actingAs($this->user)->getJson('/loyalty/rewards');
+        $response = $this->actingAs($this->user)->getJson(route('loyalty.rewards'));
 
         $response->assertOk();
         $response->assertJson(['user_points' => 400]);
@@ -102,7 +102,7 @@ class LoyaltyControllerTest extends TestCase
         LoyaltyPoint::factory()->create(['user_id' => $this->user->id, 'points' => 200]);
         Reward::factory()->create(['required_points' => 500, 'is_active' => true]);
 
-        $response = $this->actingAs($this->user)->getJson('/loyalty/progress');
+        $response = $this->actingAs($this->user)->getJson(route('loyalty.progress'));
 
         $response->assertOk();
         $response->assertJson([
@@ -125,7 +125,7 @@ class LoyaltyControllerTest extends TestCase
             'is_active' => false,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/loyalty/discount-codes');
+        $response = $this->actingAs($this->user)->getJson(route('loyalty.discount-codes'));
 
         $response->assertOk();
         $this->assertCount(1, $response->json('discount_codes'));
@@ -133,13 +133,13 @@ class LoyaltyControllerTest extends TestCase
 
     public function test_my_codes_page_renders(): void
     {
-        $response = $this->actingAs($this->user)->get('/loyalty/my-codes');
+        $response = $this->actingAs($this->user)->get(route('loyalty.my-codes'));
 
         $response->assertOk();
     }
 
     public function test_guest_is_redirected_to_login(): void
     {
-        $this->get('/loyalty')->assertRedirect(route('login'));
+        $this->get(route('loyalty.index'))->assertRedirect(route('login'));
     }
 }

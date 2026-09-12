@@ -29,7 +29,7 @@ class DashboardControllerTest extends TestCase
 
     public function test_dashboard_renders_for_an_authenticated_user(): void
     {
-        $response = $this->actingAs($this->user)->get('/dashboard');
+        $response = $this->actingAs($this->user)->get(route('dashboard'));
 
         $response->assertOk();
         $response->assertViewIs('dashboard');
@@ -61,7 +61,7 @@ class DashboardControllerTest extends TestCase
             'status' => 'completed',
         ]);
 
-        $response = $this->actingAs($this->user)->get('/dashboard');
+        $response = $this->actingAs($this->user)->get(route('dashboard'));
 
         $upcoming = $response->viewData('upcomingBookings');
         $this->assertCount(1, $upcoming);
@@ -74,7 +74,7 @@ class DashboardControllerTest extends TestCase
         $other = User::factory()->create();
         Booking::factory()->create(['user_id' => $other->id]);
 
-        $response = $this->actingAs($this->user)->get('/dashboard');
+        $response = $this->actingAs($this->user)->get(route('dashboard'));
 
         $this->assertCount(1, $response->viewData('userBookings'));
     }
@@ -88,7 +88,7 @@ class DashboardControllerTest extends TestCase
         ]);
         Announcement::factory()->create(['is_active' => false]);
 
-        $response = $this->actingAs($this->user)->get('/dashboard');
+        $response = $this->actingAs($this->user)->get(route('dashboard'));
 
         $announcements = $response->viewData('announcements');
         $this->assertCount(1, $announcements);
@@ -99,7 +99,7 @@ class DashboardControllerTest extends TestCase
     {
         BeautyService::factory()->count(3)->create();
 
-        $response = $this->actingAs($this->user)->get('/dashboard');
+        $response = $this->actingAs($this->user)->get(route('dashboard'));
 
         $this->assertCount(3, $response->viewData('recommendations'));
     }
@@ -113,7 +113,7 @@ class DashboardControllerTest extends TestCase
 
         Booking::factory()->create(['user_id' => $this->user->id, 'service_id' => $bookedService->id]);
 
-        $response = $this->actingAs($this->user)->get('/dashboard');
+        $response = $this->actingAs($this->user)->get(route('dashboard'));
 
         $recommendations = $response->viewData('recommendations');
         $ids = $recommendations->pluck('id');
@@ -124,6 +124,6 @@ class DashboardControllerTest extends TestCase
 
     public function test_guest_is_redirected_to_login(): void
     {
-        $this->get('/dashboard')->assertRedirect(route('login'));
+        $this->get(route('dashboard'))->assertRedirect(route('login'));
     }
 }

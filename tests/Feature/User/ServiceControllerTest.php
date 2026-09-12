@@ -42,7 +42,7 @@ class ServiceControllerTest extends TestCase
     {
         BeautyService::factory()->count(15)->create();
 
-        $response = $this->get('/services');
+        $response = $this->get(route('services.index'));
 
         $response->assertOk();
         $this->assertCount(12, $response->viewData('services'));
@@ -55,7 +55,7 @@ class ServiceControllerTest extends TestCase
         BeautyService::factory()->create(['category_id' => $categoryA->id]);
         BeautyService::factory()->create(['category_id' => $categoryB->id]);
 
-        $response = $this->get('/services?category='.$categoryA->id);
+        $response = $this->get(route('services.index', ['category' => $categoryA->id]));
 
         $this->assertCount(1, $response->viewData('services'));
     }
@@ -67,7 +67,7 @@ class ServiceControllerTest extends TestCase
         $related = BeautyService::factory()->create(['category_id' => $category->id]);
         $unrelated = BeautyService::factory()->create();
 
-        $response = $this->get("/services/{$service->id}");
+        $response = $this->get(route('services.show', ['service' => $service->id]));
 
         $response->assertOk();
         $relatedIds = $response->viewData('relatedServices')->pluck('id');
@@ -103,7 +103,7 @@ class ServiceControllerTest extends TestCase
         $specialist = \App\Models\Specialist::factory()->create();
         $service->specialists()->attach($specialist->id);
 
-        $response = $this->actingAs($user)->getJson("/bookings/services/{$service->id}/specialists");
+        $response = $this->actingAs($user)->getJson(route('bookings.service-specialists', ['service' => $service->id]));
 
         $response->assertOk();
         $ids = collect($response->json())->pluck('id');
@@ -117,7 +117,7 @@ class ServiceControllerTest extends TestCase
         // Regression/documentation guard: this asserts the CURRENT (broken) behavior so a
         // future fix to ServiceController::favorites() is a visible, deliberate change to
         // this test, not a silent behavior shift nobody notices.
-        $response = $this->actingAs($user)->get('/favorites');
+        $response = $this->actingAs($user)->get(route('favorites.index'));
 
         $response->assertStatus(500);
     }
@@ -129,7 +129,7 @@ class ServiceControllerTest extends TestCase
         // Regression/documentation guard for the route-shadowing issue described in this
         // class's docblock: /services/{service} (registered earlier) intercepts this request
         // before /services/search (registered later) is ever reached.
-        $response = $this->actingAs($user)->get('/services/search');
+        $response = $this->actingAs($user)->get(route('services.index').'/search');
 
         $response->assertStatus(404);
     }

@@ -26,7 +26,7 @@ class SpecialistControllerTest extends TestCase
         Specialist::factory()->create(['name' => 'سارا احمدی']);
         Specialist::factory()->create(['name' => 'مریم کریمی']);
 
-        $response = $this->actingAs($this->user)->getJson('/specialists/search?name=احمدی');
+        $response = $this->actingAs($this->user)->getJson(route('specialists.search', ['name' => 'احمدی']));
 
         $response->assertOk();
         $this->assertSame(1, $response->json('total'));
@@ -39,7 +39,7 @@ class SpecialistControllerTest extends TestCase
         $matching->services()->attach($service->id);
         Specialist::factory()->create(); // unrelated
 
-        $response = $this->actingAs($this->user)->getJson("/specialists/search?service_id={$service->id}");
+        $response = $this->actingAs($this->user)->getJson(route('specialists.search', ['service_id' => $service->id]));
 
         $response->assertOk();
         $this->assertSame(1, $response->json('total'));
@@ -51,7 +51,7 @@ class SpecialistControllerTest extends TestCase
         $deleted = Specialist::factory()->create();
         $deleted->delete();
 
-        $response = $this->actingAs($this->user)->getJson('/specialists/search');
+        $response = $this->actingAs($this->user)->getJson(route('specialists.search'));
 
         $this->assertSame(1, $response->json('total'));
     }
@@ -63,7 +63,7 @@ class SpecialistControllerTest extends TestCase
         $highRated = Specialist::factory()->create();
         Booking::factory()->create(['specialist_id' => $highRated->id, 'rating' => 5]);
 
-        $response = $this->actingAs($this->user)->getJson('/specialists/search?sort=rating&direction=desc');
+        $response = $this->actingAs($this->user)->getJson(route('specialists.search', ['sort' => 'rating', 'direction' => 'desc']));
 
         $ids = collect($response->json('data'))->pluck('id');
         $this->assertSame($highRated->id, $ids->first());
@@ -76,7 +76,7 @@ class SpecialistControllerTest extends TestCase
         $specialist->services()->attach($service->id);
         Booking::factory()->create(['specialist_id' => $specialist->id, 'status' => 'completed']);
 
-        $response = $this->actingAs($this->user)->getJson("/specialists/by-service/{$service->id}");
+        $response = $this->actingAs($this->user)->getJson(route('specialists.by-service', ['service' => $service->id]));
 
         $response->assertOk();
         $data = collect($response->json('data'));
@@ -92,7 +92,7 @@ class SpecialistControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson("/specialists/{$specialist->id}/available-slots/".now()->addDays(2)->format('Y-m-d'));
+        $response = $this->actingAs($this->user)->getJson(route('specialists.available-slots', ['specialist' => $specialist->id, 'date' => now()->addDays(2)->format('Y-m-d')]));
 
         $response->assertOk();
         $this->assertArrayHasKey('available_slots', $response->json());
@@ -102,7 +102,7 @@ class SpecialistControllerTest extends TestCase
     {
         $specialist = Specialist::factory()->create();
 
-        $response = $this->actingAs($this->user)->getJson("/specialists/{$specialist->id}/availability?year=".now()->year.'&month='.now()->month);
+        $response = $this->actingAs($this->user)->getJson(route('specialists.availability', ['specialist' => $specialist->id, 'year' => now()->year, 'month' => now()->month]));
 
         $response->assertOk();
         $response->assertJsonStructure(['specialist', 'availability', 'year', 'month']);
@@ -131,7 +131,7 @@ class SpecialistControllerTest extends TestCase
             'status' => 'completed',
         ]);
 
-        $response = $this->actingAs($this->user)->getJson("/specialists/{$specialist->id}");
+        $response = $this->actingAs($this->user)->getJson(route('specialists.show', ['specialist' => $specialist->id]));
 
         $response->assertOk();
         $data = $response->json();
@@ -149,6 +149,6 @@ class SpecialistControllerTest extends TestCase
         // soft-deleted rows entirely — so this already 404s at the routing layer before the
         // controller's own explicit `if ($specialist->deleted_at) abort(404);` check would
         // ever run for a normal (non-withTrashed) lookup.
-        $this->actingAs($this->user)->getJson("/specialists/{$specialist->id}")->assertStatus(404);
+        $this->actingAs($this->user)->getJson(route('specialists.show', ['specialist' => $specialist->id]))->assertStatus(404);
     }
 }
