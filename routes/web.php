@@ -14,6 +14,17 @@ Route::prefix('s/{salon_slug}')->middleware(['salon.resolve'])->group(function (
     require __DIR__.'/web/public-specialists.php';
     // ⭐ Customer identity redesign (confirmed 2026-08-30).
     require __DIR__.'/salon-auth.php';
+    // ⭐ Fix (found sweeping the last of the /s/{slug} test failures): reviews.create/store/
+    // thank-you were placed in the authenticated-customer group below by an earlier commit
+    // (4b-3), on the mistaken assumption that they "require an authenticated customer" — but
+    // ReviewController::create()/store() only ever check auth()->check() conditionally
+    // (`if (auth()->check() && $booking->user_id !== auth()->id())`), because the real flow is a
+    // guest clicking a one-time ReviewToken link from an SMS after their appointment, almost
+    // never logged in at that moment. Wrapping these in ['auth', 'verified', 'salon.customer']
+    // silently broke that entire flow — every such click redirected straight to the login page
+    // instead of the review form. They belong here, alongside the other genuinely
+    // guest-reachable routes, not in the authenticated block below.
+    require __DIR__.'/web/reviews.php';
 
     // ⭐ Commit 4b-2: moved once the customer-identity redesign made "logged in" mean "logged
     // in as a customer of THIS salon" — 'salon.customer' (EnsureCustomerBelongsToSalon) closes
@@ -27,9 +38,6 @@ Route::prefix('s/{salon_slug}')->middleware(['salon.resolve'])->group(function (
         require __DIR__.'/web/loyalty.php';
         require __DIR__.'/web/security.php';
         require __DIR__.'/web/wallet.php';
-        // ⭐ Commit 4b-3: only the write routes (create/store/thank-you) — reviews.specialist
-        // (read) moved to public-specialists.php above.
-        require __DIR__.'/web/reviews.php';
     });
 });
 
