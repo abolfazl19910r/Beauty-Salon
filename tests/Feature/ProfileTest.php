@@ -16,7 +16,7 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/profile');
+            ->get(route('profile.show'));
 
         $response->assertOk();
     }
@@ -25,7 +25,7 @@ class ProfileTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->get('/profile/edit');
+        $response = $this->actingAs($user)->get(route('profile.edit'));
 
         $response->assertOk();
     }
@@ -36,7 +36,7 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->patch('/profile/update', [
+            ->patch(route('profile.update'), [
                 'name' => 'Test User',
             ]);
 
@@ -55,8 +55,8 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->from('/profile/edit')
-            ->patch('/profile/update', ['name' => '']);
+            ->from(route('profile.edit'))
+            ->patch(route('profile.update'), ['name' => '']);
 
         $response->assertSessionHasErrors('name');
     }
@@ -67,12 +67,15 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->delete('/profile', [
+            ->delete(route('profile.destroy'), [
                 'password' => 'password',
             ]);
 
         $response
             ->assertSessionHasNoErrors()
+            // ⭐ Account deletion redirects to the true global root, not the salon home — makes
+            // sense, since after Auth::logout() + $user->delete() there's no salon context left
+            // to send them back to.
             ->assertRedirect('/');
 
         $this->assertGuest();
@@ -85,14 +88,14 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->from('/profile')
-            ->delete('/profile', [
+            ->from(route('profile.show'))
+            ->delete(route('profile.destroy'), [
                 'password' => 'wrong-password',
             ]);
 
         $response
             ->assertSessionHasErrorsIn('userDeletion', 'password')
-            ->assertRedirect('/profile');
+            ->assertRedirect(route('profile.show'));
 
         $this->assertNotNull($user->fresh());
     }

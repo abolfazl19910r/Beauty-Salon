@@ -36,7 +36,7 @@ class PaymentControllerTest extends TestCase
         $user = User::factory()->create();
         $booking = $this->makeBooking($user, ['prepayment_amount' => 0, 'discount_code' => 'FULL100']);
 
-        $response = $this->actingAs($user)->post("/payment/{$booking->id}/process");
+        $response = $this->actingAs($user)->post(route('payment.process', $booking));
 
         $response->assertRedirect(route('bookings.success', ['id' => $booking->id]));
         $this->assertSame('paid', $booking->fresh()->payment_status);
@@ -51,7 +51,7 @@ class PaymentControllerTest extends TestCase
         $user = User::factory()->create();
         $booking = $this->makeBooking($user, ['prepayment_amount' => 0]);
 
-        $response = $this->actingAs($user)->post("/payment/{$booking->id}/process");
+        $response = $this->actingAs($user)->post(route('payment.process', $booking));
 
         $this->assertNotNull($response);
         $response->assertRedirect();
@@ -62,7 +62,7 @@ class PaymentControllerTest extends TestCase
         $user = User::factory()->create();
         $booking = $this->makeBooking($user, ['payment_status' => 'paid']);
 
-        $response = $this->actingAs($user)->post("/payment/{$booking->id}/process");
+        $response = $this->actingAs($user)->post(route('payment.process', $booking));
 
         $response->assertRedirect(route('payment.result'));
     }
@@ -73,7 +73,7 @@ class PaymentControllerTest extends TestCase
         $otherUser = User::factory()->create();
         $booking = $this->makeBooking($otherUser);
 
-        $response = $this->actingAs($user)->post("/payment/{$booking->id}/process");
+        $response = $this->actingAs($user)->post(route('payment.process', $booking));
 
         $response->assertForbidden();
     }
@@ -90,7 +90,7 @@ class PaymentControllerTest extends TestCase
         $user = User::factory()->create();
         $booking = $this->makeBooking($user);
 
-        $response = $this->actingAs($user)->post("/payment/{$booking->id}/process");
+        $response = $this->actingAs($user)->post(route('payment.process', $booking));
 
         $response->assertRedirect();
         $this->assertStringContainsString('AUTH123', $response->headers->get('Location'));
@@ -104,7 +104,7 @@ class PaymentControllerTest extends TestCase
         $user = User::factory()->create();
         $booking = $this->makeBooking($user);
 
-        $response = $this->actingAs($user)->from("/payment/{$booking->id}")->post("/payment/{$booking->id}/process");
+        $response = $this->actingAs($user)->from(route('payment.show', $booking))->post(route('payment.process', $booking));
 
         $response->assertSessionHas('error');
         $this->assertSame('unpaid', $booking->fresh()->payment_status);
@@ -120,7 +120,7 @@ class PaymentControllerTest extends TestCase
         $wallet->update(['balance' => 100000]);
         $booking = $this->makeBooking($user, ['prepayment_amount' => 60000]);
 
-        $response = $this->actingAs($user)->post("/payment/{$booking->id}/wallet", [
+        $response = $this->actingAs($user)->post(route('payment.wallet', $booking), [
             'use_wallet' => true,
             'wallet_amount' => 60000,
         ]);
@@ -138,7 +138,7 @@ class PaymentControllerTest extends TestCase
         $wallet->update(['balance' => 500000]); // far more than the booking needs
         $booking = $this->makeBooking($user, ['prepayment_amount' => 60000]);
 
-        $this->actingAs($user)->post("/payment/{$booking->id}/wallet", [
+        $this->actingAs($user)->post(route('payment.wallet', $booking), [
             'use_wallet' => true,
             'wallet_amount' => 500000,
         ]);
@@ -155,7 +155,7 @@ class PaymentControllerTest extends TestCase
         $wallet->update(['balance' => 20000]);
         $booking = $this->makeBooking($user, ['prepayment_amount' => 60000]);
 
-        $this->actingAs($user)->post("/payment/{$booking->id}/wallet", [
+        $this->actingAs($user)->post(route('payment.wallet', $booking), [
             'use_wallet' => true,
             'wallet_amount' => 20000,
         ]);
@@ -172,7 +172,7 @@ class PaymentControllerTest extends TestCase
         $wallet->update(['balance' => 20000]);
         $booking = $this->makeBooking($user, ['prepayment_amount' => 60000]);
 
-        $this->actingAs($user)->from("/payment/{$booking->id}")->post("/payment/{$booking->id}/wallet", [
+        $this->actingAs($user)->from(route('payment.show', $booking))->post(route('payment.wallet', $booking), [
             'use_wallet' => true,
             'wallet_amount' => 20000,
         ]);
@@ -190,7 +190,7 @@ class PaymentControllerTest extends TestCase
         $wallet->update(['balance' => 100000]);
         $booking = $this->makeBooking($user, ['payment_status' => 'paid']);
 
-        $response = $this->actingAs($user)->post("/payment/{$booking->id}/wallet", [
+        $response = $this->actingAs($user)->post(route('payment.wallet', $booking), [
             'use_wallet' => true,
             'wallet_amount' => 60000,
         ]);
