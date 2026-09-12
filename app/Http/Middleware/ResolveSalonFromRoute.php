@@ -45,6 +45,28 @@ class ResolveSalonFromRoute
         app(CurrentSalon::class)->set($salon);
         URL::defaults(['salon_slug' => $salon->slug]);
 
+        // ⭐ Fix (real, severe bug — confirmed with a from-scratch reproduction, not just by
+        // reading code): Laravel's ControllerDispatcher maps a route's resolved parameters to
+        // controller-method arguments POSITIONALLY (`array_values($parameters)` + a spread call),
+        // not by name. Before this fix, `salon_slug` stayed in $route->parameters() as the FIRST
+        // entry (URI segment order) for the lifetime of the request. Any controller/closure under
+        // /s/{salon_slug} that declares FEWER parameters than the route captures — which is nearly
+        // every one of them, since none of them actually want $salon_slug injected (CurrentSalon
+        // is how the resolved salon is meant to be accessed) — silently received the WRONG value:
+        // the salon slug string got bound to that method's first (and often only) parameter by
+        // position, while the real, correctly-implicit-bound model (e.g. a `$transaction`) was
+        // computed correctly right up until this exact moment and then silently discarded.
+        // Symptom actually observed: `UserWalletController::showTransaction(): Argument #1
+        // ($transaction) must be of type App\Models\UserWalletTransaction, string given` — even
+        // though the DEBUG trace confirmed the correct model was still sitting in
+        // $route->parameters()['transaction'] one middleware earlier. Root cause affects any
+        // controller method under this prefix that takes fewer parameters than the route defines,
+        // not just this one call site — this is the single, correct place to fix it, since
+        // 'salon_slug' is set here and nothing downstream (verified: no controller method
+        // anywhere declares a $salon_slug/$salonSlug parameter) ever needs it as an actual
+        // dispatch argument.
+        $request->route()->forgetParameter('salon_slug');
+
         return $next($request);
     }
 }
