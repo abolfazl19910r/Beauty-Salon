@@ -7,6 +7,7 @@ use App\Services\SMSService;
 use App\Support\CurrentSalon;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL;
 use Mockery;
 
 abstract class TestCase extends BaseTestCase
@@ -62,6 +63,21 @@ abstract class TestCase extends BaseTestCase
             );
 
             $this->app->make(CurrentSalon::class)->set($defaultSalon);
+
+            // ⭐ Same root cause, the route-helper half of it (found by actually running the full
+            // suite, not just reading code): for a real HTTP request, ResolveSalonFromRoute sets
+            // URL::defaults(['salon_slug' => ...]) so every existing route('wallet.index') /
+            // route('security.dashboard') / route('home') call (all now under /s/{salon_slug})
+            // keeps working without being rewritten. But that middleware only runs once an actual
+            // request reaches it — a test that calls route('...') to build the URL for its FIRST
+            // request in that test method never triggers it, so route() fails immediately with
+            // "Missing required parameter: salon_slug". This was the single largest category of
+            // failures in the whole suite (~80 test methods across ~16 files) once every other gap
+            // was fixed — all of them pre-dating the /s/{slug} route migration, none of them
+            // SaaS-specific in what they're actually testing. Setting the same default here that
+            // ResolveSalonFromRoute would have set keeps them working exactly as before, the same
+            // way binding CurrentSalon above already does for the model layer.
+            URL::defaults(['salon_slug' => $defaultSalon->slug]);
         }
     }
 }
