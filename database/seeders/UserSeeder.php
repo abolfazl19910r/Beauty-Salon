@@ -22,7 +22,7 @@ class UserSeeder extends Seeder
         // EnsureSuperAdmin/EnsureAdminSalonActive: both bypass entirely on hasRole('super-admin')
         // rather than resolving a salon for them).
         $superAdmin = User::firstOrCreate(
-            ['phone' => '09399999999'],
+            ['phone' => '09399717435'],
             [
                 'name' => 'سوپر ادمین (تست)',
                 'password' => Hash::make('superadmin'),
@@ -36,7 +36,7 @@ class UserSeeder extends Seeder
         }
 
         $admin = User::firstOrCreate(
-            ['phone' => '09399717435'],
+            ['phone' => '09392520108'],
             [
                 'name' => 'مدیر سیستم',
                 'password' => Hash::make('admin'),

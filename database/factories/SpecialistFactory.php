@@ -13,7 +13,10 @@ class SpecialistFactory extends Factory
 
     public function definition(): array
     {
-        $user = User::factory()->create();
+        $user = User::factory()->state([
+            'user_type' => 'staff',
+            'salon_id' => null,
+        ])->create();
 
         $specialistRole = Role::where('name', 'specialist')->first();
         if ($specialistRole) {
