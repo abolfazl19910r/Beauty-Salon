@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
-import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig({
@@ -13,9 +12,6 @@ export default defineConfig({
             ],
             refresh: true,
         }),
-        react({
-            include: '**/*.jsx'
-        })
     ],
     resolve: {
         alias: {
@@ -28,15 +24,7 @@ export default defineConfig({
     },
     optimizeDeps: {
         include: [
-            'react',
-            'react-dom',
-            '@headlessui/react',
-            '@heroicons/react',
-            'lucide-react',
-            'recharts',
-            'axios',
-            'clsx',
-            'tailwind-merge'
+            'axios'
         ]
     },
     build: {

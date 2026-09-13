@@ -1,32 +1,9 @@
 import './bootstrap';
-import { createRoot } from 'react-dom/client';
-import React from 'react';
 
-const LoadingComponent = () => (
-    <div className="flex items-center justify-center p-4">
-        <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-    </div>
-);
-
-const mountComponent = (elementId, importFn, getProps = () => ({})) => {
-    const element = document.getElementById(elementId);
-    if (!element) return;
-
-    importFn().then(({ default: Component }) => {
-        const root = createRoot(element);
-        root.render(
-            <React.StrictMode>
-                <React.Suspense fallback={<LoadingComponent />}>
-                    <Component {...getProps(element)} />
-                </React.Suspense>
-            </React.StrictMode>
-        );
-    }).catch(err => {
-        console.error(`Error mounting ${elementId}:`, err);
-    });
-};
-
-mountComponent(
-    'announcement-banner',
-    () => import('./Components/Announcement/AnnouncementBanner')
-);
+/**
+ * React removed from this project — every former .jsx component (including
+ * AnnouncementBanner, the last one this file used to mount) now has a Blade equivalent.
+ * Kept as the Vite entry point layouts/app.blade.php's @vite(['resources/js/app.jsx', ...])
+ * references, exactly like admin.jsx's own "kept as an entry point, no mount logic" state —
+ * do not re-add a React mount here; add plain JS/vanilla behavior instead.
+ */
