@@ -30,7 +30,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('salon_id')->nullable()->after('id')->constrained('salons')->nullOnDelete();
+            // ⭐ Fix (confirmed against a real MySQL/MariaDB server, not just SQLite — this
+            // project's whole test suite runs on SQLite and never enforces this): MySQL/MariaDB
+            // (error 1901: "Function or expression 'salon_id' cannot be used in the GENERATED
+            // ALWAYS AS clause") refuse to let a STORED generated column reference any column
+            // whose foreign key has an ON DELETE/ON UPDATE action that can modify its value
+            // out from under the generated computation (SET NULL, CASCADE, ...) — and
+            // customer_salon_phone_key below does exactly that with salon_id. Confirmed directly:
+            // the identical generated-column expression succeeds the moment the FK drops
+            // nullOnDelete() for a plain RESTRICT (the schema default with no explicit onDelete
+            // clause). RESTRICT is also the semantically correct choice here regardless of this
+            // constraint — a salon with real customer accounts on it should never be hard-deleted
+            // out from under them in the first place.
+            $table->foreignId('salon_id')->nullable()->after('id')->constrained('salons');
             $table->enum('user_type', ['staff', 'customer'])->default('customer')->after('salon_id');
         });
 

@@ -24,8 +24,21 @@ return new class extends Migration
             $table->unsignedInteger('max_specialists_count')->default(0); // 0 = هیچ
             $table->json('module_permissions')->nullable();
             $table->enum('subscription_type', ['1m', '3m', '6m', '12m']);
-            $table->timestamp('subscription_started_at');
-            $table->timestamp('subscription_ends_at');
+            // ⭐ Fix (confirmed against a real deploy, not just SQLite — this project's whole
+            // test suite runs on SQLite, which never enforces this): on MySQL/MariaDB, a second
+            // (or later) TIMESTAMP NOT NULL column with no explicit DEFAULT in the same CREATE
+            // TABLE can get an implicit '0000-00-00 00:00:00' default attempted for it — the
+            // first eligible TIMESTAMP column traditionally gets DEFAULT CURRENT_TIMESTAMP
+            // instead, which is why subscription_started_at (declared first) was fine while
+            // subscription_ends_at (declared second) failed with "SQLSTATE[42000]: ... 1067
+            // Invalid default value for 'subscription_ends_at'" the moment strict/NO_ZERO_DATE
+            // mode was in effect on the target server. Both columns are always set explicitly by
+            // the application (SuperAdminService::createSalonWithAdmin(), and the backfill
+            // migration below) — nullable() here only avoids MySQL/MariaDB's implicit-default
+            // machinery at CREATE TABLE time and never actually results in a null value in
+            // practice.
+            $table->timestamp('subscription_started_at')->nullable();
+            $table->timestamp('subscription_ends_at')->nullable();
             $table->boolean('is_suspended')->default(false);
             // سالن سیستم (پیش‌فرض، id=1) هرگز نباید تعلیق/حذف بشه — چک در SuperAdminController،
             // نه اینجا؛ این ستون فقط پرچم ساده‌ی تعلیق دستی توسط سوپر ادمینه.
