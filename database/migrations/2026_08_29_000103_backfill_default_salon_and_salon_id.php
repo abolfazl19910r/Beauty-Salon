@@ -15,6 +15,19 @@ use Illuminate\Support\Facades\Schema;
  * max_specialists_count for the default salon is set to whatever the CURRENT specialist count
  * already is (plus headroom) rather than a fixed guess — so existing production data can never
  * end up already over its own quota the instant this ships.
+ *
+ * ⚠️ MySQL fix: the previous version of this migration called
+ *     $table->foreignId('salon_id')->nullable(false)->change();
+ * directly on a column that already participates in the `bookings_salon_id_foreign` FK
+ * (created by migration 2026_08_29_000102_add_salon_id_to_owned_tables). MySQL/MariaDB refuses
+ * any ALTER TABLE … MODIFY COLUMN on a column that is part of a FK and raises
+ *     SQLSTATE[HY000]: General error: 1832 Cannot change column 'salon_id':
+ *     used in a foreign key constraint 'bookings_salon_id_foreign'
+ * SQLite (used by the test suite) does not enforce this, so the bug only surfaces on a real
+ * MySQL deploy. Fix: for every affected table, drop the FK first, MODIFY the column to NOT
+ * NULL, then re-create the FK with the same ON DELETE CASCADE semantics — done inside one
+ * Schema::table closure so Laravel issues the three ALTER statements sequentially against
+ * the same connection. The same fix is mirrored in down() for symmetry.
  */
 return new class extends Migration
 {
@@ -56,14 +69,28 @@ return new class extends Migration
             DB::table($tableName)->whereNull('salon_id')->update(['salon_id' => $defaultSalonId]);
         }
 
+        // ⚠️ MySQL: نمی‌توان ستونی که در یک FK شرکت دارد را با MODIFY COLUMN تغییر داد
+        //    (خطای 1832). ابتدا FK را دراپ می‌کنیم، ستون را NOT NULL می‌کنیم، سپس FK را
+        //    با همان semantics قبلی (ON DELETE CASCADE) دوباره می‌سازیم.
         foreach (self::TABLES as $tableName) {
+            Schema::table($tableName, function (Blueprint $table) {
+                $table->dropForeign(['salon_id']);
+            });
+
             Schema::table($tableName, function (Blueprint $table) {
                 $table->foreignId('salon_id')->nullable(false)->change();
             });
+
+            Schema::table($tableName, function (Blueprint $table) {
+                $table->foreign('salon_id')
+                    ->references('id')
+                    ->on('salons')
+                    ->cascadeOnDelete();
+            });
         }
 
-        // هر کاربر is_admin=true فعلی، مالک (owner) سالن پیش‌فرضه — بدون این محدودیت که سوپر
-        // ادمین برای سالن‌های بعدی اعمال می‌کنه (حداکثر یک owner)، چون این‌ها دادهٔ قدیمی‌ان،
+        // هر کاربر is_admin=true فعلی، مالک (owner) سالن پیش‌فرض است — بدون این محدودیت که سوپر
+        // ادمین برای سالن‌های بعدی اعمال می‌کنه (حداکثر یک owner)، چون این‌ها دادهٔ قدیمی‌اند،
         // نه چیزی که SuperAdminService ساخته باشه.
         $existingAdminIds = DB::table('users')->where('is_admin', true)->pluck('id');
 
@@ -83,9 +110,21 @@ return new class extends Migration
 
     public function down(): void
     {
+        // همان الگوی up() — ابتدا FK را دراپ کن، ستون را به nullable تغییر بده، سپس FK را بازسازی کن.
         foreach (self::TABLES as $tableName) {
             Schema::table($tableName, function (Blueprint $table) {
+                $table->dropForeign(['salon_id']);
+            });
+
+            Schema::table($tableName, function (Blueprint $table) {
                 $table->foreignId('salon_id')->nullable()->change();
+            });
+
+            Schema::table($tableName, function (Blueprint $table) {
+                $table->foreign('salon_id')
+                    ->references('id')
+                    ->on('salons')
+                    ->cascadeOnDelete();
             });
         }
 
