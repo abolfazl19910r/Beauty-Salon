@@ -73,10 +73,14 @@ class ProfileTest extends TestCase
 
         $response
             ->assertSessionHasNoErrors()
-            // ⭐ Account deletion redirects to the true global root, not the salon home — makes
-            // sense, since after Auth::logout() + $user->delete() there's no salon context left
-            // to send them back to.
-            ->assertRedirect('/');
+            // ⭐ Correction of an earlier, wrong assumption: '/' is NOT actually a registered
+            // route in this app (every '/' lives under some prefix — /s/{slug}/ for the public
+            // homepage, /admin for the admin dashboard) — the previous version of this comment
+            // reasoned that redirecting there "made sense" without checking that the route
+            // itself resolves at all. ProfileController::destroy() now redirects to
+            // route('login') instead (same fix, same reasoning, as
+            // AuthenticatedSessionController::destroy()).
+            ->assertRedirect(route('login'));
 
         $this->assertGuest();
         $this->assertNull($user->fresh());

@@ -183,7 +183,9 @@ class AuthResendAndEdgeCaseTest extends TestCase
 
         $response = $this->actingAs($user)->post('/logout');
 
-        $response->assertRedirect('/');
+        // ⭐ Fix: '/' isn't a registered route in this app — destroy() now redirects to
+        // route('login') instead (see AuthenticatedSessionController::destroy()).
+        $response->assertRedirect(route('login'));
         $this->assertGuest();
     }
 }

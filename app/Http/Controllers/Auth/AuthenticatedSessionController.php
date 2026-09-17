@@ -158,8 +158,8 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/')
-            ->with('success', 'با موفقیت خارج شدید.');
+		return redirect()->route('login')
+			->with('success', 'با موفقیت خارج شدید.');
     }
 
     protected function redirectPath(): string

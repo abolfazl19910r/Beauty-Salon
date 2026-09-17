@@ -96,7 +96,11 @@ class AuthenticationTest extends TestCase
 
         $response = $this->actingAs($user)->post('/logout');
 
-        $response->assertRedirect('/');
+        // ⭐ Fix: destroy() used to redirect('/') — a URL with no matching route at all in this
+        // app (every '/' route lives under some prefix: /s/{slug}/ for the public homepage,
+        // /admin for the admin dashboard); visiting it after logout 404'd. Now redirects to the
+        // real global route('login') instead.
+        $response->assertRedirect(route('login'));
         $this->assertGuest();
     }
 }
