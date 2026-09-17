@@ -217,7 +217,114 @@
     </div>
 </header>
 
-<div id="announcement-banner" class="container mx-auto px-4 pt-24"></div>
+<div id="announcement-banner-mount" class="container mx-auto px-4 pt-24 space-y-3" dir="rtl"
+     data-announcements-url="{{ route('api.announcements.active') }}"></div>
+
+@push('scripts')
+<script>
+/**
+ * ⭐ Blade + vanilla JS replacement for the removed AnnouncementBanner.jsx — same behavior:
+ * fetches active announcements, renders by priority tier (>=100 red / >=71 orange / >=31 yellow /
+ * else blue), a dismiss button on everything except priority>=100 (critical announcements can't
+ * be dismissed), and persists dismissals in localStorage under the same 'dismissedAnnouncements'
+ * key the old component used (so a returning visitor's prior dismissals still apply).
+ */
+(function () {
+    var mount = document.getElementById('announcement-banner-mount');
+    if (!mount) return;
+
+    var TIERS = [
+        { min: 100, bg: 'bg-red-100 border-red-500', text: 'text-red-900', icon: 'text-red-600', path: 'M12 9v3.75m-9.303 3.376C1.83 17.502 2.626 19 3.928 19h16.144c1.302 0 2.098-1.498 1.231-2.874L13.06 4.75c-.65-1.05-2.17-1.05-2.82 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z' },
+        { min: 71, bg: 'bg-orange-100 border-orange-500', text: 'text-orange-900', icon: 'text-orange-600', path: 'M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z' },
+        { min: 31, bg: 'bg-yellow-100 border-yellow-500', text: 'text-yellow-900', icon: 'text-yellow-600', path: 'M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z' },
+        { min: -Infinity, bg: 'bg-blue-100 border-blue-500', text: 'text-blue-900', icon: 'text-blue-600', path: 'M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z' },
+    ];
+
+    var TYPE_LABELS = { general: '📢 عمومی', maintenance: '🔧 تعمیرات', promotion: '🎉 تبلیغاتی' };
+
+    function tierFor(priority) {
+        for (var i = 0; i < TIERS.length; i++) {
+            if (priority >= TIERS[i].min) return TIERS[i];
+        }
+        return TIERS[TIERS.length - 1];
+    }
+
+    function getDismissed() {
+        try {
+            return JSON.parse(localStorage.getItem('dismissedAnnouncements') || '[]');
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function dismiss(id) {
+        var dismissed = getDismissed();
+        dismissed.push(id);
+        localStorage.setItem('dismissedAnnouncements', JSON.stringify(dismissed));
+        var el = mount.querySelector('[data-announcement-id="' + id + '"]');
+        if (el) el.remove();
+    }
+
+    function render(announcements) {
+        var dismissed = getDismissed();
+        var visible = announcements.filter(function (a) { return dismissed.indexOf(a.id) === -1; });
+
+        visible.forEach(function (announcement) {
+            var tier = tierFor(announcement.priority);
+
+            var card = document.createElement('div');
+            card.className = tier.bg + ' border-r-4 rounded-lg p-4 shadow-md relative fade-in';
+            card.setAttribute('data-announcement-id', announcement.id);
+
+            var badge = '';
+            if (announcement.priority >= 31) {
+                var typeLabel = announcement.type && TYPE_LABELS[announcement.type]
+                    ? '<span class="inline-block px-2 py-1 bg-white bg-opacity-50 rounded text-xs">' + TYPE_LABELS[announcement.type] + '</span>'
+                    : '';
+                badge = '<div class="mt-2 flex items-center gap-2">'
+                    + '<span class="inline-block px-2 py-1 bg-white bg-opacity-50 rounded text-xs font-semibold">اولویت بالا: ' + announcement.priority + '</span>'
+                    + typeLabel
+                    + '</div>';
+            }
+
+            var dismissButton = '';
+            if (announcement.priority < 100) {
+                dismissButton = '<button type="button" class="announcement-dismiss ' + tier.icon + ' hover:opacity-70 transition-opacity flex-shrink-0" title="بستن این اطلاعیه">'
+                    + '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>'
+                    + '</button>';
+            }
+
+            card.innerHTML = '<div class="flex items-start gap-3">'
+                + '<svg class="h-6 w-6 ' + tier.icon + ' flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="' + tier.path + '" /></svg>'
+                + '<div class="flex-1">'
+                + '<h3 class="font-bold text-lg ' + tier.text + ' mb-1"></h3>'
+                + '<p class="' + tier.text + ' text-sm whitespace-pre-line"></p>'
+                + badge
+                + '</div>'
+                + dismissButton
+                + '</div>';
+
+            // title/content set via textContent (not innerHTML) so announcement text can never
+            // inject markup — the same trust boundary React's JSX escaping gave the old version.
+            card.querySelector('h3').textContent = announcement.title;
+            card.querySelector('p').textContent = announcement.content;
+
+            var closeBtn = card.querySelector('.announcement-dismiss');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function () { dismiss(announcement.id); });
+            }
+
+            mount.appendChild(card);
+        });
+    }
+
+    fetch(mount.dataset.announcementsUrl)
+        .then(function (response) { return response.ok ? response.json() : []; })
+        .then(render)
+        .catch(function (error) { console.error('Error fetching announcements:', error); });
+})();
+</script>
+@endpush
 
 <main class="container mx-auto px-4 pb-8 flex-grow fade-in @unless(trim($__env->yieldContent('full-width'))) pt-4 @endunless">
     @if(session('success'))

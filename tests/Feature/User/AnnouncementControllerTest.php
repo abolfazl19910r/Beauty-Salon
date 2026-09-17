@@ -30,7 +30,7 @@ class AnnouncementControllerTest extends TestCase
         Announcement::factory()->create(['published_at' => now()->addDay()]);
         Announcement::factory()->create(['expires_at' => now()->subDay()]);
 
-        $response = $this->getJson('/api/announcements/active');
+        $response = $this->getJson(route('api.announcements.active'));
 
         $response->assertOk();
         $response->assertJsonCount(1);
@@ -45,7 +45,7 @@ class AnnouncementControllerTest extends TestCase
             'expires_at' => null,
         ]);
 
-        $response = $this->getJson('/api/announcements/active');
+        $response = $this->getJson(route('api.announcements.active'));
 
         $response->assertOk();
         $response->assertJsonFragment(['id' => $announcement->id]);
@@ -56,7 +56,7 @@ class AnnouncementControllerTest extends TestCase
         $low = Announcement::factory()->create(['priority' => 1, 'published_at' => now()->subDays(2)]);
         $high = Announcement::factory()->create(['priority' => 10, 'published_at' => now()->subDay()]);
 
-        $response = $this->getJson('/api/announcements/active');
+        $response = $this->getJson(route('api.announcements.active'));
 
         $ids = collect($response->json())->pluck('id')->all();
         $this->assertSame([$high->id, $low->id], $ids);
@@ -67,7 +67,7 @@ class AnnouncementControllerTest extends TestCase
         Announcement::factory()->create(['priority' => 3]);
         $top = Announcement::factory()->create(['priority' => 9]);
 
-        $response = $this->getJson('/api/announcements/top');
+        $response = $this->getJson(route('api.announcements.top'));
 
         $response->assertOk();
         $response->assertJsonFragment(['id' => $top->id]);
@@ -83,7 +83,7 @@ class AnnouncementControllerTest extends TestCase
         // `{}` as present. In practice this endpoint has no current consumer.
         Announcement::factory()->create(['is_active' => false]);
 
-        $response = $this->getJson('/api/announcements/top');
+        $response = $this->getJson(route('api.announcements.top'));
 
         $response->assertOk();
         $this->assertSame([], $response->json());
@@ -93,7 +93,7 @@ class AnnouncementControllerTest extends TestCase
     {
         Announcement::factory()->count(3)->create();
 
-        $response = $this->getJson('/api/announcements');
+        $response = $this->getJson(route('api.announcements.index'));
 
         $response->assertOk();
         $response->assertJsonStructure(['data', 'current_page', 'total']);
@@ -103,7 +103,7 @@ class AnnouncementControllerTest extends TestCase
     {
         $announcement = Announcement::factory()->create();
 
-        $response = $this->getJson("/api/announcements/{$announcement->id}");
+        $response = $this->getJson(route('api.announcements.show', ['id' => $announcement->id]));
 
         $response->assertOk();
         $response->assertJsonFragment(['id' => $announcement->id]);
@@ -113,7 +113,7 @@ class AnnouncementControllerTest extends TestCase
     {
         $announcement = Announcement::factory()->create(['is_active' => false]);
 
-        $response = $this->getJson("/api/announcements/{$announcement->id}");
+        $response = $this->getJson(route('api.announcements.show', ['id' => $announcement->id]));
 
         $response->assertNotFound();
     }
@@ -122,7 +122,7 @@ class AnnouncementControllerTest extends TestCase
     {
         Announcement::factory()->create();
 
-        $this->getJson('/api/announcements/active')->assertOk();
-        $this->getJson('/api/announcements/top')->assertOk();
+        $this->getJson(route('api.announcements.active'))->assertOk();
+        $this->getJson(route('api.announcements.top'))->assertOk();
     }
 }
