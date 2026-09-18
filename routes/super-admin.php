@@ -23,4 +23,5 @@ Route::post('/salons', [SuperAdminController::class, 'store'])->name('salons.sto
 Route::get('/salons/{salon}/edit', [SuperAdminController::class, 'edit'])->name('salons.edit');
 Route::put('/salons/{salon}', [SuperAdminController::class, 'update'])->name('salons.update');
 Route::post('/salons/{salon}/renew', [SuperAdminController::class, 'renewSubscription'])->name('salons.renew');
+Route::get('/salons/{salon}/invoices', [SuperAdminController::class, 'invoices'])->name('salons.invoices');
 Route::post('/salons/{salon}/toggle-suspend', [SuperAdminController::class, 'toggleSuspend'])->name('salons.toggle-suspend');

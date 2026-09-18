@@ -5,8 +5,10 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SuperAdmin\StoreSalonRequest;
 use App\Http\Requests\SuperAdmin\UpdateSalonRequest;
+use App\Models\Invoice;
 use App\Models\Salon;
 use App\Models\Specialist;
+use App\Services\Payment\InvoiceService;
 use App\Services\SuperAdmin\SuperAdminService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,7 +26,10 @@ use Illuminate\View\View;
  */
 class SuperAdminController extends Controller
 {
-    public function __construct(protected readonly SuperAdminService $superAdminService) {}
+    public function __construct(
+        protected readonly SuperAdminService $superAdminService,
+        protected readonly InvoiceService $invoiceService,
+    ) {}
 
     public function dashboard(): View
     {
@@ -92,16 +97,36 @@ class SuperAdminController extends Controller
             ->with('success', 'اطلاعات سالن به‌روزرسانی شد.');
     }
 
+    /**
+     * ⭐ فاز ۲، محور «۱. پرداخت آنلاین و صورتحساب» — این تمدید دستی حالا هم در جدول `invoices`
+     * ثبت می‌شود (payment_method='manual') تا تاریخچه‌ی خرید/تمدید یکپارچه بماند، چه مسیر آنلاین
+     * چه دستی. منطق واقعی تمدید (ریاضی تاریخ) هنوز در SuperAdminService است؛ InvoiceService فقط
+     * آن را با ثبت فاکتور ترکیب می‌کند — به docblock خودِ InvoiceService نگاه کن.
+     */
     public function renewSubscription(Request $request, Salon $salon): RedirectResponse
     {
         $validated = $request->validate([
             'subscription_type' => ['required', 'in:1m,3m,6m,12m'],
         ]);
 
-        $this->superAdminService->renewSubscription($salon, $validated['subscription_type']);
+        $this->invoiceService->recordManualRenewal($salon, $validated['subscription_type'], auth()->user());
 
         return redirect()->route('superadmin.salons.index')
             ->with('success', "اشتراک سالن «{$salon->name}» تمدید شد.");
+    }
+
+    public function invoices(Salon $salon): View
+    {
+        // ⭐ همان الگوی مستندشده در SuperAdminService::updateSalon()/remainingSpecialistQuota():
+        // global scope BelongsToSalon با هر CurrentSalon دیگری که ممکن است ست شده باشد AND
+        // می‌شود، پس یک withoutGlobalScope صریح لازم است تا این همیشه واقعاً فاکتورهای همین
+        // سالن را برگرداند، صرف‌نظر از این‌که CurrentSalon چه بوده.
+        $invoices = Invoice::withoutGlobalScope('salon')
+            ->where('salon_id', $salon->id)
+            ->orderByDesc('created_at')
+            ->paginate(20);
+
+        return view('superadmin.salons.invoices', compact('salon', 'invoices'));
     }
 
     public function toggleSuspend(Salon $salon): RedirectResponse
