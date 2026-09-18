@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -15,6 +16,25 @@ class AuthenticationTest extends TestCase
         $response = $this->get('/login');
 
         $response->assertStatus(200);
+    }
+
+    /**
+     * ⭐ Regression (session 7): RedirectIfAuthenticated (the 'guest' middleware guarding
+     * GET /login) used to fall straight to the generic is_admin check without ever asking
+     * hasRole('super-admin') first — so an already-authenticated super-admin (who, like every
+     * seeded/real super-admin, also has is_admin=true) revisiting /login landed on
+     * '/admin/dashboard' instead of '/superadmin/dashboard'. This must mirror
+     * AuthenticatedSessionController::redirectPath(), which already gets this right.
+     */
+    public function test_already_authenticated_super_admin_visiting_login_is_sent_to_superadmin_panel(): void
+    {
+        $superAdmin = User::factory()->create(['is_admin' => true]);
+        $superAdminRole = Role::firstOrCreate(['name' => 'super-admin'], ['label' => 'سوپر ادمین']);
+        $superAdmin->assignRole($superAdminRole);
+
+        $response = $this->actingAs($superAdmin)->get('/login');
+
+        $response->assertRedirect('/superadmin/dashboard');
     }
 
     public function test_users_with_correct_password_are_sent_to_otp_verification_not_logged_in_yet(): void
