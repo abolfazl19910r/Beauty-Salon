@@ -114,7 +114,15 @@ class AuthenticatedSessionController extends Controller
 
             $this->securityLogService->logLogin(true, $user->phone, $user);
 
-            return redirect()->intended($this->redirectPath())
+            // ⭐ باگ ۶ (گزارش‌شده ۲۰۲۶-۰۹-۱۸، رفع‌شده ۲۰۲۶-۰۹-۱۸ب): redirect()->intended() اگر
+            // در session مقدار 'url.intended' از قبل ذخیره شده باشد (دقیقاً همان چیزی که
+            // middleware auth هر بار کاربر لاگین‌نشده یک صفحه‌ی محافظت‌شده مثل
+            // /admin/dashboard را باز می‌کند، ذخیره می‌کند)، به همان آدرس می‌رود و
+            // redirectPath() را کاملاً نادیده می‌گیرد — حتی وقتی redirectPath() برای
+            // سوپر ادمین صحیح /superadmin/dashboard را برمی‌گرداند. این پروژه از اول یک
+            // سیستم ریدایرکت مبتنی‌بر-نقش دارد که با معنای «intended» در تناقض بنیادی است،
+            // پس مستقیم به redirectPath() می‌رویم و intended() را کنار می‌گذاریم.
+            return redirect()->to($this->redirectPath())
                 ->with('success', 'خوش آمدید!');
         }
 
