@@ -68,7 +68,10 @@ class AdminUserService
 
     public function syncRoles(User $user, array $roles): void
     {
-        $user->roles()->sync($this->filterAssignableRoles($data['roles'] ?? []));
+        // ⭐ Fix (session 7): was referencing an undefined $data variable instead of the
+        // $roles parameter — every call silently stripped ALL of the target user's roles
+        // regardless of what was submitted, since $data['roles'] ?? [] always resolved to [].
+        $user->roles()->sync($this->filterAssignableRoles($roles));
     }
 
 	private function filterAssignableRoles(array $roleIds): array
