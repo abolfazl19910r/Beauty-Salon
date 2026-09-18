@@ -21,6 +21,7 @@ class Salon extends Model
     protected $fillable = [
         'name',
         'slug',
+        'zarinpal_merchant_id',
         'max_specialists_count',
         'module_permissions',
         'subscription_type',
@@ -62,6 +63,15 @@ class Salon extends Model
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
+    }
+
+    /**
+     * ⭐ فاز ۲، محور «۱. پرداخت آنلاین و صورتحساب» — تاریخچه‌ی خرید/تمدید اشتراک این سالن
+     * (هم مسیر آنلاین زرین‌پال، هم تمدیدهای دستی سوپر ادمین). به InvoiceService نگاه کن.
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
     }
 
     /**

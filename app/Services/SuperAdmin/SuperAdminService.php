@@ -92,6 +92,13 @@ class SuperAdminService
             'name' => $data['name'],
             'max_specialists_count' => $data['max_specialists_count'],
             'module_permissions' => $data['module_permissions'] ?? null,
+            // ⭐ فاز ۲، مورد ۹ — array_key_exists (نه isset) عمداً: سوپر ادمین باید بتواند یک
+            // merchant_id قبلاً ثبت‌شده را با فرستادن مقدار خالی دوباره null کند (بازگشت به
+            // fallback سراسری)، نه اینکه مقدار قبلی برای همیشه بماند چون کلید خالی "ست‌نشده"
+            // به‌حساب بیاید.
+            'zarinpal_merchant_id' => array_key_exists('zarinpal_merchant_id', $data)
+                ? ($data['zarinpal_merchant_id'] ?: null)
+                : $salon->zarinpal_merchant_id,
         ]);
 
         return $salon;

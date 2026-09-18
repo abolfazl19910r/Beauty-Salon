@@ -110,6 +110,46 @@ class PaymentControllerTest extends TestCase
         $this->assertSame('unpaid', $booking->fresh()->payment_status);
     }
 
+    // ── مورد ۹ فاز ۲ («مرچنت آیدی مجزا برای هر سالن») ──────────────────────
+
+    public function test_process_uses_the_salons_own_merchant_id_when_set(): void
+    {
+        $salon = app(\App\Support\CurrentSalon::class)->get();
+        $salon->update(['zarinpal_merchant_id' => 'salon-specific-merchant']);
+
+        Http::fake([
+            '*request.json' => Http::response([
+                'data' => ['code' => 100, 'authority' => 'AUTH_SALON'],
+            ], 200),
+        ]);
+
+        $user = User::factory()->create();
+        $booking = $this->makeBooking($user);
+
+        $this->actingAs($user)->post(route('payment.process', $booking));
+
+        Http::assertSent(fn ($request) => $request['merchant_id'] === 'salon-specific-merchant');
+    }
+
+    public function test_process_falls_back_to_the_global_merchant_id_when_the_salon_has_none(): void
+    {
+        $salon = app(\App\Support\CurrentSalon::class)->get();
+        $this->assertNull($salon->zarinpal_merchant_id);
+
+        Http::fake([
+            '*request.json' => Http::response([
+                'data' => ['code' => 100, 'authority' => 'AUTH_GLOBAL'],
+            ], 200),
+        ]);
+
+        $user = User::factory()->create();
+        $booking = $this->makeBooking($user);
+
+        $this->actingAs($user)->post(route('payment.process', $booking));
+
+        Http::assertSent(fn ($request) => $request['merchant_id'] === config('services.zarinpal.merchant_id'));
+    }
+
     // ── processWithWallet() ──────────────────────────────────────────────
 
     public function test_full_wallet_payment_marks_the_booking_paid_without_touching_the_gateway(): void
