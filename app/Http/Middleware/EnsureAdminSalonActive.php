@@ -22,6 +22,20 @@ use Symfony\Component\HttpFoundation\Response;
  * salon) is treated the same as one whose salon is suspended or expired, rather than silently
  * falling through with no CurrentSalon bound, which would have let their queries run
  * completely unscoped.
+ *
+ * ⭐ فاز ۲، محور «۱. پرداخت آنلاین و صورتحساب» (تصمیم تأییدشده با ابوالفضل، ۲۰۲۶-۰۹-۱۹): قبل از
+ * این فیچر، هر دو حالت suspend دستی و انقضای تاریخ یکسان مدیریت می‌شدند — logout کامل + پیام
+ * «با پشتیبانی تماس بگیرید». این رفتار فیچر «تمدید آنلاین» را برای سالن *منقضی‌شده* عملاً
+ * غیرقابل‌استفاده می‌کرد، چون ادمین اصلاً نمی‌توانست به هیچ صفحه‌ای زیر /admin (از جمله صفحه‌ی
+ * تمدید) برسد تا تمدید کند.
+ *
+ * راه‌حل: این دو حالت را از هم جدا کردیم —
+ *   - `is_suspended` (اقدام دستی/آگاهانه‌ی سوپر ادمین): همان رفتار قبلی بدون تغییر — logout کامل.
+ *     تمدید آنلاین به‌درستی نمی‌تواند یک suspend دستی را دور بزند.
+ *   - فقط `subscription_ends_at` گذشته (و suspend نشده): به‌جای logout، فقط CurrentSalon ست
+ *     می‌شود و درخواست به‌جز مسیرهای `admin.billing.*` مسدود می‌شود (redirect به صفحه‌ی تمدید) —
+ *     یعنی ادمین می‌تواند وارد شود، وضعیت اشتراکش را ببیند و آنلاین تمدید کند، ولی نمی‌تواند به
+ *     هیچ بخش دیگری از پنل دسترسی داشته باشد تا وقتی واقعاً تمدید کند.
  */
 class EnsureAdminSalonActive
 {
@@ -39,7 +53,7 @@ class EnsureAdminSalonActive
 
         $salon = $user->salons()->first();
 
-        if (! $salon || $salon->is_suspended || $salon->subscription_ends_at->isPast()) {
+        if (! $salon || $salon->is_suspended) {
             auth()->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
@@ -50,6 +64,12 @@ class EnsureAdminSalonActive
         }
 
         app(CurrentSalon::class)->set($salon);
+
+        if ($salon->subscription_ends_at->isPast() && ! $request->routeIs('admin.billing.*')) {
+            return redirect()->route('admin.billing.index')->withErrors([
+                'subscription' => 'اشتراک سالن شما پایان یافته است. لطفاً ابتدا اشتراک را تمدید کنید.',
+            ]);
+        }
 
         return $next($request);
     }
