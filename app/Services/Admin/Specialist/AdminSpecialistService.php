@@ -2,6 +2,7 @@
 
 namespace App\Services\Admin\Specialist;
 
+use App\Exceptions\SpecialistQuotaExceededException;
 use App\Models\Specialist;
 use App\Models\User;
 use App\Support\CurrentSalon;
@@ -19,6 +20,26 @@ class AdminSpecialistService
         return DB::transaction(function () use ($validated, $rawCommissionRate) {
             $services = $validated['services'];
             unset($validated['services']);
+
+            // ⭐ باگ ۸ (گزارش‌شده ۲۰۲۶-۰۹-۱۸، رفع‌شده همان‌روز): تا پیش از این، هیچ‌جا سقف
+            // تعداد متخصص (max_specialists_count) واقعاً چک نمی‌شد — Specialist::create()
+            // بی‌قید-و-شرط صدا زده می‌شد. این متد داخل کانتکست پنل ادمین سالن اجرا می‌شود (نه
+            // سوپر ادمین)، پس CurrentSalon همیشه ست است. Specialist از BelongsToSalon استفاده
+            // می‌کند، یعنی Specialist::count() همین الان به‌صورت خودکار به همین سالن scope شده
+            // — نیازی به withoutGlobalScope نیست.
+            $salon = $this->currentSalon->get();
+            $currentCount = Specialist::count();
+
+            if ($currentCount >= $salon->max_specialists_count) {
+                throw SpecialistQuotaExceededException::quotaReached(
+                    'Specialist quota reached for salon.',
+                    [
+                        'salon_id' => $salon->id,
+                        'current_count' => $currentCount,
+                        'max_specialists_count' => $salon->max_specialists_count,
+                    ]
+                );
+            }
 
             $validated['phone'] = $this->normalizePhone($validated['phone']);
             $validated['commission_rate'] = $this->parseCommissionRate($rawCommissionRate);

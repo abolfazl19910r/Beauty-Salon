@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Specialist;
 
+use App\Exceptions\SpecialistQuotaExceededException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Specialist\StoreSpecialistRequest;
 use App\Http\Requests\Admin\Specialist\UpdateSpecialistRequest;
@@ -66,6 +67,8 @@ class AdminSpecialistController extends Controller
             return redirect()
                 ->route('admin.specialists.index')
                 ->with('success', $message);
+        } catch (SpecialistQuotaExceededException $e) {
+            return back()->withInput()->with('error', $e->getUserMessage());
         } catch (\Exception $e) {
             Log::error('Error storing specialist: '.$e->getMessage());
 
