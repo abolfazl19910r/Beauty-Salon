@@ -82,6 +82,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_a
     require __DIR__.'/admin/permissions.php';
     require __DIR__.'/admin/wallet.php';
     require __DIR__.'/admin/reviews.php';
+    require __DIR__.'/admin/billing.php';
 });
 
 // ⭐ Phase 1 SaaS multi-tenant (feat/saas-multi-tenant-salons, commit 4).
