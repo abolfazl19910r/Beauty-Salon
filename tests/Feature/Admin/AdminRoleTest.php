@@ -165,4 +165,41 @@ class AdminRoleTest extends TestCase
 
         $this->actingAs($user)->get('/admin/roles')->assertStatus(403);
     }
+
+    /**
+     * ⭐ باگ ۷ (گزارش‌شده ۲۰۲۶-۰۹-۱۸، رفع‌شده همان‌روز). مسیرهای escalation واقعی
+     * (assign/store/update با نقش super-admin) از قبل بسته بودند؛ نشتی واقعی این بود که
+     * index() نقش super-admin را به هر ادمین معمولی در جدول لیست نشان می‌داد، و show()
+     * اصلاً guardSuperRole() نداشت — یعنی یک ادمین معمولی می‌توانست مستقیماً آدرس نقش
+     * سوپر ادمین را باز کند و ببیند چه کسانی این نقش را دارند.
+     */
+    public function test_regular_admin_cannot_see_super_admin_role_in_index_or_show(): void
+    {
+        $superAdminRole = Role::firstOrCreate(['name' => 'super-admin'], ['label' => 'سوپر ادمین']);
+        Role::factory()->count(2)->create();
+
+        $indexResponse = $this->actingAs($this->admin)->get('/admin/roles');
+        $roleNames = $indexResponse->viewData('roles')->pluck('name')->all();
+        $this->assertNotContains('super-admin', $roleNames);
+
+        $showResponse = $this->actingAs($this->admin)->get('/admin/roles/'.$superAdminRole->id);
+        $showResponse->assertForbidden();
+    }
+
+    /**
+     * سوپر ادمین واقعی باید همچنان بتواند نقش خودش را در لیست و صفحه‌ی نمایش ببیند —
+     * فیلتر index() و guardSuperRole() هر دو فقط برای غیر-سوپر-ادمین‌ها اعمال می‌شوند.
+     */
+    public function test_super_admin_can_still_see_the_super_admin_role(): void
+    {
+        $superAdminUser = User::factory()->create(['is_admin' => true]);
+        $superAdminRole = Role::firstOrCreate(['name' => 'super-admin'], ['label' => 'سوپر ادمین']);
+        $superAdminUser->assignRole($superAdminRole);
+
+        $indexResponse = $this->actingAs($superAdminUser)->get('/admin/roles');
+        $roleNames = $indexResponse->viewData('roles')->pluck('name')->all();
+        $this->assertContains('super-admin', $roleNames);
+
+        $this->actingAs($superAdminUser)->get('/admin/roles/'.$superAdminRole->id)->assertOk();
+    }
 }
