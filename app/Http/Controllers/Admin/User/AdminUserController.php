@@ -44,14 +44,20 @@ class AdminUserController extends Controller
         }
 
         $users = $query->with('roles:id,name,label')->latest()->paginate(15);
-        $roles = Role::all();
+        $roles = Role::when(
+			! auth()->user()->hasRole('super-admin'),
+			fn ($q) => $q->where('name', '!=', 'super-admin')
+		)->get();
 
         return view('admin.users.index', compact('users', 'roles'));
     }
 
     public function create(): View
     {
-        $roles = Role::all();
+        $roles = Role::when(
+			! auth()->user()->hasRole('super-admin'),
+			fn ($q) => $q->where('name', '!=', 'super-admin')
+		)->get();
 
         return view('admin.users.create', compact('roles'));
     }
@@ -77,7 +83,10 @@ class AdminUserController extends Controller
 
     public function show(User $user): View
     {
-        $roles = Role::all();
+        $roles = Role::when(
+			! auth()->user()->hasRole('super-admin'),
+			fn ($q) => $q->where('name', '!=', 'super-admin')
+		)->get();
         $userRoles = $user->roles()->pluck('roles.id')->toArray();
         $bookings = $user->bookings()->with(['service', 'specialist'])->latest()->take(5)->get();
 
@@ -86,7 +95,10 @@ class AdminUserController extends Controller
 
     public function edit(User $user): View
     {
-        $roles = Role::all();
+        $roles = Role::when(
+			! auth()->user()->hasRole('super-admin'),
+			fn ($q) => $q->where('name', '!=', 'super-admin')
+		)->get();
         $userRoles = $user->roles()->pluck('roles.id')->toArray();
 
         return view('admin.users.edit', compact('user', 'roles', 'userRoles'));

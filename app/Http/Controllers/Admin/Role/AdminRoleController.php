@@ -77,6 +77,7 @@ class AdminRoleController extends Controller
 
     public function update(Request $request, Role $role): RedirectResponse
     {
+		$this->guardSuperRole($role);
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255|unique:roles,name,'.$role->id,
             'label' => 'required|string|max:255',
@@ -107,6 +108,7 @@ class AdminRoleController extends Controller
 
     public function destroy(Role $role): RedirectResponse
     {
+		$this->guardSuperRole($role);
         $role->users()->detach();
         $role->permissions()->detach();
 
@@ -118,6 +120,7 @@ class AdminRoleController extends Controller
 
     public function assignForm(Role $role): View
     {
+		$this->guardSuperRole($role);
         $users = User::whereDoesntHave('roles', function ($query) use ($role) {
             $query->where('role_id', $role->id);
         })->get();
@@ -127,6 +130,7 @@ class AdminRoleController extends Controller
 
     public function assign(Request $request, Role $role): RedirectResponse
     {
+		$this->guardSuperRole($role);
         $validator = Validator::make($request->all(), [
             'user_id' => 'required|exists:users,id',
         ], [
@@ -149,9 +153,19 @@ class AdminRoleController extends Controller
 
     public function removeUser(Role $role, User $user): RedirectResponse
     {
+		$this->guardSuperRole($role);
         $user->removeRole($role);
 
         return redirect()->route('admin.roles.show', $role)
             ->with('success', 'نقش با موفقیت از کاربر حذف شد.');
     }
+	
+	private function guardSuperRole(Role $role): void
+	{
+		abort_if(
+			$role->name === 'super-admin' && ! auth()->user()?->hasRole('super-admin'),
+			403,
+			'امکان مدیریت نقش سوپر ادمین از پنل ادمین وجود ندارد.'
+		);
+	}
 }

@@ -33,14 +33,6 @@ class AuthenticatedSessionController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        // ⭐ Customer identity redesign (confirmed 2026-08-30): this global login is for
-        // admin/specialist accounts only — customers sign in exclusively through their own
-        // salon's /s/{slug}/login (CustomerAuthenticatedController), which is a separate lookup
-        // scoped by salon_id. Restricting to user_type='staff' here isn't just tidiness: since a
-        // phone number can now legitimately belong to a DIFFERENT customer at every salon
-        // (unique per salon_id+phone, not globally), an unscoped lookup here would be genuinely
-        // ambiguous — first() would return whichever of those same-phone customer rows happened
-        // to be found, silently logging someone into the wrong salon's account.
         $user = User::where('phone', $credentials['phone'])->where('user_type', 'staff')->first();
 
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
@@ -166,9 +158,13 @@ class AuthenticatedSessionController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->hasRole('specialists') || $user->hasRole('specialist')) {
-            return '/my-dashboard';
-        }
+		if ($user->hasRole('super-admin')) {
+			return '/superadmin/dashboard';
+		}
+
+		if ($user->hasRole('specialists') || $user->hasRole('specialist')) {
+			return '/my-dashboard';
+		}
 
         if ($user->is_admin) {
             return RouteServiceProvider::HOME;
