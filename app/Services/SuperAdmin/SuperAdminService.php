@@ -7,7 +7,6 @@ use App\Models\Specialist;
 use App\Models\User;
 use App\Services\Admin\User\AdminUserService;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 /**
  * ⭐ Phase 1 SaaS multi-tenant (feat/saas-multi-tenant-salons, commit 5). See "⭐⭐ فیچر
@@ -68,7 +67,20 @@ class SuperAdminService
     {
         // ⭐ "کاهش سقف زیر تعداد فعلی ممنوع" — enforced here too (not just at the request-
         // validation layer) since this method could in principle be called from elsewhere.
-        $currentSpecialistCount = Specialist::where('salon_id', $salon->id)->count();
+        // ⭐ Bug found by actually running SalonManagementTest on real PHP (commit 8): a plain
+        // Specialist::where('salon_id', ...) still goes through BelongsToSalon's global 'salon'
+        // scope, which ANDs in app(CurrentSalon::class)->id() whenever it happens to be set to
+        // some OTHER salon (e.g. via the base TestCase's default binding, or any future code
+        // path that sets CurrentSalon before calling into this service) — the two salon_id
+        // filters can never both match, so the count silently comes back 0 and the "cannot
+        // lower quota below current specialist count" guard below never fires. In real
+        // production /superadmin requests this scope is never actually populated (EnsureSuperAdmin
+        // never calls CurrentSalon::set()), so this never broke production traffic — but the
+        // query itself was still wrong, and the same "global scope stacks with an explicit
+        // filter on the same column" footgun this project has hit before (WalletSetting,
+        // AdminWallet). withoutGlobalScope('salon') makes this explicitly cross-tenant, matching
+        // what a super admin operation actually is.
+        $currentSpecialistCount = Specialist::withoutGlobalScope('salon')->where('salon_id', $salon->id)->count();
 
         if ($data['max_specialists_count'] < $currentSpecialistCount) {
             throw new \InvalidArgumentException(
@@ -116,7 +128,8 @@ class SuperAdminService
 
     public function remainingSpecialistQuota(Salon $salon): int
     {
-        $current = Specialist::where('salon_id', $salon->id)->count();
+        // ⭐ Same fix as updateSalon() above — see that docblock.
+        $current = Specialist::withoutGlobalScope('salon')->where('salon_id', $salon->id)->count();
 
         return max(0, $salon->max_specialists_count - $current);
     }
