@@ -32,6 +32,9 @@ class PermissionSeeder extends Seeder
             ['name' => 'manage-roles', 'label' => 'مدیریت نقش‌ها', 'group' => 'تنظیمات', 'description' => 'مدیریت نقش‌ها و دسترسی‌ها'],
 
             ['name' => 'access_admin_panel', 'label' => 'دسترسی به پنل مدیریت', 'group' => 'تنظیمات', 'description' => 'دسترسی به پنل مدیریت سیستم'],
+
+            // ⭐ فاز ۲ SaaS، محور «۲. چند ادمین برای یک سالن».
+            ['name' => 'manage-wallet', 'label' => 'مدیریت کیف‌پول و امور مالی', 'group' => 'مالی', 'description' => 'دسترسی به کیف‌پول متخصصان، تسویه، برداشت وجه، و خرید/تمدید اشتراک سالن'],
         ];
 
         foreach ($permissions as $permission) {
@@ -67,6 +70,28 @@ class PermissionSeeder extends Seeder
                 'view-specialists',
             ])->get();
             $specialistRole->permissions()->sync($specialistPermissions->pluck('id'));
+        }
+
+        // ⭐ فاز ۲ SaaS، محور «۲. چند ادمین برای یک سالن» — منشی: فقط ثبت/مدیریت نوبت دستی و
+        // مشاهده‌ی موارد پایه؛ بدون مدیریت کاربران/ادمین‌ها، تنظیمات، یا مالی/کیف‌پول.
+        $staffRole = Role::where('name', 'staff')->first();
+        if ($staffRole) {
+            $staffPermissions = Permission::whereIn('name', [
+                'access_admin_panel',
+                'view-bookings', 'create-bookings', 'edit-bookings', 'confirm-bookings',
+                'view-services', 'view-specialists',
+            ])->get();
+            $staffRole->permissions()->sync($staffPermissions->pluck('id'));
+        }
+
+        // نقش افزودنی: owner می‌تونه این رو *علاوه‌بر* «منشی» فقط به یک staff خاص بده تا او به
+        // کیف‌پول/مالی دسترسی داشته باشه، بدون تبدیل او به owner یا تغییر کل نقش «منشی».
+        $financeRole = Role::where('name', 'finance-access')->first();
+        if ($financeRole) {
+            $manageWallet = Permission::where('name', 'manage-wallet')->first();
+            if ($manageWallet) {
+                $financeRole->permissions()->sync([$manageWallet->id]);
+            }
         }
     }
 }

@@ -19,5 +19,11 @@ class RoleSeeder extends Seeder
         // not yet implemented as of this seeder update) — this just guarantees the role itself
         // exists so that command (and the temporary seeded account below) has something to attach.
         Role::firstOrCreate(['name' => 'super-admin'], ['label' => 'سوپر ادمین']);
+        // ⭐ فاز ۲ SaaS، محور «۲. چند ادمین برای یک سالن» — نقش «منشی» (دسترسی محدود، بدون مالی/
+        // کیف‌پول) و نقش افزودنی «دسترسی مالی». پرمیشن‌های واقعی این دو نقش در
+        // 2026_09_19_000201_add_salon_staff_finance_permissions.php ست می‌شن (هم برای seeder،
+        // هم برای production که db:seed روش اجرا نمی‌شه)؛ اینجا فقط وجود خودِ ردیف تضمین می‌شه.
+        Role::firstOrCreate(['name' => 'staff'], ['label' => 'منشی']);
+        Role::firstOrCreate(['name' => 'finance-access'], ['label' => 'دسترسی مالی (افزودنی)']);
     }
 }
