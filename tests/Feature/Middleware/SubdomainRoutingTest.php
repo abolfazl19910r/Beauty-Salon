@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 /**
- * ⭐ فاز ۲ SaaS، محور «۳. ساب‌دامین اختصاصی» (شروع‌شده، ۲۰۲۶-۰۹-۱۹).
+ * ⭐ فاز ۲ SaaS، محور «۳. ساب‌دامین اختصاصی» (شروع‌شده، به‌روزشده ۲۰۲۶-۰۹-۱۹ ادامه‌ی سوم — هر
+ * دو مسیر، ساب‌دامین و /s/{slug} قدیمی، هم‌زمان زنده‌ن؛ به docblock کنار Route::domain در
+ * routes/web.php نگاه کن).
  *
  * config('app.central_domain') یک تصمیم سطح-boot است، نه per-test (به docblock کنار
  * 'central_domain' در config/app.php نگاه کن) — routes/web.php فقط یک‌بار، در لحظه‌ی بوت
@@ -84,16 +86,32 @@ class SubdomainRoutingTest extends TestCase
         $response->assertViewIs('central.placeholder');
     }
 
-    public function test_path_based_slash_s_slug_url_is_not_registered_once_central_domain_is_set(): void
+    public function test_path_based_slash_s_slug_url_still_works_as_a_fallback_when_central_domain_is_set(): void
     {
-        // ⭐ محدودیت شناخته‌شده و مستندشده‌ی همین قدم اول (به config/app.php نگاه کن): وقتی
-        // central_domain ست باشد، مسیرهای قدیمی /s/{slug} دیگر ثبت نمی‌شوند — این تست همان
-        // رفتار فعلی را قفل می‌کند تا تغییرش (اگر در نشست بعدی تصمیم گرفته شد که هر دو هم‌زمان
-        // زنده بمانند) عمدی باشد، نه یک رگرسیون خاموش.
+        // ⭐ تصمیم تأییدشده با ابوالفضل (۲۰۲۶-۰۹-۱۹، طبق docs/WILDCARD_SUBDOMAIN_DEPLOYMENT.md
+        // — «لینک قدیمی نباید بشکنه»): وقتی central_domain ست است، مسیر قدیمی /s/{slug} هنوز
+        // هم‌زمان با ساب‌دامین زنده و قابل‌دسترسیه (نه ۴۰۴).
         $salon = Salon::factory()->create(['slug' => 'sobhan-beauty']);
 
         $response = $this->get('http://'.self::CENTRAL_DOMAIN.'/s/'.$salon->slug.'/');
 
-        $response->assertNotFound();
+        $response->assertOk();
+        $this->assertSame($salon->id, app(CurrentSalon::class)->id());
+    }
+
+    public function test_route_helper_generates_subdomain_urls_even_from_a_request_reached_via_the_legacy_path(): void
+    {
+        // ⭐ همون رفتار «آخرین route ثبت‌شده برای هر نام برنده می‌شه» که در routes/web.php
+        // مستند شده: حتی وقتی درخواست از مسیر قدیمی /s/{slug} رسیده، route()/URL::defaults
+        // همچنان یک URL ساب‌دامینی می‌سازه (نه یک /s/{slug} دیگه) — این دقیقاً همون ریسک
+        // شناخته‌شده‌ی قطعی‌شدن سشن است که در config/app.php مستند شده، نه یک باگ.
+        $salon = Salon::factory()->create(['slug' => 'sobhan-beauty']);
+
+        $this->get('http://'.self::CENTRAL_DOMAIN.'/s/'.$salon->slug.'/')->assertOk();
+
+        $url = route('services.index');
+
+        $this->assertStringStartsWith('http://sobhan-beauty.'.self::CENTRAL_DOMAIN, $url);
+        $this->assertStringEndsWith('/services', $url);
     }
 }

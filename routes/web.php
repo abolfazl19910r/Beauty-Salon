@@ -8,14 +8,17 @@ use Illuminate\Support\Facades\Route;
 // ResolveSalonFromRoute's docblock for how URL::defaults() keeps every existing route() call
 // across the codebase working without being touched.
 //
-// ⭐ فاز ۲ SaaS، محور «۳. ساب‌دامین اختصاصی» (شروع‌شده): این بلوک قبلاً همیشه یک
-// Route::prefix('s/{salon_slug}') بود. حالا به‌ازای یک تصمیم سطح-boot (نه per-request —
-// دلیلش را در config/app.php کنار 'central_domain' ببین) بین دو حالت انتخاب می‌کنه:
-//   - config('app.central_domain') خالیه (پیش‌فرض; دقیقاً چیزی که همه‌ی ۱۰۱۳ تست فعلی
-//     می‌بینن) → دقیقاً همون Route::prefix('s/{salon_slug}') قبلی، بدون هیچ تغییر رفتاری.
-//   - مقداردهی شده (محلی: نیپ.آی‌اُو، production: دامنه‌ی واقعی) → همون مسیرها به‌جاش زیر
-//     Route::domain('{salon_slug}.'.central_domain) ثبت می‌شن; یعنی سالن از ساب‌دامین
-//     تشخیص داده می‌شه، نه از URI. همون middleware (salon.resolve) بدون تغییر کار می‌کنه.
+// ⭐ فاز ۲ SaaS، محور «۳. ساب‌دامین اختصاصی» (شروع‌شده، به‌روزشده ۲۰۲۶-۰۹-۱۹ ادامه‌ی سوم):
+// config('app.central_domain') یک تصمیم سطح-boot است (نه per-request — دلیلش را در
+// config/app.php کنار 'central_domain' ببین، خلاصه: سازگاری با `route:cache`).
+//   - خالیه (پیش‌فرض؛ همه‌ی ۱۰۱۳ تست اصلی این حالت رو می‌بینن) → فقط همون
+//     Route::prefix('s/{salon_slug}') قبلی، بدون هیچ تغییر رفتاری.
+//   - مقداردهی شده (محلی: نیپ.آی‌اُو، production: دامنه‌ی واقعی) → علاوه بر همون
+//     Route::prefix('s/{salon_slug}') (که پایین‌تر، بدون قید if، همیشه ثبت می‌شه)، یک
+//     Route::domain('{salon_slug}.'.central_domain) هم اضافه می‌شه. یعنی از این به بعد
+//     سالن هم از ساب‌دامین قابل‌دسترسیه، هم از مسیر قدیمی /s/{slug} — طبق تصمیم مستندشده در
+//     docs/WILDCARD_SUBDOMAIN_DEPLOYMENT.md («لینک قدیمی نباید بشکنه») و تأیید صریح ابوالفضل
+//     (۲۰۲۶-۰۹-۱۹): هر دو هم‌زمان زنده می‌مونن، نه یکی جای اون یکی.
 $centralDomain = config('app.central_domain');
 
 $tenantRoutes = function () {
@@ -52,7 +55,25 @@ $tenantRoutes = function () {
     });
 };
 
+// ⭐ همیشه ثبت می‌شه — بدون هیچ قیدی روی central_domain — دقیقاً همون چیزی که فاز ۱ همیشه
+// بوده. لینک‌های قدیمی /s/{slug} (مثلاً از پیامک‌های ارسال‌شده‌ی قبلی) هیچ‌وقت نباید بشکنن.
+Route::prefix('s/{salon_slug}')->middleware(['salon.resolve'])->group($tenantRoutes);
+
 if ($centralDomain) {
+    // ⭐ عمداً بعد از گروه prefix بالا ثبت می‌شه: Laravel برای هر نام route فقط آخرین ثبت را
+    // در جدول نام‌ها نگه می‌داره (Illuminate\Routing\RouteCollection::addToNamedRoutes) —
+    // یعنی از این خط به بعد، route('services.index') و مشابه‌ها یک URL مطلق ساب‌دامینی
+    // می‌سازن (نه /s/{slug})، حتی برای کاربری که از طریق همون لینک قدیمی وارد شده. نتیجه: لینک
+    // قدیمی خودش هنوز کار می‌کنه (۴۰۴ نمی‌ده — تست شده در SubdomainRoutingTest)، ولی هر لینک
+    // داخلی جدیدی که از همون صفحه ساخته می‌شه به‌طور طبیعی به شکل مدرن (ساب‌دامین) اشاره می‌کنه.
+    //
+    // ⚠️ ریسک شناخته‌شده و صریحاً پذیرفته‌شده (تصمیم تأییدشده با ابوالفضل، ۲۰۲۶-۰۹-۱۹): چون
+    // SESSION_DOMAIN ایزوله است (نه مشترک بین ساب‌دامین‌ها — تصمیم قبلی، هنوز پابرجا)، کاربری
+    // که از لینک قدیمی /s/{slug} وارد شده و بعد روی یک لینک داخلی (که حالا به ساب‌دامین اشاره
+    // می‌کنه) کلیک می‌کنه، عملاً به یک هاست دیگه navigate می‌شه — کوکی سشنش برای اون هاست جدید
+    // موجود نیست و ممکنه logout به نظر برسه. این یک محدودیت شناخته‌شده‌ست، نه یک باگ ناخواسته؛
+    // اگه در آینده مزاحم شد، راه‌حلش یا SESSION_DOMAIN مشترک است (با ریسک امنیتی خودش) یا یک
+    // صفحه‌ی میانی «داری به آدرس جدید سالن منتقل می‌شی» قبل از redirect نهایی.
     Route::domain('{salon_slug}.'.$centralDomain)->middleware(['salon.resolve'])->group($tenantRoutes);
 
     // ⭐ محور «۳»: تصمیم بیزنسی تأییدشده (۲۰۲۶-۰۹-۱۹، به Rasta_unified_prompt.md نگاه کن) —
@@ -62,8 +83,6 @@ if ($centralDomain) {
     Route::domain($centralDomain)->group(function () {
         Route::view('/', 'central.placeholder')->name('central.home');
     });
-} else {
-    Route::prefix('s/{salon_slug}')->middleware(['salon.resolve'])->group($tenantRoutes);
 }
 
 require __DIR__.'/web/auth.php';
