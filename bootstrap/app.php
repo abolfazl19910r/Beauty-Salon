@@ -47,6 +47,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'salon.resolve' => \App\Http\Middleware\ResolveSalonFromRoute::class,
             'salon.customer' => \App\Http\Middleware\EnsureCustomerBelongsToSalon::class,
             'salon.specialist' => \App\Http\Middleware\EnsureSpecialistSalonActive::class,
+            // ⭐ فاز ۲ SaaS، محور «۲. چند ادمین برای یک سالن».
+            'salon.owner' => \App\Http\Middleware\EnsureSalonOwner::class,
         ]);
 
         // Note: the 'admin-api' middleware group (auth + admin, previously guarding

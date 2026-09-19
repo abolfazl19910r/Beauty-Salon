@@ -58,7 +58,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_a
 
     require __DIR__.'/admin/services.php';
     require __DIR__.'/admin/specialists.php';
-    require __DIR__.'/admin/users.php';
+
+    // ⭐ فاز ۲ SaaS، محور «۲. چند ادمین برای یک سالن» — مدیریت ادمین‌های سالن (افزودن/ویرایش/حذف
+    // owner یا staff دیگر) فقط برای owner همون سالن (به EnsureSalonOwner نگاه کن).
+    Route::middleware(['salon.owner'])->group(function () {
+        require __DIR__.'/admin/users.php';
+    });
 
     require __DIR__.'/admin/search.php';
 
@@ -80,9 +85,16 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_a
     require __DIR__.'/admin/notification-settings.php';
     require __DIR__.'/admin/roles.php';
     require __DIR__.'/admin/permissions.php';
-    require __DIR__.'/admin/wallet.php';
     require __DIR__.'/admin/reviews.php';
-    require __DIR__.'/admin/billing.php';
+
+    // ⭐ فاز ۲ SaaS، محور «۲. چند ادمین برای یک سالن» — کیف‌پول/تسویه‌ی متخصصان و خرید/تمدید
+    // اشتراک سالن هر دو «مالی» هستن (نقش «منشی» پیش‌فرض این پرمیشن رو نداره؛ به
+    // 2026_09_19_000201_add_salon_staff_finance_permissions.php نگاه کن). is_admin=true
+    // (owner) طبق bypass مستندشده‌ی PermissionMiddleware/hasPermission() همیشه رد می‌شه.
+    Route::middleware(['permission:manage-wallet'])->group(function () {
+        require __DIR__.'/admin/wallet.php';
+        require __DIR__.'/admin/billing.php';
+    });
 });
 
 // ⭐ Phase 1 SaaS multi-tenant (feat/saas-multi-tenant-salons, commit 4).
