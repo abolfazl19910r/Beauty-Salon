@@ -27,7 +27,9 @@ class AdminRoleTest extends TestCase
         $response = $this->actingAs($this->admin)->get('/admin/roles');
 
         $response->assertOk();
-        $this->assertCount(3, $response->viewData('roles'));
+        // ⭐ فاز ۲ SaaS، محور «۲»: 2026_09_19_000201_add_salon_staff_finance_permissions همیشه دو
+        // نقش («staff»، «finance-access») از قبل می‌سازد؛ به AdminPermissionTest نگاه کن.
+        $this->assertCount(3 + 2, $response->viewData('roles'));
     }
 
     public function test_store_creates_a_role_and_syncs_permissions(): void

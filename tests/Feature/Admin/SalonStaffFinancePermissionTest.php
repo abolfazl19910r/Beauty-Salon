@@ -1,0 +1,91 @@
+<?php
+
+namespace Tests\Feature\Admin;
+
+use App\Models\Role;
+use App\Models\Salon;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+/**
+ * ⭐ فاز ۲ SaaS، محور «۲. چند ادمین برای یک سالن» — پرمیشن `manage-wallet` (اضافه‌شده در
+ * 2026_09_19_000201_add_salon_staff_finance_permissions.php) باید مسیرهای کیف‌پول/صورتحساب را
+ * برای یک staff بدون نقش «finance-access» مسدود کند، و برای owner (is_admin=true، طبق bypass
+ * مستندشده‌ی User::hasPermission()) و برای staffِ دارای finance-access باز بگذارد.
+ */
+class SalonStaffFinancePermissionTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private Salon $salon;
+
+    private User $owner;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->salon = Salon::where('slug', 'rasta')->firstOrFail();
+        $this->owner = User::factory()->create(['is_admin' => true]);
+    }
+
+    private function makeStaff(bool $financeAccess = false): User
+    {
+        $staff = User::factory()->create(['is_admin' => false, 'user_type' => 'staff']);
+        $this->salon->admins()->attach($staff->id, ['role' => 'staff']);
+
+        $staffRole = Role::where('name', 'staff')->firstOrFail();
+        $roleIds = [$staffRole->id];
+        if ($financeAccess) {
+            $roleIds[] = Role::where('name', 'finance-access')->firstOrFail()->id;
+        }
+        $staff->roles()->sync($roleIds);
+
+        return $staff;
+    }
+
+    public function test_staff_without_finance_access_is_blocked_from_wallet(): void
+    {
+        $staff = $this->makeStaff(financeAccess: false);
+
+        $this->actingAs($staff)->get('/admin/wallet')->assertStatus(403);
+    }
+
+    public function test_staff_without_finance_access_is_blocked_from_billing(): void
+    {
+        $staff = $this->makeStaff(financeAccess: false);
+
+        $this->actingAs($staff)->get('/admin/billing')->assertStatus(403);
+    }
+
+    public function test_staff_with_finance_access_can_reach_wallet(): void
+    {
+        $staff = $this->makeStaff(financeAccess: true);
+
+        $this->actingAs($staff)->get('/admin/wallet')->assertOk();
+    }
+
+    public function test_staff_can_still_reach_manual_booking_creation(): void
+    {
+        $staff = $this->makeStaff(financeAccess: false);
+
+        $this->actingAs($staff)->get('/admin/bookings/create')->assertOk();
+    }
+
+    public function test_owner_bypasses_the_wallet_permission_via_is_admin(): void
+    {
+        $this->actingAs($this->owner)->get('/admin/wallet')->assertOk();
+    }
+
+    public function test_staff_cannot_open_the_admin_users_management_page(): void
+    {
+        $staff = $this->makeStaff(financeAccess: false);
+
+        $this->actingAs($staff)->get('/admin/users')->assertStatus(403);
+    }
+
+    public function test_owner_can_open_the_admin_users_management_page(): void
+    {
+        $this->actingAs($this->owner)->get('/admin/users')->assertOk();
+    }
+}
