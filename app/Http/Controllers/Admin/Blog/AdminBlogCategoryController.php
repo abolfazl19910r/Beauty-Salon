@@ -43,11 +43,15 @@ class AdminBlogCategoryController extends Controller
 
     public function edit(BlogCategory $category): View
     {
+        $this->ensureSalonOwnership($category->salon_id);
+
         return view('admin.blog.categories.edit', compact('category'));
     }
 
     public function update(UpdateBlogCategoryRequest $request, BlogCategory $category): RedirectResponse
     {
+        $this->ensureSalonOwnership($category->salon_id);
+
         try {
             $this->blogCategoryService->update($category, $request->validated());
 
@@ -61,6 +65,8 @@ class AdminBlogCategoryController extends Controller
 
     public function destroy(BlogCategory $category): RedirectResponse
     {
+        $this->ensureSalonOwnership($category->salon_id);
+
         try {
             $this->blogCategoryService->destroy($category);
 

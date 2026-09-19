@@ -94,6 +94,8 @@ class AdminBookingController extends Controller
 
     public function edit(Booking $booking): View
     {
+        $this->ensureSalonOwnership($booking->salon_id);
+
         $users = User::all();
         $services = BeautyService::all();
         $specialists = Specialist::all();
@@ -103,6 +105,8 @@ class AdminBookingController extends Controller
 
     public function show(Booking $booking): View
     {
+        $this->ensureSalonOwnership($booking->salon_id);
+
         $booking->load(['service', 'user', 'specialist']);
 
         return view('admin.bookings.show', compact('booking'));
@@ -110,6 +114,8 @@ class AdminBookingController extends Controller
 
     public function update(UpdateAdminBookingRequest $request, Booking $booking): RedirectResponse
     {
+        $this->ensureSalonOwnership($booking->salon_id);
+
         $redirectRoute = $request->isStatusOnly() ? 'admin.bookings.index' : 'admin.bookings.show';
         $redirectParams = $request->isStatusOnly() ? [] : ['booking' => $booking->id];
 
@@ -135,6 +141,8 @@ class AdminBookingController extends Controller
 
     public function destroy(Booking $booking): RedirectResponse
     {
+        $this->ensureSalonOwnership($booking->salon_id);
+
         if ($booking->payment_status === 'paid') {
             return redirect()->route('admin.bookings.index')
                 ->with('error', 'نوبت‌های پرداخت شده را نمی‌توان حذف کرد. ابتدا آن را لغو کنید.');

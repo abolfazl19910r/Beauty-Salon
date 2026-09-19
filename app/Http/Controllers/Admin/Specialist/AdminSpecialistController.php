@@ -41,6 +41,8 @@ class AdminSpecialistController extends Controller
 
     public function show(Specialist $specialist): View
     {
+        $this->ensureSalonOwnership($specialist->salon_id);
+
         return view('admin.specialists.show', compact('specialist'));
     }
 
@@ -78,6 +80,8 @@ class AdminSpecialistController extends Controller
 
     public function edit(Specialist $specialist): View
     {
+        $this->ensureSalonOwnership($specialist->salon_id);
+
         $services = Category::with('services')->get();
         $selectedServices = $specialist->services->pluck('id')->toArray();
 
@@ -86,6 +90,8 @@ class AdminSpecialistController extends Controller
 
     public function update(UpdateSpecialistRequest $request, Specialist $specialist): RedirectResponse
     {
+        $this->ensureSalonOwnership($specialist->salon_id);
+
         $this->specialistService->update(
             $specialist,
             $request->validated(),
@@ -98,6 +104,8 @@ class AdminSpecialistController extends Controller
 
     public function destroy(Specialist $specialist): RedirectResponse
     {
+        $this->ensureSalonOwnership($specialist->salon_id);
+
         try {
             $this->specialistService->delete($specialist);
 

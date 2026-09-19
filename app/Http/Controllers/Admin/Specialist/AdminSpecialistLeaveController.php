@@ -20,6 +20,8 @@ class AdminSpecialistLeaveController extends Controller
 
     public function index(Specialist $specialist): View
     {
+        $this->ensureSalonOwnership($specialist->salon_id);
+
         /** @var LengthAwarePaginator $leaves */
         $leaves = $specialist->leaves()->latest()->paginate(10);
 
@@ -35,6 +37,8 @@ class AdminSpecialistLeaveController extends Controller
      */
     public function store(StoreLeaveRequest $request, Specialist $specialist): RedirectResponse
     {
+        $this->ensureSalonOwnership($specialist->salon_id);
+
         $result = $this->leaveService->store($specialist, $request->validated());
 
         return redirect()
@@ -44,6 +48,8 @@ class AdminSpecialistLeaveController extends Controller
 
     public function update(UpdateLeaveStatusRequest $request, Specialist $specialist, Leave $leave): RedirectResponse
     {
+        $this->ensureSalonOwnership($specialist->salon_id);
+
         if ($leave->specialist_id !== $specialist->id) {
             abort(403, 'شما اجازه ویرایش این درخواست را ندارید.');
         }

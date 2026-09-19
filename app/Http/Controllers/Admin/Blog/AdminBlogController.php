@@ -18,6 +18,8 @@ class AdminBlogController extends Controller
 
     public function show(BlogPost $post): View
     {
+        $this->ensureSalonOwnership($post->salon_id);
+
         $post->load('category', 'author');
 
         return view('admin.blog.show', compact('post'));

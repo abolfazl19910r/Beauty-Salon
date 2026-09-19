@@ -39,6 +39,8 @@ class AdminBlogPostActionController extends Controller
 
     public function edit(BlogPost $post): View
     {
+        $this->ensureSalonOwnership($post->salon_id);
+
         return view('admin.blog.edit', [
             'post' => $post,
             'categories' => BlogCategory::orderBy('order')->orderBy('name')->get(),
@@ -47,6 +49,8 @@ class AdminBlogPostActionController extends Controller
 
     public function update(UpdateAdminBlogPostRequest $request, BlogPost $post): RedirectResponse
     {
+        $this->ensureSalonOwnership($post->salon_id);
+
         try {
             $this->blogPostService->update($post, $request->validated(), $request->file('image'));
 
@@ -60,6 +64,8 @@ class AdminBlogPostActionController extends Controller
 
     public function destroy(BlogPost $post): RedirectResponse
     {
+        $this->ensureSalonOwnership($post->salon_id);
+
         try {
             $this->blogPostService->destroy($post);
 
@@ -73,6 +79,8 @@ class AdminBlogPostActionController extends Controller
 
     public function togglePublish(BlogPost $post): RedirectResponse
     {
+        $this->ensureSalonOwnership($post->salon_id);
+
         try {
             $post = $this->blogPostService->togglePublish($post);
             $status = $post->is_published ? 'منتشر' : 'پیش‌نویس';

@@ -51,6 +51,8 @@ class AdminDiscountCodeController extends Controller
      */
     public function edit(DiscountCode $discountCode, DiscountCalculator $calculator): View
     {
+        $this->ensureSalonOwnership($discountCode->salon_id);
+
         $sampleAmount = 1_000_000;
         $preview = $calculator->calculate($discountCode, $sampleAmount);
 
@@ -63,6 +65,8 @@ class AdminDiscountCodeController extends Controller
 
     public function update(UpdateDiscountCodeRequest $request, DiscountCode $discountCode): RedirectResponse
     {
+        $this->ensureSalonOwnership($discountCode->salon_id);
+
         $this->service->update($discountCode, $request->validated());
 
         return redirect()->route('admin.discount-codes.index')
@@ -71,6 +75,8 @@ class AdminDiscountCodeController extends Controller
 
     public function destroy(DiscountCode $discountCode): RedirectResponse
     {
+        $this->ensureSalonOwnership($discountCode->salon_id);
+
         try {
             $this->service->destroy($discountCode);
         } catch (\RuntimeException $e) {

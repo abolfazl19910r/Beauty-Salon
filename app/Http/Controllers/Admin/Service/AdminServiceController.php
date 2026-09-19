@@ -29,6 +29,8 @@ class AdminServiceController extends Controller
 
     public function edit(BeautyService $service): View
     {
+        $this->ensureSalonOwnership($service->salon_id);
+
         $categoryService = app(CategoryService::class);
         $categories = $categoryService->getCategorySelectOptions();
 
@@ -58,6 +60,8 @@ class AdminServiceController extends Controller
 
     public function update(Request $request, BeautyService $service): RedirectResponse
     {
+        $this->ensureSalonOwnership($service->salon_id);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -82,6 +86,8 @@ class AdminServiceController extends Controller
 
     public function destroy(BeautyService $service): RedirectResponse
     {
+        $this->ensureSalonOwnership($service->salon_id);
+
         try {
             $service->delete();
 

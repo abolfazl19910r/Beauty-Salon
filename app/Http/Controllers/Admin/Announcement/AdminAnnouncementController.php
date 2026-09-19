@@ -67,11 +67,15 @@ class AdminAnnouncementController extends Controller
 
     public function edit(Announcement $announcement): View
     {
+        $this->ensureSalonOwnership($announcement->salon_id);
+
         return view('admin.announcements.edit', compact('announcement'));
     }
 
     public function update(UpdateAnnouncementRequest $request, Announcement $announcement): RedirectResponse
     {
+        $this->ensureSalonOwnership($announcement->salon_id);
+
         $announcement->update($request->validated());
 
         return redirect()->route('admin.announcements.index')
@@ -80,6 +84,8 @@ class AdminAnnouncementController extends Controller
 
     public function destroy(Announcement $announcement): RedirectResponse
     {
+        $this->ensureSalonOwnership($announcement->salon_id);
+
         $announcement->delete();
 
         return redirect()->route('admin.announcements.index')

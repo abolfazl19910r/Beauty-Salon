@@ -45,6 +45,8 @@ class AdminGalleryController extends Controller
 
     public function destroy(GalleryImage $image): RedirectResponse
     {
+        $this->ensureSalonOwnership($image->salon_id);
+
         Storage::disk('public')->delete($image->image_path);
         $image->delete();
 
@@ -54,6 +56,8 @@ class AdminGalleryController extends Controller
 
     public function moveUp(GalleryImage $image): RedirectResponse
     {
+        $this->ensureSalonOwnership($image->salon_id);
+
         $previous = GalleryImage::where('order', '<', $image->order)
             ->orderByDesc('order')
             ->first();
@@ -67,6 +71,8 @@ class AdminGalleryController extends Controller
 
     public function moveDown(GalleryImage $image): RedirectResponse
     {
+        $this->ensureSalonOwnership($image->salon_id);
+
         $next = GalleryImage::where('order', '>', $image->order)
             ->orderBy('order')
             ->first();

@@ -19,6 +19,8 @@ class AdminSpecialistScheduleController extends Controller
 
     public function edit(Specialist $specialist): View
     {
+        $this->ensureSalonOwnership($specialist->salon_id);
+
         $schedules = $specialist->schedules()
             ->get()
             ->groupBy('day_of_week');
@@ -31,6 +33,8 @@ class AdminSpecialistScheduleController extends Controller
 
     public function update(Request $request, Specialist $specialist): RedirectResponse
     {
+        $this->ensureSalonOwnership($specialist->salon_id);
+
         try {
             $request->validate([
                 'schedules.*.day_of_week' => 'required|integer|between:0,6',
