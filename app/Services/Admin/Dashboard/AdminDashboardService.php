@@ -22,11 +22,24 @@ class AdminDashboardService
      */
     public function getOverviewData(): array
     {
+        // ⭐ فاز ۲ SaaS، محور «۲» (تصمیم تأییدشده ۲۰۲۶-۰۹-۱۹): قبل از این فیکس، این متد بدون هیچ
+        // چک permission‌ای totalRevenue/weeklyRevenue رو محاسبه و به داشبورد اصلی (اولین صفحه‌ای
+        // که هر ادمین از جمله «منشی» می‌بینه) پاس می‌داد — یعنی محدودیت مالی manage-wallet که
+        // routes/web.php روی wallet/billing/reports اعمال می‌کنه، برای همین دو رقم روی خودِ
+        // داشبورد اصلاً وجود نداشت. حالا این دو مقدار فقط برای کاربری که manage-wallet داره
+        // محاسبه می‌شن (bypass همیشگی is_admin طبق User::hasPermission() اینجا هم برقراره)؛
+        // dashboard.blade.php هم با @permission('manage-wallet') کارت درآمد و نمودار رو مخفی
+        // می‌کنه — این دو لایه با هم کار می‌کنن، نه جایگزین هم.
+        $canViewFinancials = auth()->user()?->hasPermission('manage-wallet') ?? false;
+
         [$commissionRate, $commissionFactor] = $this->getCommissionRateAndFactor();
 
         $todayBookingsCount = Booking::whereDate('booking_time', today())->count();
-        $rawRevenue = Booking::where('payment_status', 'paid')->sum('prepayment_amount');
-        $totalRevenue = (int) ($rawRevenue * $commissionFactor);
+        $totalRevenue = null;
+        if ($canViewFinancials) {
+            $rawRevenue = Booking::where('payment_status', 'paid')->sum('prepayment_amount');
+            $totalRevenue = (int) ($rawRevenue * $commissionFactor);
+        }
         $usersCount = User::count();
         $specialistsCount = Specialist::count();
         $rolesCount = Role::count();
@@ -46,22 +59,25 @@ class AdminDashboardService
             ->take(4)
             ->get();
 
-        $weeklyRevenue = Booking::where('payment_status', 'paid')
-            ->whereBetween('created_at', [now()->subDays(6)->startOfDay(), now()])
-            ->groupBy(DB::raw('DATE(created_at)'))
-            ->select(
-                DB::raw('DATE(created_at) as date'),
-                DB::raw('SUM(prepayment_amount) as total'),
-                DB::raw('COUNT(*) as bookings_count')
-            )
-            ->orderBy('date')
-            ->get()
-            ->map(function ($item) use ($commissionFactor) {
-                $item->date = verta($item->date)->format('Y/m/d');
-                $item->total = (int) ($item->total * $commissionFactor);
+        $weeklyRevenue = collect();
+        if ($canViewFinancials) {
+            $weeklyRevenue = Booking::where('payment_status', 'paid')
+                ->whereBetween('created_at', [now()->subDays(6)->startOfDay(), now()])
+                ->groupBy(DB::raw('DATE(created_at)'))
+                ->select(
+                    DB::raw('DATE(created_at) as date'),
+                    DB::raw('SUM(prepayment_amount) as total'),
+                    DB::raw('COUNT(*) as bookings_count')
+                )
+                ->orderBy('date')
+                ->get()
+                ->map(function ($item) use ($commissionFactor) {
+                    $item->date = verta($item->date)->format('Y/m/d');
+                    $item->total = (int) ($item->total * $commissionFactor);
 
-                return $item;
-            });
+                    return $item;
+                });
+        }
 
         return compact(
             'commissionRate',

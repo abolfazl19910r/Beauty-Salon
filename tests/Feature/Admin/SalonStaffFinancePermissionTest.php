@@ -72,6 +72,67 @@ class SalonStaffFinancePermissionTest extends TestCase
         $this->actingAs($staff)->get('/admin/bookings/create')->assertOk();
     }
 
+    public function test_staff_without_finance_access_is_blocked_from_reports(): void
+    {
+        $staff = $this->makeStaff(financeAccess: false);
+
+        $this->actingAs($staff)->get('/admin/reports')->assertStatus(403);
+    }
+
+    public function test_staff_with_finance_access_can_reach_reports(): void
+    {
+        // ⭐ monthlyBreakdown() از YEAR()/MONTH() (فقط MySQL) استفاده می‌کنه که روی SQLite تست
+        // وجود نداره — طبق سیاست مستندشده‌ی پروژه (AdminReportsControllerTest) بازنویسی نمی‌شه،
+        // فقط mock می‌شه؛ اینجا فقط می‌خوایم مطمئن بشیم permission رد می‌شه، نه خودِ گزارش.
+        $this->partialMock(\App\Services\Admin\Report\AdminReportService::class, function ($mock) {
+            $mock->shouldReceive('monthlyBreakdown')->andReturn(new \Illuminate\Support\Collection([]));
+        });
+
+        $staff = $this->makeStaff(financeAccess: true);
+
+        $this->actingAs($staff)->get('/admin/reports')->assertOk();
+    }
+
+    /**
+     * ⭐ کشف حین بررسی درخواست ابوالفضل درباره‌ی گیت‌کردن reports.php: خودِ داشبورد اصلی
+     * (اولین صفحه‌ای که هر ادمین از جمله یک staff می‌بینه) totalRevenue/weeklyRevenue رو مستقل
+     * از manage-wallet محاسبه و نمایش می‌داد — یعنی محدودیت مالی برای همین دو رقم روی داشبورد
+     * اصلاً اعمال نمی‌شد. AdminDashboardService::getOverviewData() و dashboard.blade.php هر دو
+     * برای این فیکس شدن.
+     */
+    public function test_staff_without_finance_access_does_not_see_revenue_on_dashboard(): void
+    {
+        $staff = $this->makeStaff(financeAccess: false);
+
+        $response = $this->actingAs($staff)->get('/admin');
+
+        $response->assertOk();
+        $this->assertNull($response->viewData('totalRevenue'));
+        $response->assertDontSee('id="total-revenue"', false);
+        $response->assertDontSee('نمودار درآمد');
+    }
+
+    public function test_owner_sees_revenue_on_dashboard(): void
+    {
+        $response = $this->actingAs($this->owner)->get('/admin');
+
+        $response->assertOk();
+        $this->assertNotNull($response->viewData('totalRevenue'));
+        $response->assertSee('id="total-revenue"', false);
+        $response->assertSee('نمودار درآمد');
+    }
+
+    public function test_staff_with_finance_access_sees_revenue_on_dashboard(): void
+    {
+        $staff = $this->makeStaff(financeAccess: true);
+
+        $response = $this->actingAs($staff)->get('/admin');
+
+        $response->assertOk();
+        $this->assertNotNull($response->viewData('totalRevenue'));
+        $response->assertSee('id="total-revenue"', false);
+    }
+
     public function test_owner_bypasses_the_wallet_permission_via_is_admin(): void
     {
         $this->actingAs($this->owner)->get('/admin/wallet')->assertOk();

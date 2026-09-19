@@ -80,7 +80,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_a
 
     require __DIR__.'/admin/notifications.php';
 
-    require __DIR__.'/admin/reports.php';
     require __DIR__.'/admin/security.php';
     require __DIR__.'/admin/notification-settings.php';
     require __DIR__.'/admin/roles.php';
@@ -91,9 +90,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_a
     // اشتراک سالن هر دو «مالی» هستن (نقش «منشی» پیش‌فرض این پرمیشن رو نداره؛ به
     // 2026_09_19_000201_add_salon_staff_finance_permissions.php نگاه کن). is_admin=true
     // (owner) طبق bypass مستندشده‌ی PermissionMiddleware/hasPermission() همیشه رد می‌شه.
+    // ⭐ فاز ۲ SaaS، محور «۲. چند ادمین برای یک سالن» — گزارش‌ها (خلاصه‌ی مالی، نمودار درآمد،
+    // تفکیک پرداخت، درآمد به‌تفکیک خدمت/متخصص، صادرات Excel/PDF از همین داده‌ها) هم مثل
+    // wallet/billing کاملاً «مالی»ه؛ نمودار درآمدِ خودِ داشبورد اصلی (routes/admin/dashboard.php)
+    // با داده‌ی سمت سرور رندر می‌شه (نه از این مسیرها)، فقط دکمه‌های فیلتر «امروز/هفته/ماه» به
+    // اینجا fetch می‌زنن و از قبل یک catch() سالم دارن — پس گیت‌کردن این مسیرها چیزی رو نمی‌شکنه.
     Route::middleware(['permission:manage-wallet'])->group(function () {
         require __DIR__.'/admin/wallet.php';
         require __DIR__.'/admin/billing.php';
+        require __DIR__.'/admin/reports.php';
     });
 });
 
