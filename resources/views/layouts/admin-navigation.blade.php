@@ -98,6 +98,9 @@
 
         <div class="py-2">
             <h3 class="text-xs font-semibold text-gray-400 px-3 mb-2 uppercase">مدیریت کاربران</h3>
+            {{-- ⭐ فاز ۲ SaaS، محور «۲. چند ادمین برای یک سالن» (تصمیم تأییدشده): مدیریت ادمین‌های
+                 سالن فقط برای owner قابل‌مشاهده است — همون قانونی که EnsureSalonOwner اجرا می‌کنه. --}}
+            @if(auth()->user()->hasRole('super-admin') || (($__currentSalon = app(\App\Support\CurrentSalon::class)->get()) && $__currentSalon->admins()->wherePivot('user_id', auth()->id())->wherePivot('role', 'owner')->exists()))
             <x-admin-nav-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('admin.users.*')"
                               class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors">
                 <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -108,7 +111,9 @@
                 </svg>
                 کاربران
             </x-admin-nav-link>
+            @endif
 
+            @permission('manage-wallet')
             <div class="py-2">
                 <h3 class="text-xs font-semibold text-gray-400 px-3 mb-2 uppercase">امور مالی</h3>
 
@@ -144,6 +149,7 @@
                     اشتراک و صورتحساب
                 </x-admin-nav-link>
             </div>
+            @endpermission
 
             <x-admin-nav-link href="{{ route('admin.roles.index') }}" :active="request()->routeIs('admin.roles.*')"
                               class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors">

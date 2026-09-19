@@ -92,6 +92,7 @@
                         <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">کاربر</th>
                         <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">شماره موبایل</th>
                         <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">نقش‌ها</th>
+                        <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">نقش در سالن</th>
                         <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">وضعیت</th>
                         <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">تاریخ ثبت‌نام</th>
                         <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">عملیات</th>
@@ -122,6 +123,16 @@
                                 @empty
                                     <span class="text-xs" style="color:var(--admin-text-light);">بدون نقش</span>
                                 @endforelse
+                            </td>
+                            <td class="px-4 py-3">
+                                @php $salonPivotRole = $user->salons->first()?->pivot->role ?? null; @endphp
+                                @if($salonPivotRole === 'owner')
+                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:#FEF3C7; color:#92400E;">مالک</span>
+                                @elseif($salonPivotRole === 'staff')
+                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:var(--admin-accent-light); color:var(--admin-accent);">منشی</span>
+                                @else
+                                    <span class="text-xs" style="color:var(--admin-text-light);">—</span>
+                                @endif
                             </td>
                             <td class="px-4 py-3">
                                 @if($user->phone_verified_at)
@@ -197,7 +208,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-12 text-center text-sm" style="color:var(--admin-text-dim);">
+                            <td colspan="7" class="px-4 py-12 text-center text-sm" style="color:var(--admin-text-dim);">
                                 هیچ کاربری یافت نشد
                             </td>
                         </tr>

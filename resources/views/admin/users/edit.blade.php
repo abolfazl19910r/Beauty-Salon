@@ -71,12 +71,14 @@
                             <div>
                                 <label class="form-label">تنظیمات</label>
                                 <div class="flex flex-wrap gap-3 pt-1">
-                                    <label class="role-check">
-                                        <input type="checkbox" name="is_admin" value="1"
-                                               {{ old('is_admin', $user->is_admin) ? 'checked' : '' }}
-                                               style="accent-color:var(--admin-accent); width:15px; height:15px;">
-                                        <span style="color:var(--admin-text);">دسترسی مدیریت</span>
-                                    </label>
+                                    @unless($hasCurrentSalon)
+                                        <label class="role-check">
+                                            <input type="checkbox" name="is_admin" value="1"
+                                                   {{ old('is_admin', $user->is_admin) ? 'checked' : '' }}
+                                                   style="accent-color:var(--admin-accent); width:15px; height:15px;">
+                                            <span style="color:var(--admin-text);">دسترسی مدیریت</span>
+                                        </label>
+                                    @endunless
                                     <label class="role-check">
                                         <input type="checkbox" name="is_active" value="1"
                                                {{ old('is_active', $user->phone_verified_at ? '1' : '0') == '1' ? 'checked' : '' }}
@@ -86,6 +88,35 @@
                                 </div>
                             </div>
                         </div>
+                        @if($hasCurrentSalon)
+                            {{-- ⭐ فاز ۲ SaaS، محور «۲» — همون منطق create.blade.php؛ به داکبلاک اون فایل نگاه کن. --}}
+                            <div class="mb-4 space-y-2">
+                                <label class="form-label">نقش این نفر در سالن <span style="color:#DC2626;">*</span></label>
+                                <label class="role-check">
+                                    <input type="radio" name="salon_role" value="owner"
+                                           {{ old('salon_role', $salonRole) === 'owner' ? 'checked' : '' }}
+                                           onchange="document.getElementById('edit-finance-access-box').style.display='none'"
+                                           style="accent-color:var(--admin-accent); width:15px; height:15px;">
+                                    <span style="color:var(--admin-text);">مالک (owner) — دسترسی کامل به همه‌ی بخش‌های سالن</span>
+                                </label>
+                                <label class="role-check">
+                                    <input type="radio" name="salon_role" value="staff"
+                                           {{ old('salon_role', $salonRole) === 'staff' ? 'checked' : '' }}
+                                           onchange="document.getElementById('edit-finance-access-box').style.display='flex'"
+                                           style="accent-color:var(--admin-accent); width:15px; height:15px;">
+                                    <span style="color:var(--admin-text);">منشی (staff) — فقط ثبت/مدیریت نوبت دستی، بدون مالی و بدون مدیریت ادمین‌ها</span>
+                                </label>
+                                @error('salon_role') <p class="form-error">{{ $message }}</p> @enderror
+                            </div>
+                            <div id="edit-finance-access-box" class="flex flex-wrap gap-4 mb-4" style="{{ old('salon_role', $salonRole) === 'owner' ? 'display:none;' : '' }}">
+                                <label class="role-check">
+                                    <input type="checkbox" name="finance_access" value="1" {{ old('finance_access', $financeAccess) ? 'checked' : '' }}
+                                    style="accent-color:var(--admin-accent); width:15px; height:15px;">
+                                    <span style="color:var(--admin-text);">دسترسی مالی/کیف‌پول (اختیاری)</span>
+                                </label>
+                            </div>
+                        @endif
+                        @unless($hasCurrentSalon)
                         <div class="mb-4">
                             <label class="form-label mb-2">نقش‌ها</label>
                             <div class="grid grid-cols-2 gap-1 p-3 rounded-lg" style="border:1px solid var(--admin-border); background:var(--admin-bg);">
@@ -100,6 +131,7 @@
                             </div>
                             @error('roles') <p class="form-error">{{ $message }}</p> @enderror
                         </div>
+                        @endunless
                         <div class="flex justify-between pt-4" style="border-top:1px solid var(--admin-border);">
                             <button type="submit"
                                     class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-white"

@@ -68,30 +68,70 @@
 
                     <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                         <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">تنظیمات دسترسی</h2>
-                        <div class="flex flex-wrap gap-4 mb-4">
-                            <label class="role-check">
-                                <input type="checkbox" name="is_admin" value="1" {{ old('is_admin') ? 'checked' : '' }}
-                                style="accent-color:var(--admin-accent); width:15px; height:15px;">
-                                <span style="color:var(--admin-text);">دسترسی مدیریت</span>
-                            </label>
-                            <label class="role-check">
-                                <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}
-                                style="accent-color:#16A34A; width:15px; height:15px;">
-                                <span style="color:var(--admin-text);">حساب فعال</span>
-                            </label>
-                        </div>
-                        <div class="space-y-1">
-                            <p class="text-xs font-medium mb-2" style="color:var(--admin-text-dim);">نقش‌ها:</p>
-                            @foreach($roles as $role)
+
+                        @if($hasCurrentSalon)
+                            {{-- ⭐ فاز ۲ SaaS، محور «۲. چند ادمین برای یک سالن»: به‌جای چک‌باکس آزاد
+                                 «دسترسی مدیریت» + نقش‌های عمومی، owner باید صریحاً انتخاب کند نفر
+                                 جدید مالک (دسترسی کامل) است یا منشی (دسترسی محدود) — این انتخاب
+                                 مستقیم is_admin و نقش سیستمی کاربر را تعیین می‌کند. --}}
+                            <div class="space-y-2 mb-4">
+                                <label class="form-label">نقش این نفر در سالن <span style="color:#DC2626;">*</span></label>
                                 <label class="role-check">
-                                    <input type="checkbox" name="roles[]" value="{{ $role->id }}"
-                                           {{ in_array($role->id, old('roles', [])) ? 'checked' : '' }}
+                                    <input type="radio" name="salon_role" value="owner"
+                                           {{ old('salon_role') === 'owner' ? 'checked' : '' }}
+                                           onchange="document.getElementById('finance-access-box').style.display='none'"
                                            style="accent-color:var(--admin-accent); width:15px; height:15px;">
-                                    <span style="color:var(--admin-text);">{{ $role->label }}</span>
-                                    <span class="text-xs mr-auto" style="color:var(--admin-text-light);">{{ $role->name }}</span>
+                                    <span style="color:var(--admin-text);">مالک (owner) — دسترسی کامل به همه‌ی بخش‌های سالن</span>
                                 </label>
-                            @endforeach
-                        </div>
+                                <label class="role-check">
+                                    <input type="radio" name="salon_role" value="staff"
+                                           {{ old('salon_role', 'staff') === 'staff' ? 'checked' : '' }}
+                                           onchange="document.getElementById('finance-access-box').style.display='flex'"
+                                           style="accent-color:var(--admin-accent); width:15px; height:15px;">
+                                    <span style="color:var(--admin-text);">منشی (staff) — فقط ثبت/مدیریت نوبت دستی، بدون مالی و بدون مدیریت ادمین‌ها</span>
+                                </label>
+                                @error('salon_role') <p class="form-error">{{ $message }}</p> @enderror
+                            </div>
+                            <div id="finance-access-box" class="flex flex-wrap gap-4 mb-4" style="{{ old('salon_role', 'staff') === 'owner' ? 'display:none;' : '' }}">
+                                <label class="role-check">
+                                    <input type="checkbox" name="finance_access" value="1" {{ old('finance_access') ? 'checked' : '' }}
+                                    style="accent-color:var(--admin-accent); width:15px; height:15px;">
+                                    <span style="color:var(--admin-text);">دسترسی مالی/کیف‌پول (اختیاری)</span>
+                                </label>
+                            </div>
+                            <div class="flex flex-wrap gap-4 mb-4">
+                                <label class="role-check">
+                                    <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}
+                                    style="accent-color:#16A34A; width:15px; height:15px;">
+                                    <span style="color:var(--admin-text);">حساب فعال</span>
+                                </label>
+                            </div>
+                        @else
+                            <div class="flex flex-wrap gap-4 mb-4">
+                                <label class="role-check">
+                                    <input type="checkbox" name="is_admin" value="1" {{ old('is_admin') ? 'checked' : '' }}
+                                    style="accent-color:var(--admin-accent); width:15px; height:15px;">
+                                    <span style="color:var(--admin-text);">دسترسی مدیریت</span>
+                                </label>
+                                <label class="role-check">
+                                    <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}
+                                    style="accent-color:#16A34A; width:15px; height:15px;">
+                                    <span style="color:var(--admin-text);">حساب فعال</span>
+                                </label>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-xs font-medium mb-2" style="color:var(--admin-text-dim);">نقش‌ها:</p>
+                                @foreach($roles as $role)
+                                    <label class="role-check">
+                                        <input type="checkbox" name="roles[]" value="{{ $role->id }}"
+                                               {{ in_array($role->id, old('roles', [])) ? 'checked' : '' }}
+                                               style="accent-color:var(--admin-accent); width:15px; height:15px;">
+                                        <span style="color:var(--admin-text);">{{ $role->label }}</span>
+                                        <span class="text-xs mr-auto" style="color:var(--admin-text-light);">{{ $role->name }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
 
                     <div class="flex items-center justify-between mt-5 p-4 rounded-xl" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
