@@ -16,6 +16,12 @@ use Symfony\Component\HttpFoundation\Response;
  * (EnsureAdminSalonActive) resolves it from the logged-in user instead, since an admin never
  * needs the slug in the URL.
  *
+ * ⭐ فاز ۲ SaaS، محور «۳. ساب‌دامین اختصاصی»: همین کلاس، بدون هیچ تغییری، برای مسیرهای
+ * ساب‌دامین‌محور هم استفاده می‌شه (وقتی config('app.central_domain') ست باشه — به
+ * routes/web.php نگاه کن). دلیلش اینه که Route::domain('{salon_slug}.'.$centralDomain)
+ * پارامتر salon_slug رو دقیقاً مثل یک بخش URI (از طریق $request->route('salon_slug')) پر
+ * می‌کنه؛ این کلاس نمی‌دونه (و نیازی نیست بدونه) اسلاگ از URI اومده یا از Host.
+ *
  * A missing OR suspended/expired salon both abort with a generic 404 rather than a 403 — a 403
  * would confirm to an outside visitor that a given slug exists but is inaccessible, which is
  * exactly the kind of thing a suspended/former customer's competitor could probe for. 404 gives

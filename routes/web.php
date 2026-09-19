@@ -3,11 +3,22 @@
 use Illuminate\Support\Facades\Route;
 
 // ⭐ Phase 1 SaaS multi-tenant (feat/saas-multi-tenant-salons, commit 4b-2/4b-3): guest routes +
-// the customer-only authenticated routes, all under one salon-scoped prefix. Route NAMES are
-// unchanged throughout (services.index, bookings.store, wallet.index, ...) — see
+// the customer-only authenticated routes, all under one salon-scoped tenant boundary. Route
+// NAMES are unchanged throughout (services.index, bookings.store, wallet.index, ...) — see
 // ResolveSalonFromRoute's docblock for how URL::defaults() keeps every existing route() call
 // across the codebase working without being touched.
-Route::prefix('s/{salon_slug}')->middleware(['salon.resolve'])->group(function () {
+//
+// ⭐ فاز ۲ SaaS، محور «۳. ساب‌دامین اختصاصی» (شروع‌شده): این بلوک قبلاً همیشه یک
+// Route::prefix('s/{salon_slug}') بود. حالا به‌ازای یک تصمیم سطح-boot (نه per-request —
+// دلیلش را در config/app.php کنار 'central_domain' ببین) بین دو حالت انتخاب می‌کنه:
+//   - config('app.central_domain') خالیه (پیش‌فرض; دقیقاً چیزی که همه‌ی ۱۰۱۳ تست فعلی
+//     می‌بینن) → دقیقاً همون Route::prefix('s/{salon_slug}') قبلی، بدون هیچ تغییر رفتاری.
+//   - مقداردهی شده (محلی: نیپ.آی‌اُو، production: دامنه‌ی واقعی) → همون مسیرها به‌جاش زیر
+//     Route::domain('{salon_slug}.'.central_domain) ثبت می‌شن; یعنی سالن از ساب‌دامین
+//     تشخیص داده می‌شه، نه از URI. همون middleware (salon.resolve) بدون تغییر کار می‌کنه.
+$centralDomain = config('app.central_domain');
+
+$tenantRoutes = function () {
     require __DIR__.'/web/public.php';
     // ⭐ Commit 4b-3: split out of specialistprofile.php — see that file's own docblock. Public
     // specialist browsing genuinely belongs here now, unlike before.
@@ -39,7 +50,21 @@ Route::prefix('s/{salon_slug}')->middleware(['salon.resolve'])->group(function (
         require __DIR__.'/web/security.php';
         require __DIR__.'/web/wallet.php';
     });
-});
+};
+
+if ($centralDomain) {
+    Route::domain('{salon_slug}.'.$centralDomain)->middleware(['salon.resolve'])->group($tenantRoutes);
+
+    // ⭐ محور «۳»: تصمیم بیزنسی تأییدشده (۲۰۲۶-۰۹-۱۹، به Rasta_unified_prompt.md نگاه کن) —
+    // دامنه‌ی اصلی بدون ساب‌دامین فعلاً فقط یک صفحه‌ی placeholder ساده نشون می‌ده، نه یک
+    // لندینگ کامل (اون با محور «۴. ثبت‌نام عمومی سالن» می‌آد، وقتی واقعاً یک فرم/CTA برای
+    // لینک‌کردن بهش وجود داره).
+    Route::domain($centralDomain)->group(function () {
+        Route::view('/', 'central.placeholder')->name('central.home');
+    });
+} else {
+    Route::prefix('s/{salon_slug}')->middleware(['salon.resolve'])->group($tenantRoutes);
+}
 
 require __DIR__.'/web/auth.php';
 // ⭐ Commit 4b-3: this file is now ONLY the specialist's own staff dashboard (specialist.*) —
