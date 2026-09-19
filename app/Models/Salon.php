@@ -20,6 +20,8 @@ class Salon extends Model
 
     protected $fillable = [
         'name',
+        'tagline',
+        'bio',
         'slug',
         'zarinpal_merchant_id',
         'max_specialists_count',

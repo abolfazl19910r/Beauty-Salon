@@ -29,8 +29,32 @@ class ViewComposer
         // سالن‌ها رو مدیریت می‌کنه، یا هر context بدون سالن مشخص)، به نام پلتفرم (config
         // app.name) برمی‌گرده — نه یک سالن خاص. این فقط متغیر رو در دسترس می‌ذاره؛ هر ویو باید
         // خودش از {{ $currentSalonName }} به‌جای متن ثابت استفاده کنه.
+        $currentSalonName = $this->currentSalon->get()?->name ?? config('app.name', 'راستا');
+
         if (! isset($view->currentSalonName)) {
-            $view->with('currentSalonName', $this->currentSalon->get()?->name ?? config('app.name', 'راستا'));
+            $view->with('currentSalonName', $currentSalonName);
+        }
+
+        // ⭐ پیگیری «محور ۳» (۲۰۲۶-۰۹-۲۰): همون کشفی که $currentSalonName رو ساخت، صراحتاً
+        // مستند کرد که متن‌های بازاریابی اطراف نام (tagline/bio) هنوز واقعاً generic و مشترک
+        // بین همه‌ی سالن‌ها می‌مونن — چون Salon اون‌موقع ستونی براشون نداشت (migration
+        // 2026_09_20_000000). حالا که ستون‌ها اضافه شدن، همون الگوی fallback امن رو تکرار
+        // می‌کنیم: هر ویو {{ $currentSalonTagline }}/{{ $currentSalonBio }} رو صدا می‌زنه؛ اگه
+        // سالن این فیلدها رو پر نکرده باشه (یا CurrentSalon اصلاً ست نباشه)، همون متن عمومی قبلی
+        // که قبلاً هاردکد بود برمی‌گرده — یعنی یک سالن تازه‌ساخته هیچ‌وقت صفحه‌ی خالی نمی‌بینه.
+        if (! isset($view->currentSalonTagline)) {
+            $view->with(
+                'currentSalonTagline',
+                $this->currentSalon->get()?->tagline ?: 'بهترین خدمات زیبایی با متخصص‌ترین تیم'
+            );
+        }
+
+        if (! isset($view->currentSalonBio)) {
+            $view->with(
+                'currentSalonBio',
+                $this->currentSalon->get()?->bio
+                    ?: "سالن زیبایی {$currentSalonName} فضایی آرام و لوکس را برای مراقبت کامل از مو، پوست و زیبایی شما فراهم کرده است. تیم ما متشکل از متخصصین باتجربه و دارای گواهینامه‌های بین‌المللی است."
+            );
         }
     }
 }

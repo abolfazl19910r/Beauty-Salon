@@ -333,6 +333,76 @@ class SalonManagementTest extends TestCase
     }
 
     // ---------------------------------------------------------------------
+    // پیگیری «محور ۳» (۲۰۲۶-۰۹-۲۰): tagline/bio — متن‌های بازاریابی per-salon
+    // ---------------------------------------------------------------------
+
+    public function test_super_admin_can_set_tagline_and_bio_on_a_new_salon(): void
+    {
+        $payload = $this->validSalonPayload([
+            'slug' => 'new-salon-tagline-test',
+            'tagline' => 'یک شعار کوتاه',
+            'bio' => 'یک معرفی کامل از سالن.',
+        ]);
+
+        $this->actingAs($this->superAdmin)->post('/superadmin/salons', $payload);
+
+        $this->assertDatabaseHas('salons', [
+            'slug' => 'new-salon-tagline-test',
+            'tagline' => 'یک شعار کوتاه',
+            'bio' => 'یک معرفی کامل از سالن.',
+        ]);
+    }
+
+    public function test_super_admin_can_update_tagline_and_bio(): void
+    {
+        $salon = Salon::factory()->create();
+
+        $this->actingAs($this->superAdmin)->put("/superadmin/salons/{$salon->id}", [
+            'name' => $salon->name,
+            'max_specialists_count' => $salon->max_specialists_count,
+            'tagline' => 'شعار به‌روزشده',
+            'bio' => 'معرفی به‌روزشده.',
+        ]);
+
+        $salon->refresh();
+        $this->assertSame('شعار به‌روزشده', $salon->tagline);
+        $this->assertSame('معرفی به‌روزشده.', $salon->bio);
+    }
+
+    /**
+     * ⭐ هم‌الگو با zarinpal_merchant_id — فرستادن مقدار خالی باید واقعاً پاک کنه، نه بی‌اثر بمونه.
+     */
+    public function test_super_admin_can_clear_tagline_and_bio_by_sending_empty_values(): void
+    {
+        $salon = Salon::factory()->create(['tagline' => 'قدیمی', 'bio' => 'قدیمی']);
+
+        $this->actingAs($this->superAdmin)->put("/superadmin/salons/{$salon->id}", [
+            'name' => $salon->name,
+            'max_specialists_count' => $salon->max_specialists_count,
+            'tagline' => '',
+            'bio' => '',
+        ]);
+
+        $salon->refresh();
+        $this->assertNull($salon->tagline);
+        $this->assertNull($salon->bio);
+    }
+
+    public function test_update_without_tagline_and_bio_keys_leaves_them_unchanged(): void
+    {
+        $salon = Salon::factory()->create(['tagline' => 'دست‌نخورده', 'bio' => 'دست‌نخورده']);
+
+        $this->actingAs($this->superAdmin)->put("/superadmin/salons/{$salon->id}", [
+            'name' => $salon->name,
+            'max_specialists_count' => $salon->max_specialists_count,
+        ]);
+
+        $salon->refresh();
+        $this->assertSame('دست‌نخورده', $salon->tagline);
+        $this->assertSame('دست‌نخورده', $salon->bio);
+    }
+
+    // ---------------------------------------------------------------------
     // ۵) مصونیت سالن پیش‌فرض (rasta) از تعلیق
     // ---------------------------------------------------------------------
 

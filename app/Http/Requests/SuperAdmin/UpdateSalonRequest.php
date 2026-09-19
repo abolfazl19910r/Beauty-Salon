@@ -20,6 +20,9 @@ class UpdateSalonRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            // ⭐ پیگیری «محور ۳» (۲۰۲۶-۰۹-۲۰) — متن‌های بازاریابی per-salon، به‌جای ثابت/generic.
+            'tagline' => ['nullable', 'string', 'max:255'],
+            'bio' => ['nullable', 'string', 'max:2000'],
             'max_specialists_count' => ['required', 'integer', 'min:0'],
             'module_permissions' => ['nullable', 'array'],
             'module_permissions.*' => ['string'],

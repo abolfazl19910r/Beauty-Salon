@@ -45,7 +45,7 @@
         <h1 class="text-3xl md:text-4xl font-bold text-[#E6CD8A]" style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">
             خدمات ویژه ما
         </h1>
-        <p class="text-[#F8F3E9]/60 mt-2">بهترین خدمات زیبایی با متخصص‌ترین تیم</p>
+        <p class="text-[#F8F3E9]/60 mt-2">{{ $currentSalonTagline }}</p>
     </div>
 
     {{-- Category filter --}}

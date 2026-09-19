@@ -282,7 +282,7 @@
                     <p class="eyebrow text-[var(--rasta-gold-light)] text-sm font-semibold mb-3">درباره &nbsp; ما</p>
                     <h2 class="font-serif-fa text-3xl md:text-4xl font-bold mb-6">سالنی برای حسِ خاص‌بودن</h2>
                     <p class="text-[var(--rasta-cream)]/75 leading-8 mb-6">
-                        سالن زیبایی {{ $currentSalonName }} فضایی آرام و لوکس را برای مراقبت کامل از مو، پوست و زیبایی شما فراهم کرده است. تیم ما متشکل از متخصصین باتجربه و دارای گواهینامه‌های بین‌المللی است.
+                        {{ $currentSalonBio }}
                     </p>
                     <ul class="space-y-3">
                         <li class="flex items-center gap-3 text-sm text-[var(--rasta-cream)]/80">

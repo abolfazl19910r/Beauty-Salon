@@ -18,6 +18,10 @@ class StoreSalonRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            // ⭐ پیگیری «محور ۳» (۲۰۲۶-۰۹-۲۰) — اختیاری همینجا هم؛ می‌تونه بعداً از صفحه‌ی ویرایش
+            // هم پر/عوض بشه، دقیقاً مثل zarinpal_merchant_id.
+            'tagline' => ['nullable', 'string', 'max:255'],
+            'bio' => ['nullable', 'string', 'max:2000'],
             'slug' => [
                 'required', 'string', 'max:100', 'alpha_dash',
                 Rule::unique('salons', 'slug'),

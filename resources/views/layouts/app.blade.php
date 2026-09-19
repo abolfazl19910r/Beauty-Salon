@@ -366,7 +366,7 @@
             <div>
                 <h3 class="font-serif-fa text-xl font-bold text-[var(--rasta-gold-light)] mb-3">{{ $currentSalonName }}</h3>
                 <p class="text-[var(--rasta-cream)]/60 text-sm leading-7">
-                    سالن زیبایی {{ $currentSalonName }} آماده ارائه بهترین خدمات زیبایی، آرایش و مراقبت پوست و مو به شما عزیزان است.
+                    {{ $currentSalonBio }}
                 </p>
             </div>
 

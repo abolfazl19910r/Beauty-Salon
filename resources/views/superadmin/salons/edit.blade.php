@@ -20,6 +20,22 @@
 
             <div>
                 <label class="sa-label">
+                    شعار کوتاه سالن
+                    <span style="color: var(--sa-text-dim);">(اختیاری — مثلاً روی صفحه‌ی خدمات نشون داده می‌شه)</span>
+                </label>
+                <input type="text" name="tagline" value="{{ old('tagline', $salon->tagline) }}" class="sa-input" maxlength="255">
+            </div>
+
+            <div>
+                <label class="sa-label">
+                    معرفی سالن
+                    <span style="color: var(--sa-text-dim);">(اختیاری — پاراگراف «درباره‌ی ما» در صفحه‌ی اصلی)</span>
+                </label>
+                <textarea name="bio" rows="4" class="sa-input" maxlength="2000">{{ old('bio', $salon->bio) }}</textarea>
+            </div>
+
+            <div>
+                <label class="sa-label">
                     سقف تعداد متخصص
                     <span style="color: var(--sa-text-dim);">(فعلاً {{ $salon->specialists()->count() }} متخصص ثبت‌شده)</span>
                 </label>

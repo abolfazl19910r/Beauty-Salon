@@ -39,6 +39,56 @@ class HomeControllerTest extends TestCase
         $this->assertTrue(Cache::has("home_specialists:{$salonId}"));
     }
 
+    // ---------------------------------------------------------------------
+    // پیگیری «محور ۳» (۲۰۲۶-۰۹-۲۰): $currentSalonTagline/$currentSalonBio (ViewComposer)
+    // ---------------------------------------------------------------------
+
+    public function test_home_page_shows_the_salons_own_bio_when_set(): void
+    {
+        $salon = app(CurrentSalon::class)->get();
+        $salon->update(['bio' => 'این یک معرفی اختصاصی و منحصربه‌فرد برای همین سالن است.']);
+
+        $response = $this->get(route('home'));
+
+        $response->assertOk();
+        $response->assertSee('این یک معرفی اختصاصی و منحصربه‌فرد برای همین سالن است.');
+    }
+
+    public function test_home_page_falls_back_to_generic_bio_when_salon_has_none(): void
+    {
+        $salon = app(CurrentSalon::class)->get();
+        $this->assertNull($salon->bio);
+
+        $response = $this->get(route('home'));
+
+        $response->assertOk();
+        // ⭐ fallback متن (ViewComposer) — یک سالن تازه‌ساخته که هنوز bio ننوشته نباید صفحه‌ی
+        // خالی/شکسته ببینه.
+        $response->assertSee('فضایی آرام و لوکس را برای مراقبت کامل از مو، پوست و زیبایی شما فراهم کرده است');
+    }
+
+    public function test_services_page_shows_the_salons_own_tagline_when_set(): void
+    {
+        $salon = app(CurrentSalon::class)->get();
+        $salon->update(['tagline' => 'یک شعار کاملاً اختصاصی']);
+
+        $response = $this->get(route('services.index'));
+
+        $response->assertOk();
+        $response->assertSee('یک شعار کاملاً اختصاصی');
+    }
+
+    public function test_services_page_falls_back_to_generic_tagline_when_salon_has_none(): void
+    {
+        $salon = app(CurrentSalon::class)->get();
+        $this->assertNull($salon->tagline);
+
+        $response = $this->get(route('services.index'));
+
+        $response->assertOk();
+        $response->assertSee('بهترین خدمات زیبایی با متخصص‌ترین تیم');
+    }
+
     public function test_index_is_publicly_accessible_without_authentication(): void
     {
         $this->get(route('home'))->assertOk();

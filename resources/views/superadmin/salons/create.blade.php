@@ -25,6 +25,16 @@
                         </div>
                     </div>
                 </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label class="sa-label">شعار کوتاه سالن (اختیاری)</label>
+                        <input type="text" name="tagline" value="{{ old('tagline') }}" class="sa-input" maxlength="255">
+                    </div>
+                    <div>
+                        <label class="sa-label">معرفی سالن (اختیاری)</label>
+                        <textarea name="bio" rows="2" class="sa-input" maxlength="2000">{{ old('bio') }}</textarea>
+                    </div>
+                </div>
             </div>
 
             <div>

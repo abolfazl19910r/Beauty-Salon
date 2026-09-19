@@ -31,6 +31,8 @@ class SuperAdminService
         return DB::transaction(function () use ($data, $createdBy) {
             $salon = Salon::create([
                 'name' => $data['name'],
+                'tagline' => $data['tagline'] ?? null,
+                'bio' => $data['bio'] ?? null,
                 'slug' => $data['slug'],
                 'max_specialists_count' => $data['max_specialists_count'],
                 'module_permissions' => $data['module_permissions'] ?? null,
@@ -90,6 +92,10 @@ class SuperAdminService
 
         $salon->update([
             'name' => $data['name'],
+            // ⭐ پیگیری «محور ۳» — array_key_exists (نه isset)، هم‌الگو با zarinpal_merchant_id
+            // پایین‌تر: فرستادن مقدار خالی باید واقعاً tagline/bio رو پاک کنه، نه بی‌اثر بمونه.
+            'tagline' => array_key_exists('tagline', $data) ? ($data['tagline'] ?: null) : $salon->tagline,
+            'bio' => array_key_exists('bio', $data) ? ($data['bio'] ?: null) : $salon->bio,
             'max_specialists_count' => $data['max_specialists_count'],
             'module_permissions' => $data['module_permissions'] ?? null,
             // ⭐ فاز ۲، مورد ۹ — array_key_exists (نه isset) عمداً: سوپر ادمین باید بتواند یک
