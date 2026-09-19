@@ -112,6 +112,28 @@ class SalonStaffFinancePermissionTest extends TestCase
         $response->assertDontSee('نمودار درآمد');
     }
 
+    /**
+     * ⭐ پیگیری همون کشف بالا (۲۰۲۶-۰۹-۲۰): dashboard.blade.php فیکس شده بود، ولی endpoint
+     * JSON مجزای getData() (/admin/dashboard/data — بدون هیچ consumer فعلی، ولی زنده نگه
+     * داشته‌شده طبق تصمیم قبلی پروژه) همون totalRevenue رو بدون هیچ گیت مالی برمی‌گردوند؛
+     * یعنی یک staff بدون finance-access می‌تونست با یک درخواست مستقیم به همین JSON endpoint،
+     * دور زدن محدودیت HTML رو انجام بده. حالا مثل wallet/billing/reports زیر permission
+     * manage-wallet قرار گرفته.
+     */
+    public function test_staff_without_finance_access_is_blocked_from_dashboard_data_json(): void
+    {
+        $staff = $this->makeStaff(financeAccess: false);
+
+        $this->actingAs($staff)->getJson('/admin/dashboard/data')->assertStatus(403);
+    }
+
+    public function test_staff_with_finance_access_can_reach_dashboard_data_json(): void
+    {
+        $staff = $this->makeStaff(financeAccess: true);
+
+        $this->actingAs($staff)->getJson('/admin/dashboard/data')->assertOk();
+    }
+
     public function test_owner_sees_revenue_on_dashboard(): void
     {
         $response = $this->actingAs($this->owner)->get('/admin');
