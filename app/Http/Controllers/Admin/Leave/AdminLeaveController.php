@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Leave;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Leave\UpdateLeaveStatusRequest;
 use App\Models\Leave;
+use App\Models\Specialist;
 use App\Services\Leave\LeaveService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
@@ -37,6 +38,13 @@ class AdminLeaveController extends Controller
 
     public function updateStatus(UpdateLeaveStatusRequest $request, Leave $leave): RedirectResponse
     {
+        // ⭐ Leave خودش salon_id ندارد (فقط از طریق specialist_id به سالن وصل است) — دقیقاً مثل
+        // SpecialistWallet/WithdrawalRequest، پس باید salon_id متخصص را با withoutGlobalScopes
+        // (بدون تأثیرپذیری از global scope) resolve کرد، نه با رابطه‌ی scoped معمولی.
+        $this->ensureSalonOwnership(
+            Specialist::withoutGlobalScopes()->whereKey($leave->specialist_id)->value('salon_id')
+        );
+
         $result = $this->leaveService->updateStatus(
             $leave,
             $request->validated('status'),

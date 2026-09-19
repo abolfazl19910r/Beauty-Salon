@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Wallet;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Wallet\AdjustWalletRequest;
+use App\Models\Specialist;
 use App\Models\SpecialistWallet;
 use App\Services\Admin\Wallet\WalletAdminService;
 use Exception;
@@ -34,11 +35,15 @@ class AdminWalletController extends Controller
 
     public function show(SpecialistWallet $wallet): View
     {
+        $this->ensureWalletSalonOwnership($wallet);
+
         return view('admin.wallet.show', $this->walletAdminService->getWalletDetail($wallet));
     }
 
     public function verifyIban(SpecialistWallet $wallet): RedirectResponse
     {
+        $this->ensureWalletSalonOwnership($wallet);
+
         try {
             $this->walletAdminService->verifyIban($wallet);
 
@@ -55,6 +60,8 @@ class AdminWalletController extends Controller
 
     public function adjust(AdjustWalletRequest $request, SpecialistWallet $wallet): RedirectResponse
     {
+        $this->ensureWalletSalonOwnership($wallet);
+
         $validated = $request->validated();
 
         try {
@@ -102,6 +109,8 @@ class AdminWalletController extends Controller
      */
     public function settlePendingForWallet(Request $request, SpecialistWallet $wallet): RedirectResponse
     {
+        $this->ensureWalletSalonOwnership($wallet);
+
         try {
             $result = $this->walletAdminService->settlePendingIncomes(
                 wallet: $wallet,
@@ -118,6 +127,19 @@ class AdminWalletController extends Controller
 
             return back()->with('error', 'خطا در تسویه: '.$e->getMessage());
         }
+    }
+
+    /**
+     * ⭐ SpecialistWallet هیچ ستون salon_id ندارد (فقط از طریق specialist_id به سالن وصل است) —
+     * دقیقاً همون کلاس آسیب‌پذیری WithdrawalRequest/Leave/Holiday. باید specialist را با
+     * withoutGlobalScopes (نه رابطه‌ی معمولی $wallet->specialist که خودش global scope دارد و
+     * برای یک متخصص سالن دیگر null برمی‌گرداند) resolve کرد.
+     */
+    private function ensureWalletSalonOwnership(SpecialistWallet $wallet): void
+    {
+        $this->ensureSalonOwnership(
+            Specialist::withoutGlobalScopes()->whereKey($wallet->specialist_id)->value('salon_id')
+        );
     }
 
     /**

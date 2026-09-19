@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Wallet;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Wallet\ApproveWithdrawalRequest;
 use App\Http\Requests\Admin\Wallet\RejectWithdrawalRequest;
+use App\Models\Specialist;
 use App\Models\WithdrawalRequest;
 use App\Services\Admin\Wallet\WalletAdminService;
 use Exception;
@@ -35,6 +36,8 @@ class AdminWithdrawalController extends Controller
 
     public function show(WithdrawalRequest $withdrawalRequest): View
     {
+        $this->ensureWithdrawalSalonOwnership($withdrawalRequest);
+
         $withdrawalRequest->load(['specialist', 'wallet', 'processedBy']);
 
         return view('admin.wallet.withdrawal-show', compact('withdrawalRequest'));
@@ -42,6 +45,8 @@ class AdminWithdrawalController extends Controller
 
     public function approve(ApproveWithdrawalRequest $request, WithdrawalRequest $withdrawalRequest): RedirectResponse
     {
+        $this->ensureWithdrawalSalonOwnership($withdrawalRequest);
+
         if (! in_array($withdrawalRequest->status, ['pending', 'processing'])) {
             return back()->with('error', 'این درخواست قابل تایید نیست.');
         }
@@ -63,6 +68,8 @@ class AdminWithdrawalController extends Controller
 
     public function reject(RejectWithdrawalRequest $request, WithdrawalRequest $withdrawalRequest): RedirectResponse
     {
+        $this->ensureWithdrawalSalonOwnership($withdrawalRequest);
+
         if (! in_array($withdrawalRequest->status, ['pending', 'processing'])) {
             return back()->with('error', 'این درخواست قابل رد نیست.');
         }
@@ -87,6 +94,8 @@ class AdminWithdrawalController extends Controller
 
     public function autoPayout(WithdrawalRequest $withdrawalRequest): RedirectResponse
     {
+        $this->ensureWithdrawalSalonOwnership($withdrawalRequest);
+
         if (! in_array($withdrawalRequest->status, ['pending', 'processing'])) {
             return back()->with('error', 'این درخواست قبلاً پردازش شده است.');
         }
@@ -107,5 +116,16 @@ class AdminWithdrawalController extends Controller
 
             return back()->with('error', 'خطای سیستمی: '.$e->getMessage());
         }
+    }
+
+    /**
+     * ⭐ WithdrawalRequest هم مثل SpecialistWallet ستون salon_id ندارد؛ specialist_id مستقیماً
+     * روی خودِ جدول هست، پس نیازی به عبور از wallet نیست — فقط باید unscoped resolve بشه.
+     */
+    private function ensureWithdrawalSalonOwnership(WithdrawalRequest $withdrawalRequest): void
+    {
+        $this->ensureSalonOwnership(
+            Specialist::withoutGlobalScopes()->whereKey($withdrawalRequest->specialist_id)->value('salon_id')
+        );
     }
 }

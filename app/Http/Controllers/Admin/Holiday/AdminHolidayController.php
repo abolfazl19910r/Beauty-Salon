@@ -12,6 +12,8 @@ class AdminHolidayController extends Controller
 {
     public function index(Specialist $specialist): JsonResponse
     {
+        $this->ensureSalonOwnership($specialist->salon_id);
+
         $holidays = $specialist->holidays()
             ->orderBy('date')
             ->get();
@@ -21,6 +23,8 @@ class AdminHolidayController extends Controller
 
     public function store(Request $request, Specialist $specialist): JsonResponse
     {
+        $this->ensureSalonOwnership($specialist->salon_id);
+
         $validated = $request->validate([
             'date' => [
                 'required',
@@ -67,6 +71,8 @@ class AdminHolidayController extends Controller
 
     public function destroy(Specialist $specialist, Holiday $holiday): JsonResponse
     {
+        $this->ensureSalonOwnership($specialist->salon_id);
+
         if ($holiday->specialist_id !== $specialist->id) {
             return response()->json([
                 'message' => 'شما اجازه حذف این تعطیلی را ندارید.',
@@ -88,6 +94,8 @@ class AdminHolidayController extends Controller
 
     public function upcomingHolidays(Specialist $specialist): JsonResponse
     {
+        $this->ensureSalonOwnership($specialist->salon_id);
+
         $holidays = $specialist->holidays()
             ->upcoming()
             ->get();
@@ -97,6 +105,8 @@ class AdminHolidayController extends Controller
 
     public function checkDate(Request $request, Specialist $specialist): JsonResponse
     {
+        $this->ensureSalonOwnership($specialist->salon_id);
+
         $request->validate([
             'date' => 'required|date_format:Y-m-d',
         ]);
