@@ -5,7 +5,9 @@ namespace Tests\Feature\Admin;
 use App\Jobs\GeneratePdfReportJob;
 use App\Models\Booking;
 use App\Models\ReportExport;
+use App\Models\Salon;
 use App\Models\User;
+use App\Support\CurrentSalon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
@@ -189,5 +191,120 @@ class AdminReportExportTest extends TestCase
         $user = User::factory()->create(['is_admin' => false]);
 
         $this->actingAs($user)->post('/admin/reports/export', [])->assertStatus(403);
+    }
+
+    // ⭐ Fix (real، تأییدشده، کشف‌شده ۲۰۲۶-۰۹-۱۹ — پیگیری محور «۳»، migration
+    // 2026_09_19_000300): report_exports حالا salon_id داره؛ تست‌های زیر سه مشکل واقعی رو
+    // قفل می‌کنن — (۱) GeneratePdfReportJob بدون CurrentSalon داده‌ی همه‌ی سالن‌ها رو قاطی
+    // می‌کرد، (۲) لیست index() سالن‌ها رو فیلتر نمی‌کرد، (۳) download() هیچ چک مالکیتی نداشت.
+
+    public function test_export_is_auto_scoped_to_the_requesting_admins_own_salon(): void
+    {
+        Queue::fake();
+
+        $this->actingAs($this->admin)->post('/admin/reports/export', [
+            'format' => 'excel',
+            'report_type' => 'daily',
+        ]);
+
+        $export = ReportExport::latest()->first();
+        $this->assertSame(app(CurrentSalon::class)->id(), $export->salon_id);
+    }
+
+    public function test_job_binds_current_salon_from_the_export_before_building_report_data(): void
+    {
+        Storage::fake('local');
+
+        $salonB = Salon::factory()->create(['slug' => 'salon-b']);
+        app(CurrentSalon::class)->set($salonB);
+        $export = ReportExport::factory()->for($this->admin, 'adminUser')->create([
+            'format' => 'excel',
+            'filters' => ['start_date' => now()->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')],
+            'status' => 'pending',
+        ]);
+        $this->assertSame($salonB->id, $export->salon_id);
+
+        // ⭐ شبیه‌سازی یک queue worker واقعی: هیچ CurrentSalon ای در لحظه‌ی شروع job ست نیست
+        // (دقیقاً همون چیزی که این باگ رو ایجاد کرده بود).
+        app(CurrentSalon::class)->clear();
+        $this->assertNull(app(CurrentSalon::class)->id());
+
+        $capturedSalonId = null;
+        $this->mock(\App\Services\Admin\Report\AdminReportService::class, function ($mock) use (&$capturedSalonId) {
+            $mock->shouldReceive('parseDateRange')->andReturn([
+                'start' => now()->startOfDay(),
+                'end' => now()->endOfDay(),
+                'startDate' => now()->format('Y-m-d'),
+                'endDate' => now()->format('Y-m-d'),
+            ]);
+            $mock->shouldReceive('buildExportData')->andReturnUsing(function () use (&$capturedSalonId) {
+                $capturedSalonId = app(CurrentSalon::class)->id();
+
+                return [
+                    'summary' => [], 'paymentBreakdown' => [], 'rawBookings' => collect(),
+                    'specialists' => collect(), 'services' => collect(), 'rows' => collect(),
+                ];
+            });
+        });
+
+        (new GeneratePdfReportJob($export->id))->handle(app(\App\Services\Admin\Report\AdminReportService::class));
+
+        $this->assertSame($salonB->id, $capturedSalonId);
+    }
+
+    public function test_job_fails_gracefully_when_the_export_has_no_salon_id(): void
+    {
+        $export = ReportExport::factory()->for($this->admin, 'adminUser')->create(['status' => 'pending']);
+        // ⭐ salon_id فقط روی creating() auto-fill می‌شه، نه update — پس این save() مستقیم اون
+        // رو دستی null می‌کنه، بدون فعال‌کردن دوباره‌ی auto-fill؛ شبیه‌سازی یک ردیف قدیمی/خراب.
+        $export->salon_id = null;
+        $export->save();
+
+        // ⭐ اگه CurrentSalon همچنان از context قبلی تست (سالن پیش‌فرض 'rasta') ست بمونه،
+        // global scope خودِ find() داخل job جلوی پیداشدن این ردیف (که الان salon_id=null داره)
+        // رو می‌گیره — یعنی مسیر «رکورد پیدا نشد» اجرا می‌شه، نه مسیر «بدون سالن» که می‌خوایم
+        // تست کنیم. باید دقیقاً مثل یک queue worker واقعی، این رو پاک کنیم.
+        app(CurrentSalon::class)->clear();
+
+        (new GeneratePdfReportJob($export->id))->handle(app(\App\Services\Admin\Report\AdminReportService::class));
+
+        $export->refresh();
+        $this->assertSame('failed', $export->status);
+        $this->assertNotNull($export->error_message);
+    }
+
+    public function test_export_index_does_not_show_another_salons_requests(): void
+    {
+        $otherSalon = Salon::factory()->create(['slug' => 'other-salon-index']);
+        app(CurrentSalon::class)->set($otherSalon);
+        $otherAdmin = User::factory()->create(['is_admin' => false, 'salon_id' => null]);
+        $otherAdmin->update(['is_admin' => true]);
+        ReportExport::factory()->for($otherAdmin, 'adminUser')->create();
+
+        $response = $this->actingAs($this->admin)->get('/admin/reports/exports');
+
+        $response->assertOk();
+        // فقط ردیفی که خودِ setUp() برای $this->admin نساخته بود اینجا صفره، پس این باید ۰ باشه —
+        // نه ردیف سالن دیگه.
+        $this->assertCount(0, $response->viewData('exports'));
+    }
+
+    public function test_cannot_download_another_salons_report_export(): void
+    {
+        $otherSalon = Salon::factory()->create(['slug' => 'other-salon-download']);
+        app(CurrentSalon::class)->set($otherSalon);
+        Storage::fake('local');
+        Storage::disk('local')->put('report-exports/other.xlsx', 'fake-content');
+        $otherExport = ReportExport::factory()->for($this->admin, 'adminUser')->create([
+            'status' => 'ready',
+            'format' => 'excel',
+            'file_path' => 'report-exports/other.xlsx',
+        ]);
+
+        // ⭐ 'salon.active' میدلور، CurrentSalon رو از سالن واقعیِ $this->admin (که 'rasta' است،
+        // نه $otherSalon) از نو ست می‌کنه — همین جاست که global scope باعث ۴۰۴ می‌شه.
+        $response = $this->actingAs($this->admin)->get("/admin/reports/exports/{$otherExport->id}/download");
+
+        $response->assertNotFound();
     }
 }

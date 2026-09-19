@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToSalon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,7 +10,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ReportExport extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToSalon;
 
     protected $fillable = [
         'admin_user_id',
@@ -30,6 +31,11 @@ class ReportExport extends Model
     public function adminUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'admin_user_id');
+    }
+
+    public function salon(): BelongsTo
+    {
+        return $this->belongsTo(Salon::class);
     }
 
     public function isDownloadable(): bool

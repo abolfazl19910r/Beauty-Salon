@@ -6,6 +6,7 @@ use App\Exports\AdminReportExport;
 use App\Models\ReportExport;
 use App\Notifications\Admin\Report\Export\ReportExportReadyNotification;
 use App\Services\Admin\Report\AdminReportService;
+use App\Support\CurrentSalon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -27,6 +28,15 @@ use Maatwebsite\Excel\Facades\Excel;
  * A single Job for both formats (instead of two separate Jobs) because the logic of building the report data
  * (AdminReportService::buildExportData) is completely common between PDF/Excel; only the final
  * step of serializing the file differs between the two formats.
+ *
+ * ⭐ Fix (real، تأییدشده، کشف‌شده ۲۰۲۶-۰۹-۱۹ — پیگیری محور «۳»): این یک queued job است — هیچ
+ * HTTP request/middleware chain نداره، پس CurrentSalon هیچ‌وقت به‌صورت خودکار ست نمی‌شد. چون
+ * AdminReportService::buildExportData() روی Eloquent query های salon-scoped (Booking و مشابه‌ها،
+ * از طریق BelongsToSalon) ساخته شده، بدون CurrentSalon هیچ فیلتری اعمال نمی‌شد — یعنی فایل
+ * خروجی، دادهٔ همهٔ سالن‌ها رو با هم قاطی برمی‌گردوند. راه‌حل: migration جدید salon_id رو به
+ * report_exports اضافه کرد (auto-fill شده در لحظه‌ی create() توسط BelongsToSalon، چون اون
+ * لحظه هنوز داخل HTTP request واقعی هستیم)؛ اینجا، همون salon_id رو می‌خونیم و صریحاً
+ * CurrentSalon رو قبل از هر query دیگه‌ای ست می‌کنیم.
  */
 class GeneratePdfReportJob implements ShouldQueue
 {
@@ -42,6 +52,10 @@ class GeneratePdfReportJob implements ShouldQueue
 
     public function handle(AdminReportService $reportService): void
     {
+        // ⭐ این find() عمداً قبل از ست‌شدن CurrentSalon اجراست — BelongsToSalon وقتی
+        // CurrentSalon ست نباشه هیچ فیلتری اضافه نمی‌کنه (رفتار مستندشده‌ی خودِ trait، دقیقاً
+        // مثل پنل سوپرادمین)، پس این ردیف صرف‌نظر از اینکه به کدوم سالن تعلق داره پیدا می‌شه —
+        // خودِ salon_id همین ردیف در ادامه برای ست‌کردن CurrentSalon استفاده می‌شه.
         $reportExport = ReportExport::find($this->reportExportId);
 
         if (! $reportExport) {
@@ -51,6 +65,24 @@ class GeneratePdfReportJob implements ShouldQueue
 
             return;
         }
+
+        // ⭐ بدون یک سالن مشخص، buildExportData() هیچ فیلتری اعمال نمی‌کنه و دادهٔ همهٔ
+        // سالن‌ها رو مخلوط می‌کنه — این حالت (که نباید عملاً پیش بیاد، چون create() همیشه
+        // salon_id رو auto-fill می‌کنه) رو صریحاً fail می‌کنیم، نه اینکه بی‌صدا ادامه بدیم.
+        if (! $reportExport->salon_id) {
+            $reportExport->update([
+                'status' => 'failed',
+                'error_message' => 'سالن این درخواست گزارش مشخص نیست.',
+            ]);
+
+            Log::error('GeneratePdfReportJob: ReportExport بدون salon_id — پردازش متوقف شد', [
+                'report_export_id' => $reportExport->id,
+            ]);
+
+            return;
+        }
+
+        app(CurrentSalon::class)->set($reportExport->salon);
 
         // If already processed (ready/failed), don't rerun — prevents creating the file twice
         // due to retry or multiple workers running at the same time.
