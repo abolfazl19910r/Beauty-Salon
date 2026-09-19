@@ -15,6 +15,7 @@
                     <th class="py-3 px-4">نام / آدرس</th>
                     <th class="py-3 px-4">ادمین</th>
                     <th class="py-3 px-4">سقف / مصرف متخصص</th>
+                    <th class="py-3 px-4">از تاریخ</th>
                     <th class="py-3 px-4">اشتراک تا</th>
                     <th class="py-3 px-4">وضعیت</th>
                     <th class="py-3 px-4">عملیات</th>
@@ -31,7 +32,8 @@
                             {{ optional($salon->admins->firstWhere('pivot.role', 'owner'))->name ?? '—' }}
                         </td>
                         <td class="py-3 px-4">{{ $salon->specialists_count }} / {{ $salon->max_specialists_count }}</td>
-                        <td class="py-3 px-4">{{ $salon->subscription_ends_at->format('Y-m-d') }}</td>
+                        <td class="py-3 px-4">{{ $salon->subscription_started_at ? jalali_date($salon->subscription_started_at) : '—' }}</td>
+                        <td class="py-3 px-4">{{ jalali_date($salon->subscription_ends_at) }}</td>
                         <td class="py-3 px-4">
                             @if ($salon->is_suspended)
                                 <span style="color: var(--sa-danger);">تعلیق‌شده</span>
@@ -69,7 +71,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="py-6 px-4 text-center" style="color: var(--sa-text-dim);">هنوز سالنی ثبت نشده است.</td>
+                        <td colspan="7" class="py-6 px-4 text-center" style="color: var(--sa-text-dim);">هنوز سالنی ثبت نشده است.</td>
                     </tr>
                 @endforelse
             </tbody>

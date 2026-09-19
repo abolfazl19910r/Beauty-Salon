@@ -30,6 +30,11 @@
                         @if($user->is_admin)
                             <span class="text-xs px-2 py-0.5 rounded-full" style="background:#F5F3FF; color:#7C3AED;">مدیر</span>
                         @endif
+                        @if($salonRole === 'owner')
+                            <span class="text-xs px-2 py-0.5 rounded-full" style="background:#FEF3C7; color:#92400E;">مالک سالن</span>
+                        @elseif($salonRole === 'staff')
+                            <span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--admin-accent-light); color:var(--admin-accent);">منشی سالن</span>
+                        @endif
                     </div>
                 </div>
             </div>

@@ -33,6 +33,7 @@
                     <th class="py-2">نام سالن</th>
                     <th class="py-2">آدرس</th>
                     <th class="py-2">متخصص</th>
+                    <th class="py-2">از تاریخ</th>
                     <th class="py-2">اشتراک تا</th>
                     <th class="py-2">وضعیت</th>
                 </tr>
@@ -43,7 +44,8 @@
                         <td class="py-3">{{ $salon->name }}</td>
                         <td class="py-3" style="color: var(--sa-text-dim);">/s/{{ $salon->slug }}</td>
                         <td class="py-3">{{ $salon->specialists_count }} / {{ $salon->max_specialists_count }}</td>
-                        <td class="py-3">{{ $salon->subscription_ends_at->format('Y-m-d') }}</td>
+                        <td class="py-3">{{ $salon->subscription_started_at ? jalali_date($salon->subscription_started_at) : '—' }}</td>
+                        <td class="py-3">{{ jalali_date($salon->subscription_ends_at) }}</td>
                         <td class="py-3">
                             @if ($salon->is_suspended)
                                 <span style="color: var(--sa-danger);">تعلیق‌شده</span>

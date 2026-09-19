@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\SuperAdmin;
 
+use App\Models\Invoice;
 use App\Models\Role;
 use App\Models\Salon;
 use App\Models\Specialist;
@@ -190,6 +191,49 @@ class SalonManagementTest extends TestCase
         $salon->refresh();
 
         $this->assertTrue($salon->subscription_ends_at->isSameDay(now()->addMonth()));
+    }
+
+    // ---------------------------------------------------------------------
+    // ⭐ فاز ۲، محور «۱. پرداخت آنلاین و صورتحساب» — تمدید دستی حالا هم در invoices ثبت می‌شود
+    // ---------------------------------------------------------------------
+
+    public function test_manual_renewal_records_a_paid_manual_invoice(): void
+    {
+        $salon = Salon::factory()->create([
+            'subscription_type' => '1m',
+            'subscription_ends_at' => now()->addDays(10),
+        ]);
+
+        $this->actingAs($this->superAdmin)
+            ->post("/superadmin/salons/{$salon->id}/renew", ['subscription_type' => '3m']);
+
+        $invoice = Invoice::withoutGlobalScope('salon')->where('salon_id', $salon->id)->first();
+
+        $this->assertNotNull($invoice);
+        $this->assertSame('paid', $invoice->status);
+        $this->assertSame('manual', $invoice->payment_method);
+        $this->assertSame('3m', $invoice->subscription_type);
+        $this->assertSame($this->superAdmin->id, $invoice->created_by);
+        $this->assertNull($invoice->ref_id);
+        $this->assertNotNull($invoice->paid_at);
+        $this->assertTrue($invoice->period_start->isSameDay(now()->addDays(10)));
+        $this->assertTrue($invoice->period_end->isSameDay($salon->fresh()->subscription_ends_at));
+    }
+
+    public function test_invoices_page_lists_only_that_salons_invoices(): void
+    {
+        $salonA = Salon::factory()->create();
+        $salonB = Salon::factory()->create();
+
+        Invoice::factory()->paid()->create(['salon_id' => $salonA->id]);
+        Invoice::factory()->paid()->create(['salon_id' => $salonB->id]);
+
+        $response = $this->actingAs($this->superAdmin)->get("/superadmin/salons/{$salonA->id}/invoices");
+
+        $response->assertOk();
+        $invoices = $response->viewData('invoices');
+        $this->assertCount(1, $invoices);
+        $this->assertSame($salonA->id, $invoices->first()->salon_id);
     }
 
     public function test_toggle_suspend_flips_a_regular_salons_status(): void

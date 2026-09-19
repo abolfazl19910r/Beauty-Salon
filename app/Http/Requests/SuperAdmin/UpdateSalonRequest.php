@@ -23,6 +23,10 @@ class UpdateSalonRequest extends FormRequest
             'max_specialists_count' => ['required', 'integer', 'min:0'],
             'module_permissions' => ['nullable', 'array'],
             'module_permissions.*' => ['string'],
+            // ⭐ فاز ۲، مورد ۹ («مرچنت آیدی مجزا برای هر سالن») — اختیاری: تا وقتی سالن خودش
+            // merchant_id واقعی‌اش را ثبت نکند، PaymentService به‌صورت خودکار روی merchant_id
+            // سراسری پلتفرم fallback می‌کند (به resolveMerchantId() در PaymentService نگاه کن).
+            'zarinpal_merchant_id' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    ⭐ فاز ۲ SaaS، محور «۳. ساب‌دامین اختصاصی» — چرا این فایل یک phpunit.xml جدا نیاز دارد،
+    نه یک override داخل خودِ تست:
+
+    config('app.central_domain') یک تصمیم سطح-boot است — routes/web.php فقط یک‌بار، در لحظه‌ی
+    بوت اپلیکیشن، بین Route::domain(...) و Route::prefix('s/{slug}') انتخاب می‌کند (دلیلش
+    سازگاری با `php artisan route:cache`، به docblock کنار 'central_domain' در
+    config/app.php نگاه کن). یک‌بار امتحان شد که CENTRAL_DOMAIN را داخل setUp() یک کلاس تست
+    (با putenv/$_ENV) عوض کنیم — در اجرای تکی همان فایل درست کار کرد، ولی در اجرای کل سوییت
+    (که همه‌ی تست‌ها در یک پردازش PHP مشترک اجرا می‌شن) مقدار درست اعمال نشد، چون
+    Illuminate\Support\Env یک Repository استاتیک/immutable برای کل عمر پردازش می‌سازد که به
+    تغییرات بعدی env حساس نیست. تنها راه قابل‌اعتماد، ست‌کردن این env در همون سطحی است که
+    <php><env> در phpunit.xml اصلی هم DB_CONNECTION را ست می‌کند — یعنی قبل از هر بوت اپ، در
+    یک پردازش PHP جدا.
+
+    اجرا: vendor/bin/phpunit -c phpunit.subdomain.xml
+    (phpunit.xml اصلی و ۱۰۱۳+ تست دیگر پروژه کاملاً دست‌نخورده و مستقل از این فایل باقی می‌مانند —
+    CENTRAL_DOMAIN در .env/.env.example همیشه خالی پیش‌فرض است.)
+-->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
+    <testsuites>
+        <testsuite name="Subdomain">
+            <file>tests/Feature/Middleware/SubdomainRoutingTest.php</file>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+    </source>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="CACHE_STORE" value="array"/>
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="PULSE_ENABLED" value="false"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="CENTRAL_DOMAIN" value="rasta-test.local"/>
+    </php>
+</phpunit>

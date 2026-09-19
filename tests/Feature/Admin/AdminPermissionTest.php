@@ -29,8 +29,12 @@ class AdminPermissionTest extends TestCase
         $response = $this->actingAs($this->admin)->get('/admin/permissions');
 
         $response->assertOk();
-        $this->assertCount(3, $response->viewData('permissions'));
-        $this->assertCount(2, $response->viewData('groups'));
+        // ⭐ فاز ۲ SaaS، محور «۲»: 2026_09_19_000201_add_salon_staff_finance_permissions همیشه ۸
+        // پرمیشن پایه (۷ پرمیشن نقش «منشی» + manage-wallet) در ۵ گروه دیگر از قبل می‌سازد؛ این
+        // migration مثل بقیه‌ی migrationهای این پروژه (مثلاً backfill سالن پیش‌فرض) همیشه اجرا
+        // می‌شود، پس این تست باید ۳ پرمیشن/۲ گروه *اضافه‌ی خودش* را روی همان baseline بشمارد.
+        $this->assertCount(3 + 8, $response->viewData('permissions'));
+        $this->assertCount(2 + 5, $response->viewData('groups'));
     }
 
     public function test_store_creates_a_permission(): void
@@ -86,7 +90,9 @@ class AdminPermissionTest extends TestCase
 
     public function test_destroy_refuses_to_delete_a_critical_permission(): void
     {
-        $permission = Permission::factory()->create(['name' => 'access_admin_panel']);
+        // ⭐ فاز ۲ SaaS، محور «۲»: از این پس همیشه از migration وجود دارد (سازگار با نقش «منشی»)؛
+        // factory()->create() با unique constraint روی name تصادم می‌کرد.
+        $permission = Permission::firstOrCreate(['name' => 'access_admin_panel']);
 
         $response = $this->actingAs($this->admin)->delete("/admin/permissions/{$permission->id}");
 
@@ -120,7 +126,8 @@ class AdminPermissionTest extends TestCase
     public function test_user_with_manage_roles_permission_via_role_can_access(): void
     {
         $role = Role::factory()->create();
-        $accessPermission = Permission::factory()->create(['name' => 'access_admin_panel']);
+        // ⭐ فاز ۲ SaaS، محور «۲»: access_admin_panel از این پس همیشه از migration وجود دارد.
+        $accessPermission = Permission::firstOrCreate(['name' => 'access_admin_panel']);
         $manageRolesPermission = Permission::factory()->create(['name' => 'manage-roles']);
         $role->permissions()->attach([$accessPermission->id, $manageRolesPermission->id]);
 

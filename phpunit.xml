@@ -10,6 +10,11 @@
         </testsuite>
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
+            <!-- ⭐ محور «۳. ساب‌دامین اختصاصی»: این یک فایل به یک CENTRAL_DOMAIN غیرخالی نیاز داره
+                 که فقط phpunit.subdomain.xml (در سطح <php><env>، قبل از هر بوت اپ) ست می‌کنه —
+                 به docblock بالای خودِ SubdomainRoutingTest.php نگاه کن. با این exclude، سوییت
+                 اصلی همچنان دقیقاً همون ۱۰۱۳ تست/۱ skip/۰ fail قبلی رو می‌ده. -->
+            <exclude>tests/Feature/Middleware/SubdomainRoutingTest.php</exclude>
         </testsuite>
     </testsuites>
     <source>

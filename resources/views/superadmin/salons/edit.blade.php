@@ -40,6 +40,18 @@
                 </div>
             </div>
 
+            <div>
+                <label class="sa-label">
+                    مرچنت آیدی اختصاصی زرین‌پال
+                    <span style="color: var(--sa-text-dim);">(اختیاری — خالی بمونه یعنی از حساب مشترک پلتفرم استفاده می‌شه)</span>
+                </label>
+                <input type="text" name="zarinpal_merchant_id" value="{{ old('zarinpal_merchant_id', $salon->zarinpal_merchant_id) }}" class="sa-input" dir="ltr">
+            </div>
+
+            <div class="flex items-center gap-3">
+                <a href="{{ route('superadmin.salons.invoices', $salon) }}" style="color: var(--sa-accent);">تاریخچه‌ی فاکتورها →</a>
+            </div>
+
             <button type="submit" class="sa-btn">ذخیره تغییرات</button>
         </form>
     </div>

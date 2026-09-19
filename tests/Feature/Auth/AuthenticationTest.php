@@ -37,6 +37,37 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect('/superadmin/dashboard');
     }
 
+    /**
+     * ⭐ باگ ۶ (گزارش‌شده ۲۰۲۶-۰۹-۱۸، رفع‌شده همان‌روز): این باگ متفاوت از رگرسیون بالاست —
+     * آن یکی مربوط به middleware 'guest' روی GET /login بود، این یکی مربوط به خودِ
+     * AuthenticatedSessionController::verify() است. وقتی یک سوپر ادمین *لاگین‌نشده* ابتدا یک
+     * صفحه‌ی محافظت‌شده (مثل /admin/dashboard) را باز می‌کند، middleware auth آدرس را در
+     * session به‌عنوان 'url.intended' ذخیره و به /login هدایت می‌کند. بعد از تکمیل کامل
+     * لاگین (رمز + OTP)، redirect()->intended() قبلاً همان آدرس ذخیره‌شده را برمی‌گرداند و
+     * redirectPath() صحیح (/superadmin/dashboard) را کاملاً نادیده می‌گرفت.
+     */
+    public function test_super_admin_login_ignores_stashed_intended_url_and_goes_to_superadmin_panel(): void
+    {
+        $superAdmin = User::factory()->create([
+            'password' => bcrypt('password123'),
+            'user_type' => 'staff',
+            'is_admin' => true,
+        ]);
+        $superAdminRole = Role::firstOrCreate(['name' => 'super-admin'], ['label' => 'سوپر ادمین']);
+        $superAdmin->assignRole($superAdminRole);
+
+        // Visiting a protected admin page while logged out stashes 'url.intended' in the session.
+        $this->get('/admin/dashboard');
+
+        $this->post('/login', ['phone' => $superAdmin->phone, 'password' => 'password123']);
+        $superAdmin->refresh();
+
+        $response = $this->post('/login/verify', ['code' => $superAdmin->login_verification_code]);
+
+        $response->assertRedirect('/superadmin/dashboard');
+        $this->assertAuthenticatedAs($superAdmin);
+    }
+
     public function test_users_with_correct_password_are_sent_to_otp_verification_not_logged_in_yet(): void
     {
         $user = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);

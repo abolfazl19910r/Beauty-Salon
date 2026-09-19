@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\CurrentSalon;
 use Illuminate\Support\Facades\Cache;
 
 class ReportCacheService
@@ -12,10 +13,7 @@ class ReportCacheService
 
     protected string $cachePrefix;
 
-    /**
-     * @return void
-     */
-    public function __construct()
+    public function __construct(protected CurrentSalon $currentSalon)
     {
         $this->cacheEnabled = config('cache.reports.enabled', true);
         $this->cacheTtl = config('cache.reports.ttl', 60); // دقیقه
@@ -103,6 +101,12 @@ class ReportCacheService
 
     protected function generateCacheKey(string $key): string
     {
-        return $this->cachePrefix.$key;
+        // ⭐ Fix (preventive, ۲۰۲۶-۰۹-۱۹ — پیگیری محور «۳»): remember()/put() این کلاس فعلاً
+        // هیچ‌جای کدبیس واقعاً صدا زده نمی‌شن (فقط flush() از Observerها) — یعنی امروز این یک
+        // نشتی فعال نیست. ولی اگه/وقتی در آینده برای کش گزارش‌های ادمین واقعاً استفاده بشه، بدون
+        // این fix دقیقاً همون باگ HomeController رو تکرار می‌کرد (کلید کش مشترک بین همه‌ی
+        // سالن‌ها). CurrentSalon()->id() می‌تونه null باشه (مثلاً یک context بدون سالن مشخص)؛
+        // در اون حالت هم هنوز deterministic و بی‌خطره (فقط یک namespace مشترک برای «بدون سالن»).
+        return $this->cachePrefix.($this->currentSalon->id() ?? 'none').':'.$key;
     }
 }

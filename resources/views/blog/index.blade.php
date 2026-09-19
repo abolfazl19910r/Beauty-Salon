@@ -40,11 +40,11 @@
 
     {{-- Page header --}}
     <div class="mb-10 fade-in">
-        <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase mb-2">وبلاگ سالن راستا</p>
+        <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase mb-2">وبلاگ سالن {{ $currentSalonName }}</p>
         <h1 class="text-3xl md:text-4xl font-bold text-[#E6CD8A]" style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">
             مقالات و نکات زیبایی
         </h1>
-        <p class="text-[#F8F3E9]/60 mt-2">آخرین مطالب، آموزش‌ها و اخبار سالن راستا</p>
+        <p class="text-[#F8F3E9]/60 mt-2">آخرین مطالب، آموزش‌ها و اخبار سالن {{ $currentSalonName }}</p>
     </div>
 
     {{-- Category filter --}}

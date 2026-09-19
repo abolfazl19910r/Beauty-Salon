@@ -91,11 +91,13 @@
                 <h1 class="text-xl font-bold" style="color: var(--admin-text);">داشبورد</h1>
                 <p class="text-sm mt-0.5" style="color: var(--admin-text-dim);">خلاصه وضعیت سیستم مدیریت سالن زیبایی</p>
             </div>
+            @permission('manage-wallet')
             <div class="flex items-center gap-1 p-1 rounded-lg" style="background: var(--admin-accent-light); border: 1px solid var(--admin-border);">
                 <button id="filter-today" class="filter-btn active" onclick="updateTimeFilter('today')">امروز</button>
                 <button id="filter-week"  class="filter-btn" onclick="updateTimeFilter('week')">هفته</button>
                 <button id="filter-month" class="filter-btn" onclick="updateTimeFilter('month')">ماه</button>
             </div>
+            @endpermission
         </div>
 
         {{-- Statistics cards --}}
@@ -116,6 +118,7 @@
             </div>
 
             {{-- Income --}}
+            @permission('manage-wallet')
             <div class="stat-card p-5 flex items-center gap-4">
                 <div class="stat-icon" style="background:#F0FDF4; color:#16A34A;">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -127,10 +130,11 @@
                         درآمد سالن
                         <span class="text-xs px-1.5 py-0.5 rounded mr-1" style="background:#DCFCE7; color:#166534;">%{{ $commissionRate ?? 10 }} کمیسیون</span>
                     </p>
-                    <p class="text-2xl font-bold persian-number" id="total-revenue" style="color:var(--admin-text);">{{ number_format($totalRevenue) }}</p>
+                    <p class="text-2xl font-bold persian-number" id="total-revenue" style="color:var(--admin-text);">{{ number_format($totalRevenue ?? 0) }}</p>
                 </div>
                 <a href="{{ route('admin.reports.index') }}" class="text-xs px-2 py-1 rounded" style="color:#16A34A; background:#F0FDF4;">گزارش</a>
             </div>
+            @endpermission
 
             {{-- Users --}}
             <div class="stat-card p-5 flex items-center gap-4">
@@ -165,6 +169,7 @@
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-5">
 
             {{-- Income chart --}}
+            @permission('manage-wallet')
             <div class="section-card xl:col-span-2">
                 <div class="section-header flex justify-between items-center">
                     <span>نمودار درآمد (<span id="revenue-chart-title">امروز</span>)</span>
@@ -175,9 +180,10 @@
                     </div>
                 </div>
             </div>
+            @endpermission
 
             {{-- Popular services --}}
-            <div class="section-card">
+            <div class="section-card @if(auth()->user()->hasPermission('manage-wallet')) @else xl:col-span-3 @endif">
                 <div class="section-header">خدمات محبوب (۳۰ روز اخیر)</div>
                 <div class="p-4 space-y-4" id="popular-services-container">
                     @forelse($popularServices as $service)
@@ -355,8 +361,13 @@
 
             // Initial rendering with week data (server-side)
             // initialData format from PHP: [{date, total}]
-            const initialData = @json($weeklyRevenue ?? []);
-            renderChart(initialData);
+            // ⭐ فاز ۲ SaaS، محور «۲» — این عنصر فقط وقتی در DOM هست که کاربر مجوز manage-wallet
+            // داره (@@permission در بالای همین فایل)؛ بدون این گارد، renderChart روی null.innerHTML
+            // خطای جاوااسکریپت می‌داد.
+            if (document.getElementById('revenue-chart')) {
+                const initialData = @json($weeklyRevenue ?? []);
+                renderChart(initialData);
+            }
 
             // --- Interval filter ---
             function updateTimeFilter(period) {

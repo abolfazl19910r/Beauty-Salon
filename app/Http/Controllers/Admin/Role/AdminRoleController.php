@@ -15,7 +15,15 @@ class AdminRoleController extends Controller
 {
     public function index(): View
     {
-        $roles = Role::withCount('users')->paginate(10);
+        // ⭐ باگ ۷ (گزارش‌شده ۲۰۲۶-۰۹-۱۸، رفع‌شده همان‌روز): این کوئری قبلاً نقش super-admin
+        // را (نام + برچسب فارسی) در جدول لیست نقش‌ها به هر ادمین معمولی هم نشان می‌داد — فقط
+        // دکمه‌های عملیات مخفی بودند، نه خودِ ردیف. escalation نبود ولی نشت اطلاعات بود.
+        $roles = Role::withCount('users')
+            ->when(
+                ! auth()->user()?->hasRole('super-admin'),
+                fn ($query) => $query->where('name', '!=', 'super-admin')
+            )
+            ->paginate(10);
 
         return view('admin.roles.index', compact('roles'));
     }
@@ -61,6 +69,11 @@ class AdminRoleController extends Controller
 
     public function show(Role $role): View
     {
+        // ⭐ باگ ۷ (ادامه): show() تنها متد این کنترلر بود که guardSuperRole() نداشت — یک ادمین
+        // معمولی می‌توانست مستقیماً /admin/roles/{super-admin-role-id} را باز کند و ببیند چه
+        // کسانی سوپر ادمین‌اند و این نقش چه مجوزهایی دارد.
+        $this->guardSuperRole($role);
+
         $users = $role->users()->paginate(10);
         $permissions = $role->permissions->groupBy('group');
 
