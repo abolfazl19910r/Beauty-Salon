@@ -12,7 +12,7 @@
             </div>
             <div class="relative flex flex-col sm:flex-row items-center justify-between gap-6">
                 <div>
-                    <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase mb-2">سالن راستا</p>
+                    <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase mb-2">سالن {{ $currentSalonName }}</p>
                     <h1 class="text-2xl md:text-3xl font-bold text-[#E6CD8A] mb-2"
                         style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">باشگاه مشتریان وفادار</h1>
                     <p class="text-[#F8F3E9]/60 text-sm">از هر خرید امتیاز بگیرید و جوایز ویژه دریافت کنید</p>

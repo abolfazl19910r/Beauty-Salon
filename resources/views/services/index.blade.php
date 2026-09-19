@@ -41,7 +41,7 @@
 
     {{-- Page header --}}
     <div class="mb-10 fade-in">
-        <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase mb-2">خدمات سالن راستا</p>
+        <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase mb-2">خدمات سالن {{ $currentSalonName }}</p>
         <h1 class="text-3xl md:text-4xl font-bold text-[#E6CD8A]" style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">
             خدمات ویژه ما
         </h1>

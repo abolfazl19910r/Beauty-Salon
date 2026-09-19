@@ -70,7 +70,7 @@
 
     <div class="mt-5 flex items-start gap-2 bg-[#C9A24B]/10 border border-[#C9A24B]/20 rounded-lg px-4 py-3 text-sm text-[#F8F3E9]/70">
         <svg class="w-4 h-4 shrink-0 mt-0.5 text-[#C9A24B]" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-4a1 1 0 112 0 1 1 0 01-2 0zm1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-        خوش آمدید! با تایید شماره موبایل می‌توانید از تمام خدمات سالن راستا استفاده کنید.
+        خوش آمدید! با تایید شماره موبایل می‌توانید از تمام خدمات سالن {{ $currentSalonName }} استفاده کنید.
     </div>
 
     <script>

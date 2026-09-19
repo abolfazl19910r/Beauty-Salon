@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'راستا | سالن زیبایی لوکس')
+@section('title', $currentSalonName . ' | سالن زیبایی لوکس')
 
 @section('full-width', true)
 
@@ -170,7 +170,7 @@
                     زیبایی &nbsp; اصیل &nbsp; ایرانی
                 </p>
                 <h1 class="hero-anim delay-1 font-serif-fa text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6 text-[var(--rasta-cream)]">
-                    تجربه‌ای لوکس از زیبایی و آرامش در سالن <span class="text-[var(--rasta-gold-light)]">راستا</span>
+                    تجربه‌ای لوکس از زیبایی و آرامش در سالن <span class="text-[var(--rasta-gold-light)]">{{ $currentSalonName }}</span>
                 </h1>
                 <p class="hero-anim delay-2 text-base md:text-lg text-[var(--rasta-cream)]/80 max-w-xl mx-auto mb-10 leading-8">
                     از طراحی مو و میکاپ عروس تا مراقبت پوست و ناخن؛ تیمی از متخصصان حرفه‌ای در کنار شما برای روزی به‌یادماندنی.
@@ -282,7 +282,7 @@
                     <p class="eyebrow text-[var(--rasta-gold-light)] text-sm font-semibold mb-3">درباره &nbsp; ما</p>
                     <h2 class="font-serif-fa text-3xl md:text-4xl font-bold mb-6">سالنی برای حسِ خاص‌بودن</h2>
                     <p class="text-[var(--rasta-cream)]/75 leading-8 mb-6">
-                        سالن زیبایی راستا با سال‌ها تجربه در صنعت زیبایی، فضایی آرام و لوکس را برای مراقبت کامل از مو، پوست و زیبایی شما فراهم کرده است. تیم ما متشکل از متخصصین باتجربه و دارای گواهینامه‌های بین‌المللی است.
+                        سالن زیبایی {{ $currentSalonName }} فضایی آرام و لوکس را برای مراقبت کامل از مو، پوست و زیبایی شما فراهم کرده است. تیم ما متشکل از متخصصین باتجربه و دارای گواهینامه‌های بین‌المللی است.
                     </p>
                     <ul class="space-y-3">
                         <li class="flex items-center gap-3 text-sm text-[var(--rasta-cream)]/80">
@@ -300,7 +300,7 @@
                     </ul>
                 </div>
                 <div class="fade-up fade-up-delay-2 order-1 lg:order-2">
-                    <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=1200&auto=format&fit=crop" alt="فضای سالن زیبایی راستا" loading="lazy" class="rounded-3xl w-full h-[420px] object-cover shadow-2xl">
+                    <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=1200&auto=format&fit=crop" alt="فضای سالن زیبایی {{ $currentSalonName }}" loading="lazy" class="rounded-3xl w-full h-[420px] object-cover shadow-2xl">
                 </div>
             </div>
         </section>
@@ -404,7 +404,7 @@
         <section id="gallery" class="py-20 px-4 max-w-7xl mx-auto">
             <div class="text-center mb-12 fade-up">
                 <h2 class="font-serif-fa text-3xl md:text-5xl font-bold text-[var(--rasta-gold-light)] mb-4">گالری تصاویر</h2>
-                <p class="text-[var(--rasta-cream)]/70 max-w-2xl mx-auto leading-8">نمونه‌ای از کارهای انجام‌شده در سالن راستا</p>
+                <p class="text-[var(--rasta-cream)]/70 max-w-2xl mx-auto leading-8">نمونه‌ای از کارهای انجام‌شده در سالن {{ $currentSalonName }}</p>
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -421,7 +421,7 @@
 
                 @foreach($galleryList as $index => $img)
                     <a href="{{ $img->instagram_link ?? '#' }}" target="{{ isset($img->instagram_link) ? '_blank' : '_self' }}" class="gallery-item relative aspect-square rounded-xl overflow-hidden block fade-up fade-up-delay-{{ ($index % 3) + 1 }}">
-                        <img src="{{ $img->image }}" alt="نمونه کار سالن راستا" loading="lazy" class="w-full h-full object-cover">
+                        <img src="{{ $img->image }}" alt="نمونه کار سالن {{ $currentSalonName }}" loading="lazy" class="w-full h-full object-cover">
                         @if(isset($img->instagram_link))
                             <div class="overlay absolute inset-0 bg-black/40 flex items-center justify-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.25.07 1.62.07 4.81s-.01 3.56-.07 4.81c-.15 3.23-1.66 4.77-4.92 4.92-1.25.06-1.62.07-4.85.07s-3.6 0-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92-.06-1.25-.07-1.62-.07-4.81s.01-3.56.07-4.81c.15-3.23 1.67-4.77 4.92-4.92C8.4 2.2 8.8 2.2 12 2.2zm0 1.8c-3.14 0-3.5.01-4.74.07-2.27.1-3.39 1.24-3.49 3.49C3.7 8.8 3.7 9.16 3.7 12s0 3.2.06 4.44c.1 2.25 1.22 3.4 3.49 3.49 1.24.06 1.6.07 4.74.07s3.5-.01 4.74-.07c2.27-.1 3.39-1.24 3.49-3.49.06-1.24.07-1.6.07-4.44s0-3.2-.06-4.44c-.1-2.25-1.23-3.39-3.49-3.49C15.5 4.01 15.14 4 12 4zm0 3.4a4.6 4.6 0 110 9.2 4.6 4.6 0 010-9.2zm0 1.8a2.8 2.8 0 100 5.6 2.8 2.8 0 000-5.6zm5.85-3.05a1.1 1.1 0 110 2.2 1.1 1.1 0 010-2.2z"/></svg>
@@ -440,7 +440,7 @@
                 وقت آن رسیده که به خودتان برسید
             </h2>
             <p class="text-[var(--rasta-cream)]/75 max-w-xl mx-auto mb-10 leading-8">
-                همین حالا نوبت خود را رزرو کنید و تجربه‌ای متفاوت از زیبایی و آرامش را در سالن راستا تجربه کنید.
+                همین حالا نوبت خود را رزرو کنید و تجربه‌ای متفاوت از زیبایی و آرامش را در سالن {{ $currentSalonName }} تجربه کنید.
             </p>
             <a href="{{ route('bookings.create') }}" class="btn-gold inline-block rounded-full px-10 py-4 font-bold text-lg">
                 همین حالا رزرو کنید

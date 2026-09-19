@@ -149,7 +149,7 @@
 <body>
 
 <div class="report-header">
-    <div class="brand">راستا — سالن زیبایی</div>
+    <div class="brand">{{ $specialist->salon?->name ?? config('app.name', 'راستا') }} — سالن زیبایی</div>
     <div class="doc-title">
         <strong>گزارش عملکرد متخصص</strong>
         صادر شده در: {{ \Morilog\Jalali\Jalalian::now()->format('Y/m/d H:i') }}
@@ -223,7 +223,7 @@
 </div>
 
 <div class="footer">
-    این گزارش توسط سیستم مدیریت سالن زیبایی راستا به صورت خودکار صادر شده است.
+    این گزارش توسط سیستم مدیریت سالن زیبایی {{ $specialist->salon?->name ?? config('app.name', 'راستا') }} به صورت خودکار صادر شده است.
 </div>
 
 </body>

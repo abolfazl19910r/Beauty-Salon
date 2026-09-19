@@ -58,7 +58,7 @@
     <div class="max-w-3xl mx-auto fade-in">
         {{-- Header --}}
         <div class="mb-8">
-            <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase mb-1">سالن راستا</p>
+            <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase mb-1">سالن {{ $currentSalonName }}</p>
             <h1 class="text-2xl md:text-3xl font-bold text-[#E6CD8A]"
                 style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">رزرو نوبت جدید</h1>
         </div>

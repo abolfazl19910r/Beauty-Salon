@@ -8,7 +8,7 @@
                 <line x1="23" y1="11" x2="17" y2="11"/>
             </svg>
         </div>
-        <h2 class="text-2xl font-bold" style="font-family:'Noto Naskh Arabic','Vazirmatn',serif; color:#E6CD8A">ثبت نام در راستا</h2>
+        <h2 class="text-2xl font-bold" style="font-family:'Noto Naskh Arabic','Vazirmatn',serif; color:#E6CD8A">ثبت نام در {{ $currentSalonName }}</h2>
         <p class="text-sm text-[#F8F3E9]/60 mt-1">برای استفاده از خدمات ما ثبت نام کنید</p>
     </div>
 

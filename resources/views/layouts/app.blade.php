@@ -12,7 +12,7 @@
     <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 
-    <title>@yield('title') | راستا</title>
+    <title>@yield('title') | {{ $currentSalonName }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -106,7 +106,7 @@
             <svg class="w-7 h-7 text-[var(--rasta-gold-light)]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
             </svg>
-            <span class="text-xl md:text-2xl font-serif-fa font-bold text-[var(--rasta-gold-light)]">راستا</span>
+            <span class="text-xl md:text-2xl font-serif-fa font-bold text-[var(--rasta-gold-light)]">{{ $currentSalonName }}</span>
         </a>
 
         <div class="hidden md:flex items-center gap-6 text-sm">
@@ -364,9 +364,9 @@
     <div class="container mx-auto px-4 py-12">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
             <div>
-                <h3 class="font-serif-fa text-xl font-bold text-[var(--rasta-gold-light)] mb-3">راستا</h3>
+                <h3 class="font-serif-fa text-xl font-bold text-[var(--rasta-gold-light)] mb-3">{{ $currentSalonName }}</h3>
                 <p class="text-[var(--rasta-cream)]/60 text-sm leading-7">
-                    سالن زیبایی راستا با بیش از ۱۰ سال سابقه درخشان، آماده ارائه بهترین خدمات زیبایی، آرایش و مراقبت پوست و مو به شما عزیزان است.
+                    سالن زیبایی {{ $currentSalonName }} آماده ارائه بهترین خدمات زیبایی، آرایش و مراقبت پوست و مو به شما عزیزان است.
                 </p>
             </div>
 
@@ -416,7 +416,7 @@
         </div>
 
         <div class="border-t border-[var(--rasta-gold)]/10 mt-8 pt-6 text-center text-[var(--rasta-cream)]/40 text-sm">
-            <p>© {{ date('Y') }} سالن زیبایی راستا. تمامی حقوق محفوظ است.</p>
+            <p>© {{ date('Y') }} سالن زیبایی {{ $currentSalonName }}. تمامی حقوق محفوظ است.</p>
         </div>
     </div>
 </footer>

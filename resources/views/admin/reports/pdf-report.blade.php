@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>گزارش {{ $typeLabel ?? 'مدیریتی' }} — سالن زیبایی راستا</title>
+    <title>گزارش {{ $typeLabel ?? 'مدیریتی' }} — سالن زیبایی {{ $currentSalonName }}</title>
     <style>
         @font-face {
             font-family: 'vazir';
@@ -183,7 +183,7 @@
 
 {{-- Letterhead --}}
 <div class="report-header">
-    <div class="brand">سالن زیبایی راستا</div>
+    <div class="brand">سالن زیبایی {{ $currentSalonName }}</div>
     <div class="doc-title">
         <strong>گزارش {{ $typeLabel ?? 'مدیریتی' }}</strong>
         تاریخ: {{ jalali_date(now(), 'Y/m/d') }} &nbsp; ساعت: {{ now()->format('H:i') }}
@@ -342,7 +342,7 @@
 
 {{-- Footer --}}
 <div class="footer">
-    <div class="f-right">سیستم مدیریت سالن زیبایی راستا</div>
+    <div class="f-right">سیستم مدیریت سالن زیبایی {{ $currentSalonName }}</div>
     <div class="f-left">صفحه {PAGENO} از {nbpg}</div>
 </div>
 
