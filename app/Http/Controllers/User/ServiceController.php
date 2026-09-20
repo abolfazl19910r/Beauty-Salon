@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\BeautyService;
 use App\Models\Category;
 use App\Models\WalletSetting;
+use App\Support\CurrentSalon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class ServiceController extends Controller
 {
+    public function __construct(protected CurrentSalon $currentSalon) {}
+
     public function index(): View
     {
         // ⚠️ N+1 fix: Without with('category'), each service on this page
@@ -53,7 +56,19 @@ class ServiceController extends Controller
         // it always reflects the current admin-configured wallet_settings.prepayment_percentage/
         // minimum_prepayment_amount on every request, regardless of how stale the underlying
         // service-price cache is — no cache invalidation wiring needed for settings changes.
-        $services = Cache::remember('all_beauty_services', now()->addMinutes(30), fn () => BeautyService::all());
+        //
+        // ⭐ Fix (same cross-tenant leak class as HomeController's home_services/home_specialists,
+        // found while moving this route under /s/{salon_slug}): the cache key used to be the
+        // literal string 'all_beauty_services' with no salon identifier, even though
+        // BeautyService is salon-scoped (BelongsToSalon). Once this route is actually reached
+        // through 'salon.resolve' (CurrentSalon reliably bound here), an unscoped key would have
+        // let whichever salon hit this endpoint first populate a 30-minute cache that every OTHER
+        // salon's booking page then silently inherited — the exact same bug, just moved from the
+        // query layer into the cache layer instead of being fixed. Suffixing with the salon id
+        // gives every salon its own bucket, same as HomeController.
+        $salonId = $this->currentSalon->id();
+
+        $services = Cache::remember("beauty_services:{$salonId}", now()->addMinutes(30), fn () => BeautyService::all());
 
         $settings = WalletSetting::get();
         $services = $services->map(function (BeautyService $service) use ($settings) {
