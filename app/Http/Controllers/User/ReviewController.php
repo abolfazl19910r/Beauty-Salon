@@ -135,6 +135,13 @@ class ReviewController extends Controller
             ? $specialistId
             : \App\Models\Specialist::findOrFail($specialistId);
 
+        // ⭐ Fix (customer-facing implicit-binding audit, 2026-09-20): {specialist} is resolved by
+        // the global Route::bind('specialist', ...) in RouteServiceProvider BEFORE salon.resolve
+        // sets CurrentSalon (same SubstituteBindings-runs-first race already fixed across the
+        // admin panel) — so without this check, another salon's specialist (and their real
+        // reviews/rating stats) was fully readable here regardless of which salon's URL you used.
+        $this->ensureSalonOwnership($specialist->salon_id);
+
         $reviews = Review::with(['user', 'service'])
             ->where('specialist_id', $specialist->id)
             ->approved()

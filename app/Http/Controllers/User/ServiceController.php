@@ -37,6 +37,8 @@ class ServiceController extends Controller
 
     public function show(BeautyService $service): View
     {
+        $this->ensureSalonOwnership($service->salon_id);
+
         $specialists = $service->specialists()
             ->with(['schedules' => fn ($q) => $q->where('is_active', true)->orderBy('day_of_week')])
             ->get();

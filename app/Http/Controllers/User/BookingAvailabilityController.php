@@ -15,9 +15,27 @@ class BookingAvailabilityController extends Controller
 {
     public function getAvailableTimeSlots(Request $request, $specialist, $date): JsonResponse
     {
+        // ⭐ Fix (customer-facing implicit-binding audit, 2026-09-20): resolved and ownership-
+        // checked BEFORE the try/catch below on purpose — ensureSalonOwnership() aborts with a
+        // genuine 404 (HttpException), and HttpException extends \Exception, so raising it
+        // *inside* the try block would have been silently caught by the generic `catch
+        // (Exception $e)` further down and turned into a misleading 500. Same reasoning applies
+        // to getAvailableDates()/getSpecialistsByService() below.
         try {
             $specialistModel = $this->resolveSpecialist($specialist);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::error('متخصص یافت نشد در getAvailableTimeSlots', [
+                'specialist_param' => is_object($specialist) ? get_class($specialist) : $specialist,
+                'date' => $date,
+                'error' => $e->getMessage(),
+            ]);
 
+            return response()->json(['slots' => [], 'message' => 'متخصص مورد نظر یافت نشد'], 404);
+        }
+
+        $this->ensureSalonOwnership($specialistModel->salon_id);
+
+        try {
             $carbonDate = Carbon::parse($date);
             $dayOfWeek = $carbonDate->dayOfWeek;
             $serviceDuration = $this->resolveServiceDuration($request->query('service_id'));
@@ -60,15 +78,6 @@ class BookingAvailabilityController extends Controller
                 ],
             ]);
 
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            Log::error('متخصص یافت نشد در getAvailableTimeSlots', [
-                'specialist_param' => is_object($specialist) ? get_class($specialist) : $specialist,
-                'date' => $date,
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json(['slots' => [], 'message' => 'متخصص مورد نظر یافت نشد'], 404);
-
         } catch (Exception $e) {
             Log::error('خطا در دریافت اسلات‌های زمانی', [
                 'specialist_param' => is_object($specialist) ? get_class($specialist) : $specialist,
@@ -85,7 +94,18 @@ class BookingAvailabilityController extends Controller
     {
         try {
             $specialistModel = $this->resolveSpecialist($specialist);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::error('متخصص یافت نشد در getAvailableDates', [
+                'specialist_param' => is_object($specialist) ? get_class($specialist) : $specialist,
+                'error' => $e->getMessage(),
+            ]);
 
+            return response()->json(['error' => 'متخصص مورد نظر یافت نشد', 'dates' => []], 404);
+        }
+
+        $this->ensureSalonOwnership($specialistModel->salon_id);
+
+        try {
             $dates = [];
             $startDate = Carbon::today();
 
@@ -118,14 +138,6 @@ class BookingAvailabilityController extends Controller
 
             return response()->json($dates);
 
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            Log::error('متخصص یافت نشد در getAvailableDates', [
-                'specialist_param' => is_object($specialist) ? get_class($specialist) : $specialist,
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json(['error' => 'متخصص مورد نظر یافت نشد', 'dates' => []], 404);
-
         } catch (Exception $e) {
             Log::error('خطا در دریافت تاریخ‌ها', [
                 'specialist_param' => is_object($specialist) ? get_class($specialist) : $specialist,
@@ -140,7 +152,18 @@ class BookingAvailabilityController extends Controller
     {
         try {
             $service = $this->resolveService($serviceId);
+        } catch (Exception $e) {
+            Log::error('خطا در دریافت متخصصین', [
+                'service_id' => $serviceId,
+                'error' => $e->getMessage(),
+            ]);
 
+            return response()->json(['error' => 'خطا در دریافت متخصصین'], 500);
+        }
+
+        $this->ensureSalonOwnership($service->salon_id);
+
+        try {
             $specialists = $service->specialists()
                 ->select('specialists.id', 'specialists.name', 'specialists.email', 'specialists.phone')
                 ->get();

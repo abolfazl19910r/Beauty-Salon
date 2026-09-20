@@ -55,6 +55,8 @@ class SpecialistController extends Controller
 
     public function byService(BeautyService $service): View|JsonResponse
     {
+        $this->ensureSalonOwnership($service->salon_id);
+
         $specialists = $service->specialists()
             ->whereNull('specialists.deleted_at')
             ->withCount(['bookings as completed_bookings' => function ($query) {
@@ -75,6 +77,8 @@ class SpecialistController extends Controller
 
     public function availableSlots(Specialist $specialist, $date, Request $request): JsonResponse
     {
+        $this->ensureSalonOwnership($specialist->salon_id);
+
         $duration = $request->service_duration;
         $slots = $specialist->getAvailableSlots($date, $duration);
 
@@ -93,6 +97,8 @@ class SpecialistController extends Controller
 
     public function availability(Specialist $specialist, Request $request): View|JsonResponse
     {
+        $this->ensureSalonOwnership($specialist->salon_id);
+
         $month = $request->month ?? date('m');
         $year = $request->year ?? date('Y');
         $yearMonth = "{$year}-{$month}";
@@ -172,6 +178,8 @@ class SpecialistController extends Controller
 
     public function show(Specialist $specialist): View|JsonResponse
     {
+        $this->ensureSalonOwnership($specialist->salon_id);
+
         if ($specialist->deleted_at) {
             abort(404);
         }

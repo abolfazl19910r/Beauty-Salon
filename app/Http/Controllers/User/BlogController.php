@@ -29,6 +29,8 @@ class BlogController extends Controller
 
     public function show(BlogPost $post): View
     {
+        $this->ensureSalonOwnership($post->salon_id);
+
         if (! $post->is_published || $post->published_at > now()) {
             abort(404);
         }
