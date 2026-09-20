@@ -4715,3 +4715,90 @@ specialists meeting the rating and count threshold` چون `topRated()` از ی�
 تنها مورد باز باقی‌مانده:
 - قیمت‌های config/billing.php و SMS_QUOTA_PER_MONTH تخمینی‌ان — بعد از اولین دوره‌ی واقعی
   فاکتور Kavenegar/هاستینگ حتماً بازبینی بشن (آگاهانه به تعویق افتاده، خودِ ابوالفضل).
+
+---
+
+## ⭐⭐⭐ فاز جدید بزرگ (تصمیم ۲۰۲۶-۰۹-۲۰): معرفی Repository Pattern + حذف کامل کامنت‌ها
+
+### زمینه و تصمیم
+ابوالفضل تشخیص داد که پروژه با اینکه از FormRequest برای ولیدیشن و از لایه‌ی Service برای
+منطق تجاری استفاده می‌کنه (که با اصول SOLID/separation-of-concerns هم‌راستاست)، هیچ لایه‌ی
+Repository نداره — کوئری‌های واقعی دیتابیس (`Model::where/find/create/update/paginate/...` و
+`DB::table`/`DB::raw`) مستقیم داخل کنترلرها و سرویس‌ها نوشته شدن. تصمیم: این کوئری‌ها به یک
+لایه‌ی Repository جدا منتقل بشن (Repository ← Service ← Controller). **هم‌زمان**، تصمیم دوم:
+تمام کامنت‌های فایل‌ها (فارسی و انگلیسی) حذف بشن.
+
+⚠️ **نکته‌ی مهم برای آگاهی (نه مخالفت، فقط یادداشت‌شده تا آگاهانه باشه)**: بخش زیادی از کامنت‌های
+این پروژه (علامت ⭐، در ۱۴۲ فایل) دقیقاً همون «حافظه‌ی نهادی» بین نشست‌هاست — مستندسازی باگ‌های
+واقعی پیدا‌شده، چرایی تصمیم‌های غیربدیهی، و هشدارهای «این‌کارو نکن چون قبلاً امتحان شده و باگ
+داده». حذف کاملشون از کد یعنی این تاریخچه فقط همین‌جا (`Rasta_unified_prompt.md`) باقی می‌مونه،
+نه کنار خودِ کدی که به اون دلیل نوشته شده. تصمیم نهایی با ابوالفضله؛ این فقط یادداشت شد که در
+آینده اگه یک باگ مشابه گذشته دوباره تکرار شد، دلیلش این حذف کامنت‌ها نباشه.
+
+### ممیزی اولیه‌ی پروژه (انجام‌شده همین نشست، برای این فازبندی)
+- `app/Http/Controllers`: ۷۸ فایل — `app/Services`: ۳۶ فایل — `app/Models`: ۴۴ فایل —
+  `app/Http/Requests`: ۶۲ فایل — کل `app/`: ۳۳۷ فایل PHP
+- کوئری‌های مستقیم Eloquent (`::where/find/create/update/first/all/paginate/withCount/with(/
+  orderBy/whereHas/latest/withoutGlobalScope`) در کنترلرها: **۴۳ فایل، ۱۲۷ occurrence**؛ در
+  سرویس‌ها: **۲۴ فایل، ۱۰۹ occurrence**
+- `DB::table`/`DB::raw`/`DB::select`: **۴۹ occurrence** در کل `app/`
+- کامنت (خط شروع‌شده با `//`، `#`، `*`، `/*`) در `app/`: **~۲۸۰۷ خط**، در **۱۴۲ فایل** علامت ⭐
+- هیچ پوشه/الگوی Repository از قبل در پروژه وجود نداره (بررسی شد — صفر نتیجه)
+- `SupportTicket`/`SupportTicketMessage` مدل دارن ولی هیچ Controller/route فعالی بهشون وصل
+  نیست — یا فیچر ناتمام رهاشده‌ست یا کاملاً مرده؛ باید در فاز جاروب نهایی بررسی و تصمیم‌گیری بشه
+  (حذف کامل، یا واقعاً پیاده‌سازی، یا نادیده گرفتن).
+
+### قرارداد Repository (باید در فاز ۰ دقیقاً همین‌طور اجرا بشه)
+- **داخل Repository**: هر چیزی که مستقیم روی Model کوئری می‌زنه و به دیتابیس می‌رسه —
+  `where/find/create/update/delete/paginate/with/withCount/orderBy/whereHas/latest/
+  withoutGlobalScope`، `DB::table`/`DB::raw`.
+- **داخل Model می‌مونه** (منتقل نمی‌شه): تعریف relationship methods (`hasMany`/`belongsTo`/...)،
+  accessor/mutator، scope‌های تعریف‌شده‌ی خودِ مدل (`scopeActive()` و مشابه — چون این‌ها رفتار
+  خودِ مدلن، نه یک کوئری بیرونی روی مدل)، cast‌ها، `$fillable`.
+- **داخل Service می‌مونه** (منتقل نمی‌شه): منطق تجاری، `DB::transaction`، هماهنگی چند
+  Repository/Model با هم، dispatch کردن Job/Event/Notification، محاسبات (مثلاً
+  `WalletSetting::calculatePrepaymentAmount`، `SuperAdminService::addSubscriptionPeriod`).
+- هر Repository یک Interface (`App\Repositories\Contracts\XRepositoryInterface`) و یک
+  پیاده‌سازی (`App\Repositories\Eloquent\XRepository`) داره؛ bind شدن در یک
+  `RepositoryServiceProvider` جدید. Serviceها به Interface تزریق می‌شن (constructor injection)،
+  نه به پیاده‌سازی مستقیم — دقیقاً همون الگوی موجود پروژه برای Serviceها.
+- یک `BaseRepository` عمومی (متدهای مشترک: `find`, `create`, `update`, `delete`, `paginate`)
+  که Repositoryهای خاص از اون extend می‌کنن و متدهای دامنه‌محورِ خودشون رو اضافه می‌کنن (مثلاً
+  `BookingRepository::findOverlapping(...)`).
+
+### فازبندی (هر فاز = یک یا چند پچ مستقل، verify‌شده، تحویل‌شده — دقیقاً همون روال patch delivery
+همیشگی پروژه). هر فاز هم‌زمان کوئری‌های همون دامنه رو به Repository منتقل می‌کنه **و** کامنت‌های
+همون فایل‌های لمس‌شده رو حذف می‌کنه — تا هر فایل فقط یک‌بار دست بخوره.
+
+| فاز | نام | دامنه (مدل‌ها) | کنترلر/سرویس‌های اصلی درگیر | وضعیت |
+|---|---|---|---|---|
+| ۰ | R-Repo-Foundation | — (زیرساخت) | `BaseRepository`, Contracts, `RepositoryServiceProvider`, pilot روی `Category` | ⬜ شروع‌نشده |
+| ۱ | R-Repo-Services | BeautyService, Category | ServiceController, AdminServiceController, AdminCategoryController, CategoryService | ⬜ شروع‌نشده |
+| ۲ | R-Repo-Specialists | Specialist, SpecialistSchedule, Leave, Holiday | SpecialistController (user+admin), AdminSpecialistScheduleController, AdminLeaveController, AdminHolidayController, SpecialistScheduleSelfService*, SpecialistLeave* | ⬜ شروع‌نشده |
+| ۳ | R-Repo-Bookings | Booking | BookingController, BookingReservationController, BookingRescheduleController, BookingAvailabilityController, AdminBookingController, BookingService | ⬜ شروع‌نشده |
+| ۴ | R-Repo-Payments | Payment, Invoice | PaymentController, SecurePaymentController, AdminBillingController, PaymentService, SecurePaymentService, InvoiceService, SubscriptionPaymentService | ⬜ شروع‌نشده |
+| ۵ | R-Repo-Wallet | AdminWallet(+Transaction), SpecialistWallet, UserWallet(+Transaction), WithdrawalRequest, WalletSetting | AdminWalletController, SpecialistWalletController, SpecialistWithdrawalController, AdminWithdrawalController, SpecialistIbanController, UserWalletController, WalletAdminService, SpecialistWalletService | ⬜ شروع‌نشده |
+| ۶ | R-Repo-Loyalty | LoyaltyPoint, LoyaltySetting, Reward, Loyalty, DiscountCode, DiscountUsage | LoyaltyController, AdminLoyaltyPointsController, AdminLoyaltyRewardController, AdminDiscountCodeController, BookingDiscountController, LoyaltyService, LoyaltyAdminService, DiscountCalculator | ⬜ شروع‌نشده |
+| ۷ | R-Repo-Content | BlogPost, BlogCategory, GalleryImage, Announcement, Review, ReviewToken | BlogController, AdminBlogController, AdminBlogCategoryController, AdminGalleryController, AnnouncementController, AdminAnnouncementController, ReviewController, AdminReviewController, SpecialistReviewController | ⬜ شروع‌نشده |
+| ۸ | R-Repo-Users-Auth | User, Role, Permission, salon_admins | RegisteredUserController, AuthenticatedSessionController, PasswordReset*, PhoneVerification*, TwoFactor*, CustomerRegistered/Authenticated*, AdminUserManagementController, AdminRoleController, AdminPermissionController, AdminUserService | ⬜ شروع‌نشده |
+| ۹ | R-Repo-Security | SecurityLog, SecuritySetting | SecurityController (user), AdminSecurityController, SecurityLogService | ⬜ شروع‌نشده |
+| ۱۰ | R-Repo-Salon | Salon, SalonSmsUsage | SuperAdminController, SuperAdminService, SalonSignupController/Service | ⬜ شروع‌نشده |
+| ۱۱ | R-Repo-Reports-Notif | ReportExport, ScheduledReport(+Run), NotificationSetting, UserNotification, UserReportSetting | AdminReportsController, AdminReportExportController, AdminNotificationController, AdminNotificationSettingController, SpecialistNotificationController, ReportCacheService, SmsQuotaService | ⬜ شروع‌نشده |
+| ۱۲ | R-Repo-Sweep | SupportTicket(+Message) + هر مدل/فایل جامانده | تصمیم‌گیری در مورد SupportTicket + هر Controller/Service که در فازهای بالا نیومده | ⬜ شروع‌نشده |
+| ۱۳ | R-Repo-CommentSweep | — | حذف کامنت از فایل‌های لمس‌نشده در فازهای بالا: `routes/*`, `config/*`, `database/migrations/*`, `app/Providers/*`, factories, seeders | ⬜ شروع‌نشده |
+| ۱۴ | R-Repo-Final | — | اجرای کامل `php artisan test` بعد از همه‌ی فازها + گزارش نهایی + جمع‌بندی این جدول در پرامپت | ⬜ شروع‌نشده |
+
+### روال هر فاز (مو‌به‌مو، تکرار همون روالی که این نشست‌ها همیشه داشتن)
+۱. برای اون دامنه، هر فایل کنترلر/سرویس رو دقیق بخون و هر کوئری مستقیم رو شناسایی کن.
+۲. Repository (+ Interface) مربوطه رو بساز، کوئری‌ها رو منتقل کن، Controller/Service رو با
+تزریق Repository (نه Model مستقیم) بازنویسی کن.
+۳. کامنت‌های همون فایل‌های لمس‌شده رو حذف کن (فارسی و انگلیسی، `//`، `#`، `/* */`، از جمله
+داک‌بلاک‌های PHPDoc).
+۴. تست‌های موجود همون دامنه رو اجرا کن (بدون تغییر رفتار — رفکتور خالص، نه تغییر فیچر) و مطمئن
+شو هیچ‌کدوم fail نشدن. اگه لازم شد (مثلاً برای متد جدید Repository) تست واحد جدید اضافه کن.
+۵. پچ (`git format-patch`) بساز، روی یک `git am` مستقل verify کن، تحویل بده.
+۶. وضعیت اون سطر جدول بالا رو از ⬜ به ✅ تغییر بده و این فایل رو دوباره تحویل بده.
+
+### شروع در نشست/چت بعدی
+چون این یک رفکتور بزرگ و چندفازه‌ست، هر نشست باید دقیقاً روی **یک فاز** (نه بیشتر) تمرکز کنه —
+دقیقاً مثل قدم‌های محور‌های قبلی این پروژه.
