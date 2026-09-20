@@ -7,8 +7,8 @@ use App\Http\Requests\Admin\Leave\StoreLeaveRequest;
 use App\Http\Requests\Admin\Leave\UpdateLeaveStatusRequest;
 use App\Models\Leave;
 use App\Models\Specialist;
+use App\Repositories\Contracts\LeaveRepositoryInterface;
 use App\Services\Leave\LeaveService;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -16,25 +16,18 @@ class AdminSpecialistLeaveController extends Controller
 {
     public function __construct(
         private readonly LeaveService $leaveService,
+        private readonly LeaveRepositoryInterface $leaveRepository,
     ) {}
 
     public function index(Specialist $specialist): View
     {
         $this->ensureSalonOwnership($specialist->salon_id);
 
-        /** @var LengthAwarePaginator $leaves */
-        $leaves = $specialist->leaves()->latest()->paginate(10);
+        $leaves = $this->leaveRepository->paginateForSpecialist($specialist->id, 10);
 
         return view('admin.specialists.leaves.index', compact('specialist', 'leaves'));
     }
 
-    /**
-     * ⭐ Bug fixed: Previously this method expected start_date_jalali/end_date_jalali
-     * , while the Blade leave modal would already send the Gregorian date (start_date/
-     * end_date) — meaning that registering a leave from the admin panel would always fail with a
-     * validation error. Now Form Request is aligned with the actual Blade data format
-     * .
-     */
     public function store(StoreLeaveRequest $request, Specialist $specialist): RedirectResponse
     {
         $this->ensureSalonOwnership($specialist->salon_id);

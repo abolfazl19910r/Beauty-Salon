@@ -7,7 +7,8 @@ use App\Http\Requests\Specialist\UpdateScheduleRequest;
 use App\Http\Requests\Specialist\UpdateSpecialistPasswordRequest;
 use App\Http\Requests\Specialist\UpdateSpecialistProfileRequest;
 use App\Models\LoyaltyPoint;
-use App\Models\Specialist;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
+use App\Repositories\Contracts\SpecialistScheduleRepositoryInterface;
 use App\Services\Specialist\SpecialistDashboardService;
 use App\Services\Specialist\SpecialistProfileService;
 use App\Traits\ResolvesSpecialist;
@@ -24,6 +25,8 @@ class SpecialistProfileController extends Controller
     public function __construct(
         protected SpecialistDashboardService $dashboardService,
         protected SpecialistProfileService $profileService,
+        protected readonly SpecialistRepositoryInterface $specialistRepository,
+        protected readonly SpecialistScheduleRepositoryInterface $specialistScheduleRepository,
     ) {}
 
     public function dashboard(): View
@@ -65,18 +68,16 @@ class SpecialistProfileController extends Controller
         $user = auth()->user();
         $validated = $request->validated();
 
-        // ⭐ Fix (test-writing session 6): 'email' was dropped from the validation rules
-        // (see UpdateSpecialistProfileRequest) since users has no email column; the
-        // isDirty('email')/email_verified_at block below was dead code that could never
-        // run (email is not in User::$fillable, so fill() never sets it), so it was removed.
         $user->fill($validated);
         $user->save();
 
-        $specialist = Specialist::where('phone', $validated['phone'])->first();
-        $specialist?->update([
-            'name' => $validated['name'],
-            'phone' => $validated['phone'],
-        ]);
+        $specialist = $this->specialistRepository->findByPhone($validated['phone']);
+        if ($specialist) {
+            $this->specialistRepository->update($specialist, [
+                'name' => $validated['name'],
+                'phone' => $validated['phone'],
+            ]);
+        }
 
         return redirect()->route('specialist.profile.show')
             ->with('success', 'اطلاعات پروفایل با موفقیت بروزرسانی شد.');
@@ -99,7 +100,7 @@ class SpecialistProfileController extends Controller
             return view('specialist.profile-not-found');
         }
 
-        $schedules = $specialist->schedules()->get()->groupBy('day_of_week');
+        $schedules = $this->specialistScheduleRepository->getGroupedBySpecialist($specialist->id);
 
         return view('specialist.schedule', compact('specialist', 'schedules'));
     }
@@ -116,24 +117,11 @@ class SpecialistProfileController extends Controller
 
         try {
             DB::transaction(function () use ($request, $specialist) {
-                $specialist->update([
+                $this->specialistRepository->update($specialist, [
                     'auto_confirm_bookings' => $request->input('auto_confirm_bookings', 0) == 1,
                 ]);
 
-                $specialist->schedules()->delete();
-
-                foreach ($request->input('schedules', []) as $schedule) {
-                    if (! empty($schedule['is_active'])) {
-                        $specialist->schedules()->create([
-                            'day_of_week' => $schedule['day_of_week'],
-                            'start_time' => $schedule['start_time'],
-                            'end_time' => $schedule['end_time'],
-                            'break_start' => $schedule['break_start'] ?? null,
-                            'break_end' => $schedule['break_end'] ?? null,
-                            'is_active' => true,
-                        ]);
-                    }
-                }
+                $this->specialistScheduleRepository->replaceForSpecialist($specialist, $request->input('schedules', []));
             });
 
             $message = 'برنامه کاری با موفقیت بروزرسانی شد.';

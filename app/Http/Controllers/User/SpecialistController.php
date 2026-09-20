@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\BeautyService;
 use App\Models\Specialist;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -13,35 +14,26 @@ use Illuminate\View\View;
 
 class SpecialistController extends Controller
 {
+    public function __construct(protected readonly SpecialistRepositoryInterface $specialistRepository) {}
+
     public function search(Request $request): View|JsonResponse
     {
-        $query = Specialist::whereNull('deleted_at');
+        $filters = [];
 
         if ($request->has('name')) {
-            $query->where('name', 'like', '%'.$request->name.'%');
+            $filters['name'] = $request->name;
         }
 
         if ($request->has('service_id')) {
-            $query->whereHas('services', function ($q) use ($request) {
-                $q->where('beauty_services.id', $request->service_id);
-            });
+            $filters['service_id'] = $request->service_id;
         }
 
         if ($request->has('sort')) {
-            if ($request->sort == 'rating') {
-                $query->withCount(['bookings as total_ratings' => function ($q) {
-                    $q->whereNotNull('rating');
-                }])
-                    ->withAvg('bookings', 'rating')
-                    ->orderBy('bookings_avg_rating', $request->direction ?? 'desc');
-            } else {
-                $query->orderBy($request->sort, $request->direction ?? 'asc');
-            }
-        } else {
-            $query->latest();
+            $filters['sort'] = $request->sort;
+            $filters['direction'] = $request->direction;
         }
 
-        $specialists = $query->paginate($request->per_page ?? 10);
+        $specialists = $this->specialistRepository->searchPaginated($filters, $request->per_page ?? 10);
 
         if ($request->wantsJson()) {
             return response()->json($specialists);
@@ -152,20 +144,7 @@ class SpecialistController extends Controller
 
     public function topRated(): View|JsonResponse
     {
-        $specialists = Specialist::whereNull('deleted_at')
-            ->withCount(['bookings as completed_bookings' => function ($query) {
-                $query->where('status', 'completed');
-            }])
-            ->withCount(['bookings as rating_count' => function ($query) {
-                $query->whereNotNull('rating');
-            }])
-            ->withAvg('bookings', 'rating')
-            ->having('bookings_avg_rating', '>=', 4)
-            ->having('rating_count', '>=', 5)
-            ->orderByDesc('bookings_avg_rating')
-            ->orderByDesc('rating_count')
-            ->take(10)
-            ->get();
+        $specialists = $this->specialistRepository->getTopRated(10);
 
         if (request()->wantsJson()) {
             return response()->json($specialists);

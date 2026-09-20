@@ -20,4 +20,6 @@ interface CategoryRepositoryInterface extends RepositoryInterface
     public function getParentOptions(): Collection;
 
     public function getOptionsExcept(int|string $excludeId): Collection;
+
+    public function getWithServices(): Collection;
 }

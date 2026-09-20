@@ -5,30 +5,25 @@ namespace App\Services\Admin\Specialist;
 use App\Exceptions\SpecialistQuotaExceededException;
 use App\Models\Specialist;
 use App\Models\User;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Support\CurrentSalon;
 use Illuminate\Support\Facades\DB;
 
 class AdminSpecialistService
 {
-    public function __construct(protected readonly CurrentSalon $currentSalon) {}
+    public function __construct(
+        protected readonly CurrentSalon $currentSalon,
+        protected readonly SpecialistRepositoryInterface $specialistRepository,
+    ) {}
 
-    /**
-     * @return array{specialist: Specialist, matched_user: ?User}
-     */
     public function create(array $validated, ?string $rawCommissionRate): array
     {
         return DB::transaction(function () use ($validated, $rawCommissionRate) {
             $services = $validated['services'];
             unset($validated['services']);
 
-            // ⭐ باگ ۸ (گزارش‌شده ۲۰۲۶-۰۹-۱۸، رفع‌شده همان‌روز): تا پیش از این، هیچ‌جا سقف
-            // تعداد متخصص (max_specialists_count) واقعاً چک نمی‌شد — Specialist::create()
-            // بی‌قید-و-شرط صدا زده می‌شد. این متد داخل کانتکست پنل ادمین سالن اجرا می‌شود (نه
-            // سوپر ادمین)، پس CurrentSalon همیشه ست است. Specialist از BelongsToSalon استفاده
-            // می‌کند، یعنی Specialist::count() همین الان به‌صورت خودکار به همین سالن scope شده
-            // — نیازی به withoutGlobalScope نیست.
             $salon = $this->currentSalon->get();
-            $currentCount = Specialist::count();
+            $currentCount = $this->specialistRepository->count();
 
             if ($currentCount >= $salon->max_specialists_count) {
                 throw SpecialistQuotaExceededException::quotaReached(
@@ -47,7 +42,7 @@ class AdminSpecialistService
             $matchedUser = $this->matchAndPromoteUser($validated['phone']);
             $validated['user_id'] = $matchedUser?->id;
 
-            $specialist = Specialist::create($validated);
+            $specialist = $this->specialistRepository->create($validated);
             $specialist->services()->attach($services);
 
             return [
@@ -69,7 +64,7 @@ class AdminSpecialistService
             $matchedUser = $this->matchAndPromoteUser($validated['phone']);
             $validated['user_id'] = $matchedUser?->id;
 
-            $specialist->update($validated);
+            $specialist = $this->specialistRepository->update($specialist, $validated);
             $specialist->services()->sync($services);
 
             return $specialist;
@@ -80,43 +75,20 @@ class AdminSpecialistService
     {
         DB::transaction(function () use ($specialist) {
             $specialist->services()->detach();
-            $specialist->delete();
+            $this->specialistRepository->delete($specialist);
         });
     }
 
-    /**
-     * ⭐ Customer identity redesign, follow-up (confirmed 2026-08-30): matching a specialist to
-     * an existing User by phone is pre-existing behavior — what's new is that phone is no longer
-     * globally unique for customers (only per-salon), so a plain global `User::where('phone',
-     * ...)->first()` could non-deterministically grab a customer belonging to a completely
-     * different, unrelated salon. Per the confirmed decision, when the match is an existing
-     * customer, they're being promoted to staff of THIS salon (the one currently being
-     * administered, from CurrentSalon) — user_type flips to 'staff' and salon_id is set to
-     * match. This does NOT touch their historical data (past bookings, wallet balance) — those
-     * stay tied to their user_id exactly as before; only their account's own salon_id/user_type
-     * change going forward, matching how they'll authenticate from now on (globally, like any
-     * other staff member, not through their old salon's /s/{slug}/login).
-     *
-     * A 'staff' match (already globally unique) needs no promotion — it's simply linked as-is,
-     * same as before this redesign existed.
-     */
     private function matchAndPromoteUser(string $phone): ?User
     {
         $currentSalonId = $this->currentSalon->id();
 
-        // Staff match: phone is globally unique for user_type='staff', so this is unambiguous
-        // regardless of which salon is currently active.
         $matchedUser = User::where('phone', $phone)->where('user_type', 'staff')->first();
 
         if ($matchedUser) {
             return $matchedUser;
         }
 
-        // Customer match: phone is only unique PER salon now, so a bare where('phone', ...)
-        // could match a completely unrelated customer of a different salon who happens to share
-        // this number. Scoped to the current salon specifically — if this phone belongs to a
-        // customer of some OTHER salon, that's a coincidence, not this specialist's account, and
-        // is deliberately left unmatched (user_id stays null) rather than guessed at.
         $matchedUser = User::where('phone', $phone)
             ->where('user_type', 'customer')
             ->where('salon_id', $currentSalonId)

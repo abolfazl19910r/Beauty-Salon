@@ -21,4 +21,6 @@ interface RepositoryInterface
     public function delete(Model $model): bool;
 
     public function paginate(int $perPage = 15, array $columns = ['*']): LengthAwarePaginator;
+
+    public function count(): int;
 }

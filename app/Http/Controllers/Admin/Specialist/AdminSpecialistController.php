@@ -6,8 +6,9 @@ use App\Exceptions\SpecialistQuotaExceededException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Specialist\StoreSpecialistRequest;
 use App\Http\Requests\Admin\Specialist\UpdateSpecialistRequest;
-use App\Models\Category;
 use App\Models\Specialist;
+use App\Repositories\Contracts\CategoryRepositoryInterface;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Services\Admin\Specialist\AdminSpecialistService;
 use App\Services\CategoryService;
 use Illuminate\Http\RedirectResponse;
@@ -17,24 +18,20 @@ use Illuminate\View\View;
 
 class AdminSpecialistController extends Controller
 {
-    public function __construct(protected readonly CategoryService $categoryService, protected readonly AdminSpecialistService $specialistService) {}
+    public function __construct(
+        protected readonly CategoryService $categoryService,
+        protected readonly AdminSpecialistService $specialistService,
+        protected readonly CategoryRepositoryInterface $categoryRepository,
+        protected readonly SpecialistRepositoryInterface $specialistRepository,
+    ) {}
 
     public function index(Request $request): View
     {
-        $specialists = Specialist::whereNull('deleted_at')
-            ->when($request->filled('search'), function ($q) use ($request) {
-                $search = $request->search;
-                $q->where(function ($q2) use ($search) {
-                    $q2->where('name', 'like', "%{$search}%")
-                        ->orWhere('phone', 'like', "%{$search}%");
-                });
-            })
-            ->withCount(['bookings' => function ($q) {
-                $q->whereDate('booking_time', today());
-            }])
-            ->with('services:id,name')
-            ->latest()
-            ->paginate(10);
+        $filters = [
+            'search' => $request->filled('search') ? $request->search : null,
+        ];
+
+        $specialists = $this->specialistRepository->paginateWithFilters($filters, 10);
 
         return view('admin.specialists.index', compact('specialists'));
     }
@@ -48,7 +45,7 @@ class AdminSpecialistController extends Controller
 
     public function create(): View
     {
-        $services = Category::with('services')->get();
+        $services = $this->categoryRepository->getWithServices();
 
         return view('admin.specialists.create', compact('services'));
     }
@@ -82,7 +79,7 @@ class AdminSpecialistController extends Controller
     {
         $this->ensureSalonOwnership($specialist->salon_id);
 
-        $services = Category::with('services')->get();
+        $services = $this->categoryRepository->getWithServices();
         $selectedServices = $specialist->services->pluck('id')->toArray();
 
         return view('admin.specialists.edit', compact('specialist', 'services', 'selectedServices'));

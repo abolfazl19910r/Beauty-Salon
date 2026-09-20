@@ -5,18 +5,23 @@ namespace App\Http\Controllers\Admin\Holiday;
 use App\Http\Controllers\Controller;
 use App\Models\Holiday;
 use App\Models\Specialist;
+use App\Repositories\Contracts\HolidayRepositoryInterface;
+use App\Repositories\Contracts\LeaveRepositoryInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AdminHolidayController extends Controller
 {
+    public function __construct(
+        protected readonly HolidayRepositoryInterface $holidayRepository,
+        protected readonly LeaveRepositoryInterface $leaveRepository,
+    ) {}
+
     public function index(Specialist $specialist): JsonResponse
     {
         $this->ensureSalonOwnership($specialist->salon_id);
 
-        $holidays = $specialist->holidays()
-            ->orderBy('date')
-            ->get();
+        $holidays = $this->holidayRepository->getForSpecialist($specialist->id);
 
         return response()->json($holidays);
     }
@@ -31,11 +36,7 @@ class AdminHolidayController extends Controller
                 'date_format:Y-m-d',
                 'after:yesterday',
                 function ($attribute, $value, $fail) use ($specialist) {
-                    $hasLeave = $specialist->leaves()
-                        ->where('status', 'approved')
-                        ->where('start_date', '<=', $value)
-                        ->where('end_date', '>=', $value)
-                        ->exists();
+                    $hasLeave = $this->leaveRepository->hasApprovedLeaveOnDate($specialist->id, $value);
 
                     if ($hasLeave) {
                         $fail('در این تاریخ مرخصی ثبت شده است.');
@@ -54,9 +55,7 @@ class AdminHolidayController extends Controller
             'description' => 'nullable|string|max:255',
         ]);
 
-        $existingHoliday = $specialist->holidays()
-            ->whereDate('date', $validated['date'])
-            ->first();
+        $existingHoliday = $this->holidayRepository->findOnDate($specialist->id, $validated['date']);
 
         if ($existingHoliday) {
             return response()->json([
@@ -64,7 +63,7 @@ class AdminHolidayController extends Controller
             ], 422);
         }
 
-        $holiday = $specialist->holidays()->create($validated);
+        $holiday = $this->holidayRepository->createForSpecialist($specialist, $validated);
 
         return response()->json($holiday, 201);
     }
@@ -85,7 +84,7 @@ class AdminHolidayController extends Controller
             ], 422);
         }
 
-        $holiday->delete();
+        $this->holidayRepository->delete($holiday);
 
         return response()->json([
             'message' => 'تعطیلی با موفقیت حذف شد.',
@@ -96,9 +95,7 @@ class AdminHolidayController extends Controller
     {
         $this->ensureSalonOwnership($specialist->salon_id);
 
-        $holidays = $specialist->holidays()
-            ->upcoming()
-            ->get();
+        $holidays = $this->holidayRepository->getUpcomingForSpecialist($specialist->id);
 
         return response()->json($holidays);
     }
@@ -111,9 +108,7 @@ class AdminHolidayController extends Controller
             'date' => 'required|date_format:Y-m-d',
         ]);
 
-        $isHoliday = $specialist->holidays()
-            ->whereDate('date', $request->date)
-            ->exists();
+        $isHoliday = $this->holidayRepository->existsOnDate($specialist->id, $request->date);
 
         return response()->json([
             'is_holiday' => $isHoliday,

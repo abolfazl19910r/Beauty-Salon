@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Specialist\Leave;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Specialist\StoreLeaveRequest;
 use App\Models\Leave;
+use App\Repositories\Contracts\LeaveRepositoryInterface;
 use App\Services\Leave\LeaveService;
 use App\Traits\HasJalaliDates;
 use App\Traits\ResolvesSpecialist;
@@ -19,6 +20,7 @@ class SpecialistLeaveController extends Controller
 
     public function __construct(
         private readonly LeaveService $leaveService,
+        private readonly LeaveRepositoryInterface $leaveRepository,
     ) {}
 
     public function index(): View
@@ -31,7 +33,7 @@ class SpecialistLeaveController extends Controller
 
         $this->authorize('manageLeaves', $specialist);
 
-        $leaves = $specialist->leaves()->latest()->paginate(10);
+        $leaves = $this->leaveRepository->paginateForSpecialist($specialist->id, 10);
 
         return view('specialist.leaves', compact('specialist', 'leaves'));
     }
@@ -49,11 +51,6 @@ class SpecialistLeaveController extends Controller
         return view('specialist.leaves-create', compact('specialist'));
     }
 
-    /**
-     * ⭐ Now checks for conflicts with other approved leaves and previously booked
-     * appointments before registering (via LeaveService shared with admin) —
-     * something the previous version (SpecialistLeave) did not have at all.
-     */
     public function store(StoreLeaveRequest $request): RedirectResponse
     {
         $specialist = $this->resolveSpecialist();
@@ -92,7 +89,7 @@ class SpecialistLeaveController extends Controller
             return back()->with('error', 'فقط مرخصی‌های در انتظار تایید قابل حذف هستند.');
         }
 
-        $leave->delete();
+        $this->leaveRepository->delete($leave);
 
         return redirect()->route('specialist.leaves')
             ->with('success', 'درخواست مرخصی با موفقیت حذف شد.');

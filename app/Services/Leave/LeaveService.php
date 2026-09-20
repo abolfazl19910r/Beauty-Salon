@@ -6,15 +6,12 @@ use App\Models\Leave;
 use App\Models\Specialist;
 use App\Models\User;
 use App\Notifications\Leave\LeaveStatusNotification;
+use App\Repositories\Contracts\LeaveRepositoryInterface;
 
 class LeaveService
 {
-    /**
-     * Registering a new leave request — before registering, conflicts with other approved leaves and already booked appointments are checked (something that was not possible in the old version of
-     * * SpecialistLeave)
-     *
-     * @return array{success: bool, message: string, leave: ?Leave}
-     */
+    public function __construct(protected readonly LeaveRepositoryInterface $leaveRepository) {}
+
     public function store(Specialist $specialist, array $data): array
     {
         $conflict = $this->findConflictReason($specialist, $data['start_date'], $data['end_date']);
@@ -23,7 +20,7 @@ class LeaveService
             return ['success' => false, 'message' => $conflict, 'leave' => null];
         }
 
-        $leave = $specialist->leaves()->create([
+        $leave = $this->leaveRepository->createForSpecialist($specialist, [
             'start_date' => $data['start_date'],
             'end_date' => $data['end_date'],
             'reason' => $data['reason'] ?? null,
@@ -37,12 +34,6 @@ class LeaveService
         ];
     }
 
-    /**
-     * Approve or reject a leave. On approval, a conflict check is performed again (since
-     * another leave or appointment may have been registered between the time the request was registered and its approval). In both cases, a notification (database + SMS) is sent to the specialist
-     *
-     * @return array{success: bool, message: string}
-     */
     public function updateStatus(Leave $leave, string $status, ?string $rejectReason = null): array
     {
         if ($status === 'approved') {
@@ -67,16 +58,6 @@ class LeaveService
         return ['success' => true, 'message' => 'وضعیت مرخصی با موفقیت بروزرسانی شد.'];
     }
 
-    /**
-     * ⭐ Bug fixed: Previously, the notification was sent directly to the Specialist model
-     * (`$leave->specialist->notify(...)`), i.e. it was stored with notifiable_type
-     * equal to App\Models\Specialist. But the SpecialistNotificationController
-     * reads from auth()->user()->notifications() everywhere (notifiable_type
-     * equal to App\Models\User) — i.e. this notification was never seen in the Specialist panel
-     * , although it was actually created in the database (confirmed with
-     * Telescope). Fix: The user associated with the specialist (with the same match-by-phone pattern
-     * used throughout the project) is found and notified.
-     */
     private function notifySpecialistUser(Leave $leave): void
     {
         $specialist = $leave->specialist;
@@ -91,11 +72,12 @@ class LeaveService
         string $endDate,
         ?int $excludeLeaveId = null
     ): ?string {
-        $hasOverlap = $specialist->leaves()
-            ->where('status', 'approved')
-            ->when($excludeLeaveId, fn ($q) => $q->where('id', '!=', $excludeLeaveId))
-            ->overlapping($startDate, $endDate)
-            ->exists();
+        $hasOverlap = $this->leaveRepository->hasOverlappingApprovedLeave(
+            $specialist->id,
+            $startDate,
+            $endDate,
+            $excludeLeaveId
+        );
 
         if ($hasOverlap) {
             return 'این بازه زمانی با یک مرخصی تاییدشده‌ی دیگر تداخل دارد.';

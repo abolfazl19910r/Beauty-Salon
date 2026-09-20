@@ -47,4 +47,9 @@ abstract class BaseRepository implements RepositoryInterface
     {
         return $this->model->paginate($perPage, $columns);
     }
+
+    public function count(): int
+    {
+        return $this->model->count();
+    }
 }

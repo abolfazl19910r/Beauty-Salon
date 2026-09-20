@@ -71,4 +71,9 @@ class CategoryRepository extends BaseRepository implements CategoryRepositoryInt
     {
         return $this->model->where('id', '!=', $excludeId)->get(['id', 'name']);
     }
+
+    public function getWithServices(): Collection
+    {
+        return $this->model->with('services')->get();
+    }
 }

@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin\Leave;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Leave\UpdateLeaveStatusRequest;
 use App\Models\Leave;
-use App\Models\Specialist;
+use App\Repositories\Contracts\LeaveRepositoryInterface;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Services\Leave\LeaveService;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,32 +17,25 @@ class AdminLeaveController extends Controller
 {
     public function __construct(
         private readonly LeaveService $leaveService,
+        private readonly LeaveRepositoryInterface $leaveRepository,
+        private readonly SpecialistRepositoryInterface $specialistRepository,
     ) {}
 
-    /**
-     * Global Leave Page — All leave requests for all specialists in one
-     * * table, without having to open each specialist's page. Optional filter on
-     * * status (default: all).
-     */
     public function index(Request $request): View
     {
-        /** @var LengthAwarePaginator $leaves */
-        $leaves = Leave::with('specialist:id,name')
-            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
-            ->latest('start_date')
-            ->paginate(15)
-            ->withQueryString();
+        $filters = [
+            'status' => $request->filled('status') ? $request->string('status')->toString() : null,
+        ];
+
+        $leaves = $this->leaveRepository->paginateWithFilters($filters, 15);
 
         return view('admin.leaves.index', compact('leaves'));
     }
 
     public function updateStatus(UpdateLeaveStatusRequest $request, Leave $leave): RedirectResponse
     {
-        // ⭐ Leave خودش salon_id ندارد (فقط از طریق specialist_id به سالن وصل است) — دقیقاً مثل
-        // SpecialistWallet/WithdrawalRequest، پس باید salon_id متخصص را با withoutGlobalScopes
-        // (بدون تأثیرپذیری از global scope) resolve کرد، نه با رابطه‌ی scoped معمولی.
         $this->ensureSalonOwnership(
-            Specialist::withoutGlobalScopes()->whereKey($leave->specialist_id)->value('salon_id')
+            $this->specialistRepository->getSalonIdIgnoringScopes($leave->specialist_id)
         );
 
         $result = $this->leaveService->updateStatus(
@@ -56,16 +49,9 @@ class AdminLeaveController extends Controller
             ->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
-    /**
-     * JSON style endpoint (optional for future dashboard widget) — List
-     * * Leave pending approval.
-     */
     public function pendingLeaves(): JsonResponse
     {
-        $leaves = Leave::with('specialist')
-            ->pending()
-            ->orderBy('start_date')
-            ->get();
+        $leaves = $this->leaveRepository->getPending();
 
         return response()->json($leaves);
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Specialist;
 
 use App\Http\Controllers\Controller;
 use App\Models\Specialist;
+use App\Repositories\Contracts\SpecialistScheduleRepositoryInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,8 @@ use Illuminate\View\View;
 
 class AdminSpecialistScheduleController extends Controller
 {
+    public function __construct(protected readonly SpecialistScheduleRepositoryInterface $specialistScheduleRepository) {}
+
     public function index(Specialist $specialist): View
     {
         return $this->edit($specialist);
@@ -21,9 +24,7 @@ class AdminSpecialistScheduleController extends Controller
     {
         $this->ensureSalonOwnership($specialist->salon_id);
 
-        $schedules = $specialist->schedules()
-            ->get()
-            ->groupBy('day_of_week');
+        $schedules = $this->specialistScheduleRepository->getGroupedBySpecialist($specialist->id);
 
         return view('admin.specialists.schedules.edit', [
             'specialist' => $specialist,
@@ -47,22 +48,7 @@ class AdminSpecialistScheduleController extends Controller
 
             DB::beginTransaction();
 
-            $specialist->schedules()->delete();
-
-            if ($request->has('schedules')) {
-                foreach ($request->schedules as $dayNumber => $schedule) {
-                    if (isset($schedule['is_active']) && $schedule['is_active']) {
-                        $specialist->schedules()->create([
-                            'day_of_week' => $schedule['day_of_week'],
-                            'start_time' => $schedule['start_time'],
-                            'end_time' => $schedule['end_time'],
-                            'break_start' => $schedule['break_start'] ?? null,
-                            'break_end' => $schedule['break_end'] ?? null,
-                            'is_active' => true,
-                        ]);
-                    }
-                }
-            }
+            $this->specialistScheduleRepository->replaceForSpecialist($specialist, $request->input('schedules', []));
 
             DB::commit();
 
@@ -70,12 +56,6 @@ class AdminSpecialistScheduleController extends Controller
                 ->with('success', 'برنامه کاری با موفقیت بروزرسانی شد.');
 
         } catch (ValidationException $e) {
-            // ValidationException extends \Exception, so the broad catch below would otherwise
-            // swallow it too — turning a normal per-field validation redirect into a confusing
-            // flash message containing the raw, untranslated rule key (e.g. "validation.after")
-            // instead of the actual translated error. It must be re-thrown so Laravel's default
-            // handling (redirect back with $errors in session) takes over, same as it would for
-            // any Form Request-based validation elsewhere in the project.
             throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
