@@ -6,9 +6,11 @@ use App\Events\Withdrawal\Approved\WithdrawalApproved;
 use App\Events\Withdrawal\Rejected\WithdrawalRejected;
 use App\Jobs\ProcessWithdrawalJob;
 use App\Models\SpecialistWallet;
-use App\Models\WalletSetting;
-use App\Models\WalletTransaction;
 use App\Models\WithdrawalRequest;
+use App\Repositories\Contracts\SpecialistWalletRepositoryInterface;
+use App\Repositories\Contracts\WalletSettingRepositoryInterface;
+use App\Repositories\Contracts\WalletTransactionRepositoryInterface;
+use App\Repositories\Contracts\WithdrawalRequestRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -16,54 +18,28 @@ use Illuminate\Support\Facades\Log;
 
 class WalletAdminService
 {
-    /**
-     * Paginated list of expert wallets with search and sort filter.
-     */
+    public function __construct(
+        protected readonly SpecialistWalletRepositoryInterface $specialistWalletRepository,
+        protected readonly WithdrawalRequestRepositoryInterface $withdrawalRequestRepository,
+        protected readonly WalletTransactionRepositoryInterface $walletTransactionRepository,
+        protected readonly WalletSettingRepositoryInterface $walletSettingRepository,
+    ) {}
+
     public function getWalletsList(array $filters): LengthAwarePaginator
     {
-        $query = SpecialistWallet::with('specialist');
-
-        if (! empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->whereHas('specialist', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%");
-            });
-        }
-
-        match ($filters['sort_by'] ?? 'balance_desc') {
-            'balance_asc' => $query->orderBy('balance', 'asc'),
-            'earned_desc' => $query->orderBy('total_earned', 'desc'),
-            default => $query->orderBy('balance', 'desc'),
-        };
-
-        return $query->paginate(20);
+        return $this->specialistWalletRepository->paginateWithFilters($filters, 20);
     }
 
-    /**
-     * Aggregate statistics of all expert wallets (cards on the top of the index page).
-     */
     public function getWalletTotals(): array
     {
-        return [
-            'totalBalance' => SpecialistWallet::sum('balance'),
-            'totalEarned' => SpecialistWallet::sum('total_earned'),
-            'totalWithdrawn' => SpecialistWallet::sum('total_withdrawn'),
-            'totalPending' => SpecialistWallet::sum('pending_amount'),
-        ];
+        return $this->specialistWalletRepository->getTotals();
     }
 
-    /**
-     * Details of a wallet with recent transactions (show page).
-     */
     public function getWalletDetail(SpecialistWallet $wallet): array
     {
         $wallet->load('specialist', 'transactions', 'withdrawalRequests');
 
-        $recentTransactions = $wallet->transactions()
-            ->with('booking')
-            ->latest()
-            ->paginate(20);
+        $recentTransactions = $this->walletTransactionRepository->paginateForWalletWithFilters($wallet->id, [], 20);
 
         return [
             'wallet' => $wallet,
@@ -71,52 +47,19 @@ class WalletAdminService
         ];
     }
 
-    /**
-     * Paginated list of withdrawal requests with status/method/search filter.
-     */
     public function getWithdrawalsList(array $filters): LengthAwarePaginator
     {
-        $query = WithdrawalRequest::with(['specialist', 'wallet']);
-
-        if (! empty($filters['status'])) {
-            $query->where('status', $filters['status']);
-        }
-
-        if (! empty($filters['method'])) {
-            $query->where('method', $filters['method']);
-        }
-
-        if (! empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('reference_code', 'like', "%{$search}%")
-                    ->orWhereHas('specialist', function ($sq) use ($search) {
-                        $sq->where('name', 'like', "%{$search}%")
-                            ->orWhere('phone', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        return $query->latest()->paginate(20);
+        return $this->withdrawalRequestRepository->paginateWithFilters($filters, 20);
     }
 
-    /**
-     * Quick statistics on top of withdrawal requests page.
-     */
     public function getWithdrawalStats(): array
     {
-        return [
-            'pendingCount' => WithdrawalRequest::where('status', 'pending')->count(),
-            'pendingAmount' => WithdrawalRequest::where('status', 'pending')->sum('amount'),
-            'completedToday' => WithdrawalRequest::where('status', 'completed')
-                ->whereDate('processed_at', today())
-                ->count(),
-        ];
+        return $this->withdrawalRequestRepository->getStats();
     }
 
     public function verifyIban(SpecialistWallet $wallet): void
     {
-        $wallet->update(['iban_verified' => true]);
+        $this->specialistWalletRepository->update($wallet, ['iban_verified' => true]);
     }
 
     public function adjustWallet(SpecialistWallet $wallet, float $amount, string $description): void
@@ -146,12 +89,7 @@ class WalletAdminService
         $shouldFireEvent = false;
 
         DB::transaction(function () use ($withdrawalRequest, $data, &$shouldFireEvent) {
-            // Lock the row until this transaction is committed. If two simultaneous requests
-            // (double-click or network return) arrive here, the second one will wait behind this lock until the first one is committed
-            // and then see the actual status (completed).
-            $locked = WithdrawalRequest::whereKey($withdrawalRequest->id)
-                ->lockForUpdate()
-                ->first();
+            $locked = $this->withdrawalRequestRepository->lockById($withdrawalRequest->id);
 
             if (! $locked || ! in_array($locked->status, ['pending', 'processing'])) {
                 return;
@@ -163,7 +101,7 @@ class WalletAdminService
                 'approved_at' => now()->toDateTimeString(),
             ]);
 
-            $locked->update([
+            $this->withdrawalRequestRepository->update($locked, [
                 'admin_note' => $data['admin_note'] ?? null,
             ]);
 
@@ -178,21 +116,18 @@ class WalletAdminService
 
     public function rejectWithdrawal(WithdrawalRequest $withdrawalRequest, ?string $reason): void
     {
-        // If the admin has not entered a reason (the field is displayed in the optional Blade), a default value is recorded
         $reason = $reason ?: 'بدون ذکر دلیل توسط ادمین';
 
         $shouldFireEvent = false;
 
         DB::transaction(function () use ($withdrawalRequest, $reason, &$shouldFireEvent) {
-            $locked = WithdrawalRequest::whereKey($withdrawalRequest->id)
-                ->lockForUpdate()
-                ->first();
+            $locked = $this->withdrawalRequestRepository->lockById($withdrawalRequest->id);
 
             if (! $locked || ! in_array($locked->status, ['pending', 'processing'])) {
                 return;
             }
 
-            $wallet = $locked->wallet()->lockForUpdate()->first();
+            $wallet = $this->specialistWalletRepository->lockById($locked->wallet_id);
 
             $wallet->increment('balance', $locked->amount);
             $wallet->decrement('total_withdrawn', $locked->amount);
@@ -219,36 +154,22 @@ class WalletAdminService
         }
     }
 
-    /**
-     * Starts the auto-payout of a withdrawal request — this method no longer
-     * connects to ZarrinPal itself (previous mock removed here; see "critical warning" above
-     * Rasta_unified_prompt.md). It just sets the request status to 'processing'
-     * and queues the actual processing (HTTP call to Payout API) to {@see \App\Jobs\ProcessWithdrawalJob}
-     * — as this call may be slow/timed out (same class of issue
-     * that caused synchronous login timeouts in the Telescope standalone phase).
-     *
-     * @return array{success: bool, message?: string, dispatched?: bool}
-     */
     public function autoPayout(WithdrawalRequest $withdrawalRequest): array
     {
         $dispatched = false;
 
         DB::transaction(function () use ($withdrawalRequest, &$dispatched) {
-            $locked = WithdrawalRequest::whereKey($withdrawalRequest->id)
-                ->lockForUpdate()
-                ->first();
+            $locked = $this->withdrawalRequestRepository->lockById($withdrawalRequest->id);
 
             if (! $locked || ! in_array($locked->status, ['pending', 'processing'])) {
                 return;
             }
 
-            // If it is already processing (e.g. it has been dispatched once before but the Job has not yet returned),
-            // Do not queue a new Job again — prevents the Payout port from being called twice at the same time.
             if ($locked->status === 'processing') {
                 return;
             }
 
-            $locked->update(['status' => 'processing']);
+            $this->withdrawalRequestRepository->update($locked, ['status' => 'processing']);
             $dispatched = true;
         });
 
@@ -269,55 +190,28 @@ class WalletAdminService
 
     public function updateSettings(array $data): void
     {
-        $settings = WalletSetting::first();
-        $settings->update($data);
+        $settings = $this->walletSettingRepository->first();
+        $this->walletSettingRepository->update($settings, $data);
     }
 
-    /**
-     * Settle "pending" revenue transactions and transfer them to the balance.
-     *
-     * The single source of this logic — both the `wallet:settle-pending` scheduled command (nightly, at 01:00)
-     * and the ``Manual Settlement'' button in the admin panel (both for all specialists and for a specific specialist) use the same method.
-     *
-     * @param  SpecialistWallet|null  $wallet  If null, all wallets will be checked; otherwise, only this one.
-     * @param  bool  $ignoreDelay  If true, the settlement delay (settlement_delay_days) will be ignored and all
-     *                             pending transactions (even those that are not yet due) will be settled immediately.
-     * @param  string  $source  is recorded in the transaction metadata to indicate where the settlement came from: 'schedule' or 'admin_manual'.
-     * @return array{settledCount: int, failedCount: int, settledAmount: float}
-     */
     public function settlePendingIncomes(
         ?SpecialistWallet $wallet = null,
         bool $ignoreDelay = false,
         string $source = 'schedule'
     ): array {
-        $query = WalletTransaction::where('type', 'income')
-            ->whereJsonContains('metadata->status', 'pending');
-
-        if ($wallet) {
-            $query->where('wallet_id', $wallet->id);
-        }
+        $transactions = $this->walletTransactionRepository->getPendingIncomeForSettlement($wallet?->id);
 
         $settledCount = 0;
         $failedCount = 0;
         $settledAmount = 0.0;
 
-        foreach ($query->get() as $transaction) {
+        foreach ($transactions as $transaction) {
             $settlementDate = $transaction->metadata['settlement_date'] ?? null;
 
             if (! $ignoreDelay && (! $settlementDate || ! Carbon::parse($settlementDate)->isPast())) {
                 continue;
             }
 
-            /**
-             * R-Observers addendum: settlement_date was purely "payment time + fixed delay",
-             * completely disconnected from whether the booked service had actually happened yet.
-             * A booking made 2 weeks in advance and paid immediately would settle (become real,
-             * withdrawable balance) in as little as settlement_delay_days — long before the
-             * appointment itself occurred — meaning a specialist could withdraw real money for a
-             * service that hadn't been rendered yet, then have the booking cancelled afterward
-             * (pushing their balance negative, see reverseIncome()). Even with --ignore-delay,
-             * a booking whose appointment hasn't happened yet is never settled.
-             */
             $booking = $transaction->booking;
             if ($booking && $booking->booking_time && $booking->booking_time->isFuture()) {
                 continue;
@@ -334,8 +228,8 @@ class WalletAdminService
                     $metadata['status'] = 'settled';
                     $metadata['settled_at'] = now()->toDateTimeString();
                     $metadata['settled_by'] = $source;
-                    $transaction->update(['metadata' => $metadata]);
-                    $transaction->update(['balance_after' => $transactionWallet->balance]);
+                    $this->walletTransactionRepository->update($transaction, ['metadata' => $metadata]);
+                    $this->walletTransactionRepository->update($transaction, ['balance_after' => $transactionWallet->balance]);
                 });
 
                 $settledCount++;

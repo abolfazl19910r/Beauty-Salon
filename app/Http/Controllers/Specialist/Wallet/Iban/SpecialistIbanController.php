@@ -32,9 +32,6 @@ class SpecialistIbanController extends Controller
 
     public function update(UpdateIbanRequest $request): View|RedirectResponse
     {
-        // ⚠️ Bugfix: The old controller here had no null check on the specialist
-        // (unlike edit()); If a user reaches this route without an expert record,
-        // getOrCreateWallet() would give a fatal error on null. Now it is the same with edit().
         $specialist = $this->resolveSpecialist();
 
         if (! $specialist) {

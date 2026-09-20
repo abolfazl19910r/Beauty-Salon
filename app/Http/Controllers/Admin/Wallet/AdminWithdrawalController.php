@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin\Wallet;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Wallet\ApproveWithdrawalRequest;
 use App\Http\Requests\Admin\Wallet\RejectWithdrawalRequest;
-use App\Models\Specialist;
 use App\Models\WithdrawalRequest;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Services\Admin\Wallet\WalletAdminService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
@@ -17,7 +17,8 @@ use Illuminate\View\View;
 class AdminWithdrawalController extends Controller
 {
     public function __construct(
-        private readonly WalletAdminService $walletAdminService
+        private readonly WalletAdminService $walletAdminService,
+        private readonly SpecialistRepositoryInterface $specialistRepository,
     ) {}
 
     public function index(Request $request): View
@@ -118,14 +119,10 @@ class AdminWithdrawalController extends Controller
         }
     }
 
-    /**
-     * ⭐ WithdrawalRequest هم مثل SpecialistWallet ستون salon_id ندارد؛ specialist_id مستقیماً
-     * روی خودِ جدول هست، پس نیازی به عبور از wallet نیست — فقط باید unscoped resolve بشه.
-     */
     private function ensureWithdrawalSalonOwnership(WithdrawalRequest $withdrawalRequest): void
     {
         $this->ensureSalonOwnership(
-            Specialist::withoutGlobalScopes()->whereKey($withdrawalRequest->specialist_id)->value('salon_id')
+            $this->specialistRepository->getSalonIdIgnoringScopes($withdrawalRequest->specialist_id)
         );
     }
 }

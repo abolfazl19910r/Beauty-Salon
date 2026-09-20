@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Wallet;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Wallet\AdjustWalletRequest;
-use App\Models\Specialist;
 use App\Models\SpecialistWallet;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Services\Admin\Wallet\WalletAdminService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
@@ -16,7 +16,8 @@ use Illuminate\View\View;
 class AdminWalletController extends Controller
 {
     public function __construct(
-        private readonly WalletAdminService $walletAdminService
+        private readonly WalletAdminService $walletAdminService,
+        private readonly SpecialistRepositoryInterface $specialistRepository,
     ) {}
 
     public function index(Request $request): View
@@ -82,9 +83,6 @@ class AdminWalletController extends Controller
         }
     }
 
-    /**
-     * Manually settle "pending" earnings for all specialists (so they can request a withdrawal).
-     */
     public function settlePending(Request $request): RedirectResponse
     {
         try {
@@ -104,9 +102,6 @@ class AdminWalletController extends Controller
         }
     }
 
-    /**
-     * Manual settlement of "pending" earnings by a specific specialist only.
-     */
     public function settlePendingForWallet(Request $request, SpecialistWallet $wallet): RedirectResponse
     {
         $this->ensureWalletSalonOwnership($wallet);
@@ -129,22 +124,13 @@ class AdminWalletController extends Controller
         }
     }
 
-    /**
-     * ⭐ SpecialistWallet هیچ ستون salon_id ندارد (فقط از طریق specialist_id به سالن وصل است) —
-     * دقیقاً همون کلاس آسیب‌پذیری WithdrawalRequest/Leave/Holiday. باید specialist را با
-     * withoutGlobalScopes (نه رابطه‌ی معمولی $wallet->specialist که خودش global scope دارد و
-     * برای یک متخصص سالن دیگر null برمی‌گرداند) resolve کرد.
-     */
     private function ensureWalletSalonOwnership(SpecialistWallet $wallet): void
     {
         $this->ensureSalonOwnership(
-            Specialist::withoutGlobalScopes()->whereKey($wallet->specialist_id)->value('salon_id')
+            $this->specialistRepository->getSalonIdIgnoringScopes($wallet->specialist_id)
         );
     }
 
-    /**
-     * @param  array{settledCount: int, failedCount: int, settledAmount: float}  $result
-     */
     private function buildSettlementMessage(array $result): string
     {
         if ($result['settledCount'] === 0) {

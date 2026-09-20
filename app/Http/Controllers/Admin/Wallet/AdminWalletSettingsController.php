@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin\Wallet;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Wallet\UpdateWalletSettingsRequest;
-use App\Models\WalletSetting;
+use App\Repositories\Contracts\WalletSettingRepositoryInterface;
 use App\Services\Admin\Wallet\WalletAdminService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
@@ -14,12 +14,13 @@ use Illuminate\View\View;
 class AdminWalletSettingsController extends Controller
 {
     public function __construct(
-        private readonly WalletAdminService $walletAdminService
+        private readonly WalletAdminService $walletAdminService,
+        private readonly WalletSettingRepositoryInterface $walletSettingRepository,
     ) {}
 
     public function index(): View
     {
-        $settings = WalletSetting::first();
+        $settings = $this->walletSettingRepository->first();
 
         return view('admin.wallet.settings', compact('settings'));
     }

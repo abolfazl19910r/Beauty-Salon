@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Repositories\Contracts\UserWalletTransactionRepositoryInterface;
 use App\Services\PaymentService;
 use App\Traits\HasJalaliDates;
 use Illuminate\Http\RedirectResponse;
@@ -16,30 +17,25 @@ class UserWalletController extends Controller
 {
     use HasJalaliDates;
 
-    public function __construct(protected readonly PaymentService $paymentService) {}
+    public function __construct(
+        protected readonly PaymentService $paymentService,
+        protected readonly UserWalletTransactionRepositoryInterface $userWalletTransactionRepository,
+    ) {}
 
     public function index(): View
     {
         $user = auth()->user();
         $wallet = $user->getOrCreateWallet();
 
-        $recentTransactions = $wallet->transactions()
-            ->with('booking')
-            ->latest()
-            ->limit(10)
-            ->get();
+        $recentTransactions = $this->userWalletTransactionRepository->getRecentForWallet($wallet->id, 10);
 
-        $currentMonthRefunds = $wallet->transactions()
-            ->where('type', 'refund')
-            ->whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->sum('amount');
+        $currentMonthRefunds = $this->userWalletTransactionRepository->sumForWalletByTypeAndMonth(
+            $wallet->id, 'refund', now()->month, now()->year
+        );
 
-        $currentMonthSpent = $wallet->transactions()
-            ->where('type', 'payment')
-            ->whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->sum('amount');
+        $currentMonthSpent = $this->userWalletTransactionRepository->sumForWalletByTypeAndMonth(
+            $wallet->id, 'payment', now()->month, now()->year
+        );
 
         return view('user.wallet.index', compact(
             'user',
@@ -55,25 +51,25 @@ class UserWalletController extends Controller
         $user = auth()->user();
         $wallet = $user->getOrCreateWallet();
 
-        $query = $wallet->transactions()->with('booking');
+        $filters = [];
 
         if ($request->filled('type')) {
-            $query->where('type', $request->type);
+            $filters['type'] = $request->type;
         }
 
         if ($request->filled('date_from')) {
             if ($dateFrom = $this->parseJalali($request->date_from)) {
-                $query->where('created_at', '>=', $dateFrom->startOfDay());
+                $filters['date_from'] = $dateFrom->startOfDay();
             }
         }
 
         if ($request->filled('date_to')) {
             if ($dateTo = $this->parseJalali($request->date_to)) {
-                $query->where('created_at', '<=', $dateTo->endOfDay());
+                $filters['date_to'] = $dateTo->endOfDay();
             }
         }
 
-        $transactions = $query->latest()->paginate(20)->withQueryString();
+        $transactions = $this->userWalletTransactionRepository->paginateForWalletWithFilters($wallet->id, $filters, 20);
 
         return view('user.wallet.transactions', compact('user', 'wallet', 'transactions'));
     }
@@ -107,14 +103,6 @@ class UserWalletController extends Controller
             $amountInput = $this->convertPersianNumbers($amountInput);
             $amountInput = preg_replace('/[^0-9]/', '', $amountInput);
 
-            // ⭐ Fix (test-writing session 6, 2026-08-16): the sanitized value above was
-            // computed but never merged back into the request before validate() ran —
-            // validation always ran against the original raw input, so a Persian-digit
-            // or comma-formatted amount (e.g. "۱۰۰,۰۰۰", a completely normal expected
-            // input pattern, matching how the specialist withdrawal amount field
-            // already handles this elsewhere in this project) always failed with
-            // "amount must be a number", even though the code clearly intended to
-            // support it.
             $request->merge(['amount' => $amountInput]);
 
             $validated = $request->validate([

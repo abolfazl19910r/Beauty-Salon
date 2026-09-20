@@ -52,10 +52,6 @@ class SpecialistWalletController extends Controller
 
     public function calculateFee(Request $request): JsonResponse
     {
-        // ⚠️ intentionally used resolveSpecialist() (not requireSpecialist()):
-        // This method is an endpoint called with fetch/AJAX and should always return JSON.
-        // requireSpecialist() returns Laravel's default HTML error page with abort(404)
-        // that breaks the JSON convention of this endpoint.
         $specialist = $this->resolveSpecialist();
 
         if (! $specialist) {

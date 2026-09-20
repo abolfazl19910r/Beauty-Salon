@@ -5,8 +5,11 @@ namespace App\Services\Specialist;
 use App\Events\Withdrawal\Requested\WithdrawalRequested;
 use App\Models\Specialist;
 use App\Models\SpecialistWallet;
-use App\Models\WalletSetting;
 use App\Models\WithdrawalRequest;
+use App\Repositories\Contracts\SpecialistWalletRepositoryInterface;
+use App\Repositories\Contracts\WalletSettingRepositoryInterface;
+use App\Repositories\Contracts\WalletTransactionRepositoryInterface;
+use App\Repositories\Contracts\WithdrawalRequestRepositoryInterface;
 use App\Traits\HasJalaliDates;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -15,36 +18,29 @@ class SpecialistWalletService
 {
     use HasJalaliDates;
 
-    // Modified: Removed the resolveSpecialist() method that was here before.
-    // App\Traits\ResolvesSpecialist already exists in the project and do the same (via
-    // The relationship $user->specialist, which itself is defined based on phone match.
-    // Controllers now use that trait directly.
+    public function __construct(
+        protected readonly SpecialistWalletRepositoryInterface $specialistWalletRepository,
+        protected readonly WithdrawalRequestRepositoryInterface $withdrawalRequestRepository,
+        protected readonly WalletTransactionRepositoryInterface $walletTransactionRepository,
+        protected readonly WalletSettingRepositoryInterface $walletSettingRepository,
+    ) {}
 
     public function getWalletOverview(Specialist $specialist): array
     {
         $wallet = $specialist->getOrCreateWallet();
-        $settings = WalletSetting::first();
+        $settings = $this->walletSettingRepository->first();
 
-        $recentTransactions = $wallet->transactions()
-            ->latest()
-            ->limit(10)
-            ->get();
+        $recentTransactions = $this->walletTransactionRepository->getRecentForWallet($wallet->id, 10);
 
-        $withdrawalRequests = $wallet->withdrawalRequests()
-            ->latest()
-            ->paginate(10);
+        $withdrawalRequests = $this->withdrawalRequestRepository->paginateForWallet($wallet->id, 10);
 
-        $currentMonthIncome = $wallet->transactions()
-            ->where('type', 'income')
-            ->whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->sum('amount');
+        $currentMonthIncome = $this->walletTransactionRepository->sumForWalletByTypeAndMonth(
+            $wallet->id, 'income', now()->month, now()->year
+        );
 
-        $currentMonthWithdrawals = $wallet->transactions()
-            ->where('type', 'withdrawal')
-            ->whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->sum('amount');
+        $currentMonthWithdrawals = $this->walletTransactionRepository->sumForWalletByTypeAndMonth(
+            $wallet->id, 'withdrawal', now()->month, now()->year
+        );
 
         return compact(
             'wallet',
@@ -60,32 +56,30 @@ class SpecialistWalletService
     {
         $wallet = $specialist->getOrCreateWallet();
 
-        $query = $wallet->transactions()->with('booking');
-
-        if (! empty($filters['type'])) {
-            $query->where('type', $filters['type']);
-        }
+        $normalizedFilters = [
+            'type' => $filters['type'] ?? null,
+        ];
 
         if (! empty($filters['date_from'])) {
             $dateFrom = $this->parseJalali($filters['date_from'], context: 'تاریخ از فیلتر تراکنش‌های کیف پول')?->startOfDay();
             if ($dateFrom) {
-                $query->where('created_at', '>=', $dateFrom);
+                $normalizedFilters['date_from'] = $dateFrom;
             }
         }
 
         if (! empty($filters['date_to'])) {
             $dateTo = $this->parseJalali($filters['date_to'], context: 'تاریخ تا فیلتر تراکنش‌های کیف پول')?->endOfDay();
             if ($dateTo) {
-                $query->where('created_at', '<=', $dateTo);
+                $normalizedFilters['date_to'] = $dateTo;
             }
         }
 
-        return $query->latest()->paginate(20)->withQueryString();
+        return $this->walletTransactionRepository->paginateForWalletWithFilters($wallet->id, $normalizedFilters, 20);
     }
 
     public function updateIban(SpecialistWallet $wallet, array $data): void
     {
-        $wallet->update([
+        $this->specialistWalletRepository->update($wallet, [
             'iban' => 'IR'.str_replace(' ', '', $data['iban']),
             'account_holder_name' => $data['account_holder_name'],
             'bank_name' => $data['bank_name'],
@@ -93,9 +87,6 @@ class SpecialistWalletService
         ]);
     }
 
-    /**
-     * @return array{success: bool, message?: string, withdrawal_request?: WithdrawalRequest}
-     */
     public function createWithdrawal(Specialist $specialist, array $data): array
     {
         $wallet = $specialist->getOrCreateWallet();
@@ -110,7 +101,7 @@ class SpecialistWalletService
         $withdrawalRequest = DB::transaction(function () use ($wallet, $specialist, $amount, $method) {
             $feeCalculation = $wallet->calculateWithdrawalFee($amount, $method);
 
-            $withdrawalRequest = WithdrawalRequest::create([
+            $withdrawalRequest = $this->withdrawalRequestRepository->create([
                 'wallet_id' => $wallet->id,
                 'specialist_id' => $specialist->id,
                 'amount' => $amount,
@@ -150,7 +141,7 @@ class SpecialistWalletService
                 ],
             ]);
 
-            $withdrawalRequest->update(['status' => 'cancelled']);
+            $this->withdrawalRequestRepository->update($withdrawalRequest, ['status' => 'cancelled']);
         });
     }
 

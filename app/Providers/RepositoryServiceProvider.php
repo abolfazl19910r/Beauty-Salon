@@ -11,6 +11,11 @@ use App\Repositories\Contracts\LeaveRepositoryInterface;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
 use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Repositories\Contracts\SpecialistScheduleRepositoryInterface;
+use App\Repositories\Contracts\SpecialistWalletRepositoryInterface;
+use App\Repositories\Contracts\UserWalletTransactionRepositoryInterface;
+use App\Repositories\Contracts\WalletSettingRepositoryInterface;
+use App\Repositories\Contracts\WalletTransactionRepositoryInterface;
+use App\Repositories\Contracts\WithdrawalRequestRepositoryInterface;
 use App\Repositories\Eloquent\BeautyServiceRepository;
 use App\Repositories\Eloquent\BookingRepository;
 use App\Repositories\Eloquent\CategoryRepository;
@@ -20,6 +25,11 @@ use App\Repositories\Eloquent\LeaveRepository;
 use App\Repositories\Eloquent\PaymentRepository;
 use App\Repositories\Eloquent\SpecialistRepository;
 use App\Repositories\Eloquent\SpecialistScheduleRepository;
+use App\Repositories\Eloquent\SpecialistWalletRepository;
+use App\Repositories\Eloquent\UserWalletTransactionRepository;
+use App\Repositories\Eloquent\WalletSettingRepository;
+use App\Repositories\Eloquent\WalletTransactionRepository;
+use App\Repositories\Eloquent\WithdrawalRequestRepository;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -34,6 +44,11 @@ class RepositoryServiceProvider extends ServiceProvider
         BookingRepositoryInterface::class => BookingRepository::class,
         PaymentRepositoryInterface::class => PaymentRepository::class,
         InvoiceRepositoryInterface::class => InvoiceRepository::class,
+        WalletSettingRepositoryInterface::class => WalletSettingRepository::class,
+        SpecialistWalletRepositoryInterface::class => SpecialistWalletRepository::class,
+        WithdrawalRequestRepositoryInterface::class => WithdrawalRequestRepository::class,
+        WalletTransactionRepositoryInterface::class => WalletTransactionRepository::class,
+        UserWalletTransactionRepositoryInterface::class => UserWalletTransactionRepository::class,
     ];
 
     public function register(): void
