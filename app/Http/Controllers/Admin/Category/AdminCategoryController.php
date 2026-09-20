@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin\Category;
 
 use App\Http\Controllers\Controller;
-use App\Models\Category;
+use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Services\CategoryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,35 +13,28 @@ use Illuminate\View\View;
 
 class AdminCategoryController extends Controller
 {
-    public function __construct(protected readonly CategoryService $categoryService) {}
+    public function __construct(
+        protected readonly CategoryService $categoryService,
+        protected readonly CategoryRepositoryInterface $categoryRepository,
+    ) {}
 
     public function index(Request $request): View
     {
-        $query = Category::with('parent');
+        $filters = [
+            'search' => $request->has('search') && ! empty($request->search) ? $request->search : null,
+            'status' => $request->has('status') && in_array($request->status, ['active', 'inactive']) ? $request->status : null,
+            'parent_id' => $request->has('parent_id') && ! empty($request->parent_id) ? $request->parent_id : null,
+        ];
 
-        if ($request->has('search') && ! empty($request->search)) {
-            $search = $request->search;
-            $query->where('name', 'like', "%{$search}%");
-        }
-
-        if ($request->has('status') && in_array($request->status, ['active', 'inactive'])) {
-            $isActive = $request->status === 'active';
-            $query->where('is_active', $isActive);
-        }
-
-        if ($request->has('parent_id') && ! empty($request->parent_id)) {
-            $query->where('parent_id', $request->parent_id);
-        }
-
-        $categories = $query->orderBy('order', 'asc')->paginate(10);
-        $parentCategories = Category::parents()->get(['id', 'name']);
+        $categories = $this->categoryRepository->paginateWithFilters($filters, 10);
+        $parentCategories = $this->categoryRepository->getParentOptions();
 
         return view('admin.categories.index', compact('categories', 'parentCategories'));
     }
 
     public function create(): View
     {
-        $parentCategories = Category::parents()->get(['id', 'name']);
+        $parentCategories = $this->categoryRepository->getParentOptions();
 
         return view('admin.categories.create', compact('parentCategories'));
     }
@@ -78,7 +71,7 @@ class AdminCategoryController extends Controller
 
     public function show($id): View
     {
-        $category = Category::findOrFail($id);
+        $category = $this->categoryRepository->findOrFail($id);
 
         $category->load(['parent', 'children']);
 
@@ -90,17 +83,16 @@ class AdminCategoryController extends Controller
 
     public function edit($id): View
     {
-        $category = Category::findOrFail($id);
+        $category = $this->categoryRepository->findOrFail($id);
 
-        $categories = Category::where('id', '!=', $category->id)
-            ->get(['id', 'name']);
+        $categories = $this->categoryRepository->getOptionsExcept($category->id);
 
         return view('admin.categories.edit', compact('category', 'categories'));
     }
 
     public function update(Request $request, $id): RedirectResponse
     {
-        $category = Category::findOrFail($id);
+        $category = $this->categoryRepository->findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:categories,name,'.$category->id,
@@ -148,7 +140,7 @@ class AdminCategoryController extends Controller
 
     public function toggleStatus($id): RedirectResponse
     {
-        $category = Category::findOrFail($id);
+        $category = $this->categoryRepository->findOrFail($id);
 
         try {
             $this->categoryService->toggleStatus($category);
@@ -164,7 +156,7 @@ class AdminCategoryController extends Controller
 
     public function destroy($id): RedirectResponse
     {
-        $category = Category::findOrFail($id);
+        $category = $this->categoryRepository->findOrFail($id);
 
         try {
             if ($category->children()->count() > 0 || $category->services()->count() > 0) {

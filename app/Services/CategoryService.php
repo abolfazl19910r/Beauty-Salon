@@ -3,20 +3,23 @@
 namespace App\Services;
 
 use App\Models\Category;
+use App\Repositories\Contracts\CategoryRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class CategoryService
 {
+    public function __construct(protected readonly CategoryRepositoryInterface $categoryRepository) {}
+
     public function create(array $data): Category
     {
         return DB::transaction(function () use ($data) {
-            $category = Category::create($data);
+            $category = $this->categoryRepository->create($data);
 
             if (empty($data['order'])) {
-                $maxOrder = Category::where('parent_id', $data['parent_id'] ?? null)->max('order') ?? 0;
-                $category->update(['order' => $maxOrder + 1]);
+                $maxOrder = $this->categoryRepository->getMaxOrder($data['parent_id'] ?? null);
+                $category = $this->categoryRepository->update($category, ['order' => $maxOrder + 1]);
             }
 
             Log::info('دسته‌بندی جدید ایجاد شد', ['category_id' => $category->id]);
@@ -31,11 +34,11 @@ class CategoryService
             if (isset($data['parent_id']) &&
                 $category->parent_id != $data['parent_id'] &&
                 empty($data['order'])) {
-                $maxOrder = Category::where('parent_id', $data['parent_id'])->max('order') ?? 0;
+                $maxOrder = $this->categoryRepository->getMaxOrder($data['parent_id']);
                 $data['order'] = $maxOrder + 1;
             }
 
-            $category->update($data);
+            $category = $this->categoryRepository->update($category, $data);
 
             Log::info('دسته‌بندی به‌روزرسانی شد', ['category_id' => $category->id]);
 
@@ -45,7 +48,7 @@ class CategoryService
 
     public function toggleStatus(Category $category): Category
     {
-        $category->update([
+        $category = $this->categoryRepository->update($category, [
             'is_active' => ! $category->is_active,
         ]);
 
@@ -57,27 +60,18 @@ class CategoryService
         return DB::transaction(function () use ($category) {
             Log::info('دسته‌بندی حذف شد', ['category_id' => $category->id]);
 
-            return $category->delete();
+            return $this->categoryRepository->delete($category);
         });
     }
 
     public function getCategoryTree(): Collection
     {
-        return Category::with('children')
-            ->parents()
-            ->orderBy('order')
-            ->get();
+        return $this->categoryRepository->getTree();
     }
 
     public function getActiveCategories(): Collection
     {
-        return Category::with(['children' => function ($query) {
-            $query->where('is_active', true)->orderBy('order');
-        }])
-            ->parents()
-            ->active()
-            ->orderBy('order')
-            ->get();
+        return $this->categoryRepository->getActiveTree();
     }
 
     public function reorderCategories(array $orderedIds): bool
@@ -86,7 +80,7 @@ class CategoryService
             DB::beginTransaction();
 
             foreach ($orderedIds as $index => $id) {
-                Category::where('id', $id)->update(['order' => $index + 1]);
+                $this->categoryRepository->updateOrder($id, $index + 1);
             }
 
             DB::commit();
