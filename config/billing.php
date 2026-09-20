@@ -49,4 +49,11 @@ return [
     ],
 
     'sms_quota_per_month' => (int) env('SMS_QUOTA_PER_MONTH', 1500),
+
+    // ⭐ محور «۴. ثبت‌نام عمومی سالن (self-service)»: یک سالن self-service (برخلاف سالنی که
+    // سوپرادمین دستی می‌سازه و خودش سقف رو تعیین می‌کنه) نیازی نداره این عدد رو در لحظه‌ی
+    // ثبت‌نام بفهمه/انتخاب کنه — یک پیش‌فرض معقول برای شروع (قابل‌افزایش بعداً فقط توسط
+    // سوپرادمین، SuperAdminController::update). عدد ۳ صرفاً یک تخمین منطقی برای یک سالن
+    // تازه‌کار است، نه یک محاسبه‌ی مستند مثل قیمت‌های بالا — قبل از production بازبینی بشه.
+    'default_max_specialists_count' => (int) env('DEFAULT_MAX_SPECIALISTS_COUNT', 3),
 ];

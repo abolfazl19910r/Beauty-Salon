@@ -89,6 +89,7 @@ if ($centralDomain) {
 }
 
 require __DIR__.'/web/auth.php';
+require __DIR__.'/web/salon-signup.php';
 // ⭐ Commit 4b-3: this file is now ONLY the specialist's own staff dashboard (specialist.*) —
 // the public browsing block that used to sit above it in the same file moved to
 // web/public-specialists.php, under /s/{slug} above. Stays global/unprefixed, same shape as

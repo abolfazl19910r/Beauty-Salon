@@ -50,14 +50,16 @@
             font-size: 1rem;
         }
 
-        .badge {
+        .cta {
             display: inline-block;
-            margin-top: 1.5rem;
-            padding: 0.4rem 1rem;
-            border: 1px solid var(--rasta-gold);
+            margin-top: 1.75rem;
+            padding: 0.75rem 2rem;
+            background: linear-gradient(135deg, var(--rasta-gold-light), var(--rasta-gold));
+            color: var(--rasta-dark);
             border-radius: 999px;
-            color: var(--rasta-gold-light);
-            font-size: 0.85rem;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 0.95rem;
         }
     </style>
 </head>
@@ -68,7 +70,9 @@
             این دامنه‌ی مرکزی سیستم مدیریت سالن‌های زیبایی راستاست.
             برای ورود به پنل سالن خودتان، از آدرس اختصاصی سالن (ساب‌دامین) استفاده کنید.
         </p>
-        <span class="badge">به‌زودی: ثبت‌نام آنلاین سالن جدید</span>
+        {{-- ⭐ محور «۴. ثبت‌نام عمومی سالن (self-service)»: قبلاً اینجا فقط یک badge «به‌زودی»
+             بود؛ حالا که salon-signup.create واقعاً وجود داره، این CTA به همونجا وصل می‌شه. --}}
+        <a class="cta" href="{{ route('salon-signup.create') }}">ثبت‌نام سالن جدید</a>
     </div>
 </body>
 </html>
