@@ -82,7 +82,12 @@ class ServiceControllerTest extends TestCase
         WalletSetting::query()->delete();
         WalletSetting::create(['prepayment_percentage' => 40, 'minimum_prepayment_amount' => 50000]);
 
-        $response = $this->getJson('/api/services');
+        $user = User::factory()->create();
+
+        // ⭐ Fix (real, confirmed cross-tenant data leak, 2026-09-20): this route moved from the
+        // unscoped /api/services to the salon-scoped bookings.services-list (routes/web/
+        // bookings.php) — see CrossSalonServiceLeakTest for the dedicated cross-salon coverage.
+        $response = $this->actingAs($user)->getJson(route('bookings.services-list'));
 
         $response->assertOk();
         $this->assertSame(200000, $response->json()[0]['prepayment_amount']); // 500000 * 40%
