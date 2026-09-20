@@ -3,20 +3,10 @@
 namespace App\Services\Payment;
 
 use App\Models\Invoice;
+use App\Repositories\Contracts\InvoiceRepositoryInterface;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-/**
- * ⭐ فاز ۲ از ۲، محور «۱. پرداخت آنلاین و صورتحساب». اتصال واقعی به درگاه زرین‌پال برای خرید/
- * تمدید آنلاین اشتراک سالن — جایگزین ثبت دستی سوپر ادمین (که همچنان به‌عنوان یک مسیر موازی، از
- * طریق InvoiceService::recordManualRenewal(), باقی می‌ماند).
- *
- * ⚠️ عمداً یک سرویس جدا از PaymentService (هم‌الگو با جداسازی موجود ZarinpalPayoutService): اینجا
- * جهت پول برعکسِ PaymentService است — سالن به پلتفرم پول اشتراک پرداخت می‌کند، نه مشتری به سالن.
- * پس این سرویس همیشه merchant_id سراسری پلتفرم را مستقیم از config می‌خواند و هرگز از
- * CurrentSalon/salons.zarinpal_merchant_id (مورد ۹) استفاده نمی‌کند — برخلاف PaymentService که
- * دقیقاً برعکس این کار را انجام می‌دهد.
- */
 class SubscriptionPaymentService
 {
     protected string $merchantId;
@@ -27,7 +17,7 @@ class SubscriptionPaymentService
 
     protected bool $sandbox;
 
-    public function __construct()
+    public function __construct(protected readonly InvoiceRepositoryInterface $invoiceRepository)
     {
         $this->merchantId = config('services.zarinpal.merchant_id');
         $this->sandbox = config('services.zarinpal.sandbox', true);
@@ -41,9 +31,6 @@ class SubscriptionPaymentService
         }
     }
 
-    /**
-     * @return array{success: bool, payment_url?: string, reference?: string, message?: string}
-     */
     public function createPayment(Invoice $invoice): array
     {
         try {
@@ -75,7 +62,7 @@ class SubscriptionPaymentService
 
             if ($response->successful() && isset($result['data']['code']) && $result['data']['code'] == 100) {
                 $authority = $result['data']['authority'];
-                $invoice->update(['authority' => $authority]);
+                $this->invoiceRepository->update($invoice, ['authority' => $authority]);
 
                 return [
                     'success' => true,
@@ -110,9 +97,6 @@ class SubscriptionPaymentService
         }
     }
 
-    /**
-     * @return array{success: bool, ref_id?: string, message?: string}
-     */
     public function verifyPayment(Invoice $invoice, string $status, ?string $authority): array
     {
         if ($status === 'NOK' || $status === 'cancel') {
@@ -122,9 +106,6 @@ class SubscriptionPaymentService
             ];
         }
 
-        // ⭐ اعتبار authority همیشه از رکورد سمت سرور (همان چیزی که createPayment() ذخیره کرده)
-        // خوانده می‌شود، نه از پارامتر querystring به‌تنهایی — پارامتر querystring فقط باید با آن
-        // مطابقت داشته باشد، وگرنه یک کاربر می‌تواند authority دلخواه را در URL جایگزین کند.
         if (! $authority || $authority !== $invoice->authority) {
             Log::warning('SubscriptionPaymentService: عدم تطابق authority در کال‌بک', [
                 'invoice_id' => $invoice->id,

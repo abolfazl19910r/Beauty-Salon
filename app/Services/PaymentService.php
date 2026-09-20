@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Support\CurrentSalon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -16,7 +17,7 @@ class PaymentService
 
     protected bool $sandbox;
 
-    public function __construct()
+    public function __construct(protected readonly BookingRepositoryInterface $bookingRepository)
     {
         $this->merchantId = $this->resolveMerchantId();
         $this->sandbox = config('services.zarinpal.sandbox', true);
@@ -30,17 +31,6 @@ class PaymentService
         }
     }
 
-    /**
-     * ⭐ فاز ۲ از ۲، مورد ۹ («مرچنت آیدی مجزا برای هر سالن») — پول پیش‌پرداخت نوبت/شارژ کیف‌پول
-     * (مشتری → سالن) باید مستقیم به حساب زرین‌پال خودِ سالن برود، نه حساب مشترک پلتفرم. اگر
-     * سالن جاری (CurrentSalon) هنوز zarinpal_merchant_id خودش را تنظیم نکرده — یا اصلاً هیچ
-     * سالنی بسته نیست (مثلاً یک job پس‌زمینه بدون context درخواست) — به merchant_id سراسری
-     * پلتفرم برمی‌گردیم تا سالن‌های تازه‌ساخته بدون تنظیم دستی هم بلافاصله کار کنند.
-     *
-     * ⚠️ این متد عمداً هیچ‌جای دیگری استفاده نمی‌شود: SubscriptionPaymentService (پول سالن →
-     * پلتفرم برای خرید/تمدید اشتراک) همیشه merchant_id سراسری را مستقیم از config می‌خواند و
-     * هرگز از CurrentSalon تبعیت نمی‌کند — چون آنجا برعکس، پول باید همیشه به حساب پلتفرم برود.
-     */
     private function resolveMerchantId(): string
     {
         $salon = app(CurrentSalon::class)->get();
@@ -148,7 +138,7 @@ class PaymentService
                 ];
             }
 
-            $booking = \App\Models\Booking::findOrFail($bookingId);
+            $booking = $this->bookingRepository->findOrFail($bookingId);
             $partialPayment = session('partial_payment_'.$booking->id);
             $verifyAmount = $partialPayment
                 ? $partialPayment['remaining_amount']

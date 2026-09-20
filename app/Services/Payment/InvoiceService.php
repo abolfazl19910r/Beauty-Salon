@@ -5,31 +5,20 @@ namespace App\Services\Payment;
 use App\Models\Invoice;
 use App\Models\Salon;
 use App\Models\User;
+use App\Repositories\Contracts\InvoiceRepositoryInterface;
 use App\Services\SuperAdmin\SuperAdminService;
 use Illuminate\Support\Facades\DB;
 
-/**
- * ⭐ فاز ۲ از ۲، محور «۱. پرداخت آنلاین و صورتحساب». هر تغییر در وضعیت اشتراک یک سالن —
- * چه پرداخت آنلاین موفق، چه تمدید دستی سوپر ادمین — دقیقاً از همین سرویس عبور می‌کند تا هم
- * جدول `invoices` (تاریخچه) و هم تاریخ واقعی اشتراک سالن (SuperAdminService::renewSubscription())
- * همیشه هم‌راستا بمانند؛ نه AdminBillingController نه SuperAdminController مستقیماً این دو تا
- * را جدا صدا نمی‌زنند.
- *
- * محاسبه‌ی period_start/period_end صرفاً برای ثبت در تاریخچه است، نه منبع اصلی حقیقت — منبع
- * اصلی همیشه salons.subscription_ends_at است (که SuperAdminService::renewSubscription() آن را
- * به‌روزرسانی می‌کند)؛ اینجا فقط قبل/بعد از آن فراخوانی را برای این فاکتور خاص یادداشت می‌کنیم.
- */
 class InvoiceService
 {
-    public function __construct(protected readonly SuperAdminService $superAdminService) {}
+    public function __construct(
+        protected readonly SuperAdminService $superAdminService,
+        protected readonly InvoiceRepositoryInterface $invoiceRepository,
+    ) {}
 
-    /**
-     * قدم اول مسیر آنلاین: یک فاکتور pending می‌سازد، پیش از رفتن به درگاه. اشتراک سالن هنوز
-     * دست‌نخورده می‌ماند تا پرداخت واقعاً تأیید شود (markPaidFromGateway()).
-     */
     public function createPendingOnlinePurchase(Salon $salon, string $subscriptionType, ?User $createdBy): Invoice
     {
-        return Invoice::create([
+        return $this->invoiceRepository->create([
             'salon_id' => $salon->id,
             'subscription_type' => $subscriptionType,
             'amount' => $this->priceFor($subscriptionType),
@@ -39,10 +28,6 @@ class InvoiceService
         ]);
     }
 
-    /**
-     * بعد از تأیید موفق زرین‌پال صدا زده می‌شود: فاکتور را paid می‌کند و اشتراک سالن را واقعاً
-     * تمدید می‌کند — این دو کار همیشه با هم و اتمیک انجام می‌شوند.
-     */
     public function markPaidFromGateway(Invoice $invoice, string $refId): Invoice
     {
         return DB::transaction(function () use ($invoice, $refId) {
@@ -51,7 +36,7 @@ class InvoiceService
 
             $this->superAdminService->renewSubscription($salon, $invoice->subscription_type);
 
-            $invoice->update([
+            $invoice = $this->invoiceRepository->update($invoice, [
                 'status' => 'paid',
                 'ref_id' => $refId,
                 'paid_at' => now(),
@@ -65,15 +50,11 @@ class InvoiceService
 
     public function markFailed(Invoice $invoice): Invoice
     {
-        $invoice->update(['status' => 'failed']);
+        $invoice = $this->invoiceRepository->update($invoice, ['status' => 'failed']);
 
         return $invoice->fresh();
     }
 
-    /**
-     * مسیر دستی سوپر ادمین (همان تمدید فاز ۱، حالا در همین جدول هم ثبت می‌شود) — بدون درگاه،
-     * فاکتور بلافاصله paid ساخته می‌شود.
-     */
     public function recordManualRenewal(Salon $salon, string $subscriptionType, User $performedBy): Invoice
     {
         return DB::transaction(function () use ($salon, $subscriptionType, $performedBy) {
@@ -81,7 +62,7 @@ class InvoiceService
 
             $this->superAdminService->renewSubscription($salon, $subscriptionType);
 
-            return Invoice::create([
+            return $this->invoiceRepository->create([
                 'salon_id' => $salon->id,
                 'subscription_type' => $subscriptionType,
                 'amount' => $this->priceFor($subscriptionType),

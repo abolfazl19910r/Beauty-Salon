@@ -4,7 +4,8 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
-use App\Models\Payment;
+use App\Repositories\Contracts\BookingRepositoryInterface;
+use App\Repositories\Contracts\PaymentRepositoryInterface;
 use App\Services\SecurePaymentService;
 use App\Services\SecurityLogService;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +17,12 @@ use Illuminate\View\View;
 
 class SecurePaymentController extends Controller
 {
-    public function __construct(protected readonly SecurePaymentService $paymentService, protected readonly SecurityLogService $securityLogService) {}
+    public function __construct(
+        protected readonly SecurePaymentService $paymentService,
+        protected readonly SecurityLogService $securityLogService,
+        protected readonly PaymentRepositoryInterface $paymentRepository,
+        protected readonly BookingRepositoryInterface $bookingRepository,
+    ) {}
 
     public function showOtp(): View|RedirectResponse
     {
@@ -98,7 +104,7 @@ class SecurePaymentController extends Controller
 
     public function showVerification(string $reference): View|RedirectResponse
     {
-        $payment = Payment::where('reference_id', $reference)->with('booking')->firstOrFail();
+        $payment = $this->paymentRepository->findByReferenceWithBookingOrFail($reference);
 
         $this->authorize('pay', $payment->booking);
 
@@ -125,7 +131,7 @@ class SecurePaymentController extends Controller
 
     public function verify(Request $request, string $reference): RedirectResponse
     {
-        $payment = Payment::where('reference_id', $reference)->with('booking')->firstOrFail();
+        $payment = $this->paymentRepository->findByReferenceWithBookingOrFail($reference);
 
         $this->authorize('pay', $payment->booking);
 
@@ -137,15 +143,7 @@ class SecurePaymentController extends Controller
             if ($result['success']) {
                 $booking = $payment->booking;
 
-                /**
-                 * R-Observers addendum: previously only the Payment model got gateway_reference —
-                 * the Booking itself (payment_reference/payment_details) was left untouched, unlike
-                 * every other payment path in the project. This meant bookings paid through this
-                 * secure-checkout flow showed no payment reference on booking detail pages and were
-                 * invisible to payment_details->method-based reports (paymentBreakdown() /
-                 * getFinancialSummary()), silently excluded from all three method buckets.
-                 */
-                $booking->update([
+                $this->bookingRepository->update($booking, [
                     'payment_status' => 'paid',
                     'paid_at' => now(),
                     'payment_reference' => $result['transaction_id'] ?? $reference,
@@ -157,7 +155,7 @@ class SecurePaymentController extends Controller
                 ]);
 
                 if (! $payment->isCompleted()) {
-                    $payment->update([
+                    $this->paymentRepository->update($payment, [
                         'status' => 'completed',
                         'gateway_response' => $result,
                         'gateway_reference' => $result['transaction_id'] ?? $reference,
@@ -223,7 +221,7 @@ class SecurePaymentController extends Controller
         $reference = $request->reference;
         $message = $request->message;
 
-        $payment = Payment::where('reference_id', $reference)->with('booking')->first();
+        $payment = $this->paymentRepository->findByReferenceWithBooking($reference);
 
         if ($payment) {
             $this->authorize('pay', $payment->booking);
@@ -236,9 +234,7 @@ class SecurePaymentController extends Controller
 
     public function checkStatus(string $reference): JsonResponse
     {
-        $payment = Payment::where('reference_id', $reference)
-            ->with('booking')
-            ->firstOrFail();
+        $payment = $this->paymentRepository->findByReferenceWithBookingOrFail($reference);
 
         $this->authorize('pay', $payment->booking);
 

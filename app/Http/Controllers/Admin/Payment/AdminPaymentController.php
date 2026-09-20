@@ -3,18 +3,20 @@
 namespace App\Http\Controllers\Admin\Payment;
 
 use App\Http\Controllers\Controller;
-use App\Models\Booking;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class AdminPaymentController extends Controller
 {
+    public function __construct(protected readonly BookingRepositoryInterface $bookingRepository) {}
+
     public function create(Request $request): View
     {
         $booking = null;
         if ($request->has('booking_id')) {
-            $booking = Booking::findOrFail($request->booking_id);
+            $booking = $this->bookingRepository->findOrFail($request->booking_id);
         }
 
         return view('admin.payments.create', compact('booking'));
@@ -30,17 +32,9 @@ class AdminPaymentController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $booking = Booking::findOrFail($request->booking_id);
+        $booking = $this->bookingRepository->findOrFail($request->booking_id);
 
-        /**
-         * R-Observers: payment_method is not a real column on `bookings` (see payment_details JSON
-         * column instead — every other payment path in the project, e.g. PaymentController, stores
-         * the method under payment_details->method). This was previously documented as fixed, but
-         * the fix was never actually applied here: $booking->update(['payment_method' => ...]) was
-         * silently dropped by mass-assignment because the key isn't in Booking::$fillable, so manual
-         * admin-recorded payments never actually stored which method was used.
-         */
-        $booking->update([
+        $this->bookingRepository->update($booking, [
             'payment_status' => 'paid',
             'prepayment_amount' => $request->amount,
             'payment_details' => [

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Services\LoyaltyService;
 use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
@@ -14,7 +15,11 @@ use Illuminate\View\View;
 
 class PaymentController extends Controller
 {
-    public function __construct(protected readonly PaymentService $paymentService, protected readonly LoyaltyService $loyaltyService) {}
+    public function __construct(
+        protected readonly PaymentService $paymentService,
+        protected readonly LoyaltyService $loyaltyService,
+        protected readonly BookingRepositoryInterface $bookingRepository,
+    ) {}
 
     public function process(Booking $booking): RedirectResponse
     {
@@ -27,7 +32,7 @@ class PaymentController extends Controller
                 DB::transaction(function () use ($booking) {
                     $specialist = $booking->specialist;
                     $finalStatus = $specialist->auto_confirm_bookings ? 'confirmed' : 'pending';
-                    $booking->update([
+                    $this->bookingRepository->update($booking, [
                         'payment_status' => 'paid',
                         'status' => $finalStatus,
                         'paid_at' => now(),
@@ -107,7 +112,7 @@ class PaymentController extends Controller
 
                     $specialist = $booking->specialist;
                     $finalStatus = $specialist->auto_confirm_bookings ? 'confirmed' : 'pending';
-                    $booking->update([
+                    $this->bookingRepository->update($booking, [
                         'payment_status' => 'paid',
                         'status' => $finalStatus,
                         'paid_at' => now(),
@@ -175,7 +180,7 @@ class PaymentController extends Controller
     {
         try {
             $result = $this->paymentService->verifyPayment($request);
-            $booking = Booking::findOrFail($result['booking_id']);
+            $booking = $this->bookingRepository->findOrFail($result['booking_id']);
 
             if ($result['success']) {
                 $booking->refresh();
@@ -199,7 +204,7 @@ class PaymentController extends Controller
                             session()->forget('partial_payment_'.$booking->id);
                         }
 
-                        $booking->update([
+                        $this->bookingRepository->update($booking, [
                             'payment_status' => 'paid',
                             'paid_at' => now(),
                             'payment_reference' => $result['ref_id'] ?? $result['reference'],
@@ -228,7 +233,7 @@ class PaymentController extends Controller
                 session()->forget('partial_payment_'.$booking->id);
             }
 
-            $booking->update(['status' => 'cancelled', 'cancellation_reason' => 'پرداخت ناموفق']);
+            $this->bookingRepository->update($booking, ['status' => 'cancelled', 'cancellation_reason' => 'پرداخت ناموفق']);
 
             return redirect()->route('bookings.failed')
                 ->with('error', $result['message'] ?? 'پرداخت ناموفق بود');

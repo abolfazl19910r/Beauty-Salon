@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin\Billing;
 
 use App\Http\Controllers\Controller;
-use App\Models\Invoice;
+use App\Repositories\Contracts\InvoiceRepositoryInterface;
 use App\Services\Payment\InvoiceService;
 use App\Services\Payment\SubscriptionPaymentService;
 use App\Support\CurrentSalon;
@@ -11,28 +11,19 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-/**
- * ⭐ فاز ۲ از ۲، محور «۱. پرداخت آنلاین و صورتحساب». خرید/تمدید آنلاین اشتراک توسط خودِ ادمین
- * سالن — جایگزین ثبت دستی سوپر ادمین (که همچنان از طریق SuperAdminController::renewSubscription()
- * به‌عنوان یک مسیر موازی باقی می‌ماند، مثلاً برای توافق‌های آفلاین/تخفیف دستی).
- *
- * این کنترلر تنها استثنای EnsureAdminSalonActive برای سالن منقضی‌شده است — به docblock آن
- * middleware نگاه کن.
- */
 class AdminBillingController extends Controller
 {
     public function __construct(
         protected readonly SubscriptionPaymentService $subscriptionPaymentService,
         protected readonly InvoiceService $invoiceService,
+        protected readonly InvoiceRepositoryInterface $invoiceRepository,
     ) {}
 
     public function index(): View
     {
         $salon = app(CurrentSalon::class)->get();
 
-        $invoices = Invoice::where('salon_id', $salon->id)
-            ->orderByDesc('created_at')
-            ->paginate(15);
+        $invoices = $this->invoiceRepository->paginateForSalon($salon->id, 15);
 
         $prices = config('billing.subscription_prices');
 
@@ -67,7 +58,7 @@ class AdminBillingController extends Controller
     public function callback(Request $request): RedirectResponse
     {
         $invoiceId = $request->query('invoice');
-        $invoice = Invoice::findOrFail($invoiceId);
+        $invoice = $this->invoiceRepository->findOrFail($invoiceId);
 
         $status = $request->Status ?? $request->status;
         $authority = $request->Authority ?? $request->authority;

@@ -4,17 +4,20 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\Payment;
+use App\Repositories\Contracts\PaymentRepositoryInterface;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class SecurePaymentService
 {
+    public function __construct(protected readonly PaymentRepositoryInterface $paymentRepository) {}
+
     public function createPayment(Booking $booking): Payment
     {
         $referenceId = $this->generateSecureReference();
 
-        $payment = Payment::create([
+        $payment = $this->paymentRepository->create([
             'booking_id' => $booking->id,
             'amount' => $booking->prepayment_amount,
             'reference_id' => $referenceId,
@@ -36,17 +39,9 @@ class SecurePaymentService
         return $payment;
     }
 
-    /**
-     * Verifies a secure-checkout payment reference and, on success, completes the transaction.
-     *
-     * The amount is intentionally NOT taken as an input parameter here (it previously came from
-     * the client's request body, an amount a user could freely tamper with before this check ever
-     * ran) — it is always read from the server-side Payment record created in createPayment(),
-     * and cross-checked against the encrypted card_data blob purely as a tamper-evidence signature.
-     */
     public function verifyPayment(string $referenceId): array
     {
-        $payment = Payment::where('reference_id', $referenceId)->first();
+        $payment = $this->paymentRepository->findByReference($referenceId);
 
         if (! $payment) {
             Log::warning('Secure payment verification failed - payment not found', [
@@ -131,11 +126,6 @@ class SecurePaymentService
         return json_decode(Crypt::decryptString($encryptedData), true);
     }
 
-    /**
-     * Minutes a secure-checkout payment window stays valid for, read from
-     * PAYMENT_EXPIRY_MINUTES (services.secure_payment.expiry_minutes), defaulting to 15
-     * (the previous hardcoded value).
-     */
     protected function expiryMinutes(): int
     {
         return max(1, (int) config('services.secure_payment.expiry_minutes', 15));
