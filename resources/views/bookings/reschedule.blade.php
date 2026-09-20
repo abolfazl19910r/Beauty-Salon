@@ -164,6 +164,14 @@
             const BOOKING_ID    = {{ $booking->id }};
             const CSRF          = document.querySelector('meta[name="csrf-token"]').content;
 
+            // ⭐ Fix (real, confirmed cross-tenant data leak, 2026-09-20): this page used to call
+            // the unscoped /api/available-dates/{id} and /api/time-slots/{id}/{date} — neither
+            // under /s/{salon_slug}, so CurrentSalon was never bound and both mixed every salon's
+            // specialists together. Now points at the salon-scoped equivalents in
+            // routes/web/bookings.php, same as bookings/create.blade.php.
+            const AVAILABLE_DATES_URL = @json(route('bookings.available-dates', ['specialist' => $booking->specialist_id]));
+            const AVAILABLE_SLOTS_URL_TEMPLATE = @json(route('bookings.available-slots', ['specialist' => $booking->specialist_id, 'date' => '__DATE__']));
+
             let selectedDate = null;
             let selectedTime = null;
 
@@ -295,7 +303,7 @@
             // ---- API calls ----
             async function loadAvailableDates() {
                 try {
-                    const res = await fetch(`/api/available-dates/${SPECIALIST_ID}`, {
+                    const res = await fetch(AVAILABLE_DATES_URL, {
                         headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
                     });
                     const data = await res.json();
@@ -309,7 +317,7 @@
 
             async function loadTimeSlots(date) {
                 try {
-                    const res = await fetch(`/api/time-slots/${SPECIALIST_ID}/${date}`, {
+                    const res = await fetch(AVAILABLE_SLOTS_URL_TEMPLATE.replace('__DATE__', encodeURIComponent(date)), {
                         headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
                     });
                     const data = await res.json();

@@ -234,6 +234,30 @@
     <script>
         (function() {
             // --------------------------------------------------------------
+            // ⭐ Fix (real, confirmed cross-tenant data leak, 2026-09-20): this page used to call
+            // the unscoped /api/services, /api/specialists/{id}, /api/available-dates/{id} and
+            // /api/time-slots/{id}/{date} — none of them under /s/{salon_slug}, so CurrentSalon
+            // was never bound and every one of them mixed all salons' data together. Now points
+            // at the salon-scoped equivalents (routes/web/bookings.php), rendered server-side so
+            // the existing URL::defaults(['salon_slug' => ...]) machinery fills in the slug the
+            // same way every other route() call in this project already does.
+            // ---------------------------------------------------------------
+            const ROUTES = {
+                services: @json(route('bookings.services-list')),
+                specialistsByService: @json(route('bookings.service-specialists', ['service' => '__SERVICE__'])),
+                availableDates: @json(route('bookings.available-dates', ['specialist' => '__SPECIALIST__'])),
+                availableSlots: @json(route('bookings.available-slots', ['specialist' => '__SPECIALIST__', 'date' => '__DATE__'])),
+            };
+
+            function buildUrl(template, replacements) {
+                let url = template;
+                for (const [placeholder, value] of Object.entries(replacements)) {
+                    url = url.replace(placeholder, encodeURIComponent(value));
+                }
+                return url;
+            }
+
+            // --------------------------------------------------------------
             // Self-contained Gregorian↔solar conversion — no external libraries/CDN
             // (same jcal algorithm used in the rest of the project pages)
             // ---------------------------------------------------------------
@@ -354,7 +378,7 @@
             // ---------------------------------------------------------------
             async function loadServices() {
                 try {
-                    const response = await fetch('/api/services', { headers: { 'Accept': 'application/json' } });
+                    const response = await fetch(ROUTES.services, { headers: { 'Accept': 'application/json' } });
                     services = await response.json();
 
                     const select = document.getElementById('service-select');
@@ -404,7 +428,7 @@
             // ---------------------------------------------------------------
             async function loadSpecialists() {
                 try {
-                    const response = await fetch(`/api/specialists/${selectedService}`, {
+                    const response = await fetch(buildUrl(ROUTES.specialistsByService, { '__SERVICE__': selectedService }), {
                         headers: { 'Accept': 'application/json' }
                     });
                     specialists = await response.json();
@@ -448,7 +472,7 @@
                 showEl('dates-loading');
                 hideEl('dates-section');
                 try {
-                    const response = await fetch(`/api/available-dates/${selectedSpecialist}`, {
+                    const response = await fetch(buildUrl(ROUTES.availableDates, { '__SPECIALIST__': selectedSpecialist }), {
                         headers: { 'Accept': 'application/json' }
                     });
                     if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -501,7 +525,8 @@
                 showEl('slots-loading');
                 hideEl('slots-section');
                 try {
-                    const url = `/api/time-slots/${selectedSpecialist}/${selectedDate}?service_id=${selectedService}`;
+                    const base = buildUrl(ROUTES.availableSlots, { '__SPECIALIST__': selectedSpecialist, '__DATE__': selectedDate });
+                    const url = `${base}?service_id=${selectedService}`;
                     const response = await fetch(url, {
                         headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
                     });
