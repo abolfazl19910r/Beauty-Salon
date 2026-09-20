@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\User\Booking\ConfirmBookingRequest;
 use App\Http\Requests\User\Booking\StoreBookingRequest;
 use App\Models\Booking;
+use App\Repositories\Contracts\BeautyServiceRepositoryInterface;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Services\Booking\BookingService;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -17,7 +19,9 @@ use Illuminate\View\View;
 class BookingReservationController extends Controller
 {
     public function __construct(
-        protected BookingService $bookingService
+        protected BookingService $bookingService,
+        protected readonly BeautyServiceRepositoryInterface $beautyServiceRepository,
+        protected readonly SpecialistRepositoryInterface $specialistRepository,
     ) {}
 
     public function create(): View|RedirectResponse
@@ -27,8 +31,8 @@ class BookingReservationController extends Controller
                 ->with('message', 'برای رزرو نوبت ابتدا باید وارد شوید.');
         }
 
-        $services = \App\Models\BeautyService::all();
-        $specialists = \App\Models\Specialist::all();
+        $services = $this->beautyServiceRepository->all();
+        $specialists = $this->specialistRepository->all();
 
         return view('bookings.create', compact('services', 'specialists'));
     }
@@ -36,8 +40,8 @@ class BookingReservationController extends Controller
     public function confirm(ConfirmBookingRequest $request): View|RedirectResponse
     {
         try {
-            $service = \App\Models\BeautyService::findOrFail($request->service_id);
-            $specialist = \App\Models\Specialist::findOrFail($request->specialist_id);
+            $service = $this->beautyServiceRepository->findOrFail($request->service_id);
+            $specialist = $this->specialistRepository->findOrFail($request->specialist_id);
             $bookingTime = $request->booking_time;
 
             if (! $this->bookingService->isTimeAvailable($specialist->id, $bookingTime)) {

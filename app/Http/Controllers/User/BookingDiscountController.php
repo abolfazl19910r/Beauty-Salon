@@ -6,8 +6,9 @@ use App\Exceptions\DiscountCodeInvalidException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\Booking\ApplyDiscountRequest;
 use App\Http\Requests\User\Booking\CheckDiscountRequest;
-use App\Models\BeautyService;
 use App\Models\Booking;
+use App\Repositories\Contracts\BeautyServiceRepositoryInterface;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Services\Booking\BookingService;
 use App\Traits\HandlesApiResponse;
 use Exception;
@@ -15,25 +16,16 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 
-/**
- * ⚠️ Fixed critical bug (R-DiscountLogic): This controller previously imported
- * `use App\Http\Requests\Booking\ApplyDiscountRequest;` —
- * a class that didn't exist at all (the entire namespace had been moved from Requests/Booking to
- * Requests/User/Booking). This meant that every time the apply() method was called
- * (whether from the Blade form of the appointment details page or from anywhere else), a fatal error
- * "Class not found" would occur — the "Apply Discount Code" web path was effectively broken from the start.
- */
 class BookingDiscountController extends Controller
 {
     use HandlesApiResponse;
 
     public function __construct(
-        protected BookingService $bookingService
+        protected BookingService $bookingService,
+        protected readonly BookingRepositoryInterface $bookingRepository,
+        protected readonly BeautyServiceRepositoryInterface $beautyServiceRepository,
     ) {}
 
-    /**
-     * Preview (no persist). Used for both web and API.
-     */
     public function check(CheckDiscountRequest $request): JsonResponse
     {
         try {
@@ -57,10 +49,6 @@ class BookingDiscountController extends Controller
         }
     }
 
-    /**
-     * Actual actions (persist) — for web forms (RedirectResponse) as well as
-     * * API consumers that send an Accept: application/json header (JsonResponse).
-     */
     public function apply(ApplyDiscountRequest $request, Booking $booking): RedirectResponse|JsonResponse
     {
         $this->authorize('applyDiscount', $booking);
@@ -96,10 +84,6 @@ class BookingDiscountController extends Controller
         }
     }
 
-    /**
-     * Guaranteed JSON version for API routes (e.g. future mobile app) where possible
-     * * Do not always send the Accept: application/json header correctly.
-     */
     public function applyApi(ApplyDiscountRequest $request, Booking $booking): JsonResponse
     {
         $this->authorize('applyDiscount', $booking);
@@ -120,15 +104,10 @@ class BookingDiscountController extends Controller
         }
     }
 
-    /**
-     * Actual base amount for discount preview: prepayment of an existing appointment,
-     * * Calculated prepayment of a service, or minimum default prepayment.
-     * * Previously this number was always hardcoded to 50,000 regardless of what was actually requested.
-     */
     private function resolveBaseAmount(CheckDiscountRequest $request): float
     {
         if ($request->filled('booking_id')) {
-            $booking = Booking::findOrFail($request->integer('booking_id'));
+            $booking = $this->bookingRepository->findOrFail($request->integer('booking_id'));
 
             $this->authorize('view', $booking);
 
@@ -136,7 +115,7 @@ class BookingDiscountController extends Controller
         }
 
         if ($request->filled('service_id')) {
-            $service = BeautyService::findOrFail($request->integer('service_id'));
+            $service = $this->beautyServiceRepository->findOrFail($request->integer('service_id'));
 
             return $this->bookingService->calculatePrepayment((float) $service->price)['original_amount'];
         }

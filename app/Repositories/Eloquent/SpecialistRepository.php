@@ -90,4 +90,17 @@ class SpecialistRepository extends BaseRepository implements SpecialistRepositor
     {
         return $this->model->withoutGlobalScopes()->whereKey($specialistId)->value('salon_id');
     }
+
+    public function paginateByService(int $serviceId, int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->model->whereNull('deleted_at')
+            ->whereHas('services', function ($query) use ($serviceId) {
+                $query->where('beauty_services.id', $serviceId);
+            })
+            ->withCount(['bookings as completed_bookings' => function ($query) {
+                $query->where('status', 'completed');
+            }])
+            ->withAvg('bookings', 'rating')
+            ->paginate($perPage);
+    }
 }

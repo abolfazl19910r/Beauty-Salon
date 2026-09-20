@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\BeautyService;
 use App\Models\Specialist;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use Carbon\Carbon;
 use Exception;
@@ -14,7 +15,10 @@ use Illuminate\View\View;
 
 class SpecialistController extends Controller
 {
-    public function __construct(protected readonly SpecialistRepositoryInterface $specialistRepository) {}
+    public function __construct(
+        protected readonly SpecialistRepositoryInterface $specialistRepository,
+        protected readonly BookingRepositoryInterface $bookingRepository,
+    ) {}
 
     public function search(Request $request): View|JsonResponse
     {
@@ -49,13 +53,7 @@ class SpecialistController extends Controller
     {
         $this->ensureSalonOwnership($service->salon_id);
 
-        $specialists = $service->specialists()
-            ->whereNull('specialists.deleted_at')
-            ->withCount(['bookings as completed_bookings' => function ($query) {
-                $query->where('status', 'completed');
-            }])
-            ->withAvg('bookings', 'rating')
-            ->paginate(15);
+        $specialists = $this->specialistRepository->paginateByService($service->id, 15);
 
         if (request()->wantsJson()) {
             return response()->json($specialists);
@@ -165,25 +163,12 @@ class SpecialistController extends Controller
 
         $specialist->load(['services', 'schedules']);
 
-        $specialist->rating_avg = $specialist->bookings()
-            ->whereNotNull('rating')
-            ->avg('rating');
+        $ratingStats = $this->bookingRepository->getRatingStatsForSpecialist($specialist->id);
+        $specialist->rating_avg = $ratingStats['avg'];
+        $specialist->rating_count = $ratingStats['count'];
+        $specialist->completed_bookings = $ratingStats['completed'];
 
-        $specialist->rating_count = $specialist->bookings()
-            ->whereNotNull('rating')
-            ->count();
-
-        $specialist->completed_bookings = $specialist->bookings()
-            ->where('status', 'completed')
-            ->count();
-
-        $reviews = $specialist->bookings()
-            ->with('user:id,name')
-            ->whereNotNull('review')
-            ->whereNotNull('rating')
-            ->orderByDesc('created_at')
-            ->take(5)
-            ->get()
+        $reviews = $this->bookingRepository->getRecentReviewsForSpecialist($specialist->id, 5)
             ->map(function ($booking) {
                 return [
                     'user_name' => $booking->user->name,

@@ -6,11 +6,15 @@ use App\Models\Leave;
 use App\Models\Specialist;
 use App\Models\User;
 use App\Notifications\Leave\LeaveStatusNotification;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\LeaveRepositoryInterface;
 
 class LeaveService
 {
-    public function __construct(protected readonly LeaveRepositoryInterface $leaveRepository) {}
+    public function __construct(
+        protected readonly LeaveRepositoryInterface $leaveRepository,
+        protected readonly BookingRepositoryInterface $bookingRepository,
+    ) {}
 
     public function store(Specialist $specialist, array $data): array
     {
@@ -83,10 +87,11 @@ class LeaveService
             return 'این بازه زمانی با یک مرخصی تاییدشده‌ی دیگر تداخل دارد.';
         }
 
-        $hasBooking = $specialist->bookings()
-            ->whereBetween('booking_time', ["{$startDate} 00:00:00", "{$endDate} 23:59:59"])
-            ->whereNotIn('status', ['cancelled'])
-            ->exists();
+        $hasBooking = $this->bookingRepository->hasBookingInRange(
+            $specialist->id,
+            "{$startDate} 00:00:00",
+            "{$endDate} 23:59:59"
+        );
 
         if ($hasBooking) {
             return 'در این بازه زمانی نوبت‌هایی برای این متخصص ثبت شده است.';

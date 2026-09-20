@@ -5,6 +5,11 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\BeautyService;
 use App\Models\Specialist;
+use App\Repositories\Contracts\BeautyServiceRepositoryInterface;
+use App\Repositories\Contracts\HolidayRepositoryInterface;
+use App\Repositories\Contracts\LeaveRepositoryInterface;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
+use App\Repositories\Contracts\SpecialistScheduleRepositoryInterface;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,14 +18,16 @@ use Illuminate\Support\Facades\Log;
 
 class BookingAvailabilityController extends Controller
 {
+    public function __construct(
+        protected readonly SpecialistRepositoryInterface $specialistRepository,
+        protected readonly BeautyServiceRepositoryInterface $beautyServiceRepository,
+        protected readonly HolidayRepositoryInterface $holidayRepository,
+        protected readonly LeaveRepositoryInterface $leaveRepository,
+        protected readonly SpecialistScheduleRepositoryInterface $specialistScheduleRepository,
+    ) {}
+
     public function getAvailableTimeSlots(Request $request, $specialist, $date): JsonResponse
     {
-        // ⭐ Fix (customer-facing implicit-binding audit, 2026-09-20): resolved and ownership-
-        // checked BEFORE the try/catch below on purpose — ensureSalonOwnership() aborts with a
-        // genuine 404 (HttpException), and HttpException extends \Exception, so raising it
-        // *inside* the try block would have been silently caught by the generic `catch
-        // (Exception $e)` further down and turned into a misleading 500. Same reasoning applies
-        // to getAvailableDates()/getSpecialistsByService() below.
         try {
             $specialistModel = $this->resolveSpecialist($specialist);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -40,22 +47,15 @@ class BookingAvailabilityController extends Controller
             $dayOfWeek = $carbonDate->dayOfWeek;
             $serviceDuration = $this->resolveServiceDuration($request->query('service_id'));
 
-            if ($specialistModel->holidays()->whereDate('date', $date)->exists()) {
+            if ($this->holidayRepository->existsOnDate($specialistModel->id, $date)) {
                 return response()->json(['slots' => [], 'message' => 'این روز تعطیل است']);
             }
 
-            if ($specialistModel->leaves()
-                ->whereDate('start_date', '<=', $date)
-                ->whereDate('end_date', '>=', $date)
-                ->where('status', 'approved')
-                ->exists()) {
+            if ($this->leaveRepository->hasApprovedLeaveOnDate($specialistModel->id, $date)) {
                 return response()->json(['slots' => [], 'message' => 'متخصص در این روز مرخصی است']);
             }
 
-            $schedule = $specialistModel->schedules()
-                ->where('day_of_week', $dayOfWeek)
-                ->where('is_active', true)
-                ->first();
+            $schedule = $this->specialistScheduleRepository->findActiveForDay($specialistModel->id, $dayOfWeek);
 
             if (! $schedule) {
                 return response()->json(['slots' => [], 'message' => 'این روز جزو روزهای کاری متخصص نیست']);
@@ -112,24 +112,15 @@ class BookingAvailabilityController extends Controller
             for ($i = 0; $i < 30; $i++) {
                 $date = $startDate->copy()->addDays($i);
 
-                $schedule = $specialistModel->schedules()
-                    ->where('day_of_week', $date->dayOfWeek)
-                    ->where('is_active', true)
-                    ->first();
+                $schedule = $this->specialistScheduleRepository->findActiveForDay($specialistModel->id, $date->dayOfWeek);
 
                 if (! $schedule) {
                     continue;
                 }
 
-                $hasLeave = $specialistModel->leaves()
-                    ->where('start_date', '<=', $date->format('Y-m-d'))
-                    ->where('end_date', '>=', $date->format('Y-m-d'))
-                    ->where('status', 'approved')
-                    ->exists();
+                $hasLeave = $this->leaveRepository->hasApprovedLeaveOnDate($specialistModel->id, $date->format('Y-m-d'));
 
-                $isHoliday = $specialistModel->holidays()
-                    ->whereDate('date', $date)
-                    ->exists();
+                $isHoliday = $this->holidayRepository->existsOnDate($specialistModel->id, $date->format('Y-m-d'));
 
                 if (! $hasLeave && ! $isHoliday) {
                     $dates[] = $date->format('Y-m-d');
@@ -188,26 +179,16 @@ class BookingAvailabilityController extends Controller
 
         $specialistId = is_numeric($specialist) ? (int) $specialist : $specialist;
 
-        return Specialist::findOrFail($specialistId);
+        return $this->specialistRepository->findOrFail($specialistId);
     }
 
     private function resolveService($service): BeautyService
     {
-        // Route::bind('service', ...) in RouteServiceProvider globally intercepts any route
-        // parameter literally named {service} across the whole app and resolves it into an
-        // already-loaded BeautyService instance before the controller even runs — regardless
-        // of whether this method's own parameter is type-hinted as a model. Without this check,
-        // BeautyService::findOrFail($serviceId) would receive an object instead of a raw id and
-        // always throw "No query results", even for a perfectly valid, existing service — which
-        // is exactly what was happening on the two routes registered with {service} (the third,
-        // registered with {serviceId}, was unaffected since only the literal name 'service'
-        // triggers the global binder). Mirrors the existing resolveSpecialist() pattern in this
-        // same file, which already handles the identical situation for {specialist}.
         if ($service instanceof BeautyService) {
             return $service;
         }
 
-        return BeautyService::findOrFail($service);
+        return $this->beautyServiceRepository->findOrFail($service);
     }
 
     private function resolveServiceDuration(?string $serviceId): ?int
@@ -216,6 +197,6 @@ class BookingAvailabilityController extends Controller
             return null;
         }
 
-        return BeautyService::find($serviceId)?->duration;
+        return $this->beautyServiceRepository->find($serviceId)?->duration;
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\Booking\RateBookingRequest;
 use App\Models\Booking;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Traits\HasJalaliDates;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
@@ -15,51 +16,28 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
-/**
- * Responsible for displaying the list and details of turns, payment success/failure pages, and comment registration.
- * Methods extracted to separate controllers (phase R3):
- *  - create / confirm / store / cancel  → BookingReservationController
- *  - checkDiscount / applyDiscount      → BookingDiscountController
- *  - getAvailableTimeSlots / Dates / …  → BookingAvailabilityController
- *  - show / update (reschedule)         → BookingRescheduleController
- */
 class BookingController extends Controller
 {
     use HasJalaliDates;
 
-    // ── Web ──────────────────────────────────────────────────────────
+    public function __construct(protected readonly BookingRepositoryInterface $bookingRepository) {}
 
     public function index(Request $request): View
     {
         $user = auth()->user();
 
-        $query = Booking::with(['service', 'specialist'])
-            ->where('user_id', $user->id)
-            // Prioritize by status: Approved/Completed (1) → Awaiting payment/approval (2) → Canceled (3)
-            // Within each group, the most recent appointment (based on appointment time) is placed higher.
-            ->orderByRaw("
-                CASE `status`
-                    WHEN 'confirmed' THEN 1
-                    WHEN 'completed' THEN 1
-                    WHEN 'pending' THEN 2
-                    WHEN 'pending_payment' THEN 2
-                    WHEN 'cancelled' THEN 3
-                    ELSE 4
-                END
-            ")
-            ->orderBy('booking_time', 'desc');
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
+        $filters = [
+            'status' => $request->filled('status') ? $request->status : null,
+            'date' => null,
+        ];
 
         if ($request->filled('date')) {
             if ($gregorianDate = $this->parseJalali($request->query('date'))) {
-                $query->whereDate('booking_time', $gregorianDate->toDateString());
+                $filters['date'] = $gregorianDate->toDateString();
             }
         }
 
-        $bookings = $query->paginate(10)->withQueryString();
+        $bookings = $this->bookingRepository->paginateForUser($user->id, $filters, 10);
 
         return view('bookings.index', compact('bookings'));
     }
@@ -102,16 +80,12 @@ class BookingController extends Controller
 
     public function success(Request $request): View
     {
-        // PaymentController redirects with ?id=, so we check both
         $bookingId = session('booking_id') ?? $request->query('id');
 
         $booking = null;
 
         if ($bookingId) {
-            $booking = Booking::with(['service', 'specialist'])
-                ->where('id', $bookingId)
-                ->where('user_id', auth()->id())
-                ->first();
+            $booking = $this->bookingRepository->findForUserWithDetails((int) $bookingId, auth()->id());
         }
 
         return view('bookings.success', compact('booking'));
@@ -122,9 +96,7 @@ class BookingController extends Controller
         $booking = null;
 
         if ($bookingId = session('booking_id')) {
-            $booking = Booking::where('id', $bookingId)
-                ->where('user_id', auth()->id())
-                ->first();
+            $booking = $this->bookingRepository->findForUser((int) $bookingId, auth()->id());
         }
 
         $errorMessage = session('error') ?? 'متاسفانه پرداخت با خطا مواجه شد.';
@@ -137,7 +109,7 @@ class BookingController extends Controller
         $this->authorize('view', $booking);
 
         try {
-            $booking->update($request->validated());
+            $this->bookingRepository->update($booking, $request->validated());
 
             $booking->specialist->notify(new \App\Notifications\Review\NewReviewNotification($booking));
 
@@ -150,28 +122,14 @@ class BookingController extends Controller
         }
     }
 
-    // ── API ──────────────────────────────────────────────────────────
-
     public function getUserBookings(): Collection
     {
-        return Booking::with(['service', 'specialist'])
-            ->where('user_id', auth()->id())
-            ->orderBy('booking_time', 'desc')
-            ->get();
+        return $this->bookingRepository->getAllForUser(auth()->id());
     }
 
-    /**
-     * Upcoming Turns — API endpoint.
-     * * Old name in controller: upcoming() — fixed to be consistent with route.
-     */
     public function getUpcomingBookings(): JsonResponse
     {
-        $bookings = Booking::with(['service', 'specialist'])
-            ->where('user_id', Auth::id())
-            ->where('booking_time', '>', now())
-            ->whereNotIn('status', ['cancelled'])
-            ->orderBy('booking_time', 'asc')
-            ->get();
+        $bookings = $this->bookingRepository->getUpcomingExcludingCancelledForUser(Auth::id());
 
         return response()->json([
             'bookings' => $bookings,
@@ -179,17 +137,9 @@ class BookingController extends Controller
         ]);
     }
 
-    /**
-     * Past Turns — API endpoint.
-     * * Old name in controller: past() — fixed to be consistent with route.
-     */
     public function getPastBookings(): JsonResponse
     {
-        $bookings = Booking::with(['service', 'specialist'])
-            ->where('user_id', Auth::id())
-            ->where('booking_time', '<=', now())
-            ->orderBy('booking_time', 'desc')
-            ->get();
+        $bookings = $this->bookingRepository->getPastForUserApi(Auth::id());
 
         return response()->json([
             'bookings' => $bookings,
@@ -200,11 +150,7 @@ class BookingController extends Controller
     public function latestSuccessful(): JsonResponse
     {
         try {
-            $booking = Booking::with(['service', 'specialist'])
-                ->where('user_id', Auth::id())
-                ->where('payment_status', 'paid')
-                ->latest('paid_at')
-                ->firstOrFail();
+            $booking = $this->bookingRepository->getLatestSuccessfulForUser(Auth::id());
 
             return response()->json($booking);
 

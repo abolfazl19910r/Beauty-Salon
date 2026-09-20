@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Admin\Booking;
 
-use App\Http\Controllers\Controller;
 use App\Exceptions\BookingNotAvailableException;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Booking\StoreAdminBookingRequest;
 use App\Http\Requests\Admin\Booking\UpdateAdminBookingRequest;
-use App\Models\BeautyService;
 use App\Models\Booking;
-use App\Models\Specialist;
 use App\Models\User;
+use App\Repositories\Contracts\BeautyServiceRepositoryInterface;
+use App\Repositories\Contracts\BookingRepositoryInterface;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Services\Admin\Booking\AdminBookingService;
 use App\Services\Booking\BookingService;
 use Illuminate\Http\RedirectResponse;
@@ -20,67 +21,42 @@ class AdminBookingController extends Controller
 {
     public function __construct(
         protected readonly AdminBookingService $bookingService,
-        // ⭐ Fix (fix/admin-booking-slot-conflict, commit 2): shared with the online booking flow
-        // specifically so both paths run through the exact same availability check — see
-        // BookingService::createManualBooking().
         protected readonly BookingService $sharedBookingService,
+        protected readonly BookingRepositoryInterface $bookingRepository,
+        protected readonly BeautyServiceRepositoryInterface $beautyServiceRepository,
+        protected readonly SpecialistRepositoryInterface $specialistRepository,
     ) {}
 
     public function index(Request $request): View
     {
-        $query = Booking::with(['user', 'specialist', 'service'])->latest();
+        $filters = [
+            'status' => ($request->has('status') && $request->status !== '') ? $request->status : null,
+            'date' => $request->filled('date') ? $request->date : null,
+        ];
 
-        if ($request->has('status') && $request->status !== '') {
-            $query->where('status', $request->status);
-        }
-
+        $bookings = $this->bookingRepository->paginateWithFilters($filters, 15);
+        $stats = $this->bookingRepository->getStats($filters);
         $hasDateFilter = $request->filled('date');
 
-        if ($hasDateFilter) {
-            $date = $request->date;
-            $query->whereDate('booking_time', $date);
-        }
-
-        $bookings = $query->paginate(15)->withQueryString();
-
-        $statsQuery = Booking::query();
-        if ($hasDateFilter) {
-            $statsQuery->whereDate('booking_time', $date);
-        }
-
-        $totalBookings = (clone $statsQuery)->count();
-        $confirmedBookings = (clone $statsQuery)->where('status', 'confirmed')->count();
-        $cancelledBookings = (clone $statsQuery)->where('status', 'cancelled')->count();
-
-        return view('admin.bookings.index', compact(
-            'bookings',
-            'totalBookings',
-            'confirmedBookings',
-            'cancelledBookings',
-            'hasDateFilter'
-        ));
+        return view('admin.bookings.index', [
+            'bookings' => $bookings,
+            'totalBookings' => $stats['total'],
+            'confirmedBookings' => $stats['confirmed'],
+            'cancelledBookings' => $stats['cancelled'],
+            'hasDateFilter' => $hasDateFilter,
+        ]);
     }
 
     public function create(): View
     {
-        // ⭐ Fix (fix/admin-booking-slot-conflict, commit 3): $users (User::all()) removed —
-        // it loaded every user in the system into one <select>, and had no path at all for a
-        // walk-in/phone customer with no existing account. The view now uses an AJAX
-        // search/quick-create widget (AdminBookingCustomerController) instead.
-        $services = BeautyService::all();
-        $specialists = Specialist::all();
+        $services = $this->beautyServiceRepository->all();
+        $specialists = $this->specialistRepository->all();
 
         return view('admin.bookings.create', compact('services', 'specialists'));
     }
 
     public function store(StoreAdminBookingRequest $request): RedirectResponse
     {
-        // ⭐ Fix (fix/admin-booking-slot-conflict, commit 2): previously this was a bare
-        // Booking::create($request->validated()) with no availability check at all — a manually
-        // entered phone/walk-in booking could silently collide with an online booking (or another
-        // manual one) for the same specialist+time. createManualBooking() runs the same slot
-        // check the online flow uses, plus a DB-level unique-index fallback for the race-condition
-        // case (see migration 2026_08_29_000001_add_active_slot_key_to_bookings_table).
         try {
             $booking = $this->sharedBookingService->createManualBooking($request->validated());
         } catch (BookingNotAvailableException $e) {
@@ -97,8 +73,8 @@ class AdminBookingController extends Controller
         $this->ensureSalonOwnership($booking->salon_id);
 
         $users = User::all();
-        $services = BeautyService::all();
-        $specialists = Specialist::all();
+        $services = $this->beautyServiceRepository->all();
+        $specialists = $this->specialistRepository->all();
 
         return view('admin.bookings.edit', compact('booking', 'users', 'services', 'specialists'));
     }
@@ -128,9 +104,6 @@ class AdminBookingController extends Controller
                 ->with('success', $result['message']);
 
         } catch (BookingNotAvailableException $e) {
-            // ⭐ Fix (fix/admin-booking-slot-conflict, commit 4): caught ahead of the generic
-            // \Exception below so a slot conflict gets its own clear Persian message instead of
-            // the generic "خطایی...رخ داد" — same wording used on the create form (commit 2).
             return redirect()->route($redirectRoute, $redirectParams)
                 ->with('error', 'این ساعت برای این متخصص قبلاً رزرو شده است. لطفاً ساعت دیگری انتخاب کنید.');
         } catch (\Exception $e) {
@@ -148,7 +121,7 @@ class AdminBookingController extends Controller
                 ->with('error', 'نوبت‌های پرداخت شده را نمی‌توان حذف کرد. ابتدا آن را لغو کنید.');
         }
 
-        $booking->delete();
+        $this->bookingRepository->delete($booking);
 
         return redirect()->route('admin.bookings.index')
             ->with('success', 'نوبت با موفقیت حذف شد.');

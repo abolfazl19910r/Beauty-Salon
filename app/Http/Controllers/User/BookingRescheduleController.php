@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\User\Booking\UpdateRescheduleRequest;
 use App\Models\Booking;
 use App\Notifications\Booking\BookingRescheduledNotification;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Services\SMSService;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -18,6 +19,7 @@ class BookingRescheduleController extends Controller
 {
     public function __construct(
         protected SMSService $smsService,
+        protected readonly BookingRepositoryInterface $bookingRepository,
     ) {}
 
     public function show(Booking $booking): View
@@ -56,7 +58,7 @@ class BookingRescheduleController extends Controller
 
                 $newStatus = $specialist->auto_confirm_bookings ? 'confirmed' : 'pending';
 
-                $booking->update([
+                $this->bookingRepository->update($booking, [
                     'booking_time' => $bookingTime,
                     'status' => $newStatus,
                 ]);

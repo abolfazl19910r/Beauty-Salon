@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Holiday;
 use App\Http\Controllers\Controller;
 use App\Models\Holiday;
 use App\Models\Specialist;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\HolidayRepositoryInterface;
 use App\Repositories\Contracts\LeaveRepositoryInterface;
 use Illuminate\Http\JsonResponse;
@@ -15,6 +16,7 @@ class AdminHolidayController extends Controller
     public function __construct(
         protected readonly HolidayRepositoryInterface $holidayRepository,
         protected readonly LeaveRepositoryInterface $leaveRepository,
+        protected readonly BookingRepositoryInterface $bookingRepository,
     ) {}
 
     public function index(Specialist $specialist): JsonResponse
@@ -42,10 +44,7 @@ class AdminHolidayController extends Controller
                         $fail('در این تاریخ مرخصی ثبت شده است.');
                     }
 
-                    $hasBooking = $specialist->bookings()
-                        ->whereDate('booking_time', $value)
-                        ->whereNotIn('status', ['cancelled'])
-                        ->exists();
+                    $hasBooking = $this->bookingRepository->hasBookingOnDate($specialist->id, $value);
 
                     if ($hasBooking) {
                         $fail('در این تاریخ نوبت ثبت شده است.');

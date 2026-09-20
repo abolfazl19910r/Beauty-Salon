@@ -19,6 +19,14 @@ class SpecialistScheduleRepository extends BaseRepository implements SpecialistS
         return $this->model->where('specialist_id', $specialistId)->get()->groupBy('day_of_week');
     }
 
+    public function findActiveForDay(int $specialistId, int $dayOfWeek): ?SpecialistSchedule
+    {
+        return $this->model->where('specialist_id', $specialistId)
+            ->where('day_of_week', $dayOfWeek)
+            ->where('is_active', true)
+            ->first();
+    }
+
     public function replaceForSpecialist(Specialist $specialist, array $schedules): void
     {
         $specialist->schedules()->delete();
