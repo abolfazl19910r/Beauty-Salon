@@ -43,12 +43,6 @@ class AdminDiscountCodeController extends Controller
             ->with('success', 'کد تخفیف با موفقیت ایجاد شد.');
     }
 
-    /**
-     * type/amount/max_amount aren't editable (see UpdateDiscountCodeRequest / AdminDiscountCodeService
-     * doc-comments) so this preview is static/server-rendered — computed once here via
-     * DiscountCalculator against a representative sample amount, not the interactive AJAX widget
-     * the create page has.
-     */
     public function edit(DiscountCode $discountCode, DiscountCalculator $calculator): View
     {
         $this->ensureSalonOwnership($discountCode->salon_id);

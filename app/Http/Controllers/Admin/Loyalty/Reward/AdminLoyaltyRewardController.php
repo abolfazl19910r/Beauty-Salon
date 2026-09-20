@@ -12,10 +12,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
-/**
- * Responsible for CRUD of loyalty program rewards (web + API).
- * Derived from AdminLoyaltyController (R-AdminLoyalty phase).
- */
 class AdminLoyaltyRewardController extends Controller
 {
     public function __construct(
@@ -94,8 +90,6 @@ class AdminLoyaltyRewardController extends Controller
                 ->with('error', 'خطا در فعال‌سازی پاداش: '.$e->getMessage());
         }
     }
-
-    // ---- JSON version — for resources/js/admin.jsx (SPA mount point in index.blade.php) ----
 
     public function getRewards(): JsonResponse
     {

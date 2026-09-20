@@ -2,14 +2,17 @@
 
 namespace App\Services;
 
-use App\Models\Booking;
 use App\Models\DiscountCode;
 use App\Models\LoyaltyPoint;
-use App\Models\LoyaltySetting;
 use App\Models\Reward;
 use App\Models\User;
 use App\Notifications\Loyalty\PointsEarned;
 use App\Notifications\Loyalty\RewardRedeemed;
+use App\Repositories\Contracts\BookingRepositoryInterface;
+use App\Repositories\Contracts\DiscountCodeRepositoryInterface;
+use App\Repositories\Contracts\LoyaltyPointRepositoryInterface;
+use App\Repositories\Contracts\LoyaltySettingRepositoryInterface;
+use App\Repositories\Contracts\RewardRepositoryInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -18,10 +21,14 @@ use Illuminate\Support\Str;
 
 class LoyaltyService
 {
-    /**
-     * Invalidates the cache for displaying points in the navigation bar (layouts/app.blade.php).
-     * * Should be called after every actual change to the user's points balance.
-     */
+    public function __construct(
+        private readonly LoyaltyPointRepositoryInterface $loyaltyPointRepository,
+        private readonly RewardRepositoryInterface $rewardRepository,
+        private readonly DiscountCodeRepositoryInterface $discountCodeRepository,
+        private readonly LoyaltySettingRepositoryInterface $loyaltySettingRepository,
+        private readonly BookingRepositoryInterface $bookingRepository,
+    ) {}
+
     private function forgetPointsCache(int $userId): void
     {
         Cache::forget("user:{$userId}:loyalty_points");
@@ -29,47 +36,25 @@ class LoyaltyService
 
     public function getCurrentPoints($userId): int
     {
-        return LoyaltyPoint::where('user_id', $userId)->sum('points');
+        return $this->loyaltyPointRepository->sumForUser($userId);
     }
 
     public function getExpiringPoints($userId, $days = 30): int
     {
-        return LoyaltyPoint::where('user_id', $userId)
-            ->where('type', 'earned')
-            ->whereNotNull('expires_at')
-            ->whereBetween('expires_at', [now(), now()->addDays($days)])
-            ->sum('points');
+        return $this->loyaltyPointRepository->sumExpiringForUser($userId, $days);
     }
 
     public function getHistory($userId, $perPage = 10): LengthAwarePaginator
     {
-        return LoyaltyPoint::where('user_id', $userId)
-            ->with(['booking' => function ($query) {
-                $query->select('id', 'booking_time', 'service_id', 'specialist_id')
-                    ->with(['service:id,name', 'specialist:id,name']);
-            }])
-            ->orderBy('created_at', 'desc')
-            ->paginate($perPage);
+        return $this->loyaltyPointRepository->paginateForUserWithBooking($userId, $perPage);
     }
 
     public function getAvailableRewards($userId): Collection
     {
-        $userPoints = $this->getCurrentPoints($userId);
-
-        return Reward::where('is_active', true)
-            ->orderBy('required_points')
-            ->get();
+        return $this->rewardRepository->getActive();
     }
 
     /**
-     * Bug fixed: Previously this method called isAvailableForUser/notify on auth()->user()
-     * , not on the actual user $userId. For the customer route (it redeems for itself
-     * ) these were the same, but the same method should be called exactly by the admin panel
-     * (LoyaltyAdminService::redeemRewardForUser) for a user other than the admin
-     * — in which case auth()->user() was wrong (admin):
-     * The points balance check was performed on the admin account and the notification was sent to the admin,
-     * not to the target user. Now it works completely based on $userId.
-     *
      * @throws \Exception
      */
     public function redeemReward(int $userId, Reward $reward): DiscountCode
@@ -81,14 +66,14 @@ class LoyaltyService
         }
 
         return DB::transaction(function () use ($userId, $reward, $user) {
-            LoyaltyPoint::create([
+            $this->loyaltyPointRepository->create([
                 'user_id' => $userId,
                 'points' => -$reward->required_points,
                 'description' => "استفاده از پاداش: {$reward->title}",
                 'type' => 'spent',
             ]);
 
-            $discountCode = DiscountCode::create([
+            $discountCode = $this->discountCodeRepository->create([
                 'code' => strtoupper(Str::random(8)),
                 'type' => $reward->discount_type,
                 'amount' => $reward->discount_amount,
@@ -110,13 +95,13 @@ class LoyaltyService
 
     public function earnPointsFromBooking($userId, $bookingId): LoyaltyPoint
     {
-        $booking = Booking::findOrFail($bookingId);
+        $booking = $this->bookingRepository->findOrFail($bookingId);
         $points = $this->calculatePointsForBooking($booking);
 
-        $expiryMonths = (int) LoyaltySetting::getValue('points_expiry_months', 12);
+        $expiryMonths = (int) $this->loyaltySettingRepository->getValue('points_expiry_months', 12);
         $expiryMonths = $expiryMonths > 0 ? $expiryMonths : 12;
 
-        $loyaltyPoint = LoyaltyPoint::create([
+        $loyaltyPoint = $this->loyaltyPointRepository->create([
             'user_id' => $userId,
             'booking_id' => $bookingId,
             'points' => $points,
@@ -132,14 +117,9 @@ class LoyaltyService
         return $loyaltyPoint;
     }
 
-    /**
-     * ⚠️ Integration (R-AdminLoyalty phase): Previously this amount was hardcoded (10000).
-     * Now it is read from loyalty_settings (key points_per_amount); the same
-     * source that App\Models\LoyaltyPoint::calculatePointsForBooking() also reads.
-     */
     protected function calculatePointsForBooking($booking): int
     {
-        $pointsPerAmount = (int) LoyaltySetting::getValue('points_per_amount', 10000);
+        $pointsPerAmount = (int) $this->loyaltySettingRepository->getValue('points_per_amount', 10000);
         $pointsPerAmount = $pointsPerAmount > 0 ? $pointsPerAmount : 10000;
 
         return (int) floor($booking->prepayment_amount / $pointsPerAmount);

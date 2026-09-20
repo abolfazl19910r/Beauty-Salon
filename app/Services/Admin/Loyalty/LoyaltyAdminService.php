@@ -7,6 +7,8 @@ use App\Models\DiscountCode;
 use App\Models\LoyaltyPoint;
 use App\Models\Reward;
 use App\Models\User;
+use App\Repositories\Contracts\LoyaltyPointRepositoryInterface;
+use App\Repositories\Contracts\RewardRepositoryInterface;
 use App\Services\LoyaltyService;
 use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -14,34 +16,20 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Business logic for managing the loyalty program from the admin panel.
- *
- * Extracted from AdminLoyaltyController (R-AdminLoyalty phase).
- *
- * ⚠️ Bug fixed (discovered when reporting "adding reward not working"): This class
- * did not have the methods getDashboardStats/createReward/updateReward/deleteReward/
- * getActiveRewards/redeemRewardForUser that AdminLoyaltyRewardController
- * called. Since PHP throws a non-existent method call on the object with
- * \Error and the controller has catch(\Throwable $e) everywhere, this error
- * would be silently swallowed and the user would only see a generic "error creating reward" message
- * (or even no indication, depending on the path) — without leaving anything in the log or
- * database.
- */
 class LoyaltyAdminService
 {
     public function __construct(
         private readonly LoyaltyService $loyaltyService,
+        private readonly LoyaltyPointRepositoryInterface $loyaltyPointRepository,
+        private readonly RewardRepositoryInterface $rewardRepository,
     ) {}
-
-    // ─── Dashboard (admin.loyalty.index) ───────────────────────────────────
 
     public function getDashboardStats(): array
     {
-        $totalActivePoints = (int) LoyaltyPoint::where('type', 'earned')->sum('points');
-        $totalPointUsers = LoyaltyPoint::distinct('user_id')->count('user_id');
-        $totalRedeemedRewards = (int) Reward::sum('used_count');
-        $rewards = Reward::orderBy('required_points')->get();
+        $totalActivePoints = $this->loyaltyPointRepository->sumByType('earned');
+        $totalPointUsers = $this->loyaltyPointRepository->countDistinctUsers();
+        $totalRedeemedRewards = $this->rewardRepository->sumUsedCount();
+        $rewards = $this->rewardRepository->allOrderedByRequiredPoints();
 
         return [
             'totalActivePoints' => $totalActivePoints,
@@ -54,23 +42,17 @@ class LoyaltyAdminService
 
     public function getActiveRewards(): Collection
     {
-        return Reward::where('is_active', true)
-            ->orderBy('required_points')
-            ->get();
+        return $this->rewardRepository->getActive();
     }
-
-    // ─── Reward CRUD ────────────────────────────────────────────────────────
 
     public function createReward(array $data): Reward
     {
-        return Reward::create($data);
+        return $this->rewardRepository->create($data);
     }
 
     public function updateReward(Reward $reward, array $data): Reward
     {
-        $reward->update($data);
-
-        return $reward;
+        return $this->rewardRepository->update($reward, $data);
     }
 
     public function deleteReward(Reward $reward): void
@@ -79,41 +61,25 @@ class LoyaltyAdminService
             throw new \Exception('پاداشی که قبلاً استفاده شده قابل حذف نیست.');
         }
 
-        $reward->delete();
+        $this->rewardRepository->delete($reward);
     }
 
-    /**
-     * Activate/redeem Reward for a specific user from admin side.
-     * * Uses exactly the same logic as LoyaltyService::redeemReward() (customer route)
-     * * so that the points→discount code conversion formula is not repeated twice.
-     */
     public function redeemRewardForUser(int $userId, Reward $reward): DiscountCode
     {
         return $this->loyaltyService->redeemReward($userId, $reward);
     }
 
-    // ─── General statistics (Reports/history — No change) ─────────────────
-
     public function getStatistics(): array
     {
-        $totalPoints = LoyaltyPoint::where('type', 'earned')->sum('points');
-        $usedPoints = abs(LoyaltyPoint::where('type', 'spent')->sum('points'));
-        $activeUsers = LoyaltyPoint::select('user_id')->distinct()->count('user_id');
-        $totalRewards = Reward::where('is_active', true)->count();
-        $redeemedCount = LoyaltyPoint::where('type', 'spent')->count();
+        $totalPoints = $this->loyaltyPointRepository->sumByType('earned');
+        $usedPoints = abs($this->loyaltyPointRepository->sumByType('spent'));
+        $activeUsers = $this->loyaltyPointRepository->countDistinctUsers();
+        $totalRewards = $this->rewardRepository->countActive();
+        $redeemedCount = $this->loyaltyPointRepository->countByType('spent');
 
-        $topUsers = LoyaltyPoint::select('user_id', DB::raw('SUM(points) as total_points'))
-            ->groupBy('user_id')
-            ->orderByDesc('total_points')
-            ->limit(5)
-            ->with('user:id,name,phone')
-            ->get();
+        $topUsers = $this->loyaltyPointRepository->topUsersByPoints(5);
 
-        $recentRedemptions = LoyaltyPoint::where('type', 'spent')
-            ->with(['user:id,name', 'booking'])
-            ->orderByDesc('created_at')
-            ->limit(10)
-            ->get();
+        $recentRedemptions = $this->loyaltyPointRepository->recentByType('spent', 10);
 
         return [
             'total_points_earned' => $totalPoints,
@@ -132,16 +98,11 @@ class LoyaltyAdminService
 
     public function getUserPoints(User $user): array
     {
-        $earned = LoyaltyPoint::where('user_id', $user->id)->where('type', 'earned')->sum('points');
-        $spent = abs(LoyaltyPoint::where('user_id', $user->id)->where('type', 'spent')->sum('points'));
+        $earned = $this->loyaltyPointRepository->sumForUserByType($user->id, 'earned');
+        $spent = abs($this->loyaltyPointRepository->sumForUserByType($user->id, 'spent'));
         $balance = $earned - $spent;
 
-        $expiringSoon = LoyaltyPoint::where('user_id', $user->id)
-            ->where('type', 'earned')
-            ->whereNotNull('expires_at')
-            ->where('expires_at', '>', now())
-            ->where('expires_at', '<=', now()->addDays(30))
-            ->sum('points');
+        $expiringSoon = $this->loyaltyPointRepository->sumExpiringSoonForUser($user->id, 30);
 
         return [
             'user' => $user->only(['id', 'name', 'phone', 'email']),
@@ -149,9 +110,7 @@ class LoyaltyAdminService
             'total_spent' => $spent,
             'current_balance' => $balance,
             'expiring_soon' => $expiringSoon,
-            'history' => LoyaltyPoint::where('user_id', $user->id)
-                ->orderByDesc('created_at')
-                ->paginate(20),
+            'history' => $this->loyaltyPointRepository->paginateForUser($user->id, 20),
         ];
     }
 
@@ -161,7 +120,7 @@ class LoyaltyAdminService
         string $description,
         ?string $expiresAt = null
     ): LoyaltyPoint {
-        $loyaltyPoint = LoyaltyPoint::create([
+        $loyaltyPoint = $this->loyaltyPointRepository->create([
             'user_id' => $user->id,
             'points' => $points,
             'type' => 'earned',
@@ -179,13 +138,13 @@ class LoyaltyAdminService
      */
     public function deductPoints(User $user, int $points, string $description): LoyaltyPoint
     {
-        $balance = LoyaltyPoint::where('user_id', $user->id)->sum('points');
+        $balance = $this->loyaltyPointRepository->sumForUser($user->id);
 
         if ($balance < $points) {
             throw new InsufficientLoyaltyPointsException($user->id, (int) $balance, $points);
         }
 
-        $loyaltyPoint = LoyaltyPoint::create([
+        $loyaltyPoint = $this->loyaltyPointRepository->create([
             'user_id' => $user->id,
             'points' => -$points,
             'type' => 'spent',
@@ -200,7 +159,7 @@ class LoyaltyAdminService
     public function getExportData(string $type = 'points'): array
     {
         if ($type === 'rewards') {
-            return Reward::all()->toArray();
+            return $this->rewardRepository->all()->toArray();
         }
 
         return User::select('id', 'name', 'phone', 'email')
@@ -223,25 +182,6 @@ class LoyaltyAdminService
 
     public function getHistory(array $filters = []): LengthAwarePaginator
     {
-        $query = LoyaltyPoint::with('user:id,name,phone')
-            ->orderByDesc('created_at');
-
-        if (! empty($filters['user_id'])) {
-            $query->where('user_id', $filters['user_id']);
-        }
-
-        if (! empty($filters['type'])) {
-            $query->where('type', $filters['type']);
-        }
-
-        if (! empty($filters['from'])) {
-            $query->where('created_at', '>=', Carbon::parse($filters['from'])->startOfDay());
-        }
-
-        if (! empty($filters['to'])) {
-            $query->where('created_at', '<=', Carbon::parse($filters['to'])->endOfDay());
-        }
-
-        return $query->paginate(20);
+        return $this->loyaltyPointRepository->paginateWithFilters($filters, 20);
     }
 }

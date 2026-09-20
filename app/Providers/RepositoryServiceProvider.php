@@ -5,10 +5,14 @@ namespace App\Providers;
 use App\Repositories\Contracts\BeautyServiceRepositoryInterface;
 use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
+use App\Repositories\Contracts\DiscountCodeRepositoryInterface;
 use App\Repositories\Contracts\HolidayRepositoryInterface;
 use App\Repositories\Contracts\InvoiceRepositoryInterface;
 use App\Repositories\Contracts\LeaveRepositoryInterface;
+use App\Repositories\Contracts\LoyaltyPointRepositoryInterface;
+use App\Repositories\Contracts\LoyaltySettingRepositoryInterface;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
+use App\Repositories\Contracts\RewardRepositoryInterface;
 use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Repositories\Contracts\SpecialistScheduleRepositoryInterface;
 use App\Repositories\Contracts\SpecialistWalletRepositoryInterface;
@@ -19,10 +23,14 @@ use App\Repositories\Contracts\WithdrawalRequestRepositoryInterface;
 use App\Repositories\Eloquent\BeautyServiceRepository;
 use App\Repositories\Eloquent\BookingRepository;
 use App\Repositories\Eloquent\CategoryRepository;
+use App\Repositories\Eloquent\DiscountCodeRepository;
 use App\Repositories\Eloquent\HolidayRepository;
 use App\Repositories\Eloquent\InvoiceRepository;
 use App\Repositories\Eloquent\LeaveRepository;
+use App\Repositories\Eloquent\LoyaltyPointRepository;
+use App\Repositories\Eloquent\LoyaltySettingRepository;
 use App\Repositories\Eloquent\PaymentRepository;
+use App\Repositories\Eloquent\RewardRepository;
 use App\Repositories\Eloquent\SpecialistRepository;
 use App\Repositories\Eloquent\SpecialistScheduleRepository;
 use App\Repositories\Eloquent\SpecialistWalletRepository;
@@ -49,6 +57,10 @@ class RepositoryServiceProvider extends ServiceProvider
         WithdrawalRequestRepositoryInterface::class => WithdrawalRequestRepository::class,
         WalletTransactionRepositoryInterface::class => WalletTransactionRepository::class,
         UserWalletTransactionRepositoryInterface::class => UserWalletTransactionRepository::class,
+        DiscountCodeRepositoryInterface::class => DiscountCodeRepository::class,
+        RewardRepositoryInterface::class => RewardRepository::class,
+        LoyaltyPointRepositoryInterface::class => LoyaltyPointRepository::class,
+        LoyaltySettingRepositoryInterface::class => LoyaltySettingRepository::class,
     ];
 
     public function register(): void

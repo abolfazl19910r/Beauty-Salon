@@ -4,10 +4,6 @@ namespace App\Http\Requests\Admin\Loyalty\Point;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-/**
- * Validates a manual points grant by an admin to a specific user
- * (App\Services\Admin\Loyalty\LoyaltyAdminService::addPoints()).
- */
 class AddUserPointsRequest extends FormRequest
 {
     public function authorize(): bool

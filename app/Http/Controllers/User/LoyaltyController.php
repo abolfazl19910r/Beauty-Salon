@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\DiscountCode;
-use App\Models\LoyaltyPoint;
 use App\Models\Reward;
+use App\Repositories\Contracts\DiscountCodeRepositoryInterface;
+use App\Repositories\Contracts\LoyaltyPointRepositoryInterface;
+use App\Repositories\Contracts\RewardRepositoryInterface;
 use App\Services\LoyaltyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -16,7 +17,12 @@ use Illuminate\View\View;
 
 class LoyaltyController extends Controller
 {
-    public function __construct(protected readonly LoyaltyService $loyaltyService) {}
+    public function __construct(
+        protected readonly LoyaltyService $loyaltyService,
+        protected readonly DiscountCodeRepositoryInterface $discountCodeRepository,
+        protected readonly RewardRepositoryInterface $rewardRepository,
+        protected readonly LoyaltyPointRepositoryInterface $loyaltyPointRepository,
+    ) {}
 
     public function index(): View|RedirectResponse
     {
@@ -27,15 +33,7 @@ class LoyaltyController extends Controller
             $history = $this->loyaltyService->getHistory($userId, 10);
             $rewards = $this->loyaltyService->getAvailableRewards($userId);
             $nextReward = $this->getNextReward($userPoints);
-            $activeCodes = DiscountCode::where('user_id', $userId)
-                ->where('is_active', true)
-                ->where(function ($q) {
-                    $q->whereNull('expires_at')
-                        ->orWhere('expires_at', '>', now());
-                })
-                ->where('used_count', '<', DB::raw('max_uses'))
-                ->latest()
-                ->get();
+            $activeCodes = $this->discountCodeRepository->getActiveForUser($userId);
 
             return view('loyalty.index', compact(
                 'userPoints',
@@ -130,15 +128,7 @@ class LoyaltyController extends Controller
 
     public function discountCodes(): JsonResponse
     {
-        $codes = DiscountCode::where('user_id', auth()->id())
-            ->where('is_active', true)
-            ->where(function ($q) {
-                $q->whereNull('expires_at')
-                    ->orWhere('expires_at', '>', now());
-            })
-            ->where('used_count', '<', DB::raw('max_uses'))
-            ->latest()
-            ->get()
+        $codes = $this->discountCodeRepository->getActiveForUser(auth()->id())
             ->map(function ($code) {
                 return [
                     'code' => $code->code,
@@ -157,10 +147,7 @@ class LoyaltyController extends Controller
 
     protected function getNextReward($userPoints)
     {
-        return Reward::where('is_active', true)
-            ->where('required_points', '>', $userPoints)
-            ->orderBy('required_points')
-            ->first();
+        return $this->rewardRepository->getNextForPoints($userPoints);
     }
 
     public function overview(): JsonResponse
@@ -174,12 +161,8 @@ class LoyaltyController extends Controller
             'summary' => [
                 'current_points' => $userPoints,
                 'expiring_points' => $expiringPoints,
-                'total_earned' => LoyaltyPoint::where('user_id', $user->id)
-                    ->where('type', 'earned')
-                    ->sum('points'),
-                'total_spent' => abs(LoyaltyPoint::where('user_id', $user->id)
-                    ->where('type', 'spent')
-                    ->sum('points')),
+                'total_earned' => $this->loyaltyPointRepository->sumForUserByType($user->id, 'earned'),
+                'total_spent' => abs($this->loyaltyPointRepository->sumForUserByType($user->id, 'spent')),
             ],
             'next_reward' => $nextReward ? [
                 'title' => $nextReward->title,

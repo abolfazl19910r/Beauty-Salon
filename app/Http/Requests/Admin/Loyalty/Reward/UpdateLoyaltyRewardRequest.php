@@ -18,8 +18,6 @@ class UpdateLoyaltyRewardRequest extends FormRequest
 
         $discountAmountRules = ['required', 'numeric', 'min:1'];
 
-        // Same fix as StoreLoyaltyRewardRequest: MaxPercentage must only apply to percentage-type
-        // discounts, not fixed-toman-amount discounts (which are routinely > 100).
         if ($this->input('discount_type') === 'percentage') {
             $discountAmountRules[] = new MaxPercentage;
         }

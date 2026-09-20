@@ -5,10 +5,6 @@ namespace App\Http\Requests\Admin\Loyalty\Reward;
 use App\Rules\MaxPercentage;
 use Illuminate\Foundation\Http\FormRequest;
 
-/**
- * Validate loyalty reward creation — replaces validate inline in
- * AdminLoyaltyController::store() and AdminLoyaltyController::storeReward()
- */
 class StoreLoyaltyRewardRequest extends FormRequest
 {
     public function authorize(): bool
@@ -20,10 +16,6 @@ class StoreLoyaltyRewardRequest extends FormRequest
     {
         $discountAmountRules = ['required', 'numeric', 'min:1'];
 
-        // MaxPercentage only makes sense for percentage-type rewards; a 'fixed' discount_amount
-        // is a toman value (typically tens of thousands) and must not be capped at 100. Applying
-        // it unconditionally is the exact same regression documented for StoreDiscountCodeRequest
-        // in R-AdminForms — it was fixed there but never carried over to this sibling Form Request.
         if ($this->input('discount_type') === 'percentage') {
             $discountAmountRules[] = new MaxPercentage;
         }

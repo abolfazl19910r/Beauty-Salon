@@ -4,14 +4,6 @@ namespace App\Http\Requests\Admin\Loyalty\Point;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-/**
- * Validates a manual points deduction by an admin from a specific user
- * (App\Services\Admin\Loyalty\LoyaltyAdminService::deductPoints()).
- *
- * Insufficient-balance is NOT checked here — that is a business-logic
- * concern handled by the service (InsufficientLoyaltyPointsException),
- * not a validation-shape concern.
- */
 class DeductUserPointsRequest extends FormRequest
 {
     public function authorize(): bool

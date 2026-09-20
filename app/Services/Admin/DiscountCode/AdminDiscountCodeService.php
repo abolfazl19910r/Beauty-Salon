@@ -3,28 +3,21 @@
 namespace App\Services\Admin\DiscountCode;
 
 use App\Models\DiscountCode;
+use App\Repositories\Contracts\DiscountCodeRepositoryInterface;
 use App\Services\Discount\DiscountCalculator;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Str;
 
-/**
- * R-AdminDiscountCode: independent admin panel for manually creating/managing discount codes,
- * separate from the existing loyalty-redemption path (LoyaltyService::redeemReward()) which
- * remains the only place codes are created automatically. This service never reimplements the
- * discount formula itself — App\Services\Discount\DiscountCalculator (the project's single source
- * of discount math, per R-DiscountLogic) is used for the preview feature below.
- */
 class AdminDiscountCodeService
 {
     public function __construct(
         private readonly DiscountCalculator $calculator,
+        private readonly DiscountCodeRepositoryInterface $discountCodeRepository,
     ) {}
 
     public function paginate(int $perPage = 15): LengthAwarePaginator
     {
-        return DiscountCode::with('user')
-            ->latest()
-            ->paginate($perPage);
+        return $this->discountCodeRepository->paginateWithUser($perPage);
     }
 
     /**
@@ -32,19 +25,7 @@ class AdminDiscountCodeService
      */
     public function stats(): array
     {
-        return [
-            'total' => DiscountCode::count(),
-            'active' => DiscountCode::where('is_active', true)
-                ->where(function ($query) {
-                    $query->whereNull('expires_at')->orWhere('expires_at', '>', now());
-                })
-                ->whereColumn('used_count', '<', 'max_uses')
-                ->count(),
-            'expired' => DiscountCode::whereNotNull('expires_at')
-                ->where('expires_at', '<', now())
-                ->count(),
-            'used_up' => DiscountCode::whereColumn('used_count', '>=', 'max_uses')->count(),
-        ];
+        return $this->discountCodeRepository->getStats();
     }
 
     public function store(array $data): DiscountCode
@@ -53,27 +34,16 @@ class AdminDiscountCodeService
         $data['used_count'] = 0;
         $data['is_active'] = $data['is_active'] ?? true;
 
-        return DiscountCode::create($data);
+        return $this->discountCodeRepository->create($data);
     }
 
-    /**
-     * UpdateDiscountCodeRequest deliberately only validates is_active/expires_at/max_uses (see
-     * R2's documented note on this file) — code/type/amount/user_id are immutable after creation,
-     * so a code's discount math can never silently change out from under bookings that already
-     * reference it by its string `code` value.
-     */
     public function update(DiscountCode $discountCode, array $data): DiscountCode
     {
-        $discountCode->update($data);
+        $discountCode = $this->discountCodeRepository->update($discountCode, $data);
 
         return $discountCode->fresh();
     }
 
-    /**
-     * Codes that have already been used are kept (not hard-deleted) for financial/audit
-     * traceability — the only way to retire one is to deactivate it (is_active=false), which
-     * DiscountCode::isValid() already respects.
-     */
     public function destroy(DiscountCode $discountCode): void
     {
         if ($discountCode->used_count > 0) {
@@ -82,7 +52,7 @@ class AdminDiscountCodeService
             );
         }
 
-        $discountCode->delete();
+        $this->discountCodeRepository->delete($discountCode);
     }
 
     /**

@@ -12,26 +12,12 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-/**
- * Manual points management for a specific user, from the admin panel.
- *
- * Reuses LoyaltyAdminService::addPoints()/deductPoints()/getUserPoints(), which
- * existed and were fully tested (LoyaltyAdminServiceTest) but — until this
- * controller — had no HTTP entry point at all after the previous
- * AdminLoyaltyPointsController was removed as dead code (R-Cleanup-DeadCode /
- * test-writing session 9).
- */
 class AdminLoyaltyPointsController extends Controller
 {
     public function __construct(
         private readonly LoyaltyAdminService $loyaltyAdminService,
     ) {}
 
-    /**
-     * Search for a user by name/phone, and if one is selected (?user_id=),
-     * show their full points balance + paginated history alongside the
-     * add/deduct forms.
-     */
     public function index(Request $request): View
     {
         $users = collect();

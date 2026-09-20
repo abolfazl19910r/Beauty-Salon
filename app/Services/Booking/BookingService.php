@@ -6,11 +6,11 @@ use App\Events\Booking\BookingCancelled;
 use App\Exceptions\BookingNotAvailableException;
 use App\Exceptions\DiscountCodeInvalidException;
 use App\Models\Booking;
-use App\Models\DiscountCode;
 use App\Models\WalletSetting;
 use App\Notifications\Booking\CustomerBookingNotification;
 use App\Repositories\Contracts\BeautyServiceRepositoryInterface;
 use App\Repositories\Contracts\BookingRepositoryInterface;
+use App\Repositories\Contracts\DiscountCodeRepositoryInterface;
 use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Services\Discount\DiscountCalculator;
 use Exception;
@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Log;
 class BookingService
 {
     public function __construct(
-        protected readonly DiscountCode $discountCode,
+        protected readonly DiscountCodeRepositoryInterface $discountCodeRepository,
         protected readonly DiscountCalculator $discountCalculator,
         protected readonly SpecialistRepositoryInterface $specialistRepository,
         protected readonly BeautyServiceRepositoryInterface $beautyServiceRepository,
@@ -84,7 +84,7 @@ class BookingService
 
     public function validateDiscountCode(string $code, int $userId, ?float $baseAmount = null): array
     {
-        $discountCode = $this->discountCode->where('code', $code)->first();
+        $discountCode = $this->discountCodeRepository->findByCode($code);
 
         if (! $discountCode || ! $discountCode->isValid()) {
             throw DiscountCodeInvalidException::because(
@@ -114,7 +114,7 @@ class BookingService
 
     public function applyDiscountCode(Booking $booking, string $code): array
     {
-        $discountCode = $this->discountCode->where('code', $code)->first();
+        $discountCode = $this->discountCodeRepository->findByCode($code);
 
         if (! $discountCode || ! $discountCode->isValid()) {
             return ['success' => false, 'message' => 'کد تخفیف نامعتبر است.'];
@@ -133,7 +133,7 @@ class BookingService
         }
 
         return DB::transaction(function () use ($booking, $code) {
-            $lockedDiscountCode = $this->discountCode->where('code', $code)->lockForUpdate()->first();
+            $lockedDiscountCode = $this->discountCodeRepository->lockByCode($code);
 
             if (! $lockedDiscountCode || ! $lockedDiscountCode->isValid()) {
                 return ['success' => false, 'message' => 'کد تخفیف نامعتبر است.'];
@@ -169,7 +169,7 @@ class BookingService
         $discountCode = null;
 
         if ($code) {
-            $discountCode = $this->discountCode->where('code', $code)->first();
+            $discountCode = $this->discountCodeRepository->findByCode($code);
 
             if ($discountCode && $discountCode->isValid()) {
                 $discountAmount = $this->discountCalculator
@@ -223,7 +223,7 @@ class BookingService
             ]);
 
             if ($discountCode && $prepaymentData['discount_code']) {
-                $lockedDiscountCode = $this->discountCode->where('code', $discountCode)->lockForUpdate()->first();
+                $lockedDiscountCode = $this->discountCodeRepository->lockByCode($discountCode);
 
                 if ($lockedDiscountCode && $lockedDiscountCode->isValid()) {
                     $lockedDiscountCode->incrementUsage();
