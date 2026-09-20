@@ -27,6 +27,16 @@
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_STORE" value="array"/>
+        <!-- ⭐ Fix (۲۰۲۶-۰۹-۲۰، پیدا شده با اجرای واقعی php artisan test روی محیط لوکال
+             ابوالفضل): بدون این خط، config('app.central_domain') از هر چیزی که در .env واقعی
+             توسعه‌دهنده ست شده (مثلاً CENTRAL_DOMAIN=rasta-app.test برای تست دستی محور «۳»/«۴»
+             روی hosts دستی) می‌خونه، نه از یک مقدار پیش‌بینی‌پذیر تست. BareDomainWithoutCentralDomainTest
+             دقیقاً همین فرض («سوییت اصلی همیشه CENTRAL_DOMAIN خالی می‌بینه» — به کامنت بالای
+             exclude زیر نگاه کن) رو صریح assert می‌کنه؛ بدون override اینجا، هر بار که یک
+             توسعه‌دهنده CENTRAL_DOMAIN رو محلی برای تست دستی پر می‌کنه، این یک تست کاملاً سبز رو
+             قرمز می‌کنه — نه یک باگ واقعی، فقط یک وابستگی پنهان سوییت به .env محلی که این خط
+             قطعش می‌کنه.-->
+        <env name="CENTRAL_DOMAIN" value=""/>
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
         <env name="MAIL_MAILER" value="array"/>
