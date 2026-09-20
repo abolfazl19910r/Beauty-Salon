@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Service;
 
 use App\Http\Controllers\Controller;
 use App\Models\BeautyService;
+use App\Repositories\Contracts\BeautyServiceRepositoryInterface;
 use App\Services\CategoryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,9 +13,11 @@ use Illuminate\View\View;
 
 class AdminServiceController extends Controller
 {
+    public function __construct(protected readonly BeautyServiceRepositoryInterface $beautyServiceRepository) {}
+
     public function index(): View
     {
-        $services = BeautyService::with('category')->latest()->paginate(10);
+        $services = $this->beautyServiceRepository->paginateWithCategory(10);
 
         return view('admin.services.index', compact('services'));
     }
@@ -52,7 +55,7 @@ class AdminServiceController extends Controller
             $validated['image'] = $request->file('image')->store('services', 'public');
         }
 
-        BeautyService::create($validated);
+        $this->beautyServiceRepository->create($validated);
 
         return redirect()->route('admin.services.index')
             ->with('success', 'خدمت جدید با موفقیت ایجاد شد.');
@@ -78,7 +81,7 @@ class AdminServiceController extends Controller
             $validated['image'] = $request->file('image')->store('services', 'public');
         }
 
-        $service->update($validated);
+        $this->beautyServiceRepository->update($service, $validated);
 
         return redirect()->route('admin.services.index')
             ->with('success', 'خدمت با موفقیت بروزرسانی شد.');
@@ -89,7 +92,7 @@ class AdminServiceController extends Controller
         $this->ensureSalonOwnership($service->salon_id);
 
         try {
-            $service->delete();
+            $this->beautyServiceRepository->delete($service);
 
             return redirect()->route('admin.services.index')
                 ->with('success', 'خدمت با موفقیت حذف شد.');
