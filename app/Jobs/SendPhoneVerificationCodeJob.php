@@ -47,7 +47,7 @@ class SendPhoneVerificationCodeJob implements ShouldQueue
 
         $template = config('services.kavenegar.templates.register_verify');
 
-        $result = $smsService->sendTemplate($user->phone, $template, [$this->code]);
+        $result = $smsService->sendTemplate($user->phone, $template, [$this->code], $user->salon_id);
 
         if (! $result) {
             Log::error('SendPhoneVerificationCodeJob: failed to send phone verification code', [

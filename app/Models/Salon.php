@@ -26,6 +26,7 @@ class Salon extends Model
         'zarinpal_merchant_id',
         'max_specialists_count',
         'module_permissions',
+        'sms_quota_per_month',
         'subscription_type',
         'subscription_started_at',
         'subscription_ends_at',

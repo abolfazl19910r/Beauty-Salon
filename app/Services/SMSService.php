@@ -2,7 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\Salon;
+use App\Notifications\Sms\SmsQuotaExhaustedNotification;
+use App\Services\Sms\SmsQuotaService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Kavenegar\Exceptions\ApiException;
 use Kavenegar\Exceptions\HttpException;
 use Kavenegar\KavenegarApi;
@@ -16,8 +20,19 @@ class SMSService
         $this->api = new KavenegarApi(config('services.kavenegar.api_key'));
     }
 
-    public function send(string $mobile, string $message): bool
+    /**
+     * ⭐ فیچر «سقف/قطع پیامک ماهانه» (تصمیم صریح ابوالفضل، ۲۰۲۶-۰۹-۲۰). $salonId اختیاری و در
+     * آخر پارامترها است تا همه‌ی call siteهای قبلی (که salon context نمی‌فرستند) بدون تغییر کار
+     * کنند — بدون salon_id، این متد رفتار قبلی‌اش را دارد و اصلاً وارد منطق سهمیه نمی‌شود. جاهایی
+     * که واقعاً به سالن مشخصی وصل‌اند (پیامک‌های نوبت، یادآوری، ورود) باید صریحاً salon_id را پاس
+     * بدهند تا واقعاً محافظت بشوند.
+     */
+    public function send(string $mobile, string $message, ?int $salonId = null): bool
     {
+        if ($salonId !== null && ! $this->consumeQuotaOrNotify($salonId)) {
+            return false;
+        }
+
         // ⭐ لاگ متمرکز: تمام پیامک‌های پروژه (بوکینگ، مرخصی، برداشت وجه و...)
         // در نهایت از همین متد رد می‌شن (از طریق SmsChannel::send() → toSms())،
         // پس یک لاگ اینجا کافیه برای دیدن محتوای واقعی هر پیامک در فایل لاگ،
@@ -55,8 +70,12 @@ class SMSService
         }
     }
 
-    public function sendTemplate(string $mobile, string $templateName, array $tokens): bool
+    public function sendTemplate(string $mobile, string $templateName, array $tokens, ?int $salonId = null): bool
     {
+        if ($salonId !== null && ! $this->consumeQuotaOrNotify($salonId)) {
+            return false;
+        }
+
         // ⭐ همین‌جا کد OTP (اولین token) هم قابل مشاهده‌ست — چون sendLoginCode/sendCode
         // هر دو نهایتاً از همین متد رد می‌شن.
         Log::info('SMS Template: در حال ارسال', [
@@ -107,6 +126,56 @@ class SMSService
 
             return false;
         }
+    }
+
+    /**
+     * ⭐ فیچر «سقف/قطع پیامک ماهانه». true = اجازه‌ی ارسال هست (و مصرف ثبت شد)؛ false = سهمیه
+     * تمام شده، ارسال واقعی اصلاً نباید انجام بشه. سالن پیدا نشد → عمداً اجازه می‌دهد (fail-open)
+     * تا یک salon_id نامعتبر/قدیمی هیچ پیامک واقعی‌ای را بی‌صدا قطع نکند؛ این حالت خودش در لاگ
+     * ثبت می‌شود تا قابل پیگیری باشد.
+     */
+    private function consumeQuotaOrNotify(int $salonId): bool
+    {
+        $salon = Salon::find($salonId);
+
+        if (! $salon) {
+            Log::warning('SmsQuotaService: salon not found for quota check, allowing send', ['salon_id' => $salonId]);
+
+            return true;
+        }
+
+        $quota = app(SmsQuotaService::class);
+
+        if (! $quota->hasQuotaRemaining($salon)) {
+            if ($quota->shouldNotifyExhaustion($salon)) {
+                $this->notifyQuotaExhausted($salon, $quota->quotaFor($salon));
+            }
+
+            Log::warning('SmsQuotaService: monthly SMS quota exhausted, send blocked', [
+                'salon_id' => $salon->id,
+                'quota' => $quota->quotaFor($salon),
+            ]);
+
+            return false;
+        }
+
+        $quota->recordUsage($salon);
+
+        return true;
+    }
+
+    private function notifyQuotaExhausted(Salon $salon, int $quota): void
+    {
+        $recipients = $salon->admins()
+            ->get()
+            ->merge(\App\Models\User::whereHas('roles', fn ($q) => $q->where('name', 'super-admin'))->get())
+            ->unique('id');
+
+        if ($recipients->isEmpty()) {
+            return;
+        }
+
+        Notification::send($recipients, new SmsQuotaExhaustedNotification($salon, $quota));
     }
 
     //    public function sendVerificationCode(string $mobile, string $code, string $type = 'login'): bool

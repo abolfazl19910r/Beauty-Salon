@@ -83,8 +83,8 @@ class SendBookingReminderJob implements ShouldQueue
             $booking->id
         );
 
-        $customerSent = $smsService->send($booking->user->phone, $customerMessage);
-        $specialistSent = $smsService->send($booking->specialist->phone, $specialistMessage);
+        $customerSent = $smsService->send($booking->user->phone, $customerMessage, $booking->salon_id);
+        $specialistSent = $smsService->send($booking->specialist->phone, $specialistMessage, $booking->salon_id);
 
         if (! $customerSent || ! $specialistSent) {
             Log::error('SendBookingReminderJob: یکی از دو پیامک یادآوری ارسال نشد', [

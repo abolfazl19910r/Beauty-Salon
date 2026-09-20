@@ -59,6 +59,6 @@ class BookingNotification extends Notification
             $message .= "\n\n✅ تایید خودکار";
         }
 
-        return (new SMSService)->send($notifiable->phone, $message);
+        return (new SMSService)->send($notifiable->phone, $message, $this->booking->salon_id);
     }
 }

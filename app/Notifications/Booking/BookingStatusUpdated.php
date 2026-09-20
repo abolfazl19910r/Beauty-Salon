@@ -73,7 +73,7 @@ class BookingStatusUpdated extends Notification
     {
         $message = $this->getSmsMessage($notifiable);
 
-        return $this->smsService->send($notifiable->phone, $message);
+        return $this->smsService->send($notifiable->phone, $message, $this->booking->salon_id);
     }
 
     private function getSmsMessage($notifiable): string

@@ -39,7 +39,7 @@ class Send2faVerificationCodeJob implements ShouldQueue
 
         $template = config('services.kavenegar.templates.login_verify');
 
-        $result = $smsService->sendTemplate($user->phone, $template, [$this->code]);
+        $result = $smsService->sendTemplate($user->phone, $template, [$this->code], $user->salon_id);
 
         if (! $result) {
             Log::error('Send2faVerificationCodeJob: failed to send 2FA verification code', [

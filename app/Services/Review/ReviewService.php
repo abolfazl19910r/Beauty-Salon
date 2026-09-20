@@ -48,7 +48,7 @@ class ReviewService
                 $reviewUrl
             );
 
-            $sent = $this->smsService->send($booking->user->phone, $message);
+            $sent = $this->smsService->send($booking->user->phone, $message, $booking->salon_id);
 
             if ($sent) {
                 $booking->update(['review_sent_at' => now()]);

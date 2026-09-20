@@ -455,7 +455,7 @@ class BookingObserver
             $booking->cancellation_reason ?? 'ذکر نشده'
         );
 
-        $this->smsService->send($booking->user->phone, $message);
+        $this->smsService->send($booking->user->phone, $message, $booking->salon_id);
     }
 
     protected function sendSpecialistCancellationSMS(Booking $booking, string $cancelledBy): void
@@ -492,7 +492,7 @@ class BookingObserver
             }
         }
 
-        $this->smsService->send($specialist->phone, $message);
+        $this->smsService->send($specialist->phone, $message, $booking->salon_id);
     }
 
     protected function sendCustomerConfirmationSMS(Booking $booking): void
@@ -517,7 +517,7 @@ class BookingObserver
             $booking->id
         );
 
-        $this->smsService->send($booking->user->phone, $message);
+        $this->smsService->send($booking->user->phone, $message, $booking->salon_id);
     }
 
     protected function sendCustomerPendingSMS(Booking $booking): void
@@ -533,7 +533,7 @@ class BookingObserver
             number_format((float) $booking->prepayment_amount),
             number_format($booking->remaining_amount)
         );
-        $this->smsService->send($booking->user->phone, $message);
+        $this->smsService->send($booking->user->phone, $message, $booking->salon_id);
     }
 
     /**
