@@ -127,4 +127,64 @@ class SalonSignupTest extends TestCase
     {
         $this->get(route('salon-signup.verify'))->assertRedirect(route('salon-signup.create'));
     }
+
+    // ⭐ مورد ۴ (نشست ۲۰۲۶-۰۹-۲۰): چک یکتایی زنده — همین دو endpoint رو فرم سوپرادمین
+    // (superadmin.salons.create) هم مستقیم استفاده می‌کنه، پس این تست‌ها هر دو مصرف‌کننده رو
+    // پوشش می‌دن.
+    public function test_check_slug_reports_available_for_a_free_slug(): void
+    {
+        $this->getJson(route('salon-signup.check-slug', ['slug' => 'brand-new-salon']))
+            ->assertOk()
+            ->assertJson(['available' => true, 'reason' => null]);
+    }
+
+    public function test_check_slug_reports_taken_for_an_existing_slug(): void
+    {
+        Salon::factory()->create(['slug' => 'already-taken']);
+
+        $this->getJson(route('salon-signup.check-slug', ['slug' => 'already-taken']))
+            ->assertOk()
+            ->assertJson(['available' => false, 'reason' => 'taken']);
+    }
+
+    public function test_check_slug_rejects_invalid_characters(): void
+    {
+        $this->getJson(route('salon-signup.check-slug', ['slug' => 'not valid slug!']))
+            ->assertOk()
+            ->assertJson(['available' => false, 'reason' => 'invalid']);
+    }
+
+    public function test_check_phone_reports_available_for_a_free_phone(): void
+    {
+        $this->getJson(route('salon-signup.check-phone', ['phone' => '09129999999']))
+            ->assertOk()
+            ->assertJson(['available' => true, 'reason' => null]);
+    }
+
+    public function test_check_phone_reports_taken_for_an_existing_staff_phone(): void
+    {
+        User::factory()->admin()->create(['phone' => '09129999999']);
+
+        $this->getJson(route('salon-signup.check-phone', ['phone' => '09129999999']))
+            ->assertOk()
+            ->assertJson(['available' => false, 'reason' => 'taken']);
+    }
+
+    public function test_check_phone_does_not_flag_a_customer_phone_as_taken(): void
+    {
+        // ⭐ قانون StoreSalonSignupRequest: phone فقط بین user_type='staff' یکتاست، نه مشتری‌ها —
+        // یک مشتری با همین شماره نباید ثبت‌نام یک ادمین جدید رو مسدود کنه.
+        User::factory()->create(['phone' => '09121112233', 'user_type' => 'customer']);
+
+        $this->getJson(route('salon-signup.check-phone', ['phone' => '09121112233']))
+            ->assertOk()
+            ->assertJson(['available' => true, 'reason' => null]);
+    }
+
+    public function test_check_phone_rejects_invalid_format(): void
+    {
+        $this->getJson(route('salon-signup.check-phone', ['phone' => '12345']))
+            ->assertOk()
+            ->assertJson(['available' => false, 'reason' => 'invalid']);
+    }
 }

@@ -29,4 +29,16 @@ Route::prefix('salon-signup')->name('salon-signup.')->group(function () {
     Route::post('/resend-code', [SalonSignupController::class, 'resendCode'])
         ->middleware('throttle:registration')
         ->name('resend-code');
+
+    // ⭐ مورد ۴ (نشست ۲۰۲۶-۰۹-۲۰): چک یکتایی زنده‌ی slug/phone — هم این فرم هم فرم سوپرادمین
+    // (superadmin.salons.create) از همین دو endpoint استفاده می‌کنن (به docblock
+    // SalonSignupController::checkSlug/checkPhone نگاه کن). throttle:60,1 عمومی Laravel
+    // (نه یکی از rate limiter های نام‌دار SMS) چون این‌ها هیچ پیامکی نمی‌فرستن، فقط یک
+    // کوئری سبک هستن که با هر keystroke (debounced) صدا زده می‌شن.
+    Route::get('/check-slug', [SalonSignupController::class, 'checkSlug'])
+        ->middleware('throttle:60,1')
+        ->name('check-slug');
+    Route::get('/check-phone', [SalonSignupController::class, 'checkPhone'])
+        ->middleware('throttle:60,1')
+        ->name('check-phone');
 });

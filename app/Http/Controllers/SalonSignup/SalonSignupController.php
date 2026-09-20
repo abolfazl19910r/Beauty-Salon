@@ -8,6 +8,7 @@ use App\Models\Salon;
 use App\Models\User;
 use App\Services\PhoneVerificationService;
 use App\Services\SalonSignup\SalonSignupService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -43,6 +44,43 @@ class SalonSignupController extends Controller
         return view('salon-signup.create', [
             'prices' => config('billing.subscription_prices'),
         ]);
+    }
+
+    /**
+     * ⭐ مورد ۴ (نشست ۲۰۲۶-۰۹-۲۰): چک یکتایی زنده برای slug — هم فرم self-service هم فرم
+     * سوپرادمین (superadmin.salons.create) از همین یک endpoint عمومی استفاده می‌کنن، چون
+     * منطق یکتایی (جدول salons) دقیقاً یکیه و افشای «این slug گرفته شده یا نه» به هیچ‌کس هیچ
+     * اطلاعات حساس‌تری از چیزی که همین الان خطای submit کامل فرم می‌ده، نمی‌ده. عمداً بدون auth
+     * (فرم self-service اصلاً کاربر لاگین‌شده نداره).
+     */
+    public function checkSlug(Request $request): JsonResponse
+    {
+        $slug = (string) $request->query('slug', '');
+
+        if ($slug === '' || ! preg_match('/^[a-zA-Z0-9_-]+$/', $slug)) {
+            return response()->json(['available' => false, 'reason' => 'invalid']);
+        }
+
+        $available = ! Salon::where('slug', $slug)->exists();
+
+        return response()->json(['available' => $available, 'reason' => $available ? null : 'taken']);
+    }
+
+    /**
+     * ⭐ مورد ۴: هم‌الگو با checkSlug — یکتایی owner_phone/admin_phone سراسری بین
+     * user_type='staff' (دقیقاً قانون StoreSalonSignupRequest/StoreSalonRequest).
+     */
+    public function checkPhone(Request $request): JsonResponse
+    {
+        $phone = (string) $request->query('phone', '');
+
+        if (! preg_match('/^09[0-9]{9}$/', $phone)) {
+            return response()->json(['available' => false, 'reason' => 'invalid']);
+        }
+
+        $available = ! User::where('user_type', 'staff')->where('phone', $phone)->exists();
+
+        return response()->json(['available' => $available, 'reason' => $available ? null : 'taken']);
     }
 
     public function store(StoreSalonSignupRequest $request): RedirectResponse

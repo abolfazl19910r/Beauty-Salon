@@ -68,6 +68,10 @@
         .plan .title { font-weight: bold; color: var(--rasta-gold-light); }
         .plan .price { font-size: .85rem; opacity: .8; margin-top: .2rem; }
         .err { color: #ff8a8a; font-size: .8rem; margin-top: .3rem; }
+        .check-status { font-size: .78rem; margin-top: .35rem; min-height: 1em; }
+        .check-status.ok { color: #7ee0a6; }
+        .check-status.bad { color: #ff8a8a; }
+        .check-status.pending { color: rgba(248, 243, 233, 0.45); }
         .flash-err {
             background: rgba(220,38,38,.15); border-right: 4px solid #dc2626;
             padding: .75rem 1rem; border-radius: .4rem; margin-bottom: 1.25rem; font-size: .875rem;
@@ -112,7 +116,9 @@
                     <div class="row">
                         <label for="slug">آدرس اختصاصی سالن (بعداً غیرقابل‌تغییر)</label>
                         <input type="text" id="slug" name="slug" value="{{ old('slug') }}" required
-                               maxlength="100" pattern="[a-zA-Z0-9_-]+" placeholder="مثلاً: almas-beauty" dir="ltr">
+                               maxlength="100" pattern="[a-zA-Z0-9_-]+" placeholder="مثلاً: almas-beauty" dir="ltr"
+                               autocomplete="off">
+                        <div id="slug-status" class="check-status"></div>
                     </div>
                 </fieldset>
 
@@ -142,7 +148,8 @@
                     <div class="row">
                         <label for="owner_phone">شماره موبایل</label>
                         <input type="tel" id="owner_phone" name="owner_phone" value="{{ old('owner_phone') }}"
-                               required maxlength="11" dir="ltr" placeholder="09xxxxxxxxx">
+                               required maxlength="11" dir="ltr" placeholder="09xxxxxxxxx" autocomplete="off">
+                        <div id="owner_phone-status" class="check-status"></div>
                     </div>
                     <div class="row">
                         <label for="owner_password">رمز عبور</label>
@@ -158,5 +165,74 @@
             </form>
         </div>
     </div>
+
+    {{--
+        ⭐ مورد ۴ (نشست ۲۰۲۶-۰۹-۲۰): چک یکتایی زنده — فقط یک راهنمایی سریع به کاربره، تصمیم نهایی
+        همیشه همون validation سرور در store() هست (این fetch هیچ‌جا جای اون رو نمی‌گیره). Vanilla
+        JS بدون هیچ کتابخونه‌ای — این صفحه هیچ @vite/jQuery‌ای نداره (به docblock بالای فایل نگاه
+        کن)، پس نباید هیچ‌کدوم رو فرض کرد.
+    --}}
+    <script>
+        (function () {
+            function debounce(fn, wait) {
+                var t;
+                return function () {
+                    var args = arguments;
+                    clearTimeout(t);
+                    t = setTimeout(function () { fn.apply(null, args); }, wait);
+                };
+            }
+
+            function wireCheck(inputId, checkUrl, paramName, messages) {
+                var input = document.getElementById(inputId);
+                var status = document.getElementById(inputId + '-status');
+                if (!input || !status) return;
+
+                var run = debounce(function () {
+                    var value = input.value.trim();
+                    if (!value) { status.textContent = ''; status.className = 'check-status'; return; }
+
+                    status.textContent = messages.pending;
+                    status.className = 'check-status pending';
+
+                    fetch(checkUrl + '?' + paramName + '=' + encodeURIComponent(value), {
+                        headers: { 'Accept': 'application/json' },
+                    })
+                        .then(function (res) { return res.json(); })
+                        .then(function (data) {
+                            if (input.value.trim() !== value) return; // کاربر تا اون موقع ادامه داده
+                            if (data.available) {
+                                status.textContent = messages.ok;
+                                status.className = 'check-status ok';
+                            } else if (data.reason === 'invalid') {
+                                status.textContent = '';
+                                status.className = 'check-status';
+                            } else {
+                                status.textContent = messages.taken;
+                                status.className = 'check-status bad';
+                            }
+                        })
+                        .catch(function () {
+                            status.textContent = '';
+                            status.className = 'check-status';
+                        });
+                }, 500);
+
+                input.addEventListener('input', run);
+            }
+
+            wireCheck('slug', '{{ route('salon-signup.check-slug') }}', 'slug', {
+                pending: 'در حال بررسی…',
+                ok: '✓ این آدرس آزاد است',
+                taken: '✗ این آدرس قبلاً استفاده شده است',
+            });
+
+            wireCheck('owner_phone', '{{ route('salon-signup.check-phone') }}', 'phone', {
+                pending: 'در حال بررسی…',
+                ok: '✓ این شماره آزاد است',
+                taken: '✗ ادمینی با این شماره قبلاً ثبت‌نام کرده است',
+            });
+        })();
+    </script>
 </body>
 </html>
