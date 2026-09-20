@@ -4681,3 +4681,32 @@ Blade/JS واقعی این route name‌ها رو صدا نمی‌زنه (بوک
   اجرا نکرده — تست دستی بالا جایگزین کامل این مورد نیست، فقط confidence بالایی می‌ده.
 - قیمت‌های config/billing.php و SMS_QUOTA_PER_MONTH تخمینی‌ان — بعد از اولین دوره‌ی واقعی
   فاکتور Kavenegar/هاستینگ حتماً بازبینی بشن.
+
+### ⭐⭐ ادامه‌ی همون نشست: اجرای واقعی سوییت (`php artisan test`) — ۱۰۸۶ pass، ۱ fail، ۱ skip
+
+ابوالفضل کل سوییت رو روی XAMPP خودش اجرا کرد. نتیجه: **۱۰۸۶ pass، ۱ fail، ۱ skip (۲۴۳۳
+assertion)** — شامل تمام تست‌های تازه‌ی این نشست:
+- `SpecialistsAvailabilityRouteCollisionTest`: هر ۴ تست ✓ (پچ ۰۰۰۱)
+- `SalonSignupTest`: هر ۱۵ تست ✓ (پچ‌های ۰۰۰۲/۰۰۰۳، شامل هر ۷ تست check-slug/check-phone)
+
+**۱ fail — محیطی بود، نه باگ کد** — رفع شد (پچ `0004`): `BareDomainWithoutCentralDomainTest`
+با `assertEmpty(config('app.central_domain'), ...)` شروع می‌شه، ولی `phpunit.xml` هیچ‌وقت
+`CENTRAL_DOMAIN` رو override نمی‌کرد، پس مقدار واقعی `.env` محلی ابوالفضل
+(`CENTRAL_DOMAIN=rasta-app.test`، که خودش برای تست دستی محور ۴ در همین نشست لازم بود) رو
+می‌خوند و تست fail می‌شد — دقیقاً یک وابستگی پنهان سوییت اصلی به `.env` محلی توسعه‌دهنده، نه یک
+رگرسیون واقعی. فیکس: `<env name="CENTRAL_DOMAIN" value=""/>` به بخش `<php>` در `phpunit.xml`
+اضافه شد — دقیقاً هم‌الگو با کاری که `phpunit.subdomain.xml` از قبل در جهت عکس انجام می‌ده.
+
+**۱ skip** — از قبل و بی‌ربط به این نشست: `SpecialistControllerTest::top rated only includes
+specialists meeting the rating and count threshold` چون `topRated()` از یک تابع MySQL-only
+استفاده می‌کنه که روی SQLite (سوییت تست) کار نمی‌کنه — مستند و قصدی، نه چیزی که این نشست باز
+کرده باشه.
+
+### تحویل این نشست (تکمیلی)
+- `0004`: پین‌کردن `CENTRAL_DOMAIN=""` در `phpunit.xml` برای سوییت اصلی
+
+### قدم‌های باز برای نشست بعدی (به‌روز)
+- ✅ سوییت اصلی کامل اجرا و تایید شد (۱۰۸۶/۱۰۸۷ pass با ۱ skip قصدی، صفر fail واقعی بعد از
+  پچ ۰۰۰۴). دیگه نیازی به اجرای مجدد این مورد به‌تنهایی نیست — فقط بعد از هر پچ جدید تکرار بشه.
+- قیمت‌های config/billing.php و SMS_QUOTA_PER_MONTH تخمینی‌ان — بعد از اولین دوره‌ی واقعی
+  فاکتور Kavenegar/هاستینگ حتماً بازبینی بشن.
