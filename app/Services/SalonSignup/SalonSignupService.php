@@ -4,6 +4,7 @@ namespace App\Services\SalonSignup;
 
 use App\Models\Salon;
 use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\PasswordStrengthService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -36,7 +37,10 @@ use Illuminate\Support\Facades\Hash;
  */
 class SalonSignupService
 {
-    public function __construct(protected readonly PasswordStrengthService $passwordStrengthService) {}
+    public function __construct(
+        protected readonly PasswordStrengthService $passwordStrengthService,
+        protected readonly UserRepositoryInterface $userRepository,
+    ) {}
 
     /**
      * @return array{salon: Salon, owner: User}
@@ -56,7 +60,7 @@ class SalonSignupService
                 'created_by' => null,
             ]);
 
-            $owner = User::create([
+            $owner = $this->userRepository->create([
                 'name' => $data['owner_name'],
                 'phone' => $data['owner_phone'],
                 'password' => Hash::make($data['owner_password']),

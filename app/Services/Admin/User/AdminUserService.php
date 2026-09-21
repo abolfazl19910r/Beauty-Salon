@@ -5,11 +5,14 @@ namespace App\Services\Admin\User;
 use App\Models\Role;
 use App\Models\Salon;
 use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class AdminUserService
 {
+    public function __construct(private readonly UserRepositoryInterface $userRepository) {}
+
     /**
      * ⭐ فاز ۲ SaaS، محور «۲. چند ادمین برای یک سالن»: وقتی $data['salon'] (یک Salon) و
      * $data['salon_role'] ('owner'|'staff') هر دو داده شده باشن، کاربر تازه‌ساز به
@@ -20,7 +23,7 @@ class AdminUserService
     public function create(array $data): User
     {
         return DB::transaction(function () use ($data) {
-            $user = User::create([
+            $user = $this->userRepository->create([
                 'name' => $data['name'],
                 'phone' => $data['phone'],
                 'password' => Hash::make($data['password']),
@@ -43,9 +46,9 @@ class AdminUserService
 
     /**
      * @param  Salon|null  $salon  فاز ۲ SaaS، محور ۲: وقتی داده بشه (owner یک ادمین سالن خودش رو
-     *                              ویرایش می‌کنه) و $data['salon_role'] هم داده شده باشه، نقش این
-     *                              کاربر در همون سالن (owner/staff) هم‌زمان به‌روز می‌شه — با محافظت
-     *                              «آخرین owner نمی‌تونه تنزل بگیره» (guardNotLastOwner()).
+     *                             ویرایش می‌کنه) و $data['salon_role'] هم داده شده باشه، نقش این
+     *                             کاربر در همون سالن (owner/staff) هم‌زمان به‌روز می‌شه — با محافظت
+     *                             «آخرین owner نمی‌تونه تنزل بگیره» (guardNotLastOwner()).
      */
     public function update(User $user, array $data, ?Salon $salon = null): User
     {

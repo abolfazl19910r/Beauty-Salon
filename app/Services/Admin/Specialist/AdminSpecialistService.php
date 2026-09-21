@@ -6,6 +6,7 @@ use App\Exceptions\SpecialistQuotaExceededException;
 use App\Models\Specialist;
 use App\Models\User;
 use App\Repositories\Contracts\SpecialistRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Support\CurrentSalon;
 use Illuminate\Support\Facades\DB;
 
@@ -14,6 +15,7 @@ class AdminSpecialistService
     public function __construct(
         protected readonly CurrentSalon $currentSalon,
         protected readonly SpecialistRepositoryInterface $specialistRepository,
+        protected readonly UserRepositoryInterface $userRepository,
     ) {}
 
     public function create(array $validated, ?string $rawCommissionRate): array
@@ -83,16 +85,13 @@ class AdminSpecialistService
     {
         $currentSalonId = $this->currentSalon->id();
 
-        $matchedUser = User::where('phone', $phone)->where('user_type', 'staff')->first();
+        $matchedUser = $this->userRepository->findStaffByPhone($phone);
 
         if ($matchedUser) {
             return $matchedUser;
         }
 
-        $matchedUser = User::where('phone', $phone)
-            ->where('user_type', 'customer')
-            ->where('salon_id', $currentSalonId)
-            ->first();
+        $matchedUser = $this->userRepository->findCustomerByPhoneInSalon($phone, $currentSalonId);
 
         if ($matchedUser) {
             $matchedUser->update([

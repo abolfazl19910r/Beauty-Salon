@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\UserWalletTransactionRepositoryInterface;
 use App\Services\PaymentService;
 use App\Traits\HasJalaliDates;
@@ -20,6 +20,7 @@ class UserWalletController extends Controller
     public function __construct(
         protected readonly PaymentService $paymentService,
         protected readonly UserWalletTransactionRepositoryInterface $userWalletTransactionRepository,
+        protected readonly UserRepositoryInterface $userRepository,
     ) {}
 
     public function index(): View
@@ -202,7 +203,7 @@ class UserWalletController extends Controller
 
             if ($result['success']) {
                 return DB::transaction(function () use ($chargePending, $result) {
-                    $user = User::findOrFail($chargePending['user_id']);
+                    $user = $this->userRepository->findOrFail($chargePending['user_id']);
                     $wallet = $user->getOrCreateWallet();
                     $wallet->increment('balance', $chargePending['amount']);
                     $wallet->increment('total_deposited', $chargePending['amount']);

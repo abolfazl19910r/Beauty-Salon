@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\SMSService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -33,9 +33,9 @@ class SendPhoneVerificationCodeJob implements ShouldQueue
         protected string $code
     ) {}
 
-    public function handle(SMSService $smsService): void
+    public function handle(SMSService $smsService, UserRepositoryInterface $userRepository): void
     {
-        $user = User::find($this->userId);
+        $user = $userRepository->find($this->userId);
 
         if (! $user) {
             Log::warning('SendPhoneVerificationCodeJob: user not found, skipping SMS', [

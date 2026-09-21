@@ -5,6 +5,7 @@ namespace App\Listeners\User;
 use App\Events\User\NewUserRegistered;
 use App\Models\User;
 use App\Notifications\User\NewUserRegisteredNotification;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Notification;
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\Notification;
 class SendNewUserNotifications implements ShouldQueue
 {
     use InteractsWithQueue;
+
+    public function __construct(private readonly UserRepositoryInterface $userRepository) {}
 
     public function handle(NewUserRegistered $event): void
     {
@@ -30,17 +33,6 @@ class SendNewUserNotifications implements ShouldQueue
      */
     private function getAdmins(User $newUser)
     {
-        $admins = User::where('is_admin', true)
-            ->orWhereHas('roles.permissions', function ($query) {
-                $query->where('name', 'access_admin_panel');
-            });
-
-        if ($newUser->salon_id) {
-            $admins->whereHas('salons', function ($query) use ($newUser) {
-                $query->where('salons.id', $newUser->salon_id);
-            });
-        }
-
-        return $admins->get();
+        return $this->userRepository->getAdminRecipients($newUser->salon_id);
     }
 }

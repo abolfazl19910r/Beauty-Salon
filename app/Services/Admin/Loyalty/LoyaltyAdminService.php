@@ -9,6 +9,7 @@ use App\Models\Reward;
 use App\Models\User;
 use App\Repositories\Contracts\LoyaltyPointRepositoryInterface;
 use App\Repositories\Contracts\RewardRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\LoyaltyService;
 use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -22,6 +23,7 @@ class LoyaltyAdminService
         private readonly LoyaltyService $loyaltyService,
         private readonly LoyaltyPointRepositoryInterface $loyaltyPointRepository,
         private readonly RewardRepositoryInterface $rewardRepository,
+        private readonly UserRepositoryInterface $userRepository,
     ) {}
 
     public function getDashboardStats(): array
@@ -162,7 +164,7 @@ class LoyaltyAdminService
             return $this->rewardRepository->all()->toArray();
         }
 
-        return User::select('id', 'name', 'phone', 'email')
+        return $this->userRepository->query()->select('id', 'name', 'phone', 'email')
             ->withSum(['loyaltyPoints as total_points' => fn ($q) => $q->where('type', 'earned'),
             ], 'points')
             ->withSum(['loyaltyPoints as used_points' => fn ($q) => $q->where('type', 'spent'),

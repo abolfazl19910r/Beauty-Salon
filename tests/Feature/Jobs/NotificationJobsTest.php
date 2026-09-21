@@ -9,6 +9,7 @@ use App\Jobs\SendPhoneVerificationCodeJob;
 use App\Models\Booking;
 use App\Models\Specialist;
 use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\SMSService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
@@ -91,7 +92,7 @@ class NotificationJobsTest extends TestCase
                 ->andReturn(true);
         });
 
-        (new Send2faVerificationCodeJob($user->id, '482913'))->handle(app(SMSService::class));
+        (new Send2faVerificationCodeJob($user->id, '482913'))->handle(app(SMSService::class), app(UserRepositoryInterface::class));
     }
 
     public function test_2fa_job_skips_silently_for_a_deleted_user(): void
@@ -100,7 +101,7 @@ class NotificationJobsTest extends TestCase
             $mock->shouldNotReceive('sendTemplate');
         });
 
-        (new Send2faVerificationCodeJob(999999, '123456'))->handle(app(SMSService::class));
+        (new Send2faVerificationCodeJob(999999, '123456'))->handle(app(SMSService::class), app(UserRepositoryInterface::class));
 
         $this->assertTrue(true);
     }
@@ -116,7 +117,7 @@ class NotificationJobsTest extends TestCase
                 ->andReturn(true);
         });
 
-        (new SendLoginVerificationCodeJob($user->id, '771122'))->handle(app(SMSService::class));
+        (new SendLoginVerificationCodeJob($user->id, '771122'))->handle(app(SMSService::class), app(UserRepositoryInterface::class));
     }
 
     // ── SendPhoneVerificationCodeJob ─────────────────────────────────────
@@ -136,7 +137,7 @@ class NotificationJobsTest extends TestCase
                 ->andReturn(true);
         });
 
-        (new SendPhoneVerificationCodeJob($user->id, '556677'))->handle(app(SMSService::class));
+        (new SendPhoneVerificationCodeJob($user->id, '556677'))->handle(app(SMSService::class), app(UserRepositoryInterface::class));
     }
 
     public function test_phone_verification_job_skips_silently_for_a_deleted_user(): void
@@ -145,7 +146,7 @@ class NotificationJobsTest extends TestCase
             $mock->shouldNotReceive('sendTemplate');
         });
 
-        (new SendPhoneVerificationCodeJob(999999, '123456'))->handle(app(SMSService::class));
+        (new SendPhoneVerificationCodeJob(999999, '123456'))->handle(app(SMSService::class), app(UserRepositoryInterface::class));
 
         $this->assertTrue(true); // no exception thrown = pass
     }

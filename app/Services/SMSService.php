@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Salon;
 use App\Notifications\Sms\SmsQuotaExhaustedNotification;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Sms\SmsQuotaService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -168,7 +169,7 @@ class SMSService
     {
         $recipients = $salon->admins()
             ->get()
-            ->merge(\App\Models\User::whereHas('roles', fn ($q) => $q->where('name', 'super-admin'))->get())
+            ->merge(app(UserRepositoryInterface::class)->getSuperAdmins())
             ->unique('id');
 
         if ($recipients->isEmpty()) {

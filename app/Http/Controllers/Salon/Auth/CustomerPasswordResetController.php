@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Salon\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\SMSService;
 use App\Support\CurrentSalon;
 use Illuminate\Http\RedirectResponse;
@@ -35,6 +35,7 @@ class CustomerPasswordResetController extends Controller
     public function __construct(
         protected readonly SMSService $smsService,
         protected readonly CurrentSalon $currentSalon,
+        protected readonly UserRepositoryInterface $userRepository,
     ) {}
 
     public function create(): View
@@ -50,10 +51,7 @@ class CustomerPasswordResetController extends Controller
             'phone' => ['required', 'regex:/^09[0-9]{9}$/'],
         ]);
 
-        $user = User::where('phone', $request->phone)
-            ->where('salon_id', $salon->id)
-            ->where('user_type', 'customer')
-            ->first();
+        $user = $this->userRepository->findCustomerByPhoneInSalon($request->phone, $salon->id);
 
         if (! $user) {
             return back()->withErrors(['phone' => 'کاربری با این شماره در این سالن یافت نشد.']);
@@ -124,10 +122,7 @@ class CustomerPasswordResetController extends Controller
         // can never be replayed against a same-phone customer of a different salon.
         [$tokenSalonId, $phone] = explode(':', $resetRecord->phone, 2);
 
-        $user = User::where('phone', $phone)
-            ->where('salon_id', $tokenSalonId)
-            ->where('user_type', 'customer')
-            ->first();
+        $user = $this->userRepository->findCustomerByPhoneInSalon($phone, (int) $tokenSalonId);
 
         if (! $user) {
             return back()->withErrors(['code' => 'کاربر یافت نشد.']);

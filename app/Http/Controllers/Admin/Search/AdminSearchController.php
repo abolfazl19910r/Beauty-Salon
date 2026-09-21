@@ -7,7 +7,7 @@ use App\Models\BeautyService;
 use App\Models\BlogPost;
 use App\Models\Booking;
 use App\Models\Specialist;
-use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -15,6 +15,8 @@ use Verta;
 
 class AdminSearchController extends Controller
 {
+    public function __construct(private readonly UserRepositoryInterface $userRepository) {}
+
     public function index(Request $request): View
     {
         $query = $request->input('q');
@@ -36,10 +38,11 @@ class AdminSearchController extends Controller
                 $results['خدمات'] = $services;
             }
 
-            $users = User::where(function ($q) use ($query) {
-                $q->where('name', 'LIKE', "%{$query}%")
-                    ->orWhere('phone', 'LIKE', "%{$query}%");
-            })
+            $users = $this->userRepository->query()
+                ->where(function ($q) use ($query) {
+                    $q->where('name', 'LIKE', "%{$query}%")
+                        ->orWhere('phone', 'LIKE', "%{$query}%");
+                })
                 ->limit(5)
                 ->get();
 
@@ -111,11 +114,12 @@ class AdminSearchController extends Controller
 
     private function searchUsers($query)
     {
-        return User::where(function ($q) use ($query) {
-            $q->where('name', 'like', "%{$query}%")
-                ->orWhere('phone', 'like', "%{$query}%")
-                ->orWhere('email', 'like', "%{$query}%");
-        })
+        return $this->userRepository->query()
+            ->where(function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                    ->orWhere('phone', 'like', "%{$query}%")
+                    ->orWhere('email', 'like', "%{$query}%");
+            })
             ->limit(5)
             ->get()
             ->map(function ($user) {
@@ -204,7 +208,8 @@ class AdminSearchController extends Controller
 
         $suggestions = collect();
 
-        $users = User::where('name', 'like', "%{$query}%")
+        $users = $this->userRepository->query()
+            ->where('name', 'like', "%{$query}%")
             ->limit(3)
             ->pluck('name');
         $suggestions = $suggestions->merge($users);

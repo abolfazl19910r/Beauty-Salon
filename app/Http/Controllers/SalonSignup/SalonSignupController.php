@@ -5,7 +5,7 @@ namespace App\Http\Controllers\SalonSignup;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SalonSignup\StoreSalonSignupRequest;
 use App\Models\Salon;
-use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\PhoneVerificationService;
 use App\Services\SalonSignup\SalonSignupService;
 use Illuminate\Http\JsonResponse;
@@ -37,6 +37,7 @@ class SalonSignupController extends Controller
     public function __construct(
         protected readonly SalonSignupService $salonSignupService,
         protected readonly PhoneVerificationService $verificationService,
+        protected readonly UserRepositoryInterface $userRepository,
     ) {}
 
     public function create(): View
@@ -78,7 +79,7 @@ class SalonSignupController extends Controller
             return response()->json(['available' => false, 'reason' => 'invalid']);
         }
 
-        $available = ! User::where('user_type', 'staff')->where('phone', $phone)->exists();
+        $available = ! $this->userRepository->staffPhoneExists($phone);
 
         return response()->json(['available' => $available, 'reason' => $available ? null : 'taken']);
     }
@@ -106,7 +107,7 @@ class SalonSignupController extends Controller
                 ->withErrors(['error' => 'لطفا ابتدا ثبت‌نام کنید.']);
         }
 
-        $owner = User::find(session('salon_signup_user_id'));
+        $owner = $this->userRepository->find(session('salon_signup_user_id'));
         $salon = Salon::find(session('salon_signup_salon_id'));
 
         if (! $owner || ! $salon) {
@@ -131,7 +132,7 @@ class SalonSignupController extends Controller
                 ->withErrors(['error' => 'جلسه شما منقضی شده است. لطفا دوباره ثبت‌نام کنید.']);
         }
 
-        $owner = User::find($userId);
+        $owner = $this->userRepository->find($userId);
         $salon = Salon::find($salonId);
 
         if (! $owner || ! $salon) {
@@ -162,7 +163,7 @@ class SalonSignupController extends Controller
             return back()->withErrors(['error' => 'جلسه شما منقضی شده است.']);
         }
 
-        $owner = User::find($userId);
+        $owner = $this->userRepository->find($userId);
 
         if (! $owner) {
             return back()->withErrors(['error' => 'کاربر یافت نشد.']);

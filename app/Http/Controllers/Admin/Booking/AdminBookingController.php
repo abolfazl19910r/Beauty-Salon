@@ -7,10 +7,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Booking\StoreAdminBookingRequest;
 use App\Http\Requests\Admin\Booking\UpdateAdminBookingRequest;
 use App\Models\Booking;
-use App\Models\User;
 use App\Repositories\Contracts\BeautyServiceRepositoryInterface;
 use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\SpecialistRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Admin\Booking\AdminBookingService;
 use App\Services\Booking\BookingService;
 use Illuminate\Http\RedirectResponse;
@@ -25,6 +25,7 @@ class AdminBookingController extends Controller
         protected readonly BookingRepositoryInterface $bookingRepository,
         protected readonly BeautyServiceRepositoryInterface $beautyServiceRepository,
         protected readonly SpecialistRepositoryInterface $specialistRepository,
+        protected readonly UserRepositoryInterface $userRepository,
     ) {}
 
     public function index(Request $request): View
@@ -72,7 +73,7 @@ class AdminBookingController extends Controller
     {
         $this->ensureSalonOwnership($booking->salon_id);
 
-        $users = User::all();
+        $users = $this->userRepository->all();
         $services = $this->beautyServiceRepository->all();
         $specialists = $this->specialistRepository->all();
 

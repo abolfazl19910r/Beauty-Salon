@@ -5,11 +5,14 @@ namespace App\Services\Admin\Security;
 use App\Models\SecurityLog;
 use App\Models\SecuritySetting;
 use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class AdminSecurityService
 {
+    public function __construct(private readonly UserRepositoryInterface $userRepository) {}
+
     public function paginatedLogs(array $filters): LengthAwarePaginator
     {
         return SecurityLog::with('user:id,name,phone')
@@ -25,7 +28,7 @@ class AdminSecurityService
 
     public function paginatedUsers(?string $search): LengthAwarePaginator
     {
-        return User::query()
+        return $this->userRepository->query()
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
@@ -58,7 +61,7 @@ class AdminSecurityService
                 ->where('level', 'warning')
                 ->where('created_at', '>=', now()->subDay())
                 ->count(),
-            'users_with_2fa' => User::where('two_factor_enabled', true)->count(),
+            'users_with_2fa' => $this->userRepository->countWithTwoFactorEnabled(),
         ];
     }
 

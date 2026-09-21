@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\DiscountCode;
 use App\Models\LoyaltyPoint;
 use App\Models\Reward;
-use App\Models\User;
 use App\Notifications\Loyalty\PointsEarned;
 use App\Notifications\Loyalty\RewardRedeemed;
 use App\Repositories\Contracts\BookingRepositoryInterface;
@@ -13,6 +12,7 @@ use App\Repositories\Contracts\DiscountCodeRepositoryInterface;
 use App\Repositories\Contracts\LoyaltyPointRepositoryInterface;
 use App\Repositories\Contracts\LoyaltySettingRepositoryInterface;
 use App\Repositories\Contracts\RewardRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -27,6 +27,7 @@ class LoyaltyService
         private readonly DiscountCodeRepositoryInterface $discountCodeRepository,
         private readonly LoyaltySettingRepositoryInterface $loyaltySettingRepository,
         private readonly BookingRepositoryInterface $bookingRepository,
+        private readonly UserRepositoryInterface $userRepository,
     ) {}
 
     private function forgetPointsCache(int $userId): void
@@ -59,7 +60,7 @@ class LoyaltyService
      */
     public function redeemReward(int $userId, Reward $reward): DiscountCode
     {
-        $user = User::findOrFail($userId);
+        $user = $this->userRepository->findOrFail($userId);
 
         if (! $reward->isAvailableForUser($user)) {
             throw new \Exception('امتیاز کافی نیست یا پاداش در دسترس نیست');

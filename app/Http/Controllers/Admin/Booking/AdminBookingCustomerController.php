@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin\Booking;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Booking\QuickCreateCustomerRequest;
-use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Support\CurrentSalon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,7 +23,10 @@ use Illuminate\Support\Str;
  */
 class AdminBookingCustomerController extends Controller
 {
-    public function __construct(protected readonly CurrentSalon $currentSalon) {}
+    public function __construct(
+        protected readonly CurrentSalon $currentSalon,
+        protected readonly UserRepositoryInterface $userRepository,
+    ) {}
 
     public function search(Request $request): JsonResponse
     {
@@ -39,23 +42,14 @@ class AdminBookingCustomerController extends Controller
         // BelongsToSalon/salon_id effort exists to prevent. User itself isn't a BelongsToSalon
         // model (see that trait's docblock for why: admin/specialist rows would break under a
         // blanket salon_id filter), so this filter is applied explicitly here instead.
-        $customers = User::query()
-            ->where('user_type', 'customer')
-            ->where('salon_id', $this->currentSalon->id())
-            ->where(function ($query) use ($phone) {
-                $query->where('phone', 'like', "%{$phone}%")
-                    ->orWhere('name', 'like', "%{$phone}%");
-            })
-            ->orderBy('name')
-            ->limit(5)
-            ->get(['id', 'name', 'phone']);
+        $customers = $this->userRepository->searchCustomersInSalon($phone, $this->currentSalon->id());
 
         return response()->json(['customers' => $customers]);
     }
 
     public function quickCreate(QuickCreateCustomerRequest $request): JsonResponse
     {
-        $customer = User::create([
+        $customer = $this->userRepository->create([
             'name' => $request->validated('name'),
             'phone' => $request->validated('phone'),
             // ⭐ Walk-in/phone customers created from this widget authenticate normally later

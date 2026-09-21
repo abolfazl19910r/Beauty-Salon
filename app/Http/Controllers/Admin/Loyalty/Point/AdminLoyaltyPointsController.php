@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Loyalty\Point\AddUserPointsRequest;
 use App\Http\Requests\Admin\Loyalty\Point\DeductUserPointsRequest;
 use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Admin\Loyalty\LoyaltyAdminService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,7 @@ class AdminLoyaltyPointsController extends Controller
 {
     public function __construct(
         private readonly LoyaltyAdminService $loyaltyAdminService,
+        private readonly UserRepositoryInterface $userRepository,
     ) {}
 
     public function index(Request $request): View
@@ -24,7 +26,7 @@ class AdminLoyaltyPointsController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->string('search');
-            $users = User::query()
+            $users = $this->userRepository->query()
                 ->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
                         ->orWhere('phone', 'like', "%{$search}%");
@@ -38,7 +40,7 @@ class AdminLoyaltyPointsController extends Controller
         $pointsData = null;
 
         if ($request->filled('user_id')) {
-            $selectedUser = User::find($request->integer('user_id'));
+            $selectedUser = $this->userRepository->find($request->integer('user_id'));
 
             if ($selectedUser) {
                 $pointsData = $this->loyaltyAdminService->getUserPoints($selectedUser);

@@ -6,13 +6,15 @@ use App\Models\BeautyService;
 use App\Models\Booking;
 use App\Models\Role;
 use App\Models\Specialist;
-use App\Models\User;
 use App\Models\WalletSetting;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class AdminDashboardService
 {
+    public function __construct(private readonly UserRepositoryInterface $userRepository) {}
+
     /**
      * Full dashboard home page data (controller dashboard() method).
      *
@@ -40,7 +42,7 @@ class AdminDashboardService
             $rawRevenue = Booking::where('payment_status', 'paid')->sum('prepayment_amount');
             $totalRevenue = (int) ($rawRevenue * $commissionFactor);
         }
-        $usersCount = User::count();
+        $usersCount = $this->userRepository->count();
         $specialistsCount = Specialist::count();
         $rolesCount = Role::count();
 
@@ -104,7 +106,7 @@ class AdminDashboardService
             'todayBookings' => Booking::whereDate('created_at', today())->count(),
             'totalServices' => BeautyService::count(),
             'totalSpecialists' => Specialist::count(),
-            'totalUsers' => User::count(),
+            'totalUsers' => $this->userRepository->count(),
             'totalRevenue' => Booking::where('payment_status', 'paid')->sum('prepayment_amount'),
         ];
     }

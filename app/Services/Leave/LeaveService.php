@@ -4,16 +4,17 @@ namespace App\Services\Leave;
 
 use App\Models\Leave;
 use App\Models\Specialist;
-use App\Models\User;
 use App\Notifications\Leave\LeaveStatusNotification;
 use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\LeaveRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
 
 class LeaveService
 {
     public function __construct(
         protected readonly LeaveRepositoryInterface $leaveRepository,
         protected readonly BookingRepositoryInterface $bookingRepository,
+        protected readonly UserRepositoryInterface $userRepository,
     ) {}
 
     public function store(Specialist $specialist, array $data): array
@@ -65,7 +66,7 @@ class LeaveService
     private function notifySpecialistUser(Leave $leave): void
     {
         $specialist = $leave->specialist;
-        $user = User::where('phone', $specialist->phone)->first();
+        $user = $this->userRepository->findByPhone($specialist->phone);
 
         $user?->notify(new LeaveStatusNotification($leave));
     }

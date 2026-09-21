@@ -7,7 +7,7 @@ use App\Http\Requests\Admin\DiscountCode\PreviewDiscountCodeRequest;
 use App\Http\Requests\Admin\DiscountCode\StoreDiscountCodeRequest;
 use App\Http\Requests\Admin\DiscountCode\UpdateDiscountCodeRequest;
 use App\Models\DiscountCode;
-use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Admin\DiscountCode\AdminDiscountCodeService;
 use App\Services\Discount\DiscountCalculator;
 use Illuminate\Http\JsonResponse;
@@ -18,6 +18,7 @@ class AdminDiscountCodeController extends Controller
 {
     public function __construct(
         private readonly AdminDiscountCodeService $service,
+        private readonly UserRepositoryInterface $userRepository,
     ) {}
 
     public function index(): View
@@ -31,7 +32,7 @@ class AdminDiscountCodeController extends Controller
     public function create(): View
     {
         return view('admin.discount-codes.create', [
-            'users' => User::orderBy('name')->get(['id', 'name', 'phone']),
+            'users' => $this->userRepository->getOptionsOrderedByName(),
         ]);
     }
 

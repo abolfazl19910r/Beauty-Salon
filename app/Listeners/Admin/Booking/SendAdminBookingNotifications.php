@@ -3,8 +3,8 @@
 namespace App\Listeners\Admin\Booking;
 
 use App\Events\Booking\BookingCreated;
-use App\Models\User;
 use App\Notifications\Booking\AdminNewBookingNotification;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Notification;
@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Notification;
 class SendAdminBookingNotifications implements ShouldQueue
 {
     use InteractsWithQueue;
+
+    public function __construct(private readonly UserRepositoryInterface $userRepository) {}
 
     public function handle(BookingCreated $event): void
     {
@@ -22,10 +24,6 @@ class SendAdminBookingNotifications implements ShouldQueue
 
     private function getAdmins()
     {
-        return User::where('is_admin', true)
-            ->orWhereHas('roles.permissions', function ($query) {
-                $query->where('name', 'access_admin_panel');
-            })
-            ->get();
+        return $this->userRepository->getAdminRecipients();
     }
 }

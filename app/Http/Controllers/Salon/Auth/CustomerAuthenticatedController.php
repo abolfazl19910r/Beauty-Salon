@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Salon\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\PhoneVerificationService;
 use App\Services\SecurityLogService;
 use App\Support\CurrentSalon;
@@ -30,6 +30,7 @@ class CustomerAuthenticatedController extends Controller
         protected readonly PhoneVerificationService $verificationService,
         protected readonly SecurityLogService $securityLogService,
         protected readonly CurrentSalon $currentSalon,
+        protected readonly UserRepositoryInterface $userRepository,
     ) {}
 
     public function create(): View
@@ -46,10 +47,7 @@ class CustomerAuthenticatedController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        $user = User::where('phone', $credentials['phone'])
-            ->where('salon_id', $salon->id)
-            ->where('user_type', 'customer')
-            ->first();
+        $user = $this->userRepository->findCustomerByPhoneInSalon($credentials['phone'], $salon->id);
 
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             $this->securityLogService->logLogin(false, $credentials['phone'], $user);
@@ -89,7 +87,7 @@ class CustomerAuthenticatedController extends Controller
                 ->withErrors(['error' => 'لطفا ابتدا وارد شوید.']);
         }
 
-        $user = User::find(session('customer_login_user_id'));
+        $user = $this->userRepository->find(session('customer_login_user_id'));
 
         if (! $user) {
             session()->forget(['customer_login_user_id', 'customer_login_attempt_time']);
@@ -114,7 +112,7 @@ class CustomerAuthenticatedController extends Controller
                 ->withErrors(['error' => 'جلسه شما منقضی شده است. لطفا دوباره تلاش کنید.']);
         }
 
-        $user = User::find($userId);
+        $user = $this->userRepository->find($userId);
 
         if (! $user) {
             session()->forget(['customer_login_user_id', 'customer_login_attempt_time']);
@@ -150,7 +148,7 @@ class CustomerAuthenticatedController extends Controller
             return back()->withErrors(['error' => 'جلسه شما منقضی شده است.']);
         }
 
-        $user = User::find($userId);
+        $user = $this->userRepository->find($userId);
 
         if (! $user) {
             return back()->withErrors(['error' => 'کاربر یافت نشد.']);

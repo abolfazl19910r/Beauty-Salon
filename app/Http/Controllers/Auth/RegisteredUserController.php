@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Events\User\NewUserRegistered;
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\PasswordStrengthService;
 use App\Services\PhoneVerificationService;
 use Illuminate\Http\RedirectResponse;
@@ -19,6 +19,7 @@ class RegisteredUserController extends Controller
     public function __construct(
         protected readonly PhoneVerificationService $verificationService,
         protected readonly PasswordStrengthService $passwordStrengthService,
+        protected readonly UserRepositoryInterface $userRepository,
     ) {}
 
     /**
@@ -50,7 +51,7 @@ class RegisteredUserController extends Controller
             'phone.unique' => 'این شماره موبایل قبلاً ثبت شده است',
         ]);
 
-        $user = User::create([
+        $user = $this->userRepository->create([
             'name' => $request->name,
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
@@ -78,7 +79,7 @@ class RegisteredUserController extends Controller
                 ->withErrors(['error' => 'لطفا ابتدا ثبت نام کنید.']);
         }
 
-        $user = User::find(session('register_user_id'));
+        $user = $this->userRepository->find(session('register_user_id'));
 
         if (! $user) {
             session()->forget(['register_user_id', 'register_attempt_time']);
@@ -103,7 +104,7 @@ class RegisteredUserController extends Controller
                 ->withErrors(['error' => 'جلسه شما منقضی شده است. لطفا دوباره ثبت نام کنید.']);
         }
 
-        $user = User::find($userId);
+        $user = $this->userRepository->find($userId);
 
         if (! $user) {
             session()->forget(['register_user_id', 'register_attempt_time']);
@@ -135,7 +136,7 @@ class RegisteredUserController extends Controller
             return back()->withErrors(['error' => 'جلسه شما منقضی شده است.']);
         }
 
-        $user = User::find($userId);
+        $user = $this->userRepository->find($userId);
 
         if (! $user) {
             return back()->withErrors(['error' => 'کاربر یافت نشد.']);

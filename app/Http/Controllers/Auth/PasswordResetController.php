@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\SMSService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,7 +15,10 @@ use Illuminate\View\View;
 
 class PasswordResetController extends Controller
 {
-    public function __construct(protected readonly SMSService $smsService) {}
+    public function __construct(
+        protected readonly SMSService $smsService,
+        protected readonly UserRepositoryInterface $userRepository,
+    ) {}
 
     public function create(): View
     {
@@ -28,7 +31,7 @@ class PasswordResetController extends Controller
             'phone' => ['required', 'regex:/^09[0-9]{9}$/'],
         ]);
 
-        $user = User::where('phone', $request->phone)->first();
+        $user = $this->userRepository->findByPhone($request->phone);
 
         if (! $user) {
             return back()->withErrors(['phone' => 'کاربری با این شماره یافت نشد.']);
@@ -95,7 +98,7 @@ class PasswordResetController extends Controller
             return back()->withErrors(['code' => 'درخواست نامعتبر است.']);
         }
 
-        $user = User::where('phone', $resetRecord->phone)->first();
+        $user = $this->userRepository->findByPhone($resetRecord->phone);
 
         if (! $user) {
             return back()->withErrors(['code' => 'کاربر یافت نشد.']);

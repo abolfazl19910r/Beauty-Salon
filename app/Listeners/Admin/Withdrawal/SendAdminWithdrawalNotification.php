@@ -3,8 +3,8 @@
 namespace App\Listeners\Admin\Withdrawal;
 
 use App\Events\Withdrawal\Requested\WithdrawalRequested;
-use App\Models\User;
 use App\Notifications\Admin\Withdrawal\Request\AdminNewWithdrawalRequestNotification;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Notification;
@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Notification;
 class SendAdminWithdrawalNotification implements ShouldQueue
 {
     use InteractsWithQueue;
+
+    public function __construct(private readonly UserRepositoryInterface $userRepository) {}
 
     public function handle(WithdrawalRequested $event): void
     {
@@ -22,10 +24,6 @@ class SendAdminWithdrawalNotification implements ShouldQueue
 
     private function getAdmins()
     {
-        return User::where('is_admin', true)
-            ->orWhereHas('roles.permissions', function ($query) {
-                $query->where('name', 'access_admin_panel');
-            })
-            ->get();
+        return $this->userRepository->getAdminRecipients();
     }
 }

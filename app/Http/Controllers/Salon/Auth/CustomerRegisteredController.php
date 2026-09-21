@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Salon\Auth;
 
 use App\Events\User\NewUserRegistered;
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\PasswordStrengthService;
 use App\Services\PhoneVerificationService;
 use App\Support\CurrentSalon;
@@ -38,6 +38,7 @@ class CustomerRegisteredController extends Controller
         protected readonly PhoneVerificationService $verificationService,
         protected readonly PasswordStrengthService $passwordStrengthService,
         protected readonly CurrentSalon $currentSalon,
+        protected readonly UserRepositoryInterface $userRepository,
     ) {}
 
     public function create(): View
@@ -63,7 +64,7 @@ class CustomerRegisteredController extends Controller
             'phone.unique' => 'این شماره موبایل قبلاً در همین سالن ثبت شده است',
         ]);
 
-        $user = User::create([
+        $user = $this->userRepository->create([
             'name' => $request->name,
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
@@ -93,7 +94,7 @@ class CustomerRegisteredController extends Controller
                 ->withErrors(['error' => 'لطفا ابتدا ثبت نام کنید.']);
         }
 
-        $user = User::find(session('customer_register_user_id'));
+        $user = $this->userRepository->find(session('customer_register_user_id'));
 
         if (! $user) {
             session()->forget(['customer_register_user_id', 'customer_register_attempt_time']);
@@ -118,7 +119,7 @@ class CustomerRegisteredController extends Controller
                 ->withErrors(['error' => 'جلسه شما منقضی شده است. لطفا دوباره ثبت نام کنید.']);
         }
 
-        $user = User::find($userId);
+        $user = $this->userRepository->find($userId);
 
         if (! $user) {
             session()->forget(['customer_register_user_id', 'customer_register_attempt_time']);
@@ -150,7 +151,7 @@ class CustomerRegisteredController extends Controller
             return back()->withErrors(['error' => 'جلسه شما منقضی شده است.']);
         }
 
-        $user = User::find($userId);
+        $user = $this->userRepository->find($userId);
 
         if (! $user) {
             return back()->withErrors(['error' => 'کاربر یافت نشد.']);

@@ -22,6 +22,7 @@ use App\Repositories\Contracts\RewardRepositoryInterface;
 use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Repositories\Contracts\SpecialistScheduleRepositoryInterface;
 use App\Repositories\Contracts\SpecialistWalletRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\UserWalletTransactionRepositoryInterface;
 use App\Repositories\Contracts\WalletSettingRepositoryInterface;
 use App\Repositories\Contracts\WalletTransactionRepositoryInterface;
@@ -46,6 +47,7 @@ use App\Repositories\Eloquent\RewardRepository;
 use App\Repositories\Eloquent\SpecialistRepository;
 use App\Repositories\Eloquent\SpecialistScheduleRepository;
 use App\Repositories\Eloquent\SpecialistWalletRepository;
+use App\Repositories\Eloquent\UserRepository;
 use App\Repositories\Eloquent\UserWalletTransactionRepository;
 use App\Repositories\Eloquent\WalletSettingRepository;
 use App\Repositories\Eloquent\WalletTransactionRepository;
@@ -79,6 +81,7 @@ class RepositoryServiceProvider extends ServiceProvider
         AnnouncementRepositoryInterface::class => AnnouncementRepository::class,
         ReviewRepositoryInterface::class => ReviewRepository::class,
         ReviewTokenRepositoryInterface::class => ReviewTokenRepository::class,
+        UserRepositoryInterface::class => UserRepository::class,
     ];
 
     public function register(): void

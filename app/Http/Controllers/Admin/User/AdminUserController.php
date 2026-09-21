@@ -9,6 +9,7 @@ use App\Http\Requests\Admin\User\UpdateAdminUserRequest;
 use App\Models\Role;
 use App\Models\Salon;
 use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Admin\User\AdminUserService;
 use App\Support\CurrentSalon;
 use Illuminate\Database\Eloquent\Builder;
@@ -31,12 +32,15 @@ use Illuminate\View\View;
  */
 class AdminUserController extends Controller
 {
-    public function __construct(protected readonly AdminUserService $userService) {}
+    public function __construct(
+        protected readonly AdminUserService $userService,
+        protected readonly UserRepositoryInterface $userRepository,
+    ) {}
 
     public function index(Request $request): View
     {
         $salon = app(CurrentSalon::class)->get();
-        $query = $salon ? $this->salonAdminsQuery($salon) : User::query();
+        $query = $salon ? $this->salonAdminsQuery($salon) : $this->userRepository->query();
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -255,7 +259,7 @@ class AdminUserController extends Controller
 
     private function salonAdminsQuery(Salon $salon): Builder
     {
-        return User::query()->whereHas('salons', function ($q) use ($salon) {
+        return $this->userRepository->query()->whereHas('salons', function ($q) use ($salon) {
             $q->where('salons.id', $salon->id);
         });
     }

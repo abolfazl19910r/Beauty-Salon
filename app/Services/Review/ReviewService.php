@@ -5,13 +5,13 @@ namespace App\Services\Review;
 use App\Models\Booking;
 use App\Models\Review;
 use App\Models\ReviewToken;
-use App\Models\User;
 use App\Notifications\Review\NegativeReviewNotification;
 use App\Notifications\Review\NewReviewReceivedNotification;
 use App\Notifications\Review\SpecialistRespondedNotification;
 use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\ReviewRepositoryInterface;
 use App\Repositories\Contracts\ReviewTokenRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Notification\NotificationSettingService;
 use App\Services\SMSService;
 use App\Support\Notifications\NotificationEvents;
@@ -26,6 +26,7 @@ class ReviewService
         protected readonly ReviewRepositoryInterface $reviewRepository,
         protected readonly ReviewTokenRepositoryInterface $reviewTokenRepository,
         protected readonly BookingRepositoryInterface $bookingRepository,
+        protected readonly UserRepositoryInterface $userRepository,
     ) {}
 
     public function sendReviewRequest(Booking $booking): bool
@@ -159,11 +160,7 @@ class ReviewService
     protected function notifyAdminAboutNegativeReview(Review $review): void
     {
         try {
-            $admins = User::where('is_admin', true)
-                ->orWhereHas('roles.permissions', function ($query) {
-                    $query->where('name', 'access_admin_panel');
-                })
-                ->get();
+            $admins = $this->userRepository->getAdminRecipients();
 
             foreach ($admins as $admin) {
                 $admin->notify(new NegativeReviewNotification($review));

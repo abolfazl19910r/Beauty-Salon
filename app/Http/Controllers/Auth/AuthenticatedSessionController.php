@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Providers\RouteServiceProvider;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\PhoneVerificationService;
 use App\Services\SecurityLogService;
 use Illuminate\Http\RedirectResponse;
@@ -19,6 +19,7 @@ class AuthenticatedSessionController extends Controller
     public function __construct(
         protected readonly PhoneVerificationService $verificationService,
         protected readonly SecurityLogService $securityLogService,
+        protected readonly UserRepositoryInterface $userRepository,
     ) {}
 
     public function create(): View
@@ -33,7 +34,7 @@ class AuthenticatedSessionController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        $user = User::where('phone', $credentials['phone'])->where('user_type', 'staff')->first();
+        $user = $this->userRepository->findStaffByPhone($credentials['phone']);
 
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             $this->securityLogService->logLogin(false, $credentials['phone'], $user);
@@ -72,7 +73,7 @@ class AuthenticatedSessionController extends Controller
                 ->withErrors(['error' => 'لطفا ابتدا وارد شوید.']);
         }
 
-        $user = User::find(session('login_user_id'));
+        $user = $this->userRepository->find(session('login_user_id'));
 
         if (! $user) {
             session()->forget(['login_user_id', 'login_attempt_time']);
@@ -97,7 +98,7 @@ class AuthenticatedSessionController extends Controller
                 ->withErrors(['error' => 'جلسه شما منقضی شده است. لطفا دوباره تلاش کنید.']);
         }
 
-        $user = User::find($userId);
+        $user = $this->userRepository->find($userId);
 
         if (! $user) {
             session()->forget(['login_user_id', 'login_attempt_time']);
@@ -141,7 +142,7 @@ class AuthenticatedSessionController extends Controller
             return back()->withErrors(['error' => 'جلسه شما منقضی شده است.']);
         }
 
-        $user = User::find($userId);
+        $user = $this->userRepository->find($userId);
 
         if (! $user) {
             return back()->withErrors(['error' => 'کاربر یافت نشد.']);
@@ -158,21 +159,21 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-		return redirect()->route('login')
-			->with('success', 'با موفقیت خارج شدید.');
+        return redirect()->route('login')
+            ->with('success', 'با موفقیت خارج شدید.');
     }
 
     protected function redirectPath(): string
     {
         $user = Auth::user();
 
-		if ($user->hasRole('super-admin')) {
-			return '/superadmin/dashboard';
-		}
+        if ($user->hasRole('super-admin')) {
+            return '/superadmin/dashboard';
+        }
 
-		if ($user->hasRole('specialists') || $user->hasRole('specialist')) {
-			return '/my-dashboard';
-		}
+        if ($user->hasRole('specialists') || $user->hasRole('specialist')) {
+            return '/my-dashboard';
+        }
 
         if ($user->is_admin) {
             return RouteServiceProvider::HOME;
