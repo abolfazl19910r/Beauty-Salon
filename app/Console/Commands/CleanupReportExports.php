@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\ReportExport;
+use App\Repositories\Contracts\ReportExportRepositoryInterface;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
@@ -12,13 +12,11 @@ class CleanupReportExports extends Command
 
     protected $description = 'حذف فایل‌ها و رکوردهای قدیمی report_exports (ready/failed) تا از تجمیع فایل روی دیسک جلوگیری شود';
 
-    public function handle(): int
+    public function handle(ReportExportRepositoryInterface $reportExportRepository): int
     {
         $days = (int) $this->option('days');
 
-        $oldExports = ReportExport::whereIn('status', ['ready', 'failed'])
-            ->where('created_at', '<=', now()->subDays($days))
-            ->get();
+        $oldExports = $reportExportRepository->getOlderThanWithStatuses(['ready', 'failed'], now()->subDays($days));
 
         $deletedFiles = 0;
 
@@ -31,7 +29,7 @@ class CleanupReportExports extends Command
 
         $deletedRecords = $oldExports->count();
 
-        ReportExport::whereIn('id', $oldExports->pluck('id'))->delete();
+        $reportExportRepository->deleteByIds($oldExports->pluck('id'));
 
         $this->info("✅ {$deletedRecords} رکورد و {$deletedFiles} فایل قدیمی report_exports حذف شد.");
 

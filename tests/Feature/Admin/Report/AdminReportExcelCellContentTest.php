@@ -5,6 +5,7 @@ namespace Tests\Feature\Admin\Report;
 use App\Exports\AdminReportExport;
 use App\Models\Booking;
 use App\Models\User;
+use App\Repositories\Contracts\ReportExportRepositoryInterface;
 use App\Services\Admin\Report\AdminReportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Maatwebsite\Excel\Facades\Excel;
@@ -205,7 +206,7 @@ class AdminReportExcelCellContentTest extends TestCase
             'status' => 'pending',
         ]);
 
-        (new \App\Jobs\GeneratePdfReportJob($export->id))->handle(app(AdminReportService::class));
+        (new \App\Jobs\GeneratePdfReportJob($export->id))->handle(app(AdminReportService::class), app(ReportExportRepositoryInterface::class));
 
         $export->refresh();
         $this->assertSame('ready', $export->status);

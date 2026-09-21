@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin\Notification;
 
 use App\Http\Controllers\Controller;
-use App\Models\NotificationSetting;
+use App\Repositories\Contracts\NotificationSettingRepositoryInterface;
 use App\Services\Notification\NotificationSettingService;
 use App\Support\Notifications\NotificationEvents;
 use Illuminate\Http\RedirectResponse;
@@ -12,10 +12,13 @@ use Illuminate\View\View;
 
 class AdminNotificationSettingController extends Controller
 {
-    public function __construct(protected readonly NotificationSettingService $service) {}
+    public function __construct(
+        protected readonly NotificationSettingService $service,
+        protected readonly NotificationSettingRepositoryInterface $notificationSettingRepository,
+    ) {}
 
     public function index(): View
-            {
+    {
         // Ensure that every event recorded in the registry, even if it has never occurred to date, has at least
         // a default row in the table so that the admin can set it right there (without waiting for
         // the actual event to occur).
@@ -23,8 +26,8 @@ class AdminNotificationSettingController extends Controller
             $this->service->isEnabled($key, 'sms');
         }
 
-        $settings = NotificationSetting::whereIn('event_key', NotificationEvents::allKeys())
-            ->get()
+        $settings = $this->notificationSettingRepository
+            ->getByEventKeys(NotificationEvents::allKeys())
             ->keyBy('event_key');
 
         return view('admin.notification-settings.index', [
@@ -41,14 +44,11 @@ class AdminNotificationSettingController extends Controller
         foreach ($validKeys as $key) {
             $safeKey = str_replace('.', '__', $key);
 
-            NotificationSetting::updateOrCreate(
-                ['event_key' => $key],
-                [
-                    'sms_enabled' => $request->boolean("sms.{$safeKey}"),
-                    'database_enabled' => $request->boolean("database.{$safeKey}"),
-                    'telegram_enabled' => $request->boolean("telegram.{$safeKey}"),
-                ]
-            );
+            $this->notificationSettingRepository->updateOrCreateForEvent($key, [
+                'sms_enabled' => $request->boolean("sms.{$safeKey}"),
+                'database_enabled' => $request->boolean("database.{$safeKey}"),
+                'telegram_enabled' => $request->boolean("telegram.{$safeKey}"),
+            ]);
         }
 
         $this->service->flush();

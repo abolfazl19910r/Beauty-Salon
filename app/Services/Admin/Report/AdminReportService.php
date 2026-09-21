@@ -5,6 +5,7 @@ namespace App\Services\Admin\Report;
 use App\Models\BeautyService;
 use App\Models\Booking;
 use App\Models\Specialist;
+use App\Repositories\Contracts\DiscountCodeRepositoryInterface;
 use App\Traits\HasJalaliDates;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 class AdminReportService
 {
     use HasJalaliDates;
+
+    public function __construct(private readonly DiscountCodeRepositoryInterface $discountCodeRepository) {}
 
     /**
      * Convert start_date/end_date from input to Carbon and string.
@@ -390,8 +393,9 @@ class AdminReportService
             ->get();
 
         // Batch-fetch discount code types (avoids one query per booking for the discount type column)
-        $discountCodeTypes = \App\Models\DiscountCode::whereIn('code', $bookings->pluck('discount_code')->filter()->unique())
-            ->pluck('type', 'code');
+        $discountCodeTypes = $this->discountCodeRepository->getTypesByCodes(
+            $bookings->pluck('discount_code')->filter()->unique()
+        );
 
         return $bookings->map(function (Booking $booking) use ($statusLabels, $paymentStatusLabels, $paymentMethodLabels, $discountTypeLabels, $discountCodeTypes) {
             $method = $booking->payment_details['method'] ?? null;

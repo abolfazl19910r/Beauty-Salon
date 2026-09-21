@@ -3,6 +3,7 @@
 namespace App\Services\Notification;
 
 use App\Models\NotificationSetting;
+use App\Repositories\Contracts\NotificationSettingRepositoryInterface;
 use App\Support\Notifications\NotificationEvents;
 use Illuminate\Support\Facades\Cache;
 
@@ -15,6 +16,8 @@ use Illuminate\Support\Facades\Cache;
  */
 class NotificationSettingService
 {
+    public function __construct(private readonly NotificationSettingRepositoryInterface $notificationSettingRepository) {}
+
     private const CACHE_KEY = 'notification_settings:all';
 
     /**
@@ -80,7 +83,7 @@ class NotificationSettingService
     {
         return Cache::rememberForever(
             self::CACHE_KEY,
-            fn () => NotificationSetting::all()->keyBy('event_key')->all()
+            fn () => $this->notificationSettingRepository->getAllKeyedByEventKey()
         );
     }
 
@@ -94,8 +97,8 @@ class NotificationSettingService
 
         $overrides = self::DEFAULT_OVERRIDES[$eventKey] ?? [];
 
-        $row = NotificationSetting::firstOrCreate(
-            ['event_key' => $eventKey],
+        $row = $this->notificationSettingRepository->firstOrCreateForEvent(
+            $eventKey,
             array_merge([
                 'sms_enabled' => true,
                 'database_enabled' => true,

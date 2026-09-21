@@ -61,4 +61,9 @@ class DiscountCodeRepository extends BaseRepository implements DiscountCodeRepos
             ->latest()
             ->get();
     }
+
+    public function getTypesByCodes(iterable $codes): \Illuminate\Support\Collection
+    {
+        return $this->model->whereIn('code', $codes)->pluck('type', 'code');
+    }
 }

@@ -15,12 +15,14 @@ use App\Repositories\Contracts\InvoiceRepositoryInterface;
 use App\Repositories\Contracts\LeaveRepositoryInterface;
 use App\Repositories\Contracts\LoyaltyPointRepositoryInterface;
 use App\Repositories\Contracts\LoyaltySettingRepositoryInterface;
+use App\Repositories\Contracts\NotificationSettingRepositoryInterface;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
+use App\Repositories\Contracts\ReportExportRepositoryInterface;
 use App\Repositories\Contracts\ReviewRepositoryInterface;
 use App\Repositories\Contracts\ReviewTokenRepositoryInterface;
+use App\Repositories\Contracts\RewardRepositoryInterface;
 use App\Repositories\Contracts\SalonRepositoryInterface;
 use App\Repositories\Contracts\SalonSmsUsageRepositoryInterface;
-use App\Repositories\Contracts\RewardRepositoryInterface;
 use App\Repositories\Contracts\SecurityLogRepositoryInterface;
 use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Repositories\Contracts\SpecialistScheduleRepositoryInterface;
@@ -43,12 +45,14 @@ use App\Repositories\Eloquent\InvoiceRepository;
 use App\Repositories\Eloquent\LeaveRepository;
 use App\Repositories\Eloquent\LoyaltyPointRepository;
 use App\Repositories\Eloquent\LoyaltySettingRepository;
+use App\Repositories\Eloquent\NotificationSettingRepository;
 use App\Repositories\Eloquent\PaymentRepository;
+use App\Repositories\Eloquent\ReportExportRepository;
 use App\Repositories\Eloquent\ReviewRepository;
 use App\Repositories\Eloquent\ReviewTokenRepository;
+use App\Repositories\Eloquent\RewardRepository;
 use App\Repositories\Eloquent\SalonRepository;
 use App\Repositories\Eloquent\SalonSmsUsageRepository;
-use App\Repositories\Eloquent\RewardRepository;
 use App\Repositories\Eloquent\SecurityLogRepository;
 use App\Repositories\Eloquent\SpecialistRepository;
 use App\Repositories\Eloquent\SpecialistScheduleRepository;
@@ -91,6 +95,8 @@ class RepositoryServiceProvider extends ServiceProvider
         SecurityLogRepositoryInterface::class => SecurityLogRepository::class,
         SalonRepositoryInterface::class => SalonRepository::class,
         SalonSmsUsageRepositoryInterface::class => SalonSmsUsageRepository::class,
+        ReportExportRepositoryInterface::class => ReportExportRepository::class,
+        NotificationSettingRepositoryInterface::class => NotificationSettingRepository::class,
     ];
 
     public function register(): void

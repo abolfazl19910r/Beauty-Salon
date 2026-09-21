@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\ReportExport;
 use App\Models\Salon;
 use App\Models\User;
+use App\Repositories\Contracts\ReportExportRepositoryInterface;
 use App\Support\CurrentSalon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
@@ -117,7 +118,7 @@ class AdminReportExportTest extends TestCase
             'status' => 'pending',
         ]);
 
-        (new GeneratePdfReportJob($export->id))->handle(app(\App\Services\Admin\Report\AdminReportService::class));
+        (new GeneratePdfReportJob($export->id))->handle(app(\App\Services\Admin\Report\AdminReportService::class), app(ReportExportRepositoryInterface::class));
 
         $export->refresh();
         $this->assertSame('ready', $export->status);
@@ -131,7 +132,7 @@ class AdminReportExportTest extends TestCase
     {
         $export = ReportExport::factory()->for($this->admin, 'adminUser')->create(['status' => 'ready', 'file_path' => 'already-done.xlsx']);
 
-        (new GeneratePdfReportJob($export->id))->handle(app(\App\Services\Admin\Report\AdminReportService::class));
+        (new GeneratePdfReportJob($export->id))->handle(app(\App\Services\Admin\Report\AdminReportService::class), app(ReportExportRepositoryInterface::class));
 
         // untouched — the job must not overwrite an already-finished export
         $export->refresh();
@@ -160,7 +161,7 @@ class AdminReportExportTest extends TestCase
             'status' => 'pending',
         ]);
 
-        (new GeneratePdfReportJob($export->id))->handle(app(\App\Services\Admin\Report\AdminReportService::class));
+        (new GeneratePdfReportJob($export->id))->handle(app(\App\Services\Admin\Report\AdminReportService::class), app(ReportExportRepositoryInterface::class));
 
         $export->refresh();
         $this->assertSame('failed', $export->status);
@@ -171,7 +172,7 @@ class AdminReportExportTest extends TestCase
     public function test_job_handles_a_missing_report_export_record_gracefully(): void
     {
         // Should not throw even though 999999 doesn't exist.
-        (new GeneratePdfReportJob(999999))->handle(app(\App\Services\Admin\Report\AdminReportService::class));
+        (new GeneratePdfReportJob(999999))->handle(app(\App\Services\Admin\Report\AdminReportService::class), app(ReportExportRepositoryInterface::class));
         $this->assertTrue(true);
     }
 
@@ -247,7 +248,7 @@ class AdminReportExportTest extends TestCase
             });
         });
 
-        (new GeneratePdfReportJob($export->id))->handle(app(\App\Services\Admin\Report\AdminReportService::class));
+        (new GeneratePdfReportJob($export->id))->handle(app(\App\Services\Admin\Report\AdminReportService::class), app(ReportExportRepositoryInterface::class));
 
         $this->assertSame($salonB->id, $capturedSalonId);
     }
@@ -266,7 +267,7 @@ class AdminReportExportTest extends TestCase
         // تست کنیم. باید دقیقاً مثل یک queue worker واقعی، این رو پاک کنیم.
         app(CurrentSalon::class)->clear();
 
-        (new GeneratePdfReportJob($export->id))->handle(app(\App\Services\Admin\Report\AdminReportService::class));
+        (new GeneratePdfReportJob($export->id))->handle(app(\App\Services\Admin\Report\AdminReportService::class), app(ReportExportRepositoryInterface::class));
 
         $export->refresh();
         $this->assertSame('failed', $export->status);

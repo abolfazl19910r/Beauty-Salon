@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Report;
 use App\Http\Controllers\Controller;
 use App\Jobs\GeneratePdfReportJob;
 use App\Models\ReportExport;
+use App\Repositories\Contracts\ReportExportRepositoryInterface;
 use App\Services\Admin\Report\AdminReportService;
 use App\Support\CurrentSalon;
 use Illuminate\Http\RedirectResponse;
@@ -17,6 +18,7 @@ class AdminReportExportController extends Controller
 {
     public function __construct(
         protected AdminReportService $reportService,
+        protected ReportExportRepositoryInterface $reportExportRepository,
     ) {}
 
     /**
@@ -32,7 +34,7 @@ class AdminReportExportController extends Controller
         ['startDate' => $startDate, 'endDate' => $endDate]
             = $this->reportService->parseDateRange($request->only('start_date', 'end_date'));
 
-        $reportExport = ReportExport::create([
+        $reportExport = $this->reportExportRepository->create([
             'admin_user_id' => $request->user()->id,
             'format' => $format,
             'report_type' => $reportType,
@@ -52,9 +54,7 @@ class AdminReportExportController extends Controller
      */
     public function index(): View
     {
-        $exports = ReportExport::with('adminUser')
-            ->latest()
-            ->paginate(20);
+        $exports = $this->reportExportRepository->paginateWithAdminUser(20);
 
         return view('admin.reports.exports.index', compact('exports'));
     }

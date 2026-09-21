@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Exports\AdminReportExport;
 use App\Models\ReportExport;
 use App\Notifications\Admin\Report\Export\ReportExportReadyNotification;
+use App\Repositories\Contracts\ReportExportRepositoryInterface;
 use App\Services\Admin\Report\AdminReportService;
 use App\Support\CurrentSalon;
 use Illuminate\Bus\Queueable;
@@ -50,13 +51,13 @@ class GeneratePdfReportJob implements ShouldQueue
         protected int $reportExportId,
     ) {}
 
-    public function handle(AdminReportService $reportService): void
+    public function handle(AdminReportService $reportService, ReportExportRepositoryInterface $reportExportRepository): void
     {
         // ⭐ این find() عمداً قبل از ست‌شدن CurrentSalon اجراست — BelongsToSalon وقتی
         // CurrentSalon ست نباشه هیچ فیلتری اضافه نمی‌کنه (رفتار مستندشده‌ی خودِ trait، دقیقاً
         // مثل پنل سوپرادمین)، پس این ردیف صرف‌نظر از اینکه به کدوم سالن تعلق داره پیدا می‌شه —
         // خودِ salon_id همین ردیف در ادامه برای ست‌کردن CurrentSalon استفاده می‌شه.
-        $reportExport = ReportExport::find($this->reportExportId);
+        $reportExport = $reportExportRepository->find($this->reportExportId);
 
         if (! $reportExport) {
             Log::warning('GeneratePdfReportJob: رکورد ReportExport یافت نشد', [
@@ -206,7 +207,7 @@ class GeneratePdfReportJob implements ShouldQueue
             'error' => $exception->getMessage(),
         ]);
 
-        $reportExport = ReportExport::find($this->reportExportId);
+        $reportExport = app(ReportExportRepositoryInterface::class)->find($this->reportExportId);
         if ($reportExport && in_array($reportExport->status, ['pending', 'processing'])) {
             $reportExport->update([
                 'status' => 'failed',

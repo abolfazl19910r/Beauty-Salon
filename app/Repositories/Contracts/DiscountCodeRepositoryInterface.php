@@ -20,4 +20,6 @@ interface DiscountCodeRepositoryInterface extends RepositoryInterface
     public function lockByCode(string $code): ?DiscountCode;
 
     public function getActiveForUser(int $userId): Collection;
+
+    public function getTypesByCodes(iterable $codes): \Illuminate\Support\Collection;
 }
