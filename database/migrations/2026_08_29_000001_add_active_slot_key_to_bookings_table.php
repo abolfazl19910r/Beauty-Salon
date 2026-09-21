@@ -50,13 +50,13 @@ return new class extends Migration
 
         if ($driver === 'sqlite') {
             DB::statement(
-                "ALTER TABLE bookings ADD COLUMN active_slot_key TEXT ".
+                'ALTER TABLE bookings ADD COLUMN active_slot_key TEXT '.
                 "GENERATED ALWAYS AS (CASE WHEN status <> 'cancelled' THEN specialist_id || '_' || booking_time ELSE NULL END) STORED"
             );
         } else {
             // mysql (production) and any other MySQL-compatible driver.
             DB::statement(
-                "ALTER TABLE bookings ADD COLUMN active_slot_key VARCHAR(191) ".
+                'ALTER TABLE bookings ADD COLUMN active_slot_key VARCHAR(191) '.
                 "GENERATED ALWAYS AS (CASE WHEN status <> 'cancelled' THEN CONCAT(specialist_id, '_', booking_time) ELSE NULL END) STORED"
             );
         }

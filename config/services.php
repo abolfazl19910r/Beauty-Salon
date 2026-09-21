@@ -2,18 +2,6 @@
 
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Third Party Services
-    |--------------------------------------------------------------------------
-    |
-    | This file is for storing the credentials for third party services such
-    | as Mailgun, Postmark, AWS and more. This file provides the de facto
-    | location for this type of information, allowing packages to have
-    | a conventional file to locate the various service credentials.
-    |
-    */
-
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],
@@ -98,7 +86,7 @@ return [
     ],
 
     // Telegram bots/Yes for events that the admin has enabled from the "Notification Settings" page of their "bot" channel
-    //. Both Bot APIs are compatible with the Telegram format (yes they implement the same endpoint with a different
+    // . Both Bot APIs are compatible with the Telegram format (yes they implement the same endpoint with a different
     // domain), so a single TelegramChannel covers both. If the token/chatID
     // is not set, silent sending (with just a Log::info) is ignored — no request
     // is required.

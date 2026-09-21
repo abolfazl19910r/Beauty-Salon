@@ -14,14 +14,8 @@ use Illuminate\Support\Facades\Route;
 
 class RouteServiceProvider extends ServiceProvider
 {
-    /**
-     * @var string
-     */
     public const HOME = '/admin/dashboard';
 
-    /**
-     * @var string
-     */
     public const USER_HOME = '/dashboard';
 
     public const SPECIALIST_HOME = '/my-dashboard';
