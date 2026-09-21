@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Announcement extends Model
 {
-    use HasFactory, BelongsToSalon;
+    use BelongsToSalon, HasFactory;
 
     protected $fillable = [
         'title',
@@ -61,14 +61,6 @@ class Announcement extends Model
         }
 
         return 'فعال';
-    }
-
-    public static function getActiveAnnouncements()
-    {
-        return static::query()
-            ->active()
-            ->byPriority()
-            ->get();
     }
 
     public function isExpired(): bool

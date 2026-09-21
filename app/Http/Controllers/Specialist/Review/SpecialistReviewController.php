@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Specialist\Review;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Specialist\RespondReviewRequest;
 use App\Models\Review;
 use App\Repositories\Contracts\ReviewRepositoryInterface;
 use App\Repositories\Contracts\SpecialistRepositoryInterface;
@@ -66,7 +67,7 @@ class SpecialistReviewController extends Controller
         return view('specialist.reviews.show', compact('review', 'specialist'));
     }
 
-    public function respond(Request $request, Review $review): RedirectResponse
+    public function respond(RespondReviewRequest $request, Review $review): RedirectResponse
     {
         $user = auth()->user();
         $specialist = $this->specialistRepository->findByPhoneOrFail($user->phone);
@@ -76,12 +77,7 @@ class SpecialistReviewController extends Controller
             return back()->with('error', 'شما قبلاً به این نظر پاسخ داده‌اید.');
         }
 
-        $validated = $request->validate([
-            'response' => 'required|string|max:1000',
-        ], [
-            'response.required' => 'لطفاً پاسخ خود را وارد کنید.',
-            'response.max' => 'پاسخ شما نباید بیشتر از 1000 کاراکتر باشد.',
-        ]);
+        $validated = $request->validated();
 
         try {
             $this->reviewService->respondToReview($review, $validated['response']);
@@ -98,7 +94,7 @@ class SpecialistReviewController extends Controller
         }
     }
 
-    public function updateResponse(Request $request, Review $review): RedirectResponse
+    public function updateResponse(RespondReviewRequest $request, Review $review): RedirectResponse
     {
         $user = auth()->user();
         $specialist = $this->specialistRepository->findByPhoneOrFail($user->phone);
@@ -107,9 +103,7 @@ class SpecialistReviewController extends Controller
             $this->authorize('respond', $review);
         }
 
-        $validated = $request->validate([
-            'response' => 'required|string|max:1000',
-        ]);
+        $validated = $request->validated();
 
         try {
             $this->reviewRepository->update($review, [
