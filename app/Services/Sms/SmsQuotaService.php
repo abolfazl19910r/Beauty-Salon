@@ -4,6 +4,7 @@ namespace App\Services\Sms;
 
 use App\Models\Salon;
 use App\Models\SalonSmsUsage;
+use App\Repositories\Contracts\SalonSmsUsageRepositoryInterface;
 
 /**
  * ⭐ فیچر «سقف/قطع پیامک ماهانه» (تصمیم صریح ابوالفضل، ۲۰۲۶-۰۹-۲۰). هدف: محافظت از اعتبار
@@ -15,6 +16,8 @@ use App\Models\SalonSmsUsage;
  */
 class SmsQuotaService
 {
+    public function __construct(private readonly SalonSmsUsageRepositoryInterface $salonSmsUsageRepository) {}
+
     public function currentPeriod(): string
     {
         return now()->format('Y-m');
@@ -27,10 +30,7 @@ class SmsQuotaService
 
     public function usageRow(Salon $salon): SalonSmsUsage
     {
-        return SalonSmsUsage::firstOrCreate(
-            ['salon_id' => $salon->id, 'period' => $this->currentPeriod()],
-            ['used_count' => 0]
-        );
+        return $this->salonSmsUsageRepository->firstOrCreateForPeriod($salon->id, $this->currentPeriod());
     }
 
     public function hasQuotaRemaining(Salon $salon): bool

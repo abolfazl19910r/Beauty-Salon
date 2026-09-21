@@ -8,6 +8,7 @@ use App\Http\Requests\SuperAdmin\UpdateSalonRequest;
 use App\Models\Invoice;
 use App\Models\Salon;
 use App\Models\Specialist;
+use App\Repositories\Contracts\SalonRepositoryInterface;
 use App\Services\Payment\InvoiceService;
 use App\Services\SuperAdmin\SuperAdminService;
 use Illuminate\Http\RedirectResponse;
@@ -29,14 +30,12 @@ class SuperAdminController extends Controller
     public function __construct(
         protected readonly SuperAdminService $superAdminService,
         protected readonly InvoiceService $invoiceService,
+        protected readonly SalonRepositoryInterface $salonRepository,
     ) {}
 
     public function dashboard(): View
     {
-        $salons = Salon::withCount('specialists')
-            ->with('admins')
-            ->orderByDesc('created_at')
-            ->get();
+        $salons = $this->salonRepository->getAllWithSpecialistCountAndAdmins();
 
         $stats = [
             // ⭐ باگ ۳ (گزارش‌شده ۲۰۲۶-۰۹-۱۸، رفع‌شده همان‌روز): این خط قبلاً فقط is_suspended
@@ -59,7 +58,7 @@ class SuperAdminController extends Controller
 
     public function index(): View
     {
-        $salons = Salon::withCount('specialists')->with('admins')->orderBy('name')->paginate(20);
+        $salons = $this->salonRepository->paginateWithSpecialistCountAndAdmins(20);
 
         return view('superadmin.salons.index', compact('salons'));
     }

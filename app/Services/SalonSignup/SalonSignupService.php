@@ -4,6 +4,7 @@ namespace App\Services\SalonSignup;
 
 use App\Models\Salon;
 use App\Models\User;
+use App\Repositories\Contracts\SalonRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\PasswordStrengthService;
 use Illuminate\Support\Facades\DB;
@@ -40,6 +41,7 @@ class SalonSignupService
     public function __construct(
         protected readonly PasswordStrengthService $passwordStrengthService,
         protected readonly UserRepositoryInterface $userRepository,
+        protected readonly SalonRepositoryInterface $salonRepository,
     ) {}
 
     /**
@@ -48,7 +50,7 @@ class SalonSignupService
     public function register(array $data): array
     {
         return DB::transaction(function () use ($data) {
-            $salon = Salon::create([
+            $salon = $this->salonRepository->create([
                 'name' => $data['name'],
                 'slug' => $data['slug'],
                 'max_specialists_count' => (int) config('billing.default_max_specialists_count', 3),

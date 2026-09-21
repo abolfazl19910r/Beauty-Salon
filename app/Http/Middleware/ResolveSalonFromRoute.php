@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Salon;
+use App\Repositories\Contracts\SalonRepositoryInterface;
 use App\Support\CurrentSalon;
 use Closure;
 use Illuminate\Http\Request;
@@ -40,9 +40,11 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ResolveSalonFromRoute
 {
+    public function __construct(private readonly SalonRepositoryInterface $salonRepository) {}
+
     public function handle(Request $request, Closure $next): Response
     {
-        $salon = Salon::where('slug', $request->route('salon_slug'))->first();
+        $salon = $this->salonRepository->findBySlug((string) $request->route('salon_slug'));
 
         if (! $salon || $salon->is_suspended || $salon->subscription_ends_at->isPast()) {
             abort(404);

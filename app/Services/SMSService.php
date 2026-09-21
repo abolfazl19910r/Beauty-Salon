@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Salon;
 use App\Notifications\Sms\SmsQuotaExhaustedNotification;
+use App\Repositories\Contracts\SalonRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Sms\SmsQuotaService;
 use Illuminate\Support\Facades\Log;
@@ -137,7 +138,7 @@ class SMSService
      */
     private function consumeQuotaOrNotify(int $salonId): bool
     {
-        $salon = Salon::find($salonId);
+        $salon = app(SalonRepositoryInterface::class)->find($salonId);
 
         if (! $salon) {
             Log::warning('SmsQuotaService: salon not found for quota check, allowing send', ['salon_id' => $salonId]);

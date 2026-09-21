@@ -5,10 +5,10 @@ namespace App\Providers;
 use App\Channels\SmsChannel;
 use App\Channels\TelegramChannel;
 use App\Models\Booking;
-use App\Models\Salon;
 use App\Models\DiscountCode;
 use App\Observers\Booking\BookingObserver;
 use App\Observers\DiscountCodeObserver;
+use App\Repositories\Contracts\SalonRepositoryInterface;
 use App\Services\SecurePaymentService;
 use App\Services\TwoFactorAuthService;
 use App\Support\CurrentSalon;
@@ -105,7 +105,7 @@ class AppServiceProvider extends ServiceProvider
         if (Schema::hasTable('salons')) {
             $defaultSalonSlug = Cache::rememberForever(
                 'app:default_salon_slug',
-                fn () => Salon::query()->oldest('id')->value('slug')
+                fn () => app(SalonRepositoryInterface::class)->getOldestSlug()
             );
 
             if ($defaultSalonSlug) {

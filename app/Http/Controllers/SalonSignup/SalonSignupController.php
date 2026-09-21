@@ -4,7 +4,7 @@ namespace App\Http\Controllers\SalonSignup;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SalonSignup\StoreSalonSignupRequest;
-use App\Models\Salon;
+use App\Repositories\Contracts\SalonRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\PhoneVerificationService;
 use App\Services\SalonSignup\SalonSignupService;
@@ -38,6 +38,7 @@ class SalonSignupController extends Controller
         protected readonly SalonSignupService $salonSignupService,
         protected readonly PhoneVerificationService $verificationService,
         protected readonly UserRepositoryInterface $userRepository,
+        protected readonly SalonRepositoryInterface $salonRepository,
     ) {}
 
     public function create(): View
@@ -62,7 +63,7 @@ class SalonSignupController extends Controller
             return response()->json(['available' => false, 'reason' => 'invalid']);
         }
 
-        $available = ! Salon::where('slug', $slug)->exists();
+        $available = ! $this->salonRepository->slugExists($slug);
 
         return response()->json(['available' => $available, 'reason' => $available ? null : 'taken']);
     }
@@ -108,7 +109,7 @@ class SalonSignupController extends Controller
         }
 
         $owner = $this->userRepository->find(session('salon_signup_user_id'));
-        $salon = Salon::find(session('salon_signup_salon_id'));
+        $salon = $this->salonRepository->find(session('salon_signup_salon_id'));
 
         if (! $owner || ! $salon) {
             session()->forget(['salon_signup_user_id', 'salon_signup_salon_id', 'salon_signup_attempt_time']);
@@ -133,7 +134,7 @@ class SalonSignupController extends Controller
         }
 
         $owner = $this->userRepository->find($userId);
-        $salon = Salon::find($salonId);
+        $salon = $this->salonRepository->find($salonId);
 
         if (! $owner || ! $salon) {
             session()->forget(['salon_signup_user_id', 'salon_signup_salon_id', 'salon_signup_attempt_time']);

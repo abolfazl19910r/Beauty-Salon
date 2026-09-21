@@ -18,6 +18,8 @@ use App\Repositories\Contracts\LoyaltySettingRepositoryInterface;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
 use App\Repositories\Contracts\ReviewRepositoryInterface;
 use App\Repositories\Contracts\ReviewTokenRepositoryInterface;
+use App\Repositories\Contracts\SalonRepositoryInterface;
+use App\Repositories\Contracts\SalonSmsUsageRepositoryInterface;
 use App\Repositories\Contracts\RewardRepositoryInterface;
 use App\Repositories\Contracts\SecurityLogRepositoryInterface;
 use App\Repositories\Contracts\SpecialistRepositoryInterface;
@@ -44,6 +46,8 @@ use App\Repositories\Eloquent\LoyaltySettingRepository;
 use App\Repositories\Eloquent\PaymentRepository;
 use App\Repositories\Eloquent\ReviewRepository;
 use App\Repositories\Eloquent\ReviewTokenRepository;
+use App\Repositories\Eloquent\SalonRepository;
+use App\Repositories\Eloquent\SalonSmsUsageRepository;
 use App\Repositories\Eloquent\RewardRepository;
 use App\Repositories\Eloquent\SecurityLogRepository;
 use App\Repositories\Eloquent\SpecialistRepository;
@@ -85,6 +89,8 @@ class RepositoryServiceProvider extends ServiceProvider
         ReviewTokenRepositoryInterface::class => ReviewTokenRepository::class,
         UserRepositoryInterface::class => UserRepository::class,
         SecurityLogRepositoryInterface::class => SecurityLogRepository::class,
+        SalonRepositoryInterface::class => SalonRepository::class,
+        SalonSmsUsageRepositoryInterface::class => SalonSmsUsageRepository::class,
     ];
 
     public function register(): void

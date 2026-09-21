@@ -5,6 +5,7 @@ namespace App\Services\SuperAdmin;
 use App\Models\Salon;
 use App\Models\Specialist;
 use App\Models\User;
+use App\Repositories\Contracts\SalonRepositoryInterface;
 use App\Services\Admin\User\AdminUserService;
 use Illuminate\Support\Facades\DB;
 
@@ -21,7 +22,10 @@ use Illuminate\Support\Facades\DB;
  */
 class SuperAdminService
 {
-    public function __construct(protected readonly AdminUserService $adminUserService) {}
+    public function __construct(
+        protected readonly AdminUserService $adminUserService,
+        protected readonly SalonRepositoryInterface $salonRepository,
+    ) {}
 
     /**
      * @param  array{name:string, slug:string, subscription_type:string, max_specialists_count:int, module_permissions:?array, admin_name:string, admin_phone:string, admin_password:string}  $data
@@ -29,7 +33,7 @@ class SuperAdminService
     public function createSalonWithAdmin(array $data, User $createdBy): Salon
     {
         return DB::transaction(function () use ($data, $createdBy) {
-            $salon = Salon::create([
+            $salon = $this->salonRepository->create([
                 'name' => $data['name'],
                 'tagline' => $data['tagline'] ?? null,
                 'bio' => $data['bio'] ?? null,

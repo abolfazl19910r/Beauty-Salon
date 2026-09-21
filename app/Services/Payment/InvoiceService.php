@@ -6,6 +6,7 @@ use App\Models\Invoice;
 use App\Models\Salon;
 use App\Models\User;
 use App\Repositories\Contracts\InvoiceRepositoryInterface;
+use App\Repositories\Contracts\SalonRepositoryInterface;
 use App\Services\SuperAdmin\SuperAdminService;
 use Illuminate\Support\Facades\DB;
 
@@ -14,6 +15,7 @@ class InvoiceService
     public function __construct(
         protected readonly SuperAdminService $superAdminService,
         protected readonly InvoiceRepositoryInterface $invoiceRepository,
+        protected readonly SalonRepositoryInterface $salonRepository,
     ) {}
 
     public function createPendingOnlinePurchase(Salon $salon, string $subscriptionType, ?User $createdBy): Invoice
@@ -31,7 +33,7 @@ class InvoiceService
     public function markPaidFromGateway(Invoice $invoice, string $refId): Invoice
     {
         return DB::transaction(function () use ($invoice, $refId) {
-            $salon = Salon::lockForUpdate()->findOrFail($invoice->salon_id);
+            $salon = $this->salonRepository->lockForUpdateFindOrFail($invoice->salon_id);
             $periodStart = $salon->subscription_ends_at?->isFuture() ? $salon->subscription_ends_at : now();
 
             $this->superAdminService->renewSubscription($salon, $invoice->subscription_type);
