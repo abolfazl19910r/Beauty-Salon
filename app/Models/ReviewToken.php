@@ -94,11 +94,4 @@ class ReviewToken extends Model
             'user_id' => $booking->user_id,
         ]);
     }
-
-    public static function findValidToken(string $token): ?self
-    {
-        return self::where('token', $token)
-            ->valid()
-            ->first();
-    }
 }

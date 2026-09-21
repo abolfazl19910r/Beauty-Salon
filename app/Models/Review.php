@@ -146,30 +146,4 @@ class Review extends Model
             default => 'gray'
         };
     }
-
-    public static function calculateSpecialistAverage(int $specialistId): float
-    {
-        return self::where('specialist_id', $specialistId)
-            ->approved()
-            ->avg('overall_rating') ?? 0;
-    }
-
-    public static function getSpecialistStats(int $specialistId): array
-    {
-        $reviews = self::where('specialist_id', $specialistId)->approved();
-
-        return [
-            'total' => $reviews->count(),
-            'average' => round($reviews->avg('overall_rating') ?? 0, 1),
-            'quality_avg' => round($reviews->avg('quality_rating') ?? 0, 1),
-            'behavior_avg' => round($reviews->avg('behavior_rating') ?? 0, 1),
-            'cleanliness_avg' => round($reviews->avg('cleanliness_rating') ?? 0, 1),
-            'speed_avg' => round($reviews->avg('speed_rating') ?? 0, 1),
-            'five_star' => $reviews->clone()->where('overall_rating', 5)->count(),
-            'four_star' => $reviews->clone()->where('overall_rating', 4)->count(),
-            'three_star' => $reviews->clone()->where('overall_rating', 3)->count(),
-            'two_star' => $reviews->clone()->where('overall_rating', 2)->count(),
-            'one_star' => $reviews->clone()->where('overall_rating', 1)->count(),
-        ];
-    }
 }

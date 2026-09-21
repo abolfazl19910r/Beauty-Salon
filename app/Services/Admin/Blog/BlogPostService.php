@@ -2,8 +2,9 @@
 
 namespace App\Services\Admin\Blog;
 
-use App\Models\BlogCategory;
 use App\Models\BlogPost;
+use App\Repositories\Contracts\BlogCategoryRepositoryInterface;
+use App\Repositories\Contracts\BlogPostRepositoryInterface;
 use App\Traits\HasJalaliDates;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
@@ -15,14 +16,19 @@ class BlogPostService
 {
     use HasJalaliDates;
 
+    public function __construct(
+        private readonly BlogPostRepositoryInterface $blogPostRepository,
+        private readonly BlogCategoryRepositoryInterface $blogCategoryRepository,
+    ) {}
+
     public function getIndexData(): array
     {
         return [
-            'posts' => BlogPost::with('category')->latest()->paginate(15),
+            'posts' => $this->blogPostRepository->paginateWithCategory(15),
             'stats' => [
-                'total_views' => (int) BlogPost::sum('views'),
-                'post_count' => BlogPost::count(),
-                'category_count' => BlogCategory::count(),
+                'total_views' => $this->blogPostRepository->sumViews(),
+                'post_count' => $this->blogPostRepository->count(),
+                'category_count' => $this->blogCategoryRepository->count(),
             ],
         ];
     }
@@ -39,11 +45,7 @@ class BlogPostService
                 $attributes['image'] = $image->store('blog', 'public');
             }
 
-            $post = new BlogPost;
-            $post->fill($attributes);
-            $post->save();
-
-            return $post;
+            return $this->blogPostRepository->create($attributes);
         });
     }
 
@@ -64,7 +66,7 @@ class BlogPostService
                 $attributes['image'] = $image->store('blog', 'public');
             }
 
-            $post->update($attributes);
+            $post = $this->blogPostRepository->update($post, $attributes);
 
             return $post->fresh();
         });
@@ -76,22 +78,21 @@ class BlogPostService
             if ($post->image) {
                 Storage::disk('public')->delete($post->image);
             }
-            $post->delete();
+            $this->blogPostRepository->delete($post);
         });
     }
 
     public function togglePublish(BlogPost $post): BlogPost
     {
         return DB::transaction(function () use ($post) {
-            $post->is_published = ! $post->is_published;
+            $isPublished = ! $post->is_published;
+            $attributes = ['is_published' => $isPublished];
 
-            if ($post->is_published && ! $post->published_at) {
-                $post->published_at = now();
+            if ($isPublished && ! $post->published_at) {
+                $attributes['published_at'] = now();
             }
 
-            $post->save();
-
-            return $post;
+            return $this->blogPostRepository->update($post, $attributes);
         });
     }
 
@@ -108,12 +109,6 @@ class BlogPostService
         ];
     }
 
-    /**
-     * HTML checkboxes are not sent at all in the request when they are not checked;
-     * Previously, this key was not explicitly normalized in update(), i.e. removed
-     * The "published" tick had no effect when editing, because the is_published key does not work at all
-     * $post->update() was not passed. Now always set to true/false explicitly.
-     */
     private function normalizeIsPublished(mixed $value): bool
     {
         if ($value === null || $value === '') {
@@ -131,13 +126,6 @@ class BlogPostService
         return (bool) $value;
     }
 
-    /**
-     * Same logic for store and update:
-     * - If explicit solar date entered, same date (admin conscious override).
-     * - If published and has no previous publication date (first time), now.
-     * - Otherwise previous date is left untouched (whether published or draft)
-     * — Similar behavior to togglePublish which does not clear date when drafting.
-     */
     private function resolvePublishedAt(array $data, bool $isPublished, ?BlogPost $existing): ?Carbon
     {
         if (! empty($data['published_at_jalali'])) {

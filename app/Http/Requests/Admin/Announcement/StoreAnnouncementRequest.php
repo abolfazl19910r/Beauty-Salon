@@ -11,11 +11,6 @@ class StoreAnnouncementRequest extends FormRequest
         return auth()->check() && auth()->user()->hasPermission('access_admin_panel');
     }
 
-    /**
-     * Empty checkbox doesn't come in $request at all (not false), so without this normalization
-     * * is_active is always stored as true even when the user has disabled it —
-     * * Same published checkbox bug discovered on R-AdminBlog.
-     */
     protected function prepareForValidation(): void
     {
         $this->merge([

@@ -86,6 +86,35 @@ class SpecialistRepository extends BaseRepository implements SpecialistRepositor
         return $this->model->where('phone', $phone)->first();
     }
 
+    public function findByPhoneOrFail(string $phone): Specialist
+    {
+        return $this->model->where('phone', $phone)->firstOrFail();
+    }
+
+    public function getNameOptions(): Collection
+    {
+        return $this->model->select('id', 'name')->orderBy('name')->get();
+    }
+
+    public function getTopRatedByApprovedReviews(int $limit = 10): Collection
+    {
+        return $this->model->withCount(['reviews' => function ($q) {
+            $q->where('is_approved', true);
+        }])
+            ->withAvg(['reviews' => function ($q) {
+                $q->where('is_approved', true);
+            }], 'overall_rating')
+            ->having('reviews_count', '>=', 1)
+            ->orderByDesc('reviews_avg_overall_rating')
+            ->limit($limit)
+            ->get()
+            ->map(function ($s) {
+                $s->reviews_avg_overall_rating = round($s->reviews_avg_overall_rating ?? 0, 1);
+
+                return $s;
+            });
+    }
+
     public function getSalonIdIgnoringScopes(int $specialistId): ?int
     {
         return $this->model->withoutGlobalScopes()->whereKey($specialistId)->value('salon_id');

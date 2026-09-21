@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Specialist\Review;
 
 use App\Http\Controllers\Controller;
 use App\Models\Review;
-use App\Models\Specialist;
+use App\Repositories\Contracts\ReviewRepositoryInterface;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Services\Review\ReviewService;
 use App\Traits\HasJalaliDates;
 use Illuminate\Http\JsonResponse;
@@ -17,57 +18,33 @@ class SpecialistReviewController extends Controller
 {
     use HasJalaliDates;
 
-    public function __construct(protected readonly ReviewService $reviewService) {}
+    public function __construct(
+        protected readonly ReviewService $reviewService,
+        protected readonly ReviewRepositoryInterface $reviewRepository,
+        protected readonly SpecialistRepositoryInterface $specialistRepository,
+    ) {}
 
     public function index(Request $request): View
     {
         $user = auth()->user();
-        $specialist = Specialist::where('phone', $user->phone)->firstOrFail();
+        $specialist = $this->specialistRepository->findByPhoneOrFail($user->phone);
 
-        $query = Review::with(['user', 'service', 'booking'])
-            ->where('specialist_id', $specialist->id);
-
-        if ($request->filled('rating')) {
-            $query->where('overall_rating', $request->rating);
-        }
-
-        if ($request->has('responded')) {
-            if ($request->responded === '1') {
-                $query->whereNotNull('specialist_response');
-            } else {
-                $query->whereNull('specialist_response');
-            }
-        }
+        $filters = $request->only(['rating', 'responded', 'sort_by']);
 
         if ($request->filled('date_from')) {
             if ($dateFrom = $this->parseJalali($request->date_from, context: 'تاریخ از')) {
-                $query->where('reviewed_at', '>=', $dateFrom->startOfDay());
+                $filters['date_from'] = $dateFrom->startOfDay();
             }
         }
 
         if ($request->filled('date_to')) {
             if ($dateTo = $this->parseJalali($request->date_to, context: 'تاریخ تا')) {
-                $query->where('reviewed_at', '<=', $dateTo->endOfDay());
+                $filters['date_to'] = $dateTo->endOfDay();
             }
         }
 
-        $sortBy = $request->get('sort_by', 'latest');
-        switch ($sortBy) {
-            case 'oldest':
-                $query->oldest('reviewed_at');
-                break;
-            case 'highest_rating':
-                $query->orderBy('overall_rating', 'desc');
-                break;
-            case 'lowest_rating':
-                $query->orderBy('overall_rating', 'asc');
-                break;
-            default:
-                $query->latest('reviewed_at');
-        }
-
-        $reviews = $query->paginate(10)->withQueryString();
-        $stats = Review::getSpecialistStats($specialist->id);
+        $reviews = $this->reviewRepository->paginateForSpecialistWithFilters($specialist->id, $filters, 10);
+        $stats = $this->reviewRepository->getSpecialistStats($specialist->id);
         $averageRating = $this->reviewService->getSpecialistAverageRating($specialist->id);
 
         return view('specialist.reviews.index', compact(
@@ -81,7 +58,7 @@ class SpecialistReviewController extends Controller
     public function show(Review $review): View
     {
         $user = auth()->user();
-        $specialist = Specialist::where('phone', $user->phone)->firstOrFail();
+        $specialist = $this->specialistRepository->findByPhoneOrFail($user->phone);
         $this->authorize('view', $review);
 
         $review->load(['user', 'service', 'booking']);
@@ -92,7 +69,7 @@ class SpecialistReviewController extends Controller
     public function respond(Request $request, Review $review): RedirectResponse
     {
         $user = auth()->user();
-        $specialist = Specialist::where('phone', $user->phone)->firstOrFail();
+        $specialist = $this->specialistRepository->findByPhoneOrFail($user->phone);
         $this->authorize('respond', $review);
 
         if ($review->hasResponse()) {
@@ -124,7 +101,7 @@ class SpecialistReviewController extends Controller
     public function updateResponse(Request $request, Review $review): RedirectResponse
     {
         $user = auth()->user();
-        $specialist = Specialist::where('phone', $user->phone)->firstOrFail();
+        $specialist = $this->specialistRepository->findByPhoneOrFail($user->phone);
 
         if ($review->specialist_id !== $specialist->id) {
             $this->authorize('respond', $review);
@@ -135,7 +112,7 @@ class SpecialistReviewController extends Controller
         ]);
 
         try {
-            $review->update([
+            $this->reviewRepository->update($review, [
                 'specialist_response' => $validated['response'],
                 'responded_at' => now(),
             ]);
@@ -155,14 +132,14 @@ class SpecialistReviewController extends Controller
     public function deleteResponse(Review $review): RedirectResponse
     {
         $user = auth()->user();
-        $specialist = Specialist::where('phone', $user->phone)->firstOrFail();
+        $specialist = $this->specialistRepository->findByPhoneOrFail($user->phone);
 
         if ($review->specialist_id !== $specialist->id) {
             $this->authorize('respond', $review);
         }
 
         try {
-            $review->update([
+            $this->reviewRepository->update($review, [
                 'specialist_response' => null,
                 'responded_at' => null,
             ]);
@@ -177,9 +154,9 @@ class SpecialistReviewController extends Controller
     public function stats(): JsonResponse
     {
         $user = auth()->user();
-        $specialist = Specialist::where('phone', $user->phone)->firstOrFail();
+        $specialist = $this->specialistRepository->findByPhoneOrFail($user->phone);
 
-        $stats = Review::getSpecialistStats($specialist->id);
+        $stats = $this->reviewRepository->getSpecialistStats($specialist->id);
 
         return response()->json($stats);
     }

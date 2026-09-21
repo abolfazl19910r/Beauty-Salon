@@ -2,16 +2,22 @@
 
 namespace App\Providers;
 
+use App\Repositories\Contracts\AnnouncementRepositoryInterface;
 use App\Repositories\Contracts\BeautyServiceRepositoryInterface;
+use App\Repositories\Contracts\BlogCategoryRepositoryInterface;
+use App\Repositories\Contracts\BlogPostRepositoryInterface;
 use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Repositories\Contracts\DiscountCodeRepositoryInterface;
+use App\Repositories\Contracts\GalleryImageRepositoryInterface;
 use App\Repositories\Contracts\HolidayRepositoryInterface;
 use App\Repositories\Contracts\InvoiceRepositoryInterface;
 use App\Repositories\Contracts\LeaveRepositoryInterface;
 use App\Repositories\Contracts\LoyaltyPointRepositoryInterface;
 use App\Repositories\Contracts\LoyaltySettingRepositoryInterface;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
+use App\Repositories\Contracts\ReviewRepositoryInterface;
+use App\Repositories\Contracts\ReviewTokenRepositoryInterface;
 use App\Repositories\Contracts\RewardRepositoryInterface;
 use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Repositories\Contracts\SpecialistScheduleRepositoryInterface;
@@ -20,16 +26,22 @@ use App\Repositories\Contracts\UserWalletTransactionRepositoryInterface;
 use App\Repositories\Contracts\WalletSettingRepositoryInterface;
 use App\Repositories\Contracts\WalletTransactionRepositoryInterface;
 use App\Repositories\Contracts\WithdrawalRequestRepositoryInterface;
+use App\Repositories\Eloquent\AnnouncementRepository;
 use App\Repositories\Eloquent\BeautyServiceRepository;
+use App\Repositories\Eloquent\BlogCategoryRepository;
+use App\Repositories\Eloquent\BlogPostRepository;
 use App\Repositories\Eloquent\BookingRepository;
 use App\Repositories\Eloquent\CategoryRepository;
 use App\Repositories\Eloquent\DiscountCodeRepository;
+use App\Repositories\Eloquent\GalleryImageRepository;
 use App\Repositories\Eloquent\HolidayRepository;
 use App\Repositories\Eloquent\InvoiceRepository;
 use App\Repositories\Eloquent\LeaveRepository;
 use App\Repositories\Eloquent\LoyaltyPointRepository;
 use App\Repositories\Eloquent\LoyaltySettingRepository;
 use App\Repositories\Eloquent\PaymentRepository;
+use App\Repositories\Eloquent\ReviewRepository;
+use App\Repositories\Eloquent\ReviewTokenRepository;
 use App\Repositories\Eloquent\RewardRepository;
 use App\Repositories\Eloquent\SpecialistRepository;
 use App\Repositories\Eloquent\SpecialistScheduleRepository;
@@ -61,6 +73,12 @@ class RepositoryServiceProvider extends ServiceProvider
         RewardRepositoryInterface::class => RewardRepository::class,
         LoyaltyPointRepositoryInterface::class => LoyaltyPointRepository::class,
         LoyaltySettingRepositoryInterface::class => LoyaltySettingRepository::class,
+        BlogPostRepositoryInterface::class => BlogPostRepository::class,
+        BlogCategoryRepositoryInterface::class => BlogCategoryRepository::class,
+        GalleryImageRepositoryInterface::class => GalleryImageRepository::class,
+        AnnouncementRepositoryInterface::class => AnnouncementRepository::class,
+        ReviewRepositoryInterface::class => ReviewRepository::class,
+        ReviewTokenRepositoryInterface::class => ReviewTokenRepository::class,
     ];
 
     public function register(): void

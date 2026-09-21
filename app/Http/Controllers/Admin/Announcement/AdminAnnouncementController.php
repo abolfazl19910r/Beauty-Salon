@@ -6,42 +6,23 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Announcement\StoreAnnouncementRequest;
 use App\Http\Requests\Admin\Announcement\UpdateAnnouncementRequest;
 use App\Models\Announcement;
+use App\Repositories\Contracts\AnnouncementRepositoryInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
-/**
- * Previously, this controller only passed counters to index.blade.php, and the actual CRUD
- * (store/update/destroy) simply returned JSON for AnnouncementAdmin.jsx
- * (React SPA) to consume. Since BlogAdmin.jsx was removed, its broken import
- * in admin.jsx would have buried the entire admin bundle (not just the blog) — including this
- * page. A full conversion to Blade both eliminates that risk and aligns with the project's decision
- * ("React → Blade for simple admin pages").
- */
 class AdminAnnouncementController extends Controller
 {
+    public function __construct(
+        private readonly AnnouncementRepositoryInterface $announcementRepository,
+    ) {}
+
     public function index(): View
     {
-        $announcements = Announcement::orderBy('priority', 'desc')
-            ->orderBy('published_at', 'desc')
-            ->paginate(15);
-
-        $totalAnnouncements = Announcement::count();
-
-        $activeAnnouncements = Announcement::where('is_active', true)
-            ->where('published_at', '<=', now())
-            ->where(function ($q) {
-                $q->whereNull('expires_at')
-                    ->orWhere('expires_at', '>', now());
-            })
-            ->count();
-
-        $pendingAnnouncements = Announcement::where('is_active', true)
-            ->where('published_at', '>', now())
-            ->count();
-
-        $expiredAnnouncements = Announcement::whereNotNull('expires_at')
-            ->where('expires_at', '<', now())
-            ->count();
+        $announcements = $this->announcementRepository->paginateAllOrdered(15);
+        $totalAnnouncements = $this->announcementRepository->count();
+        $activeAnnouncements = $this->announcementRepository->countActive();
+        $pendingAnnouncements = $this->announcementRepository->countPending();
+        $expiredAnnouncements = $this->announcementRepository->countExpired();
 
         return view('admin.announcements.index', compact(
             'announcements',
@@ -59,7 +40,7 @@ class AdminAnnouncementController extends Controller
 
     public function store(StoreAnnouncementRequest $request): RedirectResponse
     {
-        Announcement::create($request->validated());
+        $this->announcementRepository->create($request->validated());
 
         return redirect()->route('admin.announcements.index')
             ->with('success', 'اطلاعیه با موفقیت ایجاد شد.');
@@ -76,7 +57,7 @@ class AdminAnnouncementController extends Controller
     {
         $this->ensureSalonOwnership($announcement->salon_id);
 
-        $announcement->update($request->validated());
+        $this->announcementRepository->update($announcement, $request->validated());
 
         return redirect()->route('admin.announcements.index')
             ->with('success', 'اطلاعیه با موفقیت به‌روزرسانی شد.');
@@ -86,7 +67,7 @@ class AdminAnnouncementController extends Controller
     {
         $this->ensureSalonOwnership($announcement->salon_id);
 
-        $announcement->delete();
+        $this->announcementRepository->delete($announcement);
 
         return redirect()->route('admin.announcements.index')
             ->with('success', 'اطلاعیه با موفقیت حذف شد.');

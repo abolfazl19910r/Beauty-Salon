@@ -5,21 +5,20 @@ namespace App\Http\Controllers\Admin\Gallery;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Gallery\StoreGalleryImageRequest;
 use App\Models\GalleryImage;
+use App\Repositories\Contracts\GalleryImageRepositoryInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
-/**
- * Previously this controller just returned an empty index() view with statistics and all the real CRUD
- * * (upload/delete/sort) just returns JSON for GalleryAdmin.jsx (React).
- * * Full conversion to Blade — no complicated drag&drop, with a simple up/down button
- * * for sorting, which can be used without any additional JS.
- */
 class AdminGalleryController extends Controller
 {
+    public function __construct(
+        private readonly GalleryImageRepositoryInterface $galleryImageRepository,
+    ) {}
+
     public function index(): View
     {
-        $images = GalleryImage::orderBy('order')->get();
+        $images = $this->galleryImageRepository->getAllOrdered();
 
         return view('admin.gallery.index', [
             'images' => $images,
@@ -32,11 +31,11 @@ class AdminGalleryController extends Controller
     {
         $path = $request->file('image')->store('gallery', 'public');
 
-        GalleryImage::create([
+        $this->galleryImageRepository->create([
             'title' => $request->validated('title'),
             'description' => $request->validated('description') ?? '',
             'image_path' => $path,
-            'order' => GalleryImage::count() + 1,
+            'order' => $this->galleryImageRepository->count() + 1,
         ]);
 
         return redirect()->route('admin.gallery.index')
@@ -48,7 +47,7 @@ class AdminGalleryController extends Controller
         $this->ensureSalonOwnership($image->salon_id);
 
         Storage::disk('public')->delete($image->image_path);
-        $image->delete();
+        $this->galleryImageRepository->delete($image);
 
         return redirect()->route('admin.gallery.index')
             ->with('success', 'تصویر با موفقیت حذف شد.');
@@ -58,9 +57,7 @@ class AdminGalleryController extends Controller
     {
         $this->ensureSalonOwnership($image->salon_id);
 
-        $previous = GalleryImage::where('order', '<', $image->order)
-            ->orderByDesc('order')
-            ->first();
+        $previous = $this->galleryImageRepository->findPreviousByOrder($image->order);
 
         if ($previous) {
             $this->swapOrder($image, $previous);
@@ -73,9 +70,7 @@ class AdminGalleryController extends Controller
     {
         $this->ensureSalonOwnership($image->salon_id);
 
-        $next = GalleryImage::where('order', '>', $image->order)
-            ->orderBy('order')
-            ->first();
+        $next = $this->galleryImageRepository->findNextByOrder($image->order);
 
         if ($next) {
             $this->swapOrder($image, $next);
@@ -87,8 +82,8 @@ class AdminGalleryController extends Controller
     private function swapOrder(GalleryImage $a, GalleryImage $b): void
     {
         [$orderA, $orderB] = [$a->order, $b->order];
-        $a->update(['order' => $orderB]);
-        $b->update(['order' => $orderA]);
+        $this->galleryImageRepository->update($a, ['order' => $orderB]);
+        $this->galleryImageRepository->update($b, ['order' => $orderA]);
     }
 
     private function calculateUsedSpace(): float

@@ -5,8 +5,13 @@ namespace App\Services\Review;
 use App\Models\Booking;
 use App\Models\Review;
 use App\Models\ReviewToken;
+use App\Models\User;
 use App\Notifications\Review\NegativeReviewNotification;
 use App\Notifications\Review\NewReviewReceivedNotification;
+use App\Notifications\Review\SpecialistRespondedNotification;
+use App\Repositories\Contracts\BookingRepositoryInterface;
+use App\Repositories\Contracts\ReviewRepositoryInterface;
+use App\Repositories\Contracts\ReviewTokenRepositoryInterface;
 use App\Services\Notification\NotificationSettingService;
 use App\Services\SMSService;
 use App\Support\Notifications\NotificationEvents;
@@ -15,7 +20,13 @@ use Illuminate\Support\Facades\Log;
 
 class ReviewService
 {
-    public function __construct(protected readonly SMSService $smsService, protected readonly NotificationSettingService $notificationSettings) {}
+    public function __construct(
+        protected readonly SMSService $smsService,
+        protected readonly NotificationSettingService $notificationSettings,
+        protected readonly ReviewRepositoryInterface $reviewRepository,
+        protected readonly ReviewTokenRepositoryInterface $reviewTokenRepository,
+        protected readonly BookingRepositoryInterface $bookingRepository,
+    ) {}
 
     public function sendReviewRequest(Booking $booking): bool
     {
@@ -30,14 +41,6 @@ class ReviewService
 
             $reviewToken = ReviewToken::createForBooking($booking);
 
-            // ⭐ Fix: route(..., absolute:true) resolves the host from config('app.url'), which in
-            // most local dev setups (XAMPP etc.) is left at the Laravel default (http://localhost)
-            // while the site is actually being served from a different host/port (e.g.
-            // http://127.0.0.1:8000) — the customer then receives an SMS link pointing at a host
-            // they can never reach. Since this method always runs inside the real HTTP request that
-            // triggered it (the specialist marking the booking complete), the actual visited host is
-            // available and far more reliable than a possibly-stale .env value; config('app.url') is
-            // kept only as a fallback for console/queued contexts where no request is bound.
             $baseUrl = request()?->getSchemeAndHttpHost() ?: rtrim(config('app.url'), '/');
             $reviewUrl = $baseUrl.route('reviews.create', ['token' => $reviewToken->token], false);
 
@@ -51,7 +54,7 @@ class ReviewService
             $sent = $this->smsService->send($booking->user->phone, $message, $booking->salon_id);
 
             if ($sent) {
-                $booking->update(['review_sent_at' => now()]);
+                $this->bookingRepository->update($booking, ['review_sent_at' => now()]);
             }
 
             return $sent;
@@ -69,7 +72,7 @@ class ReviewService
     public function createReview(array $data, Booking $booking): Review
     {
         try {
-            $review = Review::create([
+            $review = $this->reviewRepository->create([
                 'booking_id' => $booking->id,
                 'user_id' => $booking->user_id,
                 'specialist_id' => $booking->specialist_id,
@@ -82,21 +85,8 @@ class ReviewService
                 'comment' => $data['comment'] ?? null,
             ]);
 
-            $booking->update([
+            $this->bookingRepository->update($booking, [
                 'rating' => $data['overall_rating'],
-                // ⭐ Fix (test-writing session 6, 2026-08-16): 'comment' is a genuinely
-                // optional field (StoreReviewRequest: nullable|string|max:500). When
-                // omitted, $request->validated() simply doesn't include the key at
-                // all (not present-with-null), so accessing $data['comment'] directly
-                // threw "Undefined array key" — converted by this app's exception
-                // handler into a real \Exception that aborted the request mid-way
-                // through, right after the Review row had already been inserted. That
-                // left a broken half-completed state on every comment-less review
-                // submission: the Review row existed, but the booking was never
-                // marked reviewed_at, the specialist was never notified, and the
-                // customer never received their loyalty points — while the customer
-                // just saw a generic "error submitting review" message and could
-                // even resubmit the same token, since reviewed_at was never set.
                 'review' => $data['comment'] ?? null,
                 'reviewed_at' => now(),
             ]);
@@ -136,12 +126,12 @@ class ReviewService
     public function respondToReview(Review $review, string $response): bool
     {
         try {
-            $review->update([
+            $review = $this->reviewRepository->update($review, [
                 'specialist_response' => $response,
                 'responded_at' => now(),
             ]);
 
-            $review->user->notify(new \App\Notifications\Review\SpecialistRespondedNotification($review));
+            $review->user->notify(new SpecialistRespondedNotification($review));
 
             return true;
 
@@ -161,7 +151,7 @@ class ReviewService
             'specialist_avg_rating_'.$specialistId,
             now()->addHours(6),
             function () use ($specialistId) {
-                return Review::calculateSpecialistAverage($specialistId);
+                return $this->reviewRepository->calculateSpecialistAverage($specialistId);
             }
         );
     }
@@ -169,7 +159,7 @@ class ReviewService
     protected function notifyAdminAboutNegativeReview(Review $review): void
     {
         try {
-            $admins = \App\Models\User::where('is_admin', true)
+            $admins = User::where('is_admin', true)
                 ->orWhereHas('roles.permissions', function ($query) {
                     $query->where('name', 'access_admin_panel');
                 })
@@ -189,7 +179,7 @@ class ReviewService
 
     public function validateToken(string $token): ?array
     {
-        $reviewToken = ReviewToken::findValidToken($token);
+        $reviewToken = $this->reviewTokenRepository->findValidToken($token);
 
         if (! $reviewToken) {
             Log::warning('❌ Invalid or expired token', ['token' => $token]);
@@ -205,7 +195,7 @@ class ReviewService
 
     public function consumeToken(string $token): void
     {
-        $reviewToken = ReviewToken::where('token', $token)->first();
+        $reviewToken = $this->reviewTokenRepository->findByToken($token);
 
         if ($reviewToken) {
             $reviewToken->markAsUsed();

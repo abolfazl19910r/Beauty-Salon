@@ -4,9 +4,11 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\Review\StoreReviewRequest;
-use App\Models\Booking;
-use App\Models\Review;
-use App\Models\ReviewToken;
+use App\Models\Specialist;
+use App\Repositories\Contracts\BookingRepositoryInterface;
+use App\Repositories\Contracts\ReviewRepositoryInterface;
+use App\Repositories\Contracts\ReviewTokenRepositoryInterface;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Services\Review\ReviewService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,7 +17,13 @@ use Illuminate\View\View;
 
 class ReviewController extends Controller
 {
-    public function __construct(protected readonly ReviewService $reviewService) {}
+    public function __construct(
+        protected readonly ReviewService $reviewService,
+        protected readonly ReviewTokenRepositoryInterface $reviewTokenRepository,
+        protected readonly BookingRepositoryInterface $bookingRepository,
+        protected readonly SpecialistRepositoryInterface $specialistRepository,
+        protected readonly ReviewRepositoryInterface $reviewRepository,
+    ) {}
 
     public function create(Request $request): View|RedirectResponse
     {
@@ -27,7 +35,7 @@ class ReviewController extends Controller
                     ->with('error', 'لینک نظرسنجی معتبر نیست.');
             }
 
-            $reviewToken = ReviewToken::findValidToken($token);
+            $reviewToken = $this->reviewTokenRepository->findValidToken($token);
 
             if (! $reviewToken) {
                 Log::warning('❌ Token not found or invalid', [
@@ -38,8 +46,7 @@ class ReviewController extends Controller
                     ->with('error', 'لینک نظرسنجی منقضی شده است یا قبلاً استفاده شده.');
             }
 
-            $booking = Booking::with(['service', 'specialist', 'user'])
-                ->findOrFail($reviewToken->booking_id);
+            $booking = $this->bookingRepository->findOrFailWithReviewDetails($reviewToken->booking_id);
 
             if (auth()->check() && $booking->user_id !== auth()->id()) {
                 return redirect()->route('home')
@@ -84,7 +91,7 @@ class ReviewController extends Controller
                 return back()->with('error', 'لینک نظرسنجی معتبر نیست.');
             }
 
-            $booking = Booking::findOrFail($tokenData['booking_id']);
+            $booking = $this->bookingRepository->findOrFail($tokenData['booking_id']);
 
             if ($booking->reviewed_at) {
                 return redirect()->route('reviews.thank-you')
@@ -118,37 +125,17 @@ class ReviewController extends Controller
         return view('reviews.thank-you');
     }
 
-    /**
-     * ⭐ Fix (test-writing session 6, 2026-08-16): Route::bind('specialist', ...) in
-     * RouteServiceProvider globally intercepts any route parameter literally named
-     * {specialist} and resolves it into an already-loaded Specialist instance before
-     * this method even runs — regardless of the parameter's own name here
-     * ($specialistId) or type hint. Without this check, Specialist::findOrFail()
-     * received a full model object instead of a raw id and always threw "No query
-     * results", so this page 404'd for every specialist. Same root cause and same
-     * fix pattern as resolveSpecialist()/resolveService() in
-     * BookingAvailabilityController.
-     */
     public function specialistReviews($specialistId): View
     {
-        $specialist = $specialistId instanceof \App\Models\Specialist
+        $specialist = $specialistId instanceof Specialist
             ? $specialistId
-            : \App\Models\Specialist::findOrFail($specialistId);
+            : $this->specialistRepository->findOrFail($specialistId);
 
-        // ⭐ Fix (customer-facing implicit-binding audit, 2026-09-20): {specialist} is resolved by
-        // the global Route::bind('specialist', ...) in RouteServiceProvider BEFORE salon.resolve
-        // sets CurrentSalon (same SubstituteBindings-runs-first race already fixed across the
-        // admin panel) — so without this check, another salon's specialist (and their real
-        // reviews/rating stats) was fully readable here regardless of which salon's URL you used.
         $this->ensureSalonOwnership($specialist->salon_id);
 
-        $reviews = Review::with(['user', 'service'])
-            ->where('specialist_id', $specialist->id)
-            ->approved()
-            ->recent()
-            ->paginate(10);
+        $reviews = $this->reviewRepository->paginateApprovedForSpecialist($specialist->id, 10);
 
-        $stats = Review::getSpecialistStats($specialist->id);
+        $stats = $this->reviewRepository->getSpecialistStats($specialist->id);
 
         return view('reviews.specialist-reviews', compact('specialist', 'reviews', 'stats'));
     }

@@ -50,6 +50,11 @@ class BookingRepository extends BaseRepository implements BookingRepositoryInter
             ->first();
     }
 
+    public function findOrFailWithReviewDetails(int $id): Booking
+    {
+        return $this->model->with(['service', 'specialist', 'user'])->findOrFail($id);
+    }
+
     public function findForUser(int $id, int $userId): ?Booking
     {
         return $this->model->where('id', $id)->where('user_id', $userId)->first();

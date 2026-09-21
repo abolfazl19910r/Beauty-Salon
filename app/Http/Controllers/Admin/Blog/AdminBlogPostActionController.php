@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin\Blog;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Blog\Post\StoreAdminBlogPostRequest;
 use App\Http\Requests\Admin\Blog\Post\UpdateAdminBlogPostRequest;
-use App\Models\BlogCategory;
 use App\Models\BlogPost;
+use App\Repositories\Contracts\BlogCategoryRepositoryInterface;
 use App\Services\Admin\Blog\BlogPostService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
@@ -15,12 +15,15 @@ use Throwable;
 
 class AdminBlogPostActionController extends Controller
 {
-    public function __construct(private readonly BlogPostService $blogPostService) {}
+    public function __construct(
+        private readonly BlogPostService $blogPostService,
+        private readonly BlogCategoryRepositoryInterface $blogCategoryRepository,
+    ) {}
 
     public function create(): View
     {
         return view('admin.blog.create', [
-            'categories' => BlogCategory::orderBy('order')->orderBy('name')->get(),
+            'categories' => $this->blogCategoryRepository->getAllOrdered(),
         ]);
     }
 
@@ -43,7 +46,7 @@ class AdminBlogPostActionController extends Controller
 
         return view('admin.blog.edit', [
             'post' => $post,
-            'categories' => BlogCategory::orderBy('order')->orderBy('name')->get(),
+            'categories' => $this->blogCategoryRepository->getAllOrdered(),
         ]);
     }
 

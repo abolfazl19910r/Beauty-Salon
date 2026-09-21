@@ -12,6 +12,8 @@ interface BookingRepositoryInterface extends RepositoryInterface
 
     public function findForUserWithDetails(int $id, int $userId): ?Booking;
 
+    public function findOrFailWithReviewDetails(int $id): Booking;
+
     public function findForUser(int $id, int $userId): ?Booking;
 
     public function getAllForUser(int $userId): Collection;

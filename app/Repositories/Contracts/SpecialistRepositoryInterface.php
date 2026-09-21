@@ -16,6 +16,12 @@ interface SpecialistRepositoryInterface extends RepositoryInterface
 
     public function findByPhone(string $phone): ?Specialist;
 
+    public function findByPhoneOrFail(string $phone): Specialist;
+
+    public function getNameOptions(): Collection;
+
+    public function getTopRatedByApprovedReviews(int $limit = 10): Collection;
+
     public function getSalonIdIgnoringScopes(int $specialistId): ?int;
 
     public function paginateByService(int $serviceId, int $perPage = 15): LengthAwarePaginator;
