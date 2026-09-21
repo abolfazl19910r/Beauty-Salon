@@ -133,6 +133,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_a
     require __DIR__.'/admin/roles.php';
     require __DIR__.'/admin/permissions.php';
     require __DIR__.'/admin/reviews.php';
+    require __DIR__.'/admin/support-tickets.php';
 
     // ⭐ فاز ۲ SaaS، محور «۲. چند ادمین برای یک سالن» — کیف‌پول/تسویه‌ی متخصصان و خرید/تمدید
     // اشتراک سالن هر دو «مالی» هستن (نقش «منشی» پیش‌فرض این پرمیشن رو نداره؛ به

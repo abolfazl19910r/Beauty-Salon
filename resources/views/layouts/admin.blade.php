@@ -473,6 +473,16 @@
 
             <div class="py-2">
                 <h3 class="text-xs font-semibold px-3 mb-2 uppercase tracking-wider" style="color: var(--admin-text-light);">تنظیمات</h3>
+                <a href="{{ route('admin.support-tickets.index') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.support-tickets*') ? 'sidebar-active' : '' }}"
+                   style="{{ request()->routeIs('admin.support-tickets*') ? '' : 'color: var(--admin-text-dim);' }}"
+                   onmouseover="{{ request()->routeIs('admin.support-tickets*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
+                   onmouseout="{{ request()->routeIs('admin.support-tickets*') ? '' : 'this.style.backgroundColor=\"\"' }}">
+                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    پشتیبانی
+                </a>
                 <a href="{{ route('admin.profile.edit') }}"
                    class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.profile*') ? 'sidebar-active' : '' }}"
                    style="{{ request()->routeIs('admin.profile*') ? '' : 'color: var(--admin-text-dim);' }}"

@@ -29,6 +29,8 @@ use App\Repositories\Contracts\SecurityLogRepositoryInterface;
 use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Repositories\Contracts\SpecialistScheduleRepositoryInterface;
 use App\Repositories\Contracts\SpecialistWalletRepositoryInterface;
+use App\Repositories\Contracts\SupportTicketMessageRepositoryInterface;
+use App\Repositories\Contracts\SupportTicketRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\UserWalletTransactionRepositoryInterface;
 use App\Repositories\Contracts\WalletSettingRepositoryInterface;
@@ -61,6 +63,8 @@ use App\Repositories\Eloquent\SecurityLogRepository;
 use App\Repositories\Eloquent\SpecialistRepository;
 use App\Repositories\Eloquent\SpecialistScheduleRepository;
 use App\Repositories\Eloquent\SpecialistWalletRepository;
+use App\Repositories\Eloquent\SupportTicketMessageRepository;
+use App\Repositories\Eloquent\SupportTicketRepository;
 use App\Repositories\Eloquent\UserRepository;
 use App\Repositories\Eloquent\UserWalletTransactionRepository;
 use App\Repositories\Eloquent\WalletSettingRepository;
@@ -103,6 +107,8 @@ class RepositoryServiceProvider extends ServiceProvider
         NotificationSettingRepositoryInterface::class => NotificationSettingRepository::class,
         RoleRepositoryInterface::class => RoleRepository::class,
         PermissionRepositoryInterface::class => PermissionRepository::class,
+        SupportTicketRepositoryInterface::class => SupportTicketRepository::class,
+        SupportTicketMessageRepositoryInterface::class => SupportTicketMessageRepository::class,
     ];
 
     public function register(): void

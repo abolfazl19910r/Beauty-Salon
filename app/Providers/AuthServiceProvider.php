@@ -7,12 +7,14 @@ use App\Models\Leave;
 use App\Models\Review;
 use App\Models\Specialist;
 use App\Models\SpecialistWallet;
+use App\Models\SupportTicket;
 use App\Models\UserWallet;
 use App\Models\UserWalletTransaction;
 use App\Policies\BookingPolicy;
 use App\Policies\ReviewPolicy;
 use App\Policies\SpecialistPolicy;
 use App\Policies\SpecialistWalletPolicy;
+use App\Policies\SupportTicketPolicy;
 use App\Policies\UserWalletPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
@@ -29,6 +31,7 @@ class AuthServiceProvider extends ServiceProvider
         Specialist::class => SpecialistPolicy::class,
         Leave::class => SpecialistPolicy::class,
         SpecialistWallet::class => SpecialistWalletPolicy::class,
+        SupportTicket::class => SupportTicketPolicy::class,
     ];
 
     public function boot(): void
