@@ -19,6 +19,7 @@ use App\Repositories\Contracts\PaymentRepositoryInterface;
 use App\Repositories\Contracts\ReviewRepositoryInterface;
 use App\Repositories\Contracts\ReviewTokenRepositoryInterface;
 use App\Repositories\Contracts\RewardRepositoryInterface;
+use App\Repositories\Contracts\SecurityLogRepositoryInterface;
 use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Repositories\Contracts\SpecialistScheduleRepositoryInterface;
 use App\Repositories\Contracts\SpecialistWalletRepositoryInterface;
@@ -44,6 +45,7 @@ use App\Repositories\Eloquent\PaymentRepository;
 use App\Repositories\Eloquent\ReviewRepository;
 use App\Repositories\Eloquent\ReviewTokenRepository;
 use App\Repositories\Eloquent\RewardRepository;
+use App\Repositories\Eloquent\SecurityLogRepository;
 use App\Repositories\Eloquent\SpecialistRepository;
 use App\Repositories\Eloquent\SpecialistScheduleRepository;
 use App\Repositories\Eloquent\SpecialistWalletRepository;
@@ -82,6 +84,7 @@ class RepositoryServiceProvider extends ServiceProvider
         ReviewRepositoryInterface::class => ReviewRepository::class,
         ReviewTokenRepositoryInterface::class => ReviewTokenRepository::class,
         UserRepositoryInterface::class => UserRepository::class,
+        SecurityLogRepositoryInterface::class => SecurityLogRepository::class,
     ];
 
     public function register(): void

@@ -4,8 +4,8 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\Security\CheckPasswordStrengthRequest;
-use App\Models\SecurityLog;
 use App\Models\SecuritySetting;
+use App\Repositories\Contracts\SecurityLogRepositoryInterface;
 use App\Services\SecurityLogService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +16,10 @@ use Illuminate\View\View;
 
 class SecurityController extends Controller
 {
-    public function __construct(protected readonly SecurityLogService $securityLogService) {}
+    public function __construct(
+        protected readonly SecurityLogService $securityLogService,
+        protected readonly SecurityLogRepositoryInterface $securityLogRepository,
+    ) {}
 
     public function dashboard(): View
     {
@@ -41,9 +44,7 @@ class SecurityController extends Controller
 
     public function activity(): View
     {
-        $logs = SecurityLog::where('user_id', auth()->id())
-            ->orderByDesc('created_at')
-            ->paginate(20);
+        $logs = $this->securityLogRepository->paginateForUser(auth()->id());
 
         return view('security.activity', compact('logs'));
     }
@@ -111,23 +112,18 @@ class SecurityController extends Controller
 
     public function getSecurityLogs(Request $request): JsonResponse
     {
-        $logs = SecurityLog::where('user_id', auth()->id())
-            ->when($request->type, fn ($query, $type) => $query->where('event', $type))
-            ->when($request->date_from, fn ($query, $date) => $query->where('created_at', '>=', Carbon::parse($date)))
-            ->when($request->date_to, fn ($query, $date) => $query->where('created_at', '<=', Carbon::parse($date)))
-            ->orderByDesc('created_at')
-            ->paginate(20);
+        $logs = $this->securityLogRepository->paginateForUserWithFilters(auth()->id(), [
+            'type' => $request->type,
+            'date_from' => $request->date_from,
+            'date_to' => $request->date_to,
+        ]);
 
         return response()->json($logs);
     }
 
     public function getLoginHistory(): JsonResponse
     {
-        $history = SecurityLog::where('user_id', auth()->id())
-            ->where('event', 'login_attempt')
-            ->orderByDesc('created_at')
-            ->take(10)
-            ->get();
+        $history = $this->securityLogRepository->getLoginHistoryForUser(auth()->id());
 
         return response()->json($history);
     }
@@ -185,10 +181,7 @@ class SecurityController extends Controller
             $score += 20;
         }
 
-        $suspiciousActivities = SecurityLog::where('user_id', $user->id)
-            ->where('created_at', '>=', now()->subDays(30))
-            ->where('level', 'warning')
-            ->count();
+        $suspiciousActivities = $this->securityLogRepository->countWarningsForUserSince($user->id, now()->subDays(30));
 
         if ($suspiciousActivities === 0) {
             $score += 20;
@@ -228,17 +221,11 @@ class SecurityController extends Controller
 
     protected function getRecentActivities(): Collection
     {
-        return SecurityLog::where('user_id', auth()->id())
-            ->orderByDesc('created_at')
-            ->take(5)
-            ->get();
+        return $this->securityLogRepository->getRecentForUser(auth()->id());
     }
 
     protected function getLoginAttempts(): int
     {
-        return SecurityLog::where('user_id', auth()->id())
-            ->where('event', 'login_attempt')
-            ->where('created_at', '>=', now()->subDay())
-            ->count();
+        return $this->securityLogRepository->countLoginAttemptsForUserSince(auth()->id(), now()->subDay());
     }
 }

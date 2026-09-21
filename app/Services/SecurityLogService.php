@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\SecurityLog;
 use App\Models\User;
+use App\Repositories\Contracts\SecurityLogRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Log;
  */
 class SecurityLogService
 {
+    public function __construct(private readonly SecurityLogRepositoryInterface $securityLogRepository) {}
+
     public function logLogin(bool $success, string $username, ?User $user = null): void
     {
         $data = [
@@ -112,7 +114,7 @@ class SecurityLogService
 
     private function persist(string $event, string $level, array $context = [], ?int $userId = null): void
     {
-        SecurityLog::create([
+        $this->securityLogRepository->create([
             'user_id' => $userId ?? Auth::id(),
             'event' => $event,
             'level' => $level,

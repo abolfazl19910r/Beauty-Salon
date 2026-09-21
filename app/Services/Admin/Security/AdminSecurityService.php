@@ -2,20 +2,24 @@
 
 namespace App\Services\Admin\Security;
 
-use App\Models\SecurityLog;
 use App\Models\SecuritySetting;
 use App\Models\User;
+use App\Repositories\Contracts\SecurityLogRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class AdminSecurityService
 {
-    public function __construct(private readonly UserRepositoryInterface $userRepository) {}
+    public function __construct(
+        private readonly UserRepositoryInterface $userRepository,
+        private readonly SecurityLogRepositoryInterface $securityLogRepository,
+    ) {}
 
     public function paginatedLogs(array $filters): LengthAwarePaginator
     {
-        return SecurityLog::with('user:id,name,phone')
+        return $this->securityLogRepository->query()
+            ->with('user:id,name,phone')
             ->when($filters['event'] ?? null, fn ($query, $event) => $query->where('event', $event))
             ->when($filters['level'] ?? null, fn ($query, $level) => $query->where('level', $level))
             ->when($filters['user_id'] ?? null, fn ($query, $userId) => $query->where('user_id', $userId))
@@ -42,11 +46,7 @@ class AdminSecurityService
             ->paginate(20)
             ->withQueryString()
             ->through(function (User $user) {
-                $user->last_successful_login_at = SecurityLog::where('user_id', $user->id)
-                    ->where('event', 'login_attempt')
-                    ->where('level', 'info')
-                    ->latest('created_at')
-                    ->value('created_at');
+                $user->last_successful_login_at = $this->securityLogRepository->getLastSuccessfulLoginAt($user->id);
 
                 return $user;
             });
@@ -55,12 +55,9 @@ class AdminSecurityService
     public function stats(): array
     {
         return [
-            'logs_last_30_days' => SecurityLog::where('created_at', '>=', now()->subDays(30))->count(),
-            'warnings_last_30_days' => SecurityLog::where('level', 'warning')->where('created_at', '>=', now()->subDays(30))->count(),
-            'failed_logins_last_24h' => SecurityLog::where('event', 'login_attempt')
-                ->where('level', 'warning')
-                ->where('created_at', '>=', now()->subDay())
-                ->count(),
+            'logs_last_30_days' => $this->securityLogRepository->countSince(now()->subDays(30)),
+            'warnings_last_30_days' => $this->securityLogRepository->countWarningsSince(now()->subDays(30)),
+            'failed_logins_last_24h' => $this->securityLogRepository->countFailedLoginAttemptsSince(now()->subDay()),
             'users_with_2fa' => $this->userRepository->countWithTwoFactorEnabled(),
         ];
     }
