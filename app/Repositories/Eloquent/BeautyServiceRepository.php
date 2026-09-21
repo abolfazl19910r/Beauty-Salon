@@ -4,6 +4,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\BeautyService;
 use App\Repositories\Contracts\BeautyServiceRepositoryInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -12,6 +13,11 @@ class BeautyServiceRepository extends BaseRepository implements BeautyServiceRep
     public function __construct(BeautyService $model)
     {
         parent::__construct($model);
+    }
+
+    public function query(): Builder
+    {
+        return $this->model->query();
     }
 
     public function paginateForIndex(?int $categoryId, int $perPage = 12): LengthAwarePaginator
@@ -33,5 +39,10 @@ class BeautyServiceRepository extends BaseRepository implements BeautyServiceRep
             ->where('id', '!=', $excludeId)
             ->limit($limit)
             ->get();
+    }
+
+    public function getLatest(int $limit): Collection
+    {
+        return $this->model->latest()->take($limit)->get();
     }
 }

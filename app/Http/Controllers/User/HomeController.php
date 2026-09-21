@@ -3,15 +3,19 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\BeautyService;
-use App\Models\Specialist;
+use App\Repositories\Contracts\BeautyServiceRepositoryInterface;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Support\CurrentSalon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class HomeController extends Controller
 {
-    public function __construct(protected CurrentSalon $currentSalon) {}
+    public function __construct(
+        protected CurrentSalon $currentSalon,
+        protected BeautyServiceRepositoryInterface $beautyServiceRepository,
+        protected SpecialistRepositoryInterface $specialistRepository,
+    ) {}
 
     public function index(): View
     {
@@ -27,14 +31,16 @@ class HomeController extends Controller
         $salonId = $this->currentSalon->id();
 
         $services = Cache::remember("home_services:{$salonId}", 1800, function () {
-            return BeautyService::latest()
+            return $this->beautyServiceRepository->query()
+                ->latest()
                 ->select('id', 'name', 'slug', 'description', 'price', 'duration', 'image', 'category_id')
                 ->take(6)
                 ->get();
         });
 
         $specialists = Cache::remember("home_specialists:{$salonId}", 1800, function () {
-            return Specialist::latest()
+            return $this->specialistRepository->query()
+                ->latest()
                 ->with(['schedules' => fn ($q) => $q->where('is_active', true)->orderBy('day_of_week')])
                 ->select('id', 'name', 'email', 'phone', 'user_id')
                 ->take(4)

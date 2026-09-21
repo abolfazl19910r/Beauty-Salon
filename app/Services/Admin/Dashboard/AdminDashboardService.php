@@ -2,11 +2,11 @@
 
 namespace App\Services\Admin\Dashboard;
 
-use App\Models\BeautyService;
-use App\Models\Booking;
-use App\Models\Specialist;
 use App\Models\WalletSetting;
+use App\Repositories\Contracts\BeautyServiceRepositoryInterface;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\RoleRepositoryInterface;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +16,9 @@ class AdminDashboardService
     public function __construct(
         private readonly UserRepositoryInterface $userRepository,
         private readonly RoleRepositoryInterface $roleRepository,
+        private readonly BookingRepositoryInterface $bookingRepository,
+        private readonly SpecialistRepositoryInterface $specialistRepository,
+        private readonly BeautyServiceRepositoryInterface $beautyServiceRepository,
     ) {}
 
     /**
@@ -39,14 +42,14 @@ class AdminDashboardService
 
         [$commissionRate, $commissionFactor] = $this->getCommissionRateAndFactor();
 
-        $todayBookingsCount = Booking::whereDate('booking_time', today())->count();
+        $todayBookingsCount = $this->bookingRepository->query()->whereDate('booking_time', today())->count();
         $totalRevenue = null;
         if ($canViewFinancials) {
-            $rawRevenue = Booking::where('payment_status', 'paid')->sum('prepayment_amount');
+            $rawRevenue = $this->bookingRepository->query()->where('payment_status', 'paid')->sum('prepayment_amount');
             $totalRevenue = (int) ($rawRevenue * $commissionFactor);
         }
         $usersCount = $this->userRepository->count();
-        $specialistsCount = Specialist::count();
+        $specialistsCount = $this->specialistRepository->count();
         $rolesCount = $this->roleRepository->count();
 
         $roles = $this->roleRepository->getTopByUserCount(4);
@@ -59,14 +62,16 @@ class AdminDashboardService
             ->take(3)
             ->map(fn (array $item) => (object) $item);
 
-        $recentBookings = Booking::with(['user', 'service'])
+        $recentBookings = $this->bookingRepository->query()
+            ->with(['user', 'service'])
             ->latest()
             ->take(4)
             ->get();
 
         $weeklyRevenue = collect();
         if ($canViewFinancials) {
-            $weeklyRevenue = Booking::where('payment_status', 'paid')
+            $weeklyRevenue = $this->bookingRepository->query()
+                ->where('payment_status', 'paid')
                 ->whereBetween('created_at', [now()->subDays(6)->startOfDay(), now()])
                 ->groupBy(DB::raw('DATE(created_at)'))
                 ->select(
@@ -105,12 +110,12 @@ class AdminDashboardService
     public function getSummaryStats(): array
     {
         return [
-            'totalBookings' => Booking::count(),
-            'todayBookings' => Booking::whereDate('created_at', today())->count(),
-            'totalServices' => BeautyService::count(),
-            'totalSpecialists' => Specialist::count(),
+            'totalBookings' => $this->bookingRepository->count(),
+            'todayBookings' => $this->bookingRepository->query()->whereDate('created_at', today())->count(),
+            'totalServices' => $this->beautyServiceRepository->count(),
+            'totalSpecialists' => $this->specialistRepository->count(),
             'totalUsers' => $this->userRepository->count(),
-            'totalRevenue' => Booking::where('payment_status', 'paid')->sum('prepayment_amount'),
+            'totalRevenue' => $this->bookingRepository->query()->where('payment_status', 'paid')->sum('prepayment_amount'),
         ];
     }
 
@@ -123,16 +128,18 @@ class AdminDashboardService
         $lastMonth = now()->subDays(30);
         $previousMonth = now()->subDays(60);
 
-        $currentMonthServices = BeautyService::withCount(['bookings' => function ($query) use ($lastMonth) {
-            $query->where('created_at', '>=', $lastMonth);
-        }])
+        $currentMonthServices = $this->beautyServiceRepository->query()
+            ->withCount(['bookings' => function ($query) use ($lastMonth) {
+                $query->where('created_at', '>=', $lastMonth);
+            }])
             ->withSum(['bookings' => function ($query) use ($lastMonth) {
                 $query->where('created_at', '>=', $lastMonth);
             }], 'prepayment_amount');
 
-        $previousMonthServices = BeautyService::withCount(['bookings' => function ($query) use ($previousMonth, $lastMonth) {
-            $query->whereBetween('created_at', [$previousMonth, $lastMonth]);
-        }])->pluck('bookings_count', 'id');
+        $previousMonthServices = $this->beautyServiceRepository->query()
+            ->withCount(['bookings' => function ($query) use ($previousMonth, $lastMonth) {
+                $query->whereBetween('created_at', [$previousMonth, $lastMonth]);
+            }])->pluck('bookings_count', 'id');
 
         return $currentMonthServices
             ->orderByDesc('bookings_count')
@@ -164,9 +171,10 @@ class AdminDashboardService
     {
         $lastMonth = now()->subDays(30);
 
-        return Specialist::withCount(['bookings' => function ($query) use ($lastMonth) {
-            $query->where('created_at', '>=', $lastMonth);
-        }])
+        return $this->specialistRepository->query()
+            ->withCount(['bookings' => function ($query) use ($lastMonth) {
+                $query->where('created_at', '>=', $lastMonth);
+            }])
             ->withSum(['bookings' => function ($query) use ($lastMonth) {
                 $query->where('created_at', '>=', $lastMonth);
             }], 'prepayment_amount')

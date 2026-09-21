@@ -4,6 +4,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\Booking;
 use App\Repositories\Contracts\BookingRepositoryInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
@@ -13,6 +14,11 @@ class BookingRepository extends BaseRepository implements BookingRepositoryInter
     public function __construct(Booking $model)
     {
         parent::__construct($model);
+    }
+
+    public function query(): Builder
+    {
+        return $this->model->query();
     }
 
     public function paginateForUser(int $userId, array $filters, int $perPage = 10): LengthAwarePaginator

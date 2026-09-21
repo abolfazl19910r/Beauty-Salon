@@ -3,11 +3,14 @@
 namespace App\Repositories\Contracts;
 
 use App\Models\Booking;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 interface BookingRepositoryInterface extends RepositoryInterface
 {
+    public function query(): Builder;
+
     public function paginateForUser(int $userId, array $filters, int $perPage = 10): LengthAwarePaginator;
 
     public function findForUserWithDetails(int $id, int $userId): ?Booking;

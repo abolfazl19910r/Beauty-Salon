@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\Booking;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Services\SMSService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -34,9 +34,9 @@ class SendBookingReminderJob implements ShouldQueue
 
     public function __construct(protected int $bookingId) {}
 
-    public function handle(SMSService $smsService): void
+    public function handle(SMSService $smsService, BookingRepositoryInterface $bookingRepository): void
     {
-        $booking = Booking::with(['user', 'specialist', 'service'])->find($this->bookingId);
+        $booking = $bookingRepository->query()->with(['user', 'specialist', 'service'])->find($this->bookingId);
 
         if (! $booking || ! $booking->user || ! $booking->specialist || ! $booking->service) {
             Log::warning('SendBookingReminderJob: booking/related model not found, skipping', [

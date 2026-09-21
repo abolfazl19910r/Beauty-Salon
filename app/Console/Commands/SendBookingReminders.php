@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Jobs\SendBookingReminderJob;
-use App\Models\Booking;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use Illuminate\Console\Command;
 
 class SendBookingReminders extends Command
@@ -12,7 +12,7 @@ class SendBookingReminders extends Command
 
     protected $description = 'Send SMS reminders for upcoming bookings to customers and specialists';
 
-    public function handle()
+    public function handle(BookingRepositoryInterface $bookingRepository)
     {
         // Update (2026-07-25): Previously, this command would run once a day (18:00)
         // and would remind all shifts for the next 24 hours — i.e. for morning shifts
@@ -22,7 +22,8 @@ class SendBookingReminders extends Command
         // gets a reminder just once, exactly 1 hour before it. The 10-minute interval was intentionally
         // chosen to overlap with the command's execution interval (every 5 or 10 minutes) and
         // no shifts are missed between two consecutive runs.
-        $bookings = Booking::where('booking_time', '>=', now()->addMinutes(55))
+        $bookings = $bookingRepository->query()
+            ->where('booking_time', '>=', now()->addMinutes(55))
             ->where('booking_time', '<=', now()->addMinutes(65))
             ->where('status', 'confirmed')
             ->where('reminder_sent', false)

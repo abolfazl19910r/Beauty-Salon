@@ -9,6 +9,7 @@ use App\Jobs\SendPhoneVerificationCodeJob;
 use App\Models\Booking;
 use App\Models\Specialist;
 use App\Models\User;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\SMSService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -41,7 +42,7 @@ class NotificationJobsTest extends TestCase
                 });
         });
 
-        (new SendBookingReminderJob($booking->id))->handle(app(SMSService::class));
+        (new SendBookingReminderJob($booking->id))->handle(app(SMSService::class), app(BookingRepositoryInterface::class));
 
         $this->assertContains($user->phone, $sentTo);
         $this->assertContains($specialist->phone, $sentTo);
@@ -53,7 +54,7 @@ class NotificationJobsTest extends TestCase
             $mock->shouldNotReceive('send');
         });
 
-        (new SendBookingReminderJob(999999))->handle(app(SMSService::class));
+        (new SendBookingReminderJob(999999))->handle(app(SMSService::class), app(BookingRepositoryInterface::class));
 
         $this->assertTrue(true); // no exception thrown = pass
     }
@@ -76,7 +77,7 @@ class NotificationJobsTest extends TestCase
         Log::shouldReceive('warning')->zeroOrMoreTimes();
         Log::shouldReceive('debug')->zeroOrMoreTimes();
 
-        (new SendBookingReminderJob($booking->id))->handle(app(SMSService::class));
+        (new SendBookingReminderJob($booking->id))->handle(app(SMSService::class), app(BookingRepositoryInterface::class));
     }
 
     // ── Send2faVerificationCodeJob / SendLoginVerificationCodeJob ───────

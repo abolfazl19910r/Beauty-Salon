@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Booking;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
@@ -23,14 +23,15 @@ class CleanupPendingBookings extends Command
     /**
      * Execute the console command.
      */
-    public function handle(): int
+    public function handle(BookingRepositoryInterface $bookingRepository): int
     {
         $minutes = (int) $this->option('minutes');
         $dryRun = $this->option('dry-run');
 
         $this->info("🔍 جستجوی نوبت‌های pending_payment بیشتر از {$minutes} دقیقه...");
 
-        $expiredBookings = Booking::where('status', 'pending_payment')
+        $expiredBookings = $bookingRepository->query()
+            ->where('status', 'pending_payment')
             ->where('payment_status', 'unpaid')
             ->where('created_at', '<=', Carbon::now()->subMinutes($minutes))
             ->get();

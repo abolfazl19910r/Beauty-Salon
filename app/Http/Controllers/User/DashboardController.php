@@ -4,27 +4,36 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Announcement;
-use App\Models\BeautyService;
-use App\Models\Booking;
-use App\Models\Specialist;
+use App\Repositories\Contracts\BeautyServiceRepositoryInterface;
+use App\Repositories\Contracts\BookingRepositoryInterface;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
+    public function __construct(
+        private readonly BeautyServiceRepositoryInterface $beautyServiceRepository,
+        private readonly BookingRepositoryInterface $bookingRepository,
+        private readonly SpecialistRepositoryInterface $specialistRepository,
+    ) {}
+
     public function index(): View
     {
-        $popularServices = BeautyService::withCount('bookings')
+        $popularServices = $this->beautyServiceRepository->query()
+            ->withCount('bookings')
             ->orderByDesc('bookings_count')
             ->take(4)
             ->get();
 
-        $userBookings = Booking::where('user_id', auth()->id())
+        $userBookings = $this->bookingRepository->query()
+            ->where('user_id', auth()->id())
             ->with(['service', 'specialist'])
             ->latest()
             ->take(5)
             ->get();
 
-        $upcomingBookings = Booking::where('user_id', auth()->id())
+        $upcomingBookings = $this->bookingRepository->query()
+            ->where('user_id', auth()->id())
             ->where('booking_time', '>', now())
             ->whereNotIn('status', ['cancelled'])
             ->with(['service', 'specialist'])
@@ -34,7 +43,8 @@ class DashboardController extends Controller
 
         $announcements = Announcement::active()->byPriority()->take(3)->get();
 
-        $topSpecialists = Specialist::withAvg('bookings', 'rating')
+        $topSpecialists = $this->specialistRepository->query()
+            ->withAvg('bookings', 'rating')
             ->orderByDesc('bookings_avg_rating')
             ->whereHas('bookings', function ($query) {
                 $query->whereNotNull('rating');
@@ -56,20 +66,22 @@ class DashboardController extends Controller
 
     protected function getRecommendedServices()
     {
-        $userServiceIds = Booking::where('user_id', auth()->id())
+        $userServiceIds = $this->bookingRepository->query()
+            ->where('user_id', auth()->id())
             ->pluck('service_id')
             ->unique()
             ->toArray();
 
         if (empty($userServiceIds)) {
-            return BeautyService::latest()->take(3)->get();
+            return $this->beautyServiceRepository->getLatest(3);
         }
 
-        return BeautyService::whereIn('category_id', function ($query) use ($userServiceIds) {
-            $query->select('category_id')
-                ->from('beauty_services')
-                ->whereIn('id', $userServiceIds);
-        })
+        return $this->beautyServiceRepository->query()
+            ->whereIn('category_id', function ($query) use ($userServiceIds) {
+                $query->select('category_id')
+                    ->from('beauty_services')
+                    ->whereIn('id', $userServiceIds);
+            })
             ->whereNotIn('id', $userServiceIds)
             ->inRandomOrder()
             ->take(3)

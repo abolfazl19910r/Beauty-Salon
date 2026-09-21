@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Specialist\Notification;
 
 use App\Http\Controllers\Controller;
-use App\Models\Specialist;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Traits\HandlesApiResponse;
 use App\Traits\HasJalaliDates;
 use App\Traits\ResolvesSpecialist;
@@ -18,6 +18,8 @@ class SpecialistNotificationController extends Controller
     use HandlesApiResponse;
     use HasJalaliDates;
     use ResolvesSpecialist;
+
+    public function __construct(private readonly SpecialistRepositoryInterface $specialistRepository) {}
 
     /**
      * ⭐ نگاشت هر کلاس Notification به یک دسته‌ی قابل‌فیلتر — برای پاسخ به درخواست «مشاهده‌ی جداگانه‌ی
@@ -47,7 +49,7 @@ class SpecialistNotificationController extends Controller
     public function index(): View
     {
         $user = auth()->user();
-        $specialist = Specialist::where('phone', $user->phone)->first();
+        $specialist = $this->specialistRepository->findByPhone($user->phone);
 
         if (! $specialist) {
             return view('specialist.profile-not-found');
@@ -98,7 +100,7 @@ class SpecialistNotificationController extends Controller
     public function latest(): JsonResponse
     {
         $user = auth()->user();
-        $specialist = Specialist::where('phone', $user->phone)->first();
+        $specialist = $this->specialistRepository->findByPhone($user->phone);
 
         $userNotifications = $user->notifications()
             ->orderBy('created_at', 'desc')
@@ -138,7 +140,7 @@ class SpecialistNotificationController extends Controller
     public function count(): JsonResponse
     {
         $user = auth()->user();
-        $specialist = Specialist::where('phone', $user->phone)->first();
+        $specialist = $this->specialistRepository->findByPhone($user->phone);
 
         $userUnread = $user->unreadNotifications()->count();
         $specialistUnread = $specialist ? $specialist->unreadNotifications()->count() : 0;
@@ -151,7 +153,7 @@ class SpecialistNotificationController extends Controller
     public function markAsRead(string $id): JsonResponse
     {
         $user = auth()->user();
-        $specialist = Specialist::where('phone', $user->phone)->first();
+        $specialist = $this->specialistRepository->findByPhone($user->phone);
 
         $notification = $user->notifications()->find($id);
 
@@ -169,7 +171,7 @@ class SpecialistNotificationController extends Controller
     public function showAndRedirect(string $id): RedirectResponse
     {
         $user = auth()->user();
-        $specialist = Specialist::where('phone', $user->phone)->first();
+        $specialist = $this->specialistRepository->findByPhone($user->phone);
 
         $notification = $user->notifications()->find($id);
 
@@ -200,7 +202,7 @@ class SpecialistNotificationController extends Controller
     public function markAllAsRead(): RedirectResponse
     {
         $user = auth()->user();
-        $specialist = Specialist::where('phone', $user->phone)->first();
+        $specialist = $this->specialistRepository->findByPhone($user->phone);
 
         $user->unreadNotifications()->update(['read_at' => now()]);
 

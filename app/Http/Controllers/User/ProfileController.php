@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\Profile\ProfileUpdateRequest;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,11 +14,14 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
+    public function __construct(private readonly BookingRepositoryInterface $bookingRepository) {}
+
     public function show(): View
     {
         // eager load and sort by booking_time (not created_at)
         // so that the list of appointments is aligned with my appointments page
-        $bookings = \App\Models\Booking::with(['service', 'specialist'])
+        $bookings = $this->bookingRepository->query()
+            ->with(['service', 'specialist'])
             ->where('user_id', auth()->id())
             ->orderBy('booking_time', 'desc')
             ->paginate(10);

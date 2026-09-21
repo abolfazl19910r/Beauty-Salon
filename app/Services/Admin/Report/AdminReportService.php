@@ -2,10 +2,12 @@
 
 namespace App\Services\Admin\Report;
 
-use App\Models\BeautyService;
 use App\Models\Booking;
 use App\Models\Specialist;
+use App\Repositories\Contracts\BeautyServiceRepositoryInterface;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\DiscountCodeRepositoryInterface;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Traits\HasJalaliDates;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -15,7 +17,12 @@ class AdminReportService
 {
     use HasJalaliDates;
 
-    public function __construct(private readonly DiscountCodeRepositoryInterface $discountCodeRepository) {}
+    public function __construct(
+        private readonly DiscountCodeRepositoryInterface $discountCodeRepository,
+        private readonly BookingRepositoryInterface $bookingRepository,
+        private readonly SpecialistRepositoryInterface $specialistRepository,
+        private readonly BeautyServiceRepositoryInterface $beautyServiceRepository,
+    ) {}
 
     /**
      * Convert start_date/end_date from input to Carbon and string.
@@ -54,25 +61,25 @@ class AdminReportService
     public function getSummary(Carbon $start, Carbon $end): array
     {
         return [
-            'total_revenue' => Booking::where('payment_status', 'paid')
+            'total_revenue' => $this->bookingRepository->query()->where('payment_status', 'paid')
                 ->whereBetween('created_at', [$start, $end])
                 ->sum('prepayment_amount'),
 
-            'total_bookings' => Booking::whereBetween('created_at', [$start, $end])->count(),
+            'total_bookings' => $this->bookingRepository->query()->whereBetween('created_at', [$start, $end])->count(),
 
-            'completed_bookings' => Booking::where('status', 'completed')
+            'completed_bookings' => $this->bookingRepository->query()->where('status', 'completed')
                 ->whereBetween('created_at', [$start, $end])
                 ->count(),
 
-            'cancelled_bookings' => Booking::where('status', 'cancelled')
+            'cancelled_bookings' => $this->bookingRepository->query()->where('status', 'cancelled')
                 ->whereBetween('created_at', [$start, $end])
                 ->count(),
 
-            'pending_payments' => Booking::where('payment_status', 'unpaid')
+            'pending_payments' => $this->bookingRepository->query()->where('payment_status', 'unpaid')
                 ->whereBetween('created_at', [$start, $end])
                 ->sum('prepayment_amount'),
 
-            'average_booking_value' => (float) (Booking::where('payment_status', 'paid')
+            'average_booking_value' => (float) ($this->bookingRepository->query()->where('payment_status', 'paid')
                 ->whereBetween('created_at', [$start, $end])
                 ->avg('prepayment_amount') ?? 0),
         ];
@@ -80,7 +87,7 @@ class AdminReportService
 
     public function getFinancialSummary(Carbon $start, Carbon $end): array
     {
-        $base = Booking::whereBetween('created_at', [$start, $end]);
+        $base = $this->bookingRepository->query()->whereBetween('created_at', [$start, $end]);
 
         return [
             'total_revenue' => (clone $base)->where('payment_status', 'paid')->sum('prepayment_amount'),
@@ -111,7 +118,7 @@ class AdminReportService
 
     public function dailyRevenue(Carbon $start, Carbon $end): Collection
     {
-        return Booking::where('payment_status', 'paid')
+        return $this->bookingRepository->query()->where('payment_status', 'paid')
             ->whereBetween('created_at', [$start, $end])
             ->groupBy(DB::raw('DATE(created_at)'))
             ->select(
@@ -136,7 +143,7 @@ class AdminReportService
 
     public function weeklyRevenue(Carbon $start, Carbon $end): Collection
     {
-        return Booking::where('payment_status', 'paid')
+        return $this->bookingRepository->query()->where('payment_status', 'paid')
             ->whereBetween('created_at', [$start, $end])
             ->groupBy(DB::raw('YEARWEEK(created_at)'))
             ->select(
@@ -160,7 +167,7 @@ class AdminReportService
 
     public function monthlyRevenue(Carbon $start, Carbon $end): Collection
     {
-        return Booking::where('payment_status', 'paid')
+        return $this->bookingRepository->query()->where('payment_status', 'paid')
             ->whereBetween('created_at', [$start, $end])
             ->groupBy(DB::raw('YEAR(created_at)'), DB::raw('MONTH(created_at)'))
             ->select(
@@ -193,7 +200,7 @@ class AdminReportService
 
     public function monthlyBreakdown(Carbon $start, Carbon $end): Collection
     {
-        return Booking::whereBetween('created_at', [$start, $end])
+        return $this->bookingRepository->query()->whereBetween('created_at', [$start, $end])
             ->groupBy(DB::raw('YEAR(created_at)'), DB::raw('MONTH(created_at)'))
             ->select(
                 DB::raw('YEAR(created_at) as year'),
@@ -220,7 +227,7 @@ class AdminReportService
 
     public function paymentBreakdown(Carbon $start, Carbon $end): array
     {
-        $base = Booking::whereBetween('created_at', [$start, $end])->where('payment_status', 'paid');
+        $base = $this->bookingRepository->query()->whereBetween('created_at', [$start, $end])->where('payment_status', 'paid');
 
         $total = (clone $base)->count();
 
@@ -245,7 +252,7 @@ class AdminReportService
 
     public function serviceRevenue(Carbon $start, Carbon $end, int $limit = 8): Collection
     {
-        return BeautyService::withCount(['bookings' => fn ($q) => $q->whereBetween('created_at', [$start, $end])->where('status', '!=', 'cancelled'),
+        return $this->beautyServiceRepository->query()->withCount(['bookings' => fn ($q) => $q->whereBetween('created_at', [$start, $end])->where('status', '!=', 'cancelled'),
         ])
             ->withSum(['bookings as revenue' => fn ($q) => $q->where('payment_status', 'paid')->whereBetween('created_at', [$start, $end]),
             ], 'prepayment_amount')
@@ -271,7 +278,7 @@ class AdminReportService
 
     public function popularServices(Carbon $start, Carbon $end, int $limit = 5): Collection
     {
-        return BeautyService::withCount(['bookings' => fn ($q) => $q->whereBetween('created_at', [$start, $end])->where('status', '!=', 'cancelled'),
+        return $this->beautyServiceRepository->query()->withCount(['bookings' => fn ($q) => $q->whereBetween('created_at', [$start, $end])->where('status', '!=', 'cancelled'),
         ])
             ->withSum(['bookings as revenue' => fn ($q) => $q->where('payment_status', 'paid')->whereBetween('created_at', [$start, $end]),
             ], 'prepayment_amount')
@@ -282,7 +289,7 @@ class AdminReportService
 
     public function specialistPerformance(Carbon $start, Carbon $end): Collection
     {
-        return Specialist::with(['bookings' => fn ($q) => $q->whereBetween('created_at', [$start, $end])])
+        return $this->specialistRepository->query()->with(['bookings' => fn ($q) => $q->whereBetween('created_at', [$start, $end])])
             ->withCount(['bookings as total_bookings' => fn ($q) => $q->whereBetween('created_at', [$start, $end])])
             ->withSum(['bookings as total_revenue' => fn ($q) => $q->whereBetween('created_at', [$start, $end])->where('payment_status', 'paid'),
             ], 'prepayment_amount')
@@ -309,7 +316,7 @@ class AdminReportService
 
     public function customerSatisfaction(Carbon $start, Carbon $end): Collection
     {
-        return Booking::whereBetween('created_at', [$start, $end])
+        return $this->bookingRepository->query()->whereBetween('created_at', [$start, $end])
             ->whereNotNull('rating')
             ->select(
                 'specialist_id',
@@ -336,12 +343,12 @@ class AdminReportService
             'summary' => $this->getFinancialSummary($start, $end),
             'paymentBreakdown' => $this->paymentBreakdown($start, $end),
             'rawBookings' => $this->getRawBookingsForExport($start, $end),
-            'specialists' => Specialist::withCount(['bookings as total_bookings' => fn ($q) => $q->whereBetween('created_at', [$start, $end])])
+            'specialists' => $this->specialistRepository->query()->withCount(['bookings as total_bookings' => fn ($q) => $q->whereBetween('created_at', [$start, $end])])
                 ->withSum(['bookings as total_revenue' => fn ($q) => $q->whereBetween('created_at', [$start, $end])->where('payment_status', 'paid'),
                 ], 'prepayment_amount')
                 ->orderByDesc('total_bookings')
                 ->get(),
-            'services' => BeautyService::withCount(['bookings' => fn ($q) => $q->whereBetween('created_at', [$start, $end])])
+            'services' => $this->beautyServiceRepository->query()->withCount(['bookings' => fn ($q) => $q->whereBetween('created_at', [$start, $end])])
                 ->withSum(['bookings as revenue' => fn ($q) => $q->where('payment_status', 'paid')->whereBetween('created_at', [$start, $end]),
                 ], 'prepayment_amount')
                 ->orderByDesc('bookings_count')
@@ -387,7 +394,7 @@ class AdminReportService
             'fixed' => 'مبلغ ثابت',
         ];
 
-        $bookings = Booking::with(['user:id,name,phone', 'specialist:id,name,phone,commission_rate', 'service:id,name'])
+        $bookings = $this->bookingRepository->query()->with(['user:id,name,phone', 'specialist:id,name,phone,commission_rate', 'service:id,name'])
             ->whereBetween('created_at', [$start, $end])
             ->orderBy('created_at')
             ->get();
@@ -458,8 +465,8 @@ class AdminReportService
         $prevEnd = $s->copy()->subDay();
         $prevSt = $prevEnd->copy()->subDays($days);
 
-        $curRev = Booking::where('payment_status', 'paid')->whereBetween('created_at', [$s, $e])->sum('prepayment_amount');
-        $prevRev = Booking::where('payment_status', 'paid')->whereBetween('created_at', [$prevSt, $prevEnd])->sum('prepayment_amount');
+        $curRev = $this->bookingRepository->query()->where('payment_status', 'paid')->whereBetween('created_at', [$s, $e])->sum('prepayment_amount');
+        $prevRev = $this->bookingRepository->query()->where('payment_status', 'paid')->whereBetween('created_at', [$prevSt, $prevEnd])->sum('prepayment_amount');
 
         return [
             'revenue_change' => $prevRev > 0

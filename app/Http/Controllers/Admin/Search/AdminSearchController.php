@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin\Search;
 
 use App\Http\Controllers\Controller;
-use App\Models\BeautyService;
 use App\Models\BlogPost;
-use App\Models\Booking;
-use App\Models\Specialist;
+use App\Repositories\Contracts\BeautyServiceRepositoryInterface;
+use App\Repositories\Contracts\BookingRepositoryInterface;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,7 +15,12 @@ use Verta;
 
 class AdminSearchController extends Controller
 {
-    public function __construct(private readonly UserRepositoryInterface $userRepository) {}
+    public function __construct(
+        private readonly UserRepositoryInterface $userRepository,
+        private readonly SpecialistRepositoryInterface $specialistRepository,
+        private readonly BeautyServiceRepositoryInterface $beautyServiceRepository,
+        private readonly BookingRepositoryInterface $bookingRepository,
+    ) {}
 
     public function index(Request $request): View
     {
@@ -24,14 +29,16 @@ class AdminSearchController extends Controller
 
         if ($query) {
 
-            $specialists = Specialist::where('name', 'LIKE', "%{$query}%")
+            $specialists = $this->specialistRepository->query()
+                ->where('name', 'LIKE', "%{$query}%")
                 ->limit(5)
                 ->get();
             if ($specialists->isNotEmpty()) {
                 $results['متخصصین'] = $specialists;
             }
 
-            $services = BeautyService::where('name', 'LIKE', "%{$query}%")
+            $services = $this->beautyServiceRepository->query()
+                ->where('name', 'LIKE', "%{$query}%")
                 ->limit(5)
                 ->get();
             if ($services->isNotEmpty()) {
@@ -84,7 +91,8 @@ class AdminSearchController extends Controller
 
     private function searchBookings($query)
     {
-        return Booking::with(['user', 'service', 'specialist'])
+        return $this->bookingRepository->query()
+            ->with(['user', 'service', 'specialist'])
             ->where(function ($q) use ($query) {
                 $q->where('id', 'like', "%{$query}%")
                     ->orWhere('payment_reference', 'like', "%{$query}%")
@@ -138,7 +146,8 @@ class AdminSearchController extends Controller
 
     private function searchServices($query)
     {
-        return BeautyService::with('category')
+        return $this->beautyServiceRepository->query()
+            ->with('category')
             ->where('name', 'like', "%{$query}%")
             ->orWhere('description', 'like', "%{$query}%")
             ->limit(5)
@@ -158,7 +167,8 @@ class AdminSearchController extends Controller
 
     private function searchSpecialists($query)
     {
-        return Specialist::where('name', 'like', "%{$query}%")
+        return $this->specialistRepository->query()
+            ->where('name', 'like', "%{$query}%")
             ->orWhere('phone', 'like', "%{$query}%")
             ->orWhere('email', 'like', "%{$query}%")
             ->limit(5)
@@ -214,12 +224,14 @@ class AdminSearchController extends Controller
             ->pluck('name');
         $suggestions = $suggestions->merge($users);
 
-        $services = BeautyService::where('name', 'like', "%{$query}%")
+        $services = $this->beautyServiceRepository->query()
+            ->where('name', 'like', "%{$query}%")
             ->limit(3)
             ->pluck('name');
         $suggestions = $suggestions->merge($services);
 
-        $specialists = Specialist::where('name', 'like', "%{$query}%")
+        $specialists = $this->specialistRepository->query()
+            ->where('name', 'like', "%{$query}%")
             ->limit(2)
             ->pluck('name');
         $suggestions = $suggestions->merge($specialists);

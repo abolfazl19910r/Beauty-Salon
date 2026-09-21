@@ -2,12 +2,14 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Booking;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use Closure;
 use Illuminate\Http\Request;
 
 class CheckBookingOwnership
 {
+    public function __construct(private readonly BookingRepositoryInterface $bookingRepository) {}
+
     public function handle(Request $request, Closure $next)
     {
         $bookingId = $request->route('booking');
@@ -15,7 +17,7 @@ class CheckBookingOwnership
         if (is_object($bookingId)) {
             $booking = $bookingId;
         } else {
-            $booking = Booking::findOrFail($bookingId);
+            $booking = $this->bookingRepository->findOrFail($bookingId);
         }
 
         if ($booking->user_id !== auth()->id()) {

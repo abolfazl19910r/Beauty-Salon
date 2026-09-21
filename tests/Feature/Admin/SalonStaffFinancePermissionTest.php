@@ -84,9 +84,10 @@ class SalonStaffFinancePermissionTest extends TestCase
         // ⭐ monthlyBreakdown() از YEAR()/MONTH() (فقط MySQL) استفاده می‌کنه که روی SQLite تست
         // وجود نداره — طبق سیاست مستندشده‌ی پروژه (AdminReportsControllerTest) بازنویسی نمی‌شه،
         // فقط mock می‌شه؛ اینجا فقط می‌خوایم مطمئن بشیم permission رد می‌شه، نه خودِ گزارش.
-        $this->partialMock(\App\Services\Admin\Report\AdminReportService::class, function ($mock) {
-            $mock->shouldReceive('monthlyBreakdown')->andReturn(new \Illuminate\Support\Collection([]));
-        });
+        $real = $this->app->make(\App\Services\Admin\Report\AdminReportService::class);
+        $mock = \Mockery::mock($real)->makePartial();
+        $mock->shouldReceive('monthlyBreakdown')->andReturn(new \Illuminate\Support\Collection([]));
+        $this->app->instance(\App\Services\Admin\Report\AdminReportService::class, $mock);
 
         $staff = $this->makeStaff(financeAccess: true);
 

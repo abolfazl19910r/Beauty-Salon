@@ -4,6 +4,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\Specialist;
 use App\Repositories\Contracts\SpecialistRepositoryInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -12,6 +13,11 @@ class SpecialistRepository extends BaseRepository implements SpecialistRepositor
     public function __construct(Specialist $model)
     {
         parent::__construct($model);
+    }
+
+    public function query(): Builder
+    {
+        return $this->model->query();
     }
 
     public function paginateWithFilters(array $filters, int $perPage = 10): LengthAwarePaginator

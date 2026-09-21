@@ -6,6 +6,7 @@ use App\Events\Booking\BookingCancelled;
 use App\Events\Booking\Completed\BookingCompleted;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Traits\HasJalaliDates;
 use App\Traits\ResolvesSpecialist;
 use Exception;
@@ -20,6 +21,8 @@ class SpecialistBookingManagementController extends Controller
     use HasJalaliDates;
     use ResolvesSpecialist;
 
+    public function __construct(private readonly BookingRepositoryInterface $bookingRepository) {}
+
     public function index(Request $request): View
     {
         $specialist = $this->resolveSpecialist();
@@ -30,7 +33,8 @@ class SpecialistBookingManagementController extends Controller
 
         $this->authorize('manageBookings', $specialist);
 
-        $query = Booking::where('specialist_id', $specialist->id)
+        $query = $this->bookingRepository->query()
+            ->where('specialist_id', $specialist->id)
             ->with(['service', 'user']);
 
         $this->applyFilters($query, $request);

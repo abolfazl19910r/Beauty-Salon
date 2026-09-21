@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\Booking;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Services\SMSService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -21,9 +21,10 @@ class CancelUnpaidBookings implements ShouldQueue
 
     public $backoff = 60;
 
-    public function handle(SMSService $smsService): void
+    public function handle(SMSService $smsService, BookingRepositoryInterface $bookingRepository): void
     {
-        $expiredBookings = Booking::where('status', 'pending_payment')
+        $expiredBookings = $bookingRepository->query()
+            ->where('status', 'pending_payment')
             ->where('payment_status', 'unpaid')
             ->where('created_at', '<=', Carbon::now()->subMinutes(30))
             ->get();

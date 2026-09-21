@@ -9,6 +9,7 @@ use App\Models\Booking;
 use App\Models\LoyaltySetting;
 use App\Models\WalletSetting;
 use App\Notifications\Booking\BookingNotification;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Services\Notification\NotificationSettingService;
 use App\Services\ReportCacheService;
 use App\Services\SMSService;
@@ -19,7 +20,12 @@ use Illuminate\Support\Facades\Log;
 
 class BookingObserver
 {
-    public function __construct(protected readonly ReportCacheService $cacheService, protected readonly SMSService $smsService, protected readonly NotificationSettingService $notificationSettings) {}
+    public function __construct(
+        protected readonly ReportCacheService $cacheService,
+        protected readonly SMSService $smsService,
+        protected readonly NotificationSettingService $notificationSettings,
+        protected readonly BookingRepositoryInterface $bookingRepository,
+    ) {}
 
     /**
      * R-Events: Previously, BookingCreated was not dispatched anywhere (not here, not in
@@ -231,7 +237,7 @@ class BookingObserver
                      * ; if specialist_repeat_cancellation_threshold is exceeded,
                      * specialist_repeat_cancellation_extra_percentage is added to the base percentage.
                      */
-                    $recentSpecialistCancellations = Booking::where('specialist_id', $specialist->id)
+                    $recentSpecialistCancellations = $this->bookingRepository->query()->where('specialist_id', $specialist->id)
                         ->where('cancelled_by', 'specialist')
                         ->where('cancelled_at', '>=', now()->subDays($settings->specialist_repeat_cancellation_window_days))
                         ->count();

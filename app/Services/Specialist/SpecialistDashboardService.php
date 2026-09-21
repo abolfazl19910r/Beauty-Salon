@@ -2,14 +2,16 @@
 
 namespace App\Services\Specialist;
 
-use App\Models\Booking;
 use App\Models\Specialist;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Traits\HasJalaliDates;
 use Carbon\Carbon;
 
 class SpecialistDashboardService
 {
     use HasJalaliDates;
+
+    public function __construct(private readonly BookingRepositoryInterface $bookingRepository) {}
 
     public function getDashboardData(Specialist $specialist): array
     {
@@ -33,7 +35,7 @@ class SpecialistDashboardService
 
     private function getTodaySchedule(Specialist $specialist)
     {
-        return Booking::where('specialist_id', $specialist->id)
+        return $this->bookingRepository->query()->where('specialist_id', $specialist->id)
             ->whereDate('booking_time', Carbon::today())
             ->where('payment_status', 'paid')
             ->with(['service', 'user'])
@@ -43,7 +45,7 @@ class SpecialistDashboardService
 
     private function getTodayBookingsCount(Specialist $specialist): int
     {
-        return Booking::where('specialist_id', $specialist->id)
+        return $this->bookingRepository->query()->where('specialist_id', $specialist->id)
             ->whereDate('booking_time', Carbon::today())
             ->where('payment_status', 'paid')
             ->count();
@@ -51,7 +53,7 @@ class SpecialistDashboardService
 
     private function getTodayRevenue(Specialist $specialist): float
     {
-        return Booking::where('specialist_id', $specialist->id)
+        return $this->bookingRepository->query()->where('specialist_id', $specialist->id)
             ->whereDate('booking_time', Carbon::today())
             ->where('payment_status', 'paid')
             ->where('status', '!=', 'cancelled')
@@ -60,7 +62,7 @@ class SpecialistDashboardService
 
     private function getMonthBookingsCount(Specialist $specialist): int
     {
-        return Booking::where('specialist_id', $specialist->id)
+        return $this->bookingRepository->query()->where('specialist_id', $specialist->id)
             ->whereMonth('booking_time', Carbon::now()->month)
             ->whereYear('booking_time', Carbon::now()->year)
             ->where('payment_status', 'paid')
@@ -69,7 +71,7 @@ class SpecialistDashboardService
 
     private function getMonthRevenue(Specialist $specialist): float
     {
-        return Booking::where('specialist_id', $specialist->id)
+        return $this->bookingRepository->query()->where('specialist_id', $specialist->id)
             ->whereMonth('booking_time', Carbon::now()->month)
             ->whereYear('booking_time', Carbon::now()->year)
             ->where('payment_status', 'paid')
@@ -79,14 +81,14 @@ class SpecialistDashboardService
 
     private function getAverageRating(Specialist $specialist): float
     {
-        return Booking::where('specialist_id', $specialist->id)
+        return $this->bookingRepository->query()->where('specialist_id', $specialist->id)
             ->whereNotNull('rating')
             ->avg('rating') ?: 0;
     }
 
     private function getUpcomingBookings(Specialist $specialist)
     {
-        $bookings = Booking::where('specialist_id', $specialist->id)
+        $bookings = $this->bookingRepository->query()->where('specialist_id', $specialist->id)
             ->where('booking_time', '>', Carbon::now())
             ->where('booking_time', '<=', Carbon::now()->addDays(7))
             ->where('payment_status', 'paid')
@@ -108,7 +110,7 @@ class SpecialistDashboardService
 
     private function getRecentReviews(Specialist $specialist)
     {
-        return Booking::where('specialist_id', $specialist->id)
+        return $this->bookingRepository->query()->where('specialist_id', $specialist->id)
             ->whereNotNull('review')
             ->with('user')
             ->orderBy('updated_at', 'desc')
@@ -121,7 +123,7 @@ class SpecialistDashboardService
         $weeklyRevenue = [];
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::today()->subDays($i);
-            $revenue = Booking::where('specialist_id', $specialist->id)
+            $revenue = $this->bookingRepository->query()->where('specialist_id', $specialist->id)
                 ->whereDate('booking_time', $date)
                 ->where('payment_status', 'paid')
                 ->where('status', '!=', 'cancelled')
@@ -138,7 +140,7 @@ class SpecialistDashboardService
 
     private function countByStatus(Specialist $specialist, ?string $status): int
     {
-        $query = Booking::where('specialist_id', $specialist->id)
+        $query = $this->bookingRepository->query()->where('specialist_id', $specialist->id)
             ->where('payment_status', 'paid');
 
         if ($status !== null) {

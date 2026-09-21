@@ -37,10 +37,11 @@ class AdminReportsControllerTest extends TestCase
         parent::setUp();
         $this->admin = User::factory()->create(['is_admin' => true]);
 
-        $this->partialMock(AdminReportService::class, function ($mock) {
-            $mock->shouldReceive('monthlyBreakdown')
-                ->andReturn(new Collection([]));
-        });
+        $real = $this->app->make(AdminReportService::class);
+        $mock = Mockery::mock($real)->makePartial();
+        $mock->shouldReceive('monthlyBreakdown')
+            ->andReturn(new Collection([]));
+        $this->app->instance(AdminReportService::class, $mock);
     }
 
     public function test_index_renders_with_no_date_range_given_defaulting_to_today(): void

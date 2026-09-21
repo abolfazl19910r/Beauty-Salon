@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Specialist\Report;
 
 use App\Exports\SpecialistBookingsExport;
 use App\Http\Controllers\Controller;
-use App\Models\Booking;
-use App\Models\Specialist;
+use App\Repositories\Contracts\BookingRepositoryInterface;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Traits\HasJalaliDates;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -14,6 +14,11 @@ use Maatwebsite\Excel\Facades\Excel;
 class SpecialistReportController extends Controller
 {
     use HasJalaliDates;
+
+    public function __construct(
+        private readonly SpecialistRepositoryInterface $specialistRepository,
+        private readonly BookingRepositoryInterface $bookingRepository,
+    ) {}
 
     /**
      * ⭐ Fix (test-writing session 6, 2026-08-16): declared return type was View, but
@@ -25,7 +30,7 @@ class SpecialistReportController extends Controller
     public function index(Request $request): View|\Symfony\Component\HttpFoundation\BinaryFileResponse|string|null
     {
         $user = auth()->user();
-        $specialist = Specialist::where('phone', $user->phone)->first();
+        $specialist = $this->specialistRepository->findByPhone($user->phone);
 
         if (! $specialist) {
             return view('specialist.profile-not-found');
@@ -38,7 +43,7 @@ class SpecialistReportController extends Controller
         $status = $request->input('status', 'all');
         $serviceId = $request->input('service_id', 'all');
 
-        $query = Booking::where('specialist_id', $specialist->id);
+        $query = $this->bookingRepository->query()->where('specialist_id', $specialist->id);
 
         if ($startDate && $endDate) {
             $startCarbon = $this->parseJalali($startDate)?->startOfDay() ?? now()->startOfDay();
