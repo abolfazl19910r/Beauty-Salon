@@ -17,10 +17,12 @@ use App\Repositories\Contracts\LoyaltyPointRepositoryInterface;
 use App\Repositories\Contracts\LoyaltySettingRepositoryInterface;
 use App\Repositories\Contracts\NotificationSettingRepositoryInterface;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
+use App\Repositories\Contracts\PermissionRepositoryInterface;
 use App\Repositories\Contracts\ReportExportRepositoryInterface;
 use App\Repositories\Contracts\ReviewRepositoryInterface;
 use App\Repositories\Contracts\ReviewTokenRepositoryInterface;
 use App\Repositories\Contracts\RewardRepositoryInterface;
+use App\Repositories\Contracts\RoleRepositoryInterface;
 use App\Repositories\Contracts\SalonRepositoryInterface;
 use App\Repositories\Contracts\SalonSmsUsageRepositoryInterface;
 use App\Repositories\Contracts\SecurityLogRepositoryInterface;
@@ -47,10 +49,12 @@ use App\Repositories\Eloquent\LoyaltyPointRepository;
 use App\Repositories\Eloquent\LoyaltySettingRepository;
 use App\Repositories\Eloquent\NotificationSettingRepository;
 use App\Repositories\Eloquent\PaymentRepository;
+use App\Repositories\Eloquent\PermissionRepository;
 use App\Repositories\Eloquent\ReportExportRepository;
 use App\Repositories\Eloquent\ReviewRepository;
 use App\Repositories\Eloquent\ReviewTokenRepository;
 use App\Repositories\Eloquent\RewardRepository;
+use App\Repositories\Eloquent\RoleRepository;
 use App\Repositories\Eloquent\SalonRepository;
 use App\Repositories\Eloquent\SalonSmsUsageRepository;
 use App\Repositories\Eloquent\SecurityLogRepository;
@@ -97,6 +101,8 @@ class RepositoryServiceProvider extends ServiceProvider
         SalonSmsUsageRepositoryInterface::class => SalonSmsUsageRepository::class,
         ReportExportRepositoryInterface::class => ReportExportRepository::class,
         NotificationSettingRepositoryInterface::class => NotificationSettingRepository::class,
+        RoleRepositoryInterface::class => RoleRepository::class,
+        PermissionRepositoryInterface::class => PermissionRepository::class,
     ];
 
     public function register(): void

@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Role;
 use App\Models\User;
+use App\Repositories\Contracts\RoleRepositoryInterface;
 use App\Services\Admin\User\AdminUserService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
@@ -44,7 +44,7 @@ class CreateSuperAdmin extends Command
      */
     protected $description = 'ساخت یک حساب سوپر ادمین واقعی (جایگزین حساب موقت seed‌شده)';
 
-    public function handle(AdminUserService $adminUserService): int
+    public function handle(AdminUserService $adminUserService, RoleRepositoryInterface $roleRepository): int
     {
         $phone = $this->argument('phone') ?? $this->ask('شماره موبایل سوپر ادمین (۰۹xxxxxxxxx)');
         $name = $this->argument('name') ?? $this->ask('نام سوپر ادمین');
@@ -90,10 +90,7 @@ class CreateSuperAdmin extends Command
             return self::FAILURE;
         }
 
-        $superAdminRole = Role::firstOrCreate(
-            ['name' => 'super-admin'],
-            ['label' => 'سوپر ادمین']
-        );
+        $superAdminRole = $roleRepository->firstOrCreateByName('super-admin', ['label' => 'سوپر ادمین']);
 
         $user = $adminUserService->create([
             'name' => $name,

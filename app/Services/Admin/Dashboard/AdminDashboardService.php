@@ -4,16 +4,19 @@ namespace App\Services\Admin\Dashboard;
 
 use App\Models\BeautyService;
 use App\Models\Booking;
-use App\Models\Role;
 use App\Models\Specialist;
 use App\Models\WalletSetting;
+use App\Repositories\Contracts\RoleRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class AdminDashboardService
 {
-    public function __construct(private readonly UserRepositoryInterface $userRepository) {}
+    public function __construct(
+        private readonly UserRepositoryInterface $userRepository,
+        private readonly RoleRepositoryInterface $roleRepository,
+    ) {}
 
     /**
      * Full dashboard home page data (controller dashboard() method).
@@ -44,9 +47,9 @@ class AdminDashboardService
         }
         $usersCount = $this->userRepository->count();
         $specialistsCount = Specialist::count();
-        $rolesCount = Role::count();
+        $rolesCount = $this->roleRepository->count();
 
-        $roles = Role::withCount('users')->take(4)->get();
+        $roles = $this->roleRepository->getTopByUserCount(4);
 
         $popularServices = $this->getPopularServicesWithTrend()
             ->take(4)

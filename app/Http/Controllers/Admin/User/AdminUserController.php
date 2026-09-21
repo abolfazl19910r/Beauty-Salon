@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\User\ResetAdminUserPasswordRequest;
 use App\Http\Requests\Admin\User\StoreAdminUserRequest;
 use App\Http\Requests\Admin\User\UpdateAdminUserRequest;
-use App\Models\Role;
 use App\Models\Salon;
 use App\Models\User;
+use App\Repositories\Contracts\RoleRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Admin\User\AdminUserService;
 use App\Support\CurrentSalon;
@@ -35,6 +35,7 @@ class AdminUserController extends Controller
     public function __construct(
         protected readonly AdminUserService $userService,
         protected readonly UserRepositoryInterface $userRepository,
+        protected readonly RoleRepositoryInterface $roleRepository,
     ) {}
 
     public function index(Request $request): View
@@ -70,20 +71,14 @@ class AdminUserController extends Controller
         }
 
         $users = $query->latest()->paginate(15);
-        $roles = Role::when(
-            ! auth()->user()->hasRole('super-admin'),
-            fn ($q) => $q->where('name', '!=', 'super-admin')
-        )->get();
+        $roles = $this->roleRepository->getAssignable((bool) auth()->user()->hasRole('super-admin'));
 
         return view('admin.users.index', compact('users', 'roles'));
     }
 
     public function create(): View
     {
-        $roles = Role::when(
-            ! auth()->user()->hasRole('super-admin'),
-            fn ($q) => $q->where('name', '!=', 'super-admin')
-        )->get();
+        $roles = $this->roleRepository->getAssignable((bool) auth()->user()->hasRole('super-admin'));
         $hasCurrentSalon = app(CurrentSalon::class)->id() !== null;
 
         return view('admin.users.create', compact('roles', 'hasCurrentSalon'));
@@ -126,10 +121,7 @@ class AdminUserController extends Controller
     {
         $this->authorizeSalonMembership($user);
 
-        $roles = Role::when(
-            ! auth()->user()->hasRole('super-admin'),
-            fn ($q) => $q->where('name', '!=', 'super-admin')
-        )->get();
+        $roles = $this->roleRepository->getAssignable((bool) auth()->user()->hasRole('super-admin'));
         $userRoles = $user->roles()->pluck('roles.id')->toArray();
         $bookings = $user->bookings()->with(['service', 'specialist'])->latest()->take(5)->get();
         $salonRole = app(CurrentSalon::class)->get()?->admins()
@@ -142,15 +134,12 @@ class AdminUserController extends Controller
     {
         $this->authorizeSalonMembership($user);
 
-        $roles = Role::when(
-            ! auth()->user()->hasRole('super-admin'),
-            fn ($q) => $q->where('name', '!=', 'super-admin')
-        )->get();
+        $roles = $this->roleRepository->getAssignable((bool) auth()->user()->hasRole('super-admin'));
         $userRoles = $user->roles()->pluck('roles.id')->toArray();
         $salon = app(CurrentSalon::class)->get();
         $hasCurrentSalon = $salon !== null;
         $salonRole = $salon?->admins()->wherePivot('user_id', $user->id)->first()?->pivot->role;
-        $financeAccess = $userRoles && in_array(Role::where('name', 'finance-access')->value('id'), $userRoles);
+        $financeAccess = $userRoles && in_array($this->roleRepository->getIdByName('finance-access'), $userRoles);
 
         return view('admin.users.edit', compact('user', 'roles', 'userRoles', 'salonRole', 'financeAccess', 'hasCurrentSalon'));
     }
@@ -295,11 +284,9 @@ class AdminUserController extends Controller
             return [];
         }
 
-        $roleIds = Role::whereIn('name', array_filter([
+        return $this->roleRepository->getIdsByNames(array_filter([
             'staff',
             $financeAccess ? 'finance-access' : null,
-        ]))->pluck('id')->all();
-
-        return $roleIds;
+        ]));
     }
 }

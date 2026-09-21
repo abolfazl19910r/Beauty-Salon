@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Admin\Role;
 
 use App\Http\Controllers\Controller;
-use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use App\Repositories\Contracts\PermissionRepositoryInterface;
+use App\Repositories\Contracts\RoleRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,26 +15,25 @@ use Illuminate\View\View;
 
 class AdminRoleController extends Controller
 {
-    public function __construct(private readonly UserRepositoryInterface $userRepository) {}
+    public function __construct(
+        private readonly UserRepositoryInterface $userRepository,
+        private readonly RoleRepositoryInterface $roleRepository,
+        private readonly PermissionRepositoryInterface $permissionRepository,
+    ) {}
 
     public function index(): View
     {
         // ⭐ باگ ۷ (گزارش‌شده ۲۰۲۶-۰۹-۱۸، رفع‌شده همان‌روز): این کوئری قبلاً نقش super-admin
         // را (نام + برچسب فارسی) در جدول لیست نقش‌ها به هر ادمین معمولی هم نشان می‌داد — فقط
         // دکمه‌های عملیات مخفی بودند، نه خودِ ردیف. escalation نبود ولی نشت اطلاعات بود.
-        $roles = Role::withCount('users')
-            ->when(
-                ! auth()->user()?->hasRole('super-admin'),
-                fn ($query) => $query->where('name', '!=', 'super-admin')
-            )
-            ->paginate(10);
+        $roles = $this->roleRepository->paginateWithUserCount((bool) auth()->user()?->hasRole('super-admin'));
 
         return view('admin.roles.index', compact('roles'));
     }
 
     public function create(): View
     {
-        $permissions = Permission::all()->groupBy('group');
+        $permissions = $this->permissionRepository->getAllGroupedByGroup();
 
         return view('admin.roles.create', compact('permissions'));
     }
@@ -57,7 +57,7 @@ class AdminRoleController extends Controller
                 ->withInput();
         }
 
-        $role = Role::create([
+        $role = $this->roleRepository->create([
             'name' => $request->name,
             'label' => $request->label,
         ]);
@@ -85,7 +85,7 @@ class AdminRoleController extends Controller
 
     public function edit(Role $role): View
     {
-        $permissions = Permission::all()->groupBy('group');
+        $permissions = $this->permissionRepository->getAllGroupedByGroup();
         $rolePermissions = $role->permissions->pluck('id')->toArray();
 
         return view('admin.roles.edit', compact('role', 'permissions', 'rolePermissions'));

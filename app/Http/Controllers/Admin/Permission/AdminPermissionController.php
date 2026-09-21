@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Permission;
 
 use App\Http\Controllers\Controller;
 use App\Models\Permission;
+use App\Repositories\Contracts\PermissionRepositoryInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -11,17 +12,19 @@ use Illuminate\View\View;
 
 class AdminPermissionController extends Controller
 {
+    public function __construct(private readonly PermissionRepositoryInterface $permissionRepository) {}
+
     public function index(): View
     {
-        $permissions = Permission::orderBy('group')->orderBy('name')->paginate(20);
-        $groups = Permission::select('group')->distinct()->pluck('group');
+        $permissions = $this->permissionRepository->paginateOrderedByGroupAndName(20);
+        $groups = $this->permissionRepository->getDistinctGroups();
 
         return view('admin.permissions.index', compact('permissions', 'groups'));
     }
 
     public function create(): View
     {
-        $groups = Permission::select('group')->distinct()->pluck('group');
+        $groups = $this->permissionRepository->getDistinctGroups();
 
         return view('admin.permissions.create', compact('groups'));
     }
@@ -46,7 +49,7 @@ class AdminPermissionController extends Controller
                 ->withInput();
         }
 
-        Permission::create($request->all());
+        $this->permissionRepository->create($request->all());
 
         return redirect()->route('admin.permissions.index')
             ->with('success', 'دسترسی با موفقیت ایجاد شد.');
@@ -61,7 +64,7 @@ class AdminPermissionController extends Controller
 
     public function edit(Permission $permission): View
     {
-        $groups = Permission::select('group')->distinct()->pluck('group');
+        $groups = $this->permissionRepository->getDistinctGroups();
 
         return view('admin.permissions.edit', compact('permission', 'groups'));
     }
@@ -114,7 +117,7 @@ class AdminPermissionController extends Controller
 
     public function filter(Request $request): View
     {
-        $query = Permission::query();
+        $query = $this->permissionRepository->query();
 
         if ($request->filled('group')) {
             $query->where('group', $request->group);
@@ -130,7 +133,7 @@ class AdminPermissionController extends Controller
         }
 
         $permissions = $query->orderBy('group')->orderBy('name')->paginate(20);
-        $groups = Permission::select('group')->distinct()->pluck('group');
+        $groups = $this->permissionRepository->getDistinctGroups();
 
         return view('admin.permissions.index', compact('permissions', 'groups'));
     }

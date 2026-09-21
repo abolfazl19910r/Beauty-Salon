@@ -5,10 +5,10 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SuperAdmin\StoreSalonRequest;
 use App\Http\Requests\SuperAdmin\UpdateSalonRequest;
-use App\Models\Invoice;
 use App\Models\Salon;
-use App\Models\Specialist;
+use App\Repositories\Contracts\InvoiceRepositoryInterface;
 use App\Repositories\Contracts\SalonRepositoryInterface;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Services\Payment\InvoiceService;
 use App\Services\SuperAdmin\SuperAdminService;
 use Illuminate\Http\RedirectResponse;
@@ -31,6 +31,8 @@ class SuperAdminController extends Controller
         protected readonly SuperAdminService $superAdminService,
         protected readonly InvoiceService $invoiceService,
         protected readonly SalonRepositoryInterface $salonRepository,
+        protected readonly InvoiceRepositoryInterface $invoiceRepository,
+        protected readonly SpecialistRepositoryInterface $specialistRepository,
     ) {}
 
     public function dashboard(): View
@@ -42,7 +44,7 @@ class SuperAdminController extends Controller
             // را چک می‌کرد، نه اعتبار اشتراک را — یک سالن منقضی‌شده ولی تعلیق‌نشده هم «فعال»
             // شمرده می‌شد. hasActiveSubscription() هر دو شرط را با هم چک می‌کند.
             'active_salons' => $salons->filter(fn ($salon) => $salon->hasActiveSubscription())->count(),
-            'total_specialists' => Specialist::count(),
+            'total_specialists' => $this->specialistRepository->count(),
             // ⭐ باگ ۴ (گزارش‌شده ۲۰۲۶-۰۹-۱۸، رفع‌شده همان‌روز): diffInDays(now()) روی یک
             // تاریخ آینده در این نسخه‌ی Carbon عدد منفی برمی‌گرداند، پس شرط <= 7 روی هر سالنِ
             // غیرمنقضی همیشه true بود. مقایسه‌ی مستقیم تاریخ به‌جای diffInDays با علامت مبهم.
@@ -120,10 +122,7 @@ class SuperAdminController extends Controller
         // global scope BelongsToSalon با هر CurrentSalon دیگری که ممکن است ست شده باشد AND
         // می‌شود، پس یک withoutGlobalScope صریح لازم است تا این همیشه واقعاً فاکتورهای همین
         // سالن را برگرداند، صرف‌نظر از این‌که CurrentSalon چه بوده.
-        $invoices = Invoice::withoutGlobalScope('salon')
-            ->where('salon_id', $salon->id)
-            ->orderByDesc('created_at')
-            ->paginate(20);
+        $invoices = $this->invoiceRepository->paginateForSalonIgnoringScope($salon->id);
 
         return view('superadmin.salons.invoices', compact('salon', 'invoices'));
     }

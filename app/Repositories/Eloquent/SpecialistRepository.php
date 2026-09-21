@@ -120,6 +120,11 @@ class SpecialistRepository extends BaseRepository implements SpecialistRepositor
         return $this->model->withoutGlobalScopes()->whereKey($specialistId)->value('salon_id');
     }
 
+    public function countBySalonIgnoringScope(int $salonId): int
+    {
+        return $this->model->withoutGlobalScope('salon')->where('salon_id', $salonId)->count();
+    }
+
     public function paginateByService(int $serviceId, int $perPage = 15): LengthAwarePaginator
     {
         return $this->model->whereNull('deleted_at')

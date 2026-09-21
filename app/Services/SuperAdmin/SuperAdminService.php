@@ -3,9 +3,9 @@
 namespace App\Services\SuperAdmin;
 
 use App\Models\Salon;
-use App\Models\Specialist;
 use App\Models\User;
 use App\Repositories\Contracts\SalonRepositoryInterface;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Services\Admin\User\AdminUserService;
 use Illuminate\Support\Facades\DB;
 
@@ -25,6 +25,7 @@ class SuperAdminService
     public function __construct(
         protected readonly AdminUserService $adminUserService,
         protected readonly SalonRepositoryInterface $salonRepository,
+        protected readonly SpecialistRepositoryInterface $specialistRepository,
     ) {}
 
     /**
@@ -86,7 +87,7 @@ class SuperAdminService
         // filter on the same column" footgun this project has hit before (WalletSetting,
         // AdminWallet). withoutGlobalScope('salon') makes this explicitly cross-tenant, matching
         // what a super admin operation actually is.
-        $currentSpecialistCount = Specialist::withoutGlobalScope('salon')->where('salon_id', $salon->id)->count();
+        $currentSpecialistCount = $this->specialistRepository->countBySalonIgnoringScope($salon->id);
 
         if ($data['max_specialists_count'] < $currentSpecialistCount) {
             throw new \InvalidArgumentException(
@@ -146,7 +147,7 @@ class SuperAdminService
     public function remainingSpecialistQuota(Salon $salon): int
     {
         // ⭐ Same fix as updateSalon() above — see that docblock.
-        $current = Specialist::withoutGlobalScope('salon')->where('salon_id', $salon->id)->count();
+        $current = $this->specialistRepository->countBySalonIgnoringScope($salon->id);
 
         return max(0, $salon->max_specialists_count - $current);
     }

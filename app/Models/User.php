@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Repositories\Contracts\RoleRepositoryInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -137,7 +138,7 @@ class User extends Authenticatable
     public function assignRole($role): static
     {
         if (is_string($role)) {
-            $role = Role::where('name', $role)->firstOrFail();
+            $role = app(RoleRepositoryInterface::class)->findByNameOrFail($role);
         }
 
         $this->roles()->syncWithoutDetaching($role);
@@ -148,7 +149,7 @@ class User extends Authenticatable
     public function removeRole($role): static
     {
         if (is_string($role)) {
-            $role = Role::where('name', $role)->firstOrFail();
+            $role = app(RoleRepositoryInterface::class)->findByNameOrFail($role);
         }
 
         $this->roles()->detach($role);

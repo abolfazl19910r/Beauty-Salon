@@ -2,16 +2,19 @@
 
 namespace App\Services\Admin\User;
 
-use App\Models\Role;
 use App\Models\Salon;
 use App\Models\User;
+use App\Repositories\Contracts\RoleRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class AdminUserService
 {
-    public function __construct(private readonly UserRepositoryInterface $userRepository) {}
+    public function __construct(
+        private readonly UserRepositoryInterface $userRepository,
+        private readonly RoleRepositoryInterface $roleRepository,
+    ) {}
 
     /**
      * ⭐ فاز ۲ SaaS، محور «۲. چند ادمین برای یک سالن»: وقتی $data['salon'] (یک Salon) و
@@ -148,7 +151,7 @@ class AdminUserService
             return $roleIds;
         }
 
-        $superRoleId = Role::where('name', 'super-admin')->value('id');
+        $superRoleId = $this->roleRepository->getIdByName('super-admin');
 
         return array_values(array_diff($roleIds, array_filter([$superRoleId])));
     }

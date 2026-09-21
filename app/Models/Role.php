@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Repositories\Contracts\PermissionRepositoryInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -38,7 +39,7 @@ class Role extends Model
     public function givePermissionTo($permission)
     {
         if (is_string($permission)) {
-            $permission = Permission::where('name', $permission)->firstOrFail();
+            $permission = app(PermissionRepositoryInterface::class)->findByNameOrFail($permission);
         }
 
         $this->permissions()->syncWithoutDetaching($permission);

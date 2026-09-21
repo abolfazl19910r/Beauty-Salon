@@ -24,5 +24,7 @@ interface SpecialistRepositoryInterface extends RepositoryInterface
 
     public function getSalonIdIgnoringScopes(int $specialistId): ?int;
 
+    public function countBySalonIgnoringScope(int $salonId): int;
+
     public function paginateByService(int $serviceId, int $perPage = 15): LengthAwarePaginator;
 }

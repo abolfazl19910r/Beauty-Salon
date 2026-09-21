@@ -19,4 +19,12 @@ class InvoiceRepository extends BaseRepository implements InvoiceRepositoryInter
             ->orderByDesc('created_at')
             ->paginate($perPage);
     }
+
+    public function paginateForSalonIgnoringScope(int $salonId, int $perPage = 20): LengthAwarePaginator
+    {
+        return $this->model->withoutGlobalScope('salon')
+            ->where('salon_id', $salonId)
+            ->orderByDesc('created_at')
+            ->paginate($perPage);
+    }
 }
