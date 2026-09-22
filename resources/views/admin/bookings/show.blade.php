@@ -181,7 +181,7 @@
                         اطلاعات مالی
                     </h2>
                     @php
-                        $commissionRate = \App\Models\WalletSetting::first()->admin_commission_percentage ?? 10;
+                        $commissionRate = app(\App\Repositories\Contracts\WalletSettingRepositoryInterface::class)->first()->admin_commission_percentage ?? 10;
                         $salonShare = $booking->prepayment_amount * ($commissionRate / 100);
                         $specialistShare = $booking->prepayment_amount * (1 - $commissionRate / 100);
                     @endphp

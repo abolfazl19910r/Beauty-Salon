@@ -89,9 +89,6 @@
                         </div>
 
                         {{-- Account connection status --}}
-                        @php
-                            $linkedUser = \App\Models\User::where('phone', $specialist->phone)->first();
-                        @endphp
                         <div class="pt-2" style="border-top:1px solid var(--admin-border);">
                             @if($linkedUser)
                                 <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium"

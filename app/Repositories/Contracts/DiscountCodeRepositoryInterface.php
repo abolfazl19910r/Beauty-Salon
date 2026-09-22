@@ -21,5 +21,7 @@ interface DiscountCodeRepositoryInterface extends RepositoryInterface
 
     public function getActiveForUser(int $userId): Collection;
 
+    public function getExpiredForUser(int $userId): Collection;
+
     public function getTypesByCodes(iterable $codes): \Illuminate\Support\Collection;
 }

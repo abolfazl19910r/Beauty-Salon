@@ -125,7 +125,7 @@
                         <p class="form-error">{{ $message }}</p>
                         @enderror
                         @php
-                            $globalRate = \App\Models\WalletSetting::first()?->admin_commission_percentage ?? 10;
+                            $globalRate = app(\App\Repositories\Contracts\WalletSettingRepositoryInterface::class)->first()?->admin_commission_percentage ?? 10;
                         @endphp
                         <p class="text-xs mt-1" style="color:var(--admin-text-light)">
                             نرخ global فعلی: <strong>{{ $globalRate }}%</strong>

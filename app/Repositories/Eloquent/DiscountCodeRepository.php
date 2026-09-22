@@ -62,6 +62,20 @@ class DiscountCodeRepository extends BaseRepository implements DiscountCodeRepos
             ->get();
     }
 
+    public function getExpiredForUser(int $userId): Collection
+    {
+        return $this->model->where('user_id', $userId)
+            ->where(function ($q) {
+                $q->where('is_active', false)
+                    ->orWhere(function ($q2) {
+                        $q2->whereNotNull('expires_at')->where('expires_at', '<=', now());
+                    })
+                    ->orWhereRaw('used_count >= max_uses');
+            })
+            ->latest()
+            ->get();
+    }
+
     public function getTypesByCodes(iterable $codes): \Illuminate\Support\Collection
     {
         return $this->model->whereIn('code', $codes)->pluck('type', 'code');

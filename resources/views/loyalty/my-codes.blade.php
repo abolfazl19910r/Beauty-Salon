@@ -20,27 +20,6 @@
             </a>
         </div>
 
-        @php
-            $activeCodes = \App\Models\DiscountCode::where('user_id', auth()->id())
-                ->where('is_active', true)
-                ->where(function($q) {
-                    $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
-                })
-                ->where('used_count', '<', \Illuminate\Support\Facades\DB::raw('max_uses'))
-                ->latest()->get();
-
-            $expiredCodes = \App\Models\DiscountCode::where('user_id', auth()->id())
-                ->where(function($q) {
-                    $q->where('is_active', false)
-                        ->orWhere(function($q2) {
-                            $q2->whereNotNull('expires_at')->where('expires_at', '<=', now());
-                        })
-                        ->orWhereRaw('used_count >= max_uses');
-                })->latest()->get();
-
-            $totalDiscount = $activeCodes->sum(fn($c) => $c->type === 'fixed' ? $c->amount : 0);
-        @endphp
-
         {{-- Statistical cards --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
             <div class="bg-[#2E2117] rounded-2xl border border-emerald-500/20 p-6">

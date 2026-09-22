@@ -145,7 +145,7 @@
                                 $userPoints = \Illuminate\Support\Facades\Cache::remember(
                                     'user:' . auth()->id() . ':loyalty_points',
                                     now()->addMinutes(5),
-                                    fn () => \App\Models\LoyaltyPoint::where('user_id', auth()->id())->sum('points')
+                                    fn () => app(\App\Repositories\Contracts\LoyaltyPointRepositoryInterface::class)->sumForUser(auth()->id())
                                 );
                             } catch (\Exception $e) {
                                 $userPoints = 0;

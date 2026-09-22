@@ -17,6 +17,7 @@ class AdminSpecialistTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private BeautyService $service;
 
     protected function setUp(): void
@@ -141,6 +142,24 @@ class AdminSpecialistTest extends TestCase
 
         $this->actingAs($this->admin)->get("/admin/specialists/{$specialist->id}")->assertOk();
         $this->actingAs($this->admin)->get("/admin/specialists/{$specialist->id}/edit")->assertOk();
+    }
+
+    public function test_show_page_reports_whether_the_specialist_has_a_linked_user_account(): void
+    {
+        $linkedSpecialist = Specialist::factory()->create(['phone' => '09121234567']);
+        \App\Models\User::factory()->create(['phone' => '09121234567', 'user_type' => 'staff']);
+
+        $unlinkedSpecialist = Specialist::factory()->create(['phone' => '09129999999']);
+
+        $this->actingAs($this->admin)
+            ->get("/admin/specialists/{$linkedSpecialist->id}")
+            ->assertOk()
+            ->assertViewHas('linkedUser', fn ($user) => $user !== null && $user->phone === '09121234567');
+
+        $this->actingAs($this->admin)
+            ->get("/admin/specialists/{$unlinkedSpecialist->id}")
+            ->assertOk()
+            ->assertViewHas('linkedUser', fn ($user) => $user === null);
     }
 
     public function test_update_changes_fields_and_syncs_services(): void

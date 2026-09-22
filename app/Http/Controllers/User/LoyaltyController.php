@@ -174,6 +174,10 @@ class LoyaltyController extends Controller
 
     public function myCodes(): View
     {
-        return view('loyalty.my-codes');
+        $activeCodes = $this->discountCodeRepository->getActiveForUser(auth()->id());
+        $expiredCodes = $this->discountCodeRepository->getExpiredForUser(auth()->id());
+        $totalDiscount = $activeCodes->sum(fn ($c) => $c->type === 'fixed' ? $c->amount : 0);
+
+        return view('loyalty.my-codes', compact('activeCodes', 'expiredCodes', 'totalDiscount'));
     }
 }

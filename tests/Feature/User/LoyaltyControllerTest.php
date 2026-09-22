@@ -131,6 +131,29 @@ class LoyaltyControllerTest extends TestCase
         $this->assertCount(1, $response->json('discount_codes'));
     }
 
+    public function test_my_codes_page_shows_active_and_expired_codes_correctly(): void
+    {
+        \App\Models\DiscountCode::factory()->create([
+            'user_id' => $this->user->id,
+            'code' => 'ACTIVE1',
+            'is_active' => true,
+            'expires_at' => now()->addMonth(),
+        ]);
+        \App\Models\DiscountCode::factory()->create([
+            'user_id' => $this->user->id,
+            'code' => 'EXPIRED1',
+            'is_active' => false,
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('loyalty.my-codes'));
+
+        $response->assertOk();
+        $response->assertViewHas('activeCodes', fn ($codes) => $codes->pluck('code')->contains('ACTIVE1')
+            && ! $codes->pluck('code')->contains('EXPIRED1'));
+        $response->assertViewHas('expiredCodes', fn ($codes) => $codes->pluck('code')->contains('EXPIRED1')
+            && ! $codes->pluck('code')->contains('ACTIVE1'));
+    }
+
     public function test_my_codes_page_renders(): void
     {
         $response = $this->actingAs($this->user)->get(route('loyalty.my-codes'));

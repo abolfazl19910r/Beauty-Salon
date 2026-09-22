@@ -9,6 +9,7 @@ use App\Http\Requests\Admin\Specialist\UpdateSpecialistRequest;
 use App\Models\Specialist;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Repositories\Contracts\SpecialistRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Admin\Specialist\AdminSpecialistService;
 use App\Services\CategoryService;
 use Illuminate\Http\RedirectResponse;
@@ -23,6 +24,7 @@ class AdminSpecialistController extends Controller
         protected readonly AdminSpecialistService $specialistService,
         protected readonly CategoryRepositoryInterface $categoryRepository,
         protected readonly SpecialistRepositoryInterface $specialistRepository,
+        protected readonly UserRepositoryInterface $userRepository,
     ) {}
 
     public function index(Request $request): View
@@ -40,7 +42,9 @@ class AdminSpecialistController extends Controller
     {
         $this->ensureSalonOwnership($specialist->salon_id);
 
-        return view('admin.specialists.show', compact('specialist'));
+        $linkedUser = $this->userRepository->findByPhone($specialist->phone);
+
+        return view('admin.specialists.show', compact('specialist', 'linkedUser'));
     }
 
     public function create(): View
