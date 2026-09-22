@@ -12,7 +12,7 @@ github_pat_11A53YIYI0Vk4zgl2anwO3_irhnp6Gn4lp6SGvUxuWWa7GN9rFI72LoTHa9EtFufzRCPJ
 این توکن برای خواندن فایل‌ها مستقیم از GitHub API (`raw.githubusercontent.com` و `api.github.com`) استفاده می‌شه تا نیازی به آپلود دستی فایل توسط کاربر نباشه. هر بار با هدر `Authorization: token <TOKEN>` در curl استفاده بشه.
 
 ## برنچ‌های پروژه
-`main`, `develop` — برنچ `V2` در ۲۰۲۶-۰۹-۲۰ با یک merge commit (`40c58eb`) داخل `develop` ادغام و از ریموت حذف شد؛ از این به بعد فقط `develop` وجود داره و کار جدید از همونجا شاخه گرفته می‌شه.
+`main`, `develop`, `V3` — برنچ `V2` در ۲۰۲۶-۰۹-۲۰ با یک merge commit (`40c58eb`) داخل `develop` ادغام و از ریموت حذف شد. ⚠️ **به‌روزرسانی ۲۰۲۶-۰۹-۲۱**: ابوالفضل تأیید کرد `V3` الان به‌روزترین برنچ کاره، نه `develop` — از این به بعد همیشه فایل‌ها باید از `V3` خونده بشن و هر پچ/کامیت جدید هم باید بر پایه‌ی `V3` باشه (نه `develop`). قبل از هر کاری چک کن `V3` هنوز جدیدترینه یا نه (ممکنه دوباره عوض بشه).
 
 ---
 
@@ -20,7 +20,7 @@ github_pat_11A53YIYI0Vk4zgl2anwO3_irhnp6Gn4lp6SGvUxuWWa7GN9rFI72LoTHa9EtFufzRCPJ
 دسترسی شبکه/GitHub در محیط چت وب بین جلسات مختلف متفاوت بوده — گاهی کاملاً بسته (نه bash، نه web_fetch)، گاهی کاملاً باز (در فاز R-AdminBlog مستقیم از `api.github.com`/`raw.githubusercontent.com` روی برنچ `develop` خونده شد و همین باعث کشف چند باگ جدی شد که فقط از روی فایل‌های آپلودی قابل کشف نبودن).
 
 1. **همیشه اول با یک curl ساده (`api.github.com/repos/...`) تست کن** که دسترسی باز است یا نه.
-2. اگه باز بود: فایل واقعی رو مستقیم از ریپو (ترجیحاً برنچ `develop`) با هدر `Authorization: token <TOKEN>` بخون، نه فقط فایل آپلودی کاربر رو — چون آپلودها می‌تونن قدیمی‌تر یا جدیدتر از ریپو باشن (چندبار در این پروژه این مورد اتفاق افتاده).
+2. اگه باز بود: فایل واقعی رو مستقیم از ریپو (⚠️ برنچ `V3` — نه `develop`، طبق تصمیم ۲۰۲۶-۰۹-۲۱) با هدر `Authorization: token <TOKEN>` بخون، نه فقط فایل آپلودی کاربر رو — چون آپلودها می‌تونن قدیمی‌تر یا جدیدتر از ریپو باشن (چندبار در این پروژه این مورد اتفاق افتاده).
 3. اگه بسته بود: کاربر فایل‌های مرتبط رو مستقیم آپلود می‌کنه، فایل اصلاح‌شده تحویل داده می‌شه، کاربر خودش جایگزین و کامیت می‌کنه.
 4. **بعد از ساختن هر فایل، حتماً `present_files` صدا زده بشه** — چند بار در این پروژه فایل ساخته شد ولی تحویل داده نشد و کاربر فکر می‌کرد رفع نشده.
 5. **⭐ وقتی چند فایل خروجی با اسم مشابه پشت سر هم تحویل داده می‌شن (مثلاً چند `show.blade.php` برای مسیرهای مختلف)، حتماً هر کدوم یک اسم یکتا و صریح بگیره** (مثل `bookings-show.blade.php` در برابر `payment-show.blade.php`) و مسیر دقیق مقصدش (`resources/views/.../اسم‌واقعی.blade.php`) توی جدول توضیح داده بشه — یک بار در همین پروژه یک فایل جدید ناخواسته فایل قبلی رو overwrite کرد چون هر دو `show.blade.php` نام‌گذاری شده بودن.
@@ -3145,7 +3145,7 @@ tests/Feature/Auth/LoginThrottlingTest.php (۹ تست جدید): تلاش‌ها
    - باگ‌فیکس: `fix/<شرح-کوتاه>`
    - فیچر جدید: `feat/<شرح-کوتاه>`
    - رفکتور: `refactor/<شرح-کوتاه>`
-   - معمولاً یک شاخه‌ی جدید از روی `develop`
+   - معمولاً یک شاخه‌ی جدید از روی `V3` (⚠️ نه `develop` — طبق تصمیم ۲۰۲۶-۰۹-۲۱، `V3` پایه‌ی کار فعلیه)
 2. **پیام کامیت دقیق** طبق Conventional Commits، با prefix های قبلی: `fix:`, `feat:`, `refactor:`, `perf:`, `chore:`, `build(docker):`، فرمت `type(scope): توضیح کوتاه`
 3. اگه چند تغییر نامرتبط در یک پاسخ انجام شده، باید برای هرکدوم یک کامیت جدا پیشنهاد بشه (نه یک کامیت بزرگ)
 4. دستورات `git add`, `git commit -m "..."` رو دقیق و آماده‌ی کپی بده
@@ -4772,21 +4772,22 @@ Repository نداره — کوئری‌های واقعی دیتابیس (`Model:
 
 | فاز | نام | دامنه (مدل‌ها) | کنترلر/سرویس‌های اصلی درگیر | وضعیت |
 |---|---|---|---|---|
-| ۰ | R-Repo-Foundation | — (زیرساخت) | `BaseRepository`, Contracts, `RepositoryServiceProvider`, pilot روی `Category` | ⬜ شروع‌نشده |
-| ۱ | R-Repo-Services | BeautyService, Category | ServiceController, AdminServiceController, AdminCategoryController, CategoryService | ⬜ شروع‌نشده |
-| ۲ | R-Repo-Specialists | Specialist, SpecialistSchedule, Leave, Holiday | SpecialistController (user+admin), AdminSpecialistScheduleController, AdminLeaveController, AdminHolidayController, SpecialistScheduleSelfService*, SpecialistLeave* | ⬜ شروع‌نشده |
-| ۳ | R-Repo-Bookings | Booking | BookingController, BookingReservationController, BookingRescheduleController, BookingAvailabilityController, AdminBookingController, BookingService | ⬜ شروع‌نشده |
-| ۴ | R-Repo-Payments | Payment, Invoice | PaymentController, SecurePaymentController, AdminBillingController, PaymentService, SecurePaymentService, InvoiceService, SubscriptionPaymentService | ⬜ شروع‌نشده |
-| ۵ | R-Repo-Wallet | AdminWallet(+Transaction), SpecialistWallet, UserWallet(+Transaction), WithdrawalRequest, WalletSetting | AdminWalletController, SpecialistWalletController, SpecialistWithdrawalController, AdminWithdrawalController, SpecialistIbanController, UserWalletController, WalletAdminService, SpecialistWalletService | ⬜ شروع‌نشده |
-| ۶ | R-Repo-Loyalty | LoyaltyPoint, LoyaltySetting, Reward, Loyalty, DiscountCode, DiscountUsage | LoyaltyController, AdminLoyaltyPointsController, AdminLoyaltyRewardController, AdminDiscountCodeController, BookingDiscountController, LoyaltyService, LoyaltyAdminService, DiscountCalculator | ⬜ شروع‌نشده |
-| ۷ | R-Repo-Content | BlogPost, BlogCategory, GalleryImage, Announcement, Review, ReviewToken | BlogController, AdminBlogController, AdminBlogCategoryController, AdminGalleryController, AnnouncementController, AdminAnnouncementController, ReviewController, AdminReviewController, SpecialistReviewController | ⬜ شروع‌نشده |
-| ۸ | R-Repo-Users-Auth | User, Role, Permission, salon_admins | RegisteredUserController, AuthenticatedSessionController, PasswordReset*, PhoneVerification*, TwoFactor*, CustomerRegistered/Authenticated*, AdminUserManagementController, AdminRoleController, AdminPermissionController, AdminUserService | ⬜ شروع‌نشده |
-| ۹ | R-Repo-Security | SecurityLog, SecuritySetting | SecurityController (user), AdminSecurityController, SecurityLogService | ⬜ شروع‌نشده |
-| ۱۰ | R-Repo-Salon | Salon, SalonSmsUsage | SuperAdminController, SuperAdminService, SalonSignupController/Service | ⬜ شروع‌نشده |
-| ۱۱ | R-Repo-Reports-Notif | ReportExport, ScheduledReport(+Run), NotificationSetting, UserNotification, UserReportSetting | AdminReportsController, AdminReportExportController, AdminNotificationController, AdminNotificationSettingController, SpecialistNotificationController, ReportCacheService, SmsQuotaService | ⬜ شروع‌نشده |
-| ۱۲ | R-Repo-Sweep | SupportTicket(+Message) + هر مدل/فایل جامانده | تصمیم‌گیری در مورد SupportTicket + هر Controller/Service که در فازهای بالا نیومده | ⬜ شروع‌نشده |
-| ۱۳ | R-Repo-CommentSweep | — | حذف کامنت از فایل‌های لمس‌نشده در فازهای بالا: `routes/*`, `config/*`, `database/migrations/*`, `app/Providers/*`, factories, seeders | ⬜ شروع‌نشده |
-| ۱۴ | R-Repo-Final | — | اجرای کامل `php artisan test` بعد از همه‌ی فازها + گزارش نهایی + جمع‌بندی این جدول در پرامپت | ⬜ شروع‌نشده |
+| ۰ | R-Repo-Foundation | — (زیرساخت) | `BaseRepository`, Contracts, `RepositoryServiceProvider`, pilot روی `Category` | ✅ انجام‌شده (۲۰۲۶-۰۹-۲۰) |
+| ۱ | R-Repo-Services | BeautyService (Category قبلاً در فاز ۰ کامل شد) | ServiceController, AdminServiceController | ✅ انجام‌شده (۲۰۲۶-۰۹-۲۰) |
+| ۲ | R-Repo-Specialists | Specialist, SpecialistSchedule, Leave, Holiday | SpecialistController (user+admin), AdminSpecialistScheduleController, AdminLeaveController, AdminHolidayController, SpecialistScheduleSelfService*, SpecialistLeave* | ✅ انجام‌شده (۲۰۲۶-۰۹-۲۰) |
+| ۳ | R-Repo-Bookings | Booking | BookingController, BookingReservationController, BookingRescheduleController, BookingAvailabilityController, AdminBookingController, BookingService | ✅ انجام‌شده (۲۰۲۶-۰۹-۲۰) |
+| ۴ | R-Repo-Payments | Payment, Invoice | PaymentController, SecurePaymentController, AdminBillingController, PaymentService, SecurePaymentService, InvoiceService, SubscriptionPaymentService | ✅ انجام‌شده (۲۰۲۶-۰۹-۲۰) |
+| ۵ | R-Repo-Wallet | AdminWallet(+Transaction), SpecialistWallet, UserWallet(+Transaction), WithdrawalRequest, WalletSetting | AdminWalletController, SpecialistWalletController, SpecialistWithdrawalController, AdminWithdrawalController, SpecialistIbanController, UserWalletController, WalletAdminService, SpecialistWalletService | ✅ انجام‌شده (۲۰۲۶-۰۹-۲۰) |
+| ۶ | R-Repo-Loyalty | LoyaltyPoint, LoyaltySetting, Reward, Loyalty, DiscountCode, DiscountUsage | LoyaltyController, AdminLoyaltyPointsController, AdminLoyaltyRewardController, AdminDiscountCodeController, BookingDiscountController, LoyaltyService, LoyaltyAdminService, DiscountCalculator | ✅ انجام‌شده (۲۰۲۶-۰۹-۲۱) |
+| ۷ | R-Repo-Content | BlogPost, BlogCategory, GalleryImage, Announcement, Review, ReviewToken | BlogController, AdminBlogController, AdminBlogCategoryController, AdminGalleryController, AnnouncementController, AdminAnnouncementController, ReviewController, AdminReviewController, SpecialistReviewController | ✅ انجام‌شده (۲۰۲۶-۰۹-۲۱) |
+| ۸ | R-Repo-Users-Auth | User, Role, Permission, salon_admins | RegisteredUserController, AuthenticatedSessionController, PasswordReset*, PhoneVerification*, TwoFactor*, CustomerRegistered/Authenticated*, AdminUserManagementController, AdminRoleController, AdminPermissionController, AdminUserService | ✅ انجام‌شده (۲۰۲۶-۰۹-۲۱) |
+| ۹ | R-Repo-Security | SecurityLog, SecuritySetting | SecurityController (user), AdminSecurityController, SecurityLogService | ✅ انجام‌شده (۲۰۲۶-۰۹-۲۱) |
+| ۱۰ | R-Repo-Salon | Salon, SalonSmsUsage | SuperAdminController, SuperAdminService, SalonSignupController/Service | ✅ انجام‌شده (۲۰۲۶-۰۹-۲۱) |
+| ۱۱ | R-Repo-Reports-Notif | ReportExport, ScheduledReport(+Run), NotificationSetting, UserNotification, UserReportSetting | AdminReportsController, AdminReportExportController, AdminNotificationController, AdminNotificationSettingController, SpecialistNotificationController, ReportCacheService, SmsQuotaService | ✅ انجام‌شده (۲۰۲۶-۰۹-۲۱) |
+| ۱۲ | R-Repo-Sweep | SupportTicket(+Message) + هر مدل/فایل جامانده | تصمیم‌گیری در مورد SupportTicket + هر Controller/Service که در فازهای بالا نیومده | ✅ انجام‌شده جزئی (۲۰۲۶-۰۹-۲۱) — به یادداشت پایان این فاز نگاه کن |
+| ۱۲b | R-Repo-BookingSweep (فاز جدید، کشف‌شده در فاز ۱۲) | Specialist, Booking, BeautyService | هر `Controller`/`Service`ای که این سه مدل رو مستقیم کوئری می‌زنه — فهرست کامل در یادداشت پایان فاز ۱۲ | ✅ انجام‌شده (۲۰۲۶-۰۹-۲۱) |
+| ۱۳ | R-Repo-CommentSweep | — | حذف کامنت از فایل‌های لمس‌نشده در فازهای بالا: `routes/*`, `config/*`, `database/migrations/*`, `app/Providers/*`, factories, seeders | ✅ انجام‌شده (۲۰۲۶-۰۹-۲۱) |
+| ۱۴ | R-Repo-Final | — | اجرای کامل `php artisan test` بعد از همه‌ی فازها + گزارش نهایی + جمع‌بندی این جدول در پرامپت | ✅ انجام‌شده (۲۰۲۶-۰۹-۲۱) |
 
 ### روال هر فاز (مو‌به‌مو، تکرار همون روالی که این نشست‌ها همیشه داشتن)
 ۱. برای اون دامنه، هر فایل کنترلر/سرویس رو دقیق بخون و هر کوئری مستقیم رو شناسایی کن.
@@ -4802,3 +4803,1216 @@ Repository نداره — کوئری‌های واقعی دیتابیس (`Model:
 ### شروع در نشست/چت بعدی
 چون این یک رفکتور بزرگ و چندفازه‌ست، هر نشست باید دقیقاً روی **یک فاز** (نه بیشتر) تمرکز کنه —
 دقیقاً مثل قدم‌های محور‌های قبلی این پروژه.
+
+---
+
+## نشست تکمیل‌شده: فاز ۰ (R-Repo-Foundation) — ۲۰۲۶-۰۹-۲۰
+
+### وضعیت دسترسی GitHub این نشست
+توکن GitHub موجود در این فایل با `401 Unauthorized` مواجه شد (منقضی/نامعتبر) — طبق روال
+بخش «روال دسترسی به GitHub»، مستقیماً از فایل زیپ آپلودی کار شد. توکن نیاز به تمدید داره.
+
+### محیط
+PHP 8.3 + Composer از صفر روی سندباکس نصب شد (composer.phar از
+`github.com/composer/composer/releases`، نه getcomposer.org — طبق نکته‌ی مستندشده‌ی قبلی).
+پوشه‌ی `storage/*` کلاً در زیپ آپلودی وجود نداشت (نه در `.gitignore` هم نبود) — از صفر با
+ساختار استاندارد لاراول بازسازی شد. سوییت تست کامل با `phpunit.xml` (SQLite in-memory) قبل از
+شروع اجرا شد: **۱۰۸۷ passed / ۱ skipped / ۱ error محیطی-تصادفی (bookings.active_slot_key
+UNIQUE collision در `AdminReportExportTest`، به‌خاطر داده‌ی رندوم فکتوری، نامرتبط با این نشست و
+غیرقابل تکرار در اجرای بعدی)** — این baseline قبل از هر تغییری ثبت شد.
+
+### تصمیم دامنه (نکته‌ی مهم برای فاز ۱)
+درخواست این نشست هم زیرساخت Repository Pattern و هم پیاده‌سازی pilot روی **کل دامنه‌ی
+Category** رو خواسته بود — یعنی `AdminCategoryController` و `CategoryService` هر دو در همین فاز
+۰ به‌طور کامل به Repository منتقل شدن (نه فقط نمونه‌ی جزئی). جدول فازبندی بالا به‌روز شد: فاز ۱
+(`R-Repo-Services`) دیگه نیازی به دست‌زدن به `AdminCategoryController`/`CategoryService` نداره و
+فقط باید روی دامنه‌ی `BeautyService` (`ServiceController`, `AdminServiceController`) تمرکز کنه.
+
+### کار انجام‌شده
+- `app/Repositories/Contracts/RepositoryInterface.php` — قرارداد عمومی
+  (`all/find/findOrFail/create/update/delete/paginate`)
+- `app/Repositories/Eloquent/BaseRepository.php` — پیاده‌سازی عمومی همون متدها روی
+  `protected Model $model`
+- `app/Repositories/Contracts/CategoryRepositoryInterface.php` — extends `RepositoryInterface`
+  + `getMaxOrder`, `updateOrder`, `getTree`, `getActiveTree`, `paginateWithFilters`,
+  `getParentOptions`, `getOptionsExcept`
+- `app/Repositories/Eloquent/CategoryRepository.php` — pilot، extends `BaseRepository`
+- `app/Providers/RepositoryServiceProvider.php` — bind `CategoryRepositoryInterface` →
+  `CategoryRepository`؛ در `bootstrap/providers.php` ثبت شد
+- `app/Services/CategoryService.php` — بازنویسی کامل: تمام کوئری‌های مستقیم `Category::`
+  حذف و با `CategoryRepositoryInterface` (constructor injection) جایگزین شدن؛ منطق تجاری
+  (`DB::transaction`, `DB::beginTransaction/commit/rollBack`, `Log::info/error`) دست‌نخورده موند
+  (طبق قرارداد Repository). کامنت‌ها حذف شدن (این فایل از قبل کامنت نداشت).
+- `app/Http/Controllers/Admin/Category/AdminCategoryController.php` — بازنویسی کامل:
+  کوئری‌های خواندنی (`index`, `create`, `show`, `edit`, `toggleStatus`, `destroy`) از
+  `CategoryRepositoryInterface` استفاده می‌کنن؛ عملیات نوشتن (`store`, `update`, `toggleStatus`,
+  `destroy`) همچنان از طریق `CategoryService` می‌رن. کامنت‌ها حذف شدن (این فایل هم از قبل
+  کامنت نداشت).
+- **عمداً دست‌نخورده موند**: `AdminSpecialistController.php` (خط‌های `Category::with('services')`)
+  و `app/Http/Controllers/User/ServiceController.php` (خط `Category::all()`) — این دو فایل به
+  فازهای ۲ و ۱ تعلق دارن و طبق قانون «هر فایل فقط یک‌بار دست بخوره در فاز خودش»، اینجا لمس
+  نشدن؛ در فازهای مربوطه‌شون باید Repository تزریق بشه.
+
+### تست و وریفای
+- `tests/Feature/Admin/AdminCategoryTest.php`: ۱۵/۱۵ سبز، قبل و بعد یکسان
+- Laravel Pint: `PASS` روی همه‌ی فایل‌های جدید/لمس‌شده
+- کل سوییت بعد از تغییر: **۱۰۸۷ passed / ۱ skipped / صفر fail** (همون خطای تصادفی محیطی این بار
+  اصلاً رخ نداد — تأیید می‌کنه که به این نشست ربطی نداشت)
+- پچ (`0001-feat-repo-R-Repo-Foundation-Repository-Pattern-infra.patch`) روی یک `git am`
+  مستقل (کلون جدا از commit پایه) با `--keep-cr` تست شد — بدون conflict اعمال شد، و
+  `AdminCategoryTest` روی همون کلون هم ۱۵/۱۵ سبز بود.
+
+### قدم‌های باز برای نشست بعدی
+فاز ۱ (`R-Repo-Services`) رو شروع کن — این‌بار فقط دامنه‌ی `BeautyService`: یک
+`BeautyServiceRepositoryInterface` + `BeautyServiceRepository` بساز (از همون `BaseRepository`
+extend کن)، `ServiceController` (کاربر) و `AdminServiceController` رو بازنویسی کن، و همون‌جا
+خط‌های باقی‌مانده‌ی `Category::` در این دو فایل (اگه بودن) رو هم با تزریق
+`CategoryRepositoryInterface` موجود جایگزین کن. `AdminSpecialistController.php` رو دست نزن —
+اون فاز ۲ (`R-Repo-Specialists`) هست.
+
+---
+
+## نشست تکمیل‌شده: فاز ۱ (R-Repo-Services) — ۲۰۲۶-۰۹-۲۰
+
+### وضعیت دسترسی GitHub این نشست
+ابوالفضل توکن جدید داد؛ `api.github.com` تست شد (`200 OK`) و کل نشست مستقیماً از `develop`
+(commit پایه `0ad76e8`) کلون و کار شد — طبق روال، نه از زیپ. پچ فاز ۰ (که قبلاً فقط روی زیپ
+verify شده بود) اینجا مجدداً روی `develop` واقعی با `git am` اعمال و verify شد (بدون conflict)،
+و پچ خروجی فاز ۰ هم با base واقعی `develop` بازتولید شد (محتوا یکسان، فقط parent commit درست).
+دیف کامل بین زیپ قبلی و `develop` واقعی چک شد — هیچ تفاوت مرتبطی نبود (فقط دو تا پوشه‌ی زبدی
+اشتباهی از نشست قبل و فایل‌های build/vendor که gitignore شدن).
+
+### کار انجام‌شده
+- `app/Repositories/Contracts/BeautyServiceRepositoryInterface.php` — extends
+  `RepositoryInterface` + `paginateForIndex`, `paginateWithCategory`, `getRelated`
+- `app/Repositories/Eloquent/BeautyServiceRepository.php` — extends `BaseRepository`
+- `RepositoryServiceProvider` به‌روز شد: `BeautyServiceRepositoryInterface` →
+  `BeautyServiceRepository` هم bind شد
+- `ServiceController` (کاربر): `index`/`list`/`show` دیگه مستقیم روی `BeautyService::`/
+  `Category::` کوئری نمی‌زنن — از `BeautyServiceRepositoryInterface` و
+  `CategoryRepositoryInterface` (فاز ۰، از قبل موجود) استفاده می‌کنن
+- `AdminServiceController`: `index`/`store`/`update`/`destroy` از
+  `BeautyServiceRepositoryInterface` استفاده می‌کنن؛ `CategoryService::getCategorySelectOptions()`
+  دست‌نخورده موند (از قبل از طریق `CategoryRepository` فاز ۰ می‌ره)
+- کامنت‌های هر دو کنترلر حذف شدن
+
+### مرزهای رعایت‌شده (عمداً دست‌نخورده موندن)
+- `$service->specialists()->with(...)->get()` در `ServiceController::show()` — کوئری روی
+  نمونه‌ی از قبل route-model-bind شده، نه کلاس استاتیک `Model`؛ دقیقاً همون مرزی که در فاز ۰ برای
+  `$category->load(...)` رعایت شد
+- `app/Models/BeautyService.php` (متدهای استاتیک `latest()`/`paginate()` که خودشون Eloquent رو
+  override می‌کنن) — هیچ‌کدوم از دو کنترلر این فاز صداشون نمی‌زنن؛ تنها مصرف‌کننده‌هاشون
+  (`DashboardController`, `HomeController`) به فاز‌های دیگه تعلق دارن و اینجا لمس نشدن
+- `AdminSpecialistController.php` (`Category::with('services')`) — فاز ۲
+
+### تست و وریفای
+- تست‌های دامنه (`AdminServiceTest`, `ServiceControllerTest`, `CrossSalonServiceLeakTest`,
+  `AdminCategoryTest`): ۳۳/۳۳ سبز، قبل و بعد یکسان
+- Laravel Pint: `PASS` روی همه‌ی فایل‌های جدید/لمس‌شده (`--test` روی کل ریپو هم چک شد — بقیه‌ی
+  ایرادها همه از قبل و در فایل‌های لمس‌نشده‌ی این فاز بودن)
+- کل سوییت بعد و قبل: **۱۰۸۷ passed / ۱ skipped / صفر fail** — بدون تغییر رفتاری
+- هر دو پچ (۰۰۰۱ فاز ۰ + ۰۰۰۲ فاز ۱) پشت‌سرهم روی یک `git am` مستقل (کلون جدا از `0ad76e8`)
+  تست شدن — بدون conflict اعمال شدن، و کل سوییت روی همون کلون هم ۱۰۸۷/۱ (skip) سبز بود
+
+### قدم‌های باز برای نشست بعدی
+فاز ۲ (`R-Repo-Specialists`) رو شروع کن: دامنه‌ی `Specialist`, `SpecialistSchedule`, `Leave`,
+`Holiday` — `SpecialistController` (کاربر+ادمین)، `AdminSpecialistScheduleController`،
+`AdminLeaveController`، `AdminHolidayController`، `SpecialistScheduleSelfService*`،
+`SpecialistLeave*`. توجه: `AdminSpecialistController.php` دو خط `Category::with('services')`
+داره — با تزریق `CategoryRepositoryInterface` موجود (فاز ۰) جایگزینش کن، نیازی به متد جدید در
+Repository نیست چون `with('services')->get()` فقط یک `all()` با eager-load سادست (یا در صورت
+نیاز یک متد کوچیک به `CategoryRepositoryInterface` اضافه کن).
+
+---
+
+## نشست تکمیل‌شده: فاز ۲ (R-Repo-Specialists) — ۲۰۲۶-۰۹-۲۰
+
+### دامنه‌ی فایل‌ها (فراتر از لیست جدول)
+جدول فازبندی صراحتاً فقط `SpecialistController` (کاربر+ادمین)،
+`AdminSpecialistScheduleController`، `AdminLeaveController`، `AdminHolidayController`،
+`SpecialistScheduleSelfService*` (=`SpecialistProfileController::schedule/updateSchedule`) و
+`SpecialistLeave*` (=`SpecialistLeaveController`) رو نام برده بود. در عمل، `AdminSpecialistLeaveController`
+(کنترلر جدای ادمین برای مرخصیِ per-specialist، مسیرش `admin/specialists/{id}/leaves`) هم چون
+مستقیماً به مدل `Leave` (دامنه‌ی همین فاز) کوئری می‌زد، به همین فاز اضافه شد — جدول جدا اسمش رو
+نیاورده بود ولی از نظر دامنه‌ی مدل دقیقاً همین‌جا تعلق داره.
+
+### قاعده‌ی مرز نهایی‌شده (برای فازهای بعدی هم صادقه)
+دو تا نکته‌ی مهم درباره‌ی مرز «کجا Repository، کجا نه» که این فاز نهایی‌شون کرد:
+1. **متدهای کسب‌وکاری خودِ Model که روی `$this` عمل می‌کنن** (مثل
+   `Specialist::getAvailableSlots/getMonthAvailability`, `Leave::approve/reject`) — این‌ها رفتار
+   خودِ مدلن (analogous به scope)، نه یک کوئری کنترلر/سرویس؛ دست‌نخورده می‌مونن حتی اگه داخلشون
+   `$this->schedules()->where(...)` بزنن.
+2. **کوئری‌های رابطه‌ای (`$parent->relation()->...`) که مدل مقصدشون دامنه‌ی همین فاز یا فازهای
+   قبلی تکمیل‌شده‌ست** (اینجا: `SpecialistSchedule`, `Leave`, `Holiday` که همین فاز Repository
+   گرفتن) — این‌ها هم به Repository منتقل می‌شن، نه فقط کوئری‌هایی که از `Model::` استاتیک شروع
+   می‌شن؛ در غیر این صورت دقیقاً همون کوئری‌های تکراری (مثل الگوی delete+recreate شیفت که در ۲
+   کنترلر جدا تکرار شده بود) دوباره تکرار می‌مونن. اما اگه مدل مقصد دامنه‌ی یک فاز **آینده**‌ست
+   (اینجا: `Booking` فاز ۳، `User` فاز ۸)، دست‌نخورده می‌مونه — همون فاز خودش حلش می‌کنه.
+
+### کار انجام‌شده
+- `SpecialistRepositoryInterface` + `SpecialistRepository`: `paginateWithFilters`,
+  `searchPaginated`, `getTopRated`, `findByPhone`, `getSalonIdIgnoringScopes`
+- `SpecialistScheduleRepositoryInterface` + `SpecialistScheduleRepository`:
+  `getGroupedBySpecialist`, `replaceForSpecialist` (الگوی delete+recreate که بین
+  `AdminSpecialistScheduleController` و `SpecialistProfileController::updateSchedule` عیناً
+  تکرار شده بود، حالا در یک متد repository)
+- `LeaveRepositoryInterface` + `LeaveRepository`: `paginateWithFilters` (لیست سراسری ادمین)،
+  `paginateForSpecialist` (بین ادمین per-specialist و خودِ متخصص مشترک)، `getPending`،
+  `createForSpecialist`، `hasOverlappingApprovedLeave`، `hasApprovedLeaveOnDate`
+- `HolidayRepositoryInterface` + `HolidayRepository`: `getForSpecialist`,
+  `getUpcomingForSpecialist`, `findOnDate`, `existsOnDate`, `createForSpecialist`
+- `RepositoryInterface`/`BaseRepository`: متد عمومی `count()` اضافه شد (برای چک سقف تعداد متخصص)
+- `CategoryRepositoryInterface`/`CategoryRepository`: متد `getWithServices()` اضافه شد — رفع
+  بدهی باقی‌مانده از فاز ۰/۱ (`Category::with('services')->get()` در `AdminSpecialistController`)
+- همه‌ی ۴ binding جدید در `RepositoryServiceProvider` ثبت شدن
+- کنترلرها/سرویس‌های بازنویسی‌شده: `SpecialistController` (کاربر)، `AdminSpecialistController`،
+  `AdminSpecialistService`، `AdminSpecialistScheduleController`، `AdminLeaveController`،
+  `LeaveService`، `SpecialistLeaveController`، `AdminSpecialistLeaveController`،
+  `AdminHolidayController`، `SpecialistProfileController` (`update`/`schedule`/`updateSchedule`)
+- کامنت‌های همه‌ی فایل‌های لمس‌شده حذف شدن — شامل دو تا PHPDoc بلاک `@return array{...}` در
+  `AdminSpecialistService`/`LeaveService` (طبق سیاست پروژه: حذف کامنت یعنی حتی PHPDoc)
+
+### باگ رفتاری که موقع رفکتور کشف و جلوگیری شد (نه از قبل بوده، حین همین فاز)
+`SpecialistController::search()` (کاربر) از `$request->has('name'/'service_id'/'sort')` استفاده
+می‌کرد (چک وجود کلید، نه truthiness). نسخه‌ی اول Repository من اشتباهاً از `!empty($filters[...])`
+استفاده کرده بود که یک تغییر رفتار ظریف می‌بود (مثلاً `?name=` با مقدار خالی دیگه فیلتر نمی‌شد).
+قبل از commit با دقت چک و به `array_key_exists`/`has()`-معادل اصلاح شد تا رفتار عیناً یکی بمونه.
+
+### تست و وریفای
+- تست‌های دامنه (۱۳ فایل: `AdminHolidayTest`, `AdminLeaveTest`, `AdminSpecialistLeaveTest`,
+  `AdminSpecialistPhoneNormalizationTest`, `AdminSpecialistQuotaTest`, `AdminSpecialistScheduleTest`,
+  `AdminSpecialistTest`, `SpecialistAvailabilityTest`, `SpecialistCommissionRateTest`,
+  `SpecialistsAvailabilityRouteCollisionTest`, `SpecialistScheduleSelfServiceTest`,
+  `SpecialistSelfServiceAuthorizationTest`, `ServiceControllerTest` کاربر): **۱۰۷/۱۰۷ (۱ skip)** سبز
+- Laravel Pint: `PASS` روی همه‌ی ۲۵ فایل جدید/لمس‌شده
+- کل سوییت: **۱۰۸۷ passed / ۱ skipped / صفر fail** — بدون تغییر رفتاری، قبل و بعد یکسان
+- هر سه پچ (۰۰۰۱+۰۰۰۲+۰۰۰۳) پشت‌سرهم روی یک `git am` مستقل (کلون جدا از `0ad76e8`) تست شدن —
+  بدون conflict، و کل سوییت روی همون کلون هم ۱۰۸۷/۱ (skip) سبز بود
+
+### قدم‌های باز برای نشست بعدی
+فاز ۳ (`R-Repo-Bookings`) رو شروع کن: دامنه‌ی `Booking` — `BookingController`,
+`BookingReservationController`, `BookingRescheduleController`, `BookingAvailabilityController`,
+`AdminBookingController`, `BookingService`. طبق قاعده‌ی نهایی‌شده‌ی بالا (بخش «قاعده‌ی مرز
+نهایی‌شده»)، این فاز باید هر `$specialist->bookings()->...` باقی‌مونده در فایل‌های فاز ۱ و ۲ رو هم
+که عمداً دست‌نخورده مونده بودن جارو کنه — مشخصاً:
+- `SpecialistController::show/byService` (کاربر، فاز ۲) — چند خط `$specialist->bookings()->...`
+- `LeaveService::findConflictReason` (فاز ۲) — `$specialist->bookings()->whereBetween(...)`
+- `AdminHolidayController::store` (فاز ۲) — `$specialist->bookings()->whereDate(...)`
+این‌ها موقع نوشتن `BookingRepository` باید شناسایی و به همون Repository جدید وصل بشن، نه
+دست‌نخورده رها بشن.
+
+---
+
+## نشست تکمیل‌شده: فاز ۳ (R-Repo-Bookings) — ۲۰۲۶-۰۹-۲۰
+
+### دامنه‌ی فایل‌ها (فراتر از لیست جدول)
+`BookingDiscountController` در جدول فازبندی اسمش نیومده بود، ولی مستقیم به `Booking::`/
+`BeautyService::` کوئری می‌زد — دقیقاً همون الگوی `AdminSpecialistLeaveController` در فاز ۲ —
+پس به همین فاز اضافه شد.
+
+در طرف مقابل، این کنترلرها/فایل‌ها که به Booking مربوطن ولی در جدول نیومده بودن، **عمداً دست‌نخورده
+موندن** و به فاز جاروب نهایی (`R-Repo-Sweep`, فاز ۱۲) واگذار شدن:
+`SpecialistBookingManagementController`, `AdminBookingCustomerController`,
+`CleanupPendingBookings` (command), `CancelUnpaidBookings` (job).
+
+### بدهی‌های باقی‌مونده از فاز ۲ که این فاز جارو کرد
+هر سه موردی که در یادداشت پایان فاز ۲ فهرست شده بودن، اینجا رفع شدن:
+- `SpecialistController::show()` (کاربر) — چهار کوئری `$specialist->bookings()->...` (میانگین/شمارش
+  امتیاز، تعداد تکمیل‌شده، نظرات اخیر) → دو متد جدید `BookingRepository::getRatingStatsForSpecialist`
+  و `getRecentReviewsForSpecialist`
+- `SpecialistController::byService()` (کاربر) — `$service->specialists()->withCount/withAvg` که در
+  فاز ۱ عمداً دست‌نخورده مونده بود → متد جدید `SpecialistRepository::paginateByService` (چون این
+  کوئری در واقع لیست‌کردن Specialistهاست، نه Bookingها؛ به همون Repository دامنه‌ش تعلق داره)
+- `LeaveService::findConflictReason` → `BookingRepository::hasBookingInRange`
+- `AdminHolidayController::store` (validation closure) → `BookingRepository::hasBookingOnDate`
+
+### کار انجام‌شده
+- `BookingRepositoryInterface` + `BookingRepository`: `paginateForUser`, `findForUserWithDetails`,
+  `findForUser`, `getAllForUser`, `getUpcomingExcludingCancelledForUser`, `getPastForUserApi`,
+  `getLatestSuccessfulForUser` (کاربر)؛ `paginateWithFilters`, `getStats` (ادمین)؛
+  `getUpcomingForUser`, `getPastForUser` (سرویس/داشبورد — نام‌گذاری جدا از نسخه‌ی API چون فیلتر/
+  limit متفاوتی دارن)؛ `getRatingStatsForSpecialist`, `getRecentReviewsForSpecialist`,
+  `hasBookingInRange`, `hasBookingOnDate` (رفع بدهی فاز ۲)
+- `SpecialistScheduleRepository`: متد `findActiveForDay` اضافه شد (برای
+  `BookingAvailabilityController`)
+- `SpecialistRepository`: متد `paginateByService` اضافه شد
+- binding جدید (`BookingRepositoryInterface`) در `RepositoryServiceProvider` ثبت شد
+- کنترلرها/سرویس‌های بازنویسی‌شده: `BookingController`, `BookingReservationController`,
+  `BookingRescheduleController`, `BookingAvailabilityController`, `BookingDiscountController`,
+  `AdminBookingController`, `BookingService`, `AdminBookingService`
+- کامنت‌های همه‌ی فایل‌های لمس‌شده حذف شدن (شامل چند PHPDoc بلاک بزرگ در
+  `AdminBookingController`/`AdminBookingService`/`BookingDiscountController`)
+
+### مرزهای رعایت‌شده (عمداً دست‌نخورده موندن)
+- منطق کسب‌وکار خودِ `Booking` model (`getRemainingAmountAttribute`, `canBeRescheduled`)
+- `$this->discountCode->where(...)` در `BookingService` — دامنه‌ی `DiscountCode` متعلق به فاز ۶
+  (`R-Repo-Loyalty`) است
+- `User::all()`/`User::where(...)` در `AdminBookingController`/`AdminSpecialistService`/
+  `LeaveService` — دامنه‌ی `User` متعلق به فاز ۸ است
+- `$service->specialists()->select(...)->get()` در `BookingAvailabilityController::getSpecialistsByService`
+  — کوئری رابطه‌ای ساده‌ی خواندنی روی نمونه‌ی از قبل resolve‌شده، دقیقاً همون الگوی
+  `ServiceController::show` در فاز ۱
+
+### تست و وریفای
+- تست‌های دامنه (۱۸ فایل: `AdminBookingControllerTest`, `AdminBookingCustomerControllerTest`,
+  `AdminBookingSlotConflictTest`, `BookingServiceTest`, `SendBookingRemindersTest`,
+  `BookingModelTest`, `BookingSmsDuplicationTest`, `BookingObserverTest`, `BookingPolicyTest`,
+  `BookingAvailabilityControllerTest`, `BookingControllerTest`, `BookingDiscountControllerTest`,
+  `BookingRescheduleControllerTest`, `BookingReservationControllerTest`, کاربر
+  `SpecialistControllerTest`, `AdminHolidayTest`, `AdminLeaveTest`, `AdminSpecialistLeaveTest`):
+  **۲۰۶/۲۰۶ (۱ skip)** سبز، بار اول بدون هیچ اصلاحی
+- Laravel Pint: `PASS` روی همه‌ی ۲۸ فایل جدید/لمس‌شده
+- کل سوییت: **۱۰۸۷ passed / ۱ skipped / صفر fail** — بدون تغییر رفتاری، قبل و بعد یکسان
+- هر چهار پچ (۰۰۰۱ تا ۰۰۰۴) پشت‌سرهم روی یک `git am` مستقل (کلون جدا از `0ad76e8`) تست شدن —
+  بدون conflict، و کل سوییت روی همون کلون هم ۱۰۸۷/۱ (skip) سبز بود
+
+### نکته‌ی تحویل پچ (بازخورد ابوالفضل، همین نشست)
+دیگه لازم نیست پچ‌های قبلی (۰۰۰۱-۰۰۰۳) که تغییری نکردن دوباره تحویل داده بشن — فقط پچ فاز جدید
+(این‌بار ۰۰۰۴) به‌تنهایی ساخته و ارائه شد (`git format-patch -1 HEAD --start-number=N`، نه کل
+بازه‌ی `base..HEAD`).
+
+### قدم‌های باز برای نشست بعدی
+فاز ۴ (`R-Repo-Payments`) رو شروع کن: دامنه‌ی `Payment`, `Invoice` — `PaymentController`,
+`SecurePaymentController`, `AdminBillingController`, `PaymentService`, `SecurePaymentService`,
+`InvoiceService`, `SubscriptionPaymentService`. طبق همون قاعده‌ی مرز، هر `Booking::`/
+`$booking->...` که تو این فایل‌ها پیدا بشه باید از طریق `BookingRepositoryInterface` موجود (فاز
+۳) بره، نه مستقیم.
+
+---
+
+## نشست تکمیل‌شده: فاز ۴ (R-Repo-Payments) — ۲۰۲۶-۰۹-۲۰
+
+### دامنه‌ی فایل‌ها (فراتر از لیست جدول)
+`AdminPaymentController` در جدول فازبندی اسمش نیومده بود — نه Payment می‌سازه نه Invoice، فقط
+مستقیم `Booking::findOrFail`/`$booking->update()` می‌زنه (ثبت دستی پرداخت توسط ادمین، بدون رکورد
+Payment واقعی). دقیقاً همون الگوی `BookingDiscountController` در فاز ۳ — پس به همین فاز اضافه شد
+و از `BookingRepositoryInterface` موجود (فاز ۳) استفاده کرد.
+
+### کار انجام‌شده
+- `PaymentRepositoryInterface` + `PaymentRepository`: `findByReference` (بدون eager-load، برای
+  `SecurePaymentService::verifyPayment`)، `findByReferenceWithBooking` (`first()`، برای
+  `showResult`)، `findByReferenceWithBookingOrFail` (`firstOrFail()`، برای `showVerification`/
+  `verify`/`checkStatus`)
+- `InvoiceRepositoryInterface` + `InvoiceRepository`: `paginateForSalon`
+- binding‌های جدید در `RepositoryServiceProvider` ثبت شدن
+- کنترلرها/سرویس‌های بازنویسی‌شده: `PaymentController`, `SecurePaymentController`,
+  `AdminBillingController`, `AdminPaymentController`, `PaymentService`, `SecurePaymentService`,
+  `InvoiceService`, `SubscriptionPaymentService`
+- تمام `$booking->update(...)`/`Booking::findOrFail(...)` باقی‌مونده در این فایل‌ها (که به دامنه‌ی
+  Payment مربوط بودن ولی مدلشون Booking بود) از `BookingRepositoryInterface` موجود (فاز ۳)
+  استفاده کردن — نه فقط از repositoryهای تازه‌ساخته‌ی همین فاز
+- کامنت‌های همه‌ی فایل‌های لمس‌شده حذف شدن (چند PHPDoc/⭐ بلاک بزرگ در
+  `PaymentService::resolveMerchantId`, `InvoiceService`, `SubscriptionPaymentService`,
+  `AdminBillingController`, `AdminPaymentController`)
+
+### مرزهای رعایت‌شده (عمداً دست‌نخورده موندن)
+- منطق کسب‌وکار خودِ `Payment`/`Invoice` model (`markAsCompleted`, `markAsFailed`, `isPending`,
+  `isPaid`, ...)
+- `$wallet->increment('balance', ...)`/`$wallet->transactions()->create(...)` در
+  `PaymentController` — دامنه‌ی `Wallet` متعلق به فاز ۵ (`R-Repo-Wallet`) است
+- `Salon::lockForUpdate()->findOrFail(...)` در `InvoiceService::markPaidFromGateway` — دامنه‌ی
+  `Salon` متعلق به فاز ۱۰ (`R-Repo-Salon`) است
+- `app/Providers/PaymentServiceProvider.php` — یک provider مرده که هیچ‌جا register نشده (نه در
+  `bootstrap/providers.php`)؛ `new PaymentService(...)` داخلش حتی با امضای فعلی (قبل از این فاز)
+  هم ناسازگار بود. تأیید شد بی‌اثره و دست‌نخورده موند
+
+### تست و وریفای
+- تست‌های دامنه (۶ فایل: `AdminPaymentControllerTest`, `AdminBillingControllerTest`,
+  `EnsureTwoFactorVerifiedForPaymentTest`, `PaymentControllerTest`,
+  `SecurePaymentControllerTest`, `SecurePaymentServiceConfigTest`): **۴۸/۴۸** سبز، بار اول بدون
+  هیچ اصلاحی
+- Laravel Pint: `PASS` روی همه‌ی ۲۹ فایل جدید/لمس‌شده، بدون هیچ fix
+- کل سوییت: **۱۰۸۷ passed / ۱ skipped / صفر fail** — بدون تغییر رفتاری، قبل و بعد یکسان
+- هر پنج پچ (۰۰۰۱ تا ۰۰۰۵) پشت‌سرهم روی یک `git am` مستقل (کلون جدا از `0ad76e8`) تست شدن —
+  بدون conflict، و کل سوییت روی همون کلون هم ۱۰۸۷/۱ (skip) سبز بود
+
+### قدم‌های باز برای نشست بعدی
+فاز ۵ (`R-Repo-Wallet`) رو شروع کن: دامنه‌ی `AdminWallet(+Transaction)`, `SpecialistWallet`,
+`UserWallet(+Transaction)`, `WithdrawalRequest`, `WalletSetting` — `AdminWalletController`,
+`SpecialistWalletController`, `SpecialistWithdrawalController`, `AdminWithdrawalController`,
+`SpecialistIbanController`, `UserWalletController`, `WalletAdminService`,
+`SpecialistWalletService`. توجه: `PaymentController::processWithWallet`/`callback` (فاز ۴) و
+`Booking` model's معادل، هر دو `$wallet->increment/transactions()->create` مستقیم می‌زنن — این
+فاز باید این‌ها رو هم جارو کنه.
+
+---
+
+## نشست تکمیل‌شده: فاز ۵ (R-Repo-Wallet) — ۲۰۲۶-۰۹-۲۰
+
+### قاعده‌ی مرز تازه (برای فازهای بعدی هم صادقه): «مالکیت اتمیک موجودی» می‌مونه، «کوئری/CRUD خالص» می‌ره
+این فاز یک نوع جدید از تصمیم مرزی رو معرفی کرد که در فازهای قبل پیش نیومده بود: عملیات
+`$wallet->increment('balance', ...)`/`decrement(...)` + `$wallet->transactions()->create(...)`
+که همیشه با هم، داخل یک `DB::transaction` می‌آن (مثل `adjustWallet`, `rejectWithdrawal`,
+`cancelWithdrawal`, `chargeCallback`) — این‌ها **عمداً دست‌نخورده موندن**، چون این الگو خودِ
+business logic هست (دقیقاً همون کاری که `AdminWallet::addCommission()` به‌عنوان متد خودِ Model
+انجام می‌ده)، نه یک کوئری/لیست ساده. در مقابل، `->update()` خالص روی نمونه‌ی top-level (مثل
+`$wallet->update(['iban_verified'=>true])` یا `$locked->update(['status'=>'processing'])`)
+همیشه از Repository رفت — این تمایز («تغییر اتمیک موجودی+ثبت تراکنش» در برابر «CRUD خالص»)
+از این فاز به بعد قاعده‌ی رسمیه.
+
+### دامنه‌ی فایل‌ها (فراتر از لیست جدول)
+`AdminWalletSettingsController` در جدول فازبندی اسمش نیومده بود ولی مستقیم
+`WalletSetting::first()` می‌زد — چون `WalletSetting` توی ستون دامنه‌ی همین ردیف جدول هست، اضافه
+شد (همون الگوی تکراری این چند فاز آخر).
+
+### کار انجام‌شده
+- `WalletSettingRepositoryInterface` + `WalletSettingRepository`: `first()`
+- `SpecialistWalletRepositoryInterface` + `SpecialistWalletRepository`: `paginateWithFilters`,
+  `getTotals`, `lockById`
+- `WithdrawalRequestRepositoryInterface` + `WithdrawalRequestRepository`: `paginateWithFilters`
+  (ادمین سراسری)، `getStats`، `lockById`، `paginateForWallet` (مشترک بین wallet overview
+  خودِ متخصص و ادمین per-specialist)
+- `WalletTransactionRepositoryInterface` + `WalletTransactionRepository` (کیف‌پول متخصص):
+  `paginateForWalletWithFilters`, `getRecentForWallet`, `sumForWalletByTypeAndMonth`,
+  `getPendingIncomeForSettlement`
+- `UserWalletTransactionRepositoryInterface` + `UserWalletTransactionRepository` (کیف‌پول
+  کاربر — مدل جدا از `WalletTransaction`): همون ۳ متد اول
+- ۵ binding جدید در `RepositoryServiceProvider` ثبت شدن
+- کنترلرها/سرویس‌های بازنویسی‌شده: `AdminWalletController`, `AdminWalletSettingsController`,
+  `AdminWithdrawalController`, `SpecialistWalletController`, `SpecialistWithdrawalController`,
+  `SpecialistIbanController`, `UserWalletController`, `WalletAdminService`,
+  `SpecialistWalletService`
+- `Specialist::withoutGlobalScopes()->whereKey(...)->value('salon_id')` در دو کنترلر ادمین
+  (`AdminWalletController`, `AdminWithdrawalController`) با
+  `SpecialistRepositoryInterface::getSalonIdIgnoringScopes` موجود (فاز ۲) جایگزین شد
+- کامنت‌های همه‌ی فایل‌های لمس‌شده حذف شدن
+
+### مرزهای رعایت‌شده (عمداً دست‌نخورده موندن)
+- منطق کسب‌وکار خودِ Model‌ها (`SpecialistWallet::addIncome/settlePendingAmount/canWithdraw/
+  calculateWithdrawalFee/recordWithdrawal`, `WithdrawalRequest::markAsCompleted/markAsFailed`,
+  `UserWallet::addRefund`, `Specialist::getOrCreateWallet`, `User::getOrCreateWallet`)
+- `$wallet->increment/decrement` + `$wallet->transactions()->create` (بالا توضیح داده شد)
+- `AdminWallet.php`/`AdminWalletTransaction.php` — هیچ فایل این فاز بهشون کوئری نمی‌زد (فقط
+  `BookingObserver.php` که در جدول فازبندی نیست و به فاز جاروب (`R-Repo-Sweep`) واگذار شد)؛
+  کاملاً دست‌نخورده موندن
+- `User::findOrFail` در `UserWalletController::chargeCallback` — دامنه‌ی `User` متعلق به فاز ۸
+  (`R-Repo-Users-Auth`) است
+
+### تست و وریفای
+- تست‌های دامنه (۱۱ فایل: `AdminWalletControllerTest`, `AdminWithdrawalControllerTest`,
+  `ProcessWithdrawalJobTest`, `SpecialistIbanControllerTest`, `SpecialistWalletControllerTest`,
+  `SpecialistWithdrawalControllerTest`, `UserWalletControllerTest`, `SpecialistWithdrawalTest`,
+  `WalletAdminServiceSettlementTest`, `WalletAdminServiceWithdrawalTest`, `WalletSettingTest`):
+  **۱۰۵/۱۰۵** سبز، بار اول بدون هیچ اصلاحی
+- Laravel Pint: `PASS` روی همه‌ی ۴۰ فایل جدید/لمس‌شده، بدون هیچ fix
+- کل سوییت: **۱۰۸۷ passed / ۱ skipped / صفر fail** — بدون تغییر رفتاری، قبل و بعد یکسان
+- هر شش پچ (۰۰۰۱ تا ۰۰۰۶) پشت‌سرهم روی یک `git am` مستقل (کلون جدا از `0ad76e8`) تست شدن —
+  بدون conflict، و کل سوییت روی همون کلون هم ۱۰۸۷/۱ (skip) سبز بود
+
+### قدم‌های باز برای نشست بعدی
+فاز ۶ (`R-Repo-Loyalty`) رو شروع کن: دامنه‌ی `LoyaltyPoint`, `LoyaltySetting`, `Reward`,
+`Loyalty`, `DiscountCode`, `DiscountUsage` — `LoyaltyController`, `AdminLoyaltyPointsController`,
+`AdminLoyaltyRewardController`, `AdminDiscountCodeController`, `BookingDiscountController`,
+`LoyaltyService`, `LoyaltyAdminService`, `DiscountCalculator`. توجه: `BookingDiscountController`
+از فاز ۳ همین حالا Booking/BeautyService رو از Repository می‌گیره — این فاز فقط باید
+`DiscountCode`-محورهای همون فایل (اگه بودن) رو اضافه کنه. همچنین `BookingService`/
+`AdminBillingController` (فاز‌های ۳/۴) هنوز مستقیم `$this->discountCode->where('code',...)`
+می‌زنن — طبق قاعده‌ی همیشگی («فایل‌های فاز قبل که به دامنه‌ی تازه‌تکمیل‌شده وابسته بودن رو جارو
+کن») این فاز باید این‌ها رو هم به `DiscountCodeRepositoryInterface` تازه وصل کنه.
+
+---
+
+## نشست تکمیل‌شده: فاز ۶ (R-Repo-Loyalty) — ۲۰۲۶-۰۹-۲۱
+
+### وضعیت دسترسی GitHub این نشست
+توکن GitHub موجود در این فایل باز هم `401 Unauthorized` داد. طبق روال، مستقیماً از فایل زیپ
+آپلودی کار شد (یک گیت‌ریپوی محلی از صفر با یک کامیت baseline از همون زیپ ساخته شد). توکن
+هنوز نیاز به تمدید داره؛ نکته‌ی برنچ `V3` (نه `develop`، طبق تصمیم ۲۰۲۶-۰۹-۲۱ بالا) برای وقتی
+که دسترسی GitHub برقرار بشه یادداشت موند ولی این نشست عملاً ازش استفاده نکرد.
+
+### محیط
+PHP 8.3 + تمام extensionهای لازم (gd, mysql, sqlite, intl, bcmath, ...) از آرشیو استاندارد
+اوبونتو ۲۴.۰۴ نصب شد (نه PPA — `add-apt-repository ppa:ondrej/php` با شبکه‌ی sandbox کار
+نکرد، ولی خودِ اوبونتو ۲۴.۰۴ از قبل PHP 8.3 داره). Composer از
+`github.com/composer/composer/releases` نصب شد. پوشه‌ی `storage/*` از صفر بازسازی شد.
+MariaDB با `mysqld_safe` و `setsid nohup` بالا آورده شد (پراسس‌های bash بین فراخوانی‌های ابزار
+sandbox پاک می‌شن، پس هر دفعه که ارتباط قطع شد باید MariaDB دوباره استارت بشه — این نکته برای
+نشست‌های بعدی هم صادقه). سوییت تست کامل قبل از شروع اجرا شد: **baseline تأیید شد: ۱۰۸۷
+passed / ۱ skipped / صفر fail** — دقیقاً منطبق با آخرین وضعیت مستندشده‌ی فاز ۵.
+
+### کار انجام‌شده
+- `app/Repositories/Contracts/DiscountCodeRepositoryInterface.php` +
+  `app/Repositories/Eloquent/DiscountCodeRepository.php`: `paginateWithUser`, `getStats`
+  (total/active/expired/used_up)، `findByCode`, `lockByCode` (نسخه‌ی `lockForUpdate`)،
+  `getActiveForUser`
+- `app/Repositories/Contracts/RewardRepositoryInterface.php` +
+  `app/Repositories/Eloquent/RewardRepository.php`: `getActive`,
+  `allOrderedByRequiredPoints`, `getNextForPoints`, `sumUsedCount`, `countActive`
+- `app/Repositories/Contracts/LoyaltyPointRepositoryInterface.php` +
+  `app/Repositories/Eloquent/LoyaltyPointRepository.php`: ۱۲ متد — `sumForUser`,
+  `sumExpiringForUser`, `sumExpiringSoonForUser` (دو نسخه‌ی کمی متفاوتِ «امتیاز در حال انقضا»
+  که در کد اصلی هم جدا بودن، عمداً یکی نشدن تا رفتار دقیقاً حفظ بشه)، `sumForUserByType`,
+  `sumByType`, `countDistinctUsers`, `countByType`, `paginateForUserWithBooking`,
+  `paginateForUser`, `paginateWithFilters`, `topUsersByPoints`, `recentByType`
+- `app/Repositories/Contracts/LoyaltySettingRepositoryInterface.php` +
+  `app/Repositories/Eloquent/LoyaltySettingRepository.php`: `getValue` (همون منطق
+  `LoyaltySetting::getValue()` مدل، فقط پشت Repository)
+- ۴ binding جدید در `RepositoryServiceProvider` ثبت شد
+- `LoyaltyController`, `AdminLoyaltyPointsController`, `AdminLoyaltyRewardController`,
+  `AdminDiscountCodeController`, `AdminDiscountCodeService`, `BookingDiscountController`,
+  `LoyaltyService`, `LoyaltyAdminService`, `DiscountCalculator`: بازنویسی کامل — کوئری‌های
+  مستقیم این دامنه با تزریق Repository جایگزین شدن؛ کامنت‌ها (فارسی/انگلیسی، PHPDoc شامل)
+  حذف شدن. `BookingDiscountController` و `DiscountCalculator` از قبل هیچ کوئری مستقیمی
+  نداشتن (فقط کامنت حذف شد)
+- `BookingService.php` (فاز ۳، طبق یادداشت پایان فاز ۵): فقط ۵ occurrence از
+  `$this->discountCode->where('code', ...)`/`->lockForUpdate()->first()` به
+  `DiscountCodeRepositoryInterface::findByCode()`/`lockByCode()` وصل شدن؛ `WalletSetting::get()`
+  همون فایل (دامنه‌ی فاز ۵) طبق قاعده‌ی «هر فایل فقط یک‌بار دست بخوره در فاز خودش» دست‌نخورده
+  موند
+- کامنت‌های ۵ فایل FormRequest اختصاصی همین کنترلرها هم حذف شدن (`PreviewDiscountCodeRequest`,
+  `StoreLoyaltyRewardRequest`, `UpdateLoyaltyRewardRequest`, `AddUserPointsRequest`,
+  `DeductUserPointsRequest`) — این فایل‌ها در جدول فازبندی اسم برده نشده بودن ولی چون
+  منحصراً کنترلرهای همین فاز رو سرویس می‌دن و هیچ کوئری‌ای نداشتن، حذف کامنتشون بی‌خطر بود
+
+### مرزهای رعایت‌شده (عمداً دست‌نخورده موندن)
+- `LoyaltySetting::getValue()`, `LoyaltyPoint::calculatePointsForBooking()`,
+  `LoyaltyPoint::getCurrentBalance()`, `LoyaltyPoint::getExpiringPoints()` — متدهای استاتیک
+  روی مدل که `BookingObserver.php`, `SpecialistProfileController.php`, و نوتیفیکیشن
+  `PointsEarned` مستقیماً صداشون می‌زنن؛ هیچ‌کدوم از این سه فایل جزو دامنه‌ی این فاز نیستن
+  (`BookingObserver` طبق تصمیم فاز ۵ به `R-Repo-Sweep` واگذار شده؛ دو تای دیگه اصلاً در هیچ
+  فازی اسم برده نشدن) — دقیقاً همون الگوی `WalletSetting::get()` در فاز ۵
+- `User::orderBy('name')->get(...)` در `AdminDiscountCodeController::create()` و
+  `User::query()->where(...)->get()`/`User::find(...)` در
+  `AdminLoyaltyPointsController::index()` — دامنه‌ی `User` متعلق به فاز ۸
+  (`R-Repo-Users-Auth`) است؛ دقیقاً مثل `Salon::lockForUpdate()->findOrFail(...)` که در
+  `InvoiceService` (فاز ۴) به‌خاطر تعلق به فاز ۱۰ دست‌نخورده موند
+- `Reward::incrementUsage()`/`DiscountCode::incrementUsage()` (هر دو `$this->increment(...)`)
+  — منطق نوشتنیِ خودِ Model، مثل `SpecialistWallet::addIncome` در فاز ۵
+- `DiscountCodeObserver.php` — بدون هیچ کوئری مستقیم (فقط `$discountCode->save()`/متدهای
+  نمونه‌ی از قبل bind‌شده)، در جدول فازبندی اسم برده نشده، دست‌نخورده موند (مثل
+  `BookingObserver` در فاز ۳/۵)
+- `Loyalty::rewards()` (relationship) و `DiscountCode::user()`/`bookings()` و مشابه — تعریف
+  رابطه، طبق قرارداد داخل Model می‌مونه
+- **مدل `Loyalty` (سطح‌بندی/tier) هیچ کوئری مستقیمی در کل پروژه نداره** (فقط
+  `Reward::loyalty()` relationship) — پس هیچ Repository ای براش لازم نبود؛ اگه در آینده
+  واقعاً استفاده بشه، این نکته باید بازبینی بشه
+- **مدل `DiscountUsage` هم هیچ کوئری مستقیمی در کل پروژه نداره** — هیچ Repository ای براش
+  ساخته نشد
+
+### ⚠️ آیتم‌های باز برای تصمیم تو
+1. ~~**`AdminLoyaltyController::index()`**~~ ✅ **بسته شد (همین نشست، طبق تصمیم ابوالفضل «الان
+   بهش رسیدگی کن»)** — این کنترلر (که هندلر واقعی `GET /admin/loyalty` است، طبق
+   `routes/admin/loyalty.php`) به‌جای کوئری مستقیم `LoyaltyPoint::`/`Reward::`، حالا از
+   `LoyaltyAdminService::getDashboardStats()` استفاده می‌کنه — دقیقاً همون منطقی که
+   `AdminLoyaltyRewardController::index()` (که خودش، معلوم شد، هیچ روتی نداره و کاملاً مرده‌ست)
+   از قبل داشت. هیچ تغییر رفتاری/View‌ای نداد؛ پچ دوم (`0002`) تحویل داده شد.
+2. ~~**مغایرت با یادداشت پایان فاز ۵**~~ ✅ **بررسی مجدد انجام شد** — با یک grep سراسری روی کل
+   `app/` برای تمام مدل‌های این دامنه (`DiscountCode`, `LoyaltyPoint`, `Reward`,
+   `LoyaltySetting`, `Loyalty`, `DiscountUsage`)، تأیید شد `AdminBillingController` واقعاً هیچ
+   ارجاعی نداره (یادداشت قبلی اشتباه یا قدیمی بوده). **یک مورد واقعی جدید پیدا شد که به این
+   فاز تعلق نداره**: `App\Services\Admin\Report\AdminReportService.php` یک
+   `DiscountCode::whereIn('code', ...)` مستقیم داره (برای batch-fetch نوع کد تخفیف در گزارش
+   نوبت‌ها) — این فایل دامنه‌ی `R-Repo-Reports-Notif` (فاز ۱۱، هنوز شروع‌نشده) است و در فهرست
+   فایل‌های فاز ۶ اسم برده نشده بود، پس طبق قاعده‌ی «هر فایل فقط یک‌بار دست بخوره در فاز خودش»
+   دست‌نخورده موند. **باید در فاز ۱۱ یا یک sweep جدا رسیدگی بشه.**
+
+### تست و وریفای (بعد از پچ دوم)
+- `AdminLoyaltyRewardHttpTest` (شامل `test_index_shows_dashboard_stats_and_rewards_list` که
+  دقیقاً همین کنترلر رو از مسیر HTTP کامل تست می‌کنه)، `AdminLoyaltyPointsControllerTest`،
+  `Loyalty*` — **۴۸/۴۸** سبز
+- کل سوییت: **۱۰۸۷ passed / ۱ skipped / صفر fail** — بدون تغییر
+- Laravel Pint: `PASS`
+- هر دو پچ (`0001`, `0002`) پشت‌سرهم روی یک `git am` مستقل (کلون جدا از baseline) تست شدن —
+  بدون conflict، و کل سوییت روی همون کلون هم ۱۰۸۷/۱ (skip) سبز بود
+
+### قدم‌های باز برای نشست بعدی
+فاز ۷ (`R-Repo-Content`) رو شروع کن: دامنه‌ی `BlogPost`, `BlogCategory`, `GalleryImage`,
+`Announcement`, `Review`, `ReviewToken` — `BlogController`, `AdminBlogController`,
+`AdminBlogCategoryController`, `AdminGalleryController`, `AnnouncementController`,
+`AdminAnnouncementController`, `ReviewController`, `AdminReviewController`,
+`SpecialistReviewController`. یک نکته‌ی جدید از این نشست: `AdminReportService.php` یک
+`DiscountCode::whereIn(...)` مستقیم داره که به فاز ۶ تعلق نداشت و به فاز ۱۱
+(`R-Repo-Reports-Notif`) واگذار شد — وقتی به اون فاز رسیدیم یادت باشه.
+
+---
+
+## نشست تکمیل‌شده: فاز ۷ (R-Repo-Content) — ۲۰۲۶-۰۹-۲۱
+
+### دامنه‌ی فایل‌ها (فراتر از لیست جدول)
+`AdminBlogPostActionController` و سرویس‌های `BlogPostService`, `BlogCategoryService`,
+`ReviewService` در جدول فازبندی/پرامپت شروع نشست اسم برده نشده بودن، ولی منحصراً همین ۹
+کنترلر رو سرویس می‌دن (`AdminBlogPostActionController` واقعاً CRUD مقاله‌ست — `create`/
+`store`/`edit`/`update`/`destroy`/`togglePublish` — و `AdminBlogController` فقط `index`/`show`
+داره). طبق تصمیم صریح ابوالفضل در پایان فاز ۶ («check thoroughly, fix real gaps»)، این‌بار
+خودم این‌ها رو بدون توقف برای تأیید، جزو دامنه در نظر گرفتم و رفکتور کردم.
+
+### کار انجام‌شده
+- Repository های جدید (Interface + Eloquent، بایند در `RepositoryServiceProvider`):
+  - `BlogPostRepository`: `paginateWithCategory`, `sumViews`, `paginatePublished`,
+    `getRelatedPublished`
+  - `BlogCategoryRepository`: `getAllOrdered` (بدون count، برای dropdown فرم‌ها)،
+    `getWithPostsCount` (با count، برای صفحه‌ی عمومی وبلاگ)، `paginateWithPostsCount`،
+    `getMaxOrder`، `hasPosts`
+  - `GalleryImageRepository`: `getAllOrdered`, `findPreviousByOrder`, `findNextByOrder`
+  - `AnnouncementRepository`: `getActive`, `getTopActive`, `paginateActive`,
+    `findActiveOrFail`, `paginateAllOrdered`, `countActive`, `countPending`, `countExpired`
+    — این چهارتای اول به‌جای بازنویسی همون where-chain برای چهارمین‌بار، از
+    `scopeActive()`/`scopeByPriority()` خودِ Model استفاده می‌کنن (رفتار عیناً یکسان، فقط
+    منبع کد یکی شد)
+  - `ReviewRepository`: ۱۳ متد — شامل `paginateWithFilters` (فیلتر ادمین) و
+    `paginateForSpecialistWithFilters` (فیلتر پنل متخصص، با تاریخ‌های شمسی که در Controller
+    از قبل به Carbon تبدیل می‌شن، نه داخل Repository)
+  - `ReviewTokenRepository`: `findByToken`, `findValidToken`
+- Repository های فازهای قبل (بدون ساخت Repository جدید، طبق قاعده‌ی «متد کوچیک اضافه کن»):
+  - `SpecialistRepositoryInterface` (فاز ۲): `findByPhoneOrFail`, `getNameOptions`,
+    `getTopRatedByApprovedReviews`
+  - `BookingRepositoryInterface` (فاز ۳): `findOrFailWithReviewDetails`
+- همه‌ی کنترلرها/سرویس‌های دامنه بازنویسی و کامنت‌زدایی شدن (۳۴ فایل — شامل
+  `StoreAnnouncementRequest`, `RespondReviewRequest` که منحصراً این کنترلرها رو سرویس می‌دن)
+
+### مرزهای رعایت‌شده (عمداً دست‌نخورده موندن)
+- **`Review::calculateSpecialistAverage()`/`getSpecialistStats()` و
+  `ReviewToken::findValidToken()`**: هیچ فراخواننده‌ای خارج از فایل‌های این فاز نداشتن (نه در
+  تست، نه در کد) → کامل به Repository منتقل و از Model **حذف** شدن (مثل الگوی
+  `CategoryRepository` که هیچ متد استاتیک کوئری‌زنی روی `Category` باقی نموند)
+- **`ReviewToken::createForBooking()`**: برخلاف بقیه، **در تست مستقیم استفاده می‌شه**
+  (۱۱ بار در `ReviewControllerTest.php` به‌عنوان setup) → دقیقاً طبق الگوی `WalletSetting::get()`
+  از فاز ۵، روی Model دست‌نخورده موند و `ReviewService::sendReviewRequest()` هم همچنان
+  مستقیم صداش می‌زنه
+- `User::where('is_admin', true)->...` در `ReviewService::notifyAdminAboutNegativeReview()` —
+  دامنه‌ی `User` متعلق به فاز ۸ است
+  - **`Announcement::getActiveAnnouncements()`** — کد کاملاً مرده (هیچ فراخواننده‌ای در کل
+  پروژه نداره)، در فهرست فایل‌های این فاز اسم برده نشده، دست‌نخورده موند
+- **`App\Http\Requests\Specialist\RespondReviewRequest`** — کد مرده
+  (`SpecialistReviewController::respond()` این Request رو استفاده نمی‌کنه، validation رو
+  inline انجام می‌ده)؛ فقط کامنتش حذف شد چون دامنه‌ی همین فاز رو سرویس می‌ده، ولی منطقی برای
+  migrate کردن نداشت
+
+### تست و وریفای
+- تست‌های دامنه (۸ فایل، ۷۶ تست): `AdminAnnouncementTest`, `AdminBlogTest`, `AdminGalleryTest`,
+  `AdminReviewTest`, `SpecialistReviewControllerTest`, `AnnouncementControllerTest`,
+  `BlogControllerTest`, `ReviewControllerTest` — **۷۶/۷۶** سبز (فقط یک باگ import
+  فراموش‌شده در `RepositoryServiceProvider` پیدا و فیکس شد؛ منطق کوئری‌ها بار اول درست بود)
+- کل سوییت: **۱۰۸۷ passed / ۱ skipped / صفر fail** — بدون تغییر
+- Laravel Pint: `PASS` روی هر ۳۴ فایل
+- پچ (`0001-feat-repo-R-Repo-Content-...patch`) روی یک `git am` مستقل — کلون جدا که فقط تا
+  آخر فاز ۶ (`cc53d27`) رفته، سپس فقط همین یک پچ روش اعمال شد — بدون conflict، و کل سوییت
+  روی همون کلون هم ۱۰۸۷/۱ (skip) سبز بود
+
+### قدم‌های باز برای نشست بعدی
+فاز ۹ تمام شد — به بخش «✅ نشست تکمیل‌شده: فاز ۹ (R-Repo-Security)» در انتهای همین سند نگاه
+کن. فاز ۱۰ (`R-Repo-Salon`) رو شروع کن: دامنه‌ی `Salon`, `SalonSmsUsage` —
+`SuperAdminController`, `SuperAdminService`, `SalonSignupController`/`SalonSignupService`. توجه:
+`SalonSignupController`/`SalonSignupService` در فاز ۸ فقط برای بخش‌های `User::` ریفکتور شدن —
+بخش‌های `Salon::` همون دو فایل (مثل `Salon::create()`, `Salon::where('slug', $slug)->exists()`)
+دست‌نخورده موندن چون این فاز هنوز شروع نشده بود. قبل از شروع، یک grep سراسری `Salon::`/
+`SalonSmsUsage::` در کل `app/` بزن، نه فقط چیزهایی که در این سند یادداشت شدن. همچنین دو آیتم
+باز جامونده از فازهای قبل رو یادت باشه: `AdminReportService.php` (`DiscountCode::whereIn`،
+فاز ۱۱) و `Announcement::getActiveAnnouncements()`/
+`App\Http\Requests\Specialist\RespondReviewRequest` (کد مرده، بدون فاز مشخص — تصمیم با
+ابوالفضل).
+## نشست تکمیل‌شده: فاز ۸ (R-Repo-Users-Auth) — ۲۰۲۶-۰۹-۲۱
+
+طبق تصمیم صریح پایان فاز ۷، این فاز بار سنگینی از جاروب داشت: هر جا در کل `app/` مستقیم
+`User::` کوئری زده می‌شد (نه فقط جاهایی که در سند یادداشت شده بودن)، جزو دامنه بود. یک grep
+سراسری `User::` در کل `app/` زده شد و همه‌ی نتایج (غیر از تعریف رابطه‌های `belongsTo`/
+`belongsToMany` و کامنت‌ها) بررسی و ریفکتور شدن — ۳ فایل Job، ۹ فایل Service، ۱۳ کنترلر و ۴
+Listener.
+
+### کار انجام‌شده
+- `UserRepository` جدید (Interface + Eloquent، بایند در `RepositoryServiceProvider`) — علاوه بر
+  متدهای پایه‌ی `RepositoryInterface` (`find`, `findOrFail`, `create`, `count`, ...)، ۱۱ متد
+  اختصاصی: `query()` (escape hatch برای فیلترسازی پویا)، `findByPhone`, `findStaffByPhone`,
+  `findCustomerByPhoneInSalon`, `staffPhoneExists`, `searchCustomersInSalon`,
+  `getAdminRecipients` (کوئری تکراری «is_admin=true یا permission=access_admin_panel» که عیناً
+  در ۴ Listener مختلف کپی شده بود، حالا یک‌جا)، `getSuperAdmins`, `getUsersWithoutRole`,
+  `getOptionsOrderedByName`, `countWithTwoFactorEnabled`
+- همه‌ی کنترلرها/سرویس‌ها/Jobها/Listenerها بازنویسی شدن تا به‌جای `User::` مستقیم، از
+  `UserRepositoryInterface` (تزریق‌شده در constructor یا، برای Jobها، به‌عنوان پارامتر دوم
+  `handle()`) استفاده کنن. فایل‌های دست‌خورده: `SendLoginVerificationCodeJob`,
+  `SendPhoneVerificationCodeJob`, `Send2faVerificationCodeJob`, `LoyaltyService`,
+  `AdminSecurityService`, `AdminDashboardService`, `LoyaltyAdminService`, `SalonSignupService`,
+  `LeaveService`, `SMSService`, `ReviewService`, `AdminSpecialistService`, `AdminUserService`,
+  `AdminRoleController`, `AdminBookingController`, `AdminBookingCustomerController`,
+  `AdminDiscountCodeController`, `AdminSearchController`, `AdminUserController`,
+  `AdminLoyaltyPointsController`, `UserWalletController`, `RegisteredUserController`,
+  `AuthenticatedSessionController`, `PasswordResetController`, `SalonSignupController`,
+  `CustomerRegisteredController`, `CustomerAuthenticatedController`,
+  `CustomerPasswordResetController`, و ۴ Listener (`SendAdminBookingNotifications`,
+  `SendAdminPaymentNotification`, `SendAdminWithdrawalNotification`, `SendNewUserNotifications`)
+
+### مرزهای رعایت‌شده (عمداً دست‌نخورده موندن)
+- **`RouteServiceProvider::configureModelBindings()`** — `Route::bind('user', fn ($value) =>
+  User::findOrFail($value))` عمداً دست‌نخورده موند، هم‌الگو با بایندهای `specialist`/`service`/
+  `booking` که در فازهای قبلی هم به همین شکل باقی موندن — این زیرساخت route model binding است،
+  نه یک کوئری دامنه‌ای
+- `AdminSecurityService::paginatedLogs()`/`stats()` قسمت‌های `SecurityLog::` (نه `User::`)
+  دست‌نخورده موندن — دامنه‌ی فاز ۹ (`R-Repo-Security`) است؛ فقط دو خط `User::` همون فایل
+  (`paginatedUsers()` و `stats()['users_with_2fa']`) در این فاز ریفکتور شدن
+- `AdminSearchController` بخش‌های `Specialist::`/`BeautyService::`/`Booking::`/`BlogPost::`
+  دست‌نخورده موندن — این کنترلر جستجوی سراسریه و از هیچ Repository دیگه‌ای هم استفاده نمی‌کنه؛
+  فقط ۳ بخش `User::` (که دامنه‌ی این فازه) به `UserRepositoryInterface::query()` منتقل شدن
+
+### باگ واقعی کشف و رفع‌شده (نه بخشی از دامنه‌ی اصلی فاز، ولی توسط تزریق‌کردن Repository به
+`SMSService` آشکار شد)
+`SMSService` در ۱۳ کلاس Notification مختلف با `new SMSService` (بدون container) ساخته می‌شه —
+یک الگوی از قبل موجود در کل پروژه. اضافه‌کردن یک پارامتر اجباری به constructor این کلاس همه‌ی
+این ۱۳ جا رو می‌شکست (خطای `ArgumentCountError`، تست‌ها ۳۷۶ error دادن). به‌جای
+constructor injection، از همون الگوی موجود خودِ فایل (`app(SmsQuotaService::class)` داخل
+`consumeQuotaOrNotify()`) استفاده شد — `app(UserRepositoryInterface::class)` فقط داخل همون یک
+متدی که واقعاً نیازش داره (`notifyQuotaExhausted()`)، بدون تغییر constructor. یک
+`SMSServiceProvider` قدیمی/کاملاً منسوخ هم در `app/Providers/` پیدا شد
+(`new SMSService(config('services.sms.api_key'), ...)` — سیگنیچر کاملاً متفاوت با نسخه‌ی فعلی
+کلاس) که هیچ‌جا register نشده (نه در `bootstrap/providers.php`، نه در `config/app.php`) —
+کد کاملاً مرده، دست‌نخورده موند (تصمیم‌گیری درباره‌ی حذفش با ابوالفضل، هم‌الگو با آیتم‌های مرده‌ی
+یادداشت‌شده‌ی قبلی).
+
+همچنین: `findCustomerByPhoneInSalon()`/`searchCustomersInSalon()` عمداً `?int $salonId`
+می‌گیرن نه `int` — چون `CurrentSalon::id()` می‌تونه `null` برگردونه (مثلاً برای سوپرادمین بدون
+سالن فعال)؛ اگه پارامتر non-nullable بود، یک null اونجا به‌جای رفتار بی‌خطر قبلی
+(`WHERE salon_id IS NULL`) باعث `TypeError` می‌شد — یک رگرسیون واقعی که قبل از commit پیدا و
+رفع شد.
+
+### تست و وریفای
+- کل سوییت: **۱۰۸۸ passed / ۱ skipped / صفر fail** — بدون تغییر نسبت به baseline
+- تنها تغییر لازم در تست‌های موجود: `tests/Feature/Jobs/NotificationJobsTest.php` — ۶ فراخوانی
+  مستقیم `->handle(app(SMSService::class))` روی ۴ Job (`Send2faVerificationCodeJob`,
+  `SendLoginVerificationCodeJob`, `SendPhoneVerificationCodeJob` — هر کدوم ۱ یا ۲ بار) باید
+  پارامتر دوم (`app(UserRepositoryInterface::class)`) هم می‌گرفتن، چون این تست‌ها مستقیم
+  `handle()` رو صدا می‌زنن (نه از طریق queue/dispatch که تزریق پارامتر دوم رو خودکار انجام
+  می‌ده)
+- Laravel Pint: `PASS` روی هر ۳۶ فایل تغییریافته
+- پچ (`0001-refactor-repo-Phase-8-R-Repo-Users-Auth-extract-User.patch`) روی یک `git am`
+  مستقل — کلون جدا که فقط تا آخر فاز ۷ رفته، سپس فقط همین یک پچ روش اعمال شد — بدون conflict،
+  و کل سوییت روی همون کلون هم ۱۰۸۸/۱ (skip) سبز بود
+
+### قدم‌های باز برای نشست بعدی
+فاز ۹ (`R-Repo-Security`) رو شروع کن: دامنه‌ی `SecurityLog`, `SecuritySetting` —
+`SecurityController` (کاربر)، `AdminSecurityController`، `SecurityLogService`.
+`AdminSecurityService::paginatedLogs()`/`stats()` مستقیم `SecurityLog::` کوئری می‌زنن (به بخش
+«مرزهای رعایت‌شده» بالا نگاه کن). قبل از شروع، یک grep سراسری `SecurityLog::`/
+`SecuritySetting::` در کل `app/` بزن.
+
+⚠️ یادآوری مهم: توکن GitHub PAT ذخیره‌شده در این سند دوباره منقضی شده بود (۴۰۱ در ابتدای این
+نشست) — طبق الگوی مستندشده در بخش «روال دسترسی به GitHub»، این کل نشست از روی زیپ آپلودی کار
+کرد (نه از GitHub مستقیم) و وریفای پچ روی یک کلون محلی (نه یک کلون واقعی از GitHub) انجام شد.
+یک PAT تازه لازمه تا نشست بعدی بتونه مستقیم از GitHub بخونه/وریفای کنه.
+
+## نشست تکمیل‌شده: فاز ۹ (R-Repo-Security) — ۲۰۲۶-۰۹-۲۱
+
+یک grep سراسری `SecurityLog::`/`SecuritySetting::` در کل `app/` زده شد — دامنه‌ی این فاز به‌مراتب
+کوچیک‌تر از فاز ۸ بود: فقط ۴ فایل، حدود ۱۳ محل `SecurityLog::`.
+
+### کار انجام‌شده
+- `SecurityLogRepository` جدید (Interface + Eloquent، بایند در `RepositoryServiceProvider`) —
+  ۱۱ متد اختصاصی: `query()` (escape hatch برای `AdminSecurityService::paginatedLogs()` با ۵
+  فیلتر پویا)، `paginateForUser`, `paginateForUserWithFilters`, `getRecentForUser`,
+  `getLoginHistoryForUser`, `getLastSuccessfulLoginAt`, `countSince`, `countWarningsSince`,
+  `countFailedLoginAttemptsSince`, `countWarningsForUserSince`, `countLoginAttemptsForUserSince`
+- فایل‌های ریفکتورشده: `SecurityLogService` (`persist()` → `create()` از طریق ریپازیتوری)،
+  `AdminSecurityService` (`paginatedLogs()`, `paginatedUsers()`'s `last_successful_login_at`,
+  `stats()`'s سه شمارنده)، و `SecurityController` (کاربر — هر ۷ محل: `activity()`,
+  `getSecurityLogs()`, `getLoginHistory()`, `calculateSecurityScore()`, `getRecentActivities()`,
+  `getLoginAttempts()`)
+
+### مرزهای رعایت‌شده (عمداً دست‌نخورده موندن)
+- **`SecuritySetting::get()`** — در هر سه محلش (`AdminSecurityService::updateSettings()`,
+  `AdminSecurityController::settings()`, `SecurityController::calculateSecurityScore()`) عمداً
+  دست‌نخورده موند. این متد استاتیک سفارشیه (`first() ?? create([])`)، دقیقاً هم‌الگو با
+  `WalletSetting::get()` که در learnings مستند شده («این خط رو "فیکس" نکن») — و بعد از فاز ۵
+  (`R-Repo-Wallet`) هم `WalletSetting::get()` همچنان مستقیم روی Model صدا زده می‌شه، نه از طریق
+  Repository (`BookingObserver`, `BookingService`, `ServiceController` چک شدن، همه هنوز مستقیم).
+  قبل از شروع این فاز، این الگو صریحاً چک شد تا همون اشتباه دوباره تکرار نشه.
+- قبل از تزریق `SecurityLogRepositoryInterface` به constructor `SecurityLogService`، طبق درسی
+  که فاز ۸ با `SMSService` یاد داد، یک grep برای `new SecurityLogService` زده شد — هیچ محل
+  دستی‌ای پیدا نشد (همیشه از طریق container resolve می‌شه)، پس constructor injection ساده و
+  بی‌خطر بود.
+
+### تست و وریفای
+- کل سوییت: **۱۰۸۸ passed / ۱ skipped / صفر fail** — بدون تغییر نسبت به baseline، بدون هیچ
+  رگرسیونی (برخلاف فاز ۸، این‌بار سوییت از همون تلاش اول سبز شد)
+- Laravel Pint: `PASS` روی هر ۶ فایل تغییریافته
+- پچ (`0001-refactor-repo-Phase-9-R-Repo-Security-extract-Securi.patch`) روی یک `git am`
+  مستقل — کلون جدا که فقط تا آخر فاز ۸ رفته، سپس فقط همین یک پچ روش اعمال شد — بدون conflict،
+  و کل سوییت روی همون کلون هم ۱۰۸۸/۱ (skip) سبز بود
+
+### قدم‌های باز برای نشست بعدی
+فاز ۱۰ تمام شد — به بخش «✅ نشست تکمیل‌شده: فاز ۱۰ (R-Repo-Salon)» در انتهای همین سند نگاه کن.
+فاز ۱۱ (`R-Repo-Reports-Notif`) رو شروع کن: دامنه‌ی `ReportExport`, `ScheduledReport(+Run)`,
+`NotificationSetting`, `UserNotification`, `UserReportSetting` — `AdminReportsController`,
+`AdminReportExportController`, `AdminNotificationController`, `AdminNotificationSettingController`,
+`SpecialistNotificationController`, `ReportCacheService`, `SmsQuotaService`. یادآوری از قبل:
+`AdminReportService.php` یک `DiscountCode::whereIn` مستقیم داره که جزو دامنه‌ی این فازه (دامنه‌ی
+`DiscountCode` نیست، ولی همون فایلیه که این فاز قراره روش کار کنه). قبل از شروع، یک grep سراسری
+`ReportExport::`/`ScheduledReport::`/`NotificationSetting::`/`UserNotification::`/
+`UserReportSetting::` در کل `app/` بزن. همچنین یک آیتم باز دیگه از فازهای قبل رو یادت باشه:
+`Announcement::getActiveAnnouncements()`/`App\Http\Requests\Specialist\RespondReviewRequest`
+(کد مرده، بدون فاز مشخص — تصمیم با ابوالفضل).
+
+⚠️ یادآوری برای فاز بعد از ۱۱ (یا هر فاز sweep نهایی): دو مورد «جامونده‌ی عمدی» از فاز ۱۰ رو
+یادت باشه — `SuperAdminService`'s دو `Specialist::withoutGlobalScope('salon')->where('salon_id',
+...)->count()` (دامنه‌ی Specialist، نه Salon) و `SuperAdminController::invoices()`'s
+`Invoice::withoutGlobalScope('salon')->where('salon_id', ...)` (دامنه‌ی Invoice، نه Salon) —
+هیچ‌کدوم دامنه‌ی فاز ۱۰ نبودن، عمداً دست‌نخورده موندن.
+
+⚠️ یادآوری: توکن GitHub PAT همچنان تازه نشده — این نشست هم مثل فازهای ۸ و ۹ از روی همون زیپ
+اولیه‌ی آپلودشده و کلون‌های محلی کار کرد.
+
+## نشست تکمیل‌شده: فاز ۱۰ (R-Repo-Salon) — ۲۰۲۶-۰۹-۲۱
+
+یک grep سراسری `Salon::`/`SalonSmsUsage::` در کل `app/` زده شد. برخلاف فازهای ۸ و ۹، این‌بار
+چند محل واقعاً حساس هم جزو دامنه بودن — نه فقط کنترلر/سرویس معمولی.
+
+### کار انجام‌شده
+- `SalonRepository` جدید (Interface + Eloquent) — ۶ متد اختصاصی: `findBySlug`, `slugExists`,
+  `lockForUpdateFindOrFail` (برای قفل بدبینانه‌ی `InvoiceService::markPaidFromGateway`),
+  `getOldestSlug`, `getAllWithSpecialistCountAndAdmins`, `paginateWithSpecialistCountAndAdmins`
+- `SalonSmsUsageRepository` جدید (Interface + Eloquent) — ۱ متد اختصاصی: `firstOrCreateForPeriod`
+  (چون `SalonSmsUsage` مدل جدایی از `Salon` است، طبق قرارداد این پروژه یک ریپازیتوری مستقل گرفت،
+  نه متدی روی `SalonRepository`)
+- هر دو در `RepositoryServiceProvider` بایند شدن
+- فایل‌های ریفکتورشده: `SmsQuotaService`, `InvoiceService`, `SuperAdminService`,
+  `SuperAdminController`, `SalonSignupController`, `SalonSignupService`
+
+### دو محل حساس، با احتیاط بیشتر ریفکتور شدن
+- **`AppServiceProvider::boot()`** — کش سراسری `default_salon_slug` (`Salon::query()->oldest('id')
+  ->value('slug')`) به `app(SalonRepositoryInterface::class)->getOldestSlug()` تبدیل شد
+  (service-locator، نه constructor injection، چون این یک ServiceProvider است). گارد
+  `Schema::hasTable('salons')` قبل از این فراخوانی دست‌نخورده موند — همون گاردی که قبلاً یک
+  کرش واقعی (خطای «no such table» روی هر بوت، پیش از migrate) رو حل کرده بود.
+- **`ResolveSalonFromRoute`** — تنها جایی که یک سالن با slug پیدا می‌شه، برای کل مسیرهای عمومی
+  چندسالنی (`/s/{slug}` و ساب‌دامین). این فایل تاریخچه‌ی مستند از باگ‌های واقعی و جدی داره
+  (باگ positional-argument که قبلاً کشف شده). قبل از دست‌زدن، یک grep برای `new
+  ResolveSalonFromRoute(` زده شد تا مطمئن بشیم constructor injection امن است (هیچ‌جا دستی
+  ساخته نمی‌شه). فقط خط `Salon::where('slug', ...)->first()` به
+  `$this->salonRepository->findBySlug((string) $request->route('salon_slug'))` تبدیل شد —
+  بقیه‌ی منطق (چک تعلیق/انقضا، `CurrentSalon::set()`, `URL::defaults()`, فیکس
+  `forgetParameter('salon_slug')`) کاملاً دست‌نخورده موند. `(string)` cast روی پارامتر route
+  عمداً اضافه شد تا با سیگنیچر `findBySlug(string $slug)` جور شه — در عمل بی‌خطره چون این
+  پارامتر همیشه توسط تعریف روت پر می‌شه، هیچ‌وقت واقعاً null نیست.
+
+### مرزهای رعایت‌شده (طبق درسِ فاز ۸ با SMSService)
+- قبل از تزریق `SalonRepositoryInterface`/`SalonSmsUsageRepositoryInterface` به هر سرویس، یک
+  grep برای `new <ServiceName>(` زده شد — هیچ محل ساخت دستی‌ای برای `SmsQuotaService`,
+  `InvoiceService`, `SalonSignupService`, یا `SuperAdminService` پیدا نشد، پس constructor
+  injection ساده و بی‌خطر بود
+- `SMSService::consumeQuotaOrNotify()`'s `Salon::find($salonId)` — طبق همون محدودیت مستندشده‌ی
+  فاز ۸ (constructor این کلاس عمداً بدون پارامتره چون ۱۳ کلاس Notification با `new SMSService`
+  می‌سازنش) — به‌جای constructor injection، `app(SalonRepositoryInterface::class)->find(...)`
+  استفاده شد
+- دو مورد `Specialist::withoutGlobalScope('salon')` در `SuperAdminService` و یک مورد
+  `Invoice::withoutGlobalScope('salon')` در `SuperAdminController::invoices()` عمداً دست‌نخورده
+  موندن — دامنه‌ی این دو مدل جزو این فاز نیست (به بخش «قدم‌های باز» زیر نگاه کن)
+
+### تست و وریفای
+- کل سوییت: **۱۰۸۸ passed / ۱ skipped / صفر fail** — بدون تغییر نسبت به baseline، سبز از تلاش
+  اول، حتی بعد از دست‌زدن به `ResolveSalonFromRoute`
+- Laravel Pint: `PASS` روی هر ۱۴ فایل تغییریافته/جدید
+- پچ (`0001-refactor-repo-Phase-10-R-Repo-Salon-extract-Salon-an.patch`) روی یک `git am`
+  مستقل — کلون جدا که فقط تا آخر فاز ۹ رفته، سپس فقط همین یک پچ روش اعمال شد — بدون conflict،
+  و کل سوییت روی همون کلون هم ۱۰۸۸/۱ (skip) سبز بود
+
+### قدم‌های باز برای نشست بعدی
+فاز ۱۱ تمام شد — به بخش «✅ نشست تکمیل‌شده: فاز ۱۱ (R-Repo-Reports-Notif)» در انتهای همین سند
+نگاه کن؛ دستور کار کامل فاز ۱۲ هم همون‌جا (در انتهای اون بخش) نوشته شده.
+
+## نشست تکمیل‌شده: فاز ۱۱ (R-Repo-Reports-Notif) — ۲۰۲۶-۰۹-۲۱
+
+یک grep سراسری `ReportExport::`/`ScheduledReport::`/`ScheduledReportRun::`/`NotificationSetting::`/
+`UserNotification::`/`UserReportSetting::` در کل `app/` زده شد. نتیجه‌ی مهم: دامنه‌ی واقعی این
+فاز خیلی کوچیک‌تر از چیزی بود که جدول فازبندی نشون می‌داد.
+
+### کار انجام‌شده
+- `ReportExportRepository` جدید (Interface + Eloquent) — ۳ متد: `paginateWithAdminUser`,
+  `getOlderThanWithStatuses`, `deleteByIds`
+- `NotificationSettingRepository` جدید (Interface + Eloquent) — ۴ متد: `getAllKeyedByEventKey`,
+  `firstOrCreateForEvent`, `getByEventKeys`, `updateOrCreateForEvent`
+- یک متد جدید (`getTypesByCodes`) به `DiscountCodeRepository` موجود (از فاز ۶) اضافه شد، برای
+  رفع `DiscountCode::whereIn` مستقیم در `AdminReportService.php` — دامنه‌ی این فایل جزو فاز ۱۱
+  بود (طبق یادداشت نشست قبل)، هرچند مدلش (`DiscountCode`) نه
+- فایل‌های ریفکتورشده: `NotificationSettingService`, `AdminNotificationSettingController`,
+  `AdminReportExportController`, `GeneratePdfReportJob` (هم `handle()` هم `failed()`),
+  `CleanupReportExports` (Artisan Command)، `AdminReportService`
+
+### یافته‌ی مهم: دامنه‌ی واقعی این فاز کوچیک‌تر از جدول فازبندی بود
+- `ScheduledReport`, `ScheduledReportRun`, `UserReportSetting`: هر سه مدل وجود دارن، ولی هیچ‌جای
+  `app/` مستقیم کوئری نمی‌شن — فقط یک رابطه‌ی `belongsTo` بینشون تعریف شده. یا فیچر برنامه‌ریزی‌شده
+  و هنوز پیاده‌نشده‌ست، یا کاملاً کد مرده. **هیچ کاری برای این سه مدل لازم نبود**
+- `UserNotification`: `AdminNotificationController` و `SpecialistNotificationController` هیچ‌کدوم
+  مستقیم `UserNotification::` صدا نمی‌زنن — `User::notifications()`/`Specialist::notifications()`
+  یک رابطه‌ی سفارشی (`morphMany(UserNotification::class, ...)`) است، نه یک static call. طبق
+  همون قرارداد که رابطه‌ها (`belongsTo` و مشابه) همیشه در تمام فازهای قبلی هم مستثنا بودن، این
+  دو کنترلر **هیچ تغییری نیاز نداشتن**
+
+### مرزهای رعایت‌شده (طبق درسِ فاز ۸/۹/۱۰)
+- قبل از تزریق constructor به هر سرویس (`NotificationSettingService`، `AdminReportService`)، یک
+  grep برای `new <ServiceName>(` زده شد — هیچ‌کدوم دستی ساخته نمی‌شن
+- `GeneratePdfReportJob::failed()` — طبق تحقیق مستقیم رفتار Laravel (queue worker مستقیم
+  `$job->failed($e)` صدا می‌زنه، نه از طریق `app()->call()` مثل `handle()`)، اینجا از
+  `app(ReportExportRepositoryInterface::class)` (service-locator) استفاده شد، نه یک پارامتر
+  دوم روی امضای `failed()`
+- **این‌بار قبل از commit، طبق درس فاز ۸ (که اون‌موقع رگرسیون واقعی ایجاد کرد)، یک grep برای
+  `->handle(` روی `GeneratePdfReportJob` زده شد قبل از نهایی‌کردن امضاش** — ۷ محل فراخوانی مستقیم
+  `handle()` در `AdminReportExportTest.php` و `AdminReportExcelCellContentTest.php` پیدا و همون
+  لحظه (نه بعد از دیدن fail) اصلاح شدن. سوییت از تلاش اول سبز شد — برخلاف فاز ۸ که این الگو رو
+  فقط بعد از دیدن ۳۷۶ error کشف کرد
+
+### یک نکته‌ی جانبی (نه بخشی از این فاز، رفع‌شده در همین commit برای تمیزی)
+یک فیکس Pint از فاز ۱۰ (ترتیب import در `AppServiceProvider.php`) به working tree اعمال شده بود
+ولی قبل از commit فاز ۱۰ دوباره `git add` نشده بود — یعنی هیچ‌وقت واقعاً commit نشد (صرفاً
+کازمتیک، ترتیب import، بدون اثر عملکردی). توی همین فاز، به‌عنوان یک نکته‌ی جانبی، دوباره اضافه و
+commit شد.
+
+### تست و وریفای
+- کل سوییت روی محیط اصلی: **۱۰۸۸ passed / ۱ skipped / صفر fail** (دو بار اجرا شد، هر دو سبز)
+- Laravel Pint: `PASS` روی هر ۱۶ فایل تغییریافته/جدید
+- پچ (`0001-refactor-repo-Phase-11-R-Repo-Reports-Notif-extract-.patch`) روی یک `git am` مستقل
+  اعمال شد (کلون جدا، فقط تا آخر فاز ۱۰). سوییت کامل روی این کلون **سه بار** اجرا شد: بار اول
+  یک fail غیرمرتبط داد (`BookingServiceTest`، به بخش «قدم‌های باز» زیر نگاه کن)، دو بار بعدی
+  کاملاً سبز — تأیید شد که یک flaky test بود، نه رگرسیون این پچ
+
+### قدم‌های باز برای نشست بعدی
+فاز ۱۲ تمام شد (جزئی — به بخش «✅ نشست تکمیل‌شده: فاز ۱۲» در انتهای همین سند نگاه کن). دستور کار
+کامل نشست بعدی هم همون‌جا (در انتهای اون بخش) نوشته شده — شامل یک فاز کاملاً جدید و بزرگ
+(`R-Repo-BookingSweep`) که همون نشست کشف کرد.
+
+⚠️ یادآوری: توکن GitHub PAT همچنان تازه نشده — این نشست هم از روی زیپ اولیه‌ی آپلودشده و
+کلون‌های محلی کار کرد.
+
+## نشست تکمیل‌شده: فاز ۱۲ (R-Repo-Sweep) — ۲۰۲۶-۰۹-۲۱
+
+این فاز طبق تعریف خودش یک ممیزی نهایی بود، و همین موضوع باعث شد از حجم پیش‌بینی‌شده‌ش خیلی بزرگ‌تر
+دربیاد — یک فاز کامل جدید (بزرگ‌تر از فاز ۸!) وسطش کشف شد.
+
+### کار انجام‌شده
+- **`SupportTicket`/`SupportTicketMessage`**: بررسی کامل شد — مدل‌های کاملاً پیاده‌شده (با
+  `Spatie\Activitylog`، scope، متدهای کمکی) + یک migration که هر دو جدول رو می‌سازه، ولی **هیچ**
+  Controller/route/view/Job/تستی بهشون اشاره نمی‌کنه. یک فیچر کاملاً ساخته‌شده ولی هیچ‌جا وصل‌نشده.
+  دست‌نخورده موند — تصمیم با ابوالفضل (ساخت UI براش، یا حذف کامل)
+- **`app/Traits/HasRoles.php`**: کشف شد که کد مرده‌ست — تعریف شده ولی هیچ مدلی `use`ش نمی‌کنه؛
+  `User` به‌جاش یک نسخه‌ی دستی و تکراری از `assignRole()`/`removeRole()` داره. ۳ تا `Role::` داخلش
+  دست‌نخورده موندن چون غیرقابل‌اجرا هستن
+- **یافته‌ی واقعی**: `Role` و `Permission` صراحتاً جزو دامنه‌ی فاز ۸ بودن («User, Role, Permission,
+  salon_admins») ولی توی اون نشست فقط `User::` ریفکتور شد — `Role::`/`Permission::` کاملاً
+  جاافتاده بودن. این دقیقاً همون چیزیه که یک فاز sweep باید پیدا کنه، پس همین‌جا رفع شد:
+  - `RoleRepository` جدید (۸ متد) و `PermissionRepository` جدید (۵ متد)، هر دو بایند در
+    `RepositoryServiceProvider`
+  - همه‌ی محل‌های واقعی `Role::`/`Permission::` ریفکتور شدن: `app/Models/Role.php` و
+    `app/Models/User.php` با `app()` (چون Model نمی‌تونه constructor injection بگیره)،
+    `CreateSuperAdmin` (Console Command) با method injection (طبق درس فاز ۸/۱۱، اول برای
+    `->handle(` مستقیم در تست‌ها گرپ زدم — چیزی پیدا نشد)، بقیه با constructor injection معمولی
+  - **یک باگ واقعی همین‌جا پیدا و رفع شد**: `PermissionRepository::getDistinctGroups()`
+    امضاش `Illuminate\Database\Eloquent\Collection` بود ولی `Builder::pluck()` واقعاً
+    `Illuminate\Support\Collection` برمی‌گردونه — یک `TypeError` واقعی که سوییت تست
+    (`AdminPermissionTest`) گرفت، نه بازبینی دستی کد
+- **دو مورد «جامونده‌ی عمدی» از پایان فاز ۱۰** بسته شدن: `SuperAdminService`'s دو
+  `Specialist::withoutGlobalScope('salon')->count()` → متد جدید
+  `SpecialistRepositoryInterface::countBySalonIgnoringScope()`؛ و
+  `SuperAdminController::invoices()`'s `Invoice::withoutGlobalScope('salon')` → متد جدید
+  `InvoiceRepositoryInterface::paginateForSalonIgnoringScope()`. حین دست‌زدن به
+  `SuperAdminController`، یک مورد جانبی دیگه هم توی همون متد `dashboard()` پیدا و رفع شد:
+  `Specialist::count()` → `SpecialistRepositoryInterface::count()` (متد پایه) — کشفش شد چون
+  حذف import بی‌استفاده‌ی `Specialist` می‌خواست این فراخوانی زنده رو هم بشکنه
+
+### یافته‌ی بزرگ، **رفع‌نشده در این نشست** (خارج از ظرفیت یک نشست)
+یک grep گسترده‌تر برای `Specialist::`، `Booking::`، و `BeautyService::` در کل `app/` زده شد
+(بعد از این‌که رفع `Specialist::count()` بالا نشون داد ممکنه جاهای دیگه هم جامونده باشن) —
+نتیجه: **~۲۰ محل واقعی `Specialist::`، ~۴۷ محل `Booking::`، و ~۱۴ محل `BeautyService::`**
+(غیر از تعریف رابطه‌ها)، پخش‌شده در فایل‌های زیاد، که همه‌شون از قبل از تاریخچه‌ی قابل‌مشاهده‌ی
+این گفتگو باقی موندن (هر «فاز ۲/۳»ی که قبلاً این مدل‌ها رو پوشش داده، شفاف نبوده). این از نظر
+حجم قابل‌مقایسه با جاروب `User::` فاز ۸ است — در واقع `Booking::` به‌تنهایی بزرگ‌تر از `User::`
+بود. **عمداً در همین نشست به این دست نزدم** — جدول فازبندی رو با یک ردیف جدید (`۱۲b —
+R-Repo-BookingSweep`) به‌روز کردم؛ فهرست کامل فایل‌ها رو باید نشست بعدی از نو با grep دربیاره
+(اینجا فقط شمارش خام گزارش شد، نه فهرست فایل‌به‌فایل).
+
+### تست و وریفای
+- کل سوییت روی محیط اصلی: **۱۰۸۸ passed / ۱ skipped / صفر fail**
+- Laravel Pint: `PASS` روی هر ۱۹ فایل تغییریافته/جدید
+- پچ (`0001-refactor-repo-Phase-12-R-Repo-Sweep-Role-Permission-.patch`) روی یک `git am` مستقل
+  اعمال شد (کلون جدا، فقط تا آخر فاز ۱۱). سوییت کامل **دو بار** روی این کلون اجرا شد (به‌خاطر
+  flaky test فاز قبل، این‌بار برای اطمینان بیشتر) — هر دو بار کاملاً سبز
+
+### یادداشت باقی‌مانده از فاز ۱۱ (برای رکورد)
+Flaky test که در وریفای فاز ۱۱ یک‌بار دیده شد
+(`BookingServiceTest::test_cancel_booking_on_a_paid_booking_triggers_the_wallet_refund`) توی
+وریفای این فاز (دو اجرای کامل) دیگه دیده نشد — الگوی flaky بودن (نه رگرسیون) با اطمینان بیشتری
+تأیید شد.
+
+### قدم‌های باز برای نشست بعدی
+فاز ۱۲b تمام شد — به بخش «✅ نشست تکمیل‌شده: فاز ۱۲b (R-Repo-BookingSweep)» در انتهای همین سند
+نگاه کن؛ دستور کار فاز ۱۳ هم همون‌جا نوشته شده.
+
+⚠️ یادآوری: توکن GitHub PAT همچنان تازه نشده — این نشست هم از روی زیپ اولیه‌ی آپلودشده و
+کلون‌های محلی کار کرد.
+
+## نشست تکمیل‌شده: فاز ۱۲b (R-Repo-BookingSweep) — ۲۰۲۶-۰۹-۲۱
+
+فاز کاملاً جدیدی که در پایان فاز ۱۲ کشف شد — از نظر حجم قابل‌مقایسه با فاز ۸ (`Booking::` به‌تنهایی
+حدود ۲۱ محل بیشتر از `User::` فاز ۸ داشت).
+
+### کار انجام‌شده
+- هر سه ریپازیتوری (`Specialist`, `Booking`, `BeautyService`) از فازهای اولیه از قبل وجود داشتن
+  با متدهای substantial — این فاز اون‌ها رو گسترش داد، نه از صفر ساخت: یک متد `query(): Builder`
+  (escape hatch، هم‌الگو با تمام فازهای قبلی برای کوئری‌های گزارش‌گیری/جستجوی ad-hoc) به هر سه
+  اضافه شد، به‌علاوه یک متد اختصاصی کوچیک (`BeautyServiceRepositoryInterface::getLatest()`)
+- همه‌ی محل‌های واقعی سه مدل در حدود ۲۰ فایل ریفکتور شدن — بیشترشون بیش از یک مدل رو با هم مخلوط
+  داشتن (`DashboardController`, `HomeController`, `AdminSearchController`,
+  `AdminDashboardService` هر سه مدل رو داشتن؛ `AdminReportService` تنهایی ۲۱ محل از هر سه مدل
+  داشت — با یک token-replace مکانیکیِ تأییدشده انجام شد، چون هر رخداد واقعاً یک static call بود،
+  نه بخشی از comment/type-hint)
+- یک الگوی تکراری واقعی پیدا شد: `Specialist::where('phone', $user->phone)->first()` — دقیقاً
+  همون متدی که `SpecialistRepository::findByPhone()` از یک فاز قبلی از قبل داشت. به‌جای
+  `query()`، از همون متد موجود استفاده شد — در `SpecialistReportController` و ۶ بار عیناً تکراری
+  در `SpecialistNotificationController`
+- Jobs/Commands (`SendBookingReminderJob`, `CancelUnpaidBookings`, `SendBookingReminders`,
+  `CleanupPendingBookings`): طبق درس فازهای ۸/۱۱، اول برای `->handle(` مستقیم در تست‌ها گرپ زده
+  شد — ۳ محل در `NotificationJobsTest.php` برای `SendBookingReminderJob` پیدا و همون لحظه اصلاح
+  شدن
+- `RouteServiceProvider`'s سه بایندینگ (`Specialist::`, `Booking::`, `BeautyService::`) عمداً
+  دست‌نخورده موندن، هم‌الگو با هر فاز قبلی
+
+### دو باگ واقعی، هر دو با تست کشف شدن نه بازبینی دستی
+1. `AdminReportService`'s token-replace درست `use App\Models\{BeautyService,Booking,Specialist}`
+   رو حذف کرد چون دیگه به‌صورت static استفاده نمی‌شدن — ولی `calcSpecialistScore(Specialist
+   $specialist)` هنوز به همون type hint نیاز داشت. PHP این رو در زمان parse خطا نداد (چون
+   `Specialist` بدون import رو نسبت به namespace فعلی resolve کرد، به یک کلاس ناموجود) — فقط در
+   زمان اجرا (`AdminReportsControllerTest`) ترکید. `use App\Models\Specialist;` برگردونده شد.
+2. دو تست (`AdminReportsControllerTest`, `SalonStaffFinancePermissionTest`) با
+   `$this->partialMock(AdminReportService::class, ...)` کار می‌کنن — که Mockery رو مستقیم روی
+   نام کلاس می‌سازه، **بدون صدازدن constructor واقعی**. چون این فاز پراپرتی‌های
+   readonly جدیدی (repository interface ها) به constructor این کلاس اضافه کرد، هر متد
+   unstubbed (مثل `getSummary()`، که این دو تست واقعاً صداش می‌زنن) با خطای «must not be accessed
+   before initialization» می‌ترکید. راه‌حل: یک نمونه‌ی واقعی از طریق container ساخته شد
+   (`$this->app->make(...)`) و بعد همون نمونه (نه نام کلاس) با `Mockery::mock($real)
+   ->makePartial()` پوشونده شد — این‌طوری constructor واقعی صدا زده می‌شه و همه‌ی dependency ها
+   واقعی می‌مونن، فقط متد مشخص‌شده (`monthlyBreakdown()`) stub می‌شه.
+
+### تست و وریفای
+- کل سوییت روی محیط اصلی: **۱۰۸۸ passed / ۱ skipped / صفر fail** — **دو بار** اجرا شد (با توجه
+  به حجم بزرگ این فاز)، هر دو بار کاملاً سبز
+- Laravel Pint: `PASS` روی هر ۲۶ فایل تغییریافته
+- پچ (`0001-refactor-repo-Phase-12b-R-Repo-BookingSweep-extract-.patch`) روی یک `git am` مستقل
+  اعمال شد (کلون جدا، فقط تا آخر فاز ۱۲). سوییت کامل **دو بار** روی این کلون هم اجرا شد — هر دو
+  بار کاملاً سبز
+
+### یادداشت مهم برای فازهای بعدی (درس این فاز)
+وقتی یک کلاس رو به constructor injection مجهز می‌کنی، همیشه چک کن آیا اون کلاس جایی توی تست‌ها با
+`partialMock()`/`mock()` روی نام کلاس (نه نمونه) mock می‌شه — این الگو constructor واقعی رو صدا
+نمی‌زنه و با پراپرتی‌های readonly جدید می‌ترکه. `grep -rn "partialMock(<ClassName>::class\|mock(<ClassName>::class" tests/`
+قبل از نهایی‌کردن امضای constructor، هم‌تراز با چک همیشگی `new <ClassName>(` که از فاز ۸ به بعد
+انجام می‌شه.
+
+### قدم‌های باز برای نشست بعدی
+فاز ۱۳ تمام شد — به بخش «✅ نشست تکمیل‌شده: فاز ۱۳ (R-Repo-CommentSweep)» در انتهای همین سند نگاه
+کن. فاز ۱۴ (`R-Repo-Final`، آخرین فاز جدول) رو شروع کن: اجرای کامل `php artisan test` بعد از
+همه‌ی فازها + گزارش نهایی + جمع‌بندی جدول فازبندی در همین سند.
+
+آیتم‌های باز باقی‌مانده (بدون فاز مشخص، تصمیم با ابوالفضل):
+- `SupportTicket`/`SupportTicketMessage` (فاز ۱۲: مدل‌های کاملاً ساخته‌شده، هیچ‌جا وصل‌نشده)
+- `Announcement::getActiveAnnouncements()`/`App\Http\Requests\Specialist\RespondReviewRequest`
+  (کد مرده، فازهای قدیمی‌تر)
+
+⚠️ یادآوری: توکن GitHub PAT همچنان تازه نشده — این نشست هم از روی زیپ اولیه‌ی آپلودشده و
+کلون‌های محلی کار کرد.
+
+## نشست تکمیل‌شده: فاز ۱۳ (R-Repo-CommentSweep) — ۲۰۲۶-۰۹-۲۱
+
+برخلاف فازهای ۸ تا ۱۲b (ریفکتور منطق)، این فاز صرفاً کامنت‌زدایی از فایل‌های دست‌نخورده بود —
+بدون پوشش تستی برای این نوع تغییر (کامنت‌ها روی رفتار اثر ندارن)، پس ریسک اصلی «از دست‌رفتن
+مستندات باارزش» بود، نه «باگ». به همین خاطر رویکرد کاملاً محتاطانه و marker-aware بود، نه یک
+حذف کورکورانه.
+
+### روش کار
+هر بلوک کامنت قبل از حذف، برای وجود مارکر `⭐`/`⚠️`/متن فارسی چک شد — فقط بلوک‌های کاملاً عمومی
+و تولیدشده‌ی خودِ Laravel (یکسان با نصب پیش‌فرض) حذف شدن. مستندات تصمیم/باگ‌فیکس مخصوص این
+پروژه کاملاً دست‌نخورده موند — با شمارش تعداد مارکر قبل/بعد هر فایل تأیید شد (دقیقاً یکسان).
+
+### کار انجام‌شده
+- `config/*.php`: بلوک‌های استاندارد `/* |----| Title |----| ... */` از ۱۴ فایل از ۱۶ حذف شدن.
+  `config/billing.php` (مستندات مفصل منطق قیمت‌گذاری) و `config/middleware-aliases.php` هیچ
+  تغییری نیاز نداشتن
+- `database/migrations/*.php`: داک‌بلاک‌های عمومی `/** Run the migrations. */` و `/** Reverse
+  the migrations. */` از ۲۰ فایل از ۵۳ حذف شدن (قبل از اعمال، تأیید شد که هیچ‌کدوم از ۱۸ فایل
+  دارای مارکر این الگوی عمومی رو نداشتن — یعنی حذف mechanical امن بود)
+- `database/factories/` + `database/seeders/` (۵۹ فایل): تقریباً هیچی لازم نبود — فقط یک
+  داک‌بلاک عمومی (`UserNotificationSeeder.php`) در کل دو پوشه وجود داشت. فکتوری/سیدرهای این
+  پروژه از اول تمیز نوشته شده بودن
+- `app/Providers/` (۶ فایل دست‌نخورده از فازهای ۸ تا ۱۲b): دو بلوک `@var string` تکراری
+  (`RouteServiceProvider`) و داک‌بلاک‌های تولیدشده‌ی پکیج Telescope
+  (`TelescopeServiceProvider`) حذف شدن. `AuthServiceProvider`, `EventServiceProvider`,
+  `PaymentServiceProvider`, `SMSServiceProvider` هیچ تغییری نیاز نداشتن (صفر کامنت عمومی).
+  کامنت‌های توضیحی واقعی `RouteServiceProvider` (یادداشت باگ ثبت تکراری روت، منطق rate limiter)
+  عمداً دست‌نخورده موندن، حتی بدون `⭐` — چون واقعاً تاریخچه‌ی پروژه‌ن، نه نویز عمومی
+
+### `routes/*` (۴۹ فایل) — بررسی‌شده، عمداً کاملاً دست‌نخورده
+۱۳ فایل مارکر `⭐`/`⚠️` متراکم دارن، و از ۳۶ فایل بی‌مارکر باقی‌مونده، فقط ۵ تا اصلاً کامنت دارن —
+هرکدوم توضیح واقعی و مخصوص پروژه‌ست (یک باگ اجرای دوباره‌ی واقعی در `console.php`، یک یادداشت
+واقعی جلوگیری از حلقه‌ی بی‌نهایت ریدایرکت در `web/payments.php`، یک یادداشت تاریخچه‌ی فیچر
+حذف‌شده در `admin/schedule.php`) — نه بویلرپلیت. ۳۱ فایل باقی‌مونده صفر کامنت دارن. چیزی برای حذف
+امن پیدا نشد.
+
+### تست و وریفای
+- کل سوییت روی محیط اصلی: **۱۰۸۸ passed / ۱ skipped / صفر fail**
+- Laravel Pint: `PASS` روی هر ۱۳۶ فایل پنج پوشه‌ی دست‌خورده
+- پچ (`0001-chore-Phase-13-R-Repo-CommentSweep-strip-generic-boi.patch`) روی یک `git am` مستقل
+  اعمال شد (کلون جدا، فقط تا آخر فاز ۱۲b). سوییت کامل روی این کلون هم ۱۰۸۸/۱ (skip) کاملاً سبز
+  بود — به‌علاوه یک چک اضافی مخصوص این فاز: `php artisan config:cache` روی همون کلون بدون خطا
+  اجرا شد (یک اعتبارسنجی سخت‌گیرانه‌تر از تست معمولی، چون واقعاً هر فایل config رو parse و
+  serialize می‌کنه)
+
+## نشست تکمیل‌شده: فاز ۱۴ (R-Repo-Final) — ۲۰۲۶-۰۹-۲۱
+
+آخرین فاز جدول فازبندی — گزارش نهایی کل پروژه‌ی Repository Pattern (فازهای ۰ تا ۱۳).
+
+### وضعیت نهایی
+- کل سوییت تست: **۱۰۸۸ passed / ۱ skipped / صفر fail** — بدون تغییر نسبت به baseline شروع فاز ۸،
+  در طول ۷ فاز پیاپی (۸، ۹، ۱۰، ۱۱، ۱۲، ۱۲b، ۱۳) هرکدوم با وریفای مستقل روی یک کلون جدا بعد از
+  `git am`
+- تعداد Repository جدید ساخته‌شده در این هفت فاز: `UserRepository`, `SecurityLogRepository`,
+  `SalonRepository`, `SalonSmsUsageRepository`, `ReportExportRepository`,
+  `NotificationSettingRepository`, `RoleRepository`, `PermissionRepository` — به‌علاوه گسترش
+  چند Repository موجود از فازهای اولیه (`DiscountCodeRepository`, `InvoiceRepository`,
+  `SpecialistRepository`, `BookingRepository`, `BeautyServiceRepository`)
+- تعداد کل commit این هفت فاز: ۷ commit مجزا (یکی به‌ازای هر فاز)، هرکدوم با پیام commit کامل و
+  مستند
+- دو رگرسیون واقعی در طول این فازها پیدا و رفع شدن (هر دو با تست، نه بازبینی دستی): باگ
+  `SMSService` constructor injection (فاز ۸) و باگ Mockery partial-mock constructor (فاز ۱۲b)؛
+  به‌علاوه چند باگ کوچک‌تر type/nullable (فازهای ۸، ۱۰، ۱۲)
+
+### آیتم‌های باز که با تصمیم صریح ابوالفضل نیاز به بسته‌شدن داشتن (نه بخشی از این فازبندی)
+✅ هر چهار آیتم این فهرست حالا بسته شدن:
+- **`app/Traits/HasRoles.php`**، **`app/Providers/SMSServiceProvider.php`**: بعد از پایان فاز
+  ۱۴، همون نشست — کد مرده‌ی بدون‌ابهام (صفر مصرف‌کننده، دوباره تأیید شد)، بدون نیاز به تصمیم
+  جداگانه حذف شدن
+- **`Announcement::getActiveAnnouncements()`**: در نشست بعدی، بعد از بررسی مجدد به درخواست
+  ابوالفضل، تأیید شد کاملاً بی‌استفاده‌ست (grep در کل `app/`, `routes/`, `resources/`, `tests/`
+  — صفر فراخواننده؛ scopeهای `active()`/`byPriority()` زیرینش جای دیگه مستقیم استفاده می‌شن) —
+  حذف شد
+- **`App\Http\Requests\Specialist\RespondReviewRequest`**: بررسی مجدد نشون داد این کد مرده
+  نبود، بلکه یک FormRequest درست‌نوشته‌شده بود که هیچ‌وقت واقعاً به کنترلر وصل نشده بود —
+  `SpecialistReviewController::respond()`/`updateResponse()` هر دو یک کپی عیناً‌تکراری از همون
+  اعتبارسنجی رو inline داشتن. به‌جای حذف، در همون کنترلر wire شد (تکرار کد حذف شد، بدون تغییر
+  رفتار)
+- **`SupportTicket`/`SupportTicketMessage`**: طبق تصمیم صریح ابوالفضل («UI براش بساز»)، یک UI
+  کامل ساخته شد — به بخش «✅ نشست تکمیل‌شده: SupportTicket UI» در انتهای همین سند نگاه کن
+
+### پیشنهاد برای بعد از این جدول
+جدول فازبندی رسماً تمام شد (فاز ۰ تا ۱۴)، و هر ۴ آیتم کد مرده‌ی باز هم بسته شدن (بالا رو نگاه
+کن). یک حوزه هنوز باز مونده که ارزش یک فاز/نشست جداگانه داره:
+- اگه بعداً معلوم شد جای دیگه‌ای هم Repository pattern جا افتاده (شبیه کشف `Role`/`Permission`
+  در فاز ۱۲ یا `Booking`/`Specialist`/`BeautyService` در فاز ۱۲b)، یک sweep نهایی و جامع‌تر —
+  شاید با ابزار خودکارتر (مثل یک اسکریپت PHP-Parser-based به‌جای grep دستی) قابل‌اطمینان‌تر باشه
+
+⚠️ یادآوری برای نشست بعدی: توکن GitHub PAT دوباره چک بشه — این کل زنجیره‌ی فازهای ۸ تا ۱۴ از روی
+همون زیپ اولیه‌ی آپلودشده در ابتدای این گفتگو و کلون‌های محلی کار کردن، نه از GitHub مستقیم.
+
+## نشست تکمیل‌شده: بستن آیتم‌های باز (RespondReviewRequest + SupportTicket UI) — ۲۰۲۶-۰۹-۲۲
+
+بعد از پایان فاز ۱۴، ابوالفضل صریحاً برای دو آیتم باز باقی‌مونده تصمیم داد: «برای `SupportTicket`
+UI بساز» و «برای `RespondReviewRequest` بیشتر بررسی کن، شاید واقعاً کد مرده نباشه».
+
+### `RespondReviewRequest` — یافته‌ی مهم: کد مرده نبود
+بررسی مجدد نشون داد `SpecialistReviewController::respond()` و `updateResponse()` هر دو یک نسخه‌ی
+inline و عیناً‌تکراری از همون قوانین اعتبارسنجی (`response: required|string|max:1000`) داشتن —
+`RespondReviewRequest` یک FormRequest درست‌نوشته‌شده (با پیام خطای فارسی) بود که ساخته شده ولی
+هیچ‌وقت واقعاً به کنترلر متصل نشده بود. به‌جای حذف، در هر دو متد wire شد (`Request $request` →
+`RespondReviewRequest $request`, `$request->validate([...])` → `$request->validated()`) — تکرار
+کد حذف شد، هیچ تغییر رفتاری‌ای نداد (همون قوانین، همون authorization جریان داخل بدنه‌ی متد).
+`Announcement::getActiveAnnouncements()` بعد از بررسی مجدد (grep در `app/`, `routes/`,
+`resources/`, `tests/`) واقعاً بدون فراخواننده تأیید شد — حذف شد.
+
+### `SupportTicket`/`SupportTicketMessage` — UI کامل ساخته شد
+**طراحی**: جدول `support_tickets` هیچ ستون `salon_id` نداره — این یک سیستم تیکت سراسری
+(غیرسالن‌محور) است. با توجه به معماری موجود پروژه (Admin = اپراتور سالن، SuperAdmin = اپراتور
+پلتفرم)، طراحی شد: ادمین‌های سالن از پنل `/admin` تیکت ثبت می‌کنن، SuperAdmin پلتفرم از پنل
+`/superadmin` بهشون رسیدگی می‌کنه.
+
+**دو باگ واقعی در مدل‌های «کاملاً ساخته‌شده»، پیدا و رفع شدن قبل از ساخت هر چیز روی اون‌ها**:
+1. `SupportTicketMessage::getAttachmentUrlsAttribute()` بدون `use
+   Illuminate\Support\Facades\Storage` — هر پیامی با پیوست، خطای fatal می‌داد
+2. `SupportTicket::logActivity()` از هِلپر `activity()` پکیج Spatie استفاده می‌کرد، ولی **هیچ
+   migration جدولی `activity_log` در کل پروژه وجود نداشت**، و مدل تِریت `LogsActivity` رو هم
+   اصلاً apply نمی‌کرد (یعنی `getActivitylogOptions()` تعریف شده بود ولی کاملاً بی‌اثر). رفع شد:
+   یک migration جدید (دقیقاً منطبق با stub رسمی خودِ پکیج — جدول پایه + ستون `event` + ستون
+   `batch_uuid`، همه در یک migration چون نصب تازه‌ست)، انتشار `config/activitylog.php`، اضافه‌شدن
+   تِریت. کل چرخه‌ی حیات مدل (ساخت، `assignTo()`، `markAsResolved()`، `addMessage()`، ثبت
+   activity log) مستقیم روی یک دیتابیس واقعی از طریق tinker تست شد، قبل از هر کار دیگه.
+
+**ساخته‌شده**:
+- `SupportTicketRepository` + `SupportTicketMessageRepository` (بایند در
+  `RepositoryServiceProvider`)
+- `SupportTicketService` (createTicket, addReply, assign, markResolved/Closed, reopen —
+  `addReply()` خودکار وضعیت `open`→`in_progress` رو با پاسخ staff عوض می‌کنه، و یک تیکت
+  حل‌شده/بسته‌شده رو با پاسخ مشتری دوباره باز می‌کنه)
+- `SupportTicketPolicy` (bypass سوپرادمین، صاحب تیکت می‌تونه ببینه/پاسخ بده)، ثبت در
+  `AuthServiceProvider`
+- ۳ FormRequest — دسته‌بندی‌های `StoreSupportTicketRequest` (`booking, payment, service,
+  technical, other`) عمداً با دسته‌بندی‌های از‌قبل‌موجودِ `SupportTicketFactory` هم‌تراز شدن، نه
+  یک taxonomy عمومی ابداعی
+- دو کنترلر: `Admin\SupportTicket\SupportTicketController` (تیکت‌های خودِ ادمین) و
+  `SuperAdmin\SupportTicketController` (صندوق پلتفرم با فیلتر وضعیت/اولویت/واگذاری)
+- ۱۲ روت (۵ ادمین، ۷ سوپرادمین)، لینک‌های نویگیشن در هر دو `layouts/admin.blade.php` و
+  `layouts/superadmin.blade.php`
+- ۵ ویو Blade، دقیقاً هم‌سبک با قراردادهای موجود (`--admin-*`/`sa-card`/`sa-btn`)
+- ۱۲ تست ویژگی جدید (ایجاد تیکت، ایزوله‌بودن بین ادمین‌ها با ۴۰۳، بازشدن خودکار تیکت حل‌شده با
+  پاسخ، درستی فیلتر، واگذاری، چرخه‌ی کامل resolve/close/reopen)
+
+### تست و وریفای
+- سوییت کامل: **۱۱۰۰ passed (۱۰۸۸ baseline + ۱۲ جدید) / ۱ skipped / صفر fail** — دو بار روی
+  محیط اصلی
+- Laravel Pint: `PASS` روی هر ۲۹ فایل PHP تغییریافته/جدید
+- پچ (`0001-feat-build-UI-for-SupportTicket-SupportTicketMessage.patch`) روی یک `git am` مستقل
+  اعمال شد. سوییت کامل روی این کلون هم ۱۱۰۰/۱ (skip) سبز بود؛ به‌علاوه یک migration تازه از صفر
+  (`migrate --force` روی دیتابیس خالی) و `route:list` هر دو بدون خطا روی همون کلون تأیید شدن
+
+### قدم‌های باز
+هیچ آیتم بازی از فهرست «تصمیم با ابوالفضل» باقی نمونده. یک sweep نهایی و جامع‌تر (به بخش «✅
+نشست تکمیل‌شده: sweep نهایی» در انتهای همین سند نگاه کن) هم انجام و تموم شد.
+
+⚠️ یادآوری: توکن GitHub PAT همچنان تازه نشده.
+
+## نشست تکمیل‌شده: sweep نهایی — کشف Model:: در Blade و route closures — ۲۰۲۶-۰۹-۲۲
+
+طبق درخواست صریح ابوالفضل («یک sweep نهایی و جامع‌تر انجام بده»)، این نشست دقیقاً همون چیزی رو
+پیدا کرد که پیشنهاد شده بود: **هر ۷ فاز repository (۸ تا ۱۲b) فقط `app/` رو grep می‌زدن، هیچ‌وقت
+`resources/views/` یا `routes/Channels.php` رو چک نکرده بودن.**
+
+### یافته‌های واقعی، همه رفع‌شدن
+- **`admin/specialists/show.blade.php`**: یک `User::where('phone', ...)->first()` داخل یک بلوک
+  `@php` — منتقل شد به `AdminSpecialistController::show()`، با استفاده از متد
+  `UserRepository::findByPhone()` که از فاز ۸ از قبل وجود داشت
+- **`layouts/app.blade.php`** (لایوت مشترک همه‌ی صفحات): یک کوئری `LoyaltyPoint::` sum، همراه یک
+  کش ۵دقیقه‌ای که قبلاً یک فیکس واقعی performance بوده (کامنتش کاملاً حفظ شد) — به
+  `app(LoyaltyPointRepositoryInterface::class)->sumForUser()` تبدیل شد؛ دقیقاً منطبق با متد
+  موجودش
+- **`loyalty/my-codes.blade.php`**: دو کوئری `DiscountCode::` — منتقل شدن به
+  `LoyaltyController::myCodes()`. یکی (`getActiveForUser`) دقیقاً با متد موجود مطابقت داشت؛
+  برای دیگری یک متد جدید (`getExpiredForUser`) اضافه شد
+- **سه فایل `admin/bookings/show.blade.php`, `specialists/create.blade.php`,
+  `specialists/edit.blade.php`**: هر سه `WalletSetting::first()` (یک static call واقعی،
+  متفاوت از قرارداد جاافتاده‌ی `WalletSetting::get()` که دست‌نخورده می‌مونه) — به
+  `app(WalletSettingRepositoryInterface::class)->first()` تبدیل شدن
+- **`routes/Channels.php`**: دو closure احرازهویت broadcast-channel (`Payment::find()`،
+  `Booking::find()`). **قبل از فیکس، سورس خودِ `Illuminate\Broadcasting\Broadcasters\Broadcaster`
+  چک شد** — این closure ها مستقیم با `$handler($user, ...$parameters)` صدا زده می‌شن، **نه** از
+  طریق container. یعنی تلاش اول من (اضافه‌کردن یک پارامتر تایپ‌شده‌ی سوم به closure) یک
+  `TypeError` واقعی در زمان اجرا می‌داد، چون فقط مقادیر wildcard مسیر channel پاس داده می‌شن، نه
+  چیز دیگه‌ای. فیکس درست: `app(...)` داخل بدنه‌ی closure، بدون تغییر امضای closure
+
+### مرزهای رعایت‌شده
+- `app/View/Composers/ViewComposer.php` چک و کاملاً تمیز تأیید شد (از abstraction
+  `CurrentSalon` استفاده می‌کنه، نه کوئری خام)
+- تمام seeder/factory ها (که مدل رو مستقیم صدا می‌زنن) عمداً دست‌نخورده موندن — همون قرارداد
+  همیشگی این پروژه که زیرساخت تست/seed جزو دامنه‌ی این فازها نیست
+- `config/auth.php` و `ReviewFactory.php`'s match فقط رفرنس `::class` بودن (نه فراخوانی متد)،
+  خارج از دامنه
+
+### تست و وریفای
+- ۲ تست رگرسیون واقعی اضافه شد (پوشش تست قبلی این دو صفحه فقط «۲۰۰ برمی‌گردونه» بود، نه چک
+  محتوا) — یکی تأیید می‌کنه کدهای فعال/منقضی درست تفکیک می‌شن، یکی تأیید می‌کنه وضعیت حساب
+  لینک‌شده/نشده‌ی متخصص درست گزارش می‌شه
+- فیکس `Channels.php` تست اختصاصی نداره — `BROADCAST_CONNECTION=log` هست و هیچ‌جا
+  `Broadcast::routes()` صدا زده نشده، پس هیچ endpoint واقعی‌ای برای تست HTTP وجود نداره؛ به‌جاش
+  resolve‌شدن درست هر دو Repository Interface از طریق container با tinker تأیید شد
+- کل سوییت: **۱۱۰۲ passed (۱۱۰۰ + ۲ جدید) / ۱ skipped / صفر fail** — هم روی محیط اصلی، هم روی
+  کلون مستقل بعد از `git am`
+- Laravel Pint: `PASS` روی هر ۱۳ فایل تغییریافته
+
+### قدم‌های باز
+هیچ. این sweep دقیقاً همون چیزی بود که در انتهای فاز ۱۴ پیشنهاد شده بود، و چیزی که پیدا کرد
+(کوئری‌های پنهان در Blade views و route closures) دقیقاً نشون‌دهنده‌ی ارزش انجامش بود. اگه در
+آینده باز هم دلیلی برای شک به جامانده‌گی repository pattern پیدا شد، این sweep یادآوریه که محدوده
+باید فراتر از `app/` باشه — `resources/views/`, `routes/`, و هر closure دیگه‌ای که مدل رو مستقیم
+صدا می‌زنه.
+
+⚠️ یادآوری: توکن GitHub PAT همچنان تازه نشده.
