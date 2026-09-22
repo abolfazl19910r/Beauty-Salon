@@ -10,11 +10,16 @@ return new class extends Migration
     {
         Schema::create('specialists', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('salon_id')->constrained('salons')->cascadeOnDelete();
             $table->string('name');
             $table->string('phone');
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
             $table->string('email')->unique();
             $table->boolean('auto_confirm_bookings')->default(false);
+            $table->decimal('commission_rate', 5, 2)
+                ->nullable()
+                ->default(null)
+                ->comment('نرخ کمیسیون اختصاصی (%). null = استفاده از تنظیمات global');
             $table->timestamps();
             $table->softDeletes();
         });

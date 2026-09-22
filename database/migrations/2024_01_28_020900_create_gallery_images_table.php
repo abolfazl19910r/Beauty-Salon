@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('gallery_images', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('salon_id')->constrained('salons')->cascadeOnDelete();
             $table->string('title');
             $table->string('description')->nullable();
             $table->string('image_path');

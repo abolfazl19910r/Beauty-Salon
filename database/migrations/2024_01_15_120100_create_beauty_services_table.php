@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('beauty_services', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('salon_id')->constrained('salons')->cascadeOnDelete();
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();

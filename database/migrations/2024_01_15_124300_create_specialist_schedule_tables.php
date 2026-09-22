@@ -14,20 +14,14 @@ return new class extends Migration
             $table->tinyInteger('day_of_week');
             $table->time('start_time');
             $table->time('end_time');
+            // ⭐ Feature completion (test-writing session 9, per explicit project decision):
+            // Specialist::getAvailableSlots() has always read break_start/break_end to carve a
+            // lunch-break-style gap out of the day's available slots; nullable so a
+            // specialist/day with no break behaves exactly as one with these columns absent.
+            $table->time('break_start')->nullable();
+            $table->time('break_end')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-        });
-
-        Schema::create('work_schedules', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('specialist_id')->constrained('specialists')->onDelete('cascade');
-            $table->json('work_days');
-            $table->time('start_time');
-            $table->time('end_time');
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
-
-            $table->unique('specialist_id');
         });
 
         Schema::create('holidays', function (Blueprint $table) {
@@ -61,7 +55,6 @@ return new class extends Migration
     {
         Schema::dropIfExists('leaves');
         Schema::dropIfExists('holidays');
-        Schema::dropIfExists('work_schedules');
         Schema::dropIfExists('specialist_schedules');
     }
 };

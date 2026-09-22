@@ -12,13 +12,24 @@ class DatabaseSeeder extends Seeder
     {
         // ⭐ Customer identity redesign / SaaS multi-tenant (2026-08-30): every salon-owned
         // table's salon_id is NOT NULL (see BelongsToSalon), and it's only auto-filled when
-        // CurrentSalon is set. Migrations create the default 'rasta' salon before seeders ever
-        // run (see 2026_08_29_000103_backfill_default_salon_and_salon_id), so it's always here
-        // to bind to. Without this, every seeder below that creates a Specialist, BeautyService,
-        // Booking, customer User, etc. would fail the NOT NULL constraint immediately — this was
-        // a documented, known gap ("seederهای CLI هنوز مشکل دارن") from when BelongsToSalon was
-        // first introduced; this is that gap actually being closed.
-        $salon = Salon::where('slug', 'rasta')->firstOrFail();
+        // CurrentSalon is set. The default 'rasta' salon used to be created by a migration
+        // (backfill_default_salon_and_salon_id, since removed as part of consolidating the
+        // migrations that added salon_id — see Rasta_unified_prompt.md); it's created here
+        // instead now, since a migration is schema-only and this is genuinely seed data. Without
+        // this, every seeder below that creates a Specialist, BeautyService, Booking, customer
+        // User, etc. would fail the NOT NULL constraint immediately.
+        $salon = Salon::firstOrCreate(
+            ['slug' => 'rasta'],
+            [
+                'name' => 'سالن زیبایی راستا',
+                'max_specialists_count' => 100,
+                'module_permissions' => null, // null = همه‌ی ماژول‌ها
+                'subscription_type' => '12m',
+                'subscription_started_at' => now(),
+                'subscription_ends_at' => now()->addMonths(12),
+                'is_suspended' => false,
+            ]
+        );
         app(CurrentSalon::class)->set($salon);
 
         $this->call([

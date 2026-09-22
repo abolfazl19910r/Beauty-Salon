@@ -66,7 +66,21 @@ return new class extends Migration
 
         Schema::create('wallet_settings', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('salon_id')->constrained('salons')->cascadeOnDelete();
             $table->decimal('withdrawal_fee_percentage', 5, 2)->default(2.5);
+            // ⭐ Added by explicit user decision: admin's cut of every booking's prepayment.
+            $table->decimal('admin_commission_percentage', 5, 2)->default(10);
+            // ⭐ Added by explicit user decision: the prepayment amount used to be hardcoded in
+            // BookingService (30% of the service price, minimum 50,000 toman) — not configurable
+            // by the admin at all. Business case for keeping it percentage-based rather than a
+            // flat amount: a flat prepayment on an expensive service is both a weak commitment
+            // from the customer and, more importantly, makes the cancellation-fee system (itself
+            // a percentage of the prepayment) nearly meaningless for expensive bookings — the
+            // maximum possible cancellation fee would stay capped at the same small flat amount
+            // regardless of how much specialist time was reserved. Defaults below (30%, 50,000)
+            // exactly match the previous hardcoded behavior.
+            $table->decimal('prepayment_percentage', 5, 2)->default(30);
+            $table->decimal('minimum_prepayment_amount', 12, 2)->default(50000);
             $table->decimal('minimum_withdrawal_amount', 15, 2)->default(100000);
             $table->decimal('maximum_withdrawal_amount', 15, 2)->default(50000000);
             $table->boolean('instant_withdrawal_enabled')->default(false);
@@ -74,12 +88,33 @@ return new class extends Migration
             $table->integer('cancellation_before_hours')->default(24);
             $table->decimal('customer_cancellation_fee_percentage', 5, 2)->default(20);
             $table->decimal('specialist_cancellation_penalty_percentage', 5, 2)->default(10);
+            // ⭐ Added by explicit user request (suggestions 1 and 4 on the cancellation logic):
+            // 1) `specialist_cancellation_before_hours` — previously the specialist cancellation
+            // penalty had no time threshold (unlike the client, which has
+            // `cancellation_before_hours`) — meaning even a cancellation a month before the
+            // appointment was subject to a penalty. Kept as its own column, not shared with the
+            // client column, since the reasonable interval for a client and a specialist isn't
+            // necessarily the same.
+            $table->integer('specialist_cancellation_before_hours')->default(24);
+            // 2) `specialist_repeat_cancellation_*` — the aggravated penalty for repeated
+            // cancellations: if the specialist cancels `_threshold` or more appointments within
+            // `_window_days`, the penalty percentage for THAT cancellation (not previous ones)
+            // increases by `_extra_percentage`. `_threshold = 0` disables this entirely (default,
+            // so existing behavior never changes without a deliberate admin adjustment).
+            $table->unsignedInteger('specialist_repeat_cancellation_threshold')->default(0);
+            $table->unsignedInteger('specialist_repeat_cancellation_window_days')->default(30);
+            $table->decimal('specialist_repeat_cancellation_extra_percentage', 5, 2)->default(0);
             $table->integer('settlement_delay_days')->default(2);
             $table->timestamps();
         });
 
-        // Insert default settings
+        // See 0000_01_01_000000_create_salons_table.php's own comment — RefreshDatabase runs
+        // migrations only, never seeders, so the baseline row every salon-owned table needs has
+        // to be created here, tied to the one default salon that migration guarantees exists.
+        $salonId = DB::table('salons')->where('slug', 'rasta')->value('id');
+
         DB::table('wallet_settings')->insert([
+            'salon_id' => $salonId,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
