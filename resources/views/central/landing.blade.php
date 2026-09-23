@@ -243,6 +243,8 @@
         .btn-preview { background: transparent; border: 1px solid #d9cbb0; color: inherit; }
         .plan.best .btn-preview { border-color: rgba(201,162,75,.45); }
         .btn-preview:hover { border-color: var(--gold); }
+        .buy-now { text-align: center; font-size: .88rem; text-decoration: underline; text-underline-offset: 4px; opacity: .8; padding: .2rem 0; }
+        .buy-now:hover { opacity: 1; color: var(--gold); }
 
         dialog { border: 0; border-radius: 1.2rem; padding: 0; width: min(640px, 100% - 1.5rem); max-height: calc(100vh - 2rem); color: var(--ink); background: var(--cream); }
         dialog::backdrop { background: rgba(26,20,16,.7); }
@@ -614,7 +616,8 @@
                 <h2 id="pricing-title">تعرفه‌ی اشتراک</h2>
                 <p>
                     @if ($trialDays > 0)
-                        اول {{ to_persian_num((string) $trialDays) }} روز رایگان استفاده کنید؛ پلن را بعد از آن، از داخل پنل سالن می‌خرید.
+                        اول {{ to_persian_num((string) $trialDays) }} روز رایگان استفاده کنید و پلن را بعداً از داخل پنل سالن بخرید،
+                        یا اگر دوره‌ی رایگان نمی‌خواهید، همین حالا با «خرید فوری» پلن را بخرید و آنلاین پرداخت کنید.
                     @else
                         پلن را بعد از ساخت سالن، از داخل پنل سالن و با درگاه زرین‌پال می‌خرید.
                     @endif
@@ -651,9 +654,18 @@
                         </div>
                         <div class="actions">
                             <button type="button" class="btn btn-preview" data-plan-preview="{{ $plan['type'] }}">پیش‌نمایش پلن</button>
-                            <a class="btn {{ $plan['type'] === '6m' ? 'btn-gold' : 'btn-ink' }}" href="{{ $plan['signup_url'] }}" data-plan-link="{{ $plan['type'] }}">
-                                @if ($trialDays > 0) شروع رایگان با این پلن @else انتخاب این پلن @endif
-                            </a>
+                            @if ($trialDays > 0)
+                                <a class="btn {{ $plan['type'] === '6m' ? 'btn-gold' : 'btn-ink' }}" href="{{ $plan['signup_url'] }}" data-plan-link="{{ $plan['type'] }}" data-link-kind="signup">
+                                    شروع {{ to_persian_num((string) $trialDays) }} روز رایگان
+                                </a>
+                                <a class="buy-now" href="{{ $plan['buy_url'] }}" data-plan-link="{{ $plan['type'] }}" data-link-kind="buy">
+                                    خرید فوری، بدون دوره‌ی رایگان
+                                </a>
+                            @else
+                                <a class="btn {{ $plan['type'] === '6m' ? 'btn-gold' : 'btn-ink' }}" href="{{ $plan['buy_url'] }}" data-plan-link="{{ $plan['type'] }}" data-link-kind="buy">
+                                    خرید و پرداخت آنلاین
+                                </a>
+                            @endif
                         </div>
                     </article>
                 @endforeach
@@ -684,6 +696,17 @@
                         {{ to_persian_num(number_format($smsQuota)) }} پیامک در ماه.
                     </p>
                 </details>
+            @endif
+            @if ($trialDays > 0)
+            <details>
+                <summary>اگر دوره‌ی رایگان نخواهم و همین حالا بخواهم اشتراک بخرم؟</summary>
+                <p>
+                    روی کارت پلن دلخواه، گزینه‌ی «خرید فوری، بدون دوره‌ی رایگان» را بزنید. فرم ساخت سالن را پر می‌کنید، شماره موبایل را
+                    با کد پیامکی تایید می‌کنید و بلافاصله به درگاه پرداخت امن زرین‌پال هدایت می‌شوید. بعد از پرداخت موفق،
+                    اشتراک از همان لحظه فعال است و آدرس رزرو سالن در پنل به شما نمایش داده می‌شود. اگر پرداخت نیمه‌کاره
+                    بماند، سالن شما از بین نمی‌رود و می‌توانید از صفحه‌ی خرید داخل پنل دوباره پرداخت کنید.
+                </p>
+            </details>
             @endif
             <details>
                 <summary>آدرس سالن را از کجا بگیرم؟</summary>
@@ -776,9 +799,10 @@
             @if ($trialDays > 0) خرید از داخل پنل سالن انجام می‌شود؛ اگر زودتر از پایان دوره‌ی رایگان بخرید، اشتراک از همان روز خرید شروع می‌شود. @endif
         </p>
         <div class="dlg-actions">
-            <a class="btn btn-ink" id="dlg-cta" href="#">
-                @if ($trialDays > 0) شروع رایگان با این پلن @else انتخاب این پلن @endif
-            </a>
+            @if ($trialDays > 0)
+                <a class="btn btn-ink" id="dlg-cta" href="#">شروع {{ to_persian_num((string) $trialDays) }} روز رایگان</a>
+            @endif
+            <a class="btn {{ $trialDays > 0 ? 'btn-preview' : 'btn-ink' }}" id="dlg-buy" href="#">همین حالا بخرم و پرداخت کنم</a>
             <button type="button" class="btn btn-preview" data-close-dialog>بستن</button>
         </div>
     </div>
@@ -814,7 +838,8 @@
             cta.href = withSlug(signupUrl, slug);
             document.querySelectorAll('[data-plan-link]').forEach(function (a) {
                 var plan = plans.find(function (p) { return p.type === a.getAttribute('data-plan-link'); });
-                if (plan) a.href = withSlug(plan.signup_url, slug);
+                var kind = a.getAttribute('data-link-kind') === 'buy' ? 'buy_url' : 'signup_url';
+                if (plan) a.href = withSlug(plan[kind], slug);
             });
         }
 
@@ -901,7 +926,9 @@
                 setText('dlg-saving', plan.saving > 0
                     ? 'نسبت به تمدید ماه‌به‌ماه ' + money(plan.saving) + ' تومان (' + fa(plan.saving_percent) + ' درصد) کمتر پرداخت می‌کنید.'
                     : 'بدون تعهد بلندمدت؛ هر ماه می‌توانید تمدید کنید یا پلن بلندتر بخرید.');
-                document.getElementById('dlg-cta').href = withSlug(plan.signup_url, input.value);
+                var trialCta = document.getElementById('dlg-cta');
+                if (trialCta) trialCta.href = withSlug(plan.signup_url, input.value);
+                document.getElementById('dlg-buy').href = withSlug(plan.buy_url, input.value);
                 if (typeof dialog.showModal === 'function') {
                     dialog.showModal();
                 } else {

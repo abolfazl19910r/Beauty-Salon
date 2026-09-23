@@ -59,6 +59,8 @@ class CentralLandingController extends Controller
                 'trial_end_label' => $this->jalaliLabel(now()->addDays($trialDays)),
                 'period_end_label' => $this->jalaliLabel($paidFrom->copy()->addMonths($months)),
                 'signup_url' => route('salon-signup.create', ['plan' => $type]),
+                // ⭐ «خرید مستقیم بدون دوره‌ی رایگان» (۲۰۲۶-۰۹-۲۳) — بعد از تایید موبایل مستقیم به درگاه.
+                'buy_url' => route('salon-signup.create', ['plan' => $type, 'intent' => 'buy']),
             ];
         }
 

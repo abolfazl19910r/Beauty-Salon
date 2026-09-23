@@ -84,6 +84,6 @@ class AdminBillingController extends Controller
         $salonUrl = $invoice->salon()->withoutGlobalScopes()->first()?->publicUrl();
 
         return redirect()->route('admin.billing.index')
-            ->with('success', 'اشتراک سالن با موفقیت تمدید شد.'.($salonUrl ? " آدرس رزرو آنلاین سالن شما: {$salonUrl}" : ''));
+            ->with('success', 'پرداخت موفق بود و اشتراک سالن فعال شد.'.($salonUrl ? " آدرس رزرو آنلاین سالن شما: {$salonUrl}" : ''));
     }
 }

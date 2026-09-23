@@ -40,6 +40,8 @@ class StoreSalonSignupRequest extends FormRequest
             // ⭐ دیگه در فرم نمایش داده نمی‌شه (۲۰۲۶-۰۹-۲۳) — فقط hidden، از ?plan= صفحه‌ی فروش؛
             // خالی/نامعتبر نباید ثبت‌نام رو رد کنه، پس nullable و در سرویس پیش‌فرض ۱m.
             'subscription_type' => ['nullable', 'in:1m,3m,6m,12m'],
+            // «خرید مستقیم» (buy) یا مسیر عادی آزمایشی (trial) — فقط مسیر بعد از تایید OTP رو عوض می‌کنه.
+            'intent' => ['nullable', 'in:trial,buy'],
             'owner_name' => ['required', 'string', 'max:255'],
             'owner_phone' => [
                 'required', 'string', 'regex:/^09[0-9]{9}$/',

@@ -67,6 +67,10 @@
         .hours-row input[type=time] { padding: .4rem .5rem; direction: ltr; }
         .hours-row.is-closed input[type=time] { opacity: .35; }
         @media (max-width: 520px) { .hours-row { grid-template-columns: 4.5rem auto 1fr 1fr; gap: .35rem; } }
+        .buy-summary { display: flex; justify-content: space-between; align-items: center; gap: 1rem; border: 1px solid var(--rasta-gold); border-radius: .7rem; padding: .8rem 1rem; margin-bottom: 1.5rem; background: rgba(201, 162, 75, .08); }
+        .buy-title { font-weight: 800; color: var(--rasta-gold-light); }
+        .buy-price { font-size: .85rem; opacity: .8; margin-top: .15rem; }
+        .buy-summary a { color: var(--rasta-gold-light); font-size: .85rem; white-space: nowrap; }
         .err { color: #ff8a8a; font-size: .8rem; margin-top: .3rem; }
         .check-status { font-size: .78rem; margin-top: .35rem; min-height: 1em; }
         .check-status.ok { color: #7ee0a6; }
@@ -95,7 +99,9 @@
         <h1>ساخت سالن خودتان روی راستا</h1>
         <p class="sub">
             در چند دقیقه، پنل مدیریت اختصاصی سالن خودتان را راه‌اندازی کنید.
-            @if ($trialDays > 0)
+            @if ($intent === 'buy')
+                <br>بعد از تایید شماره موبایل، مستقیم به درگاه پرداخت زرین‌پال هدایت می‌شوید و اشتراک از همان لحظه فعال می‌شود.
+            @elseif ($trialDays > 0)
                 <br>بعد از تایید شماره موبایل، {{ to_persian_num((string) $trialDays) }} روز رایگان از همه‌ی امکانات استفاده می‌کنید؛
                 خرید اشتراک بعداً از داخل پنل سالن انجام می‌شود.
             @else
@@ -114,6 +120,26 @@
 
             <form method="POST" action="{{ route('salon-signup.store') }}">
                 @csrf
+
+                {{-- ⭐ تصمیم ابوالفضل (۲۰۲۶-۰۹-۲۳): انتخاب پلن از فرم ساخت سالن حذف شد — برای همه، نه فقط
+                     وقتی دوره‌ی آزمایشی روشنه. پلن فقط یک‌جا انتخاب می‌شه: صفحه‌ی خرید داخل پنل
+                     (admin.billing.index). ?plan= از کارت‌های صفحه‌ی فروش فقط به‌عنوان پیش‌انتخاب همون
+                     صفحه‌ی خرید ذخیره می‌شه (salons.subscription_type). --}}
+                <input type="hidden" name="subscription_type" value="{{ old('subscription_type', $selectedPlan) }}">
+                <input type="hidden" name="intent" value="{{ old('intent', $intent) }}">
+
+                {{-- ⭐ «خرید مستقیم» (۲۰۲۶-۰۹-۲۳): فقط خلاصه‌ی فقط‌خواندنی پلنی که از صفحه‌ی فروش انتخاب شده،
+                     نه دوباره یک انتخاب‌گر پلن (تصمیم «پلن فقط یک‌جا انتخاب می‌شه» سر جاشه). --}}
+                @if (old('intent', $intent) === 'buy')
+                    @php $planLabels = ['1m' => 'یک‌ماهه', '3m' => 'سه‌ماهه', '6m' => 'شش‌ماهه', '12m' => 'یک‌ساله']; @endphp
+                    <div class="buy-summary">
+                        <div>
+                            <div class="buy-title">پلن {{ $planLabels[old('subscription_type', $selectedPlan)] ?? '' }}</div>
+                            <div class="buy-price">{{ to_persian_num(number_format($selectedPlanPrice)) }} تومان — پرداخت آنلاین بعد از تایید موبایل</div>
+                        </div>
+                        <a href="{{ route('central.home') }}#pricing">تغییر پلن</a>
+                    </div>
+                @endif
 
                 <fieldset>
                     <legend>مشخصات سالن</legend>
@@ -189,11 +215,6 @@
                     </div>
                 </fieldset>
 
-                {{-- ⭐ تصمیم ابوالفضل (۲۰۲۶-۰۹-۲۳): انتخاب پلن از فرم ساخت سالن حذف شد — برای همه، نه فقط
-                     وقتی دوره‌ی آزمایشی روشنه. پلن فقط یک‌جا انتخاب می‌شه: صفحه‌ی خرید داخل پنل
-                     (admin.billing.index). ?plan= از کارت‌های صفحه‌ی فروش فقط به‌عنوان پیش‌انتخاب همون
-                     صفحه‌ی خرید ذخیره می‌شه (salons.subscription_type). --}}
-                <input type="hidden" name="subscription_type" value="{{ old('subscription_type', $selectedPlan) }}">
 
 
                 <fieldset>
@@ -218,7 +239,7 @@
                     </div>
                 </fieldset>
 
-                <button type="submit">ادامه و ارسال کد تایید</button>
+                <button type="submit">{{ old('intent', $intent) === 'buy' ? 'ادامه، تایید موبایل و پرداخت' : 'ادامه و ارسال کد تایید' }}</button>
             </form>
         </div>
     </div>

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SalonSignup\StoreSalonSignupRequest;
 use App\Repositories\Contracts\SalonRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Services\Payment\InvoiceService;
+use App\Services\Payment\SubscriptionPaymentService;
 use App\Services\PhoneVerificationService;
 use App\Services\SalonSignup\SalonSignupService;
 use Illuminate\Http\JsonResponse;
@@ -39,16 +41,23 @@ class SalonSignupController extends Controller
         protected readonly PhoneVerificationService $verificationService,
         protected readonly UserRepositoryInterface $userRepository,
         protected readonly SalonRepositoryInterface $salonRepository,
+        protected readonly InvoiceService $invoiceService,
+        protected readonly SubscriptionPaymentService $subscriptionPaymentService,
     ) {}
 
     public function create(): View
     {
         $prices = config('billing.subscription_prices');
         $plan = (string) request()->query('plan', '');
+        $selectedPlan = array_key_exists($plan, $prices) ? $plan : '1m';
 
         return view('salon-signup.create', [
-            'selectedPlan' => array_key_exists($plan, $prices) ? $plan : '1m',
+            'selectedPlan' => $selectedPlan,
+            'selectedPlanPrice' => (int) $prices[$selectedPlan],
             'trialDays' => $this->salonSignupService->trialDays(),
+            // ⭐ «خرید مستقیم بدون دوره‌ی رایگان» (۲۰۲۶-۰۹-۲۳): ?intent=buy از دکمه‌ی «خرید و پرداخت
+            // آنلاین» صفحه‌ی فروش میاد؛ هر مقدار دیگه‌ای یعنی مسیر عادی (آزمایشی).
+            'intent' => request()->query('intent') === 'buy' ? 'buy' : 'trial',
         ]);
     }
 
@@ -98,6 +107,7 @@ class SalonSignupController extends Controller
         $this->verificationService->sendCode($result['owner']);
 
         session([
+            'salon_signup_intent' => $request->input('intent') === 'buy' ? 'buy' : 'trial',
             'salon_signup_salon_id' => $result['salon']->id,
             'salon_signup_user_id' => $result['owner']->id,
             'salon_signup_attempt_time' => now(),
@@ -150,10 +160,15 @@ class SalonSignupController extends Controller
         }
 
         if ($this->verificationService->verify($owner, $request->code)) {
-            session()->forget(['salon_signup_user_id', 'salon_signup_salon_id', 'salon_signup_attempt_time']);
+            $intent = session('salon_signup_intent', 'trial');
+            session()->forget(['salon_signup_user_id', 'salon_signup_salon_id', 'salon_signup_attempt_time', 'salon_signup_intent']);
 
             Auth::login($owner);
             $request->session()->regenerate();
+
+            if ($intent === 'buy') {
+                return $this->startImmediatePurchase($salon->fresh(), $owner);
+            }
 
             // ⭐ دوره‌ی آزمایشی (۲۰۲۶-۰۹-۲۳): سالن آزمایشی همین الان فعاله، پس مستقیم به داشبورد
             // (که کارت «آدرس اختصاصی سالن» رو نشون می‌ده) می‌ره، نه صفحه‌ی پرداخت.
@@ -167,6 +182,37 @@ class SalonSignupController extends Controller
         }
 
         return back()->withErrors(['code' => 'کد وارد شده نامعتبر یا منقضی شده است.']);
+    }
+
+    /**
+     * ⭐ «خرید مستقیم بدون دوره‌ی رایگان» (۲۰۲۶-۰۹-۲۳): کسی که از صفحه‌ی فروش «خرید و پرداخت
+     * آنلاین» رو زده، بعد از تایید موبایل مستقیم به درگاه زرین‌پال می‌ره — همون مسیر پرداختی که
+     * صفحه‌ی خرید داخل پنل استفاده می‌کنه (InvoiceService::createPendingOnlinePurchase +
+     * SubscriptionPaymentService::createPayment، مرچنت سراسری پلتفرم، callback همون
+     * admin.billing.callback). هیچ مسیر پرداخت دومی ساخته نشده.
+     *
+     * سالن مثل هر ثبت‌نام دیگه‌ای ساخته شده (اگه آزمایشی روشن باشه، آزمایشی). پس اگه پرداخت
+     * ناموفق یا نیمه‌کاره بمونه، صاحب سالن قفل نمی‌شه: آزمایشی‌اش سر جاشه و از صفحه‌ی خرید پنل
+     * دوباره تلاش می‌کنه. اگه پرداخت موفق بشه، چون خرید وسط آزمایشی اشتراک رو از همون لحظه شروع
+     * می‌کنه (Salon::subscriptionPeriodBase)، عملاً هیچ روز آزمایشی‌ای مصرف نشده.
+     */
+    private function startImmediatePurchase(\App\Models\Salon $salon, \App\Models\User $owner): RedirectResponse
+    {
+        $invoice = $this->invoiceService->createPendingOnlinePurchase($salon, $salon->subscription_type, $owner);
+        $result = $this->subscriptionPaymentService->createPayment($invoice);
+
+        if (! $result['success']) {
+            $this->invoiceService->markFailed($invoice);
+
+            $fallback = $salon->isOnTrial()
+                ? ' تا آن زمان دوره‌ی آزمایشی رایگان سالن شما فعال است.'
+                : '';
+
+            return redirect()->route('admin.billing.index')
+                ->withErrors(['error' => 'سالن ساخته شد، ولی اتصال به درگاه پرداخت ناموفق بود. از همین صفحه دوباره پرداخت کنید.'.$fallback]);
+        }
+
+        return redirect()->away($result['payment_url']);
     }
 
     public function resendCode(Request $request): RedirectResponse
