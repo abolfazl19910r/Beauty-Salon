@@ -77,6 +77,10 @@ class SuperAdminController extends Controller
             auth()->user(),
         );
 
+        if ($request->hasFile('logo')) {
+            app(\App\Services\Salon\SalonLogoService::class)->replace($salon, $request->file('logo'));
+        }
+
         return redirect()->route('superadmin.salons.index')
             ->with('success', "سالن «{$salon->name}» با موفقیت ایجاد شد.");
     }
@@ -90,6 +94,14 @@ class SuperAdminController extends Controller
     {
         try {
             $this->superAdminService->updateSalon($salon, $request->validated() + ['contact' => $request->salonContactAttributes()]);
+
+            // ⭐ لوگو (۲۰۲۶-۰۹-۲۴): آپلود جدید جایگزین می‌شه؛ «حذف لوگو» فقط وقتی فایل جدیدی نیومده.
+            $logoService = app(\App\Services\Salon\SalonLogoService::class);
+            if ($request->hasFile('logo')) {
+                $logoService->replace($salon->fresh(), $request->file('logo'));
+            } elseif ($request->boolean('remove_logo')) {
+                $logoService->remove($salon->fresh());
+            }
         } catch (\InvalidArgumentException $e) {
             return back()->withInput()->withErrors(['max_specialists_count' => $e->getMessage()]);
         }

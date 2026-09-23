@@ -9,7 +9,7 @@
             (غیرقابل‌تغییر)
         </div>
 
-        <form method="POST" action="{{ route('superadmin.salons.update', $salon) }}" class="space-y-5">
+        <form method="POST" action="{{ route('superadmin.salons.update', $salon) }}" class="space-y-5" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 

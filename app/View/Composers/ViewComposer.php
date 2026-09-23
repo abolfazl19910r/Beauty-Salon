@@ -65,6 +65,8 @@ class ViewComposer
 
         foreach ([
             'currentSalonAddress' => $salon?->address,
+            // ⭐ لوگوی اختصاصی سالن (۲۰۲۶-۰۹-۲۴)؛ null = آیکون پیش‌فرض.
+            'currentSalonLogoUrl' => $salon?->logoUrl(),
             'currentSalonPhone' => $salon?->phone,
             'currentSalonExperienceYears' => $salon?->experienceYears(),
             'currentSalonHours' => $salon?->workingHoursLines() ?? [],

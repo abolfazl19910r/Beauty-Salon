@@ -104,6 +104,12 @@ class SalonSignupController extends Controller
             $request->validated() + ['contact' => $request->salonContactAttributes()]
         );
 
+        // ⭐ لوگوی اختصاصی (۲۰۲۶-۰۹-۲۴، اختیاری): بعد از ساخت سالن، چون پوشه‌ی فایل به id سالن
+        // وابسته‌ست (salons/{id}/branding).
+        if ($request->hasFile('logo')) {
+            app(\App\Services\Salon\SalonLogoService::class)->replace($result['salon'], $request->file('logo'));
+        }
+
         $this->verificationService->sendCode($result['owner']);
 
         session([

@@ -141,7 +141,18 @@
                     <span style="color: var(--admin-accent);">پنل مدیریت</span>
                 </h2>
             </div>
-            <p class="text-xs mt-2" style="color: var(--admin-text-light);">سیستم مدیریت سالن زیبایی</p>
+            {{-- ⭐ ۲۰۲۶-۰۹-۲۴: لوگو و نام همین سالن (وقتی CurrentSalon داریم)؛ سوپرادمین همون متن قبلی رو می‌بینه. --}}
+            @php $adminSalon = app(\App\Support\CurrentSalon::class)->get(); @endphp
+            @if ($adminSalon)
+                <div class="flex items-center gap-2 mt-3">
+                    @if ($adminSalon->logoUrl())
+                        <img src="{{ $adminSalon->logoUrl() }}" alt="لوگوی {{ $adminSalon->name }}" class="w-9 h-9 object-contain rounded">
+                    @endif
+                    <span class="text-sm font-bold" style="color: var(--admin-text);">{{ $adminSalon->name }}</span>
+                </div>
+            @else
+                <p class="text-xs mt-2" style="color: var(--admin-text-light);">سیستم مدیریت سالن زیبایی</p>
+            @endif
         </div>
 
         <nav class="mt-4 px-2">

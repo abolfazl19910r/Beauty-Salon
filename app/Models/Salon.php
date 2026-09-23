@@ -22,6 +22,7 @@ class Salon extends Model
         'name',
         'tagline',
         'bio',
+        'logo_path',
         'address',
         'phone',
         'established_year',
@@ -196,5 +197,11 @@ class Salon extends Model
     public function workingHoursLines(): array
     {
         return \App\Support\SalonWorkingHours::lines($this->working_hours);
+    }
+
+    /** ⭐ لوگوی اختصاصی سالن (۲۰۲۶-۰۹-۲۴)؛ null = بدون لوگو (ویوها آیکون پیش‌فرض رو نشون می‌دن). */
+    public function logoUrl(): ?string
+    {
+        return $this->logo_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->logo_path) : null;
     }
 }

@@ -31,6 +31,9 @@ class StoreSalonRequest extends FormRequest
     {
         // ⭐ ۲۰۲۶-۰۹-۲۳: اطلاعات تماس/فعالیت سالن اینجا اختیاریه (سالن‌های موجود هنوز ندارن).
         return $this->salonContactRules(required: false) + [
+            // ⭐ لوگوی اختصاصی سالن (۲۰۲۶-۰۹-۲۴) — اختیاری؛ remove_logo فقط در ویرایش معنی داره.
+            'logo' => \App\Services\Salon\SalonLogoService::RULES,
+            'remove_logo' => ['nullable', 'boolean'],
             'name' => ['required', 'string', 'max:255'],
             // ⭐ پیگیری «محور ۳» (۲۰۲۶-۰۹-۲۰) — اختیاری همینجا هم؛ می‌تونه بعداً از صفحه‌ی ویرایش
             // هم پر/عوض بشه، دقیقاً مثل zarinpal_merchant_id.
@@ -58,7 +61,7 @@ class StoreSalonRequest extends FormRequest
 
     public function messages(): array
     {
-        return $this->salonContactMessages() + [
+        return $this->salonContactMessages() + \App\Services\Salon\SalonLogoService::MESSAGES + [
             'slug.unique' => 'این آدرس قبلاً برای سالن دیگری استفاده شده است.',
             'slug.alpha_dash' => 'آدرس فقط می‌تواند شامل حروف انگلیسی، عدد، خط تیره و زیرخط باشد.',
             'admin_phone.regex' => 'شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد.',

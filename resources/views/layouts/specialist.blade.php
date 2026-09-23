@@ -105,9 +105,14 @@
     <aside id="sidebar" class="w-64 min-h-screen overflow-y-auto hidden md:block transition-all duration-300 z-30 border-l" style="background-color: var(--specialist-surface); border-color: var(--specialist-border);">
         <div class="p-5 border-b flex items-center justify-between" style="border-color: var(--specialist-border);">
             <a href="{{ route('home') }}" class="flex items-center gap-2">
-                <svg class="w-8 h-8" style="color: var(--specialist-plum-mid);" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                </svg>
+                {{-- ⭐ لوگوی سالن متخصص (۲۰۲۶-۰۹-۲۴)، وگرنه آیکون پیش‌فرض. --}}
+                @if (! empty($currentSalonLogoUrl))
+                    <img src="{{ $currentSalonLogoUrl }}" alt="لوگوی {{ $currentSalonName }}" class="w-9 h-9 object-contain rounded">
+                @else
+                    <svg class="w-8 h-8" style="color: var(--specialist-plum-mid);" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                @endif
                 <span class="text-lg font-bold font-serif-fa" style="color: var(--specialist-plum-light);">پنل متخصص</span>
             </a>
         </div>

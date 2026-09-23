@@ -32,6 +32,8 @@ class StoreSalonSignupRequest extends FormRequest
     public function rules(): array
     {
         return $this->salonContactRules(required: true) + [
+            // ⭐ لوگوی اختصاصی سالن (۲۰۲۶-۰۹-۲۴) — اختیاری.
+            'logo' => \App\Services\Salon\SalonLogoService::RULES,
             'name' => ['required', 'string', 'max:255'],
             'slug' => [
                 'required', 'string', 'max:100', 'alpha_dash',
@@ -64,7 +66,7 @@ class StoreSalonSignupRequest extends FormRequest
 
     public function messages(): array
     {
-        return $this->salonContactMessages() + [
+        return $this->salonContactMessages() + \App\Services\Salon\SalonLogoService::MESSAGES + [
             'slug.unique' => 'این آدرس قبلاً برای سالن دیگری استفاده شده است.',
             'slug.alpha_dash' => 'آدرس فقط می‌تواند شامل حروف انگلیسی، عدد، خط تیره و زیرخط باشد.',
             'owner_phone.regex' => 'شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد.',

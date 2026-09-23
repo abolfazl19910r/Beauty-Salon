@@ -16,6 +16,22 @@
 @endphp
 <div>
     <h3 class="font-bold mb-3" style="color: var(--sa-accent);">اطلاعات تماس و فعالیت سالن</h3>
+    {{-- ⭐ لوگوی اختصاصی سالن (۲۰۲۶-۰۹-۲۴) — اختیاری. --}}
+    <div class="mb-4">
+        <label class="sa-label">لوگوی سالن <span style="color: var(--sa-text-dim);">(اختیاری — PNG/JPG/WEBP، حداکثر ۲ مگابایت)</span></label>
+        <div class="flex items-center gap-3">
+            @if ($salon?->logoUrl())
+                <img src="{{ $salon->logoUrl() }}" alt="لوگوی {{ $salon->name }}" class="w-14 h-14 object-contain rounded border" style="border-color: var(--sa-border);">
+            @endif
+            <input type="file" name="logo" accept="image/png,image/jpeg,image/webp" class="text-sm">
+        </div>
+        @if ($salon?->logo_path)
+            <label class="flex items-center gap-2 mt-2 text-sm">
+                <input type="checkbox" name="remove_logo" value="1">
+                حذف لوگوی فعلی
+            </label>
+        @endif
+    </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="md:col-span-2">
             <label class="sa-label">آدرس سالن <span style="color: var(--sa-text-dim);">(اختیاری)</span></label>

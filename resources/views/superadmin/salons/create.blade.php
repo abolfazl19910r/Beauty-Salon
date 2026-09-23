@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="sa-card p-6 max-w-3xl">
-        <form method="POST" action="{{ route('superadmin.salons.store') }}" class="space-y-6">
+        <form method="POST" action="{{ route('superadmin.salons.store') }}" class="space-y-6" enctype="multipart/form-data">
             @csrf
 
             <div>

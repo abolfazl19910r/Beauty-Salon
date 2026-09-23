@@ -71,6 +71,9 @@
         .buy-title { font-weight: 800; color: var(--rasta-gold-light); }
         .buy-price { font-size: .85rem; opacity: .8; margin-top: .15rem; }
         .buy-summary a { color: var(--rasta-gold-light); font-size: .85rem; white-space: nowrap; }
+        .logo-pick { display: flex; align-items: center; gap: .8rem; }
+        .logo-pick img { width: 56px; height: 56px; object-fit: contain; border-radius: .6rem; background: rgba(248, 243, 233, .08); border: 1px solid rgba(201, 162, 75, .3); padding: .25rem; }
+        .logo-pick input[type=file] { font-family: inherit; font-size: .85rem; color: inherit; }
         .err { color: #ff8a8a; font-size: .8rem; margin-top: .3rem; }
         .check-status { font-size: .78rem; margin-top: .35rem; min-height: 1em; }
         .check-status.ok { color: #7ee0a6; }
@@ -118,7 +121,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('salon-signup.store') }}">
+            <form method="POST" action="{{ route('salon-signup.store') }}" enctype="multipart/form-data">
                 @csrf
 
                 {{-- ⭐ تصمیم ابوالفضل (۲۰۲۶-۰۹-۲۳): انتخاب پلن از فرم ساخت سالن حذف شد — برای همه، نه فقط
@@ -153,6 +156,15 @@
                                maxlength="100" pattern="[a-zA-Z0-9_-]+" placeholder="مثلاً: almas-beauty" dir="ltr"
                                autocomplete="off">
                         <div id="slug-status" class="check-status"></div>
+                    </div>
+                    {{-- ⭐ لوگوی اختصاصی سالن (۲۰۲۶-۰۹-۲۴) — اختیاری. --}}
+                    <div class="row" style="margin-bottom:0;">
+                        <label for="logo">لوگوی سالن <span style="opacity:.6; font-weight:400;">(اختیاری)</span></label>
+                        <div class="logo-pick">
+                            <img id="logo-preview" alt="" hidden>
+                            <input type="file" id="logo" name="logo" accept="image/png,image/jpeg,image/webp">
+                        </div>
+                        <div class="hint">PNG، JPG یا WEBP، حداکثر ۲ مگابایت. در سایت سالن، صفحه‌ی ورود و پنل مدیریت نمایش داده می‌شود. بعداً هم قابل تغییر است.</div>
                     </div>
                 </fieldset>
 
@@ -313,6 +325,13 @@
         })();
     </script>
     <script>
+        document.getElementById('logo').addEventListener('change', function () {
+            var preview = document.getElementById('logo-preview');
+            var file = this.files && this.files[0];
+            if (!file) { preview.hidden = true; return; }
+            preview.src = URL.createObjectURL(file);
+            preview.hidden = false;
+        });
         document.querySelectorAll('[data-closed-toggle]').forEach(function (box) {
             box.addEventListener('change', function () {
                 var row = box.closest('[data-hours-row]');
