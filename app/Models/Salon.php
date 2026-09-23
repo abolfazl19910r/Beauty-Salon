@@ -134,4 +134,24 @@ class Salon extends Model
             && (int) $this->sms_quota_per_month === (int) config('billing.trial_sms_quota')
             && ! $this->hasPaidInvoice();
     }
+
+    /**
+     * ⭐ آدرس عمومی رزرو آنلاین سالن (۲۰۲۶-۰۹-۲۳) — همون لینکی که مالک سالن به مشتری‌هاش می‌ده.
+     * route('home') عمداً: وقتی CENTRAL_DOMAIN پره، آخرین ثبت این نام همون نسخه‌ی ساب‌دامینیه
+     * (routes/web.php)، پس URL مطلق `{slug}.{central_domain}` ساخته می‌شه؛ وقتی خالیه، همون
+     * `/s/{slug}` قدیمی. یعنی این متد هیچ‌وقت خودش تصمیم routing نمی‌گیره.
+     */
+    public function publicUrl(): string
+    {
+        return route('home', ['salon_slug' => $this->slug]);
+    }
+
+    /**
+     * مسیر قدیمی/همیشه‌زنده‌ی `/s/{slug}` روی همون هاستی که درخواست جاری روشه — وقتی ساب‌دامین
+     * فعاله به‌عنوان لینک جایگزین نشون داده می‌شه (مثلاً اگه DNS ساب‌دامین هنوز آماده نباشه).
+     */
+    public function legacyPublicUrl(): string
+    {
+        return url('/s/'.$this->slug);
+    }
 }

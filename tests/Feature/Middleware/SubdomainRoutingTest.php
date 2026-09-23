@@ -114,4 +114,14 @@ class SubdomainRoutingTest extends TestCase
         $this->assertStringStartsWith('http://sobhan-beauty.'.self::CENTRAL_DOMAIN, $url);
         $this->assertStringEndsWith('/services', $url);
     }
+
+    public function test_salon_public_url_is_the_subdomain_and_legacy_url_is_slash_s_slug(): void
+    {
+        // ⭐ ۲۰۲۶-۰۹-۲۳: همون آدرسی که کارت «آدرس اختصاصی رزرو آنلاین سالن شما» در پنل ادمین
+        // به مالک سالن نشون می‌ده (Salon::publicUrl/legacyPublicUrl).
+        $salon = Salon::factory()->create(['slug' => 'sobhan-beauty']);
+
+        $this->assertStringStartsWith('http://sobhan-beauty.'.self::CENTRAL_DOMAIN, $salon->publicUrl());
+        $this->assertStringEndsWith('/s/sobhan-beauty', $salon->legacyPublicUrl());
+    }
 }

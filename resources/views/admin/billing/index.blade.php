@@ -24,6 +24,8 @@
             </div>
         @endif
 
+        @include('admin.partials.salon-public-link', ['salon' => $salon])
+
         {{-- وضعیت فعلی اشتراک --}}
         <div class="rounded-xl overflow-hidden mb-6" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
             <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
@@ -35,6 +37,8 @@
                     <div class="font-bold mt-1">
                         @if ($salon->subscription_ends_at->isPast())
                             <span style="color:#b91c1c;">منقضی‌شده</span>
+                        @elseif ($salon->isOnTrial())
+                            <span style="color:#92400E;">دوره‌ی آزمایشی رایگان</span>
                         @else
                             <span style="color:var(--admin-accent);">فعال</span>
                         @endif
@@ -46,7 +50,7 @@
                 </div>
                 <div>
                     <div style="color:var(--admin-text-dim);">نوع فعلی</div>
-                    <div class="font-bold mt-1">{{ $salon->subscription_type }}</div>
+                    <div class="font-bold mt-1">{{ ['1m' => 'یک ماهه', '3m' => 'سه ماهه', '6m' => 'شش ماهه', '12m' => 'دوازده ماهه'][$salon->subscription_type] ?? $salon->subscription_type }}</div>
                 </div>
             </div>
         </div>
@@ -61,7 +65,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                     @foreach (['1m' => 'یک ماهه', '3m' => 'سه ماهه', '6m' => 'شش ماهه', '12m' => 'دوازده ماهه'] as $type => $label)
                         <label class="rounded-lg p-4 cursor-pointer text-center" style="border:1px solid var(--admin-border);">
-                            <input type="radio" name="subscription_type" value="{{ $type }}" class="ml-1" {{ $loop->first ? 'checked' : '' }}>
+                            <input type="radio" name="subscription_type" value="{{ $type }}" class="ml-1" {{ $salon->subscription_type === $type ? 'checked' : '' }}>
                             <div class="font-bold mt-2" style="color:var(--admin-text);">{{ $label }}</div>
                             <div class="text-sm mt-1 persian-number" style="color:var(--admin-text-dim);">{{ number_format($prices[$type]) }} تومان</div>
                         </label>

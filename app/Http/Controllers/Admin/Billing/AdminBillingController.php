@@ -79,7 +79,11 @@ class AdminBillingController extends Controller
 
         $this->invoiceService->markPaidFromGateway($invoice, $result['ref_id']);
 
+        // ⭐ ۲۰۲۶-۰۹-۲۳: آدرس عمومی سالن هم همراه پیام موفقیت — همون لحظه‌ای که مالک سالن تازه
+        // خریده و بیشتر از هر وقت دیگه‌ای دنبال «حالا لینک رو به مشتری‌هام چی بدم» می‌گرده.
+        $salonUrl = $invoice->salon()->withoutGlobalScopes()->first()?->publicUrl();
+
         return redirect()->route('admin.billing.index')
-            ->with('success', 'اشتراک سالن با موفقیت تمدید شد.');
+            ->with('success', 'اشتراک سالن با موفقیت تمدید شد.'.($salonUrl ? " آدرس رزرو آنلاین سالن شما: {$salonUrl}" : ''));
     }
 }
