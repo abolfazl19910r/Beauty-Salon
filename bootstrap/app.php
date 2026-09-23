@@ -21,6 +21,12 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Session\Middleware\StartSession::class,
         ]);
 
+        // ⭐ ۲۰۲۶-۰۹-۲۳: باید قبل از EncryptCookies/StartSession اجرا بشه — رفع 419 روی 127.0.0.1
+        // وقتی SESSION_DOMAIN روی دامنه‌ی مرکزی تنظیم شده (به docblock خودِ کلاس نگاه کن).
+        $middleware->web(prepend: [
+            \App\Http\Middleware\MatchSessionCookieDomainToHost::class,
+        ]);
+
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
