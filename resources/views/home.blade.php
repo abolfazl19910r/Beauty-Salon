@@ -331,8 +331,11 @@
                                 {{ mb_substr($specialist->name, 0, 1) }}
                             </div>
                         @endif
-                        <h3 class="font-serif-fa font-bold text-lg mb-1">{{ $specialist->name }}</h3>
+                        <h3 class="font-serif-fa font-bold text-lg mb-1">
+                            <a href="{{ route('specialists.show', $specialist) }}" class="hover:text-[var(--rasta-gold-light)]">{{ $specialist->name }}</a>
+                        </h3>
                         <p class="text-xs text-[var(--rasta-gold-light)] mb-3">متخصص زیبایی</p>
+                        <a href="{{ route('specialists.show', $specialist) }}" class="text-xs underline text-[var(--rasta-cream)]/70">مشاهده‌ی پروفایل</a>
                         {{-- ⭐ ۲۰۲۶-۰۹-۲۴: شماره موبایل شخصی متخصص (همون شماره‌ی ورودش) دیگه در صفحه‌ی عمومی نمایش داده نمی‌شه. --}}
                     </div>
                 @empty
