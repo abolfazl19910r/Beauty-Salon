@@ -99,7 +99,7 @@ class LoyaltyServiceTest extends TestCase
 
     public function test_earn_points_from_booking_uses_configured_points_per_amount(): void
     {
-        LoyaltySetting::where('key', 'points_per_amount')->update(['value' => '5000']);
+        LoyaltySetting::updateOrCreate(['key' => 'points_per_amount'], ['value' => '5000']);
         $user = User::factory()->create();
         $booking = Booking::factory()->create(['user_id' => $user->id, 'prepayment_amount' => 47500]);
 

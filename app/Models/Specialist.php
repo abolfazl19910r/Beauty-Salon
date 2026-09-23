@@ -15,10 +15,10 @@ use Illuminate\Support\Facades\Log;
 
 class Specialist extends Model
 {
+    use BelongsToSalon;
     use HasFactory;
     use Notifiable;
     use SoftDeletes;
-    use BelongsToSalon;
 
     protected $fillable = [
         'name', 'phone', 'user_id', 'email', 'auto_confirm_bookings',
@@ -140,12 +140,12 @@ class Specialist extends Model
 
     /**
      * @param  int|null  $excludeBookingId  ⭐ Fix (fix/admin-booking-slot-conflict, commit 4):
-     *      when re-checking availability for a booking that ALREADY occupies this specialist's
-     *      calendar (i.e. editing an existing booking rather than creating a new one), that
-     *      booking's own row must be excluded from the "existing bookings" query below —
-     *      otherwise a booking always collides with itself and every edit that doesn't change
-     *      the time would be incorrectly rejected as "slot taken". Left null (default) for the
-     *      normal create-flow callers, which are unaffected by this addition.
+     *                                      when re-checking availability for a booking that ALREADY occupies this specialist's
+     *                                      calendar (i.e. editing an existing booking rather than creating a new one), that
+     *                                      booking's own row must be excluded from the "existing bookings" query below —
+     *                                      otherwise a booking always collides with itself and every edit that doesn't change
+     *                                      the time would be incorrectly rejected as "slot taken". Left null (default) for the
+     *                                      normal create-flow callers, which are unaffected by this addition.
      */
     public function getAvailableSlots($date, $serviceDuration = null, ?int $excludeBookingId = null): array
     {
@@ -365,7 +365,7 @@ class Specialist extends Model
             return (float) $this->commission_rate;
         }
 
-        $settings = \App\Models\WalletSetting::first();
+        $settings = \App\Models\WalletSetting::get();
 
         return (float) ($settings->admin_commission_percentage ?? 10);
     }

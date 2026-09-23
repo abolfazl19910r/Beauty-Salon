@@ -221,7 +221,7 @@ class AdminDashboardService
 
     private function getCommissionRateAndFactor(): array
     {
-        $commissionRate = WalletSetting::first()->admin_commission_percentage ?? 10;
+        $commissionRate = WalletSetting::get()->admin_commission_percentage ?? 10;
 
         return [$commissionRate, $commissionRate / 100];
     }

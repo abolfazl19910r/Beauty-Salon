@@ -5,9 +5,9 @@ namespace App\Services\Specialist;
 use App\Events\Withdrawal\Requested\WithdrawalRequested;
 use App\Models\Specialist;
 use App\Models\SpecialistWallet;
+use App\Models\WalletSetting;
 use App\Models\WithdrawalRequest;
 use App\Repositories\Contracts\SpecialistWalletRepositoryInterface;
-use App\Repositories\Contracts\WalletSettingRepositoryInterface;
 use App\Repositories\Contracts\WalletTransactionRepositoryInterface;
 use App\Repositories\Contracts\WithdrawalRequestRepositoryInterface;
 use App\Traits\HasJalaliDates;
@@ -22,13 +22,12 @@ class SpecialistWalletService
         protected readonly SpecialistWalletRepositoryInterface $specialistWalletRepository,
         protected readonly WithdrawalRequestRepositoryInterface $withdrawalRequestRepository,
         protected readonly WalletTransactionRepositoryInterface $walletTransactionRepository,
-        protected readonly WalletSettingRepositoryInterface $walletSettingRepository,
     ) {}
 
     public function getWalletOverview(Specialist $specialist): array
     {
         $wallet = $specialist->getOrCreateWallet();
-        $settings = $this->walletSettingRepository->first();
+        $settings = WalletSetting::get();
 
         $recentTransactions = $this->walletTransactionRepository->getRecentForWallet($wallet->id, 10);
 

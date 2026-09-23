@@ -56,7 +56,7 @@ class BookingServiceTest extends TestCase
 
     public function test_create_booking_uses_the_real_service_price_for_prepayment(): void
     {
-        WalletSetting::first()->update(['prepayment_percentage' => 30, 'minimum_prepayment_amount' => 50000]);
+        WalletSetting::get()->update(['prepayment_percentage' => 30, 'minimum_prepayment_amount' => 50000]);
 
         $specialist = $this->makeFullyAvailableSpecialist();
         $service = BeautyService::factory()->create(['price' => 250000]);
@@ -115,7 +115,7 @@ class BookingServiceTest extends TestCase
 
     public function test_create_booking_with_discount_code_does_not_reduce_the_prepayment(): void
     {
-        WalletSetting::first()->update(['prepayment_percentage' => 30, 'minimum_prepayment_amount' => 50000]);
+        WalletSetting::get()->update(['prepayment_percentage' => 30, 'minimum_prepayment_amount' => 50000]);
 
         $specialist = $this->makeFullyAvailableSpecialist();
         $service = BeautyService::factory()->create(['price' => 250000]);

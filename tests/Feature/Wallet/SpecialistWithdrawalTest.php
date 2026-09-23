@@ -33,7 +33,7 @@ class SpecialistWithdrawalTest extends TestCase
     {
         // Regression guard: this must genuinely enforce the configured minimum — the documented
         // WalletSetting::get()/first() bug made this check silently ineffective in the past.
-        WalletSetting::first()->update(['minimum_withdrawal_amount' => 100000]);
+        WalletSetting::get()->update(['minimum_withdrawal_amount' => 100000]);
         $specialist = $this->specialistWithBalance(500000);
 
         $result = $this->service->createWithdrawal($specialist, ['amount' => 50000, 'method' => 'iban']);
@@ -44,7 +44,7 @@ class SpecialistWithdrawalTest extends TestCase
 
     public function test_withdrawal_at_or_above_minimum_amount_succeeds(): void
     {
-        WalletSetting::first()->update(['minimum_withdrawal_amount' => 100000, 'withdrawal_fee_percentage' => 0]);
+        WalletSetting::get()->update(['minimum_withdrawal_amount' => 100000, 'withdrawal_fee_percentage' => 0]);
         $specialist = $this->specialistWithBalance(500000);
 
         $result = $this->service->createWithdrawal($specialist, ['amount' => 100000, 'method' => 'iban']);
@@ -55,7 +55,7 @@ class SpecialistWithdrawalTest extends TestCase
 
     public function test_withdrawal_above_maximum_amount_is_rejected(): void
     {
-        WalletSetting::first()->update(['maximum_withdrawal_amount' => 1000000]);
+        WalletSetting::get()->update(['maximum_withdrawal_amount' => 1000000]);
         $specialist = $this->specialistWithBalance(5000000);
 
         $result = $this->service->createWithdrawal($specialist, ['amount' => 2000000, 'method' => 'iban']);
@@ -65,7 +65,7 @@ class SpecialistWithdrawalTest extends TestCase
 
     public function test_withdrawal_exceeding_balance_is_rejected(): void
     {
-        WalletSetting::first()->update(['minimum_withdrawal_amount' => 10000]);
+        WalletSetting::get()->update(['minimum_withdrawal_amount' => 10000]);
         $specialist = $this->specialistWithBalance(50000);
 
         $result = $this->service->createWithdrawal($specialist, ['amount' => 100000, 'method' => 'iban']);
@@ -75,7 +75,7 @@ class SpecialistWithdrawalTest extends TestCase
 
     public function test_withdrawal_fee_percentage_is_deducted_for_regular_iban_method(): void
     {
-        WalletSetting::first()->update([
+        WalletSetting::get()->update([
             'minimum_withdrawal_amount' => 10000,
             'withdrawal_fee_percentage' => 5,
         ]);
@@ -92,7 +92,7 @@ class SpecialistWithdrawalTest extends TestCase
     {
         // The full requested amount (not net-of-fee) must leave the balance immediately —
         // the fee is only relevant to what the specialist actually receives.
-        WalletSetting::first()->update(['minimum_withdrawal_amount' => 10000, 'withdrawal_fee_percentage' => 10]);
+        WalletSetting::get()->update(['minimum_withdrawal_amount' => 10000, 'withdrawal_fee_percentage' => 10]);
         $specialist = $this->specialistWithBalance(500000);
 
         $this->service->createWithdrawal($specialist, ['amount' => 100000, 'method' => 'iban']);
@@ -102,7 +102,7 @@ class SpecialistWithdrawalTest extends TestCase
 
     public function test_creating_a_withdrawal_sets_status_to_pending(): void
     {
-        WalletSetting::first()->update(['minimum_withdrawal_amount' => 10000]);
+        WalletSetting::get()->update(['minimum_withdrawal_amount' => 10000]);
         $specialist = $this->specialistWithBalance(500000);
 
         $result = $this->service->createWithdrawal($specialist, ['amount' => 100000, 'method' => 'iban']);
@@ -112,7 +112,7 @@ class SpecialistWithdrawalTest extends TestCase
 
     public function test_cancelling_a_withdrawal_refunds_the_wallet(): void
     {
-        WalletSetting::first()->update(['minimum_withdrawal_amount' => 10000, 'withdrawal_fee_percentage' => 0]);
+        WalletSetting::get()->update(['minimum_withdrawal_amount' => 10000, 'withdrawal_fee_percentage' => 0]);
         $specialist = $this->specialistWithBalance(500000);
         $result = $this->service->createWithdrawal($specialist, ['amount' => 100000, 'method' => 'iban']);
 

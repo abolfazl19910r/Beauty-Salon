@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -67,27 +66,6 @@ return new class extends Migration
             $table->boolean('is_suspended')->default(false);
             $table->timestamps();
         });
-
-        // ⭐ Every salon-owned table (wallet_settings, admin_wallet, loyalty_settings, ...)
-        // requires a salon_id from the moment it's created — including the one baseline row each
-        // of those tables seeds for itself. Since RefreshDatabase (used throughout the test
-        // suite) runs migrations only, never seeders, this default salon has to be created here,
-        // unconditionally, rather than in DatabaseSeeder — exactly like it always was before this
-        // migration set was consolidated (see the now-removed backfill_default_salon_and_salon_id
-        // migration). DatabaseSeeder's own Salon::firstOrCreate(['slug' => 'rasta'], ...) is a
-        // defensive no-op against this same row for the demo-data seeding flow.
-        DB::table('salons')->insert([
-            'name' => 'سالن زیبایی راستا',
-            'slug' => 'rasta',
-            'max_specialists_count' => 100,
-            'module_permissions' => null,
-            'subscription_type' => '12m',
-            'subscription_started_at' => now(),
-            'subscription_ends_at' => now()->addMonths(12),
-            'is_suspended' => false,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
     }
 
     public function down(): void

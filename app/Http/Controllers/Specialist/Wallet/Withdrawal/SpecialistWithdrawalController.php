@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Specialist\Wallet\Withdrawal;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Specialist\Wallet\Withdrawal\StoreWithdrawalRequest;
+use App\Models\WalletSetting;
 use App\Models\WithdrawalRequest;
-use App\Repositories\Contracts\WalletSettingRepositoryInterface;
 use App\Services\Specialist\SpecialistWalletService;
 use App\Traits\ResolvesSpecialist;
 use Exception;
@@ -19,7 +19,6 @@ class SpecialistWithdrawalController extends Controller
 
     public function __construct(
         private SpecialistWalletService $walletService,
-        private readonly WalletSettingRepositoryInterface $walletSettingRepository,
     ) {}
 
     public function create(): View|RedirectResponse
@@ -33,7 +32,7 @@ class SpecialistWithdrawalController extends Controller
         $wallet = $specialist->getOrCreateWallet();
         $this->authorize('requestWithdrawal', $wallet);
 
-        $settings = $this->walletSettingRepository->first();
+        $settings = WalletSetting::get();
 
         if (! $wallet->iban) {
             return redirect()->route('specialist.wallet.edit-iban')

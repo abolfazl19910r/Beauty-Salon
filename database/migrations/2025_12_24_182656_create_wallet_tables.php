@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -107,17 +106,6 @@ return new class extends Migration
             $table->integer('settlement_delay_days')->default(2);
             $table->timestamps();
         });
-
-        // See 0000_01_01_000000_create_salons_table.php's own comment — RefreshDatabase runs
-        // migrations only, never seeders, so the baseline row every salon-owned table needs has
-        // to be created here, tied to the one default salon that migration guarantees exists.
-        $salonId = DB::table('salons')->where('slug', 'rasta')->value('id');
-
-        DB::table('wallet_settings')->insert([
-            'salon_id' => $salonId,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
     }
 
     public function down(): void

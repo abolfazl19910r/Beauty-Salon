@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -47,35 +46,6 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->timestamps();
         });
-
-        $salonId = DB::table('salons')->where('slug', 'rasta')->value('id');
-
-        DB::table('loyalty_settings')->insert([
-            [
-                'salon_id' => $salonId,
-                'key' => 'points_per_amount',
-                'value' => '10000',
-                'description' => 'میزان امتیاز به ازای هر 1000 تومان خرید',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'salon_id' => $salonId,
-                'key' => 'points_expiry_months',
-                'value' => '12',
-                'description' => 'مدت زمان اعتبار امتیازها (ماه)',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'salon_id' => $salonId,
-                'key' => 'minimum_points_for_discount',
-                'value' => '1000',
-                'description' => 'حداقل امتیاز لازم برای دریافت تخفیف',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
 
         Schema::create('loyalties', function (Blueprint $table) {
             $table->id();

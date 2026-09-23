@@ -69,7 +69,7 @@ class BookingObserverTest extends TestCase
 
     public function test_payment_uses_specialists_own_commission_rate_not_global_default(): void
     {
-        WalletSetting::first()->update(['admin_commission_percentage' => 50]);
+        WalletSetting::get()->update(['admin_commission_percentage' => 50]);
 
         $booking = $this->makePaidBooking(); // specialist has commission_rate = 10, explicit override
 
@@ -109,7 +109,7 @@ class BookingObserverTest extends TestCase
 
     public function test_customer_cancellation_within_penalty_window_deducts_fee_and_refunds_rest(): void
     {
-        WalletSetting::first()->update([
+        WalletSetting::get()->update([
             'cancellation_before_hours' => 24,
             'customer_cancellation_fee_percentage' => 20,
         ]);
@@ -139,7 +139,7 @@ class BookingObserverTest extends TestCase
 
     public function test_customer_cancellation_outside_penalty_window_refunds_in_full(): void
     {
-        WalletSetting::first()->update([
+        WalletSetting::get()->update([
             'cancellation_before_hours' => 24,
             'customer_cancellation_fee_percentage' => 20,
         ]);
@@ -164,7 +164,7 @@ class BookingObserverTest extends TestCase
 
     public function test_specialist_cancellation_within_penalty_window_nets_specialist_to_zero(): void
     {
-        WalletSetting::first()->update([
+        WalletSetting::get()->update([
             'specialist_cancellation_before_hours' => 24,
             'specialist_cancellation_penalty_percentage' => 10,
             'specialist_repeat_cancellation_threshold' => 0,
@@ -196,7 +196,7 @@ class BookingObserverTest extends TestCase
 
     public function test_specialist_cancellation_outside_penalty_window_has_no_penalty(): void
     {
-        WalletSetting::first()->update([
+        WalletSetting::get()->update([
             'specialist_cancellation_before_hours' => 24,
             'specialist_cancellation_penalty_percentage' => 10,
         ]);
@@ -216,7 +216,7 @@ class BookingObserverTest extends TestCase
 
     public function test_specialist_repeat_cancellation_increases_penalty(): void
     {
-        WalletSetting::first()->update([
+        WalletSetting::get()->update([
             'specialist_cancellation_before_hours' => 24,
             'specialist_cancellation_penalty_percentage' => 10,
             'specialist_repeat_cancellation_threshold' => 1,

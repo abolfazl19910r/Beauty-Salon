@@ -48,7 +48,7 @@ class SpecialistWallet extends Model
 
     public function addIncome(float $amount, int $bookingId, ?string $description = null): WalletTransaction
     {
-        $settings = WalletSetting::first();
+        $settings = WalletSetting::get();
         $settlementDelay = $settings->settlement_delay_days ?? 2;
 
         $this->increment('pending_amount', $amount);
@@ -141,7 +141,7 @@ class SpecialistWallet extends Model
 
     public function canWithdraw(float $amount): array
     {
-        $settings = WalletSetting::first();
+        $settings = WalletSetting::get();
 
         if ($amount < $settings->minimum_withdrawal_amount) {
             return [
@@ -176,7 +176,7 @@ class SpecialistWallet extends Model
 
     public function calculateWithdrawalFee(float $amount, string $method = 'iban'): array
     {
-        $settings = WalletSetting::first();
+        $settings = WalletSetting::get();
 
         $fee = 0;
         if ($method === 'instant' && $settings->instant_withdrawal_enabled) {

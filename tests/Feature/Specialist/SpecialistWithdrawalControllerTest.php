@@ -67,7 +67,7 @@ class SpecialistWithdrawalControllerTest extends TestCase
         [$user, $specialist] = $this->actingSpecialist();
         $this->withIban($specialist);
         $specialist->getOrCreateWallet()->update(['balance' => 500000]);
-        WalletSetting::first()->update(['minimum_withdrawal_amount' => 50000, 'maximum_withdrawal_amount' => 1000000]);
+        WalletSetting::get()->update(['minimum_withdrawal_amount' => 50000, 'maximum_withdrawal_amount' => 1000000]);
 
         $response = $this->actingAs($user)->post(route('specialist.wallet.store-withdrawal'), [
             'amount' => 100000,
@@ -87,7 +87,7 @@ class SpecialistWithdrawalControllerTest extends TestCase
         [$user, $specialist] = $this->actingSpecialist();
         $this->withIban($specialist);
         $specialist->getOrCreateWallet()->update(['balance' => 500000]);
-        WalletSetting::first()->update(['minimum_withdrawal_amount' => 100000]);
+        WalletSetting::get()->update(['minimum_withdrawal_amount' => 100000]);
 
         $response = $this->actingAs($user)->post(route('specialist.wallet.store-withdrawal'), [
             'amount' => 50000,
@@ -103,7 +103,7 @@ class SpecialistWithdrawalControllerTest extends TestCase
         [$user, $specialist] = $this->actingSpecialist();
         $this->withIban($specialist);
         $specialist->getOrCreateWallet()->update(['balance' => 5000]);
-        WalletSetting::first()->update(['minimum_withdrawal_amount' => 5000, 'maximum_withdrawal_amount' => 1000000]);
+        WalletSetting::get()->update(['minimum_withdrawal_amount' => 5000, 'maximum_withdrawal_amount' => 1000000]);
 
         $response = $this->actingAs($user)->post(route('specialist.wallet.store-withdrawal'), [
             'amount' => 8000,

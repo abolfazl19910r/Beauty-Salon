@@ -48,13 +48,17 @@ class StoreWithdrawalRequest extends FormRequest
     }
 
     /**
-     * ⚠️ Bugfix: old controller here from WalletSetting::get() (which returns a Collection)
-     * used, not ::first() (which returns a single record). Because the configuration table has only one row,
-     * Access to ->minimum_withdrawal_amount on a Collection was always null and the rule min: actually
-     * would be converted to empty (no number) `min:`.
+     * WalletSetting has its own custom static get() (first() ?? create([])) specifically because
+     * Eloquent's built-in Model::get() returns a Collection — calling that generic method here
+     * by mistake once made ->minimum_withdrawal_amount always null (a Collection has no such
+     * property), silently turning the `min:` rule into `min:` (empty, i.e. no minimum enforced
+     * at all). WalletSetting::get() is the safe one to call — it shadows the generic Eloquent
+     * method by design, precisely to avoid that confusion. ::first() (the very thing being
+     * guarded against here) is a different bug: it returns null when no row exists yet for the
+     * current salon, which the : WalletSetting return type below would turn into a TypeError.
      */
     private function walletSettings(): WalletSetting
     {
-        return WalletSetting::first();
+        return WalletSetting::get();
     }
 }

@@ -6,6 +6,7 @@ use App\Events\Withdrawal\Approved\WithdrawalApproved;
 use App\Events\Withdrawal\Rejected\WithdrawalRejected;
 use App\Jobs\ProcessWithdrawalJob;
 use App\Models\SpecialistWallet;
+use App\Models\WalletSetting;
 use App\Models\WithdrawalRequest;
 use App\Repositories\Contracts\SpecialistWalletRepositoryInterface;
 use App\Repositories\Contracts\WalletSettingRepositoryInterface;
@@ -190,7 +191,7 @@ class WalletAdminService
 
     public function updateSettings(array $data): void
     {
-        $settings = $this->walletSettingRepository->first();
+        $settings = WalletSetting::get();
         $this->walletSettingRepository->update($settings, $data);
     }
 
