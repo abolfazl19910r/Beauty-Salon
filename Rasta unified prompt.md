@@ -6372,9 +6372,49 @@ SalonBuyNowTest (۸)، payload مشترک `Tests\Concerns\SalonContactPayload`. 
 **تست:** `SalonLogoTest` (۷)، `SalonUploadIsolationTest` (۴؛ دو تست بدون رفع fail می‌شن — وریفای شد).
 سوییت کامل **۱۱۶۱ passed / ۱ skipped**، Pint PASS.
 
+### ۲۰۲۶-۰۹-۲۴ (ادامه) — کیف پول سوپرادمین، فیلتر سالن‌ها، اطلاعات سالن، عکس متخصص، مرچنت سالن
+
+**درخواست‌های ابوالفضل:** (۱) بخش کیف پول سوپرادمین برای همه‌ی واریزهای خرید اشتراک با جستجو/فیلتر روی
+همه‌ی جزئیات. (۲) جستجو/فیلتر لیست سالن‌ها روی همه‌ی ستون‌ها. (۳) دو پیشنهاد قبلی: صفحه‌ی «اطلاعات
+سالن» برای مالک + عکس متخصص. (۴) سؤال: مرچنت آیدی هر سالن کجا وارد می‌شه؟ اگه نیست بساز؛ در ساخت سالن
+اشاره بشه، و توضیح داده بشه که بدون مرچنت هیچ پرداختی ممکن نیست.
+
+**پچ‌ها (روی `8658718`):**
+1. `feat(superadmin): subscription payments ("wallet") section with search, filters and CSV` —
+   `SubscriptionPaymentReport` (همیشه withoutGlobalScope('salon'))، `FilterSubscriptionPaymentsRequest`،
+   `SuperAdminPaymentController` (index/show/export)، `App\Support\JalaliDateInput` (ورودی شمسی با
+   ارقام فارسی و ماه/روز تک‌رقمی — Jalalian::fromFormat تک‌رقمی رو قبول نمی‌کنه). کارت‌های کلی، خلاصه‌ی
+   فیلترشده، جدول، صفحه‌ی جزئیات، CSV با BOM.
+2. `feat(superadmin): search and filter the salons list on every column` — `SalonListFilter` +
+   `FilterSalonsRequest`؛ وضعیت trial/expiring_soon/…، سقف متخصص، بازه‌ی شمسی هر دو ستون تاریخ؛ نشان «آزمایشی».
+3. `feat(admin): "salon information" page so the owner can edit their own salon` —
+   `admin.salon-settings.*` داخل گروه `salon.owner`؛ slug عمداً غیرقابل‌تغییر.
+4. `feat(specialist): profile photo, set by the salon admin or the specialist` — migration
+   `2026_09_24_000002` (`specialists.photo_path`)، `SpecialistPhotoService` (کش home_specialists سالن رو
+   پاک می‌کنه). **رفع حریم خصوصی:** کارت‌های «متخصصین ما» موبایل شخصی متخصص رو نشون می‌داد.
+5. `feat(payments): every salon enters its own Zarinpal merchant id; no merchant, no online payment`
+   - **جواب سؤال:** ستون `salons.zarinpal_merchant_id` بود ولی فقط سوپرادمین (بدون اعتبارسنجی) می‌تونست
+     پرش کنه؛ و بدتر، `PaymentService` بی‌صدا به `ZARINPAL_MERCHANT_ID` پلتفرم برمی‌گشت → **پول مشتری‌های
+     سالن بدون مرچنت به حساب پلتفرم می‌رفت.**
+   - ⚠️ **قانون جدید:** مرچنت پلتفرم فقط برای خرید اشتراک سالن‌ها (`SubscriptionPaymentService`). پول
+     مشتری‌های هر سالن فقط به مرچنت خود سالن؛ بدون مرچنت → `createPayment`/`createWalletChargePayment`
+     قبل از هر درخواست `{success:false, reason:merchant_missing}`.
+   - ورود مرچنت: فرم ثبت‌نام (اختیاری + توضیح)، صفحه‌ی «اطلاعات سالن» مالک (وضعیت فعال/غیرفعال)،
+     فرم سوپرادمین. `App\Support\ZarinpalMerchant` (UUID ۳۶ کاراکتری، normalize به lower-case).
+   - هشدار قرمز در داشبورد و صفحه‌ی اشتراک؛ بنر در صفحه‌ی رزرو مشتری؛ `BookingReservationController`
+     confirm/store رو برای خدمات نیازمند پیش‌پرداخت رد می‌کنه (خدمت بدون پیش‌پرداخت همچنان قابل رزرو).
+   - `SalonFactory` پیش‌فرض یک مرچنت fake داره (تست‌های پرداخت قبلی)؛ seeder مرچنت .env رو به سالن دمو می‌ده.
+   - تست قدیمی «fallback به مرچنت سراسری» با «هرگز fallback نمی‌کنه» جایگزین شد.
+6. `fix(public): add the missing public specialist profile page (was a 500)` — `specialists.show`
+   وجود نداشت (۵۰۰ تأییدشده). ⚠️ routeهای search/top-rated/by-service/availability در
+   `routes/web/public-specialists.php` هم view ندارن ولی هیچ لینکی بهشون نیست — تصمیم باز.
+
+**تست:** SubscriptionPaymentsTest (۱۰)، SalonListFilterTest (۶)، AdminSalonSettingsTest (۸)،
+SpecialistPhotoTest (۷)، SalonMerchantIdTest (۹)، PublicSpecialistProfileTest (۳). سوییت کامل
+**۱۲۰۳ passed / ۱ skipped**، Pint PASS.
+
 ### قدم‌های باز
-- صفحه‌ی «اطلاعات سالن» برای خودِ مدیر سالن در پنل (لوگو، آدرس، تلفن، ساعات کاری) — فعلاً فقط
-  موقع ثبت‌نام یا توسط سوپرادمین قابل تغییره. پیشنهاد، تصمیم با ابوالفضل
-- عکس پروفایل متخصص (اختیاری)
-- `php artisan migrate` روی سیستم لوکال برای `logo_path`
+- routeهای عمومی متخصص بدون view (search/top-rated/by-service/availability): حذف یا ساخت صفحه — تصمیم با ابوالفضل
+- (اختیاری) پیامک خوش‌آمد به مالک سالن با آدرس سالن
+- روی سیستم لوکال: `php artisan migrate` (photo_path)؛ اگه سالن‌های موجود مرچنت ندارن، پرداخت آنلاین‌شون تا ورود مرچنت غیرفعاله
 
