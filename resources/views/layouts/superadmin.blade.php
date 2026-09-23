@@ -54,6 +54,7 @@
             <nav class="p-3">
                 <a href="{{ route('superadmin.dashboard') }}" class="sa-nav-link {{ request()->routeIs('superadmin.dashboard') ? 'active' : '' }}">داشبورد</a>
                 <a href="{{ route('superadmin.salons.index') }}" class="sa-nav-link {{ request()->routeIs('superadmin.salons.*') ? 'active' : '' }}">مدیریت سالن‌ها</a>
+                <a href="{{ route('superadmin.payments.index') }}" class="sa-nav-link {{ request()->routeIs('superadmin.payments.*') ? 'active' : '' }}">کیف پول و درآمد اشتراک</a>
                 <a href="{{ route('superadmin.support-tickets.index') }}" class="sa-nav-link {{ request()->routeIs('superadmin.support-tickets.*') ? 'active' : '' }}">تیکت‌های پشتیبانی</a>
             </nav>
         </aside>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\SuperAdmin\SuperAdminController;
+use App\Http\Controllers\SuperAdmin\SuperAdminPaymentController;
 use App\Http\Controllers\SuperAdmin\SupportTicketController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +27,11 @@ Route::put('/salons/{salon}', [SuperAdminController::class, 'update'])->name('sa
 Route::post('/salons/{salon}/renew', [SuperAdminController::class, 'renewSubscription'])->name('salons.renew');
 Route::get('/salons/{salon}/invoices', [SuperAdminController::class, 'invoices'])->name('salons.invoices');
 Route::post('/salons/{salon}/toggle-suspend', [SuperAdminController::class, 'toggleSuspend'])->name('salons.toggle-suspend');
+
+// ⭐ کیف پول / درآمد اشتراک (۲۰۲۶-۰۹-۲۴) — همه‌ی واریزهای خرید/تمدید اشتراک سالن‌ها.
+Route::get('/payments', [SuperAdminPaymentController::class, 'index'])->name('payments.index');
+Route::get('/payments/export', [SuperAdminPaymentController::class, 'export'])->name('payments.export');
+Route::get('/payments/{invoice}', [SuperAdminPaymentController::class, 'show'])->whereNumber('invoice')->name('payments.show');
 
 Route::prefix('support-tickets')->name('support-tickets.')->group(function () {
     Route::get('/', [SupportTicketController::class, 'index'])->name('index');
