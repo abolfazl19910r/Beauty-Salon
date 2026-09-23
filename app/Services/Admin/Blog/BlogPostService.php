@@ -42,7 +42,7 @@ class BlogPostService
             $attributes['slug'] = Str::slug($data['title']);
 
             if ($image) {
-                $attributes['image'] = $image->store('blog', 'public');
+                $attributes['image'] = $image->store(\App\Support\SalonStorage::forCurrentSalon('blog'), 'public');
             }
 
             return $this->blogPostRepository->create($attributes);
@@ -63,7 +63,7 @@ class BlogPostService
                 if ($post->image) {
                     Storage::disk('public')->delete($post->image);
                 }
-                $attributes['image'] = $image->store('blog', 'public');
+                $attributes['image'] = $image->store(\App\Support\SalonStorage::forCurrentSalon('blog'), 'public');
             }
 
             $post = $this->blogPostRepository->update($post, $attributes);

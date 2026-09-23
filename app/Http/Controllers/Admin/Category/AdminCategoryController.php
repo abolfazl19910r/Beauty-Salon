@@ -54,7 +54,7 @@ class AdminCategoryController extends Controller
         $validated['slug'] = Str::slug($validated['name']);
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('categories', 'public');
+            $path = $request->file('image')->store(\App\Support\SalonStorage::forCurrentSalon('categories'), 'public');
             $validated['image'] = $path;
         }
 
@@ -118,7 +118,7 @@ class AdminCategoryController extends Controller
             if ($category->image) {
                 Storage::disk('public')->delete($category->image);
             }
-            $path = $request->file('image')->store('categories', 'public');
+            $path = $request->file('image')->store(\App\Support\SalonStorage::forCurrentSalon('categories'), 'public');
             $validated['image'] = $path;
         }
 

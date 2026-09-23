@@ -29,7 +29,7 @@ class AdminGalleryController extends Controller
 
     public function store(StoreGalleryImageRequest $request): RedirectResponse
     {
-        $path = $request->file('image')->store('gallery', 'public');
+        $path = $request->file('image')->store(\App\Support\SalonStorage::forCurrentSalon('gallery'), 'public');
 
         $this->galleryImageRepository->create([
             'title' => $request->validated('title'),
@@ -86,10 +86,16 @@ class AdminGalleryController extends Controller
         $this->galleryImageRepository->update($b, ['order' => $orderA]);
     }
 
+    /**
+     * ⭐ رفع ۲۰۲۶-۰۹-۲۴: قبلاً allFiles('gallery') کل پوشه‌ی مشترک گالری همه‌ی سالن‌ها رو می‌شمرد،
+     * یعنی هر سالن «فضای مصرفی» مجموع همه‌ی سالن‌ها رو می‌دید. حالا فقط فایل‌های رکوردهای گالری
+     * همین سالن (GalleryImage با scope سراسری BelongsToSalon) — هم فایل‌های قدیمی در gallery/ و هم
+     * جدیدها در salons/{id}/gallery/.
+     */
     private function calculateUsedSpace(): float
     {
         $totalSize = 0;
-        $files = Storage::disk('public')->allFiles('gallery');
+        $files = GalleryImage::query()->pluck('image_path')->filter();
 
         foreach ($files as $file) {
             try {

@@ -52,7 +52,7 @@ class AdminServiceController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('services', 'public');
+            $validated['image'] = $request->file('image')->store(\App\Support\SalonStorage::forCurrentSalon('services'), 'public');
         }
 
         $this->beautyServiceRepository->create($validated);
@@ -78,7 +78,7 @@ class AdminServiceController extends Controller
             if ($service->image) {
                 Storage::disk('public')->delete($service->image);
             }
-            $validated['image'] = $request->file('image')->store('services', 'public');
+            $validated['image'] = $request->file('image')->store(\App\Support\SalonStorage::forCurrentSalon('services'), 'public');
         }
 
         $this->beautyServiceRepository->update($service, $validated);
