@@ -58,11 +58,20 @@ class SuperAdminController extends Controller
         return view('superadmin.dashboard', compact('salons', 'stats', 'recentSalons'));
     }
 
-    public function index(): View
+    /**
+     * ⭐ ۲۰۲۶-۰۹-۲۴: جستجو و فیلتر روی همه‌ی ستون‌های لیست (App\Services\SuperAdmin\SalonListFilter).
+     */
+    public function index(\App\Http\Requests\SuperAdmin\FilterSalonsRequest $request): View
     {
-        $salons = $this->salonRepository->paginateWithSpecialistCountAndAdmins(20);
+        $filters = $request->filters();
+        $salons = app(\App\Services\SuperAdmin\SalonListFilter::class)->paginate($filters);
 
-        return view('superadmin.salons.index', compact('salons'));
+        return view('superadmin.salons.index', [
+            'salons' => $salons,
+            'filters' => $filters,
+            'statuses' => \App\Services\SuperAdmin\SalonListFilter::STATUSES,
+            'sorts' => \App\Services\SuperAdmin\SalonListFilter::SORTS,
+        ]);
     }
 
     public function create(): View
