@@ -6016,3 +6016,143 @@ inline و عیناً‌تکراری از همون قوانین اعتبارسن�
 صدا می‌زنه.
 
 ⚠️ یادآوری: توکن GitHub PAT همچنان تازه نشده.
+
+## نشست تکمیل‌شده: یکی‌سازی Migration ها (۵۴ → ۳۶ فایل) — ۲۰۲۶-۰۹-۲۲
+
+طبق درخواست صریح ابوالفضل، بعد از یک بحث دقیق درباره‌ی ایندکس‌گذاری و ریسک‌های ادغام، هر ۲۰
+migration ای که فقط جدول‌های ساخته‌شده در migration دیگه رو تغییر می‌دادن (۱۷ تای «ساده» + ۳ تای
+«پیچیده‌تر») در همون migration اصلی‌شون ادغام شدن.
+
+### بخش A: ۱۷ مورد ساده (بدون پیچیدگی داده/ترتیب)
+- `wallet_settings`: ۳ migration (admin_commission_percentage، prepayment_percentage +
+  minimum_prepayment_amount، ۴ ستون specialist_cancellation_*) ادغام شدن
+- `specialists`: commission_rate + nullable‌شدن user_id ادغام شدن
+- `users` (بخش schema-only): two_factor_enabled/code/expires_at و
+  password_changed_at/password_strength_score ادغام شدن — به‌علاوه یک ایندکس جدید روی
+  `two_factor_enabled` (طبق درخواست صریح)
+- `bookings`: notes، source، و ستون تولیدی پیچیده‌ی active_slot_key (با شاخه‌بندی
+  MySQL/SQLite/Postgres) ادغام شدن
+- `specialist_schedules`: break_start/break_end ادغام شدن
+- `work_schedules`: یک جدول که در یک migration ساخته و در migration دیگه‌ای کامل حذف شده بود
+  (فیچر هیچ‌وقت واقعاً استفاده نشد) — هر دو فایل (بلوک ساخت + migration حذف) کاملاً حذف شدن
+- `salons`: zarinpal_merchant_id، tagline/bio، sms_quota_per_month ادغام شدن
+- همه‌ی مستندات ⭐ عیناً توی فایل‌های ادغام‌شده حفظ شدن
+
+وریفای بخش A: سوییت کامل روی SQLite سبز، به‌علاوه یک `migrate --force` کاملاً تازه روی MySQL واقعی.
+
+### بخش B: ۳ مورد پیچیده‌تر (به‌هم‌وابسته از نظر ترتیب ساخت جدول)
+`add_salon_id_to_owned_tables`، `backfill_default_salon_and_salon_id`، و
+`add_salon_id_and_user_type_to_users_table` — هر سه کاملاً جذب شدن، هر سه فایل حذف شدن.
+
+**مانع اصلی**: `salons` باید قبل از ۱۲ جدولی که بهش وابسته‌ن وجود داشته باشه، ولی
+`salons.created_by` به `users` وابسته‌ست و `users.salon_id` (ستونی که داشتیم ادغام می‌کردیم) به
+`salons` وابسته‌ست — یک وابستگی دوری واقعی. راه‌حل: `create_salons_table` به قبل از
+`create_users_table` منتقل شد (تایم‌استمپ `0000_01_01_000000`، بدون created_by)، یک migration
+پیگیری ۳خطی (`0001_01_01_000001_add_created_by_to_salons_table`) بعد از ساخت users اضافه شد که
+created_by رو برمی‌گردونه، و `create_salon_admins_table` هم به بلافاصله بعدش منتقل شد.
+
+با وجود `salons` از همون اول، `salon_id NOT NULL` مستقیم توی migration اصلی هر کدوم از ۱۲ جدول
+(specialists، beauty_services، categories، blog_posts، blog_categories، gallery_images،
+announcements، discount_codes، loyalty_settings، wallet_settings، admin_wallet، bookings) اضافه
+شد — بدون نیاز به رقص nullable-سپس-NOT-NULL و بدون نیاز به دور زدن باگ MySQL 1832، چون این حالا
+schema تازه‌ست نه ALTER روی جدول با داده‌ی موجود. `salon_id` (nullable) در `report_exports` هم
+همین‌طوری ادغام شد؛ تایپوی فاصله‌ی نام فایلش (`2026_07_21 _000001_...`) هم موقع دست‌زدن بهش رفع شد.
+
+منطق `salon_id`/`user_type`/سیستم generated-column برای تفکیک unique constraint (که پیچیده‌ترین
+بخش هر سه فایل بود، با یک راه‌حل دور زدن باگ واقعی MySQL 1901 که قبلاً روی یک دیپلوی واقعی
+تأییدشده) کامل، با تمام کامنت‌هاش، داخل `create_users_table.php` ادغام شد.
+
+### دو اشتباه واقعی، هر دو با تست پیدا و رفع شدن — نه بازبینی دستی
+1. **باگ خودم**: اولین ویرایش `create_users_table.php` به‌طور تصادفی کل ستون `phone` رو حذف
+   کرد (یک `str_replace` که بیشتر از چیزی که قصد داشتم match کرد). علامتش: ۱۰۴۳ خطای تست («no
+   such column: phone»). بلافاصله رفع شد.
+2. **تصحیح مهم‌تر**: فرض اولیه‌ام این بود که ساخت سالن پیش‌فرض «راستا» رو می‌شه از migration به
+   `DatabaseSeeder` منتقل کرد (چون یک دیتابیس کاملاً تازه چیزی برای backfill نداره). این فرض
+   اشتباه بود: `wallet_settings`، `admin_wallet`، و `loyalty_settings` هرکدوم یک ردیف پایه
+   داشتن که بدون قید‌وشرط توسط خودِ migration ساختشون درج می‌شد (نه توسط یک seeder)، و **۸ فایل
+   تست** در حوزه‌های Wallet/Booking/Specialist/Loyalty صریحاً به وجود همون ردیف وابسته بودن —
+   چون `RefreshDatabase` فقط migration ها رو اجرا می‌کنه، هیچ‌وقت seeder صدا نمی‌زنه. رفع شد: سالن
+   پیش‌فرض مستقیم داخل `create_salons_table.php` ساخته می‌شه (یک `DB::table()->insert()`
+   بدون‌قید‌وشرط، نه `firstOrCreate` — این داده‌ی bootstrap ـه، نه seed داده‌ی idempotent)، و ردیف‌های
+   پیش‌فرض wallet_settings/admin_wallet/loyalty_settings هم توی همون migration های خودشون
+   برگردونده شدن، این‌بار با salon_id درست. `DatabaseSeeder`'s خودش (`firstOrCreate`) یک لایه‌ی
+   محافظتی اضافه‌ست برای جریان seed داده‌ی نمایشی، نه منبع اصلی این ردیف.
+
+### تست و وریفای نهایی
+- سوییت کامل: **۱۱۰۲ passed / ۱ skipped / صفر fail** — دو بار روی محیط اصلی، یک بار روی کلون مستقل
+- یک `migrate --force` کاملاً تازه روی MySQL واقعی (هم بعد از بخش A، هم بعد از بخش B، هم روی کلون
+  مستقل) — هر سه بار بدون خطا
+- یک `db:seed --force` کامل روی همون MySQL تازه (هم محیط اصلی، هم کلون مستقل) — بررسی دستی بعدش:
+  صفر `salon_id` تهی روی هر جدول salon-owned، کاربرهای staff درست `salon_id=NULL` (سراسری)،
+  کاربرهای customer درست `salon_id=<راستا>` (محدود به سالن)، و `SHOW CREATE TABLE users` تأیید
+  کرد ستون‌های generated و unique index ها دقیقاً همون‌طور که باید هستن
+- Laravel Pint: `PASS` روی هر ۹۵ فایل ردیابی‌شده‌ی `database/`
+
+### تعداد نهایی
+**۵۴ → ۳۶ فایل migration** (۱۸ فایل خالص کمتر، با احتساب ۳ فایل جدید کوچیک که برای حل وابستگی
+دوری لازم بودن).
+
+### قدم‌های باز
+هیچ. یک اصلاح مهم بعد از این نشست انجام شد — به بخش «✅ نشست تکمیل‌شده: بازگردوندن migration ها
+به pure-schema» در انتهای همین سند نگاه کن.
+
+## نشست تکمیل‌شده: بازگردوندن migration ها به pure-schema — ۲۰۲۶-۰۹-۲۲
+
+بعد از نشست قبلی (یکی‌سازی migration ها)، ابوالفضل یک سؤال کلیدی پرسید: به‌جای نگه‌داشتن منطق
+bootstrap (ساخت سالن پیش‌فرض + ردیف‌های پیش‌فرض تنظیمات) داخل migration ها، نمی‌شه اون ۸ فایل
+تستِ وابسته رو اصلاح کرد تا migration ها بتونن کاملاً pure-schema بمونن و `DatabaseSeeder` تنها
+مسئول داده باشه؟ جواب: بله، و این کار یک رده‌ی کامل از باگ واقعی رو هم آشکار کرد.
+
+### چرا این تصمیم درست بود
+موقع بررسی، مشخص شد `base TestCase::setUp()` از قبل و **مستقل از migration ها** سالن پیش‌فرض
+«راستا» رو می‌سازه و `CurrentSalon` رو ست می‌کنه — یعنی نیازی نبود این منطق تو migration بمونه؛
+فقط باید تست‌هایی که مستقیم به یک ردیف از پیش‌موجود در `WalletSetting`/`LoyaltySetting` وابسته
+بودن (نه به خودِ سالن) اصلاح می‌شدن.
+
+### یافته‌ی مهم: یک رده کامل از باگ واقعی، قبلاً پنهان‌شده
+با برداشتن ردیف‌های bootstrap از migration، معلوم شد **۵ فایل کد واقعیِ اپلیکیشن** (نه فقط تست)
+همیشه فرض می‌کردن یک ردیف `WalletSetting` از قبل وجود داره — چون migration قبلی همیشه دقیقاً یک
+ردیف تضمین می‌کرد، این فرض هیچ‌وقت واقعاً امتحان نشده بود:
+- `SpecialistWithdrawalController::create()` — برای هر سالن بدون تنظیمات کیف پول، صفحه‌ی برداشت
+  ۵۰۰ می‌داد
+- `SpecialistWalletService::getWalletOverview()` — همون ریسک، صفحه‌ی کیف پول متخصص
+- `WalletAdminService::updateSettings()` — اولین باری که یک ادمین برای یک سالن تازه تنظیمات
+  کیف پول رو ذخیره می‌کرد، کرش می‌کرد
+- `AdminWalletSettingsController::index()` — همون ریسک، سمت ادمین
+- `SpecialistWallet::addIncome()`/`canWithdraw()`/`calculateWithdrawalFee()` — سه محل دیگه توی
+  خودِ مدل
+- `Specialist::getEffectiveCommissionRate()` و **`StoreWithdrawalRequest::walletSettings()`**
+  (این یکی جدی‌ترین بود — چون return type غیر-nullable `: WalletSetting` داره، یک `first()`
+  تهی باعث `TypeError` واقعی می‌شد، نه فقط یک warning قابل‌چشم‌پوشی)
+
+همه‌ی این ۱۰ محل به `WalletSetting::get()` (متد ایمنِ `first() ?? create([])` که خودِ مدل داره،
+از قبل درست‌استفاده‌شده جاهای دیگه مثل AdminSecurityService) تبدیل شدن.
+
+### کار انجام‌شده
+- ۲۲ رخداد در ۵ فایل تست: `WalletSetting::first()->update(...)` → `WalletSetting::get()->update(...)`
+- `LoyaltyServiceTest.php`: `LoyaltySetting::where(...)->update()` (یک no-op اگه ردیف نباشه) →
+  `updateOrCreate(...)`
+- migration ها (`create_salons_table`, `create_wallet_tables`, migration مربوط به `admin_wallet`,
+  `create_loyalty_system_tables`) به pure-schema برگردونده شدن — بدون هیچ insert داده‌ای
+- یک کامنت گمراه‌کننده در `StoreWithdrawalRequest.php` هم اصلاح شد (کامنت قبلی هشدار می‌داد از
+  `WalletSetting::get()` که با `Model::get()` عمومی Eloquent اشتباه گرفته می‌شد؛ توضیح داده شد
+  که این دو متفاوتن و `get()` سفارشیِ خودِ این مدل کاملاً امنه)
+
+### تست و وریفای
+- سوییت کامل: **۱۱۰۲ passed / ۱ skipped / صفر fail** — دو بار روی محیط اصلی، یک بار روی کلون مستقل
+- `migrate --force` کاملاً تازه روی MySQL واقعی — تأیید شد بلافاصله بعدش صفر ردیف توی
+  `salons`/`wallet_settings`/`loyalty_settings` (یعنی واقعاً pure-schema شده)
+- `db:seed --force` کامل روی همون MySQL — تأیید شد دقیقاً یک سالن، یک `wallet_settings`، یک
+  `admin_wallet`، و `salon_id` درست روی همه‌ی جدول‌های salon-owned
+- Laravel Pint: `PASS` روی هر ۱۸ فایل تغییریافته
+
+### یک نکته‌ی جانبی (مستندشده، بدون نیاز به اقدام)
+حین وریفای، یک ناسازگاری از‌قبل‌موجود (نه چیزی که این نشست ایجاد کرد) دیده شد:
+`LoyaltyBasicDataSeeder` کلیدهای `points_per_currency`/`min_points_redemption` می‌سازه، درحالی‌که
+`LoyaltyService` واقعاً کلیدهای `points_per_amount`/`points_expiry_months` رو می‌خونه — دو seeder/
+consumer با نام‌گذاری متفاوت. چون `LoyaltySettingRepository::getValue()` یک `$default` امن داره،
+این هیچ کرشی ایجاد نمی‌کنه (فقط یعنی مقدار پیش‌فرض کد همیشه استفاده می‌شه، نه مقدار seed‌شده) —
+خارج از دامنه‌ی این کار، فقط برای رکورد مستند شد.
+
+### قدم‌های باز
+هیچ.
