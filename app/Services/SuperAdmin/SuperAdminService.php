@@ -124,10 +124,19 @@ class SuperAdminService
     {
         $base = $salon->subscription_ends_at->isFuture() ? $salon->subscription_ends_at : now();
 
-        $salon->update([
+        $attributes = [
             'subscription_type' => $subscriptionType,
             'subscription_ends_at' => $this->addSubscriptionPeriod($base, $subscriptionType),
-        ]);
+        ];
+
+        // ⭐ دوره‌ی آزمایشی (۲۰۲۶-۰۹-۲۳): اولین خرید، سهمیه‌ی پیامک کم‌ترِ آزمایشی رو برمی‌داره
+        // (null = برگشت به billing.sms_quota_per_month عادی). روزهای باقی‌مونده‌ی آزمایشی
+        // عمداً دور ریخته نمی‌شن — $base بالا همونه که بود.
+        if ($salon->isTrialSmsQuotaInEffect()) {
+            $attributes['sms_quota_per_month'] = null;
+        }
+
+        $salon->update($attributes);
 
         return $salon;
     }

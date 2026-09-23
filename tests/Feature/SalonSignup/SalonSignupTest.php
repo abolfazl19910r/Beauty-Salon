@@ -18,6 +18,15 @@ class SalonSignupTest extends TestCase
 {
     use RefreshDatabase;
 
+    // ⭐ دوره‌ی آزمایشی (۲۰۲۶-۰۹-۲۳): این فایل عمداً مسیر «بدون آزمایشی» (SUBSCRIPTION_TRIAL_DAYS=0،
+    // اول پرداخت بعد دسترسی) رو مستند نگه می‌داره؛ مسیر آزمایشی در SalonTrialTest جدا تست می‌شه.
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config(['billing.trial_days' => 0]);
+    }
+
     private function validPayload(array $overrides = []): array
     {
         return array_merge([

@@ -128,14 +128,19 @@
                         @foreach (['1m' => '۱ ماهه', '3m' => '۳ ماهه', '6m' => '۶ ماهه', '12m' => '۱۲ ماهه'] as $type => $label)
                             <label class="plan">
                                 <input type="radio" name="subscription_type" value="{{ $type }}"
-                                       @checked(old('subscription_type', '1m') === $type) required>
+                                       @checked(old('subscription_type', $selectedPlan) === $type) required>
                                 <div class="title">{{ $label }}</div>
                                 <div class="price">{{ number_format($prices[$type]) }} تومان</div>
                             </label>
                         @endforeach
                     </div>
                     <p class="sub" style="margin:.75rem 0 0; text-align:right; font-size:.8rem;">
-                        همین حالا نیازی به پرداخت نیست — بعد از تایید شماره موبایل، از پنل ادمین پرداخت می‌کنید.
+                        @if ($trialDays > 0)
+                            همین حالا نیازی به پرداخت نیست — بعد از تایید شماره موبایل، {{ $trialDays }} روز
+                            آزمایشی رایگان دارید؛ پلن انتخابی فقط پیش‌انتخاب صفحه‌ی خرید بعد از آن است.
+                        @else
+                            همین حالا نیازی به پرداخت نیست — بعد از تایید شماره موبایل، از پنل ادمین پرداخت می‌کنید.
+                        @endif
                     </p>
                 </fieldset>
 

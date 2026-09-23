@@ -50,14 +50,20 @@ class SalonSignupService
     public function register(array $data): array
     {
         return DB::transaction(function () use ($data) {
+            $trialDays = $this->trialDays();
+
             $salon = $this->salonRepository->create([
                 'name' => $data['name'],
                 'slug' => $data['slug'],
                 'max_specialists_count' => (int) config('billing.default_max_specialists_count', 3),
                 'subscription_type' => $data['subscription_type'],
                 'subscription_started_at' => now(),
-                // ⭐ عمدی، نه باگ — به docblock بالای این کلاس نگاه کن.
-                'subscription_ends_at' => now()->subSecond(),
+                // ⭐ عمدی، نه باگ — به docblock بالای این کلاس نگاه کن. با دوره‌ی آزمایشی روشن
+                // (۲۰۲۶-۰۹-۲۳)، به‌جای «از قبل منقضی»، سالن همین الان تا پایان آزمایشی کاملاً فعاله
+                // و همون EnsureAdminSalonActive موجود بعد از پایانش خودکار به billing می‌فرسته.
+                'subscription_ends_at' => $trialDays > 0 ? now()->addDays($trialDays) : now()->subSecond(),
+                'trial_ends_at' => $trialDays > 0 ? now()->addDays($trialDays) : null,
+                'sms_quota_per_month' => $trialDays > 0 ? (int) config('billing.trial_sms_quota') : null,
                 'is_suspended' => false,
                 'created_by' => null,
             ]);
@@ -80,5 +86,10 @@ class SalonSignupService
 
             return ['salon' => $salon->fresh(), 'owner' => $owner];
         });
+    }
+
+    public function trialDays(): int
+    {
+        return max(0, (int) config('billing.trial_days', 0));
     }
 }

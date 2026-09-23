@@ -30,6 +30,7 @@ class Salon extends Model
         'subscription_type',
         'subscription_started_at',
         'subscription_ends_at',
+        'trial_ends_at',
         'is_suspended',
         'created_by',
     ];
@@ -38,6 +39,7 @@ class Salon extends Model
         'module_permissions' => 'array',
         'subscription_started_at' => 'datetime',
         'subscription_ends_at' => 'datetime',
+        'trial_ends_at' => 'datetime',
         'is_suspended' => 'boolean',
     ];
 
@@ -86,5 +88,50 @@ class Salon extends Model
     public function hasActiveSubscription(): bool
     {
         return ! $this->is_suspended && $this->subscription_ends_at->isFuture();
+    }
+
+    /**
+     * ⭐ فیچر «دوره‌ی آزمایشی رایگان» (۲۰۲۶-۰۹-۲۳): «هنوز در دوره‌ی آزمایشی» یعنی آزمایشی گرفته،
+     * هنوز تموم نشده، و هیچ فاکتور پرداخت‌شده‌ای (آنلاین یا دستی سوپرادمین) نداره. به‌محض اولین
+     * خرید، سالن دیگه «آزمایشی» حساب نمی‌شه — حتی اگه روزهای باقی‌مونده‌ی آزمایشی هنوز جلوی
+     * دوره‌ی خریداری‌شده باشن (SuperAdminService::renewSubscription اون روزها رو دور نمی‌ریزه).
+     */
+    public function isOnTrial(): bool
+    {
+        return $this->trial_ends_at !== null
+            && $this->trial_ends_at->isFuture()
+            && ! $this->hasPaidInvoice();
+    }
+
+    public function trialDaysLeft(): int
+    {
+        if (! $this->isOnTrial()) {
+            return 0;
+        }
+
+        return max(1, (int) ceil(now()->diffInSeconds($this->trial_ends_at) / 86400));
+    }
+
+    public function hasPaidInvoice(): bool
+    {
+        // ⭐ withoutGlobalScope('salon'): خودِ رابطه از قبل به salon_id همین سالن محدوده؛ scope
+        // سراسری BelongsToSalon (بر پایه‌ی CurrentSalon درخواست جاری) اینجا فقط می‌تونه غلط جواب
+        // بده — مثلاً وقتی سوپرادمین یا یک Job سالن دیگه‌ای رو بررسی می‌کنه.
+        return $this->invoices()->withoutGlobalScope('salon')->where('status', 'paid')->exists();
+    }
+
+    /**
+     * ⭐ سهمیه‌ی پیامک کم‌ترِ دوره‌ی آزمایشی (billing.trial_sms_quota) از طریق همون override
+     * موجود sms_quota_per_month اعمال می‌شه — نه یک مسیر جدا در SmsQuotaService. برای این‌که
+     * برگردوندنش بعد از اولین خرید هیچ‌وقت یک override دستیِ سوپرادمین رو پاک نکنه، فقط وقتی
+     * «در اثر آزمایشیه» حساب می‌شه که مقدارش دقیقاً همون عدد آزمایشی باشه و هنوز هیچ فاکتور
+     * پرداخت‌شده‌ای وجود نداشته باشه.
+     */
+    public function isTrialSmsQuotaInEffect(): bool
+    {
+        return $this->trial_ends_at !== null
+            && $this->sms_quota_per_month !== null
+            && (int) $this->sms_quota_per_month === (int) config('billing.trial_sms_quota')
+            && ! $this->hasPaidInvoice();
     }
 }

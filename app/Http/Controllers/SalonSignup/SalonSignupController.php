@@ -43,8 +43,13 @@ class SalonSignupController extends Controller
 
     public function create(): View
     {
+        $prices = config('billing.subscription_prices');
+        $plan = (string) request()->query('plan', '');
+
         return view('salon-signup.create', [
-            'prices' => config('billing.subscription_prices'),
+            'prices' => $prices,
+            'selectedPlan' => array_key_exists($plan, $prices) ? $plan : '1m',
+            'trialDays' => $this->salonSignupService->trialDays(),
         ]);
     }
 
@@ -148,6 +153,13 @@ class SalonSignupController extends Controller
 
             Auth::login($owner);
             $request->session()->regenerate();
+
+            // ⭐ دوره‌ی آزمایشی (۲۰۲۶-۰۹-۲۳): سالن آزمایشی همین الان فعاله، پس مستقیم به داشبورد
+            // (که کارت «آدرس اختصاصی سالن» رو نشون می‌ده) می‌ره، نه صفحه‌ی پرداخت.
+            if ($salon->fresh()->isOnTrial()) {
+                return redirect()->route('admin.home')
+                    ->with('success', "سالن «{$salon->name}» ساخته شد و دوره‌ی آزمایشی رایگان {$this->salonSignupService->trialDays()} روزه‌ی شما از همین حالا فعال است.");
+            }
 
             return redirect()->route('admin.billing.index')
                 ->with('success', "سالن «{$salon->name}» با موفقیت ساخته شد! برای فعال‌سازی، یکی از پلن‌های زیر را خریداری کنید.");
