@@ -31,7 +31,7 @@
             </a>
         </div>
 
-        <form action="{{ route('admin.specialists.update', $specialist) }}" method="POST">
+        <form action="{{ route('admin.specialists.update', $specialist) }}" method="POST" enctype="multipart/form-data">
             @csrf @method('PUT')
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
@@ -53,6 +53,22 @@
                             <input type="email" name="email" value="{{ old('email', $specialist->email) }}" class="form-input" dir="ltr">
                             @error('email') <p class="form-error">{{ $message }}</p> @enderror
                         </div>
+                        {{-- ⭐ عکس پروفایل متخصص (۲۰۲۶-۰۹-۲۴) — اختیاری. --}}
+                        <div>
+                            <label class="form-label">عکس پروفایل <span style="color:var(--admin-text-light);">(PNG/JPG/WEBP، حداکثر ۲ مگابایت)</span></label>
+                            <div class="flex items-center gap-3">
+                                @if ($specialist->photoUrl())
+                                    <img src="{{ $specialist->photoUrl() }}" alt="{{ $specialist->name }}" class="w-14 h-14 rounded-full object-cover">
+                                @endif
+                                <input type="file" name="photo" accept="image/png,image/jpeg,image/webp" class="text-sm">
+                            </div>
+                            @error('photo') <p class="form-error">{{ $message }}</p> @enderror
+                        </div>
+                        @if ($specialist->photo_path)
+                            <label class="flex items-center gap-2 text-sm" style="color:var(--admin-text-dim);">
+                                <input type="checkbox" name="remove_photo" value="1"> حذف عکس فعلی
+                            </label>
+                        @endif
                     </div>
 
                     <div class="mt-5 p-3 rounded-lg text-xs" style="background:#EFF6FF; color:#1D4ED8;">

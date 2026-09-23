@@ -77,10 +77,14 @@
                             onmouseout="this.style.background=''">
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
+                                    @if ($specialist->photoUrl())
+                                        <img src="{{ $specialist->photoUrl() }}" alt="{{ $specialist->name }}" class="w-9 h-9 rounded-full object-cover flex-shrink-0">
+                                    @else
                                     <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
                                          style="background:var(--admin-accent); color:#fff;">
                                         {{ mb_substr($specialist->name, 0, 1) }}
                                     </div>
+                                    @endif
                                     <div>
                                         <p class="font-medium" style="color:var(--admin-text);">{{ $specialist->name }}</p>
                                         <p class="text-xs" style="color:var(--admin-text-light);">متخصص زیبایی</p>

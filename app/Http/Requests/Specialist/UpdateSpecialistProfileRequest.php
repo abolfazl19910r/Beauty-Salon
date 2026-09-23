@@ -22,6 +22,9 @@ class UpdateSpecialistProfileRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:255'],
+            // ⭐ عکس پروفایل متخصص (۲۰۲۶-۰۹-۲۴) — خودِ متخصص هم می‌تونه عوض/حذفش کنه.
+            'photo' => \App\Services\Salon\SpecialistPhotoService::RULES,
+            'remove_photo' => ['nullable', 'boolean'],
             'phone' => ['required', 'string', 'max:20', "unique:users,phone,{$userId}"],
             // ⭐ Fix (test-writing session 6): the users table has no email column at all
             // (the whole project is phone-based — same finding already documented for the
@@ -33,7 +36,7 @@ class UpdateSpecialistProfileRequest extends FormRequest
 
     public function messages(): array
     {
-        return [
+        return \App\Services\Salon\SpecialistPhotoService::MESSAGES + [
             'name.required' => 'نام الزامی است.',
             'name.max' => 'نام نباید بیشتر از ۲۵۵ کاراکتر باشد.',
             'phone.required' => 'شماره موبایل الزامی است.',

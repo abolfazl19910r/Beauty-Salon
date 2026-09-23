@@ -173,7 +173,10 @@
                         </div>
                         <div class="summary-row flex justify-between pb-3">
                             <span class="text-[#F8F3E9]/60">متخصص</span>
-                            <span id="summary-specialist" class="font-medium text-[#F8F3E9]"></span>
+                            <span class="inline-flex items-center gap-2">
+                                <img id="summary-specialist-photo" alt="" class="w-7 h-7 rounded-full object-cover" hidden>
+                                <span id="summary-specialist" class="font-medium text-[#F8F3E9]"></span>
+                            </span>
                         </div>
                         <div class="summary-row flex justify-between pb-3">
                             <span class="text-[#F8F3E9]/60">تاریخ</span>
@@ -344,6 +347,15 @@
 
                 document.getElementById('summary-service').textContent = service.name;
                 document.getElementById('summary-specialist').textContent = specialist.name;
+                // ⭐ عکس متخصص (۲۰۲۶-۰۹-۲۴) — photo_url از getSpecialistsByService میاد
+                const photoEl = document.getElementById('summary-specialist-photo');
+                if (specialist.photo_url) {
+                    photoEl.src = specialist.photo_url;
+                    photoEl.alt = specialist.name;
+                    photoEl.hidden = false;
+                } else {
+                    photoEl.hidden = true;
+                }
                 document.getElementById('summary-date').textContent = formatJalaliFull(selectedDate);
                 document.getElementById('summary-time').textContent = selectedTime;
                 // prepayment_amount comes from the server (ServiceController::list(), computed via

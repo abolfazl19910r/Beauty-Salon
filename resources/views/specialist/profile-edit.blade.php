@@ -38,11 +38,28 @@
                     </h2>
                 </div>
 
-                <form method="POST" action="{{ route('specialist.profile.update') }}" class="p-6 flex-grow flex flex-col justify-between">
+                <form method="POST" action="{{ route('specialist.profile.update') }}" class="p-6 flex-grow flex flex-col justify-between" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
                     <div class="space-y-4">
+                        {{-- ⭐ عکس پروفایل متخصص (۲۰۲۶-۰۹-۲۴) — در سایت رزرو سالن به مشتری‌ها نمایش داده می‌شود. --}}
+                        <div>
+                            <label for="photo" class="block text-xs text-[var(--specialist-plum-muted)] mb-2">عکس پروفایل (PNG/JPG/WEBP، حداکثر ۲ مگابایت)</label>
+                            <div class="flex items-center gap-3">
+                                @if ($specialist?->photoUrl())
+                                    <img src="{{ $specialist->photoUrl() }}" alt="{{ $specialist->name }}" class="w-14 h-14 rounded-full object-cover">
+                                @endif
+                                <input type="file" name="photo" id="photo" accept="image/png,image/jpeg,image/webp" class="text-sm text-[var(--specialist-text)]">
+                            </div>
+                            @if ($specialist?->photo_path)
+                                <label class="flex items-center gap-2 mt-2 text-sm text-[var(--specialist-text-dim)]">
+                                    <input type="checkbox" name="remove_photo" value="1"> حذف عکس فعلی
+                                </label>
+                            @endif
+                            @error('photo') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
+                        </div>
+
                         <div>
                             <label for="name" class="block text-xs text-[var(--specialist-plum-muted)] mb-2">نام و نام خانوادگی</label>
                             <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}"

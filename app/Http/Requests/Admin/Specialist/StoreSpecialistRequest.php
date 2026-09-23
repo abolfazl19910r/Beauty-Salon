@@ -32,6 +32,9 @@ class StoreSpecialistRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            // ⭐ عکس پروفایل متخصص (۲۰۲۶-۰۹-۲۴) — اختیاری.
+            'photo' => \App\Services\Salon\SpecialistPhotoService::RULES,
+            'remove_photo' => ['nullable', 'boolean'],
             'phone' => ['required', 'string', 'max:11', 'unique:specialists,phone'],
             'email' => ['required', 'email', 'unique:specialists,email'],
             'services' => ['required', 'array'],
@@ -51,5 +54,10 @@ class StoreSpecialistRequest extends FormRequest
         }
 
         return $digits;
+    }
+
+    public function messages(): array
+    {
+        return \App\Services\Salon\SpecialistPhotoService::MESSAGES;
     }
 }

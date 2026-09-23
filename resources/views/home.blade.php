@@ -322,14 +322,18 @@
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
                 @forelse(($specialists ?? []) as $index => $specialist)
                     <div class="fade-up fade-up-delay-{{ ($index % 3) + 1 }} group relative rounded-2xl overflow-hidden card-hover bg-[var(--rasta-brown)] border border-[var(--rasta-gold)]/10 flex flex-col items-center justify-center text-center py-10 px-4 h-72">
-                        <div class="w-20 h-20 rounded-full bg-[var(--rasta-gold)]/15 flex items-center justify-center mb-4 text-2xl font-serif-fa font-bold text-[var(--rasta-gold-light)]">
-                            {{ mb_substr($specialist->name, 0, 1) }}
-                        </div>
+                        {{-- ⭐ عکس پروفایل متخصص (۲۰۲۶-۰۹-۲۴)، وگرنه حرف اول اسم. --}}
+                        @if ($specialist->photoUrl())
+                            <img src="{{ $specialist->photoUrl() }}" alt="{{ $specialist->name }}" loading="lazy"
+                                 class="w-24 h-24 rounded-full object-cover mb-4 border-2 border-[var(--rasta-gold)]/40">
+                        @else
+                            <div class="w-20 h-20 rounded-full bg-[var(--rasta-gold)]/15 flex items-center justify-center mb-4 text-2xl font-serif-fa font-bold text-[var(--rasta-gold-light)]">
+                                {{ mb_substr($specialist->name, 0, 1) }}
+                            </div>
+                        @endif
                         <h3 class="font-serif-fa font-bold text-lg mb-1">{{ $specialist->name }}</h3>
                         <p class="text-xs text-[var(--rasta-gold-light)] mb-3">متخصص زیبایی</p>
-                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-xs text-[var(--rasta-cream)]/60 persian-number">
-                            {{ $specialist->phone }}
-                        </div>
+                        {{-- ⭐ ۲۰۲۶-۰۹-۲۴: شماره موبایل شخصی متخصص (همون شماره‌ی ورودش) دیگه در صفحه‌ی عمومی نمایش داده نمی‌شه. --}}
                     </div>
                 @empty
                     {{-- TODO: کنترلر باید متغیر $specialists را به ویو ارسال کند --}}

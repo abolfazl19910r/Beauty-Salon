@@ -62,6 +62,8 @@ class AdminSpecialistController extends Controller
                 $request->input('commission_rate')
             );
 
+            app(\App\Services\Salon\SpecialistPhotoService::class)->applyFromRequest($result['specialist'], $request);
+
             $message = 'متخصص جدید با موفقیت ایجاد شد.';
             if (! $result['matched_user']) {
                 $message .= ' توجه: هنوز هیچ کاربری با این شماره موبایل ثبت‌نام نکرده — پس از ثبت‌نام متخصص با این شماره، پنل او فعال خواهد شد.';
@@ -98,6 +100,8 @@ class AdminSpecialistController extends Controller
             $request->validated(),
             $request->input('commission_rate')
         );
+
+        app(\App\Services\Salon\SpecialistPhotoService::class)->applyFromRequest($specialist->fresh(), $request);
 
         return redirect()->route('admin.specialists.index')
             ->with('success', 'اطلاعات متخصص با موفقیت بروزرسانی شد.');

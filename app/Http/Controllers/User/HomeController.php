@@ -42,7 +42,7 @@ class HomeController extends Controller
             return $this->specialistRepository->query()
                 ->latest()
                 ->with(['schedules' => fn ($q) => $q->where('is_active', true)->orderBy('day_of_week')])
-                ->select('id', 'name', 'email', 'phone', 'user_id')
+                ->select('id', 'name', 'email', 'phone', 'user_id', 'photo_path')
                 ->take(4)
                 ->get();
         });

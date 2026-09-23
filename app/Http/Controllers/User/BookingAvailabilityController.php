@@ -155,9 +155,17 @@ class BookingAvailabilityController extends Controller
         $this->ensureSalonOwnership($service->salon_id);
 
         try {
+            // ⭐ ۲۰۲۶-۰۹-۲۴: photo_url برای نمایش عکس متخصص انتخاب‌شده در فرم رزرو.
             $specialists = $service->specialists()
-                ->select('specialists.id', 'specialists.name', 'specialists.email', 'specialists.phone')
-                ->get();
+                ->select('specialists.id', 'specialists.name', 'specialists.email', 'specialists.phone', 'specialists.photo_path')
+                ->get()
+                ->map(fn ($s) => [
+                    'id' => $s->id,
+                    'name' => $s->name,
+                    'email' => $s->email,
+                    'phone' => $s->phone,
+                    'photo_url' => $s->photoUrl(),
+                ]);
 
             return response()->json($specialists);
 

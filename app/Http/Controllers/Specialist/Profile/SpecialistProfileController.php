@@ -68,7 +68,8 @@ class SpecialistProfileController extends Controller
         $user = auth()->user();
         $validated = $request->validated();
 
-        $user->fill($validated);
+        // ⭐ ۲۰۲۶-۰۹-۲۴: فقط name/phone — validated حالا photo (فایل) هم داره که مال users نیست.
+        $user->fill(\Illuminate\Support\Arr::only($validated, ['name', 'phone']));
         $user->save();
 
         $specialist = $this->specialistRepository->findByPhone($validated['phone']);
@@ -77,6 +78,8 @@ class SpecialistProfileController extends Controller
                 'name' => $validated['name'],
                 'phone' => $validated['phone'],
             ]);
+
+            app(\App\Services\Salon\SpecialistPhotoService::class)->applyFromRequest($specialist->fresh(), $request);
         }
 
         return redirect()->route('specialist.profile.show')

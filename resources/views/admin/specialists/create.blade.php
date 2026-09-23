@@ -33,7 +33,7 @@
             </a>
         </div>
 
-        <form action="{{ route('admin.specialists.store') }}" method="POST">
+        <form action="{{ route('admin.specialists.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
@@ -54,6 +54,15 @@
                             <label class="form-label">ایمیل</label>
                             <input type="email" name="email" value="{{ old('email') }}" class="form-input" dir="ltr" placeholder="example@email.com">
                             @error('email') <p class="form-error">{{ $message }}</p> @enderror
+                        </div>
+                        {{-- ⭐ عکس پروفایل متخصص (۲۰۲۶-۰۹-۲۴) — اختیاری. --}}
+                        <div>
+                            <label class="form-label">عکس پروفایل <span style="color:var(--admin-text-light);">(PNG/JPG/WEBP، حداکثر ۲ مگابایت)</span></label>
+                            <div class="flex items-center gap-3">
+                                
+                                <input type="file" name="photo" accept="image/png,image/jpeg,image/webp" class="text-sm">
+                            </div>
+                            @error('photo') <p class="form-error">{{ $message }}</p> @enderror
                         </div>
                     </div>
                 </div>

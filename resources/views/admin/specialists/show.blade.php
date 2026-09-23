@@ -7,10 +7,14 @@
         {{-- Heather --}}
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
             <div class="flex items-center gap-3">
+                @if ($specialist->photoUrl())
+                    <img src="{{ $specialist->photoUrl() }}" alt="{{ $specialist->name }}" class="w-12 h-12 rounded-full object-cover flex-shrink-0">
+                @else
                 <div class="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0"
                      style="background:var(--admin-accent); color:#fff;">
                     {{ mb_substr($specialist->name, 0, 1) }}
                 </div>
+                @endif
                 <div>
                     <h1 class="text-xl font-bold" style="color:var(--admin-text);">{{ $specialist->name }}</h1>
                     <p class="text-sm" style="color:var(--admin-text-dim);">متخصص زیبایی</p>

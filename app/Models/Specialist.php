@@ -369,4 +369,10 @@ class Specialist extends Model
 
         return (float) ($settings->admin_commission_percentage ?? 10);
     }
+
+    /** ⭐ عکس پروفایل متخصص (۲۰۲۶-۰۹-۲۴)؛ null = بدون عکس (ویوها حرف اول اسم رو نشون می‌دن). */
+    public function photoUrl(): ?string
+    {
+        return $this->photo_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->photo_path) : null;
+    }
 }
