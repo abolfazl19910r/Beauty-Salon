@@ -6324,3 +6324,22 @@ SalonBuyNowTest (۸)، payload مشترک `Tests\Concerns\SalonContactPayload`. 
 - (اختیاری) پیامک خوش‌آمد به مالک سالن با آدرس سالن بعد از ثبت‌نام/اولین خرید — هزینه‌ی پیامک داره
 - `php artisan migrate` + `php artisan config:clear` + `php artisan route:clear` روی سیستم لوکال
 
+### دور چهارم (۲۰۲۶-۰۹-۲۳) — باگ 419 Page Expired روی 127.0.0.1
+
+- **گزارش ابوالفضل (بعد از اعمال ۱۱ پچ):** روی `http://127.0.0.1:8000` هر فرم POST (ساخت سالن،
+  خرید فوری، ورود) خطای **419 Page Expired** می‌داد.
+- **علت (در Chromium headless بازتولید شد):** `.env` لوکال `SESSION_DOMAIN=.rasta-app.test` داره (برای
+  حالت ساب‌دامینی لازمه). روی هر هاست دیگه (127.0.0.1، localhost) کوکی‌های session و XSRF-TOKEN با
+  `Domain=.rasta-app.test` فرستاده می‌شدن و مرورگر اصلاً ذخیره‌شون نمی‌کرد → بدون session، CSRF رد
+  می‌شد. باگ از خودِ `.env` میومد، نه از پچ‌های این نشست؛ با آوردن صفحه‌ی فروش روی 127.0.0.1 آشکار شد.
+- **رفع — پچ `fix(session): stop 419 Page Expired on 127.0.0.1 when SESSION_DOMAIN is set`:**
+  `App\Http\Middleware\MatchSessionCookieDomainToHost`، prepend به گروه web (قبل از EncryptCookies و
+  StartSession). فقط برای همون درخواست، اگه هاست زیرمجموعه‌ی `session.domain` نباشه (قاعده‌ی
+  domain-match RFC 6265)، `session.domain` رو null می‌کنه → کوکی host-only. `rasta-app.test` و همه‌ی
+  ساب‌دامین‌ها دقیقاً مثل قبل. هر دو آدرس هم‌زمان کار می‌کنن (session جدا). تغییر `.env` لازم نیست.
+- ⚠️ **قانون:** هر وقت SESSION_DOMAIN تنظیم شده و 419 دیدی، اول چک کن مرورگر اصلاً کوکی ذخیره کرده یا نه
+  (DevTools → Application → Cookies)؛ 419 همیشه به معنی «توکن منقضی شده» نیست.
+- تست: `MatchSessionCookieDomainToHostTest` (۴؛ تست اول بدون middleware fail می‌شه — وریفای شد).
+  سوییت کامل **۱۱۵۰ passed / ۱ skipped**، ساب‌دامین ۱۲ passed، Pint PASS. دستی در Chromium با سرور
+  واقعی: ثبت‌نام آزمایشی → OTP → داشبورد؛ خرید فوری → OTP → مرحله‌ی پرداخت.
+
