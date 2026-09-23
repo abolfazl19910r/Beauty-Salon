@@ -24,6 +24,7 @@
             </div>
         @endif
 
+        @include('admin.partials.merchant-warning', ['salon' => $salon])
         @include('admin.partials.salon-public-link', ['salon' => $salon])
 
         {{-- وضعیت فعلی اشتراک --}}

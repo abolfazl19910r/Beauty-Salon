@@ -63,6 +63,17 @@
                 style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">رزرو نوبت جدید</h1>
         </div>
 
+        {{-- ⭐ ۲۰۲۶-۰۹-۲۴: سالن بدون درگاه زرین‌پال → نوبت‌های نیازمند پیش‌پرداخت قابل ثبت نیستن
+             (سرور هم در BookingReservationController::blockedForMissingMerchant همین رو اعمال می‌کنه). --}}
+        @if (isset($onlinePaymentAvailable) && ! $onlinePaymentAvailable)
+            <div class="mb-6 rounded-2xl border border-red-400/40 bg-red-500/10 p-4 text-sm leading-7 text-red-200" role="alert">
+                {{ \App\Support\ZarinpalMerchant::CUSTOMER_MESSAGE }}
+                @if ($currentSalonPhone)
+                    <a href="tel:{{ $currentSalonPhone }}" class="font-bold underline mr-1" dir="ltr">{{ $currentSalonPhone }}</a>
+                @endif
+            </div>
+        @endif
+
         <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 p-6 md:p-8">
             <form id="booking-form" method="POST" action="{{ route('bookings.confirm') }}" class="space-y-7">
                 @csrf

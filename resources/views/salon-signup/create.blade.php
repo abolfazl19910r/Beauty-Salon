@@ -74,6 +74,7 @@
         .logo-pick { display: flex; align-items: center; gap: .8rem; }
         .logo-pick img { width: 56px; height: 56px; object-fit: contain; border-radius: .6rem; background: rgba(248, 243, 233, .08); border: 1px solid rgba(201, 162, 75, .3); padding: .25rem; }
         .logo-pick input[type=file] { font-family: inherit; font-size: .85rem; color: inherit; }
+        .notice { border: 1px solid rgba(201, 162, 75, .45); background: rgba(201, 162, 75, .08); border-radius: .7rem; padding: .8rem 1rem; font-size: .85rem; line-height: 1.9; margin-bottom: 1rem; }
         .err { color: #ff8a8a; font-size: .8rem; margin-top: .3rem; }
         .check-status { font-size: .78rem; margin-top: .35rem; min-height: 1em; }
         .check-status.ok { color: #7ee0a6; }
@@ -227,7 +228,21 @@
                     </div>
                 </fieldset>
 
-
+                {{-- ⭐ کد پذیرنده‌ی زرین‌پال سالن (۲۰۲۶-۰۹-۲۴) — اختیاری در ثبت‌نام، ولی بدونش هیچ پرداخت آنلاینی ممکن نیست. --}}
+                <fieldset>
+                    <legend>درگاه پرداخت سالن (زرین‌پال)</legend>
+                    <div class="notice">
+                        ایمیل یا پیامکی که زرین‌پال بعد از تأیید درگاه برایتان فرستاده، یک «کد پذیرنده» (Merchant ID) ۳۶ کاراکتری دارد.
+                        <b>بدون این کد هیچ پرداخت آنلاینی برای مشتری‌های سالن شما ممکن نیست</b>: نه پیش‌پرداخت نوبت، نه پرداخت باقی‌مانده و نه شارژ کیف پول.
+                        پول این پرداخت‌ها مستقیم به حساب زرین‌پال خود سالن واریز می‌شود.
+                        اگر الان این کد را ندارید، خالی بگذارید و بعداً حتماً از «پنل مدیریت ← اطلاعات سالن» واردش کنید.
+                    </div>
+                    <div class="row" style="margin-bottom:0;">
+                        <label for="zarinpal_merchant_id">کد پذیرنده‌ی زرین‌پال (Merchant ID) <span style="opacity:.6; font-weight:400;">(اختیاری)</span></label>
+                        <input type="text" id="zarinpal_merchant_id" name="zarinpal_merchant_id" value="{{ old('zarinpal_merchant_id') }}"
+                               maxlength="36" dir="ltr" autocomplete="off" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                    </div>
+                </fieldset>
 
                 <fieldset>
                     <legend>مشخصات مدیر سالن (شما)</legend>

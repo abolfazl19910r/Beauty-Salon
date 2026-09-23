@@ -46,12 +46,12 @@ class UpdateSalonRequest extends FormRequest
             // ⭐ فاز ۲، مورد ۹ («مرچنت آیدی مجزا برای هر سالن») — اختیاری: تا وقتی سالن خودش
             // merchant_id واقعی‌اش را ثبت نکند، PaymentService به‌صورت خودکار روی merchant_id
             // سراسری پلتفرم fallback می‌کند (به resolveMerchantId() در PaymentService نگاه کن).
-            'zarinpal_merchant_id' => ['nullable', 'string', 'max:255'],
+            'zarinpal_merchant_id' => \App\Support\ZarinpalMerchant::RULES,
         ];
     }
 
     public function messages(): array
     {
-        return $this->salonContactMessages() + \App\Services\Salon\SalonLogoService::MESSAGES;
+        return $this->salonContactMessages() + \App\Services\Salon\SalonLogoService::MESSAGES + \App\Support\ZarinpalMerchant::MESSAGES;
     }
 }

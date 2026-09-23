@@ -109,7 +109,7 @@ class SuperAdminService
             // fallback سراسری)، نه اینکه مقدار قبلی برای همیشه بماند چون کلید خالی "ست‌نشده"
             // به‌حساب بیاید.
             'zarinpal_merchant_id' => array_key_exists('zarinpal_merchant_id', $data)
-                ? ($data['zarinpal_merchant_id'] ?: null)
+                ? \App\Support\ZarinpalMerchant::normalize($data['zarinpal_merchant_id'])
                 : $salon->zarinpal_merchant_id,
             // ⭐ ۲۰۲۶-۰۹-۲۳: فقط کلیدهایی که واقعاً در فرم بودن (salonContactAttributes)؛ خالی = پاک.
             ...($data['contact'] ?? []),

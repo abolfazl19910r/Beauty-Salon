@@ -34,6 +34,8 @@ class StoreSalonSignupRequest extends FormRequest
         return $this->salonContactRules(required: true) + [
             // ⭐ لوگوی اختصاصی سالن (۲۰۲۶-۰۹-۲۴) — اختیاری.
             'logo' => \App\Services\Salon\SalonLogoService::RULES,
+            // ⭐ کد پذیرنده‌ی زرین‌پال سالن (۲۰۲۶-۰۹-۲۴) — اختیاری در ثبت‌نام، ولی بدونش هیچ پرداخت آنلاینی ممکن نیست.
+            'zarinpal_merchant_id' => \App\Support\ZarinpalMerchant::RULES,
             'name' => ['required', 'string', 'max:255'],
             'slug' => [
                 'required', 'string', 'max:100', 'alpha_dash',
@@ -66,7 +68,7 @@ class StoreSalonSignupRequest extends FormRequest
 
     public function messages(): array
     {
-        return $this->salonContactMessages() + \App\Services\Salon\SalonLogoService::MESSAGES + [
+        return $this->salonContactMessages() + \App\Services\Salon\SalonLogoService::MESSAGES + \App\Support\ZarinpalMerchant::MESSAGES + [
             'slug.unique' => 'این آدرس قبلاً برای سالن دیگری استفاده شده است.',
             'slug.alpha_dash' => 'آدرس فقط می‌تواند شامل حروف انگلیسی، عدد، خط تیره و زیرخط باشد.',
             'owner_phone.regex' => 'شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد.',

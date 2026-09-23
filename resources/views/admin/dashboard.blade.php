@@ -100,6 +100,7 @@
             @endpermission
         </div>
 
+        @include('admin.partials.merchant-warning', ['salon' => app(\App\Support\CurrentSalon::class)->get()])
         @include('admin.partials.salon-public-link', ['salon' => app(\App\Support\CurrentSalon::class)->get()])
 
         {{-- Statistics cards --}}

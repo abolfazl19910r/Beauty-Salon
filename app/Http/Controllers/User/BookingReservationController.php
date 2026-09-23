@@ -33,12 +33,18 @@ class BookingReservationController extends Controller
 
         $services = $this->beautyServiceRepository->all();
         $specialists = $this->specialistRepository->all();
+        // ⭐ ۲۰۲۶-۰۹-۲۴: سالن بدون درگاه زرین‌پال → بنر هشدار و غیرفعال شدن ثبت نوبت‌های نیازمند پیش‌پرداخت.
+        $onlinePaymentAvailable = (bool) app(\App\Support\CurrentSalon::class)->get()?->acceptsOnlinePayments();
 
-        return view('bookings.create', compact('services', 'specialists'));
+        return view('bookings.create', compact('services', 'specialists', 'onlinePaymentAvailable'));
     }
 
     public function confirm(ConfirmBookingRequest $request): View|RedirectResponse
     {
+        if ($blocked = $this->blockedForMissingMerchant((int) $request->service_id, false)) {
+            return $blocked;
+        }
+
         try {
             $service = $this->beautyServiceRepository->findOrFail($request->service_id);
             $specialist = $this->specialistRepository->findOrFail($request->specialist_id);
@@ -69,6 +75,12 @@ class BookingReservationController extends Controller
 
     public function store(StoreBookingRequest $request): JsonResponse|RedirectResponse
     {
+        // ⭐ ۲۰۲۶-۰۹-۲۴: نوبتی که پیش‌پرداخت لازم داره در سالنی که هنوز درگاه نداره اصلاً ساخته نمی‌شه
+        // (وگرنه یک نوبت «در انتظار پرداخت» می‌موند که هیچ‌وقت قابل پرداخت نیست).
+        if ($blocked = $this->blockedForMissingMerchant((int) $request->service_id, $request->expectsJson())) {
+            return $blocked;
+        }
+
         try {
             $booking = $this->bookingService->createBooking(
                 userId: auth()->id(),
@@ -113,5 +125,22 @@ class BookingReservationController extends Controller
 
             return back()->with('error', 'خطا در لغو نوبت.');
         }
+    }
+
+    private function blockedForMissingMerchant(int $serviceId, bool $json): JsonResponse|RedirectResponse|null
+    {
+        $salon = app(\App\Support\CurrentSalon::class)->get();
+        if (! $salon || $salon->acceptsOnlinePayments()) {
+            return null;
+        }
+
+        $service = $this->beautyServiceRepository->find($serviceId);
+        if (! $service || $this->bookingService->calculatePrepayment((float) $service->price)['original_amount'] <= 0) {
+            return null;
+        }
+
+        return $json
+            ? response()->json(['message' => \App\Support\ZarinpalMerchant::CUSTOMER_MESSAGE], 422)
+            : back()->with('error', \App\Support\ZarinpalMerchant::CUSTOMER_MESSAGE)->withInput();
     }
 }

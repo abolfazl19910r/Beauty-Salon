@@ -35,6 +35,12 @@ class AdminSalonSettingsController extends Controller
             ...$request->salonContactAttributes(),
         ]);
 
+        // ⭐ ۲۰۲۶-۰۹-۲۴: کد پذیرنده‌ی زرین‌پال خود سالن — فقط وقتی فیلد واقعاً در فرم بوده (خالی = پرداخت
+        // آنلاین غیرفعال). درخواستی که اصلاً این فیلد رو نداره نباید بی‌صدا درگاه سالن رو پاک کنه.
+        if ($request->exists('zarinpal_merchant_id')) {
+            $salon->update(['zarinpal_merchant_id' => \App\Support\ZarinpalMerchant::normalize($request->validated('zarinpal_merchant_id'))]);
+        }
+
         if ($request->hasFile('logo')) {
             $this->logoService->replace($salon, $request->file('logo'));
         } elseif ($request->boolean('remove_logo')) {

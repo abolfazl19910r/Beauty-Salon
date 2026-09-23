@@ -31,19 +31,43 @@ class PaymentService
         }
     }
 
+    /**
+     * ⭐ ۲۰۲۶-۰۹-۲۴ (تصمیم ابوالفضل): پول مشتری‌های یک سالن فقط به درگاه خودِ همون سالن. سالن بدون
+     * کد پذیرنده → رشته‌ی خالی → createPayment/createWalletChargePayment قبل از هر درخواستی رد
+     * می‌کنن. قبلاً این‌جا بی‌صدا به ZARINPAL_MERCHANT_ID پلتفرم برمی‌گشت و پول مشتری‌های سالن به
+     * حساب پلتفرم می‌رفت. مرچنت پلتفرم فقط وقتی هیچ سالنی bind نیست (نباید در مسیرهای مشتری پیش بیاد).
+     */
     private function resolveMerchantId(): string
     {
         $salon = app(CurrentSalon::class)->get();
 
-        if ($salon && filled($salon->zarinpal_merchant_id)) {
-            return $salon->zarinpal_merchant_id;
+        if ($salon) {
+            return (string) $salon->zarinpal_merchant_id;
         }
 
-        return config('services.zarinpal.merchant_id');
+        return (string) config('services.zarinpal.merchant_id');
+    }
+
+    public function isAvailable(): bool
+    {
+        return $this->merchantId !== '';
+    }
+
+    private function unavailableResult(): array
+    {
+        return [
+            'success' => false,
+            'reason' => 'merchant_missing',
+            'message' => \App\Support\ZarinpalMerchant::CUSTOMER_MESSAGE,
+        ];
     }
 
     public function createPayment($booking, $customAmount = null): array
     {
+        if (! $this->isAvailable()) {
+            return $this->unavailableResult();
+        }
+
         try {
             $callbackUrl = route('payment.callback', ['booking' => $booking->id]);
             $paymentAmount = $customAmount ?? $booking->prepayment_amount;
@@ -211,6 +235,10 @@ class PaymentService
 
     public function createWalletChargePayment($user, $amount): array
     {
+        if (! $this->isAvailable()) {
+            return $this->unavailableResult();
+        }
+
         try {
             $callbackUrl = route('wallet.charge.callback');
             $amountInRials = (int) ($amount * 10);

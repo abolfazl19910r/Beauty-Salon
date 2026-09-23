@@ -38,12 +38,13 @@ class UpdateSalonSettingsRequest extends FormRequest
             'bio' => ['nullable', 'string', 'max:2000'],
             'logo' => SalonLogoService::RULES,
             'remove_logo' => ['nullable', 'boolean'],
+            'zarinpal_merchant_id' => \App\Support\ZarinpalMerchant::RULES,
         ];
     }
 
     public function messages(): array
     {
-        return $this->salonContactMessages() + SalonLogoService::MESSAGES + [
+        return $this->salonContactMessages() + SalonLogoService::MESSAGES + \App\Support\ZarinpalMerchant::MESSAGES + [
             'name.required' => 'نام سالن را وارد کنید.',
         ];
     }

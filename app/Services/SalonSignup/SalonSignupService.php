@@ -69,6 +69,7 @@ class SalonSignupService
                 // ⭐ ۲۰۲۶-۰۹-۲۳: آدرس/تلفن/سال شروع فعالیت/ساعات کاری — از
                 // StoreSalonSignupRequest::salonContactAttributes().
                 ...($data['contact'] ?? []),
+                'zarinpal_merchant_id' => \App\Support\ZarinpalMerchant::normalize($data['zarinpal_merchant_id'] ?? null),
             ]);
 
             $owner = $this->userRepository->create([

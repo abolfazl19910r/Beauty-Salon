@@ -24,6 +24,10 @@ class SalonFactory extends Factory
             'subscription_ends_at' => now()->addMonths(12),
             'is_suspended' => false,
             'created_by' => null,
+            // ⭐ ۲۰۲۶-۰۹-۲۴: بدون کد پذیرنده هیچ پرداخت آنلاینی ممکن نیست؛ سالن‌های factory پیش‌فرض
+            // یکی دارن تا تست‌های پرداخت موجود همون رفتار قبلی رو ببینن. برای تست «بدون درگاه»
+            // صریحاً null بدید.
+            'zarinpal_merchant_id' => fake()->uuid(),
         ];
     }
 

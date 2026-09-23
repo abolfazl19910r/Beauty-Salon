@@ -204,4 +204,13 @@ class Salon extends Model
     {
         return $this->logo_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->logo_path) : null;
     }
+
+    /**
+     * ⭐ ۲۰۲۶-۰۹-۲۴: بدون کد پذیرنده‌ی زرین‌پالِ خودِ سالن هیچ پرداخت آنلاینی ممکن نیست
+     * (App\Support\ZarinpalMerchant).
+     */
+    public function acceptsOnlinePayments(): bool
+    {
+        return filled($this->zarinpal_merchant_id);
+    }
 }

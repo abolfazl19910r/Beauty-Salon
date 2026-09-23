@@ -131,23 +131,26 @@ class PaymentControllerTest extends TestCase
         Http::assertSent(fn ($request) => $request['merchant_id'] === 'salon-specific-merchant');
     }
 
-    public function test_process_falls_back_to_the_global_merchant_id_when_the_salon_has_none(): void
+    /**
+     * ⭐ جایگزین تست قبلی «fallback به مرچنت سراسری» (تصمیم ابوالفضل، ۲۰۲۶-۰۹-۲۴): سالنی که کد
+     * پذیرنده‌ی خودش رو نداره هیچ پرداخت آنلاینی نداره — قبلاً پول مشتری‌های سالن بی‌صدا به
+     * مرچنت پلتفرم (ZARINPAL_MERCHANT_ID) واریز می‌شد.
+     */
+    public function test_process_never_falls_back_to_the_platform_merchant_when_the_salon_has_none(): void
     {
         $salon = app(\App\Support\CurrentSalon::class)->get();
-        $this->assertNull($salon->zarinpal_merchant_id);
+        $salon->update(['zarinpal_merchant_id' => null]);
 
-        Http::fake([
-            '*request.json' => Http::response([
-                'data' => ['code' => 100, 'authority' => 'AUTH_GLOBAL'],
-            ], 200),
-        ]);
+        Http::fake();
 
         $user = User::factory()->create();
         $booking = $this->makeBooking($user);
 
-        $this->actingAs($user)->post(route('payment.process', $booking));
+        $response = $this->actingAs($user)->from(route('payment.show', $booking))->post(route('payment.process', $booking));
 
-        Http::assertSent(fn ($request) => $request['merchant_id'] === config('services.zarinpal.merchant_id'));
+        Http::assertNothingSent();
+        $response->assertSessionHas('error', fn ($msg) => str_contains($msg, 'پرداخت آنلاین این سالن هنوز فعال نشده است'));
+        $this->assertSame('unpaid', $booking->fresh()->payment_status);
     }
 
     // ── processWithWallet() ──────────────────────────────────────────────
