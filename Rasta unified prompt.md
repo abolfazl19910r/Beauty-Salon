@@ -6439,7 +6439,49 @@ SpecialistPhotoTest (۷)، SalonMerchantIdTest (۹)، PublicSpecialistProfileTes
 - `App\Providers\PaymentServiceProvider` کد مرده‌ست (ثبت نشده در bootstrap/providers.php و با
   آرگومان‌های اشتباه به constructor می‌ده) — در بازطراحی درگاه‌ها حذف بشه.
 
+### ۲۰۲۶-۰۹-۲۴ (ادامه ۳) — تصمیم‌های چند درگاه + تسویه از حساب سالن
+
+**جواب‌های ابوالفضل:**
+- سناریو: **هر سالن چند درگاه فعال** + انتخاب درگاه توسط مشتری یا جایگزینی خودکار (failover).
+- درگاه‌ها (علاوه بر زرین‌پال): **زیبال، آیدی‌پی، نکست‌پی / پی‌پینگ، درگاه مستقیم بانکی (سامان/ملت/پارسیان)**.
+- تسویه‌ی کیف پول متخصص: **از حساب درگاه خود سالن** (API هر سالن) + مدیر سالن باید **دستی هم** بتونه تسویه کنه.
+
+**پچ `fix(payout): settle specialist withdrawals from the salon's own Zarinpal account` (انجام‌شده):**
+migration `2026_09_24_000003` (`salons.zarinpal_payout_api_key`، cast `encrypted`، در `$hidden`)،
+`Salon::canAutoPayout()`، `ZarinpalPayoutService` از مرچنت+توکن سالن (از طریق specialist، بدون scope چون در Job
+اجرا می‌شه)، `WalletAdminService::autoPayout` قبل از processing چک می‌کنه، فیلد توکن در «اطلاعات سالن»
+(password، هرگز نمایش داده نمی‌شه، خالی = بدون تغییر)، دکمه‌ی تسویه‌ی خودکار فقط وقتی سالن پیکربندی شده.
+تسویه‌ی دستی (approve با کد پیگیری) از قبل وجود داشت و دست‌نخورده‌ست. تست: `SalonPayoutAccountTest` (۵).
+سوییت کامل **۱۲۱۸ passed / ۱ skipped**.
+
+**طرح پیاده‌سازی چند درگاه (هنوز کدی نوشته نشده — ترتیب مراحل):**
+1. **مرحله‌ی ۰ (پیش‌نیاز، بدون تغییر رفتار):**
+   - `App\Payments\Contracts\PaymentGateway`: `start(PaymentIntent): GatewayStart` (redirect GET یا فرم POST
+     خودکار برای بانک‌ها)، `verify(Request, PaymentTransaction): GatewayVerification`، `supportsPayout()`، `refund()`.
+   - `App\Payments\GatewayManager`: درگاه‌های فعال سالن به ترتیب priority؛ اگه start درگاه اول خطای اتصال داد →
+     درگاه بعدی (failover)؛ اگه مشتری انتخاب کرده → همون.
+   - جدول `salon_payment_gateways` (salon_id, driver, label, credentials json **encrypted**, is_active, priority,
+     sandbox, supports_payout). migration داده: `salons.zarinpal_merchant_id` → یک ردیف zarinpal.
+   - جدول واحد `payment_transactions` (payable morph: booking / invoice / wallet charge، gateway_id, driver,
+     amount_rial, token/authority, ref_id, card_pan_masked, status, request/verify raw json, verified_at) +
+     **یک callback مشترک** `/payments/return/{transaction}` که driver رو از تراکنش می‌خونه (نه از query).
+   - تبدیل تومان→ریال فقط در یک جا (`PaymentIntent`)، مبلغ همیشه با خود درگاه در verify چک می‌شه، idempotent.
+   - `PaymentService` / `SubscriptionPaymentService` روی manager؛ `ZarinpalPayoutService` → `PayoutGateway`.
+   - حذف `App\Providers\PaymentServiceProvider` (مرده، ثبت نشده، آرگومان اشتباه).
+2. **مرحله‌ی ۱:** driverهای درگاه‌های واسط (زیبال، آیدی‌پی، نکست‌پی، پی‌پینگ) + UI مدیریت درگاه‌ها در «اطلاعات
+   سالن» (افزودن/ترتیب/فعال‌سازی/تست اتصال) + انتخاب درگاه در صفحه‌ی پرداخت مشتری.
+3. **مرحله‌ی ۲:** درگاه‌های مستقیم بانکی (سامان: توکن + فرم POST + verify؛ ملت/به‌پرداخت و پارسیان: SOAP،
+   تأیید/settle در مهلت، reverse) — نیاز به قرارداد شاپرک و ثبت IP سرور.
+4. **مرحله‌ی ۳:** payout برای درگاه‌هایی که API تسویه دارن؛ بقیه فقط دستی.
+
+⚠️ **پیش از نوشتن هر driver:** مستندات به‌روز همون سرویس از پنل/سایت رسمی‌اش بررسی بشه (endpointها عوض
+می‌شن — مثلاً مستندات فعلی زرین‌پال آدرس `payment.zarinpal.com/pg/v4/payment/...` رو نشون می‌ده در حالی که
+کد ما `api.zarinpal.com` رو صدا می‌زنه؛ PayPing نسخه‌ی v3 با callback به‌صورت POST داره؛ وضعیت فعلی سرویس
+وب‌سرویس آیدی‌پی هم باید تأیید بشه).
+⚠️ هر سالن باید دامنه/ساب‌دامین خودش رو در پنل درگاهش ثبت کنه (بررسی دامنه‌ی callback توسط درگاه‌ها).
+
 ### قدم‌های باز
-- تصمیم ابوالفضل درباره‌ی چند درگاه (جواب سؤال‌های پرسیده‌شده) و درباره‌ی تسویه‌ی متخصص از حساب پلتفرم
+- شروع مرحله‌ی ۰ چند درگاه (بعد از تأیید جزئیات باز ابوالفضل: کارمزد درگاه‌ها، رفتار failover)
+- بررسی آدرس production زرین‌پال (`api.zarinpal.com` در کد در برابر `payment.zarinpal.com` در مستندات فعلی)
 - (اختیاری) پیامک خوش‌آمد به مالک سالن
 
