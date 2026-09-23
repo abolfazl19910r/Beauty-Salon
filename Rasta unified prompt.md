@@ -6343,3 +6343,38 @@ SalonBuyNowTest (۸)، payload مشترک `Tests\Concerns\SalonContactPayload`. 
   سوییت کامل **۱۱۵۰ passed / ۱ skipped**، ساب‌دامین ۱۲ passed، Pint PASS. دستی در Chromium با سرور
   واقعی: ثبت‌نام آزمایشی → OTP → داشبورد؛ خرید فوری → OTP → مرحله‌ی پرداخت.
 
+### ۲۰۲۶-۰۹-۲۴ — لوگوی اختصاصی سالن + جداسازی فایل‌های آپلودی
+
+**درخواست/سؤال ابوالفضل:** (۱) هر سالن باید بتونه لوگوی خودش رو آپلود و استفاده کنه، مثل بقیه‌ی
+اطلاعات per-salon. (۲) آیا هر عکسی که ادمین یک سالن آپلود می‌کنه (گالری/نمونه‌کار، خدمات، …) فقط در
+همون سالن دیده می‌شه؟
+
+**پچ‌ها (روی `c5bca24` / همون HEAD بعد از رفع 419):**
+1. `feat(salon): per-salon logo, uploaded at signup and shown across the salon`
+   - migration `2026_09_24_000001`: `salons.logo_path` (nullable).
+   - `App\Support\SalonStorage` (پوشه‌ی `salons/{id}/{kind}`)، `App\Services\Salon\SalonLogoService`
+     (replace فایل قبلی رو پاک می‌کنه، remove). اعتبارسنجی: اختیاری، PNG/JPG/WEBP، حداکثر ۲MB،
+     حداقل ۶۴×۶۴. **SVG عمداً رد می‌شه** (دیسک public مستقیم سرو می‌کنه و SVG می‌تونه اسکریپت داشته باشه).
+   - فرم ثبت‌نام عمومی (multipart، پیش‌نمایش زنده) و فرم ساخت/ویرایش سوپرادمین (آپلود، پیش‌نمایش، «حذف لوگو»).
+   - نمایش (`currentSalonLogoUrl` در ViewComposer): هدر و فوتر سایت مشتری، هدر ورود/ثبت‌نام، favicon
+     سایت مشتری و guest، سایدبار پنل ادمین (لوگو + نام سالن)، سایدبار پنل متخصص. بدون لوگو = آیکون قبلی.
+2. `feat(storage): keep every salon's uploads in its own folder; fix gallery usage leak`
+   - **جواب سؤال ۲:** نمایش از قبل جدا بود (BelongsToSalon روی GalleryImage/BeautyService/Category/
+     BlogPost/BlogCategory + `CrossSalonImplicitBindingTest`). ولی فایل‌ها در پوشه‌های مشترک بودن، و
+     **نشت واقعی:** «فضای مصرفی گالری» با `allFiles('gallery')` مجموع فایل‌های همه‌ی سالن‌ها رو نشون می‌داد.
+   - آپلودهای جدید گالری/خدمات/دسته‌بندی/بلاگ → `salons/{id}/{kind}/`. فایل‌های قدیمی جابه‌جا نشدن (مسیرشون در DB).
+   - فضای مصرفی فقط از رکوردهای گالری همین سالن.
+3. `fix(central): stop claiming specialists can upload a portfolio` — صفحه‌ی فروش ادعا می‌کرد متخصص
+   «پروفایل عمومی و نمونه‌کارها» رو ویرایش می‌کنه؛ پروفایل متخصص فقط نام/موبایل/رمز داره.
+
+**نکته:** متخصص‌ها اصلاً عکس پروفایل ندارن (نه ستون، نه آپلود). اگه لازمه، فیچر جداست.
+
+**تست:** `SalonLogoTest` (۷)، `SalonUploadIsolationTest` (۴؛ دو تست بدون رفع fail می‌شن — وریفای شد).
+سوییت کامل **۱۱۶۱ passed / ۱ skipped**، Pint PASS.
+
+### قدم‌های باز
+- صفحه‌ی «اطلاعات سالن» برای خودِ مدیر سالن در پنل (لوگو، آدرس، تلفن، ساعات کاری) — فعلاً فقط
+  موقع ثبت‌نام یا توسط سوپرادمین قابل تغییره. پیشنهاد، تصمیم با ابوالفضل
+- عکس پروفایل متخصص (اختیاری)
+- `php artisan migrate` روی سیستم لوکال برای `logo_path`
+
