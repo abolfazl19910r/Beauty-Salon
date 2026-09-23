@@ -189,7 +189,7 @@ class SalonTrialTest extends TestCase
         $this->get(route('salon-signup.create', ['plan' => '6m']))
             ->assertOk()
             ->assertViewHas('selectedPlan', '6m')
-            ->assertSee('14 روز', false);
+            ->assertSee('۱۴ روز رایگان', false);
 
         $this->get(route('salon-signup.create', ['plan' => 'bogus']))
             ->assertViewHas('selectedPlan', '1m');

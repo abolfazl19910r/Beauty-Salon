@@ -47,7 +47,6 @@ class SalonSignupController extends Controller
         $plan = (string) request()->query('plan', '');
 
         return view('salon-signup.create', [
-            'prices' => $prices,
             'selectedPlan' => array_key_exists($plan, $prices) ? $plan : '1m',
             'trialDays' => $this->salonSignupService->trialDays(),
         ]);

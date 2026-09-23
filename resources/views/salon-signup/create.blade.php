@@ -8,7 +8,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800&display=swap" rel="stylesheet">
 
     {{--
         ⭐ عمداً یک صفحه‌ی کاملاً self-contained (بدون @vite، بدون x-guest-layout) — دقیقاً
@@ -30,7 +30,7 @@
             min-height: 100vh;
             background-color: var(--rasta-dark);
             color: var(--rasta-cream);
-            font-family: 'Noto Naskh Arabic', 'Vazirmatn', serif;
+            font-family: 'Vazirmatn', Tahoma, sans-serif;
             padding: 2.5rem 1rem;
         }
         .wrap { max-width: 40rem; margin: 0 auto; }
@@ -56,17 +56,6 @@
             font-size: .95rem;
         }
         input:focus { outline: none; border-color: var(--rasta-gold); box-shadow: 0 0 0 3px rgba(201, 162, 75, 0.2); }
-        .plans { display: grid; grid-template-columns: repeat(2, 1fr); gap: .6rem; }
-        .plan {
-            border: 1px solid rgba(201, 162, 75, 0.25);
-            border-radius: .6rem;
-            padding: .7rem;
-            cursor: pointer;
-            position: relative;
-        }
-        .plan input { position: absolute; top: .6rem; left: .6rem; }
-        .plan .title { font-weight: bold; color: var(--rasta-gold-light); }
-        .plan .price { font-size: .85rem; opacity: .8; margin-top: .2rem; }
         .err { color: #ff8a8a; font-size: .8rem; margin-top: .3rem; }
         .check-status { font-size: .78rem; margin-top: .35rem; min-height: 1em; }
         .check-status.ok { color: #7ee0a6; }
@@ -93,7 +82,15 @@
 <body>
     <div class="wrap">
         <h1>ساخت سالن خودتان روی راستا</h1>
-        <p class="sub">در چند دقیقه، پنل مدیریت اختصاصی سالن خودتان را راه‌اندازی کنید.</p>
+        <p class="sub">
+            در چند دقیقه، پنل مدیریت اختصاصی سالن خودتان را راه‌اندازی کنید.
+            @if ($trialDays > 0)
+                <br>بعد از تایید شماره موبایل، {{ to_persian_num((string) $trialDays) }} روز رایگان از همه‌ی امکانات استفاده می‌کنید؛
+                خرید اشتراک بعداً از داخل پنل سالن انجام می‌شود.
+            @else
+                <br>بعد از تایید شماره موبایل، اشتراک را از داخل پنل سالن خریداری می‌کنید.
+            @endif
+        </p>
 
         <div class="card">
             @if ($errors->any())
@@ -122,27 +119,12 @@
                     </div>
                 </fieldset>
 
-                <fieldset>
-                    <legend>پلن اشتراک</legend>
-                    <div class="plans">
-                        @foreach (['1m' => '۱ ماهه', '3m' => '۳ ماهه', '6m' => '۶ ماهه', '12m' => '۱۲ ماهه'] as $type => $label)
-                            <label class="plan">
-                                <input type="radio" name="subscription_type" value="{{ $type }}"
-                                       @checked(old('subscription_type', $selectedPlan) === $type) required>
-                                <div class="title">{{ $label }}</div>
-                                <div class="price">{{ number_format($prices[$type]) }} تومان</div>
-                            </label>
-                        @endforeach
-                    </div>
-                    <p class="sub" style="margin:.75rem 0 0; text-align:right; font-size:.8rem;">
-                        @if ($trialDays > 0)
-                            همین حالا نیازی به پرداخت نیست — بعد از تایید شماره موبایل، {{ $trialDays }} روز
-                            آزمایشی رایگان دارید؛ پلن انتخابی فقط پیش‌انتخاب صفحه‌ی خرید بعد از آن است.
-                        @else
-                            همین حالا نیازی به پرداخت نیست — بعد از تایید شماره موبایل، از پنل ادمین پرداخت می‌کنید.
-                        @endif
-                    </p>
-                </fieldset>
+                {{-- ⭐ تصمیم ابوالفضل (۲۰۲۶-۰۹-۲۳): انتخاب پلن از فرم ساخت سالن حذف شد — برای همه، نه فقط
+                     وقتی دوره‌ی آزمایشی روشنه. پلن فقط یک‌جا انتخاب می‌شه: صفحه‌ی خرید داخل پنل
+                     (admin.billing.index). ?plan= از کارت‌های صفحه‌ی فروش فقط به‌عنوان پیش‌انتخاب همون
+                     صفحه‌ی خرید ذخیره می‌شه (salons.subscription_type). --}}
+                <input type="hidden" name="subscription_type" value="{{ old('subscription_type', $selectedPlan) }}">
+
 
                 <fieldset>
                     <legend>مشخصات مدیر سالن (شما)</legend>

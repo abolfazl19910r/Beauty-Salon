@@ -29,7 +29,9 @@ class StoreSalonSignupRequest extends FormRequest
                 'required', 'string', 'max:100', 'alpha_dash',
                 Rule::unique('salons', 'slug'),
             ],
-            'subscription_type' => ['required', 'in:1m,3m,6m,12m'],
+            // ⭐ دیگه در فرم نمایش داده نمی‌شه (۲۰۲۶-۰۹-۲۳) — فقط hidden، از ?plan= صفحه‌ی فروش؛
+            // خالی/نامعتبر نباید ثبت‌نام رو رد کنه، پس nullable و در سرویس پیش‌فرض ۱m.
+            'subscription_type' => ['nullable', 'in:1m,3m,6m,12m'],
             'owner_name' => ['required', 'string', 'max:255'],
             'owner_phone' => [
                 'required', 'string', 'regex:/^09[0-9]{9}$/',

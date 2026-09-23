@@ -196,4 +196,29 @@ class SalonSignupTest extends TestCase
             ->assertOk()
             ->assertJson(['available' => false, 'reason' => 'invalid']);
     }
+
+    public function test_signup_form_no_longer_shows_a_plan_picker(): void
+    {
+        // ⭐ تصمیم ابوالفضل (۲۰۲۶-۰۹-۲۳): پلن فقط در صفحه‌ی خرید داخل پنل انتخاب می‌شه — برای
+        // همه، چه دوره‌ی آزمایشی روشن باشه چه نه. فقط یک hidden از ?plan= باقی مونده.
+        foreach ([0, 14] as $trialDays) {
+            config(['billing.trial_days' => $trialDays]);
+
+            $html = $this->get(route('salon-signup.create', ['plan' => '6m']))->assertOk()->getContent();
+
+            $this->assertStringNotContainsString('type="radio" name="subscription_type"', $html);
+            $this->assertStringNotContainsString('پلن اشتراک', $html);
+            $this->assertStringContainsString('<input type="hidden" name="subscription_type" value="6m">', $html);
+        }
+    }
+
+    public function test_signup_without_any_plan_defaults_to_one_month_preselection(): void
+    {
+        $payload = $this->validPayload();
+        unset($payload['subscription_type']);
+
+        $this->post(route('salon-signup.store'), $payload)->assertRedirect(route('salon-signup.verify'));
+
+        $this->assertSame('1m', Salon::where('slug', $payload['slug'])->firstOrFail()->subscription_type);
+    }
 }

@@ -56,7 +56,7 @@ class SalonSignupService
                 'name' => $data['name'],
                 'slug' => $data['slug'],
                 'max_specialists_count' => (int) config('billing.default_max_specialists_count', 3),
-                'subscription_type' => $data['subscription_type'],
+                'subscription_type' => $data['subscription_type'] ?? '1m',
                 'subscription_started_at' => now(),
                 // ⭐ عمدی، نه باگ — به docblock بالای این کلاس نگاه کن. با دوره‌ی آزمایشی روشن
                 // (۲۰۲۶-۰۹-۲۳)، به‌جای «از قبل منقضی»، سالن همین الان تا پایان آزمایشی کاملاً فعاله

@@ -8,7 +8,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -27,7 +27,7 @@
             justify-content: center;
             background-color: var(--rasta-dark);
             color: var(--rasta-cream);
-            font-family: 'Noto Naskh Arabic', 'Vazirmatn', serif;
+            font-family: 'Vazirmatn', Tahoma, sans-serif;
             padding: 2rem 1rem;
         }
         .card {
