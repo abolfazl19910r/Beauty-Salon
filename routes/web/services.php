@@ -18,15 +18,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/services/compare', [ServiceController::class, 'compare'])->name('services.compare');
 
+    // ⭐ ۲۰۲۶-۰۹-۲۴: /search و /top-rated از این گروه (auth) حذف شدن. همین URIها در
+    // routes/web/public-specialists.php هم ثبت بودن و چون این فایل بعد از اون require می‌شه،
+    // نسخه‌ی این‌جا بی‌صدا overwrite می‌کرد و صفحه‌های «عمومی» جستجو و برترین متخصص‌ها عملاً
+    // لاگین لازم داشتن. حالا فقط نسخه‌ی عمومی می‌مونه.
     Route::prefix('specialists')->name('specialists.')->group(function () {
-        Route::get('/search', [SpecialistController::class, 'search'])->name('search');
-
         Route::get('/by-service/{service}', [SpecialistController::class, 'byService'])->name('by-service');
 
         Route::get('/{specialist}/availability', [SpecialistController::class, 'availability'])->name('availability');
         Route::get('/{specialist}/available-slots/{date}', [SpecialistController::class, 'availableSlots'])->name('available-slots');
-
-        Route::get('/top-rated', [SpecialistController::class, 'topRated'])->name('top-rated');
     });
 
     Route::prefix('favorites')->name('favorites.')->group(function () {

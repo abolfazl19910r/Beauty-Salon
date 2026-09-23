@@ -317,6 +317,7 @@
                 <p class="text-[var(--rasta-cream)]/70 max-w-2xl mx-auto leading-8">
                     با تیمی از حرفه‌ای‌ترین متخصصان زیبایی آشنا شوید.
                 </p>
+                <a href="{{ route('specialists.search') }}" class="inline-block mt-4 text-sm underline text-[var(--rasta-gold-light)]">مشاهده‌ی همه‌ی متخصص‌ها</a>
             </div>
 
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">

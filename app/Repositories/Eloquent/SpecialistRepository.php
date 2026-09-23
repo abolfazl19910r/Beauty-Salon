@@ -79,12 +79,14 @@ class SpecialistRepository extends BaseRepository implements SpecialistRepositor
                 $query->whereNotNull('rating');
             }])
             ->withAvg('bookings', 'rating')
-            ->having('bookings_avg_rating', '>=', 4)
-            ->having('rating_count', '>=', 5)
-            ->orderByDesc('bookings_avg_rating')
-            ->orderByDesc('rating_count')
+            ->get()
+            // ⭐ ۲۰۲۶-۰۹-۲۴: فیلتر/مرتب‌سازی در PHP به‌جای HAVING بدون GROUP BY — اون فقط روی MySQL
+            // کار می‌کرد و روی SQLite (تست‌ها) «HAVING clause on a non-aggregate query» می‌داد. تعداد
+            // متخصص‌های هر سالن کمه، پس هزینه‌ای نداره.
+            ->filter(fn ($s) => (float) $s->bookings_avg_rating >= 4 && (int) $s->rating_count >= 5)
+            ->sortBy([['bookings_avg_rating', 'desc'], ['rating_count', 'desc']])
             ->take($limit)
-            ->get();
+            ->values();
     }
 
     public function findByPhone(string $phone): ?Specialist

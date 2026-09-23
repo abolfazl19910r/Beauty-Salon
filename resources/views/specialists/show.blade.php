@@ -15,6 +15,7 @@
 
 @section('content')
     <div class="max-w-4xl mx-auto px-4 py-10" style="color: var(--rasta-cream);">
+        @include('specialists.partials.nav')
         <div class="flex flex-col sm:flex-row items-center gap-6 mb-10 text-center sm:text-right">
             @if ($specialist->photoUrl())
                 <img src="{{ $specialist->photoUrl() }}" alt="{{ $specialist->name }}" class="w-32 h-32 rounded-full object-cover border-2 border-[var(--rasta-gold)]/40">
@@ -25,7 +26,7 @@
             @endif
             <div class="flex-1">
                 <h1 class="text-2xl md:text-3xl font-bold mb-2" style="color: var(--rasta-gold-light);">{{ $specialist->name }}</h1>
-                <p class="text-sm opacity-80 mb-3">متخصص سالن {{ $currentSalonName }}</p>
+                <p class="text-sm opacity-80 mb-3">متخصص {{ $currentSalonName }}</p>
                 <div class="flex flex-wrap justify-center sm:justify-start gap-4 text-sm persian-number">
                     @if ($specialist->rating_count > 0)
                         <span><span style="color: var(--rasta-gold);">★</span> {{ to_persian_num(number_format((float) $specialist->rating_avg, 1)) }} از ۵ ({{ to_persian_num((string) $specialist->rating_count) }} نظر)</span>
@@ -35,7 +36,10 @@
                     @endif
                 </div>
             </div>
-            <a href="{{ route('bookings.create') }}" class="px-6 py-3 rounded-full font-bold" style="background: var(--rasta-gold); color: #1A1410;">رزرو نوبت</a>
+            <div class="flex flex-col gap-2">
+                <a href="{{ route('bookings.create') }}" class="px-6 py-3 rounded-full font-bold text-center" style="background: var(--rasta-gold); color: #1A1410;">رزرو نوبت</a>
+                <a href="{{ route('specialists.availability', $specialist) }}" class="px-6 py-2 rounded-full text-sm text-center" style="border: 1px solid rgba(201,162,75,.4); color: var(--rasta-gold-light);">تقویم نوبت‌های خالی</a>
+            </div>
         </div>
 
         @if ($specialist->services->isNotEmpty())

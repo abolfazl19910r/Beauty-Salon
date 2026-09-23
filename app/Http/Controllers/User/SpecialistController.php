@@ -24,20 +24,25 @@ class SpecialistController extends Controller
     {
         $filters = [];
 
-        if ($request->has('name')) {
-            $filters['name'] = $request->name;
+        if (filled($request->name)) {
+            $filters['name'] = (string) $request->name;
         }
 
-        if ($request->has('service_id')) {
-            $filters['service_id'] = $request->service_id;
+        if (filled($request->service_id)) {
+            $filters['service_id'] = (int) $request->service_id;
         }
 
-        if ($request->has('sort')) {
+        // ⭐ ۲۰۲۶-۰۹-۲۴: قبلاً sort/direction مستقیم به orderBy می‌رفت — ستون یا جهت نامعتبر (مثلاً از
+        // URL دستکاری‌شده) خطای ۵۰۰ SQL/InvalidArgumentException می‌داد. حالا whitelist.
+        if (in_array($request->sort, ['name', 'rating'], true)) {
             $filters['sort'] = $request->sort;
-            $filters['direction'] = $request->direction;
+            $filters['direction'] = in_array($request->direction, ['asc', 'desc'], true)
+                ? $request->direction
+                : ($request->sort === 'rating' ? 'desc' : 'asc');
         }
 
-        $specialists = $this->specialistRepository->searchPaginated($filters, $request->per_page ?? 10);
+        $perPage = min(max((int) ($request->per_page ?? 12), 1), 48);
+        $specialists = $this->specialistRepository->searchPaginated($filters, $perPage)->withQueryString();
 
         if ($request->wantsJson()) {
             return response()->json($specialists);
@@ -46,6 +51,9 @@ class SpecialistController extends Controller
         return view('specialists.search', [
             'specialists' => $specialists,
             'search' => $request->name,
+            'serviceId' => $filters['service_id'] ?? null,
+            'sort' => $filters['sort'] ?? null,
+            'services' => BeautyService::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -89,8 +97,9 @@ class SpecialistController extends Controller
     {
         $this->ensureSalonOwnership($specialist->salon_id);
 
-        $month = $request->month ?? date('m');
-        $year = $request->year ?? date('Y');
+        // ⭐ ۲۰۲۶-۰۹-۲۴: ورودی نامعتبر (month=13، year=abc) قبلاً Carbon::createFromFormat رو می‌شکست.
+        $month = str_pad((string) min(max((int) ($request->month ?? date('m')), 1), 12), 2, '0', STR_PAD_LEFT);
+        $year = (string) min(max((int) ($request->year ?? date('Y')), 2000), 2100);
         $yearMonth = "{$year}-{$month}";
 
         $availabilityData = $specialist->getMonthAvailability($yearMonth);
