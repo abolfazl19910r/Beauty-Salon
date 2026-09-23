@@ -8,7 +8,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;600;700&family=Vazirmatn:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 
     {{--
         ⭐ صفحه‌ی اصلی/فروش دامنه‌ی مرکزی (۲۰۲۶-۰۹-۲۳) — CentralLandingController.
@@ -38,7 +38,7 @@
             --slate-border: #E2E8F0;
             --slate-text: #1E293B;
             --slate-dim: #64748B;
-            --display: 'Reem Kufi', 'Vazirmatn', Tahoma, sans-serif;
+            --display: 'Vazirmatn', Tahoma, sans-serif;
             --body: 'Vazirmatn', Tahoma, sans-serif;
         }
 
@@ -49,7 +49,7 @@
         a { color: inherit; }
         :focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; border-radius: 6px; }
         .wrap { width: min(1160px, 100% - 2.5rem); margin-inline: auto; }
-        h1, h2, h3 { font-family: var(--display); font-weight: 600; line-height: 1.35; margin: 0; }
+        h1, h2, h3 { font-family: var(--display); font-weight: 800; line-height: 1.45; margin: 0; }
         h2 { font-size: clamp(1.6rem, 3vw, 2.3rem); }
         p { margin: 0; }
         .num { font-feature-settings: "tnum"; }
@@ -71,7 +71,7 @@
         .top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-block: .8rem; }
         .brand { display: flex; align-items: center; gap: .6rem; text-decoration: none; }
         .brand-mark { width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--gold); display: grid; place-items: center; font-family: var(--display); color: var(--champagne); font-size: 1.15rem; }
-        .brand-name { font-family: var(--display); font-size: 1.35rem; color: var(--champagne); }
+        .brand-name { font-family: var(--display); font-weight: 800; font-size: 1.3rem; color: var(--champagne); }
         .nav { display: flex; gap: 1.6rem; font-size: .95rem; }
         .nav a { text-decoration: none; color: var(--text-dim); }
         .nav a:hover { color: var(--champagne); }
@@ -107,9 +107,6 @@
         /* phone mockup (customer booking) */
         .phone { width: min(330px, 100%); margin-inline: auto; background: #0e0a08; border-radius: 2.4rem; padding: .7rem; box-shadow: 0 40px 80px -30px rgba(0,0,0,.8), 0 0 0 1px rgba(201,162,75,.25); }
         .phone-screen { background: var(--cream); border-radius: 1.8rem; overflow: hidden; color: var(--ink); font-size: .78rem; }
-        .phone-bar { background: #fff; padding: .6rem .8rem; display: flex; align-items: center; gap: .4rem; border-bottom: 1px solid var(--cream-2); direction: ltr; }
-        .phone-bar .lock { color: #16a34a; font-size: .7rem; }
-        .phone-bar .url { flex: 1; background: var(--cream); border-radius: 999px; padding: .25rem .7rem; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .68rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .phone-hero { margin: .7rem; border-radius: 1rem; padding: 1rem; color: var(--cream); background: linear-gradient(160deg, #6b5033, #2E2117); min-height: 96px; }
         .phone-hero strong { font-family: var(--display); font-size: 1.05rem; display: block; color: var(--champagne); }
         .phone-sec { padding: 0 .7rem .7rem; }
@@ -139,7 +136,7 @@
         .step { padding: 1.8rem 1.4rem 0 1.4rem; border-left: 1px solid #d9cbb0; }
         .step:last-child { border-left: 0; }
         @media (max-width: 860px) { .step { border-left: 0; border-bottom: 1px solid #d9cbb0; padding-bottom: 1.6rem; } }
-        .step b { font-family: var(--display); font-size: 2.4rem; color: var(--gold); display: block; line-height: 1; margin-bottom: .8rem; }
+        .step b { font-family: var(--display); font-weight: 900; font-size: 2.2rem; color: var(--gold); display: block; line-height: 1; margin-bottom: .8rem; }
         .step h3 { font-size: 1.2rem; margin-bottom: .45rem; }
         .step p { color: #5b4a3a; }
 
@@ -326,7 +323,7 @@
                             <span class="fixed">{{ $addressPrefix }}</span>
                         @endif
                         <input id="slug-input" type="text" inputmode="url" autocomplete="off" spellcheck="false"
-                               maxlength="100" placeholder="salon-e-shoma" aria-describedby="slug-status">
+                               maxlength="100" placeholder="almas-beauty" aria-describedby="slug-status">
                         @if ($addressSuffix !== '')
                             <span class="fixed">{{ $addressSuffix }}</span>
                         @endif
@@ -351,10 +348,6 @@
 
             <div class="phone" aria-label="نمونه‌ی صفحه‌ی رزرو مشتری روی موبایل" role="img">
                 <div class="phone-screen">
-                    <div class="phone-bar">
-                        <span class="lock">●</span>
-                        <span class="url" id="phone-url">{{ $addressPrefix }}salon-e-shoma{{ $addressSuffix }}</span>
-                    </div>
                     <div class="phone-hero">
                         <strong>سالن زیبایی شما</strong>
                         نوبت بعدی‌تان را در کمتر از یک دقیقه رزرو کنید
@@ -514,7 +507,7 @@
             </div>
 
             <div class="stage">
-                <div class="browser-bar"><i></i><i></i><i></i><span id="stage-url">{{ $addressPrefix }}salon-e-shoma{{ $addressSuffix }}</span></div>
+                <div class="browser-bar" aria-hidden="true"><i></i><i></i><i></i></div>
 
                 {{-- سایت مشتری --}}
                 <div class="pane" id="pane-customer" role="tabpanel" aria-labelledby="tab-customer">
@@ -790,8 +783,6 @@
         var plans = @json($plans);
         var signupUrl = '{{ route('salon-signup.create') }}';
         var checkUrl = '{{ route('salon-signup.check-slug') }}';
-        var prefix = @json($addressPrefix);
-        var suffix = @json($addressSuffix);
         var faDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
 
         function fa(value) {
@@ -805,8 +796,6 @@
         var input = document.getElementById('slug-input');
         var status = document.getElementById('slug-status');
         var cta = document.getElementById('slug-cta');
-        var phoneUrl = document.getElementById('phone-url');
-        var stageUrl = document.getElementById('stage-url');
         var defaultHint = status.textContent;
         var timer;
 
@@ -816,9 +805,6 @@
         }
 
         function syncLinks(slug) {
-            var shown = prefix + (slug || 'salon-e-shoma') + suffix;
-            phoneUrl.textContent = shown;
-            stageUrl.textContent = shown;
             cta.href = withSlug(signupUrl, slug);
             document.querySelectorAll('[data-plan-link]').forEach(function (a) {
                 var plan = plans.find(function (p) { return p.type === a.getAttribute('data-plan-link'); });
