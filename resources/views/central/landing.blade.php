@@ -673,7 +673,7 @@
                     <p>
                         پنل مدیریت فقط صفحه‌ی خرید اشتراک را نشان می‌دهد و آدرس رزرو سالن برای مشتری‌ها موقتاً بسته می‌شود.
                         هیچ اطلاعاتی پاک نمی‌شود؛ به محض خرید، همه‌چیز همان‌طور که بود ادامه پیدا می‌کند. اگر وسط دوره‌ی رایگان
-                        بخرید، روزهای رایگان باقی‌مانده از بین نمی‌رود و دوره‌ی پولی از بعد از آن شروع می‌شود.
+                        بخرید، اشتراک از همان روز خرید فعال می‌شود و دوره‌ی رایگان همان لحظه به پایان می‌رسد.
                     </p>
                 </details>
                 <details>
@@ -746,7 +746,13 @@
         <button type="button" class="dlg-close" data-close-dialog aria-label="بستن">✕</button>
     </div>
     <div class="dlg-body">
-        <strong>اگر همین امروز ({{ $todayLabel }}) شروع کنید:</strong>
+        <strong>
+            @if ($trialDays > 0)
+                اگر امروز ({{ $todayLabel }}) سالن بسازید و بعد از دوره‌ی رایگان این پلن را بخرید:
+            @else
+                اگر امروز ({{ $todayLabel }}) این پلن را بخرید:
+            @endif
+        </strong>
         <div class="timeline" aria-hidden="true">
             @if ($trialDays > 0)
                 <div class="t-trial">{{ to_persian_num((string) $trialDays) }} روز رایگان</div>
@@ -767,7 +773,7 @@
         <p class="dlg-note" id="dlg-saving"></p>
         <p class="dlg-note">
             همه‌ی امکانات سایت مشتری، پنل متخصص و پنل مدیریت در این پلن فعال است.
-            @if ($trialDays > 0) پرداخت فقط بعد از دوره‌ی رایگان و از داخل پنل سالن انجام می‌شود. @endif
+            @if ($trialDays > 0) خرید از داخل پنل سالن انجام می‌شود؛ اگر زودتر از پایان دوره‌ی رایگان بخرید، اشتراک از همان روز خرید شروع می‌شود. @endif
         </p>
         <div class="dlg-actions">
             <a class="btn btn-ink" id="dlg-cta" href="#">

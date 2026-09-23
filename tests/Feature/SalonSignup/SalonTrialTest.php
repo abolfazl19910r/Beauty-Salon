@@ -96,18 +96,72 @@ class SalonTrialTest extends TestCase
         $this->get('/s/trial-salon')->assertNotFound();
     }
 
-    public function test_first_purchase_during_trial_keeps_remaining_days_and_restores_normal_sms_quota(): void
+    public function test_purchase_during_trial_starts_the_paid_period_immediately_and_ends_the_trial(): void
     {
-        $salon = $this->signUp();
-        $trialEnd = $salon->trial_ends_at->copy();
+        // ⭐ تصمیم ابوالفضل (۲۰۲۶-۰۹-۲۳): اشتراک از روز خرید شروع می‌شه، نه بعد از پایان آزمایشی.
+        $this->signUp();
+        $this->travel(5)->days();
         $superAdmin = User::factory()->admin()->create();
 
-        app(InvoiceService::class)->recordManualRenewal($salon->fresh(), '1m', $superAdmin);
+        $invoice = app(InvoiceService::class)->recordManualRenewal(
+            Salon::where('slug', 'trial-salon')->firstOrFail(), '1m', $superAdmin
+        );
+
+        $salon = Salon::where('slug', 'trial-salon')->firstOrFail();
+        $this->assertEqualsWithDelta(now()->addMonth()->timestamp, $salon->subscription_ends_at->timestamp, 5);
+        $this->assertEqualsWithDelta(now()->timestamp, $invoice->period_start->timestamp, 5);
+        $this->assertEqualsWithDelta(now()->timestamp, $salon->trial_ends_at->timestamp, 5);
+        $this->assertFalse($salon->isOnTrial());
+        $this->assertSame(0, $salon->trialDaysLeft());
+        $this->assertNull($salon->sms_quota_per_month);
+    }
+
+    public function test_online_gateway_purchase_during_trial_also_starts_immediately(): void
+    {
+        $salon = $this->signUp();
+        $this->travel(3)->days();
+
+        $invoice = \App\Models\Invoice::factory()->create([
+            'salon_id' => $salon->id,
+            'subscription_type' => '6m',
+            'status' => 'pending',
+        ]);
+
+        $paid = app(InvoiceService::class)->markPaidFromGateway($invoice, 'REF-TRIAL');
 
         $salon = $salon->fresh();
-        $this->assertNull($salon->sms_quota_per_month);
+        $this->assertEqualsWithDelta(now()->addMonths(6)->timestamp, $salon->subscription_ends_at->timestamp, 5);
+        $this->assertEqualsWithDelta(now()->timestamp, $paid->period_start->timestamp, 5);
         $this->assertFalse($salon->isOnTrial());
-        $this->assertEqualsWithDelta($trialEnd->copy()->addMonth()->timestamp, $salon->subscription_ends_at->timestamp, 5);
+    }
+
+    public function test_purchase_after_trial_expired_also_starts_today(): void
+    {
+        $this->signUp();
+        $this->travel(20)->days();
+        $superAdmin = User::factory()->admin()->create();
+
+        app(InvoiceService::class)->recordManualRenewal(Salon::where('slug', 'trial-salon')->firstOrFail(), '3m', $superAdmin);
+
+        $salon = Salon::where('slug', 'trial-salon')->firstOrFail();
+        $this->assertEqualsWithDelta(now()->addMonths(3)->timestamp, $salon->subscription_ends_at->timestamp, 5);
+    }
+
+    public function test_second_purchase_after_trial_still_stacks_on_the_paid_period(): void
+    {
+        // خارج از آزمایشی، تمدید مثل قبل روی پایان دوره‌ی پولی فعلی سوار می‌شه.
+        $this->signUp();
+        $superAdmin = User::factory()->admin()->create();
+        app(InvoiceService::class)->recordManualRenewal(Salon::where('slug', 'trial-salon')->firstOrFail(), '1m', $superAdmin);
+        $firstEnd = Salon::where('slug', 'trial-salon')->firstOrFail()->subscription_ends_at->copy();
+
+        app(InvoiceService::class)->recordManualRenewal(Salon::where('slug', 'trial-salon')->firstOrFail(), '1m', $superAdmin);
+
+        $this->assertEqualsWithDelta(
+            $firstEnd->addMonth()->timestamp,
+            Salon::where('slug', 'trial-salon')->firstOrFail()->subscription_ends_at->timestamp,
+            5
+        );
     }
 
     public function test_purchase_never_clears_a_manual_super_admin_sms_override(): void

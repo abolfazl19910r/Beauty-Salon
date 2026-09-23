@@ -34,7 +34,7 @@ class InvoiceService
     {
         return DB::transaction(function () use ($invoice, $refId) {
             $salon = $this->salonRepository->lockForUpdateFindOrFail($invoice->salon_id);
-            $periodStart = $salon->subscription_ends_at?->isFuture() ? $salon->subscription_ends_at : now();
+            $periodStart = $salon->subscriptionPeriodBase();
 
             $this->superAdminService->renewSubscription($salon, $invoice->subscription_type);
 
@@ -60,7 +60,7 @@ class InvoiceService
     public function recordManualRenewal(Salon $salon, string $subscriptionType, User $performedBy): Invoice
     {
         return DB::transaction(function () use ($salon, $subscriptionType, $performedBy) {
-            $periodStart = $salon->subscription_ends_at?->isFuture() ? $salon->subscription_ends_at : now();
+            $periodStart = $salon->subscriptionPeriodBase();
 
             $this->superAdminService->renewSubscription($salon, $subscriptionType);
 

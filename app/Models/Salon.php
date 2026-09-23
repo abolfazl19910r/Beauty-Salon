@@ -93,14 +93,31 @@ class Salon extends Model
     /**
      * ⭐ فیچر «دوره‌ی آزمایشی رایگان» (۲۰۲۶-۰۹-۲۳): «هنوز در دوره‌ی آزمایشی» یعنی آزمایشی گرفته،
      * هنوز تموم نشده، و هیچ فاکتور پرداخت‌شده‌ای (آنلاین یا دستی سوپرادمین) نداره. به‌محض اولین
-     * خرید، سالن دیگه «آزمایشی» حساب نمی‌شه — حتی اگه روزهای باقی‌مونده‌ی آزمایشی هنوز جلوی
-     * دوره‌ی خریداری‌شده باشن (SuperAdminService::renewSubscription اون روزها رو دور نمی‌ریزه).
+     * خرید، سالن دیگه «آزمایشی» حساب نمی‌شه (و SuperAdminService::renewSubscription خودِ
+     * trial_ends_at رو هم به لحظه‌ی خرید می‌آره — به subscriptionPeriodBase() نگاه کن).
      */
     public function isOnTrial(): bool
     {
         return $this->trial_ends_at !== null
             && $this->trial_ends_at->isFuture()
             && ! $this->hasPaidInvoice();
+    }
+
+    /**
+     * ⭐ تصمیم ابوالفضل (۲۰۲۶-۰۹-۲۳، جایگزین رفتار قبلی «روزهای آزمایشی سوخت نمی‌شن»): خرید در طول
+     * دوره‌ی آزمایشی، اشتراک پولی رو از همون لحظه‌ی خرید شروع می‌کنه و دوره‌ی آزمایشی همون‌جا تموم
+     * می‌شه. خارج از آزمایشی، رفتار تمدید مثل قبله: اگه اشتراک هنوز فعاله، دوره‌ی جدید بعد از
+     * پایانش شروع می‌شه؛ اگه منقضی شده، از همین حالا. SuperAdminService::renewSubscription و
+     * InvoiceService (period_start فاکتور) هر دو از همین یک متد می‌خونن تا هیچ‌وقت از هم جدا نشن.
+     * باید قبل از علامت‌خوردن فاکتور جاری به‌عنوان paid صدا زده بشه (isOnTrial به hasPaidInvoice وابسته‌ست).
+     */
+    public function subscriptionPeriodBase(): \Illuminate\Support\Carbon
+    {
+        if ($this->isOnTrial()) {
+            return now();
+        }
+
+        return $this->subscription_ends_at?->isFuture() ? $this->subscription_ends_at->copy() : now();
     }
 
     public function trialDaysLeft(): int

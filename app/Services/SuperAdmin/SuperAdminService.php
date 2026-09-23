@@ -122,16 +122,23 @@ class SuperAdminService
      */
     public function renewSubscription(Salon $salon, string $subscriptionType): Salon
     {
-        $base = $salon->subscription_ends_at->isFuture() ? $salon->subscription_ends_at : now();
+        $wasOnTrial = $salon->isOnTrial();
+        $base = $salon->subscriptionPeriodBase();
 
         $attributes = [
             'subscription_type' => $subscriptionType,
             'subscription_ends_at' => $this->addSubscriptionPeriod($base, $subscriptionType),
         ];
 
-        // ⭐ دوره‌ی آزمایشی (۲۰۲۶-۰۹-۲۳): اولین خرید، سهمیه‌ی پیامک کم‌ترِ آزمایشی رو برمی‌داره
-        // (null = برگشت به billing.sms_quota_per_month عادی). روزهای باقی‌مونده‌ی آزمایشی
-        // عمداً دور ریخته نمی‌شن — $base بالا همونه که بود.
+        // ⭐ دوره‌ی آزمایشی (۲۰۲۶-۰۹-۲۳): خرید وسط آزمایشی، آزمایشی رو همین لحظه تموم می‌کنه
+        // (اشتراک پولی از امروز شروع شده — Salon::subscriptionPeriodBase). trial_ends_at پاک
+        // نمی‌شه، فقط به «الان» می‌آد، تا ثبت «این سالن قبلاً آزمایشی گرفته» بمونه.
+        if ($wasOnTrial) {
+            $attributes['trial_ends_at'] = now();
+        }
+
+        // اولین خرید، سهمیه‌ی پیامک کم‌ترِ آزمایشی رو برمی‌داره (null = برگشت به
+        // billing.sms_quota_per_month عادی) — override دستی سوپرادمین هرگز.
         if ($salon->isTrialSmsQuotaInEffect()) {
             $attributes['sms_quota_per_month'] = null;
         }
