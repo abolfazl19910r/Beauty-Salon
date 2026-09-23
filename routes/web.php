@@ -78,15 +78,15 @@ if ($centralDomain) {
     // هیچ سوراخ امنیتی جدیدی باز نمی‌کنه. تصمیم نهایی جدید: SESSION_DOMAIN مشترک
     // (`.yourdomain.com` روی production) در `.env`، نه کد — این فایل خودش تغییری لازم نداشت.
     Route::domain('{salon_slug}.'.$centralDomain)->middleware(['salon.resolve'])->group($tenantRoutes);
-
-    // ⭐ محور «۳»: تصمیم بیزنسی تأییدشده (۲۰۲۶-۰۹-۱۹، به Rasta_unified_prompt.md نگاه کن) —
-    // دامنه‌ی اصلی بدون ساب‌دامین فعلاً فقط یک صفحه‌ی placeholder ساده نشون می‌ده، نه یک
-    // لندینگ کامل (اون با محور «۴. ثبت‌نام عمومی سالن» می‌آد، وقتی واقعاً یک فرم/CTA برای
-    // لینک‌کردن بهش وجود داره).
-    Route::domain($centralDomain)->group(function () {
-        Route::view('/', 'central.placeholder')->name('central.home');
-    });
 }
+
+// ⭐ صفحه‌ی اصلی/فروش دامنه‌ی مرکزی (۲۰۲۶-۰۹-۲۳، تصمیم صریح ابوالفضل — جایگزین placeholder و
+// جایگزین تصمیم قبلی «دامنه‌ی خام بدون CENTRAL_DOMAIN باید ۴۰۴ بده»): کسی که هنوز آدرس هیچ سالنی
+// رو نداره، چه با http://127.0.0.1:8000/ چه با rasta-app.test بیاد، باید صفحه‌ی خرید اشتراک رو
+// ببینه. عمداً بدون Route::domain() و بعد از گروه ساب‌دامین بالا ثبت می‌شه: Laravel روت‌ها رو به
+// ترتیب ثبت match می‌کنه، پس «{slug}.rasta-app.test/» همچنان صفحه‌ی خانه‌ی همون سالنه و فقط هاستی
+// که با هیچ گروه ساب‌دامینی جور نیست (دامنه‌ی مرکزی خام، 127.0.0.1، localhost) به اینجا می‌رسه.
+Route::get('/', \App\Http\Controllers\Central\CentralLandingController::class)->name('central.home');
 
 require __DIR__.'/web/auth.php';
 require __DIR__.'/web/salon-signup.php';

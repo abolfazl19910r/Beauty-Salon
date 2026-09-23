@@ -115,7 +115,7 @@
                     </div>
                     <div class="row">
                         <label for="slug">آدرس اختصاصی سالن (بعداً غیرقابل‌تغییر)</label>
-                        <input type="text" id="slug" name="slug" value="{{ old('slug') }}" required
+                        <input type="text" id="slug" name="slug" value="{{ old('slug', request()->query('slug')) }}" required
                                maxlength="100" pattern="[a-zA-Z0-9_-]+" placeholder="مثلاً: almas-beauty" dir="ltr"
                                autocomplete="off">
                         <div id="slug-status" class="check-status"></div>

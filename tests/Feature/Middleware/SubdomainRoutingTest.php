@@ -78,12 +78,27 @@ class SubdomainRoutingTest extends TestCase
         $response->assertNotFound();
     }
 
-    public function test_bare_central_domain_shows_the_placeholder_page(): void
+    public function test_bare_central_domain_shows_the_landing_page(): void
     {
+        // ⭐ ۲۰۲۶-۰۹-۲۳: placeholder با صفحه‌ی فروش کامل (CentralLandingController) جایگزین شد.
         $response = $this->get('http://'.self::CENTRAL_DOMAIN.'/');
 
         $response->assertOk();
-        $response->assertViewIs('central.placeholder');
+        $response->assertViewIs('central.landing');
+        // پیش‌نمایش آدرس در hero باید شکل ساب‌دامینی داشته باشه، نه /s/{slug}.
+        $response->assertViewHas('addressSuffix', '.'.self::CENTRAL_DOMAIN);
+    }
+
+    public function test_salon_subdomain_root_is_still_the_salon_home_not_the_landing_page(): void
+    {
+        // ⭐ روت / صفحه‌ی فروش عمداً بدون Route::domain و بعد از گروه ساب‌دامین ثبت شده
+        // (routes/web.php)؛ این تست تضمین می‌کنه ترتیب ثبت، صفحه‌ی خانه‌ی سالن رو نمی‌بلعه.
+        Salon::factory()->create(['slug' => 'sobhan-beauty']);
+
+        $response = $this->get('http://sobhan-beauty.'.self::CENTRAL_DOMAIN.'/');
+
+        $response->assertOk();
+        $this->assertNotSame('central.landing', $response->original->name());
     }
 
     public function test_path_based_slash_s_slug_url_still_works_as_a_fallback_when_central_domain_is_set(): void
