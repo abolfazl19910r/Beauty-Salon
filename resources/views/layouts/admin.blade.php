@@ -400,6 +400,27 @@
                 @endpermission
             </div>
 
+            {{-- ⭐ «اطلاعات سالن» (۲۰۲۶-۰۹-۲۴) — فقط برای مالک سالن (همون قاعده‌ی EnsureSalonOwner). --}}
+            @php
+                $sidebarSalon = app(\App\Support\CurrentSalon::class)->get();
+                $sidebarIsOwner = auth()->check() && (auth()->user()->hasRole('super-admin')
+                    || ($sidebarSalon && $sidebarSalon->admins()->wherePivot('user_id', auth()->id())->wherePivot('role', 'owner')->exists()));
+            @endphp
+            @if ($sidebarSalon && $sidebarIsOwner)
+                <div class="py-2">
+                    <h3 class="text-xs font-semibold px-3 mb-2 uppercase tracking-wider" style="color: var(--admin-text-light);">سالن</h3>
+                    <a href="{{ route('admin.salon-settings.edit') }}"
+                       class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.salon-settings.*') ? 'sidebar-active' : '' }}"
+                       style="{{ request()->routeIs('admin.salon-settings.*') ? '' : 'color: var(--admin-text-dim);' }}">
+                        <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                        اطلاعات سالن
+                    </a>
+                </div>
+            @endif
+
             <div class="py-2">
                 <h3 class="text-xs font-semibold px-3 mb-2 uppercase tracking-wider" style="color: var(--admin-text-light);">مدیریت کاربران</h3>
                 @permission('view-users')

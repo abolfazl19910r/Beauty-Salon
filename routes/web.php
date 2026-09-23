@@ -122,6 +122,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_a
     // owner یا staff دیگر) فقط برای owner همون سالن (به EnsureSalonOwner نگاه کن).
     Route::middleware(['salon.owner'])->group(function () {
         require __DIR__.'/admin/users.php';
+        require __DIR__.'/admin/salon-settings.php';
     });
 
     require __DIR__.'/admin/search.php';
