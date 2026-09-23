@@ -2,6 +2,8 @@
 
 namespace App\Services\Payment;
 
+use App\Models\Salon;
+use App\Models\Specialist;
 use App\Models\WithdrawalRequest;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -31,8 +33,6 @@ class ZarinpalPayoutService
 
     public function __construct()
     {
-        $this->merchantId = config('services.zarinpal.merchant_id');
-        $this->apiKey = config('services.zarinpal.payout.api_key');
         $this->sandbox = (bool) config('services.zarinpal.payout.sandbox', true);
 
         $this->apiUrl = $this->sandbox
@@ -40,26 +40,41 @@ class ZarinpalPayoutService
             : config('services.zarinpal.payout.base_url');
     }
 
-    public function isConfigured(): bool
+    /**
+     * ⭐ ۲۰۲۶-۰۹-۲۴ (تصمیم ابوالفضل): تسویه از حساب زرین‌پال **خودِ سالنِ** متخصص (کد پذیرنده +
+     * توکن Payout سالن)، نه از حساب پلتفرم. قبلاً merchant_id و api_key از config پلتفرم خونده می‌شد،
+     * یعنی برداشت متخصص‌های همه‌ی سالن‌ها از موجودی زرین‌پال پلتفرم پرداخت می‌شد.
+     */
+    public function isConfiguredFor(?Salon $salon): bool
     {
-        return filled($this->apiKey) && filled($this->merchantId);
+        return $salon !== null && $salon->canAutoPayout();
     }
 
-    /**
-     * @return array{success: bool, reference_code?: string, payout_id?: string, message?: string, raw?: array}
-     */
+    private function salonOf(WithdrawalRequest $withdrawalRequest): ?Salon
+    {
+        $salonId = Specialist::withoutGlobalScopes()->whereKey($withdrawalRequest->specialist_id)->value('salon_id');
+
+        return $salonId ? Salon::withoutGlobalScopes()->find($salonId) : null;
+    }
+
     public function payout(WithdrawalRequest $withdrawalRequest): array
     {
-        if (! $this->isConfigured()) {
-            Log::error('ZarinpalPayoutService: پیکربندی ناقص — ZARINPAL_PAYOUT_API_KEY تنظیم نشده', [
+        $salon = $this->salonOf($withdrawalRequest);
+
+        if (! $this->isConfiguredFor($salon)) {
+            Log::warning('ZarinpalPayoutService: تسویه‌ی خودکار برای این سالن پیکربندی نشده', [
                 'withdrawal_request_id' => $withdrawalRequest->id,
+                'salon_id' => $salon?->id,
             ]);
 
             return [
                 'success' => false,
-                'message' => 'اتصال به درگاه تسویه پیکربندی نشده است (کلید API موجود نیست).',
+                'message' => 'تسویه‌ی خودکار برای این سالن فعال نیست (کد پذیرنده یا توکن Payout زرین‌پال سالن وارد نشده). درخواست را دستی تسویه کنید.',
             ];
         }
+
+        $this->merchantId = (string) $salon->zarinpal_merchant_id;
+        $this->apiKey = (string) $salon->zarinpal_payout_api_key;
 
         $amount = (int) (($withdrawalRequest->net_amount ?? $withdrawalRequest->amount) * 10);
 

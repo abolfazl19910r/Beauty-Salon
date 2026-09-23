@@ -133,6 +133,8 @@ class AdminWithdrawalControllerTest extends TestCase
     public function test_auto_payout_dispatches_the_payout_job_and_sets_processing(): void
     {
         Queue::fake();
+        // ⭐ ۲۰۲۶-۰۹-۲۴: تسویه‌ی خودکار فقط وقتی سالن کد پذیرنده + توکن Payout خودش رو داره.
+        app(\App\Support\CurrentSalon::class)->get()->update(['zarinpal_payout_api_key' => str_repeat('t', 40)]);
         $withdrawal = WithdrawalRequest::factory()->create(['status' => 'pending']);
 
         $response = $this->actingAs($this->admin)

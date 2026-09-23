@@ -29,6 +29,7 @@ class Salon extends Model
         'working_hours',
         'slug',
         'zarinpal_merchant_id',
+        'zarinpal_payout_api_key',
         'max_specialists_count',
         'module_permissions',
         'sms_quota_per_month',
@@ -40,7 +41,13 @@ class Salon extends Model
         'created_by',
     ];
 
+    /**
+     * ⭐ ۲۰۲۶-۰۹-۲۴: توکن Payout زرین‌پال سالن هیچ‌وقت در JSON/toArray بیرون نمی‌ره.
+     */
+    protected $hidden = ['zarinpal_payout_api_key'];
+
     protected $casts = [
+        'zarinpal_payout_api_key' => 'encrypted',
         'module_permissions' => 'array',
         'working_hours' => 'array',
         'established_year' => 'integer',
@@ -212,5 +219,14 @@ class Salon extends Model
     public function acceptsOnlinePayments(): bool
     {
         return filled($this->zarinpal_merchant_id);
+    }
+
+    /**
+     * ⭐ ۲۰۲۶-۰۹-۲۴: تسویه‌ی خودکار کیف پول متخصص فقط از حساب زرین‌پال خود سالن — هم کد پذیرنده و هم
+     * توکن Payout سالن لازمه. بدون این‌ها مدیر سالن همچنان می‌تونه دستی تسویه و کد پیگیری ثبت کنه.
+     */
+    public function canAutoPayout(): bool
+    {
+        return filled($this->zarinpal_merchant_id) && filled($this->zarinpal_payout_api_key);
     }
 }

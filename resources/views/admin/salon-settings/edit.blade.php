@@ -86,6 +86,23 @@
                            placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
                     <p class="text-xs mt-1" style="color: var(--admin-text-light);">کد ۳۶ کاراکتری که زرین‌پال بعد از تأیید درگاه به شما داده است. خالی کردن این فیلد پرداخت آنلاین را غیرفعال می‌کند.</p>
                 </div>
+
+                {{-- ⭐ توکن Payout زرین‌پال سالن (۲۰۲۶-۰۹-۲۴) — برای تسویه‌ی خودکار کیف پول متخصص‌ها از حساب خود سالن. --}}
+                <div>
+                    <label class="block text-sm mb-1" for="zarinpal_payout_api_key">توکن Payout زرین‌پال (برای تسویه‌ی خودکار متخصص‌ها)</label>
+                    <input id="zarinpal_payout_api_key" name="zarinpal_payout_api_key" type="password" dir="ltr" autocomplete="new-password"
+                           class="{{ $input }}" style="{{ $inputStyle }}"
+                           placeholder="{{ $salon->zarinpal_payout_api_key ? '•••••••• (ذخیره شده — برای تغییر، توکن جدید را وارد کنید)' : 'توکن دسترسی با مجوز Payout از پنل زرین‌پال' }}">
+                    <p class="text-xs mt-1" style="color: var(--admin-text-light);">
+                        اختیاری. با این توکن، دکمه‌ی «تسویه‌ی آنلاین خودکار» درخواست‌های برداشت متخصص‌ها را از موجودی زرین‌پال همین سالن
+                        به شبای متخصص واریز می‌کند. بدون آن، تسویه را دستی انجام دهید و کد پیگیری را ثبت کنید. توکن رمزشده ذخیره می‌شود و دوباره نمایش داده نمی‌شود.
+                    </p>
+                    @if ($salon->zarinpal_payout_api_key)
+                        <label class="flex items-center gap-2 mt-2 text-sm">
+                            <input type="checkbox" name="remove_zarinpal_payout_api_key" value="1"> حذف توکن فعلی (غیرفعال کردن تسویه‌ی خودکار)
+                        </label>
+                    @endif
+                </div>
             </section>
 
             <section class="space-y-4">

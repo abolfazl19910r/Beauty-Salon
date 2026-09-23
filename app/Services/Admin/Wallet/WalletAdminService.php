@@ -157,6 +157,16 @@ class WalletAdminService
 
     public function autoPayout(WithdrawalRequest $withdrawalRequest): array
     {
+        // ⭐ ۲۰۲۶-۰۹-۲۴: تسویه‌ی خودکار فقط از حساب زرین‌پال خود سالن؛ اگه سالن پیکربندی نشده، قبل از
+        // processing کردن درخواست رد می‌شه (وگرنه درخواست بی‌دلیل به صف می‌رفت و بعد fail می‌شد).
+        $salon = app(\App\Support\CurrentSalon::class)->get();
+        if (! $salon || ! $salon->canAutoPayout()) {
+            return [
+                'success' => false,
+                'message' => 'تسویه‌ی خودکار برای این سالن فعال نیست. کد پذیرنده و توکن Payout زرین‌پال سالن را در «اطلاعات سالن» وارد کنید، یا درخواست را دستی تسویه کنید.',
+            ];
+        }
+
         $dispatched = false;
 
         DB::transaction(function () use ($withdrawalRequest, &$dispatched) {

@@ -37,6 +37,13 @@ class AdminSalonSettingsController extends Controller
 
         // ⭐ ۲۰۲۶-۰۹-۲۴: کد پذیرنده‌ی زرین‌پال خود سالن — فقط وقتی فیلد واقعاً در فرم بوده (خالی = پرداخت
         // آنلاین غیرفعال). درخواستی که اصلاً این فیلد رو نداره نباید بی‌صدا درگاه سالن رو پاک کنه.
+        // ⭐ ۲۰۲۶-۰۹-۲۴: توکن Payout هیچ‌وقت در فرم نمایش داده نمی‌شه؛ فیلد خالی یعنی «بدون تغییر».
+        if ($request->boolean('remove_zarinpal_payout_api_key')) {
+            $salon->update(['zarinpal_payout_api_key' => null]);
+        } elseif (filled($request->validated('zarinpal_payout_api_key'))) {
+            $salon->update(['zarinpal_payout_api_key' => trim($request->validated('zarinpal_payout_api_key'))]);
+        }
+
         if ($request->exists('zarinpal_merchant_id')) {
             $salon->update(['zarinpal_merchant_id' => \App\Support\ZarinpalMerchant::normalize($request->validated('zarinpal_merchant_id'))]);
         }

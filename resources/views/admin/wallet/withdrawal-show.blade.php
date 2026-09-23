@@ -181,9 +181,12 @@
                     <div class="rounded-xl p-5 mt-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                         <h2 class="text-sm font-bold mb-3 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">یا تسویه‌ی آنلاین خودکار</h2>
                         <p class="text-xs mb-3" style="color:var(--admin-text-dim);">
-                            به‌جای وارد کردن دستی کد پیگیری، می‌توانید تسویه را مستقیم از طریق درگاه Payout زرین‌پال انجام دهید.
+                            به‌جای وارد کردن دستی کد پیگیری، می‌توانید تسویه را مستقیم از موجودی زرین‌پال همین سالن انجام دهید.
                             این عملیات در پس‌زمینه پردازش می‌شود و نتیجه (موفق/ناموفق) پس از چند ثانیه در همین صفحه قابل مشاهده است.
                         </p>
+                        {{-- ⭐ ۲۰۲۶-۰۹-۲۴: تسویه‌ی خودکار فقط از حساب زرین‌پال خود سالن. --}}
+                        @php $payoutSalon = app(\App\Support\CurrentSalon::class)->get(); @endphp
+                        @if ($payoutSalon && $payoutSalon->canAutoPayout())
                         <form action="{{ route('admin.wallet.withdrawals.auto-payout', $withdrawalRequest) }}" method="POST"
                               data-confirm-action data-confirm-message="آیا از تسویه‌ی آنلاین خودکار این درخواست اطمینان دارید؟">
                             @csrf
@@ -198,6 +201,12 @@
                                 تسویه‌ی آنلاین خودکار (زرین‌پال)
                             </button>
                         </form>
+                        @else
+                            <div class="rounded-lg p-3 text-xs leading-6" style="background:var(--admin-bg); color:var(--admin-text-dim);">
+                                تسویه‌ی خودکار برای این سالن فعال نیست. برای فعال‌سازی، مالک سالن باید کد پذیرنده و توکن Payout زرین‌پال سالن را در
+                                «اطلاعات سالن» وارد کند. تا آن زمان، مبلغ را دستی واریز کنید و کد پیگیری را در فرم بالا ثبت کنید.
+                            </div>
+                        @endif
                     </div>
                 @elseif($withdrawalRequest->status === 'processing')
                     <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
