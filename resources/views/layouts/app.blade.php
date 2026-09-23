@@ -378,25 +378,28 @@
                     تماس با ما
                 </h3>
                 <div class="text-[var(--rasta-cream)]/60 text-sm space-y-2">
-                    <p class="flex items-center">
-                        <svg class="w-4 h-4 ml-2 text-[var(--rasta-gold)]/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        آدرس: تهران، خیابان ولیعصر
-                    </p>
-                    <p class="flex items-center persian-number">
-                        <svg class="w-4 h-4 ml-2 text-[var(--rasta-gold)]/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                        </svg>
-                        تلفن: 021-12345678
-                    </p>
-                    <p class="flex items-center">
-                        <svg class="w-4 h-4 ml-2 text-[var(--rasta-gold)]/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                        ایمیل: info@rasta-salon.ir
-                    </p>
+                    {{-- ⭐ ۲۰۲۶-۰۹-۲۳: از اطلاعات همین سالن (ViewComposer)، نه متن ثابت مشترک. ایمیل
+                         ساختگی مشترک (info@rasta-salon.ir) حذف شد چون مال هیچ سالنی نبود. --}}
+                    @if ($currentSalonAddress)
+                        <p class="flex items-start">
+                            <svg class="w-4 h-4 ml-2 mt-1 shrink-0 text-[var(--rasta-gold)]/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span>آدرس: {{ $currentSalonAddress }}</span>
+                        </p>
+                    @endif
+                    @if ($currentSalonPhone)
+                        <p class="flex items-center persian-number">
+                            <svg class="w-4 h-4 ml-2 text-[var(--rasta-gold)]/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            تلفن: <a href="tel:{{ $currentSalonPhone }}" class="mr-1 hover:text-[var(--rasta-gold-light)]" dir="ltr">{{ $currentSalonPhone }}</a>
+                        </p>
+                    @endif
+                    @unless ($currentSalonAddress || $currentSalonPhone)
+                        <p>اطلاعات تماس سالن به‌زودی اضافه می‌شود.</p>
+                    @endunless
                 </div>
             </div>
 
@@ -408,9 +411,11 @@
                     ساعات کاری
                 </h3>
                 <div class="text-[var(--rasta-cream)]/60 text-sm space-y-2 persian-number">
-                    <p>شنبه تا چهارشنبه: ۹ صبح تا ۹ شب</p>
-                    <p>پنجشنبه: ۹ صبح تا ۵ عصر</p>
-                    <p>جمعه: تعطیل</p>
+                    @forelse ($currentSalonHours as $line)
+                        <p>{{ $line }}</p>
+                    @empty
+                        <p>برای هماهنگی با سالن تماس بگیرید.</p>
+                    @endforelse
                 </div>
             </div>
         </div>

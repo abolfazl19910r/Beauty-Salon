@@ -91,7 +91,9 @@ class SalonSignupController extends Controller
 
     public function store(StoreSalonSignupRequest $request): RedirectResponse
     {
-        $result = $this->salonSignupService->register($request->validated());
+        $result = $this->salonSignupService->register(
+            $request->validated() + ['contact' => $request->salonContactAttributes()]
+        );
 
         $this->verificationService->sendCode($result['owner']);
 

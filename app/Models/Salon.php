@@ -22,6 +22,10 @@ class Salon extends Model
         'name',
         'tagline',
         'bio',
+        'address',
+        'phone',
+        'established_year',
+        'working_hours',
         'slug',
         'zarinpal_merchant_id',
         'max_specialists_count',
@@ -37,6 +41,8 @@ class Salon extends Model
 
     protected $casts = [
         'module_permissions' => 'array',
+        'working_hours' => 'array',
+        'established_year' => 'integer',
         'subscription_started_at' => 'datetime',
         'subscription_ends_at' => 'datetime',
         'trial_ends_at' => 'datetime',
@@ -170,5 +176,25 @@ class Salon extends Model
     public function legacyPublicUrl(): string
     {
         return url('/s/'.$this->slug);
+    }
+
+    /**
+     * ⭐ اطلاعات تماس و فعالیت سالن (۲۰۲۶-۰۹-۲۳): «سال تجربه» از سال شروع فعالیت محاسبه می‌شه
+     * (نه یک عدد ثابت)، تا هر سال خودکار به‌روز بمونه. null = سالن هنوز واردش نکرده.
+     */
+    public function experienceYears(): ?int
+    {
+        return $this->established_year === null ? null : max(0, now()->year - $this->established_year);
+    }
+
+    public static function establishedYearFromExperience(int $years): int
+    {
+        return now()->year - max(0, $years);
+    }
+
+    /** خطوط نمایشی ساعات کاری (خالی = هنوز وارد نشده) — به SalonWorkingHours::lines نگاه کن. */
+    public function workingHoursLines(): array
+    {
+        return \App\Support\SalonWorkingHours::lines($this->working_hours);
     }
 }

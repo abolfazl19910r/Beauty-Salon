@@ -38,6 +38,8 @@
                 </div>
             </div>
 
+            @include('superadmin.salons.partials.contact-fields', ['salon' => null])
+
             <div>
                 <h3 class="font-bold mb-3" style="color: var(--sa-accent);">اشتراک و سقف</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

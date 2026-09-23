@@ -22,6 +22,12 @@ class DatabaseSeeder extends Seeder
             ['slug' => 'rasta'],
             [
                 'name' => 'سالن زیبایی راستا',
+                // ⭐ ۲۰۲۶-۰۹-۲۳: همون مقادیری که قبلاً در فوتر layouts/app هاردکد بود، حالا به‌عنوان
+                // داده‌ی واقعی همین سالن دمو (هر سالن دیگه مقادیر خودش رو داره).
+                'address' => 'تهران، خیابان ولیعصر',
+                'phone' => '02112345678',
+                'established_year' => now()->year - 9,
+                'working_hours' => \App\Support\SalonWorkingHours::defaults(),
                 'max_specialists_count' => 100,
                 'module_permissions' => null, // null = همه‌ی ماژول‌ها
                 'subscription_type' => '12m',

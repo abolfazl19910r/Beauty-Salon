@@ -34,6 +34,8 @@
                 <textarea name="bio" rows="4" class="sa-input" maxlength="2000">{{ old('bio', $salon->bio) }}</textarea>
             </div>
 
+            @include('superadmin.salons.partials.contact-fields', ['salon' => $salon])
+
             <div>
                 <label class="sa-label">
                     سقف تعداد متخصص

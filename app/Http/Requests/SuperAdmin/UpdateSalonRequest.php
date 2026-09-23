@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\SuperAdmin;
 
+use App\Http\Requests\Concerns\ValidatesSalonContactDetails;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -11,14 +12,27 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class UpdateSalonRequest extends FormRequest
 {
+    use ValidatesSalonContactDetails;
+
     public function authorize(): bool
     {
         return auth()->check() && auth()->user()->hasRole('super-admin');
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->prepareSalonContactInput();
+    }
+
+    public function after(): array
+    {
+        return [fn ($validator) => $this->validateSalonWorkingHours($validator)];
+    }
+
     public function rules(): array
     {
-        return [
+        // ⭐ ۲۰۲۶-۰۹-۲۳: اطلاعات تماس/فعالیت سالن اینجا اختیاریه (سالن‌های موجود هنوز ندارن).
+        return $this->salonContactRules(required: false) + [
             'name' => ['required', 'string', 'max:255'],
             // ⭐ پیگیری «محور ۳» (۲۰۲۶-۰۹-۲۰) — متن‌های بازاریابی per-salon، به‌جای ثابت/generic.
             'tagline' => ['nullable', 'string', 'max:255'],
@@ -31,5 +45,10 @@ class UpdateSalonRequest extends FormRequest
             // سراسری پلتفرم fallback می‌کند (به resolveMerchantId() در PaymentService نگاه کن).
             'zarinpal_merchant_id' => ['nullable', 'string', 'max:255'],
         ];
+    }
+
+    public function messages(): array
+    {
+        return $this->salonContactMessages();
     }
 }

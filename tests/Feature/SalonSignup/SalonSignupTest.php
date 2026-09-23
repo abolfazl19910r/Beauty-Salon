@@ -5,6 +5,7 @@ namespace Tests\Feature\SalonSignup;
 use App\Models\Salon;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\SalonContactPayload;
 use Tests\TestCase;
 
 /**
@@ -17,6 +18,7 @@ use Tests\TestCase;
 class SalonSignupTest extends TestCase
 {
     use RefreshDatabase;
+    use SalonContactPayload;
 
     // ⭐ دوره‌ی آزمایشی (۲۰۲۶-۰۹-۲۳): این فایل عمداً مسیر «بدون آزمایشی» (SUBSCRIPTION_TRIAL_DAYS=0،
     // اول پرداخت بعد دسترسی) رو مستند نگه می‌داره؛ مسیر آزمایشی در SalonTrialTest جدا تست می‌شه.
@@ -37,7 +39,7 @@ class SalonSignupTest extends TestCase
             'owner_phone' => '09121234567',
             'owner_password' => 'Str0ng!Passw0rd',
             'owner_password_confirmation' => 'Str0ng!Passw0rd',
-        ], $overrides);
+        ], $this->salonContactPayload(), $overrides);
     }
 
     public function test_registration_form_is_publicly_accessible(): void

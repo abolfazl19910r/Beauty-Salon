@@ -73,7 +73,7 @@ class SuperAdminController extends Controller
     public function store(StoreSalonRequest $request): RedirectResponse
     {
         $salon = $this->superAdminService->createSalonWithAdmin(
-            $request->validated(),
+            $request->validated() + ['contact' => $request->salonContactAttributes()],
             auth()->user(),
         );
 
@@ -89,7 +89,7 @@ class SuperAdminController extends Controller
     public function update(UpdateSalonRequest $request, Salon $salon): RedirectResponse
     {
         try {
-            $this->superAdminService->updateSalon($salon, $request->validated());
+            $this->superAdminService->updateSalon($salon, $request->validated() + ['contact' => $request->salonContactAttributes()]);
         } catch (\InvalidArgumentException $e) {
             return back()->withInput()->withErrors(['max_specialists_count' => $e->getMessage()]);
         }

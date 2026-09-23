@@ -46,7 +46,7 @@
         legend { color: var(--rasta-gold); font-weight: bold; margin-bottom: .75rem; padding: 0; }
         label { display: block; font-size: .875rem; margin-bottom: .35rem; opacity: .9; }
         .row { margin-bottom: 1rem; }
-        input[type=text], input[type=password], input[type=tel] {
+        input[type=text], input[type=password], input[type=tel], input[type=number], input[type=time], textarea {
             width: 100%;
             background-color: rgba(248, 243, 233, 0.04);
             border: 1px solid rgba(201, 162, 75, 0.25);
@@ -56,6 +56,17 @@
             font-size: .95rem;
         }
         input:focus { outline: none; border-color: var(--rasta-gold); box-shadow: 0 0 0 3px rgba(201, 162, 75, 0.2); }
+        textarea { resize: vertical; min-height: 4.5rem; font-family: inherit; line-height: 1.8; }
+        .hint { font-size: .78rem; opacity: .6; margin-top: .3rem; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+        @media (max-width: 520px) { .two { grid-template-columns: 1fr; } }
+        .hours { display: grid; gap: .45rem; }
+        .hours-row { display: grid; grid-template-columns: 5.5rem auto 1fr 1fr; gap: .5rem; align-items: center; }
+        .hours-row .day { font-size: .9rem; }
+        .hours-row .closed { display: flex; align-items: center; gap: .3rem; font-size: .8rem; margin: 0; opacity: .85; white-space: nowrap; }
+        .hours-row input[type=time] { padding: .4rem .5rem; direction: ltr; }
+        .hours-row.is-closed input[type=time] { opacity: .35; }
+        @media (max-width: 520px) { .hours-row { grid-template-columns: 4.5rem auto 1fr 1fr; gap: .35rem; } }
         .err { color: #ff8a8a; font-size: .8rem; margin-top: .3rem; }
         .check-status { font-size: .78rem; margin-top: .35rem; min-height: 1em; }
         .check-status.ok { color: #7ee0a6; }
@@ -116,6 +127,65 @@
                                maxlength="100" pattern="[a-zA-Z0-9_-]+" placeholder="مثلاً: almas-beauty" dir="ltr"
                                autocomplete="off">
                         <div id="slug-status" class="check-status"></div>
+                    </div>
+                </fieldset>
+
+                {{-- ⭐ ۲۰۲۶-۰۹-۲۳: اطلاعات تماس و فعالیت همین سالن — بعد از ساخت، همون‌جاهایی که قبلاً متن
+                     ثابت مشترک بین همه‌ی سالن‌ها بود (فوتر سایت مشتری، آمار صفحه‌ی اصلی، صفحه‌ی تشکر
+                     بعد از ثبت نظر) با همین مقادیر پر می‌شن. --}}
+                <fieldset>
+                    <legend>اطلاعات تماس و فعالیت سالن</legend>
+                    <div class="row">
+                        <label for="salon_address">آدرس سالن</label>
+                        <textarea id="salon_address" name="salon_address" required minlength="10" maxlength="500"
+                                  placeholder="مثلاً: تهران، خیابان ولیعصر، بالاتر از میدان ونک، پلاک ۱۲، طبقه‌ی دوم">{{ old('salon_address') }}</textarea>
+                    </div>
+                    <div class="two">
+                        <div class="row">
+                            <label for="salon_phone">شماره تماس سالن</label>
+                            <input type="tel" id="salon_phone" name="salon_phone" value="{{ old('salon_phone') }}" required
+                                   maxlength="15" dir="ltr" placeholder="02112345678">
+                            <div class="hint">ثابت یا موبایل؛ روی سایت سالن به مشتری‌ها نمایش داده می‌شود.</div>
+                        </div>
+                        <div class="row">
+                            <label for="experience_years">سابقه‌ی کاری سالن (سال)</label>
+                            <input type="number" id="experience_years" name="experience_years" value="{{ old('experience_years') }}"
+                                   required min="0" max="80" step="1" dir="ltr" placeholder="مثلاً ۵">
+                            <div class="hint">هر سال به‌طور خودکار یکی اضافه می‌شود.</div>
+                        </div>
+                    </div>
+
+                    @php
+                        $hoursInput = old('working_hours');
+                        $hoursDefaults = \App\Support\SalonWorkingHours::defaults();
+                    @endphp
+                    <div class="row" style="margin-bottom:0;">
+                        <label>ساعات کاری سالن</label>
+                        <div class="hours">
+                            @foreach (\App\Support\SalonWorkingHours::WEEK_ORDER as $day)
+                                @php
+                                    $default = $hoursDefaults[$day];
+                                    $row = is_array($hoursInput) ? ($hoursInput[$day] ?? []) : [
+                                        'closed' => $default === null,
+                                        'open' => $default['open'] ?? '09:00',
+                                        'close' => $default['close'] ?? '21:00',
+                                    ];
+                                    $isClosed = ! empty($row['closed']);
+                                @endphp
+                                <div class="hours-row {{ $isClosed ? 'is-closed' : '' }}" data-hours-row>
+                                    <span class="day">{{ \App\Support\SalonWorkingHours::DAY_NAMES[$day] }}</span>
+                                    <label class="closed">
+                                        <input type="checkbox" name="working_hours[{{ $day }}][closed]" value="1" data-closed-toggle @checked($isClosed)>
+                                        تعطیل
+                                    </label>
+                                    <input type="time" name="working_hours[{{ $day }}][open]" value="{{ $row['open'] ?? '09:00' }}"
+                                           aria-label="ساعت شروع {{ \App\Support\SalonWorkingHours::DAY_NAMES[$day] }}" @disabled($isClosed)>
+                                    <input type="time" name="working_hours[{{ $day }}][close]" value="{{ $row['close'] ?? '21:00' }}"
+                                           aria-label="ساعت پایان {{ \App\Support\SalonWorkingHours::DAY_NAMES[$day] }}" @disabled($isClosed)>
+                                </div>
+                            @endforeach
+                        </div>
+                        <div class="hint">فقط برای نمایش به مشتری‌هاست؛ ساعت‌های قابل رزرو را برنامه‌ی کاری هر متخصص تعیین می‌کند.</div>
                     </div>
                 </fieldset>
 
@@ -220,6 +290,15 @@
                 taken: '✗ ادمینی با این شماره قبلاً ثبت‌نام کرده است',
             });
         })();
+    </script>
+    <script>
+        document.querySelectorAll('[data-closed-toggle]').forEach(function (box) {
+            box.addEventListener('change', function () {
+                var row = box.closest('[data-hours-row]');
+                row.classList.toggle('is-closed', box.checked);
+                row.querySelectorAll('input[type=time]').forEach(function (input) { input.disabled = box.checked; });
+            });
+        });
     </script>
 </body>
 </html>

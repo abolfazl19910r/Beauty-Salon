@@ -46,6 +46,7 @@ class SuperAdminService
                 'subscription_ends_at' => $this->computeSubscriptionEnd($data['subscription_type']),
                 'is_suspended' => false,
                 'created_by' => $createdBy->id,
+                ...($data['contact'] ?? []),
             ]);
 
             $admin = $this->adminUserService->create([
@@ -110,6 +111,8 @@ class SuperAdminService
             'zarinpal_merchant_id' => array_key_exists('zarinpal_merchant_id', $data)
                 ? ($data['zarinpal_merchant_id'] ?: null)
                 : $salon->zarinpal_merchant_id,
+            // ⭐ ۲۰۲۶-۰۹-۲۳: فقط کلیدهایی که واقعاً در فرم بودن (salonContactAttributes)؛ خالی = پاک.
+            ...($data['contact'] ?? []),
         ]);
 
         return $salon;

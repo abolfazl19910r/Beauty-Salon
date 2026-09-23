@@ -2,11 +2,14 @@
 
 namespace App\Http\Requests\SuperAdmin;
 
+use App\Http\Requests\Concerns\ValidatesSalonContactDetails;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class StoreSalonRequest extends FormRequest
 {
+    use ValidatesSalonContactDetails;
+
     public function authorize(): bool
     {
         // ⭐ Redundant with the 'super_admin' route middleware (EnsureSuperAdmin) by design —
@@ -14,9 +17,20 @@ class StoreSalonRequest extends FormRequest
         return auth()->check() && auth()->user()->hasRole('super-admin');
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->prepareSalonContactInput();
+    }
+
+    public function after(): array
+    {
+        return [fn ($validator) => $this->validateSalonWorkingHours($validator)];
+    }
+
     public function rules(): array
     {
-        return [
+        // ⭐ ۲۰۲۶-۰۹-۲۳: اطلاعات تماس/فعالیت سالن اینجا اختیاریه (سالن‌های موجود هنوز ندارن).
+        return $this->salonContactRules(required: false) + [
             'name' => ['required', 'string', 'max:255'],
             // ⭐ پیگیری «محور ۳» (۲۰۲۶-۰۹-۲۰) — اختیاری همینجا هم؛ می‌تونه بعداً از صفحه‌ی ویرایش
             // هم پر/عوض بشه، دقیقاً مثل zarinpal_merchant_id.
@@ -44,7 +58,7 @@ class StoreSalonRequest extends FormRequest
 
     public function messages(): array
     {
-        return [
+        return $this->salonContactMessages() + [
             'slug.unique' => 'این آدرس قبلاً برای سالن دیگری استفاده شده است.',
             'slug.alpha_dash' => 'آدرس فقط می‌تواند شامل حروف انگلیسی، عدد، خط تیره و زیرخط باشد.',
             'admin_phone.regex' => 'شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد.',

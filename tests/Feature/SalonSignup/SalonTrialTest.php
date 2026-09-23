@@ -6,6 +6,7 @@ use App\Models\Salon;
 use App\Models\User;
 use App\Services\Payment\InvoiceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\SalonContactPayload;
 use Tests\TestCase;
 
 /**
@@ -17,6 +18,7 @@ use Tests\TestCase;
 class SalonTrialTest extends TestCase
 {
     use RefreshDatabase;
+    use SalonContactPayload;
 
     protected function setUp(): void
     {
@@ -35,7 +37,7 @@ class SalonTrialTest extends TestCase
             'owner_phone' => '09125556677',
             'owner_password' => 'Str0ng!Passw0rd',
             'owner_password_confirmation' => 'Str0ng!Passw0rd',
-        ], $overrides))->assertRedirect(route('salon-signup.verify'));
+        ], $this->salonContactPayload(), $overrides))->assertRedirect(route('salon-signup.verify'));
 
         return Salon::where('slug', 'trial-salon')->firstOrFail();
     }

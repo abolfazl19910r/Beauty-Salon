@@ -196,7 +196,7 @@
              3) Statistics section / Trust counter
         ========================================================= --}}
         <section id="stats" class="bg-[var(--rasta-brown)] py-14 fade-up">
-            <div class="max-w-6xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div class="max-w-6xl mx-auto px-4 grid grid-cols-2 {{ $currentSalonExperienceYears !== null ? 'md:grid-cols-4' : 'md:grid-cols-3' }} gap-8 text-center">
                 <div>
                     <p class="counter font-serif-fa text-3xl md:text-5xl font-bold text-[var(--rasta-gold-light)]" data-target="{{ $stats['customers'] ?? 4500 }}">0</p>
                     <p class="mt-2 text-sm md:text-base text-[var(--rasta-cream)]/70">مشتری راضی</p>
@@ -205,10 +205,13 @@
                     <p class="counter font-serif-fa text-3xl md:text-5xl font-bold text-[var(--rasta-gold-light)]" data-target="{{ $stats['specialists'] ?? 18 }}">0</p>
                     <p class="mt-2 text-sm md:text-base text-[var(--rasta-cream)]/70">متخصص حرفه‌ای</p>
                 </div>
-                <div>
-                    <p class="counter font-serif-fa text-3xl md:text-5xl font-bold text-[var(--rasta-gold-light)]" data-target="{{ $stats['years'] ?? 9 }}">0</p>
-                    <p class="mt-2 text-sm md:text-base text-[var(--rasta-cream)]/70">سال تجربه</p>
-                </div>
+                {{-- ⭐ ۲۰۲۶-۰۹-۲۳: سابقه‌ی واقعی همین سالن (salons.established_year)، نه عدد ثابت ۹. --}}
+                @if ($currentSalonExperienceYears !== null)
+                    <div>
+                        <p class="counter font-serif-fa text-3xl md:text-5xl font-bold text-[var(--rasta-gold-light)]" data-target="{{ $currentSalonExperienceYears }}">0</p>
+                        <p class="mt-2 text-sm md:text-base text-[var(--rasta-cream)]/70">سال تجربه</p>
+                    </div>
+                @endif
                 <div>
                     <p class="counter font-serif-fa text-3xl md:text-5xl font-bold text-[var(--rasta-gold-light)]" data-target="{{ $stats['rating'] ?? 4.9 }}" data-decimal="{{ isset($stats['rating']) ? 1 : 1 }}">0</p>
                     <p class="mt-2 text-sm md:text-base text-[var(--rasta-cream)]/70">امتیاز کاربران</p>

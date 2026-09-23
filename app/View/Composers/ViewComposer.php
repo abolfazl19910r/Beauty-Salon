@@ -56,5 +56,22 @@ class ViewComposer
                     ?: "سالن زیبایی {$currentSalonName} فضایی آرام و لوکس را برای مراقبت کامل از مو، پوست و زیبایی شما فراهم کرده است. تیم ما متشکل از متخصصین باتجربه و دارای گواهینامه‌های بین‌المللی است."
             );
         }
+
+        // ⭐ اطلاعات تماس و فعالیت سالن (۲۰۲۶-۰۹-۲۳) — همون الگوی name/tagline/bio، با یک فرق عمدی:
+        // اینجا هیچ متن پیش‌فرض ساختگی‌ای برنمی‌گرده. قبلاً فوتر همه‌ی سالن‌ها یک آدرس/تلفن/ساعت
+        // هاردکد مشترک نشون می‌داد، که برای هر سالنی جز یکی غلط بود؛ حالا اگه سالن مقداری نداشته
+        // باشه (null / آرایه‌ی خالی)، ویو همون خط رو اصلاً نمایش نمی‌ده.
+        $salon = $this->currentSalon->get();
+
+        foreach ([
+            'currentSalonAddress' => $salon?->address,
+            'currentSalonPhone' => $salon?->phone,
+            'currentSalonExperienceYears' => $salon?->experienceYears(),
+            'currentSalonHours' => $salon?->workingHoursLines() ?? [],
+        ] as $key => $value) {
+            if (! isset($view->{$key})) {
+                $view->with($key, $value);
+            }
+        }
     }
 }

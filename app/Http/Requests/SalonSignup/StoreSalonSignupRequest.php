@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\SalonSignup;
 
+use App\Http\Requests\Concerns\ValidatesSalonContactDetails;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
@@ -16,14 +17,21 @@ use Illuminate\Validation\Rules;
  */
 class StoreSalonSignupRequest extends FormRequest
 {
+    use ValidatesSalonContactDetails;
+
     public function authorize(): bool
     {
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->prepareSalonContactInput();
+    }
+
     public function rules(): array
     {
-        return [
+        return $this->salonContactRules(required: true) + [
             'name' => ['required', 'string', 'max:255'],
             'slug' => [
                 'required', 'string', 'max:100', 'alpha_dash',
@@ -43,9 +51,18 @@ class StoreSalonSignupRequest extends FormRequest
         ];
     }
 
+    /**
+     * ⭐ ۲۰۲۶-۰۹-۲۳: آدرس/تلفن/سابقه/ساعات کاری سالن همون لحظه‌ی ساخت گرفته می‌شن تا سایت
+     * سالن از روز اول اطلاعات واقعی خودش رو نشون بده (به ValidatesSalonContactDetails نگاه کن).
+     */
+    public function after(): array
+    {
+        return [fn ($validator) => $this->validateSalonWorkingHours($validator)];
+    }
+
     public function messages(): array
     {
-        return [
+        return $this->salonContactMessages() + [
             'slug.unique' => 'این آدرس قبلاً برای سالن دیگری استفاده شده است.',
             'slug.alpha_dash' => 'آدرس فقط می‌تواند شامل حروف انگلیسی، عدد، خط تیره و زیرخط باشد.',
             'owner_phone.regex' => 'شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد.',

@@ -66,6 +66,9 @@ class SalonSignupService
                 'sms_quota_per_month' => $trialDays > 0 ? (int) config('billing.trial_sms_quota') : null,
                 'is_suspended' => false,
                 'created_by' => null,
+                // ⭐ ۲۰۲۶-۰۹-۲۳: آدرس/تلفن/سال شروع فعالیت/ساعات کاری — از
+                // StoreSalonSignupRequest::salonContactAttributes().
+                ...($data['contact'] ?? []),
             ]);
 
             $owner = $this->userRepository->create([

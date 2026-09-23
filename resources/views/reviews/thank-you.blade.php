@@ -50,9 +50,12 @@
             </div>
         </div>
 
-        <div class="mt-8 text-[#F8F3E9]/40 text-sm">
-            <p>آیا سوالی دارید؟ با پشتیبانی ما تماس بگیرید:</p>
-            <p class="font-bold text-[#F8F3E9]/60 mt-1 persian-number" dir="ltr">021-12345678</p>
-        </div>
+        {{-- ⭐ ۲۰۲۶-۰۹-۲۳: تلفن همین سالن، نه یک شماره‌ی ثابت مشترک. --}}
+        @if ($currentSalonPhone)
+            <div class="mt-8 text-[#F8F3E9]/40 text-sm">
+                <p>آیا سوالی دارید؟ با سالن تماس بگیرید:</p>
+                <a href="tel:{{ $currentSalonPhone }}" class="block font-bold text-[#F8F3E9]/60 mt-1 persian-number" dir="ltr">{{ $currentSalonPhone }}</a>
+            </div>
+        @endif
     </div>
 @endsection
