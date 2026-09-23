@@ -7,12 +7,16 @@
 
 ## GitHub Personal Access Token (به‌روزرسانی‌شده)
 ```
-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
+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
 ```
 این توکن برای خواندن فایل‌ها مستقیم از GitHub API (`raw.githubusercontent.com` و `api.github.com`) استفاده می‌شه تا نیازی به آپلود دستی فایل توسط کاربر نباشه. هر بار با هدر `Authorization: token <TOKEN>` در curl استفاده بشه.
 
 ## برنچ‌های پروژه
 `main`, `develop`, `V3` — برنچ `V2` در ۲۰۲۶-۰۹-۲۰ با یک merge commit (`40c58eb`) داخل `develop` ادغام و از ریموت حذف شد. ⚠️ **به‌روزرسانی ۲۰۲۶-۰۹-۲۱**: ابوالفضل تأیید کرد `V3` الان به‌روزترین برنچ کاره، نه `develop` — از این به بعد همیشه فایل‌ها باید از `V3` خونده بشن و هر پچ/کامیت جدید هم باید بر پایه‌ی `V3` باشه (نه `develop`). قبل از هر کاری چک کن `V3` هنوز جدیدترینه یا نه (ممکنه دوباره عوض بشه).
+
+⭐ **قانون ۲۰۲۶-۰۹-۲۳**: پیام commit ها و توضیحات بدنه‌ی پچ‌ها (subject + body) **فقط انگلیسی** نوشته می‌شن. کامنت‌های داخل کد طبق روال پروژه فارسی می‌مونن مگر ابوالفضل خلافش رو بگه.
+
+⭐ **به‌روزرسانی ۲۰۲۶-۰۹-۲۳**: ابوالفضل اعلام کرد به‌روزترین برنچ‌ها `develop` و `V4-merge-migration` هستن (هر دو روی `afb3764`). مرجع خواندن کد از این به بعد `develop` است (نه `V3`؛ بند ۲ روال دسترسی پایین با این جمله جایگزین می‌شه).
 
 ---
 
@@ -6156,3 +6160,167 @@ consumer با نام‌گذاری متفاوت. چون `LoyaltySettingRepository
 
 ### قدم‌های باز
 هیچ.
+
+---
+
+## نشست ۲۰۲۶-۰۹-۲۳ — صفحه‌ی فروش دامنه‌ی مرکزی + دوره‌ی آزمایشی + نمایش آدرس سالن به مالک
+
+### درخواست ابوالفضل
+کسی که هنوز آدرس هیچ سالنی رو نداره، با `http://127.0.0.1:8000/` یا `rasta-app.test` باید به یک
+صفحه‌ی اصلی کامل برسه که همه‌ی امکانات رو (بر اساس پلن‌ها) با پیش‌نمایش توضیح بده و بشه ازش اشتراک
+گرفت؛ بعد از خرید، مالک سالن باید آدرس اختصاصی سالنش رو بگیره تا به مشتری‌هاش بده. سؤال جانبی:
+چند روز دوره‌ی آزمایشی؟ → پیشنهاد **۱۴ روز** (یک چرخه‌ی کامل مشتری هفتگی/دوهفتگی؛ ۷ کم، ۳۰ هزینه‌ی
+پیامک و تأخیر تصمیم)، ابوالفضل با «ادامه بده» تأیید کرد. قابل تغییر با `SUBSCRIPTION_TRIAL_DAYS`
+(۰ = خاموش).
+
+### یافته‌ها (قبل از کد)
+- دامنه‌ی خام بدون `CENTRAL_DOMAIN` عمداً ۴۰۴ می‌داد (`BareDomainWithoutCentralDomainTest`) و با
+  `CENTRAL_DOMAIN` فقط یک placeholder بود — درخواست امروز همون «تصمیم صریح» لازم برای عوض‌کردنشه.
+- **آدرس عمومی سالن هیچ‌جای پنل به مالکش نشون داده نمی‌شد** — نه داشبورد، نه billing، نه پیام
+  پرداخت موفق. یعنی سالن self-service عملاً لینکی برای مشتری‌ها دریافت نمی‌کرد.
+- «پلن‌ها» فقط در مدت/قیمت فرق دارن؛ `module_permissions` فقط ذخیره می‌شه و هیچ‌جا اعمال نمی‌شه.
+  صفحه‌ی فروش عمداً امکانات متفاوت وعده نمی‌ده. اگه روزی پلن‌های پایه/حرفه‌ای لازم شد، اول باید
+  اعمال `module_permissions` ساخته بشه.
+- ⚠️ `.env` لوکال ابوالفضل هنوز قیمت‌های placeholder قدیمی رو داره
+  (`SUBSCRIPTION_PRICE_1M=490000` …)، که config محاسبه‌شده (۷۲۰٬۰۰۰ …) رو override می‌کنه —
+  صفحه‌ی فروش و پنل خرید هر دو همین اعداد رو نشون می‌دن. باید دستی اصلاح/حذف بشه.
+- ⚠️ **باگ از‌قبل‌موجود (رفع‌شده در ادامه‌ی همین نشست، پچ ۰۰۰۵)**: با `CENTRAL_DOMAIN` پر،
+  `php artisan route:cache` روی `develop` (`afb3764`) با
+  `LogicException: Another route has already been assigned name [home]` شکست می‌خورد — چون
+  `$tenantRoutes` دو بار (prefix و domain) با نام‌های یکسان ثبت می‌شد. `docker/entrypoint.sh` روی
+  production از `route:cache` استفاده می‌کنه، پس deploy ساب‌دامینی بالا نمیومد.
+
+### سه پچ (به ترتیب)
+1. `feat(onboarding): free trial period for self-service salon signup`
+   - migration جدید `2026_09_23_000001_add_trial_ends_at_to_salons_table` (ستون nullable؛ بدون
+     enum/وضعیت جدید — دسترسی آزمایشی کاملاً با همون `subscription_ends_at` کار می‌کنه)
+   - `config/billing.php`: `trial_days` (پیش‌فرض ۱۴) و `trial_sms_quota` (پیش‌فرض ۳۰۰، از طریق
+     override موجود `sms_quota_per_month`)
+   - `Salon::isOnTrial()`/`trialDaysLeft()`/`hasPaidInvoice()` (با `withoutGlobalScope('salon')`،
+     چون scope سراسری Invoice بر پایه‌ی CurrentSalon اینجا فقط جواب غلط می‌ده)/`isTrialSmsQuotaInEffect()`
+   - `SuperAdminService::renewSubscription` (تنها نقطه‌ی تمدید، آنلاین و دستی): اولین خرید سقف
+     پیامک آزمایشی رو null می‌کنه — override دستی سوپرادمین (هر عددی غیر از عدد آزمایشی) هرگز —
+     و روزهای باقی‌مونده‌ی آزمایشی رو دور نمی‌ریزه
+   - مالک سالن آزمایشی بعد از OTP به `admin.home` می‌ره نه billing؛ فرم ثبت‌نام `?plan=` رو پیش‌انتخاب می‌کنه
+   - بعد از پایان آزمایشی همون `EnsureAdminSalonActive`/`ResolveSalonFromRoute` بدون کد جدید می‌بندن
+2. `feat(admin): show the salon's public booking URL to its owner`
+   - `Salon::publicUrl()` = `route('home', ['salon_slug' => slug])` (با CENTRAL_DOMAIN ساب‌دامین،
+     وگرنه `/s/{slug}`) و `legacyPublicUrl()` = `/s/{slug}` روی هاست جاری
+   - partial جدید `admin.partials.salon-public-link` (لینک + کپی با fallback برای http غیرامن +
+     مشاهده + وضعیت فعال/آزمایشی/غیرفعال) روی داشبورد و billing؛ پیام پرداخت موفق هم آدرس رو داره
+   - billing: وضعیت «دوره‌ی آزمایشی رایگان»، نام فارسی نوع اشتراک، پیش‌انتخاب پلن فعلی سالن
+3. `feat(central): full sales landing page on the bare central domain`
+   - `Route::get('/')->name('central.home')` بدون `Route::domain` و **بعد از** گروه ساب‌دامین —
+     ترتیب ثبت تضمین می‌کنه `{slug}.central/` همچنان خانه‌ی سالنه (تست شده)
+   - `CentralLandingController` (invokable) — همه‌ی اعداد از config/billing.php، تاریخ‌ها شمسی
+   - `central/landing.blade.php` (self-contained): انتخاب آدرس با چک زنده (`check-slug`)، ماکت
+     موبایل، روند سه‌مرحله‌ای، امکانات سه پنل، پیش‌نمایش تب‌دار سه پنل با tokenهای واقعی،
+     کارت پلن‌ها + dialog «پیش‌نمایش پلن»، سؤالات رایج؛ فرم ثبت‌نام `?slug=` رو پیش‌پر می‌کنه
+   - `central/placeholder.blade.php` حذف شد
+
+### تست و وریفای
+- baseline روی `develop` (`afb3764`): ۱۱۰۲ passed / ۱ skipped (یادآوری: بدون `npm run build`،
+  ۱۷۸ تست فقط به‌خاطر نبودن manifest ویت fail می‌شن — خطای محیطی، نه کد)
+- بعد از سه پچ، روی کلون مستقل با `git am`: **۱۱۲۱ passed / ۱ skipped / صفر fail**؛
+  `phpunit.subdomain.xml`: **۱۰ passed**
+- تست‌های جدید: `SalonTrialTest` (۸)، `SalonPublicLinkTest` (۶)، `CentralLandingPageTest` (۵)،
+  ۲ تست در `SubdomainRoutingTest`؛ `BareDomainWithoutCentralDomainTest` بازنویسی و
+  `SalonSignupTest` روی `trial_days=0` پین شد (مسیر «بدون آزمایشی» مستند بمونه)
+- دستی (بدون route:cache): `127.0.0.1` و `rasta-app.test` → صفحه‌ی فروش، `almas.rasta-app.test`
+  → خانه‌ی سالن، `/s/almas` → ۲۰۰؛ اسکرین‌شات دسکتاپ/موبایل/dialog بررسی شد
+- Laravel Pint: `PASS` روی ۱۵ فایل PHP تغییریافته
+
+### ادامه‌ی نشست (همون روز) — درخواست ابوالفضل: «۱. .env رو به‌روز کن ۲. باگ رو رفع کن»
+
+**۱. `.env` لوکال** (فایل gitignore‌شده؛ به‌صورت فایل جدا تحویل داده شد، نه پچ): فقط بلوک قیمت
+عوض شد (`490000/1350000/2500000/4500000` → `720000/1990000/3670000/6610000`، همون مقادیر
+config و `.env.example`) و چهار کلید جاافتاده اضافه شد: `SMS_QUOTA_PER_MONTH=1500`،
+`DEFAULT_MAX_SPECIALISTS_COUNT=3`، `SUBSCRIPTION_TRIAL_DAYS=14`، `TRIAL_SMS_QUOTA=300`. بقیه‌ی
+فایل (DB، کلیدها، زرین‌پال، کاوه‌نگار، `CENTRAL_DOMAIN`، `SESSION_DOMAIN`) بایت‌به‌بایت دست‌نخورده.
+بعد از جایگزینی: `php artisan config:clear`. حالا مجموعه‌ی کلیدهای `.env` با `.env.example` یکیه.
+
+**۲. پچ ۰۰۰۵ — `fix(routing): make route:cache work when CENTRAL_DOMAIN is set`**
+- `routes/web.php`: گروه `/s/{slug}` فقط وقتی `CENTRAL_DOMAIN` پره `->name('legacy.')` می‌گیره.
+  نام‌های بی‌پیشوند دقیقاً مثل قبل متعلق به نسخه‌ی ساب‌دامینی‌ان (رفتار «آخرین ثبت برنده‌ست»،
+  حالا صریح)؛ بدون `CENTRAL_DOMAIN` هیچ تغییری نیست. URI/middleware/controller دست‌نخورده.
+- جایگزین رد‌شده: حذف گروه `/s/{slug}` در حالت ساب‌دامینی و ریدایرکت ۳۰۱ به ساب‌دامین — تمیزتره
+  ولی تصمیم تأییدشده‌ی ۲۰۲۶-۰۹-۱۹ («لینک قدیمی زنده بمونه، نه فقط ریدایرکت») رو عوض می‌کرد.
+- اثر جانبی بی‌خطر: روی مسیر قدیمی `request()->routeIs('dashboard')` (رنگ فعال منوی
+  `layouts/navigation`) false می‌شه؛ `SecurityMiddleware` هم نام `legacy.*` لاگ می‌کنه.
+- ⚠️ **قانون جدید**: هر کدی که از این به بعد `routeIs('xxx')` روی routeهای تننت می‌نویسه، باید
+  `routeIs('xxx', 'legacy.xxx')` بنویسه اگه باید روی مسیر `/s/{slug}` هم درست کار کنه.
+- ⚠️ بعد از هر تغییر `CENTRAL_DOMAIN`: `php artisan route:clear` (کش routes تصمیم سطح-boot رو منجمد می‌کنه).
+- تست: `SubdomainRoutingTest` +۲ (compile کل RouteCollection — همون مسیر route:cache؛ **بدون رفع
+  با همون LogicException fail می‌شه، وریفای شد**) و `BareDomainWithoutCentralDomainTest` +۱.
+- `WILDCARD_SUBDOMAIN_DEPLOYMENT.md` هم به‌روز شد.
+- وریفای: سوییت کامل **۱۱۲۲ passed / ۱ skipped**، ساب‌دامین **۱۲ passed**، Pint PASS؛ دستی با
+  `route:cache` واقعی: دامنه‌ی خام و 127.0.0.1 → صفحه‌ی فروش، `almas.rasta-app.test` → خانه‌ی
+  سالن، `/s/almas` و زیرمسیرهاش → ۲۰۰، ساب‌دامین ناموجود → ۴۰۴.
+
+### دور سوم همین نشست (۲۰۲۶-۰۹-۲۳) — بازخورد ابوالفضل روی صفحه‌ی فروش و فرم ساخت سالن
+
+⚠️ **سری پچ بازسازی شد**: هیچ‌کدوم از پچ‌های قبلی این نشست هنوز روی `develop` اعمال نشده بود، پس کل
+سری با پیام‌های انگلیسی از نو ساخته شد و دو commit جدای «docs: update prompt» قبلی حذف و در یک
+commit نهایی docs ادغام شدن. سری نهایی روی `afb3764` (به ترتیب):
+1. `feat(onboarding): free trial period for self-service salon signup`
+2. `feat(admin): show the salon's public booking URL to its owner`
+3. `feat(central): full sales landing page on the bare central domain`
+4. `fix(routing): make route:cache work when CENTRAL_DOMAIN is set`
+5. `style(central): single typeface on the landing page and drop the mock salon URLs`
+6. `chore(billing): raise subscription prices, one-month plan starts at 1,500,000 toman`
+7. `feat(billing): a purchase during the free trial starts the paid plan immediately`
+8. `feat(signup): remove the plan picker from the create-salon form`
+9. `feat(salon): per-salon address, phone, experience and working hours`
+10. `feat(signup): let a new salon skip the free trial and pay right away`
+11. `docs: update Rasta unified prompt (...)`
+
+**تصمیم‌ها و تغییرات این دور:**
+- **فونت (۱):** صفحه‌ی فروش فقط Vazirmatn (Reem Kufi حذف شد، خواندن رو سخت می‌کرد)؛ سلسله‌مراتب با
+  اندازه/وزن. صفحه‌های ثبت‌نام و تایید OTP هم از Noto Naskh Arabic به Vazirmatn رفتن.
+- **آدرس‌های نمایشی (۲):** آدرس ساختگی `salon-e-shoma...` از ماکت موبایل و نوار مرورگر پیش‌نمایش حذف شد.
+- **قیمت‌ها (۳):** یک‌ماهه ۱٬۵۰۰٬۰۰۰ / سه‌ماهه ۴٬۱۵۰٬۰۰۰ / شش‌ماهه ۷٬۶۵۰٬۰۰۰ / یک‌ساله ۱۳٬۸۵۰٬۰۰۰
+  تومان (همون نردبان تخفیف ≈۸٪/۱۵٪/۲۳٪). عدد ۷۲۰ هزار قبلی «کف هزینه» بود، نه قیمت فروش.
+  `.env` لوکال ابوالفضل (فایل `rasta.env` تحویلی) هم با همین اعداد.
+- **خرید وسط آزمایشی (۴) — جایگزین رفتار قبلی:** اشتراک پولی از **همون لحظه‌ی خرید** شروع می‌شه و
+  `trial_ends_at` به «الان» می‌آد (پاک نمی‌شه، تا سابقه‌ی «آزمایشی گرفته» بمونه). منبع واحد:
+  `Salon::subscriptionPeriodBase()` — هم `SuperAdminService::renewSubscription` هم `period_start`
+  فاکتور در `InvoiceService` از همین می‌خونن. خارج از آزمایشی، تمدید مثل قبل روی دوره‌ی جاری سوار می‌شه.
+- **حذف انتخاب پلن از فرم ساخت سالن (۵) — برای همه:** پلن فقط در `admin.billing.index` انتخاب می‌شه.
+  `?plan=` صفحه‌ی فروش فقط hidden می‌مونه و در `salons.subscription_type` ذخیره می‌شه (پیش‌انتخاب
+  صفحه‌ی خرید). `subscription_type` در request حالا nullable، پیش‌فرض `1m`.
+- **اطلاعات تماس و فعالیت هر سالن (۶ و ۷):** migration `2026_09_23_000002`: `salons.address`،
+  `salons.phone`، `salons.established_year` (سال شروع فعالیت — فرم «سابقه به سال» می‌گیره تا
+  `experienceYears()` هر سال خودکار زیاد بشه)، `salons.working_hours` (JSON با کلید روز Carbon،
+  ۰=یکشنبه، هم‌قرارداد `specialist_schedules.day_of_week`؛ `{open,close}` یا null=تعطیل).
+  - `App\Support\SalonWorkingHours` (defaults / fromInput / errors / lines با ادغام روزهای یکسان)
+  - `App\Http\Requests\Concerns\ValidatesSalonContactDetails`: در ثبت‌نام عمومی **اجباری**، در فرم
+    سوپرادمین **اختیاری**؛ ارقام فارسی و خط‌تیره در تلفن/سابقه پذیرفته می‌شن.
+  - نمایش (ViewComposer: `currentSalonAddress/Phone/ExperienceYears/Hours`): فوتر `layouts/app`،
+    شمارنده‌ی «سال تجربه» صفحه‌ی اصلی، تلفن `reviews/thank-you`. **برخلاف tagline/bio هیچ متن
+    ساختگی پیش‌فرضی نداره** — خالی = اون خط نمایش داده نمی‌شه. ایمیل ساختگی مشترک فوتر حذف شد.
+  - فرم سوپرادمین: partial `superadmin/salons/partials/contact-fields`؛ ساعات کاری در fieldset
+    غیرفعال مگر تیک «ثبت ساعات کاری» — ذخیره‌ی فرم ویرایش یک سالن قدیمی هیچ‌وقت ساعات پیش‌فرض
+    رو بی‌صدا روش نمی‌نویسه.
+  - ⚠️ ساعات کاری سالن **فقط نمایشی‌ان**؛ زمان‌های قابل‌رزرو همچنان از برنامه‌ی هر متخصص میان.
+  - seeder: سالن دمو `rasta` همون مقادیری رو گرفت که قبلاً در فوتر هاردکد بود.
+- **خرید فوری بدون دوره‌ی رایگان (سؤال جدید ابوالفضل):** کارت هر پلن در صفحه‌ی فروش: دکمه‌ی اصلی
+  «شروع ۱۴ روز رایگان» + لینک «خرید فوری، بدون دوره‌ی رایگان» → `?plan=..&intent=buy`. فرم ساخت
+  سالن در این حالت فقط خلاصه‌ی فقط‌خواندنی پلن + قیمت + «تغییر پلن» نشون می‌ده. بعد از تایید OTP
+  و لاگین، مستقیم به زرین‌پال — **همون مسیر پرداخت صفحه‌ی خرید پنل**
+  (`createPendingOnlinePurchase` + `SubscriptionPaymentService::createPayment`، مرچنت سراسری،
+  callback همون `admin.billing.callback`)؛ مسیر پرداخت دومی ساخته نشد. پرداخت موفق → اشتراک از همون
+  لحظه (هیچ روز آزمایشی مصرف نمی‌شه). درگاه ناموفق/نیمه‌کاره → سالن از بین نمی‌ره، فاکتور failed،
+  صاحب سالن با پیام «دوباره پرداخت کنید» به صفحه‌ی خرید می‌ره و تا اون موقع آزمایشی‌اش فعاله. با
+  `SUBSCRIPTION_TRIAL_DAYS=0` کارت‌ها فقط دکمه‌ی «خرید و پرداخت آنلاین» (همین مسیر) دارن.
+
+**تست و وریفای این دور:** SalonTrialTest (بازنویسی مورد ۴)، SalonContactDetailsTest (۱۱)،
+SalonBuyNowTest (۸)، payload مشترک `Tests\Concerns\SalonContactPayload`. سوییت کامل
+**۱۱۴۶ passed / ۱ skipped**، ساب‌دامین **۱۲ passed**، Pint PASS؛ اسکرین‌شات کارت‌های پلن و فرم
+ساخت سالن در حالت خرید فوری بررسی شد.
+
+### قدم‌های باز
+- صفحه‌ی ویرایش «اطلاعات سالن» برای خودِ مدیر سالن در پنل ادمین (فعلاً مثل name فقط سوپرادمین
+  می‌تونه ویرایش کنه) — پیشنهاد، تصمیم با ابوالفضل
+- (اختیاری) پیامک خوش‌آمد به مالک سالن با آدرس سالن بعد از ثبت‌نام/اولین خرید — هزینه‌ی پیامک داره
+- `php artisan migrate` + `php artisan config:clear` + `php artisan route:clear` روی سیستم لوکال
+
