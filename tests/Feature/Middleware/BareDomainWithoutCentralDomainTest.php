@@ -34,4 +34,16 @@ class BareDomainWithoutCentralDomainTest extends TestCase
     {
         $this->get('/s/rasta')->assertOk();
     }
+
+    public function test_without_central_domain_routes_compile_and_tenant_names_have_no_legacy_prefix(): void
+    {
+        // ⭐ پیشوند «legacy.» (رفع باگ route:cache، ۲۰۲۶-۰۹-۲۳) فقط وقتی CENTRAL_DOMAIN پره اضافه
+        // می‌شه؛ در حالت پیش‌فرض /s/{slug} تنها ثبت این نام‌هاست و باید همون نام‌های قدیمی بمونن.
+        $routes = app('router')->getRoutes();
+
+        $this->assertIsArray($routes->compile());
+        $this->assertNotNull($routes->getByName('home'));
+        $this->assertNull($routes->getByName('legacy.home'));
+        $this->assertStringEndsWith('/s/rasta', route('home', ['salon_slug' => 'rasta']));
+    }
 }

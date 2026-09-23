@@ -57,12 +57,23 @@ $tenantRoutes = function () {
 
 // ⭐ همیشه ثبت می‌شه — بدون هیچ قیدی روی central_domain — دقیقاً همون چیزی که فاز ۱ همیشه
 // بوده. لینک‌های قدیمی /s/{slug} (مثلاً از پیامک‌های ارسال‌شده‌ی قبلی) هیچ‌وقت نباید بشکنن.
-Route::prefix('s/{salon_slug}')->middleware(['salon.resolve'])->group($tenantRoutes);
+// ⭐ رفع باگ route:cache (۲۰۲۶-۰۹-۲۳): وقتی CENTRAL_DOMAIN پره، $tenantRoutes دو بار ثبت می‌شه
+// (همین prefix و گروه ساب‌دامین پایین) — قبلاً با نام‌های یکسان. Laravel موقع اجرا فقط آخرین ثبت هر
+// نام رو نگه می‌داشت (پس route('home') به ساب‌دامین اشاره می‌کرد)، ولی `php artisan route:cache`
+// (که docker/entrypoint.sh روی production اجرا می‌کنه) نام تکراری رو اصلاً قبول نمی‌کنه و با
+// «Another route has already been assigned name [home]» می‌شکست. حالا فقط در همین حالت، نسخه‌ی
+// قدیمی /s/{slug} نام‌هاش رو با پیشوند «legacy.» می‌گیره: نام‌ها یکتا می‌شن و route('home') و بقیه
+// دقیقاً مثل قبل به نسخه‌ی ساب‌دامینی اشاره می‌کنن (همون رفتار «آخرین ثبت برنده‌ست»، این بار صریح).
+// بدون CENTRAL_DOMAIN هیچ پیشوندی اضافه نمی‌شه، چون اون موقع این تنها ثبت این نام‌هاست.
+// اثر جانبی شناخته‌شده و بی‌خطر: روی مسیر قدیمی، request()->routeIs('dashboard') (فقط برای رنگ
+// «فعال» منوی layouts/navigation) false می‌شه چون اسم route جاری legacy.dashboard است.
+Route::prefix('s/{salon_slug}')->middleware(['salon.resolve'])->name($centralDomain ? 'legacy.' : '')->group($tenantRoutes);
 
 if ($centralDomain) {
-    // ⭐ عمداً بعد از گروه prefix بالا ثبت می‌شه: Laravel برای هر نام route فقط آخرین ثبت را
-    // در جدول نام‌ها نگه می‌داره (Illuminate\Routing\RouteCollection::addToNamedRoutes) —
-    // یعنی از این خط به بعد، route('services.index') و مشابه‌ها یک URL مطلق ساب‌دامینی
+    // ⭐ نام‌های بی‌پیشوند متعلق به این گروه ساب‌دامینی‌ان (نسخه‌ی /s/{slug} بالا با «legacy.»
+    // پیشوند می‌خوره — رفع باگ route:cache، ۲۰۲۶-۰۹-۲۳؛ قبلاً این نتیجه به‌طور ضمنی از «Laravel فقط
+    // آخرین ثبت هر نام رو نگه می‌داره» میومد، که route:cache قبولش نمی‌کرد) —
+    // یعنی route('services.index') و مشابه‌ها یک URL مطلق ساب‌دامینی
     // می‌سازن (نه /s/{slug})، حتی برای کاربری که از طریق همون لینک قدیمی وارد شده. نتیجه: لینک
     // قدیمی خودش هنوز کار می‌کنه (۴۰۴ نمی‌ده — تست شده در SubdomainRoutingTest)، ولی هر لینک
     // داخلی جدیدی که از همون صفحه ساخته می‌شه به‌طور طبیعی به شکل مدرن (ساب‌دامین) اشاره می‌کنه.

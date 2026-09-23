@@ -139,4 +139,30 @@ class SubdomainRoutingTest extends TestCase
         $this->assertStringStartsWith('http://sobhan-beauty.'.self::CENTRAL_DOMAIN, $salon->publicUrl());
         $this->assertStringEndsWith('/s/sobhan-beauty', $salon->legacyPublicUrl());
     }
+
+    public function test_routes_compile_for_route_cache_without_duplicate_names(): void
+    {
+        // ⭐ رگرسیون‌گارد باگ route:cache (۲۰۲۶-۰۹-۲۳): با CENTRAL_DOMAIN پر، $tenantRoutes دو بار
+        // ثبت می‌شه؛ قبلاً با نام‌های یکسان، و `php artisan route:cache` (docker/entrypoint.sh روی
+        // production) با LogicException «Another route has already been assigned name [home]»
+        // می‌شکست. compile() همون مسیر کدیه که route:cache قبل از نوشتن فایل کش اجرا می‌کنه
+        // (RouteCollection::toSymfonyRouteCollection، همون‌جایی که نام تکراری رد می‌شه).
+        $compiled = app('router')->getRoutes()->compile();
+
+        $this->assertArrayHasKey('compiled', $compiled);
+        $this->assertArrayHasKey('attributes', $compiled);
+    }
+
+    public function test_route_names_keep_pointing_at_the_subdomain_and_legacy_copy_is_prefixed(): void
+    {
+        // ⭐ رفع بالا نباید رفتار route() رو عوض کنه: نام‌های بی‌پیشوند همچنان نسخه‌ی ساب‌دامینی‌ان
+        // (همون چیزی که قبلاً «آخرین ثبت برنده‌ست» به‌طور ضمنی می‌داد)، و نسخه‌ی /s/{slug} فقط با
+        // پیشوند legacy. قابل‌آدرس‌دهیه.
+        $this->assertStringStartsWith(
+            'http://sobhan-beauty.'.self::CENTRAL_DOMAIN,
+            route('home', ['salon_slug' => 'sobhan-beauty'])
+        );
+        $this->assertStringEndsWith('/s/sobhan-beauty', route('legacy.home', ['salon_slug' => 'sobhan-beauty']));
+        $this->assertStringEndsWith('/s/sobhan-beauty/services', route('legacy.services.index', ['salon_slug' => 'sobhan-beauty']));
+    }
 }
