@@ -6413,8 +6413,33 @@ SalonBuyNowTest (۸)، payload مشترک `Tests\Concerns\SalonContactPayload`. 
 SpecialistPhotoTest (۷)، SalonMerchantIdTest (۹)، PublicSpecialistProfileTest (۳). سوییت کامل
 **۱۲۰۳ passed / ۱ skipped**، Pint PASS.
 
+### ۲۰۲۶-۰۹-۲۴ (ادامه ۲) — صفحه‌های عمومی متخصص‌ها + بررسی «چند درگاه پرداخت»
+
+**تصمیم ابوالفضل:** چهار route عمومی بدون view باید صفحه‌ی واقعی بگیرن (نه حذف).
+
+**پچ `feat(public): specialist search, top-rated, by-service and availability pages`:**
+- viewهای `specialists.search` / `top-rated` / `by-service` / `availability` + partialهای `card` و `nav`؛
+  لینک «متخصص‌ها» در هدر سایت مشتری و «مشاهده‌ی همه» در صفحه‌ی اصلی.
+- ⚠️ `/specialists/search` و `/top-rated` دو بار ثبت بودن (public-specialists.php و گروه auth در
+  services.php) → دومی overwrite می‌کرد و صفحه‌های «عمومی» لاگین می‌خواستن. از services.php حذف شدن.
+- sort/direction جستجو whitelist شد (قبلاً مستقیم به orderBy → ۵۰۰)؛ month/year تقویم clamp شد.
+- `SpecialistRepository::getTopRated`: HAVING بدون GROUP BY فقط روی MySQL کار می‌کرد (SQLite خطا) → فیلتر در PHP.
+- تست: `PublicSpecialistPagesTest` (۱۰). سوییت کامل **۱۲۱۳ passed / ۱ skipped**.
+
+**سؤال ابوالفضل: چند درگاه پرداخت؟** — تحلیل کامل در همین نشست داده شد و سؤال‌هایی پرسیده شد؛
+**هیچ کدی نوشته نشده، منتظر تصمیم.** یافته‌های کلیدی کد فعلی:
+- زرین‌پال در سه سرویس جدا هاردکد شده: `PaymentService` (پیش‌پرداخت نوبت، باقی‌مانده، شارژ کیف پول
+  مشتری — مرچنت سالن)، `Payment\SubscriptionPaymentService` (خرید اشتراک — مرچنت پلتفرم)،
+  `Payment\ZarinpalPayoutService` (تسویه‌ی خودکار کیف پول متخصص).
+- نام ستون‌ها/پارامترها زرین‌پالی: `invoices.authority`/`ref_id`، callbackها `Authority`/`Status` رو می‌خونن،
+  `salons.zarinpal_merchant_id`، تبدیل تومان→ریال (×۱۰) داخل هر سرویس.
+- ⚠️ **یافته‌ی جدی (اصلاح‌نشده):** `ZarinpalPayoutService` با مرچنت و API key **پلتفرم** تسویه می‌کنه،
+  در حالی که درآمد متخصص از پرداخت مشتری‌ها به حساب **سالن** اومده → برداشت متخصص‌های هر سالن از
+  موجودی زرین‌پال پلتفرم پرداخت می‌شه. نیاز به تصمیم.
+- `App\Providers\PaymentServiceProvider` کد مرده‌ست (ثبت نشده در bootstrap/providers.php و با
+  آرگومان‌های اشتباه به constructor می‌ده) — در بازطراحی درگاه‌ها حذف بشه.
+
 ### قدم‌های باز
-- routeهای عمومی متخصص بدون view (search/top-rated/by-service/availability): حذف یا ساخت صفحه — تصمیم با ابوالفضل
-- (اختیاری) پیامک خوش‌آمد به مالک سالن با آدرس سالن
-- روی سیستم لوکال: `php artisan migrate` (photo_path)؛ اگه سالن‌های موجود مرچنت ندارن، پرداخت آنلاین‌شون تا ورود مرچنت غیرفعاله
+- تصمیم ابوالفضل درباره‌ی چند درگاه (جواب سؤال‌های پرسیده‌شده) و درباره‌ی تسویه‌ی متخصص از حساب پلتفرم
+- (اختیاری) پیامک خوش‌آمد به مالک سالن
 
