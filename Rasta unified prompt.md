@@ -6531,9 +6531,68 @@ production زرین‌پال (`api.zarinpal.com` در کد در برابر `paym
 
 **هنوز روی لایه‌ی درگاه نیست:** Payout (`ZarinpalPayoutService`) — با مرحله‌ی ۳.
 
-### قدم‌های باز
-- **مرحله‌ی ۱:** driverهای زیبال، آیدی‌پی، نکست‌پی، پی‌پینگ (هرکدام اول با مستندات رسمی به‌روزش)؛ UI مدیریت
-  درگاه‌ها در «اطلاعات سالن» (جایگزین فیلد تکی مرچنت زرین‌پال + sync فعلی)؛ صفحه‌ی انتخاب درگاه مشتری؛
-  محاسبه‌ی کارمزد روی مبلغ مشتری (`fee_percent`/`fee_fixed_toman` → `fee_rial` تراکنش)
-- (اختیاری) پیامک خوش‌آمد به مالک سالن
+### ۲۰۲۶-۰۹-۲۵ — چند درگاه: مرحله‌ی ۱ (درایورها، صفحه‌ی مدیریت درگاه‌ها، انتخاب درگاه مشتری، کارمزد)
 
+**تصمیم ابوالفضل (این نشست):** فهرست درگاه‌ها عوض شد → **زرین‌پال، زیبال، آسان پرداخت، وندار**.
+آیدی‌پی، نکست‌پی و پی‌پینگ از طرح حذف شدن (آیدی‌پی: گزارش راه‌پرداخت اسفند ۱۴۰۲ از بازداشت مدیرعامل و مسدودی
+حساب‌ها، شکایت کاربران تا ۱۴۰۴، و 502 دائمی `api.idpay.ir` در مرداد ۲۰۲۶).
+
+**وضعیت توکن GitHub:** توکن داخل همین سند **401** می‌ده (منقضی/باطل). کلون عمومی با git کار کرد، push نه.
+توکن هم در این سند و هم در چت اومده — باید در GitHub revoke و توکن تازه ساخته بشه.
+
+**محیط:** زیپ آپلودی = develop `21f2e54` (فقط فایل‌های محلی مثل .env و public/build اضافه). ⚠️ بدون `public/build`
+۲۲۳ تست با `ViteManifestNotFoundException` fail می‌شن — در sandbox از زیپ کپی می‌شه (فایل commit‌شده نیست).
+پایه: **۱۲۳۳ passed / ۱ skipped**.
+
+**مستندات (پیش از هر driver):**
+- زیبال: مستند رسمی help.zibal.ir/ipg (نسخه‌ی ایندکس‌شده‌ی context7). `gateway.zibal.ir/v1/request|verify`،
+  شروع `/start/{trackId}`، ریال، مرچنت تست `zibal`، verify مبلغ نمی‌گیره (۱۰۰/۲۰۱ موفق).
+- وندار: docs.vandar.io (IPG **v4**؛ آینه‌ی قدیمی vandarpay.github.io هنوز v3 است — منسوخ). `ipg.vandar.io/api/v4/send|verify`،
+  انتقال `/v4/{token}`، بازگشت `token` + `payment_status=OK|FAILED`، ریال، callback و Referer باید روی دامنه‌ی ثبت‌شده باشن.
+- آسان پرداخت: **مستند رسمی (IPG REST 1.9.3) عمومی نیست** و فقط به پذیرنده داده می‌شه؛ طبق دو پیاده‌سازی نگهداری‌شده‌ی
+  هم‌خوان (shetabit/multipay و افزونه‌ی Pars Kit): `ipgrest.asanpardakht.ir/v1/Time|Token|TranResult|Verify|Settlement`،
+  هدر `usr`/`pwd`، `localInvoiceId` عددی یکتا، انتقال با فرم POST به `asan.shaparak.ir` (RefId)، خطاها = کد HTTP
+  (۴۷۱–۴۹۷، ۵۷۱–۵۸۰). ⚠️ وقتی قرارداد آسان پرداخت گرفته شد، با PDF رسمی مقایسه بشه.
+
+**پچ‌ها (روی `21f2e54`، برنچ پیشنهادی `feat/multi-gateway-stage-1`):**
+1. `feat(payments): Zibal, Vandar and Asan Pardakht drivers; gateway fee on top of the customer's amount`
+   - `App\Payments\Drivers\{Zibal,Vandar,AsanPardakht}Driver`؛ `GatewayCatalog` (برچسب + فیلدهای credentials هر درگاه).
+   - verify همیشه با **توکن ذخیره‌شده در تراکنش** (نه مقدار callback) — زرین‌پال هم همین‌طور شد؛ `GatewayVerifyRequest`
+     توکن و id تراکنش رو داره. زیبال/وندار مبلغ پاسخ verify رو با تراکنش مقایسه می‌کنن.
+   - `GatewayStartResult::postForm` + `App\Payments\GatewayRedirect` + view `payments.gateway-redirect` (فرم POST خودکار).
+   - آسان پرداخت: failover فقط روی قطع اتصال یا ۵۰۰/۵۰۲/۵۰۳/۵۰۴ واقعی؛ ۵۷x خطای پیکربندیه. Verify ناموفق → Settlement نمی‌زنه.
+   - **کارمزد:** `SalonPaymentGateway::feeRialFor()` = درصد + ثابت، رو به بالا تا تومان کامل. `GatewayManager::start`
+     کارمزد هر درگاهی که امتحان می‌کنه رو جدا اضافه می‌کنه (بعد از failover دوباره حساب می‌شه) و `[result, gateway, feeRial]`
+     برمی‌گردونه. تراکنش: `amount_rial` = پایه + کارمزد (verify با همین)، `fee_rial`. پیش‌پرداخت نوبت و شارژ کیف پول
+     فقط مبلغ پایه؛ کارمزد و driver در `payment_details` / metadata کیف پول.
+2. `feat(admin): payment gateways page for the salon owner, replacing the single Zarinpal merchant field`
+   - `admin.payment-gateways.*` (فقط owner): افزودن (هر نوع حداکثر یکی)، ویرایش (نام نمایشی، credentials، فعال، کارمزد
+     درصدی ≤۱۰ و ثابت ≤۱۰۰٬۰۰۰ تومان، ارقام فارسی)، ترتیب ▲▼ (= ترتیب failover، اولی پیش‌فرض مشتری)، حذف، **تست اتصال**
+     (درخواست پرداخت واقعی بدون انتقال مشتری؛ throttle). secretها رمزشده، هرگز نمایش داده نمی‌شن، خالی = بدون تغییر.
+     درگاه سالن دیگه = ۴۰۴ (همیشه از `$salon->paymentGateways()`).
+   - `SalonGatewayService`: تغییر ردیف zarinpal با `saveQuietly` به `salons.zarinpal_merchant_id` برمی‌گرده (ثبت‌نام/سوپرادمین
+     هنوز این ستون رو می‌نویسن و Payout هنوز ازش می‌خونه؛ Salon::booted هم‌چنان ستون → ردیف).
+   - «اطلاعات سالن»: فیلد تکی مرچنت حذف شد (مقدار ارسالی نادیده گرفته می‌شه) → وضعیت + دکمه‌ی صفحه‌ی جدید. فیلد توکن
+     Payout زرین‌پال همون‌جا مونده تا مرحله‌ی ۳. لینک سایدبار + لینک هشدار داشبورد/اشتراک.
+3. `feat(payments): customer picks the gateway on the payment and wallet top-up pages, with the fee shown`
+   - partial `payments._gateway-picker` داخل فرم پرداخت نوبت و شارژ کیف پول؛ ردیف «کارمزد درگاه» و مبلغ نهایی با JS
+     (همون فرمول PHP — روی نمونه‌ها مقایسه شد)؛ پرداخت کامل از کیف پول picker رو مخفی می‌کنه. متن «درگاه امن زرین‌پال»
+     در صفحه‌های مشتری → «درگاه امن شاپرکی».
+
+**تست‌ها:** GatewayDriversTest (۱۲)، GatewayFeeLedgerTest (۶؛ شامل آسان پرداخت end-to-end با فرم POST و بازگشت POST بدون
+کوکی)، AdminPaymentGatewayTest (۸)، CustomerGatewayChoiceTest (۳)؛ SalonMerchantIdTest بازنویسی شد. سوییت کامل
+**۱۲۶۲ passed / ۱ skipped**. اسکریپت‌های رندرشده‌ی سه صفحه با `node --check` بدون خطا.
+⚠️ `pint --test` روی کل پروژه ۲۹ فایل قدیمی رو گزارش می‌ده (روی `21f2e54` هم همین ۲۹ تا — مال این نشست نیست)؛ فایل‌های
+این نشست Pint-clean هستن. ادعای «Pint PASS» نشست‌های قبل احتمالاً `--dirty` بوده.
+
+**تحویل:** پوشه‌ی `outputs/batch-2026-09-25-multigateway-stage1/` (۴ پچ + این سند)، وریفای روی کلون تازه با `git am`.
+
+### قدم‌های باز
+- **تست دستی واقعی** هر درگاه روی XAMPP: زیبال با مرچنت `zibal` (بدون پول واقعی)؛ وندار و آسان پرداخت فقط با حساب واقعی
+  (sandbox سلف‌سرویس ندارن). آسان پرداخت: ثبت IP سرور در پنل؛ مقایسه‌ی driver با PDF رسمی IPG REST.
+- ثبت دامنه/ساب‌دامین هر سالن در پنل هر درگاه (مستند برای مالک‌ها).
+- **مرحله‌ی ۲:** درگاه‌های مستقیم بانکی (سامان/ملت/پارسیان) — فرم POST آماده است (`GatewayStartResult::postForm`).
+- **مرحله‌ی ۳:** Payout روی لایه‌ی درگاه (زرین‌پال فعلی؛ زیبال/وندار API تسویه دارن) + جابه‌جایی فیلد توکن Payout از
+  «اطلاعات سالن» به صفحه‌ی درگاه‌ها؛ بعد از اون ستون `salons.zarinpal_merchant_id` می‌تونه حذف بشه.
+- (اختیاری) پاک‌سازی ۲۹ مورد Pint قدیمی در یک commit جدا `style:`.
+- (اختیاری) پیامک خوش‌آمد به مالک سالن
