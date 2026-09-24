@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Booking extends Model
 {
@@ -78,6 +79,24 @@ class Booking extends Model
      * never used in any wallet/commission calculation (BookingObserver::addIncomeAndCommission()
      * only ever operates on prepayment_amount, the actual money collected through the platform).
      */
+    /** ⭐ تراکنش‌های درگاه این نوبت (دفتر واحد payment_transactions). */
+    public function paymentTransactions(): MorphMany
+    {
+        return $this->morphMany(PaymentTransaction::class, 'payable');
+    }
+
+    /**
+     * ⭐ نوبت‌هایی که پرداختشون در جریان نیست — لغو خودکار «پرداخت‌نشده بعد از ۳۰ دقیقه» فقط روی این‌ها. مهلت ۳۰
+     * دقیقه از ساخت نوبت شمرده می‌شه نه از رفتن به بانک؛ بدون این، مشتری‌ای که در دقیقه‌ی ۲۸ پرداخت می‌کرد و در
+     * ۳۲ برمی‌گشت نوبتش وسط پرداخت لغو می‌شد (و اگه ساعتش رو کس دیگه‌ای می‌گرفت، پولش گیر می‌کرد).
+     */
+    public function scopeWithoutPaymentInProgress($query)
+    {
+        return $query->whereDoesntHave('paymentTransactions', fn ($q) => $q
+            ->where('status', 'pending')
+            ->where('created_at', '>', now()->subMinutes(PaymentTransaction::PENDING_LIFETIME_MINUTES)));
+    }
+
     public function getRemainingAmountAttribute(): float
     {
         if (! $this->service) {

@@ -22,6 +22,13 @@ class PaymentTransaction extends Model
      */
     public const REVERSAL_STATUSES = ['reversing', 'reversed'];
 
+    /**
+     * عمر یک تراکنش باز: تا این مدت مشتری ممکنه هنوز در صفحه‌ی بانک باشه — لغو خودکار نوبت‌های پرداخت‌نشده
+     * (CancelUnpaidBookings / bookings:cleanup) از نوبتی با تراکنش باز جوان‌تر از این رد می‌شه، و بعدش
+     * payments:reconcile تراکنش رو expired می‌کنه.
+     */
+    public const PENDING_LIFETIME_MINUTES = 60;
+
     protected $fillable = [
         'public_id', 'salon_id', 'gateway_id', 'driver', 'purpose', 'payable_type', 'payable_id', 'user_id',
         'amount_rial', 'fee_rial', 'token', 'ref_id', 'gateway_receipt', 'card_pan', 'status', 'callback_url',

@@ -27,6 +27,7 @@ class CancelUnpaidBookings implements ShouldQueue
             ->where('status', 'pending_payment')
             ->where('payment_status', 'unpaid')
             ->where('created_at', '<=', Carbon::now()->subMinutes(30))
+            ->withoutPaymentInProgress() // ⭐ مشتری هنوز در صفحه‌ی بانکه — لغو نکن
             ->get();
 
         $cancelledCount = 0;

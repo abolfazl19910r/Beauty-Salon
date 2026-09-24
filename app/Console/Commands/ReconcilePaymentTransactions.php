@@ -29,7 +29,7 @@ class ReconcilePaymentTransactions extends Command
 
     protected $description = 'منقضی کردن تراکنش‌های رهاشده و برگشت وجه پرداخت‌های سامانی که پاسخ تایید آن‌ها نرسید';
 
-    public const EXPIRE_PENDING_AFTER_MINUTES = 60;
+    public const EXPIRE_PENDING_AFTER_MINUTES = PaymentTransaction::PENDING_LIFETIME_MINUTES;
 
     /** بعد از این، مهلت ۳۰ دقیقه‌ای verify مشتری تمام شده. */
     public const SAMAN_REVERSE_AFTER_MINUTES = 31;
