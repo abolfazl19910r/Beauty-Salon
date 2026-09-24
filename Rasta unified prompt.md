@@ -6480,8 +6480,35 @@ migration `2026_09_24_000003` (`salons.zarinpal_payout_api_key`، cast `encrypte
 وب‌سرویس آیدی‌پی هم باید تأیید بشه).
 ⚠️ هر سالن باید دامنه/ساب‌دامین خودش رو در پنل درگاهش ثبت کنه (بررسی دامنه‌ی callback توسط درگاه‌ها).
 
+### ۲۰۲۶-۰۹-۲۵ — چند درگاه: مرحله‌ی ۰ (بخش اول) + دو تصمیم جدید
+
+**تصمیم‌های ابوالفضل:** (۱) رفتار پیش‌فرض: **مشتری درگاه رو انتخاب می‌کنه + اگه قطع بود خودکار سراغ بعدی**.
+(۲) **کارمزد درگاه به مبلغ مشتری اضافه می‌شه** (نه اینکه سالن بده).
+
+⚠️ **درس تحویل:** فایل‌های پچ نوبت قبل (۰۰۰۱/۰۰۰۲ صفحه‌های متخصص) از outputs پاک شده بودن چون پچ‌های بعدی
+با همون شماره‌ها خروجی گرفته شدن و `rm outputs/*.patch` قبلی‌ها رو حذف کرد → لینک‌ها دانلود نمی‌شدن.
+**از این به بعد:** هر نوبت در یک پوشه‌ی جدا با نام توصیفی (`outputs/batch-.../`) و هیچ‌وقت فایل تحویل‌داده‌شده‌ی
+قبلی پاک نمی‌شه.
+
+**پچ `refactor(payments): gateway driver layer, per-salon gateways table, Zarinpal as the first driver`:**
+- `App\Payments\Contracts\PaymentGatewayDriver` + value objectها (`GatewayStartRequest` با تنها تبدیل
+  تومان→ریال، `GatewayStartResult` با `retryable` و پشتیبانی فرم POST برای بانک‌ها، `GatewayVerify*`).
+- `App\Payments\Drivers\ZarinpalDriver` (کد PaymentService بدون تغییر رفتار منتقل شد).
+- `App\Payments\GatewayManager`: ترتیب priority، اول درگاه انتخابی مشتری، failover **فقط** روی
+  «در دسترس نبودن» (اتصال/۵xx)، نه خطای منطقی.
+- جدول `salon_payment_gateways` (credentials با `encrypted:array`، `fee_percent`/`fee_fixed_toman` که فعلاً ۰
+  هستن تا مرحله‌ی ۱). migration برای هر سالن دارای مرچنت یک ردیف zarinpal می‌سازه (rollback+migrate وریفای شد).
+- تا UI مرحله‌ی ۱، فیلد «کد پذیرنده‌ی زرین‌پال» ردیف zarinpal رو sync می‌کنه (`Salon::booted`).
+  `acceptsOnlinePayments()` = «حداقل یک درگاه فعال».
+- `PaymentService` روی manager؛ درگاهِ شروع در session، و verify فقط درگاه‌های خودِ سالن رو قبول می‌کنه.
+- تست: `GatewayManagerTest` (۷). سوییت کامل **۱۲۲۵ passed / ۱ skipped**.
+
+**باقی‌مانده‌ی مرحله‌ی ۰:** جدول واحد `payment_transactions` + callback مشترک؛ `SubscriptionPaymentService`
+و `ZarinpalPayoutService` روی لایه‌ی درگاه؛ حذف `App\Providers\PaymentServiceProvider` (مرده)؛ بررسی آدرس
+production زرین‌پال (`api.zarinpal.com` در کد در برابر `payment.zarinpal.com` در مستندات فعلی).
+
 ### قدم‌های باز
-- شروع مرحله‌ی ۰ چند درگاه (بعد از تأیید جزئیات باز ابوالفضل: کارمزد درگاه‌ها، رفتار failover)
-- بررسی آدرس production زرین‌پال (`api.zarinpal.com` در کد در برابر `payment.zarinpal.com` در مستندات فعلی)
+- ادامه‌ی مرحله‌ی ۰ (بالا)، بعد مرحله‌ی ۱: driverهای زیبال/آیدی‌پی/نکست‌پی/پی‌پینگ (با بررسی مستندات به‌روز هرکدام)،
+  UI مدیریت درگاه‌ها، صفحه‌ی انتخاب درگاه مشتری، محاسبه‌ی کارمزد روی مبلغ مشتری
 - (اختیاری) پیامک خوش‌آمد به مالک سالن
 
