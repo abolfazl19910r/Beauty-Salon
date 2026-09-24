@@ -85,6 +85,7 @@ class SavePaymentGatewayRequest extends FormRequest
             'credentials.*.required' => 'همه‌ی اطلاعات اتصال درگاه را وارد کنید.',
             'credentials.merchant_id.regex' => 'کد پذیرنده‌ی زرین‌پال باید ۳۶ کاراکتر به شکل xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx باشد.',
             'credentials.merchant_config_id.digits_between' => 'شناسه‌ی پیکربندی آسان پرداخت باید عدد باشد.',
+            'credentials.terminal_id.digits_between' => 'شماره ترمینال بانک سامان باید فقط عدد باشد.',
             'fee_percent.max' => 'کارمزد درصدی حداکثر '.SalonPaymentGateway::MAX_FEE_PERCENT.' درصد است.',
             'fee_percent.numeric' => 'کارمزد درصدی باید عدد باشد.',
             'fee_fixed_toman.max' => 'کارمزد ثابت حداکثر '.number_format(SalonPaymentGateway::MAX_FEE_FIXED_TOMAN).' تومان است.',

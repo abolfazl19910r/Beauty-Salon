@@ -6,6 +6,7 @@ use App\Models\Salon;
 use App\Models\SalonPaymentGateway;
 use App\Payments\Contracts\PaymentGatewayDriver;
 use App\Payments\Drivers\AsanPardakhtDriver;
+use App\Payments\Drivers\SamanDriver;
 use App\Payments\Drivers\VandarDriver;
 use App\Payments\Drivers\ZarinpalDriver;
 use App\Payments\Drivers\ZibalDriver;
@@ -44,6 +45,7 @@ class GatewayManager
             'zibal' => new ZibalDriver($credentials),
             'vandar' => new VandarDriver($credentials),
             'asanpardakht' => new AsanPardakhtDriver($credentials),
+            'saman' => new SamanDriver($credentials),
             default => throw new InvalidArgumentException("Unknown payment gateway driver [{$gateway->driver}]."),
         };
     }

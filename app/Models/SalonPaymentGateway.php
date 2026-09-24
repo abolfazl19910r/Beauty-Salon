@@ -17,6 +17,7 @@ class SalonPaymentGateway extends Model
         'zibal' => 'زیبال',
         'asanpardakht' => 'آسان پرداخت',
         'vandar' => 'وندار',
+        'saman' => 'بانک سامان (سپ)',
     ];
 
     /** سقف کارمزدی که سالن می‌تونه روی مبلغ مشتری بذاره. */

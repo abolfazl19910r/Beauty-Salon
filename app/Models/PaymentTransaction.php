@@ -17,7 +17,7 @@ class PaymentTransaction extends Model
 
     protected $fillable = [
         'public_id', 'salon_id', 'gateway_id', 'driver', 'purpose', 'payable_type', 'payable_id', 'user_id',
-        'amount_rial', 'fee_rial', 'token', 'ref_id', 'card_pan', 'status', 'callback_url',
+        'amount_rial', 'fee_rial', 'token', 'ref_id', 'gateway_receipt', 'card_pan', 'status', 'callback_url',
         'start_response', 'verify_response', 'verified_at',
     ];
 
