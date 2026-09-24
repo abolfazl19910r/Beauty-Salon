@@ -200,35 +200,62 @@ class PaymentController extends Controller
                     $specialist = $booking->specialist;
                     $isAutoConfirm = $specialist->auto_confirm_bookings ?? false;
                     $newStatus = $isAutoConfirm ? 'confirmed' : 'pending';
+                    $partialPayment = session('partial_payment_'.$booking->id);
 
-                    DB::transaction(function () use ($booking, $result, $newStatus) {
-                        $partialPayment = session('partial_payment_'.$booking->id);
-                        $paymentDetails = [
-                            'method' => $partialPayment ? 'wallet_gateway' : 'gateway',
-                            'gateway_ref' => $result['ref_id'] ?? $result['reference'],
-                            'card_pan' => $result['card_pan'] ?? null,
-                            'gateway' => $result['gateway'] ?? null,
-                            'gateway_fee' => $result['gateway_fee'] ?? 0,
-                        ];
+                    try {
+                        DB::transaction(function () use ($booking, $result, $newStatus, $partialPayment) {
+                            $paymentDetails = [
+                                'method' => $partialPayment ? 'wallet_gateway' : 'gateway',
+                                'gateway_ref' => $result['ref_id'] ?? $result['reference'],
+                                'card_pan' => $result['card_pan'] ?? null,
+                                'gateway' => $result['gateway'] ?? null,
+                                'gateway_fee' => $result['gateway_fee'] ?? 0,
+                            ];
 
-                        if ($partialPayment) {
-                            $paymentDetails['wallet_amount'] = $partialPayment['wallet_amount'];
-                            $paymentDetails['gateway_amount'] = $partialPayment['remaining_amount'];
-                            session()->forget('partial_payment_'.$booking->id);
+                            if ($partialPayment) {
+                                $paymentDetails['wallet_amount'] = $partialPayment['wallet_amount'];
+                                $paymentDetails['gateway_amount'] = $partialPayment['remaining_amount'];
+                                session()->forget('partial_payment_'.$booking->id);
+                            }
+
+                            $this->bookingRepository->update($booking, [
+                                'payment_status' => 'paid',
+                                'paid_at' => now(),
+                                'payment_reference' => $result['ref_id'] ?? $result['reference'],
+                                'status' => $newStatus,
+                                'payment_details' => $paymentDetails,
+                            ]);
+                        });
+                    } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+                        // ⭐ درگاه پول رو گرفته ولی ساعت این نوبت (که در این فاصله لغو شده بود) حالا مال نفر دیگه‌ایه —
+                        // index یکتای bookings.active_slot_key. پول به کارت (سامان) یا کیف پول برمی‌گرده؛ هرگز «ناموفق» بی‌بازگشت.
+                        if (! str_contains($e->getMessage(), 'active_slot')) {
+                            throw $e;
                         }
 
-                        $this->bookingRepository->update($booking, [
-                            'payment_status' => 'paid',
-                            'paid_at' => now(),
-                            'payment_reference' => $result['ref_id'] ?? $result['reference'],
-                            'status' => $newStatus,
-                            'payment_details' => $paymentDetails,
-                        ]);
-                    });
+                        $refund = app(\App\Services\Payment\LostSlotRefundService::class)->refund(
+                            $booking->fresh(),
+                            isset($result['transaction_id']) ? \App\Models\PaymentTransaction::find($result['transaction_id']) : null,
+                            $partialPayment,
+                            $partialPayment['remaining_amount'] ?? $booking->prepayment_amount,
+                        );
+                        session()->forget('partial_payment_'.$booking->id);
+
+                        return redirect()->route('bookings.failed')->with('error', $refund['handled']
+                            ? \App\Services\Payment\LostSlotRefundService::message($refund)
+                            : 'مبلغ این پرداخت قبلاً به شما برگشت داده شده است و نوبت ثبت نشد.');
+                    }
                 }
 
                 return redirect()->route('bookings.success', ['id' => $booking->id])
                     ->with('success', 'پرداخت با موفقیت انجام شد و نوبت شما ثبت شد.');
+            }
+
+            if (! empty($result['refunded'])) {
+                // پول قبلاً برگشت داده شده؛ نوبت و کیف پول دست نمی‌خورن (بخش کیف پولی همون موقع برگشت خورده)
+                session()->forget('partial_payment_'.$booking->id);
+
+                return redirect()->route('bookings.failed')->with('error', $result['message']);
             }
 
             $partialPayment = session('partial_payment_'.$booking->id);

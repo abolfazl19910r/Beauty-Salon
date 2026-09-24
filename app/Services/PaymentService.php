@@ -224,7 +224,13 @@ class PaymentService
 
             if ($transaction?->isPaid()) {
                 // idempotent: callback تکراری همون تراکنش دوباره تأیید/ثبت نمی‌شه
-                return ['status' => 'success', 'success' => true, 'booking_id' => $booking->id, 'reference' => $transaction->token, 'ref_id' => $transaction->ref_id, 'card_pan' => $transaction->card_pan, 'fee' => null, 'gateway' => $transaction->driver, 'gateway_fee' => intdiv((int) $transaction->fee_rial, 10)];
+                return ['status' => 'success', 'success' => true, 'booking_id' => $booking->id, 'reference' => $transaction->token, 'ref_id' => $transaction->ref_id, 'card_pan' => $transaction->card_pan, 'fee' => null, 'gateway' => $transaction->driver, 'gateway_fee' => intdiv((int) $transaction->fee_rial, 10), 'transaction_id' => $transaction->id];
+            }
+
+            if ($transaction && in_array($transaction->status, \App\Models\PaymentTransaction::REVERSAL_STATUSES, true)) {
+                // ⭐ پول این تراکنش قبلاً برگشت داده شده (ساعت از دست رفته یا پاسخ verify گم‌شده) — دوباره تایید نمی‌شه
+                return ['status' => 'failed', 'success' => false, 'booking_id' => $booking->id, 'refunded' => true,
+                    'message' => 'مبلغ این پرداخت قبلاً به شما برگشت داده شده است و نوبت ثبت نشد.'];
             }
 
             $gateway = $transaction?->gateway ?? $this->gatewayFromSession('payment_gateway_'.$booking->id);
@@ -261,6 +267,7 @@ class PaymentService
                     'fee' => $result->fee,
                     'gateway' => $gateway->driver,
                     'gateway_fee' => $transaction ? intdiv((int) $transaction->fee_rial, 10) : 0,
+                    'transaction_id' => $transaction?->id,
                 ];
             }
 
