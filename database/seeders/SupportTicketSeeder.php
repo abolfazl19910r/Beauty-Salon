@@ -2,89 +2,70 @@
 
 namespace Database\Seeders;
 
+use App\Models\Salon;
 use App\Models\SupportTicket;
 use App\Models\SupportTicketMessage;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
+/**
+ * ⭐ ۲۰۲۶-۰۹-۲۵ — تیکت‌های نمونه‌ی واقع‌گرایانه.
+ *
+ * تیکت پشتیبانی یعنی «مدیر سالن ← تیم پلتفرم»: مالک/ادمین سالن از /admin تیکت می‌زنه و سوپرادمین از
+ * /superadmin جواب می‌ده (مشتری‌های سالن اصلاً مسیر ثبت تیکت ندارن). نسخه‌ی قبلی این seeder ۳۱ تیکت
+ * از ۱۰ کاربر تصادفی (مشتری) با متن‌های مشتری‌وار («پرداخت کردم ولی نوبتم ثبت نشد») می‌ساخت، که صندوق
+ * سوپرادمین رو گمراه‌کننده می‌کرد. حالا چند تیکت از مالک‌های سالن‌های دمو، درباره‌ی موضوع‌های پلتفرم.
+ */
 class SupportTicketSeeder extends Seeder
 {
+    private const TICKETS = [
+        ['payment', 'high', 'open', 'درگاه زیبال در تست اتصال خطای IP می‌دهد',
+            'در صفحه‌ی درگاه‌های پرداخت، تست اتصال زیبال پیام «IP سرور در پنل زیبال ثبت نشده است» می‌دهد. IP را از کجا بگیرم؟', null],
+        ['other', 'medium', 'in_progress', 'تمدید اشتراک سالانه',
+            'اشتراک ما ماه آینده تمام می‌شود. آیا با تمدید سالانه تخفیفی شامل می‌شود؟',
+            'بله، در صفحه‌ی اشتراک پلن سالانه را انتخاب کنید؛ مبلغ همان‌جا نمایش داده می‌شود.'],
+        ['technical', 'medium', 'resolved', 'پیامک یادآوری نوبت برای مشتری‌ها ارسال نمی‌شود',
+            'از دیروز پیامک یادآوری یک ساعت قبل از نوبت به مشتری‌ها نمی‌رسد.',
+            'سقف پیامک ماهانه‌ی سالن پر شده بود؛ سقف را در تنظیمات اطلاع‌رسانی افزایش دادیم.'],
+        ['technical', 'low', 'closed', 'اضافه کردن متخصص ششم',
+            'موقع افزودن متخصص جدید پیام «سقف تعداد متخصص» می‌آید.',
+            'پلن فعلی شما تا ۵ متخصص است؛ برای متخصص بیشتر پلن را ارتقا دهید.'],
+        ['payment', 'urgent', 'open', 'پرداخت مشتری کسر شده ولی نوبت پرداخت‌نشده مانده',
+            'یکی از مشتری‌ها می‌گوید مبلغ از کارتش کم شده، ولی نوبتش در پنل «در انتظار پرداخت» است. کد پیگیری را پیوست کرده‌ام.', null],
+    ];
+
     public function run(): void
     {
-        $admin = \App\Models\User::firstOrCreate(
-            ['phone' => '09399717435'],
-            [
-                'name' => 'Admin User',
-                'password' => Hash::make('admin'),
-                'phone_verified_at' => now(),
-            ]
-        );
+        $staff = User::whereHas('roles', fn ($q) => $q->where('name', 'super-admin'))->first()
+            ?? User::where('phone', '09399717435')->first();
 
-        $supportUser = \App\Models\User::firstOrCreate(
-            ['phone' => '09121234567'],
-            [
-                'name' => 'Support User',
-                'password' => Hash::make('password'),
-                'phone_verified_at' => now(),
-            ]
-        );
+        $owners = Salon::withoutGlobalScopes()->with(['admins' => fn ($q) => $q->wherePivot('role', 'owner')])->get()
+            ->flatMap->admins->unique('id')->values();
 
-        $users = User::factory(10)->create();
-        $allUsers = User::all();
+        if ($owners->isEmpty()) {
+            return; // بدون مالک سالن تیکتی معنی نداره
+        }
 
-        $tickets = SupportTicket::factory(30)
-            ->recycle($users)
-            ->state(new Sequence(
-                ['status' => 'open'],
-                ['status' => 'in_progress', 'assigned_to' => $admin->id],
-                ['status' => 'resolved', 'resolved_at' => now()->subDays(5)],
-                ['status' => 'closed', 'resolved_at' => now()->subDays(10), 'closed_at' => now()->subDays(2)],
-            ))
-            ->create();
+        foreach (self::TICKETS as $i => [$category, $priority, $status, $title, $question, $answer]) {
+            $owner = $owners[$i % $owners->count()];
 
-        $tickets->each(function (SupportTicket $ticket) use ($admin) {
-            $messageCount = rand(1, 5);
+            $ticket = SupportTicket::create([
+                'user_id' => $owner->id,
+                'title' => $title,
+                'description' => $question,
+                'category' => $category,
+                'priority' => $priority,
+                'status' => $status,
+                'assigned_to' => $status !== 'open' ? $staff?->id : null,
+                'resolved_at' => in_array($status, ['resolved', 'closed'], true) ? now()->subDays(3) : null,
+                'closed_at' => $status === 'closed' ? now()->subDay() : null,
+            ]);
 
-            for ($i = 0; $i < $messageCount; $i++) {
-                if ($ticket->status !== 'closed' && $ticket->status !== 'resolved') {
-                    $isStaffReply = (rand(0, 1) === 1) && ($i > 0);
+            SupportTicketMessage::create(['ticket_id' => $ticket->id, 'user_id' => $owner->id, 'message' => $question, 'is_staff_reply' => false]);
 
-                    SupportTicketMessage::factory()->create([
-                        'ticket_id' => $ticket->id,
-                        'user_id' => $isStaffReply ? $admin->id : $ticket->user_id,
-                        'is_staff_reply' => $isStaffReply,
-                    ]);
-                } else {
-                    SupportTicketMessage::factory()->create([
-                        'ticket_id' => $ticket->id,
-                        'user_id' => $ticket->user_id,
-                        'is_staff_reply' => false,
-                    ]);
-                }
+            if ($answer && $staff) {
+                SupportTicketMessage::create(['ticket_id' => $ticket->id, 'user_id' => $staff->id, 'message' => $answer, 'is_staff_reply' => true]);
             }
-        });
-
-        $urgentTicket = SupportTicket::factory()->urgent()->create([
-            'user_id' => $users->random()->id,
-            'title' => 'مشکل اضطراری در پرداخت و رزرو',
-            'description' => 'پرداخت انجام شده ولی نوبت من ثبت نشده است. نیاز به رسیدگی فوری دارم.',
-            'category' => 'payment',
-        ]);
-
-        SupportTicketMessage::factory()->create([
-            'ticket_id' => $urgentTicket->id,
-            'user_id' => $urgentTicket->user_id,
-            'message' => 'شماره پیگیری پرداخت: '.rand(10000000, 99999999),
-        ]);
-
-        SupportTicketMessage::factory()->staffReply()->create([
-            'ticket_id' => $urgentTicket->id,
-            'user_id' => $admin->id,
-            'message' => 'در حال بررسی با بخش مالی. لطفا چند دقیقه منتظر بمانید.',
-        ]);
-
-        $urgentTicket->update(['status' => 'in_progress', 'assigned_to' => $admin->id]);
+        }
     }
 }
