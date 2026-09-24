@@ -81,6 +81,17 @@ class ReconcilePaymentTransactions extends Command
                 'verify_response' => json_encode($response + ($ok ? ['reversed_at' => now()->toIso8601String()] : []), JSON_UNESCAPED_UNICODE),
             ]);
 
+            if ($ok) {
+                // ⭐ مشتری باید بدونه پولش به کارتش برگشت (پیامک صف‌دار)
+                \App\Models\User::find($tx->user_id)?->notify(new \App\Notifications\Payment\PaymentRefundedNotification(
+                    'verify_unanswered',
+                    intdiv((int) $tx->amount_rial, 10),
+                    0,
+                    \App\Models\Salon::find($tx->salon_id),
+                    $tx->purpose === 'booking' ? (int) $tx->payable_id : null,
+                ));
+            }
+
             Log::log($ok ? 'info' : 'warning', $ok ? 'Saman payment reversed after unanswered verify' : 'Saman reverse failed', [
                 'transaction_id' => $tx->id, 'salon_id' => $tx->salon_id, 'gateway_missing' => ! $tx->gateway,
             ]);

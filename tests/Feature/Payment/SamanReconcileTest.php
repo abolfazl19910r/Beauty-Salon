@@ -6,6 +6,7 @@ use App\Models\PaymentTransaction;
 use App\Models\Salon;
 use App\Models\SalonPaymentGateway;
 use App\Models\User;
+use App\Notifications\Payment\PaymentRefundedNotification;
 use App\Payments\Drivers\SamanDriver;
 use App\Payments\GatewayReceipt;
 use App\Payments\GatewayVerifyRequest;
@@ -13,6 +14,7 @@ use App\Support\CurrentSalon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Sleep;
 use Tests\TestCase;
 
@@ -33,6 +35,7 @@ class SamanReconcileTest extends TestCase
     {
         parent::setUp();
         Sleep::fake();
+        Notification::fake();
         $this->salon = app(CurrentSalon::class)->get();
         $this->salon->paymentGateways()->delete();
         $this->gateway = $this->salon->paymentGateways()->create(['driver' => 'saman', 'credentials' => ['terminal_id' => self::TERMINAL], 'priority' => 1]);
@@ -152,6 +155,9 @@ class SamanReconcileTest extends TestCase
         $this->travel(35)->minutes();
         $this->artisan('payments:reconcile');
         $this->assertSame('reversed', $tx->fresh()->status);
+        Notification::assertSentToTimes($user, PaymentRefundedNotification::class, 1);
+        Notification::assertSentTo($user, PaymentRefundedNotification::class, fn ($n) => $n->reason === 'verify_unanswered'
+            && $n->cardToman === 25000 && $n->bookingId === $booking->id);
 
         // ۳) مشتری صفحه‌ی قبلی رو refresh می‌کنه: هیچ verifyی زده نمی‌شه و وضعیت برگشت‌خورده می‌مونه
         $this->refake(['sep.shaparak.ir/*' => Http::response(['ResultCode' => 2, 'Success' => true, 'TransactionDetail' => ['RefNum' => 'RCPT-LOST', 'OrginalAmount' => 250000]])]);
@@ -160,6 +166,7 @@ class SamanReconcileTest extends TestCase
         Http::assertNothingSent();
         $this->assertSame('reversed', $tx->fresh()->status);
         $this->assertSame('unpaid', $booking->fresh()->payment_status);
+        Notification::assertSentToTimes($user, PaymentRefundedNotification::class, 1); // refresh پیامک دوم نمی‌فرسته
     }
 
     public function test_a_failed_reverse_is_retried_by_the_next_run(): void

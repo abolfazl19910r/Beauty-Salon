@@ -8,10 +8,12 @@ use App\Models\PaymentTransaction;
 use App\Models\Salon;
 use App\Models\Specialist;
 use App\Models\User;
+use App\Notifications\Payment\PaymentRefundedNotification;
 use App\Support\CurrentSalon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Sleep;
 use Tests\TestCase;
 
@@ -36,6 +38,7 @@ class LostSlotRefundTest extends TestCase
     {
         parent::setUp();
         Sleep::fake();
+        Notification::fake();
         $this->salon = app(CurrentSalon::class)->get();
         $this->salon->paymentGateways()->delete();
         $this->specialist = Specialist::factory()->create(['auto_confirm_bookings' => true]);
@@ -99,6 +102,12 @@ class LostSlotRefundTest extends TestCase
         $this->comeBack($user, $tx, ['trackId' => 7, 'success' => 1, 'status' => 2])->assertRedirect(route('bookings.failed'));
         $this->assertSame(60500.0, (float) $user->getOrCreateWallet()->fresh()->balance);
         $this->assertSame(1, count(Http::recorded(fn (Request $r) => str_contains($r->url(), '/v1/verify'))));
+
+        // مشتری پیامک گرفت — فقط یک بار، با مبلغ کیف پول
+        Notification::assertSentToTimes($user, PaymentRefundedNotification::class, 1);
+        Notification::assertSentTo($user, PaymentRefundedNotification::class, fn ($n) => $n->reason === 'slot_taken'
+            && $n->walletToman === 60500 && $n->cardToman === 0 && $n->bookingId === $booking->id
+            && str_contains($n->text, '۶۰٬۵۰۰ تومان به کیف پول'));
     }
 
     public function test_the_wallet_share_of_a_split_payment_comes_back_too(): void
@@ -156,6 +165,8 @@ class LostSlotRefundTest extends TestCase
 
         Http::assertSent(fn (Request $r) => str_ends_with($r->url(), '/ReverseTransaction') && $r['RefNum'] === 'RC-9');
         $this->assertSame('reversed', $tx->fresh()->status);
+        Notification::assertSentTo($user, PaymentRefundedNotification::class, fn ($n) => $n->cardToman === 60000 && $n->walletToman === 0
+            && str_contains($n->text, 'به کارت بانکی شما'));
         $this->assertSame(0.0, (float) $user->getOrCreateWallet()->fresh()->balance);
     }
 
@@ -197,5 +208,6 @@ class LostSlotRefundTest extends TestCase
 
         $this->assertSame('paid', $booking->fresh()->payment_status);
         $this->assertSame(0.0, (float) $user->getOrCreateWallet()->fresh()->balance);
+        Notification::assertNotSentTo($user, PaymentRefundedNotification::class);
     }
 }

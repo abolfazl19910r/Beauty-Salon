@@ -83,6 +83,15 @@ class LostSlotRefundService
             ])->save();
         });
 
+        // ⭐ مشتری حتماً باید بدونه پولش کجا رفت (پیامک صف‌دار، بدون مصرف سهمیه‌ی سالن)
+        $booking->user?->notify(new \App\Notifications\Payment\PaymentRefundedNotification(
+            'slot_taken',
+            $toCard ? (int) $gatewayToman : 0,
+            (int) round($walletToman),
+            \App\Models\Salon::find($booking->salon_id),
+            $booking->id,
+        ));
+
         Log::warning('Booking payment refunded: slot was taken while the customer was at the bank', [
             'booking_id' => $booking->id, 'transaction_id' => $transaction?->id,
             'card_toman' => $toCard ? $gatewayToman : 0, 'wallet_toman' => $walletToman, 'wallet_part' => $walletPart,
