@@ -6650,11 +6650,63 @@ production زرین‌پال (`api.zarinpal.com` در کد در برابر `paym
 (۲) مستند قدیمی رسمی (vandarpay.github.io) مبلغ `settlement/store` رو **تومان** (حداقل ۵۰۰۰) می‌گه و مستند جدید در
 دسترس ما واحد درخواست رو صریح نمی‌گه. منتظر تأیید واحد از پنل/پشتیبانی وندار.
 
+### ۲۰۲۶-۰۹-۲۶ — چند درگاه: مرحله‌ی ۲ — درگاه مستقیم بانک سامان (سپ) + reconcile + بلوپی
+
+روی `896fe24` (develop)، ۳ کامیت کد + این سند. محیط: کلون develop = زیپ آپلودی (به‌جز .env / public/build).
+
+**مستندات (پیش از کد):** «راهنمای استفاده از درگاه پرداخت اینترنتی» رسمی سپ نگارش ۳٫۲ (تیر ۱۴۰۲، پیوست issue
+در GitHub پروژه‌ی Parbad)؛ نگارش ۳٫۳ هم پیدا شد (endpointها یکسان). یک پیاده‌سازی تست‌شده با ترمینال واقعی
+(`django-iranian-payment`) به نگارش ۳٫۶ (دی ۱۴۰۴) ارجاع می‌ده و در همه‌ی فیلدها با ۳٫۲ یکیه؛ خود ۳٫۶ رو مستقیم ندیدیم.
+- توکن: `POST sep.shaparak.ir/OnlinePG/OnlinePG` `{action:"token", TerminalId, Amount (ریال), ResNum, RedirectUrl,
+  CellNumber}` → `{status:1, token}` / `{status:-1, errorCode}`. IP سرور باید نزد سپ ثبت باشه (کد ۸).
+- انتقال: فرم POST با `Token` از سایت خودمون (مستند: Referer لازمه — `Referrer-Policy: strict-origin-when-cross-origin`
+  پروژه origin رو می‌فرسته). بازگشت: POST با `State/Status/RefNum/ResNum/TerminalId/MID/TraceNo/Rrn/SecurePan/Token`؛ Status=2 موفق.
+- تایید: `…/verifyTxnRandomSessionkey/ipg/VerifyTransaction {RefNum, TerminalNumber}` ظرف ۳۰ دقیقه؛ ResultCode ۰
+  موفق، ۲ تکراری. Reverse: `…/ReverseTransaction` تا ۵۰ دقیقه.
+- ⚠️ **یافته‌ی کلیدی:** سپ هر RefNum رو هر چند بار تایید می‌کنه و پاسخ verify شماره‌ی خرید (ResNum) نداره؛ مستند
+  جلوگیری از مصرف دوباره‌ی رسید رو صریحاً به عهده‌ی پذیرنده گذاشته.
+
+**کامیت‌ها:**
+1. `feat(payments): Saman (SEP) direct bank gateway with single-use receipts`
+   - `App\Payments\Drivers\SamanDriver`؛ `GatewayCatalog['saman']` (فقط `terminal_id`، ارقام فارسی → لاتین؛ سپ رمز نمی‌خواد).
+   - قبل از هر verify: Token/ResNum/TerminalId/MID بازگشت باید مال همین تراکنش/ترمینال باشه، Status=2؛ لغو/timeout هرگز verify نمی‌شه.
+   - **رسید یک‌بارمصرف:** ستون `payment_transactions.gateway_receipt` + `unique(driver, gateway_receipt)` (migration
+     `2026_09_25_000200`)؛ `App\Payments\GatewayReceipt::claim()` اتمیک (تصمیم با index دیتابیس، امن در برابر callback هم‌زمان).
+   - verify: RefNum/ترمینال پاسخ + `OrginalAmount` = مبلغ تراکنش؛ نبودِ پاسخ → ۳ بار تلاش. **مبلغ ناهمخوان → Reverse + رد.**
+2. `feat(payments): payments:reconcile — …` (هر ۵ دقیقه در `bootstrap/app.php`)
+   - pending بیش از ۶۰ دقیقه → `expired` (مانع تایید دیرهنگام نیست). ⚠️ مشتری‌ای که برنگشته **با هیچ API سپ قابل تایید
+     نیست** (RefNum فقط با بازگشت می‌رسه)؛ سپ خودش بعد از ۳۰ دقیقه برگشت می‌زنه.
+   - **پول گیرکرده:** مشتری برگشت ولی پاسخ verify نرسید (`unanswered=true`). اگه سپ واقعاً تایید کرده باشه دیگه خودش
+     برگشت نمی‌زنه → Reverse در پنجره‌ی ۳۱ تا ۴۵ دقیقه بعد از آخرین تلاش (`updated_at`)؛ یعنی بعد از بسته شدن مهلت
+     verify مشتری (refresh صفحه) و با حاشیه از سقف ۵۰ دقیقه. `failed → reversing` شرطی؛ `claim` و `PaymentService`
+     وضعیت‌های `reversing/reversed` (`PaymentTransaction::REVERSAL_STATUSES`) رو محترم می‌شمارن. Reverse ناموفق → اجرای بعدی.
+   - 🐞 باگ پیداشده با تست قبل از commit: به‌روزرسانی وضعیت `updated_at` رو جلو می‌برد و تراکنش از پنجره‌ی خودش خارج
+     می‌شد → `toBase()->update` (بدون timestamp).
+3. `feat(payments): optional BluPay (neo-pg) page for Saman terminals` — فیلد انتخابی `redirect_mode` (classic پیش‌فرض |
+   blupay؛ partial فیلدها نوع `options` یاد گرفت). فرم به هدر `X-IPG-Url` پاسخ توکن می‌ره فقط اگه https روی sep.ir /
+   shaparak.ir باشه؛ وگرنه (یا نبودِ هدر) صفحه‌ی کلاسیک. ⚠️ این رفتار در مستند ۳٫۲ نیست (از پیاده‌سازی تست‌شده‌ی ۳٫۶).
+
+**تست:** `SamanGatewayTest` (۱۶، شامل مسیر کامل نوبت: فرم POST → بازگشت POST بدون کوکی → 303 → paid، و ردِ پرداخت نوبت
+دوم با رسید مصرف‌شده)، `SamanReconcileTest` (۷، شامل مسیر کامل: پاسخ گم‌شده → Reverse → refresh دیرهنگام نه نوبت رو paid
+می‌کنه نه دفتر رو بازنویسی)، `SamanBlupayTest` (۳). Mutation: بدون `claim` ۴ تست و بدون گارد `PaymentService` تست
+مسیر کامل fail می‌شن. سوییت کامل **۱۳۰۹ passed / ۱ skipped** (پایه ۱۲۸۳). `pint --test` کل پروژه PASS (۷۹۴ فایل).
+**MariaDB 10.11:** migration + rollback، رفتار `claim` روی index یکتا، و ۱۱۶ تست پرداخت/درگاه روی MySQL واقعی PASS.
+
+**نکته‌ی جانبی (بدون تغییر):** دستور `bookings:cleanup` (لغو نوبت‌های پرداخت‌نشده بعد از ۳۰ دقیقه) در scheduler ثبت
+**نیست**. اگه فعالش کنید، با سامان مهلت ۳۰ دقیقه‌ی خودش با زمان پرداخت مشتری تداخل داره (پرداخت در دقیقه‌ی ۲۹، بازگشت
+در ۳۱) — قبلش باید مهلت رو بیشتر کرد یا نوبت‌های دارای تراکنش pending رو مستثنا کرد.
+
+⚠️ **توکن GitHub:** توکن جدیدی که در چت اومد کار می‌کرد؛ عمداً در این سند نوشته نشد (ریپو عمومیه). توکن داخل همین
+سند (بالای فایل) منقضی است و باید پاک بشه.
+
 ### قدم‌های باز
-- ⚠️ باطل کردن کلید کاوه‌نگار و توکن GitHub.
+- ⚠️ باطل کردن کلید کاوه‌نگار و توکن‌های GitHub (هم توکن این سند، هم توکنی که در چت ۲۰۲۶-۰۹-۲۶ اومد).
 - تست دستی درگاه‌ها: زیبال با مرچنت `zibal`؛ وندار و آسان پرداخت با حساب واقعی؛ IP سرور در پنل آسان پرداخت؛ تطبیق با
   PDF رسمی IPG REST. ثبت دامنه/ساب‌دامین هر سالن در پنل هر درگاه.
 - درایور تسویه‌ی وندار (بعد از تأیید واحد مبلغ؛ با تمدید خودکار توکن ۵ روزه).
 - اولین تسویه‌ی واقعی زیبال با مبلغ کم.
-- **مرحله‌ی ۲:** درگاه‌های مستقیم بانکی (سامان REST؛ ملت و پارسیان SOAP) — فرم POST آماده است (`GatewayStartResult::postForm`).
+- **مرحله‌ی ۲ ادامه:** ملت/به‌پرداخت و پارسیان (SOAP؛ settle در مهلت، reverse). سامان انجام شد (۲۰۲۶-۰۹-۲۶).
+- سامان در محیط واقعی: قرارداد + ثبت IP سرور نزد سپ؛ اولین پرداخت با مبلغ کم؛ اگه ترمینال بلوپی داره، تست `redirect_mode=blupay`.
+- اجرای `schedule:run` روی سرور برای `payments:reconcile` (کران DirectAdmin بالا) — بدونش Reverse پرداخت‌های گیرکرده انجام نمی‌شه.
+- تصمیم درباره‌ی `bookings:cleanup` (ثبت‌نشده در scheduler؛ نکته‌ی جانبی بالا).
 - برند: خوشنویسی اختصاصی «ماهرو» (کار خوشنویس) + ثبت علامت تجاری + خرید دامنه‌ها.
