@@ -184,6 +184,7 @@ $response = Http::withHeaders([
 - **Cron روی DirectAdmin**:
   ```
   * * * * * cd /home/[username]/public_html && php artisan schedule:run >> /dev/null 2>&1
+  (از ۲۰۲۶-۰۹-۲۶: با `QUEUE_WORK_VIA_SCHEDULER=true` همین خط صف رو هم اجرا می‌کنه — `docs/deployment/SCHEDULER_AND_QUEUE.md`)
   ```
 - **رفع داده‌های تاریخی تکراری**: `cleanup-duplicates.sql` آماده‌ست (SELECT اول، بعد DELETE)
 - **سلسله‌مراتب چندسالنی (SaaS، برنامه‌ریزی‌شده)**: `super_admin` (بدون محدودیت سالن) → هر `admin` از طریق جدول pivot `salon_admins` (نه ستون مستقیم) به یک `Salon` وصل است — در فاز ۱ عملاً هر سالن یک ادمین دارد (قانون در سطح اپلیکیشن)، ساختار داده از روز اول آماده‌ی چند ادمین (فاز ۲) است. ایزولاسیون داده از طریق ستون `salon_id` + `BelongsToSalon` Global Scope روی تمام مدل‌های صاحب‌داده. به بخش «SaaS چندسالنی» در انتهای سند نگاه کن.
@@ -6703,8 +6704,8 @@ scheduler این پروژه در **دو** جا تعریف شده (`bootstrap/app
 ### ۲۰۲۶-۰۹-۲۶ (ادامه) — لغو خودکار نوبت وسط پرداخت + برگشت پول وقتی ساعت از دست رفته
 
 **سؤال‌های ابوالفضل:** (۱) کرون `schedule:run` دستیه؟ → نه؛ همه‌ی کارها در کد زمان‌بندی شدن و فقط **یک خط کرون یک‌باره**
-روی سرور لازمه (Docker: کانتینر `scheduler` از قبل انجامش می‌ده؛ DirectAdmin: همون خط بخش «معماری کلیدی»؛ لوکال:
-`schedule:work`). ⚠️ `CancelUnpaidBookings` با `Schedule::job` صف‌دار است → با `QUEUE_CONNECTION` غیر sync، `queue:work` هم لازمه.
+روی سرور لازمه (~~Docker: کانتینر `scheduler` از قبل انجامش می‌ده~~ — **غلط بود**: در Docker نه scheduler اجرا می‌شد نه
+queue؛ رفع در بخش بعد؛ DirectAdmin: همون خط بخش «معماری کلیدی»؛ لوکال: `schedule:work`). ⚠️ `CancelUnpaidBookings` با `Schedule::job` صف‌دار است → با `QUEUE_CONNECTION` غیر sync، `queue:work` هم لازمه.
 (۲) تداخل لغو ۳۰ دقیقه‌ای با پرداخت دیرهنگام — با دو probe واقعی بازتولید شد (فایل‌ها پاک شدن):
 - ساعت هنوز آزاد → پرداخت دیرهنگام نوبت لغوشده رو بی‌صدا `confirmed/paid` می‌کرد (بعد از پیامک «نوبت شما لغو شد»).
 - ساعت رو نفر دیگه گرفته → `UNIQUE bookings.active_slot_key` (درست جلوی رزرو دوبل رو گرفت) ولی callback اون رو خطای عمومی
@@ -6725,15 +6726,44 @@ scheduler این پروژه در **دو** جا تعریف شده (`bootstrap/app
 **تست:** `CancelUnpaidBookingsInFlightPaymentTest` (۳)، `LostSlotRefundTest` (۵). Mutation: بدون scope تست اول، بدون
 برگشت ۴ از ۵ fail. سوییت کامل **۱۳۱۷ passed / ۱ skipped**؛ Pint کل پروژه PASS؛ ۱۳۹ تست پرداخت/job روی MariaDB 10.11 PASS.
 
+### ۲۰۲۶-۰۹-۲۶ (ادامه ۲) — پیامک برگشت پول + راه‌اندازی واقعی scheduler/queue (Docker و DirectAdmin)
+
+**تصمیم‌ها:** امنیت (کلید کاوه‌نگار، توکن‌ها) → خود ابوالفضل. سرور → در فایل‌های پروژه تنظیم + فایل راهنما. پیامک برگشت پول → الزامی.
+
+**کامیت‌ها:**
+1. `feat(payments): SMS the customer whenever their money is sent back` — `App\Notifications\Payment\PaymentRefundedNotification`
+   (صف‌دار، sms) از هر سه جا: `slot_taken` (LostSlotRefundService)، `verify_unanswered` (reconcile)، `amount_mismatch` (Reverse
+   فوری سامان، مبلغ از OrginalAmount). متن در سازنده ساخته می‌شه (سالن، شماره‌ی نوبت، هر مبلغ و مقصدش، ارقام فارسی).
+   ⚠️ عمداً **بدون salon_id** (از سهمیه‌ی پیامک سالن کم نمی‌شه): پیام مالی نباید با تمام شدن سهمیه نرسه. تکراری نمی‌ره.
+2. `fix(deploy): make the scheduler and the queue actually run …` — **در Docker هیچ‌وقت نه scheduler اجرا شده بود نه queue:**
+   (۱) `.dockerignore` پوشه‌ی `docker/` رو ignore می‌کرد در حالی که Dockerfile ازش COPY می‌کنه → build شکست؛ (۲) healthcheck
+   دستور ناموجود `health:check` + `||` در فرم exec → app هرگز healthy نمی‌شد و queue/scheduler بالا نمی‌اومدن؛ (۳)
+   `entrypoint.sh` آرگومان‌ها رو نادیده می‌گرفت و همیشه وب‌سرور اجرا می‌کرد (+ migrate هم‌زمان ۳ container)؛ (۴) حلقه‌ی
+   `schedule:run && sleep 60`؛ (۵) env ناقص worker. رفع: entrypoint دو نقشی (web: migrate+supervisord؛ worker: exec دستور
+   با `su-exec www`)، anchorهای مشترک compose (یک `.env` با `env_file`)، healthcheck با curl، `schedule:work`، Makefile
+   (APP_KEY روی host، `logs-scheduler`، `queue-restart`). **DirectAdmin:** `QUEUE_WORK_VIA_SCHEDULER=true` → همون یک خط کرون
+   هر دقیقه `queue:work --stop-when-empty --max-time=50` (پس‌زمینه). فایل‌ها: `deploy/cron/mahru.cron`،
+   `deploy/supervisor/mahru-worker.conf`، **راهنما: `docs/deployment/SCHEDULER_AND_QUEUE.md`** (با پرامپت آماده).
+   ⚠️ `CACHE_STORE=array` (در `.env.example` و `.env` لوکال) در production قفل‌های scheduler و throttle ورود رو بی‌اثر می‌کنه —
+   راهنما `database`/`file` رو الزامی کرده.
+
+**بررسی:** entrypoint در هر دو نقش واقعاً اجرا شد (root، production، MariaDB، کاربر www، su-exec): web → symlink + ۴۵
+migration + cache + supervisord؛ worker → بدون migrate، دستور با www، فایل‌های cache مال www. shellcheck تمیز. با
+`QUEUE_WORK_VIA_SCHEDULER=true` یک `schedule:run` دو job صف‌شده رو در ۲ ثانیه اجرا کرد (۰ شکست) و worker خودش بسته شد.
+**بررسی‌نشده:** build واقعی image (Docker در محیط Claude نبود). مشکل جدای باز: سرویس `nginx` در compose یک volume خالی
+(`beauty_public`) رو سرو می‌کنه و به سوکت php-fpm داخل app دسترسی نداره.
+
+**تست:** `PaymentRefundedNotificationTest` (۳) + پیامک در `LostSlotRefundTest`/`SamanReconcileTest`؛ `SchedulerQueueSetupTest` (۳).
+سوییت کامل **۱۳۲۳ passed / ۱ skipped**؛ Pint کل پروژه PASS (۸۰۰ فایل).
+
 ### قدم‌های باز
-- ⚠️ باطل کردن کلید کاوه‌نگار و توکن‌های GitHub (هم توکن این سند، هم توکنی که در چت ۲۰۲۶-۰۹-۲۶ اومد).
+- ⚠️ باطل کردن کلید کاوه‌نگار و توکن‌های GitHub (هم توکن این سند، هم توکنی که در چت ۲۰۲۶-۰۹-۲۶ اومد) — **خود ابوالفضل**.
 - تست دستی درگاه‌ها: زیبال با مرچنت `zibal`؛ وندار و آسان پرداخت با حساب واقعی؛ IP سرور در پنل آسان پرداخت؛ تطبیق با
   PDF رسمی IPG REST. ثبت دامنه/ساب‌دامین هر سالن در پنل هر درگاه.
 - درایور تسویه‌ی وندار (بعد از تأیید واحد مبلغ؛ با تمدید خودکار توکن ۵ روزه).
 - اولین تسویه‌ی واقعی زیبال با مبلغ کم.
 - **مرحله‌ی ۲ ادامه:** ملت/به‌پرداخت و پارسیان (SOAP؛ settle در مهلت، reverse). سامان انجام شد (۲۰۲۶-۰۹-۲۶).
 - سامان در محیط واقعی: قرارداد + ثبت IP سرور نزد سپ؛ اولین پرداخت با مبلغ کم؛ اگه ترمینال بلوپی داره، تست `redirect_mode=blupay`.
-- اجرای `schedule:run` روی سرور برای `payments:reconcile` (کران DirectAdmin بالا) — بدونش Reverse پرداخت‌های گیرکرده انجام نمی‌شه.
-- اطمینان از اجرای `queue:work` روی سرور اگه `QUEUE_CONNECTION` غیر sync است (`CancelUnpaidBookings` صف‌دار است).
-- (اختیاری) پیامک به مشتری وقتی پولش به کیف پول/کارت برگشت؛ الان فقط پیام صفحه و ردیف کیف پول.
+- **روی سرور:** اجرای `docs/deployment/SCHEDULER_AND_QUEUE.md` (DirectAdmin: `.env` → `QUEUE_WORK_VIA_SCHEDULER=true`، `CACHE_STORE=database`، یک خط کرون) — کد آماده است، فقط تنظیم سرور مونده.
+- Docker (اگه قراره استفاده بشه): یک `make setup` واقعی + رفع سرویس جداگانه‌ی `nginx`.
 - برند: خوشنویسی اختصاصی «ماهرو» (کار خوشنویس) + ثبت علامت تجاری + خرید دامنه‌ها.
