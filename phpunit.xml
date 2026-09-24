@@ -37,6 +37,8 @@
              قرمز می‌کنه — نه یک باگ واقعی، فقط یک وابستگی پنهان سوییت به .env محلی که این خط
              قطعش می‌کنه.-->
         <env name="CENTRAL_DOMAIN" value=""/>
+        <!-- ⭐ هیچ تستی نباید پیامک واقعی بفرستد (۲۰۲۶-۰۹-۲۵) -->
+        <env name="KAVENEGAR_SEND_IN_LOCAL" value="false" force="true"/>
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
         <env name="MAIL_MAILER" value="array"/>
