@@ -12,11 +12,21 @@
 @foreach ($item['fields'] as $name => $field)
     <div>
         <label class="block text-sm mb-1" for="{{ $prefix.$driver.'-'.$name }}">{{ $field['label'] }}</label>
+        @if (! empty($field['options']))
+            {{-- ⭐ فیلد انتخابی (مثل حالت بلوپی سامان) — اولین گزینه پیش‌فرض است --}}
+            @php $selected = (string) ($useOld ? old('credentials.'.$name) : ($gateway?->credentials[$name] ?? '')); @endphp
+            <select id="{{ $prefix.$driver.'-'.$name }}" name="credentials[{{ $name }}]" class="{{ $input }}" style="{{ $inputStyle }}">
+                @foreach ($field['options'] as $value => $optionLabel)
+                    <option value="{{ $value }}" @selected($selected === (string) $value)>{{ $optionLabel }}</option>
+                @endforeach
+            </select>
+        @else
         <input id="{{ $prefix.$driver.'-'.$name }}" name="credentials[{{ $name }}]" dir="ltr" autocomplete="off"
                type="{{ $field['secret'] ? 'password' : 'text' }}"
                value="{{ $field['secret'] ? '' : ($useOld ? old('credentials.'.$name) : ($gateway?->credentials[$name] ?? '')) }}"
                placeholder="{{ $field['secret'] && ! $isNew ? '•••••••• (ذخیره شده — برای تغییر مقدار جدید وارد کنید)' : $field['placeholder'] }}"
                class="{{ $input }}" style="{{ $inputStyle }}">
+        @endif
         @if (! empty($field['optional']) && $field['secret'] && ! $isNew && filled($gateway?->credentials[$name] ?? null))
             <label class="flex items-center gap-2 mt-1 text-xs" style="color: var(--admin-text-dim);">
                 <input type="checkbox" name="clear[{{ $name }}]" value="1"> حذف مقدار ذخیره‌شده

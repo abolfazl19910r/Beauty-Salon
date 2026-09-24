@@ -58,6 +58,9 @@ final class GatewayCatalog
             'website' => 'https://www.sep.ir/',
             'fields' => [
                 'terminal_id' => ['label' => 'شماره ترمینال (Terminal ID)', 'secret' => false, 'rules' => ['digits_between:1,15'], 'placeholder' => 'مثلاً 13012345'],
+                // ⭐ «بلوپی» (neo-pg): فقط اگه سپ برای ترمینال فعالش کرده؛ وگرنه خودکار همون صفحه‌ی کلاسیک
+                'redirect_mode' => ['label' => 'صفحه‌ی پرداخت', 'secret' => false, 'optional' => true, 'rules' => ['in:classic,blupay'], 'placeholder' => '',
+                    'options' => ['classic' => 'درگاه اینترنتی سپ (پیش‌فرض)', 'blupay' => 'درگاه + بلوپی (فقط اگر سپ بلوپی را برای ترمینال فعال کرده)']],
             ],
             'note' => 'شماره ترمینال را پرداخت الکترونیک سامان پس از قرارداد می‌دهد. IP سرور سایت باید نزد سپ ثبت شده باشد (برای دریافت توکن و تایید پرداخت).',
         ],
@@ -79,7 +82,7 @@ final class GatewayCatalog
         return self::DRIVERS[$driver]['label'] ?? $driver;
     }
 
-    /** @return array<string, array{label: string, secret: bool, rules: array, placeholder: string}> */
+    /** @return array<string, array{label: string, secret: bool, rules: array, placeholder: string, optional?: bool, options?: array<string, string>}> */
     public static function fields(string $driver): array
     {
         return self::DRIVERS[$driver]['fields'] ?? [];

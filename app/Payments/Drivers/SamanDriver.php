@@ -37,7 +37,14 @@ use Throwable;
  * ⚠️ پاسخ verify نرسید: اگه سپ در واقع تایید کرده باشه، دیگه خودش برگشت نمی‌زنه و پول مشتری بدون خدمت می‌مونه؛
  * این حالت با unanswered=true در raw علامت می‌خوره تا payments:reconcile بعد از بسته شدن مهلت ۳۰ دقیقه‌ای
  * verify (و قبل از مهلت ۵۰ دقیقه‌ای Reverse) کل مبلغ رو برگردونه.
- * credentials: ['terminal_id' => '...'] — سپ برای توکن/تایید رمز نمی‌خواد؛ امنیت با IP ثبت‌شده است.
+ *
+ * حالت «بلوپی» (redirect_mode = blupay، اختیاری): ترمینال‌هایی که سپ برایشان neo-pg فعال کرده، در پاسخ توکن
+ * هدر X-IPG-Url (مثل https://neo-pg.sep.ir/transaction/init) می‌گیرن و فرم به همون آدرس می‌ره تا مشتری بین
+ * «درگاه اینترنتی» و «بلوپی» انتخاب کنه. این رفتار در مستند نگارش ۳٫۲ نیست و از یک پیاده‌سازی تست‌شده با ترمینال
+ * واقعی (django-iranian-payment، مستند ۳٫۶) گرفته شده. اگه هدر نیومد (neo-pg برای ترمینال فعال نیست)، همون
+ * صفحه‌ی کلاسیک استفاده می‌شه تا پرداخت نخوابه. آدرس هدر فقط اگه https و روی sep.ir / shaparak.ir باشه قبوله.
+ * credentials: ['terminal_id' => '...', 'redirect_mode' => 'classic'|'blupay'] — سپ برای توکن/تایید رمز نمی‌خواد؛
+ * امنیت با IP ثبت‌شده است.
  */
 class SamanDriver implements PaymentGatewayDriver
 {
@@ -86,6 +93,30 @@ class SamanDriver implements PaymentGatewayDriver
         return preg_match('/^(?:0098|98|0)?(9\d{9})$/', (string) $digits, $m) ? '0'.$m[1] : null;
     }
 
+    private function blupay(): bool
+    {
+        return ($this->credentials['redirect_mode'] ?? 'classic') === 'blupay';
+    }
+
+    /** مقصد فرم در حالت بلوپی؛ null = آدرس نامعتبر یا نیومده → صفحه‌ی کلاسیک. */
+    public static function trustedIpgUrl(?string $url): ?string
+    {
+        $parts = parse_url(trim((string) $url));
+        $host = strtolower((string) ($parts['host'] ?? ''));
+
+        if (($parts['scheme'] ?? '') !== 'https' || isset($parts['user']) || isset($parts['port'])) {
+            return null;
+        }
+
+        foreach (['sep.ir', 'shaparak.ir'] as $domain) {
+            if ($host === $domain || str_ends_with($host, '.'.$domain)) {
+                return trim((string) $url);
+            }
+        }
+
+        return null;
+    }
+
     public function start(GatewayStartRequest $request): GatewayStartResult
     {
         $resNum = (string) ($request->transactionId ?? (int) (microtime(true) * 1000));
@@ -107,7 +138,16 @@ class SamanDriver implements PaymentGatewayDriver
         $token = (string) ($body['token'] ?? '');
 
         if ($response->successful() && (int) ($body['status'] ?? 0) === 1 && $token !== '') {
-            return GatewayStartResult::postForm(self::PAYMENT_URL, $token, ['Token' => $token], ['status' => 1, 'ResNum' => $resNum]);
+            $action = self::PAYMENT_URL;
+            $raw = ['status' => 1, 'ResNum' => $resNum];
+
+            if ($this->blupay()) {
+                $ipg = self::trustedIpgUrl($response->header('X-IPG-Url'));
+                $action = $ipg ?? self::PAYMENT_URL;
+                $raw += ['mode' => $ipg ? 'blupay' : 'classic', 'ipg_url' => $response->header('X-IPG-Url') ?: null];
+            }
+
+            return GatewayStartResult::postForm($action, $token, ['Token' => $token], $raw);
         }
 
         $code = (int) ($body['errorCode'] ?? 0);
