@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>ثبت‌نام سالن جدید — {{ config('app.name', 'راستا') }}</title>
+    <title>ثبت‌نام سالن جدید — {{ config('brand.name') }}</title>
+    @include('partials.platform-icons')
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,6 +26,8 @@
             --rasta-brown: #2E2117;
         }
         * { box-sizing: border-box; }
+        .signup-logo { display: inline-block; margin-bottom: 1.25rem; }
+        .signup-logo img { height: 52px; width: auto; display: block; }
         body {
             margin: 0;
             min-height: 100vh;
@@ -100,7 +103,8 @@
 </head>
 <body>
     <div class="wrap">
-        <h1>ساخت سالن خودتان روی راستا</h1>
+        <a href="{{ route('central.home') }}" class="signup-logo"><img src="{{ asset('brand/mahru-logo-horizontal-on-dark.svg') }}" alt="{{ config('brand.name') }}" height="52"></a>
+        <h1>ساخت سالن خودتان روی {{ config('brand.name') }}</h1>
         <p class="sub">
             در چند دقیقه، پنل مدیریت اختصاصی سالن خودتان را راه‌اندازی کنید.
             @if ($intent === 'buy')

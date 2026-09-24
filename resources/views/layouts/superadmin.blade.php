@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>پنل مدیریت کل | @yield('title')</title>
+    <title>پنل مدیریت کل {{ config('brand.name') }} | @yield('title')</title>
+    @include('partials.platform-icons')
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     @vite(['resources/css/app.css'])
@@ -48,8 +49,8 @@
     <div class="flex min-h-screen">
         <aside class="w-64 flex-shrink-0 hidden md:block" style="background: var(--sa-surface); border-left: 1px solid var(--sa-border);">
             <div class="p-5 border-b" style="border-color: var(--sa-border);">
+                <img src="{{ asset('brand/mahru-logo-horizontal-on-dark.svg') }}" alt="{{ config('brand.name') }}" style="height: 40px; width: auto; display: block; margin-bottom: .5rem;">
                 <div class="text-lg font-bold" style="color: var(--sa-accent);">پنل مدیریت کل</div>
-                <div class="text-xs" style="color: var(--sa-text-dim);">راستا SaaS</div>
             </div>
             <nav class="p-3">
                 <a href="{{ route('superadmin.dashboard') }}" class="sa-nav-link {{ request()->routeIs('superadmin.dashboard') ? 'active' : '' }}">داشبورد</a>

@@ -3,8 +3,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="راستا؛ نرم‌افزار نوبت‌دهی آنلاین و مدیریت سالن زیبایی با آدرس اختصاصی رزرو برای هر سالن.">
-    <title>راستا — نوبت‌دهی آنلاین سالن زیبایی</title>
+    <meta name="description" content="{{ config('brand.name') }}؛ نرم‌افزار نوبت‌دهی آنلاین و مدیریت سالن زیبایی با آدرس اختصاصی رزرو برای هر سالن.">
+    <title>{{ config('brand.name') }} — نوبت‌دهی آنلاین سالن زیبایی</title>
+    @include('partials.platform-icons')
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -70,6 +71,8 @@
         .top { background: var(--ink); color: var(--cream); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid rgba(201,162,75,.15); }
         .top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-block: .8rem; }
         .brand { display: flex; align-items: center; gap: .6rem; text-decoration: none; }
+        .brand-logo { height: 46px; width: auto; display: block; }
+        .footer-mark { height: 22px; width: auto; vertical-align: middle; margin-left: .4rem; }
         .brand-mark { width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--gold); display: grid; place-items: center; font-family: var(--display); color: var(--champagne); font-size: 1.15rem; }
         .brand-name { font-family: var(--display); font-weight: 800; font-size: 1.3rem; color: var(--champagne); }
         .nav { display: flex; gap: 1.6rem; font-size: .95rem; }
@@ -290,8 +293,7 @@
 <header class="top">
     <div class="wrap">
         <a class="brand" href="{{ route('central.home') }}">
-            <span class="brand-mark" aria-hidden="true">ر</span>
-            <span class="brand-name">راستا</span>
+            <img class="brand-logo" src="{{ asset('brand/mahru-logo-horizontal-on-dark.svg') }}" alt="{{ config('brand.name') }}" height="46">
         </a>
         <nav class="nav" aria-label="بخش‌های صفحه">
             <a href="#how">روند راه‌اندازی</a>
@@ -314,7 +316,7 @@
             <div>
                 <h1 id="hero-title">سالن شما، با آدرس رزرو آنلاین خودش</h1>
                 <p class="hero-lead">
-                    راستا برای سالن شما یک سایت نوبت‌دهی اختصاصی می‌سازد. مشتری‌ها خدمت، متخصص و ساعت را خودشان
+                    {{ config('brand.name') }} برای سالن شما یک سایت نوبت‌دهی اختصاصی می‌سازد. مشتری‌ها خدمت، متخصص و ساعت را خودشان
                     انتخاب می‌کنند و پیش‌پرداخت می‌دهند؛ شما و متخصص‌هایتان هر کدام پنل خودتان را دارید.
                 </p>
 
@@ -421,7 +423,7 @@
         <div class="wrap">
             <div class="sec-head">
                 <h2 id="features-title">همه‌ی امکانات، در همه‌ی پلن‌ها</h2>
-                <p>راستا سه پنل جدا دارد، برای سه نفری که هر روز با سالن سروکار دارند. پلن‌ها فقط در مدت اشتراک فرق دارند، نه در امکانات.</p>
+                <p>{{ config('brand.name') }} سه پنل جدا دارد، برای سه نفری که هر روز با سالن سروکار دارند. پلن‌ها فقط در مدت اشتراک فرق دارند، نه در امکانات.</p>
             </div>
 
             <div class="aud">
@@ -468,7 +470,7 @@
                         <li>گزارش مالی و خروجی Excel و PDF</li>
                         <li>مدیریت کد تخفیف، باشگاه مشتریان، گالری، وبلاگ و اطلاعیه</li>
                         <li>چند مدیر برای یک سالن: مالک و منشی با دسترسی محدودتر</li>
-                        <li>تنظیمات پیامک‌ها، پنل امنیت و تیکت پشتیبانی با تیم راستا</li>
+                        <li>تنظیمات پیامک‌ها، پنل امنیت و تیکت پشتیبانی با تیم {{ config('brand.name') }}</li>
                     </ul>
                 </div>
             </div>
@@ -755,7 +757,7 @@
 
 <footer>
     <div class="wrap">
-        <span>راستا — نرم‌افزار نوبت‌دهی آنلاین سالن زیبایی</span>
+        <span><img class="footer-mark" src="{{ asset('brand/mahru-mark.svg') }}" alt="" aria-hidden="true">{{ config('brand.name') }} — نرم‌افزار نوبت‌دهی آنلاین سالن زیبایی</span>
         <span><a href="#pricing">تعرفه</a> · <a href="{{ route('login') }}">ورود مدیر سالن</a></span>
     </div>
 </footer>

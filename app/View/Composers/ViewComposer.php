@@ -27,9 +27,9 @@ class ViewComposer
         // به همه‌ی ویوها share می‌شه: وقتی CurrentSalon ست باشه (تمام مسیرهای مشتری زیر
         // /s/{slug} یا ساب‌دامین)، نام واقعی همون سالنه؛ وقتی ست نباشه (پنل سوپرادمین که همه‌ی
         // سالن‌ها رو مدیریت می‌کنه، یا هر context بدون سالن مشخص)، به نام پلتفرم (config
-        // app.name) برمی‌گرده — نه یک سالن خاص. این فقط متغیر رو در دسترس می‌ذاره؛ هر ویو باید
+        // brand.name = «ماهرو») برمی‌گرده — نه یک سالن خاص. این فقط متغیر رو در دسترس می‌ذاره؛ هر ویو باید
         // خودش از {{ $currentSalonName }} به‌جای متن ثابت استفاده کنه.
-        $currentSalonName = $this->currentSalon->get()?->name ?? config('app.name', 'راستا');
+        $currentSalonName = $this->currentSalon->get()?->name ?? config('brand.name');
 
         if (! isset($view->currentSalonName)) {
             $view->with('currentSalonName', $currentSalonName);
