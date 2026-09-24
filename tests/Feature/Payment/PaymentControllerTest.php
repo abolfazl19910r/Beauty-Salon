@@ -241,4 +241,31 @@ class PaymentControllerTest extends TestCase
         $response->assertRedirect(route('bookings.show', $booking));
         $this->assertSame(100000.0, (float) $wallet->fresh()->balance);
     }
+
+    /**
+     * ⭐ مرحله‌ی ۰ بخش ۲ (۲۰۲۶-۰۹-۲۵) — زنجیره‌ی کامل: شروع پرداخت → درگاه به آدرس بازگشت مشترک
+     * برمی‌گرده → 303 به callback کسب‌وکار (با session سالم) → تأیید با مبلغ ثبت‌شده → نوبت پرداخت‌شده.
+     */
+    public function test_end_to_end_through_the_shared_return_url_marks_the_booking_paid(): void
+    {
+        Http::fake([
+            '*request.json' => Http::response(['data' => ['code' => 100, 'authority' => 'A-E2E']], 200),
+            '*verify.json' => Http::response(['data' => ['code' => 100, 'ref_id' => 'REF-E2E']], 200),
+        ]);
+        $user = User::factory()->create();
+        $booking = $this->makeBooking($user);
+
+        $this->actingAs($user)->post(route('payment.process', $booking));
+        $tx = \App\Models\PaymentTransaction::where('payable_id', $booking->id)->where('purpose', 'booking')->sole();
+        $this->assertStringContainsString('booking='.$booking->id, $tx->callback_url);
+
+        $bounce = $this->get("/payments/return/{$tx->public_id}?Authority=A-E2E&Status=OK");
+        $bounce->assertStatus(303);
+
+        $this->actingAs($user)->get($bounce->headers->get('Location'));
+
+        $this->assertSame('paid', $booking->fresh()->payment_status);
+        $this->assertSame('paid', $tx->fresh()->status);
+        Http::assertSent(fn ($r) => str_ends_with($r->url(), 'verify.json') && $r['amount'] === 600000);
+    }
 }

@@ -56,9 +56,44 @@ class PaymentService
         ];
     }
 
-    private function startWith(GatewayStartRequest $request, string $sessionKey, ?int $preferredGatewayId, array $logContext): array
+    /**
+     * ⭐ مرحله‌ی ۰ بخش ۲ (۲۰۲۶-۰۹-۲۵): هر شروع پرداخت یک ردیف payment_transactions می‌سازه و آدرس بازگشتی
+     * که به درگاه داده می‌شه مسیر مشترک payments.return همون تراکنشه (نه callback کسب‌وکار) — تا درگاه‌هایی
+     * که با POST cross-site و بدون کوکی session برمی‌گردن هم کار کنن. callback کسب‌وکار در خود ردیف ذخیره
+     * می‌شه و GatewayReturnController مشتری رو (با GET) به اون می‌فرسته.
+     */
+    private function startWith(GatewayStartRequest $request, string $sessionKey, ?int $preferredGatewayId, array $logContext, string $purpose, ?\Illuminate\Database\Eloquent\Model $payable, ?int $userId): array
     {
-        [$result, $gateway] = $this->manager()->start($this->salon(), $request, $preferredGatewayId);
+        $salon = $this->salon();
+        $transaction = \App\Models\PaymentTransaction::create([
+            'salon_id' => $salon?->id,
+            'driver' => (string) $this->manager()->gatewaysFor($salon)->first()?->driver,
+            'purpose' => $purpose,
+            'payable_type' => $payable?->getMorphClass(),
+            'payable_id' => $payable?->getKey(),
+            'user_id' => $userId,
+            'amount_rial' => $request->amountRial,
+            'callback_url' => $request->callbackUrl,
+        ]);
+
+        $request = new GatewayStartRequest(
+            $request->amountRial,
+            route('payments.return', ['publicId' => $transaction->public_id]),
+            $request->description,
+            $request->mobile,
+            $request->email,
+            $request->orderId,
+        );
+
+        [$result, $gateway] = $this->manager()->start($salon, $request, $preferredGatewayId);
+
+        $transaction->update([
+            'gateway_id' => $gateway?->id,
+            'driver' => $gateway?->driver ?? $transaction->driver,
+            'token' => $result->token,
+            'status' => $result->success ? 'pending' : 'failed',
+            'start_response' => $result->raw ?: null,
+        ]);
 
         if ($result->success && $gateway) {
             session([$sessionKey => $gateway->id]);
@@ -69,6 +104,7 @@ class PaymentService
                 'reference' => $result->token,
                 'gateway_id' => $gateway->id,
                 'gateway' => $gateway->driver,
+                'transaction' => $transaction->public_id,
             ];
         }
 
@@ -82,6 +118,34 @@ class PaymentService
             'success' => false,
             'message' => $result->message ?? 'خطا در اتصال به درگاه پرداخت. لطفاً دوباره تلاش کنید.',
         ];
+    }
+
+    /**
+     * تراکنشِ پارامتر tx (از GatewayReturnController)، فقط اگه مال همین سالن و همین نوع پرداخت باشه.
+     */
+    private function transactionFrom($request, string $purpose): ?\App\Models\PaymentTransaction
+    {
+        $publicId = $request instanceof \Illuminate\Http\Request ? $request->query('tx', $request->input('tx')) : ($request->tx ?? null);
+
+        if (! is_string($publicId) || $publicId === '') {
+            return null;
+        }
+
+        return \App\Models\PaymentTransaction::where('public_id', $publicId)
+            ->where('salon_id', $this->salon()?->id)
+            ->where('purpose', $purpose)
+            ->first();
+    }
+
+    private function recordVerification(?\App\Models\PaymentTransaction $transaction, \App\Payments\GatewayVerifyResult $result): void
+    {
+        $transaction?->update([
+            'status' => $result->success ? 'paid' : ($result->cancelledByUser ? 'cancelled' : 'failed'),
+            'ref_id' => $result->refId,
+            'card_pan' => $result->cardPan,
+            'verify_response' => $result->raw ?: null,
+            'verified_at' => $result->success ? now() : null,
+        ]);
     }
 
     /** درگاهی که پرداخت باهاش شروع شد؛ فقط از بین درگاه‌های همین سالن (session دستکاری‌شده بی‌اثره). */
@@ -108,7 +172,7 @@ class PaymentService
             (string) $booking->id,
         );
 
-        return $this->startWith($request, 'payment_gateway_'.$booking->id, $preferredGatewayId, ['booking_id' => $booking->id]);
+        return $this->startWith($request, 'payment_gateway_'.$booking->id, $preferredGatewayId, ['booking_id' => $booking->id], 'booking', $booking, $booking->user_id ?? null);
     }
 
     public function verifyPayment($request): array
@@ -126,7 +190,17 @@ class PaymentService
             }
 
             $booking = $this->bookingRepository->findOrFail($bookingId);
-            $gateway = $this->gatewayFromSession('payment_gateway_'.$booking->id);
+            $transaction = $this->transactionFrom($request, 'booking');
+            if ($transaction && ((int) $transaction->payable_id !== (int) $booking->id)) {
+                $transaction = null; // tx یک نوبت دیگه — نادیده (به مسیر session برمی‌گرده)
+            }
+
+            if ($transaction?->isPaid()) {
+                // idempotent: callback تکراری همون تراکنش دوباره تأیید/ثبت نمی‌شه
+                return ['status' => 'success', 'success' => true, 'booking_id' => $booking->id, 'reference' => $transaction->token, 'ref_id' => $transaction->ref_id, 'card_pan' => $transaction->card_pan, 'fee' => null, 'gateway' => $transaction->driver];
+            }
+
+            $gateway = $transaction?->gateway ?? $this->gatewayFromSession('payment_gateway_'.$booking->id);
 
             if (! $gateway) {
                 return ['status' => 'failed', 'success' => false, 'booking_id' => $booking->id, 'message' => \App\Support\ZarinpalMerchant::CUSTOMER_MESSAGE];
@@ -136,9 +210,10 @@ class PaymentService
             $verifyAmount = $partialPayment ? $partialPayment['remaining_amount'] : $booking->prepayment_amount;
 
             $result = $this->manager()->verify($gateway, new GatewayVerifyRequest(
-                (int) ((float) $verifyAmount * 10),
+                $transaction ? $transaction->amount_rial : (int) ((float) $verifyAmount * 10),
                 $request instanceof \Illuminate\Http\Request ? $request->all() : (array) $request,
             ));
+            $this->recordVerification($transaction, $result);
 
             if ($result->cancelledByUser) {
                 Log::warning('⚠️ Payment Cancelled by User', ['authority' => $result->token]);
@@ -188,22 +263,29 @@ class PaymentService
             $user->email ?? '',
         );
 
-        return $this->startWith($request, 'wallet_charge_gateway', $preferredGatewayId, ['user_id' => $user->id, 'amount' => $amount]);
+        return $this->startWith($request, 'wallet_charge_gateway', $preferredGatewayId, ['user_id' => $user->id, 'amount' => $amount], 'wallet_charge', null, $user->id);
     }
 
     public function verifyWalletChargePayment($request, $expectedAmount): array
     {
         try {
-            $gateway = $this->gatewayFromSession('wallet_charge_gateway');
+            $transaction = $this->transactionFrom($request, 'wallet_charge');
+
+            if ($transaction?->isPaid()) {
+                return ['success' => false, 'message' => 'این تراکنش قبلاً ثبت شده است.'];
+            }
+
+            $gateway = $transaction?->gateway ?? $this->gatewayFromSession('wallet_charge_gateway');
 
             if (! $gateway) {
                 return ['success' => false, 'message' => \App\Support\ZarinpalMerchant::CUSTOMER_MESSAGE];
             }
 
             $result = $this->manager()->verify($gateway, new GatewayVerifyRequest(
-                (int) ((float) $expectedAmount * 10),
+                $transaction ? $transaction->amount_rial : (int) ((float) $expectedAmount * 10),
                 $request instanceof \Illuminate\Http\Request ? $request->all() : (array) $request,
             ));
+            $this->recordVerification($transaction, $result);
 
             if ($result->success) {
                 return [

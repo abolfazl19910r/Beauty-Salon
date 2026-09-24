@@ -3,107 +3,90 @@
 namespace App\Services\Payment;
 
 use App\Models\Invoice;
+use App\Payments\Drivers\ZarinpalDriver;
+use App\Payments\GatewayStartRequest;
+use App\Payments\GatewayVerifyRequest;
 use App\Repositories\Contracts\InvoiceRepositoryInterface;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class SubscriptionPaymentService
 {
-    protected string $merchantId;
+    /**
+     * ⭐ لایه‌ی چند درگاه — مرحله‌ی ۰ (۲۰۲۶-۰۹-۲۵): خرید اشتراک سالن‌ها (پول به حساب **پلتفرم**) حالا از
+     * همون ZarinpalDriver استفاده می‌کنه، با credentials پلتفرم از config (نه درگاه هیچ سالنی). قرارداد
+     * متدها و متن پیام‌ها بدون تغییر. پرداخت اشتراک عمداً روی GatewayManager نیست: درگاه پلتفرم یکیه و
+     * ربطی به درگاه‌های سالن نداره.
+     */
+    public function __construct(protected readonly InvoiceRepositoryInterface $invoiceRepository) {}
 
-    protected string $apiUrl;
-
-    protected string $gatewayUrl;
-
-    protected bool $sandbox;
-
-    public function __construct(protected readonly InvoiceRepositoryInterface $invoiceRepository)
+    protected function driver(): ZarinpalDriver
     {
-        $this->merchantId = config('services.zarinpal.merchant_id');
-        $this->sandbox = config('services.zarinpal.sandbox', true);
-
-        if ($this->sandbox) {
-            $this->apiUrl = 'https://sandbox.zarinpal.com/pg/v4/payment';
-            $this->gatewayUrl = 'https://sandbox.zarinpal.com/pg/StartPay';
-        } else {
-            $this->apiUrl = 'https://api.zarinpal.com/pg/v4/payment';
-            $this->gatewayUrl = 'https://www.zarinpal.com/pg/StartPay';
-        }
+        return new ZarinpalDriver(
+            ['merchant_id' => (string) config('services.zarinpal.merchant_id')],
+            (bool) config('services.zarinpal.sandbox', true),
+        );
     }
 
     public function createPayment(Invoice $invoice): array
     {
-        try {
-            $callbackUrl = route('admin.billing.callback', ['invoice' => $invoice->id]);
-            $amount = (int) ($invoice->amount * 10);
+        // ⭐ مرحله‌ی ۰ بخش ۲: ثبت در دفتر واحد payment_transactions + بازگشت از مسیر مشترک payments.return
+        $transaction = \App\Models\PaymentTransaction::create([
+            'salon_id' => $invoice->salon_id,
+            'driver' => 'zarinpal',
+            'purpose' => 'subscription',
+            'payable_type' => $invoice->getMorphClass(),
+            'payable_id' => $invoice->id,
+            'user_id' => $invoice->created_by,
+            'amount_rial' => (int) ((float) $invoice->amount * 10),
+            'callback_url' => route('admin.billing.callback', ['invoice' => $invoice->id]),
+        ]);
 
-            $requestData = [
-                'merchant_id' => $this->merchantId,
-                'amount' => $amount,
-                'callback_url' => $callbackUrl,
-                'description' => sprintf(
-                    'خرید/تمدید اشتراک سالن «%s» (%s)',
-                    $invoice->salon->name,
-                    $invoice->subscription_type
-                ),
-                'metadata' => [
-                    'mobile' => $invoice->createdBy?->phone ?? '',
-                ],
-            ];
+        $result = $this->driver()->start(new GatewayStartRequest(
+            $transaction->amount_rial,
+            route('payments.return', ['publicId' => $transaction->public_id]),
+            sprintf('خرید/تمدید اشتراک سالن «%s» (%s)', $invoice->salon->name, $invoice->subscription_type),
+            $invoice->createdBy?->phone ?? '',
+        ));
 
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json',
-                ])
-                ->post($this->apiUrl.'/request.json', $requestData);
+        $transaction->update([
+            'token' => $result->token,
+            'status' => $result->success ? 'pending' : 'failed',
+            'start_response' => $result->raw ?: null,
+        ]);
 
-            $result = $response->json();
-
-            if ($response->successful() && isset($result['data']['code']) && $result['data']['code'] == 100) {
-                $authority = $result['data']['authority'];
-                $this->invoiceRepository->update($invoice, ['authority' => $authority]);
-
-                return [
-                    'success' => true,
-                    'payment_url' => $this->gatewayUrl.'/'.$authority,
-                    'reference' => $authority,
-                ];
-            }
-
-            $errorCode = $result['data']['code'] ?? $result['errors']['code'] ?? -999;
-            $errorMessage = $result['errors']['message'] ?? "خطای زرین‌پال (کد {$errorCode})";
-
-            Log::error('SubscriptionPaymentService: درخواست پرداخت اشتراک ناموفق', [
-                'invoice_id' => $invoice->id,
-                'error_code' => $errorCode,
-                'response' => $result,
-            ]);
+        if ($result->success) {
+            $this->invoiceRepository->update($invoice, ['authority' => $result->token]);
 
             return [
-                'success' => false,
-                'message' => $errorMessage,
-            ];
-        } catch (\Throwable $e) {
-            Log::error('SubscriptionPaymentService: خطای اتصال به درگاه پرداخت اشتراک', [
-                'invoice_id' => $invoice->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return [
-                'success' => false,
-                'message' => 'خطا در اتصال به درگاه پرداخت. لطفاً دوباره تلاش کنید.',
+                'success' => true,
+                'payment_url' => $result->redirectUrl,
+                'reference' => $result->token,
             ];
         }
+
+        if ($result->raw === []) {
+            Log::error('SubscriptionPaymentService: خطای اتصال به درگاه پرداخت اشتراک', ['invoice_id' => $invoice->id]);
+
+            return ['success' => false, 'message' => 'خطا در اتصال به درگاه پرداخت. لطفاً دوباره تلاش کنید.'];
+        }
+
+        $errorCode = $result->raw['data']['code'] ?? $result->raw['errors']['code'] ?? -999;
+        Log::error('SubscriptionPaymentService: درخواست پرداخت اشتراک ناموفق', [
+            'invoice_id' => $invoice->id,
+            'error_code' => $errorCode,
+            'response' => $result->raw,
+        ]);
+
+        return [
+            'success' => false,
+            'message' => $result->raw['errors']['message'] ?? "خطای زرین‌پال (کد {$errorCode})",
+        ];
     }
 
     public function verifyPayment(Invoice $invoice, string $status, ?string $authority): array
     {
         if ($status === 'NOK' || $status === 'cancel') {
-            return [
-                'success' => false,
-                'message' => 'پرداخت توسط شما لغو شد.',
-            ];
+            return ['success' => false, 'message' => 'پرداخت توسط شما لغو شد.'];
         }
 
         if (! $authority || $authority !== $invoice->authority) {
@@ -113,62 +96,43 @@ class SubscriptionPaymentService
                 'received' => $authority,
             ]);
 
-            return [
-                'success' => false,
-                'message' => 'اطلاعات تراکنش نامعتبر است.',
-            ];
+            return ['success' => false, 'message' => 'اطلاعات تراکنش نامعتبر است.'];
         }
 
-        try {
-            $amount = (int) ($invoice->amount * 10);
+        $result = $this->driver()->verify(new GatewayVerifyRequest(
+            (int) ((float) $invoice->amount * 10),
+            ['Authority' => $authority, 'Status' => $status],
+        ));
 
-            $requestData = [
-                'merchant_id' => $this->merchantId,
-                'authority' => $authority,
-                'amount' => $amount,
-            ];
-
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json',
-                ])
-                ->post($this->apiUrl.'/verify.json', $requestData);
-
-            $result = $response->json();
-
-            if ($response->successful() && isset($result['data']['code'])) {
-                $code = $result['data']['code'];
-                if ($code == 100 || $code == 101) {
-                    return [
-                        'success' => true,
-                        'ref_id' => (string) ($result['data']['ref_id'] ?? $authority),
-                    ];
-                }
-            }
-
-            $errorCode = $result['data']['code'] ?? $result['errors']['code'] ?? -999;
-
-            Log::warning('SubscriptionPaymentService: تأیید پرداخت اشتراک ناموفق', [
-                'invoice_id' => $invoice->id,
-                'authority' => $authority,
-                'error_code' => $errorCode,
+        \App\Models\PaymentTransaction::where('purpose', 'subscription')
+            ->where('payable_type', $invoice->getMorphClass())->where('payable_id', $invoice->id)
+            ->where('token', $authority)
+            ->update([
+                'status' => $result->success ? 'paid' : 'failed',
+                'ref_id' => $result->refId,
+                'card_pan' => $result->cardPan,
+                'verify_response' => $result->raw ? json_encode($result->raw, JSON_UNESCAPED_UNICODE) : null,
+                'verified_at' => $result->success ? now() : null,
+                'updated_at' => now(),
             ]);
 
-            return [
-                'success' => false,
-                'message' => "پرداخت تأیید نشد (کد {$errorCode}).",
-            ];
-        } catch (\Throwable $e) {
-            Log::error('SubscriptionPaymentService: خطای اتصال هنگام تأیید پرداخت اشتراک', [
-                'invoice_id' => $invoice->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return [
-                'success' => false,
-                'message' => 'خطا در تأیید پرداخت.',
-            ];
+        if ($result->success) {
+            return ['success' => true, 'ref_id' => (string) $result->refId];
         }
+
+        if ($result->raw === []) {
+            Log::error('SubscriptionPaymentService: خطای اتصال هنگام تأیید پرداخت اشتراک', ['invoice_id' => $invoice->id]);
+
+            return ['success' => false, 'message' => 'خطا در تأیید پرداخت.'];
+        }
+
+        $errorCode = $result->raw['data']['code'] ?? $result->raw['errors']['code'] ?? -999;
+        Log::warning('SubscriptionPaymentService: تأیید پرداخت اشتراک ناموفق', [
+            'invoice_id' => $invoice->id,
+            'authority' => $authority,
+            'error_code' => $errorCode,
+        ]);
+
+        return ['success' => false, 'message' => "پرداخت تأیید نشد (کد {$errorCode})."];
     }
 }

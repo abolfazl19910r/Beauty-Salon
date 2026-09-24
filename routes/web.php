@@ -99,6 +99,15 @@ if ($centralDomain) {
 // که با هیچ گروه ساب‌دامینی جور نیست (دامنه‌ی مرکزی خام، 127.0.0.1، localhost) به اینجا می‌رسه.
 Route::get('/', \App\Http\Controllers\Central\CentralLandingController::class)->name('central.home');
 
+// ⭐ آدرس بازگشت مشترک همه‌ی درگاه‌های پرداخت (لایه‌ی چند درگاه — مرحله‌ی ۰ بخش ۲، ۲۰۲۶-۰۹-۲۵). بدون
+// Route::domain (روی هاست همون سالن کار می‌کنه)، GET و POST، بدون auth و بدون CSRF چون بانک‌ها با POST
+// cross-site برمی‌گردن و کوکی session همراهش نیست — به GatewayReturnController نگاه کن.
+Route::match(['get', 'post'], '/payments/return/{publicId}', \App\Http\Controllers\Payment\GatewayReturnController::class)
+    ->whereUuid('publicId')
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class, \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+    ->middleware('throttle:60,1')
+    ->name('payments.return');
+
 require __DIR__.'/web/auth.php';
 require __DIR__.'/web/salon-signup.php';
 // ⭐ Commit 4b-3: this file is now ONLY the specialist's own staff dashboard (specialist.*) —

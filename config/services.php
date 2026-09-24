@@ -54,6 +54,9 @@ return [
         'api_key' => env('ZARINPAL_API_KEY'),
         'base_url' => env('ZARINPAL_BASE_URL', 'https://api.zarinpal.com/pg/v4'),
         'sandbox' => env('ZARINPAL_SANDBOX', true),
+        // ⭐ ۲۰۲۶-۰۹-۲۵: آدرس‌های production درگاه پرداخت طبق مستندات رسمی فعلی زرین‌پال.
+        'payment_api_url' => env('ZARINPAL_PAYMENT_API_URL', 'https://payment.zarinpal.com/pg/v4/payment'),
+        'start_pay_url' => env('ZARINPAL_START_PAY_URL', 'https://payment.zarinpal.com/pg/StartPay'),
 
         // ⭐ Payout (specialized automatic withdrawal settlement) — intentionally separate from merchant_id/api_key above:
         // ZarrinPal provides a dedicated API Key for the Payout feature (which is only issued by separately activating

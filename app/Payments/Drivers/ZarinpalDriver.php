@@ -28,8 +28,11 @@ class ZarinpalDriver implements PaymentGatewayDriver
             $this->apiUrl = 'https://sandbox.zarinpal.com/pg/v4/payment';
             $this->gatewayUrl = 'https://sandbox.zarinpal.com/pg/StartPay';
         } else {
-            $this->apiUrl = 'https://api.zarinpal.com/pg/v4/payment';
-            $this->gatewayUrl = 'https://www.zarinpal.com/pg/StartPay';
+            // ⭐ ۲۰۲۶-۰۹-۲۵: طبق مستندات رسمی فعلی زرین‌پال (zarinpal.com/docs/paymentGateway/connectToGateway)
+            // آدرس‌های production روی payment.zarinpal.com هستن — قبلاً کد api.zarinpal.com و
+            // www.zarinpal.com/pg/StartPay رو صدا می‌زد. قابل override با env برای وقتی دوباره عوض بشن.
+            $this->apiUrl = rtrim((string) config('services.zarinpal.payment_api_url', 'https://payment.zarinpal.com/pg/v4/payment'), '/');
+            $this->gatewayUrl = rtrim((string) config('services.zarinpal.start_pay_url', 'https://payment.zarinpal.com/pg/StartPay'), '/');
         }
     }
 
