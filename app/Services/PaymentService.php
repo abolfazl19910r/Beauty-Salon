@@ -2,55 +2,49 @@
 
 namespace App\Services;
 
+use App\Payments\GatewayManager;
+use App\Payments\GatewayStartRequest;
+use App\Payments\GatewayVerifyRequest;
 use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Support\CurrentSalon;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class PaymentService
 {
-    protected string $merchantId;
+    /**
+     * ⭐ لایه‌ی چند درگاه — مرحله‌ی ۰ (۲۰۲۶-۰۹-۲۵): این سرویس دیگه مستقیم با زرین‌پال حرف نمی‌زنه؛
+     * درگاه‌های فعال سالن جاری رو از App\Payments\GatewayManager می‌گیره (انتخاب مشتری + جایگزینی
+     * خودکار) و خود درخواست/تایید رو driver انجام می‌ده. قرارداد عمومی متدها (آرایه‌های برگشتی) و
+     * رفتار با یک درگاه زرین‌پال دقیقاً مثل قبله. درگاهی که پرداخت باهاش شروع شد در session نگه داشته
+     * می‌شه تا تایید با همون درگاه انجام بشه (درگاه‌ها authority همدیگه رو نمی‌شناسن).
+     *
+     * قانون ۲۰۲۶-۰۹-۲۴ سر جاشه: پول مشتری‌های سالن فقط به درگاه‌های خودِ سالن؛ بدون درگاه فعال →
+     * {success:false, reason:merchant_missing} قبل از هر درخواست.
+     */
+    public function __construct(
+        protected readonly BookingRepositoryInterface $bookingRepository,
+        protected readonly ?GatewayManager $gateways = null,
+    ) {}
 
-    protected string $apiUrl;
-
-    protected string $gatewayUrl;
-
-    protected bool $sandbox;
-
-    public function __construct(protected readonly BookingRepositoryInterface $bookingRepository)
+    private function manager(): GatewayManager
     {
-        $this->merchantId = $this->resolveMerchantId();
-        $this->sandbox = config('services.zarinpal.sandbox', true);
-
-        if ($this->sandbox) {
-            $this->apiUrl = 'https://sandbox.zarinpal.com/pg/v4/payment';
-            $this->gatewayUrl = 'https://sandbox.zarinpal.com/pg/StartPay';
-        } else {
-            $this->apiUrl = 'https://api.zarinpal.com/pg/v4/payment';
-            $this->gatewayUrl = 'https://www.zarinpal.com/pg/StartPay';
-        }
+        return $this->gateways ?? app(GatewayManager::class);
     }
 
-    /**
-     * ⭐ ۲۰۲۶-۰۹-۲۴ (تصمیم ابوالفضل): پول مشتری‌های یک سالن فقط به درگاه خودِ همون سالن. سالن بدون
-     * کد پذیرنده → رشته‌ی خالی → createPayment/createWalletChargePayment قبل از هر درخواستی رد
-     * می‌کنن. قبلاً این‌جا بی‌صدا به ZARINPAL_MERCHANT_ID پلتفرم برمی‌گشت و پول مشتری‌های سالن به
-     * حساب پلتفرم می‌رفت. مرچنت پلتفرم فقط وقتی هیچ سالنی bind نیست (نباید در مسیرهای مشتری پیش بیاد).
-     */
-    private function resolveMerchantId(): string
+    private function salon(): ?\App\Models\Salon
     {
-        $salon = app(CurrentSalon::class)->get();
-
-        if ($salon) {
-            return (string) $salon->zarinpal_merchant_id;
-        }
-
-        return (string) config('services.zarinpal.merchant_id');
+        return app(CurrentSalon::class)->get();
     }
 
     public function isAvailable(): bool
     {
-        return $this->merchantId !== '';
+        return $this->manager()->gatewaysFor($this->salon())->isNotEmpty();
+    }
+
+    /** درگاه‌های فعال سالن جاری برای صفحه‌ی انتخاب درگاه مشتری. */
+    public function availableGateways(): \Illuminate\Support\Collection
+    {
+        return $this->manager()->gatewaysFor($this->salon());
     }
 
     private function unavailableResult(): array
@@ -62,340 +56,168 @@ class PaymentService
         ];
     }
 
-    public function createPayment($booking, $customAmount = null): array
+    private function startWith(GatewayStartRequest $request, string $sessionKey, ?int $preferredGatewayId, array $logContext): array
+    {
+        [$result, $gateway] = $this->manager()->start($this->salon(), $request, $preferredGatewayId);
+
+        if ($result->success && $gateway) {
+            session([$sessionKey => $gateway->id]);
+
+            return [
+                'success' => true,
+                'payment_url' => $result->redirectUrl,
+                'reference' => $result->token,
+                'gateway_id' => $gateway->id,
+                'gateway' => $gateway->driver,
+            ];
+        }
+
+        Log::error('❌ Payment Request Failed', $logContext + [
+            'gateway' => $gateway?->driver,
+            'message' => $result->message,
+            'full_response' => $result->raw,
+        ]);
+
+        return [
+            'success' => false,
+            'message' => $result->message ?? 'خطا در اتصال به درگاه پرداخت. لطفاً دوباره تلاش کنید.',
+        ];
+    }
+
+    /** درگاهی که پرداخت باهاش شروع شد؛ فقط از بین درگاه‌های همین سالن (session دستکاری‌شده بی‌اثره). */
+    private function gatewayFromSession(string $sessionKey): ?\App\Models\SalonPaymentGateway
+    {
+        $gateways = $this->manager()->gatewaysFor($this->salon());
+        $id = session($sessionKey);
+
+        return $gateways->firstWhere('id', $id) ?? $gateways->first();
+    }
+
+    public function createPayment($booking, $customAmount = null, ?int $preferredGatewayId = null): array
     {
         if (! $this->isAvailable()) {
             return $this->unavailableResult();
         }
 
-        try {
-            $callbackUrl = route('payment.callback', ['booking' => $booking->id]);
-            $paymentAmount = $customAmount ?? $booking->prepayment_amount;
-            $amount = (int) ($paymentAmount * 10);
+        $request = GatewayStartRequest::fromToman(
+            $customAmount ?? $booking->prepayment_amount,
+            route('payment.callback', ['booking' => $booking->id]),
+            sprintf('پیش پرداخت نوبت سالن زیبایی - شماره %d', $booking->id),
+            $booking->user->phone ?? '',
+            $booking->user->email ?? '',
+            (string) $booking->id,
+        );
 
-            $requestData = [
-                'merchant_id' => $this->merchantId,
-                'amount' => $amount,
-                'callback_url' => $callbackUrl,
-                'description' => sprintf('پیش پرداخت نوبت سالن زیبایی - شماره %d', $booking->id),
-                'metadata' => [
-                    'mobile' => $booking->user->phone ?? '',
-                    'email' => $booking->user->email ?? '',
-                ],
-            ];
-
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json',
-                ])
-                ->post($this->apiUrl.'/request.json', $requestData);
-
-            $statusCode = $response->status();
-            $result = $response->json();
-
-            if ($response->successful() && isset($result['data']['code']) && $result['data']['code'] == 100) {
-                $authority = $result['data']['authority'];
-                $paymentUrl = $this->gatewayUrl.'/'.$authority;
-
-                return [
-                    'success' => true,
-                    'payment_url' => $paymentUrl,
-                    'reference' => $authority,
-                ];
-            }
-
-            $errorCode = $result['data']['code'] ?? $result['errors']['code'] ?? -999;
-            $errorMessage = $this->getZarinpalError($errorCode);
-
-            Log::error('❌ Payment Request Failed', [
-                'booking_id' => $booking->id,
-                'error_code' => $errorCode,
-                'message' => $errorMessage,
-                'full_response' => $result,
-            ]);
-
-            return [
-                'success' => false,
-                'message' => $errorMessage,
-            ];
-
-        } catch (\Exception $e) {
-            Log::error('💥 Payment Creation Exception', [
-                'booking_id' => $booking->id,
-                'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return [
-                'success' => false,
-                'message' => 'خطا در اتصال به درگاه پرداخت. لطفاً دوباره تلاش کنید.',
-            ];
-        }
+        return $this->startWith($request, 'payment_gateway_'.$booking->id, $preferredGatewayId, ['booking_id' => $booking->id]);
     }
 
     public function verifyPayment($request): array
     {
         try {
-            $authority = $request->Authority ?? $request->authority;
-            $status = $request->Status ?? $request->status;
-
-            if ($status === 'NOK' || $status === 'cancel') {
-                Log::warning('⚠️ Payment Cancelled by User', ['authority' => $authority]);
-
-                return [
-                    'success' => false,
-                    'message' => 'پرداخت توسط کاربر لغو شد',
-                ];
-            }
-
             $bookingId = $request->booking ?? null;
-
             if (! $bookingId) {
+                $status = $request->Status ?? $request->status;
+                if ($status === 'NOK' || $status === 'cancel') {
+                    return ['success' => false, 'message' => 'پرداخت توسط کاربر لغو شد'];
+                }
                 Log::error('❌ Booking ID not found in callback');
 
-                return [
-                    'success' => false,
-                    'message' => 'شناسه رزرو یافت نشد',
-                ];
+                return ['success' => false, 'message' => 'شناسه رزرو یافت نشد'];
             }
 
             $booking = $this->bookingRepository->findOrFail($bookingId);
-            $partialPayment = session('partial_payment_'.$booking->id);
-            $verifyAmount = $partialPayment
-                ? $partialPayment['remaining_amount']
-                : $booking->prepayment_amount;
+            $gateway = $this->gatewayFromSession('payment_gateway_'.$booking->id);
 
-            $amount = (int) ($verifyAmount * 10);
-
-            $requestData = [
-                'merchant_id' => $this->merchantId,
-                'authority' => $authority,
-                'amount' => $amount,
-            ];
-
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json',
-                ])
-                ->post($this->apiUrl.'/verify.json', $requestData);
-
-            $result = $response->json();
-
-            if ($response->successful() && isset($result['data']['code'])) {
-                $code = $result['data']['code'];
-                if ($code == 100 || $code == 101) {
-                    $refId = $result['data']['ref_id'] ?? $authority;
-
-                    return [
-                        'status' => 'success',
-                        'success' => true,
-                        'booking_id' => $booking->id,
-                        'reference' => $authority,
-                        'ref_id' => $refId,
-                        'card_pan' => $result['data']['card_pan'] ?? null,
-                        'fee' => $result['data']['fee'] ?? null,
-                    ];
-                }
+            if (! $gateway) {
+                return ['status' => 'failed', 'success' => false, 'booking_id' => $booking->id, 'message' => \App\Support\ZarinpalMerchant::CUSTOMER_MESSAGE];
             }
 
-            $errorCode = $result['data']['code'] ?? $result['errors']['code'] ?? -999;
-            $errorMessage = $this->getZarinpalError($errorCode);
+            $partialPayment = session('partial_payment_'.$booking->id);
+            $verifyAmount = $partialPayment ? $partialPayment['remaining_amount'] : $booking->prepayment_amount;
+
+            $result = $this->manager()->verify($gateway, new GatewayVerifyRequest(
+                (int) ((float) $verifyAmount * 10),
+                $request instanceof \Illuminate\Http\Request ? $request->all() : (array) $request,
+            ));
+
+            if ($result->cancelledByUser) {
+                Log::warning('⚠️ Payment Cancelled by User', ['authority' => $result->token]);
+
+                return ['success' => false, 'message' => $result->message];
+            }
+
+            if ($result->success) {
+                return [
+                    'status' => 'success',
+                    'success' => true,
+                    'booking_id' => $booking->id,
+                    'reference' => $result->token,
+                    'ref_id' => $result->refId,
+                    'card_pan' => $result->cardPan,
+                    'fee' => $result->fee,
+                    'gateway' => $gateway->driver,
+                ];
+            }
 
             Log::warning('⚠️ Payment Verification Failed', [
                 'booking_id' => $booking->id,
-                'authority' => $authority,
-                'error_code' => $errorCode,
-                'message' => $errorMessage,
+                'authority' => $result->token,
+                'gateway' => $gateway->driver,
+                'message' => $result->message,
             ]);
 
-            return [
-                'status' => 'failed',
-                'success' => false,
-                'booking_id' => $booking->id,
-                'message' => $errorMessage,
-            ];
-
+            return ['status' => 'failed', 'success' => false, 'booking_id' => $booking->id, 'message' => $result->message];
         } catch (\Exception $e) {
-            Log::error('💥 Payment Verification Exception', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
+            Log::error('💥 Payment Verification Exception', ['error' => $e->getMessage()]);
 
-            return [
-                'status' => 'failed',
-                'success' => false,
-                'message' => 'خطا در تایید پرداخت',
-            ];
+            return ['status' => 'failed', 'success' => false, 'message' => 'خطا در تایید پرداخت'];
         }
     }
 
-    public function createWalletChargePayment($user, $amount): array
+    public function createWalletChargePayment($user, $amount, ?int $preferredGatewayId = null): array
     {
         if (! $this->isAvailable()) {
             return $this->unavailableResult();
         }
 
-        try {
-            $callbackUrl = route('wallet.charge.callback');
-            $amountInRials = (int) ($amount * 10);
+        $request = GatewayStartRequest::fromToman(
+            $amount,
+            route('wallet.charge.callback'),
+            sprintf('شارژ کیف پول - کاربر: %s', $user->name ?? $user->phone),
+            $user->phone ?? '',
+            $user->email ?? '',
+        );
 
-            $requestData = [
-                'merchant_id' => $this->merchantId,
-                'amount' => $amountInRials,
-                'callback_url' => $callbackUrl,
-                'description' => sprintf('شارژ کیف پول - کاربر: %s', $user->name ?? $user->phone),
-                'metadata' => [
-                    'mobile' => $user->phone ?? '',
-                    'email' => $user->email ?? '',
-                ],
-            ];
-
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json',
-                ])
-                ->post($this->apiUrl.'/request.json', $requestData);
-
-            $result = $response->json();
-
-            if ($response->successful() && isset($result['data']['code']) && $result['data']['code'] == 100) {
-                $authority = $result['data']['authority'];
-                $paymentUrl = $this->gatewayUrl.'/'.$authority;
-
-                return [
-                    'success' => true,
-                    'payment_url' => $paymentUrl,
-                    'reference' => $authority,
-                ];
-            }
-
-            $errorCode = $result['data']['code'] ?? $result['errors']['code'] ?? -999;
-            $errorMessage = $this->getZarinpalError($errorCode);
-
-            Log::error('❌ Wallet Charge Request Failed', [
-                'user_id' => $user->id,
-                'amount' => $amount,
-                'error_code' => $errorCode,
-                'message' => $errorMessage,
-            ]);
-
-            return [
-                'success' => false,
-                'message' => $errorMessage,
-            ];
-
-        } catch (\Exception $e) {
-            Log::error('💥 Wallet Charge Creation Exception', [
-                'user_id' => $user->id,
-                'amount' => $amount,
-                'error' => $e->getMessage(),
-            ]);
-
-            return [
-                'success' => false,
-                'message' => 'خطا در اتصال به درگاه پرداخت.',
-            ];
-        }
+        return $this->startWith($request, 'wallet_charge_gateway', $preferredGatewayId, ['user_id' => $user->id, 'amount' => $amount]);
     }
 
     public function verifyWalletChargePayment($request, $expectedAmount): array
     {
         try {
-            $authority = $request->Authority ?? $request->authority;
-            $status = $request->Status ?? $request->status;
+            $gateway = $this->gatewayFromSession('wallet_charge_gateway');
 
-            if ($status === 'NOK' || $status === 'cancel') {
+            if (! $gateway) {
+                return ['success' => false, 'message' => \App\Support\ZarinpalMerchant::CUSTOMER_MESSAGE];
+            }
+
+            $result = $this->manager()->verify($gateway, new GatewayVerifyRequest(
+                (int) ((float) $expectedAmount * 10),
+                $request instanceof \Illuminate\Http\Request ? $request->all() : (array) $request,
+            ));
+
+            if ($result->success) {
                 return [
-                    'success' => false,
-                    'message' => 'پرداخت توسط کاربر لغو شد',
+                    'success' => true,
+                    'ref_id' => $result->refId,
+                    'card_pan' => $result->cardPan,
                 ];
             }
 
-            $amount = (int) ($expectedAmount * 10);
-
-            $requestData = [
-                'merchant_id' => $this->merchantId,
-                'authority' => $authority,
-                'amount' => $amount,
-            ];
-
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json',
-                ])
-                ->post($this->apiUrl.'/verify.json', $requestData);
-
-            $result = $response->json();
-
-            if ($response->successful() && isset($result['data']['code'])) {
-                $code = $result['data']['code'];
-                if ($code == 100 || $code == 101) {
-                    return [
-                        'success' => true,
-                        'ref_id' => $result['data']['ref_id'] ?? $authority,
-                        'card_pan' => $result['data']['card_pan'] ?? null,
-                    ];
-                }
-            }
-
-            $errorCode = $result['data']['code'] ?? $result['errors']['code'] ?? -999;
-            $errorMessage = $this->getZarinpalError($errorCode);
-
-            return [
-                'success' => false,
-                'message' => $errorMessage,
-            ];
-
+            return ['success' => false, 'message' => $result->message];
         } catch (\Exception $e) {
-            Log::error('💥 Wallet Charge Verification Exception', [
-                'error' => $e->getMessage(),
-            ]);
+            Log::error('💥 Wallet Charge Verification Exception', ['error' => $e->getMessage()]);
 
-            return [
-                'success' => false,
-                'message' => 'خطا در تایید پرداخت',
-            ];
+            return ['success' => false, 'message' => 'خطا در تایید پرداخت'];
         }
-    }
-
-    private function getZarinpalError(int $code): string
-    {
-        return match ($code) {
-            -1 => 'اطلاعات ارسال شده ناقص است',
-            -2 => 'IP و یا مرچنت کد پذیرنده صحیح نیست',
-            -3 => 'با توجه به محدودیت های شاپرک امکان پرداخت با رقم درخواست شده میسر نمی باشد',
-            -4 => 'سطح تایید پذیرنده پایین تر از سطح نقره ای است',
-            -9 => 'آدرس IP درخواست کننده همگام با IP ثبت شده در وب سرویس نیست',
-            -10 => 'توکن دسترسی غیرفعال شده است',
-            -11 => 'درخواست مورد نظر یافت نشد',
-            -12 => 'امکان ویرایش درخواست میسر نمی باشد',
-            -15 => 'درگاه پرداخت به حالت تعلیق در آمده است',
-            -16 => 'سطح تایید پذیرنده پایین تر از سطح نقره ای است',
-            -17 => 'محدودیت پذیرنده در وضعیت حاضر، امکان پرداخت را محدود می کند',
-            -21 => 'هیچ نوع عملیات مالی برای این تراکنش یافت نشد',
-            -22 => 'تراکنش ناموفق می باشد',
-            -30 => 'پذیرنده اجازه دسترسی به متد مربوطه را ندارد',
-            -31 => 'حساب بانکی پذیرنده به درستی تعریف نشده است',
-            -32 => 'مبلغ درخواستی از مبلغ کل تراکنش بیشتر است',
-            -33 => 'رقم تراکنش با رقم پرداخت شده مطابقت ندارد',
-            -34 => 'سقف تقسیم تراکنش از لحاظ تعداد یا رقم عبور نموده است',
-            -40 => 'اجازه دسترسی به متد مربوطه وجود ندارد',
-            -41 => 'اطلاعات ارسال شده مربوط به AdditionalData غیرمعتبر می باشد',
-            -42 => 'مدت زمان معتبر طول عمر شناسه پرداخت باید بین 30 دقیقه تا 45 روز می باشد',
-            -50 => 'مبلغ پرداخت شده با مقدار مبلغ در تراکنش همخوانی ندارد',
-            -51 => 'پرداخت ناموفق بوده است',
-            -52 => 'خطایی غیرمنتظره سرور رخ داده است. لطفا مشکل را به امور مشتریان زرین‌پال اطلاع دهید',
-            -53 => 'پذیرنده در وب سرویس تسهیم شریک نیست',
-            -54 => 'درخواست مورد نظر آرشیو شده است',
-            100 => 'عملیات با موفقیت انجام شد',
-            101 => 'عملیات پرداخت موفق بوده و قبلاً PaymentVerification تراکنش انجام شده است',
-            default => 'خطایی نامشخص در درگاه پرداخت (کد: '.$code.')'
-        };
     }
 }

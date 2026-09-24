@@ -218,7 +218,39 @@ class Salon extends Model
      */
     public function acceptsOnlinePayments(): bool
     {
-        return filled($this->zarinpal_merchant_id);
+        // ⭐ لایه‌ی چند درگاه (۲۰۲۶-۰۹-۲۵): «حداقل یک درگاه فعال» به‌جای فقط ستون زرین‌پال.
+        return $this->paymentGateways()->where('is_active', true)->exists();
+    }
+
+    public function paymentGateways(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(SalonPaymentGateway::class);
+    }
+
+    /**
+     * ⭐ مرحله‌ی ۰ چند درگاه (۲۰۲۶-۰۹-۲۵): تا وقتی UI مدیریت درگاه‌ها (مرحله‌ی ۱) نیومده، فیلد
+     * «کد پذیرنده‌ی زرین‌پال» (ثبت‌نام، اطلاعات سالن، سوپرادمین) منبع ورودیه و ردیف zarinpal جدول
+     * salon_payment_gateways رو همگام نگه می‌داره: مقدار دار → ایجاد/به‌روزرسانی و فعال؛ خالی → حذف.
+     */
+    protected static function booted(): void
+    {
+        static::saved(function (Salon $salon) {
+            if (! $salon->wasRecentlyCreated && ! $salon->wasChanged('zarinpal_merchant_id')) {
+                return;
+            }
+
+            if (filled($salon->zarinpal_merchant_id)) {
+                $gateway = $salon->paymentGateways()->firstOrNew(['driver' => 'zarinpal']);
+                $gateway->fill([
+                    'label' => $gateway->label ?: 'زرین‌پال',
+                    'credentials' => ['merchant_id' => $salon->zarinpal_merchant_id],
+                    'is_active' => true,
+                    'priority' => $gateway->priority ?: 1,
+                ])->save();
+            } else {
+                $salon->paymentGateways()->where('driver', 'zarinpal')->delete();
+            }
+        });
     }
 
     /**
