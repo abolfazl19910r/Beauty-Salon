@@ -7,15 +7,7 @@
     @auth
         <meta name="user-logged-in" content="true">
     @endauth
-    @if (! empty($currentSalonLogoUrl))
-        {{-- ⭐ لوگوی سالن به‌عنوان favicon همون سالن (۲۰۲۶-۰۹-۲۴). --}}
-        <link rel="icon" href="{{ $currentSalonLogoUrl }}">
-    @else
-        <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
-        <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
-    @endif
-    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+    @include('partials.favicons')
 
     <title>@yield('title') | {{ $currentSalonName }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
@@ -109,13 +101,7 @@
     <nav class="container mx-auto px-4 h-20 flex items-center justify-between">
         <a href="{{ route('home') }}" class="flex items-center gap-2 shrink-0">
             {{-- ⭐ لوگوی اختصاصی سالن (۲۰۲۶-۰۹-۲۴) به‌جای آیکون پیش‌فرض، وقتی سالن لوگو داره. --}}
-            @if ($currentSalonLogoUrl)
-                <img src="{{ $currentSalonLogoUrl }}" alt="لوگوی {{ $currentSalonName }}" class="h-10 md:h-11 w-auto max-w-[140px] object-contain">
-            @else
-                <svg class="w-7 h-7 text-[var(--rasta-gold-light)]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                </svg>
-            @endif
+            <x-brand-emblem class="h-10 md:h-11 w-auto max-w-[140px]" />
             <span class="text-xl md:text-2xl font-serif-fa font-bold text-[var(--rasta-gold-light)]">{{ $currentSalonName }}</span>
         </a>
 

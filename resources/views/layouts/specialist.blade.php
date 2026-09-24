@@ -9,10 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@500;700&display=swap" rel="stylesheet">
 
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
-    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
-    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+    @include('partials.favicons')
 
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
 
@@ -106,13 +103,7 @@
         <div class="p-5 border-b flex items-center justify-between" style="border-color: var(--specialist-border);">
             <a href="{{ route('home') }}" class="flex items-center gap-2">
                 {{-- ⭐ لوگوی سالن متخصص (۲۰۲۶-۰۹-۲۴)، وگرنه آیکون پیش‌فرض. --}}
-                @if (! empty($currentSalonLogoUrl))
-                    <img src="{{ $currentSalonLogoUrl }}" alt="لوگوی {{ $currentSalonName }}" class="w-9 h-9 object-contain rounded">
-                @else
-                    <svg class="w-8 h-8" style="color: var(--specialist-plum-mid);" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                    </svg>
-                @endif
+                <x-brand-emblem class="w-9 h-9 rounded" :light="true" />
                 <span class="text-lg font-bold font-serif-fa" style="color: var(--specialist-plum-light);">پنل متخصص</span>
             </a>
         </div>

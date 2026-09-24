@@ -4,10 +4,8 @@ use Illuminate\Support\Facades\Route;
 ?>
 <x-guest-layout>
     <div class="text-center mb-8">
-        <div class="w-14 h-14 rounded-full bg-[#C9A24B]/15 flex items-center justify-center mx-auto mb-4">
-            <svg class="w-7 h-7 text-[#E6CD8A]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-            </svg>
+        <div class="flex items-center justify-center mx-auto mb-4">
+            <x-brand-emblem class="h-16 w-auto max-w-[180px]" />
         </div>
         <h2 class="text-2xl font-bold" style="font-family:'Noto Naskh Arabic','Vazirmatn',serif; color:#E6CD8A">ورود به {{ $salon->name }}</h2>
         <p class="text-sm text-[#F8F3E9]/60 mt-1">برای رزرو نوبت وارد شوید</p>

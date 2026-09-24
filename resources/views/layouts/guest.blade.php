@@ -4,15 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    @if (! empty($currentSalonLogoUrl))
-        {{-- ⭐ لوگوی سالن به‌عنوان favicon همون سالن (۲۰۲۶-۰۹-۲۴). --}}
-        <link rel="icon" href="{{ $currentSalonLogoUrl }}">
-    @else
-        <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
-        <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
-    @endif
-    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+    @include('partials.favicons')
 
     <title>{{ $currentSalonName }}</title>
 
@@ -96,13 +88,7 @@
 <div class="min-h-screen flex flex-col justify-center items-center px-4 py-10">
     <div class="fade-in mb-2">
         <a href="{{ route('home') }}" class="flex items-center justify-center gap-2">
-            @if ($currentSalonLogoUrl)
-                <img src="{{ $currentSalonLogoUrl }}" alt="لوگوی {{ $currentSalonName }}" class="h-12 w-auto max-w-[160px] object-contain">
-            @else
-                <svg class="w-9 h-9 text-[var(--rasta-gold-light)]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                </svg>
-            @endif
+            <x-brand-emblem class="h-12 w-auto max-w-[160px]" />
             <span class="text-2xl font-serif-fa font-bold text-[var(--rasta-gold-light)]">{{ $currentSalonName }}</span>
         </a>
     </div>

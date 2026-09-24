@@ -8,10 +8,7 @@
     <title>@yield('title') | پنل مدیریت سالن زیبایی</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
-    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
-    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+    @include('partials.favicons')
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
     @stack('styles')
@@ -145,9 +142,7 @@
             @php $adminSalon = app(\App\Support\CurrentSalon::class)->get(); @endphp
             @if ($adminSalon)
                 <div class="flex items-center gap-2 mt-3">
-                    @if ($adminSalon->logoUrl())
-                        <img src="{{ $adminSalon->logoUrl() }}" alt="لوگوی {{ $adminSalon->name }}" class="w-9 h-9 object-contain rounded">
-                    @endif
+                    <x-brand-emblem class="w-9 h-9 rounded" :light="true" />
                     <span class="text-sm font-bold" style="color: var(--admin-text);">{{ $adminSalon->name }}</span>
                 </div>
             @else
