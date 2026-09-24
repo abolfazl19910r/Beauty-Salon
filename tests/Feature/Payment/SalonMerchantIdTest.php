@@ -69,23 +69,35 @@ class SalonMerchantIdTest extends TestCase
             ->assertSessionHasErrors('zarinpal_merchant_id');
     }
 
-    public function test_owner_sets_and_clears_the_merchant_id_from_salon_information(): void
+    /**
+     * ⭐ مرحله‌ی ۱ چند درگاه (۲۰۲۶-۰۹-۲۵): فیلد تکی کد پذیرنده از «اطلاعات سالن» حذف شد؛ مالک از صفحه‌ی
+     * «درگاه‌های پرداخت» زرین‌پال رو اضافه/حذف می‌کنه و ستون salons.zarinpal_merchant_id هم‌گام می‌مونه.
+     */
+    public function test_owner_sets_and_clears_the_merchant_id_from_the_payment_gateways_page(): void
     {
         $owner = User::factory()->create(['is_admin' => true]); // اولین ادمین = owner
         $this->withoutMerchant();
 
         $this->actingAs($owner)->get(route('admin.salon-settings.edit'))
-            ->assertOk()->assertSee('پرداخت آنلاین سالن غیرفعال است');
+            ->assertOk()->assertSee('پرداخت آنلاین سالن غیرفعال است')
+            ->assertSee(route('admin.payment-gateways.index'), false)
+            ->assertDontSee('name="zarinpal_merchant_id"', false);
 
         $this->actingAs($owner)->put(route('admin.salon-settings.update'), [
             'name' => $this->salon->name, 'zarinpal_merchant_id' => self::MERCHANT,
         ])->assertSessionHasNoErrors();
-        $this->assertTrue($this->salon->fresh()->acceptsOnlinePayments());
+        $this->assertFalse($this->salon->fresh()->acceptsOnlinePayments(), 'فیلد قدیمی دیگه اثری نداره');
 
-        $this->actingAs($owner)->put(route('admin.salon-settings.update'), [
-            'name' => $this->salon->name, 'zarinpal_merchant_id' => '',
-        ]);
+        $this->actingAs($owner)->post(route('admin.payment-gateways.store'), [
+            'driver' => 'zarinpal', 'credentials' => ['merchant_id' => strtoupper(self::MERCHANT)], 'is_active' => '1',
+        ])->assertSessionHasNoErrors();
+        $this->assertTrue($this->salon->fresh()->acceptsOnlinePayments());
+        $this->assertSame(self::MERCHANT, $this->salon->fresh()->zarinpal_merchant_id);
+
+        $gateway = $this->salon->paymentGateways()->sole();
+        $this->actingAs($owner)->delete(route('admin.payment-gateways.destroy', $gateway->id));
         $this->assertFalse($this->salon->fresh()->acceptsOnlinePayments());
+        $this->assertNull($this->salon->fresh()->zarinpal_merchant_id);
     }
 
     public function test_super_admin_merchant_field_is_validated_and_normalised(): void

@@ -418,6 +418,15 @@
                         </svg>
                         اطلاعات سالن
                     </a>
+                    <a href="{{ route('admin.payment-gateways.index') }}"
+                       class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.payment-gateways.*') ? 'sidebar-active' : '' }}"
+                       style="{{ request()->routeIs('admin.payment-gateways.*') ? '' : 'color: var(--admin-text-dim);' }}">
+                        <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                            <line x1="1" y1="10" x2="23" y2="10"></line>
+                        </svg>
+                        درگاه‌های پرداخت
+                    </a>
                 </div>
             @endif
 

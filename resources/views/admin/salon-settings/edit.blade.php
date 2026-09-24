@@ -68,24 +68,24 @@
                 </div>
             </section>
 
-            {{-- ⭐ کد پذیرنده‌ی زرین‌پال سالن (۲۰۲۶-۰۹-۲۴). --}}
+            {{-- ⭐ مرحله‌ی ۱ چند درگاه (۲۰۲۶-۰۹-۲۵): فیلد تکی کد پذیرنده‌ی زرین‌پال با صفحه‌ی «درگاه‌های پرداخت» جایگزین شد. --}}
             <section class="space-y-3" id="merchant">
-                <h2 class="font-bold" style="color: var(--admin-accent);">درگاه پرداخت (زرین‌پال)</h2>
-                @if ($salon->acceptsOnlinePayments())
-                    <div class="rounded-lg p-3 text-sm" style="background:#DCFCE7; color:#166534;">درگاه پرداخت فعال است؛ پرداخت‌های مشتری‌ها مستقیم به حساب زرین‌پال این سالن واریز می‌شود.</div>
+                <h2 class="font-bold" style="color: var(--admin-accent);">درگاه‌های پرداخت</h2>
+                @php $activeGateways = $salon->paymentGateways()->where('is_active', true)->orderBy('priority')->get(); @endphp
+                @if ($activeGateways->isNotEmpty())
+                    <div class="rounded-lg p-3 text-sm" style="background:#DCFCE7; color:#166534;">
+                        پرداخت آنلاین فعال است؛ پرداخت‌های مشتری‌ها مستقیم به حساب درگاه‌های همین سالن واریز می‌شود:
+                        <b>{{ $activeGateways->map->displayName()->implode('، ') }}</b>
+                    </div>
                 @else
                     <div class="rounded-lg p-3 text-sm" style="background:#FEE2E2; color:#991B1B;">
-                        <b>پرداخت آنلاین سالن غیرفعال است.</b> تا کد پذیرنده وارد نشود، مشتری‌ها نمی‌توانند پیش‌پرداخت نوبت
+                        <b>پرداخت آنلاین سالن غیرفعال است.</b> تا حداقل یک درگاه فعال اضافه نشود، مشتری‌ها نمی‌توانند پیش‌پرداخت نوبت
                         یا شارژ کیف پول انجام دهند و رزرو خدماتی که پیش‌پرداخت دارند ممکن نیست.
                     </div>
                 @endif
-                <div>
-                    <label class="block text-sm mb-1" for="zarinpal_merchant_id">کد پذیرنده‌ی زرین‌پال (Merchant ID)</label>
-                    <input id="zarinpal_merchant_id" name="zarinpal_merchant_id" dir="ltr" maxlength="36" autocomplete="off"
-                           value="{{ old('zarinpal_merchant_id', $salon->zarinpal_merchant_id) }}" class="{{ $input }}" style="{{ $inputStyle }}"
-                           placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
-                    <p class="text-xs mt-1" style="color: var(--admin-text-light);">کد ۳۶ کاراکتری که زرین‌پال بعد از تأیید درگاه به شما داده است. خالی کردن این فیلد پرداخت آنلاین را غیرفعال می‌کند.</p>
-                </div>
+                <a href="{{ route('admin.payment-gateways.index') }}" class="inline-block px-4 py-2 rounded-lg text-sm font-bold text-white" style="background: var(--admin-accent);">
+                    مدیریت درگاه‌های پرداخت (زرین‌پال، زیبال، آسان پرداخت، وندار)
+                </a>
 
                 {{-- ⭐ توکن Payout زرین‌پال سالن (۲۰۲۶-۰۹-۲۴) — برای تسویه‌ی خودکار کیف پول متخصص‌ها از حساب خود سالن. --}}
                 <div>

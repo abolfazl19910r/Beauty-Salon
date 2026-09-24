@@ -38,7 +38,6 @@ class UpdateSalonSettingsRequest extends FormRequest
             'bio' => ['nullable', 'string', 'max:2000'],
             'logo' => SalonLogoService::RULES,
             'remove_logo' => ['nullable', 'boolean'],
-            'zarinpal_merchant_id' => \App\Support\ZarinpalMerchant::RULES,
             // ⭐ توکن Payout زرین‌پال سالن (۲۰۲۶-۰۹-۲۴) — خالی = بدون تغییر؛ remove_* برای حذف.
             'zarinpal_payout_api_key' => ['nullable', 'string', 'min:20', 'max:2000'],
             'remove_zarinpal_payout_api_key' => ['nullable', 'boolean'],
@@ -47,7 +46,7 @@ class UpdateSalonSettingsRequest extends FormRequest
 
     public function messages(): array
     {
-        return $this->salonContactMessages() + SalonLogoService::MESSAGES + \App\Support\ZarinpalMerchant::MESSAGES + [
+        return $this->salonContactMessages() + SalonLogoService::MESSAGES + [
             'name.required' => 'نام سالن را وارد کنید.',
         ];
     }

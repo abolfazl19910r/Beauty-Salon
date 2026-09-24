@@ -132,6 +132,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_a
     Route::middleware(['salon.owner'])->group(function () {
         require __DIR__.'/admin/users.php';
         require __DIR__.'/admin/salon-settings.php';
+        require __DIR__.'/admin/payment-gateways.php';
     });
 
     require __DIR__.'/admin/search.php';
