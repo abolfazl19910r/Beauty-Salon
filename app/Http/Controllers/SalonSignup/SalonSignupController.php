@@ -172,6 +172,9 @@ class SalonSignupController extends Controller
             Auth::login($owner);
             $request->session()->regenerate();
 
+            // ⭐ پیامک خوش‌آمد (۲۰۲۶-۰۹-۲۵) — فقط همین‌جا، یعنی یک‌بار و فقط برای ثبت‌نام خودکار.
+            $owner->notify(new \App\Notifications\Salon\SalonWelcomeNotification($salon->fresh(), $salon->fresh()->isOnTrial() ? $this->salonSignupService->trialDays() : 0));
+
             if ($intent === 'buy') {
                 return $this->startImmediatePurchase($salon->fresh(), $owner);
             }
