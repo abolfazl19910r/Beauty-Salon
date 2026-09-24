@@ -6608,13 +6608,39 @@ production زرین‌پال (`api.zarinpal.com` در کد در برابر `paym
   + `public/site.webmanifest`. fallbackهای `config('app.name','راستا')` → `config('brand.name')`.
 - تست: `PlatformBrandTest` (۵). سوییت کامل **۱۲۶۷ passed / ۱ skipped**.
 
+### ۲۰۲۶-۰۹-۲۵ — پیگیری‌های برند، تیکت‌ها، تسویه روی لایه‌ی درگاه (مرحله‌ی ۳)، امنیت پیامک
+
+روی `6ae0f2f`، برنچ پیشنهادی `fix/brand-followups`، ۷ کامیت:
+1. `fix(brand): Mahru mark or the salon's own logo on login/register and in every browser tab` — «آرم قدیمی» آیکون قلب
+   بود (fallback لایوت‌ها + badge صفحه‌های ورود). `<x-brand-emblem>` = لوگوی سالن یا نشان ماهرو؛ `partials.favicons`
+   در همه‌ی لایوت‌های سالن (پنل مدیر/متخصص قبلاً لوگوی سالن رو نادیده می‌گرفتن). `welcome.blade.php` و
+   `layouts/navigation.blade.php` یتیم بودن → حذف. قلب‌های «امتیازات/خدمات» آیکون محتوا هستن و موندن.
+2. `fix(seed): realistic demo support tickets ...` — ⚠️ تیکت = «مدیر سالن ← تیم پلتفرم» (مشتری مسیر تیکت نداره)؛
+   سوپرادمین جواب‌دهنده است. seeder قبلی ۳۱ تیکت جعلی از مشتری‌های تصادفی می‌ساخت → حالا ۵ تیکت از مالک سالن.
+3. `style: apply Laravel Pint ...` — ۲۹ مورد قدیمی؛ `pint --test` کل پروژه تمیز.
+4. `feat(brand): share-preview image and Open Graph tags` — `public/brand/mahru-og.png` (۱۲۰۰×۶۳۰).
+5. `fix(security): tests never send real SMS; remove the Kavenegar API key from .env.example` — ⚠️ `.env.example`
+   (ریپوی عمومی) کلید واقعی کاوه‌نگار + `KAVENEGAR_SEND_IN_LOCAL=true` داشت و phpunit override نمی‌کرد → اجرای کامل
+   تست‌ها ۵۹۰ تلاش ارسال پیامک واقعی لاگ می‌کرد. `phpunit.xml` حالا `force="true"` false. **کلید باید در پنل
+   کاوه‌نگار باطل و عوض بشه** (در تاریخچه‌ی git می‌مونه).
+6. `feat(signup): welcome SMS to the owner of a newly registered salon` — `SalonWelcomeNotification` (صف‌دار، فقط sms)،
+   یک‌بار بعد از تایید موبایل ثبت‌نام؛ بدون salon_id → از سهمیه‌ی سالن کم نمی‌شه. URLها در constructor ساخته می‌شن.
+7. `feat(payments): payouts on the gateway layer; payout token moves to the gateways page; drop salons.zarinpal_* columns`
+   - `App\Payments\{Contracts\PayoutDriver, PayoutRequest, PayoutResult, PayoutManager, Drivers\ZarinpalPayoutDriver}`؛
+     `ZarinpalPayoutService` → `SalonPayoutService`. درگاه تسویه = اولین ردیف با `payout` در GatewayCatalog و اطلاعات
+     کامل، **مستقل از is_active**.
+   - توکن Payout = فیلد اختیاری secret درگاه زرین‌پال (`clear[payout_api_key]` برای حذف).
+   - migration `2026_09_25_000100`: انتقال به ردیف zarinpal + حذف دو ستون؛ down() برمی‌گردونه.
+   - ⚠️ `Salon::zarinpal_merchant_id` / `zarinpal_payout_api_key` حالا **ویژگی مجازی** روی ردیف zarinpal هستن (نه ستون):
+     در `toArray()` نمیان؛ نوشتن بعد از save و فقط با تغییر واقعی اعمال می‌شه (ویرایش سوپرادمین دیگه درگاه خاموش‌شده
+     رو روشن نمی‌کنه). `->where('zarinpal_merchant_id', …)` / `->value(...)` دیگه کار نمی‌کنه.
+   - `tests/TestCase.php`: سالن پیش‌فرض با `factory()->create()` (نسخه‌ی قبلی با `make()->toArray()` درگاهش گم می‌شد).
+سوییت کامل: **۱۲۷۸ passed / ۱ skipped**.
+
 ### قدم‌های باز
-- **تست دستی واقعی** هر درگاه روی XAMPP: زیبال با مرچنت `zibal` (بدون پول واقعی)؛ وندار و آسان پرداخت فقط با حساب واقعی
-  (sandbox سلف‌سرویس ندارن). آسان پرداخت: ثبت IP سرور در پنل؛ مقایسه‌ی driver با PDF رسمی IPG REST.
-- ثبت دامنه/ساب‌دامین هر سالن در پنل هر درگاه (مستند برای مالک‌ها).
-- **مرحله‌ی ۲:** درگاه‌های مستقیم بانکی (سامان/ملت/پارسیان) — فرم POST آماده است (`GatewayStartResult::postForm`).
-- **مرحله‌ی ۳:** Payout روی لایه‌ی درگاه (زرین‌پال فعلی؛ زیبال/وندار API تسویه دارن) + جابه‌جایی فیلد توکن Payout از
-  «اطلاعات سالن» به صفحه‌ی درگاه‌ها؛ بعد از اون ستون `salons.zarinpal_merchant_id` می‌تونه حذف بشه.
-- (اختیاری) پاک‌سازی ۲۹ مورد Pint قدیمی در یک commit جدا `style:`.
-- (اختیاری) پیامک خوش‌آمد به مالک سالن
-- برند: نسخه‌ی خوشنویسی‌شده‌ی اختصاصی «ماهرو» (به‌جای فونت Noto Nastaliq) + ثبت علامت تجاری؛ تصویر OG برای اشتراک‌گذاری صفحه‌ی فروش
+- ⚠️ باطل کردن کلید کاوه‌نگار و توکن GitHub.
+- تست دستی درگاه‌ها: زیبال با مرچنت `zibal`؛ وندار و آسان پرداخت با حساب واقعی؛ IP سرور در پنل آسان پرداخت؛ تطبیق با
+  PDF رسمی IPG REST. ثبت دامنه/ساب‌دامین هر سالن در پنل هر درگاه.
+- درایور تسویه‌ی زیبال و وندار (بعد از بررسی مستندات تسویه‌شان).
+- **مرحله‌ی ۲:** درگاه‌های مستقیم بانکی (سامان REST؛ ملت و پارسیان SOAP) — فرم POST آماده است (`GatewayStartResult::postForm`).
+- برند: خوشنویسی اختصاصی «ماهرو» (کار خوشنویس) + ثبت علامت تجاری + خرید دامنه‌ها.
