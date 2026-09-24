@@ -59,7 +59,7 @@
                                 @if (\App\Payments\GatewayCatalog::supportsPayout($gateway->driver))
                                     <div class="text-xs mt-1" style="color: var(--admin-text-dim);">
                                         تسویه‌ی خودکار متخصص‌ها:
-                                        {{ app(\App\Payments\PayoutManager::class)->isConfigured($gateway) ? 'فعال' : 'غیرفعال (توکن Payout وارد نشده)' }}
+                                        {{ app(\App\Payments\PayoutManager::class)->isConfigured($gateway) ? 'فعال' : 'غیرفعال (اطلاعات تسویه وارد نشده)' }}
                                     </div>
                                 @endif
                             </div>

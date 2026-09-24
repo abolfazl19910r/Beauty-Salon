@@ -37,6 +37,12 @@ class SavePaymentGatewayRequest extends FormRequest
             $v,
         ) : $v;
 
+        // ارقام فارسی/عربی در اطلاعات اتصال (مثل شناسه‌ی کیف پول زیبال) → لاتین؛ فاصله/ویرگول دست نمی‌خوره
+        $latin = fn ($v) => is_string($v) ? strtr($v, ['۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4', '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9', '٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4', '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9']) : $v;
+        if (is_array($this->input('credentials'))) {
+            $this->merge(['credentials' => array_map($latin, $this->input('credentials'))]);
+        }
+
         $this->merge([
             'fee_percent' => $digits($this->input('fee_percent')) ?: 0,
             'fee_fixed_toman' => $digits($this->input('fee_fixed_toman')) ?: 0,

@@ -26,7 +26,11 @@ final class GatewayCatalog
             'website' => 'https://zibal.ir/',
             'fields' => [
                 'merchant' => ['label' => 'کد مرچنت (merchant)', 'secret' => false, 'rules' => ['string', 'max:64'], 'placeholder' => 'مثلاً 5f3e...'],
+                // ⭐ مرحله‌ی ۳ (۲۰۲۶-۰۹-۲۵): تسویه‌ی خودکار متخصص‌ها از کیف پول زیبال سالن
+                'payout_access_token' => ['label' => 'توکن دسترسی API (اختیاری — برای تسویه‌ی خودکار متخصص‌ها)', 'secret' => true, 'optional' => true, 'rules' => ['string', 'max:2000'], 'placeholder' => 'پنل زیبال ← توسعه‌دهندگان ← API Tokenها'],
+                'payout_wallet_id' => ['label' => 'شناسه‌ی کیف پول تسویه (اختیاری)', 'secret' => false, 'optional' => true, 'rules' => ['digits_between:1,20'], 'placeholder' => 'مثلاً 1010101'],
             ],
+            'payout' => true,
             'note' => 'کد مرچنت درگاه از پنل زیبال. برای آزمایش بدون پول واقعی می‌توانید کد «zibal» را وارد کنید.',
         ],
         'asanpardakht' => [
