@@ -136,6 +136,12 @@
                                 {{ number_format($wallet->balance) }} تومان
                             </span>
                         </div>
+                        {{-- ⭐ مرحله‌ی ۱ چند درگاه: کارمزد درگاه به مبلغ پرداختی اضافه می‌شود، نه از شارژ کم --}}
+                        <div class="flex justify-between items-center pb-2" id="preview-fee-row"
+                             style="border-bottom: 1px solid rgba(201,162,75,0.2); display:none;">
+                            <span style="color: var(--rasta-cream); opacity: 0.7;">کارمزد درگاه / مبلغ پرداختی:</span>
+                            <span class="persian-number" id="preview-fee" style="color: var(--rasta-cream);"></span>
+                        </div>
                         <div class="flex justify-between items-center font-bold text-lg pt-2">
                             <span style="color: var(--rasta-cream);">موجودی جدید:</span>
                             <span class="persian-number" id="preview-new-balance"
@@ -145,6 +151,8 @@
                         </div>
                     </div>
                 </div>
+
+                @include('payments._gateway-picker', ['gatewayOptions' => $gatewayOptions ?? [], 'baseAmount' => 0])
 
                 {{-- Important points --}}
                 <div class="rounded-xl p-4 mb-6"
@@ -160,7 +168,7 @@
                             <ul class="list-disc list-inside space-y-1" style="opacity: 0.8;">
                                 <li>پس از پرداخت، موجودی بلافاصله به کیف پول شما اضافه می‌شود</li>
                                 <li>از موجودی کیف پول می‌توانید برای پرداخت نوبت‌های بعدی استفاده کنید</li>
-                                <li>پرداخت از طریق درگاه امن زرین‌پال انجام می‌شود</li>
+                                <li>پرداخت از طریق درگاه امن شاپرکی انجام می‌شود؛ کارمزد درگاه (در صورت وجود) به مبلغ پرداختی اضافه می‌شود</li>
                             </ul>
                         </div>
                     </div>
@@ -198,7 +206,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
-                <p>پرداخت شما از طریق درگاه امن زرین‌پال انجام می‌شود و اطلاعات کارت بانکی شما ذخیره نمی‌گردد.</p>
+                <p>پرداخت شما از طریق درگاه امن شاپرکی انجام می‌شود و اطلاعات کارت بانکی شما ذخیره نمی‌گردد.</p>
             </div>
         </div>
     </div>
@@ -261,6 +269,12 @@
                     englishToPersian(amount.toLocaleString('en-US')) + ' تومان';
                 document.getElementById('preview-new-balance').textContent =
                     englishToPersian((currentBalance + amount).toLocaleString('en-US')) + ' تومان';
+                const fee = window.RastaGatewayFee ? window.RastaGatewayFee.fee(amount) : 0;
+                if (window.RastaGatewayFee) window.RastaGatewayFee.refreshLabels(amount);
+                const feeRow = document.getElementById('preview-fee-row');
+                feeRow.style.display = fee > 0 ? '' : 'none';
+                document.getElementById('preview-fee').textContent =
+                    englishToPersian(fee.toLocaleString('en-US')) + ' / ' + englishToPersian((amount + fee).toLocaleString('en-US')) + ' تومان';
             } else {
                 box.classList.add('hidden');
             }
@@ -269,6 +283,11 @@
         function validateAmount(amount) {
             document.getElementById('submit-btn').disabled = !(amount >= MIN_AMOUNT && amount <= MAX_AMOUNT);
         }
+
+        document.addEventListener('gateway-changed', () => {
+            const v = parseInt(document.getElementById('amount-input').getAttribute('data-value') || '0', 10);
+            updatePreview(v);
+        });
 
         document.getElementById('charge-form').addEventListener('submit', function(e) {
             e.preventDefault();

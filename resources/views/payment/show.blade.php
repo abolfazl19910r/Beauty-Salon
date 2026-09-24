@@ -201,6 +201,12 @@
                     </div>
                 </div>
 
+                {{-- ⭐ مرحله‌ی ۱ چند درگاه: کارمزد درگاه انتخابی که به مبلغ پرداختی اضافه می‌شود --}}
+                <div id="gateway-fee-row" class="hidden flex justify-between border-b border-[#C9A24B]/8 pb-3">
+                    <span class="text-[#F8F3E9]/55">کارمزد درگاه</span>
+                    <span class="text-[#F8F3E9]/80 persian-number" id="gateway-fee-amount">0 تومان</span>
+                </div>
+
                 <div class="flex justify-between items-center text-lg font-bold pt-2 border-t-2 border-[#C9A24B]/20">
                     <span class="text-[#E6CD8A]">مبلغ قابل پرداخت</span>
                     <span class="text-[#E6CD8A] persian-number" id="final-amount">{{ number_format($booking->prepayment_amount) }} تومان</span>
@@ -212,6 +218,8 @@
             @csrf
             <input type="hidden" name="use_wallet" id="use_wallet" value="0">
             <input type="hidden" name="wallet_amount" id="wallet_amount" value="0">
+
+            @include('payments._gateway-picker', ['gatewayOptions' => $gatewayOptions ?? [], 'baseAmount' => $booking->prepayment_amount])
 
             <button type="submit"
                     class="w-full py-3.5 rounded-xl text-sm font-bold transition-all
@@ -231,7 +239,7 @@
             <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
             </svg>
-            پرداخت شما از طریق درگاه امن زرین‌پال انجام می‌شود و اطلاعات کارت بانکی شما ذخیره نمی‌گردد.
+            پرداخت شما از طریق درگاه امن شاپرکی انجام می‌شود و اطلاعات کارت بانکی شما ذخیره نمی‌گردد.
         </div>
     </div>
 
@@ -245,6 +253,22 @@
         const bookingAmount = {{ $booking->prepayment_amount }};
         const servicePrice = {{ (int) ($booking->service->price ?? 0) }};
         const walletBalance = {{ $wallet->balance }};
+
+        // ⭐ مرحله‌ی ۱ چند درگاه: مبلغ قابل پرداخت = سهم درگاه + کارمزد درگاه انتخابی (پرداخت کامل از
+        // کیف پول کارمزد ندارد). مبلغ واقعی سمت سرور حساب می‌شود؛ این فقط نمایش است.
+        let lastGatewayAmount = bookingAmount;
+        function showGatewayTotal(gatewayAmount) {
+            lastGatewayAmount = gatewayAmount;
+            const fee = window.RastaGatewayFee ? window.RastaGatewayFee.fee(gatewayAmount) : 0;
+            if (window.RastaGatewayFee) window.RastaGatewayFee.refreshLabels(gatewayAmount);
+            document.getElementById('gateway-fee-row').classList.toggle('hidden', fee <= 0);
+            document.getElementById('gateway-fee-amount').textContent = fee.toLocaleString('fa-IR') + ' تومان';
+            document.getElementById('final-amount').textContent = (gatewayAmount + fee).toLocaleString('fa-IR') + ' تومان';
+            const picker = document.getElementById('gateway-picker');
+            if (picker) picker.style.display = gatewayAmount > 0 ? '' : 'none';
+        }
+        document.addEventListener('gateway-changed', () => showGatewayTotal(lastGatewayAmount));
+        document.addEventListener('DOMContentLoaded', () => showGatewayTotal(bookingAmount));
 
         function applyDiscount() {
             const codeInput = document.getElementById('discount_code');
@@ -328,7 +352,7 @@
                 document.getElementById('use_wallet').value = '0';
                 document.getElementById('wallet_amount').value = '0';
                 document.getElementById('wallet-payment-summary').classList.add('hidden');
-                document.getElementById('final-amount').textContent = bookingAmount.toLocaleString('fa-IR') + ' تومان';
+                showGatewayTotal(bookingAmount);
                 document.getElementById('payment-button-text').textContent = 'پرداخت و تایید نوبت';
                 paymentForm.action = '{{ route("payment.process", $booking) }}';
             }
@@ -339,7 +363,7 @@
             const paymentForm = document.getElementById('payment-form');
             if (!toggle.classList.contains('active')) {
                 paymentForm.action = '{{ route("payment.process", $booking) }}';
-                document.getElementById('final-amount').textContent = bookingAmount.toLocaleString('fa-IR') + ' تومان';
+                showGatewayTotal(bookingAmount);
                 return;
             }
 
@@ -356,7 +380,7 @@
             document.getElementById('wallet-payment-summary').classList.remove('hidden');
             document.getElementById('wallet-amount').textContent = walletAmount.toLocaleString('fa-IR') + ' تومان';
             document.getElementById('gateway-amount').textContent = gatewayAmount.toLocaleString('fa-IR') + ' تومان';
-            document.getElementById('final-amount').textContent = gatewayAmount.toLocaleString('fa-IR') + ' تومان';
+            showGatewayTotal(gatewayAmount);
 
             if (gatewayAmount === 0) {
                 document.getElementById('payment-button-text').textContent = '✓ پرداخت کامل از کیف پول';
