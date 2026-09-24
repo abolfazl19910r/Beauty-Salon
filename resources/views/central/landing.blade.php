@@ -6,6 +6,19 @@
     <meta name="description" content="{{ config('brand.name') }}؛ نرم‌افزار نوبت‌دهی آنلاین و مدیریت سالن زیبایی با آدرس اختصاصی رزرو برای هر سالن.">
     <title>{{ config('brand.name') }} — نوبت‌دهی آنلاین سالن زیبایی</title>
     @include('partials.platform-icons')
+    {{-- ⭐ پیش‌نمایش اشتراک‌گذاری لینک (تلگرام، واتساپ، لینکدین، X) — ۲۰۲۶-۰۹-۲۵ --}}
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="fa_IR">
+    <meta property="og:site_name" content="{{ config('brand.name') }}">
+    <meta property="og:title" content="{{ config('brand.name') }} — نوبت‌دهی آنلاین سالن زیبایی">
+    <meta property="og:description" content="برای سالن شما یک سایت نوبت‌دهی اختصاصی، با پنل مدیر و متخصص و پرداخت آنلاین مستقیم به حساب خود سالن.">
+    <meta property="og:url" content="{{ url('/') }}">
+    <meta property="og:image" content="{{ asset('brand/mahru-og.png') }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="{{ config('brand.name') }} — نوبت‌دهی آنلاین سالن‌های زیبایی">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="{{ asset('brand/mahru-og.png') }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

@@ -27,6 +27,17 @@ class PlatformBrandTest extends TestCase
             ->assertDontSee('راستا');
     }
 
+    public function test_landing_page_has_share_preview_tags_with_the_og_image(): void
+    {
+        $this->get(route('central.home'))
+            ->assertOk()
+            ->assertSee('<meta property="og:image" content="'.asset('brand/mahru-og.png').'">', false)
+            ->assertSee('<meta property="og:image:width" content="1200">', false)
+            ->assertSee('<meta name="twitter:card" content="summary_large_image">', false);
+
+        $this->assertSame([1200, 630], array_slice(getimagesize(public_path('brand/mahru-og.png')), 0, 2));
+    }
+
     public function test_salon_signup_page_is_branded_mahru(): void
     {
         $this->get(route('salon-signup.create'))

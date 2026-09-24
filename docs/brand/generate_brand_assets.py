@@ -219,3 +219,27 @@ png(icon, os.path.join(OUT, 'icon-512.png'), 512)
 png(app_icon(rounded=False, inset=0.8), os.path.join(OUT, 'icon-maskable-512.png'), 512)  # ناحیه‌ی امن ۸۰٪
 cairosvg.svg2png(bytestring=vertical(CREAM).encode(), write_to=os.path.join(OUT, 'mahru-logo-vertical-on-dark.png'), scale=2)
 print('done')
+
+
+# ── تصویر OG برای اشتراک‌گذاری صفحه‌ی فروش (۱۲۰۰×۶۳۰، استاندارد تلگرام/واتساپ/توییتر/لینکدین) ──
+og_fa_d, og_fa_b = shape('NotoNastaliqUrdu[wght].ttf', 700, 'ماهرو', 150)
+og_tag_d, og_tag_b = shape('Vazirmatn[wght].ttf', 300, 'نوبت‌دهی آنلاین سالن‌های زیبایی', 38)
+og_dom_d, og_dom_b = shape('CormorantGaramond[wght].ttf', 600, 'MAHRU.IR', 28, tracking=0.35)
+OW, OH = 1200, 630
+mark_size = 330
+text_right = OW - 110 - mark_size - 70          # لبه‌ی راست ستون متن (نشان سمت راست، RTL)
+col_w = max(w(og_fa_b), w(og_tag_b), w(og_dom_b))
+block_h = hgt(og_fa_b) + 34 + hgt(og_tag_b) + 40 + hgt(og_dom_b)
+ty = (OH - block_h) / 2
+og_items = [
+    f'<rect width="{OW}" height="{OH}" fill="{DARK}"/>',
+    f'<rect x="28" y="28" width="{OW - 56}" height="{OH - 56}" rx="18" fill="none" stroke="{GOLD}" stroke-opacity="0.35" stroke-width="1.5"/>',
+    f'<g transform="translate({OW - 110 - mark_size} {(OH - mark_size) / 2:.2f}) scale({mark_size / 200:.4f})">{mark_group()}</g>',
+    f'<path transform="translate({text_right - w(og_fa_b) - og_fa_b[0]:.2f} {ty - og_fa_b[1]:.2f})" d="{og_fa_d}" fill="{CREAM}"/>',
+    f'<path transform="translate({text_right - w(og_tag_b) - og_tag_b[0]:.2f} {ty + hgt(og_fa_b) + 34 - og_tag_b[1]:.2f})" d="{og_tag_d}" fill="{CREAM}" opacity="0.78"/>',
+    f'<path transform="translate({text_right - w(og_dom_b) - og_dom_b[0]:.2f} {ty + hgt(og_fa_b) + 34 + hgt(og_tag_b) + 40 - og_dom_b[1]:.2f})" d="{og_dom_d}" fill="{GOLD}"/>',
+]
+og_svg = svg(OW, OH, ''.join(og_items), title='ماهرو — نوبت‌دهی آنلاین سالن‌های زیبایی')
+write('mahru-og.svg', og_svg)
+cairosvg.svg2png(bytestring=og_svg.encode(), write_to=os.path.join(OUT, 'mahru-og.png'), output_width=OW, output_height=OH)
+print('og done')
