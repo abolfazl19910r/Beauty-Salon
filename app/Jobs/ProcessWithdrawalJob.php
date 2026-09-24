@@ -5,7 +5,7 @@ namespace App\Jobs;
 use App\Events\Withdrawal\Approved\WithdrawalApproved;
 use App\Events\Withdrawal\Rejected\WithdrawalRejected;
 use App\Models\WithdrawalRequest;
-use App\Services\Payment\ZarinpalPayoutService;
+use App\Services\Payment\SalonPayoutService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -46,7 +46,7 @@ class ProcessWithdrawalJob implements ShouldQueue
         protected int $withdrawalRequestId,
     ) {}
 
-    public function handle(ZarinpalPayoutService $payoutService): void
+    public function handle(SalonPayoutService $payoutService): void
     {
         DB::transaction(function () use ($payoutService) {
             $withdrawalRequest = WithdrawalRequest::whereKey($this->withdrawalRequestId)

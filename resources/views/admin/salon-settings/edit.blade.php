@@ -87,22 +87,15 @@
                     مدیریت درگاه‌های پرداخت (زرین‌پال، زیبال، آسان پرداخت، وندار)
                 </a>
 
-                {{-- ⭐ توکن Payout زرین‌پال سالن (۲۰۲۶-۰۹-۲۴) — برای تسویه‌ی خودکار کیف پول متخصص‌ها از حساب خود سالن. --}}
-                <div>
-                    <label class="block text-sm mb-1" for="zarinpal_payout_api_key">توکن Payout زرین‌پال (برای تسویه‌ی خودکار متخصص‌ها)</label>
-                    <input id="zarinpal_payout_api_key" name="zarinpal_payout_api_key" type="password" dir="ltr" autocomplete="new-password"
-                           class="{{ $input }}" style="{{ $inputStyle }}"
-                           placeholder="{{ $salon->zarinpal_payout_api_key ? '•••••••• (ذخیره شده — برای تغییر، توکن جدید را وارد کنید)' : 'توکن دسترسی با مجوز Payout از پنل زرین‌پال' }}">
-                    <p class="text-xs mt-1" style="color: var(--admin-text-light);">
-                        اختیاری. با این توکن، دکمه‌ی «تسویه‌ی آنلاین خودکار» درخواست‌های برداشت متخصص‌ها را از موجودی زرین‌پال همین سالن
-                        به شبای متخصص واریز می‌کند. بدون آن، تسویه را دستی انجام دهید و کد پیگیری را ثبت کنید. توکن رمزشده ذخیره می‌شود و دوباره نمایش داده نمی‌شود.
-                    </p>
-                    @if ($salon->zarinpal_payout_api_key)
-                        <label class="flex items-center gap-2 mt-2 text-sm">
-                            <input type="checkbox" name="remove_zarinpal_payout_api_key" value="1"> حذف توکن فعلی (غیرفعال کردن تسویه‌ی خودکار)
-                        </label>
+                {{-- ⭐ مرحله‌ی ۳ (۲۰۲۶-۰۹-۲۵): توکن Payout زرین‌پال به ویرایش درگاه زرین‌پال در همان صفحه منتقل شد. --}}
+                <p class="text-xs" style="color: var(--admin-text-light);">
+                    تسویه‌ی خودکار کیف پول متخصص‌ها:
+                    @if ($salon->canAutoPayout())
+                        <b style="color:#166534;">فعال</b> — از حساب درگاه سالن.
+                    @else
+                        غیرفعال — برای فعال‌سازی، در «درگاه‌های پرداخت» توکن Payout درگاه زرین‌پال را وارد کنید.
                     @endif
-                </div>
+                </p>
             </section>
 
             <section class="space-y-4">

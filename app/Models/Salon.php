@@ -41,13 +41,7 @@ class Salon extends Model
         'created_by',
     ];
 
-    /**
-     * ⭐ ۲۰۲۶-۰۹-۲۴: توکن Payout زرین‌پال سالن هیچ‌وقت در JSON/toArray بیرون نمی‌ره.
-     */
-    protected $hidden = ['zarinpal_payout_api_key'];
-
     protected $casts = [
-        'zarinpal_payout_api_key' => 'encrypted',
         'module_permissions' => 'array',
         'working_hours' => 'array',
         'established_year' => 'integer',
@@ -228,37 +222,107 @@ class Salon extends Model
     }
 
     /**
-     * ⭐ مرحله‌ی ۰ چند درگاه (۲۰۲۶-۰۹-۲۵): تا وقتی UI مدیریت درگاه‌ها (مرحله‌ی ۱) نیومده، فیلد
-     * «کد پذیرنده‌ی زرین‌پال» (ثبت‌نام، اطلاعات سالن، سوپرادمین) منبع ورودیه و ردیف zarinpal جدول
-     * salon_payment_gateways رو همگام نگه می‌داره: مقدار دار → ایجاد/به‌روزرسانی و فعال؛ خالی → حذف.
+     * ⭐ مرحله‌ی ۳ چند درگاه (۲۰۲۶-۰۹-۲۵): ستون‌های salons.zarinpal_merchant_id و
+     * salons.zarinpal_payout_api_key حذف شدن؛ منبع حقیقت ردیف zarinpal جدول salon_payment_gateways است
+     * (credentials: merchant_id و payout_api_key، رمزشده). این دو «ویژگی مجازی» فقط برای سازگاری با
+     * فرم ثبت‌نام، فرم سوپرادمین، factory و کدهای قبلی نگه داشته شدن:
+     * - خوندن ← از ردیف zarinpal (یا مقداری که همین الان ست شده و هنوز save نشده)
+     * - نوشتن ← بعد از save روی ردیف zarinpal اعمال می‌شه، و فقط وقتی مقدار واقعاً عوض شده باشه
+     *   (ویرایش بقیه‌ی اطلاعات سالن توسط سوپرادمین نباید درگاهی رو که مالک غیرفعال کرده دوباره فعال کنه).
+     *   کد پذیرنده‌ی خالی = حذف ردیف zarinpal (همون رفتار قبلی).
+     * هیچ‌کدوم در toArray/JSON نمیان (accessor هستن و در $appends نیستن).
+     *
+     * @var array<string, string>|null
      */
+    private ?array $pendingZarinpal = null;
+
+    public function setZarinpalMerchantIdAttribute($value): void
+    {
+        $this->pendingZarinpal['merchant_id'] = trim((string) ($value ?? ''));
+    }
+
+    public function setZarinpalPayoutApiKeyAttribute($value): void
+    {
+        $this->pendingZarinpal['payout_api_key'] = trim((string) ($value ?? ''));
+    }
+
+    public function getZarinpalMerchantIdAttribute(): ?string
+    {
+        if (isset($this->pendingZarinpal['merchant_id'])) {
+            return $this->pendingZarinpal['merchant_id'] ?: null;
+        }
+
+        return ($this->zarinpalGateway()?->credentials['merchant_id'] ?? null) ?: null;
+    }
+
+    public function getZarinpalPayoutApiKeyAttribute(): ?string
+    {
+        if (isset($this->pendingZarinpal['payout_api_key'])) {
+            return $this->pendingZarinpal['payout_api_key'] ?: null;
+        }
+
+        return ($this->zarinpalGateway()?->credentials['payout_api_key'] ?? null) ?: null;
+    }
+
+    public function zarinpalGateway(): ?SalonPaymentGateway
+    {
+        return $this->exists ? $this->paymentGateways()->where('driver', 'zarinpal')->first() : null;
+    }
+
     protected static function booted(): void
     {
         static::saved(function (Salon $salon) {
-            if (! $salon->wasRecentlyCreated && ! $salon->wasChanged('zarinpal_merchant_id')) {
+            $pending = $salon->pendingZarinpal;
+            $salon->pendingZarinpal = null;
+
+            if ($pending === null) {
                 return;
             }
 
-            if (filled($salon->zarinpal_merchant_id)) {
-                $gateway = $salon->paymentGateways()->firstOrNew(['driver' => 'zarinpal']);
-                $gateway->fill([
-                    'label' => $gateway->label ?: 'زرین‌پال',
-                    'credentials' => ['merchant_id' => $salon->zarinpal_merchant_id],
-                    'is_active' => true,
-                    'priority' => $gateway->priority ?: 1,
-                ])->save();
-            } else {
-                $salon->paymentGateways()->where('driver', 'zarinpal')->delete();
+            $row = $salon->paymentGateways()->where('driver', 'zarinpal')->first();
+            $credentials = (array) ($row?->credentials ?? []);
+            $activate = false;
+
+            if (array_key_exists('merchant_id', $pending)) {
+                if (! filled($pending['merchant_id'])) {
+                    $row?->delete();
+
+                    return;
+                }
+
+                if (($credentials['merchant_id'] ?? null) !== $pending['merchant_id']) {
+                    $credentials['merchant_id'] = $pending['merchant_id'];
+                    $activate = true;
+                }
             }
+
+            if (array_key_exists('payout_api_key', $pending) && ($credentials['payout_api_key'] ?? '') !== $pending['payout_api_key']) {
+                $credentials['payout_api_key'] = $pending['payout_api_key'];
+            }
+
+            if (! filled($credentials['merchant_id'] ?? null) || $credentials === (array) ($row?->credentials ?? [])) {
+                return; // توکن Payout بدون کد پذیرنده معنی نداره؛ یا چیزی عوض نشده
+            }
+
+            $row ??= $salon->paymentGateways()->make([
+                'driver' => 'zarinpal',
+                'priority' => ((int) $salon->paymentGateways()->max('priority')) + 1,
+            ]);
+            $row->credentials = $credentials;
+            if ($activate || ! $row->exists) {
+                $row->is_active = true;
+            }
+            $row->save();
         });
     }
 
     /**
-     * ⭐ ۲۰۲۶-۰۹-۲۴: تسویه‌ی خودکار کیف پول متخصص فقط از حساب زرین‌پال خود سالن — هم کد پذیرنده و هم
-     * توکن Payout سالن لازمه. بدون این‌ها مدیر سالن همچنان می‌تونه دستی تسویه و کد پیگیری ثبت کنه.
+     * ⭐ ۲۰۲۶-۰۹-۲۴ / مرحله‌ی ۳ (۲۰۲۶-۰۹-۲۵): تسویه‌ی خودکار کیف پول متخصص فقط از حساب درگاه خودِ
+     * سالن — اولین درگاه سالن که تسویه پشتیبانی می‌کنه و اطلاعاتش کامله (App\Payments\PayoutManager).
+     * بدونش مدیر سالن همچنان می‌تونه دستی تسویه و کد پیگیری ثبت کنه.
      */
     public function canAutoPayout(): bool
     {
-        return filled($this->zarinpal_merchant_id) && filled($this->zarinpal_payout_api_key);
+        return app(\App\Payments\PayoutManager::class)->driverFor($this) !== null;
     }
 }

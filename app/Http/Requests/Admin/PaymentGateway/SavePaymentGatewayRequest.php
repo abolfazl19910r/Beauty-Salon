@@ -52,6 +52,7 @@ class SavePaymentGatewayRequest extends FormRequest
             'fee_percent' => ['numeric', 'min:0', 'max:'.SalonPaymentGateway::MAX_FEE_PERCENT],
             'fee_fixed_toman' => ['integer', 'min:0', 'max:'.SalonPaymentGateway::MAX_FEE_FIXED_TOMAN],
             'credentials' => ['array'],
+            'clear' => ['nullable', 'array'],
         ];
 
         if (! $this->editing()) {
@@ -61,7 +62,8 @@ class SavePaymentGatewayRequest extends FormRequest
         }
 
         foreach (GatewayCatalog::fields($this->driver()) as $name => $field) {
-            $required = $this->editing() && $field['secret'] ? 'nullable' : 'required';
+            $optional = ! empty($field['optional']) || ($this->editing() && $field['secret']);
+            $required = $optional ? 'nullable' : 'required';
             $rules["credentials.$name"] = [$required, ...$field['rules']];
         }
 

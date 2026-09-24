@@ -13,10 +13,9 @@ use Illuminate\Support\Facades\DB;
  * زرین‌پال» در صفحه‌ی «اطلاعات سالن». هر سالن از هر نوع درگاه حداکثر یکی داره؛ ترتیب (priority) همون
  * ترتیب جایگزینی خودکاره و درگاه اول پیش‌فرض صفحه‌ی پرداخت مشتری.
  *
- * هم‌گام‌سازی با salons.zarinpal_merchant_id: فرم ثبت‌نام/سوپرادمین هنوز این ستون رو می‌نویسن (و
- * Salon::booted ردیف zarinpal رو می‌سازه) و تسویه‌ی خودکار متخصص‌ها (ZarinpalPayoutService) هنوز از
- * همین ستون می‌خونه. پس هر تغییر ردیف zarinpal از این صفحه با updateQuietly به ستون برمی‌گرده — بدون
- * رویداد، تا Salon::booted دوباره ردیف رو بازنویسی نکنه.
+ * مرحله‌ی ۳ (۲۰۲۶-۰۹-۲۵): ستون‌های salons.zarinpal_* حذف شدن و Salon مستقیم از ردیف zarinpal می‌خونه
+ * (ویژگی‌های مجازی zarinpal_merchant_id / zarinpal_payout_api_key)، پس هیچ هم‌گام‌سازی‌ای لازم نیست.
+ * فیلدهای اختیاری (مثل توکن Payout زرین‌پال) با clear[نام] حذف می‌شن.
  */
 class SalonGatewayService
 {
@@ -26,14 +25,12 @@ class SalonGatewayService
             $gateway = $salon->paymentGateways()->create([
                 'driver' => $data['driver'],
                 'label' => $data['label'] ?? null,
-                'credentials' => $this->credentials($data['driver'], (array) ($data['credentials'] ?? []), []),
+                'credentials' => $this->credentials($data['driver'], (array) ($data['credentials'] ?? []), [], []),
                 'is_active' => (bool) ($data['is_active'] ?? true),
                 'priority' => ((int) $salon->paymentGateways()->max('priority')) + 1,
                 'fee_percent' => $data['fee_percent'] ?? 0,
                 'fee_fixed_toman' => $data['fee_fixed_toman'] ?? 0,
             ]);
-
-            $this->syncZarinpalColumn($salon);
 
             return $gateway;
         });
@@ -43,13 +40,11 @@ class SalonGatewayService
     {
         $gateway->update([
             'label' => $data['label'] ?? null,
-            'credentials' => $this->credentials($gateway->driver, (array) ($data['credentials'] ?? []), (array) $gateway->credentials),
+            'credentials' => $this->credentials($gateway->driver, (array) ($data['credentials'] ?? []), (array) $gateway->credentials, (array) ($data['clear'] ?? [])),
             'is_active' => (bool) ($data['is_active'] ?? false),
             'fee_percent' => $data['fee_percent'] ?? 0,
             'fee_fixed_toman' => $data['fee_fixed_toman'] ?? 0,
         ]);
-
-        $this->syncZarinpalColumn($gateway->salon);
 
         return $gateway;
     }
@@ -62,8 +57,6 @@ class SalonGatewayService
             $gateway->delete();
             $this->resequence($salon);
         });
-
-        $this->syncZarinpalColumn($salon);
     }
 
     /** یک پله بالا/پایین بردن درگاه در ترتیب. */
@@ -99,13 +92,21 @@ class SalonGatewayService
         return $ordered;
     }
 
-    /** فیلدهای مخفی (رمز/کلید) خالی = مقدار قبلی بمونه. */
-    private function credentials(string $driver, array $input, array $current): array
+    /**
+     * فیلدهای مخفی (رمز/کلید) خالی = مقدار قبلی بمونه؛ clear[نام] = حذف (فقط فیلدهای اختیاری).
+     * فیلد اختیاری خالی که قبلاً مقداری نداشته اصلاً ذخیره نمی‌شه.
+     */
+    private function credentials(string $driver, array $input, array $current, array $clear): array
     {
         $result = [];
 
         foreach (GatewayCatalog::fields($driver) as $name => $field) {
             $value = trim((string) ($input[$name] ?? ''));
+            $optional = ! empty($field['optional']);
+
+            if ($optional && ! empty($clear[$name])) {
+                continue;
+            }
 
             if ($value === '' && $field['secret']) {
                 $value = (string) ($current[$name] ?? '');
@@ -115,18 +116,13 @@ class SalonGatewayService
                 $value = (string) ZarinpalMerchant::normalize($value);
             }
 
+            if ($optional && $value === '') {
+                continue;
+            }
+
             $result[$name] = $value;
         }
 
         return $result;
-    }
-
-    private function syncZarinpalColumn(Salon $salon): void
-    {
-        $merchant = $salon->paymentGateways()->where('driver', 'zarinpal')->first()?->credentials['merchant_id'] ?? null;
-
-        if ($salon->zarinpal_merchant_id !== ($merchant ?: null)) {
-            $salon->forceFill(['zarinpal_merchant_id' => $merchant ?: null])->saveQuietly();
-        }
     }
 }

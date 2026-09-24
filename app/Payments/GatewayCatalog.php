@@ -15,8 +15,11 @@ final class GatewayCatalog
             'website' => 'https://www.zarinpal.com/',
             'fields' => [
                 'merchant_id' => ['label' => 'کد پذیرنده (Merchant ID)', 'secret' => false, 'rules' => ['regex:/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/'], 'placeholder' => 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'],
+                // ⭐ مرحله‌ی ۳ (۲۰۲۶-۰۹-۲۵): از «اطلاعات سالن» به اینجا منتقل شد
+                'payout_api_key' => ['label' => 'توکن Payout (اختیاری — برای تسویه‌ی خودکار کیف پول متخصص‌ها)', 'secret' => true, 'optional' => true, 'rules' => ['string', 'max:2000'], 'placeholder' => 'از بخش «توسعه‌دهندگان» پنل زرین‌پال'],
             ],
-            'note' => 'کد ۳۶ کاراکتری درگاه از پنل زرین‌پال.',
+            'payout' => true,
+            'note' => 'کد ۳۶ کاراکتری درگاه از پنل زرین‌پال. توکن Payout فقط برای واریز خودکار برداشت متخصص‌ها به شبای‌شان لازم است.',
         ],
         'zibal' => [
             'label' => 'زیبال',
@@ -45,6 +48,12 @@ final class GatewayCatalog
             'note' => 'کلید درگاه از داشبورد وندار. دامنه‌ی سالن باید در پنل وندار برای همین درگاه ثبت شده باشد.',
         ],
     ];
+
+    /** درگاه‌هایی که driver تسویه (App\Payments\Contracts\PayoutDriver) دارن. */
+    public static function supportsPayout(string $driver): bool
+    {
+        return (bool) (self::DRIVERS[$driver]['payout'] ?? false);
+    }
 
     public static function keys(): array
     {

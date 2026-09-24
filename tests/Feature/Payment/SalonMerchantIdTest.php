@@ -56,11 +56,11 @@ class SalonMerchantIdTest extends TestCase
 
         $this->post(route('salon-signup.store'), $base + ['slug' => 'golsar', 'owner_phone' => '09121110001', 'zarinpal_merchant_id' => strtoupper(self::MERCHANT)])
             ->assertRedirect(route('salon-signup.verify'));
-        $this->assertSame(self::MERCHANT, Salon::where('slug', 'golsar')->value('zarinpal_merchant_id'));
+        $this->assertSame(self::MERCHANT, Salon::where('slug', 'golsar')->firstOrFail()->zarinpal_merchant_id);
 
         $this->post(route('salon-signup.store'), $base + ['slug' => 'golsar-2', 'owner_phone' => '09121110002'])
             ->assertRedirect(route('salon-signup.verify'));
-        $this->assertNull(Salon::where('slug', 'golsar-2')->value('zarinpal_merchant_id'));
+        $this->assertNull(Salon::where('slug', 'golsar-2')->firstOrFail()->zarinpal_merchant_id);
     }
 
     public function test_malformed_merchant_id_is_rejected(): void
@@ -71,7 +71,7 @@ class SalonMerchantIdTest extends TestCase
 
     /**
      * ⭐ مرحله‌ی ۱ چند درگاه (۲۰۲۶-۰۹-۲۵): فیلد تکی کد پذیرنده از «اطلاعات سالن» حذف شد؛ مالک از صفحه‌ی
-     * «درگاه‌های پرداخت» زرین‌پال رو اضافه/حذف می‌کنه و ستون salons.zarinpal_merchant_id هم‌گام می‌مونه.
+     * «درگاه‌های پرداخت» زرین‌پال رو اضافه/حذف می‌کنه و Salon::zarinpal_merchant_id (ویژگی مجازیِ ردیف درگاه) همون رو نشون می‌ده.
      */
     public function test_owner_sets_and_clears_the_merchant_id_from_the_payment_gateways_page(): void
     {

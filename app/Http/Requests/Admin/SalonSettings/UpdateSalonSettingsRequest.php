@@ -38,9 +38,6 @@ class UpdateSalonSettingsRequest extends FormRequest
             'bio' => ['nullable', 'string', 'max:2000'],
             'logo' => SalonLogoService::RULES,
             'remove_logo' => ['nullable', 'boolean'],
-            // ⭐ توکن Payout زرین‌پال سالن (۲۰۲۶-۰۹-۲۴) — خالی = بدون تغییر؛ remove_* برای حذف.
-            'zarinpal_payout_api_key' => ['nullable', 'string', 'min:20', 'max:2000'],
-            'remove_zarinpal_payout_api_key' => ['nullable', 'boolean'],
         ];
     }
 

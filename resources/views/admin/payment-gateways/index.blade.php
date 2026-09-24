@@ -56,6 +56,12 @@
                                     <span class="text-xs font-normal" style="color: var(--admin-text-light);">({{ \App\Payments\GatewayCatalog::label($gateway->driver) }})</span>
                                 </div>
                                 <div class="text-xs mt-1" style="color: var(--admin-text-dim);">کارمزد روی مبلغ مشتری: {{ $feeText($gateway) }}</div>
+                                @if (\App\Payments\GatewayCatalog::supportsPayout($gateway->driver))
+                                    <div class="text-xs mt-1" style="color: var(--admin-text-dim);">
+                                        تسویه‌ی خودکار متخصص‌ها:
+                                        {{ app(\App\Payments\PayoutManager::class)->isConfigured($gateway) ? 'فعال' : 'غیرفعال (توکن Payout وارد نشده)' }}
+                                    </div>
+                                @endif
                             </div>
                             @if ($gateway->is_active)
                                 <span class="text-xs rounded-full px-2 py-0.5" style="background:#DCFCE7; color:#166534;">فعال</span>

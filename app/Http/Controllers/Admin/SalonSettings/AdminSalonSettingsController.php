@@ -37,12 +37,7 @@ class AdminSalonSettingsController extends Controller
 
         // ⭐ ۲۰۲۶-۰۹-۲۵: کد پذیرنده‌ی زرین‌پال دیگه اینجا نیست — صفحه‌ی «درگاه‌های پرداخت»
         // (AdminPaymentGatewayController) جایگزینش شد؛ مقدار ارسالی به این مسیر نادیده گرفته می‌شه.
-        // ⭐ ۲۰۲۶-۰۹-۲۴: توکن Payout هیچ‌وقت در فرم نمایش داده نمی‌شه؛ فیلد خالی یعنی «بدون تغییر».
-        if ($request->boolean('remove_zarinpal_payout_api_key')) {
-            $salon->update(['zarinpal_payout_api_key' => null]);
-        } elseif (filled($request->validated('zarinpal_payout_api_key'))) {
-            $salon->update(['zarinpal_payout_api_key' => trim($request->validated('zarinpal_payout_api_key'))]);
-        }
+        // توکن Payout هم (مرحله‌ی ۳، ۲۰۲۶-۰۹-۲۵) به ویرایش درگاه زرین‌پال در همان صفحه منتقل شد.
 
         if ($request->hasFile('logo')) {
             $this->logoService->replace($salon, $request->file('logo'));

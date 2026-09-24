@@ -7,7 +7,7 @@ use App\Events\Withdrawal\Rejected\WithdrawalRejected;
 use App\Jobs\ProcessWithdrawalJob;
 use App\Models\Specialist;
 use App\Models\WithdrawalRequest;
-use App\Services\Payment\ZarinpalPayoutService;
+use App\Services\Payment\SalonPayoutService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Mockery;
@@ -42,7 +42,7 @@ class ProcessWithdrawalJobTest extends TestCase
 
         $withdrawal = $this->makeProcessingWithdrawal();
 
-        $this->mock(ZarinpalPayoutService::class, function ($mock) {
+        $this->mock(SalonPayoutService::class, function ($mock) {
             $mock->shouldReceive('payout')->once()->andReturn([
                 'success' => true,
                 'reference_code' => 'ZP-REAL-123',
@@ -50,7 +50,7 @@ class ProcessWithdrawalJobTest extends TestCase
             ]);
         });
 
-        (new ProcessWithdrawalJob($withdrawal->id))->handle(app(ZarinpalPayoutService::class));
+        (new ProcessWithdrawalJob($withdrawal->id))->handle(app(SalonPayoutService::class));
 
         $withdrawal->refresh();
         $this->assertSame('completed', $withdrawal->status);
@@ -66,14 +66,14 @@ class ProcessWithdrawalJobTest extends TestCase
 
         $withdrawal = $this->makeProcessingWithdrawal();
 
-        $this->mock(ZarinpalPayoutService::class, function ($mock) {
+        $this->mock(SalonPayoutService::class, function ($mock) {
             $mock->shouldReceive('payout')->once()->andReturn([
                 'success' => false,
                 'message' => 'موجودی کافی نیست',
             ]);
         });
 
-        (new ProcessWithdrawalJob($withdrawal->id))->handle(app(ZarinpalPayoutService::class));
+        (new ProcessWithdrawalJob($withdrawal->id))->handle(app(SalonPayoutService::class));
 
         $withdrawal->refresh();
         $this->assertSame('failed', $withdrawal->status);
@@ -104,14 +104,14 @@ class ProcessWithdrawalJobTest extends TestCase
             'total_withdrawn' => 100000,
         ]);
 
-        $this->mock(ZarinpalPayoutService::class, function ($mock) {
+        $this->mock(SalonPayoutService::class, function ($mock) {
             $mock->shouldReceive('payout')->once()->andReturn([
                 'success' => false,
                 'message' => 'خطای درگاه',
             ]);
         });
 
-        (new ProcessWithdrawalJob($withdrawal->id))->handle(app(ZarinpalPayoutService::class));
+        (new ProcessWithdrawalJob($withdrawal->id))->handle(app(SalonPayoutService::class));
 
         $wallet->refresh();
         $this->assertSame(500000.0, (float) $wallet->balance);
@@ -137,11 +137,11 @@ class ProcessWithdrawalJobTest extends TestCase
 
         Event::fake();
 
-        $payoutMock = Mockery::mock(ZarinpalPayoutService::class);
+        $payoutMock = Mockery::mock(SalonPayoutService::class);
         $payoutMock->shouldNotReceive('payout');
-        $this->app->instance(ZarinpalPayoutService::class, $payoutMock);
+        $this->app->instance(SalonPayoutService::class, $payoutMock);
 
-        (new ProcessWithdrawalJob($withdrawal->id))->handle(app(ZarinpalPayoutService::class));
+        (new ProcessWithdrawalJob($withdrawal->id))->handle(app(SalonPayoutService::class));
 
         $withdrawal->refresh();
         $this->assertSame('completed', $withdrawal->status);
@@ -155,11 +155,11 @@ class ProcessWithdrawalJobTest extends TestCase
     {
         Event::fake();
 
-        $payoutMock = Mockery::mock(ZarinpalPayoutService::class);
+        $payoutMock = Mockery::mock(SalonPayoutService::class);
         $payoutMock->shouldNotReceive('payout');
-        $this->app->instance(ZarinpalPayoutService::class, $payoutMock);
+        $this->app->instance(SalonPayoutService::class, $payoutMock);
 
-        (new ProcessWithdrawalJob(999999))->handle(app(ZarinpalPayoutService::class));
+        (new ProcessWithdrawalJob(999999))->handle(app(SalonPayoutService::class));
 
         Event::assertNotDispatched(WithdrawalApproved::class);
         Event::assertNotDispatched(WithdrawalRejected::class);

@@ -17,6 +17,11 @@
                value="{{ $field['secret'] ? '' : ($useOld ? old('credentials.'.$name) : ($gateway?->credentials[$name] ?? '')) }}"
                placeholder="{{ $field['secret'] && ! $isNew ? '•••••••• (ذخیره شده — برای تغییر مقدار جدید وارد کنید)' : $field['placeholder'] }}"
                class="{{ $input }}" style="{{ $inputStyle }}">
+        @if (! empty($field['optional']) && $field['secret'] && ! $isNew && filled($gateway?->credentials[$name] ?? null))
+            <label class="flex items-center gap-2 mt-1 text-xs" style="color: var(--admin-text-dim);">
+                <input type="checkbox" name="clear[{{ $name }}]" value="1"> حذف مقدار ذخیره‌شده
+            </label>
+        @endif
     </div>
 @endforeach
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">

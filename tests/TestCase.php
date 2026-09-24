@@ -57,10 +57,10 @@ abstract class TestCase extends BaseTestCase
         // with the migration's own row on the unique constraint. firstOrCreate() also means this
         // still works standalone if some future test setup migrates without that backfill step.
         if (Schema::hasTable('salons')) {
-            $defaultSalon = Salon::firstOrCreate(
-                ['slug' => 'rasta'],
-                Salon::factory()->make(['name' => 'سالن زیبایی راستا', 'slug' => 'rasta'])->toArray()
-            );
+            // ⭐ ۲۰۲۶-۰۹-۲۵: از factory()->create() (نه firstOrCreate با make()->toArray()) — کد پذیرنده‌ی
+            // زرین‌پال حالا ویژگی مجازیِ ردیف درگاهه و در toArray() نمیاد؛ create() همون درگاه پیش‌فرض رو می‌سازه.
+            $defaultSalon = Salon::where('slug', 'rasta')->first()
+                ?? Salon::factory()->create(['name' => 'سالن زیبایی راستا', 'slug' => 'rasta']);
 
             $this->app->make(CurrentSalon::class)->set($defaultSalon);
 
