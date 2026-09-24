@@ -94,10 +94,13 @@ class UserWalletController extends Controller
 
         $suggestedAmounts = [50000, 100000, 200000, 500000, 1000000];
 
-        return view('user.wallet.charge', compact('user', 'wallet', 'suggestedAmounts'));
+        // ⭐ مرحله‌ی ۱ چند درگاه: درگاه‌های فعال سالن با کارمزدشان (مبلغ نهایی در صفحه با JS حساب می‌شه).
+        $gatewayOptions = $this->paymentService->gatewayOptions(0);
+
+        return view('user.wallet.charge', compact('user', 'wallet', 'suggestedAmounts', 'gatewayOptions'));
     }
 
-    public function processCharge(Request $request): RedirectResponse
+    public function processCharge(Request $request): RedirectResponse|\Illuminate\Http\Response
     {
         try {
             $amountInput = $request->input('amount');
@@ -139,10 +142,11 @@ class UserWalletController extends Controller
 
             session(['wallet_charge_id' => $chargeId]);
 
-            $result = $this->paymentService->createWalletChargePayment($user, $amount);
+            $gatewayId = $request->input('gateway_id');
+            $result = $this->paymentService->createWalletChargePayment($user, $amount, is_numeric($gatewayId) ? (int) $gatewayId : null);
 
             if (isset($result['success']) && $result['success'] && isset($result['payment_url'])) {
-                return redirect($result['payment_url']);
+                return \App\Payments\GatewayRedirect::to($result);
             }
 
             session()->forget(['wallet_charge_pending', 'wallet_charge_id']);
@@ -216,6 +220,8 @@ class UserWalletController extends Controller
                             'payment_method' => 'gateway',
                             'gateway_ref' => $result['ref_id'] ?? null,
                             'card_pan' => $result['card_pan'] ?? null,
+                            'gateway' => $result['gateway'] ?? null,
+                            'gateway_fee' => $result['gateway_fee'] ?? 0,
                         ],
                     ]);
 

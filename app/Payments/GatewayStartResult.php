@@ -26,6 +26,12 @@ final class GatewayStartResult
         return new self(true, $url, $token, 'GET', [], null, false, $raw);
     }
 
+    /** درگاه‌هایی (آسان پرداخت / بانک‌ها) که مشتری باید با یک فرم POST خودکار به صفحه‌ی پرداخت بره. */
+    public static function postForm(string $url, string $token, array $fields, array $raw = []): self
+    {
+        return new self(true, $url, $token, 'POST', $fields, null, false, $raw);
+    }
+
     public static function failed(string $message, bool $retryable = false, array $raw = []): self
     {
         return new self(false, null, null, 'GET', [], $message, $retryable, $raw);

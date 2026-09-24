@@ -21,7 +21,7 @@ class PaymentController extends Controller
         protected readonly BookingRepositoryInterface $bookingRepository,
     ) {}
 
-    public function process(Booking $booking): RedirectResponse
+    public function process(Booking $booking): RedirectResponse|\Illuminate\Http\Response
     {
         try {
             $this->authorize('pay', $booking);
@@ -49,10 +49,10 @@ class PaymentController extends Controller
                 return redirect()->route('bookings.success', ['id' => $booking->id])
                     ->with('success', 'نوبت شما با تخفیف کامل با موفقیت ثبت شد.');
             }
-            $result = $this->paymentService->createPayment($booking);
+            $result = $this->paymentService->createPayment($booking, null, $this->chosenGatewayId());
 
             if (isset($result['success']) && $result['success'] && isset($result['payment_url'])) {
-                return redirect($result['payment_url']);
+                return \App\Payments\GatewayRedirect::to($result);
             }
 
             $errorMessage = $result['message'] ?? 'در حال حاضر امکان اتصال به درگاه بانکی وجود ندارد.';
@@ -75,7 +75,7 @@ class PaymentController extends Controller
         }
     }
 
-    public function processWithWallet(Request $request, Booking $booking): RedirectResponse
+    public function processWithWallet(Request $request, Booking $booking): RedirectResponse|\Illuminate\Http\Response
     {
         try {
             $this->authorize('pay', $booking);
@@ -144,10 +144,10 @@ class PaymentController extends Controller
                     ]);
                 }
 
-                $result = $this->paymentService->createPayment($booking, $remainingAmount);
+                $result = $this->paymentService->createPayment($booking, $remainingAmount, $this->chosenGatewayId());
 
                 if (isset($result['success']) && $result['success'] && isset($result['payment_url'])) {
-                    return redirect($result['payment_url']);
+                    return \App\Payments\GatewayRedirect::to($result);
                 }
 
                 if ($walletAmount > 0) {
@@ -176,6 +176,17 @@ class PaymentController extends Controller
         }
     }
 
+    /**
+     * ⭐ مرحله‌ی ۱ چند درگاه: درگاهی که مشتری در صفحه‌ی پرداخت انتخاب کرده. فقط یک ترجیح است — GatewayManager
+     * فقط درگاه‌های فعال همین سالن رو قبول می‌کنه و اگه این یکی در دسترس نبود، خودکار سراغ بعدی می‌ره.
+     */
+    private function chosenGatewayId(): ?int
+    {
+        $id = request()->input('gateway_id');
+
+        return is_numeric($id) ? (int) $id : null;
+    }
+
     public function callback(Request $request): RedirectResponse
     {
         try {
@@ -196,6 +207,8 @@ class PaymentController extends Controller
                             'method' => $partialPayment ? 'wallet_gateway' : 'gateway',
                             'gateway_ref' => $result['ref_id'] ?? $result['reference'],
                             'card_pan' => $result['card_pan'] ?? null,
+                            'gateway' => $result['gateway'] ?? null,
+                            'gateway_fee' => $result['gateway_fee'] ?? 0,
                         ];
 
                         if ($partialPayment) {
@@ -276,6 +289,7 @@ class PaymentController extends Controller
         return view('payment.show', [
             'booking' => $booking,
             'wallet' => $wallet,
+            'gatewayOptions' => $this->paymentService->gatewayOptions($booking->prepayment_amount),
         ]);
     }
 }

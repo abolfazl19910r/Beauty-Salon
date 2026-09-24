@@ -77,7 +77,7 @@ class ZarinpalDriver implements PaymentGatewayDriver
 
     public function verify(GatewayVerifyRequest $request): GatewayVerifyResult
     {
-        $authority = $request->callback['Authority'] ?? $request->callback['authority'] ?? null;
+        $authority = $request->token ?? $request->callback['Authority'] ?? $request->callback['authority'] ?? null;
         $status = $request->callback['Status'] ?? $request->callback['status'] ?? null;
 
         if ($status === 'NOK' || $status === 'cancel') {

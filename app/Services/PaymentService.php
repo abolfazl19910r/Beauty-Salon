@@ -47,6 +47,25 @@ class PaymentService
         return $this->manager()->gatewaysFor($this->salon());
     }
 
+    /**
+     * ⭐ مرحله‌ی ۱: گزینه‌های صفحه‌ی انتخاب درگاه مشتری — هر درگاه فعال با کارمزد و مبلغ نهایی خودش برای
+     * مبلغ پایه‌ی داده‌شده (تومان). اولی (بالاترین اولویت) پیش‌فرض انتخاب‌شده است.
+     *
+     * @return array<int, array{id: int, name: string, driver: string, fee: int, total: int, fee_percent: float, fee_fixed: int}>
+     */
+    public function gatewayOptions(float|int $baseToman): array
+    {
+        return $this->availableGateways()->map(fn (\App\Models\SalonPaymentGateway $g) => [
+            'id' => $g->id,
+            'name' => $g->displayName(),
+            'driver' => $g->driver,
+            'fee' => $g->feeTomanFor($baseToman),
+            'total' => (int) round((float) $baseToman) + $g->feeTomanFor($baseToman),
+            'fee_percent' => (float) $g->fee_percent,
+            'fee_fixed' => (int) $g->fee_fixed_toman,
+        ])->values()->all();
+    }
+
     private function unavailableResult(): array
     {
         return [
@@ -76,20 +95,20 @@ class PaymentService
             'callback_url' => $request->callbackUrl,
         ]);
 
-        $request = new GatewayStartRequest(
-            $request->amountRial,
-            route('payments.return', ['publicId' => $transaction->public_id]),
-            $request->description,
-            $request->mobile,
-            $request->email,
-            $request->orderId,
+        $request = $request->with(
+            callbackUrl: route('payments.return', ['publicId' => $transaction->public_id]),
+            transactionId: $transaction->id,
         );
 
-        [$result, $gateway] = $this->manager()->start($salon, $request, $preferredGatewayId);
+        [$result, $gateway, $feeRial] = $this->manager()->start($salon, $request, $preferredGatewayId);
 
+        // ⭐ مرحله‌ی ۱: amount_rial = مبلغی که واقعاً از مشتری گرفته می‌شه (مبلغ پایه + کارمزد همون درگاهی که
+        // در نهایت استفاده شد) — verify با همین مبلغ انجام می‌شه. کیف پول/نوبت فقط مبلغ پایه رو حساب می‌کنن.
         $transaction->update([
             'gateway_id' => $gateway?->id,
             'driver' => $gateway?->driver ?? $transaction->driver,
+            'amount_rial' => $request->amountRial + (int) $feeRial,
+            'fee_rial' => (int) $feeRial,
             'token' => $result->token,
             'status' => $result->success ? 'pending' : 'failed',
             'start_response' => $result->raw ?: null,
@@ -101,9 +120,12 @@ class PaymentService
             return [
                 'success' => true,
                 'payment_url' => $result->redirectUrl,
+                'method' => $result->method,
+                'form_fields' => $result->formFields,
                 'reference' => $result->token,
                 'gateway_id' => $gateway->id,
                 'gateway' => $gateway->driver,
+                'fee' => intdiv((int) $feeRial, 10),
                 'transaction' => $transaction->public_id,
             ];
         }
@@ -197,7 +219,7 @@ class PaymentService
 
             if ($transaction?->isPaid()) {
                 // idempotent: callback تکراری همون تراکنش دوباره تأیید/ثبت نمی‌شه
-                return ['status' => 'success', 'success' => true, 'booking_id' => $booking->id, 'reference' => $transaction->token, 'ref_id' => $transaction->ref_id, 'card_pan' => $transaction->card_pan, 'fee' => null, 'gateway' => $transaction->driver];
+                return ['status' => 'success', 'success' => true, 'booking_id' => $booking->id, 'reference' => $transaction->token, 'ref_id' => $transaction->ref_id, 'card_pan' => $transaction->card_pan, 'fee' => null, 'gateway' => $transaction->driver, 'gateway_fee' => intdiv((int) $transaction->fee_rial, 10)];
             }
 
             $gateway = $transaction?->gateway ?? $this->gatewayFromSession('payment_gateway_'.$booking->id);
@@ -212,6 +234,8 @@ class PaymentService
             $result = $this->manager()->verify($gateway, new GatewayVerifyRequest(
                 $transaction ? $transaction->amount_rial : (int) ((float) $verifyAmount * 10),
                 $request instanceof \Illuminate\Http\Request ? $request->all() : (array) $request,
+                $transaction?->token,
+                $transaction?->id,
             ));
             $this->recordVerification($transaction, $result);
 
@@ -231,6 +255,7 @@ class PaymentService
                     'card_pan' => $result->cardPan,
                     'fee' => $result->fee,
                     'gateway' => $gateway->driver,
+                    'gateway_fee' => $transaction ? intdiv((int) $transaction->fee_rial, 10) : 0,
                 ];
             }
 
@@ -284,6 +309,8 @@ class PaymentService
             $result = $this->manager()->verify($gateway, new GatewayVerifyRequest(
                 $transaction ? $transaction->amount_rial : (int) ((float) $expectedAmount * 10),
                 $request instanceof \Illuminate\Http\Request ? $request->all() : (array) $request,
+                $transaction?->token,
+                $transaction?->id,
             ));
             $this->recordVerification($transaction, $result);
 
@@ -292,6 +319,8 @@ class PaymentService
                     'success' => true,
                     'ref_id' => $result->refId,
                     'card_pan' => $result->cardPan,
+                    'gateway' => $gateway->driver,
+                    'gateway_fee' => $transaction ? intdiv((int) $transaction->fee_rial, 10) : 0,
                 ];
             }
 
