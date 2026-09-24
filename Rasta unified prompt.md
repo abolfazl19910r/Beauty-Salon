@@ -6507,8 +6507,33 @@ migration `2026_09_24_000003` (`salons.zarinpal_payout_api_key`، cast `encrypte
 و `ZarinpalPayoutService` روی لایه‌ی درگاه؛ حذف `App\Providers\PaymentServiceProvider` (مرده)؛ بررسی آدرس
 production زرین‌پال (`api.zarinpal.com` در کد در برابر `payment.zarinpal.com` در مستندات فعلی).
 
+### ۲۰۲۶-۰۹-۲۵ — چند درگاه: مرحله‌ی ۰ بخش ۲ (مرحله‌ی ۰ کامل شد)
+
+**پچ `feat(payments): unified transaction ledger, shared gateway return URL, subscriptions on the driver`:**
+- ⚠️ **دلیل طراحی (مهم برای هر driver بعدی):** بانک‌ها و PayPing v3 نتیجه رو با **POST cross-site** برمی‌گردونن؛
+  کوکی session با `SameSite=Lax` در اون POST فرستاده **نمی‌شه**. پس «کدوم درگاه/چه مبلغی» هرگز نباید از
+  session خونده بشه، و callback کسب‌وکار (که پشت auth هست) نمی‌تونه مستقیم آدرس بازگشت درگاه باشه.
+- جدول `payment_transactions` (public uuid، salon، gateway، driver، purpose `booking|wallet_charge|subscription`،
+  payable morph، amount_rial، fee_rial، token، ref_id، card_pan، status، callback_url کسب‌وکار، پاسخ‌های خام).
+- مسیر `payments.return` = `/payments/return/{uuid}`: GET+POST، بدون auth، بدون CSRF، throttle، بدون domain.
+  **هیچ منطق مالی نداره**: فقط 303 به callback کسب‌وکار همون تراکنش + پارامترهای درگاه + tx (GET → کوکی Lax
+  برمی‌گرده). مقادیر booking/invoice/tx از درگاه هرگز منتقل نمی‌شن.
+- `PaymentService`: هر شروع = یک تراکنش + آدرس بازگشت مشترک به درگاه. در callback، tx فقط برای همین سالن/همین
+  purpose/همین نوبت قبول می‌شه؛ verify با درگاه و **مبلغ ثبت‌شده در تراکنش**. callback تکراری: نوبت → همون نتیجه‌ی
+  ذخیره‌شده؛ شارژ کیف پول → رد (جلوگیری از شارژ دوباره). callback بدون tx همون رفتار قبلی (session).
+- `SubscriptionPaymentService` روی `ZarinpalDriver` با مرچنت پلتفرم + تراکنش + بازگشت مشترک.
+- آدرس production زرین‌پال طبق مستندات رسمی فعلی: `payment.zarinpal.com/pg/v4/payment/...` و
+  `payment.zarinpal.com/pg/StartPay/...` (قبلاً api/www). override: `ZARINPAL_PAYMENT_API_URL` / `ZARINPAL_START_PAY_URL`.
+- حذف `App\Providers\PaymentServiceProvider` (مرده).
+- تست: `PaymentTransactionLedgerTest` (۷) + تست end-to-end در `PaymentControllerTest` (شروع → return → 303 → callback
+  → نوبت paid). سوییت کامل **۱۲۳۳ passed / ۱ skipped**.
+- تست ناپایدار گزارش‌شده‌ی نوبت قبل: در ۹ اجرای کامل پشت‌سرهم دیگه بازتولید نشد — زیر نظر.
+
+**هنوز روی لایه‌ی درگاه نیست:** Payout (`ZarinpalPayoutService`) — با مرحله‌ی ۳.
+
 ### قدم‌های باز
-- ادامه‌ی مرحله‌ی ۰ (بالا)، بعد مرحله‌ی ۱: driverهای زیبال/آیدی‌پی/نکست‌پی/پی‌پینگ (با بررسی مستندات به‌روز هرکدام)،
-  UI مدیریت درگاه‌ها، صفحه‌ی انتخاب درگاه مشتری، محاسبه‌ی کارمزد روی مبلغ مشتری
+- **مرحله‌ی ۱:** driverهای زیبال، آیدی‌پی، نکست‌پی، پی‌پینگ (هرکدام اول با مستندات رسمی به‌روزش)؛ UI مدیریت
+  درگاه‌ها در «اطلاعات سالن» (جایگزین فیلد تکی مرچنت زرین‌پال + sync فعلی)؛ صفحه‌ی انتخاب درگاه مشتری؛
+  محاسبه‌ی کارمزد روی مبلغ مشتری (`fee_percent`/`fee_fixed_toman` → `fee_rial` تراکنش)
 - (اختیاری) پیامک خوش‌آمد به مالک سالن
 
