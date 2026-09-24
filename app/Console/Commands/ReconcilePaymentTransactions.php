@@ -1,0 +1,94 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\Models\PaymentTransaction;
+use App\Payments\Drivers\SamanDriver;
+use App\Payments\GatewayManager;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
+
+/**
+ * ⭐ تطبیق تراکنش‌های درگاه (مرحله‌ی ۲ چند درگاه — بانک سامان). هر ۵ دقیقه (bootstrap/app.php).
+ *
+ * ۱) مشتری از درگاه برنگشت: تراکنش pending بیشتر از یک ساعت → expired. هیچ درگاهی بدون اطلاعاتِ بازگشت
+ *    قابل تایید نیست (سپ برای verify رسید RefNum رو می‌خواد که فقط با بازگشت مشتری می‌رسه)؛ سپ پرداختِ تاییدنشده
+ *    رو بعد از ۳۰ دقیقه خودش برگشت می‌زنه. expired فقط برای صادق بودن دفتر تراکنش‌هاست و مانع تایید دیرهنگام نیست.
+ *
+ * ۲) سامان — مشتری برگشت ولی پاسخ VerifyTransaction نرسید (unanswered). اگه سپ در واقع تایید کرده باشه، دیگه
+ *    خودش برگشت نمی‌زنه و پول مشتری بدون خدمت می‌مونه. مستند اجازه‌ی Reverse تا ۵۰ دقیقه بعد از تراکنش رو می‌ده؛
+ *    ولی تا ۳۰ دقیقه مشتری هنوز می‌تونه با refresh همون صفحه تایید رو تکرار کنه. پس فقط تراکنش‌هایی که آخرین
+ *    تلاش تاییدشون (updated_at ≈ زمان بازگشت از بانک) بین ۳۱ و ۴۵ دقیقه پیش بوده برگشت زده می‌شن — اول با
+ *    یک update شرطی failed → reversing (تا دو اجرا یا یک تایید هم‌زمان با هم تداخل نکنن؛ GatewayReceipt::claim
+ *    تراکنش reversing/reversed رو رد می‌کنه). اگه Reverse ناموفق بود (مثلاً سپ هرگز تایید نکرده بود و تراکنش
+ *    رو نمی‌شناسه) دوباره failed می‌شه تا اجرای بعدی داخل همون پنجره دوباره امتحان کنه.
+ */
+class ReconcilePaymentTransactions extends Command
+{
+    protected $signature = 'payments:reconcile {--dry-run : فقط نمایش، بدون تغییر}';
+
+    protected $description = 'منقضی کردن تراکنش‌های رهاشده و برگشت وجه پرداخت‌های سامانی که پاسخ تایید آن‌ها نرسید';
+
+    public const EXPIRE_PENDING_AFTER_MINUTES = 60;
+
+    /** بعد از این، مهلت ۳۰ دقیقه‌ای verify مشتری تمام شده. */
+    public const SAMAN_REVERSE_AFTER_MINUTES = 31;
+
+    /** قبل از این، با حاشیه‌ی امن از مهلت ۵۰ دقیقه‌ای Reverse مستند. */
+    public const SAMAN_REVERSE_BEFORE_MINUTES = 45;
+
+    public function handle(GatewayManager $gateways): int
+    {
+        $dryRun = (bool) $this->option('dry-run');
+
+        $stale = PaymentTransaction::query()
+            ->where('status', 'pending')
+            ->where('created_at', '<=', now()->subMinutes(self::EXPIRE_PENDING_AFTER_MINUTES));
+
+        $expired = $dryRun ? $stale->count() : $stale->update(['status' => 'expired', 'updated_at' => now()]);
+        $this->info(($dryRun ? '[dry-run] ' : '')."تراکنش‌های رهاشده‌ی منقضی‌شده: {$expired}");
+
+        $candidates = PaymentTransaction::query()
+            ->where('driver', 'saman')
+            ->where('status', 'failed')
+            ->whereNotNull('gateway_receipt')
+            ->whereBetween('updated_at', [now()->subMinutes(self::SAMAN_REVERSE_BEFORE_MINUTES), now()->subMinutes(self::SAMAN_REVERSE_AFTER_MINUTES)])
+            ->get()
+            ->filter(fn (PaymentTransaction $tx) => ((array) $tx->verify_response)['unanswered'] ?? false);
+
+        $reversed = 0;
+
+        foreach ($candidates as $tx) {
+            if ($dryRun) {
+                $this->line("[dry-run] برگشت وجه تراکنش #{$tx->id} (رسید {$tx->gateway_receipt})");
+
+                continue;
+            }
+
+            // toBase(): updated_at عمداً دست نمی‌خوره — همون «زمان بازگشت مشتری» است که پنجره‌ی بالا باهاش حساب می‌شه؛
+            // اگه عوض می‌شد، یک Reverse ناموفق تراکنش رو از پنجره بیرون می‌انداخت و دیگه امتحان نمی‌شد.
+            if (PaymentTransaction::whereKey($tx->id)->where('status', 'failed')->toBase()->update(['status' => 'reversing']) !== 1) {
+                continue; // اجرای دیگه یا یک تایید هم‌زمان زودتر رسید
+            }
+
+            $driver = $tx->gateway ? $gateways->driver($tx->gateway) : null;
+            $ok = $driver instanceof SamanDriver && $driver->reverse((string) $tx->gateway_receipt);
+            $response = (array) $tx->verify_response;
+            $response['reverse_attempts'] = (int) ($response['reverse_attempts'] ?? 0) + 1;
+
+            PaymentTransaction::whereKey($tx->id)->toBase()->update([
+                'status' => $ok ? 'reversed' : 'failed',
+                'verify_response' => json_encode($response + ($ok ? ['reversed_at' => now()->toIso8601String()] : []), JSON_UNESCAPED_UNICODE),
+            ]);
+
+            Log::log($ok ? 'info' : 'warning', $ok ? 'Saman payment reversed after unanswered verify' : 'Saman reverse failed', [
+                'transaction_id' => $tx->id, 'salon_id' => $tx->salon_id, 'gateway_missing' => ! $tx->gateway,
+            ]);
+            $reversed += $ok ? 1 : 0;
+        }
+
+        $this->info(($dryRun ? '[dry-run] ' : '')."برگشت وجه سامان: {$reversed} از {$candidates->count()}");
+
+        return self::SUCCESS;
+    }
+}

@@ -161,6 +161,11 @@ class PaymentService
 
     private function recordVerification(?\App\Models\PaymentTransaction $transaction, \App\Payments\GatewayVerifyResult $result): void
     {
+        // تراکنشی که payments:reconcile برگشت زده، با یک callback دیرهنگام دوباره «failed» نمی‌شه
+        if ($transaction && in_array($transaction->fresh()?->status, \App\Models\PaymentTransaction::REVERSAL_STATUSES, true)) {
+            return;
+        }
+
         $transaction?->update([
             'status' => $result->success ? 'paid' : ($result->cancelledByUser ? 'cancelled' : 'failed'),
             'ref_id' => $result->refId,

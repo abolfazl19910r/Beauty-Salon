@@ -90,6 +90,13 @@ return Application::configure(basePath: dirname(__DIR__))
             ->daily()
             ->withoutOverlapping()
             ->onOneServer();
+        // Multi-gateway stage 2: expire abandoned gateway transactions and reverse Saman (SEP)
+        // payments whose verify answer never arrived (SEP only allows Reverse within 50 minutes,
+        // so this must run often) — see App\Console\Commands\ReconcilePaymentTransactions.
+        $schedule->command('payments:reconcile')
+            ->everyFiveMinutes()
+            ->withoutOverlapping()
+            ->onOneServer();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // ⭐ Wired up (post-test-writing-phase): must be registered before the generic

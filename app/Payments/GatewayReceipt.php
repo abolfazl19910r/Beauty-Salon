@@ -14,7 +14,7 @@ use Illuminate\Database\UniqueConstraintViolationException;
  * claim() اتمیک است: index یکتای (driver, gateway_receipt) در دیتابیس تصمیم می‌گیره، نه یک SELECT قبلی.
  * - رسید آزاد → به این تراکنش وصل می‌شه → true
  * - همین تراکنش قبلاً همین رسید رو گرفته (callback تکراری / تلاش دوباره) → true
- * - رسید مال تراکنش دیگه‌ایه، یا این تراکنش رسید دیگه‌ای داره → false
+ * - رسید مال تراکنش دیگه‌ایه، این تراکنش رسید دیگه‌ای داره، یا برگشت خورده → false
  */
 final class GatewayReceipt
 {
@@ -26,9 +26,10 @@ final class GatewayReceipt
             return false;
         }
 
-        $transaction = PaymentTransaction::query()->whereKey($transactionId)->first(['id', 'driver', 'gateway_receipt']);
+        $transaction = PaymentTransaction::query()->whereKey($transactionId)->first(['id', 'driver', 'gateway_receipt', 'status']);
 
-        if (! $transaction || $transaction->driver !== $driver) {
+        // تراکنشی که payments:reconcile برگشت زده (یا در حال برگشت‌زدنه) دیگه نباید تایید بشه
+        if (! $transaction || $transaction->driver !== $driver || in_array($transaction->status, PaymentTransaction::REVERSAL_STATUSES, true)) {
             return false;
         }
 

@@ -34,6 +34,9 @@ use Throwable;
  * از مصرف دوباره رو به عهده‌ی پذیرنده گذاشته. پاسخ verify هم ResNum رو برنمی‌گردونه، پس رسید با
  * App\Payments\GatewayReceipt (index یکتا) به همین تراکنش قفل می‌شه، قبل از هر verify.
  * ⚠️ مبلغ ناهمخوان: مستند می‌گه کل مبلغ باید به مشتری برگرده → Reverse و رد پرداخت.
+ * ⚠️ پاسخ verify نرسید: اگه سپ در واقع تایید کرده باشه، دیگه خودش برگشت نمی‌زنه و پول مشتری بدون خدمت می‌مونه؛
+ * این حالت با unanswered=true در raw علامت می‌خوره تا payments:reconcile بعد از بسته شدن مهلت ۳۰ دقیقه‌ای
+ * verify (و قبل از مهلت ۵۰ دقیقه‌ای Reverse) کل مبلغ رو برگردونه.
  * credentials: ['terminal_id' => '...'] — سپ برای توکن/تایید رمز نمی‌خواد؛ امنیت با IP ثبت‌شده است.
  */
 class SamanDriver implements PaymentGatewayDriver
@@ -162,7 +165,7 @@ class SamanDriver implements PaymentGatewayDriver
                 ->retry(3, 500, fn ($e) => $e instanceof ConnectionException, throw: false)
                 ->post(self::VERIFY_URL, $payload);
         } catch (Throwable) {
-            return $fail('پاسخ تایید از بانک سامان دریافت نشد. اگر مبلغی کسر شده باشد، حداکثر ظرف ۷۲ ساعت به حساب شما برمی‌گردد.', ['RefNum' => $refNum]);
+            return $fail('پاسخ تایید از بانک سامان دریافت نشد. اگر مبلغی کسر شده باشد، حداکثر ظرف ۷۲ ساعت به حساب شما برمی‌گردد.', ['RefNum' => $refNum, 'unanswered' => true]);
         }
 
         $body = self::normalize((array) $response->json());
