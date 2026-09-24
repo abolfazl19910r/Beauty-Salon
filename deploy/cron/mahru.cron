@@ -1,0 +1,14 @@
+# ============================================================
+# Mahru — the ONLY cron line the server needs (DirectAdmin / any Linux host)
+# ------------------------------------------------------------
+# DirectAdmin: Advanced Features → Cron Jobs → Minute/Hour/Day/Month/Weekday = * * * * *
+#   Command:  cd /home/[username]/public_html && /usr/local/bin/php artisan schedule:run >> /dev/null 2>&1
+# (مسیر php را با «which php» روی سرور چک کن؛ روی DirectAdmin معمولاً /usr/local/bin/php یا /usr/local/php83/bin/php)
+#
+# این یک خط همه‌ی کارهای زمان‌بندی‌شده را اجرا می‌کند (php artisan schedule:list):
+#   payments:reconcile (هر ۵ دقیقه) · لغو نوبت‌های پرداخت‌نشده (هر ۵ دقیقه) · یادآوری نوبت (هر ۱۰ دقیقه)
+#   تسویه‌ی شبانه‌ی کیف پول (۰۱:۰۰) · پاک‌سازی‌های روزانه
+# و اگر در .env «QUEUE_WORK_VIA_SCHEDULER=true» باشد، صف (پیامک‌ها و ...) را هم هر دقیقه خالی می‌کند.
+# راهنمای کامل: docs/deployment/SCHEDULER_AND_QUEUE.md
+# ============================================================
+* * * * * cd /home/[username]/public_html && php artisan schedule:run >> /dev/null 2>&1

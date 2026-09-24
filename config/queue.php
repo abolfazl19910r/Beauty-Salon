@@ -4,6 +4,14 @@ return [
 
     'default' => env('QUEUE_CONNECTION', 'database'),
 
+    /*
+    | ⭐ اجرای صف از داخل scheduler — برای هاست‌هایی مثل DirectAdmin که supervisor ندارن. با true، همون یک خط
+    | کرون «schedule:run» هر دقیقه یک worker کوتاه‌عمر («queue:work --stop-when-empty») هم اجرا می‌کنه، پس
+    | پیامک‌ها و لغو خودکار نوبت‌ها بدون پروسه‌ی دائمی اجرا می‌شن. روی Docker یا سروری که queue:work
+    | دائمی (supervisor) داره false بمونه. docs/deployment/SCHEDULER_AND_QUEUE.md
+    */
+    'work_via_scheduler' => filter_var(env('QUEUE_WORK_VIA_SCHEDULER', false), FILTER_VALIDATE_BOOL),
+
     'connections' => [
 
         'sync' => [

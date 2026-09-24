@@ -49,6 +49,8 @@ RUN apk add --no-cache \
     nginx \
     # Process manager
     supervisor \
+    # اجرای artisan / queue / scheduler با کاربر www (نه root) — docker/entrypoint.sh
+    su-exec \
     # PHP extensions dependencies
     libpng-dev \
     libjpeg-turbo-dev \

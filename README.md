@@ -245,6 +245,9 @@ npm run build
 
 ---
 
+> 📘 **راهنمای کامل سرور (DirectAdmin / VPS / Docker):** [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCHEDULER_AND_QUEUE.md)
+> — روی DirectAdmin فقط یک خط کرون لازم است و با `QUEUE_WORK_VIA_SCHEDULER=true` صف هم از همان کرون اجرا می‌شود.
+
 ### مرحله ۱۰ — راه‌اندازی Queue Worker
 
 سیستم از Queue برای Job های پس‌زمینه (ارسال SMS، یادآوری نوبت، ...) استفاده می‌کند:
@@ -255,9 +258,9 @@ php artisan queue:work --tries=3
 
 ---
 
-### مرحله ۱۱ — راه‌اندازی Scheduler (اختیاری)
+### مرحله ۱۱ — راه‌اندازی Scheduler (الزامی در production)
 
-برای اجرای دستورات زمان‌بندی شده (cleanup، یادآوری، گزارش):
+برای اجرای دستورات زمان‌بندی شده (برگشت وجه پرداخت‌های گیرکرده، لغو نوبت‌های پرداخت‌نشده، یادآوری، تسویه‌ی کیف پول، cleanup):
 
 ```bash
 # Linux/Mac — اضافه کردن به crontab

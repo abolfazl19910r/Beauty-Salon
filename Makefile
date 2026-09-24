@@ -3,7 +3,7 @@
 # دستورات سریع برای کار با Docker
 # ============================================================
 
-.PHONY: help build up down restart logs shell db-shell redis-shell migrate seed fresh status
+.PHONY: help build up down restart logs logs-scheduler queue-restart shell db-shell redis-shell migrate seed fresh status
 
 # ─── رنگ‌بندی ─────────────────────────────────────────────
 GREEN  := \033[0;32m
@@ -20,14 +20,15 @@ help: ## نمایش راهنما
 	@echo ""
 
 # ─── اولین راه‌اندازی ────────────────────────────────────
-setup: ## راه‌اندازی اولیه (copy env + build + up + key)
+setup: ## راه‌اندازی اولیه (copy env + key + build + up)
 	@cp -n .env.docker .env || true
+	@# APP_KEY قبل از بالا آمدن containerها ساخته می‌شه: .env داخل image نیست (dockerignore) و app/queue/scheduler
+	@# همه از همین .env (env_file) می‌خونن؛ key:generate داخل container فایلی برای نوشتن نداشت.
+	@grep -q '^APP_KEY=base64:' .env || sed -i "s|^APP_KEY=.*|APP_KEY=base64:$$(openssl rand -base64 32)|" .env
 	@echo "$(YELLOW)⚙️  Building images...$(RESET)"
 	docker compose build --no-cache
 	@echo "$(YELLOW)🚀 Starting containers...$(RESET)"
 	docker compose up -d
-	@echo "$(YELLOW)🔑 Generating app key...$(RESET)"
-	docker compose exec app php artisan key:generate
 	@echo "$(GREEN)✅ Setup complete! Visit: http://localhost$(RESET)"
 
 # ─── Build & Start ────────────────────────────────────────
@@ -61,6 +62,12 @@ logs-app: ## لاگ فقط app
 
 logs-queue: ## لاگ queue worker
 	docker compose logs -f queue
+
+logs-scheduler: ## لاگ scheduler (کارهای زمان‌بندی‌شده)
+	docker compose logs -f scheduler
+
+queue-restart: ## بعد از هر deploy: worker کد جدید رو بخونه
+	docker compose exec queue php artisan queue:restart
 
 logs-nginx: ## لاگ nginx
 	docker compose logs -f nginx

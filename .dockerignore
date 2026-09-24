@@ -8,7 +8,8 @@
 .gitattributes
 
 # Docker files خودش
-docker/
+# ⚠️ پوشه‌ی docker/ عمداً اینجا نیست: Dockerfile فایل‌های docker/php، docker/nginx، docker/supervisor و
+# docker/entrypoint.sh رو COPY می‌کنه و با ignore شدنش build از همون اول شکست می‌خورد.
 docker-compose*.yml
 Dockerfile
 

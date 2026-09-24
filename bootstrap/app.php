@@ -97,6 +97,17 @@ return Application::configure(basePath: dirname(__DIR__))
             ->everyFiveMinutes()
             ->withoutOverlapping()
             ->onOneServer();
+        // Hosts without supervisor (DirectAdmin): QUEUE_WORK_VIA_SCHEDULER=true lets the single
+        // schedule:run cron line also drain the queue every minute with a short-lived worker
+        // (queued SMS, CancelUnpaidBookings, refund notifications). In background so the other
+        // tasks of the same minute are not delayed; stops when the queue is empty or after 50s.
+        // Leave it false where a permanent queue:work runs (Docker "queue" service, supervisor).
+        if (config('queue.work_via_scheduler')) {
+            $schedule->command('queue:work --stop-when-empty --max-time=50 --tries=3 --timeout=45')
+                ->everyMinute()
+                ->withoutOverlapping(2)
+                ->runInBackground();
+        }
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // ⭐ Wired up (post-test-writing-phase): must be registered before the generic
