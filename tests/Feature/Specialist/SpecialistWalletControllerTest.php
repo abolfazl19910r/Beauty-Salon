@@ -4,8 +4,6 @@ namespace Tests\Feature\Specialist;
 
 use App\Models\Specialist;
 use App\Models\User;
-use App\Models\WalletSetting;
-use App\Models\WithdrawalRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

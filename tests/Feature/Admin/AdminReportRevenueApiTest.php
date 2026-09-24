@@ -54,4 +54,3 @@ class AdminReportRevenueApiTest extends TestCase
         $this->get('/admin/reports/today')->assertRedirect(route('login'));
     }
 }
-

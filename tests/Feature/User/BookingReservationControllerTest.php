@@ -20,8 +20,11 @@ class BookingReservationControllerTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+
     private BeautyService $service;
+
     private Specialist $specialist;
+
     private string $bookingTime;
 
     protected function setUp(): void

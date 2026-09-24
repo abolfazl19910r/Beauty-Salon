@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class WalletSetting extends Model
 {
-    use HasFactory, BelongsToSalon;
+    use BelongsToSalon, HasFactory;
 
     protected $fillable = [
         'withdrawal_fee_percentage',

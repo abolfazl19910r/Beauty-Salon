@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class LoyaltySetting extends Model
 {
-    use HasFactory, BelongsToSalon;
+    use BelongsToSalon, HasFactory;
 
     protected $table = 'loyalty_settings';
 

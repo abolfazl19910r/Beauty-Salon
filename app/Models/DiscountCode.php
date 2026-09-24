@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class DiscountCode extends Model
 {
-    use HasFactory, BelongsToSalon;
+    use BelongsToSalon, HasFactory;
 
     protected $fillable = [
         'code',

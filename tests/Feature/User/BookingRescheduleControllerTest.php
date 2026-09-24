@@ -21,8 +21,11 @@ class BookingRescheduleControllerTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+
     private Specialist $specialist;
+
     private BeautyService $service;
+
     private string $newTime;
 
     protected function setUp(): void

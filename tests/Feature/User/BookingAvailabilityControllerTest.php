@@ -23,6 +23,7 @@ class BookingAvailabilityControllerTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+
     private Specialist $specialist;
 
     protected function setUp(): void

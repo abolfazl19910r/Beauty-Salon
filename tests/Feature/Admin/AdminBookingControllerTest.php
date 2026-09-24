@@ -8,9 +8,9 @@ use App\Models\Booking;
 use App\Models\Specialist;
 use App\Models\SpecialistSchedule;
 use App\Models\User;
+use App\Notifications\Booking\BookingRescheduledNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
-use App\Notifications\Booking\BookingRescheduledNotification;
 use Tests\TestCase;
 
 /**
@@ -488,4 +488,3 @@ class AdminBookingControllerTest extends TestCase
         $this->actingAs($user)->get("/admin/bookings/{$booking->id}")->assertForbidden();
     }
 }
-

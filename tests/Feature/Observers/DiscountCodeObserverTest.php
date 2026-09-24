@@ -3,7 +3,6 @@
 namespace Tests\Feature\Observers;
 
 use App\Models\DiscountCode;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

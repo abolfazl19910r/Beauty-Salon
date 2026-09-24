@@ -238,7 +238,7 @@ class AdminBookingSlotConflictTest extends TestCase
         $this->assertDatabaseHas('bookings', ['id' => $booking->id, 'status' => 'confirmed']);
     }
 
-    public function test_isDuplicateActiveSlotError_recognizes_the_constraint_violation(): void
+    public function test_is_duplicate_active_slot_error_recognizes_the_constraint_violation(): void
     {
         // Regression guard for the earlier mistake in this same branch: an exact-index-name
         // string match ('bookings_active_slot_unique') matches MySQL's error message but NOT

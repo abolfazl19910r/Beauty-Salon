@@ -13,6 +13,7 @@ class AdminSpecialistScheduleTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private Specialist $specialist;
 
     protected function setUp(): void

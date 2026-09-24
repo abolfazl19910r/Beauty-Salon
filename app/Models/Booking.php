@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Booking extends Model
 {
-    use HasFactory, BelongsToSalon;
+    use BelongsToSalon, HasFactory;
 
     protected $table = 'bookings';
 

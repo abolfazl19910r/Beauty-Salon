@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 
 class BlogCategory extends Model
 {
-    use HasFactory, BelongsToSalon;
+    use BelongsToSalon, HasFactory;
 
     protected $fillable = [
         'name',

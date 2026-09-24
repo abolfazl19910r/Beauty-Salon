@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ReportExport extends Model
 {
-    use HasFactory, BelongsToSalon;
+    use BelongsToSalon, HasFactory;
 
     protected $fillable = [
         'admin_user_id',

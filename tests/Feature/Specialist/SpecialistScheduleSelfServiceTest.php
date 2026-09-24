@@ -92,7 +92,7 @@ class SpecialistScheduleSelfServiceTest extends TestCase
 
     public function test_update_rejects_a_break_period_that_ends_after_working_hours(): void
     {
-        [$user, ] = $this->actingSpecialist();
+        [$user] = $this->actingSpecialist();
 
         $response = $this->actingAs($user)->put(route('specialist.schedule.update'), [
             'schedules' => [
@@ -109,7 +109,7 @@ class SpecialistScheduleSelfServiceTest extends TestCase
 
     public function test_update_rejects_a_break_start_before_working_hours_begin(): void
     {
-        [$user, ] = $this->actingSpecialist();
+        [$user] = $this->actingSpecialist();
 
         $response = $this->actingAs($user)->put(route('specialist.schedule.update'), [
             'schedules' => [

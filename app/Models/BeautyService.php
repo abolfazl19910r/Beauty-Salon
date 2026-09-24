@@ -15,7 +15,7 @@ class BeautyService extends Model
 {
     protected $table = 'beauty_services';
 
-    use HasFactory, BelongsToSalon;
+    use BelongsToSalon, HasFactory;
 
     protected $fillable = [
         'name',

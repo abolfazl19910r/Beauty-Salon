@@ -14,6 +14,7 @@ class WalletAdminServiceWithdrawalTest extends TestCase
     use RefreshDatabase;
 
     private WalletAdminService $service;
+
     private User $admin;
 
     protected function setUp(): void

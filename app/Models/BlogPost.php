@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 
 class BlogPost extends Model
 {
-    use HasFactory, HasJalaliDates, SoftDeletes, BelongsToSalon;
+    use BelongsToSalon, HasFactory, HasJalaliDates, SoftDeletes;
 
     protected $fillable = [
         'title',

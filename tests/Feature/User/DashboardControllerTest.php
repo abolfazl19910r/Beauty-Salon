@@ -6,7 +6,6 @@ use App\Models\Announcement;
 use App\Models\BeautyService;
 use App\Models\Booking;
 use App\Models\Category;
-use App\Models\Specialist;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

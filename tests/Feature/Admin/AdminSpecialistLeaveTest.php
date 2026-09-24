@@ -6,7 +6,6 @@ use App\Models\Booking;
 use App\Models\Leave;
 use App\Models\Specialist;
 use App\Models\User;
-use App\Models\UserNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -22,6 +21,7 @@ class AdminSpecialistLeaveTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private Specialist $specialist;
 
     protected function setUp(): void

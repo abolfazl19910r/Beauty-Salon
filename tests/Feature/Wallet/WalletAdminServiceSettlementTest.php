@@ -5,7 +5,6 @@ namespace Tests\Feature\Wallet;
 use App\Models\BeautyService;
 use App\Models\Booking;
 use App\Models\Specialist;
-use App\Models\WalletSetting;
 use App\Services\Admin\Wallet\WalletAdminService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
