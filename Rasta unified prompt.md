@@ -6692,12 +6692,38 @@ production زرین‌پال (`api.zarinpal.com` در کد در برابر `paym
 مسیر کامل fail می‌شن. سوییت کامل **۱۳۰۹ passed / ۱ skipped** (پایه ۱۲۸۳). `pint --test` کل پروژه PASS (۷۹۴ فایل).
 **MariaDB 10.11:** migration + rollback، رفتار `claim` روی index یکتا، و ۱۱۶ تست پرداخت/درگاه روی MySQL واقعی PASS.
 
-**نکته‌ی جانبی (بدون تغییر):** دستور `bookings:cleanup` (لغو نوبت‌های پرداخت‌نشده بعد از ۳۰ دقیقه) در scheduler ثبت
-**نیست**. اگه فعالش کنید، با سامان مهلت ۳۰ دقیقه‌ی خودش با زمان پرداخت مشتری تداخل داره (پرداخت در دقیقه‌ی ۲۹، بازگشت
-در ۳۱) — قبلش باید مهلت رو بیشتر کرد یا نوبت‌های دارای تراکنش pending رو مستثنا کرد.
+**نکته‌ی جانبی:** ~~`bookings:cleanup` در scheduler ثبت نیست~~ — **اشتباه بود** (فقط `bootstrap/app.php` دیده شده بود).
+لغو خودکار نوبت‌های پرداخت‌نشده از قبل با job `CancelUnpaidBookings` در `routes/console.php` هر ۵ دقیقه فعال بود. ⚠️ درس:
+scheduler این پروژه در **دو** جا تعریف شده (`bootstrap/app.php` و `routes/console.php`) — همیشه `php artisan schedule:list` بگیر.
+رفع تداخلش در بخش بعدی.
 
 ⚠️ **توکن GitHub:** توکن جدیدی که در چت اومد کار می‌کرد؛ عمداً در این سند نوشته نشد (ریپو عمومیه). توکن داخل همین
 سند (بالای فایل) منقضی است و باید پاک بشه.
+
+### ۲۰۲۶-۰۹-۲۶ (ادامه) — لغو خودکار نوبت وسط پرداخت + برگشت پول وقتی ساعت از دست رفته
+
+**سؤال‌های ابوالفضل:** (۱) کرون `schedule:run` دستیه؟ → نه؛ همه‌ی کارها در کد زمان‌بندی شدن و فقط **یک خط کرون یک‌باره**
+روی سرور لازمه (Docker: کانتینر `scheduler` از قبل انجامش می‌ده؛ DirectAdmin: همون خط بخش «معماری کلیدی»؛ لوکال:
+`schedule:work`). ⚠️ `CancelUnpaidBookings` با `Schedule::job` صف‌دار است → با `QUEUE_CONNECTION` غیر sync، `queue:work` هم لازمه.
+(۲) تداخل لغو ۳۰ دقیقه‌ای با پرداخت دیرهنگام — با دو probe واقعی بازتولید شد (فایل‌ها پاک شدن):
+- ساعت هنوز آزاد → پرداخت دیرهنگام نوبت لغوشده رو بی‌صدا `confirmed/paid` می‌کرد (بعد از پیامک «نوبت شما لغو شد»).
+- ساعت رو نفر دیگه گرفته → `UNIQUE bookings.active_slot_key` (درست جلوی رزرو دوبل رو گرفت) ولی callback اون رو خطای عمومی
+  گرفت: **پول در حساب درگاه سالن، نوبت لغو، مشتری «پرداخت ناموفق»**.
+
+**تصمیم‌های ابوالفضل:** (۱) نوبتِ با پرداخت در جریان لغو نشه؛ (۲) در حالت دوم پول برگرده: سامان → Reverse به کارت، بقیه → کیف پول.
+
+**کامیت‌ها:**
+1. `fix(booking): do not auto-cancel an unpaid booking while its customer is at the bank` — `Booking::paymentTransactions()`
+   (morph) + `scopeWithoutPaymentInProgress()` (تراکنش pending جوان‌تر از `PaymentTransaction::PENDING_LIFETIME_MINUTES` = ۶۰)؛
+   هم `CancelUnpaidBookings` هم `bookings:cleanup`. `payments:reconcile` هم از همین ثابت برای expired استفاده می‌کنه.
+2. `fix(payments): refund the customer when the booking's slot was taken …` — `App\Services\Payment\LostSlotRefundService`:
+   قفل `paid → reversing` (بدون برگشت دوباره با refresh)؛ سامان: Reverse به کارت → `reversed`، اگه نشد کیف پول؛ بقیه: کیف پول
+   (کل مبلغ با کارمزد) → وضعیت جدید `refunded` (در `REVERSAL_STATUSES`)؛ بخش کیف پولی پرداخت ترکیبی همیشه کیف پول؛ دلیل در
+   `verify_response.refund` و `cancellation_reason` نوبت. `PaymentController::callback` فقط خطای یکتای `active_slot` رو می‌گیره
+   (بقیه rethrow) و به مشتری می‌گه پول کجا رفت. ساعتِ هنوز آزاد → مثل قبل تایید می‌شه.
+
+**تست:** `CancelUnpaidBookingsInFlightPaymentTest` (۳)، `LostSlotRefundTest` (۵). Mutation: بدون scope تست اول، بدون
+برگشت ۴ از ۵ fail. سوییت کامل **۱۳۱۷ passed / ۱ skipped**؛ Pint کل پروژه PASS؛ ۱۳۹ تست پرداخت/job روی MariaDB 10.11 PASS.
 
 ### قدم‌های باز
 - ⚠️ باطل کردن کلید کاوه‌نگار و توکن‌های GitHub (هم توکن این سند، هم توکنی که در چت ۲۰۲۶-۰۹-۲۶ اومد).
@@ -6708,5 +6734,6 @@ production زرین‌پال (`api.zarinpal.com` در کد در برابر `paym
 - **مرحله‌ی ۲ ادامه:** ملت/به‌پرداخت و پارسیان (SOAP؛ settle در مهلت، reverse). سامان انجام شد (۲۰۲۶-۰۹-۲۶).
 - سامان در محیط واقعی: قرارداد + ثبت IP سرور نزد سپ؛ اولین پرداخت با مبلغ کم؛ اگه ترمینال بلوپی داره، تست `redirect_mode=blupay`.
 - اجرای `schedule:run` روی سرور برای `payments:reconcile` (کران DirectAdmin بالا) — بدونش Reverse پرداخت‌های گیرکرده انجام نمی‌شه.
-- تصمیم درباره‌ی `bookings:cleanup` (ثبت‌نشده در scheduler؛ نکته‌ی جانبی بالا).
+- اطمینان از اجرای `queue:work` روی سرور اگه `QUEUE_CONNECTION` غیر sync است (`CancelUnpaidBookings` صف‌دار است).
+- (اختیاری) پیامک به مشتری وقتی پولش به کیف پول/کارت برگشت؛ الان فقط پیام صفحه و ردیف کیف پول.
 - برند: خوشنویسی اختصاصی «ماهرو» (کار خوشنویس) + ثبت علامت تجاری + خرید دامنه‌ها.
