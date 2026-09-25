@@ -39,6 +39,8 @@ class AdminReviewController extends Controller
 
     public function show(Review $review): View
     {
+        $this->ensureReviewInSalon($review);
+
         $review->load(['user', 'specialist', 'service', 'booking']);
 
         return view('admin.reviews.show', compact('review'));
@@ -46,6 +48,8 @@ class AdminReviewController extends Controller
 
     public function approve(Review $review): RedirectResponse
     {
+        $this->ensureReviewInSalon($review);
+
         try {
             $this->reviewRepository->update($review, ['is_approved' => true]);
 
@@ -68,6 +72,8 @@ class AdminReviewController extends Controller
 
     public function reject(Review $review): RedirectResponse
     {
+        $this->ensureReviewInSalon($review);
+
         try {
             $this->reviewRepository->update($review, ['is_approved' => false]);
 
@@ -85,6 +91,8 @@ class AdminReviewController extends Controller
 
     public function toggleFeatured(Review $review): RedirectResponse
     {
+        $this->ensureReviewInSalon($review);
+
         try {
             $review = $this->reviewRepository->update($review, ['is_featured' => ! $review->is_featured]);
 
@@ -101,6 +109,8 @@ class AdminReviewController extends Controller
 
     public function destroy(Review $review): RedirectResponse
     {
+        $this->ensureReviewInSalon($review);
+
         try {
             $this->reviewRepository->delete($review);
 
@@ -176,5 +186,10 @@ class AdminReviewController extends Controller
         $reviews = $this->reviewRepository->paginateTrashed(15);
 
         return view('admin.reviews.trashed', compact('reviews'));
+    }
+
+    private function ensureReviewInSalon(Review $review): void
+    {
+        $this->ensureSalonOwnership($this->specialistRepository->getSalonIdIgnoringScopes($review->specialist_id));
     }
 }

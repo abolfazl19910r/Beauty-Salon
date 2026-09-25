@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToSalonThroughSpecialist;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +11,7 @@ use Illuminate\Support\Str;
 
 class Review extends Model
 {
-    use HasFactory, SoftDeletes;
+    use BelongsToSalonThroughSpecialist, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'booking_id',
