@@ -17,6 +17,7 @@ class SchedulerQueueSetupTest extends TestCase
             ->expectsOutputToContain('payments:reconcile')
             ->expectsOutputToContain('bookings:send-reminders')
             ->expectsOutputToContain('wallet:settle-pending')
+            ->expectsOutputToContain('payouts:refresh-vandar-tokens')
             ->assertSuccessful();
     }
 

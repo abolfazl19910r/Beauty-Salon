@@ -10,6 +10,9 @@ final class PayoutResult
         public readonly ?string $payoutId = null,
         public readonly ?string $message = null,
         public readonly array $raw = [],
+        // ⭐ نتیجه نامعلوم (پاسخ نرسید بعد از فرستادن): شاید واریز ثبت شده باشه — نه ناموفق (برگشت به کیف پول =
+        // احتمال پرداخت دوباره)، نه موفق. ProcessWithdrawalJob برداشت رو برای بررسی دستی در processing نگه می‌داره.
+        public readonly bool $unknown = false,
     ) {}
 
     /** همون شکل آرایه‌ای که ProcessWithdrawalJob از قبل انتظار داره. */
@@ -21,6 +24,7 @@ final class PayoutResult
             'payout_id' => $this->payoutId,
             'message' => $this->message,
             'raw' => $this->raw ?: null,
+            'unknown' => $this->unknown ?: null,
         ], fn ($v) => $v !== null);
     }
 }

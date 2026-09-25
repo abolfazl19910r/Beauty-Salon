@@ -5,6 +5,7 @@ namespace App\Payments;
 use App\Models\Salon;
 use App\Models\SalonPaymentGateway;
 use App\Payments\Contracts\PayoutDriver;
+use App\Payments\Drivers\VandarPayoutDriver;
 use App\Payments\Drivers\ZarinpalPayoutDriver;
 use App\Payments\Drivers\ZibalPayoutDriver;
 
@@ -14,7 +15,7 @@ use App\Payments\Drivers\ZibalPayoutDriver;
  * درگاه تسویه‌ی سالن = اولین ردیف (به ترتیب priority) که driverش در GatewayCatalog تسویه پشتیبانی می‌کنه
  * و اطلاعات تسویه‌اش کامله. عمداً مستقل از is_active: مالک ممکنه یک درگاه رو برای پرداخت مشتری خاموش
  * کرده باشه ولی هنوز بخواد تسویه‌ی متخصص‌ها از همون حساب انجام بشه.
- * driver تسویه: زرین‌پال و زیبال. وندار منتظر تأیید واحد مبلغ (تومان/ریال) و مدیریت توکن ۵ روزه‌اش است.
+ * driver تسویه: زرین‌پال، زیبال و وندار (۲۰۲۶-۰۹-۲۶ — تومان طبق نمونه‌ی رسمی، توکن ۵ روزه با تمدید خودکار).
  */
 class PayoutManager
 {
@@ -40,6 +41,7 @@ class PayoutManager
         return match ($gateway->driver) {
             'zarinpal' => ZarinpalPayoutDriver::isConfigured((array) $gateway->credentials),
             'zibal' => ZibalPayoutDriver::isConfigured((array) $gateway->credentials),
+            'vandar' => VandarPayoutDriver::isConfigured((array) $gateway->credentials),
             default => false,
         };
     }
@@ -49,6 +51,7 @@ class PayoutManager
         return match ($gateway->driver) {
             'zarinpal' => new ZarinpalPayoutDriver((array) $gateway->credentials, (bool) config('services.zarinpal.payout.sandbox', true)),
             'zibal' => new ZibalPayoutDriver((array) $gateway->credentials),
+            'vandar' => new VandarPayoutDriver((array) $gateway->credentials, $gateway),
             default => throw new \InvalidArgumentException("Gateway [{$gateway->driver}] has no payout driver."),
         };
     }

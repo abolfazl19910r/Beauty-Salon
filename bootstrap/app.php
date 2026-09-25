@@ -96,6 +96,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // Multi-gateway stage 2: expire abandoned gateway transactions and reverse Saman (SEP)
         // payments whose verify answer never arrived (SEP only allows Reverse within 50 minutes,
         // so this must run often) — see App\Console\Commands\ReconcilePaymentTransactions.
+        // ⭐ توکن تسویه‌ی وندار ۵ روزه است — روزانه تمدید (هر تمدید refresh_token جدید می‌ده و ذخیره می‌شه)
+        $schedule->command('payouts:refresh-vandar-tokens')
+            ->dailyAt('03:30')
+            ->withoutOverlapping()
+            ->onOneServer();
+
         $schedule->command('payments:reconcile')
             ->everyFiveMinutes()
             ->withoutOverlapping()

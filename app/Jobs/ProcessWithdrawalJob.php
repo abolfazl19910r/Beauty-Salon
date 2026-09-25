@@ -91,6 +91,26 @@ class ProcessWithdrawalJob implements ShouldQueue
                 return;
             }
 
+            // ⭐ نتیجه‌ی نامعلوم (مثلاً وندار: پاسخ بعد از فرستادن نرسید): شاید پول واریز شده باشه. برگشت به کیف پول
+            // متخصص یعنی احتمال پرداخت دوباره؛ پس برداشت در processing می‌مونه تا مدیر در پنل درگاه ببینه و دستی
+            // تأیید یا رد کنه (هر دو مسیر در WalletAdminService برای processing کار می‌کنن و autoPayout دوباره نمی‌فرسته).
+            if (! empty($result['unknown'])) {
+                $withdrawalRequest->update([
+                    'payment_details' => array_merge((array) $withdrawalRequest->payment_details, [
+                        'needs_manual_check' => true,
+                        'payout_message' => $result['message'] ?? null,
+                        'payout_raw' => $result['raw'] ?? null,
+                    ]),
+                ]);
+
+                Log::error('ProcessWithdrawalJob: نتیجه‌ی تسویه نامعلوم — بررسی دستی لازم است', [
+                    'withdrawal_request_id' => $withdrawalRequest->id,
+                    'message' => $result['message'] ?? null,
+                ]);
+
+                return;
+            }
+
             $withdrawalRequest->markAsFailed($result['message'] ?? 'خطای نامشخص در تسویه‌ی آنلاین');
 
             // ⭐ Fix (باگ مالی واقعی): این شاخه فقط وضعیت درخواست را 'failed' می‌کرد و SMS مربوطه
