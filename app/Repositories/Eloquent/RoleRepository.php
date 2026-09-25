@@ -4,6 +4,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\Role;
 use App\Repositories\Contracts\RoleRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -28,7 +29,7 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
 
     public function paginateWithUserCount(bool $includeSuperAdmin, int $perPage = 10): LengthAwarePaginator
     {
-        return $this->model->withCount('users')
+        return $this->model->withCount(['users' => fn ($q) => $q->whereIn('users.id', app(UserRepositoryInterface::class)->querySalonMembers()->select('users.id'))])
             ->when(! $includeSuperAdmin, fn ($q) => $q->where('name', '!=', 'super-admin'))
             ->paginate($perPage);
     }
@@ -45,11 +46,16 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
 
     public function getTopByUserCount(int $limit = 4): Collection
     {
-        return $this->model->withCount('users')->take($limit)->get();
+        return $this->model->withCount(['users' => fn ($q) => $q->whereIn('users.id', app(UserRepositoryInterface::class)->querySalonMembers()->select('users.id'))])->take($limit)->get();
     }
 
     public function firstOrCreateByName(string $name, array $defaults): Role
     {
         return $this->model->firstOrCreate(['name' => $name], $defaults);
+    }
+
+    public function getSystemRoleNames(): array
+    {
+        return $this->model->newQuery()->withoutGlobalScopes()->whereNull('salon_id')->pluck('name')->all();
     }
 }

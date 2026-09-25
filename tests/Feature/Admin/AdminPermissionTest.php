@@ -39,7 +39,7 @@ class AdminPermissionTest extends TestCase
 
     public function test_store_creates_a_permission(): void
     {
-        $response = $this->actingAs($this->admin)->post('/admin/permissions', [
+        $response = $this->actingAs($this->platformAdmin())->post('/admin/permissions', [
             'name' => 'manage-blog',
             'label' => 'مدیریت وبلاگ',
             'group' => 'content',
@@ -54,7 +54,7 @@ class AdminPermissionTest extends TestCase
     {
         Permission::factory()->create(['name' => 'manage-blog']);
 
-        $response = $this->actingAs($this->admin)->post('/admin/permissions', [
+        $response = $this->actingAs($this->platformAdmin())->post('/admin/permissions', [
             'name' => 'manage-blog',
             'label' => 'تکراری',
             'group' => 'content',
@@ -68,7 +68,7 @@ class AdminPermissionTest extends TestCase
     {
         $permission = Permission::factory()->create(['label' => 'قدیمی']);
 
-        $response = $this->actingAs($this->admin)->put("/admin/permissions/{$permission->id}", [
+        $response = $this->actingAs($this->platformAdmin())->put("/admin/permissions/{$permission->id}", [
             'name' => $permission->name,
             'label' => 'جدید',
             'group' => $permission->group,
@@ -82,7 +82,7 @@ class AdminPermissionTest extends TestCase
     {
         $permission = Permission::factory()->create(['name' => 'manage-blog']);
 
-        $response = $this->actingAs($this->admin)->delete("/admin/permissions/{$permission->id}");
+        $response = $this->actingAs($this->platformAdmin())->delete("/admin/permissions/{$permission->id}");
 
         $response->assertRedirect(route('admin.permissions.index'));
         $this->assertDatabaseMissing('permissions', ['id' => $permission->id]);
@@ -94,7 +94,7 @@ class AdminPermissionTest extends TestCase
         // factory()->create() با unique constraint روی name تصادم می‌کرد.
         $permission = Permission::firstOrCreate(['name' => 'access_admin_panel']);
 
-        $response = $this->actingAs($this->admin)->delete("/admin/permissions/{$permission->id}");
+        $response = $this->actingAs($this->platformAdmin())->delete("/admin/permissions/{$permission->id}");
 
         $response->assertRedirect(route('admin.permissions.index'));
         $response->assertSessionHas('error');
@@ -145,5 +145,17 @@ class AdminPermissionTest extends TestCase
         $salon->admins()->attach($user->id, ['role' => 'owner']);
 
         $this->actingAs($user)->get('/admin/permissions')->assertOk();
+    }
+
+    /**
+     * ⭐ (۲۰۲۶-۰۹-۲۷) کاتالوگ مجوزها بین همه‌ی سالن‌ها مشترک است و ساخت/ویرایش/حذفش فقط برای مدیر پلتفرم است
+     * (RoleSalonScopeTest)؛ این تست‌ها رفتار همان مسیر را برای مدیر پلتفرم می‌سنجند.
+     */
+    private function platformAdmin(): User
+    {
+        $user = User::factory()->create(['is_admin' => true]);
+        $user->roles()->attach(Role::firstOrCreate(['name' => 'super-admin', 'salon_id' => null], ['label' => 'سوپر ادمین']));
+
+        return $user->fresh();
     }
 }

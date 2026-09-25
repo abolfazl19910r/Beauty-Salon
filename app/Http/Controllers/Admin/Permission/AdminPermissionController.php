@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Permission;
 use App\Repositories\Contracts\PermissionRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -24,6 +25,8 @@ class AdminPermissionController extends Controller
 
     public function create(): View
     {
+        $this->ensurePlatformAdmin();
+
         $groups = $this->permissionRepository->getDistinctGroups();
 
         return view('admin.permissions.create', compact('groups'));
@@ -31,6 +34,8 @@ class AdminPermissionController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $this->ensurePlatformAdmin();
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255|unique:permissions,name',
             'label' => 'required|string|max:255',
@@ -57,13 +62,15 @@ class AdminPermissionController extends Controller
 
     public function show(Permission $permission): View
     {
-        $roles = $permission->roles()->withCount('users')->get();
+        $roles = $permission->roles()->withCount(['users' => fn ($q) => $q->whereIn('users.id', app(UserRepositoryInterface::class)->querySalonMembers()->select('users.id'))])->get();
 
         return view('admin.permissions.show', compact('permission', 'roles'));
     }
 
     public function edit(Permission $permission): View
     {
+        $this->ensurePlatformAdmin();
+
         $groups = $this->permissionRepository->getDistinctGroups();
 
         return view('admin.permissions.edit', compact('permission', 'groups'));
@@ -71,6 +78,8 @@ class AdminPermissionController extends Controller
 
     public function update(Request $request, Permission $permission): RedirectResponse
     {
+        $this->ensurePlatformAdmin();
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255|unique:permissions,name,'.$permission->id,
             'label' => 'required|string|max:255',
@@ -97,6 +106,8 @@ class AdminPermissionController extends Controller
 
     public function destroy(Permission $permission): RedirectResponse
     {
+        $this->ensurePlatformAdmin();
+
         $criticalPermissions = [
             'access_admin_panel',
             'manage-roles',
@@ -136,5 +147,14 @@ class AdminPermissionController extends Controller
         $groups = $this->permissionRepository->getDistinctGroups();
 
         return view('admin.permissions.index', compact('permissions', 'groups'));
+    }
+
+    /**
+     * کاتالوگ مجوزها نام‌هایی است که کد چک می‌کند و بین همه‌ی سالن‌ها مشترک است؛ هر سالن فقط تعیین می‌کند نقش‌های
+     * خودش کدام مجوزها را داشته باشند. ساخت/ویرایش/حذف مجوز فقط برای مدیر پلتفرم.
+     */
+    private function ensurePlatformAdmin(): void
+    {
+        abort_unless(auth()->user()?->hasRole('super-admin'), 403, 'فهرست مجوزها فقط توسط مدیر پلتفرم قابل تغییر است.');
     }
 }

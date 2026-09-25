@@ -21,4 +21,7 @@ interface RoleRepositoryInterface extends RepositoryInterface
     public function getTopByUserCount(int $limit = 4): Collection;
 
     public function firstOrCreateByName(string $name, array $defaults): Role;
+
+    /** نام نقش‌های سیستمی (salon_id = null). */
+    public function getSystemRoleNames(): array;
 }

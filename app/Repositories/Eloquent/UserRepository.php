@@ -104,7 +104,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
 
     public function getUsersWithoutRole(int $roleId): Collection
     {
-        return $this->model->whereDoesntHave('roles', function ($query) use ($roleId) {
+        return $this->querySalonMembers()->whereDoesntHave('roles', function ($query) use ($roleId) {
             $query->where('role_id', $roleId);
         })->get();
     }
