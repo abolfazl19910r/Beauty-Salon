@@ -93,7 +93,14 @@ class ZarinpalDriver implements PaymentGatewayDriver
                     'amount' => $request->amountRial,
                 ]);
         } catch (Throwable $e) {
-            return new GatewayVerifyResult(false, $authority, message: 'خطا در تایید پرداخت');
+            return \App\Payments\HttpFailure::neverSent($e)
+                ? new GatewayVerifyResult(false, $authority, message: 'خطا در تایید پرداخت')
+                : new GatewayVerifyResult(false, $authority, message: 'پاسخ تایید از درگاه دریافت نشد. وضعیت پرداخت به‌صورت خودکار بررسی می‌شود و نتیجه با پیامک اطلاع داده می‌شود؛ اگر مبلغی کسر شده باشد، از بین نمی‌رود.', raw: ['unanswered' => true]);
+        }
+
+        // ⭐ ۵xx بعد از فرستادن: شاید درگاه تایید کرده باشه — payments:reconcile دوباره وضعیت رو می‌پرسه
+        if ($response->serverError()) {
+            return new GatewayVerifyResult(false, $authority, message: 'پاسخ تایید از درگاه دریافت نشد. وضعیت پرداخت به‌صورت خودکار بررسی می‌شود و نتیجه با پیامک اطلاع داده می‌شود؛ اگر مبلغی کسر شده باشد، از بین نمی‌رود.', raw: ['unanswered' => true, 'status' => $response->status()]);
         }
 
         $result = (array) $response->json();

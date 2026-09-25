@@ -56,6 +56,11 @@ class ReconcilePaymentTransactions extends Command
 
     public const PARSIAN_REVERSE_BEFORE_MINUTES = 50;
 
+    /** ۴) درگاه‌های غیرمستقیم: بعد از این مدت (فرصت refresh خود مشتری) و تا این مدت، verify دوباره پرسیده می‌شه. */
+    public const RECOVER_AFTER_MINUTES = 10;
+
+    public const RECOVER_BEFORE_MINUTES = 24 * 60;
+
     /** @return array<string, array{0: int, 1: int}> driver → [از چند دقیقه بعد, تا چند دقیقه بعد] از آخرین تلاش تایید */
     public static function reverseWindows(): array
     {
@@ -133,6 +138,37 @@ class ReconcilePaymentTransactions extends Command
 
         $this->info(($dryRun ? '[dry-run] ' : '')."برگشت وجه درگاه‌های بانکی: {$reversed} از {$candidates->count()}");
 
+        $this->recoverIndirect($dryRun);
+
         return self::SUCCESS;
+    }
+
+    /**
+     * ۴) پاسخ تایید زرین‌پال / زیبال / وندار / آسان پرداخت نرسید — UnansweredVerifyRecovery دوباره می‌پرسه: تایید شده
+     * بود → کیف پول مشتری (نوبت) یا شارژ کیف پول؛ رد قطعی → بسته؛ باز هم بی‌پاسخ → اجرای بعدی.
+     */
+    private function recoverIndirect(bool $dryRun): void
+    {
+        $candidates = PaymentTransaction::query()
+            ->where('status', 'failed')
+            ->whereIn('driver', \App\Services\Payment\UnansweredVerifyRecovery::DRIVERS)
+            ->whereIn('purpose', \App\Services\Payment\UnansweredVerifyRecovery::PURPOSES)
+            ->whereBetween('updated_at', [now()->subMinutes(self::RECOVER_BEFORE_MINUTES), now()->subMinutes(self::RECOVER_AFTER_MINUTES)])
+            ->get()
+            ->filter(fn (PaymentTransaction $tx) => ((array) $tx->verify_response)['unanswered'] ?? false);
+
+        $outcomes = ['credited' => 0, 'not_paid' => 0, 'unanswered' => 0, 'skipped' => 0];
+        $recovery = app(\App\Services\Payment\UnansweredVerifyRecovery::class);
+
+        foreach ($candidates as $tx) {
+            if ($dryRun) {
+                $this->line("[dry-run] استعلام دوباره‌ی تراکنش #{$tx->id} ({$tx->driver})");
+
+                continue;
+            }
+            $outcomes[$recovery->recover($tx)]++;
+        }
+
+        $this->info(($dryRun ? '[dry-run] ' : '')."تایید دوباره‌ی درگاه‌های غیرمستقیم: {$candidates->count()} — به کیف پول: {$outcomes['credited']}، پرداخت‌نشده: {$outcomes['not_paid']}، هنوز بی‌پاسخ: {$outcomes['unanswered']}");
     }
 }

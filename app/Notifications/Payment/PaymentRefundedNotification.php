@@ -16,6 +16,7 @@ use Illuminate\Notifications\Notification;
  * - verify_unanswered: پاسخ تایید بانک (سامان/ملت) نرسید و payments:reconcile برگشت زد → کارت
  * - amount_mismatch: مبلغ تاییدشده‌ی سامان با سفارش یکی نبود و همون لحظه Reverse شد → کارت
  * - settle_failed: ملت پرداخت رو تایید کرد ولی واریز (settle) انجام نشد و همون لحظه برگشت خورد → کارت
+ * - verify_unanswered با کیف پول / charge_recovered: پاسخ تایید درگاه غیرمستقیم نرسید و reconcile بعداً دید تایید شده بود
  *
  * ⚠️ عمداً بدون salon_id فرستاده می‌شه (از سهمیه‌ی پیامک سالن کم نمی‌کنه): پیام مالی است و نباید به‌خاطر تمام شدن
  * سهمیه‌ی سالن به مشتری نرسه. صف‌دار (queue worker لازمه)؛ متن همین‌جا ساخته می‌شه، نه در worker.
@@ -24,7 +25,7 @@ class PaymentRefundedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public const REASONS = ['slot_taken', 'verify_unanswered', 'amount_mismatch', 'settle_failed'];
+    public const REASONS = ['slot_taken', 'verify_unanswered', 'amount_mismatch', 'settle_failed', 'charge_recovered'];
 
     public readonly string $text;
 
@@ -52,6 +53,7 @@ class PaymentRefundedNotification extends Notification implements ShouldQueue
             'slot_taken' => "ساعت انتخابی هنگام پرداخت رزرو شده بود و {$subject} ثبت نشد.",
             'verify_unanswered' => "تایید {$subject} از بانک دریافت نشد و ثبت نشد.",
             'settle_failed' => "واریز نهایی {$subject} در بانک انجام نشد و ثبت نشد.",
+            'charge_recovered' => 'تایید شارژ کیف پول شما با تأخیر از درگاه رسید و شارژ انجام شد.',
             default => "مبلغ {$subject} با مبلغ سفارش همخوانی نداشت و ثبت نشد.",
         };
 
@@ -59,7 +61,9 @@ class PaymentRefundedNotification extends Notification implements ShouldQueue
             $lines[] = self::toman($this->cardToman).' تومان به کارت بانکی شما برگشت داده شد (طبق روال بانک معمولاً تا ۷۲ ساعت).';
         }
         if ($this->walletToman > 0) {
-            $lines[] = self::toman($this->walletToman).' تومان به کیف پول شما در همین سالن برگشت داده شد و برای رزرو بعدی قابل استفاده است.';
+            $lines[] = $this->reason === 'charge_recovered'
+                ? self::toman($this->walletToman).' تومان به کیف پول شما در همین سالن اضافه شد.'
+                : self::toman($this->walletToman).' تومان به کیف پول شما در همین سالن برگشت داده شد و برای رزرو بعدی قابل استفاده است.';
         }
 
         return implode("\n", $lines);

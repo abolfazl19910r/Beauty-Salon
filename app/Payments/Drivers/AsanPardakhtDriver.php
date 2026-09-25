@@ -122,8 +122,16 @@ class AsanPardakhtDriver implements PaymentGatewayDriver
                 'merchantConfigurationId' => $this->configId(),
                 'localInvoiceId' => $request->transactionId,
             ]);
-        } catch (Throwable) {
-            return new GatewayVerifyResult(false, $token, message: 'خطا در تایید پرداخت');
+        } catch (Throwable $e) {
+            return \App\Payments\HttpFailure::neverSent($e)
+                ? new GatewayVerifyResult(false, $token, message: 'خطا در تایید پرداخت')
+                : new GatewayVerifyResult(false, $token, message: 'پاسخ تایید از درگاه دریافت نشد. وضعیت پرداخت به‌صورت خودکار بررسی می‌شود و نتیجه با پیامک اطلاع داده می‌شود؛ اگر مبلغی کسر شده باشد، از بین نمی‌رود.', raw: ['unanswered' => true]);
+        }
+
+        // ⭐ پاسخ نامعلوم: ۵xx واقعی، یا کدهای خود آسان پرداخت «هنوز پردازش نشده» (۵۷۱) / «وضعیت نامشخص» (۵۷۲). بقیه‌ی
+        // کدهای ۵xx آسان پرداخت (مثل ۵۷۳) خطای منطقی و قطعی‌اند، نه قطعی سرویس.
+        if (self::unavailable($result) || in_array($result->status(), [571, 572], true)) {
+            return new GatewayVerifyResult(false, $token, message: 'پاسخ تایید از درگاه دریافت نشد. وضعیت پرداخت به‌صورت خودکار بررسی می‌شود و نتیجه با پیامک اطلاع داده می‌شود؛ اگر مبلغی کسر شده باشد، از بین نمی‌رود.', raw: ['unanswered' => true, 'status' => $result->status()]);
         }
 
         if ($result->status() === 472) {
@@ -144,13 +152,30 @@ class AsanPardakhtDriver implements PaymentGatewayDriver
 
         try {
             $verify = $this->http()->post(self::API_URL.'/Verify', $payload);
-            if ($verify->status() !== 200) {
-                return new GatewayVerifyResult(false, $token, message: self::message($verify->status()), raw: $tran + ['verify_status' => $verify->status()]);
-            }
+        } catch (Throwable $e) {
+            return \App\Payments\HttpFailure::neverSent($e)
+                ? new GatewayVerifyResult(false, $token, message: 'خطا در تایید پرداخت')
+                : new GatewayVerifyResult(false, $token, message: 'پاسخ تایید از درگاه دریافت نشد. وضعیت پرداخت به‌صورت خودکار بررسی می‌شود و نتیجه با پیامک اطلاع داده می‌شود؛ اگر مبلغی کسر شده باشد، از بین نمی‌رود.', raw: $tran + ['unanswered' => true]);
+        }
 
-            $settlement = $this->http()->post(self::API_URL.'/Settlement', $payload);
+        if (self::unavailable($verify) || $verify->status() === 572) {
+            return new GatewayVerifyResult(false, $token, message: 'پاسخ تایید از درگاه دریافت نشد. وضعیت پرداخت به‌صورت خودکار بررسی می‌شود و نتیجه با پیامک اطلاع داده می‌شود؛ اگر مبلغی کسر شده باشد، از بین نمی‌رود.', raw: $tran + ['unanswered' => true, 'verify_status' => $verify->status()]);
+        }
+        if ($verify->status() !== 200) {
+            return new GatewayVerifyResult(false, $token, message: self::message($verify->status()), raw: $tran + ['verify_status' => $verify->status()]);
+        }
+
+        // ⭐ Verify موفق = پول مشتری گرفته شده. قبلاً اگه Settlement بعدش خطا می‌داد، پرداخت «ناموفق» ثبت می‌شد و نوبت
+        // لغو می‌شد — مشتری پول داده بود و خدمتی نداشت. حالا پرداخت موفقه و شکست Settlement برای بررسی ثبت و لاگ می‌شه.
+        try {
+            $settlementStatus = $this->http()->post(self::API_URL.'/Settlement', $payload)->status();
         } catch (Throwable) {
-            return new GatewayVerifyResult(false, $token, message: 'خطا در تایید پرداخت');
+            $settlementStatus = null;
+        }
+        if ($settlementStatus !== 200) {
+            \Illuminate\Support\Facades\Log::error('AsanPardakht: Verify succeeded but Settlement did not — settle it from the Asan Pardakht panel', [
+                'local_invoice_id' => $request->transactionId, 'pay_gate_tran_id' => $tran['payGateTranID'], 'settlement_status' => $settlementStatus,
+            ]);
         }
 
         return new GatewayVerifyResult(
@@ -158,7 +183,7 @@ class AsanPardakhtDriver implements PaymentGatewayDriver
             $token,
             refId: (string) ($tran['rrn'] ?? $tran['refID'] ?? $tran['payGateTranID']),
             cardPan: $tran['cardNumber'] ?? null,
-            raw: $tran + ['settlement_status' => $settlement->status()],
+            raw: $tran + ['settlement_status' => $settlementStatus] + ($settlementStatus !== 200 ? ['settlement_failed' => true] : []),
         );
     }
 

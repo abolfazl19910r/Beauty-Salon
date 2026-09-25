@@ -72,8 +72,15 @@ class VandarDriver implements PaymentGatewayDriver
                 'api_key' => (string) ($this->credentials['api_key'] ?? ''),
                 'token' => $token,
             ]);
-        } catch (Throwable) {
-            return new GatewayVerifyResult(false, $token, message: 'خطا در تایید پرداخت');
+        } catch (Throwable $e) {
+            return \App\Payments\HttpFailure::neverSent($e)
+                ? new GatewayVerifyResult(false, $token, message: 'خطا در تایید پرداخت')
+                : new GatewayVerifyResult(false, $token, message: 'پاسخ تایید از درگاه دریافت نشد. وضعیت پرداخت به‌صورت خودکار بررسی می‌شود و نتیجه با پیامک اطلاع داده می‌شود؛ اگر مبلغی کسر شده باشد، از بین نمی‌رود.', raw: ['unanswered' => true]);
+        }
+
+        // ⭐ ۵xx بعد از فرستادن: شاید درگاه تایید کرده باشه — payments:reconcile دوباره وضعیت رو می‌پرسه
+        if ($response->serverError()) {
+            return new GatewayVerifyResult(false, $token, message: 'پاسخ تایید از درگاه دریافت نشد. وضعیت پرداخت به‌صورت خودکار بررسی می‌شود و نتیجه با پیامک اطلاع داده می‌شود؛ اگر مبلغی کسر شده باشد، از بین نمی‌رود.', raw: ['unanswered' => true, 'status' => $response->status()]);
         }
 
         $body = (array) $response->json();

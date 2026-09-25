@@ -241,6 +241,12 @@ class PaymentService
                 return ['status' => 'success', 'success' => true, 'booking_id' => $booking->id, 'reference' => $transaction->token, 'ref_id' => $transaction->ref_id, 'card_pan' => $transaction->card_pan, 'fee' => null, 'gateway' => $transaction->driver, 'gateway_fee' => intdiv((int) $transaction->fee_rial, 10), 'transaction_id' => $transaction->id];
             }
 
+            if ($transaction?->status === 'reconciling') {
+                // ⭐ payments:reconcile همین الان داره وضعیت این پرداخت رو از درگاه می‌پرسه — تایید دوم هم‌زمان نه
+                return ['status' => 'failed', 'success' => false, 'booking_id' => $booking->id, 'refunded' => true,
+                    'message' => 'وضعیت این پرداخت در حال بررسی خودکار است؛ نتیجه با پیامک اطلاع داده می‌شود.'];
+            }
+
             if ($transaction && in_array($transaction->status, \App\Models\PaymentTransaction::REVERSAL_STATUSES, true)) {
                 // ⭐ پول این تراکنش قبلاً برگشت داده شده (ساعت از دست رفته یا پاسخ verify گم‌شده) — دوباره تایید نمی‌شه
                 return ['status' => 'failed', 'success' => false, 'booking_id' => $booking->id, 'refunded' => true,
@@ -328,6 +334,10 @@ class PaymentService
 
             if ($transaction && in_array($transaction->status, \App\Models\PaymentTransaction::REVERSAL_STATUSES, true)) {
                 return ['success' => false, 'message' => 'مبلغ این پرداخت قبلاً به شما برگشت داده شده است و کیف پول شارژ نشد.'];
+            }
+
+            if ($transaction?->status === 'reconciling') {
+                return ['success' => false, 'message' => 'وضعیت این پرداخت در حال بررسی خودکار است؛ نتیجه با پیامک اطلاع داده می‌شود.'];
             }
 
             $gateway = $transaction?->gateway ?? $this->gatewayFromSession('wallet_charge_gateway');
