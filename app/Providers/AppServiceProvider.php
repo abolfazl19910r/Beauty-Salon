@@ -36,6 +36,14 @@ class AppServiceProvider extends ServiceProvider
         // ⭐ Phase 1 SaaS multi-tenant (feat/saas-multi-tenant-salons, commit 2): one instance per
         // request — see CurrentSalon's own docblock for why it must never persist across requests.
         $this->app->singleton(CurrentSalon::class);
+
+        // ⭐ laravel/telescope در require-dev است. قبلاً App\Providers\TelescopeServiceProvider در bootstrap/providers.php
+        // بی‌قید ثبت بود؛ با «composer install --no-dev» (image داکر و هر نصب production استاندارد) کلاس والدش
+        // وجود نداشت و برنامه اصلاً boot نمی‌شد (هر درخواست و هر دستور artisan، از جمله migrate). حالا فقط وقتی
+        // پکیج نصب است ثبت می‌شه — روی XAMPP/توسعه رفتار دقیقاً مثل قبله (ضبط با TELESCOPE_ENABLED کنترل می‌شه).
+        if (class_exists(\Laravel\Telescope\TelescopeApplicationServiceProvider::class)) {
+            $this->app->register(TelescopeServiceProvider::class);
+        }
     }
 
     /**
