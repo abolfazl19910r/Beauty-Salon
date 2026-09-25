@@ -26,7 +26,7 @@ class AdminLoyaltyPointsController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->string('search');
-            $users = $this->userRepository->query()
+            $users = $this->userRepository->querySalonCustomers()
                 ->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
                         ->orWhere('phone', 'like', "%{$search}%");
@@ -40,7 +40,7 @@ class AdminLoyaltyPointsController extends Controller
         $pointsData = null;
 
         if ($request->filled('user_id')) {
-            $selectedUser = $this->userRepository->find($request->integer('user_id'));
+            $selectedUser = $this->userRepository->querySalonCustomers()->find($request->integer('user_id'));
 
             if ($selectedUser) {
                 $pointsData = $this->loyaltyAdminService->getUserPoints($selectedUser);
@@ -53,6 +53,8 @@ class AdminLoyaltyPointsController extends Controller
 
     public function addPoints(AddUserPointsRequest $request, User $user): RedirectResponse
     {
+        $this->ensureSalonCustomer($user);
+
         $this->loyaltyAdminService->addPoints(
             $user,
             (int) $request->validated('points'),
@@ -67,6 +69,8 @@ class AdminLoyaltyPointsController extends Controller
 
     public function deductPoints(DeductUserPointsRequest $request, User $user): RedirectResponse
     {
+        $this->ensureSalonCustomer($user);
+
         try {
             $this->loyaltyAdminService->deductPoints(
                 $user,
@@ -82,5 +86,13 @@ class AdminLoyaltyPointsController extends Controller
                 ->route('admin.loyalty.points.index', ['user_id' => $user->id])
                 ->with('error', $e->getUserMessage());
         }
+    }
+
+    /**
+     * route model binding قبل از ست‌شدن سالن اجرا می‌شه، پس مشتری‌بودن کاربر در همین سالن اینجا چک می‌شه.
+     */
+    private function ensureSalonCustomer(User $user): void
+    {
+        abort_unless($this->userRepository->querySalonCustomers()->whereKey($user->id)->exists(), 404);
     }
 }

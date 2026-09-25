@@ -15,9 +15,9 @@ interface LoyaltyPointRepositoryInterface extends RepositoryInterface
 
     public function sumForUserByType(int $userId, string $type): int;
 
-    public function sumByType(string $type): int;
+    public function sumByType(string $type, ?int $salonId = null): int;
 
-    public function countDistinctUsers(): int;
+    public function countDistinctUsers(?int $salonId = null): int;
 
     public function countByType(string $type): int;
 

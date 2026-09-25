@@ -11,6 +11,7 @@ use App\Repositories\Contracts\LoyaltyPointRepositoryInterface;
 use App\Repositories\Contracts\RewardRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\LoyaltyService;
+use App\Support\CurrentSalon;
 use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -28,8 +29,9 @@ class LoyaltyAdminService
 
     public function getDashboardStats(): array
     {
-        $totalActivePoints = $this->loyaltyPointRepository->sumByType('earned');
-        $totalPointUsers = $this->loyaltyPointRepository->countDistinctUsers();
+        $salonId = app(CurrentSalon::class)->id();
+        $totalActivePoints = $this->loyaltyPointRepository->sumByType('earned', $salonId);
+        $totalPointUsers = $this->loyaltyPointRepository->countDistinctUsers($salonId);
         $totalRedeemedRewards = $this->rewardRepository->sumUsedCount();
         $rewards = $this->rewardRepository->allOrderedByRequiredPoints();
 

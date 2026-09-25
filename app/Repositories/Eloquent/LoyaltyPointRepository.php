@@ -3,7 +3,9 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\LoyaltyPoint;
+use App\Models\User;
 use App\Repositories\Contracts\LoyaltyPointRepositoryInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -46,14 +48,25 @@ class LoyaltyPointRepository extends BaseRepository implements LoyaltyPointRepos
             ->sum('points');
     }
 
-    public function sumByType(string $type): int
+    public function sumByType(string $type, ?int $salonId = null): int
     {
-        return (int) $this->model->where('type', $type)->sum('points');
+        return (int) $this->forSalon($salonId)->where('type', $type)->sum('points');
     }
 
-    public function countDistinctUsers(): int
+    public function countDistinctUsers(?int $salonId = null): int
     {
-        return $this->model->distinct('user_id')->count('user_id');
+        return $this->forSalon($salonId)->distinct('user_id')->count('user_id');
+    }
+
+    /**
+     * loyalty_points ستون salon_id نداره؛ امتیاز همیشه مال یک مشتریه و مشتری salon_id داره.
+     */
+    private function forSalon(?int $salonId): Builder
+    {
+        return $this->model->newQuery()->when($salonId !== null, fn (Builder $q) => $q->whereIn(
+            'user_id',
+            User::query()->select('id')->where('user_type', 'customer')->where('salon_id', $salonId)
+        ));
     }
 
     public function countByType(string $type): int
