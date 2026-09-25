@@ -81,6 +81,20 @@ class TwoFactorAuthServiceConfigTest extends TestCase
         config(['services.two_factor.code_length' => 8]);
         $code = $this->service->generateCode($this->user);
 
+        $this->assertSame(8, strlen($code));
+        $this->assertTrue($this->service->verify($this->user, $code));
+    }
+
+    /**
+     * ستون two_factor_code طول محدود داره (روی MySQL/MariaDB مقدار بلندتر خطای 1406 می‌ده؛ SQLite طول varchar رو
+     * نادیده می‌گیره). طول تنظیم‌شده باید به سقف ستون محدود بشه — و بالای ۱۸ رقم random_int هم سرریز می‌کرد.
+     */
+    public function test_an_oversized_configured_length_is_capped_to_what_the_column_holds(): void
+    {
+        config(['services.two_factor.code_length' => 30]);
+        $code = $this->service->generateCode($this->user);
+
+        $this->assertSame(10, strlen($code));
         $this->assertTrue($this->service->verify($this->user, $code));
     }
 }

@@ -8,9 +8,14 @@ use Illuminate\Support\Facades\Log;
 
 class TwoFactorAuthService
 {
+    /**
+     * طول ستون users.two_factor_code — کد بلندتر روی MySQL/MariaDB خطای 1406 می‌داد (SQLite طول رو نادیده می‌گیره).
+     */
+    public const MAX_CODE_LENGTH = 10;
+
     public function generateCode(User $user): string
     {
-        $codeLength = max(4, (int) config('services.two_factor.code_length', 6));
+        $codeLength = min(self::MAX_CODE_LENGTH, max(4, (int) config('services.two_factor.code_length', 6)));
         $code = $this->generateNumericCode($codeLength);
 
         $user->update([
