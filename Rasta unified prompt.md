@@ -6965,7 +6965,28 @@ mutationها وریفای شد. دستورهای پاک‌کردن رو با `&&
   حالت نیست). تست رگرسیون فقط وقتی ارزش داره که **قبل از اصلاح** واقعاً fail بشه.
 - سوییت کامل **۱۴۱۴ passed / ۱ skipped** دو بار پشت‌سرهم.
 
+### ۲۰۲۶-۰۹-۲۶ (ادامه ۹) — اولین اجرای **کل** سوییت روی MariaDB: باگ‌هایی که SQLite پنهان می‌کرد
+
+در همین بچ، کامیت `fix(admin): search filtered users on a column they do not have …`.
+- وریفای این بچ روی MariaDB (این بار با کل `tests/Feature/Admin`) → دو تست `AdminSearchTest` با ۵۰۰. روی **develop تمیز (`9f4da9e`) هم** همین‌طور
+  → باگ production (سرور MySQL است). `users` ستون email نداره ولی `searchUsers()` روش فیلتر می‌کرد: MySQL خطای 1054 (کل `/admin/search/api` ۵۰۰)؛
+  SQLite «"email"» ناشناخته رو رشته‌ی ثابت می‌گیره → `'email' LIKE '%mail%'` برای همه درست و جست‌وجوی «mail» همه‌ی مشتری‌ها رو برمی‌گردوند.
+  رفع + تست «mail هیچ کاربری برنمی‌گردونه» (قبل از اصلاح روی SQLite هم fail) + تست جداسازی سالن جست‌وجوی متخصص (زنجیره‌ی where/orWhere
+  بی‌گروه؛ تأیید شد scope سراسری همچنان گروهش می‌کنه). هر ۸ تست جست‌وجو روی SQLite و MariaDB پاس.
+- ⚠️ درس مهم: **SQLite شناسه‌ی ناشناخته در "…" رو رشته‌ی ثابت می‌گیره و خطا نمی‌ده.** ستونِ اشتباه در تست‌های SQLite دیده نمی‌شه.
+- **کل سوییت روی MariaDB 10.11:** ۱۴۱۳ از ۱۴۱۷ پاس؛ ۴ باقی‌مانده **روی develop تمیز هم دقیقاً همین‌طور** شکست می‌خورن (از این بچ‌ها نیستن)
+  → قدم باز اول پایین.
+
 ### قدم‌های باز
+- 🔴 **۴ باگ MySQL/MariaDB-only که SQLite پنهان می‌کنه** (روی develop تمیز بازتولید شد، ۲۰۲۶-۰۹-۲۶؛ برای دیدن: کل سوییت با
+  `phpunit.mysql.xml` روی MariaDB):
+  1. `TwoFactorAuthServiceConfigTest::…longer_configured_length…` — `SQLSTATE[22001] 1406 Data too long for column 'two_factor_code'`
+     (ستون برای کد بلندتر از طول پیش‌فرض کوتاهه؛ فقط اگر طول کد در تنظیمات بیشتر بشه).
+  2. `BookingControllerTest::test_rate_stores_the_rating_and_review_and_awards_loyalty_points` — امتیاز وفاداری روی MySQL داده نمی‌شه.
+  3. `BookingRescheduleControllerTest::test_update_moves_the_booking_to_pending_…` — redirect به ریشه‌ی سایت به‌جای `/s/{slug}/bookings/{id}`.
+  4. `BookingRescheduleControllerTest::test_update_returns_json_with_a_redirect_url_on_success` — **۵۰۰** در تغییر زمان نوبت توسط مشتری.
+  روال: هر کدوم رو روی MariaDB بازتولید، علت، رفع، تست رگرسیون که روی SQLite هم معنا داشته باشه. بعد: اجرای کل سوییت روی MariaDB
+  بخشی از روال وریفای هر نشست بشه.
 - ⚠️ باطل کردن کلید کاوه‌نگار و توکن‌های GitHub (توکن قبلی که تا ۲۰۲۶-۰۹-۲۶ در این سند بود و در تاریخچه‌ی git می‌مونه، و
   توکن‌هایی که در چت‌ها اومدن، از جمله چت درگاه ملت) — **خود ابوالفضل**.
 - **تست دستی زیبال، وندار، آسان‌پرداخت** با `MANUAL_GATEWAY_TESTING_PROMPT.md` (تحویل ۲۰۲۶-۰۹-۲۶): شامل اولین تسویه‌ی واقعی
