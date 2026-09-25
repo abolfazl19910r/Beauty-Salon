@@ -56,6 +56,8 @@ class LoyaltyController extends Controller
 
     public function redeemReward(Request $request, Reward $reward): RedirectResponse
     {
+        $this->ensureSalonOwnership($reward->salon_id);
+
         try {
             $userId = auth()->id();
 

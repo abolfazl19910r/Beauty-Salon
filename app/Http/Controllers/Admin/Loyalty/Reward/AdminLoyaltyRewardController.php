@@ -43,16 +43,22 @@ class AdminLoyaltyRewardController extends Controller
 
     public function show(Reward $reward): View
     {
+        $this->ensureSalonOwnership($reward->salon_id);
+
         return view('admin.loyalty.show', compact('reward'));
     }
 
     public function edit(Reward $reward): View
     {
+        $this->ensureSalonOwnership($reward->salon_id);
+
         return view('admin.loyalty.edit', compact('reward'));
     }
 
     public function update(UpdateLoyaltyRewardRequest $request, Reward $reward): RedirectResponse
     {
+        $this->ensureSalonOwnership($reward->salon_id);
+
         try {
             $this->loyaltyAdminService->updateReward($reward, $request->validated());
 
@@ -67,6 +73,8 @@ class AdminLoyaltyRewardController extends Controller
 
     public function destroy(Reward $reward): RedirectResponse
     {
+        $this->ensureSalonOwnership($reward->salon_id);
+
         try {
             $this->loyaltyAdminService->deleteReward($reward);
 
@@ -80,6 +88,8 @@ class AdminLoyaltyRewardController extends Controller
 
     public function redeemReward(RedeemRewardRequest $request, Reward $reward): RedirectResponse
     {
+        $this->ensureSalonOwnership($reward->salon_id);
+
         try {
             $this->loyaltyAdminService->redeemRewardForUser($request->validated('user_id'), $reward);
 
@@ -123,11 +133,15 @@ class AdminLoyaltyRewardController extends Controller
 
     public function showReward(Reward $reward): JsonResponse
     {
+        $this->ensureSalonOwnership($reward->salon_id);
+
         return response()->json($reward);
     }
 
     public function updateReward(UpdateLoyaltyRewardRequest $request, Reward $reward): JsonResponse
     {
+        $this->ensureSalonOwnership($reward->salon_id);
+
         try {
             $updated = $this->loyaltyAdminService->updateReward($reward, $request->validated());
 
@@ -146,6 +160,8 @@ class AdminLoyaltyRewardController extends Controller
 
     public function destroyReward(Reward $reward): JsonResponse
     {
+        $this->ensureSalonOwnership($reward->salon_id);
+
         try {
             $this->loyaltyAdminService->deleteReward($reward);
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin\Loyalty\Reward;
 
+use App\Rules\CustomerOfCurrentSalon;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RedeemRewardRequest extends FormRequest
@@ -14,7 +15,7 @@ class RedeemRewardRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => ['required', 'exists:users,id'],
+            'user_id' => ['required', 'exists:users,id', new CustomerOfCurrentSalon],
         ];
     }
 
