@@ -27,6 +27,7 @@ class WithdrawalRequest extends Model
         'processed_at',
         'processed_by',
         'payment_details',
+        'needs_manual_check',
     ];
 
     protected $casts = [
@@ -34,6 +35,7 @@ class WithdrawalRequest extends Model
         'fee' => 'decimal:2',
         'net_amount' => 'decimal:2',
         'processed_at' => 'datetime',
+        'needs_manual_check' => 'boolean',
         'payment_details' => 'array',
     ];
 
@@ -103,11 +105,17 @@ class WithdrawalRequest extends Model
 
     public function markAsCompleted(array $paymentDetails = []): bool
     {
+        // ⭐ اگر نتیجه‌ی تسویه‌ی خودکار نامعلوم بود، سابقه‌اش (track_id، پیام درگاه) کنار تایید دستی می‌مونه
+        if ($this->needs_manual_check) {
+            $paymentDetails['unknown_payout'] = (array) $this->payment_details;
+        }
+
         return $this->update([
             'status' => 'completed',
             'processed_at' => now(),
             'processed_by' => auth()->id(),
             'payment_details' => $paymentDetails,
+            'needs_manual_check' => false,
         ]);
     }
 
@@ -118,6 +126,7 @@ class WithdrawalRequest extends Model
             'processed_at' => now(),
             'processed_by' => auth()->id(),
             'rejection_reason' => $reason,
+            'needs_manual_check' => false,
         ]);
     }
 

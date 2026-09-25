@@ -37,6 +37,13 @@
             </div>
         </div>
 
+        {{-- ⭐ نتیجه‌ی تسویه‌ی خودکار نامعلوم (۲۰۲۶-۰۹-۲۶) --}}
+        @if(($needsCheckCount ?? 0) > 0)
+            <a href="{{ route('admin.wallet.withdrawals', ['needs_check' => 1]) }}" class="block rounded-xl p-4 mb-4 text-sm" style="background:#FFFBEB; border:1px solid #FCD34D; color:#92400E;">
+                <strong class="persian-number">{{ $needsCheckCount }}</strong> تسویه‌ی خودکار نتیجه‌ی نامعلوم داشت (پاسخ درگاه نرسید) و منتظر بررسی دستی شماست — ممکن است پول واریز شده باشد. ببینید ←
+            </a>
+        @endif
+
         {{-- Status filter --}}
         <div class="flex flex-wrap gap-2 mb-4">
             @foreach([
@@ -52,6 +59,11 @@
                     {{ $label }}
                 </a>
             @endforeach
+            <a href="{{ route('admin.wallet.withdrawals', ['needs_check' => 1]) }}"
+               class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+               style="{{ request('needs_check') ? 'background:#D97706;color:#fff;' : 'background:#FFFBEB;color:#92400E;' }}">
+                نیاز به بررسی دستی
+            </a>
         </div>
 
         {{-- Table  --}}
@@ -106,6 +118,9 @@
                             <td class="px-4 py-3">
                             <span class="px-2.5 py-0.5 rounded-full text-xs font-medium"
                                   style="background:{{ $st[1] }}; color:{{ $st[2] }};">{{ $st[0] }}</span>
+                            @if($item->needs_manual_check)
+                                <span class="px-2 py-0.5 rounded-full text-xs font-medium mr-1" style="background:#FEF3C7; color:#92400E;">بررسی دستی</span>
+                            @endif
                             </td>
                             <td class="px-4 py-3">
                                 <a href="{{ route('admin.wallet.withdrawals.show', $item) }}"

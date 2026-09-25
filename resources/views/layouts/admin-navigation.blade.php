@@ -131,6 +131,21 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                     درخواست‌های برداشت
+                    @if(($__withdrawalChecks = app(\App\Services\Admin\AttentionCounts::class)->withdrawals()) > 0)
+                        <span class="mr-auto px-1.5 rounded-full text-xs font-bold persian-number" style="background:#F59E0B; color:#fff;" title="نیاز به بررسی دستی">{{ $__withdrawalChecks }}</span>
+                    @endif
+                </x-admin-nav-link>
+
+                {{-- ⭐ پرداخت‌هایی که پیگیری خودکار به نتیجه نرسید (۲۰۲۶-۰۹-۲۶) --}}
+                <x-admin-nav-link href="{{ route('admin.payment-attention.index') }}" :active="request()->routeIs('admin.payment-attention*')"
+                                  class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors">
+                    <svg class="w-5 h-5 ml-2 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                    </svg>
+                    پرداخت‌های نیازمند بررسی
+                    @if(($__paymentChecks = app(\App\Services\Admin\AttentionCounts::class)->payments()) > 0)
+                        <span class="mr-auto px-1.5 rounded-full text-xs font-bold persian-number" style="background:#F59E0B; color:#fff;">{{ $__paymentChecks }}</span>
+                    @endif
                 </x-admin-nav-link>
 
                 <x-admin-nav-link href="{{ route('admin.wallet.settings') }}" :active="request()->routeIs('admin.wallet.settings')"

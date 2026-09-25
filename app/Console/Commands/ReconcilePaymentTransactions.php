@@ -139,6 +139,7 @@ class ReconcilePaymentTransactions extends Command
         $this->info(($dryRun ? '[dry-run] ' : '')."برگشت وجه درگاه‌های بانکی: {$reversed} از {$candidates->count()}");
 
         $this->recoverIndirect($dryRun);
+        $this->flagAbandoned($dryRun);
 
         return self::SUCCESS;
     }
@@ -170,5 +171,45 @@ class ReconcilePaymentTransactions extends Command
         }
 
         $this->info(($dryRun ? '[dry-run] ' : '')."تایید دوباره‌ی درگاه‌های غیرمستقیم: {$candidates->count()} — به کیف پول: {$outcomes['credited']}، پرداخت‌نشده: {$outcomes['not_paid']}، هنوز بی‌پاسخ: {$outcomes['unanswered']}");
+    }
+
+    /**
+     * ۵) خودکارسازی کنار کشید → پرچم needs_attention تا مدیر در «پرداخت‌های نیازمند بررسی» ببینه (۲۰۲۶-۰۹-۲۶):
+     * - failed و هنوز unanswered، بعد از تمام شدن بازه‌ی همون درگاه (مستقیم: پایان بازه‌ی برگشت؛ غیرمستقیم: ۲۴ ساعت) —
+     *   از جمله ملتِ «settle شده ولی ناموفق ثبت شده» و پارسیانِ «مهلت برگشت گذشته» که برگشتشون ممکن نشد؛
+     * - ردیفی که در reconciling / reversing گیر کرده (مثلاً فرایند وسط کار متوقف شده).
+     * فقط یک هفته بعد از هر بازه پرسیده می‌شه تا هر اجرا کل جدول رو نگرده.
+     */
+    private function flagAbandoned(bool $dryRun): void
+    {
+        $windows = array_map(fn ($w) => $w[1], self::reverseWindows())
+            + array_fill_keys(\App\Services\Payment\UnansweredVerifyRecovery::DRIVERS, self::RECOVER_BEFORE_MINUTES);
+
+        $candidates = PaymentTransaction::query()
+            ->where('needs_attention', false)
+            ->whereIn('status', ['failed', 'reconciling', 'reversing'])
+            ->where(function ($query) use ($windows) {
+                foreach ($windows as $driver => $before) {
+                    $query->orWhere(fn ($q) => $q->where('driver', $driver)
+                        ->whereBetween('updated_at', [now()->subMinutes($before)->subDays(7), now()->subMinutes($before)]));
+                }
+            })
+            ->get()
+            ->filter(fn (PaymentTransaction $tx) => $tx->status !== 'failed' || (((array) $tx->verify_response)['unanswered'] ?? false));
+
+        foreach ($candidates as $tx) {
+            if ($dryRun) {
+                $this->line("[dry-run] نیاز به بررسی: تراکنش #{$tx->id} ({$tx->driver}، {$tx->status})");
+
+                continue;
+            }
+
+            PaymentTransaction::whereKey($tx->id)->toBase()->update(['needs_attention' => true]);
+            Log::warning('Payment needs a human: automatic handling window ended', [
+                'transaction_id' => $tx->id, 'salon_id' => $tx->salon_id, 'driver' => $tx->driver, 'status' => $tx->status,
+            ]);
+        }
+
+        $this->info(($dryRun ? '[dry-run] ' : '')."نیاز به بررسی دستی: {$candidates->count()}");
     }
 }

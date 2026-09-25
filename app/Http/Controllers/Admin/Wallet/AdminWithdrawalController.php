@@ -24,7 +24,7 @@ class AdminWithdrawalController extends Controller
     public function index(Request $request): View
     {
         $withdrawals = $this->walletAdminService->getWithdrawalsList(
-            $request->only(['status', 'method', 'search'])
+            $request->only(['status', 'method', 'search', 'needs_check'])
         );
 
         $stats = $this->walletAdminService->getWithdrawalStats();

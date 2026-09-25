@@ -31,6 +31,11 @@ class WithdrawalRequestRepository extends BaseRepository implements WithdrawalRe
             $query->where('status', $filters['status']);
         }
 
+        // ⭐ نتیجه‌ی تسویه‌ی خودکار نامعلوم ماند — مدیر باید در پنل درگاه ببینه و دستی تأیید یا رد کنه
+        if (! empty($filters['needs_check'])) {
+            $query->where('needs_manual_check', true);
+        }
+
         if (! empty($filters['method'])) {
             $query->where('method', $filters['method']);
         }
@@ -53,6 +58,7 @@ class WithdrawalRequestRepository extends BaseRepository implements WithdrawalRe
     {
         return [
             'pendingCount' => $this->forCurrentSalon()->where('status', 'pending')->count(),
+            'needsCheckCount' => $this->forCurrentSalon()->where('needs_manual_check', true)->count(),
             'pendingAmount' => $this->forCurrentSalon()->where('status', 'pending')->sum('amount'),
             'completedToday' => $this->forCurrentSalon()->where('status', 'completed')
                 ->whereDate('processed_at', today())

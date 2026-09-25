@@ -84,6 +84,21 @@
 
 @section('content')
     <div class="fade-in">
+        {{-- ⭐ مواردی که پیگیری خودکار پرداخت/تسویه به نتیجه نرسید (۲۰۲۶-۰۹-۲۶) — فقط owner (صفحه‌هاش owner-only‌اند) --}}
+        @if((auth()->user()->hasRole('super-admin') || (($__salon = app(\App\Support\CurrentSalon::class)->get()) && $__salon->admins()->wherePivot('user_id', auth()->id())->wherePivot('role', 'owner')->exists()))
+            && ($__attention = app(\App\Services\Admin\AttentionCounts::class))->total() > 0)
+            <div class="rounded-xl p-4 mb-5 text-sm" style="background:#FFFBEB; border:1px solid #FCD34D; color:#92400E;" data-attention-alert>
+                <p class="font-bold mb-1">پرداخت‌هایی که به بررسی شما نیاز دارند</p>
+                <div class="flex flex-wrap gap-4">
+                    @if($__attention->payments() > 0)
+                        <a href="{{ route('admin.payment-attention.index') }}" class="underline"><span class="persian-number">{{ $__attention->payments() }}</span> پرداخت مشتری که پاسخ درگاهش نرسید</a>
+                    @endif
+                    @if($__attention->withdrawals() > 0)
+                        <a href="{{ route('admin.wallet.withdrawals', ['needs_check' => 1]) }}" class="underline"><span class="persian-number">{{ $__attention->withdrawals() }}</span> تسویه‌ی متخصص با نتیجه‌ی نامعلوم</a>
+                    @endif
+                </div>
+            </div>
+        @endif
 
         {{-- Page header + filter --}}
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">

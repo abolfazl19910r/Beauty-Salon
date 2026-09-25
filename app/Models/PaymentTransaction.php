@@ -34,12 +34,13 @@ class PaymentTransaction extends Model
     protected $fillable = [
         'public_id', 'salon_id', 'gateway_id', 'driver', 'purpose', 'payable_type', 'payable_id', 'user_id',
         'amount_rial', 'fee_rial', 'token', 'ref_id', 'gateway_receipt', 'card_pan', 'status', 'callback_url',
-        'start_response', 'verify_response', 'verified_at',
+        'start_response', 'verify_response', 'verified_at', 'needs_attention',
     ];
 
     protected $casts = [
         'amount_rial' => 'integer',
         'fee_rial' => 'integer',
+        'needs_attention' => 'boolean',
         'start_response' => 'array',
         'verify_response' => 'array',
         'verified_at' => 'datetime',
@@ -50,6 +51,25 @@ class PaymentTransaction extends Model
         static::creating(function (PaymentTransaction $tx) {
             $tx->public_id ??= (string) Str::uuid();
         });
+    }
+
+    /** ⭐ متن «چرا به بررسی انسانی نیاز دارد» برای صفحه‌ی پرداخت‌های نیازمند بررسی (۲۰۲۶-۰۹-۲۶). */
+    public function attentionReason(): string
+    {
+        $response = (array) $this->verify_response;
+        $direct = in_array($this->driver, ['saman', 'mellat', 'parsian'], true);
+
+        return match (true) {
+            ($response['settlement_failed'] ?? false) === true => 'پرداخت تایید شد ولی تسویه (Settlement) در آسان پرداخت انجام نشد. از پنل آسان پرداخت تسویه‌اش کنید؛ نوبت/شارژ مشتری ثبت شده است.',
+            in_array($this->status, ['reconciling', 'reversing'], true) => 'بررسی خودکار این پرداخت نیمه‌کاره ماند. وضعیت را در پنل درگاه ببینید.',
+            $direct => 'پاسخ تایید بانک نرسید و برگشت خودکار به کارت در مهلت بانک انجام نشد. در پنل بانک ببینید مبلغ برداشت و واریز شده یا نه.',
+            default => 'پاسخ تایید درگاه نرسید و ۲۴ ساعت بررسی خودکار نتیجه‌ای نداشت. در پنل درگاه ببینید مبلغ از مشتری گرفته شده یا نه.',
+        };
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function gateway(): BelongsTo

@@ -3,6 +3,18 @@
 
 @section('content')
     <div class="fade-in">
+        {{-- ⭐ نتیجه‌ی تسویه‌ی خودکار نامعلوم (۲۰۲۶-۰۹-۲۶) --}}
+        @if($withdrawalRequest->needs_manual_check)
+            @php $pd = (array) $withdrawalRequest->payment_details; @endphp
+            <div class="rounded-xl p-4 mb-5 text-sm leading-7" style="background:#FFFBEB; border:1px solid #FCD34D; color:#92400E;" data-needs-manual-check>
+                <p class="font-bold mb-1">نتیجه‌ی تسویه‌ی خودکار نامعلوم است — ممکن است پول واریز شده باشد.</p>
+                <p>{{ $pd['payout_message'] ?? 'پاسخ درگاه تسویه نرسید.' }}</p>
+                @if(! empty($pd['payout_raw']['track_id']))
+                    <p>شناسه‌ی پیگیری در درگاه: <span class="font-mono" dir="ltr">{{ $pd['payout_raw']['track_id'] }}</span></p>
+                @endif
+                <p class="mt-1">در پنل درگاه تسویه‌ی سالن ببینید: اگر واریز شده، <strong>تایید</strong> کنید و کد پیگیری بانک را وارد کنید؛ اگر واریز نشده، <strong>رد</strong> کنید تا مبلغ به کیف پول متخصص برگردد. تسویه‌ی خودکار دوباره برای این درخواست فرستاده نمی‌شود.</p>
+            </div>
+        @endif
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
             <div>
                 <h1 class="text-xl font-bold" style="color:var(--admin-text);">درخواست برداشت

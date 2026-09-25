@@ -96,6 +96,7 @@ class ProcessWithdrawalJob implements ShouldQueue
             // تأیید یا رد کنه (هر دو مسیر در WalletAdminService برای processing کار می‌کنن و autoPayout دوباره نمی‌فرسته).
             if (! empty($result['unknown'])) {
                 $withdrawalRequest->update([
+                    'needs_manual_check' => true,
                     'payment_details' => array_merge((array) $withdrawalRequest->payment_details, [
                         'needs_manual_check' => true,
                         'payout_message' => $result['message'] ?? null,

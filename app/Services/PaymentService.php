@@ -182,6 +182,8 @@ class PaymentService
         // Reverse و پیامک رو تکرار نمی‌کنه (REVERSAL_STATUSES در verify و GatewayReceipt::claim)
         $transaction?->update([
             'status' => $result->success ? 'paid' : (($result->raw['reversed'] ?? false) === true ? 'reversed' : ($result->cancelledByUser ? 'cancelled' : 'failed')),
+            // ⭐ پرداخت موفق ولی کار درگاه ناتمام (آسان پرداخت: Settlement نشد) — مدیر در «پرداخت‌های نیازمند بررسی» می‌بینه
+            'needs_attention' => $result->success && ($result->raw['settlement_failed'] ?? false) === true,
             'ref_id' => $result->refId,
             'card_pan' => $result->cardPan,
             'verify_response' => $result->raw ?: null,

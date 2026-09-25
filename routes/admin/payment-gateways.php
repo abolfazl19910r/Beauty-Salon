@@ -12,3 +12,8 @@ Route::prefix('payment-gateways')->name('payment-gateways.')->group(function () 
     Route::post('/{gatewayId}/move', [AdminPaymentGatewayController::class, 'move'])->whereNumber('gatewayId')->name('move');
     Route::post('/{gatewayId}/test', [AdminPaymentGatewayController::class, 'test'])->whereNumber('gatewayId')->middleware('throttle:10,1')->name('test');
 });
+
+// ⭐ پرداخت‌های نیازمند بررسی (۲۰۲۶-۰۹-۲۶) — خودکارسازی کنار کشید؛ owner بررسی می‌کنه و به کیف پول واریز یا «رسیدگی شد».
+Route::get('payment-attention', [\App\Http\Controllers\Admin\PaymentGateway\AdminPaymentAttentionController::class, 'index'])->name('payment-attention.index');
+Route::post('payment-attention/{transactionId}', [\App\Http\Controllers\Admin\PaymentGateway\AdminPaymentAttentionController::class, 'resolve'])
+    ->whereNumber('transactionId')->middleware('throttle:30,1')->name('payment-attention.resolve');
