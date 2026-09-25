@@ -5,11 +5,9 @@
 ## ریپوی پروژه
 `https://github.com/abolfazl19910r/Beauty-Salon.git` — لوکال: Windows/XAMPP
 
-## GitHub Personal Access Token (به‌روزرسانی‌شده)
-```
-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
-```
-این توکن برای خواندن فایل‌ها مستقیم از GitHub API (`raw.githubusercontent.com` و `api.github.com`) استفاده می‌شه تا نیازی به آپلود دستی فایل توسط کاربر نباشه. هر بار با هدر `Authorization: token <TOKEN>` در curl استفاده بشه.
+## GitHub Personal Access Token
+⚠️ **(۲۰۲۶-۰۹-۲۶)** توکن دیگه در این سند نوشته نمی‌شه (ریپو عمومیه و توکن قبلی همین‌جا لو رفته بود). ابوالفضل در هر
+چت توکن تازه رو می‌ده. استفاده: هدر `Authorization: token <TOKEN>` روی `api.github.com` / `raw.githubusercontent.com`.
 
 ## برنچ‌های پروژه
 `main`, `develop`, `V3` — برنچ `V2` در ۲۰۲۶-۰۹-۲۰ با یک merge commit (`40c58eb`) داخل `develop` ادغام و از ریموت حذف شد. ⚠️ **به‌روزرسانی ۲۰۲۶-۰۹-۲۱**: ابوالفضل تأیید کرد `V3` الان به‌روزترین برنچ کاره، نه `develop` — از این به بعد همیشه فایل‌ها باید از `V3` خونده بشن و هر پچ/کامیت جدید هم باید بر پایه‌ی `V3` باشه (نه `develop`). قبل از هر کاری چک کن `V3` هنوز جدیدترینه یا نه (ممکنه دوباره عوض بشه).
@@ -6756,13 +6754,58 @@ migration + cache + supervisord؛ worker → بدون migrate، دستور با 
 **تست:** `PaymentRefundedNotificationTest` (۳) + پیامک در `LostSlotRefundTest`/`SamanReconcileTest`؛ `SchedulerQueueSetupTest` (۳).
 سوییت کامل **۱۳۲۳ passed / ۱ skipped**؛ Pint کل پروژه PASS (۸۰۰ فایل).
 
+### ۲۰۲۶-۰۹-۲۶ (ادامه ۳) — چند درگاه: مرحله‌ی ۲ — درگاه مستقیم بانک ملت (به‌پرداخت، SOAP)
+
+روی `9f4da9e` (develop)، ۳ کامیت کد + این سند. محیط: کلون develop = زیپ آپلودی (به‌جز .env / public/build / storage).
+پایه‌ی واقعی: **۱۳۲۲ passed / ۱ skipped** (سند قبلی ۱۳۲۳ نوشته بود؛ روی `9f4da9e` از صفر ۱۳۲۲ است).
+⚠️ درس محیط: `key:generate` قبل از تنظیم DB اجرا شد و بی‌صدا شکست خورد (AppServiceProvider موقع boot به DB وصل می‌شه) →
+APP_KEY خالی و همه‌ی تست‌ها `MissingAppKeyException`. ترتیب درست: `.env` → DB (sqlite) → `key:generate` → `package:discover`.
+
+**مستندات (پیش از کد):** آخرین راهنمای عمومی رسمی به‌پرداخت نگارش ۱٫۱ (۲۰۱۳) است؛ نسخه‌های بعدی فقط به پذیرنده داده می‌شن.
+با سه پیاده‌سازی نگهداری‌شده (Parbad، shetabit/multipay، Pars Kit — آخری چند روز پیش به‌روز شده) مقایسه شد؛ endpointها یکسان.
+- وب‌سرویس `POST bpm.shaparak.ir/pgwchannel/services/pgw` (SOAP 1.1، namespace `http://interfaces.core.sw.bps.com/`)؛
+  انتقال: فرم POST با `RefId` به `…/pgwchannel/startpay.mellat`.
+- `bpPayRequest` → `"0,RefId"`؛ بازگشت POST با `RefId/ResCode/SaleOrderId/SaleReferenceId/CardHolderInfo` (+ `CardHolderPan`،
+  `FinalAmount` در نسخه‌های جدید). ResCode ۱۷ = انصراف.
+- `bpVerifyRequest` ظرف **۱۵ دقیقه** (وگرنه خود بانک برگشت می‌زنه؛ ۴۳ = قبلاً verify شده) → `bpSettleRequest` (۴۵ = قبلاً settle)؛
+  `bpReversalRequest` فقط قبل از settle، تا **۲ ساعت** (۴۸ = قبلاً برگشت خورده).
+- ⚠️ **یافته‌ی کلیدی:** پاسخ verify هیچ مبلغی نداره؛ بانک مبلغ رو به orderId ما گره زده. پس امنیت = چک RefId و SaleOrderId
+  بازگشت با همین تراکنش + verify همیشه با id خودمون.
+- ⚠️ WSDL سخت‌گیره (المنت ناشناخته = Unmarshalling Error) → `mobileNo` فرستاده نمی‌شه (در مستند عمومی bpPayRequest نیست).
+
+**کامیت‌ها:**
+1. `refactor(payments): ReversibleGateway contract for reconcile and lost-slot refunds` — `Contracts\ReversibleGateway::reverseTransaction()`؛
+   سامان پیاده‌اش کرد؛ `LostSlotRefundService` و `payments:reconcile` دیگه به `SamanDriver` وابسته نیستن؛ reconcile پنجره‌ی هر
+   درگاه رو از `reverseWindows()` می‌خونه. بدون تغییر رفتار.
+2. `feat(payments): Behpardakht Mellat direct bank gateway (SOAP) …` — `App\Payments\Drivers\MellatDriver`:
+   - XML خام روی `Http` (نه ext-soap: بدون دانلود WSDL و بدون افزونه‌ی جدید روی سرور؛ تست با `Http::fake`).
+   - orderId = id تراکنش؛ RefId = توکن ذخیره‌شده؛ SaleReferenceId با `GatewayReceipt::claim` قفل می‌شه (مثل سامان).
+   - verify بی‌پاسخ → `unanswered` → reconcile در پنجره‌ی **۱۶ تا ۹۰ دقیقه** برگشت می‌زنه.
+   - verify شد ولی settle نشد → همون لحظه Reverse: ۰/۴۸ → رد + پیامک با دلیل جدید `settle_failed`؛ ۴۵ → یعنی settle انجام شده
+     بوده → موفق؛ بی‌پاسخ → reconcile.
+   - failover فقط روی قطع اتصال، ۵xx بدون SOAP Fault، و ResCode ۳۴/۱۱۳.
+   - ساعت نوبت از دست رفته → **کیف پول** (پرداخت موفق ملت همیشه settle‌شده و قابل Reverse نیست؛ بدون تماس با بانک).
+   - `GatewayCatalog['mellat']`: شماره ترمینال، نام کاربری، رمز (secret).
+3. `fix(payments): an instantly reversed payment is recorded as reversed …` — 🐞 **باگ واقعی (سامان هم)، با probe بازتولید شد:**
+   پولی که همون لحظه‌ی بازگشت برگشت خورده بود (سامان: مبلغ ناهمخوان) `failed` ثبت می‌شد → refresh صفحه‌ی نتیجه دوباره verify
+   و Reverse می‌زد و **پیامک دوم** می‌رفت (probe: ۲ پیامک، ۲ Reverse). حالا `reversed` ثبت می‌شه (REVERSAL_STATUSES)؛ مسیر
+   شارژ کیف پول هم همون گارد رو گرفت.
+
+**تست:** `MellatGatewayTest` (۱۷)، `MellatReconcileTest` (۵)، `ImmediateReversalRefreshTest` (۲). Mutation: بدون claim ۶ تست،
+بدون گارد settled ۲، بدون Reverse بعد از settle ناموفق ۳، بدون چک SaleOrderId ۱، بدون پنجره‌ی ملت در reconcile ۲، و بدون فیکس
+کامیت ۳ هر دو تستش fail می‌شن. سوییت کامل **۱۳۴۶ passed / ۱ skipped** (پایه ۱۳۲۲)؛ `pint --test` کل پروژه PASS (۸۰۵ فایل).
+**MariaDB 10.11:** ۱۴۳ تست پرداخت/job PASS. وریفای روی کلون تازه با `git am`.
+
 ### قدم‌های باز
-- ⚠️ باطل کردن کلید کاوه‌نگار و توکن‌های GitHub (هم توکن این سند، هم توکنی که در چت ۲۰۲۶-۰۹-۲۶ اومد) — **خود ابوالفضل**.
+- ⚠️ باطل کردن کلید کاوه‌نگار و توکن‌های GitHub (توکن قبلی که تا ۲۰۲۶-۰۹-۲۶ در این سند بود و در تاریخچه‌ی git می‌مونه، و
+  توکن‌هایی که در چت‌ها اومدن، از جمله چت درگاه ملت) — **خود ابوالفضل**.
 - تست دستی درگاه‌ها: زیبال با مرچنت `zibal`؛ وندار و آسان پرداخت با حساب واقعی؛ IP سرور در پنل آسان پرداخت؛ تطبیق با
   PDF رسمی IPG REST. ثبت دامنه/ساب‌دامین هر سالن در پنل هر درگاه.
 - درایور تسویه‌ی وندار (بعد از تأیید واحد مبلغ؛ با تمدید خودکار توکن ۵ روزه).
 - اولین تسویه‌ی واقعی زیبال با مبلغ کم.
-- **مرحله‌ی ۲ ادامه:** ملت/به‌پرداخت و پارسیان (SOAP؛ settle در مهلت، reverse). سامان انجام شد (۲۰۲۶-۰۹-۲۶).
+- **مرحله‌ی ۲ ادامه:** پارسیان. سامان و ملت انجام شدن (۲۰۲۶-۰۹-۲۶).
+- ملت در محیط واقعی: قرارداد + ثبت IP سرور و دامنه/ساب‌دامین هر سالن نزد به‌پرداخت؛ اولین پرداخت با مبلغ کم؛ **مقایسه با
+  راهنمای جدیدی که به‌پرداخت به پذیرنده می‌ده** (به‌خصوص معنی `FinalAmount` که فعلاً فقط ذخیره می‌شه، و قالب `MobileNo`).
 - سامان در محیط واقعی: قرارداد + ثبت IP سرور نزد سپ؛ اولین پرداخت با مبلغ کم؛ اگه ترمینال بلوپی داره، تست `redirect_mode=blupay`.
 - **روی سرور:** اجرای `docs/deployment/SCHEDULER_AND_QUEUE.md` (DirectAdmin: `.env` → `QUEUE_WORK_VIA_SCHEDULER=true`، `CACHE_STORE=database`، یک خط کرون) — کد آماده است، فقط تنظیم سرور مونده.
 - Docker (اگه قراره استفاده بشه): یک `make setup` واقعی + رفع سرویس جداگانه‌ی `nginx`.
