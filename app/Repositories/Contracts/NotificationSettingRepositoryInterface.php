@@ -10,11 +10,11 @@ interface NotificationSettingRepositoryInterface extends RepositoryInterface
     /**
      * @return array<string, NotificationSetting>
      */
-    public function getAllKeyedByEventKey(): array;
+    public function getAllKeyedByEventKey(?int $salonId): array;
 
-    public function firstOrCreateForEvent(string $eventKey, array $defaults): NotificationSetting;
+    public function firstOrCreateForEvent(string $eventKey, array $defaults, ?int $salonId): NotificationSetting;
 
-    public function getByEventKeys(array $eventKeys): Collection;
+    public function getByEventKeys(array $eventKeys, ?int $salonId): Collection;
 
-    public function updateOrCreateForEvent(string $eventKey, array $data): NotificationSetting;
+    public function updateOrCreateForEvent(string $eventKey, array $data, ?int $salonId): NotificationSetting;
 }

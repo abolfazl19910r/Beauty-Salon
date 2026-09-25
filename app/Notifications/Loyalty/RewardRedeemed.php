@@ -29,7 +29,7 @@ class RewardRedeemed extends Notification
 
     public function via(mixed $notifiable): array
     {
-        return $this->gatedChannels(NotificationEvents::LOYALTY_REWARD_REDEEMED_CUSTOMER, ['database', 'sms']);
+        return $this->gatedChannels(NotificationEvents::LOYALTY_REWARD_REDEEMED_CUSTOMER, ['database', 'sms'], $notifiable);
     }
 
     public function toDatabase(mixed $notifiable): array

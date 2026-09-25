@@ -56,7 +56,7 @@ class BookingStatusUpdated extends Notification
             return ['database'];
         }
 
-        return $this->gatedChannels(NotificationEvents::BOOKING_CONFIRMED_CUSTOMER, ['database', 'sms']);
+        return $this->gatedChannels(NotificationEvents::BOOKING_CONFIRMED_CUSTOMER, ['database', 'sms'], $notifiable);
     }
 
     public function toDatabase($notifiable): array

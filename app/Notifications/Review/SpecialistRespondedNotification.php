@@ -17,7 +17,7 @@ class SpecialistRespondedNotification extends Notification
 
     public function via($notifiable): array
     {
-        return $this->gatedChannels(NotificationEvents::REVIEW_RESPONDED_CUSTOMER, ['database']);
+        return $this->gatedChannels(NotificationEvents::REVIEW_RESPONDED_CUSTOMER, ['database'], $notifiable);
     }
 
     public function toArray($notifiable): array

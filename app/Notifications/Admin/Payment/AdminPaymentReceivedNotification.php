@@ -27,7 +27,7 @@ class AdminPaymentReceivedNotification extends Notification implements ShouldQue
 
     public function via(object $notifiable): array
     {
-        return $this->gatedChannels(NotificationEvents::PAYMENT_RECEIVED_ADMIN, ['database', 'sms']);
+        return $this->gatedChannels(NotificationEvents::PAYMENT_RECEIVED_ADMIN, ['database', 'sms'], $notifiable);
     }
 
     public function toArray(object $notifiable): array

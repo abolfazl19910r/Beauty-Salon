@@ -27,7 +27,7 @@ class NewReviewNotification extends Notification
 
     public function via($notifiable): array
     {
-        return $this->gatedChannels(NotificationEvents::REVIEW_NEW_SPECIALIST, ['database', 'sms']);
+        return $this->gatedChannels(NotificationEvents::REVIEW_NEW_SPECIALIST, ['database', 'sms'], $notifiable);
     }
 
     public function toArray($notifiable): array

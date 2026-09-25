@@ -17,7 +17,7 @@ class NegativeReviewNotification extends Notification
 
     public function via($notifiable): array
     {
-        return $this->gatedChannels(NotificationEvents::REVIEW_NEGATIVE_ADMIN, ['database']);
+        return $this->gatedChannels(NotificationEvents::REVIEW_NEGATIVE_ADMIN, ['database'], $notifiable);
     }
 
     public function toArray($notifiable): array

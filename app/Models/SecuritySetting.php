@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToSalon;
 use Illuminate\Database\Eloquent\Model;
 
 class SecuritySetting extends Model
 {
+    use BelongsToSalon;
+
     protected $fillable = [
+        'salon_id',
         'password_expiry_days',
     ];
 
@@ -19,6 +23,6 @@ class SecuritySetting extends Model
      */
     public static function get(): self
     {
-        return self::first() ?? self::create([]);
+        return self::first() ?? self::create([])->fresh();
     }
 }

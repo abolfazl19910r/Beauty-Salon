@@ -24,7 +24,7 @@ class SmsQuotaExhaustedNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return $this->gatedChannels(NotificationEvents::SMS_QUOTA_EXHAUSTED_ADMIN, ['database', 'sms']);
+        return $this->gatedChannels(NotificationEvents::SMS_QUOTA_EXHAUSTED_ADMIN, ['database', 'sms'], $notifiable);
     }
 
     public function toArray(object $notifiable): array

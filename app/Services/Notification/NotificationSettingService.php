@@ -4,6 +4,7 @@ namespace App\Services\Notification;
 
 use App\Models\NotificationSetting;
 use App\Repositories\Contracts\NotificationSettingRepositoryInterface;
+use App\Support\CurrentSalon;
 use App\Support\Notifications\NotificationEvents;
 use Illuminate\Support\Facades\Cache;
 
@@ -18,7 +19,7 @@ class NotificationSettingService
 {
     public function __construct(private readonly NotificationSettingRepositoryInterface $notificationSettingRepository) {}
 
-    private const CACHE_KEY = 'notification_settings:all';
+    private const CACHE_KEY = 'notification_settings:salon:';
 
     /**
      * پیش‌فرض‌های آگاهانه‌ای که با رفتار «درست»ی که در این پروژه کشف/مستند شده هم‌راستا هستن —
@@ -34,9 +35,13 @@ class NotificationSettingService
         NotificationEvents::BOOKING_CREATED_ADMIN => ['sms_enabled' => false],
     ];
 
-    public function isEnabled(string $eventKey, string $channel): bool
+    /**
+     * $salonId: سالنی که تنظیماتش ملاک است؛ پیش‌فرض CurrentSalon. اعلان‌های صف‌شده سالن را از گیرنده می‌گیرند
+     * (RespectsNotificationSettings) چون در صف CurrentSalon ست نیست.
+     */
+    public function isEnabled(string $eventKey, string $channel, ?int $salonId = null): bool
     {
-        $row = $this->resolve($eventKey);
+        $row = $this->resolve($eventKey, $salonId ?? app(CurrentSalon::class)->id());
 
         return match ($channel) {
             'sms' => (bool) $row->sms_enabled,
@@ -52,44 +57,49 @@ class NotificationSettingService
      * بودن، 'telegram' را هم اضافه می‌کند (چون همه‌ی رویدادها بالقوه قابلیت ارسال از طریق ربات را
      * دارند، صرف‌نظر از اینکه در $base ذکر شده باشد یا نه).
      */
-    public function channels(string $eventKey, array $base): array
+    public function channels(string $eventKey, array $base, ?int $salonId = null): array
     {
+        $salonId ??= app(CurrentSalon::class)->id();
+
         $channels = [];
 
-        if (in_array('database', $base, true) && $this->isEnabled($eventKey, 'database')) {
+        if (in_array('database', $base, true) && $this->isEnabled($eventKey, 'database', $salonId)) {
             $channels[] = 'database';
         }
 
-        if (in_array('sms', $base, true) && $this->isEnabled($eventKey, 'sms')) {
+        if (in_array('sms', $base, true) && $this->isEnabled($eventKey, 'sms', $salonId)) {
             $channels[] = 'sms';
         }
 
-        if ($this->isEnabled($eventKey, 'telegram')) {
+        if ($this->isEnabled($eventKey, 'telegram', $salonId)) {
             $channels[] = 'telegram';
         }
 
         return $channels;
     }
 
-    public function flush(): void
+    public function flush(?int $salonId = null): void
     {
-        Cache::forget(self::CACHE_KEY);
+        $salonId ??= app(CurrentSalon::class)->id();
+        Cache::forget(self::CACHE_KEY.($salonId ?? 'none'));
     }
 
     /**
      * @return array<string, NotificationSetting>
      */
-    public function all(): array
+    public function all(?int $salonId = null): array
     {
+        $salonId ??= app(CurrentSalon::class)->id();
+
         return Cache::rememberForever(
-            self::CACHE_KEY,
-            fn () => $this->notificationSettingRepository->getAllKeyedByEventKey()
+            self::CACHE_KEY.($salonId ?? 'none'),
+            fn () => $this->notificationSettingRepository->getAllKeyedByEventKey($salonId)
         );
     }
 
-    private function resolve(string $eventKey): NotificationSetting
+    private function resolve(string $eventKey, ?int $salonId): NotificationSetting
     {
-        $all = $this->all();
+        $all = $this->all($salonId);
 
         if (isset($all[$eventKey])) {
             return $all[$eventKey];
@@ -103,10 +113,11 @@ class NotificationSettingService
                 'sms_enabled' => true,
                 'database_enabled' => true,
                 'telegram_enabled' => false,
-            ], $overrides)
+            ], $overrides),
+            $salonId
         );
 
-        $this->flush();
+        $this->flush($salonId);
 
         return $row;
     }

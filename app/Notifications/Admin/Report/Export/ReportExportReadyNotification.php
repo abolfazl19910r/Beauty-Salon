@@ -20,7 +20,7 @@ class ReportExportReadyNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return $this->gatedChannels(NotificationEvents::REPORT_EXPORT_READY_ADMIN, ['database']);
+        return $this->gatedChannels(NotificationEvents::REPORT_EXPORT_READY_ADMIN, ['database'], $notifiable);
     }
 
     public function toArray(object $notifiable): array

@@ -24,7 +24,7 @@ class WithdrawalApprovedNotification extends Notification
 
     public function via(mixed $notifiable): array
     {
-        return $this->gatedChannels(NotificationEvents::WITHDRAWAL_APPROVED_SPECIALIST, ['database', 'sms']);
+        return $this->gatedChannels(NotificationEvents::WITHDRAWAL_APPROVED_SPECIALIST, ['database', 'sms'], $notifiable);
     }
 
     public function toDatabase(mixed $notifiable): array

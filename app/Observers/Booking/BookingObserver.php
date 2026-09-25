@@ -417,7 +417,7 @@ class BookingObserver
 
     protected function sendCustomerCancellationSMS(Booking $booking): void
     {
-        if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_CANCELLED_CUSTOMER, 'sms')) {
+        if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_CANCELLED_CUSTOMER, 'sms', $booking->salon_id)) {
             return;
         }
 
@@ -466,7 +466,7 @@ class BookingObserver
 
     protected function sendSpecialistCancellationSMS(Booking $booking, string $cancelledBy): void
     {
-        if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_CANCELLED_SPECIALIST, 'sms')) {
+        if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_CANCELLED_SPECIALIST, 'sms', $booking->salon_id)) {
             return;
         }
 
@@ -503,7 +503,7 @@ class BookingObserver
 
     protected function sendCustomerConfirmationSMS(Booking $booking): void
     {
-        if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_CONFIRMED_CUSTOMER, 'sms')) {
+        if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_CONFIRMED_CUSTOMER, 'sms', $booking->salon_id)) {
             return;
         }
 
@@ -528,7 +528,7 @@ class BookingObserver
 
     protected function sendCustomerPendingSMS(Booking $booking): void
     {
-        if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_PAID_PENDING_APPROVAL_CUSTOMER, 'sms')) {
+        if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_PAID_PENDING_APPROVAL_CUSTOMER, 'sms', $booking->salon_id)) {
             return;
         }
 

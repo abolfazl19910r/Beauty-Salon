@@ -36,7 +36,7 @@ class ReviewService
                 return false;
             }
 
-            if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_COMPLETED_REVIEW_REQUEST, 'sms')) {
+            if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_COMPLETED_REVIEW_REQUEST, 'sms', $booking->salon_id)) {
                 return false;
             }
 

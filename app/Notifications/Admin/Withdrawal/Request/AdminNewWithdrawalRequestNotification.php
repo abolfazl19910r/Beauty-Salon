@@ -18,7 +18,7 @@ class AdminNewWithdrawalRequestNotification extends Notification implements Shou
 
     public function via(object $notifiable): array
     {
-        return $this->gatedChannels(NotificationEvents::WITHDRAWAL_REQUESTED_ADMIN, ['database']);
+        return $this->gatedChannels(NotificationEvents::WITHDRAWAL_REQUESTED_ADMIN, ['database'], $notifiable);
     }
 
     public function toArray(object $notifiable): array

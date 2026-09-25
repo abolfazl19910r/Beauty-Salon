@@ -32,7 +32,7 @@ class BookingRescheduledNotification extends Notification
 
     public function via($notifiable): array
     {
-        return $this->gatedChannels(NotificationEvents::BOOKING_RESCHEDULED_CUSTOMER, ['database', 'sms']);
+        return $this->gatedChannels(NotificationEvents::BOOKING_RESCHEDULED_CUSTOMER, ['database', 'sms'], $notifiable);
     }
 
     public function toArray($notifiable): array

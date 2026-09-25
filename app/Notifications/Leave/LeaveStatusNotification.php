@@ -27,7 +27,7 @@ class LeaveStatusNotification extends Notification
 
     public function via(mixed $notifiable): array
     {
-        return $this->gatedChannels(NotificationEvents::LEAVE_STATUS_SPECIALIST, ['database', 'sms']);
+        return $this->gatedChannels(NotificationEvents::LEAVE_STATUS_SPECIALIST, ['database', 'sms'], $notifiable);
     }
 
     /**
