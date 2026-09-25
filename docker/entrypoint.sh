@@ -124,8 +124,8 @@ if [ "${APP_ENV}" != "production" ] && [ "${TELESCOPE_ENABLED}" = "true" ]; then
     artisan telescope:install --no-interaction 2>/dev/null || true
 fi
 
-# ─── PHP-FPM socket directory ─────────────────────────────────
-mkdir -p /var/run/php-fpm
+# ─── PHP-FPM socket directory + supervisord log directory ─────
+mkdir -p /var/run/php-fpm /var/log/supervisor
 
 # ─── Start Supervisor ─────────────────────────────────────────
 echo "🚀 Starting services (PHP-FPM + Nginx)..."

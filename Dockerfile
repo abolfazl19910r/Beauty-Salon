@@ -28,13 +28,16 @@ WORKDIR /app
 
 COPY composer.json composer.lock ./
 
-# فقط dependencies بدون autoload dev
+# فقط dependencies بدون autoload dev.
+# ⚠️ image composer افزونه‌هایی مثل gd/intl/bcmath رو نداره (mpdf و phpspreadsheet ext-gd می‌خوان) و بدون این
+# گزینه همین مرحله شکست می‌خورد. افزونه‌ها در image نهایی نصب می‌شن و همون‌جا با check-platform-reqs چک می‌شن.
 RUN composer install \
     --no-dev \
     --no-interaction \
     --no-scripts \
     --prefer-dist \
-    --optimize-autoloader
+    --optimize-autoloader \
+    --ignore-platform-req='ext-*'
 
 
 # ─── Stage 3: Final image ───────────────────────────────────
@@ -96,24 +99,37 @@ RUN ln -snf /usr/share/zoneinfo/Asia/Tehran /etc/localtime \
 
 # ─── PHP-FPM config ─────────────────────────────────────────
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/beauty-salon.ini
-COPY docker/php/php-fpm.conf /usr/local/etc/php-fpm.d/beauty-salon.conf
+# ⚠️ نام zzz- عمداً: image رسمی php-fpm.d/www.conf (user = www-data, listen = 127.0.0.1:9000) و zz-docker.conf
+# (listen = 9000) رو داره و همه‌ی فایل‌ها به ترتیب حروف خونده می‌شن؛ همون pool [www] رو هر فایل بعدی override
+# می‌کنه. با نام قبلی (beauty-salon.conf) فایل ما اول خونده می‌شد → php-fpm روی TCP 9000 با www-data گوش می‌داد،
+# سوکتی که nginx بهش وصل می‌شه هیچ‌وقت ساخته نمی‌شد (502) و worker ها در storage مال www نمی‌تونستن بنویسن.
+COPY docker/php/php-fpm.conf /usr/local/etc/php-fpm.d/zzz-beauty-salon.conf
 
 # ─── Nginx config ───────────────────────────────────────────
+# ⚠️ default.conf باید در conf.d باشه: nginx.conf خودمون «include /etc/nginx/conf.d/*.conf» داره (نه http.d
+# پیش‌فرض alpine). قبلاً در http.d کپی می‌شد → nginx هیچ server blockی نداشت و روی هیچ پورتی گوش نمی‌داد.
 COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
-COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
+RUN rm -f /etc/nginx/http.d/default.conf
+COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 
 # ─── Supervisor config ──────────────────────────────────────
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # ─── App user ───────────────────────────────────────────────
 RUN addgroup -g 1000 -S www \
-    && adduser -u 1000 -S www -G www
+    && adduser -u 1000 -S www -G www \
+    && addgroup nginx www   # worker های nginx (کاربر nginx) به سوکت php-fpm با mode 0660 و گروه www دسترسی دارن
 
 # ─── App directory ──────────────────────────────────────────
 WORKDIR /var/www/html
 
 # کپی vendor از composer-builder
 COPY --from=composer-builder /app/vendor ./vendor
+
+# افزونه‌هایی که composer-builder نادیده گرفت، اینجا (با PHP واقعی image) واقعاً باید باشن
+COPY --from=composer-builder /usr/bin/composer /usr/local/bin/composer
+COPY composer.json composer.lock ./
+RUN composer check-platform-reqs --no-dev --no-interaction
 
 # کپی asset های build شده از frontend-builder
 COPY --from=frontend-builder /app/public/build ./public/build

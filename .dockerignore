@@ -13,6 +13,15 @@
 docker-compose*.yml
 Dockerfile
 
+# ⚠️ خروجی‌های محلی که نباید روی خروجی مراحل build بنشینن (COPY . . بعد از کپی vendor و public/build اجرا می‌شه):
+# vendor محلی (با پکیج‌های dev)، build قدیمی Vite، symlink storage ویندوز، و کش provider/package محلی که با
+# --no-dev ناسازگاره (کلاس پکیج dev پیدا نمی‌شه و برنامه boot نمی‌شه).
+vendor/
+public/build/
+public/hot
+public/storage
+bootstrap/cache/*.php
+
 # Node
 node_modules/
 npm-debug.log*
