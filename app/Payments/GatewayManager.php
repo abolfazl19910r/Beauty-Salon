@@ -7,6 +7,7 @@ use App\Models\SalonPaymentGateway;
 use App\Payments\Contracts\PaymentGatewayDriver;
 use App\Payments\Drivers\AsanPardakhtDriver;
 use App\Payments\Drivers\MellatDriver;
+use App\Payments\Drivers\ParsianDriver;
 use App\Payments\Drivers\SamanDriver;
 use App\Payments\Drivers\VandarDriver;
 use App\Payments\Drivers\ZarinpalDriver;
@@ -48,6 +49,7 @@ class GatewayManager
             'asanpardakht' => new AsanPardakhtDriver($credentials),
             'saman' => new SamanDriver($credentials),
             'mellat' => new MellatDriver($credentials),
+            'parsian' => new ParsianDriver($credentials),
             default => throw new InvalidArgumentException("Unknown payment gateway driver [{$gateway->driver}]."),
         };
     }

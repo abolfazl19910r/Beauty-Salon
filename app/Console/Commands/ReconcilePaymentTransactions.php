@@ -48,12 +48,21 @@ class ReconcilePaymentTransactions extends Command
     /** با حاشیه‌ی امن از سقف ۲ ساعته‌ی bpReversalRequest. */
     public const MELLAT_REVERSE_BEFORE_MINUTES = 90;
 
+    /**
+     * پارسیان: مهلت دقیق تایید/برگشت در منبع عمومی نیست؛ صفحه‌ی خود بانک می‌گه تراکنش تاییدنشده حدود ۶۰ دقیقه بعد
+     * برمی‌گرده و کد ‎-1549 یعنی مهلت برگشت گذشته. ۲۰ دقیقه برای refresh مشتری، و تمام شدن پیش از ۶۰ دقیقه.
+     */
+    public const PARSIAN_REVERSE_AFTER_MINUTES = 20;
+
+    public const PARSIAN_REVERSE_BEFORE_MINUTES = 50;
+
     /** @return array<string, array{0: int, 1: int}> driver → [از چند دقیقه بعد, تا چند دقیقه بعد] از آخرین تلاش تایید */
     public static function reverseWindows(): array
     {
         return [
             'saman' => [self::SAMAN_REVERSE_AFTER_MINUTES, self::SAMAN_REVERSE_BEFORE_MINUTES],
             'mellat' => [self::MELLAT_REVERSE_AFTER_MINUTES, self::MELLAT_REVERSE_BEFORE_MINUTES],
+            'parsian' => [self::PARSIAN_REVERSE_AFTER_MINUTES, self::PARSIAN_REVERSE_BEFORE_MINUTES],
         ];
     }
 
