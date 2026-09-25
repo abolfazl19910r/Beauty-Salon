@@ -2,8 +2,10 @@
 
 namespace App\Repositories\Eloquent;
 
+use App\Models\Specialist;
 use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Support\CurrentSalon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -71,6 +73,30 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             ->get();
     }
 
+    public function querySalonMembers(?int $salonId = null): Builder
+    {
+        $salonId ??= app(CurrentSalon::class)->id();
+        $query = $this->model->newQuery();
+
+        if ($salonId === null) {
+            return $query;
+        }
+
+        $specialists = fn () => Specialist::withoutGlobalScopes()->where('salon_id', $salonId);
+
+        return $query->where(function (Builder $q) use ($salonId, $specialists) {
+            $q->where(fn (Builder $c) => $c->where('user_type', 'customer')->where('salon_id', $salonId))
+                ->orWhereHas('salons', fn ($s) => $s->where('salons.id', $salonId))
+                ->orWhereIn('id', $specialists()->whereNotNull('user_id')->select('user_id'))
+                ->orWhere(fn (Builder $c) => $c->where('user_type', 'staff')->whereIn('phone', $specialists()->select('phone')));
+        });
+    }
+
+    public function isSalonMember(User $user, ?int $salonId = null): bool
+    {
+        return $this->querySalonMembers($salonId)->whereKey($user->id)->exists();
+    }
+
     public function getSuperAdmins(): Collection
     {
         return $this->model->whereHas('roles', fn ($q) => $q->where('name', 'super-admin'))->get();
@@ -86,10 +112,5 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     public function getOptionsOrderedByName(array $columns = ['id', 'name', 'phone']): Collection
     {
         return $this->model->orderBy('name')->get($columns);
-    }
-
-    public function countWithTwoFactorEnabled(): int
-    {
-        return $this->model->where('two_factor_enabled', true)->count();
     }
 }

@@ -22,11 +22,14 @@ interface UserRepositoryInterface extends RepositoryInterface
 
     public function getAdminRecipients(?int $salonId): Collection;
 
+    /** کاربرهای یک سالن (پیش‌فرض: CurrentSalon): مشتری‌های همون سالن، ادمین‌های salon_admins، و کاربرِ متخصص‌هاش. بدون سالن: همه. */
+    public function querySalonMembers(?int $salonId = null): Builder;
+
+    public function isSalonMember(User $user, ?int $salonId = null): bool;
+
     public function getSuperAdmins(): Collection;
 
     public function getUsersWithoutRole(int $roleId): Collection;
 
     public function getOptionsOrderedByName(array $columns = ['id', 'name', 'phone']): Collection;
-
-    public function countWithTwoFactorEnabled(): int;
 }

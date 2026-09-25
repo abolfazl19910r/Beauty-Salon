@@ -63,24 +63,6 @@ class SecurityLogRepository extends BaseRepository implements SecurityLogReposit
             ->value('created_at');
     }
 
-    public function countSince(\DateTimeInterface $since): int
-    {
-        return $this->model->where('created_at', '>=', $since)->count();
-    }
-
-    public function countWarningsSince(\DateTimeInterface $since): int
-    {
-        return $this->model->where('level', 'warning')->where('created_at', '>=', $since)->count();
-    }
-
-    public function countFailedLoginAttemptsSince(\DateTimeInterface $since): int
-    {
-        return $this->model->where('event', 'login_attempt')
-            ->where('level', 'warning')
-            ->where('created_at', '>=', $since)
-            ->count();
-    }
-
     public function countWarningsForUserSince(int $userId, \DateTimeInterface $since): int
     {
         return $this->model->where('user_id', $userId)
