@@ -36,6 +36,9 @@ class SendBookingRemindersTest extends TestCase
     public function test_a_booking_just_inside_the_window_boundaries_is_reminded(): void
     {
         Queue::fake();
+        // ⭐ (۲۰۲۶-۰۹-۲۷) ساعت ثابت: نوبت دقیقاً روی مرز «الان+۵۵ دقیقه» ساخته می‌شه و دستور کمی بعد «الان» خودش رو
+        // حساب می‌کنه؛ اگه بین این دو یک ثانیه رد می‌شد، نوبت مرز پایین بیرون می‌افتاد (روی MariaDB در یک اجرای کامل دیده شد).
+        $this->freezeTime();
 
         $lower = $this->makeBooking(55);
         $upper = $this->makeBooking(65);
