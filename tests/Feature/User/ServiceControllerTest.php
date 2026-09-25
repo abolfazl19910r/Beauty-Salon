@@ -7,32 +7,15 @@ use App\Models\Category;
 use App\Models\User;
 use App\Models\WalletSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 /**
- * Only covers the routes actually backed by real, reachable ServiceController methods
- * (index, show, list, specialists). routes/web/services.php references roughly a dozen
- * additional methods on this controller (search, filter, byCategory, popular, newest,
- * discounted, compare, favorites/addToFavorites/removeFromFavorites, history, similar,
- * addReview, getReviews) that do not exist on the class at all — an entire half-built
- * feature set (service search/filter/compare, favorites, service-level reviews) that was
- * never implemented. Confirmed via full-project grep that nothing in resources/views or
- * resources/js links to any of these routes, so nothing currently relies on them.
+ * ServiceController: index, show, list, specialists.
  *
- * Two failure modes coexist here, both confirmed with direct HTTP calls:
- * - Everything under /services/{something} (search, filter, popular, newest, discounted,
- *   compare, history) is additionally shadowed by the earlier, more generic
- *   `/services/{service}` route (registered in routes/web/public.php, loaded before
- *   routes/web/services.php) — Laravel's implicit route-model-binding on {service} tries
- *   to resolve e.g. "search" as a BeautyService, fails, and returns a plain 404 before the
- *   route-shadowing issue itself would even matter.
- * - /favorites and /services/{id}/review are NOT shadowed by that pattern (different path
- *   shape) and instead genuinely fatal with "Call to undefined method" (500), since
- *   ServiceController::favorites()/addToFavorites()/addReview()/etc. simply don't exist.
- *
- * This is a large, undocumented gap — not something to silently build out during a
- * test-writing pass. Flagging it here as a major finding (candidate for either implementing
- * the feature set or removing the dead routes in routes/web/services.php), not fixing it.
+ * ⭐ (۲۰۲۶-۰۹-۲۷) ۱۵ مسیری که به متدهای ناموجود اشاره می‌کردند (۱۴ در routes/web/services.php، به‌علاوه‌ی
+ * payment.failed) حذف شدند — هیچ صفحه یا JS به آن‌ها لینک نمی‌داد؛ test_the_removed_dead_routes_are_gone نگهبان
+ * برگشت‌نکردنشان است.
  */
 class ServiceControllerTest extends TestCase
 {
@@ -115,27 +98,18 @@ class ServiceControllerTest extends TestCase
         $this->assertTrue($ids->contains($specialist->id));
     }
 
-    public function test_the_documented_dead_favorites_route_currently_fatals(): void
+    public function test_the_removed_dead_routes_are_gone(): void
     {
+        foreach (['favorites.index', 'favorites.add', 'favorites.remove', 'payment.failed', 'services.history',
+            'services.by-category', 'services.compare', 'services.discounted', 'services.filter', 'services.newest',
+            'services.popular', 'services.search', 'services.add-review', 'services.reviews', 'services.similar'] as $name) {
+            $this->assertFalse(Route::has($name), "{$name} should not exist");
+        }
+
         $user = User::factory()->create();
-
-        // Regression/documentation guard: this asserts the CURRENT (broken) behavior so a
-        // future fix to ServiceController::favorites() is a visible, deliberate change to
-        // this test, not a silent behavior shift nobody notices.
-        $response = $this->actingAs($user)->get(route('favorites.index'));
-
-        $response->assertStatus(500);
-    }
-
-    public function test_the_documented_shadowed_search_route_currently_404s(): void
-    {
-        $user = User::factory()->create();
-
-        // Regression/documentation guard for the route-shadowing issue described in this
-        // class's docblock: /services/{service} (registered earlier) intercepts this request
-        // before /services/search (registered later) is ever reached.
-        $response = $this->actingAs($user)->get(route('services.index').'/search');
-
-        $response->assertStatus(404);
+        $service = BeautyService::factory()->create();
+        foreach (['/favorites', '/service-history', "/services/{$service->id}/similar", "/services/{$service->id}/reviews", '/payment/failed', '/services/search'] as $path) {
+            $this->actingAs($user)->get('/s/rasta'.$path)->assertNotFound();
+        }
     }
 }

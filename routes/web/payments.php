@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('payment')->name('payment.')->group(function () {
     Route::get('/callback', [PaymentController::class, 'callback'])->name('callback');
     Route::get('/result', [PaymentController::class, 'result'])->name('result');
-    Route::get('/failed', [PaymentController::class, 'failed'])->name('failed');
 
     Route::get('/{booking}', [PaymentController::class, 'show'])->name('show')
         ->middleware('check.booking.ownership')
