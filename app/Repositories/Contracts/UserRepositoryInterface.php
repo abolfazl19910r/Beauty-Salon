@@ -20,7 +20,7 @@ interface UserRepositoryInterface extends RepositoryInterface
 
     public function searchCustomersInSalon(string $term, ?int $salonId, int $limit = 5): Collection;
 
-    public function getAdminRecipients(?int $salonId = null): Collection;
+    public function getAdminRecipients(?int $salonId): Collection;
 
     public function getSuperAdmins(): Collection;
 

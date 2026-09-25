@@ -56,20 +56,19 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             ->get(['id', 'name', 'phone']);
     }
 
-    public function getAdminRecipients(?int $salonId = null): Collection
+    public function getAdminRecipients(?int $salonId): Collection
     {
-        $query = $this->model->where('is_admin', true)
-            ->orWhereHas('roles.permissions', function ($query) {
-                $query->where('name', 'access_admin_panel');
-            });
-
-        if ($salonId) {
-            $query->whereHas('salons', function ($query) use ($salonId) {
-                $query->where('salons.id', $salonId);
-            });
+        if (! $salonId) {
+            return new Collection;
         }
 
-        return $query->get();
+        return $this->model
+            ->whereHas('salons', fn ($query) => $query->where('salons.id', $salonId))
+            ->where(function ($query) {
+                $query->where('is_admin', true)
+                    ->orWhereHas('roles.permissions', fn ($q) => $q->where('name', 'access_admin_panel'));
+            })
+            ->get();
     }
 
     public function getSuperAdmins(): Collection

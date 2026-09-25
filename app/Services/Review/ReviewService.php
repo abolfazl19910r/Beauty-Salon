@@ -160,7 +160,9 @@ class ReviewService
     protected function notifyAdminAboutNegativeReview(Review $review): void
     {
         try {
-            $admins = $this->userRepository->getAdminRecipients();
+            $admins = $this->userRepository->getAdminRecipients(
+                Booking::withoutGlobalScopes()->whereKey($review->booking_id)->value('salon_id')
+            );
 
             foreach ($admins as $admin) {
                 $admin->notify(new NegativeReviewNotification($review));

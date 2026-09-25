@@ -17,13 +17,8 @@ class SendAdminBookingNotifications implements ShouldQueue
 
     public function handle(BookingCreated $event): void
     {
-        $admins = $this->getAdmins();
+        $admins = $this->userRepository->getAdminRecipients($event->booking->salon_id);
 
         Notification::send($admins, new AdminNewBookingNotification($event->booking));
-    }
-
-    private function getAdmins()
-    {
-        return $this->userRepository->getAdminRecipients();
     }
 }

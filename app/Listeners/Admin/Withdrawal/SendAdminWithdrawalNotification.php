@@ -17,13 +17,10 @@ class SendAdminWithdrawalNotification implements ShouldQueue
 
     public function handle(WithdrawalRequested $event): void
     {
-        $admins = $this->getAdmins();
+        $admins = $this->userRepository->getAdminRecipients(
+            $event->withdrawalRequest->specialist()->withoutGlobalScopes()->value('salon_id')
+        );
 
         Notification::send($admins, new AdminNewWithdrawalRequestNotification($event->withdrawalRequest));
-    }
-
-    private function getAdmins()
-    {
-        return $this->userRepository->getAdminRecipients();
     }
 }
