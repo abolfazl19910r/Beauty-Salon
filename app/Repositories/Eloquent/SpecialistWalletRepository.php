@@ -13,9 +13,19 @@ class SpecialistWalletRepository extends BaseRepository implements SpecialistWal
         parent::__construct($model);
     }
 
+    /**
+     * ⭐ فقط متخصص‌های سالن فعلی (۲۰۲۶-۰۹-۲۶): این جدول ستون salon_id نداره و مدل scope نداره؛ whereHas('specialist')
+     * scope سراسری BelongsToSalon متخصص رو اعمال می‌کنه. قبلاً فهرست و آمار این صفحه‌ها رکوردهای همه‌ی سالن‌ها رو
+     * نشون می‌داد (با probe بازتولید شد) — فقط صفحه‌ی جزئیات چک مالکیت داشت.
+     */
+    private function forCurrentSalon()
+    {
+        return $this->model->newQuery()->whereHas('specialist');
+    }
+
     public function paginateWithFilters(array $filters, int $perPage = 20): LengthAwarePaginator
     {
-        $query = $this->model->with('specialist');
+        $query = $this->forCurrentSalon()->with('specialist');
 
         if (! empty($filters['search'])) {
             $search = $filters['search'];
@@ -37,10 +47,10 @@ class SpecialistWalletRepository extends BaseRepository implements SpecialistWal
     public function getTotals(): array
     {
         return [
-            'totalBalance' => $this->model->sum('balance'),
-            'totalEarned' => $this->model->sum('total_earned'),
-            'totalWithdrawn' => $this->model->sum('total_withdrawn'),
-            'totalPending' => $this->model->sum('pending_amount'),
+            'totalBalance' => $this->forCurrentSalon()->sum('balance'),
+            'totalEarned' => $this->forCurrentSalon()->sum('total_earned'),
+            'totalWithdrawn' => $this->forCurrentSalon()->sum('total_withdrawn'),
+            'totalPending' => $this->forCurrentSalon()->sum('pending_amount'),
         ];
     }
 

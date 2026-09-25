@@ -13,9 +13,19 @@ class WithdrawalRequestRepository extends BaseRepository implements WithdrawalRe
         parent::__construct($model);
     }
 
+    /**
+     * ⭐ فقط متخصص‌های سالن فعلی (۲۰۲۶-۰۹-۲۶): این جدول ستون salon_id نداره و مدل scope نداره؛ whereHas('specialist')
+     * scope سراسری BelongsToSalon متخصص رو اعمال می‌کنه. قبلاً فهرست و آمار این صفحه‌ها رکوردهای همه‌ی سالن‌ها رو
+     * نشون می‌داد (با probe بازتولید شد) — فقط صفحه‌ی جزئیات چک مالکیت داشت.
+     */
+    private function forCurrentSalon()
+    {
+        return $this->model->newQuery()->whereHas('specialist');
+    }
+
     public function paginateWithFilters(array $filters, int $perPage = 20): LengthAwarePaginator
     {
-        $query = $this->model->with(['specialist', 'wallet']);
+        $query = $this->forCurrentSalon()->with(['specialist', 'wallet']);
 
         if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
@@ -42,9 +52,9 @@ class WithdrawalRequestRepository extends BaseRepository implements WithdrawalRe
     public function getStats(): array
     {
         return [
-            'pendingCount' => $this->model->where('status', 'pending')->count(),
-            'pendingAmount' => $this->model->where('status', 'pending')->sum('amount'),
-            'completedToday' => $this->model->where('status', 'completed')
+            'pendingCount' => $this->forCurrentSalon()->where('status', 'pending')->count(),
+            'pendingAmount' => $this->forCurrentSalon()->where('status', 'pending')->sum('amount'),
+            'completedToday' => $this->forCurrentSalon()->where('status', 'completed')
                 ->whereDate('processed_at', today())
                 ->count(),
         ];
