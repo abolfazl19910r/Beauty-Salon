@@ -4,7 +4,7 @@ namespace App\Services\Payment;
 
 use App\Models\Booking;
 use App\Models\PaymentTransaction;
-use App\Payments\Drivers\SamanDriver;
+use App\Payments\Contracts\ReversibleGateway;
 use App\Payments\GatewayManager;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -102,14 +102,14 @@ class LostSlotRefundService
 
     private function reverseToCard(PaymentTransaction $transaction): bool
     {
-        if ($transaction->driver !== 'saman' || ! $transaction->gateway || ! $transaction->gateway_receipt) {
+        if (! $transaction->gateway || ! $transaction->gateway_receipt) {
             return false;
         }
 
         try {
             $driver = $this->gateways->driver($transaction->gateway);
 
-            return $driver instanceof SamanDriver && $driver->reverse($transaction->gateway_receipt);
+            return $driver instanceof ReversibleGateway && $driver->reverseTransaction($transaction->fresh());
         } catch (Throwable) {
             return false;
         }

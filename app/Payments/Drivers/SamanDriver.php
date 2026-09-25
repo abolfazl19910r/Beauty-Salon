@@ -2,7 +2,9 @@
 
 namespace App\Payments\Drivers;
 
+use App\Models\PaymentTransaction;
 use App\Payments\Contracts\PaymentGatewayDriver;
+use App\Payments\Contracts\ReversibleGateway;
 use App\Payments\GatewayReceipt;
 use App\Payments\GatewayStartRequest;
 use App\Payments\GatewayStartResult;
@@ -46,7 +48,7 @@ use Throwable;
  * credentials: ['terminal_id' => '...', 'redirect_mode' => 'classic'|'blupay'] — سپ برای توکن/تایید رمز نمی‌خواد؛
  * امنیت با IP ثبت‌شده است.
  */
-class SamanDriver implements PaymentGatewayDriver
+class SamanDriver implements PaymentGatewayDriver, ReversibleGateway
 {
     public const PAYMENT_URL = 'https://sep.shaparak.ir/OnlinePG/OnlinePG';
 
@@ -255,6 +257,11 @@ class SamanDriver implements PaymentGatewayDriver
         $body = self::normalize((array) $response->json());
 
         return $response->successful() && ($body['Success'] ?? false) === true && in_array((int) ($body['ResultCode'] ?? -1), [0, 2], true);
+    }
+
+    public function reverseTransaction(PaymentTransaction $transaction): bool
+    {
+        return $transaction->driver === $this->key() && filled($transaction->gateway_receipt) && $this->reverse((string) $transaction->gateway_receipt);
     }
 
     /** Status عددی بازگشت؛ اگه نبود، از State متنی. null = بانک نتیجه‌ای نفرستاده. */

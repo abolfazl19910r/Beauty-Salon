@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\PaymentTransaction;
-use App\Payments\Drivers\SamanDriver;
+use App\Payments\Contracts\ReversibleGateway;
 use App\Payments\GatewayManager;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -22,12 +22,14 @@ use Illuminate\Support\Facades\Log;
  *    یک update شرطی failed → reversing (تا دو اجرا یا یک تایید هم‌زمان با هم تداخل نکنن؛ GatewayReceipt::claim
  *    تراکنش reversing/reversed رو رد می‌کنه). اگه Reverse ناموفق بود (مثلاً سپ هرگز تایید نکرده بود و تراکنش
  *    رو نمی‌شناسه) دوباره failed می‌شه تا اجرای بعدی داخل همون پنجره دوباره امتحان کنه.
+ *
+ * هر درگاهِ ReversibleGateway پنجره‌ی خودش رو در reverseWindows() داره.
  */
 class ReconcilePaymentTransactions extends Command
 {
     protected $signature = 'payments:reconcile {--dry-run : فقط نمایش، بدون تغییر}';
 
-    protected $description = 'منقضی کردن تراکنش‌های رهاشده و برگشت وجه پرداخت‌های سامانی که پاسخ تایید آن‌ها نرسید';
+    protected $description = 'منقضی کردن تراکنش‌های رهاشده و برگشت وجه پرداخت‌های بانکی که پاسخ تایید آن‌ها نرسید';
 
     public const EXPIRE_PENDING_AFTER_MINUTES = PaymentTransaction::PENDING_LIFETIME_MINUTES;
 
@@ -36,6 +38,14 @@ class ReconcilePaymentTransactions extends Command
 
     /** قبل از این، با حاشیه‌ی امن از مهلت ۵۰ دقیقه‌ای Reverse مستند. */
     public const SAMAN_REVERSE_BEFORE_MINUTES = 45;
+
+    /** @return array<string, array{0: int, 1: int}> driver → [از چند دقیقه بعد, تا چند دقیقه بعد] از آخرین تلاش تایید */
+    public static function reverseWindows(): array
+    {
+        return [
+            'saman' => [self::SAMAN_REVERSE_AFTER_MINUTES, self::SAMAN_REVERSE_BEFORE_MINUTES],
+        ];
+    }
 
     public function handle(GatewayManager $gateways): int
     {
@@ -49,10 +59,14 @@ class ReconcilePaymentTransactions extends Command
         $this->info(($dryRun ? '[dry-run] ' : '')."تراکنش‌های رهاشده‌ی منقضی‌شده: {$expired}");
 
         $candidates = PaymentTransaction::query()
-            ->where('driver', 'saman')
             ->where('status', 'failed')
             ->whereNotNull('gateway_receipt')
-            ->whereBetween('updated_at', [now()->subMinutes(self::SAMAN_REVERSE_BEFORE_MINUTES), now()->subMinutes(self::SAMAN_REVERSE_AFTER_MINUTES)])
+            ->where(function ($query) {
+                foreach (self::reverseWindows() as $driver => [$after, $before]) {
+                    $query->orWhere(fn ($q) => $q->where('driver', $driver)
+                        ->whereBetween('updated_at', [now()->subMinutes($before), now()->subMinutes($after)]));
+                }
+            })
             ->get()
             ->filter(fn (PaymentTransaction $tx) => ((array) $tx->verify_response)['unanswered'] ?? false);
 
@@ -72,7 +86,7 @@ class ReconcilePaymentTransactions extends Command
             }
 
             $driver = $tx->gateway ? $gateways->driver($tx->gateway) : null;
-            $ok = $driver instanceof SamanDriver && $driver->reverse((string) $tx->gateway_receipt);
+            $ok = $driver instanceof ReversibleGateway && $driver->reverseTransaction($tx);
             $response = (array) $tx->verify_response;
             $response['reverse_attempts'] = (int) ($response['reverse_attempts'] ?? 0) + 1;
 
@@ -92,13 +106,13 @@ class ReconcilePaymentTransactions extends Command
                 ));
             }
 
-            Log::log($ok ? 'info' : 'warning', $ok ? 'Saman payment reversed after unanswered verify' : 'Saman reverse failed', [
-                'transaction_id' => $tx->id, 'salon_id' => $tx->salon_id, 'gateway_missing' => ! $tx->gateway,
+            Log::log($ok ? 'info' : 'warning', $ok ? 'Bank payment reversed after unanswered verify' : 'Bank payment reverse failed', [
+                'driver' => $tx->driver, 'transaction_id' => $tx->id, 'salon_id' => $tx->salon_id, 'gateway_missing' => ! $tx->gateway,
             ]);
             $reversed += $ok ? 1 : 0;
         }
 
-        $this->info(($dryRun ? '[dry-run] ' : '')."برگشت وجه سامان: {$reversed} از {$candidates->count()}");
+        $this->info(($dryRun ? '[dry-run] ' : '')."برگشت وجه درگاه‌های بانکی: {$reversed} از {$candidates->count()}");
 
         return self::SUCCESS;
     }
