@@ -88,6 +88,35 @@ class AdminSearchTest extends TestCase
         $this->assertNotEmpty($response->json('results.bookings'));
     }
 
+    /**
+     * ⭐ (۲۰۲۶-۰۹-۲۶) users ستون email نداره (ورود با موبایل). searchUsers روی email فیلتر می‌کرد:
+     * - MySQL/MariaDB (production): خطای 1054 → کل API جست‌وجو ۵۰۰ (دو تست بالا روی MariaDB شکست می‌خوردن)؛
+     * - SQLite: "email"ی ناشناخته رشته‌ی ثابت 'email' حساب می‌شه → 'email' LIKE '%mail%' برای همه‌ی کاربرها درسته و جست‌وجوی
+     *   «mail» مشتری‌های بی‌ربط رو برمی‌گردوند. این تست همین نشانه رو روی هر دو پایگاه می‌گیره.
+     */
+    public function test_user_search_does_not_match_on_a_column_users_do_not_have(): void
+    {
+        User::factory()->create(['name' => 'زهرا کریمی', 'phone' => '09121112233']);
+
+        $response = $this->actingAs($this->admin)->getJson('/admin/search/api?q=mail');
+
+        $response->assertOk();
+        $this->assertEmpty($response->json('results.users'), 'هیچ کاربری «mail» در نام یا موبایل نداره');
+    }
+
+    public function test_specialist_search_never_returns_another_salons_specialists(): void
+    {
+        // searchSpecialists زنجیره‌ی where/orWhere بی‌گروه داره؛ scope سراسری سالن باید همچنان اعمال بشه
+        $other = \App\Models\Salon::factory()->create(['slug' => 'other-search']);
+        app(\App\Support\CurrentSalon::class)->set($other);
+        \App\Models\Specialist::factory()->create(['name' => 'متخصص سالن دیگر', 'phone' => '09125556677', 'email' => 'other@example.com']);
+        app(\App\Support\CurrentSalon::class)->clear();
+
+        foreach (['متخصص سالن دیگر', '09125556677', 'other@example.com'] as $q) {
+            $this->assertEmpty($this->actingAs($this->admin)->getJson('/admin/search/api?q='.urlencode($q))->assertOk()->json('results.specialists'), $q);
+        }
+    }
+
     public function test_non_admin_cannot_access_search(): void
     {
         $user = User::factory()->create(['is_admin' => false]);

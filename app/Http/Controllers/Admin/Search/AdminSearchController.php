@@ -124,9 +124,10 @@ class AdminSearchController extends Controller
     {
         return $this->userRepository->query()
             ->where(function ($q) use ($query) {
+                // ⭐ (۲۰۲۶-۰۹-۲۶) users ستون email نداره — شرط email روی MySQL خطای 1054 (کل جست‌وجو ۵۰۰) و روی SQLite
+                // مقایسه با رشته‌ی ثابت 'email' بود (AdminSearchTest)
                 $q->where('name', 'like', "%{$query}%")
-                    ->orWhere('phone', 'like', "%{$query}%")
-                    ->orWhere('email', 'like', "%{$query}%");
+                    ->orWhere('phone', 'like', "%{$query}%");
             })
             ->limit(5)
             ->get()
@@ -135,7 +136,7 @@ class AdminSearchController extends Controller
                     'id' => $user->id,
                     'type' => 'user',
                     'title' => $user->name,
-                    'subtitle' => $user->phone.($user->email ? " | {$user->email}" : ''),
+                    'subtitle' => $user->phone,
                     'status' => $user->is_active ? 'active' : 'inactive',
                     'url' => route('admin.users.show', $user->id),
                     'icon' => 'user',
