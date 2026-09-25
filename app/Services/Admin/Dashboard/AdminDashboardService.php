@@ -48,7 +48,7 @@ class AdminDashboardService
             $rawRevenue = $this->bookingRepository->query()->where('payment_status', 'paid')->sum('prepayment_amount');
             $totalRevenue = (int) ($rawRevenue * $commissionFactor);
         }
-        $usersCount = $this->userRepository->count();
+        $usersCount = $this->userRepository->querySalonMembers()->count();
         $specialistsCount = $this->specialistRepository->count();
         $rolesCount = $this->roleRepository->count();
 
@@ -114,7 +114,7 @@ class AdminDashboardService
             'todayBookings' => $this->bookingRepository->query()->whereDate('created_at', today())->count(),
             'totalServices' => $this->beautyServiceRepository->count(),
             'totalSpecialists' => $this->specialistRepository->count(),
-            'totalUsers' => $this->userRepository->count(),
+            'totalUsers' => $this->userRepository->querySalonMembers()->count(),
             'totalRevenue' => $this->bookingRepository->query()->where('payment_status', 'paid')->sum('prepayment_amount'),
         ];
     }
