@@ -178,8 +178,10 @@ class PaymentService
             ));
         }
 
+        // پولی که درگاه همون لحظه برگشت زد «reversed» ثبت می‌شه (نه failed): refresh صفحه‌ی نتیجه دیگه verify و
+        // Reverse و پیامک رو تکرار نمی‌کنه (REVERSAL_STATUSES در verify و GatewayReceipt::claim)
         $transaction?->update([
-            'status' => $result->success ? 'paid' : ($result->cancelledByUser ? 'cancelled' : 'failed'),
+            'status' => $result->success ? 'paid' : (($result->raw['reversed'] ?? false) === true ? 'reversed' : ($result->cancelledByUser ? 'cancelled' : 'failed')),
             'ref_id' => $result->refId,
             'card_pan' => $result->cardPan,
             'verify_response' => $result->raw ?: null,
@@ -322,6 +324,10 @@ class PaymentService
 
             if ($transaction?->isPaid()) {
                 return ['success' => false, 'message' => 'این تراکنش قبلاً ثبت شده است.'];
+            }
+
+            if ($transaction && in_array($transaction->status, \App\Models\PaymentTransaction::REVERSAL_STATUSES, true)) {
+                return ['success' => false, 'message' => 'مبلغ این پرداخت قبلاً به شما برگشت داده شده است و کیف پول شارژ نشد.'];
             }
 
             $gateway = $transaction?->gateway ?? $this->gatewayFromSession('wallet_charge_gateway');

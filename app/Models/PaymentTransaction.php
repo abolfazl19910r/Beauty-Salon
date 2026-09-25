@@ -17,8 +17,8 @@ class PaymentTransaction extends Model
 
     /**
      * ⭐ وضعیت‌ها: pending (منتظر بازگشت مشتری) · paid · failed · cancelled · expired (مشتری برنگشت —
-     * payments:reconcile) · reversing / reversed (کل مبلغ به کارت برگشت زده شد: پاسخ verify سامان نرسید، یا ساعت
-     * نوبت هنگام بازگشت دیگه آزاد نبود) · refunded (پول گرفته شد ولی نوبت ثبت‌شدنی نبود → به کیف پول مشتری).
+     * payments:reconcile) · reversing / reversed (کل مبلغ به کارت برگشت زده شد: پاسخ verify بانک نرسید، مبلغ سامان
+     * ناهمخوان بود، settle ملت انجام نشد، یا ساعت نوبت هنگام بازگشت دیگه آزاد نبود) · refunded (پول گرفته شد ولی نوبت ثبت‌شدنی نبود → به کیف پول مشتری).
      * expired مانع تایید بعدی نیست؛ بقیه‌ی این سه وضعیت پایانی هستن و هرگز دوباره تایید/بازنویسی نمی‌شن.
      */
     public const REVERSAL_STATUSES = ['reversing', 'reversed', 'refunded'];
