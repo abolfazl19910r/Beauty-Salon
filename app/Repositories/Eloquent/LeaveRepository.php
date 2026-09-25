@@ -18,6 +18,7 @@ class LeaveRepository extends BaseRepository implements LeaveRepositoryInterface
     public function paginateWithFilters(array $filters, int $perPage = 15): LengthAwarePaginator
     {
         return $this->model->with('specialist:id,name')
+            ->whereHas('specialist')
             ->when(! empty($filters['status']), fn ($q) => $q->where('status', $filters['status']))
             ->latest('start_date')
             ->paginate($perPage)
@@ -32,6 +33,7 @@ class LeaveRepository extends BaseRepository implements LeaveRepositoryInterface
     public function getPending(): Collection
     {
         return $this->model->with('specialist')
+            ->whereHas('specialist')
             ->pending()
             ->orderBy('start_date')
             ->get();
