@@ -58,7 +58,10 @@ class BookingFactory extends Factory
         $bookingTime = null;
 
         for ($attempt = 0; $attempt < 20; $attempt++) {
-            $bookingTime = fake()->dateTimeBetween('+1 day', '+2 months');
+            // ⭐ (۲۰۲۶-۰۹-۲۶) بازه از now() کربن (نه رشته‌ی '+2 days' که Faker با ساعت واقعی سیستم حساب می‌کنه): factory با
+            // travelTo تست‌ها هماهنگه. و از +۲ روز، نه +۱: ساعت بعداً ۹ تا ۱۷ گذاشته می‌شه و «فردا» می‌تونست کمتر از ۲۴ ساعت
+            // باشه — داخل بازه‌ی جریمه‌ی لغو مشتری؛ ریشه‌ی تست ناپایدار BookingServiceTest (BookingFactoryTimeTest).
+            $bookingTime = fake()->dateTimeBetween(now()->addDays(2), now()->addMonths(2));
             $bookingTime->setTime(fake()->numberBetween(9, 17), 0, 0);
 
             if ($status === 'cancelled') {
