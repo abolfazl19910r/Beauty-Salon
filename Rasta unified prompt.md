@@ -6796,6 +6796,43 @@ APP_KEY خالی و همه‌ی تست‌ها `MissingAppKeyException`. ترتی
 کامیت ۳ هر دو تستش fail می‌شن. سوییت کامل **۱۳۴۶ passed / ۱ skipped** (پایه ۱۳۲۲)؛ `pint --test` کل پروژه PASS (۸۰۵ فایل).
 **MariaDB 10.11:** ۱۴۳ تست پرداخت/job PASS. وریفای روی کلون تازه با `git am`.
 
+### ۲۰۲۶-۰۹-۲۶ (ادامه ۴) — Docker: stack هرگز یک صفحه سرو نکرده بود + برنامه بدون پکیج‌های dev boot نمی‌شد
+
+روی بچ ملت (`batch-2026-09-26-mellat-gateway`)، ۳ کامیت کد + این سند. تحویل: `batch-2026-09-26-docker/`.
+
+**محدودیت:** `make setup` واقعی ممکن نشد — Docker در sandbox نصب و daemon اجرا شد، ولی همه‌ی registryها (Docker Hub،
+mirror.gcr.io، ghcr.io) از پروکسی شبکه‌ی sandbox ۴۰۳ دادن. به‌جایش: شبیه‌سازی native نقش web همون container (nginx +
+php-fpm + supervisord با **همین فایل‌های پروژه** و چیدمان pool رسمی `php:*-fpm-alpine`)، مرحله‌ی composer با افزونه‌های
+image `composer`، و همه‌ی قدم‌های entrypoint روی نصب `--no-dev` با `APP_ENV=production`. `docker compose config` معتبر.
+⚠️ درس sandbox: `pkill -f php-fpm` / `pgrep -f "…"` خود shell رو (که همین رشته در command lineشه) می‌کشه → از `pkill -x` استفاده کن.
+
+**یافته‌ها (همه قبل از اصلاح بازتولید شدن):**
+- 🔴 **boot:** `laravel/telescope` در require-dev ولی `App\Providers\TelescopeServiceProvider` در `bootstrap/providers.php` بی‌قید →
+  با `--no-dev` هیچ درخواست و هیچ artisanی (حتی migrate) اجرا نمی‌شد. ⚠️ برای **هر** سرور production با `--no-dev` هم صادقه.
+- 🔴 **build:** مرحله‌ی `composer:2.7` افزونه‌ی gd نداره (mpdf) → `docker build` در مرحله‌ی ۲ می‌شکست.
+- 🔴 **php-fpm:** `www.conf`/`zz-docker.conf` رسمی بعد از فایل ما خونده می‌شدن → `listen = 9000`، `user = www-data`، سوکت ساخته نمی‌شد.
+- 🔴 **nginx داخل app:** vhost در `http.d/` ولی `nginx.conf` ما `conf.d/` رو include می‌کنه → هیچ پورتی باز نبود. کاربر nginx هم به سوکت 0660 دسترسی نداشت.
+- 🔴 **سرویس جداگانه‌ی nginx:** volume خالی + سوکت غیرقابل‌دسترس؛ تنها پورت منتشرشده‌ی سایت همین بود.
+- 🔴 **امنیت:** MySQL/Redis (بدون رمز)/phpMyAdmin روی همه‌ی interfaceها (Docker ufw رو دور می‌زنه).
+- 🟡 `/up` یک 200 ثابت nginx بود (PHP خاموش هم «healthy»)؛ `.dockerignore` vendor/build/کش provider محلی رو روی build می‌نشوند؛
+  Makefile artisan رو با root اجرا می‌کرد (laravel.log مال root → php-fpm نمی‌نوشت).
+
+**کامیت‌ها:**
+1. `fix(app): boot without dev dependencies — register Telescope only when it is installed` — ثبت از `AppServiceProvider` با
+   `class_exists`؛ روی XAMPP بدون تغییر (۴۴ route تلسکوپ).
+2. `fix(docker): make the image build and the app container actually serve` — `--ignore-platform-req='ext-*'` + `check-platform-reqs`
+   در image نهایی؛ `zzz-beauty-salon.conf`؛ vhost در `conf.d` + `addgroup nginx www`؛ `/up` به route سلامت Laravel؛
+   `mkdir /var/log/supervisor`؛ `.dockerignore`.
+3. `fix(docker): serve from the app container, drop the broken nginx service, keep databases private` — حذف سرویس nginx و
+   `beauty_public`؛ `app` پورت `${APP_PORT:-80}` رو منتشر می‌کنه؛ HTTPS بیرون از stack؛ پورت‌های DB/Redis/PMA روی `127.0.0.1`؛
+   Makefile: `ARTISAN` با `-u www`، `up -d --wait`، `make superadmin`؛ `DockerSetupTest` (۸)؛ راهنمای deployment.
+
+**بررسی:** قبل از اصلاح هیچ پورتی باز نبود. بعد: `/up`، صفحه‌ی اصلی، `/login`، assetهای Vite و فایل آپلودی ۲۰۰؛ `/.env` ۴۰۴؛ `/up`
+بدون php-fpm ۵۰۲؛ workerها با `www`. Mutation: برگردوندن هر مقدار قدیمی یک تست `DockerSetupTest` رو fail می‌کنه.
+سوییت کامل **۱۳۵۴ passed / ۱ skipped**؛ Pint PASS. وریفای روی کلون تازه با `git am` (بچ ملت + همین بچ).
+⚠️ روی کلون تازه اجرای اول **۱ fail** داد و ۷ اجرای بعدی همه ۱۳۵۴ پاس — نام تست ثبت نشد (خروجی اجرای اول ذخیره نشده بود).
+همون الگوی «تست ناپایدار زیر نظر» نشست‌های قبل؛ دفعه‌ی بعد خروجی هر اجرا در فایل ذخیره بشه تا اسمش پیدا بشه.
+
 ### قدم‌های باز
 - ⚠️ باطل کردن کلید کاوه‌نگار و توکن‌های GitHub (توکن قبلی که تا ۲۰۲۶-۰۹-۲۶ در این سند بود و در تاریخچه‌ی git می‌مونه، و
   توکن‌هایی که در چت‌ها اومدن، از جمله چت درگاه ملت) — **خود ابوالفضل**.
@@ -6808,5 +6845,9 @@ APP_KEY خالی و همه‌ی تست‌ها `MissingAppKeyException`. ترتی
   راهنمای جدیدی که به‌پرداخت به پذیرنده می‌ده** (به‌خصوص معنی `FinalAmount` که فعلاً فقط ذخیره می‌شه، و قالب `MobileNo`).
 - سامان در محیط واقعی: قرارداد + ثبت IP سرور نزد سپ؛ اولین پرداخت با مبلغ کم؛ اگه ترمینال بلوپی داره، تست `redirect_mode=blupay`.
 - **روی سرور:** اجرای `docs/deployment/SCHEDULER_AND_QUEUE.md` (DirectAdmin: `.env` → `QUEUE_WORK_VIA_SCHEDULER=true`، `CACHE_STORE=database`، یک خط کرون) — کد آماده است، فقط تنظیم سرور مونده.
-- Docker (اگه قراره استفاده بشه): یک `make setup` واقعی + رفع سرویس جداگانه‌ی `nginx`.
+- Docker: اولین `make setup` واقعی روی سرور (کد و config اصلاح و native بررسی شدن؛ image در sandbox ساخته نشد) → بعد
+  `make superadmin`. نامطمئن‌ها: `docker-php-ext-install mbstring xml` (در image رسمی از قبل هستن — شاید فقط هشدار «already
+  loaded»)، و پوشه‌ی `/var/log/supervisor` در بسته‌ی alpine (entrypoint حالا خودش می‌سازه).
+- پشت Cloudflare Proxied / هر TLS proxy: `trustProxies` در `bootstrap/app.php` تنظیم نشده → Laravel آدرس‌ها رو `http://` می‌سازه
+  (callback درگاه‌ها، لینک‌ها). نیاز به تصمیم: به کدوم IPها اعتماد بشه (رنج‌های Cloudflare یا فقط proxy خود سرور).
 - برند: خوشنویسی اختصاصی «ماهرو» (کار خوشنویس) + ثبت علامت تجاری + خرید دامنه‌ها.
