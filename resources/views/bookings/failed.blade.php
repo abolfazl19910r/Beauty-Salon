@@ -24,11 +24,19 @@
         </p>
 
         <div class="flex flex-col sm:flex-row gap-3 justify-center">
+            {{-- ⭐ (۲۰۲۶-۰۹-۲۷) نوبت ممکنه نباشه (باز کردن مستقیم، session منقضی) یا دیگه قابل پرداخت نباشه (لغو شده) --}}
+            @if ($booking && $booking->status === 'pending_payment' && $booking->payment_status !== 'paid')
             <a href="{{ route('payment.show', $booking) }}"
                class="px-6 py-3 rounded-xl text-sm font-semibold transition-all
                   bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-[#1A1410]
                   hover:shadow-lg hover:shadow-[#C9A24B]/25">
                 تلاش مجدد برای پرداخت
+            </a>
+            @endif
+            <a href="{{ route('bookings.index') }}"
+               class="px-6 py-3 rounded-xl text-sm border border-[#C9A24B]/25
+                  text-[#F8F3E9]/70 hover:bg-[#C9A24B]/10 transition-colors">
+                نوبت‌های من
             </a>
             <a href="{{ route('home') }}"
                class="px-6 py-3 rounded-xl text-sm border border-[#C9A24B]/25

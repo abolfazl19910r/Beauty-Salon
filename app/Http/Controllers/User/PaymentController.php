@@ -191,6 +191,13 @@ class PaymentController extends Controller
     {
         try {
             $result = $this->paymentService->verifyPayment($request);
+
+            // نتیجه‌ای که نوبتش معلوم نیست (callback بدون شناسه‌ی نوبت، خطای کلی) — پیامش را نشان بده، نه خطای «کلید تعریف‌نشده».
+            if (empty($result['booking_id'])) {
+                return redirect()->route('bookings.failed')
+                    ->with('error', $result['message'] ?? 'پرداخت ناموفق بود');
+            }
+
             $booking = $this->bookingRepository->findOrFail($result['booking_id']);
 
             if ($result['success']) {
@@ -241,7 +248,7 @@ class PaymentController extends Controller
                         );
                         session()->forget('partial_payment_'.$booking->id);
 
-                        return redirect()->route('bookings.failed')->with('error', $refund['handled']
+                        return redirect()->route('bookings.failed')->with('booking_id', $booking->id)->with('error', $refund['handled']
                             ? \App\Services\Payment\LostSlotRefundService::message($refund)
                             : 'مبلغ این پرداخت قبلاً به شما برگشت داده شده است و نوبت ثبت نشد.');
                     }
@@ -255,7 +262,7 @@ class PaymentController extends Controller
                 // پول قبلاً برگشت داده شده؛ نوبت و کیف پول دست نمی‌خورن (بخش کیف پولی همون موقع برگشت خورده)
                 session()->forget('partial_payment_'.$booking->id);
 
-                return redirect()->route('bookings.failed')->with('error', $result['message']);
+                return redirect()->route('bookings.failed')->with('booking_id', $booking->id)->with('error', $result['message']);
             }
 
             $partialPayment = session('partial_payment_'.$booking->id);
@@ -276,6 +283,7 @@ class PaymentController extends Controller
             $this->bookingRepository->update($booking, ['status' => 'cancelled', 'cancellation_reason' => 'پرداخت ناموفق']);
 
             return redirect()->route('bookings.failed')
+                ->with('booking_id', $booking->id)
                 ->with('error', $result['message'] ?? 'پرداخت ناموفق بود');
 
         } catch (\Exception $e) {
@@ -285,6 +293,7 @@ class PaymentController extends Controller
             ]);
 
             return redirect()->route('bookings.failed')
+                ->with('booking_id', isset($booking) ? $booking->id : null)
                 ->with('error', 'خطا در تایید تراکنش');
         }
     }

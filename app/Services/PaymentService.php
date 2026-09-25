@@ -275,7 +275,9 @@ class PaymentService
             if ($result->cancelledByUser) {
                 Log::warning('⚠️ Payment Cancelled by User', ['authority' => $result->token]);
 
-                return ['success' => false, 'message' => $result->message];
+                // ⭐ (۲۰۲۶-۰۹-۲۷) booking_id لازم است: بدون آن callback مسیر شکست (برگشت سهم کیف پول، آزادکردن نوبت)
+                // را رد می‌کرد — رایج‌ترین حالت شکست (انصراف در بانک) سهم کیف پولِ پرداخت ترکیبی را برنمی‌گرداند.
+                return ['status' => 'failed', 'success' => false, 'booking_id' => $booking->id, 'message' => $result->message];
             }
 
             if ($result->success) {
