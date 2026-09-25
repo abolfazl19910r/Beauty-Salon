@@ -3,7 +3,11 @@
 # دستورات سریع برای کار با Docker
 # ============================================================
 
-.PHONY: help build up down restart logs logs-scheduler queue-restart shell db-shell redis-shell migrate seed fresh status
+.PHONY: help setup superadmin build up down restart logs logs-scheduler queue-restart shell db-shell redis-shell migrate seed fresh status
+
+# ⚠️ artisan داخل container همیشه با کاربر www (مثل entrypoint): اجرای با root فایل‌هایی مثل storage/logs/laravel.log
+# رو مال root می‌کرد و بعدش php-fpm (کاربر www) دیگه نمی‌تونست توشون بنویسه → خطای ۵۰۰.
+ARTISAN := docker compose exec -u www app php artisan
 
 # ─── رنگ‌بندی ─────────────────────────────────────────────
 GREEN  := \033[0;32m
@@ -27,9 +31,13 @@ setup: ## راه‌اندازی اولیه (copy env + key + build + up)
 	@grep -q '^APP_KEY=base64:' .env || sed -i "s|^APP_KEY=.*|APP_KEY=base64:$$(openssl rand -base64 32)|" .env
 	@echo "$(YELLOW)⚙️  Building images...$(RESET)"
 	docker compose build --no-cache
-	@echo "$(YELLOW)🚀 Starting containers...$(RESET)"
-	docker compose up -d
-	@echo "$(GREEN)✅ Setup complete! Visit: http://localhost$(RESET)"
+	@echo "$(YELLOW)🚀 Starting containers (منتظر healthy شدن app: migrate + php-fpm + nginx)...$(RESET)"
+	docker compose up -d --wait
+	@echo "$(GREEN)✅ Setup complete! Visit: http://localhost:$${APP_PORT:-80}$(RESET)"
+	@echo "$(CYAN)➡️  قدم بعد: ساخت حساب سوپر ادمین پلتفرم: make superadmin$(RESET)"
+
+superadmin: ## ساخت حساب سوپر ادمین (شماره/نام/رمز پرسیده می‌شه)
+	$(ARTISAN) superadmin:create
 
 # ─── Build & Start ────────────────────────────────────────
 build: ## Build ایمیج‌ها
@@ -67,10 +75,10 @@ logs-scheduler: ## لاگ scheduler (کارهای زمان‌بندی‌شده)
 	docker compose logs -f scheduler
 
 queue-restart: ## بعد از هر deploy: worker کد جدید رو بخونه
-	docker compose exec queue php artisan queue:restart
+	docker compose exec -u www queue php artisan queue:restart
 
-logs-nginx: ## لاگ nginx
-	docker compose logs -f nginx
+logs-nginx: ## لاگ nginx (داخل container app، کنار php-fpm)
+	docker compose logs -f app
 
 # ─── Shell ────────────────────────────────────────────────
 shell: ## ورود به shell اپ
@@ -84,31 +92,31 @@ redis-shell: ## ورود به Redis CLI
 
 # ─── Laravel Artisan ─────────────────────────────────────
 migrate: ## اجرای migrations
-	docker compose exec app php artisan migrate --force
+	$(ARTISAN) migrate --force
 
 migrate-fresh: ## ریست کامل دیتابیس + migration
-	docker compose exec app php artisan migrate:fresh --force
+	$(ARTISAN) migrate:fresh --force
 
 seed: ## اجرای seeders
-	docker compose exec app php artisan db:seed --force
+	$(ARTISAN) db:seed --force
 
 fresh-seed: ## migrate:fresh + seed (محیط dev)
-	docker compose exec app php artisan migrate:fresh --seed --force
+	$(ARTISAN) migrate:fresh --seed --force
 
 tinker: ## باز کردن Tinker
-	docker compose exec app php artisan tinker
+	$(ARTISAN) tinker
 
 cache-clear: ## پاک کردن همه کش‌ها
-	docker compose exec app php artisan cache:clear
-	docker compose exec app php artisan config:clear
-	docker compose exec app php artisan route:clear
-	docker compose exec app php artisan view:clear
+	$(ARTISAN) cache:clear
+	$(ARTISAN) config:clear
+	$(ARTISAN) route:clear
+	$(ARTISAN) view:clear
 
 cache-optimize: ## cache برای production
-	docker compose exec app php artisan config:cache
-	docker compose exec app php artisan route:cache
-	docker compose exec app php artisan view:cache
-	docker compose exec app php artisan event:cache
+	$(ARTISAN) config:cache
+	$(ARTISAN) route:cache
+	$(ARTISAN) view:cache
+	$(ARTISAN) event:cache
 
 # ─── Status ───────────────────────────────────────────────
 status: ## وضعیت همه سرویس‌ها

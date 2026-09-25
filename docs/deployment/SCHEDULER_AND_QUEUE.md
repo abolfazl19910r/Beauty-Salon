@@ -119,7 +119,29 @@ docker compose ps    # app باید healthy باشد؛ queue و scheduler بعد
 
 ⚠️ **محدودیت بررسی:** Docker در محیط توسعه‌ی Claude در دسترس نبود، پس build واقعی image انجام نشد. `entrypoint.sh` در هر دو نقش واقعاً اجرا و بررسی شد: با MariaDB، کاربر `www` و `su-exec`. `docker-compose.yml` هم با یک parser بررسی شد.
 
-یک مشکل جدا هم هنوز باز است و به کرون و صف ربطی ندارد: سرویس جداگانه‌ی `nginx` در compose یک volume خالی (`beauty_public`) را سرو می‌کند و به سوکت php-fpm داخل `app` دسترسی ندارد. خود container `app` nginx داخلی دارد. قبل از استفاده‌ی واقعی از Docker باید این هم بازبینی شود.
+### وب‌سرور و build (اصلاح دوم، ۲۰۲۶-۰۹-۲۶)
+
+حتی بعد از اصلاح بالا، stack داکر هیچ‌وقت یک صفحه سرو نمی‌کرد و `app` هرگز healthy نمی‌شد (پس queue و scheduler هم بالا نمی‌آمدند):
+
+1. **build:** مرحله‌ی composer (`composer:2.7`) افزونه‌ی `gd` ندارد و `mpdf` آن را می‌خواهد → `docker build` در مرحله‌ی ۲ شکست می‌خورد. حالا آن مرحله `--ignore-platform-req='ext-*'` می‌گیرد و image نهایی با `composer check-platform-reqs` واقعاً چک می‌شود.
+2. **boot:** `laravel/telescope` در require-dev است ولی provider آن بی‌قید ثبت بود؛ با `--no-dev` برنامه اصلاً boot نمی‌شد (حتی `migrate` در entrypoint). حالا فقط وقتی پکیج نصب است ثبت می‌شود. ⚠️ این برای هر سرور production با `composer install --no-dev` هم صادق بود، نه فقط Docker.
+3. **php-fpm:** image رسمی `www.conf` و `zz-docker.conf` دارد که pool ما را override می‌کردند (`listen = 9000`، `user = www-data`) → سوکتی که nginx می‌خواهد ساخته نمی‌شد. فایل ما حالا `zzz-beauty-salon.conf` است (آخر خوانده می‌شود).
+4. **nginx داخل app:** vhost در `http.d/` کپی می‌شد ولی `nginx.conf` ما `conf.d/` را include می‌کند → هیچ server blockی، هیچ پورتی. کاربر `nginx` هم به گروه `www` اضافه شد تا به سوکت (0660) دسترسی داشته باشد.
+5. **سلامت:** `/up` قبلاً یک «200 OK» ثابت nginx بود؛ حالا به route سلامت Laravel می‌رسد (بدون php-fpm → 502 → unhealthy).
+6. **سرویس جداگانه‌ی `nginx` حذف شد:** volume خالی `beauty_public` را سرو می‌کرد و به سوکت php-fpm دسترسی نداشت. حالا خود `app` پورت `${APP_PORT:-80}` را منتشر می‌کند. HTTPS بیرون از stack: Cloudflare Proxied یا nginx/certbot روی سرور (`WILDCARD_SUBDOMAIN_DEPLOYMENT.md`).
+7. **امنیت:** پورت‌های MySQL، Redis (بدون رمز پیش‌فرض) و phpMyAdmin فقط روی `127.0.0.1` سرور (Docker قوانین ufw را دور می‌زند؛ قبلاً به کل اینترنت باز بودند).
+8. **`.dockerignore`:** `vendor/`، `public/build/`، `public/storage` و `bootstrap/cache/*.php` محلی دیگر روی خروجی build نمی‌نشینند (کش محلی providerهای dev را ثبت کرده و با `--no-dev` برنامه را می‌خواباند).
+9. **Makefile:** دستورهای artisan با کاربر `www` (با root، `laravel.log` مال root می‌شد و php-fpm دیگر نمی‌توانست بنویسد)؛ `make setup` تا healthy شدن صبر می‌کند؛ `make superadmin` برای ساخت اولین سوپر ادمین.
+
+⚠️ **محدودیت بررسی:** image واقعی هنوز ساخته نشده — در محیط Claude خود Docker نصب شد ولی registryها (Docker Hub و آینه‌ها) قابل دسترس نبودند. به‌جایش همون container در نقش web به‌صورت native شبیه‌سازی شد: nginx + php-fpm + supervisord با **همین فایل‌های پروژه** و چیدمان pool رسمی image. قبل از اصلاح: هیچ پورتی باز نبود. بعد: `/up`، صفحه‌ی اصلی، `/login`، assetهای Vite و فایل‌های آپلودی ۲۰۰؛ `/.env` ۴۰۴؛ `/up` بدون php-fpm ۵۰۲. مرحله‌ی composer با افزونه‌های image `composer` قبل/بعد اجرا شد، و همه‌ی قدم‌های entrypoint (migrate، cacheها، superadmin) روی نصب `--no-dev` با `APP_ENV=production`.
+
+**اولین اجرای واقعی روی سرور:**
+```bash
+make setup          # build + up + صبر تا healthy
+make superadmin     # شماره، نام و رمز سوپر ادمین پرسیده می‌شود
+make status && make logs-scheduler
+```
+اگر `make setup` خطا داد، `docker compose logs app` خروجی لازم را دارد.
 
 ## ۶. لوکال (XAMPP)
 
