@@ -31,5 +31,8 @@ interface UserRepositoryInterface extends RepositoryInterface
 
     public function getUsersWithoutRole(int $roleId): Collection;
 
-    public function getOptionsOrderedByName(array $columns = ['id', 'name', 'phone']): Collection;
+    /** مشتری‌های یک سالن (پیش‌فرض: CurrentSalon؛ بدون سالن: همه‌ی مشتری‌ها). */
+    public function querySalonCustomers(?int $salonId = null): Builder;
+
+    public function getSalonCustomerOptions(array $columns = ['id', 'name', 'phone']): Collection;
 }

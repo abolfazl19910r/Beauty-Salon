@@ -45,7 +45,7 @@ class AdminSearchController extends Controller
                 $results['خدمات'] = $services;
             }
 
-            $users = $this->userRepository->query()
+            $users = $this->userRepository->querySalonMembers()
                 ->where(function ($q) use ($query) {
                     $q->where('name', 'LIKE', "%{$query}%")
                         ->orWhere('phone', 'LIKE', "%{$query}%");
@@ -122,7 +122,7 @@ class AdminSearchController extends Controller
 
     private function searchUsers($query)
     {
-        return $this->userRepository->query()
+        return $this->userRepository->querySalonMembers()
             ->where(function ($q) use ($query) {
                 // ⭐ (۲۰۲۶-۰۹-۲۶) users ستون email نداره — شرط email روی MySQL خطای 1054 (کل جست‌وجو ۵۰۰) و روی SQLite
                 // مقایسه با رشته‌ی ثابت 'email' بود (AdminSearchTest)
@@ -219,7 +219,7 @@ class AdminSearchController extends Controller
 
         $suggestions = collect();
 
-        $users = $this->userRepository->query()
+        $users = $this->userRepository->querySalonMembers()
             ->where('name', 'like', "%{$query}%")
             ->limit(3)
             ->pluck('name');

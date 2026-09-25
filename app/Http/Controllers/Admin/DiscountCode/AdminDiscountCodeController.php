@@ -32,7 +32,7 @@ class AdminDiscountCodeController extends Controller
     public function create(): View
     {
         return view('admin.discount-codes.create', [
-            'users' => $this->userRepository->getOptionsOrderedByName(),
+            'users' => $this->userRepository->getSalonCustomerOptions(),
         ]);
     }
 

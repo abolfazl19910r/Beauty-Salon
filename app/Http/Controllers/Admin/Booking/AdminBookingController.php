@@ -73,7 +73,7 @@ class AdminBookingController extends Controller
     {
         $this->ensureSalonOwnership($booking->salon_id);
 
-        $users = $this->userRepository->all();
+        $users = $this->userRepository->getSalonCustomerOptions();
         $services = $this->beautyServiceRepository->all();
         $specialists = $this->specialistRepository->all();
 

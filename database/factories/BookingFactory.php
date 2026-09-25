@@ -6,6 +6,7 @@ use App\Models\BeautyService;
 use App\Models\Booking;
 use App\Models\Specialist;
 use App\Models\User;
+use App\Support\CurrentSalon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class BookingFactory extends Factory
@@ -16,7 +17,10 @@ class BookingFactory extends Factory
     {
         $service = BeautyService::inRandomOrder()->first() ?? BeautyService::factory()->create();
         $specialist = Specialist::inRandomOrder()->first() ?? Specialist::factory()->create();
-        $user = User::inRandomOrder()->first() ?? User::factory()->create();
+        // ⭐ (۲۰۲۶-۰۹-۲۷) مشتریِ همین سالن، نه هر کاربری (ادمین/متخصص/مشتری سالن دیگه) — نوبت فقط مال مشتری سالنه و
+        // ثبت/ویرایش نوبت در مدیریت حالا همین رو اعتبارسنجی می‌کنه (CustomerOfCurrentSalon).
+        $user = User::where('user_type', 'customer')->where('salon_id', app(CurrentSalon::class)->id())->inRandomOrder()->first()
+            ?? User::factory()->create();
         $status = fake()->randomElement(['pending', 'confirmed', 'cancelled']);
 
         $bookingTime = $this->drawNonCollidingBookingTime($specialist->id, $status);

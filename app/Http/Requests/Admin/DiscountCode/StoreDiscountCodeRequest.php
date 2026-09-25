@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin\DiscountCode;
 
+use App\Rules\CustomerOfCurrentSalon;
 use App\Rules\MaxPercentage;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -26,7 +27,7 @@ class StoreDiscountCodeRequest extends FormRequest
             'amount' => $amountRules,
             'max_uses' => ['required', 'integer', 'min:1'],
             'expires_at' => ['nullable', 'date', 'after:today'],
-            'user_id' => ['nullable', 'exists:users,id'],
+            'user_id' => ['nullable', 'exists:users,id', new CustomerOfCurrentSalon],
         ];
     }
 

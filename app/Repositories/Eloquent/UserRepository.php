@@ -109,8 +109,17 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         })->get();
     }
 
-    public function getOptionsOrderedByName(array $columns = ['id', 'name', 'phone']): Collection
+    public function querySalonCustomers(?int $salonId = null): Builder
     {
-        return $this->model->orderBy('name')->get($columns);
+        $salonId ??= app(CurrentSalon::class)->id();
+
+        return $this->model->newQuery()
+            ->where('user_type', 'customer')
+            ->when($salonId !== null, fn (Builder $q) => $q->where('salon_id', $salonId));
+    }
+
+    public function getSalonCustomerOptions(array $columns = ['id', 'name', 'phone']): Collection
+    {
+        return $this->querySalonCustomers()->orderBy('name')->get($columns);
     }
 }

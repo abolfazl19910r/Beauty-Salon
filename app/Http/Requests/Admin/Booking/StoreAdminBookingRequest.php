@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin\Booking;
 
+use App\Rules\CustomerOfCurrentSalon;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreAdminBookingRequest extends FormRequest
@@ -14,7 +15,7 @@ class StoreAdminBookingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => ['required', 'exists:users,id'],
+            'user_id' => ['required', 'exists:users,id', new CustomerOfCurrentSalon],
             'service_id' => ['required', 'exists:beauty_services,id'],
             'specialist_id' => ['required', 'exists:specialists,id'],
             'booking_time' => ['required', 'date'],

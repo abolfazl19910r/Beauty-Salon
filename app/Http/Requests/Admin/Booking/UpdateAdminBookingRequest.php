@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin\Booking;
 
+use App\Rules\CustomerOfCurrentSalon;
 use App\Traits\HasJalaliDates;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -46,7 +47,7 @@ class UpdateAdminBookingRequest extends FormRequest
         }
 
         return [
-            'user_id' => ['required', 'exists:users,id'],
+            'user_id' => ['required', 'exists:users,id', new CustomerOfCurrentSalon],
             'service_id' => ['required', 'exists:beauty_services,id'],
             'specialist_id' => ['required', 'exists:specialists,id'],
             'booking_time' => ['required', 'date'],
