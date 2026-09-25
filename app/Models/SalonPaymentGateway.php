@@ -18,6 +18,7 @@ class SalonPaymentGateway extends Model
         'asanpardakht' => 'آسان پرداخت',
         'vandar' => 'وندار',
         'saman' => 'بانک سامان (سپ)',
+        'mellat' => 'بانک ملت (به‌پرداخت)',
     ];
 
     /** سقف کارمزدی که سالن می‌تونه روی مبلغ مشتری بذاره. */

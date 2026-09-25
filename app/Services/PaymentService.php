@@ -166,11 +166,11 @@ class PaymentService
             return;
         }
 
-        // ⭐ درگاه (سامان) مبلغ ناهمخوان رو همون لحظه برگشت زد — مشتری با پیامک مطلع می‌شه
+        // ⭐ درگاه بانکی پول رو همون لحظه برگشت زد (سامان: مبلغ ناهمخوان؛ ملت: settle نشد) — مشتری با پیامک مطلع می‌شه
         if ($transaction && ! $result->success && ($result->raw['reversed'] ?? false) === true) {
             $reversedRial = (int) ($result->raw['TransactionDetail']['OrginalAmount'] ?? $transaction->amount_rial);
             \App\Models\User::find($transaction->user_id)?->notify(new \App\Notifications\Payment\PaymentRefundedNotification(
-                'amount_mismatch',
+                $result->raw['refund_reason'] ?? 'amount_mismatch',
                 intdiv($reversedRial, 10),
                 0,
                 \App\Models\Salon::find($transaction->salon_id),

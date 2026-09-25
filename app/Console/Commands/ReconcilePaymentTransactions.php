@@ -23,13 +23,16 @@ use Illuminate\Support\Facades\Log;
  *    تراکنش reversing/reversed رو رد می‌کنه). اگه Reverse ناموفق بود (مثلاً سپ هرگز تایید نکرده بود و تراکنش
  *    رو نمی‌شناسه) دوباره failed می‌شه تا اجرای بعدی داخل همون پنجره دوباره امتحان کنه.
  *
- * هر درگاهِ ReversibleGateway پنجره‌ی خودش رو در reverseWindows() داره.
+ * ۳) ملت (به‌پرداخت) — همون الگو با پنجره‌ی خودش: پاسخ bpVerifyRequest نرسید، یا verify شد ولی نه settle جواب
+ *    داد نه bpReversalRequest همون لحظه. به‌پرداخت تراکنش verify‌نشده رو بعد از ۱۵ دقیقه خودش برگشت می‌زنه و تا
+ *    ۱۵ دقیقه مشتری با refresh می‌تونه verify رو تکرار کنه؛ برگشتِ تراکنشِ settle‌نشده تا ۲ ساعت مجازه. پس پنجره
+ *    ۱۶ تا ۹۰ دقیقه.
  */
 class ReconcilePaymentTransactions extends Command
 {
     protected $signature = 'payments:reconcile {--dry-run : فقط نمایش، بدون تغییر}';
 
-    protected $description = 'منقضی کردن تراکنش‌های رهاشده و برگشت وجه پرداخت‌های بانکی که پاسخ تایید آن‌ها نرسید';
+    protected $description = 'منقضی کردن تراکنش‌های رهاشده و برگشت وجه پرداخت‌های بانکی (سامان/ملت) که پاسخ تایید آن‌ها نرسید';
 
     public const EXPIRE_PENDING_AFTER_MINUTES = PaymentTransaction::PENDING_LIFETIME_MINUTES;
 
@@ -39,11 +42,18 @@ class ReconcilePaymentTransactions extends Command
     /** قبل از این، با حاشیه‌ی امن از مهلت ۵۰ دقیقه‌ای Reverse مستند. */
     public const SAMAN_REVERSE_BEFORE_MINUTES = 45;
 
+    /** بعد از مهلت ۱۵ دقیقه‌ای verify به‌پرداخت. */
+    public const MELLAT_REVERSE_AFTER_MINUTES = 16;
+
+    /** با حاشیه‌ی امن از سقف ۲ ساعته‌ی bpReversalRequest. */
+    public const MELLAT_REVERSE_BEFORE_MINUTES = 90;
+
     /** @return array<string, array{0: int, 1: int}> driver → [از چند دقیقه بعد, تا چند دقیقه بعد] از آخرین تلاش تایید */
     public static function reverseWindows(): array
     {
         return [
             'saman' => [self::SAMAN_REVERSE_AFTER_MINUTES, self::SAMAN_REVERSE_BEFORE_MINUTES],
+            'mellat' => [self::MELLAT_REVERSE_AFTER_MINUTES, self::MELLAT_REVERSE_BEFORE_MINUTES],
         ];
     }
 
