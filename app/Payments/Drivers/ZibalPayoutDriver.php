@@ -3,6 +3,7 @@
 namespace App\Payments\Drivers;
 
 use App\Payments\Contracts\PayoutDriver;
+use App\Payments\HttpFailure;
 use App\Payments\PayoutRequest;
 use App\Payments\PayoutResult;
 use Illuminate\Support\Facades\Http;
@@ -49,7 +50,13 @@ class ZibalPayoutDriver implements PayoutDriver
         } catch (Throwable $e) {
             Log::error('ZibalPayoutDriver: خطای اتصال', ['reference' => $request->reference, 'error' => $e->getMessage()]);
 
-            return new PayoutResult(false, message: 'خطا در اتصال به سرویس تسویه‌ی زیبال. لطفاً بعداً دوباره تلاش کنید.');
+            return HttpFailure::neverSent($e)
+                ? new PayoutResult(false, message: 'خطا در اتصال به سرویس تسویه‌ی زیبال. لطفاً بعداً دوباره تلاش کنید.')
+                : self::unknown($request, null);
+        }
+
+        if ($response->serverError()) {
+            return self::unknown($request, $response->status());
         }
 
         $body = (array) $response->json();
@@ -67,5 +74,18 @@ class ZibalPayoutDriver implements PayoutDriver
         };
 
         return new PayoutResult(false, message: $message, raw: $body);
+    }
+
+    /** ⭐ درخواست فرستاده شد ولی پاسخ نرسید: شاید زیبال واریز کرده باشه — ProcessWithdrawalJob برای بررسی دستی نگه می‌داره. */
+    private static function unknown(PayoutRequest $request, ?int $status): PayoutResult
+    {
+        Log::error('ZibalPayoutDriver: نتیجه‌ی تسویه نامعلوم — بررسی دستی در پنل زیبال', ['reference' => $request->reference, 'status' => $status]);
+
+        return new PayoutResult(
+            false,
+            message: 'پاسخ زیبال دریافت نشد؛ ممکن است تسویه انجام شده باشد. تسویه‌های کیف پول را در پنل زیبال بررسی کنید (برداشت #'.$request->reference.').',
+            raw: ['status' => $status],
+            unknown: true,
+        );
     }
 }

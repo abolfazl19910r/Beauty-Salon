@@ -3,6 +3,7 @@
 namespace App\Payments\Drivers;
 
 use App\Payments\Contracts\PayoutDriver;
+use App\Payments\HttpFailure;
 use App\Payments\PayoutRequest;
 use App\Payments\PayoutResult;
 use Illuminate\Support\Facades\Http;
@@ -45,7 +46,13 @@ class ZarinpalPayoutDriver implements PayoutDriver
         } catch (Throwable $e) {
             Log::error('ZarinpalPayoutDriver: خطای اتصال', ['reference' => $request->reference, 'error' => $e->getMessage()]);
 
-            return new PayoutResult(false, message: 'خطا در اتصال به درگاه تسویه زرین‌پال. لطفاً بعداً دوباره تلاش کنید.');
+            return HttpFailure::neverSent($e)
+                ? new PayoutResult(false, message: 'خطا در اتصال به درگاه تسویه زرین‌پال. لطفاً بعداً دوباره تلاش کنید.')
+                : self::unknown($request, null);
+        }
+
+        if ($response->serverError()) {
+            return self::unknown($request, $response->status());
         }
 
         $result = (array) $response->json();
@@ -65,5 +72,18 @@ class ZarinpalPayoutDriver implements PayoutDriver
         Log::error('ZarinpalPayoutDriver: درخواست Payout ناموفق', ['reference' => $request->reference, 'error_code' => $code, 'response' => $result]);
 
         return new PayoutResult(false, message: $result['errors']['message'] ?? "خطای زرین‌پال (کد {$code})", raw: $result);
+    }
+
+    /** ⭐ درخواست فرستاده شد ولی پاسخ نرسید: شاید زرین‌پال واریز کرده باشه — ProcessWithdrawalJob برای بررسی دستی نگه می‌داره. */
+    private static function unknown(PayoutRequest $request, ?int $status): PayoutResult
+    {
+        Log::error('ZarinpalPayoutDriver: نتیجه‌ی تسویه نامعلوم — بررسی دستی در پنل زرین‌پال', ['reference' => $request->reference, 'status' => $status]);
+
+        return new PayoutResult(
+            false,
+            message: 'پاسخ زرین‌پال دریافت نشد؛ ممکن است تسویه انجام شده باشد. واریزهای اخیر را در پنل زرین‌پال بررسی کنید (برداشت #'.$request->reference.').',
+            raw: ['status' => $status],
+            unknown: true,
+        );
     }
 }

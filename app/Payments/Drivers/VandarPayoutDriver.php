@@ -4,6 +4,7 @@ namespace App\Payments\Drivers;
 
 use App\Models\SalonPaymentGateway;
 use App\Payments\Contracts\PayoutDriver;
+use App\Payments\HttpFailure;
 use App\Payments\PayoutRequest;
 use App\Payments\PayoutResult;
 use Illuminate\Http\Client\Response;
@@ -28,7 +29,7 @@ use Throwable;
  *   access_token و refresh_token **جدید** — هر دو دوباره ذخیره می‌شن (refresh_token قبلی دیگه معتبر نیست). تمدید
  *   روزانه با payouts:refresh-vandar-tokens، و روی ۴۰۱ همین‌جا (با قفل، تا تمدید هم‌زمان یک توکن رو دو بار مصرف نکنه).
  *
- * ⚠️ نتیجه‌ی نامعلوم (قطع اتصال یا ۵xx بعد از فرستادن): ممکنه وندار ثبت کرده باشه. نه «ناموفق» (برگشت به کیف پول
+ * ⚠️ نتیجه‌ی نامعلوم (پاسخ نرسید یا ۵xx بعد از فرستادن؛ «هرگز فرستاده نشد» — HttpFailure — ناموفق ساده‌ست): ممکنه وندار ثبت کرده باشه. نه «ناموفق» (برگشت به کیف پول
  * متخصص = احتمال پرداخت دوباره) و نه تکرار کورکورانه؛ unknown=true → برداشت در processing می‌مونه تا مدیر در
  * داشبورد وندار ببینه و دستی تأیید یا رد کنه.
  *
@@ -81,6 +82,10 @@ class VandarPayoutDriver implements PayoutDriver
             $response = $this->store($body); // ۴۰۱ یعنی قبل از پردازش رد شد — تکرارش امنه
         }
 
+        if ($this->lastError !== null && $response === null && HttpFailure::neverSent($this->lastError)) {
+            return new PayoutResult(false, message: 'خطا در اتصال به سرویس تسویه‌ی وندار (درخواستی فرستاده نشد). لطفاً بعداً دوباره تلاش کنید.', raw: ['track_id' => $body['track_id']]);
+        }
+
         if ($response === null || $response->serverError()) {
             Log::error('VandarPayoutDriver: نتیجه‌ی تسویه نامعلوم — بررسی دستی در داشبورد وندار', [
                 'reference' => $request->reference, 'track_id' => $body['track_id'], 'status' => $response?->status(),
@@ -111,14 +116,19 @@ class VandarPayoutDriver implements PayoutDriver
         return new PayoutResult(false, message: self::errorMessage($response, $json), raw: $json + ['track_id' => $body['track_id']]);
     }
 
+    private ?Throwable $lastError = null;
+
     private function store(array $body): ?Response
     {
+        $this->lastError = null;
+
         try {
             return Http::timeout(30)->acceptJson()->asJson()
                 ->withToken((string) ($this->credentials['payout_access_token'] ?? ''))
                 ->post(self::API.'/v3/business/'.rawurlencode((string) ($this->credentials['payout_business'] ?? '')).'/settlement/store', $body);
         } catch (Throwable $e) {
             Log::warning('VandarPayoutDriver: خطای اتصال', ['error' => $e->getMessage()]);
+            $this->lastError = $e;
 
             return null;
         }

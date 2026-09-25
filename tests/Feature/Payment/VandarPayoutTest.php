@@ -33,6 +33,9 @@ class VandarPayoutTest extends TestCase
 
     private const REFRESH_URL = 'https://api.vandar.io/v3/refreshtoken';
 
+    /** پاسخ بعد از فرستادن نرسید (cURL 28). «هرگز فرستاده نشد» (6/7) ناموفق ساده‌ست — App\Payments\HttpFailure. */
+    private const TIMEOUT = 'cURL error 28: Operation timed out after 30001 milliseconds with 0 bytes received';
+
     private Salon $salon;
 
     protected function setUp(): void
@@ -143,7 +146,7 @@ class VandarPayoutTest extends TestCase
 
     public function test_a_lost_answer_is_unknown_not_failed_and_is_never_retried(): void
     {
-        foreach ([fn () => Http::failedConnection(), fn () => Http::response(['message' => 'Server Error'], 502)] as $answer) {
+        foreach ([fn () => Http::failedConnection(self::TIMEOUT), fn () => Http::response(['message' => 'Server Error'], 502)] as $answer) {
             Http::swap(new \Illuminate\Http\Client\Factory);
             Http::fake([self::STORE_URL => $answer()]);
 
@@ -153,6 +156,19 @@ class VandarPayoutTest extends TestCase
             $this->assertTrue($result->unknown);
             $this->assertStringContainsString('mahru-wd-7', $result->message);
             Http::assertSentCount(1);
+        }
+    }
+
+    public function test_a_request_that_never_left_the_server_is_a_plain_failure(): void
+    {
+        foreach (['cURL error 6: Could not resolve host: api.vandar.io', 'cURL error 7: Failed to connect to api.vandar.io port 443'] as $error) {
+            Http::swap(new \Illuminate\Http\Client\Factory);
+            Http::fake([self::STORE_URL => Http::failedConnection($error)]);
+
+            $result = (new VandarPayoutDriver((array) $this->vandar()->credentials))->payout($this->request());
+
+            $this->assertFalse($result->success);
+            $this->assertFalse($result->unknown, 'وندار چیزی ندیده — برگشت به کیف پول متخصص امنه');
         }
     }
 
@@ -202,7 +218,7 @@ class VandarPayoutTest extends TestCase
     {
         Event::fake([WithdrawalRejected::class, WithdrawalApproved::class]);
         $this->vandar();
-        Http::fake([self::STORE_URL => Http::failedConnection()]);
+        Http::fake([self::STORE_URL => Http::failedConnection(self::TIMEOUT)]);
         $withdrawal = $this->processingWithdrawal();
 
         (new ProcessWithdrawalJob($withdrawal->id))->handle(app(SalonPayoutService::class));
