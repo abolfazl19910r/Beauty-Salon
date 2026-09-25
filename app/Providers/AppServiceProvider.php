@@ -75,7 +75,7 @@ class AppServiceProvider extends ServiceProvider
                     {
                         $payload = parent::buildPayload($notifiable, $notification);
 
-                        $payload['user_id'] = $notifiable->id;
+                        $payload['user_id'] = \App\Models\UserNotification::ownerUserId($notifiable->getMorphClass(), $notifiable->getKey());
 
                         return $payload;
                     }

@@ -40,10 +40,29 @@ class UserNotification extends DatabaseNotification
                 $model->{$model->getKeyName()} = (string) Str::uuid();
             }
 
-            if (empty($model->user_id) && $model->notifiable_id) {
-                $model->user_id = $model->notifiable_id;
+            if (empty($model->user_id)) {
+                $model->user_id = static::ownerUserId($model->notifiable_type, $model->notifiable_id);
             }
         });
+    }
+
+    /**
+     * user_id کلید خارجی به users است؛ برای اعلانی که به مدل Specialist فرستاده می‌شه، صاحبش کاربرِ همون متخصصه
+     * (ممکنه null باشه — متخصصی که ادمین قبل از ثبت‌نام خودش ساخته). قبلاً notifiable_id بی‌توجه به نوع اینجا
+     * می‌نشست: روی MySQL خطای کلید خارجی (تغییر زمان نوبت ۵۰۰، امتیاز نظر داده نمی‌شد) یا نسبت‌دادن اعلان به یک
+     * کاربر بی‌ربط.
+     */
+    public static function ownerUserId(?string $notifiableType, $notifiableId): ?int
+    {
+        if (! $notifiableId) {
+            return null;
+        }
+
+        return match ($notifiableType) {
+            (new User)->getMorphClass() => (int) $notifiableId,
+            (new Specialist)->getMorphClass() => Specialist::withoutGlobalScopes()->whereKey($notifiableId)->value('user_id'),
+            default => null,
+        };
     }
 
     public function user()
