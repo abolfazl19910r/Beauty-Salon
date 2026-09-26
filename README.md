@@ -1,106 +1,124 @@
-# 💅 Beauty Salon Management System
+# 💅 ماهرو (Mahru) — پلتفرم نوبت‌دهی آنلاین سالن‌های زیبایی
 
-> سیستم جامع مدیریت سالن زیبایی — ساخته شده با Laravel 11، React 18، Blade و Tailwind CSS
+> یک SaaS چندسالنه (multi-tenant): هر سالن پنل مدیریت، پنل متخصص، سایت مشتری، درگاه پرداخت و داده‌ی کاملاً جدای خودش را دارد.
+> ساخته‌شده با Laravel 11، Blade، Tailwind CSS و جاوااسکریپت ساده.
 
 [![Laravel](https://img.shields.io/badge/Laravel-11.x-FF2D20?style=flat-square&logo=laravel)](https://laravel.com)
 [![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=flat-square&logo=php)](https://php.net)
-[![React](https://img.shields.io/badge/React-18.x-61DAFB?style=flat-square&logo=react)](https://reactjs.org)
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com)
-[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+[![Vite](https://img.shields.io/badge/Vite-8.x-646CFF?style=flat-square&logo=vite)](https://vitejs.dev)
+[![Tests](https://img.shields.io/badge/tests-1472%20passing-brightgreen?style=flat-square)](#-اجرای-تستها)
 
 ---
 
 ## 📋 فهرست مطالب
 
 - [معرفی پروژه](#-معرفی-پروژه)
+- [جداسازی سالن‌ها (Multi-tenancy)](#-جداسازی-سالنها-multi-tenancy)
 - [ویژگی‌های اصلی](#-ویژگیهای-اصلی)
 - [معماری و ساختار فنی](#-معماری-و-ساختار-فنی)
 - [پیش‌نیازها](#-پیشنیازها)
 - [راه‌اندازی از صفر تا صد](#-راهاندازی-از-صفر-تا-صد)
+- [راه‌اندازی با Docker](#-راهاندازی-با-docker)
 - [تنظیم متغیرهای محیطی](#-تنظیم-متغیرهای-محیطی)
 - [ساختار پروژه](#-ساختار-پروژه)
 - [نقش‌های کاربری](#-نقشهای-کاربری)
-- [APIها و مسیرها](#-apiها-و-مسیرها)
-- [سرویس‌های خارجی](#-سرویسهای-خارجی)
+- [مسیرها و APIها](#-مسیرها-و-apiها)
+- [درگاه‌های پرداخت و تسویه](#-درگاههای-پرداخت-و-تسویه)
+- [کارهای زمان‌بندی‌شده و صف](#-کارهای-زمانبندیشده-و-صف)
 - [اجرای تست‌ها](#-اجرای-تستها)
-- [دستورات مفید Artisan](#-دستورات-مفید-artisan)
+- [دستورات Artisan پروژه](#-دستورات-artisan-پروژه)
+- [جداول دیتابیس](#-جداول-دیتابیس)
+- [استقرار روی سرور](#-استقرار-روی-سرور)
+- [مستندات بیشتر](#-مستندات-بیشتر)
 
 ---
 
 ## 🎯 معرفی پروژه
 
-سیستم مدیریت سالن زیبایی یک نرم‌افزار **Full-Stack** کامل برای مدیریت تمام جنبه‌های یک سالن زیبایی است. این پروژه شامل:
+**ماهرو** یک پلتفرم نرم‌افزار-به‌عنوان-سرویس برای سالن‌های زیبایی است. هر سالن با **ثبت‌نام آنلاین** (یا توسط مدیر پلتفرم) ساخته می‌شود، اشتراک ماهانه/سالانه دارد و این بخش‌ها را در اختیار می‌گیرد:
 
-- **پنل مشتری** — رزرو نوبت، پرداخت آنلاین، کیف پول، سیستم وفاداری
-- **پنل متخصص (Specialist)** — مدیریت نوبت‌ها، برنامه کاری، مرخصی، کیف پول
-- **پنل مدیریت (Admin)** — کنترل کامل سیستم، گزارش‌گیری، مدیریت کاربران و سرویس‌ها
+- **سایت و پنل مشتری** — رزرو نوبت، پرداخت آنلاین یا با کیف پول، تغییر زمان و لغو نوبت، امتیاز وفاداری و جوایز، نظر دادن
+- **پنل متخصص** — نوبت‌ها، برنامه‌ی کاری، مرخصی و تعطیلی، کیف پول و درخواست برداشت، نظرات، گزارش عملکرد و خروجی Excel
+- **پنل مدیریت سالن** — کنترل کامل سالن: نوبت‌ها، خدمات، متخصص‌ها، مشتری‌ها، درگاه‌های پرداخت، کیف پول و تسویه، گزارش‌ها، وفاداری، نقش‌ها، تنظیمات
+- **پنل مدیر پلتفرم (سوپرادمین)** — ساخت و مدیریت سالن‌ها، تمدید اشتراک، فاکتورها، تعلیق سالن، پرداخت‌های اشتراک، تیکت‌های پشتیبانی
 
-احراز هویت بر پایه **SMS (Kavenegar)** و **2FA** بوده و پرداخت از طریق **زرین‌پال** انجام می‌شود.
+ورود با **شماره موبایل و کد یک‌بارمصرف (کاوه‌نگار)** و **احراز هویت دومرحله‌ای (2FA)** انجام می‌شود.
+
+---
+
+## 🧱 جداسازی سالن‌ها (Multi-tenancy)
+
+همه‌ی سالن‌ها در **یک دیتابیس** هستند و جداسازی در سطح برنامه انجام می‌شود:
+
+- **آدرس سالن:** هر سالن یک `slug` دارد و از دو راه در دسترس است:
+  - زیرمسیر: `https://example.com/s/{salon_slug}`
+  - زیردامنه (اگر `CENTRAL_DOMAIN` تنظیم شده باشد): `https://{salon_slug}.example.com` — راهنما در [`WILDCARD_SUBDOMAIN_DEPLOYMENT.md`](WILDCARD_SUBDOMAIN_DEPLOYMENT.md)
+- **سالن فعلی (`CurrentSalon`):** middlewareها سالن را از آدرس (سایت مشتری) یا از عضویت کاربر (پنل مدیریت و متخصص) پیدا و ثبت می‌کنند.
+- **`BelongsToSalon`:** مدل‌هایی که ستون `salon_id` دارند (نوبت، خدمت، متخصص، کد تخفیف، جایزه‌ی وفاداری، تنظیمات امنیتی و …) به‌صورت خودکار به سالن فعلی محدود می‌شوند و ردیف جدید سالن فعلی را می‌گیرد.
+- **`BelongsToSalonThroughSpecialist`:** برای جدول‌هایی که فقط از طریق متخصص به سالن وصل‌اند (مثل نظرات).
+- **چک مالکیت صریح:** چون اتصال مدل در route قبل از شناسایی سالن اجرا می‌شود، هر اکشن مدیریت که مدلی را از آدرس می‌گیرد `ensureSalonOwnership()` را صدا می‌زند.
+- **کارهای صف و اعلان‌ها:** سالن فعلی ندارند، پس سالن را صریحاً از خود رکورد یا گیرنده می‌گیرند (مثلاً تنظیمات اعلان از سالنِ گیرنده خوانده می‌شود).
+- **مختص هر سالن:** جوایز وفاداری، نقش‌ها، تنظیمات اطلاع‌رسانی، تنظیمات امنیتی، تنظیمات کیف پول و درگاه‌های پرداخت.
+- **مشترک در پلتفرم:** نقش‌های سیستمی (`admin`، `specialist`، `super-admin`، …) و فهرست مجوزها — چون کد با نامشان چک می‌کند — فقط توسط مدیر پلتفرم تغییر می‌کنند.
 
 ---
 
 ## ✨ ویژگی‌های اصلی
 
 ### 🔐 احراز هویت و امنیت
-- ثبت‌نام و ورود با شماره موبایل (OTP از طریق Kavenegar)
-- احراز هویت دو مرحله‌ای (2FA)
-- RBAC کامل (Role-Based Access Control) با Permission های جداگانه
-- Middleware امنیتی (Security، Session، CSRF)
-- لاگ‌گذاری فعالیت‌ها با Spatie Activity Log
+- ثبت‌نام و ورود با شماره موبایل (OTP از طریق کاوه‌نگار)؛ مشتری در هر سالن حساب جدا دارد
+- احراز هویت دومرحله‌ای (2FA) با طول کد قابل تنظیم (۴ تا ۱۰ رقم)
+- RBAC با نقش‌های مختص هر سالن و مجوزهای مشترک
+- محدودسازی تلاش ورود، لاگ رویدادهای امنیتی، مدت اعتبار رمز عبور (مختص هر سالن)
+- لاگ فعالیت‌ها با Spatie Activity Log
 
-### 📅 سیستم رزرو (Booking)
-- رزرو نوبت با انتخاب متخصص، سرویس و زمان
-- مدیریت اسلات‌های زمانی بر اساس برنامه کاری متخصص
-- تایید خودکار یا دستی نوبت توسط متخصص
-- یادآور نوبت از طریق SMS
-- لغو و تغییر زمان نوبت
-- تاریخ‌های تعطیل و مرخصی متخصص
+### 📅 رزرو نوبت
+- رزرو با انتخاب خدمت، متخصص و زمان؛ اسلات‌ها بر اساس برنامه‌ی کاری، مرخصی و تعطیلی متخصص
+- تأیید خودکار یا دستی نوبت توسط متخصص
+- یادآوری پیامکی نوبت
+- تغییر زمان و لغو نوبت توسط مشتری، با قانون جریمه‌ی لغو
+- لغو خودکار نوبت‌های پرداخت‌نشده
 
-### 💳 سیستم پرداخت
-- پرداخت آنلاین با **زرین‌پال** (sandbox و production)
-- کیف پول کاربر (شارژ، برداشت، تراکنش‌ها)
-- کیف پول متخصص با سیستم کمیسیون
-- کیف پول ادمین
-- درخواست برداشت (Withdrawal)
-- پیش‌پرداخت (Prepayment) نوبت
+### 💳 پرداخت و کیف پول
+- **چند درگاه برای هر سالن:** زرین‌پال، زیبال، وندار، آسان‌پرداخت، سامان، ملت، پارسیان — مشتری درگاه را انتخاب می‌کند و در صورت قطعی، درگاه بعدی امتحان می‌شود
+- پیش‌پرداخت نوبت، پرداخت کامل یا ترکیبی (کیف پول + درگاه)
+- کیف پول مشتری، کیف پول متخصص با کمیسیون سالن، کیف پول سالن
+- درخواست برداشت متخصص و **تسویه‌ی خودکار** (Payout) از طریق زرین‌پال، زیبال یا وندار
+- تطبیق خودکار تراکنش‌های گیرکرده و برگشت وجه پرداختی که نوبتش از دست رفته
+- صفحه‌ی «نیاز به بررسی» برای پرداخت‌ها و تسویه‌هایی که دخالت مدیر لازم دارند
 
-### 🏆 سیستم وفاداری (Loyalty)
-- امتیازدهی به مشتریان پس از هر خدمت
-- تبدیل امتیاز به کد تخفیف
-- جوایز قابل بازخرید
-- تاریخچه کامل امتیازات
-- اعلان هنگام کسب امتیاز
+### 🏆 وفاداری
+- امتیاز بعد از هر خدمت و بعد از ثبت نظر
+- جوایز قابل دریافت (مختص هر سالن) و تبدیل به کد تخفیف
+- تاریخچه‌ی امتیازها و اعلان کسب امتیاز
 
-### ⭐ سیستم نظرات (Reviews)
-- دریافت نظر از مشتریان بعد از نوبت
-- توکن یکبار مصرف برای ارسال نظر (ReviewToken)
-- نمایش آمار نظرات به متخصص
-- اعلان نظر منفی به ادمین
-- تنظیم توکن‌های منقضی‌شده با Artisan Command
+### ⭐ نظرات
+- لینک یک‌بارمصرف (ReviewToken) برای ثبت نظر بعد از نوبت
+- امتیاز جزئی (کیفیت، برخورد، نظافت، سرعت)، تأیید/رد، نظر ویژه
+- اعلان نظر منفی به مدیرهای همان سالن
 
 ### 📊 گزارش‌گیری
-- داشبورد آماری با نمودارهای React (Recharts)
-- گزارش‌های مالی (PDF با DomPDF + Excel با Maatwebsite)
-- گزارش متخصص
-- گزارش مشتری
-- گزارش‌های زمان‌بندی شده (Scheduled Reports)
-- Export به PDF و Excel
+- داشبورد آماری مدیریت
+- گزارش روزانه، هفتگی و ماهانه
+- خروجی **Excel** (چند شیت) و **PDF** در صف، با دانلود بعد از آماده‌شدن
+- گزارش و خروجی Excel متخصص
 
 ### 📢 اطلاع‌رسانی
-- سیستم اعلان داخلی (UserNotification)
-- اعلان لحظه‌ای ادمین از ثبت نوبت جدید
-- SMS به مشتری و متخصص
-- اعلان تغییر وضعیت نوبت
+- اعلان داخلی، پیامک و تلگرام
+- هر سالن برای هر رویداد تعیین می‌کند کدام کانال فعال باشد
+- سهمیه‌ی پیامک ماهانه برای هر سالن
 
-### 📝 بلاگ و گالری
-- سیستم بلاگ با دسته‌بندی
-- گالری تصاویر سالن
-- اعلانیه‌ها (Announcements)
+### 🧾 اشتراک و صورت‌حساب
+- پلن‌های ۱، ۳، ۶ و ۱۲ ماهه، دوره‌ی آزمایشی رایگان
+- محدودیت تعداد متخصص و سهمیه‌ی پیامک بر اساس پلن
+- پرداخت و تمدید اشتراک، فاکتور، تعلیق خودکار/دستی سالن
 
-### 🎟️ کدهای تخفیف
-- ایجاد و مدیریت کدهای تخفیف
-- محدودیت تعداد استفاده و تاریخ انقضا
-- ردیابی استفاده از کد تخفیف
+### 📝 محتوا و موارد دیگر
+- بلاگ، گالری تصاویر، اعلانیه‌ها
+- کدهای تخفیف (عمومی یا شخصی، محدودیت استفاده و انقضا)
+- تیکت پشتیبانی بین سالن و مدیر پلتفرم
+- جست‌وجوی سراسری در پنل مدیریت
 
 ---
 
@@ -108,267 +126,232 @@
 
 | لایه | تکنولوژی |
 |------|-----------|
-| Backend Framework | Laravel 11 |
-| Frontend (Admin Dashboard) | React 18 + Vite |
-| Frontend (Public/User) | Blade + Tailwind CSS |
-| UI Components | Shadcn UI + Radix UI + Lucide React |
-| Charts | Recharts |
-| Authentication | Laravel Breeze + Custom SMS Auth |
-| Authorization | Custom RBAC (Role + Permission) |
-| Payment Gateway | زرین‌پال (Zarinpal) |
-| SMS Provider | Kavenegar |
-| PDF Generation | DomPDF + mPDF |
-| Excel Export | Maatwebsite Excel + PhpSpreadsheet |
-| Image Processing | Intervention Image |
-| Jalali Calendar | morilog/jalali + hekmatinasser/verta |
-| Activity Logging | Spatie Laravel Activitylog |
-| Debugging | Laravel Telescope |
-| Queue | Database Driver |
-| Cache | File / Array |
+| Backend | Laravel 11 (PHP 8.2+) |
+| Frontend | Blade + Tailwind CSS 3 + جاوااسکریپت ساده، Vite 8 |
+| فونت | Vazirmatn |
+| احراز هویت | Laravel Breeze + ورود پیامکی سفارشی، Sanctum برای API |
+| مجوزدهی | RBAC سفارشی (نقش مختص سالن + مجوز مشترک) |
+| Multi-tenancy | تک‌دیتابیس، `CurrentSalon` + global scope + چک مالکیت |
+| پرداخت | لایه‌ی درایور درگاه (`app/Payments`) با ۷ درگاه و ۳ درایور تسویه |
+| پیامک | کاوه‌نگار |
+| PDF | DomPDF / mPDF / Snappy |
+| Excel | Maatwebsite Excel + PhpSpreadsheet |
+| تصویر | Intervention Image |
+| تاریخ شمسی | morilog/jalali + hekmatinasser/verta |
+| لاگ فعالیت | Spatie Laravel Activitylog |
+| دیباگ | Laravel Telescope |
+| صف | Database (یا Redis) |
+| معماری کد | Controller ← Service ← Repository (Interface + Eloquent) |
+
+> React از پروژه حذف شده؛ فایل‌های `resources/js/app.jsx` و `admin.jsx` فقط به‌عنوان entry point برای Vite باقی مانده‌اند.
 
 ---
 
 ## 📦 پیش‌نیازها
 
-قبل از راه‌اندازی، مطمئن شوید که موارد زیر نصب هستند:
-
-| ابزار | نسخه مورد نیاز |
-|-------|----------------|
-| PHP | 8.2 یا بالاتر |
+| ابزار | نسخه |
+|-------|------|
+| PHP | 8.2 یا بالاتر (افزونه‌ها: mbstring، xml، pdo_mysql، sqlite3، curl، zip، gd، intl، bcmath) |
 | Composer | 2.x |
-| MySQL | 8.0 یا بالاتر |
+| MySQL / MariaDB | MySQL 8.0+ یا MariaDB 10.11+ |
 | Node.js | 18.x یا بالاتر |
 | npm | 9.x یا بالاتر |
-| Git | هر نسخه‌ای |
+| Git | — |
 
-> **برای کاربران XAMPP:** از XAMPP 8.2+ استفاده کنید.
+> **XAMPP:** از نسخه‌ی 8.2 به بالا استفاده کنید.
+> **Docker:** برای راه‌اندازی با Docker فقط Docker و Docker Compose لازم است (بخش [راه‌اندازی با Docker](#-راهاندازی-با-docker)).
 
 ---
 
 ## 🚀 راه‌اندازی از صفر تا صد
 
-### مرحله ۱ — Clone کردن پروژه
-
+### مرحله ۱ — Clone
 ```bash
 git clone https://github.com/abolfazl19910r/Beauty-Salon.git
 cd Beauty-Salon
+git checkout develop
 ```
 
----
-
-### مرحله ۲ — نصب وابستگی‌های PHP
-
+### مرحله ۲ — وابستگی‌های PHP
 ```bash
 composer install
 ```
-
-> ⚠️ اگر به خطای timeout یا access block برخوردید (به‌خاطر فیلترینگ)، با VPN/proxy اجرا کنید یا از آدرس mirror ایرانی استفاده کنید:
+> ⚠️ اگر به خطای timeout برخوردید (فیلترینگ)، از VPN یا mirror ایرانی استفاده کنید:
 > ```bash
 > composer config --global repos.packagist composer https://packagist.ir
 > composer install
 > ```
 
----
-
-### مرحله ۳ — نصب وابستگی‌های JavaScript
-
+### مرحله ۳ — وابستگی‌های JavaScript
 ```bash
 npm install
 ```
 
----
-
-### مرحله ۴ — ساخت فایل `.env`
-
+### مرحله ۴ — فایل `.env` و کلید برنامه
 ```bash
 cp .env.example .env
-```
-
----
-
-### مرحله ۵ — تولید Application Key
-
-```bash
 php artisan key:generate
 ```
 
----
-
-### مرحله ۶ — تنظیم دیتابیس
-
-در phpMyAdmin یا MySQL CLI یک دیتابیس جدید بسازید:
-
+### مرحله ۵ — دیتابیس
 ```sql
 CREATE DATABASE beauty_salon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
+سپس اطلاعات اتصال را در `.env` وارد کنید ([تنظیم متغیرهای محیطی](#-تنظیم-متغیرهای-محیطی)).
 
-سپس اطلاعات دیتابیس را در `.env` تنظیم کنید (بخش بعدی را ببینید).
-
----
-
-### مرحله ۷ — اجرای Migration و Seeder
-
+### مرحله ۶ — Migration و Seeder
 ```bash
-# اجرای تمام migration ها
 php artisan migrate
+php artisan db:seed            # نقش‌ها، مجوزها و داده‌های اولیه
+```
+برای reset کامل: `php artisan migrate:fresh --seed`
 
-# اجرای Seeder برای داده‌های اولیه
-php artisan db:seed
+### مرحله ۷ — ساخت مدیر پلتفرم
+```bash
+php artisan superadmin:create
 ```
 
-> **یا برای reset کامل:**
-> ```bash
-> php artisan migrate:fresh --seed
-> ```
-
----
-
-### مرحله ۸ — ساخت storage link
-
+### مرحله ۸ — storage link
 ```bash
 php artisan storage:link
 ```
 
----
-
-### مرحله ۹ — Build کردن فایل‌های Frontend
-
-برای محیط توسعه:
+### مرحله ۹ — Build فایل‌های Frontend
 ```bash
-npm run dev
+npm run dev      # توسعه
+npm run build    # production
 ```
 
-برای محیط production:
+### مرحله ۱۰ — صف و زمان‌بندی
 ```bash
-npm run build
+php artisan queue:work --tries=3     # یک ترمینال
+php artisan schedule:work            # ترمینال دیگر (در توسعه)
 ```
+در production به بخش [کارهای زمان‌بندی‌شده و صف](#-کارهای-زمانبندیشده-و-صف) مراجعه کنید.
 
----
-
-> 📘 **راهنمای کامل سرور (DirectAdmin / VPS / Docker):** [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCHEDULER_AND_QUEUE.md)
-> — روی DirectAdmin فقط یک خط کرون لازم است و با `QUEUE_WORK_VIA_SCHEDULER=true` صف هم از همان کرون اجرا می‌شود.
-
-### مرحله ۱۰ — راه‌اندازی Queue Worker
-
-سیستم از Queue برای Job های پس‌زمینه (ارسال SMS، یادآوری نوبت، ...) استفاده می‌کند:
-
-```bash
-php artisan queue:work --tries=3
-```
-
----
-
-### مرحله ۱۱ — راه‌اندازی Scheduler (الزامی در production)
-
-برای اجرای دستورات زمان‌بندی شده (برگشت وجه پرداخت‌های گیرکرده، لغو نوبت‌های پرداخت‌نشده، یادآوری، تسویه‌ی کیف پول، cleanup):
-
-```bash
-# Linux/Mac — اضافه کردن به crontab
-* * * * * cd /path/to/project && php artisan schedule:run >> /dev/null 2>&1
-
-# برای تست در محیط توسعه:
-php artisan schedule:work
-```
-
----
-
-### مرحله ۱۲ — اجرای سرور
-
+### مرحله ۱۱ — اجرای سرور
 ```bash
 php artisan serve
 ```
-
-سپس در مرورگر باز کنید: **http://127.0.0.1:8000**
+- صفحه‌ی اصلی پلتفرم: **http://127.0.0.1:8000**
+- ثبت‌نام سالن جدید: **http://127.0.0.1:8000/salon-signup**
+- سایت یک سالن: **http://127.0.0.1:8000/s/{salon_slug}**
+- پنل مدیریت سالن: **http://127.0.0.1:8000/admin**
+- پنل مدیر پلتفرم: **http://127.0.0.1:8000/superadmin/dashboard**
 
 ---
 
-### 🏃‍♂️ راه‌اندازی سریع (یک دستور)
+## 🐳 راه‌اندازی با Docker
 
-اگر composer این script را ساپورت کند، می‌توانید همه چیز را با یک دستور اجرا کنید:
+`Makefile` همه‌ی کارها را ساده کرده است (`make help` فهرست کامل را نشان می‌دهد):
 
 ```bash
-composer run dev
+make setup         # کپی .env.docker، ساخت APP_KEY، build و بالا آوردن containerها
+make migrate       # اجرای migrationها
+make seed          # اجرای seederها
+make superadmin    # ساخت مدیر پلتفرم
 ```
 
-این دستور به صورت موازی اجرا می‌کند:
-- `php artisan serve` — سرور PHP
-- `php artisan queue:listen` — Queue Worker
-- `php artisan pail` — Log Viewer
-- `npm run dev` — Vite Dev Server
+دستورهای پرکاربرد دیگر:
+
+| دستور | کار |
+|---|---|
+| `make up` / `make down` / `make restart` | بالا/پایین آوردن و ری‌استارت |
+| `make logs` / `make logs-app` / `make logs-queue` / `make logs-scheduler` | لاگ‌ها |
+| `make shell` / `make db-shell` / `make redis-shell` | ورود به container |
+| `make queue-restart` | ری‌استارت صف بعد از deploy |
+| `make cache-clear` / `make cache-optimize` | cache |
+| `make backup-db` | پشتیبان دیتابیس |
+| `make status` | وضعیت سرویس‌ها |
 
 ---
 
 ## ⚙️ تنظیم متغیرهای محیطی
 
-فایل `.env` را با مقادیر واقعی خود ویرایش کنید:
-
-### تنظیمات پایه
-
+### پایه و برند
 ```env
-APP_NAME="Beauty Salon"
+APP_NAME="ماهرو"
+BRAND_NAME="ماهرو"
+BRAND_NAME_EN=Mahru
+BRAND_DOMAIN=mahru.ir
 APP_ENV=local
 APP_DEBUG=true
 APP_URL=http://localhost
 APP_TIMEZONE=Asia/Tehran
 APP_LOCALE=fa
+CENTRAL_DOMAIN=              # مثلاً mahru.ir برای فعال‌شدن زیردامنه‌ی سالن‌ها؛ خالی = فقط /s/{slug}
 ```
 
 ### دیتابیس
-
 ```env
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=beauty_salon
 DB_USERNAME=root
-DB_PASSWORD=           # رمز MySQL خود را وارد کنید
+DB_PASSWORD=
 ```
 
-### زرین‌پال (درگاه پرداخت)
-
+### اشتراک سالن‌ها
 ```env
-ZARINPAL_MERCHANT_ID=your-merchant-id    # از پنل زرین‌پال دریافت کنید
-ZARINPAL_SANDBOX=true                    # در production روی false تنظیم کنید
+SUBSCRIPTION_PRICE_1M=1500000       # تومان
+SUBSCRIPTION_PRICE_3M=4150000
+SUBSCRIPTION_PRICE_6M=7650000
+SUBSCRIPTION_PRICE_12M=13850000
+SUBSCRIPTION_TRIAL_DAYS=14
+SMS_QUOTA_PER_MONTH=1500
+TRIAL_SMS_QUOTA=300
+DEFAULT_MAX_SPECIALISTS_COUNT=3
 ```
 
-### Kavenegar (سرویس SMS)
-
+### درگاه پرداخت اشتراک (زرین‌پال پلتفرم)
 ```env
-KAVENEGAR_API_KEY=your-api-key
-KAVENEGAR_SENDER=your-sender-number
-KAVENEGAR_SEND_IN_LOCAL=false            # در local, SMS ارسال نمی‌شود (در log ذخیره می‌شود)
-
-# Template های SMS
-KAVENEGAR_TEMPLATE_LOGIN=your-login-template
-KAVENEGAR_TEMPLATE_REGISTER=your-register-template
-KAVENEGAR_TEMPLATE_RESET=your-reset-template
-KAVENEGAR_TEMPLATE_2FA=your-2fa-template
+ZARINPAL_MERCHANT_ID=
+ZARINPAL_API_KEY=
+ZARINPAL_SANDBOX=true              # در production: false
+ZARINPAL_PAYOUT_API_KEY=
+ZARINPAL_PAYOUT_SANDBOX=true
 ```
+> درگاه‌های **هر سالن** در `.env` نیستند؛ مدیر هر سالن آن‌ها را از پنل خودش (بخش درگاه‌های پرداخت) وارد می‌کند.
 
-### امنیت و احراز هویت
-
+### کاوه‌نگار (پیامک)
 ```env
-TWO_FACTOR_TIMEOUT=300                   # مدت اعتبار کد 2FA (ثانیه)
-TWO_FACTOR_CODE_LENGTH=6                 # طول کد OTP
-MAX_LOGIN_ATTEMPTS=5                     # حداکثر تلاش برای ورود
-LOGIN_THROTTLE_MINUTES=15                # مدت قفل شدن پس از تلاش ناموفق
-VERIFICATION_CODE_EXPIRE_MINUTES=5       # انقضای کد تأیید
-PAYMENT_EXPIRY_MINUTES=30                # انقضای لینک پرداخت
+KAVENEGAR_API_KEY=
+KAVENEGAR_SENDER=
+KAVENEGAR_SEND_IN_LOCAL=false      # در local پیامک ارسال نمی‌شود و در log ثبت می‌شود
+KAVENEGAR_TEMPLATE_LOGIN=
+KAVENEGAR_TEMPLATE_REGISTER=
+KAVENEGAR_TEMPLATE_RESET=
+KAVENEGAR_TEMPLATE_2FA=
 ```
 
-### Laravel Telescope (برای debugging)
-
+### امنیت
 ```env
-TELESCOPE_ENABLED=true
-TELESCOPE_PATH=telescope
+TWO_FACTOR_TIMEOUT=300              # اعتبار کد 2FA (ثانیه)
+TWO_FACTOR_CODE_LENGTH=6            # بین ۴ تا ۱۰
+MAX_LOGIN_ATTEMPTS=5
+LOGIN_THROTTLE_MINUTES=15
+VERIFICATION_CODE_EXPIRE_MINUTES=5
+RESET_CODE_EXPIRE_MINUTES=5
+PAYMENT_EXPIRY_MINUTES=30
+SECURITY_LOG_LEVEL=
+PAYMENTS_LOG_LEVEL=
 ```
 
-### Queue و Cache
-
+### صف، cache و session
 ```env
 QUEUE_CONNECTION=database
+QUEUE_WORK_VIA_SCHEDULER=false      # true = صف از همان کرون scheduler اجرا می‌شود (مناسب DirectAdmin)
 CACHE_STORE=file
 SESSION_DRIVER=file
+```
+
+### تلگرام و Telescope
+```env
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+TELESCOPE_ENABLED=true
+TELESCOPE_PATH=telescope
 ```
 
 ---
@@ -378,236 +361,269 @@ SESSION_DRIVER=file
 ```
 Beauty-Salon/
 ├── app/
-│   ├── Broadcasting/          # Channels برای Broadcast
-│   ├── Channels/              # SMS Channel
-│   ├── Console/Commands/      # Artisan Commands (cleanup، reminder، ...)
-│   ├── Events/                # Booking، Registration Events
-│   ├── Exports/               # Excel Export (Maatwebsite)
-│   ├── Helpers/               # JalaliDate Helper
+│   ├── Console/Commands/       # دستورات Artisan پروژه
+│   ├── Events/ Listeners/      # رویدادها (نوبت، پرداخت، برداشت، …)
+│   ├── Exports/                # خروجی‌های Excel
 │   ├── Http/
 │   │   ├── Controllers/
-│   │   │   ├── Admin/         # 20+ Admin Controller
-│   │   │   ├── Api/V1/        # API Controllers
-│   │   │   ├── Auth/          # احراز هویت (SMS، 2FA، ...)
-│   │   │   └── Specialist/    # پنل متخصص
-│   │   ├── Middleware/        # Security، Role، Permission، ...
-│   │   ├── Requests/          # Form Requests
-│   │   └── Resources/         # API Resources
-│   ├── Jobs/                  # Queue Jobs
-│   ├── Listeners/             # Event Listeners
-│   ├── Models/                # 30+ Eloquent Model
-│   ├── Notifications/         # 12+ Notification Class
-│   ├── Observers/             # Booking، DiscountCode Observer
-│   ├── Policies/              # Authorization Policies
-│   ├── Providers/             # Service Providers
-│   └── Services/              # 15+ Service Class
-│       ├── BookingService.php
-│       ├── PaymentService.php
-│       ├── SMSService.php
-│       ├── LoyaltyService.php
-│       ├── ReviewService.php
-│       ├── SecurityLogService.php
-│       └── ...
+│   │   │   ├── Admin/          # پنل مدیریت سالن
+│   │   │   ├── SuperAdmin/     # پنل مدیر پلتفرم
+│   │   │   ├── Specialist/     # پنل متخصص
+│   │   │   ├── User/           # سایت و پنل مشتری
+│   │   │   ├── Payment/        # برگشت از درگاه‌ها
+│   │   │   └── Auth/           # ورود پیامکی، 2FA، …
+│   │   ├── Middleware/         # شناسایی سالن، فعال‌بودن سالن، مجوزها، …
+│   │   └── Requests/           # Form Requestها
+│   ├── Jobs/                   # کارهای صف (پیامک، گزارش، لغو نوبت پرداخت‌نشده، …)
+│   ├── Models/                 # ۴۶ مدل Eloquent
+│   ├── Notifications/          # اعلان‌ها (با تنظیمات کانال هر سالن)
+│   ├── Observers/
+│   ├── Payments/               # درایورهای درگاه و تسویه + GatewayManager / PayoutManager
+│   ├── Repositories/           # Contracts/ (Interface) + Eloquent/
+│   ├── Rules/                  # قوانین اعتبارسنجی سفارشی
+│   ├── Services/               # منطق کسب‌وکار
+│   ├── Support/                # CurrentSalon، SalonOfNotifiable، رویدادهای اعلان، …
+│   └── Traits/                 # BelongsToSalon، BelongsToSalonThroughSpecialist، …
 ├── database/
-│   ├── migrations/            # 26 Migration File
-│   └── seeders/               # 20+ Seeder
+│   ├── factories/
+│   ├── migrations/             # ۵۱ فایل
+│   └── seeders/
+├── deploy/                     # cron و supervisor
+├── docker/                     # پیکربندی containerها
+├── docs/                       # مستندات استقرار و برند
 ├── resources/
-│   ├── js/
-│   │   ├── Components/        # React Components
-│   │   │   ├── Admin/         # داشبورد ادمین (React)
-│   │   │   ├── booking/       # فرم رزرو
-│   │   │   └── Loyalty/       # سیستم وفاداری
-│   │   ├── layouts/           # AdminLayout
-│   │   ├── services/          # HTTP Client، DashboardService
-│   │   └── Utils/             # DateUtils، toast، error-handler
-│   └── views/
-│       ├── admin/             # Blade Views ادمین
-│       ├── auth/              # صفحات احراز هویت
-│       ├── bookings/          # مدیریت نوبت‌ها
-│       ├── specialist/        # پنل متخصص
-│       └── user/wallet/       # کیف پول کاربر
+│   ├── css/ js/                # Tailwind و JS ساده
+│   └── views/                  # Blade: admin، superadmin، specialist، مشتری، auth
 ├── routes/
-│   ├── web.php                # مسیرهای اصلی
-│   ├── api.php                # مسیرهای API
-│   ├── admin/                 # 22 فایل route ادمین
-│   ├── api/                   # Route های API (admin، user، public)
-│   └── web/                   # Route های Web (bookings، payments، ...)
-└── storage/
-    └── fonts/                 # فونت Vazirmatn برای PDF
+│   ├── web.php                 # ساختار کلی (پلتفرم، سالن‌ها با /s/{slug} یا زیردامنه)
+│   ├── web/                    # مسیرهای سایت مشتری و ثبت‌نام سالن
+│   ├── admin/                  # ۳۰ فایل مسیر پنل مدیریت
+│   ├── super-admin.php         # پنل مدیر پلتفرم
+│   ├── salon-auth.php          # ورود مشتری در هر سالن
+│   ├── api.php + api/          # API
+│   └── console.php
+├── tests/                      # Feature و Unit
+├── Dockerfile, docker-compose.yml, Makefile
+└── Rasta unified prompt.md     # سند توسعه‌ی پروژه (تاریخچه، تصمیم‌ها، قدم‌های باز)
 ```
 
 ---
 
 ## 👥 نقش‌های کاربری
 
-### 🔑 Admin
-- دسترسی کامل به تمام بخش‌های سیستم
-- مدیریت کاربران، متخصصین، سرویس‌ها، دسته‌بندی‌ها
-- تأیید یا رد مرخصی متخصصین
-- مشاهده و مدیریت تمام نوبت‌ها
-- گزارش‌گیری مالی و عملکردی
-- مدیریت Role ها و Permission ها
-- مدیریت کیف پول ادمین و درخواست‌های برداشت
-- تنظیمات سیستم وفاداری
+### 🛡️ مدیر پلتفرم (Super Admin)
+- ساخت، ویرایش، تعلیق و تمدید اشتراک سالن‌ها؛ فاکتورها
+- مشاهده و خروجی پرداخت‌های اشتراک
+- پاسخ به تیکت‌های پشتیبانی سالن‌ها
+- مدیریت نقش‌های سیستمی و فهرست مجوزها
 
-### 👩‍💼 Specialist (متخصص)
-- مشاهده نوبت‌های خود
-- تأیید یا رد نوبت (در صورت عدم تأیید خودکار)
-- ثبت مرخصی و مشاهده برنامه کاری
-- مشاهده نظرات مشتریان
-- مدیریت کیف پول و درخواست برداشت
-- مشاهده گزارش عملکرد
+### 🔑 مدیر سالن (Owner / Staff)
+- نوبت‌ها، خدمات، دسته‌بندی‌ها، متخصص‌ها و برنامه‌ی کاری، مرخصی‌ها
+- درگاه‌های پرداخت، کیف پول سالن، درخواست‌های برداشت و تسویه، «نیاز به بررسی»
+- گزارش‌ها و خروجی Excel/PDF
+- وفاداری (امتیازها و جوایز)، کدهای تخفیف، نظرات
+- نقش‌های سالن و تخصیص نقش به کاربران همان سالن
+- تنظیمات اطلاع‌رسانی، امنیتی و سالن؛ بلاگ، گالری، اعلانیه‌ها؛ اشتراک و صورت‌حساب
+- دسترسی هر کارمند با نقش‌ها و مجوزها محدود می‌شود (مثلاً منشی بدون دسترسی مالی)
 
-### 👤 User (مشتری)
-- رزرو نوبت آنلاین
-- پرداخت آنلاین (زرین‌پال یا کیف پول)
-- مشاهده تاریخچه نوبت‌ها
-- ارسال نظر پس از دریافت خدمت
-- مدیریت کیف پول
-- مشاهده و استفاده از امتیازات وفاداری
-- استفاده از کدهای تخفیف
+### 👩‍💼 متخصص (Specialist)
+- نوبت‌های خود، تأیید یا رد نوبت
+- برنامه‌ی کاری، مرخصی و تعطیلی
+- نظرات و آمار نظرات
+- کیف پول، تراکنش‌ها و درخواست برداشت
+- گزارش عملکرد و خروجی Excel
+
+### 👤 مشتری
+- رزرو، تغییر زمان و لغو نوبت
+- پرداخت با درگاه، کیف پول یا ترکیبی
+- تاریخچه‌ی نوبت‌ها، کیف پول و تراکنش‌ها
+- امتیاز وفاداری، دریافت جایزه، کدهای تخفیف
+- ثبت نظر، اعلان‌ها، 2FA
 
 ---
 
-## 🛣️ APIها و مسیرها
-
-### Public API (بدون احراز هویت)
-
-```
-GET  /api/v1/services          — لیست سرویس‌ها
-GET  /api/v1/specialists        — لیست متخصصین
-GET  /api/v1/gallery            — گالری تصاویر
-GET  /api/v1/blog               — پست‌های بلاگ
-GET  /api/v1/announcements      — اعلانیه‌ها
-```
-
-### User API (نیاز به احراز هویت)
-
-```
-GET  /api/v1/bookings           — نوبت‌های کاربر
-POST /api/v1/bookings           — ثبت نوبت جدید
-GET  /api/v1/loyalty            — امتیازات وفاداری
-GET  /api/v1/payments           — تراکنش‌های پرداخت
-```
-
-### Admin API
-
-```
-GET  /api/v1/admin/dashboard    — آمار داشبورد
-GET  /api/v1/admin/bookings     — مدیریت نوبت‌ها
-GET  /api/v1/admin/specialists  — مدیریت متخصصین
-GET  /api/v1/admin/reports      — گزارش‌ها
-GET  /api/v1/admin/loyalty      — تنظیمات وفاداری
-```
+## 🛣️ مسیرها و APIها
 
 ### مسیرهای اصلی Web
 
 | مسیر | توضیح |
 |------|-------|
-| `/` | صفحه اصلی |
-| `/register` | ثبت‌نام |
-| `/login` | ورود |
-| `/bookings` | رزرو نوبت |
-| `/services` | لیست سرویس‌ها |
-| `/payment/*` | فرآیند پرداخت |
-| `/wallet` | کیف پول کاربر |
-| `/loyalty` | سیستم وفاداری |
-| `/profile` | پروفایل کاربر |
-| `/admin` | پنل ادمین |
-| `/specialist/*` | پنل متخصص |
+| `/` | صفحه‌ی اصلی پلتفرم |
+| `/salon-signup` | ثبت‌نام سالن جدید |
+| `/s/{salon_slug}` | سایت سالن (یا `https://{salon_slug}.{CENTRAL_DOMAIN}`) |
+| `/s/{salon_slug}/login` | ورود مشتری |
+| `/s/{salon_slug}/services` | خدمات سالن |
+| `/s/{salon_slug}/bookings` | نوبت‌های من و رزرو |
+| `/s/{salon_slug}/wallet` | کیف پول |
+| `/s/{salon_slug}/loyalty` | وفاداری و جوایز |
+| `/s/{salon_slug}/security/2fa` | احراز هویت دومرحله‌ای |
+| `/admin` | پنل مدیریت سالن |
+| `/my-dashboard`، `/specialist/*` | پنل متخصص |
+| `/superadmin/*` | پنل مدیر پلتفرم |
+| `/payments/return/{publicId}` | برگشت از درگاه پرداخت |
+
+### API
+
+| گروه | مسیرها |
+|---|---|
+| اعلانیه‌های عمومی سالن | `GET api/s/{salon_slug}/announcements` (و `/active`، `/top`، `/{id}`) |
+| نوبت‌ها (Sanctum) | `api/bookings` — فهرست، ثبت، آینده/گذشته/آخرین، جزئیات، لغو، تغییر زمان، امتیازدهی، کد تخفیف، متخصص‌های یک خدمت، روزها و اسلات‌های خالی |
+| پرداخت امن (Sanctum) | `POST api/payments/secure/initiate/{booking}`، `GET api/payments/secure/{reference}/status` |
+| امنیت حساب (Sanctum) | `api/security` — تاریخچه‌ی ورود، لاگ‌ها، نشست‌های فعال و خاتمه‌ی آن‌ها، بررسی قدرت رمز |
+
+فهرست کامل با `php artisan route:list` قابل مشاهده است.
 
 ---
 
-## 🔌 سرویس‌های خارجی
+## 💳 درگاه‌های پرداخت و تسویه
 
-### زرین‌پال (Zarinpal)
-برای دریافت Merchant ID به [زرین‌پال](https://www.zarinpal.com) مراجعه کنید. در محیط توسعه، `ZARINPAL_SANDBOX=true` را تنظیم کنید تا از Sandbox استفاده شود.
+| درگاه | پرداخت | تسویه‌ی خودکار (Payout) |
+|---|:---:|:---:|
+| زرین‌پال | ✅ | ✅ |
+| زیبال | ✅ | ✅ |
+| وندار | ✅ | ✅ |
+| آسان‌پرداخت | ✅ | — |
+| سامان | ✅ | — |
+| ملت | ✅ | — |
+| پارسیان | ✅ | — |
 
-### Kavenegar
-برای دریافت API Key به [کاوه‌نگار](https://www.kavenegar.com) مراجعه کنید. Template های SMS را از پنل کاوه‌نگار ایجاد و نام آن‌ها را در `.env` وارد کنید.
+- هر سالن درگاه‌های خودش را با اولویت از پنل مدیریت ثبت می‌کند؛ اطلاعات محرمانه رمزنگاری‌شده ذخیره می‌شود.
+- مشتری هنگام پرداخت درگاه را انتخاب می‌کند؛ اگر درگاه در دسترس نبود، درگاه بعدی امتحان می‌شود.
+- کارمزد درگاه به مبلغ مشتری اضافه می‌شود.
+- درگاه‌های بانکی (سامان، ملت، پارسیان) معمولاً ثبت IP سرور را در پنل بانک لازم دارند.
+
+---
+
+## ⏰ کارهای زمان‌بندی‌شده و صف
+
+یک خط کرون کافی است:
+```bash
+* * * * * cd /path/to/project && php artisan schedule:run >> /dev/null 2>&1
+```
+
+| کار | زمان |
+|---|---|
+| لغو نوبت‌های پرداخت‌نشده (`CancelUnpaidBookings`) | هر ۵ دقیقه |
+| تطبیق تراکنش‌های گیرکرده (`payments:reconcile`) | هر ۵ دقیقه |
+| یادآوری نوبت (`bookings:send-reminders`) | هر ۱۰ دقیقه |
+| تسویه‌ی درآمدهای معلق کیف پول (`wallet:settle-pending`) | روزانه ۰۱:۰۰ |
+| تمدید توکن تسویه‌ی وندار (`payouts:refresh-vandar-tokens`) | روزانه ۰۳:۳۰ |
+| پاک‌سازی توکن‌های نظر (`review-tokens:cleanup`) | روزانه |
+| پاک‌سازی خروجی‌های گزارش (`reports:cleanup-exports`) | روزانه |
+
+**صف:** یا یک worker دائمی (`php artisan queue:work --tries=3` با supervisor — نمونه در `deploy/supervisor`)، یا روی هاست‌هایی مثل DirectAdmin با `QUEUE_WORK_VIA_SCHEDULER=true` صف هر دقیقه از همان کرون اجرا می‌شود.
+
+راهنمای کامل: [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCHEDULER_AND_QUEUE.md)
 
 ---
 
 ## 🧪 اجرای تست‌ها
 
 ```bash
-php artisan test
+php artisan test                           # SQLite در حافظه (پیش‌فرض phpunit.xml)
 ```
 
-یا با PHPUnit مستقیم:
+برخی باگ‌ها فقط روی MySQL/MariaDB دیده می‌شوند (کلید خارجی، طول ستون، شمارنده‌ی AUTOINCREMENT). برای اجرای کل سوییت روی MariaDB یک کپی از `phpunit.xml` با اتصال `mysql` بسازید (مثلاً `phpunit.mysql.xml`، در گیت نیست) و:
 
 ```bash
-./vendor/bin/phpunit
+vendor/bin/phpunit -c phpunit.mysql.xml
 ```
+
+وضعیت فعلی:
+
+| دیتابیس | تست | شکست | skip |
+|---|---|---|---|
+| SQLite | ۱۴۷۲ | ۰ | ۲ |
+| MariaDB 10.11 | ۱۴۷۲ | ۰ | ۱ |
+
+> اگر تست‌ها با خطای `Vite manifest not found` شکست خوردند، یک بار `npm run build` بزنید.
+> تست‌های زیردامنه جداگانه با `phpunit.subdomain.xml` اجرا می‌شوند.
 
 ---
 
-## 🛠️ دستورات مفید Artisan
+## 🛠️ دستورات Artisan پروژه
 
 ```bash
-# پاک‌سازی نوبت‌های منتظر پرداخت که منقضی شده‌اند
-php artisan bookings:cleanup-pending
+php artisan superadmin:create                 # ساخت مدیر پلتفرم
+php artisan bookings:cleanup                  # پاک‌سازی نوبت‌های منتظر پرداخت منقضی
+php artisan bookings:send-reminders           # ارسال یادآوری نوبت
+php artisan payments:reconcile [--dry-run]    # تطبیق تراکنش‌های گیرکرده با درگاه
+php artisan wallet:settle-pending             # تسویه‌ی درآمدهای معلق کیف پول
+php artisan payouts:refresh-vandar-tokens     # تمدید توکن تسویه‌ی وندار
+php artisan review-tokens:cleanup             # پاک‌سازی توکن‌های نظر منقضی
+php artisan reports:cleanup-exports [--days=7]  # پاک‌سازی خروجی‌های قدیمی گزارش
+php artisan tenancy:repair-legacy-rows [--rewards-salon=<slug>] [--dry-run]
+                                              # اصلاح یک‌باره‌ی ردیف‌های قدیمی با مالکیت اشتباه
+```
 
-# ارسال یادآور نوبت به مشتریان
-php artisan bookings:send-reminders
-
-# پاک‌سازی توکن‌های نظر منقضی‌شده
-php artisan reviews:cleanup-tokens
-
-# تسویه درآمدهای معلق کیف پول
-php artisan wallet:settle-pending
-
-# مشاهده تمام route ها
+دستورات عمومی:
+```bash
 php artisan route:list
-
-# مشاهده log ها با Pail
-php artisan pail
-
-# پاک‌سازی cache
-php artisan cache:clear
-php artisan config:clear
-php artisan view:clear
-php artisan route:clear
+php artisan pail                              # مشاهده‌ی زنده‌ی لاگ
+php artisan optimize:clear                    # پاک‌سازی همه‌ی cacheها
 ```
 
 ---
 
-## 🗄️ جداول دیتابیس (۲۶ Migration)
+## 🗄️ جداول دیتابیس
 
-| Migration | جداول |
-|-----------|-------|
-| users | کاربران سیستم |
-| roles_and_permissions | نقش‌ها و مجوزها |
-| categories | دسته‌بندی سرویس‌ها |
-| beauty_services | سرویس‌های زیبایی |
-| specialists | متخصصین |
-| specialist_services | رابطه متخصص-سرویس |
-| specialist_schedules + work_schedules + holidays + leaves | برنامه زمانی |
-| bookings | رزرو نوبت‌ها |
-| payments | تراکنش‌های پرداخت |
-| discount_codes + discount_usages | سیستم تخفیف |
-| loyalty_points + rewards + loyalties + loyalty_settings | سیستم وفاداری |
-| blog_posts + blog_categories | بلاگ |
-| gallery_images | گالری |
-| announcements | اعلانیه‌ها |
-| support_tickets + support_ticket_messages | تیکت پشتیبانی |
-| scheduled_reports + scheduled_report_runs | گزارش‌های خودکار |
-| user_notifications | اعلان‌های درونی |
-| wallet_transactions + user_wallets + specialist_wallets + admin_wallets | کیف پول‌ها |
-| reviews + review_tokens | نظرات |
-| telescope_entries | Laravel Telescope |
+۵۱ migration، ۶۳ جدول:
+
+| حوزه | جداول |
+|---|---|
+| سالن و اشتراک | `salons`، `salon_admins`، `invoices`، `salon_sms_usages` |
+| کاربران و دسترسی | `users`، `roles`، `permissions`، `role_user`، `permission_role`، `personal_access_tokens`، `password_reset_tokens`، `sessions` |
+| خدمات و متخصص‌ها | `categories`، `beauty_services`، `specialists`، `specialist_services`، `specialist_schedules`، `holidays`، `leaves` |
+| نوبت | `bookings` |
+| پرداخت | `payments`، `payment_transactions`، `salon_payment_gateways` |
+| کیف پول و تسویه | `user_wallets`، `user_wallet_transactions`، `specialist_wallets`، `wallet_transactions`، `withdrawal_requests`، `admin_wallet`، `admin_wallet_transactions`، `wallet_settings` |
+| تخفیف | `discount_codes`، `discount_usages` |
+| وفاداری | `loyalty_points`، `loyalties`، `loyalty_settings`، `rewards` |
+| نظرات | `reviews`، `review_tokens` |
+| اعلان و تنظیمات | `user_notifications`، `notification_settings`، `security_settings`، `security_logs` |
+| گزارش | `report_exports`، `scheduled_reports`، `scheduled_report_runs`، `user_report_settings` |
+| محتوا | `blog_posts`، `blog_categories`، `gallery_images`، `announcements` |
+| پشتیبانی | `support_tickets`، `support_ticket_messages` |
+| سیستم | `jobs`، `job_batches`، `failed_jobs`، `cache`، `cache_locks`، `activity_log`، `migrations`، `telescope_*` |
+
+---
+
+## 🌐 استقرار روی سرور
+
+```bash
+php artisan down
+git pull origin develop
+composer install --no-dev --optimize-autoloader
+npm ci && npm run build
+php artisan migrate --force
+php artisan optimize:clear && php artisan optimize
+php artisan queue:restart
+php artisan up
+```
+
+نکته‌ها:
+- `APP_ENV=production`، `APP_DEBUG=false`، `ZARINPAL_SANDBOX=false`
+- اگر برنامه پشت nginx یا پراکسی است، `TRUSTED_PROXIES` را تنظیم کنید.
+- برای زیردامنه‌ی سالن‌ها: DNS و گواهی wildcard — [`WILDCARD_SUBDOMAIN_DEPLOYMENT.md`](WILDCARD_SUBDOMAIN_DEPLOYMENT.md)
+- کرون scheduler و worker صف — [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCHEDULER_AND_QUEUE.md)
+- بعد از بسته‌ی ۲۰۲۶-۰۹-۲۷ یک بار: `php artisan tenancy:repair-legacy-rows --dry-run` و سپس بدون `--dry-run`
+
+---
+
+## 📚 مستندات بیشتر
+
+| فایل | محتوا |
+|---|---|
+| [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md) | سند اصلی توسعه: تاریخچه، تصمیم‌ها، درس‌ها، قدم‌های باز |
+| [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCHEDULER_AND_QUEUE.md) | scheduler و صف روی DirectAdmin، VPS و Docker |
+| [`WILDCARD_SUBDOMAIN_DEPLOYMENT.md`](WILDCARD_SUBDOMAIN_DEPLOYMENT.md) | راه‌اندازی زیردامنه‌ی سالن‌ها |
+| [`MANUAL_GATEWAY_TESTING_PROMPT.md`](MANUAL_GATEWAY_TESTING_PROMPT.md) | راهنمای تست دستی درگاه‌ها |
 
 ---
 
 ## 🤝 مشارکت
 
-این پروژه به عنوان یک پروژه شخصی-حرفه‌ای توسعه یافته است. برای گزارش باگ یا پیشنهاد ویژگی جدید، یک Issue باز کنید.
-
----
-
-## 📄 لایسنس
-
-این پروژه تحت لایسنس [MIT](LICENSE) منتشر شده است.
+این پروژه به‌صورت شخصی-حرفه‌ای توسعه داده می‌شود. روال توسعه: برنچ `develop`، پیام commitها انگلیسی، هر تغییر در commit جدا، تست روی SQLite و MariaDB. برای گزارش باگ یا پیشنهاد، Issue باز کنید.
 
 ---
 
