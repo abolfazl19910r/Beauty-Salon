@@ -22,6 +22,15 @@ class NotificationSettingService
     private const CACHE_KEY = 'notification_settings:salon:';
 
     /**
+     * کانال ربات (تلگرام/بله) هنوز پیاده‌سازی نشده (تصمیم ۲۰۲۶-۰۹-۲۷): TelegramChannel همه‌ی پیام‌ها را به یک chat_id
+     * سراسری می‌فرستد، یعنی اعلان هر سالن به یک گفت‌وگوی مشترک می‌رفت. تا پیاده‌سازی واقعی (ربات/گفت‌وگوی هر سالن)
+     * هیچ اعلانی این کانال را نمی‌گیرد، حتی اگر ردیفی telegram_enabled را روشن داشته باشد.
+     */
+    public const BOT_CHANNEL_IMPLEMENTED = false;
+
+    public const BOT_NOT_IMPLEMENTED_MESSAGE = 'این قابلیت هنوز پیاده‌سازی نشده است.';
+
+    /**
      * پیش‌فرض‌های آگاهانه‌ای که با رفتار «درست»ی که در این پروژه کشف/مستند شده هم‌راستا هستن —
      * مثلاً پیامک تکراری زمان ثبت نوبت (قبل از پرداخت) و پیامک تشکر تکراری زمان تکمیل نوبت هر دو
      * به‌صورت پیش‌فرض خاموش هستن، ولی ادمین می‌تونه از پنل تنظیمات دوباره روشنشون کنه.
@@ -46,16 +55,15 @@ class NotificationSettingService
         return match ($channel) {
             'sms' => (bool) $row->sms_enabled,
             'database' => (bool) $row->database_enabled,
-            'telegram' => (bool) $row->telegram_enabled,
+            'telegram' => self::BOT_CHANNEL_IMPLEMENTED && (bool) $row->telegram_enabled,
             default => false,
         };
     }
 
     /**
      * از میان کانال‌های «پیش‌فرضی که این نوتیفیکیشن ذاتاً پشتیبانی می‌کند» ($base، مثلاً
-     * ['database','sms'])، فقط آن‌هایی که در تنظیمات فعلی فعال هستند را برمی‌گرداند و در صورت فعال
-     * بودن، 'telegram' را هم اضافه می‌کند (چون همه‌ی رویدادها بالقوه قابلیت ارسال از طریق ربات را
-     * دارند، صرف‌نظر از اینکه در $base ذکر شده باشد یا نه).
+     * ['database','sms'])، فقط آن‌هایی که در تنظیمات فعلی فعال هستند را برمی‌گرداند. 'telegram' فقط وقتی
+     * اضافه می‌شود که کانال ربات پیاده‌سازی شده باشد (BOT_CHANNEL_IMPLEMENTED) — فعلاً هرگز.
      */
     public function channels(string $eventKey, array $base, ?int $salonId = null): array
     {

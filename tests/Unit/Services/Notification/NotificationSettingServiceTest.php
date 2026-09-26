@@ -58,7 +58,7 @@ class NotificationSettingServiceTest extends TestCase
         $this->assertSame(['database'], $channels);
     }
 
-    public function test_channels_adds_telegram_when_enabled_even_if_not_in_the_base_set(): void
+    public function test_channels_never_adds_telegram_while_the_bot_channel_is_not_implemented(): void
     {
         NotificationSetting::create([
             'event_key' => 'test.event',
@@ -69,7 +69,7 @@ class NotificationSettingServiceTest extends TestCase
 
         $channels = $this->service->channels('test.event', ['database', 'sms']);
 
-        $this->assertSame(['database', 'sms', 'telegram'], $channels);
+        $this->assertSame(['database', 'sms'], $channels);
     }
 
     public function test_flush_forces_settings_to_be_re_read_from_the_database(): void

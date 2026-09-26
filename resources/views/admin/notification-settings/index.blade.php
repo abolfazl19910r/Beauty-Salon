@@ -19,12 +19,17 @@
             </div>
         </div>
 
-        @unless($botConfigured)
+        @unless($botImplemented)
             <div class="rounded-xl p-4 mb-5 text-sm" style="background:rgba(217,119,6,0.1); border:1px solid rgba(217,119,6,0.3); color:#B45309;">
-                ⚠️ هنوز توکن/چت‌آیدی هیچ رباتی (تلگرام یا بله) در تنظیمات سرور (.env) وارد نشده؛ فعال‌کردن ستون «ربات» برای یک رویداد، تا وقتی این مقادیر تنظیم نشوند، هیچ پیامی واقعاً ارسال نمی‌کند.
-                متغیرهای لازم: <code dir="ltr">TELEGRAM_BOT_TOKEN</code>، <code dir="ltr">TELEGRAM_CHAT_ID</code> (یا معادل <code dir="ltr">BALE_BOT_TOKEN</code>/<code dir="ltr">BALE_CHAT_ID</code>).
+                ستون «ربات» (تلگرام/بله): {{ $botNotImplementedMessage }}
             </div>
         @endunless
+
+        @error('telegram')
+            <div class="rounded-xl p-4 mb-5 text-sm" style="background:rgba(220,38,38,0.1); border:1px solid rgba(220,38,38,0.3); color:#B91C1C;">
+                {{ $message }}
+            </div>
+        @enderror
 
         <form method="POST" action="{{ route('admin.notification-settings.update') }}">
             @csrf
@@ -65,8 +70,13 @@
                                                @checked($row?->database_enabled ?? true) class="w-4 h-4 rounded cursor-pointer" style="accent-color:var(--admin-accent);">
                                     </td>
                                     <td class="px-4 py-3 text-center">
-                                        <input type="checkbox" name="telegram[{{ $safeKey }}]" value="1"
-                                               @checked($row?->telegram_enabled) class="w-4 h-4 rounded cursor-pointer" style="accent-color:var(--admin-accent);">
+                                        @if($botImplemented)
+                                            <input type="checkbox" name="telegram[{{ $safeKey }}]" value="1"
+                                                   @checked($row?->telegram_enabled) class="w-4 h-4 rounded cursor-pointer" style="accent-color:var(--admin-accent);">
+                                        @else
+                                            <input type="checkbox" name="telegram[{{ $safeKey }}]" value="1" disabled
+                                                   title="{{ $botNotImplementedMessage }}" class="w-4 h-4 rounded cursor-not-allowed opacity-50">
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
