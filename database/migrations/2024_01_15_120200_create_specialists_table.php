@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('salon_id')->constrained('salons')->cascadeOnDelete();
             $table->string('name');
             $table->string('phone');
+            $table->string('photo_path')->nullable();
             $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
             $table->string('email')->unique();
             $table->boolean('auto_confirm_bookings')->default(false);

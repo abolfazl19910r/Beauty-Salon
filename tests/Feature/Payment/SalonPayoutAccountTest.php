@@ -121,33 +121,10 @@ class SalonPayoutAccountTest extends TestCase
         $this->assertTrue($gateway->fresh()->is_active, 'کد پذیرنده‌ی جدید = درگاه دوباره فعال (همون رفتار قبلی)');
     }
 
-    public function test_migration_moves_existing_merchant_and_payout_token_into_the_gateway_row_and_drops_the_columns(): void
+    public function test_zarinpal_credentials_live_only_on_the_gateway_row_not_on_salons(): void
     {
-        $migration = require database_path('migrations/2026_09_25_000100_move_zarinpal_salon_columns_into_payment_gateways.php');
-        $migration->down();
-        \App\Models\SalonPaymentGateway::query()->delete();
-
-        $withBoth = Salon::factory()->create();
-        $onlyToken = Salon::factory()->create();
-        \App\Models\SalonPaymentGateway::query()->delete();
-        \Illuminate\Support\Facades\DB::table('salons')->where('id', $withBoth->id)->update([
-            'zarinpal_merchant_id' => 'aaaaaaaa-1111-2222-3333-bbbbbbbbbbbb',
-            'zarinpal_payout_api_key' => \Illuminate\Support\Facades\Crypt::encryptString('old-column-token'),
-        ]);
-        \Illuminate\Support\Facades\DB::table('salons')->where('id', $onlyToken->id)->update([
-            'zarinpal_merchant_id' => null,
-            'zarinpal_payout_api_key' => \Illuminate\Support\Facades\Crypt::encryptString('orphan-token'),
-        ]);
-
-        $migration->up();
-
         $this->assertFalse(\Illuminate\Support\Facades\Schema::hasColumn('salons', 'zarinpal_merchant_id'));
         $this->assertFalse(\Illuminate\Support\Facades\Schema::hasColumn('salons', 'zarinpal_payout_api_key'));
-        $row = $withBoth->fresh()->zarinpalGateway();
-        $this->assertTrue($row->is_active);
-        $this->assertSame(['merchant_id' => 'aaaaaaaa-1111-2222-3333-bbbbbbbbbbbb', 'payout_api_key' => 'old-column-token'], $row->credentials);
-        $this->assertTrue($withBoth->fresh()->canAutoPayout());
-        $this->assertNull($onlyToken->fresh()->zarinpalGateway(), 'توکن بدون کد پذیرنده منتقل نمی‌شه');
     }
 
     public function test_manual_settlement_still_works_without_any_payout_configuration(): void

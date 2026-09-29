@@ -15,8 +15,12 @@ return new class extends Migration
     {
         Schema::create('security_settings', function (Blueprint $table) {
             $table->id();
+            // تنظیمات امنیتی مختص هر سالن (۲۰۲۶-۰۹-۲۷).
+            $table->foreignId('salon_id')->nullable()->constrained('salons')->cascadeOnDelete();
             $table->unsignedSmallInteger('password_expiry_days')->default(90);
             $table->timestamps();
+
+            $table->unique('salon_id');
         });
     }
 

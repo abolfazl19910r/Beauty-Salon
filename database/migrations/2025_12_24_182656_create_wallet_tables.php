@@ -51,6 +51,10 @@ return new class extends Migration
             $table->string('iban');
             $table->string('account_holder_name');
             $table->enum('status', ['pending', 'processing', 'completed', 'failed', 'cancelled'])->default('pending');
+            // نتیجه‌ی تسویه‌ی خودکار نامعلوم ماند — مدیر باید دستی بررسی کند (ProcessWithdrawalJob).
+            $table->boolean('needs_manual_check')->default(false);
+            // زمان اعلان «نیاز به بررسی» به مالک (AttentionNotifier) — هر مورد فقط یک بار.
+            $table->timestamp('attention_notified_at')->nullable();
             $table->text('admin_note')->nullable();
             $table->text('rejection_reason')->nullable();
             $table->timestamp('processed_at')->nullable();
@@ -61,6 +65,7 @@ return new class extends Migration
             $table->index(['specialist_id', 'status']);
             $table->index('status');
             $table->index('created_at');
+            $table->index('needs_manual_check');
         });
 
         Schema::create('wallet_settings', function (Blueprint $table) {

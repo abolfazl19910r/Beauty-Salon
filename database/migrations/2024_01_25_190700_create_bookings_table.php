@@ -30,6 +30,9 @@ return new class extends Migration
             $table->timestamp('paid_at')->nullable();
             $table->integer('rating')->nullable();
             $table->text('review')->nullable();
+            // درخواست نظرسنجی بعد از تکمیل نوبت (ReviewService) و زمان ثبت نظر
+            $table->timestamp('review_sent_at')->nullable();
+            $table->timestamp('reviewed_at')->nullable();
             $table->text('notes')->nullable();
             $table->enum('cancelled_by', ['customer', 'specialist', 'admin', 'system'])->nullable()->comment('شخصی که نوبت را لغو کرده');
             $table->text('cancellation_reason')->nullable()->comment('دلیل لغو نوبت');

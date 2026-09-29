@@ -39,19 +39,10 @@ return new class extends Migration
             $table->index(['overall_rating', 'created_at']);
             $table->index('is_approved');
         });
-
-        Schema::table('bookings', function (Blueprint $table) {
-            $table->timestamp('review_sent_at')->nullable()->after('review');
-            $table->timestamp('reviewed_at')->nullable()->after('review_sent_at');
-        });
     }
 
     public function down(): void
     {
-        Schema::table('bookings', function (Blueprint $table) {
-            $table->dropColumn(['review_sent_at', 'reviewed_at']);
-        });
-
         Schema::dropIfExists('reviews');
     }
 };

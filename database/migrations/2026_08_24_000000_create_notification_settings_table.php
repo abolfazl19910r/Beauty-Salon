@@ -17,12 +17,16 @@ return new class extends Migration
     {
         Schema::create('notification_settings', function (Blueprint $table) {
             $table->id();
-            $table->string('event_key')->unique();
+            // تنظیمات مختص هر سالن (۲۰۲۶-۰۹-۲۷)؛ null فقط در بافت بدون سالن.
+            $table->foreignId('salon_id')->nullable()->constrained('salons')->cascadeOnDelete();
+            $table->string('event_key');
             $table->string('label')->nullable();
             $table->boolean('sms_enabled')->default(true);
             $table->boolean('database_enabled')->default(true);
             $table->boolean('telegram_enabled')->default(false);
             $table->timestamps();
+
+            $table->unique(['salon_id', 'event_key']);
         });
     }
 

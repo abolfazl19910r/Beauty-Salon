@@ -10,6 +10,8 @@ return new class extends Migration
     {
         Schema::create('roles', function (Blueprint $table) {
             $table->id();
+            // null = نقش سیستمی (کد با نامش چک می‌کند، فقط سوپرادمین تغییرش می‌دهد)؛ غیر null = نقش همان سالن.
+            $table->foreignId('salon_id')->nullable()->constrained('salons')->cascadeOnDelete();
             $table->string('name');
             $table->string('label');
             $table->timestamps();

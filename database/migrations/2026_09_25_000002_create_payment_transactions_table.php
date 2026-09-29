@@ -28,8 +28,14 @@ return new class extends Migration
             $table->unsignedBigInteger('fee_rial')->default(0);
             $table->string('token')->nullable()->index();
             $table->string('ref_id')->nullable();
+            // رسید یکتای درگاه (مثلاً RRN)؛ یکتا در هر درگاه تا یک رسید دو بار ثبت نشود.
+            $table->string('gateway_receipt', 100)->nullable();
             $table->string('card_pan')->nullable();
             $table->string('status', 16)->default('pending');
+            // خودکارسازی تسلیم شد — در صفحه‌ی «پرداخت‌های نیازمند بررسی» مدیر (payments:reconcile).
+            $table->boolean('needs_attention')->default(false);
+            // زمان اعلان «نیاز به بررسی» به مالک (AttentionNotifier) — هر مورد فقط یک بار.
+            $table->timestamp('attention_notified_at')->nullable();
             $table->text('callback_url');
             $table->json('start_response')->nullable();
             $table->json('verify_response')->nullable();
@@ -37,6 +43,8 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['salon_id', 'status']);
+            $table->index(['salon_id', 'needs_attention']);
+            $table->unique(['driver', 'gateway_receipt'], 'payment_transactions_driver_receipt_unique');
         });
     }
 

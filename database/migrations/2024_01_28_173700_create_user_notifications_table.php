@@ -11,7 +11,8 @@ return new class extends Migration
         Schema::create('user_notifications', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('type');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            // nullable: اعلانی که گیرنده‌اش متخصص بدون حساب کاربری است کاربر مالک ندارد (UserNotification::ownerUserId()).
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->morphs('notifiable');
             $table->text('data');
             $table->timestamp('read_at')->nullable();

@@ -17,8 +17,7 @@ use Illuminate\Support\Facades\Schema;
  * every salon-owned table (specialists, bookings, ...) carries a NOT NULL salon_id foreign key
  * from its own CREATE migration onward — this table has to exist first. `created_by` is
  * deliberately NOT a column here: it references `users.id`, and `users` doesn't exist yet at
- * this point, so it's added by a tiny follow-up migration
- * (0001_01_01_000001_add_created_by_to_salons_table) immediately after users is created.
+ * this point, so 0001_01_01_000000_create_users_table adds it right after creating users.
  */
 return new class extends Migration
 {
@@ -28,19 +27,17 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('slug')->unique();
-            // ⭐ تصمیم مربوط به مرچنت آیدی مجزا برای هر سالن (زرین‌پال): هر سالن می‌تواند
-            // merchant_id مخصوص خودش را برای پرداخت‌های پیش‌پرداخت نوبت/شارژ کیف‌پول تنظیم کند تا
-            // آن پول مستقیم به حساب زرین‌پال خودِ سالن واریز شود، نه حساب مشترک پلتفرم. عمداً
-            // nullable: سالن تازه‌ساخته تا وقتی merchant_id واقعی‌اش را ثبت نکرده باید بلافاصله
-            // کار کند — PaymentService در نبود این مقدار به merchant_id سراسری برمی‌گردد. این
-            // ستون ربطی به پرداخت خرید/تمدید اشتراک (سالن → پلتفرم) ندارد؛ آن مسیر همیشه از
-            // merchant_id سراسری استفاده می‌کند.
-            $table->string('zarinpal_merchant_id')->nullable();
             // ⭐ پیگیری «محور ۳»: متن‌های بازاریابی اطراف نام سالن (مثل «با سال‌ها تجربه») قبلاً
             // generic و مشترک بین همه‌ی سالن‌ها بودن. هر دو ستون nullable — یک سالن تازه‌ساخته
             // می‌تونه اینا رو خالی بذاره، ViewComposer یک fallback عمومی معقول برمی‌گردونه.
             $table->string('tagline')->nullable();
             $table->text('bio')->nullable();
+            $table->string('logo_path')->nullable();
+            // اطلاعات تماس و معرفی سالن (صفحه‌ی عمومی سالن)
+            $table->string('address', 500)->nullable();
+            $table->string('phone', 20)->nullable();
+            $table->unsignedSmallInteger('established_year')->nullable();
+            $table->json('working_hours')->nullable();
             $table->unsignedInteger('max_specialists_count')->default(0); // 0 = هیچ
             $table->json('module_permissions')->nullable();
             // ⭐ فیچر «سقف/قطع پیامک ماهانه»: مقدار پیش‌فرض از config('billing.sms_quota_per_month')
@@ -63,6 +60,8 @@ return new class extends Migration
             // practice.
             $table->timestamp('subscription_started_at')->nullable();
             $table->timestamp('subscription_ends_at')->nullable();
+            // پایان دوره‌ی آزمایشی رایگان سالنی که از ثبت‌نام عمومی ساخته شده (config('billing.trial_days')).
+            $table->timestamp('trial_ends_at')->nullable();
             $table->boolean('is_suspended')->default(false);
             $table->timestamps();
         });

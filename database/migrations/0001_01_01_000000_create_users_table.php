@@ -50,7 +50,9 @@ return new class extends Migration
             // Dedicated OTP pair for the 2FA flow, deliberately separate from
             // login_verification_code/login_verification_code_expire_at below (the login-OTP
             // pair) so the two flows never clobber each other's codes.
-            $table->string('two_factor_code', 6)->nullable();
+            // ⭐ طول ۱۰ (نه ۶): TWO_FACTOR_CODE_LENGTH تا ۱۰ رقم مجاز است (TwoFactorAuthService) — روی MySQL کد بلندتر
+            // از ستون ذخیره نمی‌شد (۲۰۲۶-۰۹-۲۷).
+            $table->string('two_factor_code', 10)->nullable();
             $table->timestamp('two_factor_code_expires_at')->nullable();
             $table->string('verification_code')->nullable();
             $table->timestamp('verification_code_expire_at')->nullable();
@@ -89,6 +91,12 @@ return new class extends Migration
             });
         }
 
+        // ⭐ salons.created_by به users اشاره می‌کند و users.salon_id به salons — وابستگی دوری. salons قبل از users
+        // ساخته می‌شود (0000_01_01_000000) و created_by همین‌جا، بلافاصله بعد از ساخت users، اضافه می‌شود.
+        Schema::table('salons', function (Blueprint $table) {
+            $table->foreignId('created_by')->nullable()->after('id')->constrained('users')->nullOnDelete();
+        });
+
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('phone')->primary();
             $table->string('token');
@@ -118,6 +126,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        Schema::table('salons', function (Blueprint $table) {
+            $table->dropConstrainedForeignId('created_by');
+        });
+
         Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
