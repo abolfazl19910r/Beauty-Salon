@@ -58,6 +58,11 @@ class NotificationEvents
 
     public const REPORT_EXPORT_READY_ADMIN = 'report.export_ready.admin';
 
+    // پرداخت یا تسویه‌ای که خودکارسازی به نتیجه نرساند و مالک باید رسیدگی کند (AttentionNotifier) — فقط مالک‌های سالن.
+    public const PAYMENT_ATTENTION_ADMIN = 'payment.attention.admin';
+
+    public const WITHDRAWAL_ATTENTION_ADMIN = 'withdrawal.attention.admin';
+
     // وفاداری
     public const LOYALTY_POINTS_EARNED_CUSTOMER = 'loyalty.points_earned.customer';
 
@@ -106,6 +111,8 @@ class NotificationEvents
                 self::PAYMENT_RECEIVED_ADMIN => ['label' => 'دریافت پرداخت جدید — اطلاع به ادمین', 'sms' => true],
                 self::USER_REGISTERED_ADMIN => ['label' => 'ثبت‌نام کاربر جدید — اطلاع به ادمین', 'sms' => false],
                 self::REPORT_EXPORT_READY_ADMIN => ['label' => 'آماده‌شدن خروجی گزارش — اطلاع به ادمین', 'sms' => false],
+                self::PAYMENT_ATTENTION_ADMIN => ['label' => 'پرداخت نیازمند بررسی (نتیجه در درگاه روشن نشد) — اطلاع به مالک سالن', 'sms' => true],
+                self::WITHDRAWAL_ATTENTION_ADMIN => ['label' => 'تسویه‌ی نیازمند بررسی (نتیجه‌ی واریز خودکار نامعلوم) — اطلاع به مالک سالن', 'sms' => true],
             ],
             'وفاداری' => [
                 self::LOYALTY_POINTS_EARNED_CUSTOMER => ['label' => 'کسب امتیاز وفاداری — اطلاع به مشتری', 'sms' => true],

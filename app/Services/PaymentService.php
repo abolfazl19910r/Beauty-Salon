@@ -189,6 +189,10 @@ class PaymentService
             'verify_response' => $result->raw ?: null,
             'verified_at' => $result->success ? now() : null,
         ]);
+
+        if ($transaction?->needs_attention) {
+            app(\App\Services\Admin\AttentionNotifier::class)->paymentFlagged($transaction->id);
+        }
     }
 
     /** درگاهی که پرداخت باهاش شروع شد؛ فقط از بین درگاه‌های همین سالن (session دستکاری‌شده بی‌اثره). */

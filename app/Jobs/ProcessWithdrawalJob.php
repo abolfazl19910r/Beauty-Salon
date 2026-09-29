@@ -109,6 +109,8 @@ class ProcessWithdrawalJob implements ShouldQueue
                     'message' => $result['message'] ?? null,
                 ]);
 
+                app(\App\Services\Admin\AttentionNotifier::class)->withdrawalFlagged($withdrawalRequest->id);
+
                 return;
             }
 

@@ -205,6 +205,7 @@ class ReconcilePaymentTransactions extends Command
             }
 
             PaymentTransaction::whereKey($tx->id)->toBase()->update(['needs_attention' => true]);
+            app(\App\Services\Admin\AttentionNotifier::class)->paymentFlagged($tx->id);
             Log::warning('Payment needs a human: automatic handling window ended', [
                 'transaction_id' => $tx->id, 'salon_id' => $tx->salon_id, 'driver' => $tx->driver, 'status' => $tx->status,
             ]);
