@@ -14,6 +14,4 @@ interface RewardRepositoryInterface extends RepositoryInterface
     public function getNextForPoints(int $points): ?Reward;
 
     public function sumUsedCount(): int;
-
-    public function countActive(): int;
 }

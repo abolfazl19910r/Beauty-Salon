@@ -37,9 +37,4 @@ class RewardRepository extends BaseRepository implements RewardRepositoryInterfa
     {
         return (int) $this->model->sum('used_count');
     }
-
-    public function countActive(): int
-    {
-        return $this->model->where('is_active', true)->count();
-    }
 }

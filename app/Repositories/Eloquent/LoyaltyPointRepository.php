@@ -6,9 +6,7 @@ use App\Models\LoyaltyPoint;
 use App\Models\User;
 use App\Repositories\Contracts\LoyaltyPointRepositoryInterface;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\DB;
 
 class LoyaltyPointRepository extends BaseRepository implements LoyaltyPointRepositoryInterface
 {
@@ -69,11 +67,6 @@ class LoyaltyPointRepository extends BaseRepository implements LoyaltyPointRepos
         ));
     }
 
-    public function countByType(string $type): int
-    {
-        return $this->model->where('type', $type)->count();
-    }
-
     public function paginateForUserWithBooking(int $userId, int $perPage = 10): LengthAwarePaginator
     {
         return $this->model->where('user_id', $userId)
@@ -90,48 +83,5 @@ class LoyaltyPointRepository extends BaseRepository implements LoyaltyPointRepos
         return $this->model->where('user_id', $userId)
             ->orderByDesc('created_at')
             ->paginate($perPage);
-    }
-
-    public function paginateWithFilters(array $filters, int $perPage = 20): LengthAwarePaginator
-    {
-        $query = $this->model->with('user:id,name,phone')
-            ->orderByDesc('created_at');
-
-        if (! empty($filters['user_id'])) {
-            $query->where('user_id', $filters['user_id']);
-        }
-
-        if (! empty($filters['type'])) {
-            $query->where('type', $filters['type']);
-        }
-
-        if (! empty($filters['from'])) {
-            $query->where('created_at', '>=', \Carbon\Carbon::parse($filters['from'])->startOfDay());
-        }
-
-        if (! empty($filters['to'])) {
-            $query->where('created_at', '<=', \Carbon\Carbon::parse($filters['to'])->endOfDay());
-        }
-
-        return $query->paginate($perPage);
-    }
-
-    public function topUsersByPoints(int $limit = 5): Collection
-    {
-        return $this->model->select('user_id', DB::raw('SUM(points) as total_points'))
-            ->groupBy('user_id')
-            ->orderByDesc('total_points')
-            ->limit($limit)
-            ->with('user:id,name,phone')
-            ->get();
-    }
-
-    public function recentByType(string $type, int $limit = 10): Collection
-    {
-        return $this->model->where('type', $type)
-            ->with(['user:id,name', 'booking'])
-            ->orderByDesc('created_at')
-            ->limit($limit)
-            ->get();
     }
 }
