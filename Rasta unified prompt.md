@@ -7045,20 +7045,78 @@ mutationها وریفای شد. دستورهای پاک‌کردن رو با `&&
 - اعلان‌ها و jobها CurrentSalon ندارن → هر چیز «مختص سالن» که اونجا خونده می‌شه باید سالن رو صریحاً از خود رکورد/گیرنده بگیره.
 - rollback migration رو روی MariaDB هم اجرا کن (ترتیب FK/ایندکس).
 
+### ۲۰۲۶-۰۹-۳۰ — تلگرام غیرفعال، اعلان «نیاز به بررسی»، تنظیمات اعلان از سالنِ رکورد، تعداد متخصص و قیمت، ادغام migrationها (۵۲ → ۳۷)
+
+۶ کامیت روی `c01fafb` + این سند؛ هر رفع با تست رگرسیونی که **قبل از رفع شکست می‌خورد**. در پایان کل سوییت:
+**SQLite ۱۴۸۵ (۲ skip)، MariaDB 10.11 ۱۴۸۵ (۱ skip)، بدون شکست**؛ Pint PASS (۸۴۰ فایل).
+
+1. **`fix(notifications)` کانال ربات (تلگرام/بله) پیاده‌سازی نشده** — `TelegramChannel` همه‌چیز را به یک `chat_id` سراسری می‌فرستاد
+   (اعلان همه‌ی سالن‌ها در یک گفت‌وگو). `NotificationSettingService::BOT_CHANNEL_IMPLEMENTED = false`: `telegram` هرگز برگردانده
+   نمی‌شود (حتی ردیف قدیمی روشن)؛ درخواست روشن‌کردن (فرم دستکاری‌شده/POST مستقیم) با «این قابلیت هنوز پیاده‌سازی نشده است.» رد و
+   هیچ‌چیز ذخیره نمی‌شود؛ ستون ربات در صفحه غیرفعال. بقیه‌ی ردپا (config، .env.example، ثبت کانال، ستون `telegram_enabled`) عمداً
+   دست‌نخورده برای پیاده‌سازی بعدی. `TelegramChannelDisabledTest` (۳).
+2. **`chore(loyalty)`** حذف `LoyaltyAdminService::getStatistics/getHistory/getExportData` (بدون هیچ caller/route/view/test) و متدهای
+   repository که فقط آن‌ها استفاده می‌کردند (`countByType`، `paginateWithFilters`، `topUsersByPoints`، `recentByType`، `RewardRepository::countActive`).
+3. **`feat(notifications)` اعلان «نیاز به بررسی» به مالک** — قبلاً سه نقطه پرچم می‌گذاشتند و فقط لاگ بود: `payments:reconcile`
+   (flagAbandoned)، `PaymentService` (آسان‌پرداخت Verify بدون Settlement)، `ProcessWithdrawalJob` (تسویه‌ی نامعلوم).
+   رویدادهای `payment.attention.admin` و `withdrawal.attention.admin` (پیش‌فرض داخلی + پیامک، قابل‌تغییر در تنظیمات هر سالن)؛
+   `AttentionNotifier` فقط به **مالک‌های** (`salon_admins.role=owner`) سالنِ خود مورد؛ **یک بار برای هر مورد** با ادعای اتمی
+   `attention_notified_at` (ستون جدید روی `payment_transactions` و `withdrawal_requests`). `AttentionRequiredNotificationTest` (۵)؛
+   mutation: حذف «یک بار» یا «فقط مالک» هر کدام یک تست را fail می‌کند.
+4. **`fix(notifications)` تنظیمات اعلان از سالنِ رکورد، نه گیرنده** — با تست موقت ثابت شد: مالک دو سالن، اعلان‌های سالن دوم با
+   تنظیمات سالن اول (اولین ردیف `salon_admins`). `RespectsNotificationSettings::settingsSalonId()`؛ هر ۱۸ کلاس سالن را از رکوردش
+   می‌دهند (نوبت → `booking.salon_id`؛ برداشت/نظر/مرخصی → سالن متخصص با `SalonOfNotifiable::ofSpecialist`؛ خروجی گزارش؛ سهمیه‌ی پیامک؛
+   مشتری؛ جایزه). ترتیب: رکورد → گیرنده → CurrentSalon. `NotificationSettingsFollowRecordSalonTest` (هر ۱۸ کلاس قبل از رفع کانال
+   برمی‌گرداندند)؛ `SalonSettingsIsolationTest` که قاعده‌ی قبلی را assert می‌کرد به «هر نوبت با سالن خودش» تغییر کرد.
+5. **`feat(billing)` تعداد متخصص** — فرم ثبت‌نام عمومی «تعداد متخصص‌های سالن» را اجباری می‌پرسد (۱ تا `MAX_SIGNUP_SPECIALISTS`)
+   = `max_specialists_count`. `App\Support\Billing\SubscriptionPricing`: قیمت پلن شامل `INCLUDED_SPECIALISTS_COUNT` (۷) متخصص؛ هر متخصص
+   بیشتر ماهانه `EXTRA_SPECIALIST_PRICE_PER_MONTH` (۲۵۰٬۰۰۰ تومان) با همان نسبت تخفیف پلن، گرد به هزار؛ کمتر از ۷ ارزان‌تر نمی‌شود.
+   فاکتور آنلاین و تمدید دستی بر این اساس؛ صفحه‌ی صورتحساب، صفحه‌ی فروش (FAQ و دیالوگ پلن)، خلاصه‌ی خرید ثبت‌نام و فرم سوپرادمین
+   (پیش‌فرض = ۷) به‌روز. کلید `DEFAULT_MAX_SPECIALISTS_COUNT` حذف شد. `SpecialistCountPricingTest` (۴).
+   ⚠️ تصمیم باز: ۷ یا ۱۰ متخصص شامل (ابوالفضل گفت «۷ یا ۱۰»؛ ۷ پیاده شد، فقط env) و مبلغ ۲۵۰ هزار (پیشنهاد، تأیید صریح نشده).
+6. **`refactor(migrations)` ادغام migrationهای اصلاحی در migration سازنده (۵۲ → ۳۷)** — نقشه‌ی ارجاع‌های قدیمی این سند:
+
+| فایل قدیمی (حذف‌شده) | حالا داخل |
+|---|---|
+| `0001_01_01_000001_add_created_by_to_salons_table` | `0001_01_01_000000_create_users_table` (بعد از ساخت users؛ down اول FK را حذف می‌کند) |
+| `2026_09_23_000001_add_trial_ends_at…`، `2026_09_23_000002_add_contact_details…`، `2026_09_24_000001_add_logo_path…` | `0000_01_01_000000_create_salons_table` |
+| `2026_09_24_000003_add_zarinpal_payout_api_key…`، `2026_09_25_000100_move_zarinpal…` | حذف کامل: ستون‌های زرین‌پال در salons دیگر ساخته نمی‌شوند؛ حلقه‌ی کپی داده در `create_salon_payment_gateways` هم حذف شد |
+| `2026_09_24_000002_add_photo_path_to_specialists` | `2024_01_15_120200_create_specialists_table` |
+| ستون‌های `review_sent_at`/`reviewed_at` در `create_reviews_table` | `2024_01_25_190700_create_bookings_table` |
+| `2026_09_25_000200_add_gateway_receipt…`، بخش payment_transactions از `2026_09_26_000001_add_attention_flags…`، `attention_notified_at` | `2026_09_25_000002_create_payment_transactions_table` |
+| بخش withdrawal_requests از `2026_09_26_000001`، `attention_notified_at` | `2025_12_24_182656_create_wallet_tables` |
+| `2026_09_27_000001` (user_id nullable) | `2024_01_28_173700_create_user_notifications_table` |
+| `2026_09_27_000002` (two_factor_code 10) | `create_users_table` |
+| `2026_09_27_000003` (rewards.salon_id) | `2024_01_27_151700_create_loyalty_system_tables` |
+| `2026_09_27_000004` (roles.salon_id) | `2024_01_01_000003_create_roles_and_permissions_tables` |
+| `2026_09_27_000005` (تنظیمات مختص سالن) | `2026_08_24_000000_create_notification_settings_table` و `2026_08_06_000002_create_security_settings_table` |
+
+   دست‌نخورده: `2026_09_19_000201_add_salon_staff_finance_permissions` (داده‌ی نقش‌های سیستمی؛ RoleSeeder و تست‌ها به آن تکیه دارند).
+   **وریفای:** `Schema::getColumns/getIndexes/getForeignKeys` همه‌ی جدول‌ها قبل و بعد روی SQLite و MariaDB یکسان (MariaDB حتی ترتیب
+   ستون‌ها؛ تنها تفاوت `mysqldump` ترتیب چاپ دو خط KEY)؛ `migrate:fresh --seed`، rollback کامل و migrate دوباره روی هر دو بی‌خطا و
+   schema بعد از آن هم یکسان. `SalonPayoutAccountTest` که فایل move_zarinpal را `require` می‌کرد با تست «salons ستون زرین‌پال ندارد» جایگزین شد.
+
+**الف-۱ (دیتابیس جدا برای هر سالن) — فقط گزارش، تصمیم: ماندن روی یک دیتابیس.** ردپا: ۱۶ مدل `BelongsToSalon` + ۱ `ThroughSpecialist`،
+۶۶ فایل با `CurrentSalon`، `salon_id` در ۲۷ migration، کاربر staff سراسری + `salon_admins`، ۸ job / ۹ دستور / ۷ کار زمان‌بندی‌شده روی
+صف مشترک، کوئری‌های بین‌سالنی پنل پلتفرم (`SalonListFilter`، کیف پول و صورتحساب پلتفرم، سوپرادمین). جزئیات در گزارش چت ۲۰۲۶-۰۹-۳۰.
+
+**درس‌ها:**
+- اعلانی که «درباره‌ی» یک رکورد است سالن را از رکورد بگیرد؛ گیرنده‌ی کارمند می‌تواند چند سالن داشته باشد.
+- «یک بار برای هر مورد» را با UPDATE شرطی روی یک ستون زمان ادعا کن، نه با پرچم وضعیت (پرچم ممکن است پاک و دوباره گذاشته شود).
+- ادغام migration: قبل و بعد را با `Schema::get*` روی هر دو دیتابیس مقایسه کن؛ تستی که فایل migration را `require` می‌کند را پیدا کن.
+
 ### قدم‌های باز
-- **بعد از deploy این بچ روی سرور:** `php artisan migrate` (۵ migration جدید)، بعد `php artisan tenancy:repair-legacy-rows --dry-run`
-  و سپس بدون `--dry-run` (با `--rewards-salon=<slug>` اگه جایزه‌ی بدون سالن گزارش شد). چون تنظیمات اطلاع‌رسانی/امنیتی حالا مختص سالن‌ان،
-  هر سالن با مقادیر پیش‌فرض شروع می‌کنه (ردیف‌های مشترک قبلی فقط در بافت بدون سالن خونده می‌شن) — اگه سالنی تنظیمات خاصی داشت، دوباره
-  ذخیره کنه. نقش‌های ساخته‌شده توسط سالن‌ها تا امروز «سیستمی» شدن (داده‌ها تستی‌ان).
+- **روی سرور (این بچ):** دیتابیس باید از نو ساخته شود — `php artisan migrate:fresh --seed --force` (`migrate` معمولی کافی نیست: فایل‌های
+  سازنده عوض شده‌اند ولی اسمشان نه). در `.env`: `DEFAULT_MAX_SPECIALISTS_COUNT` را حذف و `INCLUDED_SPECIALISTS_COUNT=7`،
+  `EXTRA_SPECIALIST_PRICE_PER_MONTH=250000`، `MAX_SIGNUP_SPECIALISTS=50` اضافه کن؛ بعد `php artisan config:clear`. (`tenancy:repair-legacy-rows` بعد از fresh لازم نیست.)
+- تصمیم: تعداد متخصص شامل پلن ۷ یا ۱۰، و مبلغ هر متخصص اضافه (فعلاً ۲۵۰٬۰۰۰).
+- (اختیاری) امکان افزایش تعداد متخصص توسط خود مالک از صفحه‌ی صورتحساب (فعلاً فقط سوپرادمین)؛ قفل هم‌زمانی روی ساخت متخصص (دو ساخت هم‌زمان در تئوری از سقف رد می‌شوند — ثابت نشده).
+- پیاده‌سازی واقعی ربات (ربات/گفت‌وگوی هر سالن) — تا آن موقع کانال خاموش است.
 - اجرای کل سوییت روی MariaDB (`phpunit.mysql.xml`) بخشی از روال وریفای هر نشست.
-- (کوچک) `LoyaltyAdminService::getStatistics()/getHistory()/getExportData()` هیچ caller و route ندارن (کد مرده، دسترس‌ناپذیر — نشت نیست؛
-  `getExportData` بدون فیلتر سالن است، اگه روزی route گرفت باید اصلاح بشه).
-- (کوچک) ادمینی که مالک چند سالن باشه: `SalonOfNotifiable` تنظیمات اعلان اولین سالنش رو می‌خونه (الان هر ادمین یک سالن داره).
 - ⚠️ باطل کردن کلید کاوه‌نگار و توکن‌های GitHub (توکن قبلی که تا ۲۰۲۶-۰۹-۲۶ در این سند بود و در تاریخچه‌ی git می‌مونه، و
-  توکن‌هایی که در چت‌ها اومدن، از جمله چت درگاه ملت و چت ممیزی ۲۰۲۶-۰۹-۲۷) — **خود ابوالفضل**.
+  توکن‌هایی که در چت‌ها اومدن، از جمله چت درگاه ملت، چت ممیزی ۲۰۲۶-۰۹-۲۷ و چت ۲۰۲۶-۰۹-۳۰) — **خود ابوالفضل**.
 - **تست دستی زیبال، وندار، آسان‌پرداخت** با `MANUAL_GATEWAY_TESTING_PROMPT.md` (تحویل ۲۰۲۶-۰۹-۲۶): شامل اولین تسویه‌ی واقعی
   زیبال (⚠️ واحد ریال در مستندش صریح نیست — مبلغ ثبت‌شده گزارش بشه) و وندار (تومان)، و تمدید توکن وندار. تطبیق آسان‌پرداخت با PDF رسمی IPG REST.
-- (اختیاری) پیامک/اعلان به owner وقتی مورد «نیاز به بررسی» تازه‌ای پیدا می‌شه — الان فقط منو و داشبورد.
 - پارسیان در محیط واقعی: قرارداد + ثبت IP سرور؛ اولین پرداخت کم؛ **یک برگشت واقعی** (مثلاً نوبت از دست رفته) تا namespace سرویس
   برگشت و مهلتش تأیید بشه. مرحله‌ی ۲ (سامان، ملت، پارسیان) از نظر کد کامله.
 - ملت در محیط واقعی: قرارداد + ثبت IP سرور و دامنه/ساب‌دامین هر سالن نزد به‌پرداخت؛ اولین پرداخت با مبلغ کم؛ **مقایسه با
