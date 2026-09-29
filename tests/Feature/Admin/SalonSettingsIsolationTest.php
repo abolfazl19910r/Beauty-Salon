@@ -63,23 +63,26 @@ class SalonSettingsIsolationTest extends TestCase
         $this->assertTrue((bool) $page->viewData('settings')[NotificationEvents::BOOKING_CONFIRMED_CUSTOMER]->sms_enabled);
     }
 
-    public function test_a_queued_notification_follows_its_recipients_salon_settings(): void
+    /**
+     * از ۲۰۲۶-۰۹-۳۰ سالنِ رکوردِ اعلان ملاک است، نه گیرنده (NotificationSettingsFollowRecordSalonTest)؛ اینجا هر گیرنده
+     * اعلانِ نوبتِ سالن خودش را می‌گیرد.
+     */
+    public function test_a_queued_notification_follows_the_settings_of_its_bookings_salon(): void
     {
         $this->saveNotificationSettings($this->ownerA, []);
-        $booking = Booking::factory()->create();
-        app(CurrentSalon::class)->clear();
-
-        $this->assertSame([], (new AdminNewBookingNotification($booking))->via($this->ownerA));
-        $this->assertSame(['database'], (new AdminNewBookingNotification($booking))->via($this->ownerB));
-
         app(CurrentSalon::class)->set($this->salonB);
         $specialistB = Specialist::factory()->create();
+        $bookingB = Booking::factory()->create(['specialist_id' => $specialistB->id]);
         app(CurrentSalon::class)->set($this->salonA);
         $specialistA = Specialist::factory()->create();
+        $bookingA = Booking::factory()->create(['specialist_id' => $specialistA->id]);
         app(CurrentSalon::class)->clear();
 
-        $this->assertSame([], (new BookingNotification($booking))->via($specialistA));
-        $this->assertSame(['database', 'sms'], (new BookingNotification($booking))->via($specialistB));
+        $this->assertSame([], (new AdminNewBookingNotification($bookingA))->via($this->ownerA));
+        $this->assertSame(['database'], (new AdminNewBookingNotification($bookingB))->via($this->ownerB));
+
+        $this->assertSame([], (new BookingNotification($bookingA))->via($specialistA));
+        $this->assertSame(['database', 'sms'], (new BookingNotification($bookingB))->via($specialistB));
     }
 
     public function test_password_expiry_is_set_per_salon(): void

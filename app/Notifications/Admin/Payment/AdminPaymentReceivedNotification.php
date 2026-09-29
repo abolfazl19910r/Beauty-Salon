@@ -25,6 +25,11 @@ class AdminPaymentReceivedNotification extends Notification implements ShouldQue
         $this->smsService = new SMSService;
     }
 
+    protected function settingsSalonId(): ?int
+    {
+        return $this->booking->salon_id;
+    }
+
     public function via(object $notifiable): array
     {
         return $this->gatedChannels(NotificationEvents::PAYMENT_RECEIVED_ADMIN, ['database', 'sms'], $notifiable);

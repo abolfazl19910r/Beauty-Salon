@@ -32,4 +32,10 @@ class SalonOfNotifiable
                 ->value('salon_id')
             ?? $notifiable->salon_id;
     }
+
+    /** سالنِ یک متخصص، بدون وابستگی به CurrentSalon (برای برداشت، نظر، مرخصی). */
+    public static function ofSpecialist(?int $specialistId): ?int
+    {
+        return $specialistId ? Specialist::withoutGlobalScopes()->whereKey($specialistId)->value('salon_id') : null;
+    }
 }

@@ -25,6 +25,11 @@ class NewReviewNotification extends Notification
         $this->smsService = new SMSService;
     }
 
+    protected function settingsSalonId(): ?int
+    {
+        return $this->booking->salon_id;
+    }
+
     public function via($notifiable): array
     {
         return $this->gatedChannels(NotificationEvents::REVIEW_NEW_SPECIALIST, ['database', 'sms'], $notifiable);

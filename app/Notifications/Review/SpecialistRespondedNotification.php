@@ -15,6 +15,11 @@ class SpecialistRespondedNotification extends Notification
 
     public function __construct(protected readonly Review $review) {}
 
+    protected function settingsSalonId(): ?int
+    {
+        return \App\Support\SalonOfNotifiable::ofSpecialist($this->review->specialist_id);
+    }
+
     public function via($notifiable): array
     {
         return $this->gatedChannels(NotificationEvents::REVIEW_RESPONDED_CUSTOMER, ['database'], $notifiable);

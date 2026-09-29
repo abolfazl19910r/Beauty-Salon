@@ -22,6 +22,11 @@ class SmsQuotaExhaustedNotification extends Notification implements ShouldQueue
 
     public function __construct(private readonly Salon $salon, private readonly int $quota) {}
 
+    protected function settingsSalonId(): ?int
+    {
+        return $this->salon->id;
+    }
+
     public function via(object $notifiable): array
     {
         return $this->gatedChannels(NotificationEvents::SMS_QUOTA_EXHAUSTED_ADMIN, ['database', 'sms'], $notifiable);

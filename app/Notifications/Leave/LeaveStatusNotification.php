@@ -25,6 +25,11 @@ class LeaveStatusNotification extends Notification
         $this->smsService = new SMSService;
     }
 
+    protected function settingsSalonId(): ?int
+    {
+        return \App\Support\SalonOfNotifiable::ofSpecialist($this->leave->specialist_id);
+    }
+
     public function via(mixed $notifiable): array
     {
         return $this->gatedChannels(NotificationEvents::LEAVE_STATUS_SPECIALIST, ['database', 'sms'], $notifiable);

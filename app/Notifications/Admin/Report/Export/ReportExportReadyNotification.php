@@ -18,6 +18,11 @@ class ReportExportReadyNotification extends Notification implements ShouldQueue
         private readonly ReportExport $reportExport,
     ) {}
 
+    protected function settingsSalonId(): ?int
+    {
+        return $this->reportExport->salon_id;
+    }
+
     public function via(object $notifiable): array
     {
         return $this->gatedChannels(NotificationEvents::REPORT_EXPORT_READY_ADMIN, ['database'], $notifiable);

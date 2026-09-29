@@ -27,6 +27,11 @@ class RewardRedeemed extends Notification
         $this->smsService = new SMSService;
     }
 
+    protected function settingsSalonId(): ?int
+    {
+        return $this->reward->salon_id ?? null;
+    }
+
     public function via(mixed $notifiable): array
     {
         return $this->gatedChannels(NotificationEvents::LOYALTY_REWARD_REDEEMED_CUSTOMER, ['database', 'sms'], $notifiable);

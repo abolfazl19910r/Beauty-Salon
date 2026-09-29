@@ -26,6 +26,11 @@ class NewReviewReceivedNotification extends Notification
      * but belongs to the separate, older quick-star-rating flow (BookingController::rate()) — it is
      * not touched here.
      */
+    protected function settingsSalonId(): ?int
+    {
+        return \App\Support\SalonOfNotifiable::ofSpecialist($this->review->specialist_id);
+    }
+
     public function via($notifiable): array
     {
         return $this->gatedChannels(NotificationEvents::REVIEW_NEW_SPECIALIST, ['database', 'sms'], $notifiable);

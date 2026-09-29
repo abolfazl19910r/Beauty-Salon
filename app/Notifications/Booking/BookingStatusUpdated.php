@@ -50,6 +50,11 @@ class BookingStatusUpdated extends Notification
      * - status='confirmed' (specialist approves the booking): the one case that was always correct
      *   (single SMS) — now settings-gated via BOOKING_CONFIRMED_CUSTOMER so admin can still turn it off.
      */
+    protected function settingsSalonId(): ?int
+    {
+        return $this->booking->salon_id;
+    }
+
     public function via($notifiable): array
     {
         if ($this->status === 'completed' || $this->status === 'cancelled') {

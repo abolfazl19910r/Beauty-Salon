@@ -25,6 +25,11 @@ class PointsEarned extends Notification
         $this->smsService = new SMSService;
     }
 
+    protected function settingsSalonId(): ?int
+    {
+        return \App\Models\User::whereKey($this->loyaltyPoint->user_id)->value('salon_id');
+    }
+
     public function via(mixed $notifiable): array
     {
         return $this->gatedChannels(NotificationEvents::LOYALTY_POINTS_EARNED_CUSTOMER, ['database', 'sms'], $notifiable);

@@ -16,6 +16,11 @@ class AdminNewBookingNotification extends Notification implements ShouldQueue
 
     public function __construct(private readonly Booking $booking) {}
 
+    protected function settingsSalonId(): ?int
+    {
+        return $this->booking->salon_id;
+    }
+
     public function via(object $notifiable): array
     {
         return $this->gatedChannels(NotificationEvents::BOOKING_CREATED_ADMIN, ['database'], $notifiable);

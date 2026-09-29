@@ -16,6 +16,11 @@ class AdminNewWithdrawalRequestNotification extends Notification implements Shou
 
     public function __construct(private readonly WithdrawalRequest $withdrawalRequest) {}
 
+    protected function settingsSalonId(): ?int
+    {
+        return \App\Support\SalonOfNotifiable::ofSpecialist($this->withdrawalRequest->specialist_id);
+    }
+
     public function via(object $notifiable): array
     {
         return $this->gatedChannels(NotificationEvents::WITHDRAWAL_REQUESTED_ADMIN, ['database'], $notifiable);

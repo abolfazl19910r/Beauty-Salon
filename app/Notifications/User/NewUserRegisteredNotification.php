@@ -17,6 +17,11 @@ class NewUserRegisteredNotification extends Notification implements ShouldQueue
 
     public function __construct(private readonly User $newUser) {}
 
+    protected function settingsSalonId(): ?int
+    {
+        return $this->newUser->salon_id;
+    }
+
     public function via(object $notifiable): array
     {
         return $this->gatedChannels(NotificationEvents::USER_REGISTERED_ADMIN, ['database'], $notifiable);

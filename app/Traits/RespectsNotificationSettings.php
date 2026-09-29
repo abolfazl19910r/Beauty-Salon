@@ -13,15 +13,22 @@ use App\Support\SalonOfNotifiable;
 trait RespectsNotificationSettings
 {
     /**
-     * تنظیمات مال سالنِ گیرنده است (تصمیم ۲۰۲۶-۰۹-۲۷)؛ اعلان‌ها اغلب در صف ساخته می‌شوند که CurrentSalon ندارد، پس
-     * سالن از خود گیرنده خوانده می‌شود و فقط اگر معلوم نبود به CurrentSalon برمی‌گردد.
+     * تنظیمات مال سالنی است که اعلان درباره‌ی آن است (۲۰۲۶-۰۹-۳۰): اول سالنِ خودِ رکورد (settingsSalonId())، بعد سالنِ
+     * گیرنده، بعد CurrentSalon. اعلان‌ها اغلب در صف ساخته می‌شوند که CurrentSalon ندارد، و گیرنده‌ای که مالک چند سالن
+     * است سالن یکتایی ندارد — پس سالن رکورد مقدم است.
      */
     protected function gatedChannels(string $eventKey, array $base, ?object $notifiable = null): array
     {
         return app(NotificationSettingService::class)->channels(
             $eventKey,
             $base,
-            SalonOfNotifiable::resolve($notifiable) ?? app(CurrentSalon::class)->id()
+            $this->settingsSalonId() ?? SalonOfNotifiable::resolve($notifiable) ?? app(CurrentSalon::class)->id()
         );
+    }
+
+    /** سالنِ رکوردی که اعلان درباره‌ی آن است (نوبت، برداشت، نظر، …)؛ null یعنی از گیرنده پیدا شود. */
+    protected function settingsSalonId(): ?int
+    {
+        return null;
     }
 }

@@ -22,6 +22,11 @@ class WithdrawalApprovedNotification extends Notification
         $this->smsService = new SMSService;
     }
 
+    protected function settingsSalonId(): ?int
+    {
+        return \App\Support\SalonOfNotifiable::ofSpecialist($this->withdrawalRequest->specialist_id);
+    }
+
     public function via(mixed $notifiable): array
     {
         return $this->gatedChannels(NotificationEvents::WITHDRAWAL_APPROVED_SPECIALIST, ['database', 'sms'], $notifiable);

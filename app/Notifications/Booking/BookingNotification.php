@@ -17,6 +17,11 @@ class BookingNotification extends Notification
         private readonly bool $needsApproval = false
     ) {}
 
+    protected function settingsSalonId(): ?int
+    {
+        return $this->booking->salon_id;
+    }
+
     public function via($notifiable): array
     {
         return $this->gatedChannels(NotificationEvents::BOOKING_CREATED_SPECIALIST, ['database', 'sms'], $notifiable);
