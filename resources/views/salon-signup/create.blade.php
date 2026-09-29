@@ -143,7 +143,7 @@
                     <div class="buy-summary">
                         <div>
                             <div class="buy-title">پلن {{ $planLabels[old('subscription_type', $selectedPlan)] ?? '' }}</div>
-                            <div class="buy-price">{{ to_persian_num(number_format($selectedPlanPrice)) }} تومان — پرداخت آنلاین بعد از تایید موبایل</div>
+                            <div class="buy-price">{{ to_persian_num(number_format($selectedPlanPrice)) }} تومان برای {{ to_persian_num((string) $includedSpecialists) }} متخصص (هر متخصص بیشتر هم اضافه می‌شود) — پرداخت آنلاین بعد از تایید موبایل</div>
                         </div>
                         <a href="{{ route('central.home') }}#pricing">تغییر پلن</a>
                     </div>
@@ -161,6 +161,16 @@
                                maxlength="100" pattern="[a-zA-Z0-9_-]+" placeholder="مثلاً: almas-beauty" dir="ltr"
                                autocomplete="off">
                         <div id="slug-status" class="check-status"></div>
+                    </div>
+                    {{-- تعداد متخصص (۲۰۲۶-۰۹-۳۰): سقف متخصص سالن همین عدد است و قیمت اشتراک بر اساس آن (SubscriptionPricing). --}}
+                    <div class="row">
+                        <label for="specialists_count">تعداد متخصص‌های سالن</label>
+                        <input type="number" id="specialists_count" name="specialists_count" value="{{ old('specialists_count', $includedSpecialists) }}"
+                               required min="1" max="{{ $maxSignupSpecialists }}" dir="ltr">
+                        <div class="hint">
+                            تا {{ to_persian_num((string) $includedSpecialists) }} متخصص در قیمت پلن است؛ هر متخصص بیشتر ماهانه
+                            {{ to_persian_num(number_format($extraSpecialistPrice)) }} تومان. سالن بیشتر از این تعداد متخصص نمی‌تواند ثبت کند.
+                        </div>
                     </div>
                     {{-- ⭐ لوگوی اختصاصی سالن (۲۰۲۶-۰۹-۲۴) — اختیاری. --}}
                     <div class="row" style="margin-bottom:0;">

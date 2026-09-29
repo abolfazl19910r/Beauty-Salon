@@ -55,6 +55,9 @@ class SalonSignupController extends Controller
             'selectedPlan' => $selectedPlan,
             'selectedPlanPrice' => (int) $prices[$selectedPlan],
             'trialDays' => $this->salonSignupService->trialDays(),
+            'includedSpecialists' => app(\App\Support\Billing\SubscriptionPricing::class)->includedSpecialists(),
+            'extraSpecialistPrice' => app(\App\Support\Billing\SubscriptionPricing::class)->extraSpecialistPricePerMonth(),
+            'maxSignupSpecialists' => max(1, (int) config('billing.max_signup_specialists', 50)),
             // ⭐ «خرید مستقیم بدون دوره‌ی رایگان» (۲۰۲۶-۰۹-۲۳): ?intent=buy از دکمه‌ی «خرید و پرداخت
             // آنلاین» صفحه‌ی فروش میاد؛ هر مقدار دیگه‌ای یعنی مسیر عادی (آزمایشی).
             'intent' => request()->query('intent') === 'buy' ? 'buy' : 'trial',

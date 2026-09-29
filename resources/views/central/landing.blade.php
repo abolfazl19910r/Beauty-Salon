@@ -494,8 +494,8 @@
                     <span>هر سالن آدرس جدا دارد و داده‌هایش کاملاً از سالن‌های دیگر جداست.</span>
                 </div>
                 <div>
-                    <strong>تا {{ to_persian_num((string) $maxSpecialists) }} متخصص</strong>
-                    <span>برای شروع؛ برای سالن‌های بزرگ‌تر از طریق پشتیبانی افزایش می‌یابد.</span>
+                    <strong>{{ to_persian_num((string) $maxSpecialists) }} متخصص در قیمت پلن</strong>
+                    <span>هر متخصص بیشتر ماهانه {{ to_persian_num(number_format($extraSpecialistPrice)) }} تومان؛ تعداد را موقع ثبت‌نام انتخاب می‌کنید.</span>
                 </div>
                 <div>
                     <strong>{{ to_persian_num(number_format($smsQuota)) }} پیامک در ماه</strong>
@@ -642,7 +642,7 @@
 
             <div class="same-all">
                 <span>همه‌ی امکانات سه پنل</span>
-                <span>تا {{ to_persian_num((string) $maxSpecialists) }} متخصص</span>
+                <span>{{ to_persian_num((string) $maxSpecialists) }} متخصص (هر متخصص بیشتر ماهانه {{ to_persian_num(number_format($extraSpecialistPrice)) }} تومان)</span>
                 <span>{{ to_persian_num(number_format($smsQuota)) }} پیامک در هر ماه</span>
                 <span>تیکت پشتیبانی</span>
             </div>
@@ -741,7 +741,7 @@
             </details>
             <details>
                 <summary>اگر بیشتر از {{ to_persian_num((string) $maxSpecialists) }} متخصص داشته باشم؟</summary>
-                <p>از پنل مدیریت یک تیکت پشتیبانی ثبت کنید تا سقف متخصص‌های سالن شما افزایش یابد.</p>
+                <p>موقع ثبت‌نام تعداد متخصص‌ها را وارد کنید؛ هر متخصص بیشتر ماهانه {{ to_persian_num(number_format($extraSpecialistPrice)) }} تومان به قیمت پلن اضافه می‌شود (در پلن‌های چندماهه با همان تخفیف). برای افزایش بعدی، از پنل مدیریت تیکت پشتیبانی ثبت کنید.</p>
             </details>
             <details>
                 <summary>می‌توانم برای منشی سالن هم دسترسی بسازم؟</summary>
@@ -807,7 +807,7 @@
             <div><small>مدت اشتراک پولی</small><b id="dlg-months"></b></div>
             <div><small>هزینه‌ی هر ماه</small><b id="dlg-per-month"></b></div>
             <div><small>کل پیامک این دوره</small><b id="dlg-sms"></b></div>
-            <div><small>سقف متخصص‌ها</small><b>{{ to_persian_num((string) $maxSpecialists) }} نفر</b></div>
+            <div><small>متخصص در قیمت پلن</small><b>{{ to_persian_num((string) $maxSpecialists) }} نفر</b></div>
         </div>
         <p class="dlg-note" id="dlg-saving"></p>
         <p class="dlg-note">

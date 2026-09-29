@@ -22,6 +22,8 @@ trait SalonContactPayload
             'salon_phone' => '02112345678',
             'experience_years' => '7',
             'working_hours' => $hours,
+            // فیلد اجباری فرم ثبت‌نام عمومی (۲۰۲۶-۰۹-۳۰)؛ فرم سوپرادمین آن را نمی‌خواند.
+            'specialists_count' => 7,
         ], $overrides);
     }
 }

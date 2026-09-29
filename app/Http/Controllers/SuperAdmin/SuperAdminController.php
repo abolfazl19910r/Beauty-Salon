@@ -76,7 +76,12 @@ class SuperAdminController extends Controller
 
     public function create(): View
     {
-        return view('superadmin.salons.create');
+        $pricing = app(\App\Support\Billing\SubscriptionPricing::class);
+
+        return view('superadmin.salons.create', [
+            'includedSpecialists' => $pricing->includedSpecialists(),
+            'extraSpecialistPrice' => $pricing->extraSpecialistPricePerMonth(),
+        ]);
     }
 
     public function store(StoreSalonRequest $request): RedirectResponse

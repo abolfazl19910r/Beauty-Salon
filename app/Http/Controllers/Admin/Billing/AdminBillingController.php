@@ -25,9 +25,16 @@ class AdminBillingController extends Controller
 
         $invoices = $this->invoiceRepository->paginateForSalon($salon->id, 15);
 
-        $prices = config('billing.subscription_prices');
+        // قیمت هر پلن برای همین سالن: قیمت پلن + متخصص‌های بیشتر از تعداد شامل‌شده (SubscriptionPricing).
+        $pricing = app(\App\Support\Billing\SubscriptionPricing::class);
+        $specialists = (int) $salon->max_specialists_count;
+        $prices = collect(\App\Support\Billing\SubscriptionPricing::PLAN_MONTHS)
+            ->map(fn ($months, $type) => $pricing->price($type, $specialists))
+            ->all();
+        $includedSpecialists = $pricing->includedSpecialists();
+        $extraSpecialistPrice = $pricing->extraSpecialistPricePerMonth();
 
-        return view('admin.billing.index', compact('salon', 'invoices', 'prices'));
+        return view('admin.billing.index', compact('salon', 'invoices', 'prices', 'specialists', 'includedSpecialists', 'extraSpecialistPrice'));
     }
 
     public function purchase(Request $request): RedirectResponse

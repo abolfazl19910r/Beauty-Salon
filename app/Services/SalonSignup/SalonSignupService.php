@@ -26,10 +26,8 @@ use Illuminate\Support\Facades\Hash;
  * که چون subscription_ends_at از قبل گذشته، period_start هم درست از now() محاسبه می‌شه (به
  * InvoiceService::markPaidFromGateway نگاه کن، همون فالبک «اگه گذشته، از الان»).
  *
- * max_specialists_count عمداً از کاربر پرسیده نمی‌شه (این یک مفهوم داخلی SaaS است، نه چیزی که
- * یک بازدیدکننده‌ی عادی معنی‌اش رو بدونه) — از config('billing.default_max_specialists_count')
- * گرفته می‌شه؛ تغییرش بعداً هنوز فقط از طریق سوپرادمین (SuperAdminController::update) ممکنه —
- * محدودیت از قبل موجود پروژه، نه چیزی که این فیچر اضافه کرده باشه.
+ * max_specialists_count همان «تعداد متخصص‌ها»یی است که فرم ثبت‌نام می‌پرسد (۲۰۲۶-۰۹-۳۰)؛ قیمت اشتراک بر اساس
+ * همین عدد حساب می‌شه (SubscriptionPricing). تغییرش بعداً از طریق سوپرادمین (SuperAdminController::update).
  *
  * owner برخلاف AdminUserService::create() (که وقتی is_active=true باشه، phone_verified_at
  * بلافاصله ست می‌شه چون سوپرادمین خودش تاییدکننده‌ست) عمداً phone_verified_at=null می‌مونه —
@@ -55,7 +53,7 @@ class SalonSignupService
             $salon = $this->salonRepository->create([
                 'name' => $data['name'],
                 'slug' => $data['slug'],
-                'max_specialists_count' => (int) config('billing.default_max_specialists_count', 3),
+                'max_specialists_count' => (int) $data['specialists_count'],
                 'subscription_type' => $data['subscription_type'] ?? '1m',
                 'subscription_started_at' => now(),
                 // ⭐ عمدی، نه باگ — به docblock بالای این کلاس نگاه کن. با دوره‌ی آزمایشی روشن

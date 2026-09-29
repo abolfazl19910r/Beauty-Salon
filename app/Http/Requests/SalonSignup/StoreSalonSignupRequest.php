@@ -46,6 +46,8 @@ class StoreSalonSignupRequest extends FormRequest
             'subscription_type' => ['nullable', 'in:1m,3m,6m,12m'],
             // «خرید مستقیم» (buy) یا مسیر عادی آزمایشی (trial) — فقط مسیر بعد از تایید OTP رو عوض می‌کنه.
             'intent' => ['nullable', 'in:trial,buy'],
+            // تعداد متخصص سالن = سقف متخصص؛ بیشتر از تعداد شامل‌شده در پلن هزینه‌ی ماهانه دارد (SubscriptionPricing).
+            'specialists_count' => ['required', 'integer', 'min:1', 'max:'.max(1, (int) config('billing.max_signup_specialists', 50))],
             'owner_name' => ['required', 'string', 'max:255'],
             'owner_phone' => [
                 'required', 'string', 'regex:/^09[0-9]{9}$/',
@@ -70,6 +72,9 @@ class StoreSalonSignupRequest extends FormRequest
     {
         return $this->salonContactMessages() + \App\Services\Salon\SalonLogoService::MESSAGES + \App\Support\ZarinpalMerchant::MESSAGES + [
             'slug.unique' => 'این آدرس قبلاً برای سالن دیگری استفاده شده است.',
+            'specialists_count.required' => 'تعداد متخصص‌های سالن را وارد کنید.',
+            'specialists_count.min' => 'سالن حداقل یک متخصص دارد.',
+            'specialists_count.max' => 'برای بیشتر از :max متخصص با پشتیبانی تماس بگیرید.',
             'slug.alpha_dash' => 'آدرس فقط می‌تواند شامل حروف انگلیسی، عدد، خط تیره و زیرخط باشد.',
             'owner_phone.regex' => 'شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد.',
             'owner_phone.unique' => 'ادمینی با این شماره موبایل از قبل ثبت‌نام کرده است.',

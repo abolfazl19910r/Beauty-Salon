@@ -111,7 +111,7 @@
 
 ### 🧾 اشتراک و صورت‌حساب
 - پلن‌های ۱، ۳، ۶ و ۱۲ ماهه، دوره‌ی آزمایشی رایگان
-- محدودیت تعداد متخصص و سهمیه‌ی پیامک بر اساس پلن
+- تعداد متخصص موقع ثبت‌نام سالن پرسیده می‌شود و سقف متخصص همان است؛ قیمت اشتراک = قیمت پلن (شامل `INCLUDED_SPECIALISTS_COUNT` متخصص) + هر متخصص بیشتر ماهانه `EXTRA_SPECIALIST_PRICE_PER_MONTH` تومان؛ سهمیه‌ی پیامک بر اساس پلن
 - پرداخت و تمدید اشتراک، فاکتور، تعلیق خودکار/دستی سالن
 
 ### 📝 محتوا و موارد دیگر
@@ -301,7 +301,9 @@ SUBSCRIPTION_PRICE_12M=13850000
 SUBSCRIPTION_TRIAL_DAYS=14
 SMS_QUOTA_PER_MONTH=1500
 TRIAL_SMS_QUOTA=300
-DEFAULT_MAX_SPECIALISTS_COUNT=3
+INCLUDED_SPECIALISTS_COUNT=7
+EXTRA_SPECIALIST_PRICE_PER_MONTH=250000
+MAX_SIGNUP_SPECIALISTS=50
 ```
 
 ### درگاه پرداخت اشتراک (زرین‌پال پلتفرم)

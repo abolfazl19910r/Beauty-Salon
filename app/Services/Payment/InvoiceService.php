@@ -23,7 +23,7 @@ class InvoiceService
         return $this->invoiceRepository->create([
             'salon_id' => $salon->id,
             'subscription_type' => $subscriptionType,
-            'amount' => $this->priceFor($subscriptionType),
+            'amount' => $this->priceFor($subscriptionType, $salon),
             'status' => 'pending',
             'payment_method' => 'online',
             'created_by' => $createdBy?->id,
@@ -67,7 +67,7 @@ class InvoiceService
             return $this->invoiceRepository->create([
                 'salon_id' => $salon->id,
                 'subscription_type' => $subscriptionType,
-                'amount' => $this->priceFor($subscriptionType),
+                'amount' => $this->priceFor($subscriptionType, $salon),
                 'status' => 'paid',
                 'payment_method' => 'manual',
                 'ref_id' => null,
@@ -79,14 +79,9 @@ class InvoiceService
         });
     }
 
-    public function priceFor(string $subscriptionType): int
+    /** قیمت پلن + متخصص‌های بیشتر از تعداد شامل‌شده (سقف متخصص همین سالن). */
+    public function priceFor(string $subscriptionType, Salon $salon): int
     {
-        $price = config("billing.subscription_prices.{$subscriptionType}");
-
-        if ($price === null) {
-            throw new \InvalidArgumentException("قیمت برای نوع اشتراک نامعتبر: {$subscriptionType}");
-        }
-
-        return (int) $price;
+        return app(\App\Support\Billing\SubscriptionPricing::class)->price($subscriptionType, (int) $salon->max_specialists_count);
     }
 }

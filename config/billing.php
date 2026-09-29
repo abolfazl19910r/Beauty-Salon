@@ -54,12 +54,13 @@ return [
 
     'sms_quota_per_month' => (int) env('SMS_QUOTA_PER_MONTH', 1500),
 
-    // ⭐ محور «۴. ثبت‌نام عمومی سالن (self-service)»: یک سالن self-service (برخلاف سالنی که
-    // سوپرادمین دستی می‌سازه و خودش سقف رو تعیین می‌کنه) نیازی نداره این عدد رو در لحظه‌ی
-    // ثبت‌نام بفهمه/انتخاب کنه — یک پیش‌فرض معقول برای شروع (قابل‌افزایش بعداً فقط توسط
-    // سوپرادمین، SuperAdminController::update). عدد ۳ صرفاً یک تخمین منطقی برای یک سالن
-    // تازه‌کار است، نه یک محاسبه‌ی مستند مثل قیمت‌های بالا — قبل از production بازبینی بشه.
-    'default_max_specialists_count' => (int) env('DEFAULT_MAX_SPECIALISTS_COUNT', 3),
+    // ⭐ تعداد متخصص (تصمیم ابوالفضل ۲۰۲۶-۰۹-۳۰): فرم ثبت‌نام عمومی تعداد متخصص را می‌پرسد و سقف متخصص سالن همان
+    // عدد است. قیمت پلن شامل included_specialists متخصص است؛ هر متخصص بیشتر ماهانه extra_specialist_price_per_month
+    // تومان، با همان تخفیف بازه‌ی پلن (App\Support\Billing\SubscriptionPricing). ۲۵۰ هزار تومان تخمین هزینه‌ی پیامک
+    // نوبت‌های یک متخصص (حدود ۳۳ نوبت در ماه) + ۳۰٪ سود است — قبل از production بازبینی شود.
+    'included_specialists' => (int) env('INCLUDED_SPECIALISTS_COUNT', 7),
+    'extra_specialist_price_per_month' => (int) env('EXTRA_SPECIALIST_PRICE_PER_MONTH', 250000),
+    'max_signup_specialists' => (int) env('MAX_SIGNUP_SPECIALISTS', 50),
 
     // ⭐ فیچر «دوره‌ی آزمایشی رایگان» (۲۰۲۶-۰۹-۲۳): سالنی که از صفحه‌ی ثبت‌نام عمومی ساخته
     // می‌شه، به‌جای «از همون لحظه منقضی»، به این تعداد روز دسترسی کامل و رایگان می‌گیره (پنل

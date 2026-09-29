@@ -72,6 +72,11 @@
                         </label>
                     @endforeach
                 </div>
+                <p class="text-xs mt-3" style="color:var(--admin-text-dim);">
+                    قیمت‌ها برای {{ to_persian_num((string) $specialists) }} متخصص (سقف متخصص سالن شما) است؛
+                    {{ to_persian_num((string) $includedSpecialists) }} متخصص در قیمت پلن و هر متخصص بیشتر ماهانه {{ to_persian_num(number_format($extraSpecialistPrice)) }} تومان.
+                    برای تغییر تعداد متخصص با پشتیبانی تماس بگیرید.
+                </p>
                 <button type="submit" class="mt-4 px-5 py-2.5 rounded-lg text-sm font-bold text-white" style="background:var(--admin-accent);">
                     پرداخت و تمدید
                 </button>

@@ -54,7 +54,8 @@
                     </div>
                     <div>
                         <label class="sa-label">سقف تعداد متخصص</label>
-                        <input type="number" name="max_specialists_count" value="{{ old('max_specialists_count', 5) }}" min="0" class="sa-input" required>
+                        <input type="number" name="max_specialists_count" value="{{ old('max_specialists_count', $includedSpecialists) }}" min="0" class="sa-input" required>
+                        <p class="text-xs mt-1" style="opacity:.7;">{{ $includedSpecialists }} متخصص در قیمت پلن؛ هر متخصص بیشتر ماهانه {{ number_format($extraSpecialistPrice) }} تومان به قیمت تمدید اضافه می‌شود.</p>
                     </div>
                 </div>
             </div>

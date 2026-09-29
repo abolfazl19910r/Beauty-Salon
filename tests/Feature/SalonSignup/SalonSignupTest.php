@@ -60,7 +60,7 @@ class SalonSignupTest extends TestCase
         // ⭐ عمدی: از قبل منقضی، تا EnsureAdminSalonActive بدون هیچ کد جدیدی مستقیم به
         // admin.billing.index هدایت کنه — نه یک باگ.
         $this->assertTrue($salon->subscription_ends_at->isPast());
-        $this->assertSame((int) config('billing.default_max_specialists_count'), $salon->max_specialists_count);
+        $this->assertSame(7, $salon->max_specialists_count, 'تعداد متخصصی که فرم ثبت‌نام پرسید');
 
         $this->assertTrue($salon->admins()->wherePivot('user_id', $owner->id)->wherePivot('role', 'owner')->exists());
         $this->assertTrue($owner->is_admin);

@@ -33,7 +33,8 @@ class CentralLandingController extends Controller
         $prices = config('billing.subscription_prices');
         $trialDays = max(0, (int) config('billing.trial_days', 0));
         $smsQuota = (int) config('billing.sms_quota_per_month');
-        $maxSpecialists = (int) config('billing.default_max_specialists_count');
+        $maxSpecialists = app(\App\Support\Billing\SubscriptionPricing::class)->includedSpecialists();
+        $extraSpecialistPrice = app(\App\Support\Billing\SubscriptionPricing::class)->extraSpecialistPricePerMonth();
 
         $paidFrom = now()->addDays($trialDays);
         $monthlyBase = (int) ($prices['1m'] ?? 0);
@@ -70,6 +71,7 @@ class CentralLandingController extends Controller
             'trialSmsQuota' => (int) config('billing.trial_sms_quota'),
             'smsQuota' => $smsQuota,
             'maxSpecialists' => $maxSpecialists,
+            'extraSpecialistPrice' => $extraSpecialistPrice,
             'todayLabel' => $this->jalaliLabel(now()),
             'addressPrefix' => $this->addressPrefix($request),
             'addressSuffix' => $this->addressSuffix(),
