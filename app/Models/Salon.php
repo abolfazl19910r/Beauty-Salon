@@ -63,6 +63,12 @@ class Salon extends Model
             ->withTimestamps();
     }
 
+    public function isOwner(?User $user): bool
+    {
+        return $user !== null
+            && $this->admins()->wherePivot('user_id', $user->id)->wherePivot('role', 'owner')->exists();
+    }
+
     public function owner(): ?User
     {
         return $this->admins()->wherePivot('role', 'owner')->first();

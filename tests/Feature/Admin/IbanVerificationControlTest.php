@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\Role;
 use App\Models\Salon;
 use App\Models\Specialist;
 use App\Models\SpecialistWallet;
@@ -11,7 +12,7 @@ use Tests\TestCase;
 
 /**
  * تصمیم ۲۰۲۶-۰۹-۳۰: تأیید دستی شبا باید قابل ردگیری باشد، با تأیید صریح «نام را در بانک دیدم»،
- * و قابل لغو باشد.
+ * قابل لغو باشد، و هیچ‌کس جز مالک سالن نتواند شبای خودش را تأیید کند.
  */
 class IbanVerificationControlTest extends TestCase
 {
@@ -28,6 +29,18 @@ class IbanVerificationControlTest extends TestCase
         parent::setUp();
         $this->salon = Salon::where('slug', 'rasta')->firstOrFail();
         $this->owner = User::factory()->create(['is_admin' => true]);
+    }
+
+    private function financeStaff(): User
+    {
+        $staff = User::factory()->create(['is_admin' => false, 'user_type' => 'staff']);
+        $this->salon->admins()->attach($staff->id, ['role' => 'staff']);
+        $staff->roles()->sync([
+            Role::where('name', 'staff')->firstOrFail()->id,
+            Role::where('name', 'finance-access')->firstOrFail()->id,
+        ]);
+
+        return $staff;
     }
 
     private function walletOf(?User $user = null): SpecialistWallet
@@ -69,6 +82,34 @@ class IbanVerificationControlTest extends TestCase
         $this->verify($this->owner, $wallet, confirmed: false)->assertSessionHasErrors('holder_name_checked');
 
         $this->assertFalse((bool) $wallet->fresh()->iban_verified);
+    }
+
+    public function test_a_staff_member_cannot_verify_their_own_iban(): void
+    {
+        $staff = $this->financeStaff();
+        $wallet = $this->walletOf($staff);
+
+        $this->verify($staff, $wallet)->assertSessionHas('error');
+
+        $this->assertFalse((bool) $wallet->fresh()->iban_verified);
+    }
+
+    public function test_a_staff_member_can_verify_another_specialists_iban(): void
+    {
+        $wallet = $this->walletOf();
+
+        $this->verify($this->financeStaff(), $wallet)->assertSessionHas('success');
+
+        $this->assertTrue((bool) $wallet->fresh()->iban_verified);
+    }
+
+    public function test_the_owner_may_verify_their_own_iban(): void
+    {
+        $wallet = $this->walletOf($this->owner);
+
+        $this->verify($this->owner, $wallet)->assertSessionHas('success');
+
+        $this->assertTrue((bool) $wallet->fresh()->iban_verified);
     }
 
     public function test_a_verification_can_be_revoked(): void

@@ -47,6 +47,14 @@ class AdminWalletController extends Controller
     {
         $this->ensureWalletSalonOwnership($wallet);
 
+        // تصمیم ۲۰۲۶-۰۹-۳۰: هیچ‌کس جز مالک سالن شبای خودش را تأیید نمی‌کند — وگرنه کارمند مالی‌ای که متخصص هم هست
+        // می‌توانست شبای دلخواهش را تأیید و برای خودش تسویه‌ی خودکار بزند.
+        $specialist = $wallet->specialist;
+        if ($specialist && (int) $specialist->user_id === (int) auth()->id()
+            && ! $specialist->salon?->isOwner(auth()->user())) {
+            return back()->with('error', 'شما نمی‌توانید شبای خودتان را تأیید کنید؛ این کار فقط از مالک سالن ساخته است.');
+        }
+
         if (! $wallet->iban) {
             return back()->with('error', 'این متخصص هنوز شماره شبا ثبت نکرده است.');
         }
