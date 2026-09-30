@@ -34,6 +34,21 @@ return Application::configure(basePath: dirname(__DIR__))
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
 
+        // سالن جاری باید پیش از route model binding ست شود تا scope سراسری BelongsToSalon خودِ binding را محدود کند
+        // (رکورد سالن دیگر → ۴۰۴، حتی اگر اکشنی چک مالکیت را فراموش کند). Permission پیش از سالن می‌ماند (مثل قبل)،
+        // تا کاربر بی‌دسترسی به‌جای خروج اجباری EnsureAdminSalonActive همان ۴۰۳ را بگیرد.
+        foreach ([
+            \App\Http\Middleware\PermissionMiddleware::class,
+            \App\Http\Middleware\EnsureAdminSalonActive::class,
+            \App\Http\Middleware\EnsureSpecialistSalonActive::class,
+            \App\Http\Middleware\ResolveSalonFromRoute::class,
+        ] as $salonContextMiddleware) {
+            $middleware->prependToPriorityList(
+                before: \Illuminate\Routing\Middleware\SubstituteBindings::class,
+                prepend: $salonContextMiddleware,
+            );
+        }
+
         $middleware->alias([
             'check.booking.ownership' => \App\Http\Middleware\CheckBookingOwnership::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
