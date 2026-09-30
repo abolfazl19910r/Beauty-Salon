@@ -89,9 +89,33 @@
                             <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:#FEF2F2; color:#991B1B;">✗ شبا نامعتبر است (رقم کنترلی نمی‌خواند) — متخصص باید اصلاحش کند</span>
                         @elseif($wallet->iban_verified)
                             <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:#F0FDF4; color:#166534;">✓ تایید شده</span>
+                            <p class="text-xs mt-2 persian-number" style="color:var(--admin-text-dim);">
+                                توسط {{ $wallet->ibanVerifiedBy?->name ?? '—' }}
+                                @if($wallet->iban_verified_at)
+                                    — {{ verta($wallet->iban_verified_at)->format('Y/m/d H:i') }}
+                                @endif
+                            </p>
+                            <form action="{{ route('admin.wallet.unverify-iban', $wallet) }}" method="POST" class="mt-2"
+                                  data-confirm-action data-confirm-message="تأیید این شبا لغو شود؟ تا تأیید دوباره، تسویه‌ی خودکار برای این متخصص انجام نمی‌شود.">
+                                @csrf
+                                <button type="submit" class="w-full py-2 rounded-lg text-xs font-medium" style="background:#FEF2F2; color:#991B1B;">
+                                    لغو تأیید شبا
+                                </button>
+                            </form>
                         @elseif($wallet->iban)
                             <form action="{{ route('admin.wallet.verify-iban', $wallet) }}" method="POST">
                                 @csrf
+                                <div class="rounded-lg p-3 mb-2 text-xs leading-6" style="background:var(--admin-bg); color:var(--admin-text-dim);">
+                                    برای تأیید، شبا را در اپ بانک خودتان در صفحه‌ی انتقال پایا/ساتنا وارد کنید (لازم نیست انتقال را انجام دهید)؛
+                                    بانک نام صاحب حساب را نشان می‌دهد. آن را با «{{ $wallet->account_holder_name ?? '—' }}» و نام متخصص مقایسه کنید.
+                                </div>
+                                <label class="flex items-start gap-2 text-xs mb-2" style="color:var(--admin-text);">
+                                    <input type="checkbox" name="holder_name_checked" value="1" class="mt-1" required>
+                                    <span>نام صاحب حساب را در بانک دیدم و با این متخصص یکی بود.</span>
+                                </label>
+                                @error('holder_name_checked')
+                                    <p class="text-red-500 text-xs mb-2">{{ $message }}</p>
+                                @enderror
                                 <button type="submit"
                                         class="w-full py-2 rounded-lg text-xs font-bold transition-colors"
                                         style="background:var(--admin-accent-light); color:var(--admin-accent);"

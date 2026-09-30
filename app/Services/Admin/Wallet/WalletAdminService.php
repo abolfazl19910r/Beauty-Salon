@@ -60,7 +60,20 @@ class WalletAdminService
 
     public function verifyIban(SpecialistWallet $wallet): void
     {
-        $this->specialistWalletRepository->update($wallet, ['iban_verified' => true]);
+        $this->specialistWalletRepository->update($wallet, [
+            'iban_verified' => true,
+            'iban_verified_by' => auth()->id(),
+            'iban_verified_at' => now(),
+        ]);
+    }
+
+    public function unverifyIban(SpecialistWallet $wallet): void
+    {
+        $this->specialistWalletRepository->update($wallet, [
+            'iban_verified' => false,
+            'iban_verified_by' => null,
+            'iban_verified_at' => null,
+        ]);
     }
 
     public function adjustWallet(SpecialistWallet $wallet, float $amount, string $description): void

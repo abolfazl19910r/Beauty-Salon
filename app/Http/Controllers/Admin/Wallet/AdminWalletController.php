@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Wallet;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Wallet\AdjustWalletRequest;
+use App\Http\Requests\Admin\Wallet\VerifyIbanRequest;
 use App\Models\SpecialistWallet;
 use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Services\Admin\Wallet\WalletAdminService;
@@ -42,7 +43,7 @@ class AdminWalletController extends Controller
         return view('admin.wallet.show', $this->walletAdminService->getWalletDetail($wallet));
     }
 
-    public function verifyIban(SpecialistWallet $wallet): RedirectResponse
+    public function verifyIban(VerifyIbanRequest $request, SpecialistWallet $wallet): RedirectResponse
     {
         $this->ensureWalletSalonOwnership($wallet);
 
@@ -66,6 +67,15 @@ class AdminWalletController extends Controller
 
             return back()->with('error', 'خطا در تایید شماره شبا: '.$e->getMessage());
         }
+    }
+
+    public function unverifyIban(SpecialistWallet $wallet): RedirectResponse
+    {
+        $this->ensureWalletSalonOwnership($wallet);
+
+        $this->walletAdminService->unverifyIban($wallet);
+
+        return back()->with('success', 'تأیید شماره شبا لغو شد. تا تأیید دوباره، تسویه‌ی خودکار برای این متخصص انجام نمی‌شود.');
     }
 
     public function adjust(AdjustWalletRequest $request, SpecialistWallet $wallet): RedirectResponse

@@ -83,6 +83,8 @@ class SpecialistWalletService
             'account_holder_name' => $data['account_holder_name'],
             'bank_name' => $data['bank_name'],
             'iban_verified' => false,
+            'iban_verified_by' => null,
+            'iban_verified_at' => null,
         ]);
     }
 

@@ -65,7 +65,7 @@ class AdminWalletControllerTest extends TestCase
     {
         $wallet = SpecialistWallet::factory()->create(['iban' => 'IR820540102680020817909002', 'iban_verified' => false]);
 
-        $response = $this->actingAs($this->admin)->post("/admin/wallet/{$wallet->id}/verify-iban");
+        $response = $this->actingAs($this->admin)->post("/admin/wallet/{$wallet->id}/verify-iban", ['holder_name_checked' => '1']);
 
         $response->assertRedirect();
         $response->assertSessionHas('success');

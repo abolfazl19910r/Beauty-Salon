@@ -24,6 +24,8 @@ class SpecialistWallet extends Model
         'account_holder_name',
         'bank_name',
         'iban_verified',
+        'iban_verified_by',
+        'iban_verified_at',
     ];
 
     protected $casts = [
@@ -32,6 +34,7 @@ class SpecialistWallet extends Model
         'total_withdrawn' => 'decimal:2',
         'pending_amount' => 'decimal:2',
         'iban_verified' => 'boolean',
+        'iban_verified_at' => 'datetime',
     ];
 
     public function specialist(): BelongsTo
@@ -217,6 +220,11 @@ class SpecialistWallet extends Model
     public function setIbanAttribute($value)
     {
         $this->attributes['iban'] = str_replace(' ', '', strtoupper($value));
+    }
+
+    public function ibanVerifiedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'iban_verified_by');
     }
 
     public function getHasValidIbanAttribute(): bool

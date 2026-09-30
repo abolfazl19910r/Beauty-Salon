@@ -23,6 +23,7 @@ Route::prefix('wallet')->name('wallet.')->group(function () {
 
     Route::get('/{wallet}', [AdminWalletController::class, 'show'])->name('show');
     Route::post('/{wallet}/verify-iban', [AdminWalletController::class, 'verifyIban'])->name('verify-iban');
+    Route::post('/{wallet}/unverify-iban', [AdminWalletController::class, 'unverifyIban'])->name('unverify-iban');
     Route::post('/{wallet}/adjust', [AdminWalletController::class, 'adjust'])->name('adjust');
     Route::post('/{wallet}/settle-pending', [AdminWalletController::class, 'settlePendingForWallet'])->name('settle-pending-wallet');
 });

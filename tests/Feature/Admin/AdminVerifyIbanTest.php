@@ -18,7 +18,7 @@ class AdminVerifyIbanTest extends TestCase
     {
         $admin = User::factory()->create(['is_admin' => true]);
 
-        return $this->actingAs($admin)->post("/admin/wallet/{$wallet->id}/verify-iban");
+        return $this->actingAs($admin)->post("/admin/wallet/{$wallet->id}/verify-iban", ['holder_name_checked' => '1']);
     }
 
     public function test_a_wallet_without_an_iban_cannot_be_verified(): void
