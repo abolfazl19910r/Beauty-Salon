@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Specialist\Wallet\Withdrawal;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Specialist\Wallet\Withdrawal\StoreWithdrawalRequest;
+use App\Models\SpecialistWallet;
 use App\Models\WalletSetting;
 use App\Models\WithdrawalRequest;
 use App\Services\Specialist\SpecialistWalletService;
+use App\Support\Iban;
 use App\Traits\ResolvesSpecialist;
 use Exception;
 use Illuminate\Http\RedirectResponse;
@@ -37,6 +39,11 @@ class SpecialistWithdrawalController extends Controller
         if (! $wallet->iban) {
             return redirect()->route('specialist.wallet.edit-iban')
                 ->with('error', 'لطفاً ابتدا شماره شبا خود را ثبت کنید.');
+        }
+
+        if (! Iban::isValid($wallet->iban)) {
+            return redirect()->route('specialist.wallet.edit-iban')
+                ->with('error', SpecialistWallet::INVALID_IBAN_MESSAGE);
         }
 
         return view('specialist.wallet.create-withdrawal', compact('specialist', 'wallet', 'settings'));

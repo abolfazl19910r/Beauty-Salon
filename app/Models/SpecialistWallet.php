@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Iban;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class SpecialistWallet extends Model
 {
     use HasFactory;
+
+    public const INVALID_IBAN_MESSAGE = 'شماره شبای ثبت‌شده معتبر نیست (رقم کنترلی آن نمی‌خواند). لطفاً شبا را ویرایش و دوباره ثبت کنید.';
 
     protected $fillable = [
         'specialist_id',
@@ -168,6 +171,13 @@ class SpecialistWallet extends Model
             return [
                 'success' => false,
                 'message' => 'لطفاً ابتدا شماره شبا خود را ثبت کنید.',
+            ];
+        }
+
+        if (! Iban::isValid($this->iban)) {
+            return [
+                'success' => false,
+                'message' => self::INVALID_IBAN_MESSAGE,
             ];
         }
 
