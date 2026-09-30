@@ -189,7 +189,7 @@ class VandarPayoutTest extends TestCase
     {
         $specialist = Specialist::factory()->create();
         $wallet = $specialist->getOrCreateWallet();
-        $wallet->update(['balance' => 500000 - $amountToman, 'total_withdrawn' => $amountToman, 'iban' => 'IR062960000000100324200001']);
+        $wallet->update(['balance' => 500000 - $amountToman, 'total_withdrawn' => $amountToman, 'iban' => 'IR062960000000100324200001', 'iban_verified' => true]);
 
         return WithdrawalRequest::create([
             'wallet_id' => $wallet->id, 'specialist_id' => $specialist->id, 'amount' => $amountToman, 'fee' => 0,

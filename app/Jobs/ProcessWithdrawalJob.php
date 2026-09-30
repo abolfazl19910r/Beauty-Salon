@@ -72,6 +72,24 @@ class ProcessWithdrawalJob implements ShouldQueue
                 return;
             }
 
+            // تصمیم ۲۰۲۶-۰۹-۳۰: بین فرستادن به صف و اجرای job ممکن است شبا عوض یا تأییدش برداشته شده باشد.
+            // هیچ پولی فرستاده نمی‌شود؛ درخواست به pending برمی‌گردد تا مدیر دستی تصمیم بگیرد.
+            if ($blocker = $withdrawalRequest->autoPayoutBlocker()) {
+                $withdrawalRequest->update([
+                    'status' => 'pending',
+                    'payment_details' => array_merge((array) $withdrawalRequest->payment_details, [
+                        'auto_payout_blocked' => ['reason' => $blocker, 'at' => now()->toDateTimeString()],
+                    ]),
+                ]);
+
+                Log::warning('ProcessWithdrawalJob: تسویه‌ی خودکار مسدود شد — شبای تأییدنشده', [
+                    'withdrawal_request_id' => $withdrawalRequest->id,
+                    'reason' => $blocker,
+                ]);
+
+                return;
+            }
+
             $result = $payoutService->payout($withdrawalRequest);
 
             if ($result['success']) {

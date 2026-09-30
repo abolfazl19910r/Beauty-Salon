@@ -198,7 +198,12 @@
                         </p>
                         {{-- ⭐ ۲۰۲۶-۰۹-۲۴: تسویه‌ی خودکار فقط از حساب زرین‌پال خود سالن. --}}
                         @php $payoutSalon = app(\App\Support\CurrentSalon::class)->get(); @endphp
-                        @if ($payoutSalon && $payoutSalon->canAutoPayout())
+                        @php $payoutBlocker = $withdrawalRequest->autoPayoutBlocker(); @endphp
+                        @if ($payoutSalon && $payoutSalon->canAutoPayout() && $payoutBlocker)
+                            <div class="rounded-lg p-3 text-xs leading-6" style="background:#FFFBEB; color:#92400E;">
+                                {{ $payoutBlocker }}
+                            </div>
+                        @elseif ($payoutSalon && $payoutSalon->canAutoPayout())
                         <form action="{{ route('admin.wallet.withdrawals.auto-payout', $withdrawalRequest) }}" method="POST"
                               data-confirm-action data-confirm-message="آیا از تسویه‌ی آنلاین خودکار این درخواست اطمینان دارید؟">
                             @csrf

@@ -167,6 +167,10 @@ class WalletAdminService
             ];
         }
 
+        if ($blocker = $withdrawalRequest->autoPayoutBlocker()) {
+            return ['success' => false, 'message' => $blocker];
+        }
+
         $dispatched = false;
 
         DB::transaction(function () use ($withdrawalRequest, &$dispatched) {

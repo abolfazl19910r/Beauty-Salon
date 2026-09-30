@@ -136,6 +136,8 @@ class AdminWithdrawalControllerTest extends TestCase
         // ⭐ ۲۰۲۶-۰۹-۲۴: تسویه‌ی خودکار فقط وقتی سالن کد پذیرنده + توکن Payout خودش رو داره.
         app(\App\Support\CurrentSalon::class)->get()->update(['zarinpal_payout_api_key' => str_repeat('t', 40)]);
         $withdrawal = WithdrawalRequest::factory()->create(['status' => 'pending']);
+        // تصمیم ۲۰۲۶-۰۹-۳۰: تسویه‌ی خودکار فقط به شبای تأییدشده‌ای که همان شبای درخواست است.
+        $withdrawal->wallet->update(['iban' => $withdrawal->iban, 'iban_verified' => true]);
 
         $response = $this->actingAs($this->admin)
             ->post("/admin/wallet/withdrawals/{$withdrawal->id}/auto-payout");

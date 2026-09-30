@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Iban;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -143,5 +144,33 @@ class WithdrawalRequest extends Model
     public function getFormattedIbanAttribute(): string
     {
         return 'IR'.chunk_split(substr($this->iban, 2), 4, ' ');
+    }
+
+    /**
+     * تصمیم ۲۰۲۶-۰۹-۳۰: تسویه‌ی خودکار فقط به شبایی که مدیر تأیید کرده. شبای درخواست هنگام ثبت از کیف پول کپی
+     * می‌شود؛ اگر متخصص بعداً شبا را عوض کرده باشد، تأیید فعلی کیف پول درباره‌ی شبای دیگری است.
+     * null یعنی مانعی نیست؛ وگرنه دلیل فارسی برای نمایش به مدیر.
+     */
+    public function autoPayoutBlocker(): ?string
+    {
+        $wallet = $this->wallet;
+
+        if (! $wallet || ! $wallet->iban) {
+            return 'متخصص شماره شبا ثبت نکرده است؛ تسویه‌ی خودکار ممکن نیست.';
+        }
+
+        if (! Iban::isValid($this->iban)) {
+            return 'شبای این درخواست معتبر نیست (رقم کنترلی نمی‌خواند)؛ تسویه‌ی خودکار ممکن نیست.';
+        }
+
+        if (Iban::normalize((string) $this->iban) !== Iban::normalize((string) $wallet->iban)) {
+            return 'شبای این درخواست با شبای فعلی کیف پول متخصص یکی نیست (متخصص بعد از ثبت درخواست شبا را عوض کرده). درخواست را دستی تسویه یا رد کنید.';
+        }
+
+        if (! $wallet->iban_verified) {
+            return 'شبای متخصص هنوز تأیید نشده است. تسویه‌ی خودکار فقط به شبای تأییدشده انجام می‌شود؛ ابتدا شبا را در صفحه‌ی کیف پول متخصص تأیید کنید یا مبلغ را دستی واریز کنید.';
+        }
+
+        return null;
     }
 }

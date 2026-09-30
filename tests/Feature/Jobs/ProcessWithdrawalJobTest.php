@@ -21,7 +21,7 @@ class ProcessWithdrawalJobTest extends TestCase
     {
         $specialist = Specialist::factory()->create();
         $wallet = $specialist->getOrCreateWallet();
-        $wallet->update(['balance' => 500000, 'iban' => 'IR820540102680020817909002']);
+        $wallet->update(['balance' => 500000, 'iban' => 'IR820540102680020817909002', 'iban_verified' => true]);
 
         return WithdrawalRequest::create([
             'wallet_id' => $wallet->id,
