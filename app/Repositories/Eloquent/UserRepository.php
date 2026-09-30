@@ -2,12 +2,12 @@
 
 namespace App\Repositories\Eloquent;
 
-use App\Models\Specialist;
 use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Support\CurrentSalon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class UserRepository extends BaseRepository implements UserRepositoryInterface
 {
@@ -73,6 +73,15 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             ->get();
     }
 
+    /**
+     * «عضو سالن»: مشتری همین سالن، مدیر در salon_admins، کاربر متخصص همین سالن (user_id) یا کاربر staff با تلفن یک متخصص همین سالن
+     * (متخصص‌های حذف‌نرم‌شده هم — مثل قبل).
+     *
+     * ⭐ کارایی (۲۰۲۶-۰۹-۳۰): این چهار منبع قبلاً با OR/EXISTS در یک شرط روی users بودند؛ MariaDB با آن شکل هیچ ایندکسی نمی‌تواند
+     * بزند و برای هر شمارش کل users پلتفرم را می‌خواند (داده‌ی ۱۰۰۰ سالن: ۱۵۷ هزار ردیف، ۸۶–۱۴۴ms، رشد با کل پلتفرم). حالا هر منبع
+     * جدا با ایندکس خودش خوانده و در یک جدول مشتق UNION می‌شود (~۱٫۵ms). ⚠️ `id IN (A UNION B …)` بدون جدول مشتق روی MariaDB
+     * به زیرکوئری وابسته تبدیل می‌شد و بدتر بود (۳ ثانیه) — FROM (…) AS salon_members لازم است.
+     */
     public function querySalonMembers(?int $salonId = null): Builder
     {
         $salonId ??= app(CurrentSalon::class)->id();
@@ -82,14 +91,17 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             return $query;
         }
 
-        $specialists = fn () => Specialist::withoutGlobalScopes()->where('salon_id', $salonId);
+        // pgsql ستون تولیدی staff_phone_key ندارد (ایندکس جزئی دارد)
+        $staffByPhone = DB::getDriverName() === 'pgsql'
+            ? DB::table('users as su')->join('specialists as sp', 'su.phone', '=', 'sp.phone')->where('su.user_type', 'staff')
+            : DB::table('users as su')->join('specialists as sp', 'su.staff_phone_key', '=', 'sp.phone');
 
-        return $query->where(function (Builder $q) use ($salonId, $specialists) {
-            $q->where(fn (Builder $c) => $c->where('user_type', 'customer')->where('salon_id', $salonId))
-                ->orWhereHas('salons', fn ($s) => $s->where('salons.id', $salonId))
-                ->orWhereIn('id', $specialists()->whereNotNull('user_id')->select('user_id'))
-                ->orWhere(fn (Builder $c) => $c->where('user_type', 'staff')->whereIn('phone', $specialists()->select('phone')));
-        });
+        $sources = DB::table('users')->select('id')->where('user_type', 'customer')->where('salon_id', $salonId)
+            ->union(DB::table('salon_admins')->select('user_id')->where('salon_id', $salonId))
+            ->union(DB::table('specialists')->select('user_id')->where('salon_id', $salonId)->whereNotNull('user_id'))
+            ->union($staffByPhone->select('su.id')->where('sp.salon_id', $salonId));
+
+        return $query->whereIn('users.id', DB::query()->fromSub($sources, 'salon_members')->select('salon_members.id'));
     }
 
     public function isSalonMember(User $user, ?int $salonId = null): bool
