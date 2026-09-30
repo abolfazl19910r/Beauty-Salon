@@ -17,6 +17,7 @@ class SalonSmsUsage extends Model
         'salon_id',
         'period',
         'used_count',
+        'otp_count',
         'notified_at',
     ];
 

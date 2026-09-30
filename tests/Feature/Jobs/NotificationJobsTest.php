@@ -87,7 +87,7 @@ class NotificationJobsTest extends TestCase
         $user = User::factory()->create();
 
         $this->mock(SMSService::class, function ($mock) use ($user) {
-            $mock->shouldReceive('sendTemplate')
+            $mock->shouldReceive('sendAuthTemplate')
                 ->once()
                 ->withArgs(fn ($phone, $template, $tokens) => $phone === $user->phone && $tokens === ['482913'])
                 ->andReturn(true);
@@ -99,7 +99,7 @@ class NotificationJobsTest extends TestCase
     public function test_2fa_job_skips_silently_for_a_deleted_user(): void
     {
         $this->mock(SMSService::class, function ($mock) {
-            $mock->shouldNotReceive('sendTemplate');
+            $mock->shouldNotReceive('sendAuthTemplate');
         });
 
         (new Send2faVerificationCodeJob(999999, '123456'))->handle(app(SMSService::class), app(UserRepositoryInterface::class));
@@ -112,7 +112,7 @@ class NotificationJobsTest extends TestCase
         $user = User::factory()->create();
 
         $this->mock(SMSService::class, function ($mock) use ($user) {
-            $mock->shouldReceive('sendTemplate')
+            $mock->shouldReceive('sendAuthTemplate')
                 ->once()
                 ->withArgs(fn ($phone, $template, $tokens) => $phone === $user->phone && $tokens === ['771122'])
                 ->andReturn(true);
@@ -132,7 +132,7 @@ class NotificationJobsTest extends TestCase
         $user = User::factory()->create();
 
         $this->mock(SMSService::class, function ($mock) use ($user) {
-            $mock->shouldReceive('sendTemplate')
+            $mock->shouldReceive('sendAuthTemplate')
                 ->once()
                 ->withArgs(fn ($phone, $template, $tokens) => $phone === $user->phone && $tokens === ['556677'])
                 ->andReturn(true);
@@ -144,7 +144,7 @@ class NotificationJobsTest extends TestCase
     public function test_phone_verification_job_skips_silently_for_a_deleted_user(): void
     {
         $this->mock(SMSService::class, function ($mock) {
-            $mock->shouldNotReceive('sendTemplate');
+            $mock->shouldNotReceive('sendAuthTemplate');
         });
 
         (new SendPhoneVerificationCodeJob(999999, '123456'))->handle(app(SMSService::class), app(UserRepositoryInterface::class));

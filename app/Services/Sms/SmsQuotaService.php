@@ -52,6 +52,24 @@ class SmsQuotaService
      * فقط یک‌بار در هر دوره true برمی‌گرداند (وقتی سقف برای اولین بار همان ماه رد شده) — تا
      * نوتیفیکیشن اتمام شارژ برای هر پیامک بعدیِ مسدودشده دوباره ارسال نشود.
      */
+    /**
+     * پیامک‌های احراز هویت (کد ورود، ۲FA، تأیید تلفن) خرج پلتفرم‌اند و از سقف کم نمی‌شوند؛ فقط برای شفافیت شمرده می‌شوند.
+     */
+    public function recordOtp(Salon $salon): void
+    {
+        $this->usageRow($salon)->increment('otp_count');
+    }
+
+    public function otpCount(Salon $salon): int
+    {
+        return (int) $this->usageRow($salon)->otp_count;
+    }
+
+    public function usedCount(Salon $salon): int
+    {
+        return (int) $this->usageRow($salon)->used_count;
+    }
+
     public function shouldNotifyExhaustion(Salon $salon): bool
     {
         $usage = $this->usageRow($salon);

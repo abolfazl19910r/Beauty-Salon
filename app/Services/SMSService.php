@@ -72,6 +72,19 @@ class SMSService
         }
     }
 
+    /**
+     * پیامک احراز هویت (کد ورود، ۲FA، تأیید تلفن): تصمیم ۲۰۲۶-۰۹-۳۰ — خرج پلتفرم، هرگز با تمام شدن سهمیه‌ی سالن قطع
+     * نمی‌شود و از سقف کم نمی‌شود؛ فقط جدا (otp_count) شمرده می‌شود تا مصرف غیرعادی یک سالن دیده شود.
+     */
+    public function sendAuthTemplate(string $mobile, string $templateName, array $tokens, ?int $salonId = null): bool
+    {
+        if ($salonId !== null && ($salon = app(SalonRepositoryInterface::class)->find($salonId))) {
+            app(SmsQuotaService::class)->recordOtp($salon);
+        }
+
+        return $this->sendTemplate($mobile, $templateName, $tokens);
+    }
+
     public function sendTemplate(string $mobile, string $templateName, array $tokens, ?int $salonId = null): bool
     {
         if ($salonId !== null && ! $this->consumeQuotaOrNotify($salonId)) {

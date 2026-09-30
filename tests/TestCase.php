@@ -28,6 +28,7 @@ abstract class TestCase extends BaseTestCase
         $this->app->instance(SMSService::class, Mockery::mock(SMSService::class, function ($mock) {
             $mock->shouldReceive('send')->andReturn(true)->byDefault();
             $mock->shouldReceive('sendTemplate')->andReturn(true)->byDefault();
+            $mock->shouldReceive('sendAuthTemplate')->andReturn(true)->byDefault();
             $mock->shouldReceive('sendVerificationCode')->andReturn(true)->byDefault();
             $mock->shouldReceive('sendBookingConfirmation')->andReturn(true)->byDefault();
             $mock->shouldReceive('sendBookingReminder')->andReturn(true)->byDefault();
