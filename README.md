@@ -672,6 +672,12 @@ php artisan up
 
 ## 🆕 آخرین تغییرات
 
+**۲۰۲۶-۰۹-۳۰ (ادامه ۷)**
+- صف‌های جدا: `otp` (کد تأیید، با worker اختصاصی)، `sms`، `payments`، `default`، `reports`. پیامک همه‌ی اعلان‌ها از صف `sms` می‌رود.
+  بعد از به‌روزرسانی worker را عوض کنید (Docker: `docker compose up -d`؛ supervisor: فایل `deploy/supervisor/mahru-worker.conf`؛
+  DirectAdmin: تغییری لازم نیست) و `php artisan queue:restart`. راهنما: `docs/deployment/SCHEDULER_AND_QUEUE.md`.
+- داشبورد مدیر، نقش‌ها، بخش امنیت و داشبورد سوپرادمین با تعداد سالن‌ها کند نمی‌شوند.
+
 **۲۰۲۶-۰۹-۳۰ (ادامه ۶)**
 - کارایی: دو ایندکس برای کارهای زمان‌بندی‌شده (`bookings(status, booking_time)`، `payment_transactions(status, updated_at)`)، حذف N+1 و خواندن
   تکه‌تکه در `wallet:settle-pending` (۱۰۰۰ سالن: ۷۹ هزار کوئری → ۲ هزار، حافظه ۴۵۰ → ۴۲ MB). داده‌ی بار برای اندازه‌گیری:
