@@ -7338,6 +7338,28 @@ Bearer؛ فقط از IPهای اعلام‌شده. ⚠️ `result` برای `IBA
 - اعلانی که تا دیروز همزمان بود و salon_id اعلان داخلی‌اش از سالن جاری می‌آید: فقط کانال پیامک را صف کن (`viaConnections` → sync).
 - `new SMSService` در سازنده‌ی اعلان هم mock تست را دور می‌زد هم در payload صف سریال می‌شد.
 
+### ۲۰۲۶-۰۹-۳۰ (ادامه ۸) — همه‌ی پیامک‌های سالن از سهمیه‌ی همان سالن
+
+تصمیم ابوالفضل (پاسخ به یافته‌ی ادامه ۷): «حتماً باید به سهمیه‌ی سالن وصل شوند». ۱ کامیت کد روی بسته‌ی queues (ادامه ۷) + این سند.
+تحویل: `batch-2026-09-30-sms-quota/` (⚠️ بعد از performance و queues). migration ندارد.
+کل سوییت: **SQLite ۱۵۶۵ (۲ skip)، MariaDB 10.11 ۱۵۶۵ (۱ skip)، بدون شکست**.
+
+- **`fix(sms)`** — `SMSService::send()` سهمیه را فقط با `salon_id` اعمال می‌کند؛ این ارسال‌ها آن را نمی‌دادند (نه شمرده، نه قطع):
+  ۹ اعلان گزارش‌شده (`SpecialistBookingCancelledNotification`، `BookingRescheduledNotification`، `NewReviewNotification`،
+  `NewReviewReceivedNotification`، `WithdrawalApproved/RejectedNotification`، `PointsEarned`، `RewardRedeemed`، `LeaveStatusNotification`)
+  و `CancelUnpaidBookings`؛ **به‌علاوه‌ی ۴ مورد که در همین بررسی پیدا شد:** `AdminPaymentReceivedNotification`، `DiscountCodeObserver`
+  (صدور کد و تمام شدن استفاده) و `BookingRescheduleController` (تغییر زمان از پنل مشتری). اعلان‌ها از `settingsSalonId()` موجودشان
+  (همان سالنی که تنظیمات اعلانش را کنترل می‌کند) استفاده می‌کنند. `SalonSmsQuotaCoverageTest` (سالن دوم، بدون سالن جاری مثل worker).
+
+**منتظر تصمیم (دست نخورده):**
+- `SmsQuotaExhaustedNotification` — خبر «سهمیه تمام شد»؛ اگر از سهمیه کم شود، خودش مسدود می‌شود. پیشنهاد: خرج پلتفرم بماند.
+- `SalonWelcomeNotification` (ساخت سالن) و `AttentionRequiredNotification` (پرداخت/برداشت نیازمند بررسی) — پیشنهاد: خوش‌آمد خرج پلتفرم؛
+  هشدار بررسی از سهمیه‌ی سالن ولی با تمام شدن سهمیه قطع نشود؟ (نیاز به حالت سوم در SMSService).
+- کد بازیابی رمز (`PasswordResetController`، `CustomerPasswordResetController`) با `sendTemplate` بدون سالن — خرج پلتفرم است ولی در
+  `otp_count` هم شمرده نمی‌شود؛ پیشنهاد: `sendAuthTemplate` تا کنار بقیه‌ی کدهای تأیید شمرده شود.
+
+**درس:** «پیامک سالن» یعنی هر `send()` با شماره‌ی کاربر سالن — با grep روی کل `app/` پیدا شود، نه فقط اعلان‌ها (observer و کنترلر هم بودند).
+
 ### قدم‌های باز
 - **روی سرور (این بچ):** دیتابیس باید از نو ساخته شود — `php artisan migrate:fresh --seed --force` (`migrate` معمولی کافی نیست: فایل‌های
   سازنده عوض شده‌اند ولی اسمشان نه). در `.env`: `DEFAULT_MAX_SPECIALISTS_COUNT` را حذف و `INCLUDED_SPECIALISTS_COUNT=7`،
@@ -7348,7 +7370,8 @@ Bearer؛ فقط از IPهای اعلام‌شده. ⚠️ `result` برای `IBA
 - **روی سرور (بچ queues، بعد از performance):** کد جدید + `php artisan queue:restart`. **worker‌ها را عوض کنید:** Docker → `docker compose up -d`
   (سرویس تازه‌ی `queue-otp`)؛ supervisor → فایل `deploy/supervisor/mahru-worker.conf` را دوباره کپی و `supervisorctl reread/update`؛
   DirectAdmin → کاری لازم نیست (خط scheduler در کد است). worker قدیمی بدون `--queue` فقط `default` را می‌خواند.
-- **تصمیم:** پیامک ۹ اعلان (و لغو خودکار) از سهمیه‌ی سالن کم شود؟ (ادامه ۷)
+- ✅ پیامک ۹ اعلان، لغو خودکار و ۴ مورد دیگر از سهمیه‌ی سالن (ادامه ۸).
+- **تصمیم (ادامه ۸):** پیامک «سهمیه تمام شد»، خوش‌آمد سالن، هشدار «نیاز به بررسی» و کد بازیابی رمز — خرج پلتفرم یا سالن؟
 - (آینده، تصمیم باز) «یک نفر مالک/مدیر چند سالن» به‌عنوان فیچر: انتخاب‌گر سالن در سشن + افزودن کاربر موجود به سالن دیگر. اعلان‌ها از ۲۰۲۶-۰۹-۳۰ آماده‌اند.
 - **ادامه‌ی بهبودهای تک‌دیتابیس (پیشنهادشده، تصمیم ۲۰۲۶-۰۹-۳۰):** ✅ binding زیر scope سالن و تست طبقه‌بندی مدل‌ها (ادامه ۳)؛ ستون `salon_id` در `user_notifications` + فیلتر فهرست/شمارنده در هر پنل (مدیر
   چندسالنی)؛ نسبت پیامک OTP کادر به سالن یا پلتفرم (تصمیم)؛ ✅ seeder بار ۱۰۰/۱۰۰۰ سالن + slow query log/EXPLAIN + دو ایندکس
