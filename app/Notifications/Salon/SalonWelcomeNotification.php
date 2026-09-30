@@ -60,6 +60,7 @@ class SalonWelcomeNotification extends Notification implements ShouldQueue
 
     public function toSms(object $notifiable): bool
     {
-        return (new SMSService)->send($notifiable->phone, $this->message());
+        // خرج پلتفرم (تصمیم ۲۰۲۶-۰۹-۳۰): عمداً بدون salon_id — از سهمیه کم نمی‌شود و با سهمیه‌ی تمام‌شده هم می‌رود
+        return app(SMSService::class)->send($notifiable->phone, $this->message());
     }
 }

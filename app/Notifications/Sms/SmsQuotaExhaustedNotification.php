@@ -60,6 +60,7 @@ class SmsQuotaExhaustedNotification extends Notification implements ShouldQueue
             number_format($this->quota)
         );
 
-        return (new SMSService)->send($notifiable->phone, $message);
+        // خرج پلتفرم (تصمیم ۲۰۲۶-۰۹-۳۰): عمداً بدون salon_id — از سهمیه کم نمی‌شود و با سهمیه‌ی تمام‌شده هم می‌رود
+        return app(SMSService::class)->send($notifiable->phone, $message);
     }
 }

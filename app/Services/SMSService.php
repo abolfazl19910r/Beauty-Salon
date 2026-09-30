@@ -85,6 +85,19 @@ class SMSService
         return $this->sendTemplate($mobile, $templateName, $tokens);
     }
 
+    /**
+     * هشدارهایی که نباید با تمام شدن سهمیه قطع شوند (پول گیر کرده؛ تصمیم ۲۰۲۶-۰۹-۳۰): از سهمیه‌ی سالن کم می‌شوند — حتی از سقف
+     * بالاتر — ولی هرگز مسدود نمی‌شوند.
+     */
+    public function sendChargedWithoutLimit(string $mobile, string $message, int $salonId): bool
+    {
+        if ($salon = app(SalonRepositoryInterface::class)->find($salonId)) {
+            app(SmsQuotaService::class)->recordUsage($salon);
+        }
+
+        return $this->send($mobile, $message);
+    }
+
     public function sendTemplate(string $mobile, string $templateName, array $tokens, ?int $salonId = null): bool
     {
         if ($salonId !== null && ! $this->consumeQuotaOrNotify($salonId)) {

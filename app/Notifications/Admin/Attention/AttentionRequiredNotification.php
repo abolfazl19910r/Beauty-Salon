@@ -69,7 +69,8 @@ class AttentionRequiredNotification extends Notification implements ShouldQueue
 
     public function toSms(object $notifiable): bool
     {
-        return (new SMSService)->send($notifiable->phone, $this->smsText());
+        // از سهمیه‌ی سالن، ولی با سهمیه‌ی تمام‌شده هم می‌رود (تصمیم ۲۰۲۶-۰۹-۳۰)
+        return app(SMSService::class)->sendChargedWithoutLimit($notifiable->phone, $this->smsText(), $this->salonId);
     }
 
     public function smsText(): string
