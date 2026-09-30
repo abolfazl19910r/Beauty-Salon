@@ -19,6 +19,9 @@ use Illuminate\Support\Facades\Log;
 
 class WalletAdminService
 {
+    /** اندازه‌ی هر تکه در تسویه‌ی درآمدهای pending (settlePendingIncomes) — تست‌ها کوچکش می‌کنند */
+    public int $settlementChunkSize = 1000;
+
     public function __construct(
         protected readonly SpecialistWalletRepositoryInterface $specialistWalletRepository,
         protected readonly WithdrawalRequestRepositoryInterface $withdrawalRequestRepository,
@@ -233,7 +236,7 @@ class WalletAdminService
         bool $ignoreDelay = false,
         string $source = 'schedule'
     ): array {
-        $transactions = $this->walletTransactionRepository->getPendingIncomeForSettlement($wallet?->id);
+        $transactions = $this->walletTransactionRepository->lazyPendingIncomeForSettlement($wallet?->id, $this->settlementChunkSize);
 
         $settledCount = 0;
         $failedCount = 0;

@@ -6,6 +6,7 @@ use App\Models\WalletTransaction;
 use App\Repositories\Contracts\WalletTransactionRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\LazyCollection;
 
 class WalletTransactionRepository extends BaseRepository implements WalletTransactionRepositoryInterface
 {
@@ -47,9 +48,13 @@ class WalletTransactionRepository extends BaseRepository implements WalletTransa
             ->sum('amount');
     }
 
-    public function getPendingIncomeForSettlement(?int $walletId = null): Collection
+    /**
+     * درآمدهای pending همه‌ی سالن‌ها (یا یک کیف پول)، تکه‌تکه به ترتیب id. در ۱۰۰۰ سالن ~۹۷ هزار ردیف است و get() یک‌جا تا ۴۵۰ MB
+     * حافظه می‌گرفت. lazyById با «id بزرگ‌تر از آخرین» صفحه می‌زند، پس تسویه‌ی ردیف‌های یک تکه (که از شرط pending بیرون‌شان می‌برد)
+     * ردیفی از تکه‌ی بعد را جا نمی‌اندازد. نوبت هر درآمد (برای چک «ساعت نوبت گذشته؟») برای هر تکه یک‌جا بار می‌شود، نه یک کوئری برای هر درآمد.
+     */
+    public function lazyPendingIncomeForSettlement(?int $walletId = null, int $chunkSize = 1000): LazyCollection
     {
-        // نوبت هر درآمد برای چک «ساعت نوبت گذشته؟» لازم است — یک‌جا بار شود، نه یک کوئری برای هر درآمد (N+1)
         $query = $this->model->where('type', 'income')
             ->whereJsonContains('metadata->status', 'pending')
             ->with('booking:id,booking_time');
@@ -58,6 +63,6 @@ class WalletTransactionRepository extends BaseRepository implements WalletTransa
             $query->where('wallet_id', $walletId);
         }
 
-        return $query->get();
+        return $query->lazyById($chunkSize);
     }
 }

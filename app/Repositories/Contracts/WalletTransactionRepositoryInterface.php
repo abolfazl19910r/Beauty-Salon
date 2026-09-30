@@ -4,6 +4,7 @@ namespace App\Repositories\Contracts;
 
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\LazyCollection;
 
 interface WalletTransactionRepositoryInterface extends RepositoryInterface
 {
@@ -13,5 +14,5 @@ interface WalletTransactionRepositoryInterface extends RepositoryInterface
 
     public function sumForWalletByTypeAndMonth(int $walletId, string $type, int $month, int $year): float;
 
-    public function getPendingIncomeForSettlement(?int $walletId = null): Collection;
+    public function lazyPendingIncomeForSettlement(?int $walletId = null, int $chunkSize = 1000): LazyCollection;
 }
