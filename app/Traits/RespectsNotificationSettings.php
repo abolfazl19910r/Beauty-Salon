@@ -22,8 +22,14 @@ trait RespectsNotificationSettings
         return app(NotificationSettingService::class)->channels(
             $eventKey,
             $base,
-            $this->settingsSalonId() ?? SalonOfNotifiable::resolve($notifiable) ?? app(CurrentSalon::class)->id()
+            $this->notificationSalonId($notifiable)
         );
+    }
+
+    /** سالنی که اعلان درباره‌ی آن است؛ برای تنظیمات اعلان و برای ستون salon_id اعلان داخلی. */
+    public function notificationSalonId(?object $notifiable = null): ?int
+    {
+        return $this->settingsSalonId() ?? SalonOfNotifiable::resolve($notifiable) ?? app(CurrentSalon::class)->id();
     }
 
     /** سالنِ رکوردی که اعلان درباره‌ی آن است (نوبت، برداشت، نظر، …)؛ null یعنی از گیرنده پیدا شود. */

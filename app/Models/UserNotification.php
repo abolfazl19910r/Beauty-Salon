@@ -20,6 +20,7 @@ class UserNotification extends DatabaseNotification
         'id',
         'type',
         'user_id',
+        'salon_id',
         'notifiable_type',
         'notifiable_id',
         'data',
@@ -68,5 +69,37 @@ class UserNotification extends DatabaseNotification
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * تصمیم ۲۰۲۶-۰۹-۳۰: هر پنل فقط اعلان‌های سالن جاری را می‌بیند، به‌علاوه‌ی اعلان‌های بدون سالن (قدیمی یا پلتفرمی).
+     * بدون سالن جاری (صف، console، سوپرادمین) فیلتری اضافه نمی‌شود.
+     */
+    public static function limitToCurrentSalon($query)
+    {
+        $salonId = app(\App\Support\CurrentSalon::class)->id();
+
+        return $query->when($salonId, fn ($q) => $q->where(
+            fn ($w) => $w->where('user_notifications.salon_id', $salonId)->orWhereNull('user_notifications.salon_id')
+        ));
+    }
+
+    /**
+     * سالنی که اعلان درباره‌ی آن است: اول خود اعلان (سالن رکورد)، بعد داده‌ی اعلان، بعد سالن گیرنده، بعد سالن جاری.
+     */
+    public static function salonIdFor(object $notifiable, object $notification, array $data = []): ?int
+    {
+        if (method_exists($notification, 'notificationSalonId')) {
+            $salonId = $notification->notificationSalonId($notifiable);
+            if ($salonId) {
+                return (int) $salonId;
+            }
+        }
+
+        if (! empty($data['salon_id'])) {
+            return (int) $data['salon_id'];
+        }
+
+        return \App\Support\SalonOfNotifiable::resolve($notifiable) ?? app(\App\Support\CurrentSalon::class)->id();
     }
 }

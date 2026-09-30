@@ -25,6 +25,11 @@ class CustomerBookingNotification extends Notification
      * event key/toggle for this SMS has also been removed entirely from
      * NotificationEvents/the admin settings panel, not merely defaulted off.
      */
+    public function notificationSalonId(?object $notifiable = null): ?int
+    {
+        return $this->booking->salon_id ? (int) $this->booking->salon_id : null;
+    }
+
     public function via($notifiable): array
     {
         return ['database'];

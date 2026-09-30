@@ -333,10 +333,10 @@ class Specialist extends Model
 
     public function notifications()
     {
-        return $this->morphMany(
+        return \App\Models\UserNotification::limitToCurrentSalon($this->morphMany(
             \App\Models\UserNotification::class,
             'notifiable'
-        )->orderBy('created_at', 'desc');
+        )->orderBy('created_at', 'desc'));
     }
 
     public function wallet(): HasOne

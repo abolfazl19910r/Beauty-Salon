@@ -46,7 +46,7 @@ class TenantModelClassificationTest extends TestCase
         'UserWallet' => 'کیف پول مشتری (مشتری مختص سالن است)',
         'UserWalletTransaction' => 'از رابطه‌ی کیف پول مشتری',
         'AdminWalletTransaction' => 'از رابطه‌ی کیف پول سالن',
-        'UserNotification' => 'اعلان‌های خود کاربر',
+        'UserNotification' => 'اعلان‌های خود کاربر؛ رابطه‌ی notifications() با UserNotification::limitToCurrentSalon() فیلتر می‌شود',
         'UserReportSetting' => 'تنظیم خود کاربر',
         'ScheduledReport' => 'مال کاربر',
         'ScheduledReportRun' => 'از رابطه‌ی گزارش زمان‌بندی‌شده',

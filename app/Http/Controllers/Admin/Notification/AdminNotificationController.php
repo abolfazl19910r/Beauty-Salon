@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Notification;
 
 use App\Http\Controllers\Controller;
+use App\Models\UserNotification;
 use App\Traits\HandlesApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -89,9 +90,9 @@ class AdminNotificationController extends Controller
 
     public function deleteAll(): RedirectResponse
     {
-        $deleted = DB::table('user_notifications')
-            ->where('user_id', Auth::id())
-            ->delete();
+        $deleted = UserNotification::limitToCurrentSalon(
+            DB::table('user_notifications')->where('user_id', Auth::id())
+        )->delete();
 
         return redirect()->route('admin.notifications.index')
             ->with('success', 'تمام اعلانات با موفقیت حذف شدند.');
