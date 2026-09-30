@@ -27,6 +27,23 @@
 
 > ⚠️ بدون worker، کرون هم کار را کامل نمی‌کند: لغو نوبت‌ها وارد صف می‌شود ولی هیچ‌وقت اجرا نمی‌شود.
 
+### صف‌ها (تصمیم ۲۰۲۶-۰۹-۳۰)
+
+| صف | چه چیزی | worker |
+|---|---|---|
+| `otp` | کد ورود، ۲FA، تأیید تلفن | worker اختصاصی (فقط `otp`) + اولین صف worker اصلی |
+| `sms` | یادآوری نوبت و کانال پیامک همه‌ی اعلان‌ها | worker اصلی |
+| `payments` | تسویه‌ی درگاه متخصص، لغو نوبت‌های پرداخت‌نشده | worker اصلی |
+| `default` | listenerها و بقیه‌ی اعلان‌ها | worker اصلی |
+| `reports` | تولید PDF گزارش (آخر، چون کند است) | worker اصلی |
+
+ترتیب worker اصلی: `--queue=otp,sms,payments,default,reports` (`App\Support\Queues::workerOrder()`).
+⚠️ `queue:work` بدون `--queue` فقط صف `default` را می‌خواند — پیامک، پول و گزارش هرگز اجرا نمی‌شوند. خط‌های قدیمی را عوض کنید.
+
+روی هاست بدون worker دائمی (`QUEUE_WORK_VIA_SCHEDULER=true`، DirectAdmin) صف فقط هر دقیقه خالی می‌شود؛ برای همین کد تأیید آنجا
+وارد صف نمی‌شود و بلافاصله بعد از فرستادن پاسخ، در همان درخواست ارسال می‌شود (`Queues::dispatchOtp`). بقیه‌ی صف‌ها با خط
+`queue:work --queue=... --stop-when-empty` داخل scheduler اجرا می‌شوند و در کرون تغییری لازم نیست.
+
 ## ۲. کدام روش مال شماست؟
 
 | سرور | کرون | صف | بخش |
@@ -87,8 +104,10 @@ cd /home/[username]/public_html && php artisan schedule:run >> /dev/null 2>&1
 ```bash
 sudo cp deploy/supervisor/mahru-worker.conf /etc/supervisor/conf.d/
 # [username] و مسیرهای داخل فایل را اصلاح کنید
-sudo supervisorctl reread && sudo supervisorctl update && sudo supervisorctl start mahru-worker:*
+sudo supervisorctl reread && sudo supervisorctl update && sudo supervisorctl start mahru-worker:* mahru-worker-otp:*
 ```
+
+فایل دو program دارد: `mahru-worker` (همه‌ی صف‌ها به ترتیب) و `mahru-worker-otp` (فقط کد تأیید).
 
 - بعد از هر deploy: `php artisan queue:restart`. worker کد قدیمی را در حافظه دارد تا ری‌استارت شود.
 
@@ -98,7 +117,7 @@ sudo supervisorctl reread && sudo supervisorctl update && sudo supervisorctl sta
 make setup     # .env را از .env.docker می‌سازد، APP_KEY تولید می‌کند، build و up
 make logs-scheduler
 make logs-queue
-docker compose ps    # app باید healthy باشد؛ queue و scheduler بعد از آن بالا می‌آیند
+docker compose ps    # app باید healthy باشد؛ queue، queue-otp و scheduler بعد از آن بالا می‌آیند
 ```
 
 ### چه چیزی ۲۰۲۶-۰۹-۲۶ اصلاح شد
@@ -149,7 +168,7 @@ make status && make logs-scheduler
 
 ```bash
 php artisan schedule:work
-php artisan queue:work
+php artisan queue:work --queue=otp,sms,payments,default,reports
 ```
 
 یا `composer dev`، که سرور و `queue:listen` و vite را با هم اجرا می‌کند؛ `schedule:work` را جدا بزنید.

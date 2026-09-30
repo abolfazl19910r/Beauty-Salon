@@ -127,7 +127,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // tasks of the same minute are not delayed; stops when the queue is empty or after 50s.
         // Leave it false where a permanent queue:work runs (Docker "queue" service, supervisor).
         if (config('queue.work_via_scheduler')) {
-            $schedule->command('queue:work --stop-when-empty --max-time=50 --tries=3 --timeout=45')
+            // همه‌ی صف‌ها با همان ترتیب worker دائمی؛ کد تأیید اینجا نمی‌آید (Queues::dispatchOtp بعد از پاسخ می‌فرستد)
+            $schedule->command('queue:work --queue='.\App\Support\Queues::workerOrder().' --stop-when-empty --max-time=50 --tries=3 --timeout=45')
                 ->everyMinute()
                 ->withoutOverlapping(2)
                 ->runInBackground();

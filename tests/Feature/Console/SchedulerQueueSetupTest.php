@@ -32,7 +32,7 @@ class SchedulerQueueSetupTest extends TestCase
         $this->refreshApplicationWithSchedule();
 
         $this->artisan('schedule:list')
-            ->expectsOutputToContain('queue:work --stop-when-empty --max-time=50')
+            ->expectsOutputToContain('queue:work --queue='.\App\Support\Queues::workerOrder().' --stop-when-empty --max-time=50')
             ->assertSuccessful();
     }
 
@@ -42,5 +42,23 @@ class SchedulerQueueSetupTest extends TestCase
         $this->refreshApplication();
         config(['queue.work_via_scheduler' => true]);
         $this->app->forgetInstance(\Illuminate\Console\Scheduling\Schedule::class);
+    }
+
+    /**
+     * تصمیم ۲۰۲۶-۰۹-۳۰: worker اصلی همه‌ی صف‌ها را با ترتیب Queues::workerOrder() می‌خواند و یک worker اختصاصی فقط otp را.
+     * worker بدون --queue فقط صف default را می‌خواند و پیامک، پول و گزارش هرگز اجرا نمی‌شدند.
+     */
+    public function test_docker_and_supervisor_workers_read_every_queue_and_codes_have_their_own_worker(): void
+    {
+        $order = '--queue='.\App\Support\Queues::workerOrder().' ';
+
+        foreach (['docker-compose.yml', 'deploy/supervisor/mahru-worker.conf'] as $file) {
+            $content = file_get_contents(base_path($file));
+            $workers = preg_match_all('/queue:work(?:[^\n])*/', $content, $m) ? $m[0] : [];
+
+            $this->assertCount(2, $workers, "{$file}: main worker + otp worker");
+            $this->assertStringContainsString($order, $workers[0], "{$file}: main worker queue order");
+            $this->assertStringContainsString('--queue=otp ', $workers[1], "{$file}: dedicated otp worker");
+        }
     }
 }

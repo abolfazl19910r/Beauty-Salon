@@ -141,7 +141,8 @@ services:
     <<: *laravel
     container_name: beauty_salon_queue
     # entrypoint با آرگومان → نقش worker: بدون migrate/nginx، اجرای همین دستور با کاربر www
-    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600 --timeout=90
+    # ترتیب صف‌ها (App\\Support\\Queues::workerOrder): کد تأیید، پیامک، پول، پیش‌فرض، گزارش
+    command: php artisan queue:work --queue=otp,sms,payments,default,reports --sleep=3 --tries=3 --max-time=3600 --timeout=90
     depends_on:
       mysql:
         condition: service_healthy
@@ -149,6 +150,20 @@ services:
         condition: service_healthy
       app:
         condition: service_healthy   # یعنی migrationها تموم شدن
+
+  # ─── Worker اختصاصی کد تأیید (صف otp) ───────────────────
+  # تصمیم ۲۰۲۶-۰۹-۳۰: کد ورود/۲FA/تأیید تلفن هیچ‌وقت پشت یادآوری‌های دسته‌ای یا یک PDF سنگین نماند.
+  queue-otp:
+    <<: *laravel
+    container_name: beauty_salon_queue_otp
+    command: php artisan queue:work --queue=otp --sleep=1 --tries=2 --max-time=3600 --timeout=30
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      app:
+        condition: service_healthy
 
 
   # ─── Scheduler (Laravel Cron) ────────────────────────────

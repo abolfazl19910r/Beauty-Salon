@@ -68,8 +68,8 @@ logs: ## لاگ همه سرویس‌ها
 logs-app: ## لاگ فقط app
 	docker compose logs -f app
 
-logs-queue: ## لاگ queue worker
-	docker compose logs -f queue
+logs-queue: ## لاگ queue workerها (اصلی + کد تأیید)
+	docker compose logs -f queue queue-otp
 
 logs-scheduler: ## لاگ scheduler (کارهای زمان‌بندی‌شده)
 	docker compose logs -f scheduler
