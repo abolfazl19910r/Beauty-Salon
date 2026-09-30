@@ -3,26 +3,27 @@
 namespace App\Notifications\Withdrawal\Rejected;
 
 use App\Models\WithdrawalRequest;
+use App\Notifications\Concerns\QueuesOnlySmsChannel;
 use App\Services\SMSService;
 use App\Support\Notifications\NotificationEvents;
 use App\Traits\RespectsNotificationSettings;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Queue\SerializesModels;
 
-class WithdrawalRejectedNotification extends Notification
+class WithdrawalRejectedNotification extends Notification implements ShouldQueue
 {
-    use RespectsNotificationSettings;
+    use Queueable, QueuesOnlySmsChannel, RespectsNotificationSettings, SerializesModels;
 
     private WithdrawalRequest $withdrawalRequest;
 
     private string $reason;
 
-    private SMSService $smsService;
-
     public function __construct(WithdrawalRequest $withdrawalRequest, string $reason)
     {
         $this->withdrawalRequest = $withdrawalRequest;
         $this->reason = $reason;
-        $this->smsService = new SMSService;
     }
 
     protected function settingsSalonId(): ?int
@@ -56,6 +57,6 @@ class WithdrawalRejectedNotification extends Notification
             $this->reason,
         );
 
-        return $this->smsService->send($notifiable->phone, $message);
+        return app(SMSService::class)->send($notifiable->phone, $message);
     }
 }

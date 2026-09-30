@@ -3,6 +3,7 @@
 namespace App\Notifications\Admin\Payment;
 
 use App\Models\Booking;
+use App\Notifications\Concerns\SendsSmsOnSmsQueue;
 use App\Services\SMSService;
 use App\Support\Notifications\NotificationEvents;
 use App\Traits\RespectsNotificationSettings;
@@ -12,7 +13,7 @@ use Illuminate\Notifications\Notification;
 
 class AdminPaymentReceivedNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, SendsSmsOnSmsQueue;
     use RespectsNotificationSettings;
 
     private Booking $booking;

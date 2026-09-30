@@ -2,20 +2,22 @@
 
 namespace App\Notifications\Loyalty;
 
+use App\Notifications\Concerns\QueuesOnlySmsChannel;
 use App\Services\SMSService;
 use App\Support\Notifications\NotificationEvents;
 use App\Traits\RespectsNotificationSettings;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Queue\SerializesModels;
 
-class RewardRedeemed extends Notification
+class RewardRedeemed extends Notification implements ShouldQueue
 {
-    use RespectsNotificationSettings;
+    use Queueable, QueuesOnlySmsChannel, RespectsNotificationSettings, SerializesModels;
 
     private mixed $reward;
 
     private mixed $discountCode;
-
-    private SMSService $smsService;
 
     /**
      * @return void
@@ -24,7 +26,6 @@ class RewardRedeemed extends Notification
     {
         $this->reward = $reward;
         $this->discountCode = $discountCode;
-        $this->smsService = new SMSService;
     }
 
     protected function settingsSalonId(): ?int
@@ -56,6 +57,6 @@ class RewardRedeemed extends Notification
             verta($this->discountCode->expires_at)->format('Y/m/d')
         );
 
-        return $this->smsService->send($notifiable->phone, $message);
+        return app(SMSService::class)->send($notifiable->phone, $message);
     }
 }

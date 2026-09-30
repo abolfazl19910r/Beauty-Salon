@@ -3,18 +3,20 @@
 namespace App\Notifications\Loyalty;
 
 use App\Models\LoyaltyPoint;
+use App\Notifications\Concerns\QueuesOnlySmsChannel;
 use App\Services\SMSService;
 use App\Support\Notifications\NotificationEvents;
 use App\Traits\RespectsNotificationSettings;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Queue\SerializesModels;
 
-class PointsEarned extends Notification
+class PointsEarned extends Notification implements ShouldQueue
 {
-    use RespectsNotificationSettings;
+    use Queueable, QueuesOnlySmsChannel, RespectsNotificationSettings, SerializesModels;
 
     private LoyaltyPoint $loyaltyPoint;
-
-    private SMSService $smsService;
 
     /**
      * @return void
@@ -22,7 +24,6 @@ class PointsEarned extends Notification
     public function __construct(LoyaltyPoint $loyaltyPoint)
     {
         $this->loyaltyPoint = $loyaltyPoint;
-        $this->smsService = new SMSService;
     }
 
     protected function settingsSalonId(): ?int
@@ -53,6 +54,6 @@ class PointsEarned extends Notification
             LoyaltyPoint::where('user_id', $notifiable->id)->sum('points')
         );
 
-        return $this->smsService->send($notifiable->phone, $message);
+        return app(SMSService::class)->send($notifiable->phone, $message);
     }
 }

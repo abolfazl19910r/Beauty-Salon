@@ -3,17 +3,19 @@
 namespace App\Notifications\Booking;
 
 use App\Models\Booking;
+use App\Notifications\Concerns\QueuesOnlySmsChannel;
 use App\Services\SMSService;
 use App\Traits\RespectsNotificationSettings;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Queue\SerializesModels;
 
-class SpecialistBookingCancelledNotification extends Notification
+class SpecialistBookingCancelledNotification extends Notification implements ShouldQueue
 {
-    use RespectsNotificationSettings;
+    use Queueable, QueuesOnlySmsChannel, RespectsNotificationSettings, SerializesModels;
 
     protected Booking $booking;
-
-    protected SMSService $smsService;
 
     protected string $cancelledBy;
 
@@ -21,7 +23,6 @@ class SpecialistBookingCancelledNotification extends Notification
     {
         $this->booking = $booking;
         $this->cancelledBy = $cancelledBy;
-        $this->smsService = new SMSService;
     }
 
     /**
@@ -69,7 +70,7 @@ class SpecialistBookingCancelledNotification extends Notification
             $canceller
         );
 
-        return $this->smsService->send($notifiable->phone, $message);
+        return app(SMSService::class)->send($notifiable->phone, $message);
     }
 
     /**

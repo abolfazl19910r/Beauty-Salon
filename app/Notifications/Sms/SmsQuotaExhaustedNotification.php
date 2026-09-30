@@ -3,6 +3,7 @@
 namespace App\Notifications\Sms;
 
 use App\Models\Salon;
+use App\Notifications\Concerns\SendsSmsOnSmsQueue;
 use App\Services\SMSService;
 use App\Support\Notifications\NotificationEvents;
 use App\Traits\RespectsNotificationSettings;
@@ -17,7 +18,7 @@ use Illuminate\Notifications\Notification;
  */
 class SmsQuotaExhaustedNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, SendsSmsOnSmsQueue;
     use RespectsNotificationSettings;
 
     public function __construct(private readonly Salon $salon, private readonly int $quota) {}

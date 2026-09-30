@@ -3,21 +3,23 @@
 namespace App\Notifications\Booking;
 
 use App\Models\Booking;
+use App\Notifications\Concerns\QueuesOnlySmsChannel;
 use App\Services\SMSService;
 use App\Support\Notifications\NotificationEvents;
 use App\Traits\RespectsNotificationSettings;
 use Carbon\Carbon;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Queue\SerializesModels;
 
-class BookingRescheduledNotification extends Notification
+class BookingRescheduledNotification extends Notification implements ShouldQueue
 {
-    use RespectsNotificationSettings;
+    use Queueable, QueuesOnlySmsChannel, RespectsNotificationSettings, SerializesModels;
 
     private Booking $booking;
 
     private string|Carbon $oldTime;
-
-    private SMSService $smsService;
 
     /**
      * @param  Carbon|string  $oldTime
@@ -27,7 +29,6 @@ class BookingRescheduledNotification extends Notification
     {
         $this->booking = $booking;
         $this->oldTime = $oldTime;
-        $this->smsService = new SMSService;
     }
 
     protected function settingsSalonId(): ?int
@@ -66,6 +67,6 @@ class BookingRescheduledNotification extends Notification
             $this->booking->specialist->name
         );
 
-        return $this->smsService->send($notifiable->phone, $message);
+        return app(SMSService::class)->send($notifiable->phone, $message);
     }
 }

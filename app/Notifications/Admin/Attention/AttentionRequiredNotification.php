@@ -6,6 +6,7 @@ use App\Models\PaymentTransaction;
 use App\Models\Salon;
 use App\Models\Specialist;
 use App\Models\WithdrawalRequest;
+use App\Notifications\Concerns\SendsSmsOnSmsQueue;
 use App\Payments\GatewayCatalog;
 use App\Services\Notification\NotificationSettingService;
 use App\Services\SMSService;
@@ -20,7 +21,7 @@ use Illuminate\Notifications\Notification;
  */
 class AttentionRequiredNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, SendsSmsOnSmsQueue;
 
     public function __construct(
         public readonly string $kind,

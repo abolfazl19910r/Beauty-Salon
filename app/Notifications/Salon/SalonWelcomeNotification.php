@@ -3,6 +3,7 @@
 namespace App\Notifications\Salon;
 
 use App\Models\Salon;
+use App\Notifications\Concerns\SendsSmsOnSmsQueue;
 use App\Services\SMSService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -16,7 +17,7 @@ use Illuminate\Notifications\Notification;
  */
 class SalonWelcomeNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, SendsSmsOnSmsQueue;
 
     private readonly string $salonName;
 

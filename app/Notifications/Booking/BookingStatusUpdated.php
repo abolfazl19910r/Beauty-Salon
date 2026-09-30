@@ -3,14 +3,18 @@
 namespace App\Notifications\Booking;
 
 use App\Models\Booking;
+use App\Notifications\Concerns\QueuesOnlySmsChannel;
 use App\Services\SMSService;
 use App\Support\Notifications\NotificationEvents;
 use App\Traits\RespectsNotificationSettings;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Queue\SerializesModels;
 
-class BookingStatusUpdated extends Notification
+class BookingStatusUpdated extends Notification implements ShouldQueue
 {
-    use RespectsNotificationSettings;
+    use Queueable, QueuesOnlySmsChannel, RespectsNotificationSettings, SerializesModels;
 
     protected Booking $booking;
 
@@ -18,14 +22,11 @@ class BookingStatusUpdated extends Notification
 
     protected ?string $reason;
 
-    protected SMSService $smsService;
-
     public function __construct(Booking $booking, string $status, ?string $reason = null)
     {
         $this->booking = $booking;
         $this->status = $status;
         $this->reason = $reason;
-        $this->smsService = new SMSService;
     }
 
     /**
@@ -78,7 +79,7 @@ class BookingStatusUpdated extends Notification
     {
         $message = $this->getSmsMessage($notifiable);
 
-        return $this->smsService->send($notifiable->phone, $message, $this->booking->salon_id);
+        return app(SMSService::class)->send($notifiable->phone, $message, $this->booking->salon_id);
     }
 
     private function getSmsMessage($notifiable): string

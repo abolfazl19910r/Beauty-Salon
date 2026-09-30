@@ -3,18 +3,20 @@
 namespace App\Notifications\Leave;
 
 use App\Models\Leave;
+use App\Notifications\Concerns\QueuesOnlySmsChannel;
 use App\Services\SMSService;
 use App\Support\Notifications\NotificationEvents;
 use App\Traits\RespectsNotificationSettings;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Queue\SerializesModels;
 
-class LeaveStatusNotification extends Notification
+class LeaveStatusNotification extends Notification implements ShouldQueue
 {
-    use RespectsNotificationSettings;
+    use Queueable, QueuesOnlySmsChannel, RespectsNotificationSettings, SerializesModels;
 
     private Leave $leave;
-
-    private SMSService $smsService;
 
     /**
      * @return void
@@ -22,7 +24,6 @@ class LeaveStatusNotification extends Notification
     public function __construct(Leave $leave)
     {
         $this->leave = $leave;
-        $this->smsService = new SMSService;
     }
 
     protected function settingsSalonId(): ?int
@@ -89,6 +90,6 @@ class LeaveStatusNotification extends Notification
             $message .= "\nدلیل: ".$this->leave->reject_reason;
         }
 
-        return $this->smsService->send($notifiable->phone, $message);
+        return app(SMSService::class)->send($notifiable->phone, $message);
     }
 }

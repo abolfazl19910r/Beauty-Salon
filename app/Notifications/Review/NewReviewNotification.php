@@ -3,18 +3,20 @@
 namespace App\Notifications\Review;
 
 use App\Models\Booking;
+use App\Notifications\Concerns\QueuesOnlySmsChannel;
 use App\Services\SMSService;
 use App\Support\Notifications\NotificationEvents;
 use App\Traits\RespectsNotificationSettings;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Queue\SerializesModels;
 
-class NewReviewNotification extends Notification
+class NewReviewNotification extends Notification implements ShouldQueue
 {
-    use RespectsNotificationSettings;
+    use Queueable, QueuesOnlySmsChannel, RespectsNotificationSettings, SerializesModels;
 
     private Booking $booking;
-
-    private SMSService $smsService;
 
     /**
      * @return void
@@ -22,7 +24,6 @@ class NewReviewNotification extends Notification
     public function __construct(Booking $booking)
     {
         $this->booking = $booking;
-        $this->smsService = new SMSService;
     }
 
     protected function settingsSalonId(): ?int
@@ -60,6 +61,6 @@ class NewReviewNotification extends Notification
             $this->booking->review ? 'نظر: '.$this->booking->review : ''
         );
 
-        return $this->smsService->send($notifiable->phone, $message);
+        return app(SMSService::class)->send($notifiable->phone, $message);
     }
 }

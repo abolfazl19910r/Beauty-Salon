@@ -3,14 +3,18 @@
 namespace App\Notifications\Booking;
 
 use App\Models\Booking;
+use App\Notifications\Concerns\QueuesOnlySmsChannel;
 use App\Services\SMSService;
 use App\Support\Notifications\NotificationEvents;
 use App\Traits\RespectsNotificationSettings;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Queue\SerializesModels;
 
-class BookingNotification extends Notification
+class BookingNotification extends Notification implements ShouldQueue
 {
-    use RespectsNotificationSettings;
+    use Queueable, QueuesOnlySmsChannel, RespectsNotificationSettings, SerializesModels;
 
     public function __construct(
         private readonly Booking $booking,
@@ -64,6 +68,6 @@ class BookingNotification extends Notification
             $message .= "\n\n✅ تایید خودکار";
         }
 
-        return (new SMSService)->send($notifiable->phone, $message, $this->booking->salon_id);
+        return app(SMSService::class)->send($notifiable->phone, $message, $this->booking->salon_id);
     }
 }

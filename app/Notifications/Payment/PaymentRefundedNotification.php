@@ -3,6 +3,7 @@
 namespace App\Notifications\Payment;
 
 use App\Models\Salon;
+use App\Notifications\Concerns\SendsSmsOnSmsQueue;
 use App\Services\SMSService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -23,7 +24,7 @@ use Illuminate\Notifications\Notification;
  */
 class PaymentRefundedNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, SendsSmsOnSmsQueue;
 
     public const REASONS = ['slot_taken', 'verify_unanswered', 'amount_mismatch', 'settle_failed', 'charge_recovered'];
 

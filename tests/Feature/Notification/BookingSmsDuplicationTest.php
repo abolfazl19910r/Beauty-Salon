@@ -85,15 +85,32 @@ class BookingSmsDuplicationTest extends TestCase
 
     public function test_paying_for_a_booking_sends_exactly_one_raw_sms_to_the_customer_by_default(): void
     {
-        // Only the customer's raw SMS (BookingObserver::sendCustomerPendingSMS, container-injected
-        // SMSService) is asserted here; the specialist's SMS goes through BookingNotification's own
-        // `new SMSService()` instance, which the mock below doesn't intercept.
-        $this->mock(SMSService::class, function ($mock) {
-            $mock->shouldReceive('send')->once();
-        });
+        // Only the customer's booking SMS is counted. ۲۰۲۶-۰۹-۳۰: اعلان‌های پیامکی SMSService را از container می‌گیرند (صف sms)،
+        // پس پیامک متخصص (BookingNotification) و پیامک امتیاز وفاداری مشتری (PointsEarned) هم به همین mock می‌رسند —
+        // شمارش بر اساس گیرنده و موضوع (نوبت) است.
+        $sentTo = $this->recordSmsRecipients();
 
         $booking = $this->makeBooking(['status' => 'pending']);
         $booking->update(['payment_status' => 'paid']);
+
+        $this->assertSame(1, collect($sentTo->getArrayCopy())->filter(fn ($phone) => $phone === $booking->user->phone)->count());
+    }
+
+    /** گیرنده‌های پیامک‌های مربوط به نوبت */
+    private function recordSmsRecipients(): \ArrayObject
+    {
+        $sentTo = new \ArrayObject;
+        $this->mock(SMSService::class, function ($mock) use ($sentTo) {
+            $mock->shouldReceive('send')->andReturnUsing(function ($phone, $message = '') use ($sentTo) {
+                if (str_contains((string) $message, 'نوبت')) {
+                    $sentTo[] = $phone;
+                }
+
+                return true;
+            });
+        });
+
+        return $sentTo;
     }
 
     public function test_admin_can_disable_the_customer_pending_approval_sms(): void
@@ -105,12 +122,12 @@ class BookingSmsDuplicationTest extends TestCase
             'telegram_enabled' => false,
         ]);
 
-        $this->mock(SMSService::class, function ($mock) {
-            $mock->shouldReceive('send')->never();
-        });
+        $sentTo = $this->recordSmsRecipients();
 
         $booking = $this->makeBooking(['status' => 'pending']);
         $booking->update(['payment_status' => 'paid']);
+
+        $this->assertNotContains($booking->user->phone, $sentTo->getArrayCopy());
     }
 
     public function test_specialist_still_receives_exactly_one_sms_when_a_booking_is_paid(): void

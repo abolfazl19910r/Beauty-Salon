@@ -3,15 +3,18 @@
 namespace App\Notifications\Review;
 
 use App\Models\Review;
+use App\Notifications\Concerns\QueuesOnlySmsChannel;
 use App\Services\SMSService;
 use App\Support\Notifications\NotificationEvents;
 use App\Traits\RespectsNotificationSettings;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Queue\SerializesModels;
 
-class NewReviewReceivedNotification extends Notification
+class NewReviewReceivedNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, QueuesOnlySmsChannel, SerializesModels;
     use RespectsNotificationSettings;
 
     public function __construct(protected readonly Review $review) {}
@@ -64,6 +67,6 @@ class NewReviewReceivedNotification extends Notification
             $this->review->comment ? "\n💬 نظر: {$this->review->comment}" : ''
         );
 
-        return (new SMSService)->send($notifiable->phone, $message);
+        return app(SMSService::class)->send($notifiable->phone, $message);
     }
 }
