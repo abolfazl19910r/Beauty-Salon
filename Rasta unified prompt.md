@@ -7189,14 +7189,38 @@ Bearer؛ فقط از IPهای اعلام‌شده. ⚠️ `result` برای `IBA
 - برای جدا کردن دو رفع در دو کامیت از یک working tree: فایل کامل را کنار بگذار، بخش دوم را موقت حذف کن، کامیت، برگردان؛ و «قبل از رفع» را با
   `git stash push app/` (فقط کد، نه تست) ثابت کن.
 
+### ۲۰۲۶-۰۹-۳۰ (ادامه ۳) — ترتیب middleware پیش از binding + تست طبقه‌بندی مدل‌ها + بررسی سهمیه‌ی پیامک OTP
+
+۲ کامیت کد روی بچ iban-verification (`7466951`) + این سند. تحویل: `batch-2026-09-30-tenancy-guards/` (⚠️ بعد از دو بچ قبلی).
+کل سوییت روی کلون تازه بعد از `git am` هر سه بچ: **SQLite ۱۵۳۲ (۲ skip)، MariaDB 10.11 ۱۵۳۲ (۱ skip)، بدون شکست**.
+
+1. **`fix(routing)` سالن پیش از route model binding** — 🔴 بازتولید با route موقت بدون چک مالکیت در stack مدیریت و متخصص: اعلان سالن دیگر
+   **۲۰۰** می‌داد. علت: `SubstituteBindings` در گروه web است و middlewareهای سالن route-level → binding با `CurrentSalon` خالی = بدون WHERE.
+   تا امروز هر اکشن `{model}` به `ensure…Ownership()` جدا تکیه داشت (ممیزی‌های ۰۹-۱۹/۲۷ یکی‌یکی اضافه کردند). رفع در `bootstrap/app.php`:
+   `PermissionMiddleware`، `EnsureAdminSalonActive`، `EnsureSpecialistSalonActive`، `ResolveSalonFromRoute` با `prependToPriorityList` پیش از
+   `SubstituteBindings` → رکورد سالن دیگر ۴۰۴. Permission عمداً پیش از سالن (مثل قبل)، وگرنه کاربر بی‌دسترسی به‌جای ۴۰۳ با
+   `EnsureAdminSalonActive` از حساب خارج می‌شد. چک‌های مالکیت موجود به‌عنوان لایه‌ی دوم می‌مانند. `SalonScopedRouteBindingTest` (۳؛ ۲ تا قبل fail).
+   ⚠️ درس تست: TestCase سالن پیش‌فرض را از قبل ست می‌کند و این باگ را **پنهان** می‌کرد (نسخه‌ی اول تست قبل از رفع پاس شد) — پیش از درخواست
+   `CurrentSalon::clear()` تا مثل درخواست واقعی بدون سالن شروع شود.
+2. **`test(tenancy)` طبقه‌بندی همه‌ی مدل‌ها** — `TenantModelClassificationTest`: هر مدل یا `BelongsToSalon`/`…ThroughSpecialist` دارد یا با دلیل در
+   فهرست `UNSCOPED` است (۳۰ مدل: پلتفرمی، با salon_id صریح در صف، از طریق متخصص/نوبت/کاربر/کیف پول)؛ مدل scoped بدون ستون لازم و نام
+   ناموجود در فهرست هم fail. Mutation: حذف `BelongsToSalon` از `Announcement` → fail با پیام روشن.
+
+**سهمیه‌ی پیامک OTP (بررسی، تصمیم باز):** همه‌ی OTPها (ورود، ۲FA، تأیید تلفن) با `$user->salon_id` به `SMSService` می‌روند →
+- مشتری: از سهمیه‌ی سالن کم می‌شود و **با تمام شدن سهمیه، OTP مشتری هم قطع می‌شود** (`SmsQuotaTest::test_send_template_is_also_gated…`
+  با قالب `login-verify` همین را assert می‌کند) → مشتری آن سالن نمی‌تواند وارد شود / پرداخت امن کند.
+- کادر سالن و متخصص (`salon_id = null`): **بدون سهمیه**، خرج پلتفرم، بدون شمارش.
+- پیشنهاد Claude: پیامک‌های احراز هویت (OTP) **هرگز با سهمیه قطع نشوند** و خرج پلتفرم باشند؛ برای شفافیت در آمار سالن شمرده شوند ولی از سقف
+  کم نشوند (یا جدا گزارش شوند). منتظر تصمیم ابوالفضل.
+
 ### قدم‌های باز
 - **روی سرور (این بچ):** دیتابیس باید از نو ساخته شود — `php artisan migrate:fresh --seed --force` (`migrate` معمولی کافی نیست: فایل‌های
   سازنده عوض شده‌اند ولی اسمشان نه). در `.env`: `DEFAULT_MAX_SPECIALISTS_COUNT` را حذف و `INCLUDED_SPECIALISTS_COUNT=7`،
   `EXTRA_SPECIALIST_PRICE_PER_MONTH=250000`، `MAX_SIGNUP_SPECIALISTS=50` اضافه کن؛ بعد `php artisan config:clear`. (`tenancy:repair-legacy-rows` بعد از fresh لازم نیست.)
 - **روی سرور (بچ iban-verification):** `php artisan migrate` (یک migration جدید) و راه‌اندازی دوباره‌ی worker (`php artisan queue:restart`) تا `scoped` بارگذاری شود.
   شبای متخصص‌های موجود تأییدنشده‌اند → تا مدیر تأیید نکند تسویه‌ی خودکار ندارند (تصمیم ب).
-- **ادامه‌ی بهبودهای تک‌دیتابیس (پیشنهادشده، تصمیم ۲۰۲۶-۰۹-۳۰):** تست‌های معماری (مدل با salon_id بدون `BelongsToSalon`؛ route مدیریت با `{model}`
-  بدون چک مالکیت) و `resolveRouteBinding` سالن‌دار در trait؛ ستون `salon_id` در `user_notifications` + فیلتر فهرست/شمارنده در هر پنل (مدیر
+- **تصمیم (پیامک OTP):** OTP مشتری با تمام شدن سهمیه‌ی سالن قطع شود یا نه، و خرج سالن یا پلتفرم (پیشنهاد: هرگز قطع نشود، خرج پلتفرم).
+- **ادامه‌ی بهبودهای تک‌دیتابیس (پیشنهادشده، تصمیم ۲۰۲۶-۰۹-۳۰):** ✅ binding زیر scope سالن و تست طبقه‌بندی مدل‌ها (ادامه ۳)؛ ستون `salon_id` در `user_notifications` + فیلتر فهرست/شمارنده در هر پنل (مدیر
   چندسالنی)؛ نسبت پیامک OTP کادر به سالن یا پلتفرم (تصمیم)؛ seeder بار ۱۰۰/۱۰۰۰ سالن + slow query log/EXPLAIN و سپس ایندکس‌های ترکیبی
   (مثلاً `bookings(salon_id, booking_date, status)`)؛ صف‌های جدا `sms`/`payments`/`reports`؛ `chunkById` در دستورهای همه‌ی سالن‌ها؛ حالت سخت‌گیر
   BelongsToSalon در صف/console (کوئری بدون سالن فقط با `allSalons()` صریح).
