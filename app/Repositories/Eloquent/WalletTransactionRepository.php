@@ -49,8 +49,10 @@ class WalletTransactionRepository extends BaseRepository implements WalletTransa
 
     public function getPendingIncomeForSettlement(?int $walletId = null): Collection
     {
+        // نوبت هر درآمد برای چک «ساعت نوبت گذشته؟» لازم است — یک‌جا بار شود، نه یک کوئری برای هر درآمد (N+1)
         $query = $this->model->where('type', 'income')
-            ->whereJsonContains('metadata->status', 'pending');
+            ->whereJsonContains('metadata->status', 'pending')
+            ->with('booking:id,booking_time');
 
         if ($walletId) {
             $query->where('wallet_id', $walletId);
