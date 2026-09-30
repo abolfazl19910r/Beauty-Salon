@@ -7,7 +7,7 @@
 [![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=flat-square&logo=php)](https://php.net)
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com)
 [![Vite](https://img.shields.io/badge/Vite-8.x-646CFF?style=flat-square&logo=vite)](https://vitejs.dev)
-[![Tests](https://img.shields.io/badge/tests-1472%20passing-brightgreen?style=flat-square)](#-اجرای-تستها)
+[![Tests](https://img.shields.io/badge/tests-1485%20passing-brightgreen?style=flat-square)](#-اجرای-تستها)
 
 ---
 
@@ -21,6 +21,8 @@
 - [راه‌اندازی از صفر تا صد](#-راهاندازی-از-صفر-تا-صد)
 - [راه‌اندازی با Docker](#-راهاندازی-با-docker)
 - [تنظیم متغیرهای محیطی](#-تنظیم-متغیرهای-محیطی)
+- [اشتراک، قیمت و تعداد متخصص](#-اشتراک-قیمت-و-تعداد-متخصص)
+- [اطلاع‌رسانی](#-اطلاعرسانی-1)
 - [ساختار پروژه](#-ساختار-پروژه)
 - [نقش‌های کاربری](#-نقشهای-کاربری)
 - [مسیرها و APIها](#-مسیرها-و-apiها)
@@ -30,6 +32,8 @@
 - [دستورات Artisan پروژه](#-دستورات-artisan-پروژه)
 - [جداول دیتابیس](#-جداول-دیتابیس)
 - [استقرار روی سرور](#-استقرار-روی-سرور)
+- [عیب‌یابی](#-عیبیابی)
+- [آخرین تغییرات](#-آخرین-تغییرات)
 - [مستندات بیشتر](#-مستندات-بیشتر)
 
 ---
@@ -58,7 +62,7 @@
 - **`BelongsToSalon`:** مدل‌هایی که ستون `salon_id` دارند (نوبت، خدمت، متخصص، کد تخفیف، جایزه‌ی وفاداری، تنظیمات امنیتی و …) به‌صورت خودکار به سالن فعلی محدود می‌شوند و ردیف جدید سالن فعلی را می‌گیرد.
 - **`BelongsToSalonThroughSpecialist`:** برای جدول‌هایی که فقط از طریق متخصص به سالن وصل‌اند (مثل نظرات).
 - **چک مالکیت صریح:** چون اتصال مدل در route قبل از شناسایی سالن اجرا می‌شود، هر اکشن مدیریت که مدلی را از آدرس می‌گیرد `ensureSalonOwnership()` را صدا می‌زند.
-- **کارهای صف و اعلان‌ها:** سالن فعلی ندارند، پس سالن را صریحاً از خود رکورد یا گیرنده می‌گیرند (مثلاً تنظیمات اعلان از سالنِ گیرنده خوانده می‌شود).
+- **کارهای صف و اعلان‌ها:** سالن فعلی ندارند، پس سالن را صریحاً از خود رکورد می‌گیرند. تنظیمات اعلان از **سالنِ رکوردی که اعلان درباره‌ی آن است** خوانده می‌شود (نوبت، پرداخت، برداشت، نظر، مرخصی، …)، نه از گیرنده — چون یک مدیر می‌تواند مالک چند سالن باشد.
 - **مختص هر سالن:** جوایز وفاداری، نقش‌ها، تنظیمات اطلاع‌رسانی، تنظیمات امنیتی، تنظیمات کیف پول و درگاه‌های پرداخت.
 - **مشترک در پلتفرم:** نقش‌های سیستمی (`admin`، `specialist`، `super-admin`، …) و فهرست مجوزها — چون کد با نامشان چک می‌کند — فقط توسط مدیر پلتفرم تغییر می‌کنند.
 
@@ -86,7 +90,7 @@
 - کیف پول مشتری، کیف پول متخصص با کمیسیون سالن، کیف پول سالن
 - درخواست برداشت متخصص و **تسویه‌ی خودکار** (Payout) از طریق زرین‌پال، زیبال یا وندار
 - تطبیق خودکار تراکنش‌های گیرکرده و برگشت وجه پرداختی که نوبتش از دست رفته
-- صفحه‌ی «نیاز به بررسی» برای پرداخت‌ها و تسویه‌هایی که دخالت مدیر لازم دارند
+- صفحه‌ی «نیاز به بررسی» برای پرداخت‌ها و تسویه‌هایی که دخالت مدیر لازم دارند، همراه با **اعلان داخلی و پیامک به مالک سالن** (یک بار برای هر مورد)
 
 ### 🏆 وفاداری
 - امتیاز بعد از هر خدمت و بعد از ثبت نظر
@@ -105,13 +109,16 @@
 - گزارش و خروجی Excel متخصص
 
 ### 📢 اطلاع‌رسانی
-- اعلان داخلی، پیامک و تلگرام
+- اعلان داخلی (داخل پنل) و پیامک؛ کانال ربات (تلگرام/بله) هنوز پیاده‌سازی نشده و غیرفعال است
 - هر سالن برای هر رویداد تعیین می‌کند کدام کانال فعال باشد
 - سهمیه‌ی پیامک ماهانه برای هر سالن
+- جزئیات در بخش [اطلاع‌رسانی](#-اطلاعرسانی-1)
 
 ### 🧾 اشتراک و صورت‌حساب
 - پلن‌های ۱، ۳، ۶ و ۱۲ ماهه، دوره‌ی آزمایشی رایگان
-- تعداد متخصص موقع ثبت‌نام سالن پرسیده می‌شود و سقف متخصص همان است؛ قیمت اشتراک = قیمت پلن (شامل `INCLUDED_SPECIALISTS_COUNT` متخصص) + هر متخصص بیشتر ماهانه `EXTRA_SPECIALIST_PRICE_PER_MONTH` تومان؛ سهمیه‌ی پیامک بر اساس پلن
+- تعداد متخصص موقع ثبت‌نام سالن پرسیده می‌شود و سقف متخصص سالن همان است
+- قیمت اشتراک = قیمت پلن (شامل ۷ متخصص) + هزینه‌ی ماهانه‌ی هر متخصص بیشتر — جزئیات در [اشتراک، قیمت و تعداد متخصص](#-اشتراک-قیمت-و-تعداد-متخصص)
+- سهمیه‌ی پیامک ماهانه بر اساس پلن
 - پرداخت و تمدید اشتراک، فاکتور، تعلیق خودکار/دستی سالن
 
 ### 📝 محتوا و موارد دیگر
@@ -192,6 +199,7 @@ npm install
 cp .env.example .env
 php artisan key:generate
 ```
+> ⚠️ `.env` را **قبل از** `composer install` بسازید (یا بعد از ساختنش یک بار `php artisan package:discover` بزنید): برنامه موقع بالا آمدن به دیتابیس وصل می‌شود و بدون `.env`، مرحله‌ی `package:discover` در `composer install` خطای اتصال دیتابیس می‌دهد.
 
 ### مرحله ۵ — دیتابیس
 ```sql
@@ -201,10 +209,10 @@ CREATE DATABASE beauty_salon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 ### مرحله ۶ — Migration و Seeder
 ```bash
-php artisan migrate
-php artisan db:seed            # نقش‌ها، مجوزها و داده‌های اولیه
+php artisan migrate:fresh --seed
 ```
-برای reset کامل: `php artisan migrate:fresh --seed`
+- Seeder یک سالن نمایشی با آدرس `rasta` (`/s/rasta`)، نقش‌ها و مجوزها، کاربران نمایشی (مدیر، متخصص، مشتری) و داده‌ی نمونه (خدمات، نوبت، نظر، وفاداری، …) می‌سازد. شماره و رمز کاربران نمایشی در `database/seeders/UserSeeder.php` است.
+- **داده‌های فعلی دیتابیس فیک‌اند.** migrationهای اصلاحی در migration سازنده‌ی هر جدول ادغام شده‌اند (۳۷ فایل)؛ دیتابیسی که با نسخه‌های قبلی ساخته شده باید با `migrate:fresh --seed` از نو ساخته شود — `migrate` معمولی کافی نیست.
 
 ### مرحله ۷ — ساخت مدیر پلتفرم
 ```bash
@@ -233,7 +241,7 @@ php artisan schedule:work            # ترمینال دیگر (در توسعه)
 ```bash
 php artisan serve
 ```
-- صفحه‌ی اصلی پلتفرم: **http://127.0.0.1:8000**
+- صفحه‌ی اصلی پلتفرم (صفحه‌ی فروش): **http://127.0.0.1:8000**
 - ثبت‌نام سالن جدید: **http://127.0.0.1:8000/salon-signup**
 - سایت یک سالن: **http://127.0.0.1:8000/s/{salon_slug}**
 - پنل مدیریت سالن: **http://127.0.0.1:8000/admin**
@@ -294,17 +302,18 @@ DB_PASSWORD=
 
 ### اشتراک سالن‌ها
 ```env
-SUBSCRIPTION_PRICE_1M=1500000       # تومان
+SUBSCRIPTION_PRICE_1M=1500000             # تومان — قیمت پلن (شامل INCLUDED_SPECIALISTS_COUNT متخصص)
 SUBSCRIPTION_PRICE_3M=4150000
 SUBSCRIPTION_PRICE_6M=7650000
 SUBSCRIPTION_PRICE_12M=13850000
-SUBSCRIPTION_TRIAL_DAYS=14
+SUBSCRIPTION_TRIAL_DAYS=14                # ۰ = بدون دوره‌ی آزمایشی
 SMS_QUOTA_PER_MONTH=1500
-TRIAL_SMS_QUOTA=300
-INCLUDED_SPECIALISTS_COUNT=7
-EXTRA_SPECIALIST_PRICE_PER_MONTH=250000
-MAX_SIGNUP_SPECIALISTS=50
+TRIAL_SMS_QUOTA=300                       # سقف پیامک در دوره‌ی آزمایشی
+INCLUDED_SPECIALISTS_COUNT=7              # تعداد متخصص داخل قیمت پلن و پیش‌فرض فرم‌ها
+EXTRA_SPECIALIST_PRICE_PER_MONTH=250000   # هزینه‌ی ماهانه‌ی هر متخصص بیشتر (تومان)
+MAX_SIGNUP_SPECIALISTS=50                 # فقط سقف فرم ثبت‌نام عمومی؛ مدیر پلتفرم محدودیتی ندارد
 ```
+> کلید قدیمی `DEFAULT_MAX_SPECIALISTS_COUNT` حذف شده است؛ اگر در `.env` دارید پاکش کنید.
 
 ### درگاه پرداخت اشتراک (زرین‌پال پلتفرم)
 ```env
@@ -328,33 +337,65 @@ KAVENEGAR_TEMPLATE_2FA=
 ```
 
 ### امنیت
+مقادیر زیر پیش‌فرض خود کد هستند (خالی گذاشتن هم همین‌ها را می‌دهد):
 ```env
-TWO_FACTOR_TIMEOUT=300              # اعتبار کد 2FA (ثانیه)
+TWO_FACTOR_TIMEOUT=2                # اعتبار کد 2FA (دقیقه)
 TWO_FACTOR_CODE_LENGTH=6            # بین ۴ تا ۱۰
 MAX_LOGIN_ATTEMPTS=5
-LOGIN_THROTTLE_MINUTES=15
-VERIFICATION_CODE_EXPIRE_MINUTES=5
-RESET_CODE_EXPIRE_MINUTES=5
-PAYMENT_EXPIRY_MINUTES=30
-SECURITY_LOG_LEVEL=
-PAYMENTS_LOG_LEVEL=
+LOGIN_THROTTLE_MINUTES=1
+VERIFICATION_CODE_EXPIRE_MINUTES=2
+RESET_CODE_EXPIRE_MINUTES=2
+PAYMENT_EXPIRY_MINUTES=15           # مهلت پرداخت امن (دقیقه)
+SECURITY_LOG_LEVEL=warning
+PAYMENTS_LOG_LEVEL=info
+TRUSTED_PROXIES=cloudflare          # cloudflare، IP/CIDR با کاما، * یا none
 ```
 
 ### صف، cache و session
 ```env
 QUEUE_CONNECTION=database
 QUEUE_WORK_VIA_SCHEDULER=false      # true = صف از همان کرون scheduler اجرا می‌شود (مناسب DirectAdmin)
-CACHE_STORE=file
+CACHE_STORE=file                    # روی سرور file یا database؛ با array محدودیت تلاش ورود و قفل کارهای زمان‌بندی‌شده بین درخواست‌ها نمی‌ماند
 SESSION_DRIVER=file
+SESSION_DOMAIN=                     # با زیردامنه: .example.com
 ```
+> `CACHE_DRIVER` در Laravel 11 خوانده نمی‌شود؛ فقط `CACHE_STORE`.
 
 ### تلگرام و Telescope
 ```env
-TELEGRAM_BOT_TOKEN=
+TELEGRAM_BOT_TOKEN=                 # فعلاً خوانده نمی‌شود — کانال ربات پیاده‌سازی نشده است
 TELEGRAM_CHAT_ID=
-TELESCOPE_ENABLED=true
+TELESCOPE_ENABLED=true              # در production: false
 TELESCOPE_PATH=telescope
 ```
+
+---
+
+## 💰 اشتراک، قیمت و تعداد متخصص
+
+- **ثبت‌نام عمومی سالن** (`/salon-signup`) «تعداد متخصص‌های سالن» را اجباری می‌پرسد (۱ تا `MAX_SIGNUP_SPECIALISTS`، پیش‌فرض ۷). همین عدد **سقف متخصص** سالن است و مدیر سالن بیشتر از آن متخصص نمی‌تواند ثبت کند.
+- **مدیر پلتفرم** موقع ساخت یا ویرایش سالن هر عددی را می‌تواند بگذارد (سقف ۵۰ فقط مال فرم عمومی است). کاهش سقف به کمتر از تعداد متخصص‌های فعلی سالن رد می‌شود. برای افزایش، مدیر سالن تیکت پشتیبانی ثبت می‌کند.
+- **قیمت:** قیمت هر پلن شامل `INCLUDED_SPECIALISTS_COUNT` متخصص است. هر متخصص بیشتر ماهانه `EXTRA_SPECIALIST_PRICE_PER_MONTH` تومان اضافه دارد؛ در پلن‌های ۳، ۶ و ۱۲ ماهه همان نسبت تخفیف پلن روی این مبلغ هم اعمال می‌شود و نتیجه به هزار تومان گرد می‌شود. تعداد کمتر از تعداد شامل‌شده ارزان‌تر نمی‌شود.
+- فاکتور خرید آنلاین، تمدید دستی و صفحه‌ی «اشتراک و صورت‌حساب» مدیر سالن همه بر اساس سقف متخصص همان سالن حساب می‌شوند. منطق: `app/Support/Billing/SubscriptionPricing.php`.
+
+مثال با مقادیر پیش‌فرض (۷ متخصص شامل، ۲۵۰٬۰۰۰ تومان برای هر متخصص بیشتر):
+
+| پلن | ۷ متخصص | ۹ متخصص | ۱۲ متخصص |
+|---|---|---|---|
+| ۱ ماهه | ۱٬۵۰۰٬۰۰۰ | ۲٬۰۰۰٬۰۰۰ | ۲٬۷۵۰٬۰۰۰ |
+| ۳ ماهه | ۴٬۱۵۰٬۰۰۰ | ۵٬۵۳۳٬۰۰۰ | ۷٬۶۰۸٬۰۰۰ |
+| ۶ ماهه | ۷٬۶۵۰٬۰۰۰ | ۱۰٬۲۰۰٬۰۰۰ | ۱۴٬۰۲۵٬۰۰۰ |
+| ۱۲ ماهه | ۱۳٬۸۵۰٬۰۰۰ | ۱۸٬۴۶۷٬۰۰۰ | ۲۵٬۳۹۲٬۰۰۰ |
+
+---
+
+## 📢 اطلاع‌رسانی
+
+- **کانال‌ها:** اعلان داخلی (در پنل) و پیامک (کاوه‌نگار). کانال ربات (تلگرام/بله) **هنوز پیاده‌سازی نشده**: در صفحه‌ی تنظیمات غیرفعال نمایش داده می‌شود، درخواست فعال‌کردنش با پیام «این قابلیت هنوز پیاده‌سازی نشده است.» رد می‌شود و هیچ اعلانی از آن ارسال نمی‌شود.
+- **تنظیمات هر سالن:** مدیر سالن در «تنظیمات اطلاع‌رسانی» برای هر رویداد، پیامک و اعلان داخلی را جدا روشن یا خاموش می‌کند. تنظیمات همیشه از سالنِ رکوردی که اعلان درباره‌ی آن است خوانده می‌شود.
+- **«نیاز به بررسی» (فقط مالک سالن):** وقتی خودکارسازی یک پرداخت را رها می‌کند (نتیجه در درگاه روشن نشد، یا آسان‌پرداخت تایید شد ولی تسویه نشد) یا نتیجه‌ی تسویه‌ی خودکار برداشت متخصص نامعلوم است، به مالک‌های همان سالن اعلان داخلی و پیامک می‌رود — برای هر مورد فقط یک بار. رویدادها: «پرداخت نیازمند بررسی» و «تسویه‌ی نیازمند بررسی» (پیش‌فرض: داخلی + پیامک).
+- **سهمیه‌ی پیامک:** هر سالن سهمیه‌ی ماهانه دارد؛ با تمام شدنش پیامک‌های آن سالن تا ماه بعد قطع و به مدیر سالن و مدیر پلتفرم اطلاع داده می‌شود.
+- در محیط `local` پیامک واقعی فقط با `KAVENEGAR_SEND_IN_LOCAL=true` ارسال می‌شود؛ در غیر این صورت در log ثبت می‌شود.
 
 ---
 
@@ -384,11 +425,11 @@ Beauty-Salon/
 │   ├── Repositories/           # Contracts/ (Interface) + Eloquent/
 │   ├── Rules/                  # قوانین اعتبارسنجی سفارشی
 │   ├── Services/               # منطق کسب‌وکار
-│   ├── Support/                # CurrentSalon، SalonOfNotifiable، رویدادهای اعلان، …
+│   ├── Support/                # CurrentSalon، SalonOfNotifiable، رویدادهای اعلان، Billing/SubscriptionPricing، …
 │   └── Traits/                 # BelongsToSalon، BelongsToSalonThroughSpecialist، …
 ├── database/
 │   ├── factories/
-│   ├── migrations/             # ۵۱ فایل
+│   ├── migrations/             # ۳۷ فایل (هر جدول با همه‌ی ستون‌هایش در migration سازنده)
 │   └── seeders/
 ├── deploy/                     # cron و supervisor
 ├── docker/                     # پیکربندی containerها
@@ -399,7 +440,7 @@ Beauty-Salon/
 ├── routes/
 │   ├── web.php                 # ساختار کلی (پلتفرم، سالن‌ها با /s/{slug} یا زیردامنه)
 │   ├── web/                    # مسیرهای سایت مشتری و ثبت‌نام سالن
-│   ├── admin/                  # ۳۰ فایل مسیر پنل مدیریت
+│   ├── admin/                  # ۲۸ فایل مسیر پنل مدیریت
 │   ├── super-admin.php         # پنل مدیر پلتفرم
 │   ├── salon-auth.php          # ورود مشتری در هر سالن
 │   ├── api.php + api/          # API
@@ -414,14 +455,14 @@ Beauty-Salon/
 ## 👥 نقش‌های کاربری
 
 ### 🛡️ مدیر پلتفرم (Super Admin)
-- ساخت، ویرایش، تعلیق و تمدید اشتراک سالن‌ها؛ فاکتورها
+- ساخت، ویرایش، تعلیق و تمدید اشتراک سالن‌ها؛ تعیین سقف متخصص هر سالن؛ فاکتورها
 - مشاهده و خروجی پرداخت‌های اشتراک
 - پاسخ به تیکت‌های پشتیبانی سالن‌ها
 - مدیریت نقش‌های سیستمی و فهرست مجوزها
 
 ### 🔑 مدیر سالن (Owner / Staff)
 - نوبت‌ها، خدمات، دسته‌بندی‌ها، متخصص‌ها و برنامه‌ی کاری، مرخصی‌ها
-- درگاه‌های پرداخت، کیف پول سالن، درخواست‌های برداشت و تسویه، «نیاز به بررسی»
+- درگاه‌های پرداخت، کیف پول سالن، درخواست‌های برداشت و تسویه، «نیاز به بررسی» (مالک برای موردهای تازه اعلان و پیامک می‌گیرد)
 - گزارش‌ها و خروجی Excel/PDF
 - وفاداری (امتیازها و جوایز)، کدهای تخفیف، نظرات
 - نقش‌های سالن و تخصیص نقش به کاربران همان سالن
@@ -525,7 +566,7 @@ Beauty-Salon/
 php artisan test                           # SQLite در حافظه (پیش‌فرض phpunit.xml)
 ```
 
-برخی باگ‌ها فقط روی MySQL/MariaDB دیده می‌شوند (کلید خارجی، طول ستون، شمارنده‌ی AUTOINCREMENT). برای اجرای کل سوییت روی MariaDB یک کپی از `phpunit.xml` با اتصال `mysql` بسازید (مثلاً `phpunit.mysql.xml`، در گیت نیست) و:
+برخی باگ‌ها فقط روی MySQL/MariaDB دیده می‌شوند (کلید خارجی، طول ستون، شمارنده‌ی AUTOINCREMENT). برای اجرای کل سوییت روی MariaDB یک دیتابیس خالی (مثلاً `rasta_test`) و یک کپی از `phpunit.xml` بسازید (مثلاً `phpunit.mysql.xml`، در گیت نیست) که در آن `DB_CONNECTION` برابر `mysql` و `DB_DATABASE`/`DB_USERNAME`/`DB_PASSWORD` مقادیر آن دیتابیس باشند (با `force="true"`)، و:
 
 ```bash
 vendor/bin/phpunit -c phpunit.mysql.xml
@@ -535,11 +576,12 @@ vendor/bin/phpunit -c phpunit.mysql.xml
 
 | دیتابیس | تست | شکست | skip |
 |---|---|---|---|
-| SQLite | ۱۴۷۲ | ۰ | ۲ |
-| MariaDB 10.11 | ۱۴۷۲ | ۰ | ۱ |
+| SQLite | ۱۴۸۵ | ۰ | ۲ |
+| MariaDB 10.11 | ۱۴۸۵ | ۰ | ۱ |
 
 > اگر تست‌ها با خطای `Vite manifest not found` شکست خوردند، یک بار `npm run build` بزنید.
-> تست‌های زیردامنه جداگانه با `phpunit.subdomain.xml` اجرا می‌شوند.
+> تست‌های زیردامنه جداگانه با `vendor/bin/phpunit -c phpunit.subdomain.xml` اجرا می‌شوند.
+> روال پروژه: هر تغییر روی هر دو دیتابیس تست می‌شود و هر migration جدید روی هر دو یک بار بالا، یک بار rollback و دوباره بالا اجرا می‌شود.
 
 ---
 
@@ -555,7 +597,7 @@ php artisan payouts:refresh-vandar-tokens     # تمدید توکن تسویه�
 php artisan review-tokens:cleanup             # پاک‌سازی توکن‌های نظر منقضی
 php artisan reports:cleanup-exports [--days=7]  # پاک‌سازی خروجی‌های قدیمی گزارش
 php artisan tenancy:repair-legacy-rows [--rewards-salon=<slug>] [--dry-run]
-                                              # اصلاح یک‌باره‌ی ردیف‌های قدیمی با مالکیت اشتباه
+                                              # اصلاح یک‌باره‌ی ردیف‌های قدیمی با مالکیت اشتباه (بعد از migrate:fresh لازم نیست)
 ```
 
 دستورات عمومی:
@@ -569,7 +611,7 @@ php artisan optimize:clear                    # پاک‌سازی همه‌ی ca
 
 ## 🗄️ جداول دیتابیس
 
-۵۱ migration، ۶۳ جدول:
+۳۷ migration، ۶۳ جدول. هر migration سازنده همه‌ی ستون‌ها، ایندکس‌ها و کلیدهای خارجی نهایی جدولش را دارد (migrationهای اصلاحی ادغام شده‌اند). تنها migration داده‌ای `2026_09_19_000201_add_salon_staff_finance_permissions` است که نقش‌های سیستمی «منشی» و «دسترسی مالی» را می‌سازد.
 
 | حوزه | جداول |
 |---|---|
@@ -603,12 +645,42 @@ php artisan queue:restart
 php artisan up
 ```
 
+> ⚠️ **بسته‌ی ۲۰۲۶-۰۹-۳۰ (ادغام migrationها):** روی سرورهایی که قبلاً migrate شده‌اند، به‌جای `migrate --force` یک بار `php artisan migrate:fresh --seed --force` بزنید (داده‌ها فیک‌اند). همچنین در `.env`: `DEFAULT_MAX_SPECIALISTS_COUNT` را حذف و `INCLUDED_SPECIALISTS_COUNT`، `EXTRA_SPECIALIST_PRICE_PER_MONTH` و `MAX_SIGNUP_SPECIALISTS` را اضافه کنید، سپس `php artisan config:clear`.
+
 نکته‌ها:
-- `APP_ENV=production`، `APP_DEBUG=false`، `ZARINPAL_SANDBOX=false`
+- `APP_ENV=production`، `APP_DEBUG=false`، `ZARINPAL_SANDBOX=false`، `ZARINPAL_PAYOUT_SANDBOX=false`، `TELESCOPE_ENABLED=false`، `KAVENEGAR_SEND_IN_LOCAL` بی‌اثر (فقط local)
 - اگر برنامه پشت nginx یا پراکسی است، `TRUSTED_PROXIES` را تنظیم کنید.
 - برای زیردامنه‌ی سالن‌ها: DNS و گواهی wildcard — [`WILDCARD_SUBDOMAIN_DEPLOYMENT.md`](WILDCARD_SUBDOMAIN_DEPLOYMENT.md)
 - کرون scheduler و worker صف — [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCHEDULER_AND_QUEUE.md)
-- بعد از بسته‌ی ۲۰۲۶-۰۹-۲۷ یک بار: `php artisan tenancy:repair-legacy-rows --dry-run` و سپس بدون `--dry-run`
+- `CACHE_STORE=file` یا `database` (نه `array`)
+
+---
+
+## 🩺 عیب‌یابی
+
+| مشکل | علت و راه‌حل |
+|---|---|
+| `composer install` در مرحله‌ی `package:discover` خطای اتصال دیتابیس می‌دهد | `.env` هنوز ساخته نشده یا دیتابیس در دسترس نیست. `.env` را بسازید، دیتابیس را بالا بیاورید و `php artisan package:discover` بزنید |
+| خطای `Vite manifest not found` (در مرورگر یا تست‌ها) | `npm run build` |
+| خطای 419 Page Expired روی `127.0.0.1` | با `SESSION_DOMAIN=.rasta-app.test` مرورگر روی هاست‌های دیگر کوکی را ذخیره نمی‌کند؛ middleware پروژه این را خودکار درست می‌کند. اگر باز دیدید، در DevTools ← Application ← Cookies ببینید کوکی session ذخیره شده یا نه |
+| بعد از `git pull` خطای ستون یا جدول ناموجود | بعد از ادغام migrationها دیتابیس قدیمی را با `php artisan migrate:fresh --seed` از نو بسازید |
+| تغییر `.env` اثر نمی‌کند | `php artisan config:clear` (و `php artisan queue:restart` برای worker صف) |
+| پیامک در local ارسال نمی‌شود | عمدی است؛ متن در `storage/logs` ثبت می‌شود. برای ارسال واقعی `KAVENEGAR_SEND_IN_LOCAL=true` |
+| تصاویر آپلودی نمایش داده نمی‌شوند | `php artisan storage:link` (روی Windows ترمینال Administrator) |
+
+---
+
+## 🆕 آخرین تغییرات
+
+**۲۰۲۶-۰۹-۳۰**
+- کانال ربات (تلگرام/بله) تا پیاده‌سازی واقعی غیرفعال شد.
+- اعلان داخلی و پیامک به مالک سالن برای پرداخت‌ها و تسویه‌هایی که تازه «نیاز به بررسی» می‌شوند.
+- تنظیمات اعلان از سالنِ خودِ رکورد خوانده می‌شود (رفع مشکل مدیری که مالک چند سالن است).
+- ثبت‌نام عمومی تعداد متخصص را می‌پرسد؛ سقف متخصص و قیمت اشتراک بر اساس آن.
+- ادغام migrationهای اصلاحی در migration سازنده‌ی هر جدول (۵۲ ← ۳۷ فایل)؛ دیتابیس‌های موجود با `migrate:fresh --seed` از نو ساخته شوند.
+- حذف کد مرده‌ی گزارش‌های وفاداری.
+
+تاریخچه‌ی کامل، تصمیم‌ها و قدم‌های باز در [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md).
 
 ---
 
