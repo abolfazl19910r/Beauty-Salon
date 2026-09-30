@@ -101,7 +101,14 @@ class SuperAdminController extends Controller
 
     public function edit(Salon $salon): View
     {
-        return view('superadmin.salons.edit', compact('salon'));
+        $quota = app(\App\Services\Sms\SmsQuotaService::class);
+        $smsUsage = [
+            'used' => $quota->usedCount($salon),
+            'quota' => $quota->quotaFor($salon),
+            'otp' => $quota->otpCount($salon),
+        ];
+
+        return view('superadmin.salons.edit', compact('salon', 'smsUsage'));
     }
 
     public function update(UpdateSalonRequest $request, Salon $salon): RedirectResponse

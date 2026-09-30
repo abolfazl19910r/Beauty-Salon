@@ -75,4 +75,35 @@ class SmsOtpOutsideQuotaTest extends TestCase
         $this->assertSame(5, app(SmsQuotaService::class)->remaining($salon));
         $this->assertSame(1, app(SmsQuotaService::class)->otpCount($salon));
     }
+
+    public function test_the_billing_page_shows_quota_usage_and_otp_count_separately(): void
+    {
+        $salon = app(\App\Support\CurrentSalon::class)->get();
+        SalonSmsUsage::create([
+            'salon_id' => $salon->id,
+            'period' => app(SmsQuotaService::class)->currentPeriod(),
+            'used_count' => 37,
+            'otp_count' => 412,
+        ]);
+        $owner = User::factory()->create(['is_admin' => true]);
+
+        $this->actingAs($owner)->get('/admin/billing')
+            ->assertOk()
+            ->assertSee('پیامک‌های این ماه')
+            ->assertSee(to_persian_num('37'))
+            ->assertSee(to_persian_num('412'));
+    }
+
+    public function test_the_super_admin_sees_the_otp_count_of_a_salon(): void
+    {
+        [$salon] = $this->exhaustedSalonCustomer();
+        SalonSmsUsage::where('salon_id', $salon->id)->update(['otp_count' => 987]);
+        $superAdmin = User::factory()->create();
+        $superAdmin->roles()->attach(\App\Models\Role::firstOrCreate(['name' => 'super-admin'], ['label' => 'سوپر ادمین'])->id);
+
+        $this->actingAs($superAdmin)->get(route('superadmin.salons.edit', $salon))
+            ->assertOk()
+            ->assertSee('کدهای تأیید')
+            ->assertSee(to_persian_num('987'));
+    }
 }

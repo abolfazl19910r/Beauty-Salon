@@ -34,7 +34,15 @@ class AdminBillingController extends Controller
         $includedSpecialists = $pricing->includedSpecialists();
         $extraSpecialistPrice = $pricing->extraSpecialistPricePerMonth();
 
-        return view('admin.billing.index', compact('salon', 'invoices', 'prices', 'specialists', 'includedSpecialists', 'extraSpecialistPrice'));
+        $quota = app(\App\Services\Sms\SmsQuotaService::class);
+        $smsUsage = [
+            'used' => $quota->usedCount($salon),
+            'quota' => $quota->quotaFor($salon),
+            'remaining' => $quota->remaining($salon),
+            'otp' => $quota->otpCount($salon),
+        ];
+
+        return view('admin.billing.index', compact('salon', 'invoices', 'prices', 'specialists', 'includedSpecialists', 'extraSpecialistPrice', 'smsUsage'));
     }
 
     public function purchase(Request $request): RedirectResponse
