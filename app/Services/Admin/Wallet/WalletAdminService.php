@@ -96,11 +96,17 @@ class WalletAdminService
                 return;
             }
 
-            $locked->markAsCompleted([
+            // تصمیم ۲۰۲۶-۰۹-۳۰: تسویه‌ی دستی به شبای تأییدنشده مجاز است (با هشدار در صفحه)؛ وضعیت شبا در لحظه‌ی
+            // تایید در سابقه‌ی درخواست می‌ماند.
+            $ibanWarning = $locked->autoPayoutBlocker();
+
+            $locked->markAsCompleted(array_filter([
                 'payment_reference' => $data['payment_reference'],
                 'approved_by' => auth()->user()->name,
                 'approved_at' => now()->toDateTimeString(),
-            ]);
+                'iban_verified' => $ibanWarning === null,
+                'iban_warning' => $ibanWarning,
+            ], fn ($value) => $value !== null));
 
             $this->withdrawalRequestRepository->update($locked, [
                 'admin_note' => $data['admin_note'] ?? null,

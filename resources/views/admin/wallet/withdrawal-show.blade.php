@@ -138,6 +138,15 @@
                 @if($withdrawalRequest->status === 'pending')
                     <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                         <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">عملیات</h2>
+                        @php $manualIbanWarning = $withdrawalRequest->autoPayoutBlocker(); @endphp
+                        @if($manualIbanWarning)
+                            <div class="rounded-lg p-3 mb-3 text-xs leading-6" style="background:#FFFBEB; color:#92400E; border:1px solid #FDE68A;">
+                                <strong>هشدار: شبای این درخواست تأیید نشده است.</strong>
+                                {{ $manualIbanWarning }}
+                                پیش از واریز دستی، شبا را در اپ بانک (صفحه‌ی انتقال پایا/ساتنا) وارد کنید و نام صاحب حساب را با
+                                «{{ $withdrawalRequest->account_holder_name }}» مقایسه کنید.
+                            </div>
+                        @endif
                         <div class="space-y-2">
                             <form action="{{ route('admin.wallet.withdrawals.approve', $withdrawalRequest) }}" method="POST"
                                   onsubmit="if (this.dataset.submitted) { return false; } this.dataset.submitted = '1'; this.querySelector('button[type=submit]').disabled = true;">
