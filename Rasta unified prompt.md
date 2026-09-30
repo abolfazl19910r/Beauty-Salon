@@ -7299,6 +7299,45 @@ Bearer؛ فقط از IPهای اعلام‌شده. ⚠️ `result` برای `IBA
   راه‌اندازی دوباره‌ی MariaDB تا ۱۲ ثانیه برای همان کوئری).
 - `lazyById` برای حلقه‌ای که همان ستون فیلتر را تغییر می‌دهد امن است (صفحه با id بعدی)، `chunk()` با offset نیست.
 
+### ۲۰۲۶-۰۹-۳۰ (ادامه ۷) — تصمیم‌های الف/ب/ج: شمارش اعضای سالن، داشبورد سوپرادمین، صف‌های جدا
+
+۶ کامیت کد روی بسته‌ی performance (ادامه ۶) + این سند. تحویل: `batch-2026-09-30-queues/` (⚠️ بعد از `batch-2026-09-30-performance`).
+کل سوییت: **SQLite ۱۵۶۰ (۲ skip)، MariaDB 10.11 ۱۵۶۰ (۱ skip)، بدون شکست**. migration جدید ندارد.
+
+1. **`perf(users)` (الف)** — `UserRepository::querySalonMembers()`: چهار منبع (مشتری سالن، مدیر در salon_admins، کاربر متخصص با user_id،
+   کاربر staff با تلفن متخصص) حالا هر کدام با ایندکس خودش خوانده و در **جدول مشتق** UNION می‌شوند. ⚠️ `id IN (A UNION B)` بدون جدول
+   مشتق روی MariaDB زیرکوئری وابسته می‌شد (۳ ثانیه). داده‌ی ۱۰۰۰ سالن: داشبورد مدیر ~۱۹۰→۳۳ms، `dashboard/data` ~۱۴۰→۸ms، نقش‌ها
+   ~۴۲→۱۰ms، کاربران امنیت ~۱۸۵→۱۶ms. `SalonMembersQueryTest` (هر چهار منبع، مرز دو سالن با مشتری هم‌شماره، متخصص حذف‌نرم‌شده، ترکیب Builder).
+2. **`perf(security)`** — N+1 تازه (در دور اول اندازه‌گیری نبود): صفحه‌ی کاربران امنیت آخرین ورود هر ردیف را جدا می‌خواند → `withMax` +
+   `withCasts`؛ ۲۵→۵ کوئری. `getLastSuccessfulLoginAt()` بی‌استفاده شد و حذف شد.
+3. **`perf(superadmin)` (ب)** — `SalonRepository::subscriptionCounts()` (یک کوئری تجمیعی، همان تعریف `hasActiveSubscription`) و
+   `getRecentWithSpecialistCount(5)`؛ `getAllWithSpecialistCountAndAdmins()` حذف شد. ~۱۹۰→۳۰ms. `DashboardLoadTest`.
+4. **`feat(queue)` (ج)** — `App\Support\Queues`: `otp` (سه job کد تأیید)، `sms` (یادآوری + کانال پیامک اعلان‌ها)، `payments`
+   (ProcessWithdrawalJob، CancelUnpaidBookings)، `reports` (GeneratePdfReportJob)، `default`. ترتیب worker:
+   `otp,sms,payments,default,reports`. **تفاوت با طرح تأییدشده:** کد تأیید صف جدای `otp` دارد، نه داخل `sms` — در ۱۰۰۰ سالن هر پنجره‌ی
+   یادآوری چند صد پیامک است و کد پشت آن‌ها دقیقه‌ها منتظر می‌ماند. DirectAdmin (`QUEUE_WORK_VIA_SCHEDULER=true`): کد بعد از پاسخ و در
+   همان درخواست فرستاده می‌شود (`Queues::dispatchOtp` → `afterResponse`)، نه تا ۶۰ ثانیه بعد. `JobQueueRoutingTest`، `OtpDispatchTest`.
+5. **`feat(notifications)` (ج، سؤال ۲)** — ۱۱ اعلان پیامکی همزمان حالا `ShouldQueue` با `QueuesOnlySmsChannel`: کانال sms روی صف `sms`،
+   کانال database با `viaConnections(['database' => 'sync'])` همان لحظه (salon_id از سالن جاری درخواست؛ worker سالن جاری ندارد). ۵ اعلان
+   صف‌دار قبلی فقط کانال sms را به صف `sms` می‌برند (`SendsSmsOnSmsQueue`). `new SMSService` در سازنده‌ها → `app(SMSService::class)` در
+   `toSms()` (سریال نشود). `SmsNotificationQueueTest` (هر ۱۶ کلاس + اجرای واقعی worker صف sms).
+   اثر جانبی در تست: mock سراسری SMSService حالا پیامک این اعلان‌ها را هم می‌بیند — `BookingSmsDuplicationTest` پیامک نوبت مشتری را
+   بر اساس گیرنده و موضوع می‌شمارد (پرداخت نوبت یک پیامک امتیاز وفاداری هم به مشتری می‌دهد که قبلاً دیده نمی‌شد).
+6. **`chore(deploy)` (ج، سؤال ۱)** — Docker: سرویس `queue` با ترتیب کامل + سرویس تازه‌ی `queue-otp` (فقط otp)؛ supervisor: `mahru-worker`
+   + `mahru-worker-otp`؛ خط scheduler (DirectAdmin) با `--queue=`؛ `composer dev`؛ `make logs-queue`؛ سند استقرار. ⚠️ worker بدون
+   `--queue` فقط `default` را می‌خواند. `SchedulerQueueSetupTest` فایل‌های compose و supervisor را هم چک می‌کند.
+
+**یافته، منتظر تصمیم:** ۹ اعلان پیامکی `salon_id` به `send()` نمی‌دهند و از سهمیه‌ی ماهانه‌ی سالن کم نمی‌شوند (خلاف تصمیم ۰۹-۳۰: فقط
+کدهای تأیید خرج پلتفرم‌اند): `SpecialistBookingCancelledNotification`، `BookingRescheduledNotification`، `NewReviewNotification`،
+`NewReviewReceivedNotification`، `WithdrawalApproved/RejectedNotification`، `PointsEarned`، `RewardRedeemed`، `LeaveStatusNotification`؛
+به‌علاوه‌ی پیامک لغو در `CancelUnpaidBookings`.
+
+**درس‌ها:**
+- `queue:work` بدون `--queue` فقط `default` را می‌خواند؛ با اضافه کردن هر صف، همه‌ی خط‌های worker (compose، supervisor، scheduler،
+  `composer dev`) باید عوض شوند — تست فایل‌ها این را نگه می‌دارد.
+- اعلانی که تا دیروز همزمان بود و salon_id اعلان داخلی‌اش از سالن جاری می‌آید: فقط کانال پیامک را صف کن (`viaConnections` → sync).
+- `new SMSService` در سازنده‌ی اعلان هم mock تست را دور می‌زد هم در payload صف سریال می‌شد.
+
 ### قدم‌های باز
 - **روی سرور (این بچ):** دیتابیس باید از نو ساخته شود — `php artisan migrate:fresh --seed --force` (`migrate` معمولی کافی نیست: فایل‌های
   سازنده عوض شده‌اند ولی اسمشان نه). در `.env`: `DEFAULT_MAX_SPECIALISTS_COUNT` را حذف و `INCLUDED_SPECIALISTS_COUNT=7`،
@@ -7306,11 +7345,14 @@ Bearer؛ فقط از IPهای اعلام‌شده. ⚠️ `result` برای `IBA
 - **روی سرور (بچ iban-verification):** `php artisan migrate` (یک migration جدید) و راه‌اندازی دوباره‌ی worker (`php artisan queue:restart`) تا `scoped` بارگذاری شود.
   شبای متخصص‌های موجود تأییدنشده‌اند → تا مدیر تأیید نکند تسویه‌ی خودکار ندارند (تصمیم ب).
 - **روی سرور (بچ performance):** `php artisan migrate` (دو ایندکس؛ روی جدول‌های بزرگ چند ثانیه طول می‌کشد) و `php artisan queue:restart`.
-- **تصمیم (ادامه ۶):** (الف) بازنویسی `querySalonMembers()` با UNION در جدول مشتق؛ (ب) شمارش SQL در داشبورد سوپرادمین؛ (ج) طرح صف‌ها.
+- **روی سرور (بچ queues، بعد از performance):** کد جدید + `php artisan queue:restart`. **worker‌ها را عوض کنید:** Docker → `docker compose up -d`
+  (سرویس تازه‌ی `queue-otp`)؛ supervisor → فایل `deploy/supervisor/mahru-worker.conf` را دوباره کپی و `supervisorctl reread/update`؛
+  DirectAdmin → کاری لازم نیست (خط scheduler در کد است). worker قدیمی بدون `--queue` فقط `default` را می‌خواند.
+- **تصمیم:** پیامک ۹ اعلان (و لغو خودکار) از سهمیه‌ی سالن کم شود؟ (ادامه ۷)
 - (آینده، تصمیم باز) «یک نفر مالک/مدیر چند سالن» به‌عنوان فیچر: انتخاب‌گر سالن در سشن + افزودن کاربر موجود به سالن دیگر. اعلان‌ها از ۲۰۲۶-۰۹-۳۰ آماده‌اند.
 - **ادامه‌ی بهبودهای تک‌دیتابیس (پیشنهادشده، تصمیم ۲۰۲۶-۰۹-۳۰):** ✅ binding زیر scope سالن و تست طبقه‌بندی مدل‌ها (ادامه ۳)؛ ستون `salon_id` در `user_notifications` + فیلتر فهرست/شمارنده در هر پنل (مدیر
   چندسالنی)؛ نسبت پیامک OTP کادر به سالن یا پلتفرم (تصمیم)؛ ✅ seeder بار ۱۰۰/۱۰۰۰ سالن + slow query log/EXPLAIN + دو ایندکس
-  و `lazyById` تسویه‌ی شبانه (ادامه ۶)؛ صف‌های جدا `sms`/`payments`/`reports` (طرح گزارش شد، منتظر تصمیم)؛ حالت سخت‌گیر
+  و `lazyById` تسویه‌ی شبانه (ادامه ۶)؛ ✅ صف‌های جدا `otp`/`sms`/`payments`/`reports` + worker اختصاصی کد (ادامه ۷)؛ حالت سخت‌گیر
   BelongsToSalon در صف/console (کوئری بدون سالن فقط با `allSalons()` صریح).
 - تصمیم: تعداد متخصص شامل پلن ۷ یا ۱۰، و مبلغ هر متخصص اضافه (فعلاً ۲۵۰٬۰۰۰).
 - (اختیاری) امکان افزایش تعداد متخصص توسط خود مالک از صفحه‌ی صورتحساب (فعلاً فقط سوپرادمین)؛ قفل هم‌زمانی روی ساخت متخصص (دو ساخت هم‌زمان در تئوری از سقف رد می‌شوند — ثابت نشده).
