@@ -83,7 +83,20 @@ class GeneratePdfReportJob implements ShouldQueue
             return;
         }
 
-        app(CurrentSalon::class)->set($reportExport->salon);
+        $currentSalon = app(CurrentSalon::class);
+        $previousSalon = $currentSalon->get();
+        $currentSalon->set($reportExport->salon);
+
+        try {
+            $this->generate($reportExport, $reportService);
+        } finally {
+            // اجرای sync (بدون worker) نباید سالن فراخواننده را عوض کند.
+            $previousSalon ? $currentSalon->set($previousSalon) : $currentSalon->clear();
+        }
+    }
+
+    private function generate(ReportExport $reportExport, AdminReportService $reportService): void
+    {
 
         // If already processed (ready/failed), don't rerun — prevents creating the file twice
         // due to retry or multiple workers running at the same time.

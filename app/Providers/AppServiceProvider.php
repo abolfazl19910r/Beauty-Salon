@@ -35,7 +35,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(SecurePaymentService::class);
         // ⭐ Phase 1 SaaS multi-tenant (feat/saas-multi-tenant-salons, commit 2): one instance per
         // request — see CurrentSalon's own docblock for why it must never persist across requests.
-        $this->app->singleton(CurrentSalon::class);
+        // scoped (نه singleton): queue:work پیش از هر job نمونه‌های scoped را فراموش می‌کند، پس سالنی که یک job
+        // ست کرده به job بعدیِ همان پردازه نمی‌رسد. در درخواست HTTP معمولی رفتارش دقیقاً مثل singleton است.
+        $this->app->scoped(CurrentSalon::class);
 
         // ⭐ laravel/telescope در require-dev است. قبلاً App\Providers\TelescopeServiceProvider در bootstrap/providers.php
         // بی‌قید ثبت بود؛ با «composer install --no-dev» (image داکر و هر نصب production استاندارد) کلاس والدش
