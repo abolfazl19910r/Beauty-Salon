@@ -54,6 +54,6 @@ class PointsEarned extends Notification implements ShouldQueue
             LoyaltyPoint::where('user_id', $notifiable->id)->sum('points')
         );
 
-        return app(SMSService::class)->send($notifiable->phone, $message);
+        return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId());
     }
 }

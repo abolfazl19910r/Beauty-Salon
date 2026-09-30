@@ -24,7 +24,7 @@ class DiscountCodeObserver
                 $discountCode->expires_at ? verta($discountCode->expires_at)->format('Y/m/d') : 'نامحدود'
             );
 
-            $this->smsService->send($discountCode->user->phone, $message);
+            $this->smsService->send($discountCode->user->phone, $message, $discountCode->salon_id);
         }
 
         $this->cacheService->flush();
@@ -44,7 +44,7 @@ class DiscountCodeObserver
                     $discountCode->code
                 );
 
-                $this->smsService->send($discountCode->user->phone, $message);
+                $this->smsService->send($discountCode->user->phone, $message, $discountCode->salon_id);
             }
         }
 

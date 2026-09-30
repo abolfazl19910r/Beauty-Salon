@@ -57,6 +57,6 @@ class WithdrawalRejectedNotification extends Notification implements ShouldQueue
             $this->reason,
         );
 
-        return app(SMSService::class)->send($notifiable->phone, $message);
+        return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId());
     }
 }

@@ -76,7 +76,7 @@ class BookingRescheduleController extends Controller
                     $statusText
                 );
 
-                $this->smsService->send($booking->user->phone, $message);
+                $this->smsService->send($booking->user->phone, $message, $booking->salon_id);
             });
 
             $successMessage = 'زمان نوبت با موفقیت تغییر یافت.';

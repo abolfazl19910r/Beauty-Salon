@@ -67,6 +67,6 @@ class NewReviewReceivedNotification extends Notification implements ShouldQueue
             $this->review->comment ? "\n💬 نظر: {$this->review->comment}" : ''
         );
 
-        return app(SMSService::class)->send($notifiable->phone, $message);
+        return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId());
     }
 }

@@ -67,6 +67,6 @@ class BookingRescheduledNotification extends Notification implements ShouldQueue
             $this->booking->specialist->name
         );
 
-        return app(SMSService::class)->send($notifiable->phone, $message);
+        return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId());
     }
 }

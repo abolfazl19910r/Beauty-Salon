@@ -18,12 +18,9 @@ class AdminPaymentReceivedNotification extends Notification implements ShouldQue
 
     private Booking $booking;
 
-    private SMSService $smsService;
-
     public function __construct(Booking $booking)
     {
         $this->booking = $booking;
-        $this->smsService = new SMSService;
     }
 
     protected function settingsSalonId(): ?int
@@ -70,7 +67,7 @@ class AdminPaymentReceivedNotification extends Notification implements ShouldQue
             $this->booking->id,
         );
 
-        return $this->smsService->send($notifiable->phone, $message);
+        return app(SMSService::class)->send($notifiable->phone, $message, $this->booking->salon_id);
     }
 
     private function amount(): float

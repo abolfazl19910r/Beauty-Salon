@@ -70,7 +70,7 @@ class SpecialistBookingCancelledNotification extends Notification implements Sho
             $canceller
         );
 
-        return app(SMSService::class)->send($notifiable->phone, $message);
+        return app(SMSService::class)->send($notifiable->phone, $message, $this->booking->salon_id);
     }
 
     /**

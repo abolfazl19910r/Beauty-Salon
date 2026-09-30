@@ -57,6 +57,6 @@ class RewardRedeemed extends Notification implements ShouldQueue
             verta($this->discountCode->expires_at)->format('Y/m/d')
         );
 
-        return app(SMSService::class)->send($notifiable->phone, $message);
+        return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId());
     }
 }

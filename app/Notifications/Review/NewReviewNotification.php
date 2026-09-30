@@ -61,6 +61,6 @@ class NewReviewNotification extends Notification implements ShouldQueue
             $this->booking->review ? 'نظر: '.$this->booking->review : ''
         );
 
-        return app(SMSService::class)->send($notifiable->phone, $message);
+        return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId());
     }
 }
