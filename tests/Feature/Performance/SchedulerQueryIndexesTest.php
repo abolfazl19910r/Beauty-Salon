@@ -25,4 +25,9 @@ class SchedulerQueryIndexesTest extends TestCase
     {
         $this->assertIndex('bookings', ['status', 'booking_time']);
     }
+
+    public function test_payment_reconciliation_can_seek_transactions_by_status_and_time(): void
+    {
+        $this->assertIndex('payment_transactions', ['status', 'updated_at']);
+    }
 }
