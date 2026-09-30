@@ -209,7 +209,7 @@ class PaymentAttentionTest extends TestCase
         $this->salon->paymentGateways()->create(['driver' => 'zibal', 'priority' => 1, 'credentials' => ['merchant' => 'z', 'payout_access_token' => 't', 'payout_wallet_id' => '1']]);
         $specialist = Specialist::factory()->create();
         $wallet = $specialist->getOrCreateWallet();
-        $wallet->update(['balance' => 250000, 'total_withdrawn' => 250000, 'iban' => 'IR060180000000000000020600']);
+        $wallet->update(['balance' => 250000, 'total_withdrawn' => 250000, 'iban' => 'IR062960000000100324200001']);
         $withdrawal = WithdrawalRequest::create([
             'wallet_id' => $wallet->id, 'specialist_id' => $specialist->id, 'amount' => 250000, 'fee' => 0, 'net_amount' => 250000,
             'method' => 'iban', 'iban' => $wallet->iban, 'account_holder_name' => 'مریم', 'status' => 'processing',

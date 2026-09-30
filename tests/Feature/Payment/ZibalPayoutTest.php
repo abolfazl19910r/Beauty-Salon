@@ -44,13 +44,13 @@ class ZibalPayoutTest extends TestCase
         Http::fake(['api.zibal.ir/v1/wallet/checkout' => Http::response(['result' => 1, 'message' => 'موفق', 'data' => ['id' => 'xfg99754ae7abb06d63f1d60', 'amount' => 1500000]])]);
 
         $result = (new ZibalPayoutDriver(['payout_access_token' => 'zb-token', 'payout_wallet_id' => '10101']))
-            ->payout(new PayoutRequest(1500000, 'IR060180000000000000020600', 'تسویه حساب متخصص', '7'));
+            ->payout(new PayoutRequest(1500000, 'IR062960000000100324200001', 'تسویه حساب متخصص', '7'));
 
         $this->assertTrue($result->success);
         $this->assertSame('xfg99754ae7abb06d63f1d60', $result->referenceCode);
         Http::assertSent(fn (Request $r) => $r->header('Authorization') === ['Bearer zb-token']
             && $r['amount'] === 1500000 && $r['id'] === 10101
-            && $r['bankAccount'] === 'IR060180000000000000020600'
+            && $r['bankAccount'] === 'IR062960000000100324200001'
             && ! isset($r['checkoutDelay']));
     }
 
@@ -60,7 +60,7 @@ class ZibalPayoutTest extends TestCase
             ->push(['result' => 6, 'message' => 'موجودی کیف پول کافی نیست'])
             ->push(['message' => 'Unauthorized'], 401)]);
         $driver = new ZibalPayoutDriver(['payout_access_token' => 't', 'payout_wallet_id' => '1']);
-        $request = new PayoutRequest(10000, 'IR060180000000000000020600', 'x', '1');
+        $request = new PayoutRequest(10000, 'IR062960000000100324200001', 'x', '1');
 
         $first = $driver->payout($request);
         $this->assertFalse($first->success);
@@ -76,7 +76,7 @@ class ZibalPayoutTest extends TestCase
         Http::fake(['api.zibal.ir/v1/wallet/checkout' => Http::response(['result' => 1, 'data' => ['id' => 'ZB-1']])]);
         $withdrawal = WithdrawalRequest::factory()->create([
             'status' => 'processing', 'specialist_id' => Specialist::factory()->create()->id,
-            'amount' => 250000, 'net_amount' => 250000, 'iban' => 'IR060180000000000000020600',
+            'amount' => 250000, 'net_amount' => 250000, 'iban' => 'IR062960000000100324200001',
         ]);
 
         $result = app(SalonPayoutService::class)->payout($withdrawal);

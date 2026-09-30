@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Specialist;
 use App\Models\SpecialistWallet;
+use App\Support\Iban;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -25,5 +26,14 @@ class SpecialistWalletFactory extends Factory
             'pending_amount' => 0,
             'iban_verified' => false,
         ];
+    }
+
+    public function withIban(): static
+    {
+        return $this->state(fn () => [
+            'iban' => Iban::fromBban($this->faker->numerify(str_repeat('#', 22))),
+            'account_holder_name' => $this->faker->name(),
+            'bank_name' => 'بانک ملت',
+        ]);
     }
 }

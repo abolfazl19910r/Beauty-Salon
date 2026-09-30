@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Specialist;
 use App\Models\SpecialistWallet;
 use App\Models\WithdrawalRequest;
+use App\Support\Iban;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -32,7 +33,7 @@ class WithdrawalRequestFactory extends Factory
             'fee' => 0,
             'net_amount' => $amount,
             'method' => 'iban',
-            'iban' => 'IR'.$this->faker->numerify(str_repeat('#', 24)),
+            'iban' => Iban::fromBban($this->faker->numerify(str_repeat('#', 22))),
             'account_holder_name' => $this->faker->name(),
             'status' => 'pending',
         ];
