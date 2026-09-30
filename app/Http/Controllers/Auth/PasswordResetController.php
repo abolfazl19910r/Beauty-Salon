@@ -56,7 +56,9 @@ class PasswordResetController extends Controller
 
         try {
             $template = config('services.kavenegar.templates.reset_password', 'verification');
-            $this->smsService->sendTemplate($user->phone, $template, [(string) $verificationCode]);
+            // کد تأیید: خرج پلتفرم، در otp_count سالن کاربر شمرده می‌شود (تصمیم ۲۰۲۶-۰۹-۳۰)
+            $salonId = $user->salon_id ?? \App\Support\SalonOfNotifiable::resolve($user);
+            $this->smsService->sendAuthTemplate($user->phone, $template, [(string) $verificationCode], $salonId);
         } catch (\Exception $e) {
             return back()->withErrors(['phone' => 'خطا در ارسال پیامک.']);
         }

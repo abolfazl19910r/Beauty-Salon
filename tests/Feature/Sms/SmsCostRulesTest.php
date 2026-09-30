@@ -59,4 +59,25 @@ class SmsCostRulesTest extends TestCase
         $this->assertTrue($sent, 'attention alert was blocked by the exhausted quota');
         $this->assertSame(3, (int) $this->usage()->used_count);
     }
+
+    public function test_the_staff_password_reset_code_is_a_counted_verification_code(): void
+    {
+        $staff = User::factory()->create(['user_type' => 'staff', 'salon_id' => null]);
+        \Illuminate\Support\Facades\DB::table('salon_admins')->insert(['salon_id' => $this->salon->id, 'user_id' => $staff->id, 'role' => 'owner', 'created_at' => now(), 'updated_at' => now()]);
+
+        $this->post('/forgot-password', ['phone' => $staff->phone])->assertRedirect()->assertSessionHasNoErrors();
+
+        $this->assertSame(2, (int) $this->usage()->used_count);
+        $this->assertSame(1, (int) $this->usage()->otp_count);
+    }
+
+    public function test_the_customer_password_reset_code_is_a_counted_verification_code(): void
+    {
+        $customer = User::factory()->create(['user_type' => 'customer', 'salon_id' => $this->salon->id]);
+
+        $this->post('/s/'.$this->salon->slug.'/forgot-password', ['phone' => $customer->phone])->assertRedirect()->assertSessionHasNoErrors();
+
+        $this->assertSame(2, (int) $this->usage()->used_count);
+        $this->assertSame(1, (int) $this->usage()->otp_count);
+    }
 }
