@@ -18,8 +18,6 @@ interface SecurityLogRepositoryInterface extends RepositoryInterface
 
     public function getLoginHistoryForUser(int $userId, int $limit = 10): Collection;
 
-    public function getLastSuccessfulLoginAt(int $userId): mixed;
-
     public function countWarningsForUserSince(int $userId, \DateTimeInterface $since): int;
 
     public function countLoginAttemptsForUserSince(int $userId, \DateTimeInterface $since): int;

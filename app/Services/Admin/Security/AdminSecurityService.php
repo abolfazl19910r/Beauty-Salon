@@ -3,7 +3,6 @@
 namespace App\Services\Admin\Security;
 
 use App\Models\SecuritySetting;
-use App\Models\User;
 use App\Repositories\Contracts\SecurityLogRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Support\CurrentSalon;
@@ -44,14 +43,13 @@ class AdminSecurityService
             ->withCount(['securityLogs as suspicious_activity_count' => function ($query) {
                 $query->where('level', 'warning')->where('created_at', '>=', now()->subDays(30));
             }])
+            // آخرین ورود موفق در همان کوئری صفحه (قبلاً یک کوئری جدا برای هر ردیف — N+1، ۲۰۲۶-۰۹-۳۰)
+            ->withMax(['securityLogs as last_successful_login_at' => fn ($query) => $query
+                ->where('event', 'login_attempt')->where('level', 'info')], 'created_at')
+            ->withCasts(['last_successful_login_at' => 'datetime'])
             ->orderByDesc('id')
             ->paginate(20)
-            ->withQueryString()
-            ->through(function (User $user) {
-                $user->last_successful_login_at = $this->securityLogRepository->getLastSuccessfulLoginAt($user->id);
-
-                return $user;
-            });
+            ->withQueryString();
     }
 
     public function stats(): array

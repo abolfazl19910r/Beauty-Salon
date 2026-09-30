@@ -54,15 +54,6 @@ class SecurityLogRepository extends BaseRepository implements SecurityLogReposit
             ->get();
     }
 
-    public function getLastSuccessfulLoginAt(int $userId): mixed
-    {
-        return $this->model->where('user_id', $userId)
-            ->where('event', 'login_attempt')
-            ->where('level', 'info')
-            ->latest('created_at')
-            ->value('created_at');
-    }
-
     public function countWarningsForUserSince(int $userId, \DateTimeInterface $since): int
     {
         return $this->model->where('user_id', $userId)
