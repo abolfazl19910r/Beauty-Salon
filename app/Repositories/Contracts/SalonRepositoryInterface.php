@@ -16,7 +16,10 @@ interface SalonRepositoryInterface extends RepositoryInterface
 
     public function getOldestSlug(): ?string;
 
-    public function getAllWithSpecialistCountAndAdmins(): Collection;
+    /** @return array{active_salons: int, expiring_soon: int, expired: int} */
+    public function subscriptionCounts(\DateTimeInterface $now): array;
+
+    public function getRecentWithSpecialistCount(int $limit = 5): Collection;
 
     public function paginateWithSpecialistCountAndAdmins(int $perPage = 20): LengthAwarePaginator;
 }

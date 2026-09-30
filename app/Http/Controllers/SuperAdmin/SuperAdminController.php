@@ -37,25 +37,15 @@ class SuperAdminController extends Controller
 
     public function dashboard(): View
     {
-        $salons = $this->salonRepository->getAllWithSpecialistCountAndAdmins();
-
-        $stats = [
-            // ⭐ باگ ۳ (گزارش‌شده ۲۰۲۶-۰۹-۱۸، رفع‌شده همان‌روز): این خط قبلاً فقط is_suspended
-            // را چک می‌کرد، نه اعتبار اشتراک را — یک سالن منقضی‌شده ولی تعلیق‌نشده هم «فعال»
-            // شمرده می‌شد. hasActiveSubscription() هر دو شرط را با هم چک می‌کند.
-            'active_salons' => $salons->filter(fn ($salon) => $salon->hasActiveSubscription())->count(),
+        // ⭐ باگ‌های ۳ و ۴ (۲۰۲۶-۰۹-۱۸): «فعال» = تعلیق‌نشده و اشتراک معتبر؛ «رو به انقضا» با مقایسه‌ی مستقیم تاریخ. هر دو تعریف حالا
+        // در SalonRepository::subscriptionCounts() در SQL‌اند — ۲۰۲۶-۰۹-۳۰: قبلاً همه‌ی سالن‌ها و مدیرانشان برای شمردن بار می‌شدند.
+        $stats = $this->salonRepository->subscriptionCounts(now()) + [
             'total_specialists' => $this->specialistRepository->count(),
-            // ⭐ باگ ۴ (گزارش‌شده ۲۰۲۶-۰۹-۱۸، رفع‌شده همان‌روز): diffInDays(now()) روی یک
-            // تاریخ آینده در این نسخه‌ی Carbon عدد منفی برمی‌گرداند، پس شرط <= 7 روی هر سالنِ
-            // غیرمنقضی همیشه true بود. مقایسه‌ی مستقیم تاریخ به‌جای diffInDays با علامت مبهم.
-            'expiring_soon' => $salons->filter(fn ($salon) => $salon->hasActiveSubscription()
-                && $salon->subscription_ends_at->lessThanOrEqualTo(now()->addDays(7)))->count(),
-            'expired' => $salons->filter(fn ($salon) => $salon->subscription_ends_at->isPast())->count(),
         ];
 
-        $recentSalons = $salons->take(5);
+        $recentSalons = $this->salonRepository->getRecentWithSpecialistCount(5);
 
-        return view('superadmin.dashboard', compact('salons', 'stats', 'recentSalons'));
+        return view('superadmin.dashboard', compact('stats', 'recentSalons'));
     }
 
     /**
