@@ -152,7 +152,9 @@
                             </td>
                             <td class="px-4 py-3">
                                 @if($wallet->iban)
-                                    @if($wallet->iban_verified)
+                                    @if(! $wallet->has_valid_iban)
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:#FEF2F2; color:#991B1B;">نامعتبر</span>
+                                    @elseif($wallet->iban_verified)
                                         <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:#F0FDF4; color:#166534;">تایید شده</span>
                                     @else
                                         <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:#FFFBEB; color:#92400E;">در انتظار</span>

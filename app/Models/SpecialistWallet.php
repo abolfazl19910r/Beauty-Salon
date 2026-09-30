@@ -219,6 +219,11 @@ class SpecialistWallet extends Model
         $this->attributes['iban'] = str_replace(' ', '', strtoupper($value));
     }
 
+    public function getHasValidIbanAttribute(): bool
+    {
+        return Iban::isValid($this->iban);
+    }
+
     public function getFormattedIbanAttribute()
     {
         if (! $this->iban) {

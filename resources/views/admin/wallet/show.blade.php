@@ -85,7 +85,9 @@
                         <p style="color:var(--admin-text);">{{ $wallet->bank_name ?? '—' }}</p>
                     </div>
                     <div class="pt-2">
-                        @if($wallet->iban_verified)
+                        @if($wallet->iban && ! $wallet->has_valid_iban)
+                            <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:#FEF2F2; color:#991B1B;">✗ شبا نامعتبر است (رقم کنترلی نمی‌خواند) — متخصص باید اصلاحش کند</span>
+                        @elseif($wallet->iban_verified)
                             <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:#F0FDF4; color:#166534;">✓ تایید شده</span>
                         @elseif($wallet->iban)
                             <form action="{{ route('admin.wallet.verify-iban', $wallet) }}" method="POST">

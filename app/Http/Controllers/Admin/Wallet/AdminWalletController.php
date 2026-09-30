@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\Wallet\AdjustWalletRequest;
 use App\Models\SpecialistWallet;
 use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Services\Admin\Wallet\WalletAdminService;
+use App\Support\Iban;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -44,6 +45,14 @@ class AdminWalletController extends Controller
     public function verifyIban(SpecialistWallet $wallet): RedirectResponse
     {
         $this->ensureWalletSalonOwnership($wallet);
+
+        if (! $wallet->iban) {
+            return back()->with('error', 'این متخصص هنوز شماره شبا ثبت نکرده است.');
+        }
+
+        if (! Iban::isValid($wallet->iban)) {
+            return back()->with('error', 'شماره شبای ثبت‌شده معتبر نیست (رقم کنترلی آن نمی‌خواند) و قابل تأیید نیست. متخصص باید شبا را اصلاح کند.');
+        }
 
         try {
             $this->walletAdminService->verifyIban($wallet);

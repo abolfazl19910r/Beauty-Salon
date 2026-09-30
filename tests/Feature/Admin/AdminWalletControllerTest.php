@@ -63,7 +63,7 @@ class AdminWalletControllerTest extends TestCase
 
     public function test_verify_iban_marks_wallet_as_verified(): void
     {
-        $wallet = SpecialistWallet::factory()->create(['iban_verified' => false]);
+        $wallet = SpecialistWallet::factory()->create(['iban' => 'IR820540102680020817909002', 'iban_verified' => false]);
 
         $response = $this->actingAs($this->admin)->post("/admin/wallet/{$wallet->id}/verify-iban");
 
