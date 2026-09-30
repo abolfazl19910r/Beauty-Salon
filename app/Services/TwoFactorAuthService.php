@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Jobs\Send2faVerificationCodeJob;
 use App\Models\User;
+use App\Support\Queues;
 use Illuminate\Support\Facades\Log;
 
 class TwoFactorAuthService
@@ -28,7 +29,7 @@ class TwoFactorAuthService
             'phone' => $user->phone,
         ]);
 
-        Send2faVerificationCodeJob::dispatch($user->id, $code);
+        Queues::dispatchOtp(new Send2faVerificationCodeJob($user->id, $code));
 
         return $code;
     }

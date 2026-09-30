@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\SMSService;
+use App\Support\Queues;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -31,7 +32,9 @@ class SendPhoneVerificationCodeJob implements ShouldQueue
     public function __construct(
         protected int $userId,
         protected string $code
-    ) {}
+    ) {
+        $this->onQueue(Queues::OTP);
+    }
 
     public function handle(SMSService $smsService, UserRepositoryInterface $userRepository): void
     {

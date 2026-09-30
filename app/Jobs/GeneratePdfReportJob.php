@@ -8,6 +8,7 @@ use App\Notifications\Admin\Report\Export\ReportExportReadyNotification;
 use App\Repositories\Contracts\ReportExportRepositoryInterface;
 use App\Services\Admin\Report\AdminReportService;
 use App\Support\CurrentSalon;
+use App\Support\Queues;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -49,7 +50,9 @@ class GeneratePdfReportJob implements ShouldQueue
 
     public function __construct(
         protected int $reportExportId,
-    ) {}
+    ) {
+        $this->onQueue(Queues::REPORTS);
+    }
 
     public function handle(AdminReportService $reportService, ReportExportRepositoryInterface $reportExportRepository): void
     {

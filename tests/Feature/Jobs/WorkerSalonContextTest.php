@@ -43,13 +43,17 @@ class WorkerSalonContextTest extends TestCase
         dispatch(new CancelUnpaidBookings);
 
         $seen = [];
-        Queue::before(function ($event) use (&$seen) {
+        $order = [];
+        Queue::before(function ($event) use (&$seen, &$order) {
             $seen[$event->job->resolveName()] = app(CurrentSalon::class)->id();
+            $order[] = $event->job->resolveName();
         });
 
         // --memory: پردازه‌ی کل سوییت از سقف پیش‌فرض ۱۲۸MB worker بیشتر حافظه دارد و worker بعد از job اول می‌ایستاد.
-        Artisan::call('queue:work', ['--stop-when-empty' => true, '--memory' => 4096]);
+        // هر دو job روی صف خودشان‌اند؛ worker عمداً اول reports را می‌خواند تا job گزارش واقعاً قبل از job بعدی اجرا شود
+        Artisan::call('queue:work', ['--stop-when-empty' => true, '--memory' => 4096, '--queue' => \App\Support\Queues::REPORTS.','.\App\Support\Queues::PAYMENTS]);
 
+        $this->assertSame([GeneratePdfReportJob::class, CancelUnpaidBookings::class], $order);
         $this->assertArrayHasKey(CancelUnpaidBookings::class, $seen);
         $this->assertNull($seen[CancelUnpaidBookings::class]);
         $this->assertSame('cancelled', Booking::withoutGlobalScopes()->find($booking->id)->status);

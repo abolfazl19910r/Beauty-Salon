@@ -6,6 +6,7 @@ use App\Events\Withdrawal\Approved\WithdrawalApproved;
 use App\Events\Withdrawal\Rejected\WithdrawalRejected;
 use App\Models\WithdrawalRequest;
 use App\Services\Payment\SalonPayoutService;
+use App\Support\Queues;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -44,7 +45,9 @@ class ProcessWithdrawalJob implements ShouldQueue
 
     public function __construct(
         protected int $withdrawalRequestId,
-    ) {}
+    ) {
+        $this->onQueue(Queues::PAYMENTS);
+    }
 
     public function handle(SalonPayoutService $payoutService): void
     {

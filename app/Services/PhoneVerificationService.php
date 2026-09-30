@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Jobs\SendLoginVerificationCodeJob;
 use App\Jobs\SendPhoneVerificationCodeJob;
 use App\Models\User;
+use App\Support\Queues;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -40,7 +41,7 @@ class PhoneVerificationService
             'expires_at' => $user->verification_code_expire_at,
         ]);
 
-        SendPhoneVerificationCodeJob::dispatch($user->id, $code);
+        Queues::dispatchOtp(new SendPhoneVerificationCodeJob($user->id, $code));
 
         return true;
     }
@@ -63,7 +64,7 @@ class PhoneVerificationService
             'expires_at' => $user->login_verification_code_expire_at,
         ]);
 
-        SendLoginVerificationCodeJob::dispatch($user->id, $code);
+        Queues::dispatchOtp(new SendLoginVerificationCodeJob($user->id, $code));
 
         return true;
     }

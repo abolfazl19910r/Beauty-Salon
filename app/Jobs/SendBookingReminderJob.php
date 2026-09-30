@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Services\SMSService;
+use App\Support\Queues;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -32,7 +33,10 @@ class SendBookingReminderJob implements ShouldQueue
 
     // Job's own time limit — even if Kavenegar responds slowly, the Worker will not wait for this Job    public int $timeout = 15;
 
-    public function __construct(protected int $bookingId) {}
+    public function __construct(protected int $bookingId)
+    {
+        $this->onQueue(Queues::SMS);
+    }
 
     public function handle(SMSService $smsService, BookingRepositoryInterface $bookingRepository): void
     {

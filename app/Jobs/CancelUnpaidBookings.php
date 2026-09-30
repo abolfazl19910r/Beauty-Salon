@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Services\SMSService;
+use App\Support\Queues;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -20,6 +21,11 @@ class CancelUnpaidBookings implements ShouldQueue
     public $tries = 3;
 
     public $backoff = 60;
+
+    public function __construct()
+    {
+        $this->onQueue(Queues::PAYMENTS);
+    }
 
     public function handle(SMSService $smsService, BookingRepositoryInterface $bookingRepository): void
     {
