@@ -54,11 +54,7 @@ class SmsQuotaExhaustedNotification extends Notification implements ShouldQueue
      */
     public function toSms(object $notifiable): bool
     {
-        $message = sprintf(
-            "⚠️ سهمیه‌ی پیامک ماهانه‌ی سالن «%s» تمام شد (%s پیامک).\nارسال پیامک نوبت/یادآوری/ورود برای این سالن تا شروع ماه بعد یا شارژ دستی توسط پشتیبانی متوقف می‌ماند.",
-            $this->salon->name,
-            number_format($this->quota)
-        );
+        $message = \App\Support\Sms\SmsText::quotaExhausted($this->salon);
 
         // خرج پلتفرم (تصمیم ۲۰۲۶-۰۹-۳۰): عمداً بدون salon_id — از سهمیه کم نمی‌شود و با سهمیه‌ی تمام‌شده هم می‌رود
         return app(SMSService::class)->send($notifiable->phone, $message);

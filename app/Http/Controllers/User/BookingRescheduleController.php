@@ -65,17 +65,7 @@ class BookingRescheduleController extends Controller
 
                 $booking->specialist->notify(new BookingRescheduledNotification($booking, $oldTime));
 
-                $statusText = $newStatus === 'confirmed'
-                    ? 'و به‌صورت خودکار تایید شد'
-                    : 'و منتظر تایید مجدد متخصص است';
-
-                $message = sprintf(
-                    'زمان نوبت شما با موفقیت از %s به %s تغییر یافت %s.',
-                    verta($oldTime)->format('Y/m/d H:i'),
-                    verta($bookingTime)->format('Y/m/d H:i'),
-                    $statusText
-                );
-
+                $message = \App\Support\Sms\SmsText::rescheduledForCustomer($booking->fresh(['service']), $newStatus !== 'confirmed');
                 $this->smsService->send($booking->user->phone, $message, $booking->salon_id);
             });
 

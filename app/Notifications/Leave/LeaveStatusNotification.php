@@ -73,22 +73,12 @@ class LeaveStatusNotification extends Notification implements ShouldQueue
 
     public function toSms(mixed $notifiable): bool
     {
-        $statusText = match ($this->leave->status) {
-            'approved' => 'تایید',
-            'rejected' => 'رد',
-            default => $this->leave->status
-        };
-
-        $message = sprintf(
-            'همکار گرامی، درخواست مرخصی شما از تاریخ %s تا %s %s شد.',
-            verta($this->leave->start_date)->format('Y/m/d'),
-            verta($this->leave->end_date)->format('Y/m/d'),
-            $statusText
+        $message = \App\Support\Sms\SmsText::leaveDecided(
+            $this->leave->start_date,
+            $this->leave->end_date,
+            $this->leave->status === 'approved',
+            $this->leave->reject_reason
         );
-
-        if ($this->leave->status === 'rejected' && $this->leave->reject_reason) {
-            $message .= "\nدلیل: ".$this->leave->reject_reason;
-        }
 
         return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId());
     }

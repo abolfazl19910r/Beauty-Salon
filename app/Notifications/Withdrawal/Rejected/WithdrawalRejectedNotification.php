@@ -51,11 +51,7 @@ class WithdrawalRejectedNotification extends Notification implements ShouldQueue
 
     public function toSms(mixed $notifiable): bool
     {
-        $message = sprintf(
-            "همکار گرامی، درخواست برداشت شما به مبلغ %s تومان رد شد و مبلغ به کیف پول شما بازگشت.\nدلیل: %s",
-            number_format($this->withdrawalRequest->amount),
-            $this->reason,
-        );
+        $message = \App\Support\Sms\SmsText::withdrawalRejected((float) $this->withdrawalRequest->amount, $this->reason);
 
         return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId());
     }

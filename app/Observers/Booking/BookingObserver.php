@@ -421,45 +421,16 @@ class BookingObserver
             return;
         }
 
-        $persianDate = verta($booking->booking_time)->format('Y/m/d');
-        $persianTime = verta($booking->booking_time)->format('H:i');
-
         /**
-         * ⭐ Added (Suggestion 3): Previously, only the prepayment_amount was always shown
-         * , even when it was returned to the wallet for a lower penalty — the customer
-         * did not understand exactly how much was charged. Because the handleCancellation() method was executed before
-         * this method (same instance of the model), refunded_amount/refund_details were already
-         * set to $booking.
+         * مبلغ بازگشتی فقط وقتی در پیامک می‌آید که واقعاً برگشت داده شده (refunded_amount را handleCancellation()
+         * پیش از این متد روی همین مدل گذاشته) — «بازگشت X تومان» برای نوبتِ پرداخت‌نشده گمراه‌کننده است (۲۰۲۶-۰۹-۳۰).
          */
-        $refundedAmount = $booking->refunded_amount !== null
-            ? (float) $booking->refunded_amount
-            : (float) $booking->prepayment_amount;
+        $refundedAmount = (float) ($booking->refunded_amount ?? 0);
 
         $fee = (float) (($booking->refund_details['cancellation_fee'] ?? null)
             ?? ($booking->refund_details['specialist_penalty'] ?? 0));
 
-        if ($fee > 0) {
-            $amountLine = sprintf(
-                "💰 مبلغ نوبت: %s تومان\n➖ جریمه لغو: %s تومان\n✅ مبلغ بازگشتی: %s تومان",
-                number_format($booking->prepayment_amount),
-                number_format($fee),
-                number_format($refundedAmount)
-            );
-        } else {
-            $amountLine = sprintf('💰 پیش‌پرداخت: %s تومان', number_format($refundedAmount));
-        }
-
-        $message = sprintf(
-            "سلام %s، نوبت شما لغو شد.\n👤 متخصص: %s\n💇 سرویس: %s\n📅 تاریخ: %s\n⏰ زمان: %s\n%s\n🔢 پیگیری: #%s\n🏠 آدرس: تهران، خیابان ... \n❌ دلیل: %s",
-            $booking->user->name,
-            $booking->specialist->name,
-            $booking->service->name,
-            $persianDate,
-            $persianTime,
-            $amountLine,
-            $booking->id,
-            $booking->cancellation_reason ?? 'ذکر نشده'
-        );
+        $message = \App\Support\Sms\SmsText::bookingCancelledForCustomer($booking, $booking->cancellation_reason, $refundedAmount, $fee);
 
         $this->smsService->send($booking->user->phone, $message, $booking->salon_id);
     }
@@ -473,30 +444,8 @@ class BookingObserver
         $specialist = $booking->specialist;
         $user = $booking->user;
 
-        $title = match ($cancelledBy) {
-            'specialist' => 'نوبت توسط شما لغو شد',
-            'admin' => 'نوبت توسط مدیر سیستم لغو شد',
-            'customer' => 'نوبت توسط مشتری لغو شد',
-            default => 'نوبت لغو شد'
-        };
-
-        $message = "{$specialist->name} عزیز، سلام 👋\n\n";
-        $message .= "📋 {$title}\n\n";
-        $message .= "👤 مشتری: {$user->name}\n";
-        $message .= "📞 تماس: {$user->phone}\n";
-        $message .= "💇 سرویس: {$booking->service->name}\n";
-        $message .= '📅 تاریخ: '.verta($booking->booking_time)->format('Y/m/d').' - ساعت '.verta($booking->booking_time)->format('H:i');
-
-        /**
-         * ⭐ Added (Suggestion 3): If the expert has canceled and is being charged a penalty
-         * , let them know explicitly - not just keep quiet and deduct from the account.
-         */
-        if ($cancelledBy === 'specialist') {
-            $penalty = (float) ($booking->refund_details['specialist_penalty'] ?? 0);
-            if ($penalty > 0) {
-                $message .= "\n\n⚠️ به‌خاطر لغو این نوبت، مبلغ ".number_format($penalty).' تومان از حساب شما به‌عنوان جریمه کسر شد.';
-            }
-        }
+        $penalty = $cancelledBy === 'specialist' ? (float) ($booking->refund_details['specialist_penalty'] ?? 0) : 0.0;
+        $message = \App\Support\Sms\SmsText::cancelledForSpecialist($booking, $cancelledBy, $penalty);
 
         $this->smsService->send($specialist->phone, $message, $booking->salon_id);
     }
@@ -507,21 +456,7 @@ class BookingObserver
             return;
         }
 
-        $persianDate = verta($booking->booking_time)->format('Y/m/d');
-        $persianTime = verta($booking->booking_time)->format('H:i');
-
-        $message = sprintf(
-            "سلام %s، نوبت شما تایید شد.\n👤 متخصص: %s\n💇 سرویس: %s\n📅 تاریخ: %s\n⏰ زمان: %s\n💰 قیمت کل خدمت: %s تومان\n✅ پیش‌پرداخت: %s تومان\n💵 باقی‌مانده (موقع نوبت): %s تومان\n🔢 پیگیری: #%s\n🏠 آدرس: تهران، خیابان ... \n✅ لطفا ۱۵ دقیقه زودتر در محل حضور داشته باشید.",
-            $booking->user->name,
-            $booking->specialist->name,
-            $booking->service->name,
-            $persianDate,
-            $persianTime,
-            number_format((float) $booking->service->price),
-            number_format((float) $booking->prepayment_amount),
-            number_format($booking->remaining_amount),
-            $booking->id
-        );
+        $message = \App\Support\Sms\SmsText::bookingConfirmed($booking);
 
         $this->smsService->send($booking->user->phone, $message, $booking->salon_id);
     }
@@ -532,13 +467,7 @@ class BookingObserver
             return;
         }
 
-        $message = sprintf(
-            "سلام %s، نوبت شما با موفقیت ثبت شد و در انتظار تایید نهایی متخصص است.\n💰 قیمت کل خدمت: %s تومان\n✅ پیش‌پرداخت: %s تومان\n💵 باقی‌مانده (موقع نوبت): %s تومان\nنتیجه به زودی اطلاع‌رسانی می‌شود.",
-            $booking->user->name,
-            number_format((float) $booking->service->price),
-            number_format((float) $booking->prepayment_amount),
-            number_format($booking->remaining_amount)
-        );
+        $message = \App\Support\Sms\SmsText::bookingPending($booking);
         $this->smsService->send($booking->user->phone, $message, $booking->salon_id);
     }
 

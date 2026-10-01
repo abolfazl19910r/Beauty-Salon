@@ -50,12 +50,7 @@ class CancelUnpaidBookings implements ShouldQueue
                     ]);
 
                     if ($booking->user && $booking->user->phone) {
-                        $message = sprintf(
-                            'نوبت شما در تاریخ %s ساعت %s به دلیل عدم پرداخت لغو شد. برای رزرو مجدد به سایت مراجعه کنید.',
-                            verta($booking->booking_time)->format('Y/m/d'),
-                            verta($booking->booking_time)->format('H:i')
-                        );
-
+                        $message = \App\Support\Sms\SmsText::bookingCancelledUnpaid($booking);
                         try {
                             $smsService->send($booking->user->phone, $message, $booking->salon_id); // از سهمیه‌ی سالن (تصمیم ۲۰۲۶-۰۹-۳۰)
                         } catch (\Exception $smsException) {

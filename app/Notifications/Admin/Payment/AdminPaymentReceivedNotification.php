@@ -57,15 +57,7 @@ class AdminPaymentReceivedNotification extends Notification implements ShouldQue
 
     public function toSms(object $notifiable): bool
     {
-        $message = sprintf(
-            "💰 پرداخت جدید ثبت شد\nمبلغ: %s تومان\nروش: %s\nمشتری: %s\nمتخصص: %s\nکد پیگیری: %s\nنوبت #%s",
-            number_format($this->amount()),
-            $this->methodLabel(),
-            $this->customerName(),
-            $this->specialistName(),
-            $this->referenceCode(),
-            $this->booking->id,
-        );
+        $message = \App\Support\Sms\SmsText::paymentReceived($this->booking, $this->amount(), $this->methodLabel());
 
         return app(SMSService::class)->send($notifiable->phone, $message, $this->booking->salon_id);
     }

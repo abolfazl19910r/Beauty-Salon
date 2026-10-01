@@ -84,36 +84,13 @@ class BookingStatusUpdated extends Notification implements ShouldQueue
 
     private function getSmsMessage($notifiable): string
     {
-        $persianDate = verta($this->booking->booking_time)->format('Y/m/d');
-        $persianTime = verta($this->booking->booking_time)->format('H:i');
-
-        $amountLabel = $this->status === 'completed' ? 'مبلغ کل' : 'پیش‌پرداخت';
-        $amountValue = $this->status === 'completed'
-            ? number_format($this->booking->service->price)
-            : number_format($this->booking->prepayment_amount);
-
-        $baseInfo = sprintf(
-            "\n👤 متخصص: %s\n💇 سرویس: %s\n📅 تاریخ: %s\n⏰ زمان: %s\n💰 %s: %s تومان\n🔢 پیگیری: #%s\n🏠 آدرس: تهران، خیابان ... ",
-            $this->booking->specialist->name,
-            $this->booking->service->name,
-            $persianDate,
-            $persianTime,
-            $amountLabel,
-            $amountValue,
-            $this->booking->id
-        );
-
-        if ($this->status === 'completed') {
-            return "سلام {$notifiable->name} عزیز، نوبت شما انجام شد و به پایان رسید."
-                .$baseInfo
-                ."\n✔️ از اینکه ما را انتخاب کردید سپاسگزاریم.🌹";
-        }
-
+        // متن‌ها در SmsText (۲۰۲۶-۰۹-۳۰): بدون ایموجی، هر جزئیات فقط در پیامک مربوط
         return match ($this->status) {
-            'confirmed' => "سلام {$notifiable->name}، نوبت شما تایید شد.".$baseInfo."\n✅ لطفا ۱۵ دقیقه زودتر در محل حضور داشته باشید.",
-            'pending_specialist' => "سلام {$notifiable->name}، نوبت شما با موفقیت ثبت شد و در انتظار تایید نهایی متخصص است. نتیجه به زودی اطلاع‌رسانی می‌شود.".$baseInfo,
-            'cancelled' => "سلام {$notifiable->name}، نوبت شما لغو شد.".$baseInfo."\n❌ دلیل: ".($this->reason ?? 'ذکر نشده'),
-            default => "سلام {$notifiable->name}، وضعیت نوبت شما به ".$this->status.' تغییر یافت.'.$baseInfo
+            'confirmed' => \App\Support\Sms\SmsText::bookingConfirmed($this->booking),
+            'pending_specialist' => \App\Support\Sms\SmsText::bookingPending($this->booking),
+            'cancelled' => \App\Support\Sms\SmsText::bookingCancelledForCustomer($this->booking, $this->reason),
+            'completed' => \App\Support\Sms\SmsText::bookingCompleted($this->booking),
+            default => \App\Support\Sms\SmsText::bookingConfirmed($this->booking),
         };
     }
 

@@ -50,13 +50,14 @@ class RewardRedeemed extends Notification implements ShouldQueue
 
     public function toSms(mixed $notifiable): bool
     {
-        $message = sprintf(
-            'کد تخفیف %s برای پاداش %s صادر شد. مهلت استفاده تا %s',
-            $this->discountCode->code,
-            $this->reward->title,
-            verta($this->discountCode->expires_at)->format('Y/m/d')
+        $salonId = $this->settingsSalonId();
+        $message = \App\Support\Sms\SmsText::rewardRedeemed(
+            (string) $this->discountCode->code,
+            (string) $this->reward->title,
+            $this->discountCode->expires_at,
+            $salonId ? \App\Models\Salon::withoutGlobalScopes()->find($salonId) : null
         );
 
-        return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId());
+        return app(SMSService::class)->send($notifiable->phone, $message, $salonId);
     }
 }

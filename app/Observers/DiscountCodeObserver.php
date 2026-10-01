@@ -13,15 +13,11 @@ class DiscountCodeObserver
     public function created(DiscountCode $discountCode): void
     {
         if ($discountCode->user_id && $discountCode->user && $discountCode->user->phone) {
-            $message = sprintf(
-                'یک کد تخفیف جدید برای شما ایجاد شد:
-کد: %s
-مقدار: %s%s
-مهلت استفاده: %s',
-                $discountCode->code,
-                $discountCode->amount,
-                $discountCode->type === 'percentage' ? '%' : ' تومان',
-                $discountCode->expires_at ? verta($discountCode->expires_at)->format('Y/m/d') : 'نامحدود'
+            $message = \App\Support\Sms\SmsText::discountCodeIssued(
+                (string) $discountCode->code,
+                $discountCode->amount.($discountCode->type === 'percentage' ? '٪' : ' تومان'),
+                $discountCode->expires_at,
+                \App\Models\Salon::withoutGlobalScopes()->find($discountCode->salon_id)
             );
 
             $this->smsService->send($discountCode->user->phone, $message, $discountCode->salon_id);
@@ -39,10 +35,7 @@ class DiscountCodeObserver
             }
 
             if ($discountCode->user_id && $discountCode->user && $discountCode->user->phone) {
-                $message = sprintf(
-                    'کد تخفیف %s به حداکثر استفاده رسید و منقضی شد.',
-                    $discountCode->code
-                );
+                $message = \App\Support\Sms\SmsText::discountCodeUsedUp((string) $discountCode->code, \App\Models\Salon::withoutGlobalScopes()->find($discountCode->salon_id));
 
                 $this->smsService->send($discountCode->user->phone, $message, $discountCode->salon_id);
             }

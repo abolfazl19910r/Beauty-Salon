@@ -49,12 +49,7 @@ class ReviewService
                 $reviewToken->expires_at
             );
 
-            $message = sprintf(
-                "سلام %s، خدمت %s با موفقیت انجام شد. لطفاً نظر خود را ثبت کنید:\n%s",
-                $booking->user->name,
-                $booking->service->name,
-                $reviewUrl
-            );
+            $message = \App\Support\Sms\SmsText::reviewRequest($booking, $reviewUrl);
 
             $sent = $this->smsService->send($booking->user->phone, $message, $booking->salon_id);
 

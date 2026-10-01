@@ -55,20 +55,7 @@ class SpecialistBookingCancelledNotification extends Notification implements Sho
 
     public function toSms($notifiable): bool
     {
-        $persianDate = verta($this->booking->booking_time)->format('Y/m/d');
-        $persianTime = verta($this->booking->booking_time)->format('H:i');
-        $canceller = $this->cancellerLabel();
-
-        $message = sprintf(
-            "%s عزیز، سلام 👋\n\n❌ هشدار لغو نوبت.\n\n👤 مشتری: %s\n📞 تماس: %s\n📋 سرویس: %s\n📅 تاریخ: %s - ساعت %s\n\n📝 لغو کننده: %s",
-            $notifiable->name,
-            $this->booking->user->name,
-            $this->booking->user->phone,
-            $this->booking->service->name,
-            $persianDate,
-            $persianTime,
-            $canceller
-        );
+        $message = \App\Support\Sms\SmsText::cancelledForSpecialist($this->booking, $this->cancelledBy);
 
         return app(SMSService::class)->send($notifiable->phone, $message, $this->booking->salon_id);
     }

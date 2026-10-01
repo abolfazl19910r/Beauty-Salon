@@ -60,17 +60,9 @@ class BookingRescheduledNotification extends Notification implements ShouldQueue
 
     public function toSms($notifiable): bool
     {
-        $message = sprintf(
-            'تغییر زمان نوبت:
-خدمت: %s
-زمان قبلی: %s
-زمان جدید: %s
-متخصص: %s',
-            $this->booking->service->name,
-            verta($this->oldTime)->format('Y/m/d H:i'),
-            verta($this->booking->booking_time)->format('Y/m/d H:i'),
-            $this->booking->specialist->name
-        );
+        $message = $notifiable instanceof \App\Models\Specialist
+            ? \App\Support\Sms\SmsText::rescheduledForSpecialist($this->booking, $this->oldTime)
+            : \App\Support\Sms\SmsText::rescheduledForCustomer($this->booking);
 
         return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId());
     }

@@ -48,12 +48,13 @@ class PointsEarned extends Notification implements ShouldQueue
 
     public function toSms(mixed $notifiable): bool
     {
-        $message = sprintf(
-            '%d امتیاز به حساب کاربری شما اضافه شد. موجودی فعلی: %d',
-            $this->loyaltyPoint->points,
-            LoyaltyPoint::where('user_id', $notifiable->id)->sum('points')
+        $salonId = $this->settingsSalonId();
+        $message = \App\Support\Sms\SmsText::pointsEarned(
+            (int) $this->loyaltyPoint->points,
+            (int) LoyaltyPoint::where('user_id', $notifiable->id)->sum('points'),
+            $salonId ? \App\Models\Salon::withoutGlobalScopes()->find($salonId) : null
         );
 
-        return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId());
+        return app(SMSService::class)->send($notifiable->phone, $message, $salonId);
     }
 }

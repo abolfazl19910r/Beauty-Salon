@@ -47,26 +47,7 @@ class BookingNotification extends Notification implements ShouldQueue
 
     public function toSms($notifiable): bool
     {
-        $confirmationLink = route('specialist.bookings.show', ['booking' => $this->booking->id]);
-
-        $message = sprintf(
-            "%s عزیز، نوبت جدید ثبت شد:\n👤 مشتری: %s\n📅 تاریخ: %s\n⏰ ساعت: %s\n💇 سرویس: %s\n📞 تماس: %s\n💰 قیمت کل خدمت: %s تومان\n✅ پیش‌پرداخت دریافتی از مشتری (از طریق سایت): %s تومان\n💵 باقی‌مانده (موقع نوبت مستقیماً از مشتری دریافت کنید): %s تومان",
-            $notifiable->name,
-            $this->booking->user->name,
-            verta($this->booking->booking_time)->format('Y/m/d'),
-            verta($this->booking->booking_time)->format('H:i'),
-            $this->booking->service->name,
-            $this->booking->user->phone,
-            number_format((float) $this->booking->service->price),
-            number_format((float) $this->booking->prepayment_amount),
-            number_format($this->booking->remaining_amount)
-        );
-
-        if ($this->needsApproval) {
-            $message .= "\n\n⏳ نیاز به تایید شما\n🔗 جهت تایید کلیک کنید:\n".$confirmationLink;
-        } else {
-            $message .= "\n\n✅ تایید خودکار";
-        }
+        $message = \App\Support\Sms\SmsText::newBookingForSpecialist($this->booking, (bool) $this->needsApproval);
 
         return app(SMSService::class)->send($notifiable->phone, $message, $this->booking->salon_id);
     }

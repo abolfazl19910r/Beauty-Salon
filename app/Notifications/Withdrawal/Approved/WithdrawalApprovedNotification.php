@@ -47,11 +47,7 @@ class WithdrawalApprovedNotification extends Notification implements ShouldQueue
 
     public function toSms(mixed $notifiable): bool
     {
-        $message = sprintf(
-            "همکار گرامی، درخواست برداشت شما به مبلغ %s تومان تایید و به حساب شما واریز شد.\n🔢 کد پیگیری: %s",
-            number_format($this->withdrawalRequest->net_amount),
-            $this->withdrawalRequest->reference_code,
-        );
+        $message = \App\Support\Sms\SmsText::withdrawalApproved((float) $this->withdrawalRequest->net_amount, (string) $this->withdrawalRequest->reference_code);
 
         return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId());
     }

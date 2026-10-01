@@ -50,42 +50,8 @@ class SendBookingReminderJob implements ShouldQueue
             return;
         }
 
-        $customerMessage = sprintf(
-            "%s عزیز، سلام 👋\n\n".
-            "⏰ یادآوری نوبت:\n\n".
-            "📋 سرویس: %s\n".
-            "📅 تاریخ: %s\n".
-            "🕐 ساعت: %s\n".
-            "👤 متخصص: %s\n".
-            "🔢 کد پیگیری: #%s\n\n".
-            "⚠️ لطفاً 15 دقیقه قبل حضور داشته باشید.\n\n".
-            '📞 برای هرگونه تغییر با ما تماس بگیرید.',
-            $booking->user->name,
-            $booking->service->name,
-            verta($booking->booking_time)->format('Y/m/d'),
-            verta($booking->booking_time)->format('H:i'),
-            $booking->specialist->name,
-            $booking->id
-        );
-
-        $specialistMessage = sprintf(
-            "%s عزیز، سلام 👋\n\n".
-            "⏰ یادآوری نوبت:\n\n".
-            "👤 مشتری: %s\n".
-            "📱 تماس: %s\n".
-            "📋 سرویس: %s\n".
-            "📅 تاریخ: %s\n".
-            "🕐 ساعت: %s\n".
-            "🔢 کد پیگیری: #%s\n\n".
-            '🙏 منتظر حضور شما در زمان مقرر هستیم.',
-            $booking->specialist->name,
-            $booking->user->name,
-            $booking->user->phone,
-            $booking->service->name,
-            verta($booking->booking_time)->format('Y/m/d'),
-            verta($booking->booking_time)->format('H:i'),
-            $booking->id
-        );
+        $customerMessage = \App\Support\Sms\SmsText::reminderForCustomer($booking);
+        $specialistMessage = \App\Support\Sms\SmsText::reminderForSpecialist($booking);
 
         $customerSent = $smsService->send($booking->user->phone, $customerMessage, $booking->salon_id);
         $specialistSent = $smsService->send($booking->specialist->phone, $specialistMessage, $booking->salon_id);

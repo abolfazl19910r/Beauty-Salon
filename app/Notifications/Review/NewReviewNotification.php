@@ -50,15 +50,11 @@ class NewReviewNotification extends Notification implements ShouldQueue
 
     public function toSms($notifiable): bool
     {
-        $message = sprintf(
-            'نظر جدید - %s:
-مشتری: %s
-امتیاز: %d/5
-%s',
-            $this->booking->service->name,
-            $this->booking->user->name,
-            $this->booking->rating,
-            $this->booking->review ? 'نظر: '.$this->booking->review : ''
+        $message = \App\Support\Sms\SmsText::newReview(
+            (string) ($this->booking->user->name ?? ''),
+            (string) ($this->booking->service?->smsName() ?? ''),
+            (int) $this->booking->rating,
+            $this->booking->review
         );
 
         return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId());
