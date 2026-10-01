@@ -24,7 +24,11 @@ trait BelongsToSalonThroughSpecialist
                     $builder->getModel()->getTable().'.specialist_id',
                     Specialist::withoutGlobalScopes()->select('id')->where('salon_id', $salonId)
                 );
+
+                return;
             }
+
+            app(CurrentSalon::class)->guardMissing($builder->getModel()::class);
         });
     }
 }

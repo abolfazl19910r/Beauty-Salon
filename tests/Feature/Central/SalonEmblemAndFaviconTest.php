@@ -51,7 +51,9 @@ class SalonEmblemAndFaviconTest extends TestCase
         $logo = $this->withLogo();
         $slug = app(CurrentSalon::class)->get()->slug;
 
-        foreach (['/login', "/s/{$slug}/register"] as $url) {
+        // /login دامنه‌ی مرکزی سالن ندارد (ورود کادر) و همان نشان ماهرو را نشان می‌دهد — قبلاً فقط چون سالن پیش‌فرض تست به
+        // درخواست نشت می‌کرد لوگوی سالن می‌دید (ResetCurrentSalon، ۲۰۲۶-۱۰-۰۱)
+        foreach (["/s/{$slug}/login", "/s/{$slug}/register"] as $url) {
             $html = $this->get($url)->assertOk()->getContent();
             $this->assertMatchesRegularExpression('#<link rel="icon" href="[^"]*'.preg_quote($logo, '#').'" type="image/png"#', $html);
             $this->assertStringContainsString('<link rel="apple-touch-icon" href="', $html);

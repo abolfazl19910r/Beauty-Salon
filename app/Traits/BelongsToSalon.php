@@ -34,7 +34,12 @@ trait BelongsToSalon
 
             if ($salonId !== null) {
                 $builder->where($builder->getModel()->getTable().'.salon_id', $salonId);
+
+                return;
             }
+
+            // حالت سخت‌گیر (۲۰۲۶-۱۰-۰۱): بدون سالن جاری فقط داخل CurrentSalon::allSalons()
+            app(CurrentSalon::class)->guardMissing($builder->getModel()::class);
         });
 
         static::creating(function ($model) {

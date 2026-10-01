@@ -69,7 +69,9 @@ class SalonSmsQuotaCoverageTest extends TestCase
     {
         $this->sent = [];
         app(CurrentSalon::class)->clear(); // مثل worker صف sms
-        $notification->toSms($notifiable);
+        // worker سالن را از خود اعلان پیدا می‌کند (SalonOfQueuedJob، حالت سخت‌گیر ۲۰۲۶-۱۰-۰۱)
+        $salonId = \App\Support\SalonOfQueuedJob::resolve($notification) ?? \App\Support\SalonOfNotifiable::resolve($notifiable);
+        app(CurrentSalon::class)->withSalon($salonId, fn () => $notification->toSms($notifiable));
 
         $this->assertSame([$this->salon->id], array_map(fn ($id) => $id === null ? null : (int) $id, $this->sent), "{$label} is not charged to the salon's SMS quota");
     }

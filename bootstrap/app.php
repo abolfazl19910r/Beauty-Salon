@@ -20,6 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // ⭐ پروکسی‌های مورد اعتماد (Cloudflare به‌صورت پیش‌فرض) — config/trustedproxy.php
         $middleware->replace(\Illuminate\Http\Middleware\TrustProxies::class, \App\Http\Middleware\TrustProxies::class);
 
+        // حالت سخت‌گیر BelongsToSalon (۲۰۲۶-۱۰-۰۱): هر درخواست بدون سالن شروع می‌شود
+        $middleware->prepend(\App\Http\Middleware\ResetCurrentSalon::class);
+
         $middleware->web(append: [
             \Illuminate\Session\Middleware\StartSession::class,
         ]);
