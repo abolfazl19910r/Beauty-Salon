@@ -33,6 +33,7 @@ class StoreWithdrawalRequest extends FormRequest
         return [
             'amount' => ['required', 'numeric', 'min:'.$minimum],
             'method' => ['required', 'in:instant,iban'],
+            'idempotency_key' => \App\Support\Idempotency::rule(),
         ];
     }
 

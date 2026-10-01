@@ -3,6 +3,7 @@
 namespace App\Services\Specialist;
 
 use App\Events\Withdrawal\Requested\WithdrawalRequested;
+use App\Exceptions\IdempotencyKeyReusedException;
 use App\Models\Specialist;
 use App\Models\SpecialistWallet;
 use App\Models\WalletSetting;
@@ -10,6 +11,7 @@ use App\Models\WithdrawalRequest;
 use App\Repositories\Contracts\SpecialistWalletRepositoryInterface;
 use App\Repositories\Contracts\WalletTransactionRepositoryInterface;
 use App\Repositories\Contracts\WithdrawalRequestRepositoryInterface;
+use App\Support\Idempotency;
 use App\Traits\HasJalaliDates;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -94,6 +96,17 @@ class SpecialistWalletService
         $amount = (float) $data['amount'];
         $method = $data['method'];
 
+        // idempotency (۲۰۲۶-۱۰-۰۱): همان فرم دوبار فرستاده شد → همان درخواست اول، بدون کم شدن دوباره‌ی موجودی
+        $key = $data['idempotency_key'] ?? null;
+        $fingerprint = Idempotency::fingerprint(['amount' => $amount, 'method' => $method]);
+        try {
+            if ($replayed = $this->replayedWithdrawal($specialist, $key, $fingerprint)) {
+                return $replayed;
+            }
+        } catch (IdempotencyKeyReusedException $e) {
+            return ['success' => false, 'message' => $e->getMessage()];
+        }
+
         $canWithdraw = $wallet->canWithdraw($amount);
         if (! $canWithdraw['success']) {
             return ['success' => false, 'message' => $canWithdraw['message']];
@@ -101,8 +114,13 @@ class SpecialistWalletService
 
         // دو درخواست هم‌زمان (۲۰۲۶-۱۰-۰۱): چک بالا فقط برای پیام سریع است. درستی با قفل ردیف کیف پول: چک موجودی دوباره روی
         // ردیف قفل‌شده انجام می‌شود، پس درخواست دوم منتظر اولی می‌ماند و موجودی کم‌شده را می‌بیند.
-        $result = DB::transaction(function () use ($wallet, $specialist, $amount, $method) {
+        $result = DB::transaction(function () use ($wallet, $specialist, $amount, $method, $key, $fingerprint) {
             $locked = $this->specialistWalletRepository->lockById($wallet->id);
+
+            // دوباره زیر قفل: تکرار هم‌زمان پشت همین قفل منتظر مانده و حالا کلید commit‌شده‌ی اولی را می‌بیند
+            if ($replayed = $this->replayedWithdrawal($specialist, $key, $fingerprint)) {
+                return $replayed;
+            }
 
             $canWithdraw = $locked->canWithdraw($amount);
             if (! $canWithdraw['success']) {
@@ -124,17 +142,26 @@ class SpecialistWalletService
             ]);
 
             $locked->recordWithdrawal($amount, $withdrawalRequest->id);
+            Idempotency::claim(Idempotency::WITHDRAWAL, $specialist->id, $key, $fingerprint, $withdrawalRequest->id);
 
             return ['success' => true, 'withdrawal_request' => $withdrawalRequest];
         }, attempts: 3);
 
-        if (! $result['success']) {
+        if (! $result['success'] || ! empty($result['replayed'])) {
             return $result;
         }
 
         event(new WithdrawalRequested($result['withdrawal_request']));
 
         return $result;
+    }
+
+    private function replayedWithdrawal(Specialist $specialist, ?string $key, string $fingerprint): ?array
+    {
+        $id = Idempotency::existing(Idempotency::WITHDRAWAL, $specialist->id, $key, $fingerprint);
+        $withdrawal = $id ? $this->withdrawalRequestRepository->find($id) : null;
+
+        return $withdrawal ? ['success' => true, 'withdrawal_request' => $withdrawal, 'replayed' => true] : null;
     }
 
     /**

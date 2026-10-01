@@ -24,6 +24,8 @@
 
             <form action="{{ route('specialist.wallet.store-withdrawal') }}" method="POST" id="withdrawal-form" novalidate>
                 @csrf
+                {{-- idempotency: دوبار ارسال همین فرم فقط یک بار ثبت می‌شود --}}
+                <input type="hidden" name="idempotency_key" value="{{ old('idempotency_key', (string) \Illuminate\Support\Str::uuid()) }}">
 
                 <div class="mb-6">
                     <label for="amount" class="block text-xs text-[var(--specialist-plum-muted)] mb-2">
