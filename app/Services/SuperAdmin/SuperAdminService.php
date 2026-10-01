@@ -73,51 +73,59 @@ class SuperAdminService
      */
     public function updateSalon(Salon $salon, array $data): Salon
     {
-        // ⭐ "کاهش سقف زیر تعداد فعلی ممنوع" — enforced here too (not just at the request-
-        // validation layer) since this method could in principle be called from elsewhere.
-        // ⭐ Bug found by actually running SalonManagementTest on real PHP (commit 8): a plain
-        // Specialist::where('salon_id', ...) still goes through BelongsToSalon's global 'salon'
-        // scope, which ANDs in app(CurrentSalon::class)->id() whenever it happens to be set to
-        // some OTHER salon (e.g. via the base TestCase's default binding, or any future code
-        // path that sets CurrentSalon before calling into this service) — the two salon_id
-        // filters can never both match, so the count silently comes back 0 and the "cannot
-        // lower quota below current specialist count" guard below never fires. In real
-        // production /superadmin requests this scope is never actually populated (EnsureSuperAdmin
-        // never calls CurrentSalon::set()), so this never broke production traffic — but the
-        // query itself was still wrong, and the same "global scope stacks with an explicit
-        // filter on the same column" footgun this project has hit before (WalletSetting,
-        // AdminWallet). withoutGlobalScope('salon') makes this explicitly cross-tenant, matching
-        // what a super admin operation actually is.
-        $currentSpecialistCount = $this->specialistRepository->countBySalonIgnoringScope($salon->id);
+        DB::transaction(function () use ($salon, $data) {
+            // ⭐ "کاهش سقف زیر تعداد فعلی ممنوع" — enforced here too (not just at the request-
+            // validation layer) since this method could in principle be called from elsewhere.
+            // ⭐ Bug found by actually running SalonManagementTest on real PHP (commit 8): a plain
+            // Specialist::where('salon_id', ...) still goes through BelongsToSalon's global 'salon'
+            // scope, which ANDs in app(CurrentSalon::class)->id() whenever it happens to be set to
+            // some OTHER salon (e.g. via the base TestCase's default binding, or any future code
+            // path that sets CurrentSalon before calling into this service) — the two salon_id
+            // filters can never both match, so the count silently comes back 0 and the "cannot
+            // lower quota below current specialist count" guard below never fires. In real
+            // production /superadmin requests this scope is never actually populated (EnsureSuperAdmin
+            // never calls CurrentSalon::set()), so this never broke production traffic — but the
+            // query itself was still wrong, and the same "global scope stacks with an explicit
+            // filter on the same column" footgun this project has hit before (WalletSetting,
+            // AdminWallet). withoutGlobalScope('salon') makes this explicitly cross-tenant, matching
+            // what a super admin operation actually is.
+            // قفل ردیف سالن (۲۰۲۶-۱۰-۰۱): همان قفلی که ساخت متخصص می‌گیرد. بدون آن، کم کردن سقف هم‌زمان با ساخت متخصص
+            // شمارش قدیمی را می‌دید و سالن بالای سقف می‌ماند. شمارش بعد از قفل، متخصص commit‌شده را می‌بیند.
+            $locked = $this->salonRepository->lockForUpdateFindOrFail($salon->id);
+            $currentSpecialistCount = $this->specialistRepository->countBySalonIgnoringScope($salon->id);
 
-        if ($data['max_specialists_count'] < $currentSpecialistCount) {
-            throw new \InvalidArgumentException(
-                "سقف جدید ({$data['max_specialists_count']}) نمی‌تواند کمتر از تعداد متخصصین فعلی ({$currentSpecialistCount}) باشد."
-            );
-        }
+            if ($data['max_specialists_count'] < $currentSpecialistCount) {
+                throw new \InvalidArgumentException(
+                    "سقف جدید ({$data['max_specialists_count']}) نمی‌تواند کمتر از تعداد متخصصین فعلی ({$currentSpecialistCount}) باشد."
+                );
+            }
 
-        $salon->update([
-            'name' => $data['name'],
-            // ⭐ پیگیری «محور ۳» — array_key_exists (نه isset)، هم‌الگو با zarinpal_merchant_id
-            // پایین‌تر: فرستادن مقدار خالی باید واقعاً tagline/bio رو پاک کنه، نه بی‌اثر بمونه.
-            'tagline' => array_key_exists('tagline', $data) ? ($data['tagline'] ?: null) : $salon->tagline,
-            'bio' => array_key_exists('bio', $data) ? ($data['bio'] ?: null) : $salon->bio,
-            'max_specialists_count' => $data['max_specialists_count'],
-            // سهمیه‌ی پیامک اختصاصی (قطعه)؛ خالی = پیش‌فرض؛ فرمی که فیلد را ندارد، دست نمی‌زند
-            'sms_quota_per_month' => array_key_exists('sms_quota_per_month', $data)
-                ? ($data['sms_quota_per_month'] === null || $data['sms_quota_per_month'] === '' ? null : (int) $data['sms_quota_per_month'])
-                : $salon->sms_quota_per_month,
-            'module_permissions' => $data['module_permissions'] ?? null,
-            // ⭐ فاز ۲، مورد ۹ — array_key_exists (نه isset) عمداً: سوپر ادمین باید بتواند یک
-            // merchant_id قبلاً ثبت‌شده را با فرستادن مقدار خالی دوباره null کند (بازگشت به
-            // fallback سراسری)، نه اینکه مقدار قبلی برای همیشه بماند چون کلید خالی "ست‌نشده"
-            // به‌حساب بیاید.
-            'zarinpal_merchant_id' => array_key_exists('zarinpal_merchant_id', $data)
-                ? \App\Support\ZarinpalMerchant::normalize($data['zarinpal_merchant_id'])
-                : $salon->zarinpal_merchant_id,
-            // ⭐ ۲۰۲۶-۰۹-۲۳: فقط کلیدهایی که واقعاً در فرم بودن (salonContactAttributes)؛ خالی = پاک.
-            ...($data['contact'] ?? []),
-        ]);
+            $locked->update([
+                'name' => $data['name'],
+                // ⭐ پیگیری «محور ۳» — array_key_exists (نه isset)، هم‌الگو با zarinpal_merchant_id
+                // پایین‌تر: فرستادن مقدار خالی باید واقعاً tagline/bio رو پاک کنه، نه بی‌اثر بمونه.
+                'tagline' => array_key_exists('tagline', $data) ? ($data['tagline'] ?: null) : $locked->tagline,
+                'bio' => array_key_exists('bio', $data) ? ($data['bio'] ?: null) : $locked->bio,
+                'max_specialists_count' => $data['max_specialists_count'],
+                // سهمیه‌ی پیامک اختصاصی (قطعه)؛ خالی = پیش‌فرض؛ فرمی که فیلد را ندارد، دست نمی‌زند
+                'sms_quota_per_month' => array_key_exists('sms_quota_per_month', $data)
+                    ? ($data['sms_quota_per_month'] === null || $data['sms_quota_per_month'] === '' ? null : (int) $data['sms_quota_per_month'])
+                    : $locked->sms_quota_per_month,
+                'module_permissions' => $data['module_permissions'] ?? null,
+                // ⭐ فاز ۲، مورد ۹ — array_key_exists (نه isset) عمداً: سوپر ادمین باید بتواند یک
+                // merchant_id قبلاً ثبت‌شده را با فرستادن مقدار خالی دوباره null کند (بازگشت به
+                // fallback سراسری)، نه اینکه مقدار قبلی برای همیشه بماند چون کلید خالی "ست‌نشده"
+                // به‌حساب بیاید.
+                'zarinpal_merchant_id' => array_key_exists('zarinpal_merchant_id', $data)
+                    ? \App\Support\ZarinpalMerchant::normalize($data['zarinpal_merchant_id'])
+                    : $locked->zarinpal_merchant_id,
+                // ⭐ ۲۰۲۶-۰۹-۲۳: فقط کلیدهایی که واقعاً در فرم بودن (salonContactAttributes)؛ خالی = پاک.
+                ...($data['contact'] ?? []),
+            ]);
+
+            // نمونه‌ی فراخواننده هم مقدارهای ذخیره‌شده را داشته باشد
+            $salon->setRawAttributes($locked->getAttributes(), true);
+        }, attempts: 3);
 
         return $salon;
     }
