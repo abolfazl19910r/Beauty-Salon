@@ -147,6 +147,44 @@ class Specialist extends Model
      *                                      the time would be incorrectly rejected as "slot taken". Left null (default) for the
      *                                      normal create-flow callers, which are unaffected by this addition.
      */
+    /**
+     * چرا بازه‌ی [شروع، شروع + مدت خدمت) برای این متخصص جا نمی‌شود — یا null (۲۰۲۶-۱۰-۰۱).
+     * getAvailableSlots() فقط می‌گوید ساعت شروع روی شبکه‌ی زمان‌ها آزاد است (با مدت پیش‌فرض ۳۰)، نه اینکه کل خدمت
+     * جا شود؛ این متد کل بازه را با ساعت کاری، استراحت و نوبت‌های غیرلغوشده (با مدت خدمت خودشان) می‌سنجد.
+     * با query builder (بدون scope سالن): نوبت‌ها با specialist_id محدودند و در صف/کنسول هم درست کار می‌کند.
+     */
+    public function conflictFor(Carbon $start, int $durationMinutes, ?int $excludeBookingId = null): ?string
+    {
+        $end = $start->copy()->addMinutes(max(1, $durationMinutes));
+        $date = $start->format('Y-m-d');
+
+        $schedule = \Illuminate\Support\Facades\DB::table('specialist_schedules')
+            ->where('specialist_id', $this->id)->where('day_of_week', $start->dayOfWeek)->where('is_active', true)->first();
+        if (! $schedule
+            || $start->lt(Carbon::parse($date.' '.$schedule->start_time))
+            || $end->gt(Carbon::parse($date.' '.$schedule->end_time))) {
+            return 'outside_working_hours';
+        }
+
+        if ($schedule->break_start && $schedule->break_end
+            && $start->lt(Carbon::parse($date.' '.$schedule->break_end))
+            && $end->gt(Carbon::parse($date.' '.$schedule->break_start))) {
+            return 'break';
+        }
+
+        $overlapping = \Illuminate\Support\Facades\DB::table('bookings')
+            ->leftJoin('beauty_services', 'beauty_services.id', '=', 'bookings.service_id')
+            ->where('bookings.specialist_id', $this->id)
+            ->where('bookings.status', '!=', 'cancelled')
+            ->when($excludeBookingId, fn ($q) => $q->where('bookings.id', '!=', $excludeBookingId))
+            ->where('bookings.booking_time', '<', $end->format('Y-m-d H:i:s'))
+            ->where('bookings.booking_time', '>=', $start->copy()->subDay()->format('Y-m-d H:i:s'))
+            ->get(['bookings.booking_time', 'beauty_services.duration'])
+            ->first(fn ($b) => Carbon::parse($b->booking_time)->addMinutes((int) ($b->duration ?: 30))->gt($start));
+
+        return $overlapping ? 'overlapping_booking' : null;
+    }
+
     public function getAvailableSlots($date, $serviceDuration = null, ?int $excludeBookingId = null): array
     {
         try {

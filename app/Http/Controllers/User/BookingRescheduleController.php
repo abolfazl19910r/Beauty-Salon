@@ -53,6 +53,10 @@ class BookingRescheduleController extends Controller
 
         try {
             DB::transaction(function () use ($booking, $bookingTime) {
+                // کل مدت خدمت با نوبت‌های دیگر، استراحت و ساعت کاری؛ با قفل ردیف متخصص (۲۰۲۶-۱۰-۰۱)
+                app(\App\Services\Booking\BookingService::class)
+                    ->assertBookingFits((int) $booking->specialist_id, $bookingTime, (int) $booking->service_id, $booking->id);
+
                 $oldTime = $booking->booking_time;
                 $specialist = $booking->specialist;
 
@@ -82,6 +86,12 @@ class BookingRescheduleController extends Controller
             return redirect()->route('bookings.show', $booking)
                 ->with('success', $successMessage);
 
+        } catch (\App\Exceptions\BookingNotAvailableException) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'زمان انتخاب شده در دسترس نیست.'], 409);
+            }
+
+            return back()->with('error', 'زمان انتخاب شده در دسترس نیست.');
         } catch (Exception $e) {
             Log::error('خطا در تغییر زمان نوبت', [
                 'booking_id' => $booking->id,

@@ -248,6 +248,7 @@ class BookingService
         ) {
             // کلید اول تراکنش: ارسال هم‌زمان دوم روی ایندکس یکتای همین کلید منتظر می‌ماند
             $claim = Idempotency::claim(Idempotency::BOOKING, $userId, $idempotencyKey, $fingerprint);
+            $this->assertBookingFits($specialistId, $bookingTime, $serviceId);
 
             $booking = $this->bookingRepository->create([
                 'service_id' => $serviceId,
@@ -308,6 +309,8 @@ class BookingService
         }
 
         return DB::transaction(function () use ($data) {
+            $this->assertBookingFits((int) $data['specialist_id'], $data['booking_time'], (int) $data['service_id']);
+
             try {
                 return $this->bookingRepository->create([
                     'service_id' => $data['service_id'],
@@ -330,6 +333,27 @@ class BookingService
                 throw $e;
             }
         });
+    }
+
+    /**
+     * داخل تراکنش صدا زده شود: کل بازه‌ی خدمت را با ساعت کاری، استراحت و نوبت‌های دیگر می‌سنجد (۲۰۲۶-۱۰-۰۱).
+     * قید یکتای active_slot فقط شروع یکسان را می‌گرفت.
+     */
+    public function assertBookingFits(int $specialistId, string $bookingTime, int $serviceId, ?int $excludeBookingId = null): void
+    {
+        $specialist = \App\Models\Specialist::withoutGlobalScopes()->find($specialistId);
+        $duration = (int) (\Illuminate\Support\Facades\DB::table('beauty_services')->where('id', $serviceId)->value('duration') ?: 30);
+
+        $reason = $specialist
+            ? $specialist->conflictFor(Carbon::parse($bookingTime), $duration, $excludeBookingId)
+            : 'specialist_not_found';
+
+        if ($reason !== null) {
+            throw BookingNotAvailableException::slotTaken(
+                "Booking {$bookingTime} ({$duration} min) does not fit for specialist {$specialistId}: {$reason}.",
+                ['specialist_id' => $specialistId, 'booking_time' => $bookingTime, 'duration' => $duration, 'reason' => $reason, 'exclude_booking_id' => $excludeBookingId]
+            );
+        }
     }
 
     public function isDuplicateActiveSlotError(\Illuminate\Database\QueryException $e): bool

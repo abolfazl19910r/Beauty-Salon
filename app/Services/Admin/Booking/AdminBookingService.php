@@ -42,7 +42,15 @@ class AdminBookingService
 
         $oldBookingTime = $booking->booking_time;
 
-        DB::transaction(function () use ($booking, $validated, $newStatus, $oldStatus) {
+        $newServiceId = (int) ($validated['service_id'] ?? $booking->service_id);
+        $mustFit = $newStatus !== 'cancelled' && ($scheduleChanged || $newServiceId !== (int) $booking->service_id);
+
+        DB::transaction(function () use ($booking, $validated, $newStatus, $oldStatus, $mustFit, $newSpecialistId, $newBookingTime, $newServiceId) {
+            if ($mustFit) {
+                // کل مدت خدمت (شاید خدمت بلندتر) با قفل ردیف متخصص (۲۰۲۶-۱۰-۰۱)
+                $this->bookingService->assertBookingFits($newSpecialistId, $newBookingTime, $newServiceId, $booking->id);
+            }
+
             try {
                 $this->bookingRepository->update($booking, $this->buildUpdatePayload($validated, $newStatus, $oldStatus));
             } catch (\Illuminate\Database\QueryException $e) {
