@@ -69,6 +69,18 @@ class AppServiceProvider extends ServiceProvider
         Booking::observe(BookingObserver::class);
         DiscountCode::observe(DiscountCodeObserver::class);
 
+        // حالت سخت‌گیر BelongsToSalon (۲۰۲۶-۱۰-۰۱): job/اعلان بدون سالن جاری سالنِ خودش را می‌گیرد
+        \Illuminate\Support\Facades\Bus::pipeThrough([\App\Support\SetSalonForQueuedJob::class]);
+        \App\Support\SalonForQueuePayload::register();
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Queue\Events\JobProcessing::class, [\App\Support\SalonForQueuePayload::class, 'processing']);
+        foreach ([\Illuminate\Queue\Events\JobProcessed::class, \Illuminate\Queue\Events\JobFailed::class, \Illuminate\Queue\Events\JobExceptionOccurred::class] as $queueEvent) {
+            \Illuminate\Support\Facades\Event::listen($queueEvent, [\App\Support\SalonForQueuePayload::class, 'finished']);
+        }
+        // اعلانی که بدون سالن جاری فرستاده می‌شود (دستور کنسول، worker): سالنِ رکوردِ اعلان یا گیرنده فقط برای همان ارسال
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Notifications\Events\NotificationSending::class, [\App\Support\SalonForNotification::class, 'sending']);
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Notifications\Events\NotificationSent::class, [\App\Support\SalonForNotification::class, 'finished']);
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Notifications\Events\NotificationFailed::class, [\App\Support\SalonForNotification::class, 'finished']);
+
         $this->app->extend(ChannelManager::class, function ($manager) {
             $manager->extend('database', function ($app) {
                 return new class($app->make('db'), $app->make('events')) extends BaseDatabaseChannel

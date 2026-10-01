@@ -60,7 +60,8 @@ Route::name('api.')->group(function () {
         });
     }
 
-    Route::middleware('auth:sanctum')->group(function () {
+    // سالن از کاربر (حالت سخت‌گیر BelongsToSalon، ۲۰۲۶-۱۰-۰۱): این routeها بیرون از /s/{salon_slug} هستند
+    Route::middleware(['auth:sanctum', \App\Http\Middleware\ResolveSalonFromUser::class])->group(function () {
         if (file_exists(__DIR__.'/api/auth/security.php')) {
             require __DIR__.'/api/auth/security.php';
         }

@@ -40,4 +40,83 @@ class CurrentSalon
     {
         $this->salon = null;
     }
+
+    /** عمق allSalons() تو در تو */
+    protected int $allSalonsDepth = 0;
+
+    /**
+     * کد داخل $callback صریحاً با همه‌ی سالن‌ها کار می‌کند (پنل سوپرادمین، دستورهای زمان‌بندی‌شده‌ای که روی همه‌ی سالن‌ها
+     * می‌گردند). سالن جاری موقتاً برداشته و بعد برگردانده می‌شود. بدون این، کوئری مدل سالن‌دار بدون سالن جاری خطا
+     * می‌دهد (حالت سخت‌گیر، ۲۰۲۶-۱۰-۰۱).
+     *
+     * @template T
+     *
+     * @param  callable(): T  $callback
+     * @return T
+     */
+    public function allSalons(callable $callback): mixed
+    {
+        $previous = $this->salon;
+        $this->salon = null;
+        $this->allSalonsDepth++;
+
+        try {
+            return $callback();
+        } finally {
+            $this->allSalonsDepth--;
+            $this->salon = $previous;
+        }
+    }
+
+    /**
+     * $callback با سالن مشخص (مثلاً سالنِ رکوردی که job روی آن کار می‌کند)؛ سالن قبلی بعد از آن برمی‌گردد. شناسه‌ی null یا
+     * سالن ناموجود → همان وضعیت فعلی.
+     *
+     * @template T
+     *
+     * @param  callable(): T  $callback
+     * @return T
+     */
+    public function withSalon(Salon|int|null $salon, callable $callback): mixed
+    {
+        $salon = is_int($salon) ? Salon::find($salon) : $salon;
+        if (! $salon) {
+            return $callback();
+        }
+
+        $previous = $this->salon;
+        $previousDepth = $this->allSalonsDepth;
+        $this->salon = $salon;
+        $this->allSalonsDepth = 0;
+
+        try {
+            return $callback();
+        } finally {
+            $this->salon = $previous;
+            $this->allSalonsDepth = $previousDepth;
+        }
+    }
+
+    public function allowsAllSalons(): bool
+    {
+        return $this->allSalonsDepth > 0;
+    }
+
+    /**
+     * global scope مدل‌های سالن‌دار وقتی سالن جاری نیست: داخل allSalons() بدون فیلتر؛ وگرنه خطا (یا در حالت log فقط هشدار).
+     */
+    public function guardMissing(string $model): void
+    {
+        if ($this->allowsAllSalons()) {
+            return;
+        }
+
+        if (config('tenancy.strict', 'throw') === 'log') {
+            \Illuminate\Support\Facades\Log::warning('Salon-scoped query without a current salon', ['model' => $model]);
+
+            return;
+        }
+
+        throw \App\Exceptions\MissingSalonContextException::forModel($model);
+    }
 }

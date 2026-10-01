@@ -33,7 +33,11 @@ class EnsureSpecialistSalonActive
             return redirect()->route('login');
         }
 
-        $specialist = $user->specialist;
+        // سالن هنوز معلوم نیست (پنل متخصص روی دامنه‌ی مرکزی): پیدا کردن متخصص صریحاً بدون سالن (حالت سخت‌گیر ۲۰۲۶-۱۰-۰۱)
+        $currentSalon = app(CurrentSalon::class);
+        $specialist = $currentSalon->id() !== null
+            ? $user->specialist
+            : $currentSalon->allSalons(fn () => $user->specialist()->first());
 
         // ⭐ Fix (real bug, pre-existing in this middleware, not introduced this session):
         // aborting outright here broke every specialist-panel controller's own designed

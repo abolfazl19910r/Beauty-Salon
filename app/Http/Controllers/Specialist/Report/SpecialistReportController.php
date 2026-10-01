@@ -13,6 +13,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class SpecialistReportController extends Controller
 {
+    use \App\Traits\ResolvesSpecialist;
     use HasJalaliDates;
 
     public function __construct(
@@ -30,7 +31,7 @@ class SpecialistReportController extends Controller
     public function index(Request $request): View|\Symfony\Component\HttpFoundation\BinaryFileResponse|string|null
     {
         $user = auth()->user();
-        $specialist = $this->specialistRepository->findByPhone($user->phone);
+        $specialist = $this->resolveSpecialist();
 
         if (! $specialist) {
             return view('specialist.profile-not-found');

@@ -30,6 +30,7 @@ class EnsureSuperAdmin
             abort(403, 'دسترسی فقط برای سوپر ادمین.');
         }
 
-        return $next($request);
+        // پنل سوپرادمین صریحاً با همه‌ی سالن‌ها کار می‌کند (حالت سخت‌گیر BelongsToSalon، ۲۰۲۶-۱۰-۰۱)
+        return app(\App\Support\CurrentSalon::class)->allSalons(fn () => $next($request));
     }
 }

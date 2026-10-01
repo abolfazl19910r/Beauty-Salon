@@ -9,7 +9,8 @@ trait ResolvesSpecialist
 {
     protected function resolveSpecialist(bool $orFail = false): ?Specialist
     {
-        $specialist = auth()->user()?->specialist;
+        // بدون سالن جاری یعنی EnsureSpecialistSalonActive متخصصی برای این کاربر پیدا نکرد (حالت سخت‌گیر ۲۰۲۶-۱۰-۰۱)
+        $specialist = app(\App\Support\CurrentSalon::class)->id() !== null ? auth()->user()?->specialist : null;
 
         if (! $specialist && $orFail) {
             abort(404, 'رکورد متخصص برای این حساب کاربری یافت نشد.');

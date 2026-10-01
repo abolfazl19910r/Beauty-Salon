@@ -38,6 +38,14 @@ class SendBookingReminderJob implements ShouldQueue
         $this->onQueue(Queues::SMS);
     }
 
+    /** سالنِ همین نوبت برای worker (SetSalonForQueuedJob، حالت سخت‌گیر ۲۰۲۶-۱۰-۰۱) */
+    public function salonId(): ?int
+    {
+        $salonId = \Illuminate\Support\Facades\DB::table('bookings')->where('id', $this->bookingId)->value('salon_id');
+
+        return $salonId ? (int) $salonId : null;
+    }
+
     public function handle(SMSService $smsService, BookingRepositoryInterface $bookingRepository): void
     {
         $booking = $bookingRepository->query()->with(['user', 'specialist', 'service'])->find($this->bookingId);

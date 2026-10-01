@@ -50,7 +50,17 @@ class SendBulkNotificationJob implements ShouldQueue
         protected array $notificationArgs,
         protected string $notifiableModel,
         protected array $notifiableIds,
-    ) {}
+    ) {
+        // سالنی که job از آن فرستاده شد؛ worker همین را ست می‌کند (SetSalonForQueuedJob، حالت سخت‌گیر ۲۰۲۶-۱۰-۰۱)
+        $this->salonId = app(\App\Support\CurrentSalon::class)->id();
+    }
+
+    protected ?int $salonId = null;
+
+    public function salonId(): ?int
+    {
+        return $this->salonId;
+    }
 
     /**
      * Suggested entry point for future features — chunks the large list itself

@@ -22,13 +22,14 @@ class SendBookingReminders extends Command
         // gets a reminder just once, exactly 1 hour before it. The 10-minute interval was intentionally
         // chosen to overlap with the command's execution interval (every 5 or 10 minutes) and
         // no shifts are missed between two consecutive runs.
-        $bookings = $bookingRepository->query()
+        // روی همه‌ی سالن‌ها (صریح، حالت سخت‌گیر ۲۰۲۶-۱۰-۰۱)؛ job هر نوبت سالن خودش را می‌گیرد (salonId())
+        $bookings = app(\App\Support\CurrentSalon::class)->allSalons(fn () => $bookingRepository->query()
             ->where('booking_time', '>=', now()->addMinutes(55))
             ->where('booking_time', '<=', now()->addMinutes(65))
             ->where('status', 'confirmed')
             ->where('reminder_sent', false)
             ->select('id')
-            ->get();
+            ->get());
 
         $reminderCount = 0;
 

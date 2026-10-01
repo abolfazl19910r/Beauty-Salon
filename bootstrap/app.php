@@ -42,6 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\EnsureAdminSalonActive::class,
             \App\Http\Middleware\EnsureSpecialistSalonActive::class,
             \App\Http\Middleware\ResolveSalonFromRoute::class,
+            \App\Http\Middleware\ResolveSalonFromUser::class,
         ] as $salonContextMiddleware) {
             $middleware->prependToPriorityList(
                 before: \Illuminate\Routing\Middleware\SubstituteBindings::class,

@@ -51,6 +51,15 @@ class ProcessWithdrawalJob implements ShouldQueue
 
     public function handle(SalonPayoutService $payoutService): void
     {
+        // حالت سخت‌گیر BelongsToSalon (۲۰۲۶-۱۰-۰۱): worker سالن جاری ندارد؛ سالنِ متخصص همین برداشت
+        $salonId = DB::table('withdrawal_requests')->join('specialists', 'specialists.id', '=', 'withdrawal_requests.specialist_id')
+            ->where('withdrawal_requests.id', $this->withdrawalRequestId)->value('specialists.salon_id');
+
+        app(\App\Support\CurrentSalon::class)->withSalon($salonId ? (int) $salonId : null, fn () => $this->process($payoutService));
+    }
+
+    private function process(SalonPayoutService $payoutService): void
+    {
         DB::transaction(function () use ($payoutService) {
             $withdrawalRequest = WithdrawalRequest::whereKey($this->withdrawalRequestId)
                 ->lockForUpdate()

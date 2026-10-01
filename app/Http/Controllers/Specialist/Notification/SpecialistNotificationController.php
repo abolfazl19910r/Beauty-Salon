@@ -49,7 +49,7 @@ class SpecialistNotificationController extends Controller
     public function index(): View
     {
         $user = auth()->user();
-        $specialist = $this->specialistRepository->findByPhone($user->phone);
+        $specialist = $this->resolveSpecialist();
 
         if (! $specialist) {
             return view('specialist.profile-not-found');
@@ -100,7 +100,7 @@ class SpecialistNotificationController extends Controller
     public function latest(): JsonResponse
     {
         $user = auth()->user();
-        $specialist = $this->specialistRepository->findByPhone($user->phone);
+        $specialist = $this->resolveSpecialist();
 
         $userNotifications = $user->notifications()
             ->orderBy('created_at', 'desc')
@@ -140,7 +140,7 @@ class SpecialistNotificationController extends Controller
     public function count(): JsonResponse
     {
         $user = auth()->user();
-        $specialist = $this->specialistRepository->findByPhone($user->phone);
+        $specialist = $this->resolveSpecialist();
 
         $userUnread = $user->unreadNotifications()->count();
         $specialistUnread = $specialist ? $specialist->unreadNotifications()->count() : 0;
@@ -153,7 +153,7 @@ class SpecialistNotificationController extends Controller
     public function markAsRead(string $id): JsonResponse
     {
         $user = auth()->user();
-        $specialist = $this->specialistRepository->findByPhone($user->phone);
+        $specialist = $this->resolveSpecialist();
 
         $notification = $user->notifications()->find($id);
 
@@ -171,7 +171,7 @@ class SpecialistNotificationController extends Controller
     public function showAndRedirect(string $id): RedirectResponse
     {
         $user = auth()->user();
-        $specialist = $this->specialistRepository->findByPhone($user->phone);
+        $specialist = $this->resolveSpecialist();
 
         $notification = $user->notifications()->find($id);
 
@@ -202,7 +202,7 @@ class SpecialistNotificationController extends Controller
     public function markAllAsRead(): RedirectResponse
     {
         $user = auth()->user();
-        $specialist = $this->specialistRepository->findByPhone($user->phone);
+        $specialist = $this->resolveSpecialist();
 
         $user->unreadNotifications()->update(['read_at' => now()]);
 

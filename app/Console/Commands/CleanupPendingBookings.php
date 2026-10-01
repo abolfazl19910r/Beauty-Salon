@@ -30,12 +30,14 @@ class CleanupPendingBookings extends Command
 
         $this->info("🔍 جستجوی نوبت‌های pending_payment بیشتر از {$minutes} دقیقه...");
 
-        $expiredBookings = $bookingRepository->query()
+        // روی همه‌ی سالن‌ها (صریح، حالت سخت‌گیر ۲۰۲۶-۱۰-۰۱)؛ هر نوبت داخل سالن خودش لغو می‌شود
+        $currentSalon = app(\App\Support\CurrentSalon::class);
+        $expiredBookings = $currentSalon->allSalons(fn () => $bookingRepository->query()
             ->where('status', 'pending_payment')
             ->where('payment_status', 'unpaid')
             ->where('created_at', '<=', Carbon::now()->subMinutes($minutes))
             ->withoutPaymentInProgress() // ⭐ مثل CancelUnpaidBookings: وسط پرداخت لغو نکن
-            ->get();
+            ->get());
 
         if ($expiredBookings->isEmpty()) {
             $this->info('✅ نوبتی برای لغو یافت نشد.');
@@ -74,12 +76,12 @@ class CleanupPendingBookings extends Command
 
         foreach ($expiredBookings as $booking) {
             try {
-                $booking->update([
+                $currentSalon->withSalon((int) $booking->salon_id, fn () => $booking->update([
                     'status' => 'cancelled',
                     'cancelled_by' => 'system',
                     'cancelled_at' => now(),
                     'cancellation_reason' => 'عدم تکمیل پرداخت در زمان مقرر',
-                ]);
+                ]));
                 $cancelled++;
                 $this->line("✓ نوبت #{$booking->id} لغو شد");
             } catch (\Exception $e) {

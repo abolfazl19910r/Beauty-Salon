@@ -29,19 +29,21 @@ class CancelUnpaidBookings implements ShouldQueue
 
     public function handle(SMSService $smsService, BookingRepositoryInterface $bookingRepository): void
     {
-        $expiredBookings = $bookingRepository->query()
+        // روی همه‌ی سالن‌ها می‌گردد (صریح، حالت سخت‌گیر ۲۰۲۶-۱۰-۰۱)؛ هر نوبت داخل سالن خودش لغو می‌شود
+        $currentSalon = app(\App\Support\CurrentSalon::class);
+        $expiredBookings = $currentSalon->allSalons(fn () => $bookingRepository->query()
             ->where('status', 'pending_payment')
             ->where('payment_status', 'unpaid')
             ->where('created_at', '<=', Carbon::now()->subMinutes(30))
             ->withoutPaymentInProgress() // ⭐ مشتری هنوز در صفحه‌ی بانکه — لغو نکن
-            ->get();
+            ->get());
 
         $cancelledCount = 0;
         $failedCount = 0;
 
         foreach ($expiredBookings as $booking) {
             try {
-                DB::transaction(function () use ($booking, $smsService, &$cancelledCount) {
+                $currentSalon->withSalon((int) $booking->salon_id, fn () => DB::transaction(function () use ($booking, $smsService, &$cancelledCount) {
                     $booking->update([
                         'status' => 'cancelled',
                         'cancelled_by' => 'system',
@@ -62,7 +64,7 @@ class CancelUnpaidBookings implements ShouldQueue
                     }
 
                     $cancelledCount++;
-                });
+                }));
             } catch (\Exception $e) {
                 $failedCount++;
 

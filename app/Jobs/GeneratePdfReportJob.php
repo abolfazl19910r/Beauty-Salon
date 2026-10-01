@@ -60,7 +60,8 @@ class GeneratePdfReportJob implements ShouldQueue
         // CurrentSalon ست نباشه هیچ فیلتری اضافه نمی‌کنه (رفتار مستندشده‌ی خودِ trait، دقیقاً
         // مثل پنل سوپرادمین)، پس این ردیف صرف‌نظر از اینکه به کدوم سالن تعلق داره پیدا می‌شه —
         // خودِ salon_id همین ردیف در ادامه برای ست‌کردن CurrentSalon استفاده می‌شه.
-        $reportExport = $reportExportRepository->find($this->reportExportId);
+        // حالت سخت‌گیر (۲۰۲۶-۱۰-۰۱): این یک خواندن صریحاً بدون سالن است
+        $reportExport = app(CurrentSalon::class)->allSalons(fn () => $reportExportRepository->find($this->reportExportId));
 
         if (! $reportExport) {
             Log::warning('GeneratePdfReportJob: رکورد ReportExport یافت نشد', [

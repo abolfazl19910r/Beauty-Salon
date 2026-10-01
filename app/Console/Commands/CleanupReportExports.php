@@ -16,6 +16,12 @@ class CleanupReportExports extends Command
     {
         $days = (int) $this->option('days');
 
+        // نگهداری روی همه‌ی سالن‌ها (صریح، حالت سخت‌گیر ۲۰۲۶-۱۰-۰۱)
+        return app(\App\Support\CurrentSalon::class)->allSalons(fn () => $this->cleanup($reportExportRepository, $days));
+    }
+
+    private function cleanup(ReportExportRepositoryInterface $reportExportRepository, int $days): int
+    {
         $oldExports = $reportExportRepository->getOlderThanWithStatuses(['ready', 'failed'], now()->subDays($days));
 
         $deletedFiles = 0;
