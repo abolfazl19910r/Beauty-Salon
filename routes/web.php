@@ -99,6 +99,12 @@ if ($centralDomain) {
 // که با هیچ گروه ساب‌دامینی جور نیست (دامنه‌ی مرکزی خام، 127.0.0.1، localhost) به اینجا می‌رسه.
 Route::get('/', \App\Http\Controllers\Central\CentralLandingController::class)->name('central.home');
 
+// لینک کوتاه پیامک‌ها (۲۰۲۶-۰۹-۳۰، ShortLinkService): بدون Route::domain، روی دامنه‌ی مرکزی و هر هاست دیگری کار می‌کند.
+Route::get('/b/{code}', \App\Http\Controllers\ShortLinkController::class)
+    ->where('code', '[a-z0-9]{4,16}')
+    ->middleware('throttle:60,1')
+    ->name('short-link');
+
 // ⭐ آدرس بازگشت مشترک همه‌ی درگاه‌های پرداخت (لایه‌ی چند درگاه — مرحله‌ی ۰ بخش ۲، ۲۰۲۶-۰۹-۲۵). بدون
 // Route::domain (روی هاست همون سالن کار می‌کنه)، GET و POST، بدون auth و بدون CSRF چون بانک‌ها با POST
 // cross-site برمی‌گردن و کوکی session همراهش نیست — به GatewayReturnController نگاه کن.

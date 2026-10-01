@@ -28,6 +28,11 @@ return [
         'base_url' => env('SMS_BASE_URL'),
     ],
 
+    // دامنه‌ی لینک کوتاه پیامک‌ها (ShortLinkService)؛ خالی = CENTRAL_DOMAIN یا میزبان APP_URL. دامنه‌ی کوتاه‌تر = پیامک ارزان‌تر.
+    'sms_links' => [
+        'host' => env('SMS_LINK_HOST'),
+    ],
+
     'kavenegar' => [
         'api_key' => env('KAVENEGAR_API_KEY'),
         // ⭐ Fix (test-writing session 7): env('KEY', 'default') only falls back when the

@@ -43,7 +43,11 @@ class ReviewService
             $reviewToken = ReviewToken::createForBooking($booking);
 
             $baseUrl = request()?->getSchemeAndHttpHost() ?: rtrim(config('app.url'), '/');
-            $reviewUrl = $baseUrl.route('reviews.create', ['token' => $reviewToken->token], false);
+            // لینک کوتاه (۲۰۲۶-۰۹-۳۰): آدرس کامل با توکن به‌تنهایی یک قطعه‌ی پیامک بود
+            $reviewUrl = app(\App\Services\Links\ShortLinkService::class)->shorten(
+                $baseUrl.route('reviews.create', ['token' => $reviewToken->token], false),
+                $reviewToken->expires_at
+            );
 
             $message = sprintf(
                 "سلام %s، خدمت %s با موفقیت انجام شد. لطفاً نظر خود را ثبت کنید:\n%s",

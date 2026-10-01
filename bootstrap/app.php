@@ -90,6 +90,10 @@ return Application::configure(basePath: dirname(__DIR__))
             ->onOneServer();
         $schedule->command('review-tokens:cleanup')
             ->daily();
+        // لینک‌های کوتاه پیامک ۳۰ روز بعد از انقضا (ShortLink::prunable)
+        $schedule->command('model:prune', ['--model' => [\App\Models\ShortLink::class]])
+            ->dailyAt('03:45')
+            ->onOneServer();
         // R-Events: already via event(new ReminderScheduleEvent()) +
         // A listener that sets a config flag + a provider that sets that flag
         // It was checking and it was scheduled. Because that provider (EventServiceProvider) never

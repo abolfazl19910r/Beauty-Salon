@@ -31,6 +31,7 @@ class TenantModelClassificationTest extends TestCase
         'PaymentTransaction' => 'callback/reconcile بدون CurrentSalon؛ salon_id صریح',
         'SalonPaymentGateway' => 'همیشه از $salon->paymentGateways()',
         'SalonSmsUsage' => 'ابزار سهمیه‌ی خود سالن‌ها',
+        'ShortLink' => 'لینک کوتاه پیامک؛ کد تصادفی به آدرسی که خود برنامه ساخته، بدون داده‌ی سالن',
         // از طریق متخصص به سالن وصل‌اند؛ فهرست/آمار با whereHas('specialist') و جزئیات با چک مالکیت
         'SpecialistWallet' => 'repository با whereHas(specialist)',
         'WithdrawalRequest' => 'repository با whereHas(specialist)',
