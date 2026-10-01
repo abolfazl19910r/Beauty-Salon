@@ -498,7 +498,7 @@
                     <span>هر متخصص بیشتر ماهانه {{ to_persian_num(number_format($extraSpecialistPrice)) }} تومان؛ تعداد را موقع ثبت‌نام انتخاب می‌کنید.</span>
                 </div>
                 <div>
-                    <strong>{{ to_persian_num(number_format($smsQuota)) }} پیامک در ماه</strong>
+                    <strong>{{ to_persian_num(number_format($smsQuota)) }} قطعه پیامک در ماه</strong>
                     <span>پیامک‌های تایید، یادآوری و ورود؛ بدون هزینه‌ی جداگانه.</span>
                 </div>
                 <div>
@@ -643,7 +643,7 @@
             <div class="same-all">
                 <span>همه‌ی امکانات سه پنل</span>
                 <span>{{ to_persian_num((string) $maxSpecialists) }} متخصص (هر متخصص بیشتر ماهانه {{ to_persian_num(number_format($extraSpecialistPrice)) }} تومان)</span>
-                <span>{{ to_persian_num(number_format($smsQuota)) }} پیامک در هر ماه</span>
+                <span>{{ to_persian_num(number_format($smsQuota)) }} قطعه پیامک در هر ماه</span>
                 <span>تیکت پشتیبانی</span>
             </div>
 
@@ -707,8 +707,8 @@
                     <summary>در دوره‌ی رایگان محدودیتی هست؟</summary>
                     <p>
                         همه‌ی امکانات باز است. تنها تفاوت، سقف پیامک است: در دوره‌ی رایگان
-                        {{ to_persian_num(number_format($trialSmsQuota)) }} پیامک در ماه و بعد از خرید
-                        {{ to_persian_num(number_format($smsQuota)) }} پیامک در ماه.
+                        {{ to_persian_num(number_format($trialSmsQuota)) }} قطعه پیامک در ماه و بعد از خرید
+                        {{ to_persian_num(number_format($smsQuota)) }} قطعه پیامک در ماه.
                     </p>
                 </details>
             @endif
@@ -938,7 +938,7 @@
                 setText('dlg-period-end', plan.period_end_label);
                 setText('dlg-months', fa(plan.months) + ' ماه');
                 setText('dlg-per-month', money(plan.per_month) + ' تومان');
-                setText('dlg-sms', money(plan.sms_total) + ' پیامک');
+                setText('dlg-sms', money(plan.sms_total) + ' قطعه پیامک');
                 setText('dlg-saving', plan.saving > 0
                     ? 'نسبت به تمدید ماه‌به‌ماه ' + money(plan.saving) + ' تومان (' + fa(plan.saving_percent) + ' درصد) کمتر پرداخت می‌کنید.'
                     : 'بدون تعهد بلندمدت؛ هر ماه می‌توانید تمدید کنید یا پلن بلندتر بخرید.');

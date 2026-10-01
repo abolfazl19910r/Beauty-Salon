@@ -43,9 +43,28 @@ class SmsQuotaService
         return max(0, $this->quotaFor($salon) - $this->usageRow($salon)->used_count);
     }
 
-    public function recordUsage(Salon $salon): void
+    /**
+     * واحد سهمیه «قطعه» است (۲۰۲۶-۰۹-۳۰، مثل فاکتور کاوه‌نگار؛ App\Support\SmsParts).
+     */
+    public function recordUsage(Salon $salon, int $parts = 1): void
     {
-        $this->usageRow($salon)->increment('used_count');
+        $this->usageRow($salon)->increment('used_count', max(1, $parts));
+    }
+
+    /**
+     * اگر جا برای $parts قطعه هست، مصرف را ثبت می‌کند و true برمی‌گرداند؛ وگرنه هیچ چیز ثبت نمی‌شود. پیامکی که از باقی‌مانده
+     * بزرگ‌تر است کامل مسدود می‌شود (نصفه فرستاده نمی‌شود و سقف را رد نمی‌کند).
+     */
+    public function consume(Salon $salon, int $parts): bool
+    {
+        $parts = max(1, $parts);
+        if ($this->remaining($salon) < $parts) {
+            return false;
+        }
+
+        $this->recordUsage($salon, $parts);
+
+        return true;
     }
 
     /**

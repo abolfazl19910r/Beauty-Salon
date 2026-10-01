@@ -12,7 +12,7 @@
         {{-- پیامک‌های این ماه: سقف سالن در برابر کدهای تأیید (خرج پلتفرم) — برای دیدن مصرف غیرعادی --}}
         <div class="mb-5 p-4 rounded-lg text-sm persian-number" style="border:1px solid var(--sa-border); color: var(--sa-text);">
             <div class="font-bold mb-2">پیامک‌های این ماه</div>
-            <div>از سقف سالن: {{ to_persian_num((string) $smsUsage['used']) }} از {{ to_persian_num((string) $smsUsage['quota']) }}</div>
+            <div>از سقف سالن: {{ to_persian_num((string) $smsUsage['used']) }} از {{ to_persian_num((string) $smsUsage['quota']) }} قطعه</div>
             <div>کدهای تأیید (خرج پلتفرم، خارج از سقف): {{ to_persian_num((string) $smsUsage['otp']) }}</div>
         </div>
 

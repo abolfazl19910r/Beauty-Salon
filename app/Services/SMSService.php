@@ -7,6 +7,7 @@ use App\Notifications\Sms\SmsQuotaExhaustedNotification;
 use App\Repositories\Contracts\SalonRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Sms\SmsQuotaService;
+use App\Support\SmsParts;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Kavenegar\Exceptions\ApiException;
@@ -31,7 +32,7 @@ class SMSService
      */
     public function send(string $mobile, string $message, ?int $salonId = null): bool
     {
-        if ($salonId !== null && ! $this->consumeQuotaOrNotify($salonId)) {
+        if ($salonId !== null && ! $this->consumeQuotaOrNotify($salonId, SmsParts::count($message))) {
             return false;
         }
 
@@ -92,7 +93,7 @@ class SMSService
     public function sendChargedWithoutLimit(string $mobile, string $message, int $salonId): bool
     {
         if ($salon = app(SalonRepositoryInterface::class)->find($salonId)) {
-            app(SmsQuotaService::class)->recordUsage($salon);
+            app(SmsQuotaService::class)->recordUsage($salon, SmsParts::count($message));
         }
 
         return $this->send($mobile, $message);
@@ -162,7 +163,7 @@ class SMSService
      * تا یک salon_id نامعتبر/قدیمی هیچ پیامک واقعی‌ای را بی‌صدا قطع نکند؛ این حالت خودش در لاگ
      * ثبت می‌شود تا قابل پیگیری باشد.
      */
-    private function consumeQuotaOrNotify(int $salonId): bool
+    private function consumeQuotaOrNotify(int $salonId, int $parts = 1): bool
     {
         $salon = app(SalonRepositoryInterface::class)->find($salonId);
 
@@ -174,7 +175,7 @@ class SMSService
 
         $quota = app(SmsQuotaService::class);
 
-        if (! $quota->hasQuotaRemaining($salon)) {
+        if (! $quota->consume($salon, $parts)) {
             if ($quota->shouldNotifyExhaustion($salon)) {
                 $this->notifyQuotaExhausted($salon, $quota->quotaFor($salon));
             }
@@ -182,12 +183,11 @@ class SMSService
             Log::warning('SmsQuotaService: monthly SMS quota exhausted, send blocked', [
                 'salon_id' => $salon->id,
                 'quota' => $quota->quotaFor($salon),
+                'parts' => $parts,
             ]);
 
             return false;
         }
-
-        $quota->recordUsage($salon);
 
         return true;
     }

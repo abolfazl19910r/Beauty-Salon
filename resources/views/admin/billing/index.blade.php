@@ -63,13 +63,13 @@
             </div>
             <div class="p-5 grid grid-cols-1 sm:grid-cols-3 gap-5 text-sm">
                 <div>
-                    <div style="color:var(--admin-text-dim);">مصرف از سقف ماهانه</div>
+                    <div style="color:var(--admin-text-dim);">مصرف از سقف ماهانه (قطعه)</div>
                     <div class="font-bold mt-1 persian-number">
                         {{ to_persian_num((string) $smsUsage['used']) }} از {{ to_persian_num((string) $smsUsage['quota']) }}
                     </div>
                 </div>
                 <div>
-                    <div style="color:var(--admin-text-dim);">باقی‌مانده</div>
+                    <div style="color:var(--admin-text-dim);">باقی‌مانده (قطعه)</div>
                     <div class="font-bold mt-1 persian-number" style="color:{{ $smsUsage['remaining'] > 0 ? 'var(--admin-text)' : '#b91c1c' }};">
                         {{ to_persian_num((string) $smsUsage['remaining']) }}
                     </div>
@@ -80,6 +80,8 @@
                 </div>
             </div>
             <div class="px-5 pb-4 text-xs leading-6" style="color:var(--admin-text-dim);">
+                سقف بر حسب «قطعه» است، همان‌طور که اپراتور پیامک حساب می‌کند: هر پیامک فارسی تا ۷۰ نویسه یک قطعه است و پیامک
+                بلندتر چند قطعه (هر ۶۷ نویسه یک قطعه).
                 کدهای تأیید هزینه‌ای برای سالن ندارند، از سقف کم نمی‌شوند و با تمام شدن سقف هم قطع نمی‌شوند؛ فقط برای شفافیت نمایش داده می‌شوند.
                 بقیه‌ی پیامک‌ها (تأیید و یادآوری نوبت، لغو، نظرسنجی، اطلاع‌رسانی به مدیر) از سقف ماهانه‌ی سالن کم می‌شوند.
             </div>

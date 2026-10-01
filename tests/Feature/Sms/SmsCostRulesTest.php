@@ -54,10 +54,12 @@ class SmsCostRulesTest extends TestCase
     {
         $admin = User::factory()->create();
 
-        $sent = (new AttentionRequiredNotification('payment', 1, $this->salon->id))->toSms($admin);
+        $alert = new AttentionRequiredNotification('payment', 1, $this->salon->id);
+        $sent = $alert->toSms($admin);
 
         $this->assertTrue($sent, 'attention alert was blocked by the exhausted quota');
-        $this->assertSame(3, (int) $this->usage()->used_count);
+        // سهمیه بر حسب قطعه است: همه‌ی قطعه‌های هشدار، بالای سقف
+        $this->assertSame(2 + \App\Support\SmsParts::count($alert->smsText()), (int) $this->usage()->used_count);
     }
 
     public function test_the_staff_password_reset_code_is_a_counted_verification_code(): void

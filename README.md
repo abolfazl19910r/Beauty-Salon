@@ -307,8 +307,8 @@ SUBSCRIPTION_PRICE_3M=4150000
 SUBSCRIPTION_PRICE_6M=7650000
 SUBSCRIPTION_PRICE_12M=13850000
 SUBSCRIPTION_TRIAL_DAYS=14                # ۰ = بدون دوره‌ی آزمایشی
-SMS_QUOTA_PER_MONTH=1500
-TRIAL_SMS_QUOTA=300                       # سقف پیامک در دوره‌ی آزمایشی
+SMS_QUOTA_PER_MONTH=2000                 # سهمیه‌ی ماهانه بر حسب قطعه
+TRIAL_SMS_QUOTA=400                       # سقف پیامک در دوره‌ی آزمایشی
 INCLUDED_SPECIALISTS_COUNT=7              # تعداد متخصص داخل قیمت پلن و پیش‌فرض فرم‌ها
 EXTRA_SPECIALIST_PRICE_PER_MONTH=250000   # هزینه‌ی ماهانه‌ی هر متخصص بیشتر (تومان)
 MAX_SIGNUP_SPECIALISTS=50                 # فقط سقف فرم ثبت‌نام عمومی؛ مدیر پلتفرم محدودیتی ندارد
