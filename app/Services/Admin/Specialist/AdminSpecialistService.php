@@ -5,6 +5,7 @@ namespace App\Services\Admin\Specialist;
 use App\Exceptions\SpecialistQuotaExceededException;
 use App\Models\Specialist;
 use App\Models\User;
+use App\Repositories\Contracts\SalonRepositoryInterface;
 use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Support\CurrentSalon;
@@ -16,6 +17,7 @@ class AdminSpecialistService
         protected readonly CurrentSalon $currentSalon,
         protected readonly SpecialistRepositoryInterface $specialistRepository,
         protected readonly UserRepositoryInterface $userRepository,
+        protected readonly SalonRepositoryInterface $salonRepository,
     ) {}
 
     public function create(array $validated, ?string $rawCommissionRate): array
@@ -24,8 +26,12 @@ class AdminSpecialistService
             $services = $validated['services'];
             unset($validated['services']);
 
-            $salon = $this->currentSalon->get();
-            $currentCount = $this->specialistRepository->count();
+            // سقف متخصص در برابر دو ساخت هم‌زمان (۲۰۲۶-۱۰-۰۱): ردیف سالن قفل می‌شود و ساخت‌های هم‌زمان همان سالن پشت
+            // سر هم اجرا می‌شوند؛ شمارش بعد از گرفتن قفل، متخصص commit‌شده‌ی درخواست قبلی را می‌بیند. سقف هم از همان ردیف
+            // قفل‌شده خوانده می‌شود. ⚠️ پیش از این قفل هیچ کوئری خواندنی در این تراکنش نباشد: در REPEATABLE READ اولین
+            // خواندن عادی snapshot تراکنش را می‌سازد و شمارش بعدی همان عدد قدیمی را می‌دید.
+            $salon = $this->salonRepository->lockForUpdateFindOrFail($this->currentSalon->id());
+            $currentCount = $this->specialistRepository->countBySalonIgnoringScope($salon->id);
 
             if ($currentCount >= $salon->max_specialists_count) {
                 throw SpecialistQuotaExceededException::quotaReached(
@@ -51,7 +57,7 @@ class AdminSpecialistService
                 'specialist' => $specialist,
                 'matched_user' => $matchedUser,
             ];
-        });
+        }, attempts: 3);
     }
 
     public function update(Specialist $specialist, array $validated, ?string $rawCommissionRate): Specialist
