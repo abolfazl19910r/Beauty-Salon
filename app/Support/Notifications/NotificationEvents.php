@@ -34,6 +34,8 @@ class NotificationEvents
 
     public const BOOKING_RESCHEDULED_CUSTOMER = 'booking.rescheduled.customer';
 
+    public const BOOKING_RESCHEDULED_SPECIALIST = 'booking.rescheduled.specialist';
+
     // برداشت وجه متخصص
     public const WITHDRAWAL_REQUESTED_ADMIN = 'withdrawal.requested.admin';
 
@@ -93,6 +95,7 @@ class NotificationEvents
                 self::BOOKING_CANCELLED_CUSTOMER => ['label' => 'لغو نوبت — اطلاع به مشتری', 'sms' => true],
                 self::BOOKING_CANCELLED_SPECIALIST => ['label' => 'لغو نوبت — اطلاع به متخصص', 'sms' => true],
                 self::BOOKING_RESCHEDULED_CUSTOMER => ['label' => 'تغییر زمان نوبت — اطلاع به مشتری', 'sms' => true],
+                self::BOOKING_RESCHEDULED_SPECIALIST => ['label' => 'تغییر زمان نوبت — اطلاع به متخصص', 'sms' => true],
             ],
             'برداشت وجه متخصص' => [
                 self::WITHDRAWAL_REQUESTED_ADMIN => ['label' => 'ثبت درخواست برداشت — اطلاع به ادمین', 'sms' => false],

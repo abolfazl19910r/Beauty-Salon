@@ -59,6 +59,8 @@ class AdminBookingService
 
         if ($scheduleChanged) {
             $booking->user->notify(new BookingRescheduledNotification($booking, $oldBookingTime));
+            // متخصص هم باید بداند (۲۰۲۶-۰۹-۳۰؛ تغییر از سمت مشتری از قبل به او خبر می‌داد)
+            $booking->specialist?->notify(new BookingRescheduledNotification($booking, $oldBookingTime));
         }
 
         return $this->handlePostUpdateSideEffects($booking, $oldStatus);

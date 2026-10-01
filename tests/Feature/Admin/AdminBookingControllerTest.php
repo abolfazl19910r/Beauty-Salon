@@ -393,6 +393,8 @@ class AdminBookingControllerTest extends TestCase
         // specialist — matching what NotificationEvents::BOOKING_RESCHEDULED_CUSTOMER's name
         // and gate label ("تغییر زمان نوبت — اطلاع به مشتری") actually say this event is for.
         Notification::assertSentTo($user, BookingRescheduledNotification::class);
+        // ۲۰۲۶-۰۹-۳۰: متخصص هم باید بداند نوبتش جابه‌جا شد (تغییر از سمت مشتری از قبل به او خبر می‌داد، از پنل مدیر نه)
+        Notification::assertSentTo($specialist, BookingRescheduledNotification::class);
     }
 
     public function test_full_update_without_schedule_change_does_not_notify(): void

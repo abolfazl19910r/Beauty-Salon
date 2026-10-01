@@ -38,7 +38,12 @@ class BookingRescheduledNotification extends Notification implements ShouldQueue
 
     public function via($notifiable): array
     {
-        return $this->gatedChannels(NotificationEvents::BOOKING_RESCHEDULED_CUSTOMER, ['database', 'sms'], $notifiable);
+        // متخصص و مشتری هر کدام کلید تنظیمات خودشان را دارند (۲۰۲۶-۰۹-۳۰)
+        $event = $notifiable instanceof \App\Models\Specialist
+            ? NotificationEvents::BOOKING_RESCHEDULED_SPECIALIST
+            : NotificationEvents::BOOKING_RESCHEDULED_CUSTOMER;
+
+        return $this->gatedChannels($event, ['database', 'sms'], $notifiable);
     }
 
     public function toArray($notifiable): array
