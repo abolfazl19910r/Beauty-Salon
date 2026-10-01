@@ -97,6 +97,8 @@
             {{-- Final form --}}
             <form action="{{ route('bookings.store') }}" method="POST">
                 @csrf
+                {{-- idempotency: دوبار ارسال همین فرم فقط یک بار ثبت می‌شود --}}
+                <input type="hidden" name="idempotency_key" value="{{ old('idempotency_key', (string) \Illuminate\Support\Str::uuid()) }}">
                 <input type="hidden" name="service_id" value="{{ $service->id }}">
                 <input type="hidden" name="specialist_id" value="{{ $specialist->id }}">
                 <input type="hidden" name="booking_time" value="{{ $bookingTime }}">

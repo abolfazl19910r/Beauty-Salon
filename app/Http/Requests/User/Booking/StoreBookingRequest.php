@@ -18,6 +18,7 @@ class StoreBookingRequest extends FormRequest
             'specialist_id' => 'required|exists:specialists,id',
             'booking_time' => 'required|date|after:now',
             'discount_code' => 'nullable|string|max:50',
+            'idempotency_key' => \App\Support\Idempotency::rule(),
         ];
     }
 

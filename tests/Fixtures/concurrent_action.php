@@ -65,11 +65,22 @@ try {
             echo $cancelled === false ? 'not-cancelled' : 'cancelled';
             break;
 
+        case 'create-booking': // salon_id user_id service_id specialist_id booking_time idempotency_key
+            [$salonId, $userId, $serviceId, $specialistId, $time, $key] = $args;
+            $inSalon((int) $salonId);
+            $booking = $app->make(App\Services\Booking\BookingService::class)->createBooking(
+                (int) $userId, (int) $serviceId, (int) $specialistId, $time, null, $key,
+            );
+            echo 'booking:'.$booking->id;
+            break;
+
         default:
             echo 'error:unknown action '.$action;
     }
 } catch (App\Exceptions\SpecialistQuotaExceededException) {
     echo 'quota';
+} catch (App\Exceptions\BookingNotAvailableException) {
+    echo 'slot-taken';
 } catch (InvalidArgumentException $e) {
     echo 'invalid';
 } catch (Throwable $e) {

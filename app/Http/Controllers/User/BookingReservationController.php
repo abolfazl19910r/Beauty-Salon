@@ -88,6 +88,7 @@ class BookingReservationController extends Controller
                 specialistId: $request->specialist_id,
                 bookingTime: $request->booking_time,
                 discountCode: $request->discount_code,
+                idempotencyKey: $request->validated('idempotency_key'),
             );
 
             if ($request->expectsJson()) {
@@ -102,6 +103,8 @@ class BookingReservationController extends Controller
         } catch (BookingNotAvailableException $e) {
 
             throw $e;
+        } catch (\App\Exceptions\IdempotencyKeyReusedException $e) {
+            return back()->with('error', $e->getMessage());
         } catch (Exception $e) {
             Log::error('خطا در ثبت نوبت', ['error' => $e->getMessage()]);
 

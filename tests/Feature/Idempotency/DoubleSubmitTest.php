@@ -2,7 +2,10 @@
 
 namespace Tests\Feature\Idempotency;
 
+use App\Models\BeautyService;
+use App\Models\Booking;
 use App\Models\Specialist;
+use App\Models\SpecialistSchedule;
 use App\Models\User;
 use App\Models\WalletSetting;
 use App\Models\WithdrawalRequest;
@@ -69,5 +72,45 @@ class DoubleSubmitTest extends TestCase
         preg_match('/name="idempotency_key" value="([0-9a-f-]{36})"/', $b, $kb);
         $this->assertNotEmpty($ka);
         $this->assertNotSame($ka[1], $kb[1]);
+    }
+
+    private function bookable(): array
+    {
+        $user = User::factory()->create();
+        $service = BeautyService::factory()->create(['price' => 200000, 'duration' => 30]);
+        $specialist = Specialist::factory()->create();
+        $target = now()->addDay()->setTime(10, 0);
+        SpecialistSchedule::factory()->create([
+            'specialist_id' => $specialist->id, 'day_of_week' => $target->dayOfWeek,
+            'start_time' => '08:00', 'end_time' => '20:00', 'is_active' => true,
+        ]);
+
+        return [$user, ['service_id' => $service->id, 'specialist_id' => $specialist->id, 'booking_time' => $target->format('Y-m-d H:i:s')]];
+    }
+
+    public function test_a_resubmitted_booking_goes_to_the_same_payment_page_instead_of_slot_taken(): void
+    {
+        [$user, $payload] = $this->bookable();
+        $payload['idempotency_key'] = (string) Str::uuid();
+
+        $first = $this->actingAs($user)->post(route('bookings.store'), $payload);
+        $second = $this->actingAs($user)->post(route('bookings.store'), $payload);
+
+        $booking = Booking::where('user_id', $user->id)->sole();
+        $first->assertRedirect(route('payment.show', ['booking' => $booking->id]));
+        $second->assertRedirect(route('payment.show', ['booking' => $booking->id]));
+    }
+
+    public function test_another_customers_key_does_not_return_someone_elses_booking(): void
+    {
+        [$user, $payload] = $this->bookable();
+        $payload['idempotency_key'] = (string) Str::uuid();
+        $this->actingAs($user)->post(route('bookings.store'), $payload);
+
+        $other = User::factory()->create();
+        $this->actingAs($other)->post(route('bookings.store'), $payload)->assertRedirect(); // همان ساعت: گرفته‌شده
+
+        $this->assertSame(0, Booking::where('user_id', $other->id)->count());
+        $this->assertSame(1, Booking::count());
     }
 }

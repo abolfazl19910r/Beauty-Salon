@@ -7,11 +7,15 @@ use App\Models\Booking;
 use App\Models\IdempotencyKey;
 use App\Models\Salon;
 use App\Models\Specialist;
+use App\Models\SpecialistSchedule;
 use App\Models\User;
 use App\Models\WalletSetting;
 use App\Models\WithdrawalRequest;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\WithdrawalRequestRepositoryInterface;
+use App\Repositories\Eloquent\BookingRepository;
 use App\Repositories\Eloquent\WithdrawalRequestRepository;
+use App\Services\Booking\BookingService;
 use App\Services\Specialist\SpecialistWalletService;
 use App\Support\CurrentSalon;
 use Illuminate\Database\Eloquent\Model;
@@ -83,6 +87,29 @@ class ConcurrentDoubleSubmitTest extends TestCase
         });
     }
 
+    private function pauseOnFirstBookingCreate(\Closure $then): void
+    {
+        $this->app->instance(BookingRepositoryInterface::class, new class($then) extends BookingRepository
+        {
+            private bool $fired = false;
+
+            public function __construct(private readonly \Closure $then)
+            {
+                parent::__construct(new Booking);
+            }
+
+            public function create(array $data): Model
+            {
+                if (! $this->fired) {
+                    $this->fired = true;
+                    ($this->then)();
+                }
+
+                return parent::create($data);
+            }
+        });
+    }
+
     public function test_two_concurrent_submits_of_one_withdrawal_form_create_one_request(): void
     {
         WalletSetting::get()->update(['minimum_withdrawal_amount' => 10000, 'maximum_withdrawal_amount' => 50000000, 'withdrawal_fee_percentage' => 0]);
@@ -99,5 +126,25 @@ class ConcurrentDoubleSubmitTest extends TestCase
         $this->assertSame(1, WithdrawalRequest::where('wallet_id', $wallet->id)->count(), 'second='.$second);
         $this->assertSame(400000.0, (float) $wallet->fresh()->balance);
         $this->assertSame('created:'.$first['withdrawal_request']->id, $second);
+    }
+
+    public function test_two_concurrent_submits_of_one_booking_form_create_one_booking(): void
+    {
+        $user = User::factory()->create(['user_type' => 'customer', 'salon_id' => $this->salon->id]);
+        $this->users[] = $user->id;
+        $service = BeautyService::factory()->create(['salon_id' => $this->salon->id, 'price' => 200000, 'duration' => 30]);
+        $specialist = Specialist::factory()->create(['salon_id' => $this->salon->id]);
+        $target = now()->addDay()->setTime(10, 0);
+        SpecialistSchedule::factory()->create(['specialist_id' => $specialist->id, 'day_of_week' => $target->dayOfWeek, 'start_time' => '08:00', 'end_time' => '20:00', 'is_active' => true]);
+        $time = $target->format('Y-m-d H:i:s');
+        $key = (string) Str::uuid();
+
+        $this->pauseOnFirstBookingCreate(fn () => $this->startConcurrent('create-booking', (string) $this->salon->id, (string) $user->id, (string) $service->id, (string) $specialist->id, $time, $key));
+
+        $first = app(BookingService::class)->createBooking($user->id, $service->id, $specialist->id, $time, null, $key);
+        $second = $this->finishConcurrent();
+
+        $this->assertSame(1, Booking::withoutGlobalScopes()->where('user_id', $user->id)->count(), 'second='.$second);
+        $this->assertSame('booking:'.$first->id, $second);
     }
 }

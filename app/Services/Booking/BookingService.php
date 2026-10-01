@@ -13,8 +13,10 @@ use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\DiscountCodeRepositoryInterface;
 use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Services\Discount\DiscountCalculator;
+use App\Support\Idempotency;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -190,8 +192,17 @@ class BookingService
         int $serviceId,
         int $specialistId,
         string $bookingTime,
-        ?string $discountCode = null
+        ?string $discountCode = null,
+        ?string $idempotencyKey = null,
     ): Booking {
+        // idempotency (۲۰۲۶-۱۰-۰۱): همان فرم دوبار فرستاده شد → همان نوبت اول (نه «این ساعت گرفته شده»)
+        $fingerprint = Idempotency::fingerprint([
+            'service_id' => $serviceId, 'specialist_id' => $specialistId, 'booking_time' => $bookingTime, 'discount_code' => $discountCode,
+        ]);
+        if ($existing = $this->replayedBooking($userId, $idempotencyKey, $fingerprint)) {
+            return $existing;
+        }
+
         $specialist = $this->specialistRepository->findOrFail($specialistId);
         $bookingDate = date('Y-m-d', strtotime($bookingTime));
         $bookingTimeOnly = date('H:i', strtotime($bookingTime));
@@ -207,9 +218,37 @@ class BookingService
         $service = $this->beautyServiceRepository->findOrFail($serviceId);
         $prepaymentData = $this->calculatePrepayment((float) $service->price, $discountCode);
 
+        try {
+            return $this->createBookingInTransaction(
+                $userId, $serviceId, $specialistId, $bookingTime, $discountCode, $prepaymentData, $specialist, $idempotencyKey, $fingerprint
+            );
+        } catch (UniqueConstraintViolationException $e) {
+            // ارسال هم‌زمان همان فرم: درج کلید دوم پشت اولی ماند و بعد از commit آن تکراری شد — نوبت اولی را برگردان
+            if ($existing = $this->replayedBooking($userId, $idempotencyKey, $fingerprint)) {
+                return $existing;
+            }
+
+            throw $e;
+        }
+    }
+
+    private function replayedBooking(int $userId, ?string $key, string $fingerprint): ?Booking
+    {
+        $id = Idempotency::existing(Idempotency::BOOKING, $userId, $key, $fingerprint);
+
+        return $id ? $this->bookingRepository->find($id) : null;
+    }
+
+    private function createBookingInTransaction(
+        int $userId, int $serviceId, int $specialistId, string $bookingTime, ?string $discountCode, array $prepaymentData,
+        $specialist, ?string $idempotencyKey, string $fingerprint,
+    ): Booking {
         return DB::transaction(function () use (
-            $userId, $serviceId, $specialistId, $bookingTime, $discountCode, $prepaymentData, $specialist
+            $userId, $serviceId, $specialistId, $bookingTime, $discountCode, $prepaymentData, $specialist, $idempotencyKey, $fingerprint
         ) {
+            // کلید اول تراکنش: ارسال هم‌زمان دوم روی ایندکس یکتای همین کلید منتظر می‌ماند
+            $claim = Idempotency::claim(Idempotency::BOOKING, $userId, $idempotencyKey, $fingerprint);
+
             $booking = $this->bookingRepository->create([
                 'service_id' => $serviceId,
                 'specialist_id' => $specialistId,
@@ -221,6 +260,7 @@ class BookingService
                 'discount_code' => $discountCode,
                 'discount_amount' => $prepaymentData['discount_amount'],
             ]);
+            Idempotency::complete($claim, $booking->id);
 
             if ($discountCode && $prepaymentData['discount_code']) {
                 $lockedDiscountCode = $this->discountCodeRepository->lockByCode($discountCode);
