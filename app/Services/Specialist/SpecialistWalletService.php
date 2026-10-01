@@ -99,29 +99,42 @@ class SpecialistWalletService
             return ['success' => false, 'message' => $canWithdraw['message']];
         }
 
-        $withdrawalRequest = DB::transaction(function () use ($wallet, $specialist, $amount, $method) {
-            $feeCalculation = $wallet->calculateWithdrawalFee($amount, $method);
+        // دو درخواست هم‌زمان (۲۰۲۶-۱۰-۰۱): چک بالا فقط برای پیام سریع است. درستی با قفل ردیف کیف پول: چک موجودی دوباره روی
+        // ردیف قفل‌شده انجام می‌شود، پس درخواست دوم منتظر اولی می‌ماند و موجودی کم‌شده را می‌بیند.
+        $result = DB::transaction(function () use ($wallet, $specialist, $amount, $method) {
+            $locked = $this->specialistWalletRepository->lockById($wallet->id);
+
+            $canWithdraw = $locked->canWithdraw($amount);
+            if (! $canWithdraw['success']) {
+                return ['success' => false, 'message' => $canWithdraw['message']];
+            }
+
+            $feeCalculation = $locked->calculateWithdrawalFee($amount, $method);
 
             $withdrawalRequest = $this->withdrawalRequestRepository->create([
-                'wallet_id' => $wallet->id,
+                'wallet_id' => $locked->id,
                 'specialist_id' => $specialist->id,
                 'amount' => $amount,
                 'fee' => $feeCalculation['fee'],
                 'net_amount' => $feeCalculation['net_amount'],
                 'method' => $method,
-                'iban' => $wallet->iban,
-                'account_holder_name' => $wallet->account_holder_name,
+                'iban' => $locked->iban,
+                'account_holder_name' => $locked->account_holder_name,
                 'status' => 'pending',
             ]);
 
-            $wallet->recordWithdrawal($amount, $withdrawalRequest->id);
+            $locked->recordWithdrawal($amount, $withdrawalRequest->id);
 
-            return $withdrawalRequest;
-        });
+            return ['success' => true, 'withdrawal_request' => $withdrawalRequest];
+        }, attempts: 3);
 
-        event(new WithdrawalRequested($withdrawalRequest));
+        if (! $result['success']) {
+            return $result;
+        }
 
-        return ['success' => true, 'withdrawal_request' => $withdrawalRequest];
+        event(new WithdrawalRequested($result['withdrawal_request']));
+
+        return $result;
     }
 
     public function cancelWithdrawal(Specialist $specialist, WithdrawalRequest $withdrawalRequest): void

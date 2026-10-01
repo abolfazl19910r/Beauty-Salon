@@ -44,7 +44,7 @@ try {
         case 'create-withdrawal': // specialist_id amount [idempotency_key]
             $specialist = Specialist::withoutGlobalScopes()->findOrFail((int) $args[0]);
             $inSalon($specialist->salon_id);
-            $data = ['amount' => $args[1], 'method' => 'bank_transfer'];
+            $data = ['amount' => $args[1], 'method' => 'iban'];
             if (isset($args[2])) {
                 $data['idempotency_key'] = $args[2];
             }
@@ -56,6 +56,11 @@ try {
             $specialist = Specialist::withoutGlobalScopes()->findOrFail((int) $args[0]);
             $inSalon($specialist->salon_id);
             $withdrawal = WithdrawalRequest::findOrFail((int) $args[1]);
+            // همان چکی که SpecialistWithdrawalController::cancel پیش از سرویس می‌کند
+            if (! $withdrawal->canBeCancelled()) {
+                echo 'not-cancelled';
+                break;
+            }
             $cancelled = $app->make(App\Services\Specialist\SpecialistWalletService::class)->cancelWithdrawal($specialist, $withdrawal);
             echo $cancelled === false ? 'not-cancelled' : 'cancelled';
             break;
