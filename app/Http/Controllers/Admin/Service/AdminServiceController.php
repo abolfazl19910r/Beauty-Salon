@@ -44,6 +44,7 @@ class AdminServiceController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'sms_name' => 'nullable|string|max:20',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'duration' => 'required|integer|min:0',
@@ -67,6 +68,7 @@ class AdminServiceController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'sms_name' => 'nullable|string|max:20',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'duration' => 'required|integer|min:0',

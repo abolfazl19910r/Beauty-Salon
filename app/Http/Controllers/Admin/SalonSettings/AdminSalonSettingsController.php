@@ -30,6 +30,7 @@ class AdminSalonSettingsController extends Controller
 
         $salon->update([
             'name' => $request->validated('name'),
+            'sms_name' => $request->validated('sms_name') ?: null,
             'tagline' => $request->validated('tagline'),
             'bio' => $request->validated('bio'),
             ...$request->salonContactAttributes(),

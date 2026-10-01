@@ -46,6 +46,12 @@
                     <input id="name" name="name" value="{{ old('name', $salon->name) }}" required maxlength="255" class="{{ $input }}" style="{{ $inputStyle }}">
                 </div>
                 <div>
+                    <label class="block text-sm mb-1" for="sms_name">نام کوتاه برای پیامک <span style="color:var(--admin-text-light);">(اختیاری، حداکثر ۲۰ نویسه؛ خالی = نام اصلی)</span></label>
+                    <input id="sms_name" name="sms_name" value="{{ old('sms_name', $salon->sms_name) }}" maxlength="20" placeholder="مثلاً: رز سفید" class="{{ $input }}" style="{{ $inputStyle }}">
+                    <p class="text-xs mt-1" style="color:var(--admin-text-light);">پیامک فارسی تا ۷۰ نویسه یک قطعه است؛ نام کوتاه‌تر پیامک‌ها را یک‌قطعه‌ای و ارزان‌تر نگه می‌دارد. پیشنهاد: تا ۱۵ نویسه.</p>
+                    @error('sms_name') <p class="text-xs mt-1" style="color:#b91c1c;">{{ $message }}</p> @enderror
+                </div>
+                <div>
                     <label class="block text-sm mb-1" for="tagline">شعار کوتاه <span style="color:var(--admin-text-light);">(اختیاری)</span></label>
                     <input id="tagline" name="tagline" value="{{ old('tagline', $salon->tagline) }}" maxlength="255" class="{{ $input }}" style="{{ $inputStyle }}">
                 </div>

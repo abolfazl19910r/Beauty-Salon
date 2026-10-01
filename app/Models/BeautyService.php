@@ -19,6 +19,7 @@ class BeautyService extends Model
 
     protected $fillable = [
         'name',
+        'sms_name',
         'slug',
         'description',
         'price',
@@ -104,5 +105,11 @@ class BeautyService extends Model
     public function getTotalReviews(): int
     {
         return $this->reviews()->approved()->count();
+    }
+
+    /** نام خدمت در پیامک: «نام کوتاه پیامکی» اگر گذاشته شده، وگرنه نام اصلی (۲۰۲۶-۰۹-۳۰) */
+    public function smsName(): string
+    {
+        return trim((string) $this->sms_name) !== '' ? trim($this->sms_name) : (string) $this->name;
     }
 }

@@ -20,6 +20,7 @@ class Salon extends Model
 
     protected $fillable = [
         'name',
+        'sms_name',
         'tagline',
         'bio',
         'logo_path',
@@ -158,6 +159,12 @@ class Salon extends Model
      * «در اثر آزمایشیه» حساب می‌شه که مقدارش دقیقاً همون عدد آزمایشی باشه و هنوز هیچ فاکتور
      * پرداخت‌شده‌ای وجود نداشته باشه.
      */
+    /** نام سالن در پیامک: «نام کوتاه پیامکی» اگر گذاشته شده، وگرنه نام اصلی (۲۰۲۶-۰۹-۳۰) */
+    public function smsName(): string
+    {
+        return trim((string) $this->sms_name) !== '' ? trim($this->sms_name) : (string) $this->name;
+    }
+
     public function isTrialSmsQuotaInEffect(): bool
     {
         return $this->trial_ends_at !== null

@@ -34,6 +34,7 @@ class UpdateSalonSettingsRequest extends FormRequest
     {
         return $this->salonContactRules(required: false) + [
             'name' => ['required', 'string', 'max:255'],
+            'sms_name' => ['nullable', 'string', 'max:20'],
             'tagline' => ['nullable', 'string', 'max:255'],
             'bio' => ['nullable', 'string', 'max:2000'],
             'logo' => SalonLogoService::RULES,

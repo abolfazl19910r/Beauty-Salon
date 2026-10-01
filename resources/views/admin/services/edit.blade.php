@@ -42,6 +42,12 @@
                                 <input type="text" name="name" value="{{ old('name', $service->name) }}" class="form-input" required>
                                 @error('name') <p class="form-error">{{ $message }}</p> @enderror
                             </div>
+                            <div class="form-group">
+                                <label class="form-label">نام کوتاه برای پیامک (اختیاری، حداکثر ۲۰ نویسه)</label>
+                                <input type="text" name="sms_name" value="{{ old('sms_name', $service->sms_name) }}" maxlength="20" class="form-input" placeholder="خالی = نام اصلی، مثلاً: کراتینه">
+                                <p class="text-xs mt-1" style="color:#6b7280;">پیامک فارسی تا ۷۰ نویسه یک قطعه است؛ نام کوتاه‌تر پیامک‌ها را یک‌قطعه‌ای و ارزان‌تر نگه می‌دارد. پیشنهاد: تا ۱۵ نویسه.</p>
+                                @error('sms_name') <p class="form-error">{{ $message }}</p> @enderror
+                            </div>
                             <div>
                                 <label class="form-label">دسته‌بندی</label>
                                 <select name="category_id" class="form-select">
