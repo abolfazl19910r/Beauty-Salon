@@ -99,9 +99,13 @@ class WithdrawalRequest extends Model
         };
     }
 
+    /**
+     * لغو توسط متخصص. نتیجه‌ی نامعلوم تسویه (needs_manual_check) یعنی شاید پول واریز شده باشد؛ برگشت به کیف پول احتمال پرداخت
+     * دوباره است، پس فقط مدیر بعد از دیدن پنل درگاه تأیید یا رد می‌کند.
+     */
     public function canBeCancelled(): bool
     {
-        return in_array($this->status, ['pending', 'processing']);
+        return in_array($this->status, ['pending', 'processing']) && ! $this->needs_manual_check;
     }
 
     public function markAsCompleted(array $paymentDetails = []): bool
