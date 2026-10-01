@@ -44,42 +44,52 @@
  * ساده‌ترین راه تغییر: مقداردهی SUBSCRIPTION_PRICE_1M/3M/6M/12M و SMS_QUOTA_PER_MONTH در .env،
  * بدون نیاز به تغییر کد.
  */
+// کلید موجود ولی خالی در .env (مثلاً «SMS_PART_PRICE=») با env('KEY', default) به ۰ تبدیل می‌شد: پلن رایگان، بسته‌ی پیامک
+// رایگان، سهمیه‌ی ۰ یا ثبت‌نام ناممکن. خالی = پیش‌فرض؛ «0» صریح (مثلاً خاموش کردن دوره‌ی آزمایشی) حفظ می‌شود.
+$int = static function (string $key, int $default): int {
+    $value = env($key);
+
+    return $value === null || trim((string) $value) === '' ? $default : (int) $value;
+};
+
+$packs = array_values(array_filter(array_map('intval', explode(',', (string) env('SMS_PACKS'))), fn (int $p) => $p > 0));
+
 return [
     'subscription_prices' => [
-        '1m' => (int) env('SUBSCRIPTION_PRICE_1M', 1500000),
-        '3m' => (int) env('SUBSCRIPTION_PRICE_3M', 4150000),
-        '6m' => (int) env('SUBSCRIPTION_PRICE_6M', 7650000),
-        '12m' => (int) env('SUBSCRIPTION_PRICE_12M', 13850000),
+        '1m' => $int('SUBSCRIPTION_PRICE_1M', 1500000),
+        '3m' => $int('SUBSCRIPTION_PRICE_3M', 4150000),
+        '6m' => $int('SUBSCRIPTION_PRICE_6M', 7650000),
+        '12m' => $int('SUBSCRIPTION_PRICE_12M', 13850000),
     ],
 
     // ⭐ ۲۰۲۶-۰۹-۳۰: واحد سهمیه «قطعه» است، همان‌طور که کاوه‌نگار فاکتور می‌کند (App\Support\SmsParts) — قبلاً «پیام»
     // (۱۵۰۰ پیام). ۲۰۰۰ قطعه با متن‌های کوتاه‌شده (~۷ تا ۸ قطعه برای هر نوبت) برای ~۲۵۰ نوبت در ماه است؛ هزینه با مصرف کامل
     // ~۲۰۰۰ × ۲۲۰ تومان. برای هر سالن جدا: فیلد «سهمیه‌ی پیامک ماهانه» در ویرایش سالن (پنل سوپرادمین).
-    'sms_quota_per_month' => (int) env('SMS_QUOTA_PER_MONTH', 2000),
+    'sms_quota_per_month' => $int('SMS_QUOTA_PER_MONTH', 2000),
 
     // ⭐ بسته‌ی پیامک (۲۰۲۶-۰۹-۳۰): قیمت هر قطعه، بدون هیچ تخفیفی برای بسته‌ی بزرگ‌تر (تصمیم صریح ابوالفضل). هزینه‌ی کاوه‌نگار
     // ~۲۲۰ تومان؛ ۳۲۰ ≈ ۴۵٪ بالاتر. اندازه‌ی بسته‌ها بر حسب قطعه، با کاما.
-    'sms_part_price' => (int) env('SMS_PART_PRICE', 320),
-    'sms_packs' => array_map('intval', explode(',', (string) env('SMS_PACKS', '1000,2500,5000'))),
+    'sms_part_price' => $int('SMS_PART_PRICE', 320),
+    'sms_packs' => $packs !== [] ? $packs : [1000, 2500, 5000],
 
     // ⭐ تعداد متخصص (تصمیم ابوالفضل ۲۰۲۶-۰۹-۳۰): فرم ثبت‌نام عمومی تعداد متخصص را می‌پرسد و سقف متخصص سالن همان
     // عدد است. قیمت پلن شامل included_specialists متخصص است؛ هر متخصص بیشتر ماهانه extra_specialist_price_per_month
     // تومان، با همان تخفیف بازه‌ی پلن (App\Support\Billing\SubscriptionPricing).
     // تصمیم ۲۰۲۶-۱۰-۰۱: ۱۰ متخصص شامل پلن (قبلاً ۷) و هر متخصص بیشتر همان ۲۵۰ هزار تومان. سهمیه‌ی پیامک برای هر سالن
     // ثابت است و با تعداد متخصص بزرگ نمی‌شود، پس این مبلغ قیمت‌گذاری ارزشی است نه هزینه‌ی پیامک.
-    'included_specialists' => (int) env('INCLUDED_SPECIALISTS_COUNT', 10),
-    'extra_specialist_price_per_month' => (int) env('EXTRA_SPECIALIST_PRICE_PER_MONTH', 250000),
-    'max_signup_specialists' => (int) env('MAX_SIGNUP_SPECIALISTS', 50),
+    'included_specialists' => $int('INCLUDED_SPECIALISTS_COUNT', 10),
+    'extra_specialist_price_per_month' => $int('EXTRA_SPECIALIST_PRICE_PER_MONTH', 250000),
+    'max_signup_specialists' => $int('MAX_SIGNUP_SPECIALISTS', 50),
 
     // ⭐ فیچر «دوره‌ی آزمایشی رایگان» (۲۰۲۶-۰۹-۲۳): سالنی که از صفحه‌ی ثبت‌نام عمومی ساخته
     // می‌شه، به‌جای «از همون لحظه منقضی»، به این تعداد روز دسترسی کامل و رایگان می‌گیره (پنل
     // ادمین + آدرس عمومی رزرو آنلاین برای مشتری‌ها). ۰ = خاموش (رفتار قبلی: اول پرداخت، بعد
     // دسترسی). ۱۴ پیشنهاد اولیه‌ست — به Rasta_unified_prompt.md برای استدلال کامل نگاه کن.
-    'trial_days' => (int) env('SUBSCRIPTION_TRIAL_DAYS', 14),
+    'trial_days' => $int('SUBSCRIPTION_TRIAL_DAYS', 14),
 
     // ⭐ سقف پیامک ماهانه‌ی سالن در دوره‌ی آزمایشی (به‌جای sms_quota_per_month عادی) — چون هر
     // پیامک هزینه‌ی واقعی Kavenegar داره و سالن آزمایشی هنوز هیچ پولی نداده. بعد از اولین خرید
     // خودکار برمی‌گرده به سقف عادی (SuperAdminService::renewSubscription).
     // واحد: قطعه (۲۰۲۶-۰۹-۳۰؛ قبلاً ۳۰۰ پیام).
-    'trial_sms_quota' => (int) env('TRIAL_SMS_QUOTA', 400),
+    'trial_sms_quota' => $int('TRIAL_SMS_QUOTA', 400),
 ];
