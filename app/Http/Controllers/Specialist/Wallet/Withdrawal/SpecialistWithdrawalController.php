@@ -87,7 +87,9 @@ class SpecialistWithdrawalController extends Controller
         }
 
         try {
-            $this->walletService->cancelWithdrawal($specialist, $withdrawalRequest);
+            if (! $this->walletService->cancelWithdrawal($specialist, $withdrawalRequest)) {
+                return back()->with('error', 'این درخواست قابل لغو نیست.');
+            }
 
             return redirect()->route('specialist.wallet.index')
                 ->with('success', 'درخواست برداشت با موفقیت لغو شد و موجودی بازگردانده شد.');

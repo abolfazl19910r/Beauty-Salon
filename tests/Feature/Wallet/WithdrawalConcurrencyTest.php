@@ -17,7 +17,8 @@ use Tests\Concerns\RunsConcurrentProcess;
 use Tests\TestCase;
 
 /**
- * برداشت متخصص در برابر دو درخواست هم‌زمان (دو پردازه، RunsConcurrentProcess): موجودی هرگز دو بار خرج نشود.
+ * برداشت متخصص در برابر دو درخواست هم‌زمان (دو پردازه، RunsConcurrentProcess): موجودی هرگز دو بار خرج نشود و لغو
+ * هرگز دو بار پول برنگرداند.
  */
 class WithdrawalConcurrencyTest extends TestCase
 {
@@ -108,5 +109,21 @@ class WithdrawalConcurrencyTest extends TestCase
         $this->assertSame(0.0, $balance, 'موجودی منفی شد: '.$balance);
         $this->assertTrue($first['success']);
         $this->assertSame('rejected', $second);
+    }
+
+    public function test_two_concurrent_cancellations_refund_only_once(): void
+    {
+        $withdrawal = app(SpecialistWalletService::class)
+            ->createWithdrawal($this->specialist->fresh(), ['amount' => 60000, 'method' => 'iban'])['withdrawal_request'];
+        $this->assertSame(40000.0, (float) $this->wallet->fresh()->balance);
+
+        $this->pauseOnFirst('update', fn () => $this->startConcurrent('cancel-withdrawal', (string) $this->specialist->id, (string) $withdrawal->id));
+
+        app(SpecialistWalletService::class)->cancelWithdrawal($this->specialist->fresh(), WithdrawalRequest::find($withdrawal->id));
+        $second = $this->finishConcurrent();
+
+        $this->assertSame(100000.0, (float) $this->wallet->fresh()->balance, 'second='.$second);
+        $this->assertSame(1, DB::table('wallet_transactions')->where('wallet_id', $this->wallet->id)->where('type', 'refund')->count());
+        $this->assertSame('not-cancelled', $second);
     }
 }

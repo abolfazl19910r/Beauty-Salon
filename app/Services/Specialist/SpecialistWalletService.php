@@ -137,26 +137,39 @@ class SpecialistWalletService
         return $result;
     }
 
-    public function cancelWithdrawal(Specialist $specialist, WithdrawalRequest $withdrawalRequest): void
+    /**
+     * لغو برداشت و برگشت مبلغ به کیف پول. false اگر درخواست (دیگر) قابل لغو نیست — مثلاً لغو هم‌زمان دیگری یا رد مدیر زودتر
+     * انجام شده. ردیف برداشت قفل و وضعیتش داخل تراکنش دوباره چک می‌شود (همان ترتیب قفل رد/تأیید مدیر: برداشت، بعد کیف پول).
+     */
+    public function cancelWithdrawal(Specialist $specialist, WithdrawalRequest $withdrawalRequest): bool
     {
-        DB::transaction(function () use ($specialist, $withdrawalRequest) {
-            $wallet = $specialist->wallet;
+        return DB::transaction(function () use ($specialist, $withdrawalRequest) {
+            $locked = $this->withdrawalRequestRepository->lockById($withdrawalRequest->id);
 
-            $wallet->increment('balance', $withdrawalRequest->amount);
-            $wallet->decrement('total_withdrawn', $withdrawalRequest->amount);
+            if (! $locked || (int) $locked->specialist_id !== (int) $specialist->id || ! $locked->canBeCancelled()) {
+                return false;
+            }
+
+            $wallet = $this->specialistWalletRepository->lockById($locked->wallet_id);
+
+            $wallet->increment('balance', $locked->amount);
+            $wallet->decrement('total_withdrawn', $locked->amount);
 
             $wallet->transactions()->create([
                 'type' => 'refund',
-                'amount' => $withdrawalRequest->amount,
+                'amount' => $locked->amount,
                 'balance_after' => $wallet->balance,
-                'description' => 'لغو درخواست برداشت - کد: '.$withdrawalRequest->reference_code,
+                'description' => 'لغو درخواست برداشت - کد: '.$locked->reference_code,
                 'metadata' => [
-                    'withdrawal_request_id' => $withdrawalRequest->id,
+                    'withdrawal_request_id' => $locked->id,
                 ],
             ]);
 
-            $this->withdrawalRequestRepository->update($withdrawalRequest, ['status' => 'cancelled']);
-        });
+            $this->withdrawalRequestRepository->update($locked, ['status' => 'cancelled']);
+            $withdrawalRequest->setRawAttributes($locked->getAttributes(), true);
+
+            return true;
+        }, attempts: 3);
     }
 
     public function calculateFee(Specialist $specialist, float $amount, string $method): array
