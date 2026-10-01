@@ -13,6 +13,9 @@ class BookingFactory extends Factory
 {
     protected $model = Booking::class;
 
+    /** ساعت‌های کشیده‌شده در همین دسته (count(n)->create() همه را پیش از درج اولی می‌سازد) — [specialist_id => [Y-m-d H:i:s, ...]] */
+    private array $drawnSlots = [];
+
     public function definition(): array
     {
         $service = BeautyService::inRandomOrder()->first() ?? BeautyService::factory()->create();
@@ -23,7 +26,7 @@ class BookingFactory extends Factory
             ?? User::factory()->create();
         $status = fake()->randomElement(['pending', 'confirmed', 'cancelled']);
 
-        $bookingTime = $this->drawNonCollidingBookingTime($specialist->id, $status);
+        $bookingTime = $this->drawNonCollidingBookingTime($specialist->id);
 
         return [
             'service_id' => $service->id,
@@ -57,7 +60,7 @@ class BookingFactory extends Factory
      * whatever this draws anyway, so tests that deliberately construct a collision (see
      * AdminBookingSlotConflictTest) are unaffected.
      */
-    private function drawNonCollidingBookingTime(int $specialistId, string $status): \DateTime
+    private function drawNonCollidingBookingTime(int $specialistId): \DateTime
     {
         $bookingTime = null;
 
@@ -68,19 +71,21 @@ class BookingFactory extends Factory
             $bookingTime = fake()->dateTimeBetween(now()->addDays(2), now()->addMonths(2));
             $bookingTime->setTime(fake()->numberBetween(9, 17), 0, 0);
 
-            if ($status === 'cancelled') {
-                break;
-            }
-
-            $collides = Booking::where('specialist_id', $specialistId)
-                ->where('booking_time', $bookingTime)
-                ->where('status', '!=', 'cancelled')
-                ->exists();
+            // ⭐ (۲۰۲۶-۱۰-۰۱) برای نوبت «cancelled» هم چک می‌شود: create(['status' => ...]) وضعیت را بعد از definition عوض
+            // می‌کند. و ساعت‌های همین دسته هم دیده می‌شوند، چون هنوز در دیتابیس نیستند (BookingFactorySlotTest).
+            $key = $bookingTime->format('Y-m-d H:i:s');
+            $collides = in_array($key, $this->drawnSlots[$specialistId] ?? [], true)
+                || Booking::where('specialist_id', $specialistId)
+                    ->where('booking_time', $bookingTime)
+                    ->where('status', '!=', 'cancelled')
+                    ->exists();
 
             if (! $collides) {
                 break;
             }
         }
+
+        $this->drawnSlots[$specialistId][] = $bookingTime->format('Y-m-d H:i:s');
 
         return $bookingTime;
     }
