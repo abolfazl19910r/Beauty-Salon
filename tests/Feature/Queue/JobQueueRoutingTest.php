@@ -9,6 +9,7 @@ use App\Jobs\Send2faVerificationCodeJob;
 use App\Jobs\SendBookingReminderJob;
 use App\Jobs\SendBulkNotificationJob;
 use App\Jobs\SendLoginVerificationCodeJob;
+use App\Jobs\SendPasswordResetCodeJob;
 use App\Jobs\SendPhoneVerificationCodeJob;
 use App\Support\Queues;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -29,6 +30,7 @@ class JobQueueRoutingTest extends TestCase
         SendLoginVerificationCodeJob::dispatch(1, '1234');
         Send2faVerificationCodeJob::dispatch(1, '1234');
         SendPhoneVerificationCodeJob::dispatch(1, '1234');
+        SendPasswordResetCodeJob::dispatch(1, '1234', null);
         SendBookingReminderJob::dispatch(1);
         ProcessWithdrawalJob::dispatch(1);
         CancelUnpaidBookings::dispatch();
@@ -38,6 +40,7 @@ class JobQueueRoutingTest extends TestCase
         Queue::assertPushedOn(Queues::OTP, SendLoginVerificationCodeJob::class);
         Queue::assertPushedOn(Queues::OTP, Send2faVerificationCodeJob::class);
         Queue::assertPushedOn(Queues::OTP, SendPhoneVerificationCodeJob::class);
+        Queue::assertPushedOn(Queues::OTP, SendPasswordResetCodeJob::class);
         Queue::assertPushedOn(Queues::SMS, SendBookingReminderJob::class);
         Queue::assertPushedOn(Queues::PAYMENTS, ProcessWithdrawalJob::class);
         Queue::assertPushedOn(Queues::PAYMENTS, CancelUnpaidBookings::class);

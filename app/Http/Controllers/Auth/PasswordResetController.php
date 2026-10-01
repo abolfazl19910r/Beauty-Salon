@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendPasswordResetCodeJob;
 use App\Repositories\Contracts\UserRepositoryInterface;
-use App\Services\SMSService;
+use App\Support\Queues;
+use App\Support\SalonOfNotifiable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -16,7 +18,6 @@ use Illuminate\View\View;
 class PasswordResetController extends Controller
 {
     public function __construct(
-        protected readonly SMSService $smsService,
         protected readonly UserRepositoryInterface $userRepository,
     ) {}
 
@@ -54,14 +55,9 @@ class PasswordResetController extends Controller
             ]
         );
 
-        try {
-            $template = config('services.kavenegar.templates.reset_password', 'verification');
-            // کد تأیید: خرج پلتفرم، در otp_count سالن کاربر شمرده می‌شود (تصمیم ۲۰۲۶-۰۹-۳۰)
-            $salonId = $user->salon_id ?? \App\Support\SalonOfNotifiable::resolve($user);
-            $this->smsService->sendAuthTemplate($user->phone, $template, [(string) $verificationCode], $salonId);
-        } catch (\Exception $e) {
-            return back()->withErrors(['phone' => 'خطا در ارسال پیامک.']);
-        }
+        // کد تأیید روی صف otp (روی هاست بدون worker بعد از پاسخ)؛ سالن کارمند همین حالا پیدا می‌شود
+        $salonId = $user->salon_id ?? SalonOfNotifiable::resolve($user);
+        Queues::dispatchOtp(new SendPasswordResetCodeJob($user->id, (string) $verificationCode, $salonId));
 
         return redirect()->route('password.verify', ['token' => $token])
             ->with('success', 'کد تایید ارسال شد.');
