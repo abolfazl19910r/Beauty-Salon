@@ -3946,6 +3946,18 @@ Backfill: تمام رکوردهای موجود `source = 'online'` (چون قب�
   و پاسخ خطای بلاک‌شدن در بله (فرض: مثل تلگرام ۴۰۳).
 - تست: `PlatformBotTest` (۱۰ تست).
 
+### ۲۰۲۶-۱۰-۰۱ (ادامه ۴) — تست محلی ربات (bot:poll) + واسط تلگرام روی Cloudflare Worker
+بچ `bot-local` (روی بچ `bot`).
+- **تست محلی:** ارسال پیام ربات از سیستم محلی کار می‌کند (درخواست خروجی)، ولی پیام‌رسان نمی‌تواند webhook را روی `127.0.0.1` صدا
+  بزند، پس «/start کد» به برنامه نمی‌رسید. `php artisan bot:poll bale` (long polling با getUpdates، همان `BotUpdateHandler` که
+  webhook استفاده می‌کند) این را حل می‌کند. تا وقتی webhook ثبت است getUpdates رد می‌شود → اول `bot:webhook bale --delete`.
+  روال تست محلی: توکن و username بله در `.env` → `config:clear` → `migrate` → ترمینال ۱: `php artisan serve`، ترمینال ۲:
+  `php artisan queue:work --queue=otp,sms,payments,default,reports`، ترمینال ۳: `php artisan bot:poll bale` → پروفایل → «اتصال به
+  ربات» → Start در بله → در تنظیمات اعلان سالن ستون ربات رویدادها را روشن کنید (ردیف‌های seed‌شده خاموش‌اند) → یک نوبت بسازید.
+- **تلگرام از سرور ایران:** `deploy/cloudflare/telegram-proxy` (worker.js، wrangler.toml، README). Worker فقط توکن همین ربات و فقط با
+  `PROXY_SECRET` در مسیر را به api.telegram.org می‌رساند؛ `TELEGRAM_API_BASE=https://tg.mahru.ir/<PROXY_SECRET>`. کد Laravel تغییری
+  نکرد. workers.dev از ایران فیلتر است → دامنه‌ی خودتان. مسیر برگشت (webhook تلگرام) مستقیم به سرور ماهرو است.
+
 ### قدم‌های باز
 هیچ‌کدام از این دو فیکس ربطی به فاز SaaS در حال انجام (بخش‌های بالای همین فایل) ندارد و روی برنچ جدایی از آن‌ها اعمال شده؛ هنگام merge نهایی توجه شود که این دو کامیت مستقل، قابل rebase/merge روی هر برنچ پایه‌ای هستند چون فقط دو فایل نامرتبط را لمس می‌کنند (`RedirectIfAuthenticated.php`, `AdminUserService.php`) + یک فایل تست.
 
