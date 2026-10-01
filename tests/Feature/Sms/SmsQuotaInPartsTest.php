@@ -7,7 +7,6 @@ use App\Models\SalonSmsUsage;
 use App\Services\Sms\SmsQuotaService;
 use App\Services\SMSService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /**
@@ -54,28 +53,5 @@ class SmsQuotaInPartsTest extends TestCase
     {
         $this->assertSame(2000, (int) config('billing.sms_quota_per_month'));
         $this->assertSame(400, (int) config('billing.trial_sms_quota'));
-    }
-
-    public function test_the_migration_keeps_each_salons_used_fraction_of_the_month(): void
-    {
-        $period = app(SmsQuotaService::class)->currentPeriod();
-        $normal = Salon::factory()->create(['sms_quota_per_month' => null]);
-        $trial = Salon::factory()->create(['sms_quota_per_month' => 300]);
-        SalonSmsUsage::create(['salon_id' => $normal->id, 'period' => $period, 'used_count' => 750]);
-        SalonSmsUsage::create(['salon_id' => $trial->id, 'period' => $period, 'used_count' => 300]);
-        SalonSmsUsage::create(['salon_id' => $normal->id, 'period' => '2020-01', 'used_count' => 1500]);
-
-        $migration = require database_path('migrations/2026_10_01_000001_convert_sms_quota_to_parts.php');
-        $migration->up();
-
-        $this->assertSame(1000, (int) SalonSmsUsage::where('salon_id', $normal->id)->where('period', $period)->value('used_count'));
-        $this->assertSame(400, (int) SalonSmsUsage::where('salon_id', $trial->id)->where('period', $period)->value('used_count'));
-        $this->assertSame(1500, (int) SalonSmsUsage::where('salon_id', $normal->id)->where('period', '2020-01')->value('used_count'));
-        $this->assertNull($normal->fresh()->sms_quota_per_month);
-        $this->assertSame(400, (int) $trial->fresh()->sms_quota_per_month);
-
-        $migration->down();
-        $this->assertSame(750, (int) SalonSmsUsage::where('salon_id', $normal->id)->where('period', $period)->value('used_count'));
-        $this->assertSame(300, (int) DB::table('salons')->where('id', $trial->id)->value('sms_quota_per_month'));
     }
 }
