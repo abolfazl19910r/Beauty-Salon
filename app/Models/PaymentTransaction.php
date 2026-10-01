@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
  */
 class PaymentTransaction extends Model
 {
-    public const PURPOSES = ['booking', 'wallet_charge', 'subscription'];
+    public const PURPOSES = ['booking', 'wallet_charge', 'subscription', 'sms_pack'];
 
     /**
      * ⭐ وضعیت‌ها: pending (منتظر بازگشت مشتری) · paid · failed · cancelled · expired (مشتری برنگشت —

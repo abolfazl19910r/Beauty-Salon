@@ -87,6 +87,52 @@
             </div>
         </div>
 
+        {{-- بسته‌ی پیامک اضافه (۲۰۲۶-۰۹-۳۰): اعتبار منقضی نمی‌شود؛ بعد از تمام شدن سهمیه‌ی ماه مصرف می‌شود --}}
+        <div id="sms-packs" class="rounded-xl overflow-hidden mb-6" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+            <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
+                بسته‌ی پیامک اضافه
+            </div>
+            <div class="p-5 text-sm">
+                <div class="mb-4 persian-number">
+                    اعتبار خریده‌شده‌ی باقی‌مانده: <strong>{{ to_persian_num(number_format($smsUsage['credit'])) }}</strong> قطعه
+                    <span style="color:var(--admin-text-dim);">(این ماه {{ to_persian_num(number_format($smsUsage['credit_used'])) }} قطعه از اعتبار مصرف شد)</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    @foreach ($smsPacks as $pack)
+                        <form method="POST" action="{{ route('admin.billing.sms-pack.purchase') }}" class="rounded-lg p-4 text-center" style="border:1px solid var(--admin-border);">
+                            @csrf
+                            <input type="hidden" name="parts" value="{{ $pack['parts'] }}">
+                            <div class="font-bold persian-number">{{ to_persian_num(number_format($pack['parts'])) }} قطعه</div>
+                            <div class="mt-1 persian-number">{{ to_persian_num(number_format($pack['price'])) }} تومان</div>
+                            <button type="submit" class="mt-3 px-4 py-2 rounded-lg text-white text-sm" style="background:var(--admin-accent);">خرید</button>
+                        </form>
+                    @endforeach
+                </div>
+                <p class="text-xs leading-6 mt-4" style="color:var(--admin-text-dim);">
+                    هر قطعه {{ to_persian_num(number_format($smsPartPrice)) }} تومان. اعتبار منقضی نمی‌شود و ماه بعد هم می‌ماند؛ فقط وقتی سهمیه‌ی ماهانه‌ی
+                    اشتراک تمام شد مصرف می‌شود.
+                </p>
+                @if ($smsPurchases->isNotEmpty())
+                    <div class="mt-4 overflow-x-auto">
+                        <table class="w-full text-xs persian-number">
+                            <thead><tr style="color:var(--admin-text-dim);"><th class="text-right p-2">تاریخ</th><th class="text-right p-2">قطعه</th><th class="text-right p-2">مبلغ</th><th class="text-right p-2">نوع</th><th class="text-right p-2">وضعیت</th></tr></thead>
+                            <tbody>
+                                @foreach ($smsPurchases as $purchase)
+                                    <tr style="border-top:1px solid var(--admin-border);">
+                                        <td class="p-2">{{ jalali_date($purchase->paid_at ?? $purchase->created_at, 'Y/m/d H:i') }}</td>
+                                        <td class="p-2">{{ to_persian_num(number_format($purchase->parts)) }}</td>
+                                        <td class="p-2">{{ $purchase->amount ? to_persian_num(number_format($purchase->amount)).' تومان' : '—' }}</td>
+                                        <td class="p-2">{{ $purchase->source === 'grant' ? 'هدیه/جبران پشتیبانی' : 'خرید آنلاین' }}</td>
+                                        <td class="p-2">{{ $purchase->status === 'paid' ? 'موفق' : 'ناموفق' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
+        </div>
+
         {{-- خرید/تمدید آنلاین --}}
         <div class="rounded-xl overflow-hidden mb-6" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
             <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">

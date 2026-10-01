@@ -51,29 +51,70 @@ class SmsQuotaService
         $this->usageRow($salon)->increment('used_count', max(1, $parts));
     }
 
+    /** درصدی از سهمیه‌ی ماه که با رد شدنش یک بار در ماه به مدیر سالن هشدار داده می‌شود (۲۰۲۶-۰۹-۳۰) */
+    public const WARNING_RATIO = 0.8;
+
     /**
-     * اگر جا برای $parts قطعه هست، مصرف را ثبت می‌کند و true برمی‌گرداند؛ وگرنه هیچ چیز ثبت نمی‌شود. پیامکی که از باقی‌مانده
-     * بزرگ‌تر است کامل مسدود می‌شود (نصفه فرستاده نمی‌شود و سقف را رد نمی‌کند).
+     * مصرف $parts قطعه: اول از سهمیه‌ی ماه، کسری از اعتبار خریده‌شده‌ی سالن (salons.sms_credit، منقضی نمی‌شود). اگر جمع
+     * باقی‌مانده‌ی ماه و اعتبار کافی نباشد هیچ چیز ثبت نمی‌شود و false برمی‌گردد — پیامک کامل مسدود است، نصفه نمی‌رود.
+     * کم کردن اعتبار شرطی و اتمی است (sms_credit >= کسری) تا دو worker هم‌زمان اعتبار را منفی نکنند.
      */
     public function consume(Salon $salon, int $parts): bool
     {
         $parts = max(1, $parts);
-        if ($this->remaining($salon) < $parts) {
-            return false;
+        $fromMonth = min($parts, $this->remaining($salon));
+        $fromCredit = $parts - $fromMonth;
+
+        if ($fromCredit > 0) {
+            $taken = Salon::withoutGlobalScopes()->whereKey($salon->id)
+                ->where('sms_credit', '>=', $fromCredit)
+                ->decrement('sms_credit', $fromCredit);
+            if ($taken === 0) {
+                return false;
+            }
+            $this->usageRow($salon)->increment('credit_used', $fromCredit);
         }
 
-        $this->recordUsage($salon, $parts);
+        if ($fromMonth > 0) {
+            $this->recordUsage($salon, $fromMonth);
+        }
 
         return true;
     }
 
+    /** اعتبار خریده‌شده‌ی باقی‌مانده (قطعه) — از دیتابیس، نه مدلی که شاید قدیمی باشد */
+    public function credit(Salon $salon): int
+    {
+        return (int) Salon::withoutGlobalScopes()->whereKey($salon->id)->value('sms_credit');
+    }
+
+    public function addCredit(Salon $salon, int $parts): void
+    {
+        Salon::withoutGlobalScopes()->whereKey($salon->id)->increment('sms_credit', max(0, $parts));
+        // اگر این ماه قبلاً «سهمیه تمام شد» رفته، تمام شدن بعدی (این بار اعتبار) دوباره خبر داده شود
+        $this->usageRow($salon)->update(['notified_at' => null]);
+    }
+
+    public function creditUsed(Salon $salon): int
+    {
+        return (int) $this->usageRow($salon)->credit_used;
+    }
+
     /**
-     * فقط یک‌بار در هر دوره true برمی‌گرداند (وقتی سقف برای اولین بار همان ماه رد شده) — تا
-     * نوتیفیکیشن اتمام شارژ برای هر پیامک بعدیِ مسدودشده دوباره ارسال نشود.
+     * یک بار در هر ماه، وقتی مصرف از ۸۰٪ سهمیه‌ی ماه گذشت: true (و ثبت می‌کند که هشدار داده شد).
      */
-    /**
-     * پیامک‌های احراز هویت (کد ورود، ۲FA، تأیید تلفن) خرج پلتفرم‌اند و از سقف کم نمی‌شوند؛ فقط برای شفافیت شمرده می‌شوند.
-     */
+    public function shouldWarnNearLimit(Salon $salon): bool
+    {
+        $quota = $this->quotaFor($salon);
+        $usage = $this->usageRow($salon);
+
+        if ($quota <= 0 || $usage->warned_at !== null || $usage->used_count < (int) ceil($quota * self::WARNING_RATIO)) {
+            return false;
+        }
+
+        return SalonSmsUsage::whereKey($usage->id)->whereNull('warned_at')->update(['warned_at' => now()]) === 1;
+    }
+
     public function recordOtp(Salon $salon): void
     {
         $this->usageRow($salon)->increment('otp_count');

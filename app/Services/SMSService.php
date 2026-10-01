@@ -189,7 +189,20 @@ class SMSService
             return false;
         }
 
+        if ($quota->shouldWarnNearLimit($salon)) {
+            $this->notifyQuotaNearLimit($salon, $quota->quotaFor($salon), $quota->credit($salon));
+        }
+
         return true;
+    }
+
+    /** هشدار ۸۰٪ فقط به مدیران خود سالن (۲۰۲۶-۰۹-۳۰) — تا قبل از قطع شدن فرصت خرید بسته داشته باشند */
+    private function notifyQuotaNearLimit(Salon $salon, int $quota, int $credit): void
+    {
+        $admins = $salon->admins()->get();
+        if ($admins->isNotEmpty()) {
+            Notification::send($admins, new \App\Notifications\Sms\SmsQuotaWarningNotification($salon, $quota, $credit));
+        }
     }
 
     private function notifyQuotaExhausted(Salon $salon, int $quota): void

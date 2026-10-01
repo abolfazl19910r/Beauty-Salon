@@ -14,7 +14,22 @@
             <div class="font-bold mb-2">پیامک‌های این ماه</div>
             <div>از سقف سالن: {{ to_persian_num((string) $smsUsage['used']) }} از {{ to_persian_num((string) $smsUsage['quota']) }} قطعه</div>
             <div>کدهای تأیید (خرج پلتفرم، خارج از سقف): {{ to_persian_num((string) $smsUsage['otp']) }}</div>
+            <div>اعتبار خریده‌شده‌ی باقی‌مانده: {{ to_persian_num(number_format($smsUsage['credit'])) }} قطعه</div>
         </div>
+
+        {{-- اعطای دستی اعتبار پیامک (هدیه/جبران) — ۲۰۲۶-۰۹-۳۰ --}}
+        <form method="POST" action="{{ route('superadmin.salons.sms-credit', $salon) }}" class="mb-5 p-4 rounded-lg text-sm flex flex-wrap items-end gap-3" style="border:1px solid var(--sa-border);">
+            @csrf
+            <div>
+                <label class="sa-label">افزودن اعتبار پیامک (قطعه)</label>
+                <input type="number" name="parts" min="1" class="sa-input" required>
+            </div>
+            <div class="flex-1 min-w-[12rem]">
+                <label class="sa-label">توضیح (اختیاری)</label>
+                <input type="text" name="note" maxlength="255" class="sa-input" placeholder="مثلاً جبران قطعی پیامک">
+            </div>
+            <button type="submit" class="px-4 py-2 rounded-lg text-white" style="background: var(--sa-accent, #4f46e5);">افزودن</button>
+        </form>
 
         <form method="POST" action="{{ route('superadmin.salons.update', $salon) }}" class="space-y-5" enctype="multipart/form-data">
             @csrf

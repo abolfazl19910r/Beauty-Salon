@@ -78,6 +78,8 @@ class NotificationEvents
     // چون قطع‌شدن بی‌صدای این هشدار دقیقاً همان مشکلی است که این فیچر می‌خواهد جلویش را بگیرد.
     public const SMS_QUOTA_EXHAUSTED_ADMIN = 'sms.quota_exhausted.admin';
 
+    public const SMS_QUOTA_WARNING_ADMIN = 'sms.quota_warning.admin';
+
     /**
      * فهرست گروه‌بندی‌شده و برچسب‌دار برای صفحه‌ی تنظیمات ادمین. کلید 'sms'/'telegram' مشخص
      * می‌کند آیا اصلاً برای این رویداد پیامک/محتوای رباتی معنادار وجود دارد (بعضی رویدادها فقط
@@ -122,6 +124,7 @@ class NotificationEvents
                 self::LOYALTY_REWARD_REDEEMED_CUSTOMER => ['label' => 'استفاده از امتیاز برای پاداش — اطلاع به مشتری', 'sms' => true],
             ],
             'سهمیه‌ی پیامک' => [
+                self::SMS_QUOTA_WARNING_ADMIN => ['label' => 'مصرف ۸۰٪ سهمیه‌ی پیامک ماهانه — اطلاع به ادمین سالن', 'sms' => true],
                 self::SMS_QUOTA_EXHAUSTED_ADMIN => ['label' => 'اتمام سهمیه‌ی پیامک ماهانه‌ی سالن — اطلاع به ادمین سالن و سوپرادمین', 'sms' => true],
             ],
         ];

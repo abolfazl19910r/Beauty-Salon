@@ -40,9 +40,15 @@ class AdminBillingController extends Controller
             'quota' => $quota->quotaFor($salon),
             'remaining' => $quota->remaining($salon),
             'otp' => $quota->otpCount($salon),
+            'credit' => $quota->credit($salon),
+            'credit_used' => $quota->creditUsed($salon),
         ];
+        $smsCredit = app(\App\Services\Sms\SmsCreditService::class);
+        $smsPacks = collect($smsCredit->packs())->map(fn ($parts) => ['parts' => $parts, 'price' => $smsCredit->price($parts)])->all();
+        $smsPartPrice = $smsCredit->partPrice();
+        $smsPurchases = $smsCredit->history($salon, 10);
 
-        return view('admin.billing.index', compact('salon', 'invoices', 'prices', 'specialists', 'includedSpecialists', 'extraSpecialistPrice', 'smsUsage'));
+        return view('admin.billing.index', compact('salon', 'invoices', 'prices', 'specialists', 'includedSpecialists', 'extraSpecialistPrice', 'smsUsage', 'smsPacks', 'smsPartPrice', 'smsPurchases'));
     }
 
     public function purchase(Request $request): RedirectResponse
@@ -100,5 +106,52 @@ class AdminBillingController extends Controller
 
         return redirect()->route('admin.billing.index')
             ->with('success', 'پرداخت موفق بود و اشتراک سالن فعال شد.'.($salonUrl ? " آدرس رزرو آنلاین سالن شما: {$salonUrl}" : ''));
+    }
+
+    /** خرید بسته‌ی پیامک (۲۰۲۶-۰۹-۳۰): فقط اندازه‌های SMS_PACKS؛ قیمت از سرور، نه فرم */
+    public function purchaseSmsPack(Request $request): RedirectResponse
+    {
+        $credit = app(\App\Services\Sms\SmsCreditService::class);
+        $validated = $request->validate([
+            'parts' => ['required', 'integer', \Illuminate\Validation\Rule::in($credit->packs())],
+        ]);
+
+        $salon = app(CurrentSalon::class)->get();
+        $purchase = $credit->startOnlinePurchase($salon, (int) $validated['parts'], auth()->user());
+        $result = app(\App\Services\Payment\SmsPackPaymentService::class)->createPayment($purchase);
+
+        if (! $result['success']) {
+            $credit->markFailed($purchase);
+
+            return back()->withErrors(['error' => $result['message'] ?? 'خطا در اتصال به درگاه پرداخت.']);
+        }
+
+        return redirect()->away($result['payment_url']);
+    }
+
+    public function smsPackCallback(Request $request, int $purchase): RedirectResponse
+    {
+        $salon = app(CurrentSalon::class)->get();
+        // فقط خرید همین سالن — شناسه در URL است
+        $record = \App\Models\SmsCreditPurchase::where('salon_id', $salon->id)->where('source', 'online')->findOrFail($purchase);
+        $credit = app(\App\Services\Sms\SmsCreditService::class);
+
+        if (! $record->isPending()) {
+            return redirect()->route('admin.billing.index')->with('info', 'این خرید قبلاً پردازش شده است.');
+        }
+
+        $result = app(\App\Services\Payment\SmsPackPaymentService::class)
+            ->verifyPayment($record, $request->Status ?? $request->status, $request->Authority ?? $request->authority);
+
+        if (! $result['success']) {
+            $credit->markFailed($record);
+
+            return redirect()->route('admin.billing.index')->withErrors(['error' => $result['message'] ?? 'پرداخت تأیید نشد.']);
+        }
+
+        $credit->completeOnlinePurchase($record, $result['ref_id']);
+
+        return redirect()->route('admin.billing.index')
+            ->with('success', sprintf('پرداخت موفق بود؛ %s قطعه پیامک به اعتبار سالن اضافه شد.', number_format($record->parts)));
     }
 }

@@ -16,4 +16,7 @@ Route::prefix('billing')->name('billing.')->group(function () {
     Route::get('/', [AdminBillingController::class, 'index'])->name('index');
     Route::post('/purchase', [AdminBillingController::class, 'purchase'])->name('purchase');
     Route::get('/callback', [AdminBillingController::class, 'callback'])->name('callback');
+    // بسته‌ی پیامک (۲۰۲۶-۰۹-۳۰)
+    Route::post('/sms-pack', [AdminBillingController::class, 'purchaseSmsPack'])->name('sms-pack.purchase');
+    Route::get('/sms-pack/{purchase}/callback', [AdminBillingController::class, 'smsPackCallback'])->name('sms-pack.callback');
 });

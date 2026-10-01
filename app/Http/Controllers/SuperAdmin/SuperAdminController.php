@@ -95,10 +95,25 @@ class SuperAdminController extends Controller
         $smsUsage = [
             'used' => $quota->usedCount($salon),
             'quota' => $quota->quotaFor($salon),
+            'credit' => $quota->credit($salon),
             'otp' => $quota->otpCount($salon),
         ];
 
         return view('superadmin.salons.edit', compact('salon', 'smsUsage'));
+    }
+
+    /** اعطای دستی اعتبار پیامک (هدیه، جبران خطا) — ۲۰۲۶-۰۹-۳۰؛ در تاریخچه‌ی خرید سالن با مبلغ ۰ ثبت می‌شود */
+    public function grantSmsCredit(\Illuminate\Http\Request $request, Salon $salon): RedirectResponse
+    {
+        $validated = $request->validate([
+            'parts' => ['required', 'integer', 'min:1', 'max:1000000'],
+            'note' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        app(\App\Services\Sms\SmsCreditService::class)->grant($salon, (int) $validated['parts'], $request->user(), $validated['note'] ?? null);
+
+        return redirect()->route('superadmin.salons.edit', $salon)
+            ->with('success', sprintf('%s قطعه اعتبار پیامک به سالن «%s» داده شد.', number_format((int) $validated['parts']), $salon->name));
     }
 
     public function update(UpdateSalonRequest $request, Salon $salon): RedirectResponse

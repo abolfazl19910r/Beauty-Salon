@@ -17,12 +17,15 @@ class SalonSmsUsage extends Model
         'salon_id',
         'period',
         'used_count',
+        'credit_used',
         'otp_count',
         'notified_at',
+        'warned_at',
     ];
 
     protected $casts = [
         'notified_at' => 'datetime',
+        'warned_at' => 'datetime',
     ];
 
     public function salon(): BelongsTo
