@@ -36,10 +36,14 @@ class PlatformBotTest extends TestCase
             'services.telegram.bot_token' => null,
             'services.bot.webhook_secret' => self::SECRET,
         ]);
-        Http::fake(fn () => $this->blocked
-            ? Http::response(['ok' => false, 'error_code' => 403, 'description' => 'Forbidden: bot was blocked by the user'], 403)
-            : Http::response(['ok' => true, 'result' => []]));
+        Http::fake(fn ($request) => match (true) {
+            $this->blocked => Http::response(['ok' => false, 'error_code' => 403, 'description' => 'Forbidden: bot was blocked by the user'], 403),
+            str_ends_with($request->url(), '/getUpdates') && $this->updates !== null => Http::response($this->updates),
+            default => Http::response(['ok' => true, 'result' => []]),
+        });
     }
+
+    private ?array $updates = null;
 
     private bool $blocked = false;
 
@@ -191,5 +195,28 @@ class PlatformBotTest extends TestCase
         app()->call([new \App\Jobs\SendBookingReminderJob($booking->id), 'handle']);
 
         Bus::assertDispatchedTimes(SendBotMessageJob::class, 2);
+    }
+
+    public function test_bot_poll_links_a_chat_without_a_public_webhook_for_local_testing(): void
+    {
+        $user = User::factory()->create();
+        $code = app(BotLinkService::class)->createCode($user, null);
+        $this->updates = ['ok' => true, 'result' => [
+            ['update_id' => 41, 'message' => ['chat' => ['id' => 321, 'type' => 'private'], 'text' => "/start {$code}"]],
+        ]];
+
+        $this->artisan('bot:poll', ['messenger' => 'bale', '--once' => true])->assertSuccessful();
+
+        $this->assertDatabaseHas('bot_links', ['user_id' => $user->id, 'messenger' => 'bale', 'chat_id' => '321']);
+        $this->assertStringContainsString('اتصال انجام شد', $this->sentTexts()[0]);
+    }
+
+    public function test_bot_poll_explains_that_a_registered_webhook_must_be_removed_first(): void
+    {
+        $this->updates = ['ok' => false, 'error_code' => 409, 'description' => "Conflict: can't use getUpdates method while webhook is active"];
+
+        $this->artisan('bot:poll', ['messenger' => 'bale', '--once' => true])
+            ->expectsOutputToContain('bot:webhook bale --delete')
+            ->assertFailed();
     }
 }

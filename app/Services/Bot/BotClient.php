@@ -71,6 +71,28 @@ class BotClient
         return self::FAILED;
     }
 
+    /**
+     * long polling (bot:poll، محیط محلی بدون آدرس عمومی). تا وقتی webhook ثبت است پیام‌رسان getUpdates را رد می‌کند.
+     *
+     * @return array{ok: bool, result: array, description: ?string}
+     */
+    public function getUpdates(string $messenger, int $offset, int $timeout = 25): array
+    {
+        try {
+            $response = Http::timeout($timeout + 10)->post($this->url($messenger, 'getUpdates'), [
+                'offset' => $offset, 'timeout' => $timeout, 'allowed_updates' => ['message', 'edited_message'],
+            ]);
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'result' => [], 'description' => $e->getMessage()];
+        }
+
+        return [
+            'ok' => $response->successful() && $response->json('ok') !== false,
+            'result' => (array) ($response->json('result') ?? []),
+            'description' => $response->json('description'),
+        ];
+    }
+
     public function setWebhook(string $messenger, ?string $url): array
     {
         $response = Http::timeout(15)->post($this->url($messenger, $url ? 'setWebhook' : 'deleteWebhook'), $url ? ['url' => $url] : []);
