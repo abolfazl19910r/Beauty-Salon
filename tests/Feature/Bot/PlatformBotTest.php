@@ -219,4 +219,13 @@ class PlatformBotTest extends TestCase
             ->expectsOutputToContain('bot:webhook bale --delete')
             ->assertFailed();
     }
+
+    public function test_telegram_goes_through_the_cloudflare_worker_when_the_api_base_has_a_secret_path(): void
+    {
+        config(['services.telegram.bot_token' => '123:ABC', 'services.telegram.api_base' => 'https://tg.mahru.ir/proxySecret1234567/']);
+
+        app(\App\Services\Bot\BotClient::class)->sendMessage('telegram', '42', 'سلام');
+
+        Http::assertSent(fn ($request) => $request->url() === 'https://tg.mahru.ir/proxySecret1234567/bot123:ABC/sendMessage');
+    }
 }

@@ -1,0 +1,15 @@
+# واسط Bot API تلگرام برای سرور ماهرو داخل ایران — راهنما: README.md همین پوشه
+name = "mahru-telegram-proxy"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+
+# workers.dev از داخل ایران معمولاً فیلتر است؛ از زیردامنه‌ی خودتان (روی Cloudflare) استفاده کنید.
+workers_dev = false
+
+routes = [
+  { pattern = "tg.mahru.ir", custom_domain = true }
+]
+
+# Secretها اینجا نوشته نمی‌شوند:
+#   npx wrangler secret put TELEGRAM_BOT_TOKEN
+#   npx wrangler secret put PROXY_SECRET
