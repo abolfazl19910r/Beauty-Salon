@@ -103,6 +103,10 @@ class SuperAdminService
             'tagline' => array_key_exists('tagline', $data) ? ($data['tagline'] ?: null) : $salon->tagline,
             'bio' => array_key_exists('bio', $data) ? ($data['bio'] ?: null) : $salon->bio,
             'max_specialists_count' => $data['max_specialists_count'],
+            // سهمیه‌ی پیامک اختصاصی (قطعه)؛ خالی = پیش‌فرض؛ فرمی که فیلد را ندارد، دست نمی‌زند
+            'sms_quota_per_month' => array_key_exists('sms_quota_per_month', $data)
+                ? ($data['sms_quota_per_month'] === null || $data['sms_quota_per_month'] === '' ? null : (int) $data['sms_quota_per_month'])
+                : $salon->sms_quota_per_month,
             'module_permissions' => $data['module_permissions'] ?? null,
             // ⭐ فاز ۲، مورد ۹ — array_key_exists (نه isset) عمداً: سوپر ادمین باید بتواند یک
             // merchant_id قبلاً ثبت‌شده را با فرستادن مقدار خالی دوباره null کند (بازگشت به

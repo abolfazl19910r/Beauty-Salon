@@ -41,6 +41,8 @@ class UpdateSalonRequest extends FormRequest
             'tagline' => ['nullable', 'string', 'max:255'],
             'bio' => ['nullable', 'string', 'max:2000'],
             'max_specialists_count' => ['required', 'integer', 'min:0'],
+            // سهمیه‌ی پیامک ماهانه‌ی اختصاصی بر حسب قطعه؛ خالی = پیش‌فرض SMS_QUOTA_PER_MONTH
+            'sms_quota_per_month' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'module_permissions' => ['nullable', 'array'],
             'module_permissions.*' => ['string'],
             // ⭐ فاز ۲، مورد ۹ («مرچنت آیدی مجزا برای هر سالن») — اختیاری: تا وقتی سالن خودش

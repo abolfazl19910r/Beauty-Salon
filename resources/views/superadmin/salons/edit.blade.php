@@ -52,6 +52,16 @@
             </div>
 
             <div>
+                <label class="sa-label">
+                    سهمیه‌ی پیامک ماهانه (قطعه)
+                    <span style="color: var(--sa-text-dim);">— خالی = پیش‌فرض {{ to_persian_num(number_format((int) config('billing.sms_quota_per_month'))) }} قطعه</span>
+                </label>
+                <input type="number" name="sms_quota_per_month" value="{{ old('sms_quota_per_month', $salon->sms_quota_per_month) }}" min="0" class="sa-input"
+                       placeholder="{{ (int) config('billing.sms_quota_per_month') }}">
+                <p class="text-xs mt-1" style="color: var(--sa-text-dim);">فقط برای سالنی که سهمیه‌ی متفاوت می‌خواهد. سالن آزمایشی تا اولین خرید سهمیه‌ی آزمایشی دارد.</p>
+            </div>
+
+            <div>
                 <label class="sa-label">دسترسی‌های ماژولار</label>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                     @php $currentModules = old('module_permissions', $salon->module_permissions ?? []); @endphp
