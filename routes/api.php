@@ -2,6 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 
+// webhook ربات پلتفرم بله/تلگرام (۲۰۲۶-۱۰-۰۱) — بدون session/CSRF؛ secret در مسیر
+Route::post('bot/webhook/{messenger}/{secret}', \App\Http\Controllers\Bot\BotWebhookController::class)
+    ->whereIn('messenger', \App\Models\BotLink::MESSENGERS)
+    ->middleware('throttle:120,1')
+    ->name('bot.webhook');
+
 Route::name('api.')->group(function () {
     if (file_exists(__DIR__.'/api/public/bookings.php')) {
         require __DIR__.'/api/public/bookings.php';

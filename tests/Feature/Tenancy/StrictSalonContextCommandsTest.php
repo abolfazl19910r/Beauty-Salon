@@ -64,7 +64,7 @@ class StrictSalonContextCommandsTest extends TestCase
             ['reports:cleanup-exports', []],
             ['payments:reconcile', []],
             ['payouts:refresh-vandar-tokens', []],
-            ['model:prune', ['--model' => [\App\Models\ShortLink::class, \App\Models\IdempotencyKey::class]]],
+            ['model:prune', ['--model' => [\App\Models\ShortLink::class, \App\Models\IdempotencyKey::class, \App\Models\BotLinkCode::class]]],
             ['tenancy:repair-legacy-rows', []],
         ];
     }

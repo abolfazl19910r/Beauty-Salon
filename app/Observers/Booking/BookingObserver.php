@@ -417,9 +417,6 @@ class BookingObserver
 
     protected function sendCustomerCancellationSMS(Booking $booking): void
     {
-        if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_CANCELLED_CUSTOMER, 'sms', $booking->salon_id)) {
-            return;
-        }
 
         /**
          * مبلغ بازگشتی فقط وقتی در پیامک می‌آید که واقعاً برگشت داده شده (refunded_amount را handleCancellation()
@@ -431,6 +428,13 @@ class BookingObserver
             ?? ($booking->refund_details['specialist_penalty'] ?? 0));
 
         $message = \App\Support\Sms\SmsText::bookingCancelledForCustomer($booking, $booking->cancellation_reason, $refundedAmount, $fee);
+
+        // ربات (اگر مشتری وصل کرده و کانال ربات این رویداد روشن است) جدا از پیامک — ۲۰۲۶-۱۰-۰۱
+        $this->botMessage($booking, $message, NotificationEvents::BOOKING_CANCELLED_CUSTOMER);
+
+        if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_CANCELLED_CUSTOMER, 'sms', $booking->salon_id)) {
+            return;
+        }
 
         $this->smsService->send($booking->user->phone, $message, $booking->salon_id);
     }
@@ -452,23 +456,36 @@ class BookingObserver
 
     protected function sendCustomerConfirmationSMS(Booking $booking): void
     {
+        $message = \App\Support\Sms\SmsText::bookingConfirmed($booking);
+        $this->botMessage($booking, $message, NotificationEvents::BOOKING_CONFIRMED_CUSTOMER);
+
         if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_CONFIRMED_CUSTOMER, 'sms', $booking->salon_id)) {
             return;
         }
-
-        $message = \App\Support\Sms\SmsText::bookingConfirmed($booking);
 
         $this->smsService->send($booking->user->phone, $message, $booking->salon_id);
     }
 
     protected function sendCustomerPendingSMS(Booking $booking): void
     {
+        $message = \App\Support\Sms\SmsText::bookingPending($booking);
+        $this->botMessage($booking, $message, NotificationEvents::BOOKING_PAID_PENDING_APPROVAL_CUSTOMER);
+
         if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_PAID_PENDING_APPROVAL_CUSTOMER, 'sms', $booking->salon_id)) {
             return;
         }
 
-        $message = \App\Support\Sms\SmsText::bookingPending($booking);
         $this->smsService->send($booking->user->phone, $message, $booking->salon_id);
+    }
+
+    /** پیام ربات به مشتری نوبت؛ خطای ربات هیچ‌وقت جلوی پیامک را نمی‌گیرد. */
+    protected function botMessage(Booking $booking, string $message, string $eventKey): void
+    {
+        try {
+            app(\App\Services\Bot\BotMessenger::class)->send($booking->user, $message, $eventKey, $booking->salon_id);
+        } catch (\Throwable $e) {
+            Log::warning('Bot message for booking failed', ['booking_id' => $booking->id, 'error' => $e->getMessage()]);
+        }
     }
 
     /**

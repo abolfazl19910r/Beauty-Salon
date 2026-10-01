@@ -33,7 +33,10 @@ class AttentionRequiredNotification extends Notification implements ShouldQueue
     {
         $event = $this->kind === 'payment' ? NotificationEvents::PAYMENT_ATTENTION_ADMIN : NotificationEvents::WITHDRAWAL_ATTENTION_ADMIN;
 
-        return app(NotificationSettingService::class)->channels($event, ['database', 'sms'], $this->salonId);
+        return app(\App\Services\Bot\BotMessenger::class)->onlyIfLinked(
+            app(NotificationSettingService::class)->channels($event, ['database', 'sms'], $this->salonId),
+            $notifiable,
+        );
     }
 
     public function toArray(object $notifiable): array

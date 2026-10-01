@@ -20,17 +20,18 @@ class NotificationSettingServiceTest extends TestCase
         $this->service = app(NotificationSettingService::class);
     }
 
-    public function test_an_event_with_no_explicit_default_override_defaults_to_sms_and_database_on_telegram_off(): void
+    // ربات پیش‌فرض روشن (۲۰۲۶-۱۰-۰۱): فقط به کسی می‌رود که خودش بله/تلگرام را وصل کرده
+    public function test_an_event_with_no_explicit_default_override_defaults_to_all_channels_on(): void
     {
         $this->assertTrue($this->service->isEnabled(NotificationEvents::BOOKING_CONFIRMED_CUSTOMER, 'sms'));
         $this->assertTrue($this->service->isEnabled(NotificationEvents::BOOKING_CONFIRMED_CUSTOMER, 'database'));
-        $this->assertFalse($this->service->isEnabled(NotificationEvents::BOOKING_CONFIRMED_CUSTOMER, 'telegram'));
+        $this->assertTrue($this->service->isEnabled(NotificationEvents::BOOKING_CONFIRMED_CUSTOMER, 'telegram'));
 
         $this->assertDatabaseHas('notification_settings', [
             'event_key' => NotificationEvents::BOOKING_CONFIRMED_CUSTOMER,
             'sms_enabled' => 1,
             'database_enabled' => 1,
-            'telegram_enabled' => 0,
+            'telegram_enabled' => 1,
         ]);
     }
 
@@ -58,7 +59,7 @@ class NotificationSettingServiceTest extends TestCase
         $this->assertSame(['database'], $channels);
     }
 
-    public function test_channels_never_adds_telegram_while_the_bot_channel_is_not_implemented(): void
+    public function test_channels_adds_telegram_when_the_bot_channel_is_on(): void
     {
         NotificationSetting::create([
             'event_key' => 'test.event',
@@ -69,7 +70,7 @@ class NotificationSettingServiceTest extends TestCase
 
         $channels = $this->service->channels('test.event', ['database', 'sms']);
 
-        $this->assertSame(['database', 'sms'], $channels);
+        $this->assertSame(['database', 'sms', 'telegram'], $channels);
     }
 
     public function test_flush_forces_settings_to_be_re_read_from_the_database(): void

@@ -22,11 +22,10 @@ class NotificationSettingService
     private const CACHE_KEY = 'notification_settings:salon:';
 
     /**
-     * کانال ربات (تلگرام/بله) هنوز پیاده‌سازی نشده (تصمیم ۲۰۲۶-۰۹-۲۷): TelegramChannel همه‌ی پیام‌ها را به یک chat_id
-     * سراسری می‌فرستد، یعنی اعلان هر سالن به یک گفت‌وگوی مشترک می‌رفت. تا پیاده‌سازی واقعی (ربات/گفت‌وگوی هر سالن)
-     * هیچ اعلانی این کانال را نمی‌گیرد، حتی اگر ردیفی telegram_enabled را روشن داشته باشد.
+     * کانال ربات (کلید 'telegram'): ربات پلتفرم بله و تلگرام (۲۰۲۶-۱۰-۰۱). پیام فقط به گفت‌وگوهای وصل‌شده‌ی خود
+     * گیرنده می‌رود (BotLink)؛ از ۲۰۲۶-۰۹-۲۷ تا این تاریخ خاموش بود چون همه‌چیز به یک chat_id سراسری می‌رفت.
      */
-    public const BOT_CHANNEL_IMPLEMENTED = false;
+    public const BOT_CHANNEL_IMPLEMENTED = true;
 
     public const BOT_NOT_IMPLEMENTED_MESSAGE = 'این قابلیت هنوز پیاده‌سازی نشده است.';
 
@@ -120,7 +119,8 @@ class NotificationSettingService
             array_merge([
                 'sms_enabled' => true,
                 'database_enabled' => true,
-                'telegram_enabled' => false,
+                // ربات پیش‌فرض روشن: فقط به کسی می‌رود که خودش ربات را وصل کرده (۲۰۲۶-۱۰-۰۱)
+                'telegram_enabled' => true,
             ], $overrides),
             $salonId
         );

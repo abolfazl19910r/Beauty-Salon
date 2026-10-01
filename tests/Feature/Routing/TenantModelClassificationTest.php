@@ -33,6 +33,8 @@ class TenantModelClassificationTest extends TestCase
         'SalonSmsUsage' => 'ابزار سهمیه‌ی خود سالن‌ها',
         'SmsCreditPurchase' => 'صورتحساب و سوپرادمین صریحاً با salon_id فیلتر می‌کنند؛ callback خرید با salon_id سالن جاری',
         'ShortLink' => 'لینک کوتاه پیامک؛ کد تصادفی به آدرسی که خود برنامه ساخته، بدون داده‌ی سالن',
+        'BotLink' => 'گفت‌وگوی بله/تلگرام کاربر؛ مال کاربر است نه سالن (کادر در چند سالن)',
+        'BotLinkCode' => 'کد یک‌بارمصرف اتصال ربات برای یک کاربر',
         'IdempotencyKey' => 'کلید فرم برای صاحبش (کاربر/متخصص)؛ فقط شناسه‌ی رکوردی را نگه می‌دارد که از مسیر عادی و scope سالن خوانده می‌شود',
         // از طریق متخصص به سالن وصل‌اند؛ فهرست/آمار با whereHas('specialist') و جزئیات با چک مالکیت
         'SpecialistWallet' => 'repository با whereHas(specialist)',

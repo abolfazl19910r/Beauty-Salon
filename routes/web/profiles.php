@@ -14,4 +14,7 @@ Route::prefix('profile')->name('profile.')->group(function () {
     Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password');
 
     Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
+    // ربات پلتفرم: اتصال/قطع اتصال بله یا تلگرام (۲۰۲۶-۱۰-۰۱)
+    Route::post('/bot/{messenger}', [\App\Http\Controllers\Bot\BotConnectController::class, 'store'])->whereIn('messenger', \App\Models\BotLink::MESSENGERS)->name('bot.connect');
+    Route::delete('/bot/{messenger}', [\App\Http\Controllers\Bot\BotConnectController::class, 'destroy'])->whereIn('messenger', \App\Models\BotLink::MESSENGERS)->name('bot.disconnect');
 });

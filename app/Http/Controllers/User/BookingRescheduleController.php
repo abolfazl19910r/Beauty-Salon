@@ -70,6 +70,7 @@ class BookingRescheduleController extends Controller
                 $booking->specialist->notify(new BookingRescheduledNotification($booking, $oldTime));
 
                 $message = \App\Support\Sms\SmsText::rescheduledForCustomer($booking->fresh(['service']), $newStatus !== 'confirmed');
+                app(\App\Services\Bot\BotMessenger::class)->send($booking->user, $message, \App\Support\Notifications\NotificationEvents::BOOKING_RESCHEDULED_CUSTOMER, $booking->salon_id);
                 $this->smsService->send($booking->user->phone, $message, $booking->salon_id);
             });
 

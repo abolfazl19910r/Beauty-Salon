@@ -35,6 +35,9 @@ Route::middleware(['auth', 'verified', 'salon.specialist'])->name('specialist.')
         Route::get('/profile/edit', [SpecialistProfileController::class, 'edit'])->name('profile.edit');
         Route::put('/profile', [SpecialistProfileController::class, 'update'])->name('profile.update');
         Route::put('/profile/password', [SpecialistProfileController::class, 'updatePassword'])->name('profile.password');
+        // ربات پلتفرم: اتصال/قطع اتصال بله یا تلگرام (۲۰۲۶-۱۰-۰۱)
+        Route::post('/profile/bot/{messenger}', [\App\Http\Controllers\Bot\BotConnectController::class, 'store'])->whereIn('messenger', \App\Models\BotLink::MESSENGERS)->name('profile.bot.connect');
+        Route::delete('/profile/bot/{messenger}', [\App\Http\Controllers\Bot\BotConnectController::class, 'destroy'])->whereIn('messenger', \App\Models\BotLink::MESSENGERS)->name('profile.bot.disconnect');
 
         Route::get('/schedule', [SpecialistProfileController::class, 'schedule'])->name('schedule');
         Route::put('/schedule', [SpecialistProfileController::class, 'updateSchedule'])->name('schedule.update');

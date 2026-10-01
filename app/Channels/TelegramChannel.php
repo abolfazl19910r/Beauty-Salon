@@ -2,72 +2,41 @@
 
 namespace App\Channels;
 
+use App\Services\Bot\BotMessenger;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 /**
- * Bot channel — for events for which the admin has enabled the "Bot" channel from the notification settings page
- * . Telegram and Yes both have compatible Bot APIs (only the domain is different), so the message
- * will be sent to both (whichever is configured in .env).
- *
- * Message content: If the Notification class itself implements the toTelegram() method, it will be used
- * ; otherwise, the 'message' key in the toDatabase()/toArray() output of the same
- * class will be used automatically — since almost all Notification classes in the project already have such a key, this
- * fallback will generate a reasonable and ready-made text without having to manipulate each class individually.
+ * کانال «ربات» تنظیمات اعلان (کلید 'telegram'): ربات پلتفرم بله و تلگرام (۲۰۲۶-۱۰-۰۱). پیام فقط به گفت‌وگوهای
+ * وصل‌شده‌ی خود گیرنده می‌رود (قبلاً همه‌چیز به یک chat_id سراسری از .env می‌رفت و کانال خاموش بود).
+ * متن: toTelegram() اگر اعلان داشته باشد، وگرنه کلید 'message' از toDatabase()/toArray().
+ * روشن/خاموش بودن رویداد را خود اعلان با gatedChannels() از پیش سنجیده است.
  */
 class TelegramChannel
 {
-    public function send($notifiable, Notification $notification)
+    public function __construct(private readonly BotMessenger $messenger) {}
+
+    public function send($notifiable, Notification $notification): void
     {
         $text = $this->resolveText($notification, $notifiable);
-
         if (! $text) {
             return;
         }
 
-        $this->sendVia('telegram', $text);
-        $this->sendVia('bale', $text);
+        $salonId = method_exists($notification, 'notificationSalonId') ? $notification->notificationSalonId($notifiable) : null;
+
+        $this->messenger->send($notifiable, $text, null, $salonId);
     }
 
     private function resolveText(Notification $notification, $notifiable): ?string
     {
-        if (method_exists($notification, 'toTelegram')) {
-            return $notification->toTelegram($notifiable);
-        }
+        foreach (['toTelegram', 'toDatabase', 'toArray'] as $method) {
+            if (method_exists($notification, $method)) {
+                $data = $notification->{$method}($notifiable);
 
-        if (method_exists($notification, 'toDatabase')) {
-            $data = $notification->toDatabase($notifiable);
-
-            return $data['message'] ?? null;
-        }
-
-        if (method_exists($notification, 'toArray')) {
-            $data = $notification->toArray($notifiable);
-
-            return $data['message'] ?? null;
+                return is_string($data) ? $data : ($data['message'] ?? null);
+            }
         }
 
         return null;
-    }
-
-    private function sendVia(string $bot, string $text): void
-    {
-        $token = config("services.{$bot}.bot_token");
-        $chatId = config("services.{$bot}.chat_id");
-        $apiBase = config("services.{$bot}.api_base");
-
-        if (! $token || ! $chatId) {
-            return;
-        }
-
-        try {
-            Http::timeout(10)->post("{$apiBase}/bot{$token}/sendMessage", [
-                'chat_id' => $chatId,
-                'text' => $text,
-            ]);
-        } catch (\Throwable $e) {
-            Log::warning("❌ خطا در ارسال پیام از طریق ربات ({$bot})", ['error' => $e->getMessage()]);
-        }
     }
 }

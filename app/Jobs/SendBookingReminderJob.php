@@ -61,6 +61,11 @@ class SendBookingReminderJob implements ShouldQueue
         $customerMessage = \App\Support\Sms\SmsText::reminderForCustomer($booking);
         $specialistMessage = \App\Support\Sms\SmsText::reminderForSpecialist($booking);
 
+        // ربات (اگر مشتری/متخصص وصل کرده‌اند)؛ یادآوری مثل پیامکش تنظیم جدا ندارد — ۲۰۲۶-۱۰-۰۱
+        $bot = app(\App\Services\Bot\BotMessenger::class);
+        $bot->send($booking->user, $customerMessage, null, $booking->salon_id);
+        $bot->send($booking->specialist, $specialistMessage, null, $booking->salon_id);
+
         $customerSent = $smsService->send($booking->user->phone, $customerMessage, $booking->salon_id);
         $specialistSent = $smsService->send($booking->specialist->phone, $specialistMessage, $booking->salon_id);
 

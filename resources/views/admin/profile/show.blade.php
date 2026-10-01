@@ -66,4 +66,5 @@
 
         </div>
     </div>
+    @include('partials.bot-connect', ['routePrefix' => 'admin.profile.bot'])
 @endsection

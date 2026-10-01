@@ -196,4 +196,5 @@
             </div>
         </div>
     </div>
+    @include('partials.bot-connect', ['routePrefix' => 'profile.bot'])
 @endsection

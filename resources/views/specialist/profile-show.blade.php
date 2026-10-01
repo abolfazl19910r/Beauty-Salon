@@ -203,4 +203,5 @@
             </div>
         </div>
     </div>
+    @include('partials.bot-connect', ['routePrefix' => 'specialist.profile.bot'])
 @endsection

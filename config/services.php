@@ -93,20 +93,24 @@ return [
         'expiry_minutes' => (int) (env('PAYMENT_EXPIRY_MINUTES') ?: 15),
     ],
 
-    // Telegram bots/Yes for events that the admin has enabled from the "Notification Settings" page of their "bot" channel
-    // . Both Bot APIs are compatible with the Telegram format (yes they implement the same endpoint with a different
-    // domain), so a single TelegramChannel covers both. If the token/chatID
-    // is not set, silent sending (with just a Log::info) is ignored — no request
-    // is required.
+    // ربات پلتفرم (۲۰۲۶-۱۰-۰۱): یک ربات بله و یک ربات تلگرام برای کل پلتفرم؛ هر کاربر با «/start <کد>» وصل می‌شود و
+    // اعلان‌ها فقط به گفت‌وگوی خودش می‌رود (BotLink). هر دو Bot API یک قالب‌اند، فقط دامنه فرق دارد. توکن خالی = آن
+    // پیام‌رسان خاموش. ⚠️ از سرور داخل ایران api.telegram.org در دسترس نیست — تلگرام فقط با سرور بیرون یا پراکسی
+    // (TELEGRAM_API_BASE). webhook: php artisan bot:webhook bale (و telegram).
     'telegram' => [
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
-        'chat_id' => env('TELEGRAM_CHAT_ID'),
+        'username' => env('TELEGRAM_BOT_USERNAME'),
         'api_base' => env('TELEGRAM_API_BASE') ?: 'https://api.telegram.org',
     ],
 
     'bale' => [
         'bot_token' => env('BALE_BOT_TOKEN'),
-        'chat_id' => env('BALE_CHAT_ID'),
+        'username' => env('BALE_BOT_USERNAME'),
         'api_base' => env('BALE_API_BASE') ?: 'https://tapi.bale.ai',
+    ],
+
+    'bot' => [
+        // بخش مخفی آدرس webhook (هر دو پیام‌رسان)؛ خالی = webhook غیرفعال
+        'webhook_secret' => env('BOT_WEBHOOK_SECRET'),
     ],
 ];

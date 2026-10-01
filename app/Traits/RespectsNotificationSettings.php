@@ -19,11 +19,14 @@ trait RespectsNotificationSettings
      */
     protected function gatedChannels(string $eventKey, array $base, ?object $notifiable = null): array
     {
-        return app(NotificationSettingService::class)->channels(
+        $channels = app(NotificationSettingService::class)->channels(
             $eventKey,
             $base,
             $this->notificationSalonId($notifiable)
         );
+
+        // کانال ربات فقط وقتی گیرنده واقعاً بله/تلگرام را وصل کرده — ۲۰۲۶-۱۰-۰۱
+        return app(\App\Services\Bot\BotMessenger::class)->onlyIfLinked($channels, $notifiable);
     }
 
     /** سالنی که اعلان درباره‌ی آن است؛ برای تنظیمات اعلان و برای ستون salon_id اعلان داخلی. */

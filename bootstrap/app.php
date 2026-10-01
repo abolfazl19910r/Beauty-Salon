@@ -95,7 +95,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('review-tokens:cleanup')
             ->daily();
         // لینک‌های کوتاه پیامک ۳۰ روز بعد از انقضا (ShortLink::prunable)؛ کلیدهای idempotency فرم‌ها بعد از ۲۴ ساعت
-        $schedule->command('model:prune', ['--model' => [\App\Models\ShortLink::class, \App\Models\IdempotencyKey::class]])
+        $schedule->command('model:prune', ['--model' => [\App\Models\ShortLink::class, \App\Models\IdempotencyKey::class, \App\Models\BotLinkCode::class]])
             ->dailyAt('03:45')
             ->onOneServer();
         // R-Events: already via event(new ReminderScheduleEvent()) +
