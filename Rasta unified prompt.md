@@ -3959,6 +3959,59 @@ Backfill: تمام رکوردهای موجود `source = 'online'` (چون قب�
   `PROXY_SECRET` در مسیر را به api.telegram.org می‌رساند؛ `TELEGRAM_API_BASE=https://tg.mahru.ir/<PROXY_SECRET>`. کد Laravel تغییری
   نکرد. workers.dev از ایران فیلتر است → دامنه‌ی خودتان. مسیر برگشت (webhook تلگرام) مستقیم به سرور ماهرو است.
 
+### ۲۰۲۶-۱۰-۰۱ (ادامه ۵) — ادغام دوم migrationها (۴۸ → ۴۱)
+بچ `migrations-merge-2` (۴ کامیت روی `c66bdac`). **تصمیم ابوالفضل:** داده‌ها فیک‌اند، `migrate:fresh --seed` مجاز؛ migration اضافی نماند.
+پیشنهادهای Claude که بدون مخالفت اجرا شد: migration داده‌ای تبدیل سهمیه حذف، دو فایل تغییر نام، `add_salon_staff_finance_permissions` دست‌نخورده.
+
+1. **`refactor(migrations)` (۴۸ → ۴۲)** — نقشه‌ی ارجاع‌های قدیمی این سند:
+
+| فایل قدیمی (حذف‌شده یا تغییر نام) | حالا داخل |
+|---|---|
+| `2026_09_30_000001_add_iban_verification_audit_to_specialist_wallets_table` (`iban_verified_by`، `iban_verified_at`) | `2025_12_24_182656_create_wallet_tables` |
+| `2026_09_30_000002_add_otp_count_to_salon_sms_usages_table` | `2026_09_20_050100_create_salon_sms_usages_table` |
+| `2026_09_30_000003_add_salon_id_to_user_notifications_table` | `2024_01_28_173700_create_user_notifications_table` |
+| `2026_09_30_000004_add_status_booking_time_index_to_bookings_table` | `2024_01_25_190700_create_bookings_table` (داخل بلوک create، تا شاخه‌ی pgsql هم آن را داشته باشد) |
+| `2026_09_30_000005_add_status_updated_at_index_to_payment_transactions_table` | `2026_09_25_000002_create_payment_transactions_table` |
+| بخش ALTER از `2026_10_01_000003_create_sms_credit_tables` (`salons.sms_credit`، `salon_sms_usages.credit_used/warned_at`) | `create_salons_table` و `create_salon_sms_usages_table`؛ خود فایل → `2026_10_01_000003_create_sms_credit_purchases_table` (فقط همین جدول) |
+| `2026_10_01_000004_add_sms_name_to_salons_and_services` | `0000_01_01_000000_create_salons_table` و `2024_01_15_120100_create_beauty_services_table` |
+| `2025_12_25_175009_add_admin_wallet_and_commission_features` (فقط جدول می‌ساخت) | تغییر نام → `2025_12_25_175009_create_admin_wallet_tables` |
+
+   ستون‌ها همان جای `after()` قبلی و ایندکس‌ها/FKها با همان نام. ترتیب نهایی `salon_sms_usages`: `used_count, credit_used, otp_count, notified_at, warned_at`.
+2. **`chore(migrations)` (۴۲ → ۴۱)** — حذف `2026_10_01_000001_convert_sms_quota_to_parts` (فقط داده‌ی ماه جاری را × ۴/۳ می‌کرد؛ روی دیتابیس
+   تازه بی‌اثر) و متد `SmsQuotaInPartsTest::test_the_migration_keeps_each_salons_used_fraction_of_the_month` که فایل را `require` می‌کرد.
+
+3. **`test(factories)` 🐞 شکست ناپایدار کشف‌شده حین وریفای (قبلاً هم بود، ربطی به ادغام ندارد)** — در یکی از اجراهای کلون تازه
+   `AdminDashboardControllerTest::test_get_data_returns_summary_stats_as_json` با `UNIQUE constraint failed: bookings.active_slot_key` شکست
+   (اجرای بعدی پاس). `BookingFactory` ساعت آزاد متخصص را با چک دیتابیس می‌کشید ولی: (الف) `count(n)->create()` همه‌ی definitionها را پیش از
+   درج اولی می‌سازد → ساعت‌های همان دسته دیده نمی‌شد؛ (ب) برای وضعیت قرعه‌ی `cancelled` چک نمی‌شد ولی `create(['status' => 'pending'])`
+   وضعیت را بعداً عوض می‌کند. رفع: ساعت‌های کشیده‌شده‌ی همان نمونه‌ی factory هم چک می‌شوند و چک برای همه‌ی وضعیت‌ها. `BookingFactorySlotTest`
+   (Faker با seed ثابت، یک متخصص، ۱۲۰ نوبت؛ هر دو تست پیش از رفع با همان خطا شکستند).
+
+**عمداً ادغام‌نشده:** `salons.created_by` داخل `create_users_table` (وابستگی دوری salons ↔ users)؛ `Schema::table` داخل خود
+`create_users_table` و `create_bookings_table` (ستون‌های تولیدی، شاخه بر اساس driver)؛ `2026_09_19_000201_add_salon_staff_finance_permissions`
+(داده‌ی نقش‌های سیستمی؛ RefreshDatabase تست‌ها seeder صدا نمی‌زند).
+
+**وریفای:** `Schema::getColumns/getIndexes/getForeignKeys` هر ۶۸ جدول قبل و بعد: SQLite، MariaDB 10.11 و MySQL 8.0.46 **صفر تفاوت**
+(نوع، nullable، پیش‌فرض، ایندکس، FK)؛ MariaDB/MySQL ترتیب ستون‌ها هم یکسان؛ `mysqldump --no-data` فقط ترتیب چاپ سه خط KEY. روی SQLite
+ترتیب ۵ جدول عوض شد (ستون‌هایی که ALTER ته جدول می‌گذاشت حالا سر جای MySQL)؛ تعداد جدول‌هایی که ترتیب ستونشان در SQLite با MariaDB
+فرق دارد ۵ → ۱ (`salons.created_by`). `migrate:fresh --seed`، `migrate:reset` (فقط جدول migrations ماند) و `migrate` دوباره روی هر سه
+بی‌خطا و اسکیما باز یکسان. سوییت: قبل **SQLite ۱۶۶۵ (۹ skip)، MariaDB ۱۶۶۵ (۱ skip)، MySQL ۱۶۶۵ (۱ skip)**؛ بعد از دو کامیت
+migration **۱۶۶۴** (یک تست حذف‌شده) و بعد از رفع factory **۱۶۶۶** (+۲) با همان skipها، بدون شکست؛ سوییت ساب‌دامین ۱۲/۱۲. Pint PASS.
+همه‌ی این‌ها روی کلون تازه از GitHub بعد از `git am` هر ۴ پچ هم تکرار شد.
+
+**دیتابیس قدیمی (شبیه‌سازی روی MariaDB):** `migrate` معمولی روی دیتابیس ۴۸-فایلی با `Table 'admin_wallet' already exists` **شکست می‌خورد**
+(فایل تغییرنام‌داده دوباره اجرا می‌شود) — یعنی خطا بلند است، نه اسکیمای ناقص بی‌صدا. `migrate:fresh --seed` روی همان دیتابیس بی‌خطا و جدول
+`migrations` از ۴۸ ردیف به ۴۱. ⚠️ Docker: entrypoint با `set -e` و `migrate --force` روی volume قدیمی بالا نمی‌آید → دستور `docker compose run
+--rm --entrypoint php app artisan migrate:fresh --seed --force` در README (در sandbox، Docker اجرا نشد).
+
+**درس‌ها:**
+- تغییر نام migration روی دیتابیس قدیمی «جدول از قبل هست» می‌دهد؛ در سند/README بنویس، به‌خصوص برای entrypointی که خودش migrate می‌زند.
+- روی SQLite، `after()` در ALTER نادیده گرفته می‌شود؛ مقایسه‌ی ترتیب ستون‌ها را جدا از «ساختار» گزارش کن.
+- ایندکسی که در migration سازنده‌ای با `return` زودهنگام (شاخه‌ی pgsql در bookings) اضافه می‌شود باید داخل `Schema::create` باشد.
+- factory که «جای آزاد» را با کوئری دیتابیس پیدا می‌کند، باید مقدارهای کشیده‌شده‌ی همان دسته را هم بشناسد (`count(n)` اول همه را می‌سازد)،
+  و نباید به مقداری از definition (مثل status) تکیه کند که `create([...])` بعداً عوض می‌کند.
+- اجرای هم‌زمان چند سوییت MySQL/MariaDB در sandbox ۴ گیگ حافظه سرورهای دیتابیس را می‌کشد (لاگ خالی می‌ماند) — سوییت‌ها پشت سر هم.
+
 ### قدم‌های باز
 هیچ‌کدام از این دو فیکس ربطی به فاز SaaS در حال انجام (بخش‌های بالای همین فایل) ندارد و روی برنچ جدایی از آن‌ها اعمال شده؛ هنگام merge نهایی توجه شود که این دو کامیت مستقل، قابل rebase/merge روی هر برنچ پایه‌ای هستند چون فقط دو فایل نامرتبط را لمس می‌کنند (`RedirectIfAuthenticated.php`, `AdminUserService.php`) + یک فایل تست.
 
@@ -7497,6 +7550,9 @@ Bearer؛ فقط از IPهای اعلام‌شده. ⚠️ `result` برای `IBA
 - مدل جدید بدون BelongsToSalon باید در `TenantModelClassificationTest` با دلیل ثبت شود (کامیت لینک کوتاه اول بدون آن بود).
 
 ### قدم‌های باز
+- ⭐ **روی سرور و لوکال (بچ migrations-merge-2، ۲۰۲۶-۱۰-۰۱):** یک بار `php artisan migrate:fresh --seed --force` (لوکال بدون `--force`)، بعد
+  `php artisan superadmin:create`، `optimize:clear`/`config:cache` و `queue:restart`. این **جای همه‌ی `php artisan migrate`های** بندهای پایین
+  (iban-verification، performance، sms-billing، locks، bot) را می‌گیرد؛ متغیرهای `.env` و کارهای worker آن بندها همچنان لازم‌اند.
 - **روی سرور (این بچ):** دیتابیس باید از نو ساخته شود — `php artisan migrate:fresh --seed --force` (`migrate` معمولی کافی نیست: فایل‌های
   سازنده عوض شده‌اند ولی اسمشان نه). در `.env`: `DEFAULT_MAX_SPECIALISTS_COUNT` را حذف و `INCLUDED_SPECIALISTS_COUNT=10`،
   `EXTRA_SPECIALIST_PRICE_PER_MONTH=250000`، `MAX_SIGNUP_SPECIALISTS=50` اضافه کن؛ بعد `php artisan config:clear`. (`tenancy:repair-legacy-rows` بعد از fresh لازم نیست.)

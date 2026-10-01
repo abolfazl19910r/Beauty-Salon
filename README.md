@@ -212,7 +212,7 @@ CREATE DATABASE beauty_salon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 php artisan migrate:fresh --seed
 ```
 - Seeder یک سالن نمایشی با آدرس `rasta` (`/s/rasta`)، نقش‌ها و مجوزها، کاربران نمایشی (مدیر، متخصص، مشتری) و داده‌ی نمونه (خدمات، نوبت، نظر، وفاداری، …) می‌سازد. شماره و رمز کاربران نمایشی در `database/seeders/UserSeeder.php` است.
-- **داده‌های فعلی دیتابیس فیک‌اند.** migrationهای اصلاحی در migration سازنده‌ی هر جدول ادغام شده‌اند (۳۷ فایل)؛ دیتابیسی که با نسخه‌های قبلی ساخته شده باید با `migrate:fresh --seed` از نو ساخته شود — `migrate` معمولی کافی نیست.
+- **داده‌های فعلی دیتابیس فیک‌اند.** migrationهای اصلاحی در migration سازنده‌ی هر جدول ادغام شده‌اند (۴۱ فایل، آخرین ادغام ۲۰۲۶-۱۰-۰۱)؛ دیتابیسی که با نسخه‌های قبلی ساخته شده باید با `migrate:fresh --seed` از نو ساخته شود — `migrate` معمولی کافی نیست.
 
 ### مرحله ۷ — ساخت مدیر پلتفرم
 ```bash
@@ -645,6 +645,14 @@ php artisan queue:restart
 php artisan up
 ```
 
+> ⚠️ **بسته‌ی ۲۰۲۶-۱۰-۰۱ (ادغام دوم migrationها، ۴۸ ← ۴۱):** این بار هم فایل‌های سازنده عوض شده‌اند ولی اسمشان نه، پس
+> `migrate --force` ستون‌ها و ایندکس‌های ادغام‌شده را به دیتابیس قدیمی اضافه نمی‌کند. یک بار به‌جای `migrate --force`:
+> `php artisan migrate:fresh --seed --force` و بعد `php artisan superadmin:create`، `php artisan optimize:clear && php artisan optimize`
+> و `php artisan queue:restart`. این دستور جای همه‌ی «بعد از به‌روزرسانی: `php artisan migrate`»های بچ‌های ۰۹-۳۰ و ۱۰-۰۱ را می‌گیرد.
+> روی دیتابیس قدیمی، `migrate` معمولی با `Table 'admin_wallet' already exists` شکست می‌خورد (دو فایل تغییر نام داده‌اند)؛ این یعنی fresh لازم است.
+> **Docker با volume دیتابیس قدیمی:** entrypoint خودش `migrate` می‌زند و با همین خطا بالا نمی‌آید، پس اول:
+> `docker compose up -d mysql redis` → `docker compose run --rm --entrypoint php app artisan migrate:fresh --seed --force` → `docker compose up -d`.
+
 > ⚠️ **بسته‌ی ۲۰۲۶-۰۹-۳۰ (ادغام migrationها):** روی سرورهایی که قبلاً migrate شده‌اند، به‌جای `migrate --force` یک بار `php artisan migrate:fresh --seed --force` بزنید (داده‌ها فیک‌اند). همچنین در `.env`: `DEFAULT_MAX_SPECIALISTS_COUNT` را حذف و `INCLUDED_SPECIALISTS_COUNT`، `EXTRA_SPECIALIST_PRICE_PER_MONTH` و `MAX_SIGNUP_SPECIALISTS` را اضافه کنید، سپس `php artisan config:clear`.
 
 نکته‌ها:
@@ -663,6 +671,7 @@ php artisan up
 | `composer install` در مرحله‌ی `package:discover` خطای اتصال دیتابیس می‌دهد | `.env` هنوز ساخته نشده یا دیتابیس در دسترس نیست. `.env` را بسازید، دیتابیس را بالا بیاورید و `php artisan package:discover` بزنید |
 | خطای `Vite manifest not found` (در مرورگر یا تست‌ها) | `npm run build` |
 | خطای 419 Page Expired روی `127.0.0.1` | با `SESSION_DOMAIN=.rasta-app.test` مرورگر روی هاست‌های دیگر کوکی را ذخیره نمی‌کند؛ middleware پروژه این را خودکار درست می‌کند. اگر باز دیدید، در DevTools ← Application ← Cookies ببینید کوکی session ذخیره شده یا نه |
+| بعد از `git pull`، `migrate` خطای `Table 'admin_wallet' already exists` می‌دهد | ادغام دوم migrationها (۲۰۲۶-۱۰-۰۱)؛ یک بار `php artisan migrate:fresh --seed` (داده‌ها فیک‌اند) |
 | بعد از `git pull` خطای ستون یا جدول ناموجود | بعد از ادغام migrationها دیتابیس قدیمی را با `php artisan migrate:fresh --seed` از نو بسازید |
 | تغییر `.env` اثر نمی‌کند | `php artisan config:clear` (و `php artisan queue:restart` برای worker صف) |
 | پیامک در local ارسال نمی‌شود | عمدی است؛ متن در `storage/logs` ثبت می‌شود. برای ارسال واقعی `KAVENEGAR_SEND_IN_LOCAL=true` |
@@ -671,6 +680,12 @@ php artisan up
 ---
 
 ## 🆕 آخرین تغییرات
+
+**۲۰۲۶-۱۰-۰۱ (ادغام دوم migrationها)**
+- هفت migration اصلاحی بعد از ادغام اول (ستون‌های تأیید شبا، شمارنده‌ی کد تأیید و اعتبار پیامک، `salon_id` اعلان‌ها، دو ایندکس کارایی،
+  نام کوتاه پیامکی) داخل migration سازنده‌ی جدولشان رفتند؛ migration داده‌ای تبدیل سهمیه به قطعه حذف شد (۴۸ ← ۴۱ فایل). اسکیمای نهایی
+  روی SQLite، MariaDB و MySQL بدون تغییر است. **دیتابیس‌های موجود (لوکال و سرور) با `php artisan migrate:fresh --seed` از نو ساخته شوند**
+  (روی سرور با `--force`)؛ `migrate` معمولی کافی نیست.
 
 **۲۰۲۶-۱۰-۰۱**
 - سهمیه‌ی پیامک بر حسب «قطعه» (مثل کاوه‌نگار)، پیش‌فرض ۲۰۰۰ در ماه؛ سهمیه‌ی اختصاصی هر سالن از پنل سوپرادمین.
