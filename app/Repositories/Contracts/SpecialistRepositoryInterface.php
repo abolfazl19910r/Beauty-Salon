@@ -29,5 +29,8 @@ interface SpecialistRepositoryInterface extends RepositoryInterface
 
     public function countBySalonIgnoringScope(int $salonId): int;
 
+    /** ردیف متخصص با lockForUpdate (بدون scope سالن) — نوبت‌های یک متخصص پشت سر هم ثبت می‌شوند */
+    public function lockById(int $id): ?\App\Models\Specialist;
+
     public function paginateByService(int $serviceId, int $perPage = 15): LengthAwarePaginator;
 }

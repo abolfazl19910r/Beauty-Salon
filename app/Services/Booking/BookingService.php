@@ -336,12 +336,13 @@ class BookingService
     }
 
     /**
-     * داخل تراکنش صدا زده شود: کل بازه‌ی خدمت را با ساعت کاری، استراحت و نوبت‌های دیگر می‌سنجد (۲۰۲۶-۱۰-۰۱).
-     * قید یکتای active_slot فقط شروع یکسان را می‌گرفت.
+     * داخل تراکنش صدا زده شود: ردیف متخصص را قفل می‌کند (نوبت‌های هم‌زمان یک متخصص پشت سر هم) و بعد کل بازه‌ی خدمت را
+     * با ساعت کاری، استراحت و نوبت‌های دیگر می‌سنجد (۲۰۲۶-۱۰-۰۱). قید یکتای active_slot فقط شروع یکسان را می‌گرفت.
+     * ⚠️ پیش از این قفل هیچ خواندن عادی در همین تراکنش نباشد (snapshot در REPEATABLE READ).
      */
     public function assertBookingFits(int $specialistId, string $bookingTime, int $serviceId, ?int $excludeBookingId = null): void
     {
-        $specialist = \App\Models\Specialist::withoutGlobalScopes()->find($specialistId);
+        $specialist = $this->specialistRepository->lockById($specialistId);
         $duration = (int) (\Illuminate\Support\Facades\DB::table('beauty_services')->where('id', $serviceId)->value('duration') ?: 30);
 
         $reason = $specialist

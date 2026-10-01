@@ -128,6 +128,11 @@ class SpecialistRepository extends BaseRepository implements SpecialistRepositor
         return $this->model->withoutGlobalScopes()->whereKey($specialistId)->value('salon_id');
     }
 
+    public function lockById(int $id): ?Specialist
+    {
+        return $this->model->withoutGlobalScopes()->whereKey($id)->lockForUpdate()->first();
+    }
+
     public function countBySalonIgnoringScope(int $salonId): int
     {
         return $this->model->withoutGlobalScope('salon')->where('salon_id', $salonId)->count();
