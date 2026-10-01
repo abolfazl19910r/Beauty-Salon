@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('salon_id')->constrained('salons')->cascadeOnDelete();
             $table->string('name');
+            $table->string('sms_name', 20)->nullable(); // نام کوتاه پیامکی؛ خالی = نام اصلی
             $table->string('slug')->unique();
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2);

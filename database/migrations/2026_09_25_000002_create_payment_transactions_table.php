@@ -44,6 +44,8 @@ return new class extends Migration
 
             $table->index(['salon_id', 'status']);
             $table->index(['salon_id', 'needs_attention']);
+            // payments:reconcile (همه‌ی سالن‌ها، بدون salon_id): status + بازه‌ی زمانی.
+            $table->index(['status', 'updated_at'], 'payment_transactions_status_updated_at_index');
             $table->unique(['driver', 'gateway_receipt'], 'payment_transactions_driver_receipt_unique');
         });
     }

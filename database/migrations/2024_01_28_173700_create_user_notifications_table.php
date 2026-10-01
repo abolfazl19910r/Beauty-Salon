@@ -13,6 +13,8 @@ return new class extends Migration
             $table->string('type');
             // nullable: اعلانی که گیرنده‌اش متخصص بدون حساب کاربری است کاربر مالک ندارد (UserNotification::ownerUserId()).
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
+            // سالنی که اعلان درباره‌ی آن است؛ هر پنل فقط اعلان‌های سالن جاری (و بدون سالن) را نشان می‌دهد.
+            $table->foreignId('salon_id')->nullable()->constrained('salons')->nullOnDelete();
             $table->morphs('notifiable');
             $table->text('data');
             $table->timestamp('read_at')->nullable();

@@ -19,6 +19,9 @@ return new class extends Migration
             $table->string('account_holder_name')->nullable();
             $table->string('bank_name')->nullable();
             $table->boolean('iban_verified')->default(false);
+            // چه کسی و کی شبا را تأیید کرد (تأیید قابل ردگیری، ۲۰۲۶-۰۹-۳۰)؛ تغییر شبا هر دو را پاک می‌کند.
+            $table->foreignId('iban_verified_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('iban_verified_at')->nullable();
             $table->timestamps();
 
             $table->index('specialist_id');

@@ -26,6 +26,8 @@ return new class extends Migration
         Schema::create('salons', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            // «نام کوتاه پیامکی»: خالی = نام اصلی (نام بلند پیامک را از یک قطعه رد می‌کرد).
+            $table->string('sms_name', 20)->nullable();
             $table->string('slug')->unique();
             // ⭐ پیگیری «محور ۳»: متن‌های بازاریابی اطراف نام سالن (مثل «با سال‌ها تجربه») قبلاً
             // generic و مشترک بین همه‌ی سالن‌ها بودن. هر دو ستون nullable — یک سالن تازه‌ساخته
@@ -44,6 +46,8 @@ return new class extends Migration
             // خونده می‌شه (nullable اینجا یعنی «از پیش‌فرض پلتفرم استفاده کن») — این ستون فقط
             // برای override دستی روی یک سالن خاص است.
             $table->unsignedInteger('sms_quota_per_month')->nullable();
+            // اعتبار پیامک خریده‌شده یا اعطاشده (قطعه)؛ منقضی نمی‌شود و بعد از سهمیه‌ی ماه مصرف می‌شود.
+            $table->unsignedInteger('sms_credit')->default(0);
             $table->enum('subscription_type', ['1m', '3m', '6m', '12m']);
             // ⭐ Fix (confirmed against a real deploy, not just SQLite — this project's whole
             // test suite runs on SQLite, which never enforces this): on MySQL/MariaDB, a second

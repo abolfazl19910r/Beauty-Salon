@@ -19,8 +19,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('salon_id')->constrained()->cascadeOnDelete();
             $table->char('period', 7); // 'Y-m'
-            $table->unsignedInteger('used_count')->default(0);
+            $table->unsignedInteger('used_count')->default(0); // قطعه، از سقف ماهانه
+            $table->unsignedInteger('credit_used')->default(0); // قطعه، از اعتبار خریده‌شده (salons.sms_credit)
+            $table->unsignedInteger('otp_count')->default(0);   // کدهای تأیید: خرج پلتفرم، از سقف کم نمی‌شوند
             $table->timestamp('notified_at')->nullable();
+            $table->timestamp('warned_at')->nullable();         // هشدار ۸۰٪ — یک بار در ماه
             $table->timestamps();
 
             $table->unique(['salon_id', 'period']);

@@ -47,6 +47,9 @@ return new class extends Migration
 
             $table->index('cancelled_by');
             $table->index('cancelled_at');
+            // کارهای زمان‌بندی‌شده‌ی همه‌ی سالن‌ها (bookings:send-reminders با status + بازه‌ی booking_time، و
+            // CancelUnpaidBookings با status = pending_payment) بدون این ایندکس کل جدول را می‌خواندند.
+            $table->index(['status', 'booking_time'], 'bookings_status_booking_time_index');
         });
 
         // ⭐ Fix (fix/admin-booking-slot-conflict): the check-then-insert pattern used by both
