@@ -13,7 +13,7 @@ class SubscriptionPricing
 
     public function includedSpecialists(): int
     {
-        return max(1, (int) config('billing.included_specialists', 7));
+        return max(1, (int) config('billing.included_specialists', 10));
     }
 
     public function extraSpecialistPricePerMonth(): int

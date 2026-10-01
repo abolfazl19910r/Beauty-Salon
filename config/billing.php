@@ -64,9 +64,10 @@ return [
 
     // ⭐ تعداد متخصص (تصمیم ابوالفضل ۲۰۲۶-۰۹-۳۰): فرم ثبت‌نام عمومی تعداد متخصص را می‌پرسد و سقف متخصص سالن همان
     // عدد است. قیمت پلن شامل included_specialists متخصص است؛ هر متخصص بیشتر ماهانه extra_specialist_price_per_month
-    // تومان، با همان تخفیف بازه‌ی پلن (App\Support\Billing\SubscriptionPricing). ۲۵۰ هزار تومان تخمین هزینه‌ی پیامک
-    // نوبت‌های یک متخصص (حدود ۳۳ نوبت در ماه) + ۳۰٪ سود است — قبل از production بازبینی شود.
-    'included_specialists' => (int) env('INCLUDED_SPECIALISTS_COUNT', 7),
+    // تومان، با همان تخفیف بازه‌ی پلن (App\Support\Billing\SubscriptionPricing).
+    // تصمیم ۲۰۲۶-۱۰-۰۱: ۱۰ متخصص شامل پلن (قبلاً ۷) و هر متخصص بیشتر همان ۲۵۰ هزار تومان. سهمیه‌ی پیامک برای هر سالن
+    // ثابت است و با تعداد متخصص بزرگ نمی‌شود، پس این مبلغ قیمت‌گذاری ارزشی است نه هزینه‌ی پیامک.
+    'included_specialists' => (int) env('INCLUDED_SPECIALISTS_COUNT', 10),
     'extra_specialist_price_per_month' => (int) env('EXTRA_SPECIALIST_PRICE_PER_MONTH', 250000),
     'max_signup_specialists' => (int) env('MAX_SIGNUP_SPECIALISTS', 50),
 
