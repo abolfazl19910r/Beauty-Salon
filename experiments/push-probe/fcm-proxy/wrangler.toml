@@ -1,0 +1,18 @@
+# واسط FCM برای آزمایش پوش — راهنما: README.md همین پوشه
+name = "mahru-fcm-probe-proxy"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+
+# workers.dev از داخل ایران معمولاً فیلتر است؛ از زیردامنه‌ی خودتان (روی Cloudflare) استفاده کنید.
+workers_dev = false
+
+routes = [
+  { pattern = "push-probe.mahru.ir", custom_domain = true }
+]
+
+[vars]
+# همان project_id داخل فایل حساب سرویس فایربیس
+FCM_PROJECT_ID = "mahru-push-probe"
+
+# Secret اینجا نوشته نمی‌شود:
+#   npx wrangler secret put PROXY_SECRET
