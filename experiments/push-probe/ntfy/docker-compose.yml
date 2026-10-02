@@ -1,0 +1,12 @@
+# سرور ntfy روی سیستم لوکال برای آزمایش «راه بدون گوگل» — راهنما: README.md همین پوشه
+# اگر Docker Hub از ایران در دسترس نبود، نام image را با یک mirror داخلی جایگزین کنید (NTFY_IMAGE در .env کنار همین فایل).
+services:
+  ntfy:
+    image: ${NTFY_IMAGE:-binwiederhier/ntfy:latest}
+    command: serve
+    ports:
+      - "8090:80"
+    volumes:
+      - ./server.yml:/etc/ntfy/server.yml:ro
+      - ./cache:/var/cache/ntfy
+    restart: unless-stopped

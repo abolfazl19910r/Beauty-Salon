@@ -5,13 +5,15 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
-import { AppState, Platform, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { AppState, Linking, Platform, Pressable, ScrollView, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { ntfySubscribeLink, randomTopic } from './src/ntfy';
 import { formatTime, mergeEntry, parseProbe, ProbeEntry, ReceiptSource, toCsv } from './src/probe';
 
 const CHANNEL_ID = 'probe';
 const LOG_KEY = 'push-probe-log-v1';
-const STATES = ['باز', 'پس‌زمینه', 'بسته', 'بسته-باتری', 'ریستارت'] as const;
+const NTFY_KEY = 'push-probe-ntfy-v1';
+const STATES = ['باز', 'پس‌زمینه', 'بسته', 'بسته-باتری', 'ریستارت', 'قطعی'] as const;
 
 // وقتی اپ باز است اعلان هم نشان داده شود (پیش‌فرض اندروید نشان نمی‌دهد)
 Notifications.setNotificationHandler({
@@ -36,6 +38,9 @@ export default function App() {
   const [tokenInfo, setTokenInfo] = useState<string>('');
   const [state, setState] = useState<(typeof STATES)[number]>('باز');
   const [entries, setEntries] = useState<ProbeEntry[]>([]);
+  const [ntfyServer, setNtfyServer] = useState('');
+  const [topic, setTopic] = useState('');
+  const [ntfyInfo, setNtfyInfo] = useState('');
 
   const record = useCallback(async (notification: Notifications.Notification, source: ReceiptSource) => {
     const parsed = parseProbe(notification);
@@ -66,6 +71,12 @@ export default function App() {
       }
       setPermission((await Notifications.getPermissionsAsync()).status);
       setEntries(JSON.parse((await AsyncStorage.getItem(LOG_KEY)) ?? '[]'));
+      // تاپیک یک بار ساخته و نگه داشته می‌شود (تاپیک ntfy مثل آدرس است؛ تصادفی تا کسی حدس نزند)
+      const savedNtfy = JSON.parse((await AsyncStorage.getItem(NTFY_KEY)) ?? 'null') as { server: string; topic: string } | null;
+      const ntfy = savedNtfy ?? { server: '', topic: randomTopic() };
+      if (!savedNtfy) await AsyncStorage.setItem(NTFY_KEY, JSON.stringify(ntfy));
+      setNtfyServer(ntfy.server);
+      setTopic(ntfy.topic);
       await scanTray();
       const last = await Notifications.getLastNotificationResponseAsync();
       if (last) await record(last.notification, 'لمس');
@@ -103,6 +114,26 @@ export default function App() {
 
   const label = `${deviceShortName()}-${state}`;
   const command = token ? `php artisan push:probe fcm ${token} --label=${label}` : '';
+  const ntfyCommand = topic ? `php artisan push:probe ntfy ${topic} --label=${label}` : '';
+
+  const saveNtfyServer = async (server: string) => {
+    setNtfyServer(server);
+    await AsyncStorage.setItem(NTFY_KEY, JSON.stringify({ server, topic }));
+  };
+
+  const subscribeInNtfy = async () => {
+    const link = ntfySubscribeLink(ntfyServer, topic, `ماهرو ${deviceShortName()}`);
+    if (!link) {
+      setNtfyInfo('آدرس سرور ntfy را کامل بنویسید، مثل http://192.168.1.10:8090');
+      return;
+    }
+    try {
+      await Linking.openURL(link);
+      setNtfyInfo(`باز شد: ${link}`);
+    } catch {
+      setNtfyInfo('اپ ntfy نصب نیست (از F-Droid یا GitHub نصب کنید) — یا تاپیک را دستی در آن اضافه کنید.');
+    }
+  };
 
   const clearLog = async () => {
     await AsyncStorage.removeItem(LOG_KEY);
@@ -147,7 +178,31 @@ export default function App() {
           )}
         </Section>
 
-        <Section title={`۴. پیام‌های رسیده (${entries.length})`}>
+        <Section title="۴. ntfy (راه بدون گوگل)">
+          <Text style={styles.muted}>
+            پیام‌های ntfy را اپ ntfy نشان می‌دهد، نه این اپ؛ زمان رسیدنشان را از اعلان بخوانید (ساعت ارسال داخل متن است).
+          </Text>
+          <TextInput
+            value={ntfyServer}
+            onChangeText={saveNtfyServer}
+            placeholder="http://192.168.1.10:8090"
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+            style={styles.input}
+          />
+          <Text style={styles.text}>تاپیک: {topic}</Text>
+          <Button title="اشتراک تاپیک در اپ ntfy" onPress={subscribeInNtfy} />
+          {!!ntfyInfo && <Text style={styles.muted}>{ntfyInfo}</Text>}
+          {!!ntfyCommand && (
+            <>
+              <Text selectable style={styles.mono}>{ntfyCommand}</Text>
+              <Button title="فرستادن دستور ntfy به سیستم" onPress={() => Share.share({ message: ntfyCommand })} />
+            </>
+          )}
+        </Section>
+
+        <Section title={`۵. پیام‌های رسیده‌ی FCM (${entries.length})`}>
           <View style={styles.row}>
             <Button title="بررسی سینی اعلان‌ها" onPress={scanTray} />
             <Button title="اشتراک نتایج" onPress={() => Share.share({ message: toCsv(entries, label) })} />
@@ -203,5 +258,6 @@ const styles = StyleSheet.create({
   chipTextOn: { fontSize: 14, color: '#fff' },
   button: { backgroundColor: '#8a6a2f', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, alignSelf: 'flex-end', marginTop: 4 },
   buttonText: { color: '#fff', fontSize: 14 },
+  input: { borderWidth: 1, borderColor: '#c9a86a', borderRadius: 8, padding: 8, marginVertical: 6, fontFamily: 'monospace', fontSize: 13, color: '#2b2118', textAlign: 'left' },
   entry: { borderTopWidth: 1, borderTopColor: '#f0e6d6', paddingVertical: 6 },
 });
