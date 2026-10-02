@@ -63,6 +63,9 @@ class PaymentAttentionTest extends TestCase
 
     public function test_reconcile_flags_payments_only_after_their_automatic_window_ends(): void
     {
+        // ⭐ (۲۰۲۶-۱۰-۰۲) ساعت ثابت: «now()->subHours(25)» اول و آخر تست دو بار حساب می‌شود؛ اگر بینشان مرز ثانیه رد می‌شد
+        // assert آخر با یک ثانیه اختلاف می‌شکست (روی MariaDB در اجرای کامل دیده شد).
+        $this->freezeSecond();
         Http::fake(['*' => Http::failedConnection('cURL error 28: Operation timed out')]);
         $indirectExpired = $this->lastTouched($this->tx(), now()->subHours(25));
         $indirectInWindow = $this->lastTouched($this->tx(), now()->subHours(23));
