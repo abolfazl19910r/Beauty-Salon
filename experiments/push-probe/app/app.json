@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "آزمایش پوش ماهرو",
+    "slug": "mahru-push-probe",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "platforms": ["android"],
+    "android": {
+      "package": "ir.mahru.pushprobe",
+      "googleServicesFile": "./google-services.json",
+      "adaptiveIcon": {
+        "backgroundColor": "#FAF6EF",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": ["POST_NOTIFICATIONS"],
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      ["expo-notifications", { "defaultChannel": "probe", "color": "#8A6A2F" }]
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+node_modules/
+.expo/
+dist/
+android/
+ios/
+*.apk
+*.aab
+# فایل فایربیس هر کس جداست و ریپو عمومی است — commit نشود
+google-services.json
