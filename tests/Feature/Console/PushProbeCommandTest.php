@@ -36,6 +36,8 @@ class PushProbeCommandTest extends TestCase
         config([
             'push_probe.fcm.credentials' => $this->dir.'/sa.json',
             'push_probe.fcm.proxy' => null,
+            'push_probe.ntfy.server' => null,
+            'push_probe.ntfy.token' => null,
             'push_probe.log' => $this->dir.'/probe.csv',
         ]);
     }
@@ -196,7 +198,8 @@ class PushProbeCommandTest extends TestCase
         Http::fake();
 
         $this->artisan('push:probe', ['via' => 'fcm'])->expectsOutputToContain('توکن FCM')->assertFailed();
-        $this->artisan('push:probe', ['via' => 'ntfy', 'target' => 'x'])->expectsOutputToContain('شناخته نشد')->assertFailed();
+        $this->artisan('push:probe', ['via' => 'apns', 'target' => 'x'])->expectsOutputToContain('شناخته نشد')->assertFailed();
+        $this->artisan('push:probe', ['via' => 'ntfy'])->expectsOutputToContain('تاپیک ntfy')->assertFailed();
 
         config(['push_probe.fcm.credentials' => $this->dir.'/missing.json']);
         $this->artisan('push:probe', ['via' => 'fcm', 'target' => 'x'])->expectsOutputToContain('PUSH_PROBE_FCM_CREDENTIALS')->assertFailed();
@@ -226,5 +229,59 @@ class PushProbeCommandTest extends TestCase
 
         Http::assertNotSent(fn (Request $r) => str_ends_with($r->url(), '/messages:send'));
         Http::assertSentCount(4);
+    }
+
+    public function test_ntfy_publishes_json_to_the_self_hosted_server_without_touching_google(): void
+    {
+        config(['push_probe.ntfy.server' => 'http://192.168.1.10:8090/', 'push_probe.ntfy.token' => 'tk_probe']);
+        Http::fake(['192.168.1.10:8090' => Http::response(['id' => 'abc123', 'event' => 'message'])]);
+
+        $this->artisan('push:probe', ['via' => 'ntfy', 'target' => 'mahru-probe-x7k2', '--label' => 'RN8-قطعی', '--count' => 2, '--interval' => 0])
+            ->expectsOutputToContain('abc123')
+            ->assertSuccessful();
+
+        $sent = Http::recorded()->map(fn ($pair) => $pair[0])->values();
+        $this->assertCount(2, $sent);
+        $request = $sent[0];
+        $this->assertSame('http://192.168.1.10:8090', $request->url());
+        $this->assertSame(['Bearer tk_probe'], $request->header('Authorization'));
+        $this->assertSame('mahru-probe-x7k2', $request['topic']);
+        $this->assertSame(5, $request['priority']);
+        $this->assertSame('آزمایش پوش ماهرو #1', $request['title']);
+        // همان برچسب متن FCM — اپ آزمایشی و فرم نتیجه برای هر دو راه یکسان کار می‌کنند
+        $this->assertMatchesRegularExpression('/^مسیر NTFY · ارسال \d{2}:\d{2}:\d{2} · RN8-قطعی \[P:[a-z0-9]{4}-1:\d{13}\]$/u', $request['message']);
+        Http::assertNotSent(fn (Request $r) => str_contains($r->url(), 'googleapis.com'));
+
+        $rows = array_map('str_getcsv', file($this->dir.'/probe.csv', FILE_IGNORE_NEW_LINES));
+        $this->assertSame(['ntfy', 'mahru-probe-x7k2'], [$rows[1][2], $rows[1][4]]);
+    }
+
+    public function test_ntfy_without_a_server_or_with_an_unreachable_one_fails_clearly(): void
+    {
+        Http::fake(fn () => throw new ConnectionException('cURL error 7: Failed to connect'));
+
+        $this->artisan('push:probe', ['via' => 'ntfy', 'target' => 'topic'])
+            ->expectsOutputToContain('PUSH_PROBE_NTFY_SERVER')
+            ->assertFailed();
+        Http::assertNothingSent();
+
+        config(['push_probe.ntfy.server' => 'http://127.0.0.1:8090']);
+        $this->artisan('push:probe', ['via' => 'ntfy', 'target' => 'topic'])
+            ->expectsOutputToContain('اتصال برقرار نشد')
+            ->assertFailed();
+    }
+
+    public function test_check_reports_ntfy_health(): void
+    {
+        config(['push_probe.fcm.credentials' => null, 'push_probe.ntfy.server' => 'http://127.0.0.1:8090']);
+        Http::fake([
+            '127.0.0.1:8090/v1/health' => Http::response(['healthy' => true]),
+            '*' => Http::response('', 404),
+        ]);
+
+        $this->artisan('push:probe', ['via' => 'check'])
+            // هر خط خروجی فقط با یک expectation جفت می‌شود؛ نتیجه و نام سرور در یک ردیف‌اند
+            ->expectsOutputToContain('سرور ntfy: http://127.0.0.1:8090 | موفق     | 200')
+            ->assertSuccessful();
     }
 }

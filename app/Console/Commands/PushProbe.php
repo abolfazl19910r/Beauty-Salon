@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Experiments\PushProbe\FcmProbeSender;
+use App\Experiments\PushProbe\NtfyProbeSender;
 use App\Experiments\PushProbe\ProbeMessage;
 use App\Experiments\PushProbe\ProbeResult;
 use Illuminate\Console\Command;
@@ -17,6 +18,7 @@ use RuntimeException;
  *   php artisan push:probe check                         سنجش راه‌ها بدون ارسال
  *   php artisan push:probe fcm <توکن FCM> --label=...    مستقیم از سرور به گوگل
  *   php artisan push:probe fcm-proxy <توکن FCM>          از Worker کلودفلر
+ *   php artisan push:probe ntfy <تاپیک>                  سرور ntfy خودمیزبان (بدون گوگل؛ برای قطعی اینترنت بین‌الملل)
  *
  * «موفق» در خروجی یعنی سرویس پیام را پذیرفت؛ رسیدن به گوشی را اپ آزمایشی و فرم نتیجه نشان می‌دهند.
  * راهنمای کامل: experiments/push-probe/README.md
@@ -24,34 +26,36 @@ use RuntimeException;
 class PushProbe extends Command
 {
     protected $signature = 'push:probe
-        {via : check | fcm | fcm-proxy}
-        {target? : توکن FCM گوشی (از اپ آزمایشی)}
+        {via : check | fcm | fcm-proxy | ntfy}
+        {target? : توکن FCM گوشی یا نام تاپیک ntfy (هر دو در اپ آزمایشی)}
         {--count=1 : تعداد پیام}
         {--interval=5 : فاصله‌ی بین پیام‌ها به ثانیه}
         {--label= : برچسب آزمایش در متن پیام، مثلاً A17-بسته}';
 
-    protected $description = 'آزمایش پوش (بسته‌ی ۰ اپلیکیشن): ارسال پیام آزمایشی FCM و سنجش دسترسی به گوگل';
+    protected $description = 'آزمایش پوش (بسته‌ی ۰ اپلیکیشن): ارسال پیام آزمایشی با FCM یا ntfy و سنجش دسترسی سرور';
 
-    public function handle(FcmProbeSender $fcm): int
+    public function handle(FcmProbeSender $fcm, NtfyProbeSender $ntfy): int
     {
         $via = (string) $this->argument('via');
 
         try {
             return match ($via) {
-                'check' => $this->check($fcm),
-                'fcm', 'fcm-proxy' => $this->sendAll($via, $fcm),
-                default => $this->failWith("مسیر «{$via}» شناخته نشد؛ یکی از check، fcm، fcm-proxy."),
+                'check' => $this->check($fcm, $ntfy),
+                'fcm', 'fcm-proxy', 'ntfy' => $this->sendAll($via, $fcm, $ntfy),
+                default => $this->failWith("مسیر «{$via}» شناخته نشد؛ یکی از check، fcm، fcm-proxy، ntfy."),
             };
         } catch (RuntimeException $e) {
             return $this->failWith($e->getMessage());
         }
     }
 
-    private function sendAll(string $via, FcmProbeSender $fcm): int
+    private function sendAll(string $via, FcmProbeSender $fcm, NtfyProbeSender $ntfy): int
     {
         $target = trim((string) $this->argument('target'));
         if ($target === '') {
-            return $this->failWith('توکن FCM گوشی را بدهید (در اپ آزمایشی، دکمه‌ی «اشتراک توکن»).');
+            return $this->failWith($via === 'ntfy'
+                ? 'نام تاپیک ntfy را بدهید (در اپ آزمایشی، بخش ntfy).'
+                : 'توکن FCM گوشی را بدهید (در اپ آزمایشی، بخش توکن FCM).');
         }
 
         $count = max(1, min(50, (int) $this->option('count')));
@@ -69,7 +73,9 @@ class PushProbe extends Command
             }
 
             $message = ProbeMessage::make($runId, $seq, $via, $label);
-            $result = $fcm->send($target, $message, $via === 'fcm-proxy');
+            $result = $via === 'ntfy'
+                ? $ntfy->send($target, $message)
+                : $fcm->send($target, $message, $via === 'fcm-proxy');
 
             $allOk = $allOk && $result->ok;
             $rows[] = [
@@ -89,7 +95,7 @@ class PushProbe extends Command
         return $allOk ? self::SUCCESS : self::FAILURE;
     }
 
-    private function check(FcmProbeSender $fcm): int
+    private function check(FcmProbeSender $fcm, NtfyProbeSender $ntfy): int
     {
         $rows = [];
         $rows[] = $this->reach('گوگل: oauth2.googleapis.com', (string) config('push_probe.fcm.oauth_url'));
@@ -102,6 +108,12 @@ class PushProbe extends Command
             }
         } else {
             $rows[] = ['توکن دسترسی FCM', 'رد شد', '—', '—', 'PUSH_PROBE_FCM_CREDENTIALS تنظیم نشده'];
+        }
+
+        if (config('push_probe.ntfy.server')) {
+            $rows[] = $this->row('سرور ntfy: '.$ntfy->server(), $ntfy->health());
+        } else {
+            $rows[] = ['سرور ntfy', 'رد شد', '—', '—', 'PUSH_PROBE_NTFY_SERVER تنظیم نشده'];
         }
 
         $this->table(['مورد', 'نتیجه', 'HTTP', 'میلی‌ثانیه', 'توضیح'], $rows);

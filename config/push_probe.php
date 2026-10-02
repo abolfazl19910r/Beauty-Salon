@@ -20,6 +20,13 @@ return [
         'ttl' => (int) (env('PUSH_PROBE_FCM_TTL') ?: 3600),
     ],
 
+    'ntfy' => [
+        // سرور ntfy خودمیزبان (راه بدون گوگل). آزمایش لوکال: http://127.0.0.1:8090 — گوشی همان را با IP شبکه‌ی محلی می‌بیند
+        'server' => env('PUSH_PROBE_NTFY_SERVER') ?: null,
+        // فقط اگر روی سرور ntfy کاربر/توکن تعریف کرده‌اید
+        'token' => env('PUSH_PROBE_NTFY_TOKEN') ?: null,
+    ],
+
     'timeout' => (int) (env('PUSH_PROBE_TIMEOUT') ?: 20),
 
     // هر ارسال یک خط اینجا ثبت می‌شود (برای پر کردن فرم نتیجه)
