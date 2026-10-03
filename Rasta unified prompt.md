@@ -4130,7 +4130,7 @@ migration **۱۶۶۴** (یک تست حذف‌شده) و بعد از رفع facto
 2. Worker کلودفلر `experiments/push-probe/fcm-proxy/` (دو مسیر POST پشت بخش مخفی؛ aud داخل JWT همان آدرس گوگل).
 3. اپ Expo SDK 57 `experiments/push-probe/app/` (پکیج `ir.mahru.pushprobe`، فقط expo-notifications): توکن FCM با زمان/خطا، انتخاب
    حالت و اشتراک دستور آماده، لاگ رسیدن با تأخیر — اعلان‌های سینی با زمان `postTime` اندروید (اپ بسته هم درست زمان می‌خورد).
-   `google-services.json` در `.gitignore` ولی نه در `.easignore`؛ پروفایل EAS `apk`. بخش ntfy: تاپیک تصادفی ماندگار، لینک
+   `google-services.json` در `.gitignore`؛ پروفایل EAS `apk`؛ ساخت با `build-apk.ps1` (اصلاح «ادامه ۴»). بخش ntfy: تاپیک تصادفی ماندگار، لینک
    `ntfy://<host>/<topic>?display=…` (برای http با `secure=false`)، دستور آماده.
 4. `experiments/push-probe/ntfy/`: docker-compose (image قابل تعویض با mirror داخلی) و `server.yml` حداقلی (cache ۱۲ ساعت، keepalive ۴۵ ثانیه).
 5. `README.md`، `FIREBASE_AND_PHONES.md`، `ntfy/README.md`، `RESULTS.md` (۱۱ سناریوی FCM برای هر گوشی با تنظیمات باتری اول پیش‌فرض،
@@ -4155,6 +4155,19 @@ sandbox: `push:probe ntfy` دو پیام فرستاد و از cache سرور ب�
    probe: `usleep(1.1s)` پیش از assert آخر → روی SQLite و MySQL 8 همیشه شکست؛ با `freezeSecond()` پاس؛ probe حذف شد. بقیه‌ی تست‌هایی که
    زمانِ از `now()` را با مقدار ذخیره‌شده مقایسه می‌کنند `assertEqualsWithDelta` دارند (grep). فایل تست روی MySQL 8 سه بار ۱۰/۱۰؛
    کل سوییت SQLite روی `develop` + این دو پچ **۱۶۶۶ (۹ skip)** بدون شکست.
+### ۲۰۲۶-۱۰-۰۲ (ادامه ۴) — اصلاح ساخت APK کیت بسته‌ی ۰ + راهنمای ساخت و اتصال Firebase
+**درخواست ابوالفضل:** «ادامه بده و بگو برای بیلد گرفتن و وصل کردن به فایربیس چه کنم».
+**🐛 باگ کیت (پیش از اولین ساخت پیدا شد):** اپ آزمایشی داخل ریپوی لاراول است. eas-cli با گیت، **ریشه‌ی گیت** را بارگذاری می‌کند و
+`.easignore` را فقط همان‌جا می‌خواند (`vcs/clients/git.js` در eas-cli 24.9.0) — پس `.easignore` پوشه‌ی اپ بی‌اثر بود،
+`google-services.json` به‌خاطر `.gitignore` جا می‌ماند و ساخت می‌شکست؛ فایل‌های untracked پروژه هم بارگذاری می‌شدند.
+**اصلاح (پچ `0008` روی `experiment/push-probe`):** `experiments/push-probe/app/build-apk.ps1` با `EAS_NO_VCS=1` و
+`EAS_PROJECT_ROOT=<پوشه‌ی اپ>` فقط همان پوشه را با `.easignore` خودش می‌فرستد؛ نبودن `google-services.json` را پیش از ساخت می‌گیرد؛
+UTF-8 با BOM (PowerShell 5.1). وریفای: `makeShallowCopyAsync` خود eas-cli روی پوشه `google-services.json` را برد و
+`node_modules`/`android`/`.expo` را نبرد؛ اسکریپت زیر pwsh 7.4 با npx ساختگی هر دو متغیر را گذاشت و دستور درست را صدا زد.
+`FIREBASE_AND_PHONES.md`: Node 20.19+، VPN برای Expo، پرسش‌های بار اول، زمان صف.
+**درس:** هر ابزاری که «ریشه‌ی پروژه» را خودش پیدا می‌کند (EAS، Metro، ...) داخل ریپوی دیگر ممکن است ریشه‌ی گیت را بگیرد؛ رفتار را
+از کد خود ابزار وریفای کن، نه از فرض.
+
 **درس:** در sandbox، `pkill -f mysqld` خودِ شل همان دستور را هم می‌کشد (الگو در خط فرمان شل هست) — `pkill -x` استفاده کن. نصب
 `mysql-server-8.0` بعد از حذف MariaDB روی پرسش تنظیمات می‌ماند؛ `mysqld --no-defaults --initialize-insecure --datadir=...` کافی است.
 
