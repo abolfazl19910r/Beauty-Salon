@@ -201,8 +201,16 @@ class PushProbeCommandTest extends TestCase
         $this->artisan('push:probe', ['via' => 'apns', 'target' => 'x'])->expectsOutputToContain('شناخته نشد')->assertFailed();
         $this->artisan('push:probe', ['via' => 'ntfy'])->expectsOutputToContain('تاپیک ntfy')->assertFailed();
 
+        config(['push_probe.fcm.credentials' => null]);
+        $this->artisan('push:probe', ['via' => 'fcm', 'target' => 'x'])->expectsOutputToContain('PUSH_PROBE_FCM_CREDENTIALS در .env تنظیم نشده')->assertFailed();
+
         config(['push_probe.fcm.credentials' => $this->dir.'/missing.json']);
-        $this->artisan('push:probe', ['via' => 'fcm', 'target' => 'x'])->expectsOutputToContain('PUSH_PROBE_FCM_CREDENTIALS')->assertFailed();
+        $this->artisan('push:probe', ['via' => 'fcm', 'target' => 'x'])->expectsOutputToContain($this->dir.'/missing.json')->assertFailed();
+
+        // تغییر نام در ویندوز با پسوند پنهان: sa.json در عمل sa.json.json است
+        copy($this->dir.'/sa.json', $this->dir.'/renamed.json.json');
+        config(['push_probe.fcm.credentials' => $this->dir.'/renamed.json']);
+        $this->artisan('push:probe', ['via' => 'fcm', 'target' => 'x'])->expectsOutputToContain('پسوند دوبار آمده')->assertFailed();
 
         file_put_contents($this->dir.'/google-services.json', json_encode(['project_info' => ['project_id' => 'x']]));
         config(['push_probe.fcm.credentials' => $this->dir.'/google-services.json']);
@@ -269,6 +277,20 @@ class PushProbeCommandTest extends TestCase
         $this->artisan('push:probe', ['via' => 'ntfy', 'target' => 'topic'])
             ->expectsOutputToContain('اتصال برقرار نشد')
             ->assertFailed();
+    }
+
+    public function test_check_keeps_going_when_the_key_file_is_missing_and_shows_its_path(): void
+    {
+        config(['push_probe.fcm.credentials' => $this->dir.'/missing.json']);
+        Http::fake(['*' => Http::response('', 404)]);
+
+        $this->artisan('push:probe', ['via' => 'check'])
+            ->expectsOutputToContain('fcm.googleapis.com')
+            ->expectsOutputToContain('پیدا نشد یا خواندنی نیست: '.$this->dir.'/missing.json')
+            ->assertSuccessful();
+
+        // فقط GET دسترس‌پذیری؛ هیچ درخواست توکن (POST) فرستاده نشد
+        Http::assertNotSent(fn (Request $r) => $r->method() === 'POST');
     }
 
     public function test_check_reports_ntfy_health(): void

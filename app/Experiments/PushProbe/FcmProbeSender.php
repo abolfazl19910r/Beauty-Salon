@@ -131,8 +131,14 @@ class FcmProbeSender
         }
 
         $path = (string) config('push_probe.fcm.credentials');
-        if ($path === '' || ! is_readable($path)) {
-            throw new RuntimeException('فایل حساب سرویس فایربیس پیدا نشد؛ مسیر آن را در PUSH_PROBE_FCM_CREDENTIALS بگذارید.');
+        if ($path === '') {
+            throw new RuntimeException('PUSH_PROBE_FCM_CREDENTIALS در .env تنظیم نشده است (مسیر فایل حساب سرویس فایربیس)؛ بعد php artisan config:clear.');
+        }
+        if (! is_readable($path)) {
+            // ویندوز پسوند را پنهان می‌کند؛ تغییر نام به «x.json» در عمل «x.json.json» می‌سازد
+            $hint = is_readable($path.'.json') ? " — فایل با نام «{$path}.json» هست (پسوند دوبار آمده؛ نام فایل را درست کنید)." : '';
+
+            throw new RuntimeException("فایل حساب سرویس فایربیس در این مسیر پیدا نشد یا خواندنی نیست: {$path}{$hint}");
         }
 
         $json = json_decode((string) file_get_contents($path), true);

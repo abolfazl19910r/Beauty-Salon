@@ -102,9 +102,10 @@ class PushProbe extends Command
         $rows[] = $this->reach('گوگل: fcm.googleapis.com', rtrim((string) config('push_probe.fcm.api_url'), '/').'/');
 
         if (config('push_probe.fcm.credentials')) {
-            $rows[] = $this->row('توکن دسترسی FCM — مستقیم', $fcm->fetchAccessToken(false));
+            // خطای تنظیم (مثلاً فایل کلید پیدا نشد) همان ردیف را ناموفق می‌کند و بقیه‌ی سنجش‌ها ادامه پیدا می‌کنند
+            $rows[] = $this->guardedRow('توکن دسترسی FCM — مستقیم', fn () => $fcm->fetchAccessToken(false));
             if (config('push_probe.fcm.proxy')) {
-                $rows[] = $this->row('توکن دسترسی FCM — از Worker', $fcm->fetchAccessToken(true));
+                $rows[] = $this->guardedRow('توکن دسترسی FCM — از Worker', fn () => $fcm->fetchAccessToken(true));
             }
         } else {
             $rows[] = ['توکن دسترسی FCM', 'رد شد', '—', '—', 'PUSH_PROBE_FCM_CREDENTIALS تنظیم نشده'];
@@ -139,6 +140,15 @@ class PushProbe extends Command
             $ms = (int) round((hrtime(true) - $started) / 1_000_000);
 
             return [$title, 'نرسید', '—', $ms, mb_strimwidth($e->getMessage(), 0, 160, '…')];
+        }
+    }
+
+    private function guardedRow(string $title, callable $probe): array
+    {
+        try {
+            return $this->row($title, $probe());
+        } catch (RuntimeException $e) {
+            return [$title, 'ناموفق', '—', '—', $e->getMessage()];
         }
     }
 
