@@ -4165,6 +4165,11 @@ sandbox: `push:probe ntfy` دو پیام فرستاد و از cache سرور ب�
 UTF-8 با BOM (PowerShell 5.1). وریفای: `makeShallowCopyAsync` خود eas-cli روی پوشه `google-services.json` را برد و
 `node_modules`/`android`/`.expo` را نبرد؛ اسکریپت زیر pwsh 7.4 با npx ساختگی هر دو متغیر را گذاشت و دستور درست را صدا زد.
 `FIREBASE_AND_PHONES.md`: Node 20.19+، VPN برای Expo، پرسش‌های بار اول، زمان صف.
+**✅ اولین ساخت واقعی (۲۰۲۶-۱۰-۰۳):** پروژه‌ی EAS `@abolfazl1991/mahru-push-probe` و keystore ابری ساخته شد؛ دو تلاش اول بارگذاری با
+**403 (Forbidden)** شکست — بارگذاری روی URL امضاشده‌ی Google Cloud Storage است که IP ایران را رد می‌کند و VPN آن زمان ترافیک Node را
+پوشش نمی‌داد (Node پروکسی سیستم ویندوز را نمی‌خواند). **ابوالفضل VPN را عوض کرد** و با همان `build-apk.ps1` بارگذاری و ساخت موفق شد
+(`builds/4b14d192-…`). «Failed to upload metadata» به‌تنهایی فقط هشدار است (`build/build.js` در eas-cli 24.10.0). پچ `0009`:
+همین توضیح در `FIREBASE_AND_PHONES.md`.
 **درس:** هر ابزاری که «ریشه‌ی پروژه» را خودش پیدا می‌کند (EAS، Metro، ...) داخل ریپوی دیگر ممکن است ریشه‌ی گیت را بگیرد؛ رفتار را
 از کد خود ابزار وریفای کن، نه از فرض.
 
