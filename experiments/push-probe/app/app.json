@@ -6,7 +6,9 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "platforms": ["android"],
+    "platforms": [
+      "android"
+    ],
     "android": {
       "package": "ir.mahru.pushprobe",
       "googleServicesFile": "./google-services.json",
@@ -16,11 +18,24 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "permissions": ["POST_NOTIFICATIONS"],
+      "permissions": [
+        "POST_NOTIFICATIONS"
+      ],
       "predictiveBackGestureEnabled": false
     },
     "plugins": [
-      ["expo-notifications", { "defaultChannel": "probe", "color": "#8A6A2F" }]
-    ]
+      [
+        "expo-notifications",
+        {
+          "defaultChannel": "probe",
+          "color": "#8A6A2F"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "319d5e2b-718b-4c7e-aecd-f87e1e205669"
+      }
+    }
   }
 }
