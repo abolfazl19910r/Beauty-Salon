@@ -24,16 +24,19 @@
 
 ## ۲. ساخت APK
 ### راه پیشنهادی: EAS Build (ساخت روی سرورهای Expo)
-پیش‌نیاز: Node.js 20+، حساب رایگان expo.dev (ورود و ساخت ممکن است VPN بخواهد).
-```bash
-cd experiments/push-probe/app
-npm install
-npx eas-cli login
-npx eas-cli build -p android --profile apk
+پیش‌نیاز: Node.js **20.19 یا جدیدتر** (`node -v`)، حساب رایگان expo.dev، و **VPN** برای ورود، بارگذاری و دانلود
+(سرویس‌های Expo و فضای ذخیره‌ای که فایل‌ها را رویش می‌برد از ایران معمولاً در دسترس نیستند).
+```powershell
+cd experiments\push-probe\app
+npx eas-cli@latest login
+powershell -ExecutionPolicy Bypass -File .\build-apk.ps1
 ```
-- سؤال «ساخت پروژه‌ی EAS» و «Generate a new Android Keystore» ← **Yes**.
-- `google-services.json` با وجود `.gitignore` به ساخت می‌رسد، چون `.easignore` جای آن را گرفته است.
-- آخر کار یک لینک/QR برای دانلود APK می‌دهد ← روی هر دو گوشی نصب (اجازه‌ی «نصب از منابع ناشناس» برای مرورگر/فایل‌منیجر).
+- اسکریپت فقط همین پوشه را بارگذاری می‌کند (نه کل پروژه‌ی لاراول) و `google-services.json` را هم می‌برد؛ بدون آن، EAS ریشه‌ی گیت را
+  می‌فرستد و `google-services.json` به‌خاطر `.gitignore` جا می‌ماند و ساخت با «google-services.json doesn't exist» می‌شکند.
+- بار اول می‌پرسد «Would you like to automatically create an EAS project…?» ← **Y** (شناسه‌ی پروژه به `app.json` اضافه می‌شود؛
+  آن تغییر را commit نکنید) و «Generate a new Android Keystore?» ← **Y**.
+- ساخت در صف رایگان Expo معمولاً ۱۰ تا ۳۰ دقیقه است؛ آخر کار لینک و QR دانلود APK را می‌دهد (همان لینک در expo.dev ← Builds هم هست).
+- APK را روی هر دو گوشی نصب کنید (اجازه‌ی «نصب از منابع ناشناس» برای مرورگر یا فایل‌منیجر).
 
 ### راه دوم: ساخت روی ویندوز خودتان
 پیش‌نیاز: Android Studio (SDK و JDK 17 داخلش). دانلود وابستگی‌ها از `dl.google.com`/Maven گوگل از ایران معمولاً VPN می‌خواهد.
