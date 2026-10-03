@@ -1,0 +1,5 @@
+# حداقل پیکربندی OpenSSL فقط برای ساختن کلید آزمایشی در تست‌ها.
+# PHP ویندوز (XAMPP) فایل openssl.cnf پیش‌فرض ندارد و بدون آن openssl_pkey_new شکست می‌خورد.
+[ req ]
+distinguished_name = req_distinguished_name
+[ req_distinguished_name ]

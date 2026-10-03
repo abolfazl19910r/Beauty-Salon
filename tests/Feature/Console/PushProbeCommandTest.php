@@ -21,8 +21,12 @@ class PushProbeCommandTest extends TestCase
         $this->dir = sys_get_temp_dir().'/push-probe-'.uniqid();
         mkdir($this->dir);
 
-        $key = openssl_pkey_new(['private_key_bits' => 2048, 'private_key_type' => OPENSSL_KEYTYPE_RSA]);
-        openssl_pkey_export($key, $privatePem);
+        // config صریح: PHP ویندوز (XAMPP) openssl.cnf پیش‌فرض ندارد و ساختن کلید بدون آن شکست می‌خورد.
+        // خود دستور به این فایل نیاز ندارد (فقط امضا می‌کند، کلید نمی‌سازد).
+        $openssl = ['config' => base_path('tests/Fixtures/openssl-test.cnf')];
+        $key = openssl_pkey_new(['private_key_bits' => 2048, 'private_key_type' => OPENSSL_KEYTYPE_RSA] + $openssl);
+        $this->assertNotFalse($key, 'openssl_pkey_new: '.openssl_error_string());
+        openssl_pkey_export($key, $privatePem, null, $openssl);
         $this->publicKey = openssl_pkey_get_details($key)['key'];
 
         file_put_contents($this->dir.'/sa.json', json_encode([
