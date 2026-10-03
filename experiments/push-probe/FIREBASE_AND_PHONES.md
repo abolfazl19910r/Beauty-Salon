@@ -33,6 +33,9 @@ powershell -ExecutionPolicy Bypass -File .\build-apk.ps1
 ```
 - اسکریپت فقط همین پوشه را بارگذاری می‌کند (نه کل پروژه‌ی لاراول) و `google-services.json` را هم می‌برد؛ بدون آن، EAS ریشه‌ی گیت را
   می‌فرستد و `google-services.json` به‌خاطر `.gitignore` جا می‌ماند و ساخت با «google-services.json doesn't exist» می‌شکند.
+- **«Failed to upload … 403 (Forbidden)»:** فایل‌ها روی فضای ذخیره‌ی گوگل بارگذاری می‌شوند و گوگل IP ایران را رد می‌کند؛ یعنی
+  ترافیک Node از VPN رد نمی‌شود (Node پروکسی سیستم ویندوز را نمی‌خواند). VPN را عوض کنید یا حالت TUN («کل سیستم») آن را روشن کنید.
+  «Failed to upload metadata» به‌تنهایی فقط هشدار است؛ ملاک، بارگذاری اصلی (project tarball) است.
 - بار اول می‌پرسد «Would you like to automatically create an EAS project…?» ← **Y** (شناسه‌ی پروژه به `app.json` اضافه می‌شود؛
   آن تغییر را commit نکنید) و «Generate a new Android Keystore?» ← **Y**.
 - ساخت در صف رایگان Expo معمولاً ۱۰ تا ۳۰ دقیقه است؛ آخر کار لینک و QR دانلود APK را می‌دهد (همان لینک در expo.dev ← Builds هم هست).
