@@ -43,7 +43,7 @@ export default function App() {
   const [ntfyInfo, setNtfyInfo] = useState('');
 
   const record = useCallback(async (notification: Notifications.Notification, source: ReceiptSource) => {
-    const parsed = parseProbe(notification);
+    const parsed = parseProbe(notification, source);
     if (!parsed) return;
     const stored = JSON.parse((await AsyncStorage.getItem(LOG_KEY)) ?? '[]') as ProbeEntry[];
     const next = mergeEntry(stored, parsed, source);

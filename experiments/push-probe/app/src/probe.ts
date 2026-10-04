@@ -15,7 +15,7 @@ export interface ProbeEntry {
 
 const MARKER = /\[P:([A-Za-z0-9]+-\d+):(\d{13})\]/;
 
-export function parseProbe(notification: Notification): Omit<ProbeEntry, 'source'> | null {
+export function parseProbe(notification: Notification, source: ReceiptSource): Omit<ProbeEntry, 'source'> | null {
   const content = notification.request.content;
   const data = (content.data ?? {}) as Record<string, unknown>;
   const body = content.body ?? '';
@@ -30,7 +30,10 @@ export function parseProbe(notification: Notification): Omit<ProbeEntry, 'source
   const via = typeof data.via === 'string' ? data.via : (parts[0] ?? '').replace('مسیر ', '').toLowerCase();
   const label = typeof data.label === 'string' ? data.label : (parts[2] ?? '');
 
-  return { id, via, label, sentAtMs: sentAt, receivedAtMs: notification.date || Date.now() };
+  // notification.date برای پیامی که اپ باز گرفته «زمان ارسال» گوگل است (sentTime)، نه زمان رسیدن؛ پس همان لحظه را ثبت می‌کنیم.
+  // برای اعلان سینی، date همان postTime اندروید است (روی MIUI ممکن است دیرتر از نمایش واقعی باشد: کران بالا).
+  const receivedAtMs = source === 'سینی' ? notification.date || Date.now() : Date.now();
+  return { id, via, label, sentAtMs: sentAt, receivedAtMs };
 }
 
 /** هر پیام یک ردیف؛ زودترین زمان رسیدن نگه داشته می‌شود («لمس» زمان رسیدن واقعی نیست، پس اولویت ندارد). */
