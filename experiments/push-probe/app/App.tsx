@@ -245,7 +245,8 @@ function Button({ title, onPress }: { title: string; onPress: () => void }) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#faf6ef' },
-  content: { padding: 16, paddingTop: 48, gap: 12 },
+  // اندروید جدید صفحه را تا لبه می‌کشد؛ فاصله‌ی پایین تا آخرین ردیف زیر نوار ناوبری نرود
+  content: { padding: 16, paddingTop: 48, paddingBottom: 96, gap: 12 },
   h1: { fontSize: 22, fontWeight: '700', color: '#5a3e1b', textAlign: 'right', writingDirection: 'rtl' },
   h2: { fontSize: 16, fontWeight: '700', color: '#5a3e1b', textAlign: 'right', writingDirection: 'rtl', marginBottom: 8 },
   text: { fontSize: 14, color: '#2b2118', textAlign: 'right', writingDirection: 'rtl' },
