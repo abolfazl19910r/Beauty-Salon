@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Console;
 
+use App\Experiments\PushProbe\FcmProbeSender;
+use App\Experiments\PushProbe\ProbeMessage;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -157,6 +159,77 @@ class PushProbeCommandTest extends TestCase
         $this->assertCount(4, $rows);
         $this->assertSame('device-t…mnop', $rows[1][4]);
         $this->assertSame('1', $rows[1][5]);
+    }
+
+    public function test_long_runs_refresh_the_access_token_before_it_expires(): void
+    {
+        // S7 (۲۰۲۶-۱۰-۰۴): با --interval=3600 توکن یک‌ساعته‌ی پیام اول برای پیام دوم منقضی بود و همه 401 گرفتند
+        $issued = 0;
+        Http::fake([
+            'oauth2.googleapis.com/token' => function () use (&$issued) {
+                $issued++;
+
+                return Http::response(['access_token' => "ya29.t{$issued}", 'expires_in' => 3599]);
+            },
+            'fcm.googleapis.com/*' => Http::response(['name' => 'projects/mahru-push-probe/messages/0:1']),
+        ]);
+
+        $sender = app(FcmProbeSender::class);
+        $first = ProbeMessage::make('abcd', 1, 'fcm', 'RN8-شب');
+        $this->assertTrue($sender->send('device-token', $first, false)->ok);
+
+        $this->travel(10)->minutes();
+        $this->assertTrue($sender->send('device-token', $first, false)->ok);
+        $this->assertSame(1, $issued, 'توکن تازه هنوز تمدید نمی‌شود');
+
+        $this->travel(56)->minutes();
+        $this->assertTrue($sender->send('device-token', $first, false)->ok);
+        $this->assertSame(2, $issued, 'نزدیک انقضا توکن تازه گرفته می‌شود');
+
+        $tokens = Http::recorded(fn (Request $r) => str_ends_with($r->url(), '/messages:send'))
+            ->map(fn ($pair) => $pair[0]->header('Authorization')[0])->values()->all();
+        $this->assertSame(['Bearer ya29.t1', 'Bearer ya29.t1', 'Bearer ya29.t2'], $tokens);
+    }
+
+    public function test_a_401_from_fcm_is_retried_once_with_a_new_access_token(): void
+    {
+        $issued = 0;
+        $sends = 0;
+        Http::fake([
+            'oauth2.googleapis.com/token' => function () use (&$issued) {
+                $issued++;
+
+                return Http::response(['access_token' => "ya29.t{$issued}", 'expires_in' => 3599]);
+            },
+            'fcm.googleapis.com/*' => function () use (&$sends) {
+                $sends++;
+
+                return $sends === 1
+                    ? Http::response(['error' => ['code' => 401, 'status' => 'UNAUTHENTICATED', 'message' => 'invalid credentials']], 401)
+                    : Http::response(['name' => 'projects/mahru-push-probe/messages/0:9']);
+            },
+        ]);
+
+        $this->artisan('push:probe', ['via' => 'fcm', 'target' => 'device-token'])
+            ->expectsOutputToContain('0:9')
+            ->assertSuccessful();
+
+        $this->assertSame(2, $issued);
+        $this->assertSame(2, $sends);
+    }
+
+    public function test_a_401_that_persists_after_a_new_token_is_reported_without_looping(): void
+    {
+        Http::fake([
+            'oauth2.googleapis.com/token' => Http::response(['access_token' => 'ya29.test', 'expires_in' => 3599]),
+            'fcm.googleapis.com/*' => Http::response(['error' => ['code' => 401, 'status' => 'UNAUTHENTICATED', 'message' => 'invalid credentials']], 401),
+        ]);
+
+        $this->artisan('push:probe', ['via' => 'fcm', 'target' => 'device-token'])
+            ->expectsOutputToContain('UNAUTHENTICATED')
+            ->assertFailed();
+
+        $this->assertCount(2, Http::recorded(fn (Request $r) => str_ends_with($r->url(), '/messages:send')));
     }
 
     public function test_an_unregistered_token_is_reported_with_the_fcm_error_code(): void

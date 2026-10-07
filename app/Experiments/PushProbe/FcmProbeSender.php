@@ -17,7 +17,15 @@ class FcmProbeSender
 {
     private const SCOPE = 'https://www.googleapis.com/auth/firebase.messaging';
 
-    /** @var array<string, string> توکن دسترسی هر راه، فقط در همین اجرای دستور */
+    /** توکن دسترسی این‌قدر (ثانیه) پیش از انقضا دوباره گرفته می‌شود */
+    private const REFRESH_MARGIN = 300;
+
+    /**
+     * توکن دسترسی هر راه با زمان انقضا (یونیکس)، فقط در همین اجرای دستور.
+     * توکن گوگل یک ساعت اعتبار دارد؛ ارسال‌های --interval=3600 (S7) بدون تمدید از پیام دوم 401 می‌گرفتند.
+     *
+     * @var array<string, array{token: string, expires_at: int}>
+     */
     private array $accessTokens = [];
 
     private ?array $credentials = null;
@@ -46,7 +54,11 @@ class FcmProbeSender
 
         $token = $response->json('access_token');
         if ($response->successful() && is_string($token) && $token !== '') {
-            $this->accessTokens[$this->key($viaProxy)] = $token;
+            $lifetime = (int) ($response->json('expires_in') ?: 3600);
+            $this->accessTokens[$this->key($viaProxy)] = [
+                'token' => $token,
+                'expires_at' => now()->getTimestamp() + $lifetime,
+            ];
 
             return new ProbeResult(true, $response->status(), $this->elapsed($started), 'توکن دسترسی گرفته شد');
         }
@@ -56,13 +68,35 @@ class FcmProbeSender
 
     public function send(string $deviceToken, ProbeMessage $message, bool $viaProxy): ProbeResult
     {
-        if (! isset($this->accessTokens[$this->key($viaProxy)])) {
+        if (! $this->hasFreshToken($viaProxy)) {
             $auth = $this->fetchAccessToken($viaProxy);
             if (! $auth->ok) {
                 return $auth;
             }
         }
 
+        $result = $this->post($deviceToken, $message, $viaProxy);
+
+        // 401 = توکن پیش از موعد باطل شد (مثلاً ساعت سیستم جابه‌جا شد)؛ یک بار با توکن تازه تکرار می‌شود
+        if ($result->status === 401) {
+            unset($this->accessTokens[$this->key($viaProxy)]);
+            $auth = $this->fetchAccessToken($viaProxy);
+
+            return $auth->ok ? $this->post($deviceToken, $message, $viaProxy) : $auth;
+        }
+
+        return $result;
+    }
+
+    private function hasFreshToken(bool $viaProxy): bool
+    {
+        $cached = $this->accessTokens[$this->key($viaProxy)] ?? null;
+
+        return $cached !== null && now()->getTimestamp() < $cached['expires_at'] - self::REFRESH_MARGIN;
+    }
+
+    private function post(string $deviceToken, ProbeMessage $message, bool $viaProxy): ProbeResult
+    {
         $started = hrtime(true);
         $payload = ['message' => [
             'token' => $deviceToken,
@@ -81,7 +115,7 @@ class FcmProbeSender
         ]];
 
         try {
-            $response = Http::withToken($this->accessTokens[$this->key($viaProxy)])
+            $response = Http::withToken($this->accessTokens[$this->key($viaProxy)]['token'])
                 ->timeout((int) config('push_probe.timeout'))
                 ->post($this->sendUrl($viaProxy), $payload);
         } catch (ConnectionException $e) {
