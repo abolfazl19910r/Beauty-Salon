@@ -8,5 +8,10 @@ services:
       - "8090:80"
     volumes:
       - ./server.yml:/etc/ntfy/server.yml:ro
-      - ./cache:/var/cache/ntfy
+      # کش SQLite در volume خود Docker، نه پوشه‌ی پروژه: روی ویندوز پوشه‌ی پروژه با git (stash/checkout) پاک می‌شد و ntfy
+      # از آن به بعد روی هر انتشار و هر اتصال گوشی خطای 500 «disk I/O error: no such file or directory» می‌داد (۲۰۲۶-۱۰-۰۸)
+      - ntfy-cache:/var/cache/ntfy
     restart: unless-stopped
+
+volumes:
+  ntfy-cache:

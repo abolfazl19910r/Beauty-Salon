@@ -22,6 +22,8 @@ cd experiments/push-probe/ntfy
 docker compose up -d
 curl http://127.0.0.1:8090/v1/health        # {"healthy":true}
 ```
+کش پیام‌ها (`cache.db`) در volume ‏`ntfy-cache` خود Docker است. پاک کردن کامل آن (مثلاً برای شروع تمیز یک آزمایش):
+`docker compose down -v` و دوباره `docker compose up -d`. اگر `push:probe ntfy` خطای 500 داد: `docker compose logs --tail=40`.
 
 **ب) WSL (Ubuntu):** فایل `ntfy_<نسخه>_linux_amd64.deb` را از صفحه‌ی Releases مخزن `binwiederhier/ntfy` در GitHub بگیرید و:
 ```bash
