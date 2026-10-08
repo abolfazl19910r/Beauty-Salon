@@ -14,6 +14,9 @@ DirectAdmin نمی‌تواند برنامه‌ی همیشه‌روشن اجرا
 سرور ntfy روی خود ویندوز اجرا نمی‌شود؛ یکی از این دو:
 
 **الف) Docker Desktop** (اگر دارید):
+موتور Docker Desktop به WSL2 نیاز دارد. اگر `docker version` بخش Server نداشت یا خطای `dockerDesktopLinuxEngine` آمد و `wsl --status`
+گفت WSL نصب نیست: CMD با Run as administrator ← `wsl --install --no-distribution` ← ریستارت ← باز کردن Docker Desktop تا «Engine running».
+(اجرای ۲۰۲۶-۱۰-۰۸: image از Docker Hub بدون mirror و بدون VPN در حدود ۲٫۵ دقیقه گرفته شد.)
 ```bash
 cd experiments/push-probe/ntfy
 docker compose up -d
