@@ -2,7 +2,7 @@
   "expo": {
     "name": "آزمایش پوش ماهرو",
     "slug": "mahru-push-probe",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -11,6 +11,7 @@
     ],
     "android": {
       "package": "ir.mahru.pushprobe",
+      "versionCode": 2,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#FAF6EF",

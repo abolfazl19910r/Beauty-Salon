@@ -1,6 +1,7 @@
 // اپ آزمایشی پوش ماهرو — بسته‌ی ۰ اپلیکیشن (۲۰۲۶-۱۰-۰۲). فقط برای آزمایش؛ هیچ ربطی به اپ‌های اصلی ندارد.
 // کار اپ: گرفتن توکن FCM، ساختن دستور ارسال برای سیستم، و ثبت این‌که هر پیام آزمایشی کی و در چه حالتی رسید.
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { StatusBar } from 'expo-status-bar';
@@ -147,7 +148,7 @@ export default function App() {
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.h1}>آزمایش پوش ماهرو</Text>
         <Text style={styles.muted}>
-          {Device.manufacturer} {Device.modelName} — اندروید {Device.osVersion}
+          {Device.manufacturer} {Device.modelName} — اندروید {Device.osVersion} — نسخه‌ی اپ {Constants.expoConfig?.version}
         </Text>
 
         <Section title="۱. اجازه‌ی اعلان">
