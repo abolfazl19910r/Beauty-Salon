@@ -70,11 +70,30 @@ class SpecialistBookingManagementController extends Controller
             return back()->with('info', 'این نوبت قبلاً تایید شده است.');
         }
 
+        // ⭐ Fix (۲۰۲۶-۱۰-۱۰، بسته‌ی ۲ اپلیکیشن): پذیرش فقط از «در انتظار تأیید». قبلاً هر وضعیتی confirmed می‌شد —
+        // نوبت لغوشده (پول برگشت‌خورده) زنده می‌شد، pending_payment (مشتری هنوز در درگاه) بدون پرداخت confirmed و از دید
+        // لغو خودکار پرداخت‌نشده‌ها خارج می‌شد، و completed به confirmed برمی‌گشت. دکمه فقط برای pending نمایش داده می‌شد،
+        // ولی سرور چک نمی‌کرد. وضعیت داخل تراکنش با قفل ردیف دوباره خوانده می‌شود (لغو هم‌زمان مشتری).
+        if ($booking->status !== 'pending') {
+            return back()->with('error', 'فقط نوبت‌های «در انتظار تأیید» قابل پذیرش هستند.');
+        }
+
         try {
-            DB::transaction(function () use ($booking) {
-                $booking->update(['status' => 'confirmed']);
-                $booking->user->notify(new \App\Notifications\Booking\BookingStatusUpdated($booking, 'confirmed'));
+            $confirmed = DB::transaction(function () use ($booking) {
+                $locked = Booking::whereKey($booking->id)->lockForUpdate()->first();
+                if (! $locked || $locked->status !== 'pending') {
+                    return false;
+                }
+
+                $locked->update(['status' => 'confirmed']);
+                $locked->user->notify(new \App\Notifications\Booking\BookingStatusUpdated($locked, 'confirmed'));
+
+                return true;
             });
+
+            if (! $confirmed) {
+                return back()->with('error', 'وضعیت این نوبت تغییر کرده است؛ صفحه را دوباره باز کنید.');
+            }
 
             return back()->with('success', '✓ نوبت تایید شد و پیامک اطلاع‌رسانی ارسال گردید.');
 
