@@ -67,6 +67,24 @@ class PaymentControllerTest extends TestCase
         $response->assertRedirect(route('payment.result'));
     }
 
+    /**
+     * رگرسیون (۲۰۲۶-۱۰-۱۱): نتیجه با کلید «success» به session می‌رفت و layout آن را به‌شکل پیام «1»
+     * بالای صفحه نشان می‌داد؛ صفحه هم هنوز قالب روشن قدیمی را داشت.
+     */
+    public function test_result_page_renders_in_the_site_theme_without_a_stray_flash(): void
+    {
+        $user = User::factory()->create();
+        $booking = $this->makeBooking($user, ['payment_status' => 'paid', 'paid_at' => now()]);
+
+        $this->actingAs($user)->post(route('payment.process', $booking));
+        $html = $this->actingAs($user)->get(route('payment.result'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('پرداخت موفق', $html);
+        $this->assertStringContainsString('result-card', $html);
+        $this->assertStringNotContainsString('from-pink-500 to-purple-600', $html); // دکمه‌ی قالب قدیمی
+        $this->assertDoesNotMatchRegularExpression('#<div>\s*1\s*</div>#', $html);
+    }
+
     public function test_process_is_forbidden_for_a_non_owner(): void
     {
         $user = User::factory()->create();

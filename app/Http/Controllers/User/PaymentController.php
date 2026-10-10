@@ -26,7 +26,8 @@ class PaymentController extends Controller
         try {
             $this->authorize('pay', $booking);
             if ($booking->payment_status === 'paid') {
-                return redirect()->route('payment.result')->with(['success' => true, 'booking' => $booking]);
+                // کلید جدا، نه «success»: layout هر session('success') را به‌عنوان پیام نشان می‌داد («1» بالای صفحه)
+                return redirect()->route('payment.result')->with(['payment_result_success' => true, 'payment_result_booking' => $booking]);
             }
             if ($booking->prepayment_amount <= 0) {
                 DB::transaction(function () use ($booking) {
@@ -300,9 +301,9 @@ class PaymentController extends Controller
 
     public function result(): View|RedirectResponse
     {
-        $success = session('success', false);
-        $booking = session('booking');
-        $error_message = session('error_message');
+        $success = (bool) session('payment_result_success', false);
+        $booking = session('payment_result_booking');
+        $error_message = session('payment_result_error');
 
         if (! $booking) {
             return redirect()->route('home');
