@@ -4382,6 +4382,59 @@ GET  /api/v1/tokens  DELETE /api/v1/tokens/{id}  POST /api/v1/tokens/revoke-othe
 **روی سرور/لوکال:** migration ندارد (جدول `personal_access_tokens` از قبل هست). `config:cache` و برای scheduler کاری لازم نیست (همان
 `schedule:run`). متغیرهای اختیاری `.env`: `API_TOKEN_IDLE_DAYS`، `API_LOGIN_*`، `API_RATE_PER_MINUTE` (پیش‌فرض‌ها در `config/api.php`).
 
+### ۲۰۲۶-۱۰-۱۰ (ادامه) — بسته‌ی ۲الف اپلیکیشن: API همکار (`/api/v1/staff/*`) + دو باگ پنل وب
+**پایه:** `develop@784e852` + پچ‌های `0001`–`0005` بسته‌ی ۱ (اول آن‌ها، بعد این‌ها). پچ‌ها `0006`–`0013`.
+
+**⭐ تصمیم‌های ابوالفضل (۲۰۲۶-۱۰-۱۰):**
+1. «امروز»: **همه‌ی نوبت‌های فعال** (pending/confirmed/completed، پرداخت‌شده یا نه)؛ لغوشده و «در درگاه» (pending_payment) نه —
+   **داشبورد وب متخصص هم همین شد** («برنامه‌ی امروز» و «۷ روز آینده»؛ قبلاً فقط paid، حتی لغوشده). درآمدها همچنان فقط پرداخت‌شده‌ی لغونشده.
+2. تقویم **کامل**: نمایش + درخواست/حذف مرخصی (تأیید مدیر مثل وب) + ویرایش برنامه‌ی هفتگی.
+3. کیف پول **کامل + تغییر شبا**. محافظ‌های افزوده (پیشنهاد طراحی، بدون اعتراض): رمز فعلی برای تغییر شبا از اپ + اعلان داخلی به مالک سالن.
+4. کد اپ Expo در **ریپوی جدا** (مثلاً `abolfazl19910r/Mahru-App` — ابوالفضل می‌سازد؛ پیش‌نیاز بسته‌ی ۲ب).
+
+**🐛 دو باگ واقعی پنل وب (هر دو با probe HTTP تأیید، تست رگرسیون، کامیت جدا):**
+- `0006` **«پذیرش نوبت» متخصص هر وضعیتی را confirmed می‌کرد** (`SpecialistBookingManagementController::complete`): cancelled (پول
+  برگشت‌خورده) زنده می‌شد، pending_payment بدون پرداخت confirmed و از دید لغو خودکار پرداخت‌نشده‌ها خارج، completed برمی‌گشت.
+  دکمه فقط برای pending بود ولی سرور چک نمی‌کرد. رفع: فقط pending ← confirmed با قفل ردیف.
+- `0007` **بازیابی رمز کادر (`/forgot-password`) حساب اشتباه را عوض می‌کرد:** `findByPhone` هر نوع حسابی؛ متخصصی که با همان شماره
+  مشتری یک سالن هم بود، رمز **مشتری** عوض می‌شد و رمز کادر هرگز. رفع: `findStaffByPhone`. شش تست `PasswordResetTest` با حساب مشتری
+  (پیش‌فرض factory) روی همین مسیر کادر پاس می‌شدند — به حساب کادر اصلاح شدند.
+
+**مسیرها (همه `auth:sanctum` + `api.audience:staff`؛ متخصص و سالن فقط از توکن):**
+```
+GET  staff/today                          نوبت‌های امروز + خلاصه (تعداد، در انتظار، درآمد)
+GET  staff/bookings?from&to&status&per_page  (Y-m-d میلادی، پیش‌فرض امروز+۳۰، حداکثر ۹۲ روز؛ بدون فیلتر pending_payment نمی‌آید)
+GET  staff/bookings/{id}   POST .../confirm | cancel {reason?} | complete
+GET  staff/calendar?from&to (حداکثر ۴۲ روز)   GET|PUT staff/schedule   GET|POST staff/leaves   DELETE staff/leaves/{id}
+GET  staff/wallet | wallet/fee | wallet/transactions | wallet/withdrawals   POST wallet/withdrawals   DELETE wallet/withdrawals/{id}
+PUT  staff/wallet/iban {iban, account_holder_name, bank_name, current_password}   (throttle:api-v1-sensitive ۵/دقیقه)
+GET  staff/notifications?unread=1   POST staff/notifications/{id}/read | read-all
+POST staff/password/forgot {phone} | resend {challenge} | reset {challenge, code, password, password_confirmation}   (بدون توکن)
+```
+- **نوبت‌ها:** `SpecialistBookingActions` (`0008`، مشترک وب و API، با قفل ردیف): pending ← confirmed، هر چیز جز completed ← cancelled
+  (برگشت پول/جریمه همان `BookingObserver`)، confirmed ← completed. گذار غیرمجاز `409 invalid_booking_state`؛ تکرار بی‌اثر با
+  `meta.changed=false` (تکرار امن اپ). نوبت متخصص دیگر (حتی هم‌سالن) **۴۰۴**. `StaffBookingPresenter`: وضعیت + برچسب فارسی، زمان ISO
+  و شمسی، خدمت، مشتری (نام/موبایل)، پیش‌پرداخت/تخفیف/باقی‌مانده، `actions` هم‌خوان با قواعد گذار.
+- **تقویم:** هر روز: ساعت کاری هفتگی، تعطیلی متخصص، مرخصی pending/approved، نوبت‌ها. روز هفته مثل کربن (۰ = یکشنبه).
+  برنامه‌ی هفتگی با `SpecialistScheduleService` (مشترک وب)؛ `StaffScheduleRequest` همان قواعد فرم وب + بولی JSON + `H:i` + هر روز یک بار؛
+  نبودن `auto_confirm_bookings` در API یعنی «بدون تغییر» (در فرم وب = خاموش، مثل قبل). مرخصی با `LeaveService` (pending، تداخل →
+  `422 leave_conflict`، شروع گذشته نه)؛ حذف فقط pending (`409 leave_not_pending`).
+- **کیف پول:** همان `SpecialistWalletService` و Form Requestهای وب (قفل، idempotency برداشت، ValidIban mod 97). برداشت تکراری `200` با
+  `meta.replayed`؛ رد `422 withdrawal_rejected`؛ لغو ناممکن `409`. شبا هیچ‌وقت کامل برنمی‌گردد (`IR82…9002`). تغییر شبا: رمز فعلی +
+  `SpecialistIbanChangedNotification` به مالک (هشدار امنیتی، مستقل از تنظیمات اعلان) + مثل وب تأییدنشده تا تأیید مالک.
+- **اعلان‌ها:** حساب کادر + رکورد متخصص، فقط سالن جاری (`limitToCurrentSalon`)، صفحه‌بندی در دیتابیس؛ دسته از `CATEGORY_MAP` وب.
+- **بازیابی رمز:** `ApiPasswordResetService` روی سازوکار challenge ورود (۵ کد غلط، فاصله/سقف ارسال دوباره) با کد بازیابی وب
+  (`verification_code`، `SendPasswordResetCodeJob`، صف otp، هزینه‌ی پلتفرم)؛ فقط متخصص (`wrong_app` پیش از پیامک)؛ شماره‌ی ناموجود
+  `account_not_found` (همان افشای فرم وب)؛ رمز تازه همه‌ی توکن‌ها را باطل می‌کند. challenge ورود و بازیابی پیشوند cache جدا دارند.
+
+**تست‌های تازه:** `SpecialistBookingConfirmTransitionTest` (۴)، رگرسیون بازیابی (۱)، `SpecialistBookingActionsWebTest` (۵؛ اول روی
+کنترلر قدیمی سبز)، `SpecialistDashboardAgendaTest` (۱)، `StaffBookingApiTest` (۶)، `StaffCalendarApiTest` (۵)، `StaffWalletApiTest` (۶)،
+`StaffNotificationsAndResetTest` (۵) = **۳۳**. هر شرط امنیتی/قاعده با probe جهش‌یافته چک شد؛ دو probe اول زنده ماندند (نوع notifiable،
+جدایی پیشوند challenge) و تست گرفتند.
+**وریفای (کلون تازه + `git am --keep-cr` هر ۱۳ پچ؛ درخت برابر برنچ کار):** SQLite **۱۷۴۱ (۹ skip)**، MariaDB 10.11 **۱۷۴۱ (۱ skip)**،
+MySQL 8.0.46 **۱۷۴۱ (۱ skip)** بدون شکست (+۳۳ تست)؛ Pint PASS.
+**روی سرور/لوکال:** migration ندارد. `config:cache` و `queue:restart` (کد تازه‌ی صف otp).
+
 ### قدم‌های باز
 هیچ‌کدام از این دو فیکس ربطی به فاز SaaS در حال انجام (بخش‌های بالای همین فایل) ندارد و روی برنچ جدایی از آن‌ها اعمال شده؛ هنگام merge نهایی توجه شود که این دو کامیت مستقل، قابل rebase/merge روی هر برنچ پایه‌ای هستند چون فقط دو فایل نامرتبط را لمس می‌کنند (`RedirectIfAuthenticated.php`, `AdminUserService.php`) + یک فایل تست.
 
@@ -7955,8 +8008,9 @@ Bearer؛ فقط از IPهای اعلام‌شده. ⚠️ `result` برای `IBA
   ntfy لوکال (`experiments/push-probe/ntfy/README.md`) و شبیه‌سازی قطعی هم بخشی از همین اجراست.
   ✅ جدول «الف» (FCM مستقیم، بدون Worker)، S1 تا S4 روی RN8 (اپ باز ۳٫۸ ثانیه، بقیه حدود ۲۰ ثانیه؛ بخش ۲۰۲۶-۱۰-۰۴). S5 نرسید تا باز شدن اپ؛ عددهای سینی کران بالا (کرنومتر ۴٫۴ ثانیه). S6 بعد از ریستارت رسید (≈ ۶٫۸ ثانیه). S8 (Clean) هم رسید (≈ ۹ ثانیه)، S9 لازم نشد. S11 بعد از وصل شدن اینترنت رسید. S7 اول باطل شد (توکن دسترسی ۱ ساعته تمدید نمی‌شد؛ رفع در `0025`)، اجرای دوباره **۸/۸ رسید**. ntfy لوکال راه افتاد (۲۰۲۶-۱۰-۰۸)؛ N1–N2 روی RN8 رسیدند (Clean سرویس ntfy را نکشت)؛ N4 نرسید (بعد از ریستارت ntfy بدون Autostart بالا نمی‌آید؛ با Autostart رسید — N4ب). N5 ۸/۸ رسید (Wi‑Fi مودم، ۷ ساعت، مصرف ntfy ۰٪). شبیه‌سازی قطعی RN8 انجام شد: در قطعی ntfy رسید و FCM نه (Q3–Q6). ✅ APK ‏0.1.1 ساخته و روی هر دو گوشی نصب شد؛ جدول ب A17 پر شد (۲۰۲۶-۱۰-۰۹). A17: S1/S4/S6 رسیدند (~۴–۶ ثانیه)، **S8 با Deep sleeping نرسید** (حتی با باز کردن اپ؛ فقط با خروج از فهرست). S8ب (Sleeping) رسید؛ ntfy روی A17: N2 و N4 رسیدند (ریستارت بدون تنظیم)، Q2 در قطعی رسید، Q6 FCM برگشت. دور A17 تمام شد. **✅ تصمیم ۲ = گزینه‌ی «ج»** (۶۰ ثانیه برای پیام فوری، ۱۰ دقیقه/بدون پیامک برای عادی، پیامک مستقیم برای دستگاه بی‌رسید و در قطعی؛ بخش ۲۰۲۶-۱۰-۰۴). **بسته‌ی ۰ تمام شد**؛ مانده: حذف کلید حساب سرویس (ابوالفضل). Worker لازم نیست (جدول الف).
   نتیجه مهلت «بدون رسید → پیامک»، نیاز به Worker و شکل ntfy در اپ واقعی را تعیین می‌کند؛ بعد بسته‌های ۱ تا ۸ به ترتیب.
-  ✅ **بسته‌ی ۱ (پایه‌ی API) تمام شد** (بخش ۲۰۲۶-۱۰-۱۰). **قدم بعد: بسته‌ی ۲** — API همکار (امروز، تأیید/رد، تقویم، کیف پول) با
-  `api.audience:staff` + بازیابی رمز کادر در API + اپ «ماهرو همکار». بعد بسته‌ی ۳: v1 مشتری + ثبت‌نام/بازیابی رمز مشتری + حذف `/api` قدیمی.
+  ✅ **بسته‌ی ۱ (پایه‌ی API) تمام شد** (بخش ۲۰۲۶-۱۰-۱۰). ✅ **بسته‌ی ۲الف (API همکار) تمام شد** (بخش ۲۰۲۶-۱۰-۱۰ ادامه).
+  **قدم بعد: بسته‌ی ۲ب — اپ Expo «ماهرو همکار»** در ریپوی جدا (ابوالفضل ریپو را می‌سازد، مثلاً `abolfazl19910r/Mahru-App`؛ همان
+  ریپو بعداً اپ «ماهرو» مشتری را هم دارد — یک کد، دو اپ). بعد بسته‌ی ۳: v1 مشتری + ثبت‌نام/بازیابی رمز مشتری + حذف `/api` قدیمی.
 - ⭐ **یادداشت‌های بسته‌ی ۴ (پوش) که نباید گم شوند:** (۱) سرور مجازی داخل ایران برای ntfy و تصمیم شکل اتصال در اپ (داخل خود اپ یا
   UnifiedPush)؛ (۲) امتحان رسید از اپ **بسته** با پیام data-only با اولویت بالا روی RN8 و A17 (اپ اعلان را خودش بسازد و رسید بفرستد)؛
   (۳) فرستنده‌ی FCM واقعی با کش توکن دسترسی گوگل (مثل پچ `0025` کیت) و backoff؛ (۴) `device_tokens` به `personal_access_token_id`
