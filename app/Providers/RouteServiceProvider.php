@@ -84,6 +84,11 @@ class RouteServiceProvider extends ServiceProvider
                 ->by($request->user()?->id ? 'user:'.$request->user()->id : 'ip:'.$request->ip());
         });
 
+        // کارهای حساس واردشده با رمز فعلی (تغییر شبا از اپ همکار، بسته‌ی ۲): ۵ در دقیقه برای هر کاربر
+        RateLimiter::for('api-v1-sensitive', function (Request $request) {
+            return Limit::perMinute(5)->by('user:'.($request->user()?->id ?? $request->ip()));
+        });
+
         RateLimiter::for('auth', function (Request $request) {
             return Limit::perMinute(
                 (int) config('auth.max_login_attempts', 5),

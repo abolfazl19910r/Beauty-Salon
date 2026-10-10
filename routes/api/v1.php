@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Auth\StaffLoginController;
 use App\Http\Controllers\Api\V1\Auth\TokenController;
 use App\Http\Controllers\Api\V1\Staff\StaffBookingController;
 use App\Http\Controllers\Api\V1\Staff\StaffCalendarController;
+use App\Http\Controllers\Api\V1\Staff\StaffWalletController;
 use App\Http\Controllers\Api\V1\StatusController;
 use Illuminate\Support\Facades\Route;
 
@@ -63,5 +64,16 @@ Route::prefix('staff')->name('staff.')->middleware(['auth:sanctum', 'api.audienc
         Route::get('leaves', 'leaves')->name('leaves.index');
         Route::post('leaves', 'storeLeave')->name('leaves.store');
         Route::delete('leaves/{leaveId}', 'destroyLeave')->whereNumber('leaveId')->name('leaves.destroy');
+    });
+
+    Route::prefix('wallet')->name('wallet.')->controller(StaffWalletController::class)->group(function () {
+        Route::get('/', 'show')->name('show');
+        Route::get('fee', 'fee')->name('fee');
+        Route::get('transactions', 'transactions')->name('transactions');
+        Route::get('withdrawals', 'withdrawals')->name('withdrawals.index');
+        Route::post('withdrawals', 'storeWithdrawal')->name('withdrawals.store');
+        Route::delete('withdrawals/{withdrawalId}', 'cancelWithdrawal')->whereNumber('withdrawalId')->name('withdrawals.cancel');
+        // رمز فعلی لازم است؛ سقف جدا تا حدس رمز از این مسیر ممکن نباشد
+        Route::put('iban', 'updateIban')->middleware('throttle:api-v1-sensitive')->name('iban.update');
     });
 });
