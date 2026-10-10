@@ -21,7 +21,8 @@
             $data       = (array)$notification->data;
             $message    = $data['message'] ?? 'پیام اعلان موجود نیست';
             $type       = $data['type']    ?? 'عمومی';
-            $link       = $data['link']    ?? null;
+            // اعلان‌های قدیمی «کاربر جدید» به صفحه‌ی ناموجود مشتری لینک داشتند (404)
+            $link       = $type === 'new_user_registered' ? null : ($data['link'] ?? null);
             $details    = $data['details'] ?? null;
             $isRead     = !is_null($notification->read_at);
             $createdTime = function_exists('verta') ? verta($notification->created_at)->format('Y/m/d - H:i:s') : $notification->created_at->format('Y/m/d - H:i:s');

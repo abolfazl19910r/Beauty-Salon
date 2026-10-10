@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Providers\RouteServiceProvider;
 use App\Repositories\Contracts\RoleRepositoryInterface;
+use App\Support\CurrentSalon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -251,6 +253,35 @@ class User extends Authenticatable
     public function getAllPermissions()
     {
         return $this->roles->flatMap->permissions->unique('id');
+    }
+
+    /**
+     * صفحه‌ی خانه‌ی کاربر بعد از ورود (و وقتی کاربرِ واردشده صفحه‌ی مهمان را باز می‌کند).
+     * یک‌جا تعریف شده تا ورود و RedirectIfAuthenticated از هم جدا نشوند.
+     *
+     * نقش «specialist» در عمل به متخصص‌ها داده نمی‌شود (متخصص با شماره به users وصل می‌شود)،
+     * پس متخصص بودن از رکورد specialist خوانده می‌شود؛ مدیر سالن اولویت دارد.
+     */
+    public function homePath(): string
+    {
+        if ($this->hasRole('super-admin')) {
+            return '/superadmin/dashboard';
+        }
+
+        if ($this->hasRole('specialists') || $this->hasRole('specialist')) {
+            return RouteServiceProvider::SPECIALIST_HOME;
+        }
+
+        if ($this->is_admin) {
+            return RouteServiceProvider::HOME;
+        }
+
+        if ($this->user_type === 'staff'
+            && app(CurrentSalon::class)->allSalons(fn () => $this->specialist()->exists())) {
+            return RouteServiceProvider::SPECIALIST_HOME;
+        }
+
+        return RouteServiceProvider::USER_HOME;
     }
 
     public function specialist(): HasOne

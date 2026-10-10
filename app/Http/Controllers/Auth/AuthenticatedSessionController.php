@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Providers\RouteServiceProvider;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\PhoneVerificationService;
 use App\Services\SecurityLogService;
@@ -165,20 +164,6 @@ class AuthenticatedSessionController extends Controller
 
     protected function redirectPath(): string
     {
-        $user = Auth::user();
-
-        if ($user->hasRole('super-admin')) {
-            return '/superadmin/dashboard';
-        }
-
-        if ($user->hasRole('specialists') || $user->hasRole('specialist')) {
-            return '/my-dashboard';
-        }
-
-        if ($user->is_admin) {
-            return RouteServiceProvider::HOME;
-        }
-
-        return RouteServiceProvider::USER_HOME;
+        return Auth::user()->homePath();
     }
 }

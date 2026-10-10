@@ -8,7 +8,6 @@ use App\Traits\RespectsNotificationSettings;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Log;
 
 class NewUserRegisteredNotification extends Notification implements ShouldQueue
 {
@@ -27,22 +26,20 @@ class NewUserRegisteredNotification extends Notification implements ShouldQueue
         return $this->gatedChannels(NotificationEvents::USER_REGISTERED_ADMIN, ['database'], $notifiable);
     }
 
+    /**
+     * لینک ندارد: کاربرِ تازه ثبت‌نام‌شده همیشه مشتری است و پنل ادمین صفحه‌ی جزئیات مشتری ندارد
+     * (admin.users.show فقط مدیران سالن را نشان می‌دهد و برای مشتری 404 می‌داد). زنگوله در نبود
+     * لینک به صفحه‌ی خود اعلان می‌رود.
+     */
     public function toArray(object $notifiable): array
     {
-        $link = '#';
-
-        try {
-            $link = route('admin.users.show', $this->newUser->id, absolute: true);
-        } catch (\InvalidArgumentException $e) {
-            Log::error("Route 'admin.users.show' not defined in queued notification.", ['error' => $e->getMessage()]);
-        }
-
         return [
             'type' => 'new_user_registered',
             'user_id' => $this->newUser->id,
             'name' => $this->newUser->name,
-            'message' => 'یک کاربر جدید ثبت‌نام کرد: '.$this->newUser->name,
-            'link' => $link,
+            'phone' => $this->newUser->phone,
+            'message' => 'یک کاربر جدید ثبت‌نام کرد: '.$this->newUser->name.' ('.$this->newUser->phone.')',
+            'link' => null,
         ];
     }
 }

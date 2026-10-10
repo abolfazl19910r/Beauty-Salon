@@ -122,7 +122,11 @@ class AdminNotificationController extends Controller
                 }
 
                 $message = $notification->data['message'] ?? 'اعلان ناشناس (اطلاعات کامل نیست)';
-                $link = $notification->data['link'] ?? route('admin.notifications.index');
+                // بدون لینک (یا لینک قدیمیِ «کاربر جدید» که به صفحه‌ی ناموجود مشتری می‌رفت) → صفحه‌ی خود اعلان
+                $link = $notification->data['link'] ?? null;
+                if (! $link || ($notification->data['type'] ?? null) === 'new_user_registered') {
+                    $link = route('admin.notifications.show', $notification->id);
+                }
 
                 return [
                     'id' => $notification->id,
