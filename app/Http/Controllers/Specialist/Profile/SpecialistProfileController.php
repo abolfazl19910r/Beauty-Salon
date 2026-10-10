@@ -13,7 +13,6 @@ use App\Services\Specialist\SpecialistDashboardService;
 use App\Services\Specialist\SpecialistProfileService;
 use App\Traits\ResolvesSpecialist;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
@@ -119,13 +118,12 @@ class SpecialistProfileController extends Controller
         $this->authorize('manageSchedule', $specialist);
 
         try {
-            DB::transaction(function () use ($request, $specialist) {
-                $this->specialistRepository->update($specialist, [
-                    'auto_confirm_bookings' => $request->input('auto_confirm_bookings', 0) == 1,
-                ]);
-
-                $this->specialistScheduleRepository->replaceForSpecialist($specialist, $request->input('schedules', []));
-            });
+            // فرم وب همیشه چک‌باکس را می‌فرستد (نبودنش = خاموش) — مثل قبل
+            app(\App\Services\Specialist\SpecialistScheduleService::class)->replace(
+                $specialist,
+                $request->input('schedules', []),
+                $request->input('auto_confirm_bookings', 0) == 1,
+            );
 
             $message = 'برنامه کاری با موفقیت بروزرسانی شد.';
             if ($specialist->fresh()->auto_confirm_bookings) {

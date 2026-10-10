@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\Auth\CustomerLoginController;
 use App\Http\Controllers\Api\V1\Auth\StaffLoginController;
 use App\Http\Controllers\Api\V1\Auth\TokenController;
 use App\Http\Controllers\Api\V1\Staff\StaffBookingController;
+use App\Http\Controllers\Api\V1\Staff\StaffCalendarController;
 use App\Http\Controllers\Api\V1\StatusController;
 use Illuminate\Support\Facades\Route;
 
@@ -53,5 +54,14 @@ Route::prefix('staff')->name('staff.')->middleware(['auth:sanctum', 'api.audienc
         Route::post('{bookingId}/confirm', 'confirm')->whereNumber('bookingId')->name('confirm');
         Route::post('{bookingId}/cancel', 'cancel')->whereNumber('bookingId')->name('cancel');
         Route::post('{bookingId}/complete', 'complete')->whereNumber('bookingId')->name('complete');
+    });
+
+    Route::controller(StaffCalendarController::class)->group(function () {
+        Route::get('calendar', 'calendar')->name('calendar');
+        Route::get('schedule', 'schedule')->name('schedule');
+        Route::put('schedule', 'updateSchedule')->name('schedule.update');
+        Route::get('leaves', 'leaves')->name('leaves.index');
+        Route::post('leaves', 'storeLeave')->name('leaves.store');
+        Route::delete('leaves/{leaveId}', 'destroyLeave')->whereNumber('leaveId')->name('leaves.destroy');
     });
 });
