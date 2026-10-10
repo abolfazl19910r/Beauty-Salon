@@ -11,6 +11,14 @@ class SpecialistDashboardService
 {
     use HasJalaliDates;
 
+    /**
+     * ⭐ «برنامه‌ی امروز» و «۷ روز آینده» (تصمیم ۲۰۲۶-۱۰-۱۰، بسته‌ی ۲ اپلیکیشن — همین قاعده برای API همکار):
+     * همه‌ی نوبت‌های فعال، چه پرداخت‌شده چه نه. قبلاً فقط payment_status=paid می‌آمد: نوبت دستی مدیر که پولش حضوری
+     * گرفته می‌شود (unpaid) پنهان بود و نوبت لغوشده‌ی پرداخت‌شده دیده می‌شد. لغوشده و pending_payment (مشتری هنوز
+     * در درگاه؛ اگر نپردازد خودکار لغو می‌شود) نمایش داده نمی‌شوند. درآمدها همچنان فقط پرداخت‌شده‌ی لغونشده‌اند.
+     */
+    public const AGENDA_STATUSES = ['pending', 'confirmed', 'completed'];
+
     public function __construct(private readonly BookingRepositoryInterface $bookingRepository) {}
 
     public function getDashboardData(Specialist $specialist): array
@@ -33,11 +41,11 @@ class SpecialistDashboardService
         ];
     }
 
-    private function getTodaySchedule(Specialist $specialist)
+    public function getTodaySchedule(Specialist $specialist)
     {
         return $this->bookingRepository->query()->where('specialist_id', $specialist->id)
             ->whereDate('booking_time', Carbon::today())
-            ->where('payment_status', 'paid')
+            ->whereIn('status', self::AGENDA_STATUSES)
             ->with(['service', 'user'])
             ->orderBy('booking_time', 'asc')
             ->get();
@@ -47,11 +55,11 @@ class SpecialistDashboardService
     {
         return $this->bookingRepository->query()->where('specialist_id', $specialist->id)
             ->whereDate('booking_time', Carbon::today())
-            ->where('payment_status', 'paid')
+            ->whereIn('status', self::AGENDA_STATUSES)
             ->count();
     }
 
-    private function getTodayRevenue(Specialist $specialist): float
+    public function getTodayRevenue(Specialist $specialist): float
     {
         return $this->bookingRepository->query()->where('specialist_id', $specialist->id)
             ->whereDate('booking_time', Carbon::today())
@@ -91,7 +99,7 @@ class SpecialistDashboardService
         $bookings = $this->bookingRepository->query()->where('specialist_id', $specialist->id)
             ->where('booking_time', '>', Carbon::now())
             ->where('booking_time', '<=', Carbon::now()->addDays(7))
-            ->where('payment_status', 'paid')
+            ->whereIn('status', self::AGENDA_STATUSES)
             ->with(['service', 'user'])
             ->orderBy('booking_time', 'asc')
             ->get();

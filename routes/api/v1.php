@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\Auth\AccountController;
 use App\Http\Controllers\Api\V1\Auth\CustomerLoginController;
 use App\Http\Controllers\Api\V1\Auth\StaffLoginController;
 use App\Http\Controllers\Api\V1\Auth\TokenController;
+use App\Http\Controllers\Api\V1\Staff\StaffBookingController;
 use App\Http\Controllers\Api\V1\StatusController;
 use Illuminate\Support\Facades\Route;
 
@@ -40,4 +41,17 @@ Route::middleware(['auth:sanctum', 'api.audience', 'throttle:api-v1'])->group(fu
     Route::get('tokens', [TokenController::class, 'index'])->name('tokens.index');
     Route::post('tokens/revoke-others', [TokenController::class, 'revokeOthers'])->name('tokens.revoke-others');
     Route::delete('tokens/{tokenId}', [TokenController::class, 'destroy'])->whereNumber('tokenId')->name('tokens.destroy');
+});
+
+// اپ «ماهرو همکار» — فقط متخصص (بسته‌ی ۲ اپلیکیشن)؛ متخصص و سالن از توکن
+Route::prefix('staff')->name('staff.')->middleware(['auth:sanctum', 'api.audience:staff', 'throttle:api-v1'])->group(function () {
+    Route::get('today', [StaffBookingController::class, 'today'])->name('today');
+
+    Route::prefix('bookings')->name('bookings.')->controller(StaffBookingController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('{bookingId}', 'show')->whereNumber('bookingId')->name('show');
+        Route::post('{bookingId}/confirm', 'confirm')->whereNumber('bookingId')->name('confirm');
+        Route::post('{bookingId}/cancel', 'cancel')->whereNumber('bookingId')->name('cancel');
+        Route::post('{bookingId}/complete', 'complete')->whereNumber('bookingId')->name('complete');
+    });
 });
