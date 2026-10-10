@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Admin\Category;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Services\CategoryService;
+use App\Support\CurrentSalon;
+use App\Support\SalonSlug;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class AdminCategoryController extends Controller
@@ -42,16 +45,17 @@ class AdminCategoryController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:categories',
+            // یکتایی و والد فقط در همین سالن (قبلاً سراسری: سالن دوم «رنگ مو» نمی‌توانست بسازد)
+            'name' => ['required', 'string', 'max:255', $this->uniqueNameRule()],
             'description' => 'nullable|string',
-            'parent_id' => 'nullable|exists:categories,id',
+            'parent_id' => ['nullable', $this->sameSalonParentRule()],
             'is_active' => 'boolean',
             'icon' => 'nullable|string|max:50',
             'order' => 'nullable|integer',
             'image' => 'nullable|image|max:2048',
         ]);
 
-        $validated['slug'] = Str::slug($validated['name']);
+        $validated['slug'] = SalonSlug::make(new Category, $validated['name']);
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store(\App\Support\SalonStorage::forCurrentSalon('categories'), 'public');
@@ -95,9 +99,9 @@ class AdminCategoryController extends Controller
         $category = $this->categoryRepository->findOrFail($id);
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name,'.$category->id,
+            'name' => ['required', 'string', 'max:255', $this->uniqueNameRule()->ignore($category->id)],
             'description' => 'nullable|string',
-            'parent_id' => 'nullable|exists:categories,id',
+            'parent_id' => ['nullable', $this->sameSalonParentRule()],
             'is_active' => 'boolean',
             'icon' => 'nullable|string|max:50',
             'order' => 'nullable|integer',
@@ -106,7 +110,7 @@ class AdminCategoryController extends Controller
         ]);
 
         if ($category->name !== $validated['name']) {
-            $validated['slug'] = Str::slug($validated['name']);
+            $validated['slug'] = SalonSlug::make($category, $validated['name']);
         }
 
         if ($request->has('remove_image') && $request->remove_image) {
@@ -172,5 +176,19 @@ class AdminCategoryController extends Controller
             return redirect()->back()
                 ->with('error', 'خطا در حذف دسته‌بندی. لطفا مجددا تلاش کنید.');
         }
+    }
+
+    private function uniqueNameRule(): \Illuminate\Validation\Rules\Unique
+    {
+        return Rule::unique('categories', 'name')
+            ->where('salon_id', app(CurrentSalon::class)->id())
+            ->whereNull('deleted_at');
+    }
+
+    private function sameSalonParentRule(): \Illuminate\Validation\Rules\Exists
+    {
+        return Rule::exists('categories', 'id')
+            ->where('salon_id', app(CurrentSalon::class)->id())
+            ->whereNull('deleted_at');
     }
 }

@@ -4,7 +4,9 @@ namespace App\Http\Requests\Admin\DiscountCode;
 
 use App\Rules\CustomerOfCurrentSalon;
 use App\Rules\MaxPercentage;
+use App\Support\CurrentSalon;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreDiscountCodeRequest extends FormRequest
 {
@@ -22,7 +24,7 @@ class StoreDiscountCodeRequest extends FormRequest
         }
 
         return [
-            'code' => ['required', 'string', 'unique:discount_codes,code'],
+            'code' => ['required', 'string', Rule::unique('discount_codes', 'code')->where('salon_id', app(CurrentSalon::class)->id())],
             'type' => ['required', 'in:fixed,percentage'],
             'amount' => $amountRules,
             'max_uses' => ['required', 'integer', 'min:1'],

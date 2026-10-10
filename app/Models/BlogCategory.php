@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use App\Support\SalonSlug;
 use App\Traits\BelongsToSalon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
 
 class BlogCategory extends Model
 {
@@ -29,7 +29,7 @@ class BlogCategory extends Model
 
         static::creating(function (self $category) {
             if (! $category->slug) {
-                $category->slug = Str::slug($category->name);
+                $category->slug = SalonSlug::make($category, $category->name);
             }
         });
     }

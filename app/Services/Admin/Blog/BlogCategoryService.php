@@ -4,9 +4,9 @@ namespace App\Services\Admin\Blog;
 
 use App\Models\BlogCategory;
 use App\Repositories\Contracts\BlogCategoryRepositoryInterface;
+use App\Support\SalonSlug;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class BlogCategoryService
 {
@@ -22,7 +22,7 @@ class BlogCategoryService
     public function store(array $data): BlogCategory
     {
         return DB::transaction(function () use ($data) {
-            $data['slug'] = Str::slug($data['name']);
+            $data['slug'] = SalonSlug::make(new BlogCategory, $data['name']);
             $data['order'] = $data['order'] ?? ($this->blogCategoryRepository->getMaxOrder() + 1);
 
             return $this->blogCategoryRepository->create($data);
@@ -33,7 +33,7 @@ class BlogCategoryService
     {
         return DB::transaction(function () use ($category, $data) {
             if ($category->name !== $data['name']) {
-                $data['slug'] = Str::slug($data['name']);
+                $data['slug'] = SalonSlug::make($category, $data['name']);
             }
 
             $category = $this->blogCategoryRepository->update($category, $data);

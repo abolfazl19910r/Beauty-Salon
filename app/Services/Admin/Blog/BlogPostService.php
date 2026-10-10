@@ -5,6 +5,7 @@ namespace App\Services\Admin\Blog;
 use App\Models\BlogPost;
 use App\Repositories\Contracts\BlogCategoryRepositoryInterface;
 use App\Repositories\Contracts\BlogPostRepositoryInterface;
+use App\Support\SalonSlug;
 use App\Traits\HasJalaliDates;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
@@ -39,7 +40,7 @@ class BlogPostService
             $attributes = $this->prepareAttributes($data);
             $attributes['published_at'] = $this->resolvePublishedAt($data, $attributes['is_published'], null);
             $attributes['author_id'] = auth()->id();
-            $attributes['slug'] = Str::slug($data['title']);
+            $attributes['slug'] = SalonSlug::make(new BlogPost, $data['title']);
 
             if ($image) {
                 $attributes['image'] = $image->store(\App\Support\SalonStorage::forCurrentSalon('blog'), 'public');
@@ -56,7 +57,7 @@ class BlogPostService
             $attributes['published_at'] = $this->resolvePublishedAt($data, $attributes['is_published'], $post);
 
             if ($data['title'] !== $post->title) {
-                $attributes['slug'] = Str::slug($data['title']);
+                $attributes['slug'] = SalonSlug::make($post, $data['title']);
             }
 
             if ($image) {

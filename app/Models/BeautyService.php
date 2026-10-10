@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\SalonSlug;
 use App\Traits\BelongsToSalon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -9,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class BeautyService extends Model
 {
@@ -34,7 +34,7 @@ class BeautyService extends Model
 
         static::creating(function ($service) {
             if (! $service->slug) {
-                $service->slug = Str::slug($service->name);
+                $service->slug = SalonSlug::make($service, $service->name);
             }
         });
 

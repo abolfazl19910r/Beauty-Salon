@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin\Blog\Category;
 
+use App\Support\CurrentSalon;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -19,7 +20,7 @@ class UpdateBlogCategoryRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('blog_categories', 'name')->ignore($this->route('category')),
+                Rule::unique('blog_categories', 'name')->where('salon_id', app(CurrentSalon::class)->id())->ignore($this->route('category')),
             ],
             'description' => ['nullable', 'string', 'max:500'],
             'order' => ['nullable', 'integer', 'min:0'],

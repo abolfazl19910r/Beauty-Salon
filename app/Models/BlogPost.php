@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use App\Support\SalonSlug;
 use App\Traits\BelongsToSalon;
 use App\Traits\HasJalaliDates;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
 
 class BlogPost extends Model
 {
@@ -47,7 +47,7 @@ class BlogPost extends Model
 
         static::creating(function (self $post) {
             if (! $post->slug) {
-                $post->slug = Str::slug($post->title);
+                $post->slug = SalonSlug::make($post, $post->title);
             }
 
             if (! $post->author_id) {
