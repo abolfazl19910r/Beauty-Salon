@@ -20,6 +20,23 @@ class Specialist extends Model
     use Notifiable;
     use SoftDeletes;
 
+    /**
+     * ⭐ بسته‌ی ۱ اپلیکیشن (۲۰۲۶-۱۰-۱۰): حذف متخصص (soft یا کامل) توکن‌های اپ «ماهرو همکار» حساب کادرش
+     * را باطل می‌کند. EnsureApiAudience هم متخصص حذف‌شده را رد می‌کرد؛ این ردیف‌های توکن را هم پاک می‌کند تا
+     * در «دستگاه‌ها» و بعداً در ارسال پوش (بسته‌ی ۴) نمانند. حساب کادر با user_id یا (رکوردهای قدیمی) با
+     * شماره پیدا می‌شود — همان قاعده‌ی User::specialist() و SalonOfNotifiable.
+     */
+    protected static function booted(): void
+    {
+        static::deleted(function (Specialist $specialist) {
+            $user = $specialist->user_id
+                ? User::find($specialist->user_id)
+                : User::where('phone', $specialist->phone)->where('user_type', 'staff')->first();
+
+            $user?->tokens()->delete();
+        });
+    }
+
     protected $fillable = [
         'name', 'phone', 'user_id', 'email', 'auto_confirm_bookings',
         'commission_rate',

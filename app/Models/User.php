@@ -15,6 +15,28 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    /**
+     * ⭐ ابطال خودکار توکن‌های اپ موبایل (بسته‌ی ۱ اپلیکیشن، ۲۰۲۶-۱۰-۱۰):
+     *  - تغییر رمز (از هر مسیری — رمز در ۸ جا عوض می‌شود: پروفایل‌ها، بازیابی، تنظیم مدیر، ...) همه‌ی
+     *    دستگاه‌ها را خارج می‌کند؛ همان انتظار کاربری که رمزش لو رفته.
+     *  - تغییر user_type/salon_id (مثلاً AdminSpecialistService مشتری را کادر می‌کند): توکن اپ قبلی دیگر
+     *    به حساب درستی اشاره نمی‌کند (EnsureApiAudience هم wrong_app می‌داد؛ اینجا پاک هم می‌شود).
+     *  - حذف کاربر: personal_access_tokens کلید خارجی ندارد (morph)، پس ردیف یتیم نماند.
+     * فقط برای save مدل اجرا می‌شود، نه update گروهی کوئری.
+     */
+    protected static function booted(): void
+    {
+        static::updated(function (User $user) {
+            if ($user->wasChanged(['password', 'user_type', 'salon_id'])) {
+                $user->tokens()->delete();
+            }
+        });
+
+        static::deleting(function (User $user) {
+            $user->tokens()->delete();
+        });
+    }
+
     protected $fillable = [
         'name',
         'phone',
