@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ApiError, NETWORK_ERROR_MESSAGE } from '@/lib/api';
+import { errorMessage } from '@/lib/api';
 import { fonts, type Palette, radius, space, usePalette } from './theme';
 
 type Weight = 'regular' | 'medium' | 'bold';
@@ -148,12 +148,7 @@ export function Loading({ label = 'در حال دریافت…' }: { label?: str
   );
 }
 
-export function errorMessage(error: unknown): string {
-  if (error instanceof ApiError) {
-    return error.message;
-  }
-  return NETWORK_ERROR_MESSAGE;
-}
+export { errorMessage };
 
 export function ErrorBox({ error, onRetry }: { error: unknown; onRetry?: () => void }) {
   const p = usePalette();

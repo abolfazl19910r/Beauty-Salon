@@ -1,5 +1,5 @@
 /// <reference types="jest" />
-import { ApiError, buildUrl, createClient } from '../api';
+import { ApiError, buildUrl, createClient, errorMessage, NETWORK_ERROR_MESSAGE } from '../api';
 
 const json = (status: number, body: unknown) =>
   Promise.resolve({ ok: status >= 200 && status < 300, status, json: () => Promise.resolve(body) } as Response);
@@ -40,6 +40,14 @@ describe('createClient', () => {
     expect(error.status).toBe(422);
     expect(error.field('code')).toBe('x');
     expect(error.meta.attempts_left).toBe(3);
+    expect(errorMessage(error)).toBe('کد وارد شده نامعتبر است. ۳ تلاش دیگر باقی مانده است.');
+  });
+
+  it('adds the wait time and falls back to the network message', () => {
+    const tooSoon = new ApiError('resend_too_soon', 'برای ارسال دوباره‌ی کد کمی صبر کنید.', 429, null, { retry_after: 42 });
+    expect(errorMessage(tooSoon)).toBe('برای ارسال دوباره‌ی کد کمی صبر کنید. ۴۲ ثانیه دیگر دوباره تلاش کنید.');
+    expect(errorMessage(new ApiError('x', 'پیام', 400))).toBe('پیام');
+    expect(errorMessage(new TypeError('Network request failed'))).toBe(NETWORK_ERROR_MESSAGE);
   });
 
   it('does not send the token on public calls', async () => {

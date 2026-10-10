@@ -1,3 +1,4 @@
+import { faDigits } from './format';
 /**
  * کلاینت /api/v1 — قالب بسته‌ی ۱ لاراول:
  *   موفق {success: true, data, meta?}، خطا {success: false, error: {code, message, fields?}, meta?}
@@ -26,6 +27,25 @@ export class ApiError extends Error {
 }
 
 export const NETWORK_ERROR_MESSAGE = 'اتصال به سرور برقرار نشد. اینترنت یا آدرس سرور را بررسی کنید.';
+
+/**
+ * متن خطا برای نمایش. اگر سرور تعداد تلاش باقی‌مانده (attempts_left) یا زمان انتظار (retry_after)
+ * را در meta فرستاده باشد، به پیام اضافه می‌شود — بدون آن کاربر نمی‌داند چند بار دیگر فرصت دارد.
+ */
+export function errorMessage(error: unknown): string {
+  if (!(error instanceof ApiError)) {
+    return NETWORK_ERROR_MESSAGE;
+  }
+  const extra: string[] = [];
+  if (typeof error.meta.attempts_left === 'number') {
+    extra.push(`${faDigits(error.meta.attempts_left)} تلاش دیگر باقی مانده است.`);
+  }
+  if (typeof error.meta.retry_after === 'number' && error.meta.retry_after > 0) {
+    extra.push(`${faDigits(error.meta.retry_after)} ثانیه دیگر دوباره تلاش کنید.`);
+  }
+  return [error.message, ...extra].join(' ');
+}
+
 
 type Query = Record<string, string | number | boolean | null | undefined>;
 
