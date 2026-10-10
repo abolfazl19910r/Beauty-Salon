@@ -35,8 +35,8 @@ class SpecialistWalletService
 
         $withdrawalRequests = $this->withdrawalRequestRepository->paginateForWallet($wallet->id, 10);
 
-        $currentMonthIncome = $this->walletTransactionRepository->sumForWalletByTypeAndMonth(
-            $wallet->id, 'income', now()->month, now()->year
+        $currentMonthIncome = $this->walletTransactionRepository->sumNetIncomeForWalletInMonth(
+            $wallet->id, now()->month, now()->year
         );
 
         $currentMonthWithdrawals = $this->walletTransactionRepository->sumForWalletByTypeAndMonth(

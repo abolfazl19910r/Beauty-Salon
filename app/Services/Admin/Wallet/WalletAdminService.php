@@ -241,16 +241,24 @@ class WalletAdminService
         $settledCount = 0;
         $failedCount = 0;
         $settledAmount = 0.0;
+        $notDueCount = 0;
+        $bookingNotDoneCount = 0;
 
         foreach ($transactions as $transaction) {
             $settlementDate = $transaction->metadata['settlement_date'] ?? null;
 
             if (! $ignoreDelay && (! $settlementDate || ! Carbon::parse($settlementDate)->isPast())) {
+                $notDueCount++;
+
                 continue;
             }
 
+            // پول نوبتی که هنوز انجام نشده آزاد نمی‌شود (ممکن است لغو و برگشت بخورد) — حتی با «نادیده
+            // گرفتن مهلت». نوبتی که متخصص «انجام شد» زده، خدمتش داده شده و منتظر ساعتش نمی‌ماند.
             $booking = $transaction->booking;
-            if ($booking && $booking->booking_time && $booking->booking_time->isFuture()) {
+            if ($booking && $booking->status !== 'completed' && $booking->booking_time && $booking->booking_time->isFuture()) {
+                $bookingNotDoneCount++;
+
                 continue;
             }
 
@@ -286,6 +294,8 @@ class WalletAdminService
             'settledCount' => $settledCount,
             'failedCount' => $failedCount,
             'settledAmount' => $settledAmount,
+            'notDueCount' => $notDueCount,
+            'bookingNotDoneCount' => $bookingNotDoneCount,
         ];
     }
 }

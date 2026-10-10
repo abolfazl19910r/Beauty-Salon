@@ -160,12 +160,19 @@ class AdminWalletController extends Controller
 
     private function buildSettlementMessage(array $result): string
     {
-        if ($result['settledCount'] === 0) {
-            return 'هیچ تراکنش قابل‌تسویه‌ای یافت نشد.';
-        }
+        $message = $result['settledCount'] === 0
+            ? 'هیچ تراکنش قابل‌تسویه‌ای یافت نشد.'
+            : 'تسویه انجام شد — تعداد: '.number_format($result['settledCount'])
+                .'، مبلغ کل: '.number_format($result['settledAmount']).' تومان.';
 
-        $message = 'تسویه انجام شد — تعداد: '.number_format($result['settledCount'])
-            .'، مبلغ کل: '.number_format($result['settledAmount']).' تومان.';
+        // چرا بقیه تسویه نشدند — بدون این، «هیچ تراکنشی یافت نشد» کنار مبلغ «در انتظار» گیج‌کننده بود
+        if (($result['bookingNotDoneCount'] ?? 0) > 0) {
+            $message .= ' '.number_format($result['bookingNotDoneCount'])
+                .' درآمد مال نوبت‌هایی است که هنوز انجام نشده‌اند و بعد از زمان نوبت (یا «انجام شد») تسویه می‌شوند.';
+        }
+        if (($result['notDueCount'] ?? 0) > 0) {
+            $message .= ' '.number_format($result['notDueCount']).' درآمد هنوز به مهلت تسویه نرسیده است.';
+        }
 
         if ($result['failedCount'] > 0) {
             $message .= ' ('.number_format($result['failedCount']).' تراکنش با خطا مواجه شد، جزئیات در لاگ سرور)';

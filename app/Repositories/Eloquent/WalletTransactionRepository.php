@@ -49,6 +49,21 @@ class WalletTransactionRepository extends BaseRepository implements WalletTransa
     }
 
     /**
+     * درآمد خالص ماه: درآمدها منهای برگشت سهمِ نوبت‌های لغوشده (تعدیل‌هایی که به نوبت وصل‌اند).
+     * قبلاً فقط income جمع می‌شد، پس لغو نوبت «کل درآمد» را کم می‌کرد ولی «درآمد این ماه» را نه
+     * و درآمد ماه از کل درآمد بیشتر نشان داده می‌شد. تعدیل دستی ادمین (بدون نوبت) درآمد حساب نمی‌شود.
+     */
+    public function sumNetIncomeForWalletInMonth(int $walletId, int $month, int $year): float
+    {
+        return (float) $this->model->where('wallet_id', $walletId)
+            ->where(fn ($q) => $q->where('type', 'income')
+                ->orWhere(fn ($q) => $q->where('type', 'adjustment')->whereNotNull('booking_id')))
+            ->whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
+            ->sum('amount');
+    }
+
+    /**
      * درآمدهای pending همه‌ی سالن‌ها (یا یک کیف پول)، تکه‌تکه به ترتیب id. در ۱۰۰۰ سالن ~۹۷ هزار ردیف است و get() یک‌جا تا ۴۵۰ MB
      * حافظه می‌گرفت. lazyById با «id بزرگ‌تر از آخرین» صفحه می‌زند، پس تسویه‌ی ردیف‌های یک تکه (که از شرط pending بیرون‌شان می‌برد)
      * ردیفی از تکه‌ی بعد را جا نمی‌اندازد. نوبت هر درآمد (برای چک «ساعت نوبت گذشته؟») برای هر تکه یک‌جا بار می‌شود، نه یک کوئری برای هر درآمد.
@@ -57,7 +72,7 @@ class WalletTransactionRepository extends BaseRepository implements WalletTransa
     {
         $query = $this->model->where('type', 'income')
             ->whereJsonContains('metadata->status', 'pending')
-            ->with('booking:id,booking_time');
+            ->with('booking:id,booking_time,status');
 
         if ($walletId) {
             $query->where('wallet_id', $walletId);
