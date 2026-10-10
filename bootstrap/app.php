@@ -143,6 +143,10 @@ return Application::configure(basePath: dirname(__DIR__))
         }
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        // ⭐ /api/v1 (بسته‌ی ۱ اپلیکیشن): باید اولین رندرکننده باشد — بقیه‌ی رندرکننده‌های پایین برای هر
+        // درخواست expectsJson پاسخ قالب قدیمی می‌دهند و اولین پاسخ غیر null برنده است. برای مسیرهای دیگر null.
+        $exceptions->render(fn (\Throwable $e, Request $request) => \App\Exceptions\Api\ApiExceptionRenderer::render($e, $request));
+
         // ⭐ Wired up (post-test-writing-phase): must be registered before the generic
         // HttpException renderable below. Laravel tries render callbacks in registration
         // order and stops at the first one that returns a non-null response; since

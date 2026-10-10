@@ -64,6 +64,26 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
+        // ⭐ /api/v1 (بسته‌ی ۱ اپلیکیشن) — limiterهای جدا از 'auth' وب: limiterهای نام‌دار یک بودجه‌ی مشترک
+        // برای همه‌ی مسیرهای هم‌نام دارند، پس ورود اپ نباید سهمیه‌ی ورود وب را مصرف کند (و برعکس).
+        // کلید «آی‌پی + شماره/challenge» حدس کد یک حساب را محدود می‌کند؛ سقف جدای آی‌پی بالاتر است چون
+        // کاربران اینترنت همراه پشت CGNAT آی‌پی مشترک دارند و سقف ۵ تایی فقط با آی‌پی همه را می‌بست.
+        RateLimiter::for('api-v1-login', function (Request $request) {
+            $subject = (string) ($request->input('phone') ?? $request->input('challenge') ?? '');
+
+            return [
+                Limit::perMinute((int) config('api.rate_limits.login_per_subject_per_minute', 5))
+                    ->by('subject:'.$request->ip().'|'.$subject),
+                Limit::perMinute((int) config('api.rate_limits.login_per_ip_per_minute', 30))
+                    ->by('ip:'.$request->ip()),
+            ];
+        });
+
+        RateLimiter::for('api-v1', function (Request $request) {
+            return Limit::perMinute((int) config('api.rate_limits.authenticated_per_minute', 120))
+                ->by($request->user()?->id ? 'user:'.$request->user()->id : 'ip:'.$request->ip());
+        });
+
         RateLimiter::for('auth', function (Request $request) {
             return Limit::perMinute(
                 (int) config('auth.max_login_attempts', 5),

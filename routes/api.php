@@ -9,6 +9,11 @@ Route::post('bot/webhook/{messenger}/{secret}', \App\Http\Controllers\Bot\BotWeb
     ->name('bot.webhook');
 
 Route::name('api.')->group(function () {
+    // ⭐ API نسخه‌ی ۱ اپ‌های موبایل (بسته‌ی ۱ اپلیکیشن، ۲۰۲۶-۱۰-۱۰) — همیشه JSON با قالب یکسان
+    Route::prefix('v1')->name('v1.')->middleware(\App\Http\Middleware\Api\ForceJsonResponse::class)->group(function () {
+        require __DIR__.'/api/v1.php';
+    });
+
     if (file_exists(__DIR__.'/api/public/bookings.php')) {
         require __DIR__.'/api/public/bookings.php';
     }
