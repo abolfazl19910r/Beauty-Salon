@@ -154,6 +154,26 @@ class StaffBookingApiTest extends TestCase
             ->assertJsonPath('error.code', 'invalid_booking_state');
     }
 
+    /**
+     * رگرسیون: روی CACHE_STORE=file/database تأیید و لغو با ۵۰۰ می‌شکست، چون BookingObserver
+     * ReportCacheService::flush() را صدا می‌زد و آن FileStore::all() (ناموجود) را فراخوانی می‌کرد.
+     */
+    public function test_confirm_and_cancel_work_on_file_and_database_cache(): void
+    {
+        foreach (['file', 'database'] as $store) {
+            config(['cache.default' => $store]);
+            $pending = $this->booking('pending', 'paid', 1);
+            $confirmed = $this->booking('confirmed', 'paid', 1);
+
+            $this->api()->postJson('/api/v1/staff/bookings/'.$pending->id.'/confirm')
+                ->assertOk()->assertJsonPath('data.status', 'confirmed');
+            $this->api()->postJson('/api/v1/staff/bookings/'.$confirmed->id.'/cancel', ['reason' => 'test'])
+                ->assertOk()->assertJsonPath('data.status', 'cancelled');
+
+            \Illuminate\Support\Facades\Cache::store($store)->flush();
+        }
+    }
+
     public function test_customer_token_cannot_reach_staff_routes(): void
     {
         $customer = User::factory()->create(['user_type' => 'customer', 'salon_id' => app(CurrentSalon::class)->id()]);

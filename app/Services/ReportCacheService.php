@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Support\CurrentSalon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class ReportCacheService
 {
@@ -72,6 +74,15 @@ class ReportCacheService
         return Cache::forget($this->generateCacheKey($key));
     }
 
+    /**
+     * همه‌ی گزارش‌های کش‌شده را باطل می‌کند — با بالا بردن «نسل» کلیدها، نه با پیمایش store.
+     *
+     * نسخه‌ی قبلی فقط روی store تگ‌دار (array/redis) کار می‌کرد و روی file/database با
+     * Error (نه Exception) از کار می‌افتاد: Call to undefined method FileStore::all()
+     * — و چون از BookingObserver صدا زده می‌شود، تأیید/لغو نوبت را با ۵۰۰ می‌شکست.
+     * روش نسل روی همه‌ی storeها کار می‌کند؛ کلیدهای نسل قبل با TTL خودشان پاک می‌شوند.
+     * خطای کش هرگز نباید عملیات نوبت را بشکند، پس Throwable گرفته و لاگ می‌شود.
+     */
     public function flush(): bool
     {
         if (! $this->cacheEnabled) {
@@ -79,24 +90,26 @@ class ReportCacheService
         }
 
         try {
-            if (method_exists(Cache::getStore(), 'tags')) {
-                Cache::tags('reports')->flush();
+            return Cache::forever($this->generationKey(), (string) Str::ulid());
+        } catch (\Throwable $e) {
+            Log::warning('Report cache flush failed', ['error' => $e->getMessage()]);
 
-                return true;
-            }
-
-            $keys = collect(Cache::getStore()->all())->keys()->filter(function ($key) {
-                return str_starts_with($key, $this->cachePrefix);
-            });
-
-            foreach ($keys as $key) {
-                Cache::forget($key);
-            }
-
-            return true;
-        } catch (\Exception $e) {
             return false;
         }
+    }
+
+    protected function generation(): string
+    {
+        try {
+            return (string) Cache::get($this->generationKey(), '0');
+        } catch (\Throwable) {
+            return '0';
+        }
+    }
+
+    protected function generationKey(): string
+    {
+        return $this->cachePrefix.'generation';
     }
 
     protected function generateCacheKey(string $key): string
@@ -107,6 +120,6 @@ class ReportCacheService
         // این fix دقیقاً همون باگ HomeController رو تکرار می‌کرد (کلید کش مشترک بین همه‌ی
         // سالن‌ها). CurrentSalon()->id() می‌تونه null باشه (مثلاً یک context بدون سالن مشخص)؛
         // در اون حالت هم هنوز deterministic و بی‌خطره (فقط یک namespace مشترک برای «بدون سالن»).
-        return $this->cachePrefix.($this->currentSalon->id() ?? 'none').':'.$key;
+        return $this->cachePrefix.$this->generation().':'.($this->currentSalon->id() ?? 'none').':'.$key;
     }
 }
