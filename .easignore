@@ -1,0 +1,12 @@
+node_modules/
+.expo/
+dist/
+android/
+ios/
+*.apk
+*.aab
+expo-env.d.ts
+# کلیدها روی expo.dev (متغیرهای EAS) می‌مانند — ریپو عمومی است
+google-services.json
+*.keystore
+.env*.local
