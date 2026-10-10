@@ -32,7 +32,10 @@ class PasswordResetController extends Controller
             'phone' => ['required', 'regex:/^09[0-9]{9}$/'],
         ]);
 
-        $user = $this->userRepository->findByPhone($request->phone);
+        // ⭐ Fix (۲۰۲۶-۱۰-۱۰، بسته‌ی ۲ اپلیکیشن): این بازیابی رمزِ /login (حساب کادر) است. findByPhone اولین حساب هر
+        // نوعی را برمی‌داشت؛ متخصصی که با همان شماره مشتری یک سالن هم بود، کد را روی حساب مشتری می‌گرفت و رمز مشتری
+        // عوض می‌شد (رمز کادر هرگز). مشتری بازیابی خودش را زیر /s/{slug}/forgot-password دارد.
+        $user = $this->userRepository->findStaffByPhone($request->phone);
 
         if (! $user) {
             return back()->withErrors(['phone' => 'کاربری با این شماره یافت نشد.']);
@@ -96,7 +99,7 @@ class PasswordResetController extends Controller
             return back()->withErrors(['code' => 'درخواست نامعتبر است.']);
         }
 
-        $user = $this->userRepository->findByPhone($resetRecord->phone);
+        $user = $this->userRepository->findStaffByPhone($resetRecord->phone);
 
         if (! $user) {
             return back()->withErrors(['code' => 'کاربر یافت نشد.']);

@@ -21,7 +21,7 @@ class PasswordResetTest extends TestCase
 
     public function test_reset_code_can_be_requested_for_an_existing_phone_number(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['user_type' => 'staff', 'salon_id' => null]);
 
         $response = $this->post('/forgot-password', ['phone' => $user->phone]);
 
@@ -39,7 +39,7 @@ class PasswordResetTest extends TestCase
 
     public function test_reset_screen_can_be_rendered_with_a_valid_token(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['user_type' => 'staff', 'salon_id' => null]);
         $this->post('/forgot-password', ['phone' => $user->phone]);
         $token = DB::table('password_reset_tokens')->where('phone', $user->phone)->value('token');
 
@@ -57,7 +57,7 @@ class PasswordResetTest extends TestCase
 
     public function test_password_can_be_reset_with_a_valid_code_and_token(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['user_type' => 'staff', 'salon_id' => null]);
         $this->post('/forgot-password', ['phone' => $user->phone]);
         $user->refresh();
         $token = DB::table('password_reset_tokens')->where('phone', $user->phone)->value('token');
@@ -75,7 +75,7 @@ class PasswordResetTest extends TestCase
 
     public function test_password_reset_fails_with_the_wrong_code(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['user_type' => 'staff', 'salon_id' => null]);
         $this->post('/forgot-password', ['phone' => $user->phone]);
         $token = DB::table('password_reset_tokens')->where('phone', $user->phone)->value('token');
         $originalPassword = $user->password;
@@ -93,7 +93,7 @@ class PasswordResetTest extends TestCase
 
     public function test_password_reset_token_is_consumed_after_successful_reset(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['user_type' => 'staff', 'salon_id' => null]);
         $this->post('/forgot-password', ['phone' => $user->phone]);
         $user->refresh();
         $token = DB::table('password_reset_tokens')->where('phone', $user->phone)->value('token');
@@ -117,7 +117,7 @@ class PasswordResetTest extends TestCase
     public function test_reset_code_expiry_respects_the_configured_expire_minutes(): void
     {
         config(['auth.reset_code_expire_minutes' => 20]);
-        $user = User::factory()->create();
+        $user = User::factory()->create(['user_type' => 'staff', 'salon_id' => null]);
 
         $this->post('/forgot-password', ['phone' => $user->phone]);
 
@@ -128,5 +128,40 @@ class PasswordResetTest extends TestCase
             $expiresAt->timestamp,
             5
         );
+    }
+
+    /**
+     * ⭐ رگرسیون (۲۰۲۶-۱۰-۱۰): /forgot-password بازیابی حساب کادر است. متخصصی که با همان شماره مشتری یک سالن هم هست
+     * (ردیف مشتری قدیمی‌تر)، قبلاً کد را روی حساب مشتری می‌گرفت و رمز مشتری عوض می‌شد، نه رمز کادر.
+     */
+    public function test_staff_reset_changes_the_staff_account_even_if_a_customer_has_the_same_phone(): void
+    {
+        $customer = User::factory()->create([
+            'phone' => '09121112233',
+            'user_type' => 'customer',
+            'password' => \Illuminate\Support\Facades\Hash::make('customer-pass-1'),
+        ]);
+        $staff = User::factory()->create([
+            'phone' => '09121112233',
+            'user_type' => 'staff',
+            'salon_id' => null,
+            'password' => \Illuminate\Support\Facades\Hash::make('staff-pass-1'),
+        ]);
+
+        $response = $this->post('/forgot-password', ['phone' => '09121112233']);
+        $token = basename(parse_url($response->headers->get('Location'), PHP_URL_PATH));
+
+        $this->assertNull($customer->fresh()->verification_code);
+        $this->assertNotNull($staff->fresh()->verification_code);
+
+        $this->post('/reset-password', [
+            'token' => $token,
+            'code' => $staff->fresh()->verification_code,
+            'password' => 'NewStaffPass-99',
+            'password_confirmation' => 'NewStaffPass-99',
+        ])->assertRedirect(route('login'));
+
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('NewStaffPass-99', $staff->fresh()->password));
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('customer-pass-1', $customer->fresh()->password));
     }
 }
