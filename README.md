@@ -40,7 +40,8 @@ npm i -g eas-cli
 eas login
 eas init            # پروژه‌ی mahru-staff را می‌سازد و projectId می‌دهد
 ```
-شناسه‌ی چاپ‌شده را در `app.config.ts` جای `EAS_PROJECT_ID` بگذارید (یا متغیر محیطی `EAS_PROJECT_ID`)، commit کنید، بعد:
+پروژه‌ی `mahru-staff` ساخته شده و شناسه‌اش در `EAS_PROJECT_IDS` داخل `app.config.ts` هست (`eas init` پیام «Cannot automatically
+write to dynamic config» می‌دهد که طبیعی است — config پویاست). برای پروژه‌ی تازه (مثلاً اپ مشتری) شناسه‌ی چاپ‌شده را همان‌جا بگذارید. بعد:
 ```powershell
 eas build --platform android --profile staff-apk          # آزمایشی: فیلد آدرس سرور + http محلی
 eas build --platform android --profile staff-production   # نهایی: فقط https

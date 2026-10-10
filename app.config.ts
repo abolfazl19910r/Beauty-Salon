@@ -12,8 +12,11 @@ const VARIANTS = {
 
 type Variant = keyof typeof VARIANTS;
 
-/** بعد از اولین `eas init` شناسه‌ی پروژه‌ی expo.dev را اینجا بگذارید (README، بخش «ساخت APK») */
-const EAS_PROJECT_ID = process.env.EAS_PROJECT_ID ?? '';
+/** پروژه‌ی expo.dev ‏@abolfazl1991/mahru-staff (ساخته‌شده با `eas init`، ۲۰۲۶-۱۰-۱۰). اپ مشتری (بسته‌ی ۳) پروژه‌ی جدا می‌گیرد. */
+const EAS_PROJECT_IDS: Record<Variant, string> = {
+  staff: '1ae539ab-5b39-43c1-8f62-db0b1648abdc',
+  customer: '',
+};
 
 export default ({ config }: ConfigContext): ExpoConfig => {
   const variant: Variant = process.env.APP_VARIANT === 'customer' ? 'customer' : 'staff';
@@ -57,7 +60,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       variant,
       allowServerOverride: !production,
       defaultApiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'https://mahru.ir',
-      eas: EAS_PROJECT_ID ? { projectId: EAS_PROJECT_ID } : undefined,
+      eas: (process.env.EAS_PROJECT_ID ?? EAS_PROJECT_IDS[variant]) ? { projectId: process.env.EAS_PROJECT_ID ?? EAS_PROJECT_IDS[variant] } : undefined,
     },
   };
 };

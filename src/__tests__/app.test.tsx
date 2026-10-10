@@ -5,6 +5,9 @@
  */
 import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
+// اولین رندر expo-router روی ویندوز (تبدیل سرد فایل‌ها) از ۵ ثانیه‌ی پیش‌فرض Jest بیشتر طول می‌کشد (گزارش ۲۰۲۶-۱۰-۱۰)
+jest.setTimeout(60_000);
+
 jest.mock('@react-native-async-storage/async-storage', () => require('@react-native-async-storage/async-storage/jest/async-storage-mock'));
 jest.mock('expo-font', () => ({ ...jest.requireActual('expo-font'), useFonts: () => [true] }));
 jest.mock('expo-device', () => ({ modelName: 'Galaxy A17' }));
