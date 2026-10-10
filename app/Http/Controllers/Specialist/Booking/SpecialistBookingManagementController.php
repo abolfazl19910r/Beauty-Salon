@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers\Specialist\Booking;
 
-use App\Events\Booking\BookingCancelled;
-use App\Events\Booking\Completed\BookingCompleted;
+use App\Exceptions\InvalidBookingStateException;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Repositories\Contracts\BookingRepositoryInterface;
+use App\Services\Specialist\SpecialistBookingActions;
 use App\Traits\HasJalaliDates;
 use App\Traits\ResolvesSpecialist;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
@@ -21,7 +20,10 @@ class SpecialistBookingManagementController extends Controller
     use HasJalaliDates;
     use ResolvesSpecialist;
 
-    public function __construct(private readonly BookingRepositoryInterface $bookingRepository) {}
+    public function __construct(
+        private readonly BookingRepositoryInterface $bookingRepository,
+        private readonly SpecialistBookingActions $bookingActions,
+    ) {}
 
     public function index(Request $request): View
     {
@@ -60,110 +62,68 @@ class SpecialistBookingManagementController extends Controller
 
     public function complete(Booking $booking): RedirectResponse
     {
-        $specialist = $this->resolveSpecialist();
+        $this->authorizeOwnBooking($booking, 'شما مجاز به تغییر وضعیت این نوبت نیستید.');
 
-        if (! $specialist || $booking->specialist_id !== $specialist->id) {
-            abort(403, 'شما مجاز به تغییر وضعیت این نوبت نیستید.');
-        }
-
-        if ($booking->status === 'confirmed') {
-            return back()->with('info', 'این نوبت قبلاً تایید شده است.');
-        }
-
-        // ⭐ Fix (۲۰۲۶-۱۰-۱۰، بسته‌ی ۲ اپلیکیشن): پذیرش فقط از «در انتظار تأیید». قبلاً هر وضعیتی confirmed می‌شد —
-        // نوبت لغوشده (پول برگشت‌خورده) زنده می‌شد، pending_payment (مشتری هنوز در درگاه) بدون پرداخت confirmed و از دید
-        // لغو خودکار پرداخت‌نشده‌ها خارج می‌شد، و completed به confirmed برمی‌گشت. دکمه فقط برای pending نمایش داده می‌شد،
-        // ولی سرور چک نمی‌کرد. وضعیت داخل تراکنش با قفل ردیف دوباره خوانده می‌شود (لغو هم‌زمان مشتری).
-        if ($booking->status !== 'pending') {
-            return back()->with('error', 'فقط نوبت‌های «در انتظار تأیید» قابل پذیرش هستند.');
-        }
-
-        try {
-            $confirmed = DB::transaction(function () use ($booking) {
-                $locked = Booking::whereKey($booking->id)->lockForUpdate()->first();
-                if (! $locked || $locked->status !== 'pending') {
-                    return false;
-                }
-
-                $locked->update(['status' => 'confirmed']);
-                $locked->user->notify(new \App\Notifications\Booking\BookingStatusUpdated($locked, 'confirmed'));
-
-                return true;
-            });
-
-            if (! $confirmed) {
-                return back()->with('error', 'وضعیت این نوبت تغییر کرده است؛ صفحه را دوباره باز کنید.');
-            }
-
-            return back()->with('success', '✓ نوبت تایید شد و پیامک اطلاع‌رسانی ارسال گردید.');
-
-        } catch (Exception $e) {
-            Log::error('خطا در تایید نوبت', ['booking_id' => $booking->id, 'error' => $e->getMessage()]);
-
-            return back()->with('error', 'خطا در تایید نوبت: '.$e->getMessage());
-        }
+        // پذیرش فقط از «در انتظار تأیید» (رفع ۲۰۲۶-۱۰-۱۰) — منطق مشترک با API در SpecialistBookingActions
+        return $this->run(
+            fn () => $this->bookingActions->confirm($booking),
+            'خطا در تایید نوبت',
+            $booking,
+            '✓ نوبت تایید شد و پیامک اطلاع‌رسانی ارسال گردید.',
+            'این نوبت قبلاً تایید شده است.',
+        );
     }
 
     public function markAsCompleted(Booking $booking): RedirectResponse
     {
-        $specialist = $this->resolveSpecialist();
+        $this->authorizeOwnBooking($booking, 'شما مجاز به تغییر وضعیت این نوبت نیستید.');
 
-        if ($booking->specialist_id !== $specialist->id) {
-            abort(403, 'شما مجاز به تغییر وضعیت این نوبت نیستید.');
-        }
-
-        if ($booking->status !== 'confirmed') {
-            return back()->with('error', 'فقط نوبت‌های تایید شده قابل علامت‌گذاری به عنوان «انجام شده» هستند.');
-        }
-
-        try {
-            DB::transaction(function () use ($booking) {
-                $booking->update(['status' => 'completed']);
-            });
-
-            event(new BookingCompleted($booking));
-
-            return back()->with('success', '✅ نوبت به عنوان انجام شده علامت‌گذاری شد.');
-
-        } catch (\Exception $e) {
-            Log::error('خطا در علامت‌گذاری نوبت', ['booking_id' => $booking->id, 'error' => $e->getMessage()]);
-
-            return back()->with('error', 'خطا در علامت‌گذاری نوبت: '.$e->getMessage());
-        }
+        return $this->run(
+            fn () => $this->bookingActions->complete($booking),
+            'خطا در علامت‌گذاری نوبت',
+            $booking,
+            '✅ نوبت به عنوان انجام شده علامت‌گذاری شد.',
+            'این نوبت قبلاً انجام شده است.',
+        );
     }
 
     public function cancel(Request $request, Booking $booking): RedirectResponse
     {
+        $this->authorizeOwnBooking($booking, 'شما مجاز به لغو این نوبت نیستید.');
+
+        return $this->run(
+            fn () => $this->bookingActions->cancel($booking, $request->input('cancel_reason')),
+            'خطا در لغو نوبت',
+            $booking,
+            '✓ نوبت لغو و به مشتری اطلاع‌رسانی شد.',
+            'این نوبت قبلاً لغو شده است.',
+        );
+    }
+
+    private function authorizeOwnBooking(Booking $booking, string $message): void
+    {
         $specialist = $this->resolveSpecialist();
 
         if (! $specialist || $booking->specialist_id !== $specialist->id) {
-            abort(403, 'شما مجاز به لغو این نوبت نیستید.');
+            abort(403, $message);
         }
+    }
 
-        if ($booking->status === 'cancelled') {
-            return back()->with('info', 'این نوبت قبلاً لغو شده است.');
-        }
-
-        if ($booking->status === 'completed') {
-            return back()->with('error', 'نوبت‌های انجام شده قابل لغو نیستند.');
-        }
-
+    /**
+     * @param  callable(): bool  $action  true = وضعیت عوض شد، false = از قبل در وضعیت مقصد بود
+     */
+    private function run(callable $action, string $errorLabel, Booking $booking, string $success, string $already): RedirectResponse
+    {
         try {
-            $booking->update([
-                'status' => 'cancelled',
-                'cancellation_reason' => $request->input('cancel_reason', 'دلیل مشخص نشده'),
-                'cancelled_by' => 'specialist',
-                'cancelled_at' => now(),
-            ]);
-
-            event(new BookingCancelled($booking, 'specialist'));
-
-            return back()->with('success', '✓ نوبت لغو و به مشتری اطلاع‌رسانی شد.');
-
+            return $action()
+                ? back()->with('success', $success)
+                : back()->with('info', $already);
+        } catch (InvalidBookingStateException $e) {
+            return back()->with('error', $e->getUserMessage());
         } catch (Exception $e) {
-            Log::error('خطا در لغو نوبت توسط متخصص', ['booking_id' => $booking->id, 'error' => $e->getMessage()]);
+            Log::error($errorLabel, ['booking_id' => $booking->id, 'error' => $e->getMessage()]);
 
-            return back()->with('error', 'خطا در لغو نوبت: '.$e->getMessage());
+            return back()->with('error', $errorLabel.': '.$e->getMessage());
         }
     }
 
