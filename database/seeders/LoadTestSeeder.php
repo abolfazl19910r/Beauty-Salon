@@ -380,7 +380,7 @@ class LoadTestSeeder extends Seeder
     {
         $id = $this->id('payment_transactions');
 
-        return ['id' => $id, 'public_id' => (string) Str::ulid(), 'salon_id' => $salonId, 'gateway_id' => null, 'driver' => 'zarinpal', 'purpose' => 'booking',
+        return ['id' => $id, 'public_id' => (string) Str::uuid(), 'salon_id' => $salonId, 'gateway_id' => null, 'driver' => 'zarinpal', 'purpose' => 'booking',
             'payable_type' => 'App\\Models\\Booking', 'payable_id' => $bookingId, 'user_id' => $userId, 'amount_rial' => (int) ($prepay * 10), 'fee_rial' => 0,
             'token' => 'A'.str_pad((string) $id, 35, '0', STR_PAD_LEFT), 'ref_id' => $status === 'paid' || $status === 'refunded' ? (string) (500000 + $id) : null,
             'gateway_receipt' => null, 'card_pan' => null, 'status' => $status, 'needs_attention' => 0, 'attention_notified_at' => null, 'callback_url' => '/payment/callback',
