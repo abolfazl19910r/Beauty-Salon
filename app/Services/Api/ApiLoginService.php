@@ -24,6 +24,11 @@ class ApiLoginService
 {
     protected const KEY_PREFIX = 'api-login:';
 
+    /** ستون‌های کد روی users — ApiPasswordResetService همان سازوکار را روی کد بازیابی رمز به کار می‌برد */
+    protected const CODE_FIELD = 'login_verification_code';
+
+    protected const CODE_EXPIRES_FIELD = 'login_verification_code_expire_at';
+
     public function __construct(
         protected readonly PhoneVerificationService $verificationService,
         protected readonly SecurityLogService $securityLogService,
@@ -56,27 +61,27 @@ class ApiLoginService
         [$data, $user] = $this->load($challenge, $audience, $salonId);
 
         // کد منقضی تلاش حساب نمی‌شود؛ اپ باید «ارسال دوباره» را پیشنهاد کند
-        if (! $user->login_verification_code_expire_at || now()->isAfter($user->login_verification_code_expire_at)) {
+        $expiresAt = $user->{static::CODE_EXPIRES_FIELD};
+        if (! $expiresAt || now()->isAfter($expiresAt)) {
             throw new ApiException('code_expired', 'کد تأیید منقضی شده است. کد جدید بگیرید.', 422);
         }
 
-        if ($user->login_verification_code !== null
-            && hash_equals((string) $user->login_verification_code, $code)
-            && $this->verificationService->verifyLoginCode($user, $code)) {
+        $stored = $user->{static::CODE_FIELD};
+        if ($stored !== null && hash_equals((string) $stored, $code) && $this->consumeCode($user, $code)) {
             $this->forget($challenge);
-            $this->securityLogService->logLogin(true, $user->phone, $user);
+            $this->logAttempt(true, $user);
 
             return $user;
         }
 
-        $this->securityLogService->logLogin(false, $user->phone, $user);
+        $this->logAttempt(false, $user);
 
         $max = (int) config('api.login.max_code_attempts', 5);
         $attempts = (int) Cache::increment($this->attemptsKey($challenge));
 
         if ($attempts >= $max) {
             $this->forget($challenge);
-            $user->forceFill(['login_verification_code' => null, 'login_verification_code_expire_at' => null])->save();
+            $user->forceFill([static::CODE_FIELD => null, static::CODE_EXPIRES_FIELD => null])->save();
 
             throw new ApiException('too_many_code_attempts', 'کد اشتباه بیش از حد مجاز وارد شد. دوباره وارد شوید.', 429);
         }
@@ -148,10 +153,26 @@ class ApiLoginService
         return [$data, $user];
     }
 
+    /** کد درست است: مصرفش کن (یک‌بارمصرف). */
+    protected function consumeCode(User $user, string $code): bool
+    {
+        return $this->verificationService->verifyLoginCode($user, $code);
+    }
+
+    protected function logAttempt(bool $success, User $user): void
+    {
+        $this->securityLogService->logLogin($success, $user->phone, $user);
+    }
+
+    protected function deliverCode(User $user): void
+    {
+        $this->verificationService->sendLoginCode($user);
+    }
+
     protected function sendCode(User $user): void
     {
         try {
-            $this->verificationService->sendLoginCode($user);
+            $this->deliverCode($user);
         } catch (\Throwable $e) {
             Log::error('Failed to send API login code', ['user_id' => $user->id, 'error' => $e->getMessage()]);
 
@@ -188,7 +209,7 @@ class ApiLoginService
 
     protected function key(string $challenge): string
     {
-        return self::KEY_PREFIX.hash('sha256', $challenge);
+        return static::KEY_PREFIX.hash('sha256', $challenge);
     }
 
     protected function attemptsKey(string $challenge): string

@@ -25,7 +25,7 @@ class SpecialistNotificationController extends Controller
      * ⭐ نگاشت هر کلاس Notification به یک دسته‌ی قابل‌فیلتر — برای پاسخ به درخواست «مشاهده‌ی جداگانه‌ی
      * اعلانات» در صفحه‌ی اعلانات متخصص.
      */
-    private const CATEGORY_MAP = [
+    public const CATEGORY_MAP = [
         'App\\Notifications\\Booking\\BookingNotification' => 'booking',
         'App\\Notifications\\Booking\\BookingStatusUpdated' => 'booking',
         'App\\Notifications\\Booking\\SpecialistBookingCancelledNotification' => 'booking',

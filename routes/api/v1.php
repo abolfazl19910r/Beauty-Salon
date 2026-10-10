@@ -3,9 +3,11 @@
 use App\Http\Controllers\Api\V1\Auth\AccountController;
 use App\Http\Controllers\Api\V1\Auth\CustomerLoginController;
 use App\Http\Controllers\Api\V1\Auth\StaffLoginController;
+use App\Http\Controllers\Api\V1\Auth\StaffPasswordResetController;
 use App\Http\Controllers\Api\V1\Auth\TokenController;
 use App\Http\Controllers\Api\V1\Staff\StaffBookingController;
 use App\Http\Controllers\Api\V1\Staff\StaffCalendarController;
+use App\Http\Controllers\Api\V1\Staff\StaffNotificationController;
 use App\Http\Controllers\Api\V1\Staff\StaffWalletController;
 use App\Http\Controllers\Api\V1\StatusController;
 use Illuminate\Support\Facades\Route;
@@ -25,6 +27,13 @@ Route::middleware('throttle:api-v1-login')->group(function () {
         Route::post('/', 'login');
         Route::post('verify', 'verify')->name('.verify');
         Route::post('resend', 'resend')->name('.resend');
+    });
+
+    // بازیابی رمز کادر (بسته‌ی ۲)
+    Route::prefix('staff/password')->name('staff.password.')->controller(StaffPasswordResetController::class)->group(function () {
+        Route::post('forgot', 'forgot')->name('forgot');
+        Route::post('resend', 'resend')->name('resend');
+        Route::post('reset', 'reset')->name('reset');
     });
 
     Route::prefix('customer/salons/{salon_slug}/login')->name('customer.login')->middleware('salon.resolve')
@@ -64,6 +73,12 @@ Route::prefix('staff')->name('staff.')->middleware(['auth:sanctum', 'api.audienc
         Route::get('leaves', 'leaves')->name('leaves.index');
         Route::post('leaves', 'storeLeave')->name('leaves.store');
         Route::delete('leaves/{leaveId}', 'destroyLeave')->whereNumber('leaveId')->name('leaves.destroy');
+    });
+
+    Route::prefix('notifications')->name('notifications.')->controller(StaffNotificationController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('read-all', 'readAll')->name('read-all');
+        Route::post('{notificationId}/read', 'read')->whereUuid('notificationId')->name('read');
     });
 
     Route::prefix('wallet')->name('wallet.')->controller(StaffWalletController::class)->group(function () {
