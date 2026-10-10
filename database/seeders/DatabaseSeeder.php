@@ -30,7 +30,8 @@ class DatabaseSeeder extends Seeder
                 'working_hours' => \App\Support\SalonWorkingHours::defaults(),
                 // ⭐ ۲۰۲۶-۰۹-۲۴: سالن دمو همون مرچنت .env رو می‌گیره تا پرداخت‌های تستی کار کنن
                 // (دیگه fallback خودکار به مرچنت پلتفرم وجود نداره).
-                'zarinpal_merchant_id' => \App\Support\ZarinpalMerchant::normalize(config('services.zarinpal.merchant_id')),
+                // مقدار نامعتبر (مثل your-merchant-id) کپی نمی‌شود — وگرنه هر پرداخت تستی با خطای درگاه رد می‌شد
+                'zarinpal_merchant_id' => \App\Support\ZarinpalMerchant::validOrNull(config('services.zarinpal.merchant_id')),
                 'max_specialists_count' => 100,
                 'module_permissions' => null, // null = همه‌ی ماژول‌ها
                 'subscription_type' => '12m',

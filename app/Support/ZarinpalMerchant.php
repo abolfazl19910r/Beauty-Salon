@@ -31,4 +31,16 @@ class ZarinpalMerchant
 
         return $value === '' ? null : strtolower($value);
     }
+
+    /**
+     * مثل normalize، ولی مقدار نامعتبر (مثلاً جای‌نگهدار «your-merchant-id» در ‎.env.example) را null
+     * می‌کند. برای جاهایی که مقدار از ‎.env کپی می‌شود و از فرم اعتبارسنجی‌شده نمی‌آید (seeder):
+     * مرچنت نامعتبر یعنی هر پرداخت با خطای درگاه رد می‌شود؛ null یعنی پیام روشن «پرداخت آنلاین فعال نیست».
+     */
+    public static function validOrNull(?string $value): ?string
+    {
+        $value = self::normalize($value);
+
+        return $value !== null && preg_match(self::PATTERN, $value) ? $value : null;
+    }
 }
