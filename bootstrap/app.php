@@ -46,6 +46,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\EnsureSpecialistSalonActive::class,
             \App\Http\Middleware\ResolveSalonFromRoute::class,
             \App\Http\Middleware\ResolveSalonFromUser::class,
+            \App\Http\Middleware\Api\EnsureApiAudience::class,
         ] as $salonContextMiddleware) {
             $middleware->prependToPriorityList(
                 before: \Illuminate\Routing\Middleware\SubstituteBindings::class,
@@ -77,6 +78,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'salon.specialist' => \App\Http\Middleware\EnsureSpecialistSalonActive::class,
             // ⭐ فاز ۲ SaaS، محور «۲. چند ادمین برای یک سالن».
             'salon.owner' => \App\Http\Middleware\EnsureSalonOwner::class,
+            // ⭐ /api/v1 اپ‌های موبایل (بسته‌ی ۱ اپلیکیشن): اپ توکن + سالن جاری + عمر لغزان توکن
+            'api.audience' => \App\Http\Middleware\Api\EnsureApiAudience::class,
         ]);
 
         // Note: the 'admin-api' middleware group (auth + admin, previously guarding
@@ -111,6 +114,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('bookings:send-reminders')
             ->everyTenMinutes()
             ->withoutOverlapping()
+            ->onOneServer();
+        // توکن‌های اپ موبایل که API_TOKEN_IDLE_DAYS بی‌استفاده ماندند (expires_at گذشته) — بسته‌ی ۱ اپلیکیشن
+        $schedule->command('sanctum:prune-expired', ['--hours' => 24])
+            ->dailyAt('04:10')
             ->onOneServer();
         $schedule->command('reports:cleanup-exports')
             ->daily()
