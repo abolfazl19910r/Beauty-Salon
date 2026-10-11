@@ -222,6 +222,6 @@ class BookingControllerTest extends TestCase
 
     public function test_guest_is_redirected_to_login(): void
     {
-        $this->get(route('bookings.index'))->assertRedirect(route('login'));
+        $this->get(route('bookings.index'))->assertRedirect(route('salon.login'));
     }
 }

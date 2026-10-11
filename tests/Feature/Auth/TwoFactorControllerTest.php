@@ -172,6 +172,6 @@ class TwoFactorControllerTest extends TestCase
 
     public function test_guest_is_redirected_to_login(): void
     {
-        $this->get(route('security.2fa'))->assertRedirect(route('login'));
+        $this->get(route('security.2fa'))->assertRedirect(route('salon.login'));
     }
 }

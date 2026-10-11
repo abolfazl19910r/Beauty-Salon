@@ -27,7 +27,7 @@ class BookingReservationController extends Controller
     public function create(): View|RedirectResponse
     {
         if (! auth()->check()) {
-            return redirect()->route('login')
+            return redirect()->route('salon.login')
                 ->with('message', 'برای رزرو نوبت ابتدا باید وارد شوید.');
         }
 

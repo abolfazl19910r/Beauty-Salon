@@ -19,7 +19,7 @@ class EnsureTwoFactorVerifiedForPaymentTest extends TestCase
 
         $response = $this->get(route('payments.secure.checkout', $booking));
 
-        $response->assertRedirect(route('login'));
+        $response->assertRedirect(route('salon.login'));
     }
 
     public function test_user_without_2fa_enabled_is_redirected_to_2fa_settings(): void

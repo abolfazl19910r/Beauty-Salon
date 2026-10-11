@@ -39,9 +39,22 @@ class RegistrationTest extends TestCase
         return $job->code;
     }
 
-    public function test_the_central_register_page_redirects_to_the_default_salon(): void
+    public function test_the_central_register_page_sends_visitors_to_the_landing_page_not_the_demo_salon(): void
     {
-        $this->get('/register')->assertRedirect(route('salon.register', ['salon_slug' => 'rasta']));
+        // ثبت‌نام مشتری فقط در صفحه‌ی سالن خودش؛ قبلاً همه به سالن دمو (rasta) می‌رفتند (۲۰۲۶-۱۰-۱۱)
+        $this->get('/register')->assertRedirect(route('central.home'));
+    }
+
+    public function test_salon_pages_link_to_their_own_login_and_sign_up(): void
+    {
+        \App\Models\Salon::factory()->create(['slug' => 'golbahar']);
+
+        $this->get('/s/golbahar')->assertOk()
+            ->assertSee('href="'.url('/s/golbahar/login').'"', false)
+            ->assertSee('href="'.url('/s/golbahar/register').'"', false)
+            ->assertDontSee('href="'.url('/login').'"', false)
+            ->assertDontSee('href="'.url('/register').'"', false);
+        $this->get('/s/golbahar/bookings')->assertRedirect(url('/s/golbahar/login'));
     }
 
     public function test_the_central_register_form_endpoints_are_gone(): void

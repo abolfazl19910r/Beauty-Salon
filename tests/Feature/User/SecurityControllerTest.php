@@ -137,6 +137,6 @@ class SecurityControllerTest extends TestCase
 
     public function test_guest_is_redirected_to_login(): void
     {
-        $this->get(route('security.dashboard'))->assertRedirect(route('login'));
+        $this->get(route('security.dashboard'))->assertRedirect(route('salon.login'));
     }
 }

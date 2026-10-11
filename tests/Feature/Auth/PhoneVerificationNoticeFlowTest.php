@@ -43,7 +43,7 @@ class PhoneVerificationNoticeFlowTest extends TestCase
 
     public function test_a_guest_is_redirected_to_login_not_the_verification_notice(): void
     {
-        $this->get(route('security.dashboard'))->assertRedirect(route('login'));
+        $this->get(route('security.dashboard'))->assertRedirect(route('salon.login'));
     }
 
     public function test_a_json_request_from_an_unverified_user_gets_a_428_with_a_redirect_hint(): void

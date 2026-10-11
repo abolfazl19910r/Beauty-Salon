@@ -193,6 +193,6 @@ class BookingDiscountControllerTest extends TestCase
         $code = DiscountCode::factory()->create(['is_active' => true]);
 
         $this->post(route('bookings.apply-discount', ['booking' => $booking->id]), ['code' => $code->code])
-            ->assertRedirect(route('login'));
+            ->assertRedirect(route('salon.login'));
     }
 }

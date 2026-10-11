@@ -169,8 +169,8 @@
                     <button type="submit" class="nav-link">خروج</button>
                 </form>
             @else
-                <a href="{{ route('login') }}" class="nav-link">ورود</a>
-                <a href="{{ route('register') }}" class="btn-gold rounded-full px-5 py-2 text-sm font-semibold">
+                <a href="{{ route('salon.login') }}" class="nav-link">ورود</a>
+                <a href="{{ route('salon.register') }}" class="btn-gold rounded-full px-5 py-2 text-sm font-semibold">
                     ثبت نام
                 </a>
             @endauth
@@ -208,8 +208,8 @@
                     <button type="submit" class="block w-full text-right py-2 nav-link">خروج</button>
                 </form>
             @else
-                <a href="{{ route('login') }}" class="block py-2 nav-link">ورود</a>
-                <a href="{{ route('register') }}" class="block py-2 text-[var(--rasta-gold-light)] font-bold">ثبت نام</a>
+                <a href="{{ route('salon.login') }}" class="block py-2 nav-link">ورود</a>
+                <a href="{{ route('salon.register') }}" class="block py-2 text-[var(--rasta-gold-light)] font-bold">ثبت نام</a>
             @endauth
         </div>
     </div>

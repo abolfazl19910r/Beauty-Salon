@@ -51,7 +51,7 @@ class BookingReservationControllerTest extends TestCase
     {
         $response = $this->get(route('bookings.create'));
 
-        $response->assertRedirect(route('login'));
+        $response->assertRedirect(route('salon.login'));
     }
 
     public function test_create_renders_the_form_for_authenticated_users(): void
@@ -166,7 +166,7 @@ class BookingReservationControllerTest extends TestCase
             'booking_time' => $this->bookingTime,
         ]);
 
-        $response->assertRedirect(route('login'));
+        $response->assertRedirect(route('salon.login'));
     }
 
     public function test_cancel_cancels_a_pending_booking_owned_by_the_user(): void
