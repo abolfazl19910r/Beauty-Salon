@@ -45,7 +45,7 @@ class SpecialistController extends Controller
         $specialists = $this->specialistRepository->searchPaginated($filters, $perPage)->withQueryString();
 
         if ($request->wantsJson()) {
-            return response()->json($specialists);
+            return response()->json($specialists->through(fn ($s) => \App\Support\PublicSpecialist::present($s)));
         }
 
         return view('specialists.search', [
@@ -64,7 +64,7 @@ class SpecialistController extends Controller
         $specialists = $this->specialistRepository->paginateByService($service->id, 15);
 
         if (request()->wantsJson()) {
-            return response()->json($specialists);
+            return response()->json($specialists->through(fn ($s) => \App\Support\PublicSpecialist::present($s)));
         }
 
         return view('specialists.by-service', [
@@ -154,7 +154,7 @@ class SpecialistController extends Controller
         $specialists = $this->specialistRepository->getTopRated(10);
 
         if (request()->wantsJson()) {
-            return response()->json($specialists);
+            return response()->json($specialists->map(fn ($s) => \App\Support\PublicSpecialist::present($s))->values());
         }
 
         return view('specialists.top-rated', [
@@ -189,7 +189,7 @@ class SpecialistController extends Controller
 
         if (request()->wantsJson()) {
             return response()->json([
-                'specialist' => $specialist,
+                'specialist' => \App\Support\PublicSpecialist::present($specialist),
                 'reviews' => $reviews,
             ]);
         }

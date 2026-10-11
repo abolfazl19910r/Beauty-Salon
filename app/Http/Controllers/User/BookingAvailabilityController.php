@@ -162,8 +162,6 @@ class BookingAvailabilityController extends Controller
                 ->map(fn ($s) => [
                     'id' => $s->id,
                     'name' => $s->name,
-                    'email' => $s->email,
-                    'phone' => $s->phone,
                     'photo_url' => $s->photoUrl(),
                 ]);
 
