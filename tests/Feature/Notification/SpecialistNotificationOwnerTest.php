@@ -104,6 +104,7 @@ class SpecialistNotificationOwnerTest extends TestCase
             'user_id' => $customer->id,
             'specialist_id' => $specialist->id,
             'status' => 'completed',
+            'rating' => null,
         ]);
         $before = $customer->getTotalLoyaltyPoints();
 

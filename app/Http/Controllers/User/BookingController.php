@@ -104,19 +104,17 @@ class BookingController extends Controller
         return view('bookings.failed', compact('booking', 'errorMessage'));
     }
 
-    public function rate(RateBookingRequest $request, Booking $booking): RedirectResponse
+    public function rate(RateBookingRequest $request, Booking $booking, \App\Services\Booking\BookingRatingService $rating): RedirectResponse
     {
         $this->authorize('view', $booking);
 
         try {
-            $this->bookingRepository->update($booking, $request->validated());
-
-            $booking->specialist->notify(new \App\Notifications\Review\NewReviewNotification($booking));
-
-            auth()->user()->addLoyaltyPoints(10, 'ثبت نظر برای نوبت #'.$booking->id);
+            $rating->rate(auth()->user(), $booking, (int) $request->validated('rating'), $request->validated('review'));
 
             return back()->with('success', 'نظر شما با موفقیت ثبت شد.');
 
+        } catch (\App\Exceptions\BookingActionNotAllowedException $e) {
+            return back()->with('error', $e->getUserMessage());
         } catch (Exception $e) {
             return back()->with('error', 'خطا در ثبت نظر: '.$e->getMessage());
         }

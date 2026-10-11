@@ -183,6 +183,7 @@ class BookingControllerTest extends TestCase
         $booking = Booking::factory()->create([
             'user_id' => $this->user->id,
             'status' => 'completed',
+            'rating' => null,
         ]);
         $before = $this->user->fresh()->loyalty_points ?? 0;
 
