@@ -50,10 +50,11 @@ class ApiPasswordResetService extends ApiLoginService
         }
     }
 
-    public function resetPassword(string $challenge, string $code, string $audience, string $password): User
+    public function resetPassword(string $challenge, string $code, string $audience, string $password, ?int $salonId = null): User
     {
-        $user = $this->verify($challenge, $code, $audience, null);
-        $user->forceFill(['password' => Hash::make($password)])->save();
+        $user = $this->verify($challenge, $code, $audience, $salonId);
+        // کد بازیابی مالکیت شماره را ثابت می‌کند (حساب تأییدنشده‌ی قدیمی با آن تأیید می‌شود)
+        $user->forceFill(['password' => Hash::make($password), 'phone_verified_at' => $user->phone_verified_at ?? now()])->save();
 
         return $user;
     }
