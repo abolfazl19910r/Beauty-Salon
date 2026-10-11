@@ -4512,6 +4512,109 @@ Wi‑Fi). **همه‌ی چک‌لیست بسته‌ی ۲ تأیید شد** (ور
 گفته بود) — همراه کار پرداخت با جدول رسمی (سایت مستندات زرین‌پال دسترسی خودکار را می‌بندد؛ ابوالفضل متن جدول را می‌دهد). لیست
 کشویی تیره‌ی متخصص در فرم رزرو روی فایرفاکس بریده دیده می‌شود (کروم بررسی شود). تعلیق سالن روی یک سالن غیرپیش‌فرض تست شود.
 
+### ۲۰۲۶-۱۰-۱۱ — بسته‌ی ۳الف اپلیکیشن: API مشتری (`/api/v1/customer/*`) + پرداخت در مرورگر بیرونی + حذف `/api` قدیمی
+**درخواست ابوالفضل:** شروع بسته‌ی ۳ (کد از GitHub روی `develop`، نه zip): اول baseline، بعد طراحی و پرسش‌ها، بعد پیاده‌سازی؛ ۳ب (اپ) جدا.
+Baseline روی `develop@c617185`: SQLite **۱۷۶۳ (۹ skip)**، MariaDB 10.11 **۱۷۶۳ (۱ skip)**، MySQL 8.0.46 **۱۷۶۳ (۱ skip)**، بدون شکست.
+**محیط sandbox:** MySQL 8 حالا **کنار** MariaDB اجرا می‌شود (بدون حذف MariaDB): `apt-get download mysql-server-core-8.0 mysql-client-core-8.0`،
+`dpkg -x` در `/opt/mysql8`، کتابخانه‌های `libevent-pthreads-2.1-7 libaio1t64 libmecab2 libprotobuf-lite32t64`، `--initialize-insecure` در
+`/var/lib/mysql8`، اجرا با `--port=3307 --secure-file-priv="" --log-error=/var/log/mysql8/err.log` (پوشه‌ی لاگ باید مال کاربر mysql باشد).
+
+**⭐ تصمیم‌های ابوالفضل (۲۰۲۶-۱۰-۱۱):**
+1. **همه‌چیز بعد از ورود** — پیش از ورود فقط کارت سالن (نام، لوگو، لینک) برای اعتبارسنجی لینک/QR/کد.
+2. ثبت‌نام: **حساب فقط بعد از تأیید کد**؛ ثبت‌نام نیمه‌کاره‌ی تأییدنشده جلوی صاحب شماره را نمی‌گیرد (وب هم همین شد).
+3. صفحه‌ی بانک در **مرورگر بیرونی** (مثل اپ‌های ایرانی؛ نه WebView، نه Custom Tab)؛ برگشت با `mahru://payment?tx=…`.
+4. **شارژ کیف پول از اپ: بله.** 5. «پرداخت امن» دومرحله‌ای در اپ: **نه** (ورود اپ همیشه کد پیامکی دارد).
+6. حذف حساب: **گزینه‌ی «الف»** — نوبت فعال آینده یا موجودی کیف پول → رد با پیام؛ بی‌سابقه → حذف؛ با سابقه → ناشناس‌سازی.
+7. اپ **فقط یک سالن** را نگه می‌دارد (برای سالن دیگر: خروج و لینک/QR/کد تازه) — کار سروری ندارد، برای ۳ب.
+8. شماره/ایمیل متخصص از JSON وب هم حذف. 9. پرداخت فقط برای نوبت لغونشده، پرداخت‌نشده و آینده (وب و API).
+10. `/api` قدیمی **همین بسته** حذف. 11. صندوق اعلان فقط‌خواندنی در اپ (پوش در بسته‌ی ۴).
+
+**🐛 باگ‌های واقعی (هر کدام با probe/تست قرمز پیش از رفع، کامیت جدا):**
+- `0023` ‏`.env.example`: پچ `0015` بسته‌ی ۲ **هیچ‌وقت به develop نرسیده بود** (در zip هم نبود) — `CACHE_STORE=file` دوباره.
+- `0024` **پرداخت ترکیبی (کیف پول + درگاه):** سهم کیف پول فقط در session بود؛ مشتری که از بانک برنمی‌گشت، نوبت خودکار لغو و **سهم کیف پول هیچ‌وقت
+  برنمی‌گشت**. حالا روی ردیف تراکنش (`payment_transactions.wallet_toman/wallet_state`: held → settled | released، migration
+  `2026_10_11_000002`) با `BookingWalletShare` (update شرطی، یک‌بار)؛ `BookingObserver` با لغو نوبت پرداخت‌نشده (خودکار/مدیر/متخصص/مشتری)
+  سهم را برمی‌گرداند؛ شروع ناموفق درگاه همان لحظه؛ پرداخت موفق با تلاش دیگر سهم تلاش‌های قبلی را برمی‌گرداند. **همان پچ:** نوبت
+  **لغوشده یا گذشته قابل پرداخت بود** (`payment.process/wallet/show` و پرداخت امن وضعیت را چک نمی‌کردند؛ دکمه‌ی «پرداخت» برای نوبت
+  لغوشده دیده می‌شد) → `Booking::isPayable()/notPayableReason()`. قاعده‌ی ۲۰۲۶-۰۹-۲۶ حفظ شد: پرداخت دیرهنگامِ نوبتِ **لغو خودکار** با ساعت
+  آزاد هنوز تأیید می‌شود؛ ولی نوبتی که سالن/مشتری لغو کرده یا سهم کیف پولش برگشته زنده نمی‌شود و پول برمی‌گردد (دلیل تازه‌ی
+  `booking_cancelled` در `PaymentRefundedNotification`). منطق بدون session در `BookingPaymentStarter` و `BookingPaymentFinalizer` (مشترک وب و اپ).
+- `0025` **حذف حساب مشتری** برای هر کسی که حتی یک نوبت داشت **۵۰۰** می‌داد (کلید خارجی `bookings.user_id`) →
+  `CustomerAccountDeletionService` (تصمیم «الف»؛ ناشناس‌سازی: نام «مشتری حذف‌شده»، شماره `deleted-{id}`، رمز تصادفی، توکن‌ها/ربات/اعلان‌ها/نشست‌ها
+  پاک، نوبت‌ها برای حساب‌وکتاب سالن می‌مانند؛ همان شماره دوباره ثبت‌نام می‌کند). بعد از حذف به `salon.login` (نه `/login` کادر).
+- `0026` **حریم خصوصی:** JSON صفحه‌های عمومی متخصص (بدون ورود، با `Accept: application/json`) کل مدل را می‌داد: **شماره، ایمیل، user_id و
+  درصد کمیسیون**؛ فهرست متخصص‌های فرم رزرو هم شماره/ایمیل → `App\Support\PublicSpecialist`.
+- `0027` **ثبت‌نام بعد از تأیید کد** (`CustomerRegistrationService`، کد در cache پشت challenge، `SendRegistrationCodeJob` صف otp، هزینه‌ی
+  پلتفرم؛ ۵ کد غلط، فاصله/سقف ارسال، مقید به سالن). **POST مرکزی `/register`، `/register/verify`، `/register/resend` حذف شد** — صفحه از قبل به
+  سالن پیش‌فرض redirect می‌شد ولی POSTها هنوز مشتری **بی‌سالن** می‌ساختند و پیامک می‌فرستادند. تست‌هایشان به مسیرهای سالن منتقل شد.
+- `0028` **امتیاز به نوبت:** هر نوبتی (حتی لغوشده/آینده) و **هر چند بار** امتیاز می‌گرفت و **هر بار ۱۰ امتیاز باشگاه** → با ارسال دوباره‌ی فرم
+  امتیاز (و کد تخفیف پاداش) بی‌نهایت. `BookingRatingService`: فقط نوبت انجام‌شده‌ی خود مشتری، یک بار، با قفل ردیف.
+- `0029` **دریافت پاداش هم‌زمان** (دو بار زدن، یا وب + اپ): چک امتیاز بیرون از تراکنش → امتیاز منفی و دو کد. حالا قفل ردیف کاربر و پاداش.
+  تست دوپردازه‌ای واقعی `RewardRedeemConcurrencyTest` (فقط MariaDB/MySQL، بدون قفل قرمز).
+- `0030` (refactor) جابه‌جایی نوبت مشتری از کنترلر به `BookingRescheduleService` بدون تغییر رفتار.
+- `0031` **`WalletSetting::get()`** برای سالن تازه ردیف را با `create([])` می‌ساخت که **پیش‌فرض‌های دیتابیس را نداشت**: در همان درخواست
+  پیش‌پرداخت/کمیسیون/جریمه/کارمزد **صفر** بود — مثلاً **اولین نوبت سالن تازه بدون پیش‌پرداخت** («تخفیف کامل») ثبت می‌شد. → `refresh()`.
+  (حین تست پیش‌فاکتور API پیدا شد.)
+
+**API (پچ‌های `0032` و `0033`؛ همه JSON با قالب بسته‌ی ۱):**
+```
+پیش از ورود (salon.resolve؛ سالن ناموجود/معلق/منقضی → 404):
+GET  /api/v1/customer/salons/{slug}                         کارت سالن (نام، لوگو، لینک)
+POST /api/v1/customer/salons/{slug}/login | login/verify | login/resend      (بسته‌ی ۱)
+POST /api/v1/customer/salons/{slug}/register | register/verify | register/resend   (verify → 201 توکن)
+POST /api/v1/customer/salons/{slug}/password/forgot | resend | reset
+با توکن مشتری (api.audience:customer؛ سالن از توکن):
+GET  customer/salon | home | services | services/{id}/specialists | specialists | specialists/{id}
+GET  customer/specialists/{id}/dates?service_id  (۳۰ روز)    GET customer/specialists/{id}/slots?date=Y-m-d&service_id
+GET  customer/bookings?scope=upcoming|past   GET customer/bookings/{id}   POST customer/bookings/quote {service_id, discount_code?}
+POST customer/bookings {service_id, specialist_id, booking_time, discount_code?, idempotency_key?}
+POST customer/bookings/{id}/cancel | reschedule {booking_time} | rate {rating, review?} | pay {gateway_id?, wallet_amount?}
+GET  customer/payments/{tx}   GET|POST customer/wallet/charge {amount, gateway_id?}   GET customer/wallet | wallet/transactions
+GET  customer/loyalty | loyalty/history | loyalty/codes   POST customer/loyalty/rewards/{id}/redeem
+GET|PATCH customer/profile {name}   PUT customer/password   DELETE customer/account {password}   (دو تای آخر throttle:api-v1-sensitive)
+GET  customer/notifications?unread=1   POST customer/notifications/{id}/read | read-all
+```
+- نوبت: `CustomerPresenter::booking` (وضعیت + برچسب فارسی، زمان ISO و شمسی، خدمت، متخصص، پیش‌پرداخت/تخفیف/باقی‌مانده، `pay_before`، `actions`
+  pay/cancel/reschedule/rate). نوبت مشتری دیگر **۴۰۴**. رزرو: متخصصی که خدمت را انجام نمی‌دهد `422 service_not_offered`؛ کد تخفیف شخصی
+  مشتری دیگر `422 discount_code_invalid`؛ ساعت گرفته‌شده `409 booking_not_available`؛ سالن بی‌درگاه با پیش‌پرداخت `422 online_payment_unavailable`؛
+  تکرار با همان `idempotency_key` → `200` همان نوبت. لغو فقط تا ۲۴ ساعت قبل (`409 booking_not_cancellable`).
+- **پرداخت (مرورگر بیرونی):** `pay` → `state: paid` (کیف پول کامل/تخفیف کامل) یا `state: redirect` با `checkout_url` **امضاشده‌ی ۱۵ دقیقه‌ای**
+  (`/s/{slug}/app/checkout/{tx}` → redirect درگاه یا فرم POST بانک‌ها). درگاه → `/payments/return/{tx}` (مثل قبل) → `/s/{slug}/app/payment/callback`
+  یا `/app/wallet/callback` (بدون ورود و session؛ فقط با tx همین سالن و همین نوع؛ **شناسه‌ی نوبت از ردیف تراکنش، نه از آدرس**) → صفحه‌ی
+  «بازگشت به اپ ماهرو» با `mahru://payment?tx=…&state=…&purpose=…` (۶۰۰ میلی‌ثانیه بعد خودکار). **اپ به پارامترهای لینک اعتماد نمی‌کند** و
+  `GET payments/{tx}` را می‌پرسد (`pending/paid/failed/refunded`). شارژ کیف پول با `WalletChargeService` فقط یک بار (update شرطی
+  `wallet_state=credited`)؛ callback شارژ وب هم از همین می‌رود (دو callback هم‌زمان دیگر دو بار شارژ نمی‌کنند).
+- پنل مدیر (`0034`): کارت «آدرس اختصاصی سالن» حالا **QR** (دانلود PNG، چاپ) و **کد سالن در اپ ماهرو** (= slug) را نشان می‌دهد؛ QR در مرورگر با
+  پکیج npm ‏`qrcode` (ورودی تازه‌ی Vite ‏`resources/js/salon-qr.js`) — با Playwright روی مرورگر واقعی دیده شد.
+- **حذف `/api` قدیمی (`0035`):** دو مسیری که وب واقعاً صدا می‌زد منتقل شدند: بنر اطلاعیه `GET /s/{slug}/announcements/active`
+  (`announcements.active`)، شروع پرداخت امن `POST /s/{slug}/payments/secure/initiate/{booking}` (CSRF). بقیه حذف: `routes/api/user/*`،
+  `routes/api/auth/security.php`، `routes/api/public/*`، middleware ‏`ResolveSalonFromUser` و متدهای کنترلری که فقط آن‌ها صدا می‌زدند. `/api` حالا
+  فقط webhook ربات و `/api/v1` است. README بخش API به‌روز شد.
+- `0036` تست سالن دوم (`golbahar`) + **تعلیق همان سالن** (۴۰۳ `salon_inactive` بدون حذف توکن؛ کارت و ورود ۴۰۴؛ `rasta` سالم).
+
+**تست‌های تازه:** `SplitPaymentWalletShareTest` (۸)، `PayableBookingTest` (۵)، `CustomerAccountDeletionTest` (۴)، `PublicSpecialistJsonPrivacyTest` (۲)،
+`RegistrationTest` (بازنویسی، ۱۳)، `BookingRatingRulesTest` (۲)، `RewardRedeemConcurrencyTest` (۱)، `WalletSettingDefaultsTest` (۲)، `Customer*ApiTest`
+(Auth ۹، Catalog ۷، Booking ۱۱، Payment ۱۳، Account ۷، SecondSalon ۲)، QR در `SalonPublicLinkTest` (+۱). **probe جهش‌یافته** روی هر شرط امنیتی API
+(مالکیت نوبت/تراکنش، نوبت از ردیف تراکنش، نوع/سالن تراکنش در callback، `signed`، قفل شارژ، اتصال challenge به سالن، کد تخفیف شخصی، خدمت متخصص،
+اعلان‌های دیگران، مانع حذف حساب، پرداخت نوبت لغوشده) — همه قرمز شدند؛ قفل شارژ اول زنده ماند و تست مستقیم گرفت.
+**وریفای (کلون تازه‌ی GitHub روی `develop@c617185` + `git am --keep-cr` هر ۱۵ پچ `0023`…`0037`؛ درخت دقیقاً برابر برنچ کار؛ `composer install`،
+`npm ci && npm run build` روی همان کلون):** SQLite **۱۸۲۵ (۱۰ skip)**، MariaDB 10.11 **۱۸۲۵ (۱ skip)**، MySQL 8.0.46 **۱۸۲۵ (۱ skip)** بدون شکست
+(+۶۲ تست)؛ Pint PASS؛ migration تازه روی MariaDB و MySQL 8 بالا/پایین/بالا بی‌خطا. QR کارت مدیر و صفحه‌ی برگشت اپ با Playwright (کرومیوم واقعی) دیده شد.
+
+**روی سرور/لوکال:** `php artisan migrate` (یک migration: `2026_10_11_000002`)، **`npm install && npm run build`** (پکیج تازه‌ی `qrcode` و ورودی
+Vite تازه — بدون build صفحه‌های مدیر خطای manifest می‌دهند)، `config:cache`، `queue:restart` (کد تازه‌ی صف otp و payments). متغیرهای اختیاری `.env`:
+`CUSTOMER_APP_SCHEME` (پیش‌فرض `mahru`)، `API_CHECKOUT_TTL_MINUTES` (پیش‌فرض ۱۵). اگر روی لوکال `CACHE_STORE=array` است حتماً `file` شود.
+
+**🔎 یافته‌ها برای بعد (رفع نشده، تصمیم لازم):**
+- ثبت‌نام عمومی **سالن** (`SalonSignupController`) هنوز سالن و مالک را **پیش از** تأیید کد می‌سازد؛ شماره‌ی کادر در کل پلتفرم یکتاست، پس
+  ثبت‌نام نیمه‌کاره با شماره‌ی کسی دیگر آن شماره را برای کادر قفل می‌کند (مثل مشکل قدیمی مشتری).
+- **امتیازهای منقضی‌شده** هنوز خرج می‌شوند: هیچ فرمانی منقضی‌شدن را ثبت نمی‌کند و `Reward::isAvailableForUser`/`getCurrentPoints` کل امتیاز را
+  جمع می‌زنند (فقط `getTotalLoyaltyPoints` منقضی‌ها را کنار می‌گذارد). قاعده‌ی بیزینسی لازم است.
+- `/register` مرکزی (GET) مشتری را به سالن پیش‌فرض `rasta` می‌فرستد — با تصمیم «مشتری فقط از سالن خودش» شاید بهتر است به صفحه‌ی فروش برود.
+- فرم رزرو وب کد تخفیف **شخصی** مشتری دیگر را در `POST bookings` رد نمی‌کند (فقط پیش‌نمایش چک می‌کند)؛ API رد می‌کند.
+- **باز برای ۳ب:** اپ «ماهرو» روی برنچ `mobile-app` با `APP_VARIANT=customer` (`ir.mahru`)؛ پروژه‌ی جدای expo.dev (`eas init`)؛ اسکنر QR (دوربین)؛
+  باز کردن `checkout_url` با `Linking.openURL` (مرورگر بیرونی) و گرفتن `mahru://payment`؛ یک سالن در اپ؛ Android App Links بعداً.
+
 ### قدم‌های باز
 هیچ‌کدام از این دو فیکس ربطی به فاز SaaS در حال انجام (بخش‌های بالای همین فایل) ندارد و روی برنچ جدایی از آن‌ها اعمال شده؛ هنگام merge نهایی توجه شود که این دو کامیت مستقل، قابل rebase/merge روی هر برنچ پایه‌ای هستند چون فقط دو فایل نامرتبط را لمس می‌کنند (`RedirectIfAuthenticated.php`, `AdminUserService.php`) + یک فایل تست.
 
@@ -8089,11 +8192,14 @@ Bearer؛ فقط از IPهای اعلام‌شده. ⚠️ `result` برای `IBA
   ✅ **بسته‌ی ۲ب (اپ Expo «ماهرو همکار») تحویل شد** روی برنچ یتیم `mobile-app` (پچ‌های `app-0001`…`app-0005`؛ بخش ۲۰۲۶-۱۰-۱۰ ادامه ۲).
   ✅ پچ‌های اپ `app-0001`…`app-0008` اعمال، `eas init` (projectId در `app-0007`)، APK ‏`staff-apk` ساخته و **تست دستی کامل روی RN8
   انجام شد** (بخش «۲۰۲۶-۱۰-۱۰ و ۱۱ — تست دستی بسته‌ی ۲»؛ رفع‌های `0015`…`0022`). A17 فعلاً در دسترس نیست.
-  **قدم بعد: بسته‌ی ۳** — API ‏v1 مشتری (`/api/v1/...` با `api.audience:customer`، ورود مشتری داخل سالن مسیر/کد سالن، **ثبت‌نام و
-  بازیابی رمز مشتری**، سالن‌ها/خدمات/متخصص‌ها/زمان‌های آزاد، رزرو و پرداخت (درگاه سالن، صفحه‌ی برگشت به اپ)، نوبت‌های من و لغو، کیف پول
-  مشتری و امتیازها، پروفایل) + اپ «ماهرو» از همین کد (`APP_VARIANT=customer`، `ir.mahru`) + **حذف `/api` قدیمی**. روال: طراحی و
-  سؤال‌ها اول، بعد پیاده‌سازی؛ بسته‌ی ۳الف (API) و ۳ب (اپ) جدا، مثل بسته‌ی ۲. ورود مشتری فقط داخل سالن (تصمیم ۲۰۲۶-۱۰-۱۰).
-  برای تست بسته‌ی ۳ یک سالن دوم (غیر `rasta`) با خدمت و متخصص لازم است (تعلیق سالن هم روی همان تست شود).
+  ✅ **بسته‌ی ۳الف (API ‏v1 مشتری) تمام شد** (بخش «۲۰۲۶-۱۰-۱۱ — بسته‌ی ۳الف»؛ پچ‌های `0023`…`0037`): ثبت‌نام و بازیابی رمز داخل سالن، کارت
+  عمومی سالن، خدمات/متخصص‌ها/زمان‌ها، رزرو/لغو/جابه‌جایی/امتیاز، پرداخت با **مرورگر بیرونی** و برگشت `mahru://payment`، شارژ کیف پول،
+  باشگاه مشتریان، پروفایل، حذف حساب، اعلان‌ها؛ QR و کد سالن در پنل مدیر؛ **`/api` قدیمی حذف شد**؛ ۸ باگ وب رفع شد.
+  **روی سرور/لوکال:** `migrate` + **`npm install && npm run build`** + `config:cache` + `queue:restart`.
+  **قدم بعد: بسته‌ی ۳ب** — اپ «ماهرو» از همین کد Expo روی برنچ یتیم `mobile-app` (`APP_VARIANT=customer`، `ir.mahru`، scheme `mahru`)، جدا
+  از ۳الف: ورود با لینک/QR/کد سالن (**فقط یک سالن در اپ** — تصمیم ۲۰۲۶-۱۰-۱۱)، ثبت‌نام، رزرو، پرداخت با `Linking.openURL(checkout_url)` و
+  گرفتن `mahru://payment` (اپ همیشه `GET payments/{tx}` می‌پرسد)، کیف پول و شارژ، باشگاه، پروفایل و حذف حساب، اعلان‌ها؛ پروژه‌ی جدای
+  expo.dev (`eas init`) و پروفایل‌های EAS ‏`customer-apk`/`customer-production`.
 - ⭐ **یادداشت‌های بسته‌ی ۴ (پوش) که نباید گم شوند:** (۱) سرور مجازی داخل ایران برای ntfy و تصمیم شکل اتصال در اپ (داخل خود اپ یا
   UnifiedPush)؛ (۲) امتحان رسید از اپ **بسته** با پیام data-only با اولویت بالا روی RN8 و A17 (اپ اعلان را خودش بسازد و رسید بفرستد)؛
   (۳) فرستنده‌ی FCM واقعی با کش توکن دسترسی گوگل (مثل پچ `0025` کیت) و backoff؛ (۴) `device_tokens` به `personal_access_token_id`
@@ -8107,7 +8213,7 @@ Bearer؛ فقط از IPهای اعلام‌شده. ⚠️ `result` برای `IBA
 - (مشکوک، تأیید با تست) «برنامه‌ی امروز» داشبورد متخصص نوبت‌های `unpaid` دستی را نشان نمی‌دهد و لغوشده‌ی پرداخت‌شده را نشان می‌دهد.
 - اجرای کل سوییت روی SQLite، MariaDB و MySQL 8 بخشی از روال وریفای هر نشست (تست‌های هم‌زمانی فقط روی دو تای آخر واقعاً اجرا می‌شوند).
 - ⚠️ باطل کردن کلید کاوه‌نگار و توکن‌های GitHub (توکن قبلی که تا ۲۰۲۶-۰۹-۲۶ در این سند بود و در تاریخچه‌ی git می‌مونه، و
-  توکن‌هایی که در چت‌ها اومدن، از جمله چت درگاه ملت، چت ممیزی ۲۰۲۶-۰۹-۲۷، چت ۲۰۲۶-۰۹-۳۰ و چت بسته‌ی ۱ اپلیکیشن ۲۰۲۶-۱۰-۱۰) — **خود ابوالفضل**.
+  توکن‌هایی که در چت‌ها اومدن، از جمله چت درگاه ملت، چت ممیزی ۲۰۲۶-۰۹-۲۷، چت ۲۰۲۶-۰۹-۳۰، چت بسته‌ی ۱ اپلیکیشن ۲۰۲۶-۱۰-۱۰ و چت بسته‌ی ۳ ‏۲۰۲۶-۱۰-۱۱) — **خود ابوالفضل**.
 - **تست دستی زیبال، وندار، آسان‌پرداخت** با `MANUAL_GATEWAY_TESTING_PROMPT.md` (تحویل ۲۰۲۶-۰۹-۲۶): شامل اولین تسویه‌ی واقعی
   زیبال (⚠️ واحد ریال در مستندش صریح نیست — مبلغ ثبت‌شده گزارش بشه) و وندار (تومان)، و تمدید توکن وندار. تطبیق آسان‌پرداخت با PDF رسمی IPG REST.
 - پارسیان در محیط واقعی: قرارداد + ثبت IP سرور؛ اولین پرداخت کم؛ **یک برگشت واقعی** (مثلاً نوبت از دست رفته) تا namespace سرویس
