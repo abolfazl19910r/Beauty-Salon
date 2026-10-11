@@ -8,7 +8,8 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/js/app.jsx',
-                'resources/js/admin.jsx'
+                'resources/js/admin.jsx',
+                'resources/js/salon-qr.js'
             ],
             refresh: true,
         }),

@@ -37,6 +37,25 @@
                 <a href="{{ $primaryUrl }}" target="_blank" rel="noopener"
                    class="px-4 py-2 rounded-lg text-sm font-bold text-center" style="border:1px solid var(--admin-border); color:var(--admin-text);">مشاهده</a>
             </div>
+            {{-- QR و کد سالن برای اپ «ماهرو» (بسته‌ی ۳، ۲۰۲۶-۱۰-۱۱): مشتری با لینک، QR یا همین کد سالن را در اپ پیدا می‌کند --}}
+            <div class="flex flex-col sm:flex-row gap-4 items-center pt-2" data-salon-qr-card>
+                <div class="w-40 h-40 rounded-lg p-1 shrink-0" style="background:#fff; border:1px solid var(--admin-border);"
+                     data-salon-qr="{{ $primaryUrl }}" data-salon-qr-name="{{ $salon->slug }}" data-salon-qr-title="{{ $salon->name }}"
+                     role="img" aria-label="QR آدرس سالن"></div>
+                <div class="space-y-2 text-center sm:text-right">
+                    <p style="color:var(--admin-text-dim);">
+                        این QR را روی میز پذیرش یا کارت ویزیت بگذارید. مشتری با دوربین گوشی صفحه‌ی سالن را باز می‌کند،
+                        یا در اپ «ماهرو» آن را اسکن می‌کند.
+                    </p>
+                    <p style="color:var(--admin-text);">
+                        کد سالن در اپ ماهرو: <span dir="ltr" class="font-mono font-bold">{{ $salon->slug }}</span>
+                    </p>
+                    <div class="flex gap-2 justify-center sm:justify-start">
+                        <button type="button" data-salon-qr-download class="px-3 py-1.5 rounded-lg text-xs font-bold text-white" style="background:var(--admin-accent);">دانلود QR</button>
+                        <button type="button" data-salon-qr-print class="px-3 py-1.5 rounded-lg text-xs font-bold" style="border:1px solid var(--admin-border); color:var(--admin-text);">چاپ</button>
+                    </div>
+                </div>
+            </div>
             @if ($legacyUrl !== $primaryUrl)
                 <p class="text-xs" style="color:var(--admin-text-light);">
                     آدرس جایگزین (همیشه فعال): <span dir="ltr" class="font-mono">{{ $legacyUrl }}</span>
@@ -51,6 +70,7 @@
     </div>
 
     @once
+        @vite('resources/js/salon-qr.js')
         @push('scripts')
             <script>
                 document.addEventListener('click', function (e) {

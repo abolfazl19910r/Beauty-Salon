@@ -42,6 +42,17 @@ class SalonPublicLinkTest extends TestCase
             ->assertSee('data-copy-salon-link', false);
     }
 
+    public function test_the_card_has_the_salon_qr_and_the_app_code(): void
+    {
+        $salon = app(CurrentSalon::class)->get();
+
+        $this->actingAs($this->salonAdmin())->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('data-salon-qr="'.url('/s/'.$salon->slug).'"', false)
+            ->assertSee('کد سالن در اپ ماهرو')
+            ->assertSee('salon-qr', false);
+    }
+
     public function test_billing_page_shows_the_salon_public_link_card(): void
     {
         $salon = app(CurrentSalon::class)->get();
