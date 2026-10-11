@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\Customer\CustomerAccountController;
 use App\Http\Controllers\Api\V1\Customer\CustomerAuthController;
 use App\Http\Controllers\Api\V1\Customer\CustomerBookingController;
 use App\Http\Controllers\Api\V1\Customer\CustomerCatalogController;
+use App\Http\Controllers\Api\V1\Customer\CustomerPaymentController;
 use App\Http\Controllers\Api\V1\Staff\StaffBookingController;
 use App\Http\Controllers\Api\V1\Staff\StaffCalendarController;
 use App\Http\Controllers\Api\V1\Staff\StaffNotificationController;
@@ -133,6 +134,13 @@ Route::prefix('customer')->name('customer.')->middleware(['auth:sanctum', 'api.a
         Route::post('{bookingId}/cancel', 'cancel')->whereNumber('bookingId')->name('cancel');
         Route::post('{bookingId}/reschedule', 'reschedule')->whereNumber('bookingId')->name('reschedule');
         Route::post('{bookingId}/rate', 'rate')->whereNumber('bookingId')->name('rate');
+    });
+
+    Route::controller(CustomerPaymentController::class)->group(function () {
+        Route::post('bookings/{bookingId}/pay', 'pay')->whereNumber('bookingId')->name('bookings.pay');
+        Route::get('wallet/charge', 'chargeGateways')->name('wallet.charge.options');
+        Route::post('wallet/charge', 'charge')->name('wallet.charge');
+        Route::get('payments/{publicId}', 'status')->whereUuid('publicId')->name('payments.show');
     });
 
     Route::controller(CustomerAccountController::class)->group(function () {

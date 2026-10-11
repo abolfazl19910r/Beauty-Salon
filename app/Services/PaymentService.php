@@ -324,7 +324,10 @@ class PaymentService
         }
     }
 
-    public function createWalletChargePayment($user, $amount, ?int $preferredGatewayId = null): array
+    /**
+     * @param  string|null  $callbackUrl  پیش‌فرض صفحه‌ی وب؛ اپ موبایل مسیر برگشت به اپ را می‌دهد
+     */
+    public function createWalletChargePayment($user, $amount, ?int $preferredGatewayId = null, ?string $callbackUrl = null): array
     {
         if (! $this->isAvailable()) {
             return $this->unavailableResult();
@@ -332,7 +335,7 @@ class PaymentService
 
         $request = GatewayStartRequest::fromToman(
             $amount,
-            route('wallet.charge.callback'),
+            $callbackUrl ?? route('wallet.charge.callback'),
             sprintf('شارژ کیف پول - کاربر: %s', $user->name ?? $user->phone),
             $user->phone ?? '',
             $user->email ?? '',
@@ -379,6 +382,7 @@ class PaymentService
                     'card_pan' => $result->cardPan,
                     'gateway' => $gateway->driver,
                     'gateway_fee' => $transaction ? intdiv((int) $transaction->fee_rial, 10) : 0,
+                    'transaction_id' => $transaction?->id,
                 ];
             }
 

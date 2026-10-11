@@ -9,7 +9,6 @@ use App\Services\PaymentService;
 use App\Traits\HasJalaliDates;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
@@ -206,35 +205,25 @@ class UserWalletController extends Controller
             $result = $this->paymentService->verifyWalletChargePayment($request, $chargePending['amount']);
 
             if ($result['success']) {
-                return DB::transaction(function () use ($chargePending, $result) {
-                    $user = $this->userRepository->findOrFail($chargePending['user_id']);
-                    $wallet = $user->getOrCreateWallet();
-                    $wallet->increment('balance', $chargePending['amount']);
-                    $wallet->increment('total_deposited', $chargePending['amount']);
-                    $wallet->transactions()->create([
-                        'type' => 'deposit',
+                $user = $this->userRepository->findOrFail($chargePending['user_id']);
+                $transaction = isset($result['transaction_id']) ? \App\Models\PaymentTransaction::find($result['transaction_id']) : null;
+                // فقط یک بار برای هر تراکنش، حتی با دو callback هم‌زمان (۲۰۲۶-۱۰-۱۱)
+                $newBalance = app(\App\Services\Payment\WalletChargeService::class)
+                    ->credit($user, (float) $chargePending['amount'], $result, $transaction);
+
+                session()->forget(['wallet_charge_pending', 'wallet_charge_id']);
+
+                if ($newBalance === null) {
+                    return redirect()->route('wallet.index')->with('info', 'این شارژ قبلاً به کیف پول شما اضافه شده است.');
+                }
+
+                return redirect()->route('wallet.charge.success')
+                    ->with([
+                        'success' => true,
                         'amount' => $chargePending['amount'],
-                        'balance_after' => $wallet->balance,
-                        'description' => 'شارژ کیف پول - کد پیگیری: '.($result['ref_id'] ?? 'نامشخص'),
-                        'metadata' => [
-                            'payment_method' => 'gateway',
-                            'gateway_ref' => $result['ref_id'] ?? null,
-                            'card_pan' => $result['card_pan'] ?? null,
-                            'gateway' => $result['gateway'] ?? null,
-                            'gateway_fee' => $result['gateway_fee'] ?? 0,
-                        ],
+                        'ref_id' => $result['ref_id'] ?? 'نامشخص',
+                        'new_balance' => $newBalance,
                     ]);
-
-                    session()->forget(['wallet_charge_pending', 'wallet_charge_id']);
-
-                    return redirect()->route('wallet.charge.success')
-                        ->with([
-                            'success' => true,
-                            'amount' => $chargePending['amount'],
-                            'ref_id' => $result['ref_id'] ?? 'نامشخص',
-                            'new_balance' => $wallet->balance,
-                        ]);
-                });
             }
 
             session()->forget(['wallet_charge_pending', 'wallet_charge_id']);

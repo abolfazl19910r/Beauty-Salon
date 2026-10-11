@@ -39,6 +39,8 @@ $tenantRoutes = function () {
     // instead of the review form. They belong here, alongside the other genuinely
     // guest-reachable routes, not in the authenticated block below.
     require __DIR__.'/web/reviews.php';
+    // پرداخت اپ «ماهرو» در مرورگر بیرونی (بسته‌ی ۳) — بدون ورود؛ بیرون از گروه auth پایین
+    require __DIR__.'/web/app-payments.php';
 
     // ⭐ Commit 4b-2: moved once the customer-identity redesign made "logged in" mean "logged
     // in as a customer of THIS salon" — 'salon.customer' (EnsureCustomerBelongsToSalon) closes

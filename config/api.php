@@ -18,6 +18,11 @@ return [
         'max_resends' => (int) (env('API_LOGIN_MAX_RESENDS') ?: 3),
     ],
 
+    // اپ «ماهرو» (مشتری، بسته‌ی ۳): صفحه‌ی برگشت از درگاه، مشتری را با این scheme به اپ برمی‌گرداند (mahru://payment?...)
+    'customer_app_scheme' => env('CUSTOMER_APP_SCHEME') ?: 'mahru',
+    // عمر لینک امضاشده‌ی «رفتن به درگاه» که API پرداخت به اپ می‌دهد (اپ آن را در مرورگر بیرونی باز می‌کند)
+    'checkout_ttl_minutes' => (int) (env('API_CHECKOUT_TTL_MINUTES') ?: 15),
+
     'rate_limits' => [
         // ورود/تأیید/ارسال دوباره: کلید «آی‌پی + شماره یا challenge» و سقف جدای خود آی‌پی
         // (سقف آی‌پی بالاتر است چون کاربران اپراتورهای موبایل پشت CGNAT آی‌پی مشترک دارند)
