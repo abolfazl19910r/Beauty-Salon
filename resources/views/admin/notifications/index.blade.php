@@ -2,6 +2,7 @@
 @section('title', 'مدیریت اعلانات')
 
 @section('content')
+    <span data-refresh-on-restore hidden></span>
     <div class="container px-6 mx-auto">
 
         <div class="flex items-center justify-between mb-6">

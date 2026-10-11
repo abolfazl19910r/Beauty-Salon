@@ -65,7 +65,8 @@ Route::middleware(['auth', 'verified', 'salon.specialist'])->name('specialist.')
         Route::put('/{booking}/cancel', [SpecialistBookingManagementController::class, 'cancel'])->name('cancel');
     });
 
-    Route::prefix('specialist/notifications')->name('notifications.')->group(function () {
+    // no-store: با «برگشت» مرورگر نسخه‌ی کش‌شده‌ی فهرست (اعلان خوانده‌شده هنوز پررنگ) نشان داده نشود
+    Route::prefix('specialist/notifications')->name('notifications.')->middleware('cache.headers:no_store;private')->group(function () {
         Route::get('/', [SpecialistNotificationController::class, 'index'])->name('index');
         Route::get('/latest', [SpecialistNotificationController::class, 'latest'])->name('latest');
         Route::get('/count', [SpecialistNotificationController::class, 'count'])->name('count');

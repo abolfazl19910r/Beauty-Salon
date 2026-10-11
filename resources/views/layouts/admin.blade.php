@@ -860,6 +860,15 @@
         if (e.key === 'notification_updated') fetchUnreadCount();
     });
 
+    // صفحه‌ای که با «برگشت» مرورگر از حافظه (bfcache، به‌خصوص فایرفاکس) برمی‌گردد اسکریپت‌هایش را
+    // دوباره اجرا نمی‌کند: شمارنده‌ی زنگوله و فهرست اعلان‌ها وضعیت پیش از خواندن اعلان را نشان می‌دادند.
+    // در این حالت شمارنده دوباره گرفته می‌شود و صفحه‌ی فهرست اعلان‌ها تازه می‌شود.
+    window.addEventListener('pageshow', function (event) {
+        if (!event.persisted) return;
+        fetchUnreadCount();
+        if (document.querySelector('[data-refresh-on-restore]')) window.location.reload();
+    });
+
     function fetchLatestNotifications() {
         const listContainer = document.getElementById('notification-list-container');
         const noMessage = document.getElementById('no-notifications-message');

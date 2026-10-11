@@ -3,6 +3,7 @@
 @section('title', 'اعلانات')
 
 @section('content')
+    <span data-refresh-on-restore hidden></span>
     <div class="fade-in max-w-5xl mx-auto space-y-6">
 
         <div class="flex justify-between items-center">

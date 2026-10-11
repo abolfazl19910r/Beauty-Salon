@@ -3,7 +3,8 @@
 use App\Http\Controllers\Admin\Notification\AdminNotificationController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('notifications')->name('notifications.')->group(function () {
+// no-store: با «برگشت» مرورگر نسخه‌ی کش‌شده‌ی فهرست (اعلان خوانده‌شده هنوز پررنگ) نشان داده نشود
+Route::prefix('notifications')->name('notifications.')->middleware('cache.headers:no_store;private')->group(function () {
     Route::get('count', [AdminNotificationController::class, 'unreadCount'])->name('count');
     Route::get('latest', [AdminNotificationController::class, 'latest'])->name('latest');
 
