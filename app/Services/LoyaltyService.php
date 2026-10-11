@@ -62,11 +62,16 @@ class LoyaltyService
     {
         $user = $this->userRepository->findOrFail($userId);
 
-        if (! $reward->isAvailableForUser($user)) {
-            throw new \Exception('امتیاز کافی نیست یا پاداش در دسترس نیست');
-        }
-
         return DB::transaction(function () use ($userId, $reward, $user) {
+            // قفل ردیف کاربر و پاداش (۲۰۲۶-۱۰-۱۱): دو درخواست هم‌زمان (دو بار زدن دکمه، وب + اپ) هر دو چک امتیاز
+            // را قبل از کم شدن امتیاز اولی رد می‌کردند و امتیاز دو بار خرج می‌شد (موجودی منفی، دو کد تخفیف)
+            \App\Models\User::whereKey($user->id)->lockForUpdate()->first();
+            $reward = \App\Models\Reward::whereKey($reward->id)->lockForUpdate()->firstOrFail();
+
+            if (! $reward->isAvailableForUser($user)) {
+                throw new \Exception('امتیاز کافی نیست یا پاداش در دسترس نیست');
+            }
+
             $this->loyaltyPointRepository->create([
                 'user_id' => $userId,
                 'points' => -$reward->required_points,

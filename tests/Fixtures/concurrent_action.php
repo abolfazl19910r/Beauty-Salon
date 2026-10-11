@@ -74,6 +74,17 @@ try {
             echo 'booking:'.$booking->id;
             break;
 
+        case 'redeem-reward': // salon_id user_id reward_id
+            [$salonId, $userId, $rewardId] = $args;
+            $inSalon((int) $salonId);
+            try {
+                $code = $app->make(App\Services\LoyaltyService::class)->redeemReward((int) $userId, App\Models\Reward::findOrFail((int) $rewardId));
+                echo 'redeemed:'.$code->code;
+            } catch (Exception $e) {
+                echo str_contains($e->getMessage(), 'امتیاز کافی نیست') ? 'rejected' : 'error:'.$e->getMessage();
+            }
+            break;
+
         default:
             echo 'error:unknown action '.$action;
     }
