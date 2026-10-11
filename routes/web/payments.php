@@ -28,6 +28,8 @@ Route::get('/payments/secure/otp', [SecurePaymentController::class, 'showOtp'])-
 
 Route::prefix('payments/secure')->middleware('2fa.enabled')->name('payments.secure.')->group(function () {
     Route::get('/checkout/{booking}', [SecurePaymentController::class, 'showCheckout'])->name('checkout');
+    // از /api/payments/secure/initiate منتقل شد (حذف /api قدیمی، بسته‌ی ۳ اپلیکیشن، ۲۰۲۶-۱۰-۱۱)؛ CSRF مثل بقیه‌ی فرم‌های وب
+    Route::post('/initiate/{booking}', [SecurePaymentController::class, 'initiate'])->name('initiate')->middleware('check.booking.ownership');
     Route::get('/verify/{reference}', [SecurePaymentController::class, 'showVerification'])->name('verify');
     // Real form submission + redirect (not JSON) — belongs here, not in the api/json route file.
     Route::post('/verify/{reference}', [SecurePaymentController::class, 'verify'])->name('verify.submit');

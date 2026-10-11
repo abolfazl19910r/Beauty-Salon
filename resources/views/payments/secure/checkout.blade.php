@@ -85,7 +85,7 @@
             btn.disabled = true;
             text.textContent = 'در حال آماده‌سازی...';
 
-            fetch('{{ route("api.payments.secure.initiate", $booking) }}', {
+            fetch('{{ route("payments.secure.initiate", $booking) }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

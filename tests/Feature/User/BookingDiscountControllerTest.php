@@ -7,11 +7,10 @@ use App\Models\Booking;
 use App\Models\DiscountCode;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 /**
- * BookingDiscountController (check/apply/applyApi) had zero test coverage before this
+ * BookingDiscountController (check/apply) had zero test coverage before this
  * session, despite being the exact controller at the center of the documented R-DiscountLogic
  * bug chain (payment_reference, wrong Form Request namespace, BookingPolicy 403s, dead API
  * routes, apply-discount vs check-discount confusion). This is the first regression guard for
@@ -69,29 +68,12 @@ class BookingDiscountControllerTest extends TestCase
         $response->assertStatus(422);
     }
 
-    public function test_check_requires_authentication_on_the_sanctum_guarded_api_route(): void
+    public function test_check_requires_authentication(): void
     {
-        // ⭐ Updated (test-writing session 9): the misleading "public" registration
-        // (/api/check-discount, no middleware, but silently 403'd by
-        // CheckDiscountRequest::authorize() anyway) was removed per an explicit project
-        // decision that this preview genuinely requires login. The only remaining API
-        // route is /api/bookings/check-discount, properly guarded by auth:sanctum.
+        // /api/bookings/check-discount قدیمی در بسته‌ی ۳ حذف شد؛ مسیر وب سالن هم ورود می‌خواهد
         $code = DiscountCode::factory()->create(['is_active' => true]);
 
-        $response = $this->postJson('/api/bookings/check-discount', ['code' => $code->code]);
-
-        $response->assertUnauthorized();
-    }
-
-    public function test_check_works_via_the_sanctum_guarded_api_route_once_authenticated(): void
-    {
-        $code = DiscountCode::factory()->create(['is_active' => true]);
-
-        Sanctum::actingAs($this->user);
-        $response = $this->postJson('/api/bookings/check-discount', ['code' => $code->code]);
-
-        $response->assertOk();
-        $response->assertJson(['valid' => true]);
+        $this->postJson(route('bookings.check-discount'), ['code' => $code->code])->assertUnauthorized();
     }
 
     public function test_apply_attaches_the_discount_to_the_users_own_unpaid_booking(): void
@@ -173,7 +155,7 @@ class BookingDiscountControllerTest extends TestCase
         $this->assertSame('ALREADY-APPLIED', $booking->fresh()->discount_code);
     }
 
-    public function test_apply_api_returns_json_success(): void
+    public function test_apply_returns_json_success_for_a_json_request(): void
     {
         $booking = Booking::factory()->create([
             'user_id' => $this->user->id,
@@ -182,8 +164,7 @@ class BookingDiscountControllerTest extends TestCase
         ]);
         $code = DiscountCode::factory()->create(['type' => 'fixed', 'amount' => 15000, 'is_active' => true]);
 
-        Sanctum::actingAs($this->user);
-        $response = $this->postJson("/api/bookings/{$booking->id}/apply-discount", [
+        $response = $this->actingAs($this->user)->postJson(route('bookings.apply-discount', $booking), [
             'code' => $code->code,
         ]);
 
@@ -191,15 +172,14 @@ class BookingDiscountControllerTest extends TestCase
         $response->assertJson(['success' => true]);
     }
 
-    public function test_apply_api_returns_json_error_for_an_invalid_code(): void
+    public function test_apply_returns_a_json_error_for_an_invalid_code(): void
     {
         $booking = Booking::factory()->create([
             'user_id' => $this->user->id,
             'payment_status' => 'unpaid',
         ]);
 
-        Sanctum::actingAs($this->user);
-        $response = $this->postJson("/api/bookings/{$booking->id}/apply-discount", [
+        $response = $this->actingAs($this->user)->postJson(route('bookings.apply-discount', $booking), [
             'code' => 'BOGUS-CODE',
         ]);
 

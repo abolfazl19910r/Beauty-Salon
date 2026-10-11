@@ -8,11 +8,8 @@ use App\Models\Booking;
 use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Traits\HasJalaliDates;
 use Exception;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
@@ -117,43 +114,6 @@ class BookingController extends Controller
             return back()->with('error', $e->getUserMessage());
         } catch (Exception $e) {
             return back()->with('error', 'خطا در ثبت نظر: '.$e->getMessage());
-        }
-    }
-
-    public function getUserBookings(): Collection
-    {
-        return $this->bookingRepository->getAllForUser(auth()->id());
-    }
-
-    public function getUpcomingBookings(): JsonResponse
-    {
-        $bookings = $this->bookingRepository->getUpcomingExcludingCancelledForUser(Auth::id());
-
-        return response()->json([
-            'bookings' => $bookings,
-            'count' => $bookings->count(),
-        ]);
-    }
-
-    public function getPastBookings(): JsonResponse
-    {
-        $bookings = $this->bookingRepository->getPastForUserApi(Auth::id());
-
-        return response()->json([
-            'bookings' => $bookings,
-            'count' => $bookings->count(),
-        ]);
-    }
-
-    public function latestSuccessful(): JsonResponse
-    {
-        try {
-            $booking = $this->bookingRepository->getLatestSuccessfulForUser(Auth::id());
-
-            return response()->json($booking);
-
-        } catch (Exception $e) {
-            return response()->json(['error' => 'هیچ رزرو موفقی یافت نشد.'], 404);
         }
     }
 }

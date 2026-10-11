@@ -216,7 +216,7 @@
 </header>
 
 <div id="announcement-banner-mount" class="container mx-auto px-4 pt-24 space-y-3" dir="rtl"
-     data-announcements-url="{{ route('api.announcements.active') }}"></div>
+     data-announcements-url="{{ route('announcements.active') }}"></div>
 
 @push('scripts')
 <script>

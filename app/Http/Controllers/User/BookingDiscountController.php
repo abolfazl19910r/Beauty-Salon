@@ -84,26 +84,6 @@ class BookingDiscountController extends Controller
         }
     }
 
-    public function applyApi(ApplyDiscountRequest $request, Booking $booking): JsonResponse
-    {
-        $this->authorize('applyDiscount', $booking);
-
-        try {
-            $result = $this->bookingService->applyDiscountCode($booking, $request->code);
-
-            return response()->json($result, $result['success'] ? 200 : 422);
-
-        } catch (Exception $e) {
-            Log::error('خطا در اعمال کد تخفیف (API)', [
-                'booking_id' => $booking->id,
-                'code' => $request->code,
-                'error' => $e->getMessage(),
-            ]);
-
-            return $this->errorResponse('خطا در اعمال کد تخفیف.', 500);
-        }
-    }
-
     private function resolveBaseAmount(CheckDiscountRequest $request): float
     {
         if ($request->filled('booking_id')) {

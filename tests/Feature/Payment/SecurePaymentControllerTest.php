@@ -26,7 +26,7 @@ class SecurePaymentControllerTest extends TestCase
 
         $response = $this->actingAs($user)
             ->withSession(['2fa_verified' => true])
-            ->postJson(route('api.payments.secure.initiate', $booking));
+            ->postJson(route('payments.secure.initiate', $booking));
 
         $response->assertOk()->assertJson(['success' => true]);
 
@@ -45,7 +45,7 @@ class SecurePaymentControllerTest extends TestCase
 
         $response = $this->actingAs($stranger)
             ->withSession(['2fa_verified' => true])
-            ->postJson(route('api.payments.secure.initiate', $booking));
+            ->postJson(route('payments.secure.initiate', $booking));
 
         $response->assertForbidden();
     }
@@ -57,7 +57,7 @@ class SecurePaymentControllerTest extends TestCase
 
         $response = $this->actingAs($user)
             ->withSession(['2fa_verified' => true])
-            ->postJson(route('api.payments.secure.initiate', $booking));
+            ->postJson(route('payments.secure.initiate', $booking));
 
         $response->assertStatus(422)->assertJson(['success' => false]);
         $this->assertDatabaseMissing('payments', ['booking_id' => $booking->id]);
@@ -134,37 +134,6 @@ class SecurePaymentControllerTest extends TestCase
             'reference' => $payment->reference_id,
             'status' => 'success',
         ]));
-    }
-
-    // ── checkStatus() ───────────────────────────────────────────────────
-
-    public function test_check_status_returns_the_payment_state(): void
-    {
-        $user = $this->verifiedUser();
-        $booking = Booking::factory()->create(['status' => 'pending_payment', 'user_id' => $user->id]);
-        $payment = Payment::factory()->create(['booking_id' => $booking->id, 'status' => 'pending']);
-
-        $response = $this->actingAs($user)
-            ->withSession(['2fa_verified' => true])
-            ->getJson(route('api.payments.secure.status', $payment->reference_id));
-
-        $response->assertOk()->assertJsonStructure([
-            'status', 'paid_at', 'gateway_reference', 'remaining_seconds', 'booking_status',
-        ]);
-    }
-
-    public function test_check_status_is_forbidden_for_a_non_owner(): void
-    {
-        $owner = User::factory()->create();
-        $stranger = $this->verifiedUser();
-        $booking = Booking::factory()->create(['user_id' => $owner->id]);
-        $payment = Payment::factory()->create(['booking_id' => $booking->id]);
-
-        $response = $this->actingAs($stranger)
-            ->withSession(['2fa_verified' => true])
-            ->getJson(route('api.payments.secure.status', $payment->reference_id));
-
-        $response->assertForbidden();
     }
 
     // ── showCheckout() ──────────────────────────────────────────────────

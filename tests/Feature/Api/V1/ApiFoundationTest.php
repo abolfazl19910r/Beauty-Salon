@@ -139,11 +139,12 @@ class ApiFoundationTest extends TestCase
         $this->assertGreaterThan(0, $response->json('meta.retry_after'));
     }
 
-    public function test_legacy_api_routes_keep_their_old_format(): void
+    public function test_the_legacy_api_is_gone(): void
     {
-        // /api/bookings (بیرون از v1) تا بسته‌ی ۳ دست‌نخورده می‌ماند
-        $response = $this->getJson('/api/bookings');
-
-        $response->assertStatus(401)->assertJsonMissingPath('error.code');
+        // /api قدیمی در بسته‌ی ۳ (۲۰۲۶-۱۰-۱۱) حذف شد؛ اپ فقط /api/v1 را صدا می‌زند
+        foreach (['/api/bookings', '/api/bookings/upcoming', '/api/security/sessions/active', '/api/s/rasta/announcements/active'] as $uri) {
+            $this->getJson($uri)->assertNotFound();
+        }
+        $this->postJson('/api/payments/secure/initiate/1')->assertNotFound();
     }
 }

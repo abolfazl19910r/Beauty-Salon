@@ -231,19 +231,4 @@ class SecurePaymentController extends Controller
 
         return view('payments.secure.result', compact('success', 'payment', 'booking', 'message'));
     }
-
-    public function checkStatus(string $reference): JsonResponse
-    {
-        $payment = $this->paymentRepository->findByReferenceWithBookingOrFail($reference);
-
-        $this->authorize('pay', $payment->booking);
-
-        return response()->json([
-            'status' => $payment->status,
-            'paid_at' => $payment->paid_at?->format('Y-m-d H:i:s'),
-            'gateway_reference' => $payment->gateway_reference,
-            'remaining_seconds' => $payment->getRemainingTime(),
-            'booking_status' => $payment->booking->status,
-        ]);
-    }
 }

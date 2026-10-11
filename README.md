@@ -505,15 +505,17 @@ Beauty-Salon/
 | `/superadmin/*` | پنل مدیر پلتفرم |
 | `/payments/return/{publicId}` | برگشت از درگاه پرداخت |
 
-### API
+### API اپ‌های موبایل (`/api/v1`، توکن Sanctum)
 
 | گروه | مسیرها |
 |---|---|
-| اعلانیه‌های عمومی سالن | `GET api/s/{salon_slug}/announcements` (و `/active`، `/top`، `/{id}`) |
-| نوبت‌ها (Sanctum) | `api/bookings` — فهرست، ثبت، آینده/گذشته/آخرین، جزئیات، لغو، تغییر زمان، امتیازدهی، کد تخفیف، متخصص‌های یک خدمت، روزها و اسلات‌های خالی |
-| پرداخت امن (Sanctum) | `POST api/payments/secure/initiate/{booking}`، `GET api/payments/secure/{reference}/status` |
-| امنیت حساب (Sanctum) | `api/security` — تاریخچه‌ی ورود، لاگ‌ها، نشست‌های فعال و خاتمه‌ی آن‌ها، بررسی قدرت رمز |
+| پایه | `GET api/v1/status`، `GET api/v1/me`، `POST api/v1/logout`، `api/v1/tokens` (دستگاه‌ها) |
+| اپ «ماهرو همکار» (متخصص) | `POST api/v1/staff/login…`، `api/v1/staff/*` — امروز، نوبت‌ها، تقویم، مرخصی، کیف پول و شبا، اعلان‌ها، بازیابی رمز |
+| اپ «ماهرو» پیش از ورود | `api/v1/customer/salons/{salon_slug}` — کارت سالن، `login…`، `register…`، `password/…` |
+| اپ «ماهرو» (مشتری) | `api/v1/customer/*` — سالن، خانه، خدمات، متخصص‌ها، روزها و ساعت‌های آزاد، نوبت‌ها (پیش‌فاکتور، رزرو، لغو، جابه‌جایی، امتیاز)، پرداخت (`bookings/{id}/pay`، `wallet/charge`، `payments/{tx}`)، کیف پول، باشگاه مشتریان، پروفایل، حذف حساب، اعلان‌ها |
+| پرداخت اپ در مرورگر | `/s/{salon_slug}/app/checkout/{tx}` (امضاشده)، `/s/{salon_slug}/app/payment/callback`، `/s/{salon_slug}/app/wallet/callback` |
 
+`/api` قدیمی (بیرون از v1) در بسته‌ی ۳ اپلیکیشن (۲۰۲۶-۱۰-۱۱) حذف شد.
 فهرست کامل با `php artisan route:list` قابل مشاهده است.
 
 ---

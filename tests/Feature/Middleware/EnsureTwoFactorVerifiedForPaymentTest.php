@@ -38,7 +38,7 @@ class EnsureTwoFactorVerifiedForPaymentTest extends TestCase
         $booking = Booking::factory()->create(['status' => 'pending_payment', 'user_id' => $user->id]);
 
         $response = $this->actingAs($user)
-            ->postJson(route('api.payments.secure.initiate', $booking));
+            ->postJson(route('payments.secure.initiate', $booking));
 
         $response->assertStatus(403)->assertJson(['success' => false]);
     }
@@ -80,7 +80,7 @@ class EnsureTwoFactorVerifiedForPaymentTest extends TestCase
         $booking = Booking::factory()->create(['status' => 'pending_payment', 'user_id' => $user->id]);
 
         $response = $this->actingAs($user)
-            ->postJson(route('api.payments.secure.initiate', $booking));
+            ->postJson(route('payments.secure.initiate', $booking));
 
         $response->assertStatus(428)->assertJson([
             'success' => false,

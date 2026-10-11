@@ -16,22 +16,4 @@ class AnnouncementController extends Controller
     {
         return response()->json($this->announcementRepository->getActive());
     }
-
-    public function top(): JsonResponse
-    {
-        return response()->json($this->announcementRepository->getTopActive());
-    }
-
-    public function index(): JsonResponse
-    {
-        return response()->json($this->announcementRepository->paginateActive(10));
-    }
-
-    /**
-     * @param  int  $id
-     */
-    public function show($id): JsonResponse
-    {
-        return response()->json($this->announcementRepository->findActiveOrFail($id));
-    }
 }

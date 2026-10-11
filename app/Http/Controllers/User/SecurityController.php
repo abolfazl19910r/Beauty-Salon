@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\User\Security\CheckPasswordStrengthRequest;
 use App\Models\SecuritySetting;
 use App\Repositories\Contracts\SecurityLogRepositoryInterface;
 use App\Services\SecurityLogService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -110,57 +108,6 @@ class SecurityController extends Controller
         ]);
     }
 
-    public function getSecurityLogs(Request $request): JsonResponse
-    {
-        $logs = $this->securityLogRepository->paginateForUserWithFilters(auth()->id(), [
-            'type' => $request->type,
-            'date_from' => $request->date_from,
-            'date_to' => $request->date_to,
-        ]);
-
-        return response()->json($logs);
-    }
-
-    public function getLoginHistory(): JsonResponse
-    {
-        $history = $this->securityLogRepository->getLoginHistoryForUser(auth()->id());
-
-        return response()->json($history);
-    }
-
-    public function checkPasswordStrength(CheckPasswordStrengthRequest $request): JsonResponse
-    {
-        $score = 0;
-        $password = $request->password;
-
-        if (strlen($password) >= 12) {
-            $score += 2;
-        } elseif (strlen($password) >= 8) {
-            $score += 1;
-        }
-
-        if (preg_match('/[A-Z]/', $password)) {
-            $score += 1;
-        }
-        if (preg_match('/[a-z]/', $password)) {
-            $score += 1;
-        }
-
-        if (preg_match('/[0-9]/', $password)) {
-            $score += 1;
-        }
-
-        if (preg_match('/[^A-Za-z0-9]/', $password)) {
-            $score += 1;
-        }
-
-        return response()->json([
-            'score' => $score,
-            'strength' => $this->getPasswordStrengthLabel($score),
-            'suggestions' => $this->getPasswordSuggestions($score),
-        ]);
-    }
-
     protected function calculateSecurityScore(): int
     {
         $user = auth()->user();
@@ -190,33 +137,6 @@ class SecurityController extends Controller
         }
 
         return min($score, 100);
-    }
-
-    protected function getPasswordStrengthLabel($score): string
-    {
-        return match (true) {
-            $score >= 5 => 'قوی',
-            $score >= 3 => 'متوسط',
-            default => 'ضعیف'
-        };
-    }
-
-    protected function getPasswordSuggestions($score): array
-    {
-        $suggestions = [];
-
-        if ($score < 3) {
-            $suggestions[] = 'از حروف بزرگ و کوچک استفاده کنید';
-            $suggestions[] = 'از اعداد استفاده کنید';
-        }
-        if ($score < 4) {
-            $suggestions[] = 'از کاراکترهای خاص مانند @#$% استفاده کنید';
-        }
-        if ($score < 5) {
-            $suggestions[] = 'طول رمز عبور را افزایش دهید (حداقل 12 کاراکتر)';
-        }
-
-        return $suggestions;
     }
 
     protected function getRecentActivities(): Collection
