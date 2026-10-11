@@ -203,6 +203,12 @@ class BookingService
             return $existing;
         }
 
+        // کد تخفیف نامعتبر یا شخصیِ مشتری دیگر رد می‌شود (۲۰۲۶-۱۰-۱۱) — قبلاً فقط پیش‌نمایش (check-discount) مالک کد را
+        // چک می‌کرد و هر کس کد پاداش دیگری را می‌دانست، در فرم رزرو استفاده‌اش می‌کرد
+        if ($discountCode !== null && trim($discountCode) !== '') {
+            $this->validateDiscountCode($discountCode, $userId);
+        }
+
         $specialist = $this->specialistRepository->findOrFail($specialistId);
         $bookingDate = date('Y-m-d', strtotime($bookingTime));
         $bookingTimeOnly = date('H:i', strtotime($bookingTime));
@@ -266,7 +272,7 @@ class BookingService
             if ($discountCode && $prepaymentData['discount_code']) {
                 $lockedDiscountCode = $this->discountCodeRepository->lockByCode($discountCode);
 
-                if ($lockedDiscountCode && $lockedDiscountCode->isValid()) {
+                if ($lockedDiscountCode && $lockedDiscountCode->isValid() && $lockedDiscountCode->canBeUsedBy($userId)) {
                     $lockedDiscountCode->incrementUsage();
                 } else {
                     Log::warning('⚠️ کد تخفیف بین محاسبه و رزرو نهایی به حداکثر استفاده رسید', [

@@ -208,4 +208,36 @@ class BookingReservationControllerTest extends TestCase
         $this->actingAs($this->user)->put(route('bookings.cancel', ['booking' => $booking->id]))->assertForbidden();
         $this->assertSame('confirmed', $booking->fresh()->status);
     }
+
+    public function test_store_refuses_another_customers_personal_discount_code(): void
+    {
+        // ۲۰۲۶-۱۰-۱۱: قبلاً فقط پیش‌نمایش مالک کد را چک می‌کرد؛ POST رزرو کد پاداش مشتری دیگر را می‌پذیرفت
+        $owner = \App\Models\User::factory()->create();
+        \App\Models\DiscountCode::create(['code' => 'REWARD-OF-OTHER', 'type' => 'fixed', 'amount' => 30000, 'max_uses' => 1, 'used_count' => 0, 'is_active' => true, 'user_id' => $owner->id]);
+
+        $this->actingAs($this->user)->from(route('bookings.create'))->post(route('bookings.store'), [
+            'service_id' => $this->service->id,
+            'specialist_id' => $this->specialist->id,
+            'booking_time' => $this->bookingTime,
+            'discount_code' => 'REWARD-OF-OTHER',
+        ])->assertRedirect(route('bookings.create'))->assertSessionHas('error', 'این کد تخفیف متعلق به شما نیست.');
+
+        $this->assertSame(0, \App\Models\Booking::count());
+        $this->assertSame(0, \App\Models\DiscountCode::where('code', 'REWARD-OF-OTHER')->value('used_count'));
+    }
+
+    public function test_store_accepts_the_customers_own_personal_code(): void
+    {
+        \App\Models\DiscountCode::create(['code' => 'MY-REWARD', 'type' => 'fixed', 'amount' => 30000, 'max_uses' => 1, 'used_count' => 0, 'is_active' => true, 'user_id' => $this->user->id]);
+
+        $this->actingAs($this->user)->post(route('bookings.store'), [
+            'service_id' => $this->service->id,
+            'specialist_id' => $this->specialist->id,
+            'booking_time' => $this->bookingTime,
+            'discount_code' => 'MY-REWARD',
+        ])->assertRedirect();
+
+        $this->assertSame('MY-REWARD', \App\Models\Booking::sole()->discount_code);
+        $this->assertSame(1, \App\Models\DiscountCode::where('code', 'MY-REWARD')->value('used_count'));
+    }
 }

@@ -103,6 +103,12 @@ class BookingReservationController extends Controller
         } catch (BookingNotAvailableException $e) {
 
             throw $e;
+        } catch (\App\Exceptions\DiscountCodeInvalidException $e) {
+            if ($request->expectsJson()) {
+                throw $e;
+            }
+
+            return back()->with('error', $e->getUserMessage())->withInput();
         } catch (\App\Exceptions\IdempotencyKeyReusedException $e) {
             return back()->with('error', $e->getMessage());
         } catch (Exception $e) {
