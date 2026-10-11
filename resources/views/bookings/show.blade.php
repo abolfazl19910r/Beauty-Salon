@@ -223,7 +223,7 @@
                         بازگشت به لیست نوبت‌ها
                     </a>
 
-                    @if($booking->payment_status == 'unpaid')
+                    @if($booking->isPayable())
                         <div class="flex flex-col items-end gap-1.5">
                             <a href="{{ route('payment.show', $booking) }}"
                                class="px-5 py-2 rounded-lg transition-opacity hover:opacity-90 inline-flex items-center font-bold"

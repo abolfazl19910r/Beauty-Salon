@@ -25,7 +25,7 @@ class EnsureTwoFactorVerifiedForPaymentTest extends TestCase
     public function test_user_without_2fa_enabled_is_redirected_to_2fa_settings(): void
     {
         $user = User::factory()->create(['two_factor_enabled' => false]);
-        $booking = Booking::factory()->create(['user_id' => $user->id]);
+        $booking = Booking::factory()->create(['status' => 'pending_payment', 'user_id' => $user->id]);
 
         $response = $this->actingAs($user)->get(route('payments.secure.checkout', $booking));
 
@@ -35,7 +35,7 @@ class EnsureTwoFactorVerifiedForPaymentTest extends TestCase
     public function test_json_request_without_2fa_enabled_gets_a_403_not_a_redirect(): void
     {
         $user = User::factory()->create(['two_factor_enabled' => false]);
-        $booking = Booking::factory()->create(['user_id' => $user->id]);
+        $booking = Booking::factory()->create(['status' => 'pending_payment', 'user_id' => $user->id]);
 
         $response = $this->actingAs($user)
             ->postJson(route('api.payments.secure.initiate', $booking));
@@ -48,7 +48,7 @@ class EnsureTwoFactorVerifiedForPaymentTest extends TestCase
         Queue::fake();
 
         $user = User::factory()->create(['two_factor_enabled' => true]);
-        $booking = Booking::factory()->create(['user_id' => $user->id]);
+        $booking = Booking::factory()->create(['status' => 'pending_payment', 'user_id' => $user->id]);
 
         $response = $this->actingAs($user)->get(route('payments.secure.checkout', $booking));
 
@@ -64,7 +64,7 @@ class EnsureTwoFactorVerifiedForPaymentTest extends TestCase
         Queue::fake();
 
         $user = User::factory()->create(['two_factor_enabled' => true]);
-        $booking = Booking::factory()->create(['user_id' => $user->id]);
+        $booking = Booking::factory()->create(['status' => 'pending_payment', 'user_id' => $user->id]);
 
         $this->actingAs($user)->get(route('payments.secure.checkout', $booking));
         $this->actingAs($user)->get(route('payments.secure.checkout', $booking));
@@ -77,7 +77,7 @@ class EnsureTwoFactorVerifiedForPaymentTest extends TestCase
         Queue::fake();
 
         $user = User::factory()->create(['two_factor_enabled' => true]);
-        $booking = Booking::factory()->create(['user_id' => $user->id]);
+        $booking = Booking::factory()->create(['status' => 'pending_payment', 'user_id' => $user->id]);
 
         $response = $this->actingAs($user)
             ->postJson(route('api.payments.secure.initiate', $booking));
@@ -91,7 +91,7 @@ class EnsureTwoFactorVerifiedForPaymentTest extends TestCase
     public function test_verified_session_passes_through_to_the_controller(): void
     {
         $user = User::factory()->create(['two_factor_enabled' => true]);
-        $booking = Booking::factory()->create(['user_id' => $user->id]);
+        $booking = Booking::factory()->create(['status' => 'pending_payment', 'user_id' => $user->id]);
 
         $response = $this->actingAs($user)
             ->withSession(['2fa_verified' => true])

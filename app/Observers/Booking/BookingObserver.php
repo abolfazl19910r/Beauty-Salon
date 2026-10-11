@@ -56,6 +56,11 @@ class BookingObserver
             }
 
             if ($booking->wasChanged('status') && $booking->status === 'cancelled') {
+                // سهم کیف پولِ پرداخت ترکیبی نیمه‌کاره (مشتری از بانک برنگشت، لغو خودکار/دستی) — ۲۰۲۶-۱۰-۱۱
+                if ($booking->payment_status !== 'paid') {
+                    app(\App\Services\Payment\BookingWalletShare::class)->releaseForBooking($booking, 'نوبت پیش از تکمیل پرداخت لغو شد');
+                }
+
                 $this->handleBookingCancellation($booking);
             }
 

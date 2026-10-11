@@ -193,7 +193,7 @@
                                             </svg>
                                         </a>
 
-                                        @if($booking->payment_status == 'unpaid' && in_array($booking->status, ['pending_payment', 'confirmed']))
+                                        @if($booking->isPayable())
                                             <a href="{{ route('payment.show', $booking) }}"
                                                class="transition hover:opacity-70" style="color: #6FCF97;" title="پرداخت">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

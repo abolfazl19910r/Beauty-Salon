@@ -22,7 +22,7 @@ class SecurePaymentControllerTest extends TestCase
     public function test_initiate_creates_a_pending_payment_and_returns_the_verify_url(): void
     {
         $user = $this->verifiedUser();
-        $booking = Booking::factory()->create(['user_id' => $user->id, 'prepayment_amount' => 75000, 'payment_status' => 'unpaid']);
+        $booking = Booking::factory()->create(['status' => 'pending_payment', 'user_id' => $user->id, 'prepayment_amount' => 75000, 'payment_status' => 'unpaid']);
 
         $response = $this->actingAs($user)
             ->withSession(['2fa_verified' => true])
@@ -53,7 +53,7 @@ class SecurePaymentControllerTest extends TestCase
     public function test_initiate_rejects_an_already_paid_booking(): void
     {
         $user = $this->verifiedUser();
-        $booking = Booking::factory()->create(['user_id' => $user->id, 'payment_status' => 'paid']);
+        $booking = Booking::factory()->create(['status' => 'pending_payment', 'user_id' => $user->id, 'payment_status' => 'paid']);
 
         $response = $this->actingAs($user)
             ->withSession(['2fa_verified' => true])
@@ -68,7 +68,7 @@ class SecurePaymentControllerTest extends TestCase
     public function test_verify_marks_booking_and_payment_paid_and_sets_payment_details_on_the_booking(): void
     {
         $user = $this->verifiedUser();
-        $booking = Booking::factory()->create(['user_id' => $user->id, 'prepayment_amount' => 60000, 'payment_status' => 'unpaid']);
+        $booking = Booking::factory()->create(['status' => 'pending_payment', 'user_id' => $user->id, 'prepayment_amount' => 60000, 'payment_status' => 'unpaid']);
 
         // Real flow through the service so card_data carries a valid tamper-evidence signature.
         $service = app(\App\Services\SecurePaymentService::class);
@@ -96,7 +96,7 @@ class SecurePaymentControllerTest extends TestCase
     public function test_verify_fails_gracefully_for_an_expired_payment_without_touching_the_booking(): void
     {
         $user = $this->verifiedUser();
-        $booking = Booking::factory()->create(['user_id' => $user->id, 'payment_status' => 'unpaid']);
+        $booking = Booking::factory()->create(['status' => 'pending_payment', 'user_id' => $user->id, 'payment_status' => 'unpaid']);
         $payment = Payment::factory()->create([
             'booking_id' => $booking->id,
             'status' => 'pending',
@@ -123,7 +123,7 @@ class SecurePaymentControllerTest extends TestCase
     public function test_verify_is_idempotent_for_an_already_completed_payment(): void
     {
         $user = $this->verifiedUser();
-        $booking = Booking::factory()->create(['user_id' => $user->id, 'payment_status' => 'paid']);
+        $booking = Booking::factory()->create(['status' => 'pending_payment', 'user_id' => $user->id, 'payment_status' => 'paid']);
         $payment = Payment::factory()->completed()->create(['booking_id' => $booking->id]);
 
         $response = $this->actingAs($user)
@@ -141,7 +141,7 @@ class SecurePaymentControllerTest extends TestCase
     public function test_check_status_returns_the_payment_state(): void
     {
         $user = $this->verifiedUser();
-        $booking = Booking::factory()->create(['user_id' => $user->id]);
+        $booking = Booking::factory()->create(['status' => 'pending_payment', 'user_id' => $user->id]);
         $payment = Payment::factory()->create(['booking_id' => $booking->id, 'status' => 'pending']);
 
         $response = $this->actingAs($user)
@@ -172,7 +172,7 @@ class SecurePaymentControllerTest extends TestCase
     public function test_show_checkout_redirects_away_for_an_already_paid_booking(): void
     {
         $user = $this->verifiedUser();
-        $booking = Booking::factory()->create(['user_id' => $user->id, 'payment_status' => 'paid']);
+        $booking = Booking::factory()->create(['status' => 'pending_payment', 'user_id' => $user->id, 'payment_status' => 'paid']);
 
         $response = $this->actingAs($user)
             ->withSession(['2fa_verified' => true])

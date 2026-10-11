@@ -14,6 +14,7 @@ use Illuminate\Notifications\Notification;
  *
  * هر جا پول بدون نوبت/شارژ برمی‌گرده این پیامک فرستاده می‌شه:
  * - slot_taken: ساعت نوبت وقتی مشتری در بانک بود رزرو شد (LostSlotRefundService) → کارت و/یا کیف پول
+ * - booking_cancelled: نوبت پیش از رسیدن پرداخت لغو شده بود (مثلاً لغو خودکار پرداخت‌نشده‌ها) — LostSlotRefundService
  * - verify_unanswered: پاسخ تایید بانک (سامان/ملت) نرسید و payments:reconcile برگشت زد → کارت
  * - amount_mismatch: مبلغ تاییدشده‌ی سامان با سفارش یکی نبود و همون لحظه Reverse شد → کارت
  * - settle_failed: ملت پرداخت رو تایید کرد ولی واریز (settle) انجام نشد و همون لحظه برگشت خورد → کارت
@@ -26,7 +27,7 @@ class PaymentRefundedNotification extends Notification implements ShouldQueue
 {
     use Queueable, SendsSmsOnSmsQueue;
 
-    public const REASONS = ['slot_taken', 'verify_unanswered', 'amount_mismatch', 'settle_failed', 'charge_recovered'];
+    public const REASONS = ['slot_taken', 'booking_cancelled', 'verify_unanswered', 'amount_mismatch', 'settle_failed', 'charge_recovered'];
 
     public readonly string $text;
 
@@ -52,6 +53,7 @@ class PaymentRefundedNotification extends Notification implements ShouldQueue
         $lines = [$salonName ?: config('brand.name')];
         $lines[] = match ($this->reason) {
             'slot_taken' => "ساعت انتخابی هنگام پرداخت رزرو شده بود و {$subject} ثبت نشد.",
+            'booking_cancelled' => "نوبت پیش از تکمیل پرداخت لغو شده بود و {$subject} ثبت نشد.",
             'verify_unanswered' => "تایید {$subject} از بانک دریافت نشد و ثبت نشد.",
             'settle_failed' => "واریز نهایی {$subject} در بانک انجام نشد و ثبت نشد.",
             'charge_recovered' => 'تایید شارژ کیف پول شما با تأخیر از درگاه رسید و شارژ انجام شد.',

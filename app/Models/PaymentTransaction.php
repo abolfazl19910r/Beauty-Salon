@@ -34,12 +34,13 @@ class PaymentTransaction extends Model
     protected $fillable = [
         'public_id', 'salon_id', 'gateway_id', 'driver', 'purpose', 'payable_type', 'payable_id', 'user_id',
         'amount_rial', 'fee_rial', 'token', 'ref_id', 'gateway_receipt', 'card_pan', 'status', 'callback_url',
-        'start_response', 'verify_response', 'verified_at', 'needs_attention',
+        'start_response', 'verify_response', 'verified_at', 'needs_attention', 'wallet_toman', 'wallet_state',
     ];
 
     protected $casts = [
         'amount_rial' => 'integer',
         'fee_rial' => 'integer',
+        'wallet_toman' => 'float',
         'needs_attention' => 'boolean',
         'start_response' => 'array',
         'verify_response' => 'array',

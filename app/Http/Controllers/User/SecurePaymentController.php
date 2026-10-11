@@ -43,9 +43,9 @@ class SecurePaymentController extends Controller
     {
         $this->authorize('pay', $booking);
 
-        if ($booking->payment_status === 'paid') {
+        if (! $booking->isPayable()) {
             return redirect()->route('bookings.show', $booking)
-                ->with('error', 'این نوبت قبلاً پرداخت شده است.');
+                ->with('error', $booking->notPayableReason());
         }
 
         return view('payments.secure.checkout', compact('booking'));
@@ -55,10 +55,10 @@ class SecurePaymentController extends Controller
     {
         $this->authorize('pay', $booking);
 
-        if ($booking->payment_status === 'paid') {
+        if (! $booking->isPayable()) {
             return response()->json([
                 'success' => false,
-                'message' => 'این نوبت قبلاً پرداخت شده است.',
+                'message' => $booking->notPayableReason(),
             ], 422);
         }
 

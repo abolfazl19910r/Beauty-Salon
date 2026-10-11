@@ -81,7 +81,7 @@ class PaymentService
      * که با POST cross-site و بدون کوکی session برمی‌گردن هم کار کنن. callback کسب‌وکار در خود ردیف ذخیره
      * می‌شه و GatewayReturnController مشتری رو (با GET) به اون می‌فرسته.
      */
-    private function startWith(GatewayStartRequest $request, string $sessionKey, ?int $preferredGatewayId, array $logContext, string $purpose, ?\Illuminate\Database\Eloquent\Model $payable, ?int $userId): array
+    private function startWith(GatewayStartRequest $request, string $sessionKey, ?int $preferredGatewayId, array $logContext, string $purpose, ?\Illuminate\Database\Eloquent\Model $payable, ?int $userId, float $walletToman = 0): array
     {
         $salon = $this->salon();
         $transaction = \App\Models\PaymentTransaction::create([
@@ -94,6 +94,8 @@ class PaymentService
             'amount_rial' => $request->amountRial,
             'callback_url' => $request->callbackUrl,
         ]);
+        // سهم کیف پولِ پرداخت ترکیبی (از قبل کم شده) روی همین تراکنش — نه session (۲۰۲۶-۱۰-۱۱)
+        app(\App\Services\Payment\BookingWalletShare::class)->attach($transaction, $walletToman);
 
         $request = $request->with(
             callbackUrl: route('payments.return', ['publicId' => $transaction->public_id]),
@@ -129,6 +131,9 @@ class PaymentService
                 'transaction' => $transaction->public_id,
             ];
         }
+
+        // درگاه شروع نشد: سهم کیف پولی که برای این تلاش کم شده بود همین حالا برمی‌گردد
+        app(\App\Services\Payment\BookingWalletShare::class)->release($transaction, 'اتصال به درگاه ناموفق بود');
 
         Log::error('❌ Payment Request Failed', $logContext + [
             'gateway' => $gateway?->driver,
@@ -204,22 +209,30 @@ class PaymentService
         return $gateways->firstWhere('id', $id) ?? $gateways->first();
     }
 
-    public function createPayment($booking, $customAmount = null, ?int $preferredGatewayId = null): array
+    /**
+     * @param  float  $walletToman  سهم کیف پولی که فراخواننده پیش از این (BookingWalletShare::hold) کم کرده است
+     * @param  string|null  $callbackUrl  callback کسب‌وکار؛ پیش‌فرض مسیر وب. اپ موبایل مسیر برگشت به اپ را می‌دهد.
+     */
+    public function createPayment($booking, $customAmount = null, ?int $preferredGatewayId = null, float $walletToman = 0, ?string $callbackUrl = null): array
     {
         if (! $this->isAvailable()) {
+            if ($walletToman > 0) {
+                $booking->user->getOrCreateWallet()->addRefund($walletToman, $booking->id, "بازگشت سهم کیف پول نوبت #{$booking->id} — پرداخت آنلاین در دسترس نیست");
+            }
+
             return $this->unavailableResult();
         }
 
         $request = GatewayStartRequest::fromToman(
             $customAmount ?? $booking->prepayment_amount,
-            route('payment.callback', ['booking' => $booking->id]),
+            $callbackUrl ?? route('payment.callback', ['booking' => $booking->id]),
             sprintf('پیش پرداخت نوبت سالن زیبایی - شماره %d', $booking->id),
             $booking->user->phone ?? '',
             $booking->user->email ?? '',
             (string) $booking->id,
         );
 
-        return $this->startWith($request, 'payment_gateway_'.$booking->id, $preferredGatewayId, ['booking_id' => $booking->id], 'booking', $booking, $booking->user_id ?? null);
+        return $this->startWith($request, 'payment_gateway_'.$booking->id, $preferredGatewayId, ['booking_id' => $booking->id], 'booking', $booking, $booking->user_id ?? null, $walletToman);
     }
 
     public function verifyPayment($request): array
@@ -265,11 +278,8 @@ class PaymentService
                 return ['status' => 'failed', 'success' => false, 'booking_id' => $booking->id, 'message' => \App\Support\ZarinpalMerchant::CUSTOMER_MESSAGE];
             }
 
-            $partialPayment = session('partial_payment_'.$booking->id);
-            $verifyAmount = $partialPayment ? $partialPayment['remaining_amount'] : $booking->prepayment_amount;
-
             $result = $this->manager()->verify($gateway, new GatewayVerifyRequest(
-                $transaction ? $transaction->amount_rial : (int) ((float) $verifyAmount * 10),
+                $transaction ? $transaction->amount_rial : (int) ((float) $booking->prepayment_amount * 10),
                 $request instanceof \Illuminate\Http\Request ? $request->all() : (array) $request,
                 $transaction?->token,
                 $transaction?->id,

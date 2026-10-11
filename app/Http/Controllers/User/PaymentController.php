@@ -9,7 +9,6 @@ use App\Services\LoyaltyService;
 use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
@@ -19,51 +18,36 @@ class PaymentController extends Controller
         protected readonly PaymentService $paymentService,
         protected readonly LoyaltyService $loyaltyService,
         protected readonly BookingRepositoryInterface $bookingRepository,
+        protected readonly \App\Services\Payment\BookingPaymentStarter $bookingPayment,
     ) {}
 
     public function process(Booking $booking): RedirectResponse|\Illuminate\Http\Response
     {
         try {
             $this->authorize('pay', $booking);
+            if ($notPayable = $this->notPayable($booking)) {
+                return $notPayable;
+            }
             if ($booking->payment_status === 'paid') {
                 // کلید جدا، نه «success»: layout هر session('success') را به‌عنوان پیام نشان می‌داد («1» بالای صفحه)
                 return redirect()->route('payment.result')->with(['payment_result_success' => true, 'payment_result_booking' => $booking]);
             }
-            if ($booking->prepayment_amount <= 0) {
-                DB::transaction(function () use ($booking) {
-                    $specialist = $booking->specialist;
-                    $finalStatus = $specialist->auto_confirm_bookings ? 'confirmed' : 'pending';
-                    $this->bookingRepository->update($booking, [
-                        'payment_status' => 'paid',
-                        'status' => $finalStatus,
-                        'paid_at' => now(),
-                        'payment_reference' => 'FREE-DISCOUNT-'.$booking->id,
-                        'payment_details' => [
-                            'method' => 'full_discount',
-                            'gateway_amount' => 0,
-                            'discount_code' => $booking->discount_code,
-                        ],
-                    ]);
+            $result = $this->bookingPayment->start(auth()->user(), $booking, 0, $this->chosenGatewayId());
 
-                });
-
-                return redirect()->route('bookings.success', ['id' => $booking->id])
-                    ->with('success', 'نوبت شما با تخفیف کامل با موفقیت ثبت شد.');
-            }
-            $result = $this->paymentService->createPayment($booking, null, $this->chosenGatewayId());
-
-            if (isset($result['success']) && $result['success'] && isset($result['payment_url'])) {
-                return \App\Payments\GatewayRedirect::to($result);
+            if ($result['state'] === 'paid') {
+                return redirect()->route('bookings.success', ['id' => $booking->id])->with('success', $result['message']);
             }
 
-            $errorMessage = $result['message'] ?? 'در حال حاضر امکان اتصال به درگاه بانکی وجود ندارد.';
+            if ($result['state'] === 'redirect') {
+                return \App\Payments\GatewayRedirect::to($result['gateway']);
+            }
+
             Log::error('❌ Payment Gateway Error', [
                 'booking_id' => $booking->id,
-                'error' => $errorMessage,
-                'full_result' => $result,
+                'error' => $result['message'],
             ]);
 
-            return back()->with('error', 'خطای بانک: '.$errorMessage);
+            return back()->with('error', 'خطای بانک: '.$result['message']);
 
         } catch (\Exception $e) {
             Log::error('💥 Payment Process Exception', [
@@ -85,88 +69,34 @@ class PaymentController extends Controller
                 return redirect()->route('bookings.show', $booking)
                     ->with('info', 'این نوبت قبلاً پرداخت شده است.');
             }
+            if ($notPayable = $this->notPayable($booking)) {
+                return $notPayable;
+            }
 
             $validated = $request->validate([
                 'use_wallet' => 'required|boolean',
                 'wallet_amount' => 'nullable|numeric|min:0',
             ]);
 
-            $user = auth()->user();
-            $wallet = $user->getOrCreateWallet();
-            $totalAmount = $booking->prepayment_amount;
-            $walletAmount = min(
-                $validated['wallet_amount'] ?? $wallet->balance,
-                $wallet->balance,
-                $totalAmount
+            $result = $this->bookingPayment->start(
+                auth()->user(),
+                $booking,
+                (float) ($validated['wallet_amount'] ?? auth()->user()->getOrCreateWallet()->balance),
+                $this->chosenGatewayId(),
             );
-            $remainingAmount = $totalAmount - $walletAmount;
 
-            $paidFully = false;
+            if ($result['state'] === 'paid') {
+                return redirect()->route('bookings.success', ['id' => $booking->id])
+                    ->with('success', 'پرداخت از کیف پول با موفقیت انجام شد');
+            }
 
-            $response = DB::transaction(function () use ($booking, $wallet, $walletAmount, $remainingAmount, &$paidFully) {
-                if ($remainingAmount <= 0) {
-                    $wallet->deductPayment(
-                        $walletAmount,
-                        $booking->id,
-                        "پرداخت نوبت #{$booking->id} از کیف پول"
-                    );
+            if ($result['state'] === 'redirect') {
+                return \App\Payments\GatewayRedirect::to($result['gateway']);
+            }
 
-                    $specialist = $booking->specialist;
-                    $finalStatus = $specialist->auto_confirm_bookings ? 'confirmed' : 'pending';
-                    $this->bookingRepository->update($booking, [
-                        'payment_status' => 'paid',
-                        'status' => $finalStatus,
-                        'paid_at' => now(),
-                        'payment_reference' => 'WALLET-'.$booking->id.'-'.time(),
-                        'payment_details' => [
-                            'method' => 'wallet',
-                            'wallet_amount' => $walletAmount,
-                            'gateway_amount' => 0,
-                        ],
-                    ]);
-                    $paidFully = true;
-
-                    return redirect()->route('bookings.success', ['id' => $booking->id])
-                        ->with('success', 'پرداخت از کیف پول با موفقیت انجام شد');
-                }
-
-                if ($walletAmount > 0) {
-                    $wallet->deductPayment(
-                        $walletAmount,
-                        $booking->id,
-                        "پرداخت بخشی از نوبت #{$booking->id} از کیف پول (مابقی از درگاه)"
-                    );
-
-                    session([
-                        'partial_payment_'.$booking->id => [
-                            'wallet_amount' => $walletAmount,
-                            'remaining_amount' => $remainingAmount,
-                        ],
-                    ]);
-                }
-
-                $result = $this->paymentService->createPayment($booking, $remainingAmount, $this->chosenGatewayId());
-
-                if (isset($result['success']) && $result['success'] && isset($result['payment_url'])) {
-                    return \App\Payments\GatewayRedirect::to($result);
-                }
-
-                if ($walletAmount > 0) {
-                    $wallet->increment('balance', $walletAmount);
-                    $wallet->transactions()->create([
-                        'booking_id' => $booking->id,
-                        'type' => 'refund',
-                        'amount' => $walletAmount,
-                        'balance_after' => $wallet->balance,
-                        'description' => "بازگشت وجه به دلیل خطا در اتصال به درگاه - نوبت #{$booking->id}",
-                    ]);
-                }
-
-                throw new \Exception($result['message'] ?? 'خطا در اتصال به درگاه پرداخت');
-            });
-
-            return $response;
-
+            throw new \Exception($result['message']);
+        } catch (\Illuminate\Validation\ValidationException|\Illuminate\Auth\Access\AuthorizationException $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('💥 خطا در پرداخت با کیف پول', [
                 'booking_id' => $booking->id,
@@ -175,6 +105,16 @@ class PaymentController extends Controller
 
             return back()->with('error', 'خطا در پرداخت: '.$e->getMessage());
         }
+    }
+
+    /** نوبت لغوشده، گذشته یا پرداخت‌شده دیگر پرداخت‌شدنی نیست (۲۰۲۶-۱۰-۱۱). */
+    private function notPayable(Booking $booking): ?RedirectResponse
+    {
+        if ($booking->payment_status === 'paid' || $booking->isPayable()) {
+            return null;
+        }
+
+        return redirect()->route('bookings.show', $booking)->with('error', $booking->notPayableReason());
     }
 
     /**
@@ -188,104 +128,19 @@ class PaymentController extends Controller
         return is_numeric($id) ? (int) $id : null;
     }
 
-    public function callback(Request $request): RedirectResponse
+    public function callback(Request $request, \App\Services\Payment\BookingPaymentFinalizer $finalizer): RedirectResponse
     {
         try {
-            $result = $this->paymentService->verifyPayment($request);
+            $outcome = $finalizer->handle($request);
 
-            // نتیجه‌ای که نوبتش معلوم نیست (callback بدون شناسه‌ی نوبت، خطای کلی) — پیامش را نشان بده، نه خطای «کلید تعریف‌نشده».
-            if (empty($result['booking_id'])) {
-                return redirect()->route('bookings.failed')
-                    ->with('error', $result['message'] ?? 'پرداخت ناموفق بود');
+            if ($outcome['state'] === 'paid') {
+                return redirect()->route('bookings.success', ['id' => $outcome['booking']->id])
+                    ->with('success', $outcome['message']);
             }
-
-            $booking = $this->bookingRepository->findOrFail($result['booking_id']);
-
-            if ($result['success']) {
-                $booking->refresh();
-
-                if ($booking->payment_status !== 'paid') {
-                    $specialist = $booking->specialist;
-                    $isAutoConfirm = $specialist->auto_confirm_bookings ?? false;
-                    $newStatus = $isAutoConfirm ? 'confirmed' : 'pending';
-                    $partialPayment = session('partial_payment_'.$booking->id);
-
-                    try {
-                        DB::transaction(function () use ($booking, $result, $newStatus, $partialPayment) {
-                            $paymentDetails = [
-                                'method' => $partialPayment ? 'wallet_gateway' : 'gateway',
-                                'gateway_ref' => $result['ref_id'] ?? $result['reference'],
-                                'card_pan' => $result['card_pan'] ?? null,
-                                'gateway' => $result['gateway'] ?? null,
-                                'gateway_fee' => $result['gateway_fee'] ?? 0,
-                            ];
-
-                            if ($partialPayment) {
-                                $paymentDetails['wallet_amount'] = $partialPayment['wallet_amount'];
-                                $paymentDetails['gateway_amount'] = $partialPayment['remaining_amount'];
-                                session()->forget('partial_payment_'.$booking->id);
-                            }
-
-                            $this->bookingRepository->update($booking, [
-                                'payment_status' => 'paid',
-                                'paid_at' => now(),
-                                'payment_reference' => $result['ref_id'] ?? $result['reference'],
-                                'status' => $newStatus,
-                                'payment_details' => $paymentDetails,
-                            ]);
-                        });
-                    } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
-                        // ⭐ درگاه پول رو گرفته ولی ساعت این نوبت (که در این فاصله لغو شده بود) حالا مال نفر دیگه‌ایه —
-                        // index یکتای bookings.active_slot_key. پول به کارت (سامان) یا کیف پول برمی‌گرده؛ هرگز «ناموفق» بی‌بازگشت.
-                        if (! str_contains($e->getMessage(), 'active_slot')) {
-                            throw $e;
-                        }
-
-                        $refund = app(\App\Services\Payment\LostSlotRefundService::class)->refund(
-                            $booking->fresh(),
-                            isset($result['transaction_id']) ? \App\Models\PaymentTransaction::find($result['transaction_id']) : null,
-                            $partialPayment,
-                            $partialPayment['remaining_amount'] ?? $booking->prepayment_amount,
-                        );
-                        session()->forget('partial_payment_'.$booking->id);
-
-                        return redirect()->route('bookings.failed')->with('booking_id', $booking->id)->with('error', $refund['handled']
-                            ? \App\Services\Payment\LostSlotRefundService::message($refund)
-                            : 'مبلغ این پرداخت قبلاً به شما برگشت داده شده است و نوبت ثبت نشد.');
-                    }
-                }
-
-                return redirect()->route('bookings.success', ['id' => $booking->id])
-                    ->with('success', 'پرداخت با موفقیت انجام شد و نوبت شما ثبت شد.');
-            }
-
-            if (! empty($result['refunded'])) {
-                // پول قبلاً برگشت داده شده؛ نوبت و کیف پول دست نمی‌خورن (بخش کیف پولی همون موقع برگشت خورده)
-                session()->forget('partial_payment_'.$booking->id);
-
-                return redirect()->route('bookings.failed')->with('booking_id', $booking->id)->with('error', $result['message']);
-            }
-
-            $partialPayment = session('partial_payment_'.$booking->id);
-            if ($partialPayment && isset($partialPayment['wallet_amount'])) {
-                $wallet = $booking->user->getOrCreateWallet();
-                $wallet->increment('balance', $partialPayment['wallet_amount']);
-                $wallet->transactions()->create([
-                    'booking_id' => $booking->id,
-                    'type' => 'refund',
-                    'amount' => $partialPayment['wallet_amount'],
-                    'balance_after' => $wallet->balance,
-                    'description' => "بازگشت وجه به دلیل عدم موفقیت پرداخت - نوبت #{$booking->id}",
-                ]);
-
-                session()->forget('partial_payment_'.$booking->id);
-            }
-
-            $this->bookingRepository->update($booking, ['status' => 'cancelled', 'cancellation_reason' => 'پرداخت ناموفق']);
 
             return redirect()->route('bookings.failed')
-                ->with('booking_id', $booking->id)
-                ->with('error', $result['message'] ?? 'پرداخت ناموفق بود');
+                ->with('booking_id', $outcome['booking']?->id)
+                ->with('error', $outcome['message']);
 
         } catch (\Exception $e) {
             Log::error('💥 Payment Callback Exception', [
@@ -294,7 +149,6 @@ class PaymentController extends Controller
             ]);
 
             return redirect()->route('bookings.failed')
-                ->with('booking_id', isset($booking) ? $booking->id : null)
                 ->with('error', 'خطا در تایید تراکنش');
         }
     }
@@ -319,6 +173,9 @@ class PaymentController extends Controller
         if ($booking->payment_status === 'paid') {
             return redirect()->route('bookings.show', ['booking' => $booking])
                 ->with('info', 'این نوبت قبلاً پرداخت شده است.');
+        }
+        if ($notPayable = $this->notPayable($booking)) {
+            return $notPayable;
         }
 
         $wallet = auth()->user()->getOrCreateWallet();

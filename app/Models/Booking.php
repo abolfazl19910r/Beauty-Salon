@@ -116,6 +116,30 @@ class Booking extends Model
         // return $this->hasMany(LoyaltyPoint::class);
     }
 
+    /** وضعیت‌هایی که پیش‌پرداخت نوبت در آن‌ها هنوز پذیرفته می‌شود. */
+    public const PAYABLE_STATUSES = ['pending_payment', 'pending', 'confirmed'];
+
+    /**
+     * پیش‌پرداخت این نوبت هنوز پذیرفته می‌شود؟ (۲۰۲۶-۱۰-۱۱) — لغوشده (از جمله لغو خودکار پرداخت‌نشده‌ها)،
+     * انجام‌شده، گذشته یا پرداخت‌شده نه. قبلاً صفحه‌ی پرداخت هیچ‌کدام را چک نمی‌کرد و نوبت لغوشده با پرداخت زنده می‌شد.
+     */
+    public function isPayable(): bool
+    {
+        return $this->payment_status !== 'paid'
+            && in_array($this->status, self::PAYABLE_STATUSES, true)
+            && \Carbon\Carbon::parse($this->booking_time)->isFuture();
+    }
+
+    public function notPayableReason(): string
+    {
+        return match (true) {
+            $this->payment_status === 'paid' => 'این نوبت قبلاً پرداخت شده است.',
+            $this->status === 'cancelled' => 'این نوبت لغو شده است و پرداخت آن ممکن نیست. لطفاً نوبت جدیدی رزرو کنید.',
+            ! \Carbon\Carbon::parse($this->booking_time)->isFuture() => 'زمان این نوبت گذشته است و پرداخت آن ممکن نیست.',
+            default => 'پرداخت این نوبت در وضعیت فعلی ممکن نیست.',
+        };
+    }
+
     public function canBeRescheduled(): bool
     {
         if (! in_array($this->status, ['pending', 'confirmed'])) {
