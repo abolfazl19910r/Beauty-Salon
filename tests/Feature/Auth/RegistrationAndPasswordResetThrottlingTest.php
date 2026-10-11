@@ -29,7 +29,7 @@ class RegistrationAndPasswordResetThrottlingTest extends TestCase
     public function test_registration_is_throttled_after_five_attempts_from_the_same_ip(): void
     {
         for ($i = 0; $i < 5; $i++) {
-            $this->post('/register', [
+            $this->post('/s/rasta/register', [
                 'name' => 'کاربر تست',
                 'phone' => '0912000'.str_pad((string) $i, 4, '0', STR_PAD_LEFT),
                 'password' => 'password123',
@@ -37,7 +37,7 @@ class RegistrationAndPasswordResetThrottlingTest extends TestCase
             ]);
         }
 
-        $response = $this->post('/register', [
+        $response = $this->post('/s/rasta/register', [
             'name' => 'کاربر تست',
             'phone' => '09129999999',
             'password' => 'password123',
@@ -50,14 +50,14 @@ class RegistrationAndPasswordResetThrottlingTest extends TestCase
 
     public function test_registration_resend_shares_the_registration_bucket(): void
     {
-        $user = User::factory()->create();
-        $this->withSession(['register_user_id' => $user->id]);
+        \Illuminate\Support\Facades\Queue::fake();
+        $this->post('/s/rasta/register', ['name' => 'کاربر تست', 'phone' => '09120000001', 'password' => 'password123', 'password_confirmation' => 'password123']);
 
-        for ($i = 0; $i < 5; $i++) {
-            $this->post('/register/resend');
+        for ($i = 0; $i < 4; $i++) {
+            $this->post('/s/rasta/register/resend');
         }
 
-        $response = $this->post('/register/resend');
+        $response = $this->post('/s/rasta/register/resend');
 
         $response->assertSessionHas('error');
     }
@@ -70,7 +70,7 @@ class RegistrationAndPasswordResetThrottlingTest extends TestCase
         $user = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);
 
         for ($i = 0; $i < 5; $i++) {
-            $this->post('/register', [
+            $this->post('/s/rasta/register', [
                 'name' => 'کاربر تست',
                 'phone' => '0912111'.str_pad((string) $i, 4, '0', STR_PAD_LEFT),
                 'password' => 'password123',

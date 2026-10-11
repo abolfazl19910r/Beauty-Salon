@@ -29,8 +29,8 @@ use Illuminate\View\View;
  *      user_type='staff' چک می‌شه (قانون StoreSalonSignupRequest، هم‌الگو با StoreSalonRequest
  *      سوپرادمین) — نه per-salon مثل CustomerRegisteredController.
  *
- * ⚠️ عمداً salon+owner همین‌جا در store() ساخته می‌شن (نه بعد از تایید OTP) — دقیقاً هم‌الگو با
- * CustomerRegisteredController که User رو قبل از OTP می‌سازه؛ یعنی یک ثبت‌نام ناتمام (کسی که کد
+ * ⚠️ عمداً salon+owner همین‌جا در store() ساخته می‌شن (نه بعد از تایید OTP) — الگوی قدیمی ثبت‌نام مشتری
+ * (CustomerRegisteredController از ۲۰۲۶-۱۰-۱۱ حساب را فقط بعد از تأیید کد می‌سازد)؛ یعنی یک ثبت‌نام ناتمام (کسی که کد
  * OTP رو هیچ‌وقت وارد نمی‌کنه) یک ردیف Salon+User تاییدنشده باقی می‌ذاره، دقیقاً همون سطح ریسکی
  * که پروژه از قبل برای مشتری‌ها پذیرفته — نه یک ریسک جدید مخصوص این فیچر.
  */

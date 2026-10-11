@@ -143,14 +143,14 @@ class LoginThrottlingTest extends TestCase
         $this->post('/login', ['phone' => $user->phone, 'password' => 'wrong-password']);
 
         // ...registration (a different, un-throttled route) must still work normally.
-        $response = $this->post('/register', [
+        $response = $this->post('/s/rasta/register', [
             'name' => 'کاربر جدید',
             'phone' => '09121230000',
             'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
 
-        $response->assertRedirect(route('register.verify.show'));
+        $response->assertRedirect(route('salon.register.verify.show'));
         $response->assertSessionMissing('error');
     }
 

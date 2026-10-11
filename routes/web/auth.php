@@ -9,15 +9,9 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    // ⭐ Wired up (post-test-writing-phase, throttle:registration): independent from
-    // throttle:auth (login) — see RouteServiceProvider::configureRateLimiting() for why these
-    // don't share a bucket. Covers both an SMS-spam vector (resend) and a registration/phone-
-    // enumeration spam vector (store).
+    // ثبت‌نام مشتری فقط در صفحه‌ی سالن (/s/{slug}/register). /register مرکزی فقط به آن‌جا redirect می‌کند؛
+    // POST/verify/resend مرکزی حذف شد (۲۰۲۶-۱۰-۱۱): مشتری بی‌سالن می‌ساخت و پیامک کد می‌فرستاد.
     Route::get('register', [RegisteredUserController::class, 'create'])->name('register');
-    Route::post('register', [RegisteredUserController::class, 'store'])->middleware('throttle:registration');
-    Route::get('register/verify', [RegisteredUserController::class, 'showVerify'])->name('register.verify.show');
-    Route::post('register/verify', [RegisteredUserController::class, 'verify'])->name('register.verify')->middleware('throttle:registration');
-    Route::post('register/resend', [RegisteredUserController::class, 'resendCode'])->name('register.resend')->middleware('throttle:registration');
     Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
     // ⭐ Wired up (post-test-writing-phase, throttle:auth): these three routes are the actual
     // credential/OTP-guessing surface of the login flow — password check (store), OTP code
