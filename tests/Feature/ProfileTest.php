@@ -73,14 +73,8 @@ class ProfileTest extends TestCase
 
         $response
             ->assertSessionHasNoErrors()
-            // ⭐ Correction of an earlier, wrong assumption: '/' is NOT actually a registered
-            // route in this app (every '/' lives under some prefix — /s/{slug}/ for the public
-            // homepage, /admin for the admin dashboard) — the previous version of this comment
-            // reasoned that redirecting there "made sense" without checking that the route
-            // itself resolves at all. ProfileController::destroy() now redirects to
-            // route('login') instead (same fix, same reasoning, as
-            // AuthenticatedSessionController::destroy()).
-            ->assertRedirect(route('login'));
+            // مشتری فقط از صفحه‌ی ورود سالن خودش وارد می‌شود (تصمیم ۲۰۲۶-۱۰-۱۰)؛ /login مرکزی فقط کادر است
+            ->assertRedirect(route('salon.login'));
 
         $this->assertGuest();
         $this->assertNull($user->fresh());

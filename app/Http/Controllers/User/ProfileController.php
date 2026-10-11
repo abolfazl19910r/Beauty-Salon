@@ -58,7 +58,7 @@ class ProfileController extends Controller
         return back()->with('status', 'password-updated');
     }
 
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request, \App\Services\Customer\CustomerAccountDeletionService $deletion): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
@@ -66,18 +66,19 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
+        // نوبت فعال یا موجودی کیف پول: حذف نمی‌شود (۲۰۲۶-۱۰-۱۱)
+        if ($blocker = $deletion->blocker($user)) {
+            return back()->withErrors(['password' => $blocker], 'userDeletion');
+        }
+
         Auth::logout();
 
-        $user->delete();
+        $deletion->delete($user);
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        // ⭐ Fix (same real bug as AuthenticatedSessionController::destroy(), same fix): '/' isn't
-        // a registered route at all in this app anymore (every '/' lives under some prefix —
-        // /s/{slug}/ for the public homepage, /admin for the admin dashboard) — a user who just
-        // deleted their account was redirected straight to a 404. route('login') is the correct,
-        // always-valid target once the session is gone.
-        return redirect()->route('login');
+        // ورود مشتری فقط از صفحه‌ی سالن خودش (تصمیم ۲۰۲۶-۱۰-۱۰)؛ /login مرکزی فقط کادر است
+        return redirect()->route('salon.login');
     }
 }
