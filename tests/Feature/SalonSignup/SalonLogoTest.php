@@ -9,6 +9,7 @@ use App\Support\CurrentSalon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Tests\Concerns\CompletesSalonSignup;
 use Tests\Concerns\SalonContactPayload;
 use Tests\TestCase;
 
@@ -17,6 +18,7 @@ use Tests\TestCase;
  */
 class SalonLogoTest extends TestCase
 {
+    use CompletesSalonSignup;
     use RefreshDatabase;
     use SalonContactPayload;
 
@@ -25,6 +27,7 @@ class SalonLogoTest extends TestCase
         parent::setUp();
 
         Storage::fake('public');
+        Storage::fake('local'); // لوگوی ثبت‌نامِ هنوز تأییدنشده (SalonSignupChallenge::PENDING_LOGO_DIR)
     }
 
     private function signup(array $overrides = [])
@@ -52,6 +55,11 @@ class SalonLogoTest extends TestCase
     {
         $this->signup(['logo' => UploadedFile::fake()->image('logo.png', 256, 256)])
             ->assertRedirect(route('salon-signup.verify'));
+        // تا تأیید کد، لوگو فقط در پوشه‌ی موقت خصوصی است، نه پوشه‌ی عمومی سالن
+        $this->assertSame([], Storage::disk('public')->allFiles());
+        $this->assertCount(1, Storage::disk('local')->files(\App\Services\SalonSignup\SalonSignupChallenge::PENDING_LOGO_DIR));
+        $this->confirmSalonSignup();
+        $this->assertSame([], Storage::disk('local')->files(\App\Services\SalonSignup\SalonSignupChallenge::PENDING_LOGO_DIR));
 
         $salon = Salon::where('slug', 'rose-salon')->firstOrFail();
         $this->assertNotNull($salon->logo_path);
@@ -62,6 +70,7 @@ class SalonLogoTest extends TestCase
     public function test_logo_is_optional(): void
     {
         $this->signup()->assertRedirect(route('salon-signup.verify'));
+        $this->confirmSalonSignup();
 
         $this->assertNull(Salon::where('slug', 'rose-salon')->firstOrFail()->logo_path);
     }

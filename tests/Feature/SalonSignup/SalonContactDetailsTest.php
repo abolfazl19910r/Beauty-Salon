@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Support\CurrentSalon;
 use App\Support\SalonWorkingHours;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\CompletesSalonSignup;
 use Tests\Concerns\SalonContactPayload;
 use Tests\TestCase;
 
@@ -18,6 +19,7 @@ use Tests\TestCase;
  */
 class SalonContactDetailsTest extends TestCase
 {
+    use CompletesSalonSignup;
     use RefreshDatabase;
     use SalonContactPayload;
 
@@ -37,6 +39,7 @@ class SalonContactDetailsTest extends TestCase
     {
         $this->post(route('salon-signup.store'), $this->signupPayload())
             ->assertRedirect(route('salon-signup.verify'));
+        $this->confirmSalonSignup();
 
         $salon = Salon::where('slug', 'yas-salon')->firstOrFail();
 
@@ -51,6 +54,7 @@ class SalonContactDetailsTest extends TestCase
     public function test_experience_years_grow_automatically_every_year(): void
     {
         $this->post(route('salon-signup.store'), $this->signupPayload());
+        $this->confirmSalonSignup();
         $this->travel(2)->years();
 
         $this->assertSame(9, Salon::where('slug', 'yas-salon')->firstOrFail()->experienceYears());
@@ -62,6 +66,7 @@ class SalonContactDetailsTest extends TestCase
             'salon_phone' => '۰۲۱-۱۲۳۴ ۵۶۷۸',
             'experience_years' => '۱۲',
         ]))->assertSessionHasNoErrors();
+        $this->confirmSalonSignup();
 
         $salon = Salon::where('slug', 'yas-salon')->firstOrFail();
         $this->assertSame('02112345678', $salon->phone);

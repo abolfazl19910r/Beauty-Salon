@@ -24,3 +24,13 @@ Schedule::command('loyalty:expire-points')
     ->name('loyalty-expire-points')
     ->withoutOverlapping()
     ->onOneServer();
+
+// لوگوی ثبت‌نام‌های سالنِ تأییدنشده (SalonSignupChallenge) بعد از یک روز پاک می‌شود — challenge خودش ۱۰ دقیقه عمر دارد
+Schedule::call(function () {
+    $disk = \Illuminate\Support\Facades\Storage::disk('local');
+    foreach ($disk->files(\App\Services\SalonSignup\SalonSignupChallenge::PENDING_LOGO_DIR) as $file) {
+        if ($disk->lastModified($file) < now()->subDay()->getTimestamp()) {
+            $disk->delete($file);
+        }
+    }
+})->dailyAt('03:40')->name('salon-signup-pending-logos')->onOneServer();

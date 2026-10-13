@@ -5,6 +5,8 @@ namespace Tests\Feature\SalonSignup;
 use App\Models\Salon;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
+use Tests\Concerns\CompletesSalonSignup;
 use Tests\Concerns\SalonContactPayload;
 use Tests\TestCase;
 
@@ -17,6 +19,7 @@ use Tests\TestCase;
  */
 class SalonSignupTest extends TestCase
 {
+    use CompletesSalonSignup;
     use RefreshDatabase;
     use SalonContactPayload;
 
@@ -47,10 +50,26 @@ class SalonSignupTest extends TestCase
         $this->get(route('salon-signup.create'))->assertOk();
     }
 
-    public function test_store_creates_an_unverified_pending_salon_and_owner_and_sends_otp(): void
+    public function test_store_creates_nothing_until_the_code_is_confirmed(): void
     {
+        // ۲۰۲۶-۱۰-۱۱: قبلاً سالن و مالک همین‌جا ساخته می‌شدند و ثبت‌نام نیمه‌کاره شماره‌ی کادر و slug را می‌گرفت
         $this->post(route('salon-signup.store'), $this->validPayload())
             ->assertRedirect(route('salon-signup.verify'));
+
+        $this->assertDatabaseMissing('salons', ['slug' => 'almas-test-salon']);
+        $this->assertDatabaseMissing('users', ['phone' => '09121234567']);
+        $this->assertMatchesRegularExpression('/^\d{6}$/', $this->lastSignupCode());
+        Queue::assertPushedOn('otp', \App\Jobs\SendRegistrationCodeJob::class);
+        $this->get(route('salon-signup.verify'))->assertOk()->assertSee('09121234567')->assertSee('سالن الماس');
+        $this->getJson(route('salon-signup.check-slug', ['slug' => 'almas-test-salon']))->assertJson(['available' => true]);
+
+        $this->assertGuest();
+    }
+
+    public function test_confirming_the_code_creates_the_salon_and_a_verified_owner(): void
+    {
+        $this->post(route('salon-signup.store'), $this->validPayload());
+        $this->confirmSalonSignup();
 
         $salon = Salon::where('slug', 'almas-test-salon')->firstOrFail();
         $owner = User::where('phone', '09121234567')->firstOrFail();
@@ -64,9 +83,42 @@ class SalonSignupTest extends TestCase
 
         $this->assertTrue($salon->admins()->wherePivot('user_id', $owner->id)->wherePivot('role', 'owner')->exists());
         $this->assertTrue($owner->is_admin);
-        $this->assertFalse($owner->hasVerifiedPhone());
-        $this->assertNotNull($owner->fresh()->verification_code);
+        $this->assertTrue($owner->hasVerifiedPhone());
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('Str0ng!Passw0rd', $owner->password));
+    }
 
+    public function test_an_unconfirmed_signup_does_not_block_the_same_slug_or_phone(): void
+    {
+        $this->post(route('salon-signup.store'), $this->validPayload());
+        session()->flush();
+
+        $this->post(route('salon-signup.store'), $this->validPayload(['name' => 'صاحب واقعی']))->assertRedirect(route('salon-signup.verify'));
+        $this->confirmSalonSignup()->assertRedirect(route('admin.billing.index'));
+
+        $this->assertSame('صاحب واقعی', Salon::where('slug', 'almas-test-salon')->value('name'));
+    }
+
+    public function test_the_slug_is_checked_again_when_the_code_is_confirmed(): void
+    {
+        $this->post(route('salon-signup.store'), $this->validPayload());
+        Salon::factory()->create(['slug' => 'almas-test-salon']); // ثبت‌نام دیگری زودتر تأیید شد
+
+        $this->confirmSalonSignup()->assertRedirect(route('salon-signup.create'))->assertSessionHasErrors('error');
+        $this->assertStringContainsString('نشانی (slug)', session('errors')->first('error'));
+
+        $this->assertDatabaseMissing('users', ['phone' => '09121234567']);
+        $this->assertGuest();
+    }
+
+    public function test_the_owner_phone_is_checked_again_when_the_code_is_confirmed(): void
+    {
+        $this->post(route('salon-signup.store'), $this->validPayload());
+        User::factory()->create(['phone' => '09121234567', 'user_type' => 'staff', 'salon_id' => null]); // کادر سالن دیگری همین شماره را گرفت
+
+        $this->confirmSalonSignup()->assertRedirect(route('salon-signup.create'))->assertSessionHasErrors('error');
+
+        $this->assertDatabaseMissing('salons', ['slug' => 'almas-test-salon']);
+        $this->assertSame(1, User::where('phone', '09121234567')->count());
         $this->assertGuest();
     }
 
@@ -90,12 +142,10 @@ class SalonSignupTest extends TestCase
     {
         $this->post(route('salon-signup.store'), $this->validPayload());
 
+        $response = $this->confirmSalonSignup();
         $owner = User::where('phone', '09121234567')->firstOrFail();
-        $code = $owner->fresh()->verification_code;
 
-        $response = $this->post(route('salon-signup.verify.store'), ['code' => $code]);
-
-        $response->assertRedirect(route('admin.billing.index'));
+        $response->assertRedirect(route('admin.billing.index'))->assertSessionMissing('salon_signup_challenge');
         $this->assertAuthenticatedAs($owner->fresh());
         $this->assertTrue($owner->fresh()->hasVerifiedPhone());
 
@@ -109,29 +159,23 @@ class SalonSignupTest extends TestCase
     {
         $this->post(route('salon-signup.store'), $this->validPayload());
 
-        $owner = User::where('phone', '09121234567')->firstOrFail();
-
         $this->post(route('salon-signup.verify.store'), ['code' => '000000'])
             ->assertSessionHasErrors('code');
 
         $this->assertGuest();
-        $this->assertFalse($owner->fresh()->hasVerifiedPhone());
+        $this->assertDatabaseMissing('salons', ['slug' => 'almas-test-salon']);
     }
 
-    public function test_resend_code_issues_a_new_code(): void
+    public function test_resend_code_issues_a_new_code_after_the_cooldown(): void
     {
         $this->post(route('salon-signup.store'), $this->validPayload());
 
-        $owner = User::where('phone', '09121234567')->firstOrFail();
-        $firstCode = $owner->fresh()->verification_code;
+        $this->post(route('salon-signup.resend-code'))->assertSessionHasErrors('error'); // فاصله‌ی ۶۰ ثانیه‌ای
+        $this->travel(61)->seconds();
+        $this->post(route('salon-signup.resend-code'))->assertSessionHas('success');
 
-        $this->post(route('salon-signup.resend-code'))->assertRedirect();
-
-        $this->assertNotNull($owner->fresh()->verification_code);
-        // کد جدید همیشه با کد قبلی فرق نمی‌کنه (rand می‌تونه تصادفاً تکرار بشه)، ولی حداقل
-        // verification_code_expire_at باید تازه‌سازی شده باشه.
-        $this->assertTrue($owner->fresh()->verification_code_expire_at->isFuture());
-        unset($firstCode);
+        Queue::assertPushed(\App\Jobs\SendRegistrationCodeJob::class, 2);
+        $this->confirmSalonSignup()->assertRedirect(route('admin.billing.index'));
     }
 
     public function test_verify_page_redirects_to_create_without_a_pending_session(): void
@@ -220,6 +264,7 @@ class SalonSignupTest extends TestCase
         unset($payload['subscription_type']);
 
         $this->post(route('salon-signup.store'), $payload)->assertRedirect(route('salon-signup.verify'));
+        $this->confirmSalonSignup();
 
         $this->assertSame('1m', Salon::where('slug', $payload['slug'])->firstOrFail()->subscription_type);
     }

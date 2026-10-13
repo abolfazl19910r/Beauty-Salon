@@ -12,6 +12,7 @@ use App\Services\PaymentService;
 use App\Support\CurrentSalon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Tests\Concerns\CompletesSalonSignup;
 use Tests\Concerns\SalonContactPayload;
 use Tests\TestCase;
 
@@ -21,6 +22,7 @@ use Tests\TestCase;
  */
 class SalonMerchantIdTest extends TestCase
 {
+    use CompletesSalonSignup;
     use RefreshDatabase;
     use SalonContactPayload;
 
@@ -56,10 +58,12 @@ class SalonMerchantIdTest extends TestCase
 
         $this->post(route('salon-signup.store'), $base + ['slug' => 'golsar', 'owner_phone' => '09121110001', 'zarinpal_merchant_id' => strtoupper(self::MERCHANT)])
             ->assertRedirect(route('salon-signup.verify'));
+        $this->confirmSalonSignup();
         $this->assertSame(self::MERCHANT, Salon::where('slug', 'golsar')->firstOrFail()->zarinpal_merchant_id);
 
         $this->post(route('salon-signup.store'), $base + ['slug' => 'golsar-2', 'owner_phone' => '09121110002'])
             ->assertRedirect(route('salon-signup.verify'));
+        $this->confirmSalonSignup();
         $this->assertNull(Salon::where('slug', 'golsar-2')->firstOrFail()->zarinpal_merchant_id);
     }
 

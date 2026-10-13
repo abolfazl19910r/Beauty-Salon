@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Notifications\Salon\SalonWelcomeNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use Tests\Concerns\CompletesSalonSignup;
 use Tests\Concerns\SalonContactPayload;
 use Tests\TestCase;
 
@@ -15,10 +16,11 @@ use Tests\TestCase;
  */
 class SalonWelcomeSmsTest extends TestCase
 {
+    use CompletesSalonSignup;
     use RefreshDatabase;
     use SalonContactPayload;
 
-    private function signUpAndVerify(?string $code = null): User
+    private function signUpAndVerify(?string $code = null): ?User
     {
         $this->post(route('salon-signup.store'), array_merge([
             'name' => 'سالن ماه',
@@ -30,10 +32,9 @@ class SalonWelcomeSmsTest extends TestCase
             'owner_password_confirmation' => 'Str0ng!Passw0rd',
         ], $this->salonContactPayload()));
 
-        $owner = User::where('phone', '09127778899')->firstOrFail();
-        $this->post(route('salon-signup.verify.store'), ['code' => $code ?? $owner->fresh()->verification_code]);
+        $this->confirmSalonSignup($code);
 
-        return $owner;
+        return User::where('phone', '09127778899')->first();
     }
 
     public function test_owner_gets_one_welcome_sms_with_the_booking_address_after_verifying(): void
@@ -60,9 +61,9 @@ class SalonWelcomeSmsTest extends TestCase
     {
         Notification::fake();
 
-        $this->signUpAndVerify('000000');
-
-        Notification::assertNothingSentTo(User::where('phone', '09127778899')->firstOrFail(), SalonWelcomeNotification::class);
+        // کد غلط: مالکی ساخته نمی‌شود، پس پیامک خوش‌آمدی هم نیست
+        $this->assertNull($this->signUpAndVerify('000000'));
+        Notification::assertSentTimes(SalonWelcomeNotification::class, 0);
     }
 
     public function test_the_welcome_sms_goes_out_even_with_an_exhausted_quota_and_does_not_consume_it(): void

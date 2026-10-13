@@ -8,6 +8,7 @@ use App\Services\Payment\InvoiceService;
 use App\Support\Billing\SubscriptionPricing;
 use App\Support\CurrentSalon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\CompletesSalonSignup;
 use Tests\Concerns\SalonContactPayload;
 use Tests\TestCase;
 
@@ -17,6 +18,7 @@ use Tests\TestCase;
  */
 class SpecialistCountPricingTest extends TestCase
 {
+    use CompletesSalonSignup;
     use RefreshDatabase;
     use SalonContactPayload;
 
@@ -52,6 +54,7 @@ class SpecialistCountPricingTest extends TestCase
             ->assertSessionHasErrors('specialists_count');
 
         $this->post(route('salon-signup.store'), $this->payload(['specialists_count' => 12]))->assertSessionHasNoErrors();
+        $this->confirmSalonSignup();
         $this->assertSame(12, Salon::where('slug', 'count-test-salon')->value('max_specialists_count'));
     }
 

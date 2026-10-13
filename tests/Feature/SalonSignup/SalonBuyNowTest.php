@@ -7,6 +7,7 @@ use App\Models\Salon;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Tests\Concerns\CompletesSalonSignup;
 use Tests\Concerns\SalonContactPayload;
 use Tests\TestCase;
 
@@ -17,6 +18,7 @@ use Tests\TestCase;
  */
 class SalonBuyNowTest extends TestCase
 {
+    use CompletesSalonSignup;
     use RefreshDatabase;
     use SalonContactPayload;
 
@@ -27,7 +29,8 @@ class SalonBuyNowTest extends TestCase
         config(['billing.trial_days' => 14, 'billing.subscription_prices.6m' => 7650000]);
     }
 
-    private function signUpAndVerify(array $overrides = []): User
+    /** فرم ثبت‌نام را می‌فرستد؛ سالن و مالک بعد از confirmSalonSignup() ساخته می‌شوند (۲۰۲۶-۱۰-۱۱). */
+    private function signUpAndVerify(array $overrides = []): void
     {
         $this->post(route('salon-signup.store'), array_merge([
             'name' => 'سالن نیلوفر',
@@ -39,7 +42,10 @@ class SalonBuyNowTest extends TestCase
             'owner_password' => 'Str0ng!Passw0rd',
             'owner_password_confirmation' => 'Str0ng!Passw0rd',
         ], $this->salonContactPayload(), $overrides))->assertRedirect(route('salon-signup.verify'));
+    }
 
+    private function owner(): User
+    {
         return User::where('phone', '09123334455')->firstOrFail();
     }
 
@@ -75,26 +81,26 @@ class SalonBuyNowTest extends TestCase
     public function test_verifying_otp_with_buy_intent_goes_straight_to_the_gateway(): void
     {
         $this->fakeGatewayRequest();
-        $owner = $this->signUpAndVerify();
+        $this->signUpAndVerify();
 
-        $response = $this->post(route('salon-signup.verify.store'), ['code' => $owner->fresh()->verification_code]);
+        $response = $this->confirmSalonSignup();
 
         $response->assertRedirect();
         $this->assertStringContainsString('BUYNOWAUTH', $response->headers->get('Location'));
-        $this->assertAuthenticatedAs($owner->fresh());
+        $this->assertAuthenticatedAs($this->owner());
 
         $invoice = Invoice::withoutGlobalScopes()->firstOrFail();
         $this->assertSame('pending', $invoice->status);
         $this->assertSame('6m', $invoice->subscription_type);
         $this->assertSame(7650000, (int) $invoice->amount);
-        $this->assertSame($owner->id, $invoice->created_by);
+        $this->assertSame($this->owner()->id, $invoice->created_by);
     }
 
     public function test_successful_payment_activates_the_plan_from_that_moment(): void
     {
         $this->fakeGatewayRequest();
-        $owner = $this->signUpAndVerify();
-        $this->post(route('salon-signup.verify.store'), ['code' => $owner->fresh()->verification_code]);
+        $this->signUpAndVerify();
+        $this->confirmSalonSignup();
         $invoice = Invoice::withoutGlobalScopes()->firstOrFail();
 
         $this->get(route('admin.billing.callback', ['invoice' => $invoice->id, 'Authority' => 'BUYNOWAUTH', 'Status' => 'OK']))
@@ -110,9 +116,9 @@ class SalonBuyNowTest extends TestCase
     public function test_gateway_failure_leaves_the_owner_on_the_trial_with_a_retry_message(): void
     {
         $this->fakeGatewayRequest(code: -9);
-        $owner = $this->signUpAndVerify();
+        $this->signUpAndVerify();
 
-        $this->post(route('salon-signup.verify.store'), ['code' => $owner->fresh()->verification_code])
+        $this->confirmSalonSignup()
             ->assertRedirect(route('admin.billing.index'))
             ->assertSessionHasErrors('error');
 
@@ -125,9 +131,9 @@ class SalonBuyNowTest extends TestCase
     {
         config(['billing.trial_days' => 0]);
         $this->fakeGatewayRequest();
-        $owner = $this->signUpAndVerify();
+        $this->signUpAndVerify();
 
-        $response = $this->post(route('salon-signup.verify.store'), ['code' => $owner->fresh()->verification_code]);
+        $response = $this->confirmSalonSignup();
 
         $this->assertStringContainsString('BUYNOWAUTH', $response->headers->get('Location'));
     }
@@ -135,9 +141,9 @@ class SalonBuyNowTest extends TestCase
     public function test_default_trial_signup_is_unchanged_and_never_touches_the_gateway(): void
     {
         Http::fake();
-        $owner = $this->signUpAndVerify(['intent' => null]);
+        $this->signUpAndVerify(['intent' => null]);
 
-        $this->post(route('salon-signup.verify.store'), ['code' => $owner->fresh()->verification_code])
+        $this->confirmSalonSignup()
             ->assertRedirect(route('admin.home'));
 
         Http::assertNothingSent();

@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * کد تأیید ثبت‌نام مشتری (۲۰۲۶-۱۰-۱۱) — هنوز حسابی وجود ندارد، پس شماره مستقیم داده می‌شود (نه شناسه‌ی کاربر).
- * همان قالب و هزینه‌ی SendPhoneVerificationCodeJob: پیامک احراز هویت، هزینه‌ی پلتفرم، صف otp.
+ * همان قالب و هزینه‌ی SendPhoneVerificationCodeJob: پیامک احراز هویت، هزینه‌ی پلتفرم، صف otp. ثبت‌نام سالن هنوز سالنی ندارد (salonId null).
  */
 class SendRegistrationCodeJob implements ShouldQueue
 {
@@ -26,7 +26,7 @@ class SendRegistrationCodeJob implements ShouldQueue
     public function __construct(
         public readonly string $phone,
         public readonly string $code,
-        public readonly int $salonId,
+        public readonly ?int $salonId,
     ) {
         $this->onQueue(Queues::OTP);
     }

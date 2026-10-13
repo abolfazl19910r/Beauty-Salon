@@ -31,8 +31,8 @@ use Illuminate\Support\Facades\Hash;
  *
  * owner برخلاف AdminUserService::create() (که وقتی is_active=true باشه، phone_verified_at
  * بلافاصله ست می‌شه چون سوپرادمین خودش تاییدکننده‌ست) عمداً phone_verified_at=null می‌مونه —
- * این سرویس فقط ردیف‌ها رو می‌سازه؛ ارسال/تایید کد OTP مسئولیت SalonSignupController با همون
- * PhoneVerificationService به‌کاررفته در CustomerRegisteredController است.
+ * این سرویس فقط ردیف‌ها رو می‌سازه؛ از ۲۰۲۶-۱۰-۱۱ فقط SalonSignupChallenge صدایش می‌زند، بعد از تأیید کد (و
+ * phone_verified_at مالک را همان‌جا ست می‌کند).
  */
 class SalonSignupService
 {

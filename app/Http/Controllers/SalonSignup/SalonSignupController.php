@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\SalonSignup;
 
+use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SalonSignup\StoreSalonSignupRequest;
 use App\Repositories\Contracts\SalonRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Payment\InvoiceService;
 use App\Services\Payment\SubscriptionPaymentService;
-use App\Services\PhoneVerificationService;
 use App\Services\SalonSignup\SalonSignupService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -17,28 +17,20 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
- * ⭐ فاز ۲ SaaS، محور «۴. ثبت‌نام عمومی سالن (self-service)». الگوی ثبت‌نام دو-مرحله‌ای
- * (ثبت → OTP → ورود) کپی مستقیم از App\Http\Controllers\Salon\Auth\CustomerRegisteredController
- * است — همون PhoneVerificationService، همون کلیدهای session-based قبل/بعد از OTP — با سه فرق:
+ * ⭐ فاز ۲ SaaS، محور «۴. ثبت‌نام عمومی سالن (self-service)»: فرم ← کد پیامکی ← سالن، مالک و دوره‌ی آزمایشی ← پنل مدیر.
  *
- *   ۱. همراه owner، یک Salon هم ساخته می‌شه (SalonSignupService::register)، نه فقط یک User مشتری.
- *   ۲. بعد از تایید موفق OTP، به‌جای صفحه‌ی خانه‌ی سالن، مستقیم به admin.billing.index هدایت
- *      می‌شه — اولین پرداخت واقعی سالن (به docblock SalonSignupService نگاه کن که چرا این سالن
- *      خودش‌به‌خود به اونجا redirect می‌شه، حتی بدون این redirect دستی، اگه ادمین مستقیم لاگین کنه).
- *   ۳. چون هنوز هیچ سالنی برای scope کردن phone-uniqueness وجود نداره، owner_phone سراسری بین
- *      user_type='staff' چک می‌شه (قانون StoreSalonSignupRequest، هم‌الگو با StoreSalonRequest
- *      سوپرادمین) — نه per-salon مثل CustomerRegisteredController.
- *
- * ⚠️ عمداً salon+owner همین‌جا در store() ساخته می‌شن (نه بعد از تایید OTP) — الگوی قدیمی ثبت‌نام مشتری
- * (CustomerRegisteredController از ۲۰۲۶-۱۰-۱۱ حساب را فقط بعد از تأیید کد می‌سازد)؛ یعنی یک ثبت‌نام ناتمام (کسی که کد
- * OTP رو هیچ‌وقت وارد نمی‌کنه) یک ردیف Salon+User تاییدنشده باقی می‌ذاره، دقیقاً همون سطح ریسکی
- * که پروژه از قبل برای مشتری‌ها پذیرفته — نه یک ریسک جدید مخصوص این فیچر.
+ * از ۲۰۲۶-۱۰-۱۱ سالن و مالک **فقط بعد از تأیید کد** ساخته می‌شوند (SalonSignupChallenge، همان سازوکار ثبت‌نام مشتری):
+ * ثبت‌نام نیمه‌کاره دیگر شماره‌ی کادر یا slug کسی را نمی‌گیرد. شماره‌ی مالک در کل پلتفرم بین user_type='staff' یکتاست
+ * (StoreSalonSignupRequest؛ هنوز سالنی برای scope نیست) و slug و شماره هنگام تأیید دوباره چک می‌شوند.
+ * بعد از تأیید: دوره‌ی آزمایشی → پنل مدیر؛ intent=buy → درگاه پرداخت اشتراک؛ بدون آزمایشی → صفحه‌ی صورتحساب.
  */
 class SalonSignupController extends Controller
 {
+    private const SESSION_KEY = 'salon_signup_challenge';
+
     public function __construct(
         protected readonly SalonSignupService $salonSignupService,
-        protected readonly PhoneVerificationService $verificationService,
+        protected readonly \App\Services\SalonSignup\SalonSignupChallenge $signupChallenge,
         protected readonly UserRepositoryInterface $userRepository,
         protected readonly SalonRepositoryInterface $salonRepository,
         protected readonly InvoiceService $invoiceService,
@@ -103,24 +95,16 @@ class SalonSignupController extends Controller
 
     public function store(StoreSalonSignupRequest $request): RedirectResponse
     {
-        $result = $this->salonSignupService->register(
-            $request->validated() + ['contact' => $request->salonContactAttributes()]
+        // سالن و مالک فقط بعد از تأیید کد ساخته می‌شوند (SalonSignupChallenge، تصمیم ۲۰۲۶-۱۰-۱۱)
+        $challenge = $this->signupChallenge->start(
+            $request->validated() + [
+                'contact' => $request->salonContactAttributes(),
+                'intent' => $request->input('intent') === 'buy' ? 'buy' : 'trial',
+            ],
+            $request->file('logo'),
         );
 
-        // ⭐ لوگوی اختصاصی (۲۰۲۶-۰۹-۲۴، اختیاری): بعد از ساخت سالن، چون پوشه‌ی فایل به id سالن
-        // وابسته‌ست (salons/{id}/branding).
-        if ($request->hasFile('logo')) {
-            app(\App\Services\Salon\SalonLogoService::class)->replace($result['salon'], $request->file('logo'));
-        }
-
-        $this->verificationService->sendCode($result['owner']);
-
-        session([
-            'salon_signup_intent' => $request->input('intent') === 'buy' ? 'buy' : 'trial',
-            'salon_signup_salon_id' => $result['salon']->id,
-            'salon_signup_user_id' => $result['owner']->id,
-            'salon_signup_attempt_time' => now(),
-        ]);
+        session([self::SESSION_KEY => $challenge]);
 
         return redirect()->route('salon-signup.verify')
             ->with('success', 'کد تایید به شماره موبایل شما ارسال شد.');
@@ -128,86 +112,62 @@ class SalonSignupController extends Controller
 
     public function showVerify(): View|RedirectResponse
     {
-        if (! session('salon_signup_user_id')) {
+        $data = ($challenge = session(self::SESSION_KEY)) ? $this->signupChallenge->peek($challenge) : null;
+
+        if (! $data) {
+            session()->forget(self::SESSION_KEY);
+
             return redirect()->route('salon-signup.create')
                 ->withErrors(['error' => 'لطفا ابتدا ثبت‌نام کنید.']);
         }
 
-        $owner = $this->userRepository->find(session('salon_signup_user_id'));
-        $salon = $this->salonRepository->find(session('salon_signup_salon_id'));
-
-        if (! $owner || ! $salon) {
-            session()->forget(['salon_signup_user_id', 'salon_signup_salon_id', 'salon_signup_attempt_time']);
-
-            return redirect()->route('salon-signup.create')
-                ->withErrors(['error' => 'اطلاعات ثبت‌نام یافت نشد. لطفا دوباره تلاش کنید.']);
-        }
-
-        return view('salon-signup.verify', ['owner' => $owner, 'salon' => $salon]);
+        return view('salon-signup.verify', [
+            'owner' => (object) ['phone' => $data['owner_phone']],
+            'salon' => (object) ['name' => $data['name']],
+        ]);
     }
 
     public function verify(Request $request): RedirectResponse
     {
         $request->validate(['code' => ['required', 'string', 'size:6']]);
 
-        $userId = session('salon_signup_user_id');
-        $salonId = session('salon_signup_salon_id');
-
-        if (! $userId || ! $salonId) {
+        $challenge = session(self::SESSION_KEY);
+        if (! $challenge) {
             return redirect()->route('salon-signup.create')
                 ->withErrors(['error' => 'جلسه شما منقضی شده است. لطفا دوباره ثبت‌نام کنید.']);
         }
 
-        $owner = $this->userRepository->find($userId);
-        $salon = $this->salonRepository->find($salonId);
-
-        if (! $owner || ! $salon) {
-            session()->forget(['salon_signup_user_id', 'salon_signup_salon_id', 'salon_signup_attempt_time']);
-
-            return redirect()->route('salon-signup.create')
-                ->withErrors(['error' => 'اطلاعات ثبت‌نام یافت نشد.']);
-        }
-
-        if ($this->verificationService->verify($owner, $request->code)) {
-            $intent = session('salon_signup_intent', 'trial');
-            session()->forget(['salon_signup_user_id', 'salon_signup_salon_id', 'salon_signup_attempt_time', 'salon_signup_intent']);
-
-            Auth::login($owner);
-            $request->session()->regenerate();
-
-            // ⭐ پیامک خوش‌آمد (۲۰۲۶-۰۹-۲۵) — فقط همین‌جا، یعنی یک‌بار و فقط برای ثبت‌نام خودکار.
-            $owner->notify(new \App\Notifications\Salon\SalonWelcomeNotification($salon->fresh(), $salon->fresh()->isOnTrial() ? $this->salonSignupService->trialDays() : 0));
-
-            if ($intent === 'buy') {
-                return $this->startImmediatePurchase($salon->fresh(), $owner);
+        try {
+            ['salon' => $salon, 'owner' => $owner, 'intent' => $intent] = $this->signupChallenge->complete($challenge, (string) $request->code);
+        } catch (ApiException $e) {
+            if (in_array($e->errorCode, ['invalid_code', 'code_expired'], true)) {
+                return back()->withErrors(['code' => 'کد وارد شده نامعتبر یا منقضی شده است.']);
             }
 
-            // ⭐ دوره‌ی آزمایشی (۲۰۲۶-۰۹-۲۳): سالن آزمایشی همین الان فعاله، پس مستقیم به داشبورد
-            // (که کارت «آدرس اختصاصی سالن» رو نشون می‌ده) می‌ره، نه صفحه‌ی پرداخت.
-            if ($salon->fresh()->isOnTrial()) {
-                return redirect()->route('admin.home')
-                    ->with('success', "سالن «{$salon->name}» ساخته شد و دوره‌ی آزمایشی رایگان {$this->salonSignupService->trialDays()} روزه‌ی شما از همین حالا فعال است.");
-            }
+            session()->forget(self::SESSION_KEY);
 
-            return redirect()->route('admin.billing.index')
-                ->with('success', "سالن «{$salon->name}» با موفقیت ساخته شد! برای فعال‌سازی، یکی از پلن‌های زیر را خریداری کنید.");
+            return redirect()->route('salon-signup.create')->withErrors(['error' => $e->getMessage()]);
         }
 
-        return back()->withErrors(['code' => 'کد وارد شده نامعتبر یا منقضی شده است.']);
+        session()->forget(self::SESSION_KEY);
+        Auth::login($owner);
+        $request->session()->regenerate();
+
+        $owner->notify(new \App\Notifications\Salon\SalonWelcomeNotification($salon, $salon->isOnTrial() ? $this->salonSignupService->trialDays() : 0));
+
+        if ($intent === 'buy') {
+            return $this->startImmediatePurchase($salon, $owner);
+        }
+
+        if ($salon->isOnTrial()) {
+            return redirect()->route('admin.home')
+                ->with('success', "سالن «{$salon->name}» ساخته شد و دوره‌ی آزمایشی رایگان {$this->salonSignupService->trialDays()} روزه‌ی شما از همین حالا فعال است.");
+        }
+
+        return redirect()->route('admin.billing.index')
+            ->with('success', "سالن «{$salon->name}» با موفقیت ساخته شد! برای فعال‌سازی، یکی از پلن‌های زیر را خریداری کنید.");
     }
 
-    /**
-     * ⭐ «خرید مستقیم بدون دوره‌ی رایگان» (۲۰۲۶-۰۹-۲۳): کسی که از صفحه‌ی فروش «خرید و پرداخت
-     * آنلاین» رو زده، بعد از تایید موبایل مستقیم به درگاه زرین‌پال می‌ره — همون مسیر پرداختی که
-     * صفحه‌ی خرید داخل پنل استفاده می‌کنه (InvoiceService::createPendingOnlinePurchase +
-     * SubscriptionPaymentService::createPayment، مرچنت سراسری پلتفرم، callback همون
-     * admin.billing.callback). هیچ مسیر پرداخت دومی ساخته نشده.
-     *
-     * سالن مثل هر ثبت‌نام دیگه‌ای ساخته شده (اگه آزمایشی روشن باشه، آزمایشی). پس اگه پرداخت
-     * ناموفق یا نیمه‌کاره بمونه، صاحب سالن قفل نمی‌شه: آزمایشی‌اش سر جاشه و از صفحه‌ی خرید پنل
-     * دوباره تلاش می‌کنه. اگه پرداخت موفق بشه، چون خرید وسط آزمایشی اشتراک رو از همون لحظه شروع
-     * می‌کنه (Salon::subscriptionPeriodBase)، عملاً هیچ روز آزمایشی‌ای مصرف نشده.
-     */
     private function startImmediatePurchase(\App\Models\Salon $salon, \App\Models\User $owner): RedirectResponse
     {
         $invoice = $this->invoiceService->createPendingOnlinePurchase($salon, $salon->subscription_type, $owner);
@@ -229,19 +189,16 @@ class SalonSignupController extends Controller
 
     public function resendCode(Request $request): RedirectResponse
     {
-        $userId = session('salon_signup_user_id');
-
-        if (! $userId) {
+        $challenge = session(self::SESSION_KEY);
+        if (! $challenge) {
             return back()->withErrors(['error' => 'جلسه شما منقضی شده است.']);
         }
 
-        $owner = $this->userRepository->find($userId);
-
-        if (! $owner) {
-            return back()->withErrors(['error' => 'کاربر یافت نشد.']);
+        try {
+            $this->signupChallenge->resend($challenge);
+        } catch (ApiException $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
         }
-
-        $this->verificationService->sendCode($owner);
 
         return back()->with('success', 'کد تایید مجدد ارسال شد.');
     }
