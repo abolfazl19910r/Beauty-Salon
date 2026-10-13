@@ -108,7 +108,7 @@ class CustomerRegisteredController extends Controller
         }
 
         try {
-            $this->registration->resend($challenge, $this->currentSalon->id());
+            $this->registration->resendFor($challenge, $this->currentSalon->id());
         } catch (ApiException $e) {
             return back()->withErrors(['error' => $e->getMessage()]);
         }

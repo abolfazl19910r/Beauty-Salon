@@ -72,7 +72,7 @@ class CustomerAuthController extends Controller
     {
         $input = $request->validate(['challenge' => ['required', 'string', 'max:100']]);
 
-        return ApiResponse::success($this->registration->resend($input['challenge'], $this->currentSalon->id()));
+        return ApiResponse::success($this->registration->resendFor($input['challenge'], $this->currentSalon->id()));
     }
 
     /** مثل فرم وب «شماره پیدا نشد» را می‌گوید. */
