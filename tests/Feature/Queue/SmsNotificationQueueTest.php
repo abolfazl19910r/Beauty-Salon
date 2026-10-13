@@ -24,12 +24,16 @@ class SmsNotificationQueueTest extends TestCase
     /** @return array<class-string> */
     private function smsNotifications(): array
     {
+        // مسیرها با / یکسان می‌شوند: روی ویندوز app_path() با \ است و glob ترکیبی از هر دو برمی‌گرداند
+        $app = str_replace('\\', '/', app_path()).'/';
+
         return collect(glob(app_path('Notifications/**/*.php')) ?: [])
             ->merge(glob(app_path('Notifications/*/*/*.php')) ?: [])
             ->merge(glob(app_path('Notifications/*/*/*/*.php')) ?: [])
+            ->map(fn ($f) => str_replace('\\', '/', $f))
             ->unique()
             ->filter(fn ($f) => ! str_contains($f, '/Concerns/') && str_contains(file_get_contents($f), 'function toSms'))
-            ->map(fn ($f) => 'App\\'.str_replace(['/', '.php'], ['\\', ''], Str::after($f, app_path().'/')))
+            ->map(fn ($f) => 'App\\'.str_replace(['/', '.php'], ['\\', ''], Str::after($f, $app)))
             ->values()->all();
     }
 
