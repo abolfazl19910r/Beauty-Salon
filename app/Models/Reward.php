@@ -41,9 +41,8 @@ class Reward extends Model
             return false;
         }
 
-        $userPoints = LoyaltyPoint::where('user_id', $user->id)->sum('points');
-
-        return $userPoints >= $this->required_points;
+        // امتیاز منقضی‌شده خرج نمی‌شود (LoyaltyLedger، ۲۰۲۶-۱۰-۱۱)
+        return app(\App\Services\Loyalty\LoyaltyLedger::class)->balance($user->id) >= $this->required_points;
     }
 
     public function incrementUsage()

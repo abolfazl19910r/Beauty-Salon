@@ -68,19 +68,13 @@ class LoyaltyPoint extends Model
 
     public static function getCurrentBalance($userId): int
     {
-        return static::where('user_id', $userId)
-            ->active()
-            ->selectRaw('COALESCE(SUM(CASE WHEN type = "earned" THEN points ELSE -points END), 0) as balance')
-            ->value('balance');
+        // قبلاً ردیف‌های spent (منفی) را دوباره منفی می‌کرد و به موجودی اضافه می‌کرد؛ حالا LoyaltyLedger (۲۰۲۶-۱۰-۱۱)
+        return app(\App\Services\Loyalty\LoyaltyLedger::class)->balance((int) $userId);
     }
 
     public static function getExpiringPoints($userId, $days = 30): int
     {
-        return static::where('user_id', $userId)
-            ->where('type', 'earned')
-            ->whereNotNull('expires_at')
-            ->whereBetween('expires_at', [now(), now()->addDays($days)])
-            ->sum('points');
+        return app(\App\Services\Loyalty\LoyaltyLedger::class)->expiringSoon((int) $userId, (int) $days);
     }
 
     public function isExpired(): bool

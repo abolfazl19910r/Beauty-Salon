@@ -191,7 +191,7 @@
                                     <td class="p-4" style="color:var(--admin-text)">{{ $point->created_at->format('Y/m/d H:i') }}</td>
                                     <td class="p-4">
                                         <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $point->type === 'earned' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                            {{ $point->type === 'earned' ? 'کسب‌شده' : 'مصرف‌شده' }}
+                                            {{ $point->type === 'earned' ? 'کسب‌شده' : ($point->type === 'expired' ? 'منقضی‌شده' : 'مصرف‌شده') }}
                                         </span>
                                     </td>
                                     <td class="p-4" style="color:var(--admin-text)">{{ $point->points > 0 ? '+' : '' }}{{ number_format($point->points) }}</td>

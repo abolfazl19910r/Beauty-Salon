@@ -73,7 +73,8 @@ class LoyaltyAdminService
     {
         $earned = $this->loyaltyPointRepository->sumForUserByType($user->id, 'earned');
         $spent = abs($this->loyaltyPointRepository->sumForUserByType($user->id, 'spent'));
-        $balance = $earned - $spent;
+        // موجودی با انقضا (LoyaltyLedger)، نه «کسب‌شده منهای مصرف‌شده»
+        $balance = $this->loyaltyPointRepository->sumForUser($user->id);
 
         $expiringSoon = $this->loyaltyPointRepository->sumExpiringSoonForUser($user->id, 30);
 
@@ -81,6 +82,7 @@ class LoyaltyAdminService
             'user' => $user->only(['id', 'name', 'phone', 'email']),
             'total_earned' => $earned,
             'total_spent' => $spent,
+            'total_expired' => abs($this->loyaltyPointRepository->sumForUserByType($user->id, \App\Services\Loyalty\LoyaltyLedger::TYPE_EXPIRED)),
             'current_balance' => $balance,
             'expiring_soon' => $expiringSoon,
             'history' => $this->loyaltyPointRepository->paginateForUser($user->id, 20),

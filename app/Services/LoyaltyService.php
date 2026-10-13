@@ -67,6 +67,8 @@ class LoyaltyService
             // را قبل از کم شدن امتیاز اولی رد می‌کردند و امتیاز دو بار خرج می‌شد (موجودی منفی، دو کد تخفیف)
             \App\Models\User::whereKey($user->id)->lockForUpdate()->first();
             $reward = \App\Models\Reward::whereKey($reward->id)->lockForUpdate()->firstOrFail();
+            // امتیازهای منقضی‌شده پیش از خرج ثبت شوند (تاریخچه‌ی مشتری دلیل کم شدن را ببیند)
+            app(\App\Services\Loyalty\LoyaltyLedger::class)->expire($userId);
 
             if (! $reward->isAvailableForUser($user)) {
                 throw new \Exception('امتیاز کافی نیست یا پاداش در دسترس نیست');

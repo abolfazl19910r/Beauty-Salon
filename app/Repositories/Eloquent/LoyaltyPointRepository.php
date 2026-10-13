@@ -17,26 +17,18 @@ class LoyaltyPointRepository extends BaseRepository implements LoyaltyPointRepos
 
     public function sumForUser(int $userId): int
     {
-        return (int) $this->model->where('user_id', $userId)->sum('points');
+        // موجودی واقعی با انقضا (LoyaltyLedger، ۲۰۲۶-۱۰-۱۱) — نه جمع خام همه‌ی ردیف‌ها
+        return app(\App\Services\Loyalty\LoyaltyLedger::class)->balance($userId);
     }
 
     public function sumExpiringForUser(int $userId, int $days): int
     {
-        return (int) $this->model->where('user_id', $userId)
-            ->where('type', 'earned')
-            ->whereNotNull('expires_at')
-            ->whereBetween('expires_at', [now(), now()->addDays($days)])
-            ->sum('points');
+        return app(\App\Services\Loyalty\LoyaltyLedger::class)->expiringSoon($userId, $days);
     }
 
     public function sumExpiringSoonForUser(int $userId, int $days): int
     {
-        return (int) $this->model->where('user_id', $userId)
-            ->where('type', 'earned')
-            ->whereNotNull('expires_at')
-            ->where('expires_at', '>', now())
-            ->where('expires_at', '<=', now()->addDays($days))
-            ->sum('points');
+        return app(\App\Services\Loyalty\LoyaltyLedger::class)->expiringSoon($userId, $days);
     }
 
     public function sumForUserByType(int $userId, string $type): int

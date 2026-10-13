@@ -331,16 +331,7 @@ class User extends Authenticatable
 
     public function getTotalLoyaltyPoints(): int
     {
-        try {
-            return \App\Models\LoyaltyPoint::where('user_id', $this->id)
-                ->where(function ($query) {
-                    $query->whereNull('expires_at')
-                        ->orWhere('expires_at', '>', now());
-                })
-                ->sum('points');
-        } catch (\Exception $e) {
-            return 0;
-        }
+        return app(\App\Services\Loyalty\LoyaltyLedger::class)->balance($this->id);
     }
 
     public function wallet(): HasOne

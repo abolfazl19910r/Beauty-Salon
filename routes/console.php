@@ -17,3 +17,10 @@ Schedule::job(new CancelUnpaidBookings)
 
 // Note: The actual wallet:settle-pending shedule is registered in bootstrap/app.php.
 // Previously this command was registered both here and in bootstrap/app.php (double execution every night at 01:00).
+
+// انقضای امتیاز باشگاه مشتریان (LoyaltyLedger، تصمیم ۲۰۲۶-۱۰-۱۱): باقی‌مانده‌ی بسته‌های منقضی‌شده یک ردیف «expired» می‌گیرد
+Schedule::command('loyalty:expire-points')
+    ->dailyAt('03:20')
+    ->name('loyalty-expire-points')
+    ->withoutOverlapping()
+    ->onOneServer();
