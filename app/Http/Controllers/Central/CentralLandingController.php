@@ -75,6 +75,9 @@ class CentralLandingController extends Controller
             'todayLabel' => $this->jalaliLabel(now()),
             'addressPrefix' => $this->addressPrefix($request),
             'addressSuffix' => $this->addressSuffix(),
+            // راه‌های تماس از «تنظیمات پلتفرم» سوپرادمین (پیش‌فرض .env)؛ خالی = پنهان
+            'contact' => collect(['support_phone', 'public_email', 'instagram_url', 'linkedin_url', 'telegram_url', 'bale_url'])
+                ->mapWithKeys(fn (string $key) => [$key => \App\Support\PlatformSettings::get($key)])->all(),
         ]);
     }
 

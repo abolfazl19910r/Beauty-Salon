@@ -64,6 +64,7 @@
                         <span data-demo-requests-badge style="background: var(--sa-accent); color: #0F172A; border-radius: 999px; padding: 0 .5rem; font-size: .75rem; font-weight: 700; margin-inline-start: .35rem;">{{ to_persian_num((string) $openDemoRequests) }}</span>
                     @endif
                 </a>
+                <a href="{{ route('superadmin.settings.edit') }}" class="sa-nav-link {{ request()->routeIs('superadmin.settings.*') ? 'active' : '' }}">تنظیمات پلتفرم</a>
             </nav>
         </aside>
 

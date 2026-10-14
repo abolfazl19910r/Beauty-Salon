@@ -13,9 +13,14 @@ return [
     'tagline' => 'نوبت‌دهی آنلاین سالن‌های زیبایی',
     'domain' => env('BRAND_DOMAIN', 'mahru.ir'),
     'theme_color' => '#1A1410',
-    // راه‌های تماس صفحه‌ی فروش (لندینگ ۲۰۲۶-۱۰-۱۴): خالی = آن لینک اصلاً نشان داده نمی‌شود (نه شماره‌ی نمونه)
+    // راه‌های تماس صفحه‌ی فروش (لندینگ ۲۰۲۶-۱۰-۱۴): فقط پیش‌فرض — سوپرادمین از «تنظیمات پلتفرم» عوض می‌کند (App\Support\PlatformSettings)؛
+    // خالی = آن لینک اصلاً نشان داده نمی‌شود (نه شماره‌ی نمونه)
     'support_phone' => env('BRAND_SUPPORT_PHONE') ?: null,
     'email' => env('BRAND_EMAIL') ?: null,
     'instagram_url' => env('BRAND_INSTAGRAM_URL') ?: null,
     'linkedin_url' => env('BRAND_LINKEDIN_URL') ?: null,
+    'telegram_url' => env('BRAND_TELEGRAM_URL') ?: null,
+    'bale_url' => env('BRAND_BALE_URL') ?: null,
+    // گیرنده‌ی ایمیل درخواست‌های دمو (۲۰۲۶-۱۰-۱۴)؛ ارسال واقعی به MAIL_* نیاز دارد (پیش‌فرض MAIL_MAILER=log)
+    'demo_notify_email' => env('BRAND_DEMO_NOTIFY_EMAIL') ?: null,
 ];

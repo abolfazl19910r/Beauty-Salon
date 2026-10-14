@@ -837,7 +837,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 <details><summary>اگر بیشتر از {{ to_persian_num((string) $maxSpecialists) }} متخصص داشته باشم؟</summary><p>موقع ساخت سالن تعداد متخصص‌ها را وارد کنید؛ هر متخصص بیشتر ماهانه {{ to_persian_num(number_format($extraSpecialistPrice)) }} تومان به قیمت پلن اضافه می‌شود (در پلن‌های چندماهه با همان تخفیف).</p></details>
 <details><summary>پول پیش‌پرداخت مشتری‌ها به حساب چه کسی واریز می‌شود؟</summary><p>مستقیم به حساب درگاه پرداخت خود سالن. اطلاعات درگاه را موقع ساخت سالن یا بعداً از پنل مدیریت وارد می‌کنید؛ تا درگاهی ثبت نشود، پرداخت آنلاین برای مشتری‌های سالن ممکن نیست.</p></details>
 <details><summary>اطلاعات مشتریانم امن است؟</summary><p>داده‌های هر سالن فقط برای خود آن سالن قابل دسترس است، با رمزنگاری منتقل می‌شود و بین سالن‌ها هیچ اشتراکی وجود ندارد.</p></details>
-<details><summary>اگر به کمک نیاز داشتم چه؟</summary><p>تیم پشتیبانی فارسی در راه‌اندازی و کار روزمره کنار شماست؛ از داخل پنل تیکت بزنید@if (config('brand.support_phone')) یا تماس بگیرید@endif.</p></details>
+<details><summary>اگر به کمک نیاز داشتم چه؟</summary><p>تیم پشتیبانی فارسی در راه‌اندازی و کار روزمره کنار شماست؛ از داخل پنل تیکت بزنید@if ($contact['support_phone']) یا تماس بگیرید@endif.</p></details>
 </div></div></section>
 
 
@@ -859,7 +859,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 <div class="fieldset"><label for="fPhone">شماره موبایل</label><input id="fPhone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" dir="ltr" required placeholder="09xx xxx xxxx" style="text-align:right" value="{{ old('phone') }}" @error('phone') aria-invalid="true" @enderror><span class="err" id="ePhone">@error('phone'){{ $message }}@enderror</span></div>
 <div class="fieldset"><label for="fType">نوع سالن</label><select id="fType" name="type">@foreach (\App\Models\DemoRequest::TYPES as $typeKey => $typeLabel)<option value="{{ $typeKey }}" @selected(old('type') === $typeKey)>{{ $typeLabel }}</option>@endforeach</select></div>
 <button class="btn btn-gold btn-block" type="submit" id="fBtn">ثبت درخواست دمو</button>
-@if (config('brand.support_phone'))<p class="note">یا تماس مستقیم: <a href="tel:{{ config('brand.support_phone') }}" class="num" dir="ltr">{{ config('brand.support_phone') }}</a></p>@endif
+@if ($contact['support_phone'])<p class="note">یا تماس مستقیم: <a href="tel:{{ $contact['support_phone'] }}" class="num" dir="ltr">{{ $contact['support_phone'] }}</a></p>@endif
 <div class="ok" role="status" aria-live="polite"><div class="ck"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></div><h3>درخواست شما ثبت شد</h3><p>به‌زودی برای هماهنگی دمو با شما تماس می‌گیریم.</p></div>
 </form>
 </div></div></section>
@@ -869,8 +869,8 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 <footer><div class="wrap"><div class="fg">
 <div><a class="brand" href="#top" style="margin-bottom:14px"><svg aria-hidden="true"><use href="#mark"/></svg><span>ماهرو<small>MAHRU</small></span></a><p style="max-width:300px">نرم‌افزار نوبت‌دهی و مدیریت سالن‌های زیبایی؛ ساده برای مشتری، قدرتمند برای مدیر.</p></div>
 <div><h4>محصول</h4><a href="#features">امکانات</a><a href="#product">پنل مدیریت</a><a href="#plans">تعرفه‌ها</a><a href="#for">مناسب چه کسانی</a></div>
-<div><h4>پشتیبانی</h4><a href="#faq">سؤالات متداول</a><a href="#start">درخواست دمو</a><a href="{{ route('login') }}">ورود به پنل</a>@if (config('brand.support_phone'))<a href="tel:{{ config('brand.support_phone') }}">تماس با ما</a>@endif</div>
-@if (config('brand.instagram_url') || config('brand.linkedin_url') || config('brand.email'))<div><h4>شبکه‌ها</h4>@if (config('brand.instagram_url'))<a href="{{ config('brand.instagram_url') }}" rel="noopener" target="_blank">اینستاگرام</a>@endif @if (config('brand.linkedin_url'))<a href="{{ config('brand.linkedin_url') }}" rel="noopener" target="_blank">لینکدین</a>@endif @if (config('brand.email'))<a href="mailto:{{ config('brand.email') }}">ایمیل</a>@endif</div>@endif
+<div><h4>پشتیبانی</h4><a href="#faq">سؤالات متداول</a><a href="#start">درخواست دمو</a><a href="{{ route('login') }}">ورود به پنل</a>@if ($contact['support_phone'])<a href="tel:{{ $contact['support_phone'] }}">تماس با ما</a>@endif</div>
+@if (array_filter(\Illuminate\Support\Arr::except($contact, ['support_phone'])))<div><h4>شبکه‌ها</h4>@if ($contact['instagram_url'])<a href="{{ $contact['instagram_url'] }}" rel="noopener" target="_blank">اینستاگرام</a>@endif @if ($contact['linkedin_url'])<a href="{{ $contact['linkedin_url'] }}" rel="noopener" target="_blank">لینکدین</a>@endif @if ($contact['telegram_url'])<a href="{{ $contact['telegram_url'] }}" rel="noopener" target="_blank">تلگرام</a>@endif @if ($contact['bale_url'])<a href="{{ $contact['bale_url'] }}" rel="noopener" target="_blank">بله</a>@endif @if ($contact['public_email'])<a href="mailto:{{ $contact['public_email'] }}">ایمیل</a>@endif</div>@endif
 </div><div class="copy"><span>© <span id="yr">{{ to_persian_num((string) \Morilog\Jalali\Jalalian::now()->getYear()) }}</span> ماهرو · همه‌ی حقوق محفوظ است</span><span>ساخته‌شده برای سالن‌های ایران</span></div></div></footer>
 
 <button class="icon-btn" id="ttop" type="button" aria-label="بازگشت به بالا"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg></button>
@@ -989,7 +989,7 @@ try{const r=await fetch(form.action,{method:'POST',body:data,headers:{'Accept':'
 if(r.status===422){const j=await r.json().catch(()=>({}));const er=j.errors||{};setErr(n,$1('#eName'),(er.name||[''])[0]);setErr(p,$1('#ePhone'),(er.phone||er.type||[''])[0]);throw 'shown'}
 if(r.status===429){setErr(p,$1('#ePhone'),'درخواست‌های زیادی از این دستگاه رسیده است؛ کمی بعد دوباره تلاش کنید.');throw 'shown'}
 if(!r.ok)throw 0;form.classList.add('sent')}
-catch(err){btn.disabled=false;btn.textContent='ثبت درخواست دمو';if(err!=='shown')setErr(p,$1('#ePhone'),'ارسال انجام نشد. لطفاً دوباره تلاش کنید'+(@json((bool) config('brand.support_phone'))?' یا مستقیم تماس بگیرید.':'.'))}
+catch(err){btn.disabled=false;btn.textContent='ثبت درخواست دمو';if(err!=='shown')setErr(p,$1('#ePhone'),'ارسال انجام نشد. لطفاً دوباره تلاش کنید'+(@json((bool) $contact['support_phone'])?' یا مستقیم تماس بگیرید.':'.'))}
 });
 })();
 </script>

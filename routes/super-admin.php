@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\SuperAdmin\DemoRequestController;
+use App\Http\Controllers\SuperAdmin\PlatformSettingsController;
 use App\Http\Controllers\SuperAdmin\SuperAdminController;
 use App\Http\Controllers\SuperAdmin\SuperAdminPaymentController;
 use App\Http\Controllers\SuperAdmin\SupportTicketController;
@@ -48,3 +49,7 @@ Route::prefix('support-tickets')->name('support-tickets.')->group(function () {
 // درخواست‌های دموی صفحه‌ی فروش (۲۰۲۶-۱۰-۱۴)
 Route::get('/demo-requests', [DemoRequestController::class, 'index'])->name('demo-requests.index');
 Route::patch('/demo-requests/{demoRequest}', [DemoRequestController::class, 'update'])->name('demo-requests.update');
+
+// تنظیمات پلتفرم: راه‌های تماس صفحه‌ی فروش و ایمیل درخواست‌های دمو (۲۰۲۶-۱۰-۱۴)
+Route::get('/settings', [PlatformSettingsController::class, 'edit'])->name('settings.edit');
+Route::put('/settings', [PlatformSettingsController::class, 'update'])->name('settings.update');
