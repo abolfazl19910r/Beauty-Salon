@@ -165,6 +165,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_a
 
     require __DIR__.'/admin/security.php';
     require __DIR__.'/admin/notification-settings.php';
+    require __DIR__.'/admin/sms-templates.php';
     require __DIR__.'/admin/roles.php';
     require __DIR__.'/admin/permissions.php';
     require __DIR__.'/admin/reviews.php';

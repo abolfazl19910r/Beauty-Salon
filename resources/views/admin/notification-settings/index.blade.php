@@ -17,6 +17,7 @@
                     خاموش‌کردن یک ستون فقط همان کانال را برای همان رویداد غیرفعال می‌کند؛ رویدادهای دیگر تحت تأثیر قرار نمی‌گیرند.
                 </p>
             </div>
+            <a href="{{ route('admin.sms-templates.index') }}" class="px-4 py-2 rounded-lg text-sm font-medium" style="border:1px solid var(--admin-accent); color:var(--admin-accent);">ویرایش متن پیامک‌ها</a>
         </div>
 
         @unless($botImplemented)
