@@ -459,6 +459,10 @@
         </section>
 
     </div>
+
+    @if ($appSalon = app(\App\Support\CurrentSalon::class)->get())
+        @include('partials.open-in-app', ['appSalon' => $appSalon])
+    @endif
 @endsection
 
 @push('scripts')

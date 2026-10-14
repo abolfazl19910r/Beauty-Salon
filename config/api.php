@@ -20,6 +20,12 @@ return [
 
     // اپ «ماهرو» (مشتری، بسته‌ی ۳): صفحه‌ی برگشت از درگاه، مشتری را با این scheme به اپ برمی‌گرداند (mahru://payment?...)
     'customer_app_scheme' => env('CUSTOMER_APP_SCHEME') ?: 'mahru',
+
+    // دکمه‌ی «باز کردن در اپ ماهرو» صفحه‌ی وب سالن روی اندروید (بسته‌ی ۳ب، App\Support\CustomerAppLink):
+    // شناسه‌ی اپ برای لینک intent، و آدرس دانلود APK/فروشگاه برای وقتی اپ نصب نیست (خالی = دکمه‌ی دانلود دیده نمی‌شود).
+    'customer_app_package' => env('CUSTOMER_APP_PACKAGE') ?: 'ir.mahru',
+    'customer_app_download_url' => env('CUSTOMER_APP_DOWNLOAD_URL') ?: null,
+
     // عمر لینک امضاشده‌ی «رفتن به درگاه» که API پرداخت به اپ می‌دهد (اپ آن را در مرورگر بیرونی باز می‌کند)
     'checkout_ttl_minutes' => (int) (env('API_CHECKOUT_TTL_MINUTES') ?: 15),
 
