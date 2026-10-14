@@ -3,7 +3,8 @@
 # دستورات سریع برای کار با Docker
 # ============================================================
 
-.PHONY: help setup superadmin build up down restart logs logs-scheduler queue-restart shell db-shell redis-shell migrate seed fresh status
+PHONY_BACKUP := backup backup-db backup-files
+.PHONY: $(PHONY_BACKUP) help setup superadmin build up down restart logs logs-scheduler queue-restart shell db-shell redis-shell migrate seed fresh status
 
 # ⚠️ artisan داخل container همیشه با کاربر www (مثل entrypoint): اجرای با root فایل‌هایی مثل storage/logs/laravel.log
 # رو مال root می‌کرد و بعدش php-fpm (کاربر www) دیگه نمی‌تونست توشون بنویسه → خطای ۵۰۰.
@@ -142,3 +143,12 @@ backup-db: ## پشتیبان‌گیری از دیتابیس
 		${DB_DATABASE:-beauty_salon} \
 		> backups/beauty_salon_$$(date +%Y%m%d_%H%M%S).sql
 	@echo "$(GREEN)✅ Backup saved to backups/$(RESET)"
+
+backup-files: ## پشتیبان فایل‌های آپلودی (عکس‌های دوره‌ی درمانی، لوگو، گالری، ...)
+	@mkdir -p backups
+	docker compose exec -T app sh -c 'cd /var/www/html && tar -czf - $$(for d in course-photos public private; do [ -d storage/app/$$d ] && echo storage/app/$$d; done)' \
+		> backups/storage_app_$$(date +%Y%m%d_%H%M%S).tar.gz
+	@chmod 600 backups/storage_app_*.tar.gz
+	@echo "$(GREEN)✅ Files saved to backups/ (عکس‌های دوره داده‌ی حساس‌اند — جای امن نگه دار)$(RESET)"
+
+backup: backup-db backup-files ## پشتیبان کامل (دیتابیس + فایل‌ها)

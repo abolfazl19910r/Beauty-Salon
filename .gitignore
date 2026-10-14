@@ -27,3 +27,6 @@ yarn-error.log
 
 # فایل پیکربندی فایربیس اپ‌های Expo (هر اپ جداست؛ ریپو عمومی است)
 google-services.json
+
+# پشتیبان‌های make backup / mahru-backup.sh (داده‌ی شخصی؛ هرگز در گیت)
+/backups

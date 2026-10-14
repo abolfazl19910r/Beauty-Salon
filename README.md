@@ -270,6 +270,8 @@ make superadmin    # ساخت مدیر پلتفرم
 | `make queue-restart` | ری‌استارت صف بعد از deploy |
 | `make cache-clear` / `make cache-optimize` | cache |
 | `make backup-db` | پشتیبان دیتابیس |
+| `make backup-files` | پشتیبان فایل‌های آپلودی (`storage/app`، شامل عکس‌های دوره) — بدون Docker: `deploy/backup/mahru-backup.sh`، راهنما `docs/deployment/BACKUP.md` |
+| `make backup` | هر دو |
 | `make status` | وضعیت سرویس‌ها |
 
 ---

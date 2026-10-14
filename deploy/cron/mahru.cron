@@ -12,3 +12,6 @@
 # راهنمای کامل: docs/deployment/SCHEDULER_AND_QUEUE.md
 # ============================================================
 * * * * * cd /home/[username]/public_html && php artisan schedule:run >> /dev/null 2>&1
+
+# پشتیبان شبانه‌ی دیتابیس و فایل‌ها (عکس‌های دوره، لوگو، گالری) — docs/deployment/BACKUP.md
+40 3 * * * bash /home/[username]/public_html/deploy/backup/mahru-backup.sh /home/[username]/public_html /home/[username]/mahru-backups >> /home/[username]/mahru-backups/backup.log 2>&1
