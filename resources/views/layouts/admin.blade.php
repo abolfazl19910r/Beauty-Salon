@@ -307,6 +307,19 @@
                 </a>
                 @endpermission
 
+                @permission('view-loyalty')
+                <a href="{{ route('admin.winback.index') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.winback*') ? 'sidebar-active' : '' }}"
+                   style="{{ request()->routeIs('admin.winback*') ? '' : 'color: var(--admin-text-dim);' }}"
+                   onmouseover="{{ request()->routeIs('admin.winback*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
+                   onmouseout="{{ request()->routeIs('admin.winback*') ? '' : 'this.style.backgroundColor=\"\"' }}">
+                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path>
+                    </svg>
+                    پیگیری مشتریان غایب
+                </a>
+                @endpermission
+
                 @permission('view-blog')
                 <a href="{{ route('admin.blog.index') }}"
                    class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.blog*') ? 'sidebar-active' : '' }}"

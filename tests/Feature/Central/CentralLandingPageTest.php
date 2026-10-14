@@ -41,7 +41,10 @@ class CentralLandingPageTest extends TestCase
 
         $this->assertStringContainsString('ماهرو', $html);
         $this->assertSame(0, preg_match('/(?<!ا)مهرو/u', $html), 'نام فارسی «ماهرو» است، نه «مهرو»');
-        foreach (['چند شعبه، یک پنل', 'شعبه‌های نامحدود', 'پیگیری خودکار مشتریانی', 'یادآوری خودکار جلسه‌ی بعد', 'کاملاً قابل تنظیم', '۲۹۰٬۰۰۰', '۵۹۰٬۰۰۰', '0900 000 0000', 'href="#">اینستاگرام'] as $claim) {
+        // پیگیری مشتریان غایب و متن پیامک قابل ویرایش از ۲۰۲۶-۱۰-۱۴ واقعاً هستند (WinbackService، SmsTemplates)
+        $this->assertStringContainsString('پیگیری خودکار مشتریانی که مدتی نیامده‌اند', $html);
+        $this->assertStringContainsString('متن پیامک‌های نوبت و باشگاه را هم می‌توانید', $html);
+        foreach (['چند شعبه، یک پنل', 'شعبه‌های نامحدود', 'یادآوری خودکار جلسه‌ی بعد', 'کاملاً قابل تنظیم', '۲۹۰٬۰۰۰', '۵۹۰٬۰۰۰', '0900 000 0000', 'href="#">اینستاگرام'] as $claim) {
             $this->assertStringNotContainsString($claim, $html, $claim);
         }
     }

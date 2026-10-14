@@ -150,17 +150,28 @@ class CustomerAccountController extends CustomerController
             'id' => $user->id,
             'name' => $user->name,
             'phone' => $user->phone,
+            // پیامک‌های پیگیری و پیشنهاد سالن (۲۰۲۶-۱۰-۱۴)؛ پیامک‌های نوبت جدا و همیشه روشن
+            'marketing_sms' => $user->marketing_sms_opted_out_at === null,
             'created_at' => $user->created_at?->toIso8601String(),
         ]);
     }
 
-    /** فقط نام (مثل وب؛ شماره هویت حساب است و عوض نمی‌شود). */
+    /** نام و/یا marketing_sms (مثل وب؛ شماره هویت حساب است و عوض نمی‌شود). */
     public function updateProfile(Request $request): JsonResponse
     {
-        $input = $request->validate(['name' => ['required', 'string', 'max:255']]);
+        $input = $request->validate([
+            'name' => ['required_without:marketing_sms', 'string', 'max:255'],
+            'marketing_sms' => ['sometimes', 'boolean'],
+        ]);
 
         $user = $this->customer($request);
-        $user->forceFill(['name' => $input['name']])->save();
+        if (array_key_exists('name', $input)) {
+            $user->name = $input['name'];
+        }
+        if (array_key_exists('marketing_sms', $input)) {
+            $user->marketing_sms_opted_out_at = $request->boolean('marketing_sms') ? null : ($user->marketing_sms_opted_out_at ?? now());
+        }
+        $user->save();
 
         return $this->profile($request);
     }

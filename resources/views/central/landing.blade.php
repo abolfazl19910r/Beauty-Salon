@@ -644,7 +644,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 <div class="sh rv"><span class="kicker">Why Mahru</span><h2>تلفن و دفترچه را کنار بگذارید، <span class="gold">مشتری را نگه دارید</span></h2><p>بیشتر سالن‌ها نوبت را از دست نمی‌دهند چون مشتری ندارند؛ چون نوبت‌ها در تماس‌های بی‌پاسخ، پیام‌های گم‌شده و دفترچه‌های درهم می‌ماند.</p></div>
 <div class="ba">
 <div class="card pane before rv"><span class="tag b">وضعیت فعلی</span><h3>بدون ماهرو</h3><p>هر روز ساعت‌ها از وقت تیم صرف هماهنگی می‌شود.</p><ul><li>تماس و پیام در ساعت شلوغی بی‌پاسخ می‌ماند</li><li>نوبت‌ها تداخل پیدا می‌کنند و مشتری ناراضی می‌شود</li><li>فراموشی نوبت، ساعت کاری و درآمد را هدر می‌دهد</li><li>سابقه‌ی مشتری و گزارش مالی جایی ثبت نمی‌شود</li></ul></div>
-<div class="card pane after rv d1"><span class="tag a">با ماهرو</span><h3 class="gold">همه‌چیز خودکار</h3><p>هر نوبت، از رزرو تا پیگیری، بدون دخالت دست انجام می‌شود.</p><ul><li>مشتری ۲۴ ساعته از لینک اختصاصی سالن نوبت می‌گیرد</li><li>تقویم مدت هر خدمت را حساب می‌کند و تداخل نمی‌دهد</li><li>پیامک تأیید و یادآوری، غیبت‌ها را کم می‌کند</li><li>پرونده‌ی مشتری، امتیاز وفاداری و گزارش درآمد همیشه در دسترس است</li></ul></div>
+<div class="card pane after rv d1"><span class="tag a">با ماهرو</span><h3 class="gold">همه‌چیز خودکار</h3><p>هر نوبت، از رزرو تا پیگیری، بدون دخالت دست انجام می‌شود.</p><ul><li>مشتری ۲۴ ساعته از لینک اختصاصی سالن نوبت می‌گیرد</li><li>تقویم مدت هر خدمت را حساب می‌کند و تداخل نمی‌دهد</li><li>پیامک تأیید و یادآوری، غیبت‌ها را کم می‌کند</li><li>مشتری‌ای که مدتی نیامده، خودکار پیامک دعوت و کد تخفیف می‌گیرد</li><li>پرونده‌ی مشتری، امتیاز وفاداری و گزارش درآمد همیشه در دسترس است</li></ul></div>
 </div></div></section>
 
 <!-- ============ FEATURES ============ -->
@@ -667,7 +667,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 </div>
 <div class="card tile rv d1">
 <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.6 5.6 6 .7-4.5 4.1 1.2 5.9L12 15.4 6.7 18.3l1.2-5.9L3.4 8.3l6-.7z"/></svg></div>
-<h3>باشگاه مشتریان</h3><p>پرونده‌ی مشتری، امتیاز وفاداری و کد تخفیف برای برگرداندن مشتریان قدیمی.</p>
+<h3>باشگاه مشتریان</h3><p>پرونده‌ی مشتری، امتیاز وفاداری و پیگیری خودکار مشتریانی که مدتی نیامده‌اند، با کد تخفیف اختصاصی.</p>
 <div class="vis ringv"><svg viewBox="0 0 92 92" aria-hidden="true"><circle class="bgc" cx="46" cy="46" r="38"/><circle class="fg" cx="46" cy="46" r="38"/></svg><b class="num">۷۴٪</b><p>نمونه: سهم مشتریان بازگشتی</p></div>
 </div>
 <div class="card tile rv d2">
@@ -715,7 +715,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 <tbody>
 <tr><td><div class="who"><span class="av">م</span>مریم رضایی</div></td><td class="num">۱۸</td><td>امروز</td><td class="num">۹۲۰</td><td><span class="badge">طلایی</span></td></tr>
 <tr><td><div class="who"><span class="av">ن</span>نازنین کریمی</div></td><td class="num">۱۱</td><td>امروز</td><td class="num">۵۴۰</td><td><span class="badge">نقره‌ای</span></td></tr>
-<tr><td><div class="who"><span class="av">پ</span>پریسا محمدی</div></td><td class="num">۷</td><td>۳ هفته پیش</td><td class="num">۳۱۰</td><td><span class="badge m">پیامک دعوت ارسال شد</span></td></tr>
+<tr><td><div class="who"><span class="av">پ</span>پریسا محمدی</div></td><td class="num">۷</td><td>۲ ماه پیش</td><td class="num">۳۱۰</td><td><span class="badge m">پیامک بازگشت ارسال شد</span></td></tr>
 <tr><td><div class="who"><span class="av">ه</span>هانیه شکوهی</div></td><td class="num">۱</td><td>امروز</td><td class="num">۴۰</td><td><span class="badge m">مشتری جدید</span></td></tr>
 <tr><td><div class="who"><span class="av">ر</span>رها صادقی</div></td><td class="num">۲۴</td><td>امروز</td><td class="num">۱٬۲۸۰</td><td><span class="badge">طلایی</span></td></tr>
 </tbody></table></div>
@@ -780,7 +780,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 <div class="sh rv"><span class="kicker">Made for you</span><h2>برای هر نوع <span class="gold">سالن</span></h2><p>ماهرو با ساختار خدمات و پرسنل شما سازگار می‌شود.</p></div>
 <div class="tabs rv" id="tabs" role="tablist" aria-label="نوع سالن"><button role="tab" type="button" aria-selected="true">آرایشگاه و سالن مو</button><button role="tab" type="button" aria-selected="false">ناخن و زیبایی</button><button role="tab" type="button" aria-selected="false">پوست، مو و لیزر</button></div>
 <div class="rv">
-<div class="card aud on" role="tabpanel"><div><h3>آرایشگاه و سالن مو</h3><p>رنگ، لایت و کوتاهی زمان‌های متفاوتی می‌خواهند. ماهرو مدت هر خدمت را جدا حساب می‌کند تا تداخلی پیش نیاید.</p></div><ul><li>زمان‌بندی خدمات طولانی مثل رنگ و لایت</li><li>انتخاب آرایشگر مورد علاقه‌ی مشتری</li><li>کد تخفیف و امتیاز برای برگرداندن مشتری‌ها</li></ul></div>
+<div class="card aud on" role="tabpanel"><div><h3>آرایشگاه و سالن مو</h3><p>رنگ، لایت و کوتاهی زمان‌های متفاوتی می‌خواهند. ماهرو مدت هر خدمت را جدا حساب می‌کند تا تداخلی پیش نیاید.</p></div><ul><li>زمان‌بندی خدمات طولانی مثل رنگ و لایت</li><li>انتخاب آرایشگر مورد علاقه‌ی مشتری</li><li>پیگیری خودکار مشتریانی که مدتی نیامده‌اند</li></ul></div>
 <div class="card aud" role="tabpanel"><div><h3>ناخن و زیبایی</h3><p>نوبت‌های کوتاه و پشت‌سرهم، بدون فاصله‌ی هدررفته و با یادآوری دقیق.</p></div><ul><li>رزرو سریع خدمات کوتاه</li><li>بیعانه برای جلوگیری از غیبت</li><li>پرونده‌ی سلیقه و سابقه‌ی هر مشتری</li></ul></div>
 <div class="card aud" role="tabpanel"><div><h3>پوست، مو و لیزر</h3><p>خدمات طولانی با مدت‌زمان دقیق و متخصص مشخص، بدون تداخل در تقویم.</p></div><ul><li>سابقه‌ی نوبت‌های هر مشتری در پرونده‌اش</li><li>یادآوری پیامکی پیش از هر نوبت</li><li>گزارش دقیق از هر خدمت انجام‌شده</li></ul></div>
 </div></div></section>
@@ -829,7 +829,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 <div class="faq rv">
 <details open><summary>برای شروع به چه چیزی نیاز دارم؟</summary><p>فقط اطلاعات سالن و فهرست خدمات‌تان. سالن را خودتان در چند دقیقه می‌سازید (یا درخواست دمو بدهید تا با هم بسازیم) و بقیه‌ی تنظیمات داخل پنل انجام می‌شود.</p></details>
 <details><summary>مشتریان باید برنامه‌ای نصب کنند؟</summary><p>خیر. رزرو از طریق لینک اختصاصی سالن و روی هر مرورگری انجام می‌شود؛ روی موبایل، تبلت و کامپیوتر.</p></details>
-<details><summary>پیامک یادآوری چطور کار می‌کند؟</summary><p>پس از ثبت نوبت پیامک تأیید ارسال می‌شود و پیش از نوبت هم یادآوری می‌رسد. پیامک‌ها از سهمیه‌ی ماهانه‌ی پلن ({{ to_persian_num(number_format($smsQuota)) }} قطعه) ارسال می‌شوند و هر نوع اعلان را در تنظیمات سالن روشن یا خاموش می‌کنید.</p></details>
+<details><summary>پیامک یادآوری چطور کار می‌کند؟</summary><p>پس از ثبت نوبت پیامک تأیید ارسال می‌شود و پیش از نوبت هم یادآوری می‌رسد. پیامک‌ها از سهمیه‌ی ماهانه‌ی پلن ({{ to_persian_num(number_format($smsQuota)) }} قطعه) ارسال می‌شوند و هر نوع اعلان را در تنظیمات سالن روشن یا خاموش می‌کنید. متن پیامک‌های نوبت و باشگاه را هم می‌توانید به سلیقه‌ی سالن خودتان بنویسید.</p></details>
 @if ($trialDays > 0)
 <details><summary>بعد از تمام شدن دوره‌ی رایگان چه می‌شود؟</summary><p>پنل مدیریت فقط صفحه‌ی خرید اشتراک را نشان می‌دهد و آدرس رزرو سالن برای مشتری‌ها موقتاً بسته می‌شود. هیچ اطلاعاتی پاک نمی‌شود؛ به محض خرید، همه‌چیز همان‌طور که بود ادامه پیدا می‌کند. اگر وسط دوره‌ی رایگان بخرید، اشتراک از همان روز خرید فعال می‌شود.</p></details>
 <details><summary>در دوره‌ی رایگان محدودیتی هست؟</summary><p>همه‌ی امکانات باز است. تنها تفاوت، سقف پیامک است: در دوره‌ی رایگان {{ to_persian_num(number_format($trialSmsQuota)) }} قطعه پیامک در ماه و بعد از خرید {{ to_persian_num(number_format($smsQuota)) }} قطعه پیامک در ماه.</p></details>

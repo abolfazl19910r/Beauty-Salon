@@ -51,6 +51,27 @@
                 </div>
             </div>
 
+            {{-- پیامک‌های پیگیری و پیشنهاد سالن (۲۰۲۶-۱۰-۱۴) --}}
+            @if (auth()->user()->user_type === 'customer')
+            <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 overflow-hidden">
+                <form method="post" action="{{ route('profile.marketing-sms') }}" class="p-6 flex items-center justify-between gap-4">
+                    @csrf
+                    @method('patch')
+                    <input type="hidden" name="marketing_sms" value="0">
+                    <label for="marketing_sms" class="flex-1 cursor-pointer">
+                        <h2 class="font-bold text-sm text-[#E6CD8A]">پیامک‌های پیگیری و پیشنهاد سالن</h2>
+                        <p class="text-xs text-[#F8F3E9]/45 mt-1 leading-6">مثلاً وقتی مدتی سر نزده‌اید، با کد تخفیف. پیامک‌های تأیید و یادآوری نوبت‌هایتان همیشه می‌رسد.</p>
+                        @if (session('status') === 'marketing-sms-updated')
+                            <p class="text-xs text-emerald-400 mt-1">ذخیره شد</p>
+                        @endif
+                    </label>
+                    <input id="marketing_sms" type="checkbox" name="marketing_sms" value="1" onchange="this.form.submit()"
+                           class="w-5 h-5 rounded" style="accent-color:#C9A24B" @checked(auth()->user()->marketing_sms_opted_out_at === null)>
+                    <noscript><button type="submit" class="text-xs text-[#E6CD8A]">ذخیره</button></noscript>
+                </form>
+            </div>
+            @endif
+
             {{-- Security dashboard --}}
             <a href="{{ route('security.dashboard') }}"
                class="block bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 overflow-hidden hover:border-[#C9A24B]/25 transition-colors">

@@ -115,6 +115,11 @@ return Application::configure(basePath: dirname(__DIR__))
             ->withoutOverlapping()
             ->onOneServer();
         // توکن‌های اپ موبایل که API_TOKEN_IDLE_DAYS بی‌استفاده ماندند (expires_at گذشته) — بسته‌ی ۱ اپلیکیشن
+        // پیگیری مشتریان غایب (۲۰۲۶-۱۰-۱۴): ساعت معقول برای پیامک تبلیغاتی — ۰۷:۳۰ UTC همان ۱۱:۰۰ تهران است (ایران از ۱۴۰۱ ساعت تابستانی ندارد)
+        $schedule->command('customers:winback')
+            ->dailyAt('07:30')
+            ->withoutOverlapping()
+            ->onOneServer();
         $schedule->command('sanctum:prune-expired', ['--hours' => 24])
             ->dailyAt('04:10')
             ->onOneServer();

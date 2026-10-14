@@ -41,6 +41,8 @@ $tenantRoutes = function () {
     require __DIR__.'/web/reviews.php';
     // پرداخت اپ «ماهرو» در مرورگر بیرونی (بسته‌ی ۳) — بدون ورود؛ بیرون از گروه auth پایین
     require __DIR__.'/web/app-payments.php';
+    // انصراف از پیامک‌های پیگیری با لینک امضاشده (۲۰۲۶-۱۰-۱۴) — بدون ورود
+    require __DIR__.'/web/sms-unsubscribe.php';
 
     // ⭐ Commit 4b-2: moved once the customer-identity redesign made "logged in" mean "logged
     // in as a customer of THIS salon" — 'salon.customer' (EnsureCustomerBelongsToSalon) closes
@@ -157,6 +159,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_a
     require __DIR__.'/admin/leaves.php';
     require __DIR__.'/admin/gallery.php';
     require __DIR__.'/admin/loyalty.php';
+    require __DIR__.'/admin/winback.php';
     require __DIR__.'/admin/blog.php';
     require __DIR__.'/admin/announcements.php';
     require __DIR__.'/admin/discount-codes.php';

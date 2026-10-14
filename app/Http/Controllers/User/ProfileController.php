@@ -47,6 +47,16 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
+    /** پیامک‌های پیگیری و پیشنهاد سالن (پیگیری مشتریان غایب، ۲۰۲۶-۱۰-۱۴) — پیامک‌های نوبت خود مشتری جدا و همیشه روشن‌اند */
+    public function updateMarketingSms(Request $request): RedirectResponse
+    {
+        $request->user()->forceFill([
+            'marketing_sms_opted_out_at' => $request->boolean('marketing_sms') ? null : ($request->user()->marketing_sms_opted_out_at ?? now()),
+        ])->save();
+
+        return Redirect::route('profile.edit')->with('status', 'marketing-sms-updated');
+    }
+
     public function updatePassword(\App\Http\Requests\User\Profile\UpdatePasswordRequest $request): RedirectResponse
     {
         $validated = $request->validated();

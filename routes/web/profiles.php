@@ -11,6 +11,9 @@ Route::prefix('profile')->name('profile.')->group(function () {
     Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
     Route::patch('/update', [ProfileController::class, 'update'])->name('update');
 
+    // پیامک‌های پیگیری و پیشنهاد سالن (۲۰۲۶-۱۰-۱۴)
+    Route::patch('/marketing-sms', [ProfileController::class, 'updateMarketingSms'])->name('marketing-sms');
+
     Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password');
 
     Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');

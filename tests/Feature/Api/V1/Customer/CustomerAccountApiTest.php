@@ -61,6 +61,19 @@ class CustomerAccountApiTest extends CustomerApiTestCase
             ->assertOk()->assertJsonPath('data.name', 'سمیرا')->assertJsonPath('data.phone', '09121110000');
     }
 
+    /** پیامک‌های پیگیری سالن (۲۰۲۶-۱۰-۱۴): پیش‌فرض روشن؛ اپ می‌تواند بدون فرستادن نام فقط این را عوض کند */
+    public function test_profile_turns_marketing_sms_off_and_on(): void
+    {
+        $this->api()->getJson('/api/v1/customer/profile')->assertOk()->assertJsonPath('data.marketing_sms', true);
+
+        $this->api()->patchJson('/api/v1/customer/profile', ['marketing_sms' => false])
+            ->assertOk()->assertJsonPath('data.marketing_sms', false)->assertJsonPath('data.name', $this->customer->name);
+        $this->assertNotNull($this->customer->fresh()->marketing_sms_opted_out_at);
+
+        $this->api()->patchJson('/api/v1/customer/profile', ['marketing_sms' => true])->assertOk()->assertJsonPath('data.marketing_sms', true);
+        $this->api()->patchJson('/api/v1/customer/profile', [])->assertStatus(422);
+    }
+
     public function test_changing_the_password_needs_the_current_one_and_signs_out_every_device(): void
     {
         $this->api()->putJson('/api/v1/customer/password', ['current_password' => 'wrong', 'password' => 'new-pass-123', 'password_confirmation' => 'new-pass-123'])

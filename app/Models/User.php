@@ -82,6 +82,7 @@ class User extends Authenticatable
         'two_factor_code_expires_at' => 'datetime',
         'password_changed_at' => 'datetime',
         'password_strength_score' => 'integer',
+        'marketing_sms_opted_out_at' => 'datetime',
     ];
 
     public function securityLogs(): HasMany
