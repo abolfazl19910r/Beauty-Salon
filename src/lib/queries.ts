@@ -6,7 +6,6 @@ import type {
   AppNotification,
   Booking,
   CalendarDay,
-  DeviceToken,
   Leave,
   PageMeta,
   Schedule,
@@ -28,7 +27,6 @@ export const keys = {
   transactions: ['transactions'] as const,
   withdrawals: ['withdrawals'] as const,
   notifications: ['notifications'] as const,
-  tokens: ['tokens'] as const,
 };
 
 const nextPage = (meta: ApiMeta) => {
@@ -174,20 +172,5 @@ export function useNotificationMutations() {
   return {
     read: useMutation({ mutationFn: async (id: string) => api.post(`/staff/notifications/${id}/read`), onSuccess: refresh }),
     readAll: useMutation({ mutationFn: async () => api.post('/staff/notifications/read-all'), onSuccess: refresh }),
-  };
-}
-
-export function useTokens() {
-  const api = useApi();
-  return useQuery({ queryKey: keys.tokens, queryFn: async () => (await api.get<DeviceToken[]>('/tokens')).data });
-}
-
-export function useTokenMutations() {
-  const api = useApi();
-  const qc = useQueryClient();
-  const refresh = () => void qc.invalidateQueries({ queryKey: keys.tokens });
-  return {
-    revoke: useMutation({ mutationFn: async (id: number) => api.del(`/tokens/${id}`), onSuccess: refresh }),
-    revokeOthers: useMutation({ mutationFn: async () => api.post<{ revoked: number }>('/tokens/revoke-others'), onSuccess: refresh }),
   };
 }
