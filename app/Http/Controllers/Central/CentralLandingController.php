@@ -31,7 +31,8 @@ class CentralLandingController extends Controller
     public function __invoke(Request $request): View
     {
         // پلن فروش (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴): اولین پلن عمومی فعال؛ بدون پلن (پیش از plans:sync-defaults) همان config
-        $salePlan = \App\Models\Plan::query()->offered()->get()->first(fn (\App\Models\Plan $p) => $p->isSellable());
+        $offered = \App\Models\Plan::query()->offered()->with('features')->get()->filter(fn (\App\Models\Plan $p) => $p->isSellable())->values();
+        $salePlan = $offered->first();
         $trialPlan = \App\Models\Plan::trial();
         $pricing = app(\App\Support\Billing\SubscriptionPricing::class);
         $prices = $salePlan
@@ -79,8 +80,22 @@ class CentralLandingController extends Controller
             'maxSpecialists' => $maxSpecialists,
             'extraSpecialistPrice' => $extraSpecialistPrice,
             'todayLabel' => $this->jalaliLabel(now()),
-            // دوره‌های درمانی (بسته‌ی ب): فقط وقتی پلن فروش امکان را دارد وعده داده می‌شود؛ بدون پلن (پیش از plans:sync-defaults) نه
-            'coursesOffered' => (bool) $salePlan?->hasFeature(\App\Support\Features\Feature::TreatmentCourses),
+            // دوره‌های درمانی (بسته‌ی ب): فقط وقتی یک پلن عمومی امکان را دارد وعده داده می‌شود؛ بدون پلن (پیش از plans:sync-defaults) نه
+            'coursesOffered' => $offered->contains(fn (\App\Models\Plan $p) => $p->hasFeature(\App\Support\Features\Feature::TreatmentCourses)),
+            'coursesPlanName' => $salePlan?->hasFeature(\App\Support\Features\Feature::TreatmentCourses) ? null
+                : $offered->first(fn (\App\Models\Plan $p) => $p->hasFeature(\App\Support\Features\Feature::TreatmentCourses))?->name,
+            // پلن‌های عمومی دیگر (مثلاً «کلینیک»، ادامه ۷): قیمت ماهانه و امکاناتی که پلن فروش ندارد
+            'otherPlans' => $offered->reject(fn (\App\Models\Plan $p) => $p->is($salePlan))->map(fn (\App\Models\Plan $p) => [
+                'name' => $p->name,
+                'description' => $p->description,
+                'price_1m' => $p->priceFor('1m'),
+                'specialists' => $pricing->includedSpecialists($p),
+                'sms' => (int) $p->sms_quota_per_month,
+                'extra' => collect(\App\Support\Features\Feature::cases())
+                    ->filter(fn ($f) => $p->hasFeature($f) && ! ($salePlan?->hasFeature($f) ?? true))
+                    ->map(fn ($f) => $f->label())->values()->all(),
+            ])->values()->all(),
+            'saleHasAll' => $offered->every(fn (\App\Models\Plan $p) => $salePlan === null || array_diff($p->featureKeys(), $salePlan->featureKeys()) === []),
             'addressPrefix' => $this->addressPrefix($request),
             'addressSuffix' => $this->addressSuffix(),
             // راه‌های تماس از «تنظیمات پلتفرم» سوپرادمین (پیش‌فرض .env)؛ خالی = پنهان

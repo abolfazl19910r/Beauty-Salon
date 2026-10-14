@@ -60,6 +60,23 @@ class CentralLandingPageTest extends TestCase
         $this->get(route('central.home'))->assertOk()->assertSee('یادآوری خودکار جلسه‌ی بعد');
     }
 
+    /** پلن «کلینیک» عمومی (ادامه ۷): کارت جدا با امکانات اضافه؛ ادعای دوره با نام همان پلن؛ «کامل» دیگر «همه‌ی امکانات» نیست */
+    public function test_a_second_public_plan_gets_its_own_card(): void
+    {
+        $full = \App\Models\Plan::create(['key' => 'full', 'name' => 'کامل', 'price_1m' => 1500000, 'is_active' => true, 'is_public' => true, 'sort' => 10, 'sms_quota_per_month' => 2000]);
+        $full->syncFeatures(array_diff(\App\Support\Features\Feature::keys(), ['treatment_courses', 'winback_manual']));
+        $clinic = \App\Models\Plan::create(['key' => 'clinic', 'name' => 'کلینیک', 'description' => 'برای کلینیک‌های پوست و لیزر', 'price_1m' => 2400000, 'is_active' => true, 'is_public' => true, 'sort' => 40, 'sms_quota_per_month' => 4000, 'included_specialists' => 15]);
+        $clinic->syncFeatures(\App\Support\Features\Feature::keys());
+
+        $this->get(route('central.home'))->assertOk()
+            ->assertSee('data-plan-extra="کلینیک"', false)
+            ->assertSee('۲,۴۰۰,۰۰۰')
+            ->assertSee('دوره‌های درمانی چندجلسه‌ای')
+            ->assertSee('ارسال دستی به مشتری‌های قدیمی')
+            ->assertSee('یادآوری خودکار جلسه‌ی بعد (پلن کلینیک)')
+            ->assertDontSee('همه‌ی امکانات ماهرو');
+    }
+
     public function test_contact_links_appear_only_when_configured(): void
     {
         $this->get(route('central.home'))->assertDontSee('tel:', false)->assertDontSee('>اینستاگرام<', false);

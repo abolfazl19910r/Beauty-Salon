@@ -782,7 +782,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 <div class="rv">
 <div class="card aud on" role="tabpanel"><div><h3>آرایشگاه و سالن مو</h3><p>رنگ، لایت و کوتاهی زمان‌های متفاوتی می‌خواهند. ماهرو مدت هر خدمت را جدا حساب می‌کند تا تداخلی پیش نیاید.</p></div><ul><li>زمان‌بندی خدمات طولانی مثل رنگ و لایت</li><li>انتخاب آرایشگر مورد علاقه‌ی مشتری</li><li>پیگیری خودکار مشتریانی که مدتی نیامده‌اند</li></ul></div>
 <div class="card aud" role="tabpanel"><div><h3>ناخن و زیبایی</h3><p>نوبت‌های کوتاه و پشت‌سرهم، بدون فاصله‌ی هدررفته و با یادآوری دقیق.</p></div><ul><li>رزرو سریع خدمات کوتاه</li><li>بیعانه برای جلوگیری از غیبت</li><li>پرونده‌ی سلیقه و سابقه‌ی هر مشتری</li></ul></div>
-<div class="card aud" role="tabpanel"><div><h3>پوست، مو و لیزر</h3><p>خدمات طولانی با مدت‌زمان دقیق و متخصص مشخص، بدون تداخل در تقویم.</p></div><ul><li>سابقه‌ی نوبت‌های هر مشتری در پرونده‌اش</li><li>یادآوری پیامکی پیش از هر نوبت</li>@if ($coursesOffered)<li>دوره‌های چندجلسه‌ای مثل لیزر ۶ جلسه، با یادآوری خودکار جلسه‌ی بعد</li>@endif<li>گزارش دقیق از هر خدمت انجام‌شده</li></ul></div>
+<div class="card aud" role="tabpanel"><div><h3>پوست، مو و لیزر</h3><p>خدمات طولانی با مدت‌زمان دقیق و متخصص مشخص، بدون تداخل در تقویم.</p></div><ul><li>سابقه‌ی نوبت‌های هر مشتری در پرونده‌اش</li><li>یادآوری پیامکی پیش از هر نوبت</li>@if ($coursesOffered)<li>دوره‌های چندجلسه‌ای مثل لیزر ۶ جلسه، با یادآوری خودکار جلسه‌ی بعد@if ($coursesPlanName) (پلن {{ $coursesPlanName }})@endif</li>@endif<li>گزارش دقیق از هر خدمت انجام‌شده</li></ul></div>
 </div></div></section>
 
 <!-- ============ PRICING ============ -->
@@ -797,7 +797,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 <div class="pr gold num">{{ to_persian_num(number_format($plan['price'])) }} <small>تومان</small></div>
 <p class="per">@if ($plan['months'] > 1)ماهانه حدود {{ to_persian_num(number_format($plan['per_month'])) }} تومان@endif</p>
 <ul>
-<li>همه‌ی امکانات ماهرو</li>
+<li>{{ $saleHasAll ? 'همه‌ی امکانات ماهرو' : 'نوبت‌دهی، پیامک، باشگاه، بیعانه و گزارش' }}</li>
 <li>{{ to_persian_num((string) $maxSpecialists) }} متخصص در قیمت پلن</li>
 <li>{{ to_persian_num(number_format($plan['sms_total'])) }} قطعه پیامک ({{ to_persian_num(number_format($smsQuota)) }} در ماه)</li>
 @if ($plan['saving'] > 0)<li>{{ to_persian_num((string) $plan['saving_percent']) }} درصد صرفه‌جویی ({{ to_persian_num(number_format($plan['saving'])) }} تومان)</li>@endif
@@ -811,6 +811,19 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 </div>
 @endforeach
 </div>
+@foreach ($otherPlans as $other)
+@if ($other['price_1m'])
+<div class="card pl rv" style="margin-top:22px;flex-direction:row;flex-wrap:wrap;gap:24px;align-items:center" data-plan-extra="{{ $other['name'] }}">
+<div style="flex:1 1 260px"><h3>پلن {{ $other['name'] }}</h3><p class="for" style="margin-bottom:8px">{{ $other['description'] }}</p>
+<div class="pr gold num" style="font-size:32px">{{ to_persian_num(number_format($other['price_1m'])) }} <small>تومان / ماه</small></div></div>
+<ul style="flex:1 1 260px;margin:0;border-top:0;padding-top:0">
+@foreach ($other['extra'] as $label)<li>{{ $label }}</li>@endforeach
+<li>{{ to_persian_num((string) $other['specialists']) }} متخصص و {{ to_persian_num(number_format($other['sms'])) }} قطعه پیامک در ماه</li>
+</ul>
+<a class="btn btn-line" style="flex:0 0 auto" href="{{ route('salon-signup.create') }}">شروع رایگان و انتخاب این پلن</a>
+</div>
+@endif
+@endforeach
 <div class="incl rv"><span>هر متخصص بیشتر ماهانه {{ to_persian_num(number_format($extraSpecialistPrice)) }} تومان</span><span>بدون هزینه‌ی راه‌اندازی</span><span>تیکت پشتیبانی فارسی</span><span>به‌روزرسانی رایگان</span></div>
 </div></section>
 

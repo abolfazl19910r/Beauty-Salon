@@ -69,7 +69,7 @@ class DefaultPlans
             ],
             [
                 'key' => 'clinic', 'name' => 'کلینیک', 'description' => 'حرفه‌ای + دوره‌های درمانی و ارسال دستی به مشتری‌های قدیمی.',
-                'is_trial' => false, 'is_public' => false, 'is_active' => true, 'sort' => 40,
+                'is_trial' => false, 'is_public' => true, 'is_active' => true, 'sort' => 40,
                 'price_1m' => 2400000, 'price_3m' => 6650000, 'price_6m' => 12250000, 'price_12m' => 22150000,
                 'included_specialists' => 15, 'extra_specialist_price_per_month' => 250000, 'sms_quota_per_month' => 4000,
                 'trial_days' => null,
