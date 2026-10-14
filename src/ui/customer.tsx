@@ -14,6 +14,7 @@ const TONE: Record<CustomerBookingStatus, 'warning' | 'success' | 'info' | 'dang
   confirmed: 'success',
   completed: 'info',
   cancelled: 'danger',
+  no_show: 'danger',
 };
 
 export function CustomerStatusBadge({ booking }: { booking: Pick<CustomerBooking, 'status' | 'status_label'> }) {

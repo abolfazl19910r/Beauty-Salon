@@ -22,7 +22,7 @@ export type TokenResponse = {
   account: Account;
 };
 
-export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'pending_payment';
+export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'pending_payment' | 'no_show';
 
 export type Booking = {
   id: number;
@@ -43,7 +43,7 @@ export type Booking = {
   cancelled_by: string | null;
   /** جلسه‌ی دوره‌ی درمانی (بسته‌ی ب)؛ null برای نوبت عادی */
   course?: { id: number; name: string; session_number: number | null; sessions_total: number; label: string | null; photo_consent: boolean } | null;
-  actions: { confirm: boolean; cancel: boolean; complete: boolean };
+  actions: { confirm: boolean; cancel: boolean; complete: boolean; no_show?: boolean };
 };
 
 /** پرونده‌ی دوره روی یک نوبت: همه‌ی جلسه‌ها با یادداشت و عکس (GET staff/bookings/{id}/course) */

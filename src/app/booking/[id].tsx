@@ -23,7 +23,7 @@ export default function BookingDetail() {
   }
 
   const b = booking.data;
-  const run = (kind: 'confirm' | 'complete', title: string) =>
+  const run = (kind: 'confirm' | 'complete' | 'no-show', title: string) =>
     Alert.alert(title, `${b.customer?.name ?? ''} — ${b.booking_time_jalali}`, [
       { text: 'انصراف', style: 'cancel' },
       { text: 'بله', onPress: () => action.mutate({ id: b.id, action: kind }) },
@@ -62,6 +62,7 @@ export default function BookingDetail() {
 
       {b.actions.confirm ? <Button title="پذیرش نوبت" onPress={() => run('confirm', 'پذیرش نوبت؟')} loading={action.isPending} /> : null}
       {b.actions.complete ? <Button title="انجام شد" onPress={() => run('complete', 'نوبت انجام شد؟')} loading={action.isPending} /> : null}
+      {b.actions.no_show ? <Button kind="secondary" title="مشتری نیامد" onPress={() => run('no-show', 'مشتری نیامد؟ پیش‌پرداخت برنمی‌گردد و جلسه‌ی دوره (اگر هست) می‌سوزد.')} loading={action.isPending} /> : null}
       {b.actions.cancel && !cancelling ? <Button kind="danger" title={b.status === 'pending' ? 'رد نوبت' : 'لغو نوبت'} onPress={() => setCancelling(true)} /> : null}
       {cancelling ? (
         <Card>

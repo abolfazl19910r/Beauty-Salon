@@ -59,7 +59,7 @@ export type BookableDate = { date: string; date_jalali: string; label: string };
 
 export type Slot = { time: string; booking_time: string };
 
-export type CustomerBookingStatus = 'pending_payment' | 'pending' | 'confirmed' | 'completed' | 'cancelled';
+export type CustomerBookingStatus = 'pending_payment' | 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show';
 
 export type CustomerBooking = {
   id: number;
@@ -234,6 +234,8 @@ export type CoursePackage = {
   saving: number;
   min_prepayment: number;
   service: { id: number; name: string; duration_minutes: number } | null;
+  services?: { id: number; name: string }[];
+  session_minutes?: number;
   specialist: { id: number; name: string } | null;
 };
 
@@ -256,6 +258,8 @@ export type Course = {
   min_prepayment: number;
   discount_amount: number;
   service_id: number;
+  services_label?: string;
+  session_minutes?: number;
   specialist_id: number | null;
   purchased_at: string | null;
   expires_at: string | null;

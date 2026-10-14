@@ -49,6 +49,7 @@ export default function CourseDetailScreen() {
           <T weight="bold" size={17} style={{ flexShrink: 1 }}>{c.name}</T>
           <CourseStatusBadge course={c} />
         </Row>
+        {c.services_label ? <T muted size={14}>{c.services_label}{c.session_minutes ? ` — هر جلسه ${faDigits(c.session_minutes)} دقیقه` : ''}</T> : null}
         <T>{courseProgress(c)}</T>
         {c.status === 'active' ? <T muted size={14}>{faDigits(c.sessions_remaining)} جلسه‌ی رزرونشده مانده</T> : null}
         {c.expires_at_jalali ? <T muted size={13}>مهلت استفاده تا {faDigits(c.expires_at_jalali)}</T> : null}

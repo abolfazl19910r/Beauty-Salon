@@ -9,6 +9,7 @@ const TONE: Record<BookingStatus, 'warning' | 'success' | 'info' | 'danger' | 'm
   confirmed: 'success',
   completed: 'info',
   cancelled: 'danger',
+  no_show: 'danger',
   pending_payment: 'muted',
 };
 

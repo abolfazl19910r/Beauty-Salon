@@ -54,7 +54,7 @@ export default function Courses() {
           {packages.data.map((pkg) => (
             <Card key={pkg.id} onPress={() => setOpenId(openId === pkg.id ? null : pkg.id)}>
               <T weight="bold">{pkg.name}</T>
-              <T muted size={14}>{faDigits(pkg.sessions_count)} جلسه {pkg.service?.name ?? ''} — هر {faDigits(pkg.interval_days)} روز</T>
+              <T muted size={14}>{faDigits(pkg.sessions_count)} جلسه {pkg.services?.length ? pkg.services.map((s) => s.name).join(' + ') : pkg.service?.name ?? ''} — هر {faDigits(pkg.interval_days)} روز</T>
               <KeyValue label="قیمت دوره" value={<T weight="bold" color={p.gold}>{toman(pkg.price)}</T>} />
               {pkg.saving > 0 ? <KeyValue label="صرفه‌جویی" value={toman(pkg.saving)} /> : null}
               {pkg.min_prepayment < pkg.price ? <KeyValue label="کمترین پرداخت اول" value={toman(pkg.min_prepayment)} /> : null}

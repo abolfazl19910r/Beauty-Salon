@@ -177,3 +177,26 @@ it('takes an after photo for a course session with the camera and uploads it', a
   expect(appended.find(([k]) => k === 'photo')?.[1]).toMatchObject({ uri: 'file:///tmp/after.jpg', type: 'image/jpeg', name: 'photo.jpg' });
   append.mockRestore();
 });
+
+it('marks a past booking as no-show', async () => {
+  mockSecure.set('mahru.token', '5|abc');
+  await require('@react-native-async-storage/async-storage').setItem('mahru.account', JSON.stringify(ACCOUNT));
+  let status = 'confirmed';
+  routes = (url, init) => {
+    if (url.includes('/staff/bookings/41/no-show') && init.method === 'POST') {
+      status = 'no_show';
+    }
+    if (url.includes('/staff/bookings/41')) {
+      return [200, ok({ ...BOOKING, status, status_label: status === 'no_show' ? 'نیامد' : 'تأیید شده', actions: { confirm: false, cancel: status !== 'no_show', complete: status !== 'no_show', no_show: status !== 'no_show' } })];
+    }
+    if (url.includes('/staff/notifications')) return [200, ok([], { current_page: 1, last_page: 1, total: 0, per_page: 20, unread_count: 0 })];
+    return [404, { success: false, error: { code: 'not_found', message: 'x' } }];
+  };
+  jest.spyOn(Alert, 'alert').mockImplementation((_t, _m, buttons) => buttons?.find((b) => b.text === 'بله')?.onPress?.());
+
+  renderRouter('./src/app', { initialUrl: '/booking/41' });
+
+  fireEvent.press(await screen.findByText('مشتری نیامد'));
+  await waitFor(() => expect(calls.some((c) => c.url.endsWith('/staff/bookings/41/no-show'))).toBe(true));
+  expect(await screen.findByText('نیامد')).toBeTruthy();
+});

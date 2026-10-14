@@ -60,7 +60,7 @@ export function useBookingAction() {
   const api = useApi();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (args: { id: number; action: 'confirm' | 'cancel' | 'complete'; reason?: string }) =>
+    mutationFn: async (args: { id: number; action: 'confirm' | 'cancel' | 'complete' | 'no-show'; reason?: string }) =>
       (await api.post<Booking>(`/staff/bookings/${args.id}/${args.action}`, args.action === 'cancel' ? { reason: args.reason } : {})).data,
     onSuccess: (booking) => {
       qc.setQueryData(keys.booking(booking.id), booking);
