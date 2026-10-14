@@ -42,6 +42,8 @@ class SuperAdminService
                 'max_specialists_count' => $data['max_specialists_count'],
                 'module_permissions' => $data['module_permissions'] ?? null,
                 'subscription_type' => $data['subscription_type'],
+                // پلن (بسته‌ی پلن‌ها): انتخاب سوپرادمین، وگرنه اولین پلن عمومی؛ بدون جدول پلن null (رفتار قبلی)
+                'plan_id' => $data['plan_id'] ?? \App\Models\Plan::query()->offered()->value('id'),
                 'subscription_started_at' => now(),
                 'subscription_ends_at' => $this->computeSubscriptionEnd($data['subscription_type']),
                 'is_suspended' => false,
@@ -135,15 +137,28 @@ class SuperAdminService
      * (الان یا پایان فعلی) شروع می‌شه، نه از الان، تا تمدید زودهنگام دوره‌ی باقی‌مانده رو دور
      * نریزه.
      */
-    public function renewSubscription(Salon $salon, string $subscriptionType): Salon
+    public function renewSubscription(Salon $salon, string $subscriptionType, ?\App\Models\Plan $plan = null): Salon
     {
         $wasOnTrial = $salon->isOnTrial();
+        $wasActive = (bool) $salon->subscription_ends_at?->isFuture();
         $base = $salon->subscriptionPeriodBase();
 
         $attributes = [
             'subscription_type' => $subscriptionType,
             'subscription_ends_at' => $this->addSubscriptionPeriod($base, $subscriptionType),
         ];
+
+        // پلن خریده‌شده (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴): در آزمایشی یا بعد از انقضا همین لحظه؛ وسط اشتراک فعال، پلن دیگر از ابتدای همین
+        // دوره‌ی تازه (= پایان دوره‌ی فعلی) اثر می‌کند — تنزل هیچ‌وقت پول برنمی‌گرداند و روزهای پرداخت‌شده با همان پلن تمام می‌شوند.
+        // ارتقای فوری مسیر جدای InvoiceService::markPaidFromGateway (kind=upgrade) است. null = تمدید بدون دست زدن به پلن.
+        if ($plan !== null) {
+            $planAtEnd = app(\App\Services\Plans\PlanBilling::class)->planAtEnd($salon);
+            if ($wasOnTrial || ! $wasActive) {
+                $attributes += ['plan_id' => $plan->id, 'next_plan_id' => null, 'next_plan_starts_at' => null];
+            } elseif ($plan->id !== $planAtEnd?->id) {
+                $attributes += ['next_plan_id' => $plan->id, 'next_plan_starts_at' => $base];
+            }
+        }
 
         // ⭐ دوره‌ی آزمایشی (۲۰۲۶-۰۹-۲۳): خرید وسط آزمایشی، آزمایشی رو همین لحظه تموم می‌کنه
         // (اشتراک پولی از امروز شروع شده — Salon::subscriptionPeriodBase). trial_ends_at پاک

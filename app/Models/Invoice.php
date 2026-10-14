@@ -22,6 +22,9 @@ class Invoice extends Model
     protected $fillable = [
         'salon_id',
         'subscription_type',
+        'plan_id',
+        'kind',
+        'plan_snapshot',
         'amount',
         'status',
         'payment_method',
@@ -35,6 +38,7 @@ class Invoice extends Model
 
     protected $casts = [
         'amount' => 'integer',
+        'plan_snapshot' => 'array',
         'period_start' => 'datetime',
         'period_end' => 'datetime',
         'paid_at' => 'datetime',
@@ -43,6 +47,22 @@ class Invoice extends Model
     public function salon(): BelongsTo
     {
         return $this->belongsTo(Salon::class);
+    }
+
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(Plan::class);
+    }
+
+    /** نام پلن در لحظه‌ی خرید (snapshot)، نه نام امروز پلن */
+    public function planName(): ?string
+    {
+        return $this->plan_snapshot['name'] ?? null;
+    }
+
+    public function isUpgrade(): bool
+    {
+        return $this->kind === 'upgrade';
     }
 
     public function createdBy(): BelongsTo

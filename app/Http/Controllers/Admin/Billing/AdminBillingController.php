@@ -34,6 +34,23 @@ class AdminBillingController extends Controller
         $includedSpecialists = $pricing->includedSpecialists();
         $extraSpecialistPrice = $pricing->extraSpecialistPricePerMonth();
 
+        // پلن‌ها (بسته‌ی الف، ۲۰۲۶-۱۰-۱۴): بدون هیچ پلن قابل خرید (پیش از plans:sync-defaults) همان فرم قدیمی با قیمت config
+        $billing = app(\App\Services\Plans\PlanBilling::class);
+        $currentPlan = $salon->effectivePlan();
+        $scheduledPlan = $billing->scheduledPlan($salon);
+        $planOptions = $billing->purchasablePlans($salon)->map(fn (\App\Models\Plan $plan) => [
+            'plan' => $plan,
+            'features' => $plan->featureKeys(),
+            'prices' => collect($plan->periods())->mapWithKeys(fn ($type) => [$type => $pricing->price($type, $specialists, $plan)])->all(),
+            'included' => $pricing->includedSpecialists($plan),
+            'extra_price' => $pricing->extraSpecialistPricePerMonth($plan),
+            'upgrade_price' => $billing->upgradeError($salon, $plan) === null ? $pricing->upgradePrice($salon, $plan) : null,
+            'purchase_error' => $billing->purchaseError($salon, $plan, $plan->periods()[0]),
+        ])->all();
+        $defaultPlanId = $billing->defaultPurchasePlan($salon)?->id;
+        $enabledFeatures = $salon->enabledFeatureKeys();
+        $remainingDays = $pricing->remainingDays($salon);
+
         $quota = app(\App\Services\Sms\SmsQuotaService::class);
         $smsUsage = [
             'used' => $quota->usedCount($salon),
@@ -48,23 +65,59 @@ class AdminBillingController extends Controller
         $smsPartPrice = $smsCredit->partPrice();
         $smsPurchases = $smsCredit->history($salon, 10);
 
-        return view('admin.billing.index', compact('salon', 'invoices', 'prices', 'specialists', 'includedSpecialists', 'extraSpecialistPrice', 'smsUsage', 'smsPacks', 'smsPartPrice', 'smsPurchases'));
+        return view('admin.billing.index', compact('salon', 'invoices', 'prices', 'specialists', 'includedSpecialists', 'extraSpecialistPrice', 'smsUsage', 'smsPacks', 'smsPartPrice', 'smsPurchases',
+            'currentPlan', 'scheduledPlan', 'planOptions', 'defaultPlanId', 'enabledFeatures', 'remainingDays'));
     }
 
     public function purchase(Request $request): RedirectResponse
     {
+        // فرم پلن‌ها یک رادیوی «planId:type» دارد (بدون JS هم کار کند)
+        if (is_string($choice = $request->input('choice')) && preg_match('/^(\d+):(1m|3m|6m|12m)$/', $choice, $m)) {
+            $request->merge(['plan_id' => (int) $m[1], 'subscription_type' => $m[2]]);
+        }
+
         $validated = $request->validate([
             'subscription_type' => ['required', 'in:1m,3m,6m,12m'],
+            'plan_id' => ['nullable', 'integer', 'exists:plans,id'],
         ]);
 
         $salon = app(CurrentSalon::class)->get();
+
+        $plan = null;
+        if (! empty($validated['plan_id'])) {
+            $plan = \App\Models\Plan::findOrFail($validated['plan_id']);
+            if ($error = app(\App\Services\Plans\PlanBilling::class)->purchaseError($salon, $plan, $validated['subscription_type'])) {
+                return back()->withErrors(['error' => $error]);
+            }
+        }
 
         $invoice = $this->invoiceService->createPendingOnlinePurchase(
             $salon,
             $validated['subscription_type'],
             auth()->user(),
+            $plan,
         );
 
+        return $this->redirectToGateway($invoice);
+    }
+
+    /** ارتقای فوری وسط دوره با پرداخت مابه‌التفاوت روزهای مانده (تصمیم ۲۰۲۶-۱۰-۱۴) */
+    public function upgrade(Request $request): RedirectResponse
+    {
+        $validated = $request->validate(['plan_id' => ['required', 'integer', 'exists:plans,id']]);
+
+        $salon = app(CurrentSalon::class)->get();
+        $plan = \App\Models\Plan::findOrFail($validated['plan_id']);
+
+        if ($error = app(\App\Services\Plans\PlanBilling::class)->upgradeError($salon, $plan)) {
+            return back()->withErrors(['error' => $error]);
+        }
+
+        return $this->redirectToGateway($this->invoiceService->createPendingUpgrade($salon, $plan, auth()->user()));
+    }
+
+    private function redirectToGateway(\App\Models\Invoice $invoice): RedirectResponse
+    {
         $result = $this->subscriptionPaymentService->createPayment($invoice);
 
         if (! $result['success']) {
@@ -103,6 +156,11 @@ class AdminBillingController extends Controller
         // ⭐ ۲۰۲۶-۰۹-۲۳: آدرس عمومی سالن هم همراه پیام موفقیت — همون لحظه‌ای که مالک سالن تازه
         // خریده و بیشتر از هر وقت دیگه‌ای دنبال «حالا لینک رو به مشتری‌هام چی بدم» می‌گرده.
         $salonUrl = $invoice->salon()->withoutGlobalScopes()->first()?->publicUrl();
+
+        if ($invoice->isUpgrade()) {
+            return redirect()->route('admin.billing.index')
+                ->with('success', sprintf('پرداخت موفق بود و سالن به پلن «%s» ارتقا یافت.', $invoice->planName() ?? ''));
+        }
 
         return redirect()->route('admin.billing.index')
             ->with('success', 'پرداخت موفق بود و اشتراک سالن فعال شد.'.($salonUrl ? " آدرس رزرو آنلاین سالن شما: {$salonUrl}" : ''));

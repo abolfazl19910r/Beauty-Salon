@@ -49,6 +49,9 @@ class SalonSignupService
     {
         return DB::transaction(function () use ($data) {
             $trialDays = $this->trialDays();
+            // پلن آزمایشی (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴): سهمیه و امکانات از خود پلن؛ بدون جدول پلن (پیش از plans:sync-defaults) همان
+            // override قدیمی سهمیه‌ی آزمایشی از config.
+            $trialPlan = $trialDays > 0 ? \App\Models\Plan::trial() : null;
 
             $salon = $this->salonRepository->create([
                 'name' => $data['name'],
@@ -61,7 +64,8 @@ class SalonSignupService
                 // و همون EnsureAdminSalonActive موجود بعد از پایانش خودکار به billing می‌فرسته.
                 'subscription_ends_at' => $trialDays > 0 ? now()->addDays($trialDays) : now()->subSecond(),
                 'trial_ends_at' => $trialDays > 0 ? now()->addDays($trialDays) : null,
-                'sms_quota_per_month' => $trialDays > 0 ? (int) config('billing.trial_sms_quota') : null,
+                'plan_id' => $trialPlan?->id,
+                'sms_quota_per_month' => $trialDays > 0 && ! $trialPlan ? (int) config('billing.trial_sms_quota') : null,
                 'is_suspended' => false,
                 'created_by' => null,
                 // ⭐ ۲۰۲۶-۰۹-۲۳: آدرس/تلفن/سال شروع فعالیت/ساعات کاری — از
@@ -90,8 +94,11 @@ class SalonSignupService
         });
     }
 
+    /** روزهای آزمایشی از پلن آزمایشی (سوپرادمین)؛ بدون آن از config. ۰ = بدون آزمایشی */
     public function trialDays(): int
     {
-        return max(0, (int) config('billing.trial_days', 0));
+        $trial = \App\Models\Plan::trial();
+
+        return max(0, (int) ($trial && $trial->is_active ? $trial->trial_days : ($trial ? 0 : config('billing.trial_days', 0))));
     }
 }

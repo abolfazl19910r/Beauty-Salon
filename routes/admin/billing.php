@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('billing')->name('billing.')->group(function () {
     Route::get('/', [AdminBillingController::class, 'index'])->name('index');
     Route::post('/purchase', [AdminBillingController::class, 'purchase'])->name('purchase');
+    Route::post('/upgrade', [AdminBillingController::class, 'upgrade'])->name('upgrade');
     Route::get('/callback', [AdminBillingController::class, 'callback'])->name('callback');
     // بسته‌ی پیامک (۲۰۲۶-۰۹-۳۰)
     Route::post('/sms-pack', [AdminBillingController::class, 'purchaseSmsPack'])->name('sms-pack.purchase');

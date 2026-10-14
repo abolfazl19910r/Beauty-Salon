@@ -39,16 +39,21 @@ class SalonSignupController extends Controller
 
     public function create(): View
     {
-        $prices = config('billing.subscription_prices');
+        // پلن فروش همان صفحه‌ی فروش (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴)؛ بدون پلن، config
+        $salePlan = \App\Models\Plan::query()->offered()->get()->first(fn (\App\Models\Plan $p) => $p->isSellable());
+        $prices = $salePlan
+            ? collect($salePlan->periods())->mapWithKeys(fn ($type) => [$type => $salePlan->priceFor($type)])->all()
+            : config('billing.subscription_prices');
         $plan = (string) request()->query('plan', '');
-        $selectedPlan = array_key_exists($plan, $prices) ? $plan : '1m';
+        $selectedPlan = array_key_exists($plan, $prices) ? $plan : (array_key_exists('1m', $prices) ? '1m' : (string) array_key_first($prices));
+        $pricing = app(\App\Support\Billing\SubscriptionPricing::class);
 
         return view('salon-signup.create', [
             'selectedPlan' => $selectedPlan,
             'selectedPlanPrice' => (int) $prices[$selectedPlan],
             'trialDays' => $this->salonSignupService->trialDays(),
-            'includedSpecialists' => app(\App\Support\Billing\SubscriptionPricing::class)->includedSpecialists(),
-            'extraSpecialistPrice' => app(\App\Support\Billing\SubscriptionPricing::class)->extraSpecialistPricePerMonth(),
+            'includedSpecialists' => $pricing->includedSpecialists($salePlan),
+            'extraSpecialistPrice' => $pricing->extraSpecialistPricePerMonth($salePlan),
             'maxSignupSpecialists' => max(1, (int) config('billing.max_signup_specialists', 50)),
             // ⭐ «خرید مستقیم بدون دوره‌ی رایگان» (۲۰۲۶-۰۹-۲۳): ?intent=buy از دکمه‌ی «خرید و پرداخت
             // آنلاین» صفحه‌ی فروش میاد؛ هر مقدار دیگه‌ای یعنی مسیر عادی (آزمایشی).
@@ -170,7 +175,9 @@ class SalonSignupController extends Controller
 
     private function startImmediatePurchase(\App\Models\Salon $salon, \App\Models\User $owner): RedirectResponse
     {
-        $invoice = $this->invoiceService->createPendingOnlinePurchase($salon, $salon->subscription_type, $owner);
+        $plan = app(\App\Services\Plans\PlanBilling::class)->defaultPurchasePlan($salon);
+        $type = $plan && $plan->priceFor($salon->subscription_type) === null ? $plan->periods()[0] : $salon->subscription_type;
+        $invoice = $this->invoiceService->createPendingOnlinePurchase($salon, $type, $owner, $plan);
         $result = $this->subscriptionPaymentService->createPayment($invoice);
 
         if (! $result['success']) {

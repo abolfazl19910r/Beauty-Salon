@@ -30,14 +30,20 @@ class CentralLandingController extends Controller
 
     public function __invoke(Request $request): View
     {
-        $prices = config('billing.subscription_prices');
-        $trialDays = max(0, (int) config('billing.trial_days', 0));
-        $smsQuota = (int) config('billing.sms_quota_per_month');
-        $maxSpecialists = app(\App\Support\Billing\SubscriptionPricing::class)->includedSpecialists();
-        $extraSpecialistPrice = app(\App\Support\Billing\SubscriptionPricing::class)->extraSpecialistPricePerMonth();
+        // پلن فروش (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴): اولین پلن عمومی فعال؛ بدون پلن (پیش از plans:sync-defaults) همان config
+        $salePlan = \App\Models\Plan::query()->offered()->get()->first(fn (\App\Models\Plan $p) => $p->isSellable());
+        $trialPlan = \App\Models\Plan::trial();
+        $pricing = app(\App\Support\Billing\SubscriptionPricing::class);
+        $prices = $salePlan
+            ? collect($salePlan->periods())->mapWithKeys(fn ($type) => [$type => $salePlan->priceFor($type)])->all()
+            : config('billing.subscription_prices');
+        $trialDays = app(\App\Services\SalonSignup\SalonSignupService::class)->trialDays();
+        $smsQuota = $salePlan ? (int) $salePlan->sms_quota_per_month : (int) config('billing.sms_quota_per_month');
+        $maxSpecialists = $pricing->includedSpecialists($salePlan);
+        $extraSpecialistPrice = $pricing->extraSpecialistPricePerMonth($salePlan);
 
         $paidFrom = now()->addDays($trialDays);
-        $monthlyBase = (int) ($prices['1m'] ?? 0);
+        $monthlyBase = (int) ($prices['1m'] ?? 0) ?: (int) round(collect($prices)->map(fn ($p, $t) => $p / self::PLAN_MONTHS[$t])->max() ?? 0);
 
         $plans = [];
         foreach (self::PLAN_MONTHS as $type => $months) {
@@ -68,7 +74,7 @@ class CentralLandingController extends Controller
         return view('central.landing', [
             'plans' => $plans,
             'trialDays' => $trialDays,
-            'trialSmsQuota' => (int) config('billing.trial_sms_quota'),
+            'trialSmsQuota' => (int) ($trialPlan?->sms_quota_per_month ?? config('billing.trial_sms_quota')),
             'smsQuota' => $smsQuota,
             'maxSpecialists' => $maxSpecialists,
             'extraSpecialistPrice' => $extraSpecialistPrice,

@@ -25,7 +25,8 @@ class SmsQuotaService
 
     public function quotaFor(Salon $salon): int
     {
-        return $salon->sms_quota_per_month ?? (int) config('billing.sms_quota_per_month');
+        // override دستی سوپرادمین ← سهمیه‌ی پلن مؤثر سالن ← config (سالن پیش از پلن‌ها)
+        return $salon->sms_quota_per_month ?? $salon->effectivePlan()?->sms_quota_per_month ?? (int) config('billing.sms_quota_per_month');
     }
 
     public function usageRow(Salon $salon): SalonSmsUsage

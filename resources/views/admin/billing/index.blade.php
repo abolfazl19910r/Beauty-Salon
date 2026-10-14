@@ -54,6 +54,27 @@
                     <div class="font-bold mt-1">{{ ['1m' => 'یک ماهه', '3m' => 'سه ماهه', '6m' => 'شش ماهه', '12m' => 'دوازده ماهه'][$salon->subscription_type] ?? $salon->subscription_type }}</div>
                 </div>
             </div>
+            @if ($currentPlan)
+                {{-- پلن و امکانات (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴) --}}
+                <div class="px-5 pb-5 text-sm" data-testid="current-plan">
+                    <div>
+                        پلن: <strong>{{ $currentPlan->name }}</strong>
+                        @if ($scheduledPlan)
+                            <span style="color:var(--admin-text-dim);">— از {{ jalali_date($salon->next_plan_starts_at) }} پلن «{{ $scheduledPlan->name }}»</span>
+                        @endif
+                    </div>
+                    <div class="flex flex-wrap gap-2 mt-3">
+                        @foreach (\App\Support\Features\Feature::cases() as $feature)
+                            @continue($feature->isComingSoon() && ! in_array($feature->value, $enabledFeatures, true))
+                            @php $on = in_array($feature->value, $enabledFeatures, true); @endphp
+                            <span class="px-2 py-1 rounded-full text-xs" title="{{ $feature->description() }}"
+                                  style="{{ $on ? 'background:var(--admin-accent-light); color:var(--admin-accent);' : 'background:var(--admin-bg, #f3f4f6); color:var(--admin-text-dim);' }}">
+                                {{ $on ? '✓' : '🔒' }} {{ $feature->label() }}
+                            </span>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         </div>
 
         {{-- پیامک‌های این ماه: سقف سالن جدا از کدهای تأیید (خرج پلتفرم) --}}
@@ -133,7 +154,8 @@
             </div>
         </div>
 
-        {{-- خرید/تمدید آنلاین --}}
+        @if ($planOptions === [])
+        {{-- خرید/تمدید آنلاین — بدون پلن قابل خرید (پیش از plans:sync-defaults) همان فرم قدیمی --}}
         <div class="rounded-xl overflow-hidden mb-6" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
             <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
                 تمدید / خرید آنلاین اشتراک
@@ -160,6 +182,10 @@
             </form>
         </div>
 
+        @else
+            @include('admin.billing.partials.plans', ['planOptions' => $planOptions, 'defaultPlanId' => $defaultPlanId, 'salon' => $salon, 'specialists' => $specialists, 'remainingDays' => $remainingDays, 'currentPlan' => $currentPlan])
+        @endif
+
         {{-- تاریخچه‌ی فاکتورها --}}
         <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
             <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
@@ -180,7 +206,12 @@
                     @forelse ($invoices as $invoice)
                         <tr style="border-bottom:1px solid var(--admin-border);">
                             <td class="py-3 px-4">{{ jalali_date($invoice->created_at) }}</td>
-                            <td class="py-3 px-4">{{ $invoice->subscription_type }}</td>
+                            <td class="py-3 px-4">
+                                {{ $invoice->subscription_type }}
+                                @if ($invoice->planName())
+                                    <span style="color:var(--admin-text-dim);">— {{ $invoice->planName() }}{{ $invoice->isUpgrade() ? ' (ارتقا)' : '' }}</span>
+                                @endif
+                            </td>
                             <td class="py-3 px-4 persian-number">{{ number_format($invoice->amount) }} تومان</td>
                             <td class="py-3 px-4">{{ $invoice->payment_method === 'online' ? 'آنلاین' : 'دستی (سوپر ادمین)' }}</td>
                             <td class="py-3 px-4">
