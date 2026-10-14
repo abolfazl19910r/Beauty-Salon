@@ -122,6 +122,11 @@ return Application::configure(basePath: dirname(__DIR__))
             ->dailyAt('07:30')
             ->withoutOverlapping()
             ->onOneServer();
+        // کمپین دستی مشتری‌های قدیمی (بسته‌ی ج): هر دقیقه یک دسته‌ی ۲۰تایی، خود دستور بیرون از ۹ تا ۲۰ تهران کاری نمی‌کند
+        $schedule->command('winback:campaigns')
+            ->everyMinute()
+            ->withoutOverlapping()
+            ->onOneServer();
         // دوره‌های درمانی (بسته‌ی ب): یادآوری هم‌ساعت پیگیری مشتری غایب؛ انقضا و رهاشده‌ها هر ساعت
         $schedule->command('courses:remind')
             ->dailyAt('07:40')

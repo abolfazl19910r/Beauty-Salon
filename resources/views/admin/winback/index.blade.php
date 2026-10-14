@@ -17,6 +17,19 @@
             </p>
         </div>
 
+        {{-- بسته‌ی ج: کمپین دستی برای مشتری‌هایی که پنجره‌ی پیگیری خودکار را رد کرده‌اند --}}
+        <div class="rounded-xl p-4 mb-5 flex justify-between items-center gap-3 flex-wrap" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+            <div>
+                <div class="font-bold text-sm" style="color:var(--admin-text);">ارسال دستی به مشتری‌های قدیمی</div>
+                <p class="text-xs mt-1" style="color:var(--admin-text-dim);">پیگیری خودکار فقط مشتری‌هایی را می‌گیرد که تازه از مرز غیبت گذشته‌اند؛ برای قدیمی‌ترها (تا ۲ سال) کمپین دستی بسازید.</p>
+            </div>
+            @if (app(\App\Support\CurrentSalon::class)->get()?->hasFeature(\App\Support\Features\Feature::WinbackManual))
+                <a href="{{ route('admin.winback.campaigns.index') }}" class="px-4 py-2 rounded-lg text-sm font-bold" style="background:var(--admin-accent); color:#fff;">کمپین‌ها</a>
+            @else
+                @include('admin.partials.feature-locked', ['feature' => \App\Support\Features\Feature::WinbackManual])
+            @endif
+        </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <div class="text-xs" style="color:var(--admin-text-dim);">پیامک ۳۰ روز اخیر</div>

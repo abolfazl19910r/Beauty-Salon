@@ -161,7 +161,7 @@ class WinbackService
         return $available - $parts >= (int) ceil($quota->quotaFor($salon) * self::RESERVE_RATIO);
     }
 
-    private function newCodeValue(Salon $salon): string
+    public function newCodeValue(Salon $salon): string
     {
         do {
             $value = 'BK'.substr(str_shuffle(str_repeat('ABCDEFGHJKMNPQRSTUVWXYZ23456789', 3)), 0, 5);
@@ -170,8 +170,11 @@ class WinbackService
         return $value;
     }
 
-    /** کد یک‌بارمصرف مخصوص همین مشتری. بی‌صدا ذخیره می‌شود: پیامک «کد تخفیف صادر شد» DiscountCodeObserver نباید جدا برود. */
-    private function createCode(Salon $salon, WinbackSetting $setting, User $customer, string $value, Carbon $expires): DiscountCode
+    /**
+     * کد یک‌بارمصرف مخصوص همین مشتری. بی‌صدا ذخیره می‌شود: پیامک «کد تخفیف صادر شد» DiscountCodeObserver نباید جدا برود.
+     * مشترک با کمپین دستی (بسته‌ی ج) — هر دو فیلدهای discount_* هم‌نام دارند.
+     */
+    public function createCode(Salon $salon, WinbackSetting|\App\Models\WinbackCampaign $setting, User $customer, string $value, Carbon $expires): DiscountCode
     {
         $code = new DiscountCode([
             'code' => $value,

@@ -163,6 +163,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_a
     require __DIR__.'/admin/gallery.php';
     require __DIR__.'/admin/loyalty.php';
     require __DIR__.'/admin/winback.php';
+    require __DIR__.'/admin/winback-campaigns.php';
     require __DIR__.'/admin/courses.php';
     require __DIR__.'/admin/customers.php';
     require __DIR__.'/admin/blog.php';

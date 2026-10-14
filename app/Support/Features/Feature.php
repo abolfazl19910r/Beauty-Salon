@@ -94,10 +94,10 @@ enum Feature: string
         };
     }
 
-    /** تیکش ذخیره می‌شود ولی خود امکان هنوز در کد نیست (بسته‌های ب و ج) */
+    /** تیکش ذخیره می‌شود ولی خود امکان هنوز در کد نیست — از بسته‌ی ج (۲۰۲۶-۱۰-۱۴) همه‌ی امکانات ساخته شده‌اند */
     public function isComingSoon(): bool
     {
-        return $this === self::WinbackManual;
+        return false;
     }
 
     /** @return array<string, list<self>> گروه ← امکانات، به ترتیب تعریف */
