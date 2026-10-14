@@ -5,14 +5,18 @@ namespace App\Http\Controllers\Central;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Central\StoreDemoRequestRequest;
 use App\Models\DemoRequest;
+use App\Notifications\Central\DemoRequestReceivedNotification;
+use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Support\PlatformSettings;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Notification;
 
 /**
  * POST /demo-request — فرم «درخواست دموی رایگان» صفحه‌ی فروش (لندینگ تازه، تصمیم ۲۰۲۶-۱۰-۱۴).
  * اسکریپت صفحه با fetch و Accept: application/json می‌فرستد (۲۰۱)؛ بدون جاوااسکریپت فرم عادی است و به همان بخش صفحه برمی‌گردد.
  * محافظ‌ها: سقف نرخ مسیر (throttle)، فیلد تله‌ی website (ربات → پاسخ موفق ولی ذخیره نمی‌شود)، و هر شماره در ۲۴ ساعت یک ردیف
- * (درخواست تکراری همان ردیف را تازه می‌کند تا فهرست سوپرادمین شلوغ نشود).
+ * (درخواست تکراری همان ردیف را تازه می‌کند تا فهرست سوپرادمین شلوغ نشود). ردیف تازه → پیامک سوپرادمین‌ها + ایمیل (notifyPlatform).
  */
 class DemoRequestController extends Controller
 {
@@ -36,9 +40,11 @@ class DemoRequestController extends Controller
                 ->latest('id')
                 ->first();
 
-            $recent
-                ? $recent->update($attributes)
-                : DemoRequest::create($attributes + ['phone' => $data['phone']]);
+            if ($recent) {
+                $recent->update($attributes);
+            } else {
+                $this->notifyPlatform(DemoRequest::create($attributes + ['phone' => $data['phone']]));
+            }
         }
 
         if ($request->expectsJson()) {
@@ -46,5 +52,22 @@ class DemoRequestController extends Controller
         }
 
         return redirect()->to(route('central.home').'#start')->with('demo_requested', true);
+    }
+
+    /**
+     * پیامک به همه‌ی سوپرادمین‌ها و ایمیل به گیرنده‌ی تنظیمات پلتفرم (تصمیم ۲۰۲۶-۱۰-۱۴) — صف‌شده؛ شکست ارسال پاسخ فرم را خراب نمی‌کند.
+     */
+    private function notifyPlatform(DemoRequest $demo): void
+    {
+        $notification = new DemoRequestReceivedNotification($demo);
+
+        $superAdmins = app(UserRepositoryInterface::class)->getSuperAdmins();
+        if ($superAdmins->isNotEmpty()) {
+            Notification::send($superAdmins, $notification);
+        }
+
+        if ($email = PlatformSettings::get('demo_notify_email')) {
+            Notification::route('mail', $email)->notify($notification);
+        }
     }
 }

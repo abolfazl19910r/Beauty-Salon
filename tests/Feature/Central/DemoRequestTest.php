@@ -5,7 +5,12 @@ namespace Tests\Feature\Central;
 use App\Models\DemoRequest;
 use App\Models\Role;
 use App\Models\User;
+use App\Notifications\Central\DemoRequestReceivedNotification;
+use App\Services\SMSService;
+use App\Support\PlatformSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Notifications\AnonymousNotifiable;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 /**
@@ -129,5 +134,52 @@ class DemoRequestTest extends TestCase
         $this->actingAs($salonAdmin)->get(route('superadmin.demo-requests.index'))->assertForbidden();
         $this->actingAs($salonAdmin)->patch(route('superadmin.demo-requests.update', $demo), ['handled' => 1])->assertForbidden();
         $this->assertNull($demo->fresh()->handled_at);
+    }
+
+    public function test_a_new_request_texts_every_super_admin_and_emails_the_configured_address(): void
+    {
+        Notification::fake();
+        $first = $this->superAdmin();
+        $second = $this->superAdmin();
+        PlatformSettings::save(['demo_notify_email' => 'sales@mahru.ir']);
+
+        $this->postJson(route('demo-requests.store'), $this->valid())->assertCreated();
+
+        foreach ([$first, $second] as $admin) {
+            Notification::assertSentTo($admin, DemoRequestReceivedNotification::class, fn ($n, array $channels) => $channels === ['sms']);
+        }
+        Notification::assertSentOnDemand(DemoRequestReceivedNotification::class,
+            fn ($n, array $channels, object $notifiable) => $channels === ['mail'] && $notifiable->routes['mail'] === 'sales@mahru.ir');
+    }
+
+    public function test_repeats_and_bots_do_not_notify_and_without_an_address_no_email_goes_out(): void
+    {
+        Notification::fake();
+        $admin = $this->superAdmin();
+
+        $this->postJson(route('demo-requests.store'), $this->valid())->assertCreated();
+        $this->postJson(route('demo-requests.store'), $this->valid())->assertCreated();
+        $this->postJson(route('demo-requests.store'), $this->valid(['phone' => '09350000000', 'website' => 'x']))->assertCreated();
+
+        Notification::assertSentToTimes($admin, DemoRequestReceivedNotification::class, 1);
+        Notification::assertNotSentTo(new AnonymousNotifiable, DemoRequestReceivedNotification::class);
+        Notification::assertSentOnDemandTimes(DemoRequestReceivedNotification::class, 0);
+    }
+
+    public function test_the_sms_is_a_platform_cost_and_fits_one_part(): void
+    {
+        $admin = $this->superAdmin();
+        $admin->forceFill(['phone' => '09121234567'])->save();
+        $demo = DemoRequest::factory()->create(['name' => 'سارا محمدی', 'salon_name' => 'سالن رزگلد', 'phone' => '09123456789']);
+
+        $sms = $this->mock(SMSService::class);
+        // بدون شناسه‌ی سالن: هزینه‌ی پلتفرم، نه سهمیه‌ی سالن
+        $sms->shouldReceive('send')->once()->withArgs(fn (...$args) => $args[0] === '09121234567' && count($args) === 2)->andReturnTrue();
+
+        (new DemoRequestReceivedNotification($demo))->toSms($admin);
+
+        $text = DemoRequestReceivedNotification::smsText($demo);
+        $this->assertStringContainsString('09123456789', $text);
+        $this->assertLessThanOrEqual(70, mb_strlen($text), $text);
     }
 }
