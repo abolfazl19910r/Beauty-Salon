@@ -9,6 +9,15 @@
     "staff-production": {
       "env": { "APP_VARIANT": "staff", "APP_ENV": "production" },
       "android": { "buildType": "apk" }
+    },
+    "customer-apk": {
+      "distribution": "internal",
+      "env": { "APP_VARIANT": "customer", "APP_ENV": "preview" },
+      "android": { "buildType": "apk" }
+    },
+    "customer-production": {
+      "env": { "APP_VARIANT": "customer", "APP_ENV": "production" },
+      "android": { "buildType": "apk" }
     }
   }
 }
