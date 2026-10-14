@@ -237,7 +237,8 @@ export function useUpdateProfile() {
   const api = useApi();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (name: string) => (await api.request<Profile>('PATCH', '/customer/profile', { body: { name } })).data,
+    mutationFn: async (changes: { name?: string; marketing_sms?: boolean }) =>
+      (await api.request<Profile>('PATCH', '/customer/profile', { body: changes })).data,
     onSuccess: (profile) => qc.setQueryData(ckeys.profile, profile),
   });
 }

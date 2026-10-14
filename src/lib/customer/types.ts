@@ -190,7 +190,8 @@ export type DiscountCode = {
 
 export type RedeemResult = { code: string; type: 'fixed' | 'percentage'; amount: number; expires_at: string | null; points: number };
 
-export type Profile = { id: number; name: string; phone: string; created_at: string | null };
+/** marketing_sms: پیامک‌های پیگیری و پیشنهاد سالن (پیش‌فرض روشن)؛ پیامک‌های نوبت جدا و همیشه روشن‌اند */
+export type Profile = { id: number; name: string; phone: string; marketing_sms: boolean; created_at: string | null };
 
 export type CustomerNotification = {
   id: string;

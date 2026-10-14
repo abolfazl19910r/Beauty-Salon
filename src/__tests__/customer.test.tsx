@@ -212,3 +212,24 @@ it('a suspended salon shows its own screen without logging out', async () => {
   expect(mockSecure.get('mahru.token')).toBe('7|cus');
   await act(async () => undefined);
 });
+
+it('the profile switch turns the salon follow-up texts off', async () => {
+  await signedIn();
+  let marketing = true;
+  routes = (url, init) => {
+    if (url.endsWith('/customer/profile')) {
+      if (init.method === 'PATCH') marketing = JSON.parse(String(init.body)).marketing_sms;
+      return [200, ok({ id: 9, name: 'مریم رضایی', phone: '09121111111', marketing_sms: marketing, created_at: null })];
+    }
+    return notFound;
+  };
+
+  renderRouter('./src/customer', { initialUrl: '/profile' });
+
+  const toggle = await screen.findByLabelText('پیامک‌های پیگیری و پیشنهاد سالن');
+  expect(toggle.props.value).toBe(true);
+  fireEvent(toggle, 'valueChange', false);
+
+  await waitFor(() => expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ marketing_sms: false }));
+  await waitFor(() => expect(screen.getByLabelText('پیامک‌های پیگیری و پیشنهاد سالن').props.value).toBe(false));
+});
