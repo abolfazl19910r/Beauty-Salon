@@ -1,8 +1,10 @@
 /** شکل پاسخ‌های /api/v1 (بسته‌های ۱ و ۲الف لاراول) */
 
+import type { LogoTone } from './logo';
+
 export type Account = {
   user: { id: number; name: string; phone: string; type: 'staff' | 'customer' };
-  salon: { id: number; slug: string; name: string; logo_url: string | null; public_url: string };
+  salon: { id: number; slug: string; name: string; logo_url: string | null; logo_tone?: LogoTone; logo_dark_url?: string | null; logo_dark_tone?: LogoTone; public_url: string };
   specialist?: { id: number; name: string };
 };
 

@@ -1,11 +1,17 @@
 /** شکل پاسخ‌های /api/v1/customer/* (بسته‌ی ۳الف لاراول، CustomerPresenter و کنترلرهای Customer*) */
 
+import type { LogoTone } from '../logo';
+
 export type SalonCard = {
   id: number;
   slug: string;
   name: string;
   tagline: string | null;
   logo_url: string | null;
+  /** بسته‌ی د — لحن روشنایی و لوگوی دوم برای تم تیره (lib/logo) */
+  logo_tone?: LogoTone;
+  logo_dark_url?: string | null;
+  logo_dark_tone?: LogoTone;
   public_url: string;
 };
 

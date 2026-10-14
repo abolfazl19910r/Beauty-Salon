@@ -1,10 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Image, Pressable, View } from 'react-native';
+import { Image, Pressable, useColorScheme, View } from 'react-native';
 
 import type { CustomerBooking, CustomerBookingStatus, SalonCard } from '@/lib/customer/types';
 import { faDigits, toman } from '@/lib/format';
+import { logoAppearance } from '@/lib/logo';
 import { Badge, Card, Row, T } from './kit';
 import { radius, space, usePalette } from './theme';
 
@@ -21,12 +22,22 @@ export function CustomerStatusBadge({ booking }: { booking: Pick<CustomerBooking
   return <Badge text={booking.status_label} tone={TONE[booking.status] ?? 'muted'} />;
 }
 
-/** لوگوی سالن (اگر دارد) یا نشان ماهرو */
-export function SalonLogo({ salon, size = 72 }: { salon: Pick<SalonCard, 'logo_url' | 'name'>; size?: number }) {
-  const p = usePalette();
-  return salon.logo_url ? (
-    <Image source={{ uri: salon.logo_url }} accessibilityLabel={salon.name} style={{ width: size, height: size, borderRadius: size / 4, backgroundColor: p.surfaceMuted }} />
-  ) : (
+/**
+ * لوگوی سالن (اگر دارد) یا نشان ماهرو. بسته‌ی د: لوگو کامل دیده می‌شود (contain، نه برش) و روی تمی که کنتراست کم دارد
+ * داخل پلاک گرد با پس‌زمینه‌ی مخالف می‌نشیند — همان قاعده‌ی وب؛ تم تیره لوگوی دوم سالن را اگر دارد نشان می‌دهد.
+ */
+export function SalonLogo({ salon, size = 72 }: { salon: Pick<SalonCard, 'logo_url' | 'logo_tone' | 'logo_dark_url' | 'logo_dark_tone' | 'name'>; size?: number }) {
+  const look = logoAppearance(salon, useColorScheme() === 'dark' ? 'dark' : 'light');
+  if (look) {
+    // پلاک قاب بیرونی است (padding روی خود Image در iOS نادیده گرفته می‌شود)؛ اندازه‌ی کل همان size می‌ماند.
+    const pad = look.plaque ? Math.round(size / 10) : 0;
+    return (
+      <View testID="salon-logo" style={{ width: size, height: size, borderRadius: size / 4, padding: pad, backgroundColor: look.plaque ?? 'transparent' }}>
+        <Image source={{ uri: look.uri }} accessibilityLabel={salon.name} resizeMode="contain" style={{ width: size - pad * 2, height: size - pad * 2 }} />
+      </View>
+    );
+  }
+  return (
     <Image source={require('../../assets/customer/icon.png')} accessibilityLabel={salon.name} style={{ width: size, height: size, borderRadius: size / 4 }} />
   );
 }
