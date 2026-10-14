@@ -81,8 +81,11 @@ class SuperAdminController extends Controller
             auth()->user(),
         );
 
-        if ($request->hasFile('logo')) {
-            app(\App\Services\Salon\SalonLogoService::class)->replace($salon, $request->file('logo'));
+        // ⭐ بسته‌ی د: لوگوی اصلی + لوگوی پس‌زمینه‌ی تیره (سالن ساخته شده؛ خطای لوگوی دوم در صفحه‌ی ویرایش نشان داده می‌شود)
+        if ($error = app(\App\Services\Salon\SalonLogoService::class)->syncFromRequest($salon, $request)) {
+            return redirect()->route('superadmin.salons.edit', $salon)
+                ->with('success', "سالن «{$salon->name}» با موفقیت ایجاد شد.")
+                ->withErrors(['logo_dark' => $error]);
         }
 
         return redirect()->route('superadmin.salons.index')
@@ -127,11 +130,9 @@ class SuperAdminController extends Controller
             $this->superAdminService->updateSalon($salon, $request->validated() + ['contact' => $request->salonContactAttributes()]);
 
             // ⭐ لوگو (۲۰۲۶-۰۹-۲۴): آپلود جدید جایگزین می‌شه؛ «حذف لوگو» فقط وقتی فایل جدیدی نیومده.
-            $logoService = app(\App\Services\Salon\SalonLogoService::class);
-            if ($request->hasFile('logo')) {
-                $logoService->replace($salon->fresh(), $request->file('logo'));
-            } elseif ($request->boolean('remove_logo')) {
-                $logoService->remove($salon->fresh());
+            // ⭐ بسته‌ی د: + لوگوی پس‌زمینه‌ی تیره (فقط کنار لوگوی اصلی)
+            if ($error = app(\App\Services\Salon\SalonLogoService::class)->syncFromRequest($salon->fresh(), $request)) {
+                return back()->withInput()->withErrors(['logo_dark' => $error]);
             }
         } catch (\InvalidArgumentException $e) {
             return back()->withInput()->withErrors(['max_specialists_count' => $e->getMessage()]);

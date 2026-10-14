@@ -32,6 +32,12 @@ class AdminSalonSettingsController extends Controller
         if ($request->hasFile('logo') && ! $salon->hasFeature(\App\Support\Features\Feature::CustomLogo)) {
             return back()->withInput()->withErrors(['logo' => 'لوگوی اختصاصی در پلن سالن شما نیست.']);
         }
+        if ($request->hasFile('logo_dark') && ! $salon->hasFeature(\App\Support\Features\Feature::CustomLogo)) {
+            return back()->withInput()->withErrors(['logo_dark' => 'لوگوی اختصاصی در پلن سالن شما نیست.']);
+        }
+        if ($request->hasFile('logo_dark') && ! $salon->logo_path && ! $request->hasFile('logo')) {
+            return back()->withInput()->withErrors(['logo_dark' => 'لوگوی پس‌زمینه‌ی تیره فقط کنار لوگوی اصلی پذیرفته می‌شود؛ اول لوگوی اصلی را بارگذاری کنید.']);
+        }
 
         $salon->update([
             'name' => $request->validated('name'),
@@ -45,10 +51,9 @@ class AdminSalonSettingsController extends Controller
         // (AdminPaymentGatewayController) جایگزینش شد؛ مقدار ارسالی به این مسیر نادیده گرفته می‌شه.
         // توکن Payout هم (مرحله‌ی ۳، ۲۰۲۶-۰۹-۲۵) به ویرایش درگاه زرین‌پال در همان صفحه منتقل شد.
 
-        if ($request->hasFile('logo')) {
-            $this->logoService->replace($salon, $request->file('logo'));
-        } elseif ($request->boolean('remove_logo')) {
-            $this->logoService->remove($salon);
+        // ⭐ بسته‌ی د: لوگوی اصلی (با سنجش لحن) و لوگوی دوم برای پس‌زمینه‌ی تیره
+        if ($error = $this->logoService->syncFromRequest($salon, $request)) {
+            return back()->withInput()->withErrors(['logo_dark' => $error]);
         }
 
         return redirect()->route('admin.salon-settings.edit')->with('success', 'اطلاعات سالن ذخیره شد.');

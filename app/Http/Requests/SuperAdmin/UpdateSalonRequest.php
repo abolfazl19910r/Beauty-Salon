@@ -36,6 +36,8 @@ class UpdateSalonRequest extends FormRequest
             // ⭐ لوگوی اختصاصی سالن (۲۰۲۶-۰۹-۲۴) — اختیاری؛ remove_logo فقط در ویرایش معنی داره.
             'logo' => \App\Services\Salon\SalonLogoService::RULES,
             'remove_logo' => ['nullable', 'boolean'],
+            'logo_dark' => \App\Services\Salon\SalonLogoService::DARK_RULES,
+            'remove_logo_dark' => ['nullable', 'boolean'],
             'name' => ['required', 'string', 'max:255'],
             // ⭐ پیگیری «محور ۳» (۲۰۲۶-۰۹-۲۰) — متن‌های بازاریابی per-salon، به‌جای ثابت/generic.
             'tagline' => ['nullable', 'string', 'max:255'],
@@ -54,6 +56,6 @@ class UpdateSalonRequest extends FormRequest
 
     public function messages(): array
     {
-        return $this->salonContactMessages() + \App\Services\Salon\SalonLogoService::MESSAGES + \App\Support\ZarinpalMerchant::MESSAGES;
+        return $this->salonContactMessages() + \App\Services\Salon\SalonLogoService::MESSAGES + \App\Services\Salon\SalonLogoService::DARK_MESSAGES + \App\Support\ZarinpalMerchant::MESSAGES;
     }
 }

@@ -24,6 +24,9 @@ class Salon extends Model
         'tagline',
         'bio',
         'logo_path',
+        'logo_tone',
+        'logo_dark_path',
+        'logo_dark_tone',
         'address',
         'phone',
         'established_year',
@@ -313,6 +316,43 @@ class Salon extends Model
     public function storedLogoUrl(): ?string
     {
         return $this->logo_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->logo_path) : null;
+    }
+
+    /** ⭐ بسته‌ی د: لوگوی دوم برای پس‌زمینه‌ی تیره؛ مثل logoUrl() پشت امکان «لوگوی اختصاصی» پلن و فقط کنار لوگوی اصلی. */
+    public function logoDarkUrl(): ?string
+    {
+        return $this->logoUrl() ? $this->storedLogoDarkUrl() : null;
+    }
+
+    public function storedLogoDarkUrl(): ?string
+    {
+        return $this->logo_dark_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->logo_dark_path) : null;
+    }
+
+    /**
+     * ⭐ بسته‌ی د — لوگوی هر تم و این‌که پلاک می‌خواهد یا نه (ویوها: x-brand-emblem؛ اپ‌ها همین قاعده را از API می‌سازند).
+     * تم روشن: لوگوی اصلی، پلاک اگر لحنش light است. تم تیره: لوگوی دوم اگر هست (پلاک اگر لحنش dark است)، وگرنه لوگوی اصلی
+     * با پلاک اگر لحنش dark است. null = لوگوی اختصاصی ندارد (نشان ماهرو).
+     *
+     * @return array{light: array{url: string, plaque: bool}, dark: array{url: string, plaque: bool}}|null
+     */
+    public function logoAppearance(): ?array
+    {
+        return self::appearanceFor($this->logoUrl(), $this->logo_tone, $this->logoDarkUrl(), $this->logo_dark_tone);
+    }
+
+    public static function appearanceFor(?string $url, ?string $tone, ?string $darkUrl, ?string $darkTone): ?array
+    {
+        if (! $url) {
+            return null;
+        }
+
+        return [
+            'light' => ['url' => $url, 'plaque' => $tone === \App\Services\Salon\LogoToneAnalyzer::LIGHT],
+            'dark' => $darkUrl
+                ? ['url' => $darkUrl, 'plaque' => $darkTone === \App\Services\Salon\LogoToneAnalyzer::DARK]
+                : ['url' => $url, 'plaque' => $tone === \App\Services\Salon\LogoToneAnalyzer::DARK],
+        ];
     }
 
     /**

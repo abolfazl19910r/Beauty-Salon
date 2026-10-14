@@ -30,6 +30,24 @@
                 <input type="checkbox" name="remove_logo" value="1">
                 حذف لوگوی فعلی
             </label>
+            @include('partials.logo-tone-preview', ['salon' => $salon])
+        @endif
+    </div>
+    {{-- ⭐ بسته‌ی د: لوگوی دوم اختیاری برای پس‌زمینه‌ی تیره (فقط کنار لوگوی اصلی) --}}
+    <div class="mb-4">
+        <label class="sa-label">لوگوی پس‌زمینه‌ی تیره <span style="color: var(--sa-text-dim);">(اختیاری — نسخه‌ی روشن لوگو برای تم تیره؛ فقط کنار لوگوی اصلی)</span></label>
+        <div class="flex items-center gap-3">
+            @if ($salon?->storedLogoDarkUrl())
+                <img src="{{ $salon->storedLogoDarkUrl() }}" alt="لوگوی پس‌زمینه‌ی تیره" class="w-14 h-14 object-contain rounded p-1" style="background:#15110E;">
+            @endif
+            <input type="file" name="logo_dark" accept="image/png,image/jpeg,image/webp" class="text-sm">
+        </div>
+        @error('logo_dark') <p class="text-xs mt-1" style="color:#b91c1c;">{{ $message }}</p> @enderror
+        @if ($salon?->logo_dark_path)
+            <label class="flex items-center gap-2 mt-2 text-sm">
+                <input type="checkbox" name="remove_logo_dark" value="1">
+                حذف لوگوی پس‌زمینه‌ی تیره
+            </label>
         @endif
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

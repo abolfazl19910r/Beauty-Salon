@@ -25,6 +25,10 @@ class ApiAccountPresenter
                 'slug' => $salon->slug,
                 'name' => $salon->name,
                 'logo_url' => $salon->logoUrl(),
+                // ⭐ بسته‌ی د: اپ‌ها همان پلاک وب را می‌کشند (light = پلاک تیره روی تم روشن، dark = پلاک روشن روی تم تیره)
+                'logo_tone' => $salon->logoUrl() ? $salon->logo_tone : null,
+                'logo_dark_url' => $salon->logoDarkUrl(),
+                'logo_dark_tone' => $salon->logoDarkUrl() ? $salon->logo_dark_tone : null,
                 'public_url' => $salon->publicUrl(),
                 'features' => $salon->enabledFeatureKeys(),
             ],

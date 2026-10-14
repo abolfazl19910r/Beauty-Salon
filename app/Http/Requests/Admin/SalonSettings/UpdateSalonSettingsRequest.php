@@ -39,12 +39,14 @@ class UpdateSalonSettingsRequest extends FormRequest
             'bio' => ['nullable', 'string', 'max:2000'],
             'logo' => SalonLogoService::RULES,
             'remove_logo' => ['nullable', 'boolean'],
+            'logo_dark' => SalonLogoService::DARK_RULES,
+            'remove_logo_dark' => ['nullable', 'boolean'],
         ];
     }
 
     public function messages(): array
     {
-        return $this->salonContactMessages() + SalonLogoService::MESSAGES + [
+        return $this->salonContactMessages() + SalonLogoService::MESSAGES + SalonLogoService::DARK_MESSAGES + [
             'name.required' => 'نام سالن را وارد کنید.',
         ];
     }

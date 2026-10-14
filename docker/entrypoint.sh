@@ -96,6 +96,9 @@ if [ "$ROLE" = "web" ]; then
 
     echo "🗄️  Running migrations..."
     artisan migrate --force --no-interaction
+
+    # بسته‌ی د: لحن روشنایی لوگوهای سنجیده‌نشده (فقط همان‌ها؛ هر بار بی‌خطر و سریع)
+    artisan salons:analyze-logos --no-interaction || true
 fi
 
 # ─── Cache (Production only) — هر container فایل‌های cache خودش رو داره ─────
