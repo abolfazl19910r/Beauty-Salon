@@ -109,6 +109,15 @@
             <a href="{{ route('services.index') }}" class="nav-link">خدمات</a>
             <a href="{{ route('specialists.search') }}" class="nav-link">متخصص‌ها</a>
             <a href="{{ route('blog.index') }}" class="nav-link">وبلاگ</a>
+            {{-- دوره‌های درمانی (بسته‌ی ب): فقط با امکان پلن سالن --}}
+            @php
+                $__navSalon = app(\App\Support\CurrentSalon::class)->get();
+                $__coursesOn = $__navSalon?->hasFeature(\App\Support\Features\Feature::TreatmentCourses) ?? false;
+                $__hasCourses = $__navSalon && auth()->check() && \App\Models\CustomerCourse::query()->where('user_id', auth()->id())->where('status', '!=', 'cancelled')->exists();
+            @endphp
+            @if ($__coursesOn)
+                <a href="{{ route('courses.index') }}" class="nav-link">دوره‌ها</a>
+            @endif
 
             @auth
                 @if(auth()->user()->hasRole('specialists'))
@@ -161,6 +170,9 @@
                         کیف پول
                     </a>
                     <a href="{{ route('bookings.index') }}" class="nav-link">نوبت‌های من</a>
+                    @if ($__coursesOn || $__hasCourses)
+                        <a href="{{ route('my-courses.index') }}" class="nav-link">دوره‌های من</a>
+                    @endif
                     <a href="{{ route('profile.show') }}" class="nav-link">پروفایل</a>
                 @endif
 
@@ -188,6 +200,9 @@
             <a href="{{ route('services.index') }}" class="block py-2 nav-link">خدمات</a>
             <a href="{{ route('specialists.search') }}" class="block py-2 nav-link">متخصص‌ها</a>
             <a href="{{ route('blog.index') }}" class="block py-2 nav-link">وبلاگ</a>
+            @if ($__coursesOn)
+                <a href="{{ route('courses.index') }}" class="block py-2 nav-link">دوره‌ها</a>
+            @endif
             @auth
                 @if(auth()->user()->hasRole('specialists'))
                     <a href="{{ route('specialist.profile.show') }}" class="block py-2 nav-link">پروفایل من</a>
@@ -201,6 +216,9 @@
                     </a>
                     <a href="{{ route('wallet.index') }}" class="block py-2 nav-link">کیف پول</a>
                     <a href="{{ route('bookings.index') }}" class="block py-2 nav-link">نوبت‌های من</a>
+                    @if ($__coursesOn || $__hasCourses)
+                        <a href="{{ route('my-courses.index') }}" class="block py-2 nav-link">دوره‌های من</a>
+                    @endif
                     <a href="{{ route('profile.show') }}" class="block py-2 nav-link">پروفایل</a>
                 @endif
                 <form action="{{ route('logout') }}" method="POST">

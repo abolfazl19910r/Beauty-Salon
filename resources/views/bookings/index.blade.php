@@ -125,7 +125,7 @@
                         <tbody class="divide-y" style="border-color: rgba(201,162,75,0.1);">
                         @foreach($bookings as $booking)
                             <tr class="transition hover:bg-white/5">
-                                <td class="px-6 py-4" style="color: var(--rasta-cream);">{{ $booking->service->name }}</td>
+                                <td class="px-6 py-4" style="color: var(--rasta-cream);">{{ $booking->service->name }} @if ($__courseLabel = $booking->courseSessionLabel())<span class="text-xs mr-1 px-2 py-0.5 rounded-full" style="background:rgba(201,162,75,0.15); color:#C9A24B;">{{ $__courseLabel }}</span>@endif</td>
                                 <td class="px-6 py-4" style="color: var(--rasta-cream);">{{ $booking->specialist->name }}</td>
                                 <td class="px-6 py-4 persian-number" dir="ltr" style="color: var(--rasta-cream);">
                                     {{ verta($booking->booking_time)->format('Y/m/d H:i') }}

@@ -26,6 +26,8 @@ $tenantRoutes = function () {
     // ⭐ Commit 4b-3: split out of specialistprofile.php — see that file's own docblock. Public
     // specialist browsing genuinely belongs here now, unlike before.
     require __DIR__.'/web/public-specialists.php';
+    // دوره‌های درمانی سالن برای بازدیدکننده (بسته‌ی ب)
+    require __DIR__.'/web/courses-public.php';
     // ⭐ Customer identity redesign (confirmed 2026-08-30).
     require __DIR__.'/salon-auth.php';
     // ⭐ Fix (found sweeping the last of the /s/{slug} test failures): reviews.create/store/
@@ -56,6 +58,7 @@ $tenantRoutes = function () {
         require __DIR__.'/web/loyalty.php';
         require __DIR__.'/web/security.php';
         require __DIR__.'/web/wallet.php';
+        require __DIR__.'/web/courses.php';
     });
 };
 
@@ -160,6 +163,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_a
     require __DIR__.'/admin/gallery.php';
     require __DIR__.'/admin/loyalty.php';
     require __DIR__.'/admin/winback.php';
+    require __DIR__.'/admin/courses.php';
     require __DIR__.'/admin/blog.php';
     require __DIR__.'/admin/announcements.php';
     require __DIR__.'/admin/discount-codes.php';

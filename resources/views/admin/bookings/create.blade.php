@@ -208,6 +208,15 @@
                         @error('status') <p class="form-error">{{ $message }}</p> @enderror
                     </div>
 
+                    <div class="md:col-span-2">
+                        {{-- دوره‌ی درمانی (بسته‌ی ب) --}}
+                        <input type="hidden" name="use_course" value="0">
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" name="use_course" value="1" @checked(old('use_course', true))>
+                            اگر مشتری دوره‌ی درمانی فعالِ همین خدمت را دارد، این نوبت یک جلسه از همان دوره باشد (بدون پرداخت؛ وضعیت پرداخت پایین نادیده گرفته می‌شود)
+                        </label>
+                    </div>
+
                     <div>
                         <label for="payment_status" class="form-label">وضعیت پرداخت</label>
                         <select id="payment_status" name="payment_status" class="form-select">

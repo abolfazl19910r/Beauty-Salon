@@ -238,6 +238,20 @@
                 @else
                     <div class="empty-state">داده‌ای برای این بازه زمانی وجود ندارد</div>
                 @endif
+
+                {{-- دوره‌های درمانی (بسته‌ی ب): فروش دوره جدا از درآمد نوبت؛ فقط برای سالنی که دوره دارد --}}
+                @if($courses)
+                    <h3 class="text-base font-semibold mt-8 mb-4" style="color:var(--admin-text)">دوره‌های درمانی (بازه‌ی انتخابی)</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="stat-card"><div class="label">دوره‌ی فروخته‌شده</div><div class="value">{{ number_format($courses['courses_sold']) }}</div></div>
+                        <div class="stat-card"><div class="label">پرداخت‌های دوره</div><div class="value">{{ number_format($courses['sales_amount']) }} تومان</div></div>
+                        <div class="stat-card"><div class="label">جلسه‌ی انجام‌شده</div><div class="value">{{ number_format($courses['sessions_delivered']) }}</div></div>
+                        <div class="stat-card"><div class="label">ارزش جلسه‌های پیش‌فروش‌شده‌ی مانده</div><div class="value">{{ number_format($courses['liability']) }} تومان</div></div>
+                    </div>
+                    <p class="text-xs mt-2" style="color:var(--admin-text-dim)">
+                        پرداخت‌های دوره در درآمد نوبت‌های بالا شمرده نمی‌شوند. «ارزش مانده» خدمتی است که سالن هنوز به مشتری‌های دوره‌های فعال بدهکار است (امروز، مستقل از بازه).
+                    </p>
+                @endif
             </div>
 
             {{-- Experts' Fever --}}

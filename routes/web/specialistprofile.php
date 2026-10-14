@@ -63,6 +63,10 @@ Route::middleware(['auth', 'verified', 'salon.specialist'])->name('specialist.')
         Route::put('/{booking}/complete', [SpecialistBookingManagementController::class, 'complete'])->name('complete');
         Route::put('/{booking}/mark-completed', [SpecialistBookingManagementController::class, 'markAsCompleted'])->name('mark-completed');
         Route::put('/{booking}/cancel', [SpecialistBookingManagementController::class, 'cancel'])->name('cancel');
+        // جلسه‌ی دوره‌ی درمانی (بسته‌ی ب): یادداشت، عکس قبل/بعد، رضایت مشتری
+        Route::put('/{booking}/course-note', [\App\Http\Controllers\Specialist\Booking\SpecialistCourseSessionController::class, 'saveNote'])->name('course-note');
+        Route::post('/{booking}/course-photos', [\App\Http\Controllers\Specialist\Booking\SpecialistCourseSessionController::class, 'uploadPhoto'])->name('course-photos.store');
+        Route::post('/{booking}/course-consent', [\App\Http\Controllers\Specialist\Booking\SpecialistCourseSessionController::class, 'consent'])->name('course-consent');
     });
 
     // no-store: با «برگشت» مرورگر نسخه‌ی کش‌شده‌ی فهرست (اعلان خوانده‌شده هنوز پررنگ) نشان داده نشود
@@ -76,6 +80,8 @@ Route::middleware(['auth', 'verified', 'salon.specialist'])->name('specialist.')
         // ✅ NEW: Route to redirect to notification link
         Route::get('/{id}', [SpecialistNotificationController::class, 'showAndRedirect'])->name('show');
     });
+
+    Route::get('/specialist/course-photos/{photo}', [\App\Http\Controllers\Specialist\Booking\SpecialistCourseSessionController::class, 'photo'])->whereNumber('photo')->name('course-photos.show');
 
     Route::get('/specialist/reports', [SpecialistReportController::class, 'index'])->name('reports.index');
 

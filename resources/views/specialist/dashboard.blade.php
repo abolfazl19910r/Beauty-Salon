@@ -116,7 +116,7 @@
                                 <div class="flex justify-between items-start border-b pb-3" style="border-color: var(--specialist-border);">
                                     <div>
                                         <p class="font-semibold text-[var(--specialist-text)]">{{ $booking->user->name }}</p>
-                                        <p class="text-sm text-[var(--specialist-text-dim)]">{{ $booking->service?->name ?? '—' }}</p>
+                                        <p class="text-sm text-[var(--specialist-text-dim)]">{{ $booking->service?->name ?? '—' }} @if ($__courseLabel = $booking->courseSessionLabel())<span class="text-xs mr-1 px-2 py-0.5 rounded-full" style="background:rgba(201,162,75,0.15); color:#C9A24B;">{{ $__courseLabel }}</span>@endif</p>
                                     </div>
                                     <div class="text-left">
                                         <p class="font-bold text-[var(--specialist-plum-mid)] persian-number" dir="ltr">{{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }}</p>

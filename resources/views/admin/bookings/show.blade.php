@@ -137,6 +137,9 @@
                     <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
                         <span style="color:var(--admin-text-dim);">خدمت</span>
                         <span class="font-medium" style="color:var(--admin-text);">{{ $booking->service?->name ?? '—' ?? '—' }}</span>
+                        @if ($booking->customer_course_id)
+                            <a href="{{ route('admin.courses.show', $booking->customer_course_id) }}" class="text-xs mr-2" style="color:var(--admin-accent);">{{ $booking->courseSessionLabel() }} — دوره</a>
+                        @endif
                     </div>
                     @if($booking->service)
                         <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">

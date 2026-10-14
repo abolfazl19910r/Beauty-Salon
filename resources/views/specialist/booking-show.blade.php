@@ -57,7 +57,9 @@
                             <span class="text-[var(--specialist-plum-muted)]">وضعیت پرداخت:</span>
                             <span class="font-bold {{ $paymentInfo['class'] }}">{{ $paymentInfo['label'] }}</span>
                         </p>
-                        @if($booking->service)
+                        @if($booking->customerCourse)
+                            <p class="text-[var(--specialist-plum-light)] font-bold">جلسه‌ی دوره‌ی درمانی — پولی از مشتری گرفته نمی‌شود</p>
+                        @elseif($booking->service)
                             <p class="text-[var(--specialist-text-dim)] persian-number">
                                 <span class="text-[var(--specialist-plum-muted)]">قیمت کل خدمت:</span>
                                 {{ number_format($booking->service->price) }} تومان
@@ -114,6 +116,10 @@
                 @endif
             </div>
         </div>
+
+        @if($booking->customerCourse)
+            @include('specialist.partials.course-session')
+        @endif
     </div>
 
     {{-- Cancel modal --}}

@@ -29,6 +29,7 @@
                         <div class="flex justify-between">
                             <span style="color: var(--rasta-cream); opacity: 0.6;">خدمت:</span>
                             <span class="font-medium" style="color: var(--rasta-cream);">{{ $booking->service?->name ?? '—' }}</span>
+                            @if ($__courseLabel = $booking->courseSessionLabel())<span class="text-xs mr-1 px-2 py-0.5 rounded-full" style="background:rgba(201,162,75,0.15); color:#C9A24B;">{{ $__courseLabel }}</span>@endif
                         </div>
                         <div class="flex justify-between">
                             <span style="color: var(--rasta-cream); opacity: 0.6;">متخصص:</span>

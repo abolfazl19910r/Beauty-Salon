@@ -245,6 +245,23 @@
                 </a>
                 @endpermission
 
+                {{-- دوره‌های درمانی (بسته‌ی ب): با قفل وقتی در پلن نیست؛ دوره‌های موجود همیشه دیدنی --}}
+                @permission('view-bookings')
+                <a href="{{ route('admin.courses.index') }}"
+                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.courses*') ? 'sidebar-active' : '' }}"
+                   style="{{ request()->routeIs('admin.courses*') ? '' : 'color: var(--admin-text-dim);' }}"
+                   onmouseover="{{ request()->routeIs('admin.courses*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
+                   onmouseout="{{ request()->routeIs('admin.courses*') ? '' : 'this.style.backgroundColor=\"\"' }}">
+                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                    </svg>
+                    دوره‌های درمانی
+                    @unless ($adminSalon?->hasFeature(\App\Support\Features\Feature::TreatmentCourses) ?? true)
+                        <span class="mr-auto text-xs" title="در پلن سالن شما نیست">🔒</span>
+                    @endunless
+                </a>
+                @endpermission
+
                 @permission('view-reviews')
                 <a href="{{ route('admin.reviews.index') }}"
                    class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.reviews*') ? 'sidebar-active' : '' }}"

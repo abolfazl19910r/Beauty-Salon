@@ -37,6 +37,8 @@ class AdminReportsController extends Controller
             'monthlyBreakdown' => $this->reportService->monthlyBreakdown($start, $end),
             'serviceRevenue' => $this->reportService->serviceRevenue($start, $end),
             'paymentBreakdown' => $this->reportService->paymentBreakdown($start, $end),
+            // دوره‌های درمانی (بسته‌ی ب) — فقط اگر سالن تا حالا دوره‌ای فروخته
+            'courses' => \App\Models\CustomerCourse::query()->exists() ? app(\App\Services\Courses\CourseReports::class)->summary($start, $end) : null,
             'startDate' => $startDate,
             'endDate' => $endDate,
             'type' => $type,

@@ -55,9 +55,17 @@ class SpecialistBookingManagementController extends Controller
             abort(403, 'شما اجازه دسترسی به این نوبت را ندارید.');
         }
 
-        $booking->load(['user', 'service', 'specialist']);
+        $booking->load(['user', 'service', 'specialist', 'customerCourse']);
 
-        return view('specialist.booking-show', compact('booking', 'specialist'));
+        // جلسه‌ی دوره‌ی درمانی (بسته‌ی ب): جلسه‌های قبلی همان دوره با یادداشت و عکس
+        $courseSessions = collect();
+        $courseRecords = ['notes' => collect(), 'photos' => collect()];
+        if ($booking->customerCourse) {
+            $courseSessions = $booking->customerCourse->bookings()->with('specialist')->orderBy('booking_time')->get();
+            $courseRecords = app(\App\Services\Courses\CourseSessionRecords::class)->recordsFor($booking->customerCourse);
+        }
+
+        return view('specialist.booking-show', compact('booking', 'specialist', 'courseSessions', 'courseRecords'));
     }
 
     public function complete(Booking $booking): RedirectResponse

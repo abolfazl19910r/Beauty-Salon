@@ -58,6 +58,29 @@ class AdminBookingController extends Controller
 
     public function store(StoreAdminBookingRequest $request): RedirectResponse
     {
+        // مشتری دوره‌ی فعالِ همین خدمت را دارد ← جلسه‌ای از همان دوره (بسته‌ی ب؛ تیک «از دوره کم شود»، پیش‌فرض روشن). مدیر فاصله‌ی
+        // حداقل را دور می‌زند؛ مهلت و پول دوره همچنان رعایت می‌شوند.
+        if ($request->boolean('use_course')) {
+            $course = \App\Models\CustomerCourse::query()->where('user_id', $request->validated('user_id'))
+                ->where('service_id', $request->validated('service_id'))->where('status', 'active')->orderBy('id')->get()
+                ->first(fn (\App\Models\CustomerCourse $c) => $c->bookingBlocker() === null);
+
+            if ($course) {
+                try {
+                    $booking = app(\App\Services\Courses\CourseService::class)->bookSession(
+                        $course, (int) $request->validated('specialist_id'), (string) $request->validated('booking_time'), byStaff: true, source: (string) $request->validated('source'),
+                    );
+                } catch (\App\Services\Courses\CourseException $e) {
+                    return back()->withInput()->with('error', $e->getMessage());
+                } catch (BookingNotAvailableException $e) {
+                    return back()->withInput()->with('error', 'این ساعت برای این متخصص قبلاً رزرو شده است. لطفاً ساعت دیگری انتخاب کنید.');
+                }
+
+                return redirect()->route('admin.bookings.show', $booking)
+                    ->with('success', sprintf('نوبت به‌عنوان %s دوره‌ی «%s» ثبت شد (بدون پرداخت).', $course->sessionLabel((int) $booking->course_session_number), $course->name));
+            }
+        }
+
         try {
             $booking = $this->sharedBookingService->createManualBooking($request->validated());
         } catch (BookingNotAvailableException $e) {
