@@ -53,7 +53,7 @@ export function JalaliDateField({ label, value, onChange, minDate }: { label: st
                       onChange(iso);
                       setOpen(false);
                     }}
-                    style={{ width: `${100 / 7}%`, alignItems: 'center', paddingVertical: space(2), borderRadius: radius.sm, backgroundColor: selected ? p.gold : 'transparent', opacity: disabled ? 0.3 : 1 }}
+                    style={{ width: `${100 / 7}%`, alignItems: 'center', paddingVertical: space(2), borderRadius: radius.sm, backgroundColor: selected ? p.button : 'transparent', opacity: disabled ? 0.3 : 1 }}
                   >
                     <T color={selected ? p.onGold : undefined}>{faDigits(toJ(d).jd)}</T>
                   </Pressable>

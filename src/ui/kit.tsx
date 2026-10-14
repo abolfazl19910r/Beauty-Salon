@@ -89,9 +89,9 @@ type ButtonKind = 'primary' | 'secondary' | 'danger' | 'ghost';
 export function Button({ title, onPress, kind = 'primary', loading, disabled, small }: { title: string; onPress: () => void; kind?: ButtonKind; loading?: boolean; disabled?: boolean; small?: boolean }) {
   const p = usePalette();
   const colors: Record<ButtonKind, { bg: string; fg: string; border: string }> = {
-    primary: { bg: p.gold, fg: p.onGold, border: p.gold },
+    primary: { bg: p.button, fg: p.onGold, border: p.button },
     secondary: { bg: p.surface, fg: p.text, border: p.border },
-    danger: { bg: p.dangerSoft, fg: p.danger, border: p.dangerSoft },
+    danger: { bg: 'transparent', fg: p.danger, border: p.danger },
     ghost: { bg: 'transparent', fg: p.gold, border: 'transparent' },
   };
   const c = colors[kind];
@@ -202,7 +202,7 @@ export function Chip({ label, active, onPress }: { label: string; active: boolea
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: active }}
-      style={{ borderRadius: 99, paddingHorizontal: space(3), paddingVertical: space(1.5), backgroundColor: active ? p.gold : p.surface, borderColor: active ? p.gold : p.border, borderWidth: 1 }}
+      style={{ borderRadius: 99, paddingHorizontal: space(3), paddingVertical: space(1.5), backgroundColor: active ? p.button : p.surface, borderColor: active ? p.button : p.border, borderWidth: 1 }}
     >
       <T size={13} weight="medium" color={active ? p.onGold : p.text}>{label}</T>
     </Pressable>

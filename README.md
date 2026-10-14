@@ -75,7 +75,8 @@ eas build --platform android --profile customer-production   # نهایی
   نوبت‌ها، باشگاه، حساب؛ انتخاب متخصص/روز/ساعت، پیش‌فاکتور، پرداخت و نتیجه‌ی پرداخت، جزئیات و جابه‌جایی نوبت، کیف پول و شارژ،
   اعلان‌ها، درباره‌ی سالن، متخصص‌ها، نام، رمز، دستگاه‌ها، حذف حساب.
 - `src/lib/customer/` — تایپ‌ها و کوئری‌های `/api/v1/customer/*`، تشخیص لینک/QR/کد سالن، سالن ذخیره‌شده و پرداخت در جریان، کارمزد درگاه.
-- آیکون‌ها: `assets/` همکار (زمینه‌ی تیره)، `assets/customer/` مشتری (زمینه‌ی کرم).
+- آیکون‌ها (نشان تازه‌ی برند، ۲۰۲۶-۱۰-۱۴): `assets/` همکار (اسپرسو + نشان «همکار»)، `assets/customer/` مشتری (اسپرسو). سازنده: `docs/brand/generate_brand_assets.py` پروژه‌ی لاراول (برنچ develop) با آرگومان سوم = پوشه‌ی همین اپ.
+- رنگ‌ها (`src/ui/theme.ts`): همان توکن‌های روشن/تیره‌ی لندینگ و پنل‌ها.
 - `src/lib/api.ts` — کلاینت `/api/v1` (قالب `{success, data, meta}` / `{success:false, error:{code, message, fields}}`).
 - `src/lib/session.tsx` — توکن (SecureStore)، ۴۰۱ ← خروج، `salon_inactive` ← صفحه‌ی خودش، `wrong_app` ← خروج.
 - `src/lib/jalali.ts`، `src/lib/format.ts` — شمسی (شنبه تا جمعه)، تومان و ارقام فارسی.

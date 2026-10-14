@@ -9,12 +9,13 @@ const VARIANTS = {
   staff: {
     name: 'ماهرو همکار', slug: 'mahru-staff', package: 'ir.mahru.staff', scheme: 'mahru-staff',
     // هر اپ درخت صفحه‌های خودش را دارد؛ APK فقط صفحه‌های همان نسخه را می‌گیرد (بسته‌ی ۳ب)
+    // نشان تازه‌ی برند (۲۰۲۶-۱۰-۱۴) روی اسپرسو، با نشان «همکار» زیر آن
     routerRoot: './src/app', assets: './assets', background: '#1A1410',
   },
   customer: {
     name: 'ماهرو', slug: 'mahru', package: 'ir.mahru', scheme: 'mahru',
-    // آیکون جدا (تصمیم ۲۰۲۶-۱۰-۱۴): هلال طلایی روی زمینه‌ی کرم، تا کنار «ماهرو همکار» اشتباه گرفته نشود
-    routerRoot: './src/customer', assets: './assets/customer', background: '#F7F0E3',
+    // هر دو اپ روی اسپرسو (راهنمای برند: نشان طلایی روی کرم/بژ نه — تصمیم ۲۰۲۶-۱۰-۱۴)؛ مشتری بدون نشان «همکار»
+    routerRoot: './src/customer', assets: './assets/customer', background: '#1A1410',
   },
 } as const;
 
@@ -49,8 +50,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         backgroundColor: v.background,
         foregroundImage: `${v.assets}/android-icon-foreground.png`,
         backgroundImage: `${v.assets}/android-icon-background.png`,
-        // شکل نشان در هر دو یکی است؛ آیکون تک‌رنگ اندروید ۱۳ مشترک
-        monochromeImage: './assets/android-icon-monochrome.png',
+        // آیکون تک‌رنگ اندروید ۱۳ (همکار با نشان «همکار» بریده‌شده)
+        monochromeImage: `${v.assets}/android-icon-monochrome.png`,
       },
       // expo-camera (اسکن QR سالن، فقط اپ مشتری) مجوز دوربین را در manifest کتابخانه دارد؛ اپ همکار آن را نمی‌خواهد
       blockedPermissions: variant === 'staff' ? ['android.permission.CAMERA', 'android.permission.RECORD_AUDIO'] : ['android.permission.RECORD_AUDIO'],
