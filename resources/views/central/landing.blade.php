@@ -672,7 +672,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 </div>
 <div class="card tile rv d2">
 <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg></div>
-<h3>گزارش و آمار</h3><p>درآمد، پرکارترین پرسنل و محبوب‌ترین خدمات در یک نگاه.</p>
+<h3>گزارش و آمار</h3><p>درآمد، پرکارترین پرسنل و محبوب‌ترین خدمات در یک نگاه.@if ($coursesOffered) فروش دوره‌های درمانی و جلسه‌های پیش‌فروش‌شده‌ی مانده هم جدا دیده می‌شود.@endif</p>
 <div class="vis"><div class="bars"><i style="height:35%"></i><i style="height:52%"></i><i style="height:44%"></i><i style="height:70%"></i><i style="height:62%"></i><i style="height:80%"></i><i style="height:94%"></i></div></div>
 </div>
 <div class="card tile w3 rv">
@@ -782,7 +782,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 <div class="rv">
 <div class="card aud on" role="tabpanel"><div><h3>آرایشگاه و سالن مو</h3><p>رنگ، لایت و کوتاهی زمان‌های متفاوتی می‌خواهند. ماهرو مدت هر خدمت را جدا حساب می‌کند تا تداخلی پیش نیاید.</p></div><ul><li>زمان‌بندی خدمات طولانی مثل رنگ و لایت</li><li>انتخاب آرایشگر مورد علاقه‌ی مشتری</li><li>پیگیری خودکار مشتریانی که مدتی نیامده‌اند</li></ul></div>
 <div class="card aud" role="tabpanel"><div><h3>ناخن و زیبایی</h3><p>نوبت‌های کوتاه و پشت‌سرهم، بدون فاصله‌ی هدررفته و با یادآوری دقیق.</p></div><ul><li>رزرو سریع خدمات کوتاه</li><li>بیعانه برای جلوگیری از غیبت</li><li>پرونده‌ی سلیقه و سابقه‌ی هر مشتری</li></ul></div>
-<div class="card aud" role="tabpanel"><div><h3>پوست، مو و لیزر</h3><p>خدمات طولانی با مدت‌زمان دقیق و متخصص مشخص، بدون تداخل در تقویم.</p></div><ul><li>سابقه‌ی نوبت‌های هر مشتری در پرونده‌اش</li><li>یادآوری پیامکی پیش از هر نوبت</li><li>گزارش دقیق از هر خدمت انجام‌شده</li></ul></div>
+<div class="card aud" role="tabpanel"><div><h3>پوست، مو و لیزر</h3><p>خدمات طولانی با مدت‌زمان دقیق و متخصص مشخص، بدون تداخل در تقویم.</p></div><ul><li>سابقه‌ی نوبت‌های هر مشتری در پرونده‌اش</li><li>یادآوری پیامکی پیش از هر نوبت</li>@if ($coursesOffered)<li>دوره‌های چندجلسه‌ای مثل لیزر ۶ جلسه، با یادآوری خودکار جلسه‌ی بعد</li>@endif<li>گزارش دقیق از هر خدمت انجام‌شده</li></ul></div>
 </div></div></section>
 
 <!-- ============ PRICING ============ -->

@@ -49,6 +49,17 @@ class CentralLandingPageTest extends TestCase
         }
     }
 
+    /** دوره‌های درمانی (بسته‌ی ب) فقط وقتی پلن فروش امکان را دارد؛ برداشتن تیک امکان در پنل سوپرادمین ادعا را برمی‌دارد */
+    public function test_treatment_courses_are_promised_only_when_the_sale_plan_has_them(): void
+    {
+        $plan = \App\Models\Plan::create(['key' => 'full', 'name' => 'کامل', 'price_1m' => 1500000, 'is_active' => true, 'is_public' => true, 'sms_quota_per_month' => 2000]);
+        $plan->syncFeatures(array_diff(\App\Support\Features\Feature::keys(), ['treatment_courses']));
+        $this->get(route('central.home'))->assertOk()->assertDontSee('یادآوری خودکار جلسه‌ی بعد');
+
+        $plan->syncFeatures(\App\Support\Features\Feature::keys());
+        $this->get(route('central.home'))->assertOk()->assertSee('یادآوری خودکار جلسه‌ی بعد');
+    }
+
     public function test_contact_links_appear_only_when_configured(): void
     {
         $this->get(route('central.home'))->assertDontSee('tel:', false)->assertDontSee('>اینستاگرام<', false);

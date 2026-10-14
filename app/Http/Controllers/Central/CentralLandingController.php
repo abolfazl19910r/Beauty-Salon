@@ -79,6 +79,8 @@ class CentralLandingController extends Controller
             'maxSpecialists' => $maxSpecialists,
             'extraSpecialistPrice' => $extraSpecialistPrice,
             'todayLabel' => $this->jalaliLabel(now()),
+            // دوره‌های درمانی (بسته‌ی ب): فقط وقتی پلن فروش امکان را دارد وعده داده می‌شود؛ بدون پلن (پیش از plans:sync-defaults) نه
+            'coursesOffered' => (bool) $salePlan?->hasFeature(\App\Support\Features\Feature::TreatmentCourses),
             'addressPrefix' => $this->addressPrefix($request),
             'addressSuffix' => $this->addressSuffix(),
             // راه‌های تماس از «تنظیمات پلتفرم» سوپرادمین (پیش‌فرض .env)؛ خالی = پنهان
