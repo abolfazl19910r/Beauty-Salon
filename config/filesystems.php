@@ -13,6 +13,15 @@ return [
             'throw' => false,
         ],
 
+        // عکس قبل/بعد جلسه‌های دوره‌ی درمانی (بسته‌ی ب، ۲۰۲۶-۱۰-۱۴): داده‌ی حساس چهره/پوست — هرگز public، بدون serve؛
+        // فقط CoursePhotoController با مجوز (کادر همان سالن یا خود مشتری) فایل را می‌فرستد.
+        'course_photos' => [
+            'driver' => 'local',
+            'root' => storage_path('app/course-photos'),
+            'serve' => false,
+            'throw' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

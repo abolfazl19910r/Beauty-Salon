@@ -15,7 +15,10 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class EnsureSalonFeature
 {
-    public function handle(Request $request, Closure $next, string $feature): Response
+    /**
+     * @param  string|null  $mode  «hide» برای صفحه‌های مشتری: بدون امکان ← 404 (نه صفحه‌ی صورتحساب مدیر)
+     */
+    public function handle(Request $request, Closure $next, string $feature, ?string $mode = null): Response
     {
         $feature = Feature::from($feature);
         $salon = app(CurrentSalon::class)->get();
@@ -25,6 +28,10 @@ class EnsureSalonFeature
         }
 
         $message = sprintf('«%s» در پلن سالن شما نیست.', $feature->label());
+
+        if ($mode === 'hide') {
+            abort(404);
+        }
 
         if ($request->expectsJson() || $request->is('api/*')) {
             return response()->json(['code' => 'feature_unavailable', 'feature' => $feature->value, 'message' => $message], 403);

@@ -60,6 +60,7 @@ class TenantModelClassificationTest extends TestCase
         'PlatformSetting' => 'تنظیم سطح پلتفرم (سوپرادمین)',
         'Plan' => 'پلن اشتراک، سطح پلتفرم (سوپرادمین)',
         'PlanFeature' => 'امکان یک پلن، از رابطه‌ی پلن',
+        'CourseReminder' => 'ثبت یادآوری یک دوره؛ از رابطه‌ی دوره (دستور courses:remind با salon_id صریح)',
         'SalonFeatureOverride' => 'استثنای سوپرادمین؛ FeatureResolver همیشه با salon_id صریح می‌خواند',
         'SupportTicket' => 'تیکت سالن به پلتفرم',
         'SupportTicketMessage' => 'از رابطه‌ی تیکت',

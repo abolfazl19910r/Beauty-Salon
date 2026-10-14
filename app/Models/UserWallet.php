@@ -34,7 +34,7 @@ class UserWallet extends Model
         return $this->hasMany(UserWalletTransaction::class, 'wallet_id');
     }
 
-    public function addRefund(float $amount, int $bookingId, ?string $description = null): UserWalletTransaction
+    public function addRefund(float $amount, ?int $bookingId, ?string $description = null, array $metadata = []): UserWalletTransaction
     {
         $this->increment('balance', $amount);
 
@@ -44,12 +44,13 @@ class UserWallet extends Model
             'amount' => $amount,
             'balance_after' => $this->balance,
             'description' => $description ?? "بازگشت وجه از نوبت #{$bookingId}",
+            'metadata' => $metadata ?: null,
         ]);
 
         return $transaction;
     }
 
-    public function deductPayment(float $amount, int $bookingId, ?string $description = null): UserWalletTransaction
+    public function deductPayment(float $amount, ?int $bookingId, ?string $description = null, array $metadata = []): UserWalletTransaction
     {
         if ($amount > $this->balance) {
             throw new \Exception('موجودی کافی نیست');
@@ -64,6 +65,7 @@ class UserWallet extends Model
             'amount' => -$amount,
             'balance_after' => $this->balance,
             'description' => $description ?? "پرداخت برای نوبت #{$bookingId}",
+            'metadata' => $metadata ?: null,
         ]);
 
         return $transaction;

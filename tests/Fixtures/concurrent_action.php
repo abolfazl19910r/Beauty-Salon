@@ -85,6 +85,18 @@ try {
             }
             break;
 
+        case 'book-course-session': // course_id specialist_id booking_time — رزرو جلسه‌ی دوره‌ی درمانی (بسته‌ی ب)
+            [$courseId, $specialistId, $time] = $args;
+            $course = App\Models\CustomerCourse::withoutGlobalScopes()->findOrFail((int) $courseId);
+            $inSalon($course->salon_id);
+            try {
+                $booking = $app->make(App\Services\Courses\CourseService::class)->bookSession($course, (int) $specialistId, $time);
+                echo 'booking:'.$booking->id;
+            } catch (App\Services\Courses\CourseException) {
+                echo 'rejected';
+            }
+            break;
+
         default:
             echo 'error:unknown action '.$action;
     }

@@ -40,6 +40,13 @@ class BookingRescheduleController extends Controller
             return redirect()->route('bookings.show', $booking)
                 ->with('success', $successMessage);
 
+        } catch (\App\Services\Courses\CourseException $e) {
+            // جلسه‌ی دوره‌ی درمانی خارج از بازه‌ی مجاز دوره (بسته‌ی ب)
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+            }
+
+            return back()->with('error', $e->getMessage());
         } catch (\App\Exceptions\BookingNotAvailableException) {
             if ($request->expectsJson()) {
                 return response()->json(['success' => false, 'message' => 'زمان انتخاب شده در دسترس نیست.'], 409);

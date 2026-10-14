@@ -325,6 +325,73 @@ class PaymentService
     }
 
     /**
+     * پرداخت دوره‌ی درمانی (بسته‌ی ب): کل، پیش‌پرداخت یا باقی. همان درگاه‌های سالن و همان سهم کیف پول روی تراکنش.
+     *
+     * @param  float  $walletToman  سهمی که CoursePaymentService پیش از این از کیف پول کم کرده است
+     */
+    public function createCoursePayment(\App\Models\CustomerCourse $course, float $gatewayToman, ?int $preferredGatewayId, float $walletToman, string $callbackUrl): array
+    {
+        if (! $this->isAvailable()) {
+            return $this->unavailableResult();
+        }
+
+        $user = $course->user;
+        $request = GatewayStartRequest::fromToman(
+            $gatewayToman,
+            $callbackUrl,
+            sprintf('دوره‌ی درمانی «%s» - شماره %d', mb_substr($course->name, 0, 60), $course->id),
+            $user?->phone ?? '',
+            $user?->email ?? '',
+            'C'.$course->id,
+        );
+
+        return $this->startWith($request, 'course_gateway_'.$course->id, $preferredGatewayId, ['customer_course_id' => $course->id], 'course', $course, $course->user_id, $walletToman);
+    }
+
+    /**
+     * تأیید پرداخت دوره با تراکنش tx (همین سالن، purpose=course). بدون tx معتبر کاری انجام نمی‌شود.
+     *
+     * @return array{success: bool, transaction: ?\App\Models\PaymentTransaction, message?: string, ref_id?: ?string, already?: bool}
+     */
+    public function verifyCoursePayment($request): array
+    {
+        $transaction = $this->transactionFrom($request, 'course');
+        if (! $transaction) {
+            return ['success' => false, 'transaction' => null, 'message' => 'پرداخت پیدا نشد.'];
+        }
+        if ($transaction->isPaid()) {
+            return ['success' => true, 'transaction' => $transaction, 'ref_id' => $transaction->ref_id, 'already' => true];
+        }
+        if ($transaction->status === 'reconciling') {
+            return ['success' => false, 'transaction' => $transaction, 'message' => 'وضعیت این پرداخت در حال بررسی خودکار است؛ نتیجه با پیامک اطلاع داده می‌شود.'];
+        }
+        if (in_array($transaction->status, \App\Models\PaymentTransaction::REVERSAL_STATUSES, true)) {
+            return ['success' => false, 'transaction' => $transaction, 'message' => 'مبلغ این پرداخت قبلاً به شما برگشت داده شده است.'];
+        }
+        if (! $transaction->gateway) {
+            return ['success' => false, 'transaction' => $transaction, 'message' => \App\Support\ZarinpalMerchant::CUSTOMER_MESSAGE];
+        }
+
+        try {
+            $result = $this->manager()->verify($transaction->gateway, new GatewayVerifyRequest(
+                $transaction->amount_rial,
+                $request instanceof \Illuminate\Http\Request ? $request->all() : (array) $request,
+                $transaction->token,
+                $transaction->id,
+            ));
+        } catch (\Exception $e) {
+            Log::error('💥 Course Payment Verification Exception', ['transaction_id' => $transaction->id, 'error' => $e->getMessage()]);
+
+            return ['success' => false, 'transaction' => $transaction, 'message' => 'خطا در تایید پرداخت'];
+        }
+        $this->recordVerification($transaction, $result);
+
+        return $result->success
+            ? ['success' => true, 'transaction' => $transaction->fresh(), 'ref_id' => $result->refId, 'card_pan' => $result->cardPan, 'gateway' => $transaction->driver]
+            : ['success' => false, 'transaction' => $transaction->fresh(), 'message' => $result->message ?? 'پرداخت ناموفق بود'];
+    }
+
+    /**
      * @param  string|null  $callbackUrl  پیش‌فرض صفحه‌ی وب؛ اپ موبایل مسیر برگشت به اپ را می‌دهد
      */
     public function createWalletChargePayment($user, $amount, ?int $preferredGatewayId = null, ?string $callbackUrl = null): array

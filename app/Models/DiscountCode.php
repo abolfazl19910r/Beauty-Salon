@@ -20,9 +20,11 @@ class DiscountCode extends Model
         'is_active',
         'user_id',
         'max_amount',
+        'valid_for_courses',
     ];
 
     protected $casts = [
+        'valid_for_courses' => 'boolean',
         'is_active' => 'boolean',
         'amount' => 'decimal:2',
         'max_amount' => 'decimal:2',

@@ -17,6 +17,8 @@ class Booking extends Model
     protected $table = 'bookings';
 
     protected $casts = [
+        'course_session_burned' => 'boolean',
+        'course_income_at' => 'datetime',
         'booking_time' => 'datetime',
         'payment_details' => 'array',
         'refund_details' => 'array',
@@ -51,6 +53,10 @@ class Booking extends Model
         'refunded_amount',
         'refund_reference',
         'refund_details',
+        'customer_course_id',
+        'course_session_number',
+        'course_session_burned',
+        'course_income_at',
     ];
 
     public function user(): BelongsTo
@@ -97,8 +103,36 @@ class Booking extends Model
             ->where('created_at', '>', now()->subMinutes(PaymentTransaction::PENDING_LIFETIME_MINUTES)));
     }
 
+    /** دوره‌ی درمانی‌ای که این نوبت جلسه‌ای از آن است (بسته‌ی ب) */
+    public function customerCourse(): BelongsTo
+    {
+        return $this->belongsTo(CustomerCourse::class);
+    }
+
+    public function isCourseSession(): bool
+    {
+        return $this->customer_course_id !== null;
+    }
+
+    /** «جلسه‌ی ۳ از ۶» برای کارت/فهرست نوبت؛ null برای نوبت عادی */
+    public function courseSessionLabel(): ?string
+    {
+        if (! $this->customer_course_id || ! $this->course_session_number) {
+            return null;
+        }
+
+        $course = $this->customerCourse()->withoutGlobalScopes()->first();
+
+        return $course ? $course->sessionLabel((int) $this->course_session_number) : null;
+    }
+
     public function getRemainingAmountAttribute(): float
     {
+        // جلسه‌ی دوره پولش را با خرید دوره داده — چیزی در سالن پرداخت نمی‌شود
+        if ($this->customer_course_id !== null) {
+            return 0.0;
+        }
+
         if (! $this->service) {
             return 0.0;
         }

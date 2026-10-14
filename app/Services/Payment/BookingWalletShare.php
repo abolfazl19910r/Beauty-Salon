@@ -70,7 +70,6 @@ class BookingWalletShare
             return 0.0;
         }
 
-        $bookingId = (int) $transaction->payable_id;
         $user = User::find($transaction->user_id);
         if (! $user) {
             Log::error('Wallet share could not be returned: the customer no longer exists', ['transaction_id' => $transaction->id, 'toman' => $toman]);
@@ -78,6 +77,14 @@ class BookingWalletShare
             return 0.0;
         }
 
+        // پرداخت دوره‌ی درمانی (بسته‌ی ب) هم همین سهم کیف پول را دارد؛ payable آن دوره است نه نوبت
+        if ($transaction->purpose === 'course') {
+            $user->getOrCreateWallet()->addRefund($toman, null, "بازگشت سهم کیف پول پرداخت دوره — {$reason}", ['customer_course_id' => (int) $transaction->payable_id]);
+
+            return $toman;
+        }
+
+        $bookingId = (int) $transaction->payable_id;
         $user->getOrCreateWallet()->addRefund($toman, $bookingId, "بازگشت سهم کیف پول نوبت #{$bookingId} — {$reason}");
 
         return $toman;

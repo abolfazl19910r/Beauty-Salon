@@ -55,6 +55,11 @@ class BookingObserver
                 $this->handlePaymentStatusChange($booking);
             }
 
+            // جلسه‌ی دوره‌ی درمانی انجام شد: یک جلسه مصرف و درآمد متخصص (بسته‌ی ب)
+            if ($booking->wasChanged('status') && $booking->status === 'completed' && $booking->customer_course_id) {
+                app(\App\Services\Courses\CourseService::class)->onBookingCompleted($booking);
+            }
+
             if ($booking->wasChanged('status') && $booking->status === 'cancelled') {
                 // سهم کیف پولِ پرداخت ترکیبی نیمه‌کاره (مشتری از بانک برنگشت، لغو خودکار/دستی) — ۲۰۲۶-۱۰-۱۱
                 if ($booking->payment_status !== 'paid') {
@@ -108,8 +113,25 @@ class BookingObserver
 
         $this->addIncomeAndCommission($booking);
 
+        $this->notifyPaidBooking($booking);
+
+        try {
+            $this->addLoyaltyPoints($booking);
+        } catch (\Exception $e) {
+            Log::error('❌ Failed to add loyalty points', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * پیامک/اعلان نوبتِ تازه پرداخت‌شده: تأیید یا «منتظر تایید» به مشتری، نوبت تازه به متخصص. جلسه‌ی دوره‌ی درمانی که با
+     * پرداخت‌شده ساخته می‌شود (بدون گذار payment_status) هم همین را از CourseService صدا می‌زند.
+     */
+    public function notifyPaidBooking(Booking $booking): void
+    {
         $specialist = $booking->specialist;
-        $isAutoConfirm = $specialist->auto_confirm_bookings ?? false;
 
         try {
             if ($booking->status === 'confirmed') {
@@ -121,15 +143,6 @@ class BookingObserver
             }
         } catch (\Exception $e) {
             Log::error('❌ Failed to send payment notifications', [
-                'booking_id' => $booking->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
-
-        try {
-            $this->addLoyaltyPoints($booking);
-        } catch (\Exception $e) {
-            Log::error('❌ Failed to add loyalty points', [
                 'booking_id' => $booking->id,
                 'error' => $e->getMessage(),
             ]);
@@ -146,7 +159,12 @@ class BookingObserver
 
         Cache::put($cacheKey, true, 300);
 
-        $this->handleCancellation($booking);
+        // جلسه‌ی دوره پیش‌پرداخت جدا ندارد (پول روی دوره است): برگشت/جریمه‌ی نوبت عادی نه؛ فقط شمارش جلسه (بسته‌ی ب)
+        if ($booking->customer_course_id) {
+            app(\App\Services\Courses\CourseService::class)->onBookingCancelled($booking);
+        } else {
+            $this->handleCancellation($booking);
+        }
 
         $this->sendCancellationSMS($booking);
     }

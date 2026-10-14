@@ -32,7 +32,7 @@ enum Feature: string
     /** باشگاه مشتریان: امتیاز تازه و مدیریت پاداش‌ها (امتیاز گرفته‌شده‌ی مشتری قابل استفاده می‌ماند) */
     case Loyalty = 'loyalty';
 
-    /** دوره‌های درمانی چندجلسه‌ای (بسته‌ی ب، هنوز پیاده نشده) */
+    /** دوره‌های درمانی چندجلسه‌ای (بسته‌ی ب): پنل مدیر، فروش در وب/اپ، یادآوری جلسه‌ی بعد. دوره‌های فعال موجود با خاموش شدن کار می‌کنند */
     case TreatmentCourses = 'treatment_courses';
 
     /** پرداخت آنلاین مشتری از درگاه سالن (پیش‌پرداخت نوبت، شارژ کیف پول)؛ خاموش = مثل سالن بدون درگاه */
@@ -97,7 +97,7 @@ enum Feature: string
     /** تیکش ذخیره می‌شود ولی خود امکان هنوز در کد نیست (بسته‌های ب و ج) */
     public function isComingSoon(): bool
     {
-        return in_array($this, [self::WinbackManual, self::TreatmentCourses], true);
+        return $this === self::WinbackManual;
     }
 
     /** @return array<string, list<self>> گروه ← امکانات، به ترتیب تعریف */

@@ -17,6 +17,7 @@ class DiscountUsage extends Model
         'discount_code_id',
         'user_id',
         'booking_id',
+        'customer_course_id',
         'amount_saved',
     ];
 

@@ -39,6 +39,19 @@ class BookingRescheduleService
             );
         }
 
+        // جلسه‌ی دوره‌ی درمانی (بسته‌ی ب): فقط در بازه‌ی مجاز همان دوره (فاصله‌ی حداقل از جلسه‌ی قبلی، تا پایان مهلت)
+        if ($booking->customer_course_id && ($course = \App\Models\CustomerCourse::withoutGlobalScopes()->find($booking->customer_course_id))) {
+            $at = \Illuminate\Support\Carbon::parse($bookingTime);
+            if ($course->expires_at && $at->gt($course->expires_at)) {
+                throw new \App\Services\Courses\CourseException('این زمان بعد از پایان مهلت دوره است.');
+            }
+            // فقط جلسه‌های پیش از این جلسه (نه جلسه‌های بعدی که شاید از قبل رزرو شده‌اند)
+            $earliest = $course->earliestNextSession($booking->id, \Illuminate\Support\Carbon::parse($booking->booking_time));
+            if ($at->lt($earliest)) {
+                throw new \App\Services\Courses\CourseException(sprintf('جلسه‌ی دوره زودتر از %s ممکن نیست.', verta($earliest)->format('Y/m/d')));
+            }
+        }
+
         DB::transaction(function () use ($booking, $bookingTime) {
             // کل مدت خدمت با نوبت‌های دیگر، استراحت و ساعت کاری؛ با قفل ردیف متخصص (۲۰۲۶-۱۰-۰۱)
             $this->bookingService->assertBookingFits((int) $booking->specialist_id, $bookingTime, (int) $booking->service_id, $booking->id);

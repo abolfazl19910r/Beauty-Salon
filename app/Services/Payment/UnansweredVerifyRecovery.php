@@ -31,7 +31,7 @@ class UnansweredVerifyRecovery
 {
     public const DRIVERS = ['zarinpal', 'zibal', 'vandar', 'asanpardakht'];
 
-    public const PURPOSES = ['booking', 'wallet_charge'];
+    public const PURPOSES = ['booking', 'wallet_charge', 'course'];
 
     public function __construct(private readonly GatewayManager $gateways) {}
 
@@ -119,15 +119,18 @@ class UnansweredVerifyRecovery
     private function credit(PaymentTransaction $tx, ?string $refId, ?string $cardPan, array $response, string $via): void
     {
         $user = User::find($tx->user_id);
-        $isBooking = $tx->purpose === 'booking';
+        // نوبت و دوره: پول تأییدشده ولی ثبت‌نشده → کل مبلغ به کیف پول؛ شارژ: همان شارژ
+        $isBooking = in_array($tx->purpose, ['booking', 'course'], true);
+        $bookingId = $tx->purpose === 'booking' ? (int) $tx->payable_id : null;
         // نوبت: کل مبلغی که مشتری داد (با کارمزد) برمی‌گرده. شارژ: همون مبلغ شارژ (مثل callback موفق)، بدون کارمزد درگاه.
         $toman = $isBooking ? intdiv((int) $tx->amount_rial, 10) : intdiv((int) $tx->amount_rial - (int) $tx->fee_rial, 10);
 
-        DB::transaction(function () use ($tx, $refId, $cardPan, $response, $user, $isBooking, $toman, $via) {
+        DB::transaction(function () use ($tx, $refId, $cardPan, $response, $user, $isBooking, $bookingId, $toman, $via) {
             if ($user && $toman > 0) {
                 $wallet = $user->getOrCreateWallet();
                 if ($isBooking) {
-                    $wallet->addRefund($toman, (int) $tx->payable_id, 'بازگشت وجه نوبت #'.$tx->payable_id.($via === 'manual' ? ' — ثبت دستی مدیر پس از بررسی درگاه' : ' — تایید پرداخت با تأخیر از درگاه رسید'));
+                    $wallet->addRefund($toman, $bookingId, ($bookingId ? 'بازگشت وجه نوبت #'.$bookingId : 'بازگشت وجه پرداخت دوره').($via === 'manual' ? ' — ثبت دستی مدیر پس از بررسی درگاه' : ' — تایید پرداخت با تأخیر از درگاه رسید'),
+                        $bookingId ? [] : ['customer_course_id' => (int) $tx->payable_id]);
                 } else {
                     $wallet->increment('balance', $toman);
                     $wallet->increment('total_deposited', $toman);
@@ -156,12 +159,12 @@ class UnansweredVerifyRecovery
             0,
             $toman,
             Salon::find($tx->salon_id),
-            $isBooking ? (int) $tx->payable_id : null,
+            $bookingId,
         ));
 
         Log::warning('Unanswered payment credited to the customer wallet', [
             'via' => $via, 'transaction_id' => $tx->id, 'driver' => $tx->driver, 'purpose' => $tx->purpose, 'wallet_toman' => $toman,
-            'booking_status' => $isBooking ? Booking::find($tx->payable_id)?->payment_status : null,
+            'booking_status' => $bookingId ? Booking::find($bookingId)?->payment_status : null,
         ]);
     }
 }
