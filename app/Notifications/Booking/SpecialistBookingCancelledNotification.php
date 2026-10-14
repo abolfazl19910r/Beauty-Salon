@@ -57,7 +57,7 @@ class SpecialistBookingCancelledNotification extends Notification implements Sho
     {
         $message = \App\Support\Sms\SmsText::cancelledForSpecialist($this->booking, $this->cancelledBy);
 
-        return app(SMSService::class)->send($notifiable->phone, $message, $this->booking->salon_id);
+        return app(SMSService::class)->send($notifiable->phone, $message, $this->booking->salon_id, \App\Support\Features\Feature::SmsStaff);
     }
 
     /**

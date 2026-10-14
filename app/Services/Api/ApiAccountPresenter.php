@@ -26,6 +26,7 @@ class ApiAccountPresenter
                 'name' => $salon->name,
                 'logo_url' => $salon->logoUrl(),
                 'public_url' => $salon->publicUrl(),
+                'features' => $salon->enabledFeatureKeys(),
             ],
         ];
 

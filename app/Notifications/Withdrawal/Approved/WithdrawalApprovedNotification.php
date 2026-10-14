@@ -49,6 +49,6 @@ class WithdrawalApprovedNotification extends Notification implements ShouldQueue
     {
         $message = \App\Support\Sms\SmsText::withdrawalApproved((float) $this->withdrawalRequest->net_amount, (string) $this->withdrawalRequest->reference_code);
 
-        return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId());
+        return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId(), \App\Support\Features\Feature::SmsStaff);
     }
 }

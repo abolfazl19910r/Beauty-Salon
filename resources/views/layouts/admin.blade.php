@@ -304,6 +304,9 @@
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                     </svg>
                     امتیازات
+                    @unless ($adminSalon?->hasFeature(\App\Support\Features\Feature::Loyalty) ?? true)
+                        <span class="mr-auto text-xs" title="در پلن سالن شما نیست">🔒</span>
+                    @endunless
                 </a>
                 @endpermission
 
@@ -317,6 +320,9 @@
                         <path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path>
                     </svg>
                     پیگیری مشتریان غایب
+                    @unless ($adminSalon?->hasFeature(\App\Support\Features\Feature::Winback) ?? true)
+                        <span class="mr-auto text-xs" title="در پلن سالن شما نیست">🔒</span>
+                    @endunless
                 </a>
                 @endpermission
 

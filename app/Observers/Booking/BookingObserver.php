@@ -441,7 +441,7 @@ class BookingObserver
             return;
         }
 
-        $this->smsService->send($booking->user->phone, $message, $booking->salon_id);
+        $this->smsService->send($booking->user->phone, $message, $booking->salon_id, \App\Support\Features\Feature::SmsCustomer);
     }
 
     protected function sendSpecialistCancellationSMS(Booking $booking, string $cancelledBy): void
@@ -456,7 +456,7 @@ class BookingObserver
         $penalty = $cancelledBy === 'specialist' ? (float) ($booking->refund_details['specialist_penalty'] ?? 0) : 0.0;
         $message = \App\Support\Sms\SmsText::cancelledForSpecialist($booking, $cancelledBy, $penalty);
 
-        $this->smsService->send($specialist->phone, $message, $booking->salon_id);
+        $this->smsService->send($specialist->phone, $message, $booking->salon_id, \App\Support\Features\Feature::SmsStaff);
     }
 
     protected function sendCustomerConfirmationSMS(Booking $booking): void
@@ -468,7 +468,7 @@ class BookingObserver
             return;
         }
 
-        $this->smsService->send($booking->user->phone, $message, $booking->salon_id);
+        $this->smsService->send($booking->user->phone, $message, $booking->salon_id, \App\Support\Features\Feature::SmsCustomer);
     }
 
     protected function sendCustomerPendingSMS(Booking $booking): void
@@ -480,7 +480,7 @@ class BookingObserver
             return;
         }
 
-        $this->smsService->send($booking->user->phone, $message, $booking->salon_id);
+        $this->smsService->send($booking->user->phone, $message, $booking->salon_id, \App\Support\Features\Feature::SmsCustomer);
     }
 
     /** پیام ربات به مشتری نوبت؛ خطای ربات هیچ‌وقت جلوی پیامک را نمی‌گیرد. */

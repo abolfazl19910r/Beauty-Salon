@@ -28,6 +28,11 @@ class AdminSalonSettingsController extends Controller
     {
         $salon = app(CurrentSalon::class)->get();
 
+        // لوگوی تازه فقط با امکان «لوگوی اختصاصی» پلن؛ حذف لوگوی قبلی همیشه مجاز (بسته‌ی پلن‌ها)
+        if ($request->hasFile('logo') && ! $salon->hasFeature(\App\Support\Features\Feature::CustomLogo)) {
+            return back()->withInput()->withErrors(['logo' => 'لوگوی اختصاصی در پلن سالن شما نیست.']);
+        }
+
         $salon->update([
             'name' => $request->validated('name'),
             'sms_name' => $request->validated('sms_name') ?: null,

@@ -53,6 +53,8 @@ class CustomerPresenter
             'working_hours' => $salon->workingHoursLines(),
             'experience_years' => $salon->experienceYears(),
             'online_payment' => $salon->acceptsOnlinePayments(),
+            // امکانات روشن پلن سالن (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴) تا اپ دکمه‌ها را پنهان/قفل کند
+            'features' => $salon->enabledFeatureKeys(),
             'rules' => [
                 'prepayment_percentage' => (float) $settings->prepayment_percentage,
                 'minimum_prepayment' => (float) $settings->minimum_prepayment_amount,

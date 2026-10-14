@@ -7,6 +7,7 @@ use App\Notifications\Sms\SmsQuotaExhaustedNotification;
 use App\Repositories\Contracts\SalonRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Sms\SmsQuotaService;
+use App\Support\Features\Feature;
 use App\Support\SmsParts;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -30,8 +31,14 @@ class SMSService
      * که واقعاً به سالن مشخصی وصل‌اند (پیامک‌های نوبت، یادآوری، ورود) باید صریحاً salon_id را پاس
      * بدهند تا واقعاً محافظت بشوند.
      */
-    public function send(string $mobile, string $message, ?int $salonId = null): bool
+    public function send(string $mobile, string $message, ?int $salonId = null, ?Feature $feature = null): bool
     {
+        // امکان پلن (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴): پیش از سهمیه — پیامکی که پلن سالن ندارد ساخته و شمرده نمی‌شود. فقط پیامک‌های
+        // سالن که دسته‌شان را می‌گویند گیت می‌شوند؛ کد تأیید، هشدارهای پلتفرم و برگشت پول $feature ندارند و هرگز بسته نمی‌شوند.
+        if ($salonId !== null && $feature !== null && ! $this->featureAllows($salonId, $feature)) {
+            return false;
+        }
+
         if ($salonId !== null && ! $this->consumeQuotaOrNotify($salonId, SmsParts::count($message))) {
             return false;
         }
@@ -163,6 +170,18 @@ class SMSService
      * تا یک salon_id نامعتبر/قدیمی هیچ پیامک واقعی‌ای را بی‌صدا قطع نکند؛ این حالت خودش در لاگ
      * ثبت می‌شود تا قابل پیگیری باشد.
      */
+    /** آیا پلن سالن این دسته پیامک را دارد؟ خاموش = یک خط لاگ feature_blocked، بدون پیامک و بدون مصرف سهمیه */
+    public function featureAllows(int $salonId, Feature $feature): bool
+    {
+        if (Salon::featureEnabledFor($salonId, $feature)) {
+            return true;
+        }
+
+        Log::info('SMS: feature_blocked', ['salon_id' => $salonId, 'feature' => $feature->value]);
+
+        return false;
+    }
+
     private function consumeQuotaOrNotify(int $salonId, int $parts = 1): bool
     {
         $salon = app(SalonRepositoryInterface::class)->find($salonId);

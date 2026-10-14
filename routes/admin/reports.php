@@ -11,7 +11,8 @@ Route::prefix('reports')->name('reports.')->group(function () {
     Route::get('/', [AdminReportsController::class, 'index'])->name('index');
 
     // ── Export (async — just creates a record and queues the Job) ──
-    Route::post('/export', [AdminReportExportController::class, 'export'])->name('export');
+    // ساخت خروجی فقط با امکان پلن؛ خروجی‌های قبلی قابل دیدن/دانلود می‌مانند (بسته‌ی پلن‌ها)
+    Route::post('/export', [AdminReportExportController::class, 'export'])->middleware('feature:reports_export')->name('export');
     Route::get('/exports', [AdminReportExportController::class, 'index'])->name('exports.index');
     Route::get('/exports/{reportExport}/download', [AdminReportExportController::class, 'download'])->name('exports.download');
 

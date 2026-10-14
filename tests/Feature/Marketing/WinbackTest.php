@@ -45,9 +45,9 @@ class WinbackTest extends TestCase
                 parent::__construct();
             }
 
-            public function send(string $mobile, string $message, ?int $salonId = null): bool
+            public function send(string $mobile, string $message, ?int $salonId = null, ?\App\Support\Features\Feature $feature = null): bool
             {
-                $ok = parent::send($mobile, $message, $salonId);
+                $ok = parent::send($mobile, $message, $salonId, $feature);
                 if ($ok) {
                     $this->log[] = [$mobile, $message, $salonId];
                 }

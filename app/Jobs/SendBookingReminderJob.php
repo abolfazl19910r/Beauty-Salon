@@ -66,8 +66,13 @@ class SendBookingReminderJob implements ShouldQueue
         $bot->send($booking->user, $customerMessage, null, $booking->salon_id);
         $bot->send($booking->specialist, $specialistMessage, null, $booking->salon_id);
 
-        $customerSent = $smsService->send($booking->user->phone, $customerMessage, $booking->salon_id);
-        $specialistSent = $smsService->send($booking->specialist->phone, $specialistMessage, $booking->salon_id);
+        $customerSent = $smsService->send($booking->user->phone, $customerMessage, $booking->salon_id, \App\Support\Features\Feature::SmsReminders);
+        $specialistSent = $smsService->send($booking->specialist->phone, $specialistMessage, $booking->salon_id, \App\Support\Features\Feature::SmsReminders);
+
+        // یادآوری پیامکی در پلن سالن نیست (بسته‌ی پلن‌ها) — نفرستادن عمدی است، نه خطا
+        if (! \App\Models\Salon::featureEnabledFor($booking->salon_id, \App\Support\Features\Feature::SmsReminders)) {
+            return;
+        }
 
         if (! $customerSent || ! $specialistSent) {
             Log::error('SendBookingReminderJob: یکی از دو پیامک یادآوری ارسال نشد', [

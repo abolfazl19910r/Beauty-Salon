@@ -133,6 +133,21 @@ class NotificationEvents
     /**
      * فهرست تخت تمام کلیدهای معتبر (برای اعتبارسنجی ورودی فرم تنظیمات).
      */
+    /**
+     * دسته‌ی امکان پلن برای پیامکِ این رویداد (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴) — همان دسته‌ای که فرستنده به SMSService::send می‌دهد.
+     * null = پیامکی که هرگز پشت امکان نمی‌رود (هشدارهای سهمیه و «نیاز به بررسی»).
+     */
+    public static function smsFeature(string $eventKey): ?\App\Support\Features\Feature
+    {
+        if (str_starts_with($eventKey, 'sms.') || str_contains($eventKey, '.attention.')) {
+            return null;
+        }
+
+        return str_ends_with($eventKey, '.customer') || $eventKey === self::BOOKING_COMPLETED_REVIEW_REQUEST
+            ? \App\Support\Features\Feature::SmsCustomer
+            : \App\Support\Features\Feature::SmsStaff;
+    }
+
     public static function allKeys(): array
     {
         $keys = [];

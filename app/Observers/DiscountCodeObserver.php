@@ -20,7 +20,7 @@ class DiscountCodeObserver
                 \App\Models\Salon::withoutGlobalScopes()->find($discountCode->salon_id)
             );
 
-            $this->smsService->send($discountCode->user->phone, $message, $discountCode->salon_id);
+            $this->smsService->send($discountCode->user->phone, $message, $discountCode->salon_id, \App\Support\Features\Feature::SmsCustomer);
         }
 
         $this->cacheService->flush();
@@ -37,7 +37,7 @@ class DiscountCodeObserver
             if ($discountCode->user_id && $discountCode->user && $discountCode->user->phone) {
                 $message = \App\Support\Sms\SmsText::discountCodeUsedUp((string) $discountCode->code, \App\Models\Salon::withoutGlobalScopes()->find($discountCode->salon_id));
 
-                $this->smsService->send($discountCode->user->phone, $message, $discountCode->salon_id);
+                $this->smsService->send($discountCode->user->phone, $message, $discountCode->salon_id, \App\Support\Features\Feature::SmsCustomer);
             }
         }
 

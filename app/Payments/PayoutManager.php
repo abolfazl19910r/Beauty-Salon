@@ -31,6 +31,11 @@ class PayoutManager
 
     public function driverFor(?Salon $salon): ?PayoutDriver
     {
+        // «تسویه‌ی خودکار متخصص» در پلن سالن نیست ← فقط تسویه‌ی دستی (بسته‌ی پلن‌ها)
+        if ($salon?->exists && ! $salon->hasFeature(\App\Support\Features\Feature::SpecialistPayouts)) {
+            return null;
+        }
+
         $gateway = $this->gatewayFor($salon);
 
         return $gateway ? $this->driver($gateway) : null;

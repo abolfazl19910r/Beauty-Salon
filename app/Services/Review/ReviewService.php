@@ -51,7 +51,7 @@ class ReviewService
 
             $message = \App\Support\Sms\SmsText::reviewRequest($booking, $reviewUrl);
 
-            $sent = $this->smsService->send($booking->user->phone, $message, $booking->salon_id);
+            $sent = $this->smsService->send($booking->user->phone, $message, $booking->salon_id, \App\Support\Features\Feature::SmsCustomer);
 
             if ($sent) {
                 $this->bookingRepository->update($booking, ['review_sent_at' => now()]);

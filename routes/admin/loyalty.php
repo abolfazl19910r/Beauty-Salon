@@ -5,7 +5,7 @@ use App\Http\Controllers\Admin\Loyalty\Point\AdminLoyaltyPointsController;
 use App\Http\Controllers\Admin\Loyalty\Reward\AdminLoyaltyRewardController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('loyalty')->name('loyalty.')->group(function () {
+Route::prefix('loyalty')->name('loyalty.')->middleware('feature:loyalty')->group(function () {
 
     // Home page
     Route::get('/', [AdminLoyaltyController::class, 'index'])->name('index');

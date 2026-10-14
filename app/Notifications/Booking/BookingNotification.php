@@ -49,6 +49,6 @@ class BookingNotification extends Notification implements ShouldQueue
     {
         $message = \App\Support\Sms\SmsText::newBookingForSpecialist($this->booking, (bool) $this->needsApproval);
 
-        return app(SMSService::class)->send($notifiable->phone, $message, $this->booking->salon_id);
+        return app(SMSService::class)->send($notifiable->phone, $message, $this->booking->salon_id, \App\Support\Features\Feature::SmsStaff);
     }
 }

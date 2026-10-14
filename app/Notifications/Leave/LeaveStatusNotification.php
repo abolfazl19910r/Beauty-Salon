@@ -80,6 +80,6 @@ class LeaveStatusNotification extends Notification implements ShouldQueue
             $this->leave->reject_reason
         );
 
-        return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId());
+        return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId(), \App\Support\Features\Feature::SmsStaff);
     }
 }

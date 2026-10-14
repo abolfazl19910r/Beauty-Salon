@@ -60,10 +60,12 @@ class BookingRescheduledNotification extends Notification implements ShouldQueue
 
     public function toSms($notifiable): bool
     {
-        $message = $notifiable instanceof \App\Models\Specialist
+        $toSpecialist = $notifiable instanceof \App\Models\Specialist;
+        $message = $toSpecialist
             ? \App\Support\Sms\SmsText::rescheduledForSpecialist($this->booking, $this->oldTime)
             : \App\Support\Sms\SmsText::rescheduledForCustomer($this->booking);
 
-        return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId());
+        return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId(),
+            $toSpecialist ? \App\Support\Features\Feature::SmsStaff : \App\Support\Features\Feature::SmsCustomer);
     }
 }

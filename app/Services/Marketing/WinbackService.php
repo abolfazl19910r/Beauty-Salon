@@ -45,7 +45,10 @@ class WinbackService
     /** همه‌ی سالن‌های فعال با قابلیت روشن؛ خروجی: تعداد پیامک فرستاده‌شده برای هر سالن */
     public function runAll(): array
     {
-        $settings = WinbackSetting::withoutGlobalScope('salon')->where('enabled', true)->get();
+        // فقط سالن‌هایی که «پیگیری مشتریان غایب» در پلنشان هست — در خود کوئری (بسته‌ی پلن‌ها)
+        $settings = WinbackSetting::withoutGlobalScope('salon')->where('enabled', true)
+            ->whereIn('salon_id', Salon::withoutGlobalScopes()->withFeature(\App\Support\Features\Feature::Winback)->select('id'))
+            ->get();
         $sent = [];
 
         foreach ($settings as $setting) {
@@ -127,7 +130,7 @@ class WinbackService
             'لینک_انصراف' => fn () => $this->links->shorten(self::unsubscribeUrl($salon, $customer), now()->addDays(180)),
         ]);
 
-        if (! $this->hasRoomFor($salon, SmsParts::count($text)) || ! $this->sms->send($customer->phone, $text, $salon->id)) {
+        if (! $this->hasRoomFor($salon, SmsParts::count($text)) || ! $this->sms->send($customer->phone, $text, $salon->id, \App\Support\Features\Feature::Winback)) {
             return null;
         }
 

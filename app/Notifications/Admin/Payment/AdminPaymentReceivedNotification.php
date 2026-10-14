@@ -59,7 +59,7 @@ class AdminPaymentReceivedNotification extends Notification implements ShouldQue
     {
         $message = \App\Support\Sms\SmsText::paymentReceived($this->booking, $this->amount(), $this->methodLabel());
 
-        return app(SMSService::class)->send($notifiable->phone, $message, $this->booking->salon_id);
+        return app(SMSService::class)->send($notifiable->phone, $message, $this->booking->salon_id, \App\Support\Features\Feature::SmsStaff);
     }
 
     private function amount(): float

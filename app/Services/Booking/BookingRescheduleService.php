@@ -55,7 +55,7 @@ class BookingRescheduleService
 
             $message = SmsText::rescheduledForCustomer($booking->fresh(['service']), $newStatus !== 'confirmed');
             app(BotMessenger::class)->send($booking->user, $message, NotificationEvents::BOOKING_RESCHEDULED_CUSTOMER, $booking->salon_id);
-            $this->smsService->send($booking->user->phone, $message, $booking->salon_id);
+            $this->smsService->send($booking->user->phone, $message, $booking->salon_id, \App\Support\Features\Feature::SmsCustomer);
         });
 
         return $booking->refresh();

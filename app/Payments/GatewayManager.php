@@ -31,7 +31,9 @@ class GatewayManager
     /** @return Collection<int, SalonPaymentGateway> */
     public function gatewaysFor(?Salon $salon): Collection
     {
-        if (! $salon) {
+        // «پرداخت آنلاین مشتری» در پلن سالن نیست ← مثل سالن بدون درگاه (بسته‌ی پلن‌ها). پرداخت شروع‌شده با ردیف درگاه خودش
+        // تأیید می‌شود (verify)، پس پرداخت در جریان هنگام تغییر پلن گم نمی‌شود.
+        if (! $salon || ! $salon->hasFeature(\App\Support\Features\Feature::OnlinePayment)) {
             return collect();
         }
 

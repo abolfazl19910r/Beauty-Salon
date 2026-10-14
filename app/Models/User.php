@@ -297,6 +297,12 @@ class User extends Authenticatable
      */
     public function addLoyaltyPoints(int $points, string $description = '', ?int $bookingId = null): void
     {
+        // باشگاه مشتریان در پلن سالن مشتری نیست ← امتیاز تازه داده نمی‌شود (امتیاز قبلی قابل استفاده می‌ماند) — بسته‌ی پلن‌ها
+        $salonId = $this->salon_id ?? app(\App\Support\CurrentSalon::class)->id();
+        if ($salonId && ! Salon::featureEnabledFor((int) $salonId, \App\Support\Features\Feature::Loyalty)) {
+            return;
+        }
+
         try {
             $expiryMonths = (int) LoyaltySetting::getValue('points_expiry_months', 12);
             $expiryMonths = $expiryMonths > 0 ? $expiryMonths : 12;

@@ -55,6 +55,6 @@ class PointsEarned extends Notification implements ShouldQueue
             $salonId ? \App\Models\Salon::withoutGlobalScopes()->find($salonId) : null
         );
 
-        return app(SMSService::class)->send($notifiable->phone, $message, $salonId);
+        return app(SMSService::class)->send($notifiable->phone, $message, $salonId, \App\Support\Features\Feature::SmsCustomer);
     }
 }

@@ -54,7 +54,7 @@ class CancelUnpaidBookings implements ShouldQueue
                     if ($booking->user && $booking->user->phone) {
                         $message = \App\Support\Sms\SmsText::bookingCancelledUnpaid($booking);
                         try {
-                            $smsService->send($booking->user->phone, $message, $booking->salon_id); // از سهمیه‌ی سالن (تصمیم ۲۰۲۶-۰۹-۳۰)
+                            $smsService->send($booking->user->phone, $message, $booking->salon_id, \App\Support\Features\Feature::SmsCustomer); // از سهمیه‌ی سالن (تصمیم ۲۰۲۶-۰۹-۳۰)
                         } catch (\Exception $smsException) {
                             Log::warning('Failed to send SMS for cancelled booking', [
                                 'booking_id' => $booking->id,

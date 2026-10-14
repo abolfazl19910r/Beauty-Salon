@@ -17,7 +17,7 @@
                     خاموش‌کردن یک ستون فقط همان کانال را برای همان رویداد غیرفعال می‌کند؛ رویدادهای دیگر تحت تأثیر قرار نمی‌گیرند.
                 </p>
             </div>
-            <a href="{{ route('admin.sms-templates.index') }}" class="px-4 py-2 rounded-lg text-sm font-medium" style="border:1px solid var(--admin-accent); color:var(--admin-accent);">ویرایش متن پیامک‌ها</a>
+            <a href="{{ route('admin.sms-templates.index') }}" class="px-4 py-2 rounded-lg text-sm font-medium" style="border:1px solid var(--admin-accent); color:var(--admin-accent);">ویرایش متن پیامک‌ها{{ app(\App\Support\CurrentSalon::class)->get()?->hasFeature(\App\Support\Features\Feature::SmsTemplates) === false ? ' 🔒' : '' }}</a>
         </div>
 
         @unless($botImplemented)
@@ -32,6 +32,7 @@
             </div>
         @enderror
 
+        @php $notificationSalon = app(\App\Support\CurrentSalon::class)->get(); @endphp
         <form method="POST" action="{{ route('admin.notification-settings.update') }}">
             @csrf
 
@@ -59,7 +60,14 @@
                                 <tr style="border-top:1px solid var(--admin-border);">
                                     <td class="px-4 py-3" style="color:var(--admin-text);">{{ $meta['label'] }}</td>
                                     <td class="px-4 py-3 text-center">
-                                        @if($meta['sms'] ?? true)
+                                        @php $smsFeature = \App\Support\Notifications\NotificationEvents::smsFeature($key); @endphp
+                                        @if(($meta['sms'] ?? true) && $smsFeature && ! $notificationSalon?->hasFeature($smsFeature) && $notificationSalon)
+                                            {{-- در پلن سالن نیست (بسته‌ی پلن‌ها): انتخاب خود سالن دست‌نخورده می‌ماند و بعد از ارتقا برمی‌گردد --}}
+                                            @if($row?->sms_enabled)
+                                                <input type="hidden" name="sms[{{ $safeKey }}]" value="1">
+                                            @endif
+                                            <a href="{{ route('admin.billing.index') }}" class="text-xs" title="«{{ $smsFeature->label() }}» در پلن سالن شما نیست — ارتقا" data-feature-locked="{{ $smsFeature->value }}">🔒</a>
+                                        @elseif($meta['sms'] ?? true)
                                             <input type="checkbox" name="sms[{{ $safeKey }}]" value="1"
                                                    @checked($row?->sms_enabled) class="w-4 h-4 rounded cursor-pointer" style="accent-color:var(--admin-accent);">
                                         @else

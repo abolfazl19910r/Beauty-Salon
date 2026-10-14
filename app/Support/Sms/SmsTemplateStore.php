@@ -16,7 +16,8 @@ final class SmsTemplateStore
     /** متن سالن یا پیش‌فرض */
     public static function body(?int $salonId, string $key): string
     {
-        if ($salonId !== null) {
+        // بدون امکان «ویرایش متن پیامک‌ها» در پلن، همیشه متن پیش‌فرض (متن ذخیره‌شده‌ی سالن پاک نمی‌شود) — بسته‌ی پلن‌ها
+        if ($salonId !== null && \App\Models\Salon::featureEnabledFor($salonId, \App\Support\Features\Feature::SmsTemplates)) {
             $custom = self::overrides($salonId)[$key] ?? null;
             if ($custom !== null) {
                 return $custom;

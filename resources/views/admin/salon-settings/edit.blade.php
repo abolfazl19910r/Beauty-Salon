@@ -62,10 +62,15 @@
                 <div>
                     <label class="block text-sm mb-1" for="logo">لوگوی سالن <span style="color:var(--admin-text-light);">(PNG/JPG/WEBP، حداکثر ۲ مگابایت)</span></label>
                     <div class="flex items-center gap-3">
-                        <img id="logo-preview" src="{{ $salon->logoUrl() }}" alt="لوگوی {{ $salon->name }}"
-                             class="w-16 h-16 object-contain rounded-lg" style="border:1px solid var(--admin-border); {{ $salon->logoUrl() ? '' : 'display:none;' }}">
-                        <input id="logo" type="file" name="logo" accept="image/png,image/jpeg,image/webp" class="text-sm">
+                        <img id="logo-preview" src="{{ $salon->storedLogoUrl() }}" alt="لوگوی {{ $salon->name }}"
+                             class="w-16 h-16 object-contain rounded-lg" style="border:1px solid var(--admin-border); {{ $salon->storedLogoUrl() ? '' : 'display:none;' }}">
+                        @if ($salon->hasFeature(\App\Support\Features\Feature::CustomLogo))
+                            <input id="logo" type="file" name="logo" accept="image/png,image/jpeg,image/webp" class="text-sm">
+                        @endif
                     </div>
+                    @unless ($salon->hasFeature(\App\Support\Features\Feature::CustomLogo))
+                        @include('admin.partials.feature-locked', ['feature' => \App\Support\Features\Feature::CustomLogo])
+                    @endunless
                     @if ($salon->logo_path)
                         <label class="flex items-center gap-2 mt-2 text-sm">
                             <input type="checkbox" name="remove_logo" value="1"> حذف لوگوی فعلی
@@ -78,6 +83,9 @@
             <section class="space-y-3" id="merchant">
                 <h2 class="font-bold" style="color: var(--admin-accent);">درگاه‌های پرداخت</h2>
                 @php $activeGateways = $salon->paymentGateways()->where('is_active', true)->orderBy('priority')->get(); @endphp
+                @unless ($salon->hasFeature(\App\Support\Features\Feature::OnlinePayment))
+                    @include('admin.partials.feature-locked', ['feature' => \App\Support\Features\Feature::OnlinePayment])
+                @endunless
                 @if ($activeGateways->isNotEmpty())
                     <div class="rounded-lg p-3 text-sm" style="background:#DCFCE7; color:#166534;">
                         پرداخت آنلاین فعال است؛ پرداخت‌های مشتری‌ها مستقیم به حساب درگاه‌های همین سالن واریز می‌شود:

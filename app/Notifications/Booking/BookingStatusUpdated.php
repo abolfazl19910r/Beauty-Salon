@@ -79,7 +79,7 @@ class BookingStatusUpdated extends Notification implements ShouldQueue
     {
         $message = $this->getSmsMessage($notifiable);
 
-        return app(SMSService::class)->send($notifiable->phone, $message, $this->booking->salon_id);
+        return app(SMSService::class)->send($notifiable->phone, $message, $this->booking->salon_id, \App\Support\Features\Feature::SmsCustomer);
     }
 
     private function getSmsMessage($notifiable): string
