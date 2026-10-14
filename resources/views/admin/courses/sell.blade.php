@@ -26,7 +26,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium mb-1" for="customer_phone">موبایل مشتری</label>
-                        <input id="customer_phone" name="customer_phone" dir="ltr" inputmode="tel" class="{{ $input }}" style="{{ $inputStyle }}" value="{{ old('customer_phone') }}" placeholder="09121234567">
+                        <input id="customer_phone" name="customer_phone" dir="ltr" inputmode="tel" class="{{ $input }}" style="{{ $inputStyle }}" value="{{ old('customer_phone', request('phone')) }}" placeholder="09121234567">
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1" for="customer_name">نام مشتری (فقط مشتری تازه)</label>

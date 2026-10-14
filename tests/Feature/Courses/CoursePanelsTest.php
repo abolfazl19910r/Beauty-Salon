@@ -151,6 +151,24 @@ class CoursePanelsTest extends TestCase
         $this->assertFalse(Storage::disk('public')->exists($photo->path));
     }
 
+    public function test_the_admin_customer_page_lists_the_customers_courses(): void
+    {
+        $course = $this->paidCourse();
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->get(route('admin.customers.show', $this->courseCustomer))->assertOk()
+            ->assertSee('دوره‌های درمانی')
+            ->assertSee($course->name)
+            ->assertSee(route('admin.courses.show', $course), false)
+            ->assertSee(route('admin.courses.sell', ['phone' => $this->courseCustomer->phone]), false);
+        $this->get(route('admin.courses.sell', ['phone' => $this->courseCustomer->phone]))->assertOk()->assertSee($this->courseCustomer->phone);
+
+        // تنزل پلن: دوره‌ها دیده می‌شوند، دکمه‌ی فروش نه
+        $this->courseSalonWithout(Feature::TreatmentCourses);
+        $this->get(route('admin.customers.show', $this->courseCustomer))->assertOk()->assertSee($course->name)
+            ->assertDontSee('فروش دوره به این مشتری');
+    }
+
     // ─── پنل متخصص ────────────────────────────────────────────────
 
     public function test_specialist_sees_the_course_on_the_booking_and_writes_the_session_note(): void

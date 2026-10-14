@@ -15,7 +15,7 @@
             <div class="flex justify-between items-start flex-wrap gap-3">
                 <div>
                     <h1 class="text-xl font-bold" style="color:var(--admin-text);">{{ $course->name }}</h1>
-                    <p class="text-sm mt-1" style="{{ $dim }}">{{ $course->user?->name }} <span dir="ltr">{{ $course->user?->phone }}</span> — {{ $course->service?->name }}@if ($course->specialist) · فقط {{ $course->specialist->name }}@endif</p>
+                    <p class="text-sm mt-1" style="{{ $dim }}">@if ($course->user)<a href="{{ route('admin.customers.show', $course->user_id) }}" style="color:var(--admin-accent);">{{ $course->user->name }}</a>@endif <span dir="ltr">{{ $course->user?->phone }}</span> — {{ $course->service?->name }}@if ($course->specialist) · فقط {{ $course->specialist->name }}@endif</p>
                 </div>
                 <span class="px-3 py-1 rounded-full text-sm" style="background:var(--admin-accent-light); color:var(--admin-accent);">{{ $course->statusLabel() }}</span>
             </div>
