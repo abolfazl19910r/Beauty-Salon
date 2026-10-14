@@ -1,4 +1,5 @@
 import { faDigits, toman } from '../format';
+import { jalaliLabel } from '../jalali';
 import type { Gateway } from './types';
 
 /**
@@ -22,4 +23,16 @@ export function walletShare(useWallet: boolean, balance: number, amount: number)
 /** «۲۰٪ تخفیف» / «۵۰٬۰۰۰ تومان تخفیف» */
 export function discountLabel(type: 'fixed' | 'percentage', amount: number): string {
   return type === 'percentage' ? `${faDigits(Math.round(amount))}٪ تخفیف` : `${toman(amount)} تخفیف`;
+}
+
+const WEEKDAYS = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه'];
+
+/** «شنبه ۲۶ مهر ۱۴۰۵، ساعت ۱۰:۳۰» از زمان ISO سرور (ساعت گوشی؛ Intl فارسی در Hermes کامل نیست) */
+export function bookingTimeLabel(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) {
+    return '';
+  }
+  const hm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return `${WEEKDAYS[d.getDay()]} ${jalaliLabel(d)}، ساعت ${faDigits(hm)}`;
 }
