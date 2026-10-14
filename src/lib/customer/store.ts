@@ -14,7 +14,7 @@ const PENDING_KEY = 'mahru.customer.pendingPayment';
 
 export type PendingPayment = {
   tx: string;
-  purpose: 'booking' | 'wallet_charge';
+  purpose: 'booking' | 'wallet_charge' | 'course';
   bookingId: number | null;
   checkoutUrl: string;
   /** زمان انقضای لینک امضاشده‌ی checkout (میلی‌ثانیه) */

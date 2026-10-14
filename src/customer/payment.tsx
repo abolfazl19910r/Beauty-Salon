@@ -63,11 +63,12 @@ export default function PaymentResult() {
 
   const d = status.data;
   const isBooking = d.purpose === 'booking';
+  const isCourse = d.purpose === 'course';
   const view = {
     pending: { icon: 'time-outline', color: p.warning, title: 'در انتظار نتیجه‌ی بانک', text: 'اگر پرداخت را در مرورگر تمام کرده‌اید چند لحظه صبر کنید. اگر صفحه‌ی بانک را بستید، می‌توانید دوباره بازش کنید.' },
-    paid: { icon: 'checkmark-circle', color: p.success, title: 'پرداخت موفق بود', text: isBooking ? 'نوبت شما ثبت شد.' : 'کیف پول شما شارژ شد.' },
+    paid: { icon: 'checkmark-circle', color: p.success, title: 'پرداخت موفق بود', text: isBooking ? 'نوبت شما ثبت شد.' : isCourse ? 'پرداخت روی دوره‌ی شما ثبت شد.' : 'کیف پول شما شارژ شد.' },
     failed: { icon: 'close-circle', color: p.danger, title: 'پرداخت انجام نشد', text: 'اگر از حسابتان پولی کم شده، طبق قانون بانک حداکثر تا ۷۲ ساعت برمی‌گردد.' },
-    refunded: { icon: 'return-down-back-outline', color: p.info, title: 'پرداخت برگشت خورد', text: 'نوبت نگه داشته نشد و مبلغ برگشت داده شد.' },
+    refunded: { icon: 'return-down-back-outline', color: p.info, title: 'پرداخت برگشت خورد', text: isCourse ? 'این دوره دیگر پرداخت نمی‌پذیرفت؛ مبلغ به کیف پول شما برگشت.' : 'نوبت نگه داشته نشد و مبلغ برگشت داده شد.' },
   }[d.state] as { icon: React.ComponentProps<typeof Ionicons>['name']; color: string; title: string; text: string };
 
   const canReopen = d.state === 'pending' && pending && pending.checkoutExpiresAt > Date.now();
@@ -81,10 +82,11 @@ export default function PaymentResult() {
       </View>
 
       <Card>
-        <KeyValue label={isBooking ? 'پیش‌پرداخت نوبت' : 'شارژ کیف پول'} value={toman(d.amount)} />
+        <KeyValue label={isBooking ? 'پیش‌پرداخت نوبت' : isCourse ? 'پرداخت دوره' : 'شارژ کیف پول'} value={toman(d.amount)} />
         {d.fee > 0 ? <KeyValue label="کارمزد درگاه" value={toman(d.fee)} /> : null}
         {d.ref_id ? <KeyValue label="کد پیگیری" value={faDigits(d.ref_id)} /> : null}
         {isBooking && d.booking ? <KeyValue label="نوبت" value={`${d.booking.service?.name ?? ''} — ${faDigits(d.booking.booking_time_label ?? '')}`} /> : null}
+        {isCourse && d.course ? <KeyValue label="دوره" value={d.course.name} /> : null}
         {!isBooking && d.wallet_balance !== undefined ? <KeyValue label="موجودی کیف پول" value={toman(d.wallet_balance)} /> : null}
       </Card>
 
@@ -101,7 +103,12 @@ export default function PaymentResult() {
           ? <Button title="تلاش دوباره برای پرداخت" onPress={() => router.replace(`/pay/${d.booking!.id}`)} />
           : <Button kind={d.state === 'paid' ? 'primary' : 'secondary'} title="دیدن نوبت" onPress={() => router.replace(`/booking/${d.booking!.id}`)} />
       ) : null}
-      {!isBooking ? (
+      {isCourse && d.course ? (
+        d.state === 'failed' && d.course.actions.pay
+          ? <Button title="تلاش دوباره برای پرداخت" onPress={() => router.replace(`/course-pay/${d.course!.id}`)} />
+          : <Button kind={d.state === 'paid' ? 'primary' : 'secondary'} title="دیدن دوره" onPress={() => router.replace(`/course/${d.course!.id}`)} />
+      ) : null}
+      {!isBooking && !isCourse ? (
         d.state === 'failed'
           ? <Button title="شارژ دوباره" onPress={() => router.replace('/charge')} />
           : <Button kind={d.state === 'paid' ? 'primary' : 'secondary'} title="کیف پول" onPress={() => router.replace('/wallet')} />

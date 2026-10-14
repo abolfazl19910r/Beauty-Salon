@@ -143,6 +143,11 @@ export function createClient(config: ClientConfig) {
     post: <T>(path: string, body?: unknown, auth = true) => request<T>('POST', path, { body: body ?? {}, auth }),
     put: <T>(path: string, body?: unknown) => request<T>('PUT', path, { body: body ?? {} }),
     del: <T>(path: string) => request<T>('DELETE', path),
+    /** آدرس کامل یک مسیر API و هدر توکن — برای فایل‌هایی که خود Image بار می‌کند (عکس‌های خصوصی دوره) */
+    imageSource: (path: string) => {
+      const token = config.token();
+      return { uri: buildUrl(config.baseUrl(), path), headers: token ? { Authorization: `Bearer ${token}` } : undefined };
+    },
   };
 }
 

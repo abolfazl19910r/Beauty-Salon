@@ -14,7 +14,7 @@ import type { PayStart } from './types';
  */
 export async function openCheckout(
   start: Extract<PayStart, { state: 'redirect' }>,
-  purpose: 'booking' | 'wallet_charge',
+  purpose: 'booking' | 'wallet_charge' | 'course',
   bookingId: number | null,
   now = Date.now(),
 ): Promise<void> {

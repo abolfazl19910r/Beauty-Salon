@@ -41,7 +41,32 @@ export type Booking = {
   notes: string | null;
   cancellation_reason: string | null;
   cancelled_by: string | null;
+  /** جلسه‌ی دوره‌ی درمانی (بسته‌ی ب)؛ null برای نوبت عادی */
+  course?: { id: number; name: string; session_number: number | null; sessions_total: number; label: string | null; photo_consent: boolean } | null;
   actions: { confirm: boolean; cancel: boolean; complete: boolean };
+};
+
+/** پرونده‌ی دوره روی یک نوبت: همه‌ی جلسه‌ها با یادداشت و عکس (GET staff/bookings/{id}/course) */
+export type CourseFile = {
+  id: number;
+  name: string;
+  status: string;
+  status_label: string;
+  sessions_total: number;
+  sessions_used: number;
+  photo_consent: boolean;
+  sessions: {
+    booking_id: number;
+    session_number: number | null;
+    label: string | null;
+    status: BookingStatus;
+    burned: boolean;
+    booking_time_jalali: string | null;
+    specialist: { id: number; name: string } | null;
+    note: string | null;
+    note_visible_to_customer: boolean | null;
+    photos: { id: number; kind: 'before' | 'after'; url: string }[];
+  }[];
 };
 
 export type Today = {

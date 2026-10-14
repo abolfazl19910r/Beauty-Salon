@@ -233,3 +233,51 @@ it('the profile switch turns the salon follow-up texts off', async () => {
   await waitFor(() => expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ marketing_sms: false }));
   await waitFor(() => expect(screen.getByLabelText('پیامک‌های پیگیری و پیشنهاد سالن').props.value).toBe(false));
 });
+
+const COURSE = {
+  id: 12, name: 'لیزر ۶ جلسه', status: 'pending_payment', status_label: 'در انتظار پرداخت', sessions_total: 6, sessions_used: 0, sessions_burned: 0,
+  sessions_reserved: 0, sessions_remaining: 6, paid_sessions: 6, price_total: 4800000, amount_paid: 0, balance_due: 4800000, min_prepayment: 1200000,
+  discount_amount: 0, service_id: 3, specialist_id: null, purchased_at: null, expires_at: null, expires_at_jalali: null, next_due_at: null,
+  photo_consent: false, refunded_amount: 0, actions: { pay: true, book: false }, book_blocker: 'پرداخت دوره هنوز انجام نشده است.',
+};
+
+it('buys a treatment course, pays the minimum from the wallet and books the next session', async () => {
+  await signedIn();
+  let course: any = COURSE;
+  routes = (url, init) => {
+    if (url.includes('/customer/courses/packages/7/purchase')) return [201, ok(COURSE)];
+    if (url.includes('/customer/courses/packages')) return [200, ok([{ id: 7, name: 'لیزر ۶ جلسه', description: null, sessions_count: 6, interval_days: 35, validity_days: 365, price: 4800000, list_price: 6000000, saving: 1200000, min_prepayment: 1200000, service: { id: 3, name: 'لیزر', duration_minutes: 30 }, specialist: null }])];
+    if (url.includes('/customer/courses/12/pay') && init.method === 'POST') {
+      course = { ...COURSE, status: 'active', status_label: 'فعال', amount_paid: 1200000, balance_due: 3600000, paid_sessions: 2, actions: { pay: true, book: true }, book_blocker: null };
+      return [200, ok({ state: 'paid', course })];
+    }
+    if (url.includes('/customer/courses/12/pay')) return [200, ok({ balance_due: 4800000, min_amount: 1200000, wallet_balance: 2000000, online_payment: true, gateways: [GATEWAY] })];
+    if (url.includes('/customer/courses/12/specialists')) return [200, ok([{ id: 5, name: 'سارا', photo_url: null }])];
+    if (url.includes('/customer/courses/12/dates')) return [200, ok({ from: '2026-10-15', to: '2026-11-29', dates: ['2026-10-20'] })];
+    if (url.includes('/customer/courses/12/slots')) return [200, ok({ date: '2026-10-20', slots: ['10:00'] })];
+    if (url.includes('/customer/courses/12/bookings')) return [201, ok({ booking: { ...BOOKING, status: 'confirmed', payment_status: 'paid', course: { id: 12, name: 'لیزر ۶ جلسه', session_number: 1, sessions_total: 6, label: 'جلسه‌ی ۱ از ۶', photo_consent: false } }, course })];
+    if (url.includes('/customer/courses/12')) return [200, ok({ ...course, sessions: [], payments: [] })];
+    if (url.includes('/customer/courses')) return [200, ok([])];
+    if (url.includes('/customer/home')) return [200, ok({ ...HOME, features: ['treatment_courses'] })];
+    if (url.includes('/customer/wallet')) return [200, ok({ balance: 2000000, total_deposited: 0, total_spent: 0 })];
+    return notFound;
+  };
+
+  renderRouter('./src/customer', { initialUrl: '/courses' });
+
+  fireEvent.press(await screen.findByText('لیزر ۶ جلسه'));
+  fireEvent.press(await screen.findByText('خرید این دوره'));
+
+  // پرداخت اول: کمترین مبلغ، از کیف پول
+  fireEvent.press(await screen.findByText('کمترین مبلغ'));
+  fireEvent(screen.getByLabelText('استفاده از کیف پول'), 'valueChange', true);
+  fireEvent.press(await screen.findByText('پرداخت از کیف پول'));
+  await waitFor(() => expect(calls.find((c) => c.url.includes('/courses/12/pay') && c.method === 'POST')?.body).toEqual({ amount: 1200000, use_wallet: true }));
+
+  fireEvent.press(await screen.findByText('رزرو جلسه‌ی بعد'));
+  fireEvent.press(await screen.findByText('سارا'));
+  fireEvent.press(await screen.findByText(/مهر/));
+  fireEvent.press(await screen.findByText('۱۰:۰۰'));
+  fireEvent.press(screen.getByText('رزرو این جلسه'));
+  await waitFor(() => expect(calls.find((c) => c.url.includes('/courses/12/bookings'))?.body).toEqual({ specialist_id: 5, date: '2026-10-20', time: '10:00' }));
+});

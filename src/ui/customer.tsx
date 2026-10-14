@@ -50,6 +50,7 @@ export function CustomerBookingCard({ booking }: { booking: CustomerBooking }) {
         <CustomerStatusBadge booking={booking} />
       </Row>
       <T muted size={14}>{faDigits(booking.booking_time_label ?? booking.booking_time_jalali ?? '')}</T>
+      {booking.course?.label ? <Badge text={faDigits(booking.course.label)} tone="info" /> : null}
       <Row style={{ justifyContent: 'space-between' }}>
         <T size={14}>{booking.specialist?.name ?? ''}</T>
         {booking.actions.pay ? <T size={13} weight="medium" color={p.gold}>پرداخت پیش‌پرداخت: {toman(booking.prepayment_amount)}</T> : null}

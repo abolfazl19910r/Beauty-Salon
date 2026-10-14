@@ -32,6 +32,13 @@ export default function Home() {
 
           <Button title="رزرو نوبت تازه" onPress={() => router.push('/book')} />
 
+          {home.data.features?.includes('treatment_courses') ? (
+            <Card onPress={() => router.push('/courses')}>
+              <T weight="medium">دوره‌های درمانی</T>
+              <T muted size={13}>چند جلسه را یک‌جا و ارزان‌تر بخرید؛ دوره‌های خودتان را هم این‌جا ببینید.</T>
+            </Card>
+          ) : null}
+
           <Row gap={3}>
             <Card style={{ flex: 1 }} onPress={() => router.push('/club')}>
               <T muted size={13}>امتیاز باشگاه</T>

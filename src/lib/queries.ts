@@ -6,6 +6,7 @@ import type {
   AppNotification,
   Booking,
   CalendarDay,
+  CourseFile,
   Leave,
   PageMeta,
   Schedule,
@@ -27,6 +28,7 @@ export const keys = {
   transactions: ['transactions'] as const,
   withdrawals: ['withdrawals'] as const,
   notifications: ['notifications'] as const,
+  course: (bookingId: number) => ['course', bookingId] as const,
 };
 
 const nextPage = (meta: ApiMeta) => {
@@ -172,5 +174,32 @@ export function useNotificationMutations() {
   return {
     read: useMutation({ mutationFn: async (id: string) => api.post(`/staff/notifications/${id}/read`), onSuccess: refresh }),
     readAll: useMutation({ mutationFn: async () => api.post('/staff/notifications/read-all'), onSuccess: refresh }),
+  };
+}
+
+// ─── پرونده‌ی جلسه‌ی دوره (بسته‌ی ب) ─────────────────────────────────────
+
+export function useCourseFile(bookingId: number, enabled: boolean) {
+  const api = useApi();
+  return useQuery({
+    queryKey: keys.course(bookingId),
+    queryFn: async () => (await api.get<CourseFile>(`/staff/bookings/${bookingId}/course`)).data,
+    enabled: enabled && bookingId > 0,
+  });
+}
+
+export function useCourseFileMutations(bookingId: number) {
+  const api = useApi();
+  const qc = useQueryClient();
+  const refresh = () => {
+    void qc.invalidateQueries({ queryKey: keys.course(bookingId) });
+    void qc.invalidateQueries({ queryKey: keys.booking(bookingId) });
+  };
+  return {
+    saveNote: useMutation({
+      mutationFn: async (args: { note: string; visible_to_customer: boolean }) => api.post(`/staff/bookings/${bookingId}/session-note`, args),
+      onSuccess: refresh,
+    }),
+    consent: useMutation({ mutationFn: async () => api.post(`/staff/bookings/${bookingId}/course-consent`), onSuccess: refresh }),
   };
 }

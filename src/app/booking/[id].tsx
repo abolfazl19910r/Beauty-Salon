@@ -5,6 +5,7 @@ import { Alert, Linking } from 'react-native';
 import { faDigits, toman } from '@/lib/format';
 import { useBooking, useBookingAction } from '@/lib/queries';
 import { StatusBadge } from '@/ui/booking';
+import { CourseFilePanel } from '@/ui/CourseFilePanel';
 import { Button, Card, ErrorBox, Field, KeyValue, Loading, Notice, Row, Screen, T } from '@/ui/kit';
 
 export default function BookingDetail() {
@@ -46,12 +47,14 @@ export default function BookingDetail() {
         ) : null}
       </Card>
 
+      {b.course ? <CourseFilePanel booking={b} /> : (
       <Card>
         <KeyValue label="قیمت خدمت" value={toman(b.service?.price)} />
         <KeyValue label="پیش‌پرداخت" value={`${toman(b.prepayment_amount)}${b.payment_status === 'paid' ? ' (پرداخت شده)' : ''}`} />
         {b.discount_amount > 0 ? <KeyValue label="تخفیف" value={toman(b.discount_amount)} /> : null}
         <KeyValue label="باقی‌مانده (حضوری)" value={toman(b.remaining_amount)} />
       </Card>
+      )}
 
       {b.notes ? <Notice text={`یادداشت: ${b.notes}`} /> : null}
       {b.cancellation_reason ? <Notice tone="warning" text={`دلیل لغو: ${b.cancellation_reason}`} /> : null}

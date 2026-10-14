@@ -55,12 +55,19 @@ export default function BookingDetail() {
         {b.pay_before && b.actions.pay ? <PayCountdown until={b.pay_before} /> : null}
       </Card>
 
+      {b.course ? (
+        <Card onPress={() => router.push(`/course/${b.course!.id}`)}>
+          <T weight="medium">{faDigits(b.course.label ?? '')}</T>
+          <T muted size={14}>دوره‌ی «{b.course.name}» — هزینه از قبل با دوره پرداخت شده است.</T>
+        </Card>
+      ) : (
       <Card>
         {b.service ? <KeyValue label="قیمت خدمت" value={toman(b.service.price)} /> : null}
         <KeyValue label={b.payment_status === 'paid' ? 'پیش‌پرداخت (پرداخت شد)' : 'پیش‌پرداخت'} value={toman(b.prepayment_amount)} />
         {b.discount_amount > 0 ? <KeyValue label={`تخفیف${b.discount_code ? ` (${b.discount_code})` : ''}`} value={`− ${toman(b.discount_amount)}`} /> : null}
         <KeyValue label="پرداخت در سالن" value={toman(b.remaining_amount)} />
       </Card>
+      )}
 
       {b.status === 'cancelled' && b.cancellation_reason ? <Notice tone="warning" text={`دلیل لغو: ${b.cancellation_reason}`} /> : null}
       {b.status === 'pending' ? <Notice text="نوبت شما ثبت شده و منتظر تأیید سالن است." /> : null}

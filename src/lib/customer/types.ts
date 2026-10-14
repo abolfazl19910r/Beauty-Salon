@@ -16,6 +16,8 @@ export type SalonDetail = SalonCard & {
   working_hours: string[];
   experience_years: number | null;
   online_payment: boolean;
+  /** امکانات پلن سالن (مثلاً treatment_courses) */
+  features?: string[];
   rules: {
     prepayment_percentage: number;
     minimum_prepayment: number;
@@ -80,6 +82,8 @@ export type CustomerBooking = {
   cancelled_by: string | null;
   rating: number | null;
   review: string | null;
+  /** جلسه‌ی دوره‌ی درمانی؛ null برای نوبت عادی */
+  course?: CourseBrief | null;
   actions: { pay: boolean; cancel: boolean; reschedule: boolean; rate: boolean };
 };
 
@@ -116,7 +120,7 @@ export type PaymentState = 'pending' | 'paid' | 'failed' | 'refunded';
 
 export type PaymentStatus = {
   transaction: string;
-  purpose: 'booking' | 'wallet_charge';
+  purpose: 'booking' | 'wallet_charge' | 'course';
   state: PaymentState;
   amount: number;
   fee: number;
@@ -125,6 +129,7 @@ export type PaymentStatus = {
   booking?: CustomerBooking | null;
   credited?: boolean;
   wallet_balance?: number;
+  course?: Course | null;
 };
 
 export type Home = {
@@ -134,6 +139,7 @@ export type Home = {
   loyalty_points: number;
   wallet_balance: number;
   unread_notifications: number;
+  features?: string[];
 };
 
 export type CustomerWallet = { balance: number; total_deposited: number; total_spent: number };
@@ -203,3 +209,87 @@ export type CustomerNotification = {
   created_at: string | null;
   created_at_jalali: string | null;
 };
+
+
+// ─── دوره‌ی درمانی (بسته‌ی ب؛ CoursePresenter لاراول) ────────────────────
+
+export type CourseBrief = {
+  id: number;
+  name: string;
+  session_number: number | null;
+  sessions_total: number;
+  label: string | null;
+  photo_consent: boolean;
+};
+
+export type CoursePackage = {
+  id: number;
+  name: string;
+  description: string | null;
+  sessions_count: number;
+  interval_days: number;
+  validity_days: number | null;
+  price: number;
+  list_price: number;
+  saving: number;
+  min_prepayment: number;
+  service: { id: number; name: string; duration_minutes: number } | null;
+  specialist: { id: number; name: string } | null;
+};
+
+export type CourseStatus = 'pending_payment' | 'active' | 'completed' | 'expired' | 'cancelled';
+
+export type Course = {
+  id: number;
+  name: string;
+  status: CourseStatus;
+  status_label: string;
+  sessions_total: number;
+  sessions_used: number;
+  sessions_burned: number;
+  sessions_reserved: number;
+  sessions_remaining: number;
+  paid_sessions: number;
+  price_total: number;
+  amount_paid: number;
+  balance_due: number;
+  min_prepayment: number;
+  discount_amount: number;
+  service_id: number;
+  specialist_id: number | null;
+  purchased_at: string | null;
+  expires_at: string | null;
+  expires_at_jalali: string | null;
+  next_due_at: string | null;
+  photo_consent: boolean;
+  refunded_amount: number;
+  actions: { pay: boolean; book: boolean };
+  book_blocker: string | null;
+};
+
+export type CoursePhoto = { id: number; kind: 'before' | 'after'; url: string };
+
+export type CourseSession = {
+  booking_id: number;
+  session_number: number | null;
+  label: string | null;
+  status: CustomerBookingStatus;
+  burned: boolean;
+  booking_time: string | null;
+  booking_time_jalali: string | null;
+  specialist: { id: number; name: string } | null;
+  note: string | null;
+  note_visible_to_customer: boolean | null;
+  photos: CoursePhoto[];
+};
+
+export type CourseDetail = Course & {
+  sessions: CourseSession[];
+  payments: { amount: number; method: string; created_at: string | null }[];
+};
+
+export type CoursePayOptions = { balance_due: number; min_amount: number; wallet_balance: number; online_payment: boolean; gateways: Gateway[] };
+
+export type CoursePayStart =
+  | { state: 'paid'; course: Course }
+  | { state: 'redirect'; checkout_url: string; transaction: string; gateway: string | null; fee: number; expires_in: number };

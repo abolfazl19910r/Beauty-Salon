@@ -92,6 +92,10 @@ function Navigator() {
         <Stack.Screen name="pay/[id]" options={{ title: 'پرداخت' }} />
         <Stack.Screen name="payment" options={{ title: 'نتیجه‌ی پرداخت', headerBackVisible: false }} />
         <Stack.Screen name="reschedule/[id]" options={{ title: 'تغییر زمان نوبت' }} />
+        <Stack.Screen name="courses" options={{ title: 'دوره‌های درمانی' }} />
+        <Stack.Screen name="course/[id]" options={{ title: 'دوره‌ی من' }} />
+        <Stack.Screen name="course-pay/[id]" options={{ title: 'پرداخت دوره' }} />
+        <Stack.Screen name="course-book/[id]" options={{ title: 'رزرو جلسه' }} />
         <Stack.Screen name="wallet" options={{ title: 'کیف پول' }} />
         <Stack.Screen name="charge" options={{ title: 'شارژ کیف پول' }} />
         <Stack.Screen name="wallet-transactions" options={{ title: 'تراکنش‌های کیف پول' }} />

@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 
-import { timeOf, toman } from '@/lib/format';
+import { faDigits, timeOf, toman } from '@/lib/format';
 import type { Booking, BookingStatus } from '@/lib/types';
 import { Badge, Card, Row, T } from './kit';
 
@@ -28,6 +28,7 @@ export function BookingCard({ booking, showDate }: { booking: Booking; showDate?
         <StatusBadge booking={booking} />
       </Row>
       <T weight="medium">{booking.customer?.name ?? '—'}</T>
+      {booking.course?.label ? <Badge text={faDigits(booking.course.label)} tone="info" /> : null}
       <Row style={{ justifyContent: 'space-between' }}>
         <T muted size={14}>{booking.service?.name ?? '—'}</T>
         {booking.remaining_amount > 0 ? <T muted size={13}>باقی‌مانده: {toman(booking.remaining_amount)}</T> : null}

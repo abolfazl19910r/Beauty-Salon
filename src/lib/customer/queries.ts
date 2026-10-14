@@ -7,6 +7,10 @@ import type {
   BookableDate,
   Catalog,
   ChargeOptions,
+  Course,
+  CourseDetail,
+  CoursePackage,
+  CoursePayOptions,
   CustomerBooking,
   CustomerNotification,
   CustomerWallet,
@@ -45,6 +49,13 @@ export const ckeys = {
   codes: ['c', 'codes'] as const,
   profile: ['c', 'profile'] as const,
   notifications: ['c', 'notifications'] as const,
+  coursePackages: ['c', 'course-packages'] as const,
+  courses: ['c', 'courses'] as const,
+  course: (id: number) => ['c', 'course', id] as const,
+  courseSpecialists: (id: number) => ['c', 'course-specialists', id] as const,
+  courseDates: (id: number, specialistId: number) => ['c', 'course-dates', id, specialistId] as const,
+  courseSlots: (id: number, specialistId: number, date: string) => ['c', 'course-slots', id, specialistId, date] as const,
+  coursePay: (id: number) => ['c', 'course-pay', id] as const,
 };
 
 const nextPage = (meta: ApiMeta) => {
@@ -63,6 +74,9 @@ export function useRefreshMoney() {
     void qc.invalidateQueries({ queryKey: ckeys.walletTransactions });
     void qc.invalidateQueries({ queryKey: ckeys.loyalty });
     void qc.invalidateQueries({ queryKey: ['c', 'slots'] });
+    void qc.invalidateQueries({ queryKey: ckeys.courses });
+    void qc.invalidateQueries({ queryKey: ['c', 'course'] });
+    void qc.invalidateQueries({ queryKey: ['c', 'course-slots'] });
   };
 }
 
@@ -263,5 +277,88 @@ export function useNotificationMutations() {
   return {
     read: useMutation({ mutationFn: async (id: string) => api.post(`/customer/notifications/${id}/read`), onSuccess: refresh }),
     readAll: useMutation({ mutationFn: async () => api.post('/customer/notifications/read-all'), onSuccess: refresh }),
+  };
+}
+
+// ─── دوره‌های درمانی (بسته‌ی ب) ─────────────────────────────────────────
+
+/** بسته‌های فروش آنلاین؛ ۴۰۴ (not_found) یعنی امکان در پلن سالن نیست — صفحه آن را «فروش آنلاین ندارد» نشان می‌دهد */
+export function useCoursePackages(enabled = true) {
+  const api = useApi();
+  return useQuery({
+    queryKey: ckeys.coursePackages,
+    queryFn: async () => (await api.get<CoursePackage[]>('/customer/courses/packages')).data,
+    enabled,
+    retry: false,
+  });
+}
+
+export function useCourses() {
+  const api = useApi();
+  return useQuery({ queryKey: ckeys.courses, queryFn: async () => (await api.get<Course[]>('/customer/courses')).data });
+}
+
+export function useCourse(id: number) {
+  const api = useApi();
+  return useQuery({ queryKey: ckeys.course(id), queryFn: async () => (await api.get<CourseDetail>(`/customer/courses/${id}`)).data, enabled: id > 0 });
+}
+
+export function useCourseSpecialists(id: number) {
+  const api = useApi();
+  return useQuery({
+    queryKey: ckeys.courseSpecialists(id),
+    queryFn: async () => (await api.get<Specialist[]>(`/customer/courses/${id}/specialists`)).data,
+    enabled: id > 0,
+  });
+}
+
+export function useCourseDates(id: number, specialistId: number) {
+  const api = useApi();
+  return useQuery({
+    queryKey: ckeys.courseDates(id, specialistId),
+    queryFn: async () => (await api.get<{ from: string; to: string; dates: string[] }>(`/customer/courses/${id}/dates`, { specialist_id: specialistId })).data,
+    enabled: id > 0 && specialistId > 0,
+  });
+}
+
+export function useCourseSlots(id: number, specialistId: number, date: string | null) {
+  const api = useApi();
+  return useQuery({
+    queryKey: ckeys.courseSlots(id, specialistId, date ?? ''),
+    queryFn: async () => (await api.get<{ date: string; slots: string[] }>(`/customer/courses/${id}/slots`, { specialist_id: specialistId, date })).data,
+    enabled: id > 0 && specialistId > 0 && !!date,
+    staleTime: 0,
+  });
+}
+
+export function useCoursePayOptions(id: number) {
+  const api = useApi();
+  return useQuery({ queryKey: ckeys.coursePay(id), queryFn: async () => (await api.get<CoursePayOptions>(`/customer/courses/${id}/pay`)).data, enabled: id > 0, staleTime: 0 });
+}
+
+export function useCourseActions() {
+  const api = useApi();
+  const qc = useQueryClient();
+  const refresh = useRefreshMoney();
+  return {
+    purchase: useMutation({
+      mutationFn: async (args: { packageId: number; discount_code?: string }) =>
+        (await api.post<Course>(`/customer/courses/packages/${args.packageId}/purchase`, { discount_code: args.discount_code || undefined })).data,
+      onSuccess: (course) => {
+        void qc.invalidateQueries({ queryKey: ckeys.courses });
+        qc.removeQueries({ queryKey: ckeys.course(course.id) });
+      },
+    }),
+    book: useMutation({
+      mutationFn: async (args: { courseId: number; specialist_id: number; date: string; time: string }) =>
+        (await api.post<{ booking: CustomerBooking; course: Course }>(`/customer/courses/${args.courseId}/bookings`, {
+          specialist_id: args.specialist_id, date: args.date, time: args.time,
+        })).data,
+      onSuccess: refresh,
+    }),
+    deletePhoto: useMutation({
+      mutationFn: async (args: { courseId: number; photoId: number }) => api.del(`/customer/course-photos/${args.photoId}`),
+      onSuccess: (_r, args) => void qc.invalidateQueries({ queryKey: ckeys.course(args.courseId) }),
+    }),
   };
 }
