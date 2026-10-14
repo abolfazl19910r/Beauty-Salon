@@ -4,6 +4,7 @@ use App\Http\Controllers\SuperAdmin\DemoRequestController;
 use App\Http\Controllers\SuperAdmin\PlatformSettingsController;
 use App\Http\Controllers\SuperAdmin\SuperAdminController;
 use App\Http\Controllers\SuperAdmin\SuperAdminPaymentController;
+use App\Http\Controllers\SuperAdmin\SuperAdminPlanController;
 use App\Http\Controllers\SuperAdmin\SupportTicketController;
 use Illuminate\Support\Facades\Route;
 
@@ -53,3 +54,14 @@ Route::patch('/demo-requests/{demoRequest}', [DemoRequestController::class, 'upd
 // تنظیمات پلتفرم: راه‌های تماس صفحه‌ی فروش و ایمیل درخواست‌های دمو (۲۰۲۶-۱۰-۱۴)
 Route::get('/settings', [PlatformSettingsController::class, 'edit'])->name('settings.edit');
 Route::put('/settings', [PlatformSettingsController::class, 'update'])->name('settings.update');
+
+// پلن‌ها و امکانات (بسته‌ی الف، ۲۰۲۶-۱۰-۱۴) + پلن و استثنای امکانات هر سالن
+Route::get('/plans', [SuperAdminPlanController::class, 'index'])->name('plans.index');
+Route::get('/plans/create', [SuperAdminPlanController::class, 'create'])->name('plans.create');
+Route::post('/plans', [SuperAdminPlanController::class, 'store'])->name('plans.store');
+Route::get('/plans/{plan}/edit', [SuperAdminPlanController::class, 'edit'])->name('plans.edit');
+Route::put('/plans/{plan}', [SuperAdminPlanController::class, 'update'])->name('plans.update');
+Route::delete('/plans/{plan}', [SuperAdminPlanController::class, 'destroy'])->name('plans.destroy');
+Route::put('/salons/{salon}/plan', [SuperAdminPlanController::class, 'assign'])->name('salons.plan');
+Route::post('/salons/{salon}/feature-overrides', [SuperAdminPlanController::class, 'storeOverride'])->name('salons.feature-overrides.store');
+Route::delete('/salons/{salon}/feature-overrides/{override}', [SuperAdminPlanController::class, 'destroyOverride'])->name('salons.feature-overrides.destroy');

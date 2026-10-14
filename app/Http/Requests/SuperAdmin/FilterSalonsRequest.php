@@ -22,6 +22,7 @@ class FilterSalonsRequest extends FormRequest
             'q' => ['nullable', 'string', 'max:100'],
             'status' => ['nullable', Rule::in(array_keys(SalonListFilter::STATUSES))],
             'subscription_type' => ['nullable', Rule::in(['1m', '3m', '6m', '12m'])],
+            'plan_id' => ['nullable', 'regex:/^(none|\d+)$/'],
             'quota' => ['nullable', Rule::in(['full', 'available'])],
             'started_from' => ['nullable', 'string', 'max:20', $jalali],
             'started_to' => ['nullable', 'string', 'max:20', $jalali],

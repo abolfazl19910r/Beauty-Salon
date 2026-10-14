@@ -32,7 +32,7 @@ class SalonListFilter
 
     public function query(array $filters): Builder
     {
-        $query = Salon::query()->withCount('specialists')->with('admins');
+        $query = Salon::query()->withCount('specialists')->with(['admins', 'plan']);
 
         if ($term = trim((string) ($filters['q'] ?? ''))) {
             $like = '%'.str_replace(['%', '_'], ['\%', '\_'], $term).'%';
@@ -59,6 +59,13 @@ class SalonListFilter
                 ->whereDoesntHave('invoices', fn ($i) => $i->withoutGlobalScope('salon')->where('status', 'paid')),
             default => null,
         };
+
+        // پلن (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴)؛ «none» = سالن‌های بی‌پلن
+        if (($filters['plan_id'] ?? null) === 'none') {
+            $query->whereNull('plan_id');
+        } elseif (! empty($filters['plan_id'])) {
+            $query->where('plan_id', (int) $filters['plan_id']);
+        }
 
         if (! empty($filters['subscription_type'])) {
             $query->where('subscription_type', $filters['subscription_type']);

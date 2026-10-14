@@ -20,8 +20,8 @@
     <div class="mb-4">
         <label class="sa-label">لوگوی سالن <span style="color: var(--sa-text-dim);">(اختیاری — PNG/JPG/WEBP، حداکثر ۲ مگابایت)</span></label>
         <div class="flex items-center gap-3">
-            @if ($salon?->logoUrl())
-                <img src="{{ $salon->logoUrl() }}" alt="لوگوی {{ $salon->name }}" class="w-14 h-14 object-contain rounded border" style="border-color: var(--sa-border);">
+            @if ($salon?->storedLogoUrl())
+                <img src="{{ $salon->storedLogoUrl() }}" alt="لوگوی {{ $salon->name }}" class="w-14 h-14 object-contain rounded border" style="border-color: var(--sa-border);">
             @endif
             <input type="file" name="logo" accept="image/png,image/jpeg,image/webp" class="text-sm">
         </div>

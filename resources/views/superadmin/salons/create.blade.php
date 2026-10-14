@@ -52,6 +52,20 @@
                             <option value="12m" {{ old('subscription_type') == '12m' ? 'selected' : '' }}>۱۲ ماه</option>
                         </select>
                     </div>
+                    @php $planChoices = \App\Models\Plan::query()->where('is_trial', false)->orderBy('sort')->orderBy('id')->get(); @endphp
+                    @if ($planChoices->isNotEmpty())
+                        {{-- پلن (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴) — سوپرادمین هر پلنی را، حتی غیرفعال، می‌تواند تخصیص دهد --}}
+                        <div>
+                            <label class="sa-label" for="plan_id">پلن</label>
+                            <select id="plan_id" name="plan_id" class="sa-input">
+                                @foreach ($planChoices as $planChoice)
+                                    <option value="{{ $planChoice->id }}" @selected((int) old('plan_id', $planChoices->firstWhere('is_public', true)?->id) === $planChoice->id)>
+                                        {{ $planChoice->name }}{{ $planChoice->is_active ? '' : ' (غیرفعال)' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
                     <div>
                         <label class="sa-label">سقف تعداد متخصص</label>
                         <input type="number" name="max_specialists_count" value="{{ old('max_specialists_count', $includedSpecialists) }}" min="0" class="sa-input" required>

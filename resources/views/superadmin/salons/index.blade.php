@@ -27,7 +27,17 @@
                 </select>
             </div>
             <div>
-                <label class="sa-label" for="subscription_type">پلن فعلی</label>
+                <label class="sa-label" for="plan_id">پلن</label>
+                <select id="plan_id" name="plan_id" class="sa-input">
+                    <option value="">همه</option>
+                    @foreach (\App\Models\Plan::query()->orderByDesc('is_trial')->orderBy('sort')->get() as $planOption)
+                        <option value="{{ $planOption->id }}" @selected(($filters['plan_id'] ?? null) == $planOption->id)>{{ $planOption->name }}</option>
+                    @endforeach
+                    <option value="none" @selected(($filters['plan_id'] ?? null) === 'none')>بدون پلن</option>
+                </select>
+            </div>
+            <div>
+                <label class="sa-label" for="subscription_type">بازه‌ی فعلی</label>
                 <select id="subscription_type" name="subscription_type" class="sa-input">
                     <option value="">همه</option>
                     @foreach (['1m' => 'یک‌ماهه', '3m' => 'سه‌ماهه', '6m' => 'شش‌ماهه', '12m' => 'یک‌ساله'] as $value => $label)
@@ -109,7 +119,10 @@
                         </td>
                         <td class="py-3 px-4">{{ $salon->specialists_count }} / {{ $salon->max_specialists_count }}</td>
                         <td class="py-3 px-4">{{ $salon->subscription_started_at ? jalali_date($salon->subscription_started_at) : '—' }}</td>
-                        <td class="py-3 px-4">{{ jalali_date($salon->subscription_ends_at) }}</td>
+                        <td class="py-3 px-4">
+                            {{ jalali_date($salon->subscription_ends_at) }}
+                            <div class="text-xs" style="color: var(--sa-text-dim);">{{ $salon->plan?->name ?? 'بدون پلن' }}</div>
+                        </td>
                         <td class="py-3 px-4">
                             @if ($salon->is_suspended)
                                 <span style="color: var(--sa-danger);">تعلیق‌شده</span>

@@ -44,6 +44,7 @@ class StoreSalonRequest extends FormRequest
                 Rule::unique('salons', 'slug'),
             ],
             'subscription_type' => ['required', 'in:1m,3m,6m,12m'],
+            'plan_id' => ['nullable', 'integer', 'exists:plans,id'],
             'max_specialists_count' => ['required', 'integer', 'min:0'],
             'module_permissions' => ['nullable', 'array'],
             'module_permissions.*' => ['string'],

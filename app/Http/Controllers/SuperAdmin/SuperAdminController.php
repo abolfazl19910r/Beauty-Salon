@@ -99,7 +99,12 @@ class SuperAdminController extends Controller
             'otp' => $quota->otpCount($salon),
         ];
 
-        return view('superadmin.salons.edit', compact('salon', 'smsUsage'));
+        // پلن و استثنای امکانات (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴)
+        $plans = \App\Models\Plan::query()->orderByDesc('is_trial')->orderBy('sort')->orderBy('id')->get();
+        $overrides = $salon->featureOverrides()->with('setBy')->orderBy('feature')->get();
+        $enabledFeatures = $salon->enabledFeatureKeys();
+
+        return view('superadmin.salons.edit', compact('salon', 'smsUsage', 'plans', 'overrides', 'enabledFeatures'));
     }
 
     /** اعطای دستی اعتبار پیامک (هدیه، جبران خطا) — ۲۰۲۶-۰۹-۳۰؛ در تاریخچه‌ی خرید سالن با مبلغ ۰ ثبت می‌شود */

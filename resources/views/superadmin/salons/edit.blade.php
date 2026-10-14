@@ -17,6 +17,8 @@
             <div>اعتبار خریده‌شده‌ی باقی‌مانده: {{ to_persian_num(number_format($smsUsage['credit'])) }} قطعه</div>
         </div>
 
+        @include('superadmin.salons.partials.plan-features')
+
         {{-- اعطای دستی اعتبار پیامک (هدیه/جبران) — ۲۰۲۶-۰۹-۳۰ --}}
         <form method="POST" action="{{ route('superadmin.salons.sms-credit', $salon) }}" class="mb-5 p-4 rounded-lg text-sm flex flex-wrap items-end gap-3" style="border:1px solid var(--sa-border);">
             @csrf
@@ -69,10 +71,11 @@
             <div>
                 <label class="sa-label">
                     سهمیه‌ی پیامک ماهانه (قطعه)
-                    <span style="color: var(--sa-text-dim);">— خالی = پیش‌فرض {{ to_persian_num(number_format((int) config('billing.sms_quota_per_month'))) }} قطعه</span>
+                    @php $defaultQuota = (int) ($salon->effectivePlan()?->sms_quota_per_month ?? config('billing.sms_quota_per_month')); @endphp
+                    <span style="color: var(--sa-text-dim);">— خالی = سهمیه‌ی پلن سالن، {{ to_persian_num(number_format($defaultQuota)) }} قطعه</span>
                 </label>
                 <input type="number" name="sms_quota_per_month" value="{{ old('sms_quota_per_month', $salon->sms_quota_per_month) }}" min="0" class="sa-input"
-                       placeholder="{{ (int) config('billing.sms_quota_per_month') }}">
+                       placeholder="{{ $defaultQuota }}">
                 <p class="text-xs mt-1" style="color: var(--sa-text-dim);">فقط برای سالنی که سهمیه‌ی متفاوت می‌خواهد. سالن آزمایشی تا اولین خرید سهمیه‌ی آزمایشی دارد.</p>
             </div>
 
