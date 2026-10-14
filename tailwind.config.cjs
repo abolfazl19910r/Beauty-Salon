@@ -27,6 +27,24 @@ module.exports = {
             // actually running `npm run build`: removing this broke the CSS build outright with
             // "The `border-border` class does not exist."
             colors: {
+                // ⭐ «ماهرو» (ادامه ۷): رنگ‌های سیستم طراحی لندینگ برای صفحه‌های عمومی و مشتری.
+                // مقدارها کانال‌های RGB در partials/mahru-theme هستند، پس دو تم تیره/روشن و
+                // شفافیت (text-m-gold/40) هر دو کار می‌کنند. on-gold متن ثابت روی دکمه‌ی طلایی است.
+                m: {
+                    bg: "rgb(var(--m-bg) / <alpha-value>)",
+                    bg2: "rgb(var(--m-bg2) / <alpha-value>)",
+                    bg3: "rgb(var(--m-bg3) / <alpha-value>)",
+                    card: "rgb(var(--m-card) / <alpha-value>)",
+                    tx: "rgb(var(--m-tx) / <alpha-value>)",
+                    mu: "rgb(var(--m-mu) / <alpha-value>)",
+                    gold: "rgb(var(--m-gold) / <alpha-value>)",
+                    gold2: "rgb(var(--m-gold2) / <alpha-value>)",
+                    ok: "rgb(var(--m-ok) / <alpha-value>)",
+                    bad: "rgb(var(--m-bad) / <alpha-value>)",
+                    info: "rgb(var(--m-info) / <alpha-value>)",
+                    warn: "rgb(var(--m-warn) / <alpha-value>)",
+                    ongold: "#221A0C",
+                },
                 border: "hsl(var(--border))",
                 input: "hsl(var(--input))",
                 ring: "hsl(var(--ring))",

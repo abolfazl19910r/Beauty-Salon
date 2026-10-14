@@ -8,16 +8,16 @@
 --}}
 @if (! empty($gatewayOptions))
     <div class="mb-5" id="gateway-picker">
-        <p class="font-bold text-sm mb-3" style="color:#E6CD8A;">انتخاب درگاه پرداخت</p>
+        <p class="font-bold text-sm mb-3" style="color:rgb(var(--m-gold2));">انتخاب درگاه پرداخت</p>
         <div class="space-y-2">
             @foreach ($gatewayOptions as $i => $option)
                 <label class="flex items-center gap-3 p-3 rounded-xl cursor-pointer"
-                       style="background:rgba(26,20,16,0.5); border:1px solid rgba(201,162,75,0.2);">
+                       style="background:rgb(var(--m-bg) / 0.5); border:1px solid rgb(var(--m-gold) / 0.2);">
                     <input type="radio" name="gateway_id" value="{{ $option['id'] }}" @checked($i === 0)
                            data-fee-percent="{{ $option['fee_percent'] }}" data-fee-fixed="{{ $option['fee_fixed'] }}"
-                           style="accent-color:#C9A24B;">
-                    <span class="flex-1 text-sm" style="color:#F8F3E9;">{{ $option['name'] }}</span>
-                    <span class="text-xs persian-number" style="color:rgba(248,243,233,0.6);" data-gateway-fee-label>
+                           style="accent-color:rgb(var(--m-gold));">
+                    <span class="flex-1 text-sm" style="color:rgb(var(--m-tx));">{{ $option['name'] }}</span>
+                    <span class="text-xs persian-number" style="color:rgb(var(--m-tx) / 0.6);" data-gateway-fee-label>
                         @if ($option['fee'] > 0)
                             کارمزد: {{ number_format($option['fee']) }} تومان
                         @elseif ($option['fee_percent'] > 0 || $option['fee_fixed'] > 0)
@@ -30,7 +30,7 @@
             @endforeach
         </div>
         @if (count($gatewayOptions) > 1)
-            <p class="text-xs mt-2 leading-6" style="color:rgba(248,243,233,0.5);">
+            <p class="text-xs mt-2 leading-6" style="color:rgb(var(--m-tx) / 0.5);">
                 اگر درگاه انتخابی در دسترس نباشد، پرداخت خودکار با درگاه بعدی انجام می‌شود و مبلغ نهایی در صفحه‌ی درگاه نمایش داده می‌شود.
             </p>
         @endif

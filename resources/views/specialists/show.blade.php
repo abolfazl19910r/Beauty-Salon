@@ -18,9 +18,9 @@
         @include('specialists.partials.nav')
         <div class="flex flex-col sm:flex-row items-center gap-6 mb-10 text-center sm:text-right">
             @if ($specialist->photoUrl())
-                <img src="{{ $specialist->photoUrl() }}" alt="{{ $specialist->name }}" class="w-32 h-32 rounded-full object-cover border-2 border-[var(--rasta-gold)]/40">
+                <img src="{{ $specialist->photoUrl() }}" alt="{{ $specialist->name }}" class="w-32 h-32 rounded-full object-cover border-2 border-m-gold/40">
             @else
-                <div class="w-32 h-32 rounded-full flex items-center justify-center text-4xl font-bold" style="background: rgba(201,162,75,.15); color: var(--rasta-gold-light);">
+                <div class="w-32 h-32 rounded-full flex items-center justify-center text-4xl font-bold" style="background: rgb(var(--m-gold) / .15); color: var(--rasta-gold-light);">
                     {{ mb_substr($specialist->name, 0, 1) }}
                 </div>
             @endif
@@ -37,8 +37,8 @@
                 </div>
             </div>
             <div class="flex flex-col gap-2">
-                <a href="{{ route('bookings.create') }}" class="px-6 py-3 rounded-full font-bold text-center" style="background: var(--rasta-gold); color: #1A1410;">رزرو نوبت</a>
-                <a href="{{ route('specialists.availability', $specialist) }}" class="px-6 py-2 rounded-full text-sm text-center" style="border: 1px solid rgba(201,162,75,.4); color: var(--rasta-gold-light);">تقویم نوبت‌های خالی</a>
+                <a href="{{ route('bookings.create') }}" class="px-6 py-3 rounded-full font-bold text-center" style="background: var(--m-btn); color: var(--m-on-gold);">رزرو نوبت</a>
+                <a href="{{ route('specialists.availability', $specialist) }}" class="px-6 py-2 rounded-full text-sm text-center" style="border: 1px solid rgb(var(--m-gold) / .4); color: var(--rasta-gold-light);">تقویم نوبت‌های خالی</a>
             </div>
         </div>
 
@@ -46,7 +46,7 @@
             <h2 class="text-lg font-bold mb-4" style="color: var(--rasta-gold-light);">خدمات</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10">
                 @foreach ($specialist->services as $service)
-                    <div class="rounded-xl p-4 flex items-center justify-between" style="background: var(--rasta-brown); border: 1px solid rgba(201,162,75,.12);">
+                    <div class="rounded-xl p-4 flex items-center justify-between" style="background: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / .12);">
                         <span>{{ $service->name }}</span>
                         <span class="text-sm persian-number" style="color: var(--rasta-gold);">{{ to_persian_num(number_format((int) $service->price)) }} تومان</span>
                     </div>
@@ -58,7 +58,7 @@
             <h2 class="text-lg font-bold mb-4" style="color: var(--rasta-gold-light);">روزهای کاری</h2>
             <div class="flex flex-wrap gap-2 mb-10 text-sm persian-number">
                 @foreach ($schedules as $schedule)
-                    <span class="rounded-full px-3 py-1" style="background: var(--rasta-brown); border: 1px solid rgba(201,162,75,.15);">
+                    <span class="rounded-full px-3 py-1" style="background: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / .15);">
                         {{ $dayNames[(int) $schedule->day_of_week] ?? '' }}: {{ to_persian_num(substr((string) $schedule->start_time, 0, 5)) }} تا {{ to_persian_num(substr((string) $schedule->end_time, 0, 5)) }}
                     </span>
                 @endforeach
@@ -70,7 +70,7 @@
             <a href="{{ route('reviews.specialist', $specialist) }}" class="text-sm underline" style="color: var(--rasta-gold);">همه‌ی نظرات</a>
         </div>
         @forelse ($reviews as $review)
-            <div class="rounded-xl p-4 mb-3" style="background: var(--rasta-brown); border: 1px solid rgba(201,162,75,.1);">
+            <div class="rounded-xl p-4 mb-3" style="background: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / .1);">
                 <div class="flex items-center justify-between mb-1 text-sm">
                     <span class="font-bold">{{ $review['user_name'] ?? 'مشتری' }}</span>
                     <span style="color: var(--rasta-gold);">{{ str_repeat('★', (int) $review['rating']) }}{{ str_repeat('☆', max(0, 5 - (int) $review['rating'])) }}</span>

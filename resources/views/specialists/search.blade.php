@@ -11,20 +11,20 @@
 
         <form method="GET" action="{{ route('specialists.search') }}" class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-8">
             <input type="text" name="name" value="{{ $search }}" placeholder="نام متخصص" maxlength="100"
-                   class="md:col-span-2 rounded-lg px-4 py-2" style="background: var(--rasta-brown); border: 1px solid rgba(201,162,75,.25); color: var(--rasta-cream);">
-            <select name="service_id" class="rounded-lg px-4 py-2" style="background: var(--rasta-brown); border: 1px solid rgba(201,162,75,.25); color: var(--rasta-cream);">
+                   class="md:col-span-2 rounded-lg px-4 py-2" style="background: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / .25); color: var(--rasta-cream);">
+            <select name="service_id" class="rounded-lg px-4 py-2" style="background: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / .25); color: var(--rasta-cream);">
                 <option value="">همه‌ی خدمات</option>
                 @foreach ($services as $service)
                     <option value="{{ $service->id }}" @selected($serviceId === $service->id)>{{ $service->name }}</option>
                 @endforeach
             </select>
             <div class="flex gap-2">
-                <select name="sort" class="flex-1 rounded-lg px-3 py-2" style="background: var(--rasta-brown); border: 1px solid rgba(201,162,75,.25); color: var(--rasta-cream);">
+                <select name="sort" class="flex-1 rounded-lg px-3 py-2" style="background: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / .25); color: var(--rasta-cream);">
                     <option value="">پیش‌فرض</option>
                     <option value="name" @selected($sort === 'name')>نام</option>
                     <option value="rating" @selected($sort === 'rating')>بیشترین امتیاز</option>
                 </select>
-                <button type="submit" class="px-5 py-2 rounded-lg font-bold" style="background: var(--rasta-gold); color: #1A1410;">جستجو</button>
+                <button type="submit" class="px-5 py-2 rounded-lg font-bold" style="background: var(--m-btn); color: var(--m-on-gold);">جستجو</button>
             </div>
         </form>
 

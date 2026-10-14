@@ -7,37 +7,37 @@
         {{-- Header --}}
         <div class="flex items-center gap-3 mb-8">
             <a href="{{ route('profile.edit') }}"
-               class="w-9 h-9 rounded-xl bg-[#2E2117] border border-[#C9A24B]/15 flex items-center justify-center
-                  text-[#F8F3E9]/60 hover:text-[#E6CD8A] transition-colors">
+               class="w-9 h-9 rounded-xl bg-m-card border border-m-gold/15 flex items-center justify-center
+                  text-m-tx/60 hover:text-m-gold2 transition-colors">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
                 </svg>
             </a>
             <div>
-                <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase mb-0.5">امنیت حساب</p>
-                <h1 class="text-2xl font-bold text-[#E6CD8A]" style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">احراز هویت دو مرحله‌ای</h1>
+                <p class="text-xs font-semibold text-m-gold tracking-[0.3em] uppercase mb-0.5">امنیت حساب</p>
+                <h1 class="text-2xl font-bold text-m-gold2" style="font-family:'Mahru','Vazirmatn',sans-serif;font-weight:800;">احراز هویت دو مرحله‌ای</h1>
             </div>
         </div>
 
         @if(session('error'))
-            <div class="mb-5 text-sm rounded-xl p-3 bg-red-500/10 text-red-400 border border-red-500/20">
+            <div class="mb-5 text-sm rounded-xl p-3 bg-m-bad/10 text-m-bad border border-m-bad/20">
                 {{ session('error') }}
             </div>
         @endif
 
-        <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 overflow-hidden">
-            <div class="px-6 py-4 border-b border-[#C9A24B]/10 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl {{ $enabled ? 'bg-emerald-500/15' : 'bg-[#C9A24B]/15' }} flex items-center justify-center shrink-0">
-                    <svg class="w-5 h-5 {{ $enabled ? 'text-emerald-400' : 'text-[#E6CD8A]' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <div class="bg-m-card rounded-2xl border border-m-gold/10 overflow-hidden">
+            <div class="px-6 py-4 border-b border-m-gold/10 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl {{ $enabled ? 'bg-m-ok/15' : 'bg-m-gold/15' }} flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 {{ $enabled ? 'text-m-ok' : 'text-m-gold2' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                         <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                     </svg>
                 </div>
                 <div>
-                    <p class="font-bold text-sm text-[#F8F3E9]">
-                        وضعیت: <span class="{{ $enabled ? 'text-emerald-400' : 'text-[#F8F3E9]/50' }}">{{ $enabled ? 'فعال' : 'غیرفعال' }}</span>
+                    <p class="font-bold text-sm text-m-tx">
+                        وضعیت: <span class="{{ $enabled ? 'text-m-ok' : 'text-m-tx/50' }}">{{ $enabled ? 'فعال' : 'غیرفعال' }}</span>
                     </p>
-                    <p class="text-xs text-[#F8F3E9]/45 mt-0.5">
+                    <p class="text-xs text-m-tx/45 mt-0.5">
                         با فعال بودن این گزینه، امکان استفاده از «پرداخت امن» فراهم می‌شود.
                     </p>
                 </div>
@@ -45,33 +45,33 @@
 
             <div class="p-6">
                 @if(!$enabled)
-                    <p class="text-sm text-[#F8F3E9]/60 mb-4">
+                    <p class="text-sm text-m-tx/60 mb-4">
                         با فعال‌سازی احراز هویت دو مرحله‌ای، یک لایه‌ی امنیتی اضافه با کد پیامکی به حساب شما اضافه می‌شود.
                     </p>
                     <a href="{{ route('security.2fa.setup') }}"
                        class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-bold transition-all
-                          bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-[#1A1410] hover:shadow-lg hover:shadow-[#C9A24B]/30">
+                          bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-m-ongold hover:shadow-lg hover:shadow-[#C9A24B]/30">
                         فعال‌سازی احراز هویت دو مرحله‌ای
                     </a>
                 @else
                     <div id="disable-step-1">
-                        <p class="text-sm text-[#F8F3E9]/60 mb-4">
+                        <p class="text-sm text-m-tx/60 mb-4">
                             برای غیرفعال‌سازی، ابتدا یک کد تایید برای شماره موبایل شما ارسال می‌شود.
                         </p>
                         <button onclick="requestDisableCode()" id="request-disable-btn"
-                                class="px-5 py-2.5 rounded-xl text-sm font-semibold border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors">
+                                class="px-5 py-2.5 rounded-xl text-sm font-semibold border border-m-bad/30 text-m-bad hover:bg-m-bad/10 transition-colors">
                             <span id="request-disable-text">ارسال کد برای غیرفعال‌سازی</span>
                         </button>
                     </div>
 
-                    <div id="disable-step-2" class="hidden mt-5 pt-5 border-t border-[#C9A24B]/10">
-                        <label class="block text-sm text-[#F8F3E9]/70 mb-2">کد ۶ رقمی ارسال‌شده را وارد کنید</label>
+                    <div id="disable-step-2" class="hidden mt-5 pt-5 border-t border-m-gold/10">
+                        <label class="block text-sm text-m-tx/70 mb-2">کد ۶ رقمی ارسال‌شده را وارد کنید</label>
                         <div class="flex gap-2">
                             <input type="text" id="disable-code" maxlength="6" inputmode="numeric"
-                                   class="flex-1 bg-white/5 border border-[#C9A24B]/25 text-[#F8F3E9] rounded-xl px-4 py-2.5 text-sm tracking-widest text-center"
+                                   class="flex-1 bg-m-tx/5 border border-m-gold/25 text-m-tx rounded-xl px-4 py-2.5 text-sm tracking-widest text-center"
                                    dir="ltr" placeholder="------">
                             <button onclick="confirmDisable()" id="confirm-disable-btn"
-                                    class="px-5 py-2.5 rounded-xl text-sm font-bold bg-red-500/90 text-white hover:bg-red-500 transition-colors">
+                                    class="px-5 py-2.5 rounded-xl text-sm font-bold bg-m-bad/90 text-white hover:bg-m-bad transition-colors">
                                 غیرفعال‌سازی
                             </button>
                         </div>
@@ -92,8 +92,8 @@
             const el = document.getElementById('disable-message');
             if (!el) return;
             el.textContent = text;
-            el.classList.remove('hidden', 'bg-red-500/10', 'text-red-400', 'border-red-500/20', 'bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
-            el.classList.add('border', isError ? 'bg-red-500/10' : 'bg-emerald-500/10', isError ? 'text-red-400' : 'text-emerald-400', isError ? 'border-red-500/20' : 'border-emerald-500/20');
+            el.classList.remove('hidden', 'bg-m-bad/10', 'text-m-bad', 'border-m-bad/20', 'bg-m-ok/10', 'text-m-ok', 'border-m-ok/20');
+            el.classList.add('border', isError ? 'bg-m-bad/10' : 'bg-m-ok/10', isError ? 'text-m-bad' : 'text-m-ok', isError ? 'border-m-bad/20' : 'border-m-ok/20');
         }
 
         function requestDisableCode() {

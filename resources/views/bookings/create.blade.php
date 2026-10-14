@@ -5,48 +5,48 @@
 @section('content')
     <style>
         .slot-btn {
-            background: rgba(201,162,75,0.08);
-            border: 1px solid rgba(201,162,75,0.2);
-            color: rgba(248,243,233,0.8);
+            background: rgb(var(--m-gold) / 0.08);
+            border: 1px solid rgb(var(--m-gold) / 0.2);
+            color: rgb(var(--m-tx) / 0.8);
             transition: all 0.25s;
             cursor: pointer;
         }
-        .slot-btn:hover { background: rgba(201,162,75,0.18); color: #E6CD8A; }
+        .slot-btn:hover { background: rgb(var(--m-gold) / 0.18); color: rgb(var(--m-gold2)); }
         .slot-btn.selected {
-            background: linear-gradient(135deg, #E6CD8A, #C9A24B);
-            color: #1A1410;
+            background: var(--m-btn);
+            color: var(--m-on-gold);
             font-weight: 700;
             border-color: transparent;
         }
         .date-btn {
-            background: rgba(201,162,75,0.08);
-            border: 1px solid rgba(201,162,75,0.15);
-            color: rgba(248,243,233,0.75);
+            background: rgb(var(--m-gold) / 0.08);
+            border: 1px solid rgb(var(--m-gold) / 0.15);
+            color: rgb(var(--m-tx) / 0.75);
             transition: all 0.25s;
             cursor: pointer;
         }
-        .date-btn:hover { background: rgba(201,162,75,0.18); color: #E6CD8A; }
+        .date-btn:hover { background: rgb(var(--m-gold) / 0.18); color: rgb(var(--m-gold2)); }
         .date-btn.selected {
-            background: linear-gradient(135deg, #E6CD8A, #C9A24B);
-            color: #1A1410;
+            background: var(--m-btn);
+            color: var(--m-on-gold);
             font-weight: 700;
             border-color: transparent;
         }
         .gold-select {
-            background: rgba(248,243,233,0.04);
-            border: 1px solid rgba(201,162,75,0.25);
-            color: #F8F3E9;
+            background: rgb(var(--m-tx) / 0.04);
+            border: 1px solid rgb(var(--m-gold) / 0.25);
+            color: rgb(var(--m-tx));
             border-radius: 0.75rem;
             padding: 0.75rem 1rem;
             width: 100%;
             transition: border-color 0.2s;
             -webkit-appearance: none;
         }
-        .gold-select:focus { outline: none; border-color: #C9A24B; box-shadow: 0 0 0 3px rgba(201,162,75,0.15); }
-        .gold-select option { background: #2E2117; color: #F8F3E9; }
+        .gold-select:focus { outline: none; border-color: rgb(var(--m-gold)); box-shadow: 0 0 0 3px rgb(var(--m-gold) / 0.15); }
+        .gold-select option { background: rgb(var(--m-card)); color: rgb(var(--m-tx)); }
 
-        .summary-box { background: rgba(201,162,75,0.06); border: 1px solid rgba(201,162,75,0.15); border-radius: 1rem; }
-        .summary-row { border-bottom: 1px solid rgba(201,162,75,0.08); }
+        .summary-box { background: rgb(var(--m-gold) / 0.06); border: 1px solid rgb(var(--m-gold) / 0.15); border-radius: 1rem; }
+        .summary-row { border-bottom: 1px solid rgb(var(--m-gold) / 0.08); }
         .summary-row:last-child { border-bottom: none; }
 
         .hidden-block { display: none !important; }
@@ -58,15 +58,15 @@
     <div class="max-w-3xl mx-auto fade-in">
         {{-- Header --}}
         <div class="mb-8">
-            <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase mb-1">{{ $currentSalonName }}</p>
-            <h1 class="text-2xl md:text-3xl font-bold text-[#E6CD8A]"
-                style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">رزرو نوبت جدید</h1>
+            <p class="text-xs font-semibold text-m-gold tracking-[0.3em] uppercase mb-1">{{ $currentSalonName }}</p>
+            <h1 class="text-2xl md:text-3xl font-bold text-m-gold2"
+                style="font-family:'Mahru','Vazirmatn',sans-serif;font-weight:800;">رزرو نوبت جدید</h1>
         </div>
 
         {{-- ⭐ ۲۰۲۶-۰۹-۲۴: سالن بدون درگاه زرین‌پال → نوبت‌های نیازمند پیش‌پرداخت قابل ثبت نیستن
              (سرور هم در BookingReservationController::blockedForMissingMerchant همین رو اعمال می‌کنه). --}}
         @if (isset($onlinePaymentAvailable) && ! $onlinePaymentAvailable)
-            <div class="mb-6 rounded-2xl border border-red-400/40 bg-red-500/10 p-4 text-sm leading-7 text-red-200" role="alert">
+            <div class="mb-6 rounded-2xl border border-m-bad/40 bg-m-bad/10 p-4 text-sm leading-7 text-m-bad" role="alert">
                 {{ \App\Support\ZarinpalMerchant::CUSTOMER_MESSAGE }}
                 @if ($currentSalonPhone)
                     <a href="tel:{{ $currentSalonPhone }}" class="font-bold underline mr-1" dir="ltr">{{ $currentSalonPhone }}</a>
@@ -74,7 +74,7 @@
             </div>
         @endif
 
-        <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 p-6 md:p-8">
+        <div class="bg-m-card rounded-2xl border border-m-gold/10 p-6 md:p-8">
             <form id="booking-form" method="POST" action="{{ route('bookings.confirm') }}" class="space-y-7">
                 @csrf
                 <input type="hidden" name="service_id" id="input-service-id">
@@ -83,9 +83,9 @@
 
                 {{-- Select service --}}
                 <div>
-                    <label class="block text-sm font-medium text-[#E6CD8A] mb-2">
+                    <label class="block text-sm font-medium text-m-gold2 mb-2">
                         <span class="flex items-center gap-1.5">
-                            <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg class="w-4 h-4 text-m-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                             </svg>
                             انتخاب خدمت
@@ -98,9 +98,9 @@
 
                 {{-- Expert selection --}}
                 <div id="specialist-section" class="hidden-block">
-                    <label class="block text-sm font-medium text-[#E6CD8A] mb-2">
+                    <label class="block text-sm font-medium text-m-gold2 mb-2">
                         <span class="flex items-center gap-1.5">
-                            <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg class="w-4 h-4 text-m-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                             </svg>
                             انتخاب متخصص
@@ -112,8 +112,8 @@
                 </div>
 
                 {{-- loading dates --}}
-                <div id="dates-loading" class="hidden-block flex items-center gap-3 py-4 text-sm text-[#F8F3E9]/60">
-                    <svg class="spin w-5 h-5 text-[#C9A24B]" fill="none" viewBox="0 0 24 24">
+                <div id="dates-loading" class="hidden-block flex items-center gap-3 py-4 text-sm text-m-tx/60">
+                    <svg class="spin w-5 h-5 text-m-gold" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                     </svg>
@@ -122,9 +122,9 @@
 
                 {{-- Select date --}}
                 <div id="dates-section" class="hidden-block">
-                    <label class="block text-sm font-medium text-[#E6CD8A] mb-3">
+                    <label class="block text-sm font-medium text-m-gold2 mb-3">
                         <span class="flex items-center gap-1.5">
-                            <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg class="w-4 h-4 text-m-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                                 <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
                                 <line x1="3" y1="10" x2="21" y2="10"/>
@@ -132,15 +132,15 @@
                             انتخاب تاریخ
                         </span>
                     </label>
-                    <div id="dates-empty" class="hidden-block text-center py-4 rounded-lg" style="background-color: rgba(201,162,75,0.05); border: 1px dashed rgba(201,162,75,0.3);">
-                        <p class="text-sm text-[#F8F3E9]/60">تاریخ خالی برای این متخصص یافت نشد</p>
+                    <div id="dates-empty" class="hidden-block text-center py-4 rounded-lg" style="background-color: rgb(var(--m-gold) / 0.05); border: 1px dashed rgb(var(--m-gold) / 0.3);">
+                        <p class="text-sm text-m-tx/60">تاریخ خالی برای این متخصص یافت نشد</p>
                     </div>
                     <div id="dates-grid" class="grid grid-cols-4 sm:grid-cols-7 gap-2"></div>
                 </div>
 
                 {{-- loading hours --}}
-                <div id="slots-loading" class="hidden-block flex items-center gap-3 py-4 text-sm text-[#F8F3E9]/60">
-                    <svg class="spin w-5 h-5 text-[#C9A24B]" fill="none" viewBox="0 0 24 24">
+                <div id="slots-loading" class="hidden-block flex items-center gap-3 py-4 text-sm text-m-tx/60">
+                    <svg class="spin w-5 h-5 text-m-gold" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                     </svg>
@@ -149,69 +149,69 @@
 
                 {{-- Choose a time --}}
                 <div id="slots-section" class="hidden-block">
-                    <label class="block text-sm font-medium text-[#E6CD8A] mb-3">
+                    <label class="block text-sm font-medium text-m-gold2 mb-3">
                         <span class="flex items-center gap-1.5">
-                            <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg class="w-4 h-4 text-m-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 6v6l4 2"/>
                             </svg>
                             انتخاب ساعت
-                            <span id="duration-label" class="mr-2 text-[#F8F3E9]/50 text-xs font-normal persian-number"></span>
+                            <span id="duration-label" class="mr-2 text-m-tx/50 text-xs font-normal persian-number"></span>
                         </span>
                     </label>
-                    <div id="slots-empty" class="hidden-block text-center py-4 rounded-lg" style="background-color: rgba(201,162,75,0.05); border: 1px dashed rgba(201,162,75,0.3);">
-                        <p id="slots-empty-message" class="text-sm text-[#F8F3E9]/60">ساعت خالی در این روز وجود ندارد</p>
+                    <div id="slots-empty" class="hidden-block text-center py-4 rounded-lg" style="background-color: rgb(var(--m-gold) / 0.05); border: 1px dashed rgb(var(--m-gold) / 0.3);">
+                        <p id="slots-empty-message" class="text-sm text-m-tx/60">ساعت خالی در این روز وجود ندارد</p>
                     </div>
                     <div id="slots-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-2"></div>
                 </div>
 
                 {{-- Reservation Summary --}}
                 <div id="summary-section" class="hidden-block summary-box p-5">
-                    <h3 class="font-bold text-[#E6CD8A] mb-4 flex items-center gap-1.5"
-                        style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">
-                        <svg class="w-4 h-4 text-[#C9A24B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <h3 class="font-bold text-m-gold2 mb-4 flex items-center gap-1.5"
+                        style="font-family:'Mahru','Vazirmatn',sans-serif;font-weight:800;">
+                        <svg class="w-4 h-4 text-m-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                         </svg>
                         خلاصه رزرو
                     </h3>
                     <div class="space-y-3 text-sm">
                         <div class="summary-row flex justify-between pb-3">
-                            <span class="text-[#F8F3E9]/60">خدمت</span>
-                            <span id="summary-service" class="font-medium text-[#F8F3E9]"></span>
+                            <span class="text-m-tx/60">خدمت</span>
+                            <span id="summary-service" class="font-medium text-m-tx"></span>
                         </div>
                         <div id="summary-duration-row" class="summary-row flex justify-between pb-3 hidden-block">
-                            <span class="text-[#F8F3E9]/60">مدت زمان</span>
-                            <span id="summary-duration" class="font-medium text-[#F8F3E9] persian-number"></span>
+                            <span class="text-m-tx/60">مدت زمان</span>
+                            <span id="summary-duration" class="font-medium text-m-tx persian-number"></span>
                         </div>
                         <div class="summary-row flex justify-between pb-3">
-                            <span class="text-[#F8F3E9]/60">متخصص</span>
+                            <span class="text-m-tx/60">متخصص</span>
                             <span class="inline-flex items-center gap-2">
                                 <img id="summary-specialist-photo" alt="" class="w-7 h-7 rounded-full object-cover" hidden>
-                                <span id="summary-specialist" class="font-medium text-[#F8F3E9]"></span>
+                                <span id="summary-specialist" class="font-medium text-m-tx"></span>
                             </span>
                         </div>
                         <div class="summary-row flex justify-between pb-3">
-                            <span class="text-[#F8F3E9]/60">تاریخ</span>
-                            <span id="summary-date" class="font-medium text-[#F8F3E9] persian-number"></span>
+                            <span class="text-m-tx/60">تاریخ</span>
+                            <span id="summary-date" class="font-medium text-m-tx persian-number"></span>
                         </div>
                         <div class="summary-row flex justify-between pb-3">
-                            <span class="text-[#F8F3E9]/60">ساعت شروع</span>
-                            <span id="summary-time" class="font-medium text-[#F8F3E9]"></span>
+                            <span class="text-m-tx/60">ساعت شروع</span>
+                            <span id="summary-time" class="font-medium text-m-tx"></span>
                         </div>
                         <div id="summary-end-row" class="summary-row flex justify-between pb-3 hidden-block">
-                            <span class="text-[#F8F3E9]/60">ساعت پایان (تقریبی)</span>
-                            <span id="summary-end-time" class="font-medium text-[#F8F3E9]"></span>
+                            <span class="text-m-tx/60">ساعت پایان (تقریبی)</span>
+                            <span id="summary-end-time" class="font-medium text-m-tx"></span>
                         </div>
                         <div class="summary-row flex justify-between pb-3">
-                            <span class="text-[#F8F3E9]/60">قیمت کل خدمت</span>
-                            <span id="summary-total-price" class="font-medium text-[#F8F3E9] persian-number">—</span>
+                            <span class="text-m-tx/60">قیمت کل خدمت</span>
+                            <span id="summary-total-price" class="font-medium text-m-tx persian-number">—</span>
                         </div>
                         <div class="flex justify-between pt-1">
-                            <span class="font-bold text-[#F8F3E9]">مبلغ پیش‌پرداخت</span>
-                            <span id="summary-prepayment" class="font-bold text-[#E6CD8A] persian-number">—</span>
+                            <span class="font-bold text-m-tx">مبلغ پیش‌پرداخت</span>
+                            <span id="summary-prepayment" class="font-bold text-m-gold2 persian-number">—</span>
                         </div>
                         <div class="flex justify-between pt-1">
-                            <span class="text-[#F8F3E9]/60">باقی‌مانده (موقع نوبت به متخصص می‌دهید)</span>
-                            <span id="summary-remaining" class="font-medium text-[#F8F3E9]/80 persian-number">—</span>
+                            <span class="text-m-tx/60">باقی‌مانده (موقع نوبت به متخصص می‌دهید)</span>
+                            <span id="summary-remaining" class="font-medium text-m-tx/80 persian-number">—</span>
                         </div>
                     </div>
                 </div>
@@ -219,13 +219,13 @@
                 {{-- Buttons --}}
                 <div class="flex gap-3 pt-2">
                     <a href="{{ route('services.index') }}"
-                       class="flex-1 text-center py-3 rounded-xl text-sm border border-[#C9A24B]/25
-                          text-[#F8F3E9]/70 hover:bg-[#C9A24B]/10 transition-colors">
+                       class="flex-1 text-center py-3 rounded-xl text-sm border border-m-gold/25
+                          text-m-tx/70 hover:bg-m-gold/10 transition-colors">
                         بازگشت
                     </a>
                     <button type="submit" id="submit-btn" disabled
                             class="flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300
-                               bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-[#1A1410]
+                               bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-m-ongold
                                disabled:opacity-40 disabled:cursor-not-allowed
                                hover:shadow-lg hover:shadow-[#C9A24B]/30">
                         <span id="submit-spinner" class="hidden-block items-center justify-center gap-2">

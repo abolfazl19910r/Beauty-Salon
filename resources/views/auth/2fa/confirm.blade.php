@@ -5,24 +5,24 @@
     <div class="max-w-md mx-auto fade-in">
 
         <div class="text-center mb-8">
-            <div class="w-14 h-14 rounded-full bg-[#C9A24B]/15 flex items-center justify-center mx-auto mb-4">
-                <svg class="w-7 h-7 text-[#E6CD8A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <div class="w-14 h-14 rounded-full bg-m-gold/15 flex items-center justify-center mx-auto mb-4">
+                <svg class="w-7 h-7 text-m-gold2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                 </svg>
             </div>
-            <h1 class="text-2xl font-bold text-[#E6CD8A]" style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">تایید هویت</h1>
-            <p class="text-sm text-[#F8F3E9]/55 mt-1">برای ادامه، احراز هویت دو مرحله‌ای را تکمیل کنید</p>
+            <h1 class="text-2xl font-bold text-m-gold2" style="font-family:'Mahru','Vazirmatn',sans-serif;font-weight:800;">تایید هویت</h1>
+            <p class="text-sm text-m-tx/55 mt-1">برای ادامه، احراز هویت دو مرحله‌ای را تکمیل کنید</p>
         </div>
 
-        <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 p-6">
+        <div class="bg-m-card rounded-2xl border border-m-gold/10 p-6">
             <div id="confirm-step-1">
-                <p class="text-sm text-[#F8F3E9]/60 mb-4 text-center">
+                <p class="text-sm text-m-tx/60 mb-4 text-center">
                     برای دریافت کد تایید، روی دکمه‌ی زیر بزنید.
                 </p>
                 <button onclick="requestCode()" id="request-code-btn"
                         class="w-full py-3 rounded-lg font-semibold text-sm transition-all duration-300
-                           bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-[#1A1410]
+                           bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-m-ongold
                            hover:shadow-lg hover:shadow-[#C9A24B]/30">
                     <span id="request-code-text">ارسال کد تایید</span>
                 </button>
@@ -31,13 +31,13 @@
             <div id="confirm-step-2" class="hidden">
                 <div class="flex justify-center gap-2" dir="ltr">
                     @for($i = 0; $i < 6; $i++)
-                        <input type="text" maxlength="1" inputmode="numeric" class="otp-digit w-11 h-12 text-center rounded-lg text-xl font-bold bg-white/5 border border-[#C9A24B]/25 text-[#F8F3E9] focus:outline-none focus:border-[#C9A24B] focus:ring-2 focus:ring-[#C9A24B]/25 transition-colors">
+                        <input type="text" maxlength="1" inputmode="numeric" class="otp-digit w-11 h-12 text-center rounded-lg text-xl font-bold bg-m-tx/5 border border-m-gold/25 text-m-tx focus:outline-none focus:border-m-gold focus:ring-2 focus:ring-m-gold/25 transition-colors">
                     @endfor
                 </div>
 
                 <button onclick="submitCode()" id="confirm-btn"
                         class="w-full mt-5 py-3 rounded-lg font-semibold text-sm transition-all duration-300
-                           bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-[#1A1410]
+                           bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-m-ongold
                            hover:shadow-lg hover:shadow-[#C9A24B]/30 disabled:opacity-50 disabled:cursor-not-allowed">
                     <span id="confirm-btn-text">تایید</span>
                 </button>
@@ -55,8 +55,8 @@
         function showMessage(text, isError) {
             const el = document.getElementById('confirm-message');
             el.textContent = text;
-            el.classList.remove('hidden', 'bg-red-500/10', 'text-red-400', 'border-red-500/20', 'bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
-            el.classList.add('border', isError ? 'bg-red-500/10' : 'bg-emerald-500/10', isError ? 'text-red-400' : 'text-emerald-400', isError ? 'border-red-500/20' : 'border-emerald-500/20');
+            el.classList.remove('hidden', 'bg-m-bad/10', 'text-m-bad', 'border-m-bad/20', 'bg-m-ok/10', 'text-m-ok', 'border-m-ok/20');
+            el.classList.add('border', isError ? 'bg-m-bad/10' : 'bg-m-ok/10', isError ? 'text-m-bad' : 'text-m-ok', isError ? 'border-m-bad/20' : 'border-m-ok/20');
         }
 
         function requestCode() {

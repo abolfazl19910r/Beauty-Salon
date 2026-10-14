@@ -4,9 +4,9 @@
 
 @section('content')
     <div class="max-w-md mx-auto fade-in">
-        <div class="rounded-xl p-6 text-center" style="background-color: var(--rasta-brown); border: 1px solid rgba(201,162,75,0.2);">
+        <div class="rounded-xl p-6 text-center" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.2);">
 
-            <div class="mb-6" style="color: #6FCF97;">
+            <div class="mb-6" style="color: rgb(var(--m-ok));">
                 <svg class="w-20 h-20 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
@@ -23,7 +23,7 @@
                  below used to be read unconditionally, so any of those cases threw a fatal
                  "Attempt to read property on null" instead of showing a graceful message. --}}
             @if($booking)
-            <div class="rounded-lg p-5 mb-5 text-right" style="background-color: var(--rasta-dark); border: 1px solid rgba(201,162,75,0.15);">
+            <div class="rounded-lg p-5 mb-5 text-right" style="background-color: var(--rasta-dark); border: 1px solid rgb(var(--m-gold) / 0.15);">
                 <h2 class="font-bold mb-4 text-center" style="color: var(--rasta-gold-light);">اطلاعات پرداخت</h2>
                 <div class="space-y-2 persian-number">
                     <div class="flex justify-between items-center">
@@ -51,7 +51,7 @@
                 </div>
             </div>
 
-            <div class="rounded-lg p-5 mb-6 text-right" style="background-color: rgba(201,162,75,0.07); border: 1px solid rgba(201,162,75,0.2);">
+            <div class="rounded-lg p-5 mb-6 text-right" style="background-color: rgb(var(--m-gold) / 0.07); border: 1px solid rgb(var(--m-gold) / 0.2);">
                 <h2 class="font-bold mb-4 text-center" style="color: var(--rasta-gold-light);">جزئیات نوبت</h2>
                 <div class="space-y-2">
                     <div class="flex justify-between items-center">
@@ -84,13 +84,13 @@
                 @if($booking)
                 <a href="{{ route('bookings.show', $booking) }}"
                    class="inline-block px-6 py-3 rounded-lg font-bold transition-opacity hover:opacity-90"
-                   style="background: linear-gradient(135deg, var(--rasta-gold-light), var(--rasta-gold)); color: var(--rasta-dark);">
+                   style="background: var(--m-btn); color: var(--m-on-gold);">
                     مشاهده جزئیات نوبت
                 </a>
                 @endif
                 <a href="{{ route('home') }}"
-                   class="inline-block px-6 py-3 rounded-lg transition hover:bg-white/5"
-                   style="border: 1px solid rgba(201,162,75,0.25); color: var(--rasta-cream); opacity: 0.85;">
+                   class="inline-block px-6 py-3 rounded-lg transition hover:bg-m-tx/5"
+                   style="border: 1px solid rgb(var(--m-gold) / 0.25); color: var(--rasta-cream); opacity: 0.85;">
                     بازگشت به صفحه اصلی
                 </a>
             </div>

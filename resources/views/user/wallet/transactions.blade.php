@@ -4,10 +4,10 @@
 
 @php
     $typeBadgeMap = [
-        'deposit'    => ['label' => 'واریز',       'class' => 'background-color: rgba(111,207,151,0.12); color: #6FCF97;'],
-        'payment'    => ['label' => 'پرداخت',       'class' => 'background-color: rgba(224,137,137,0.12); color: #E08989;'],
-        'refund'     => ['label' => 'بازگشت وجه',    'class' => 'background-color: rgba(201,162,75,0.15); color: var(--rasta-gold-light);'],
-        'adjustment' => ['label' => 'تعدیل',        'class' => 'background-color: rgba(248,243,233,0.08); color: var(--rasta-cream);'],
+        'deposit'    => ['label' => 'واریز',       'class' => 'background-color: rgb(var(--m-ok) / 0.12); color: rgb(var(--m-ok));'],
+        'payment'    => ['label' => 'پرداخت',       'class' => 'background-color: rgb(var(--m-bad) / 0.12); color: rgb(var(--m-bad));'],
+        'refund'     => ['label' => 'بازگشت وجه',    'class' => 'background-color: rgb(var(--m-gold) / 0.15); color: var(--rasta-gold-light);'],
+        'adjustment' => ['label' => 'تعدیل',        'class' => 'background-color: rgb(var(--m-tx) / 0.08); color: var(--rasta-cream);'],
     ];
 @endphp
 
@@ -22,9 +22,9 @@
             z-index: 9999;
             width: 280px;
             background-color: var(--rasta-brown);
-            border: 1px solid rgba(201,162,75,0.25);
+            border: 1px solid rgb(var(--m-gold) / 0.25);
             border-radius: 10px;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.6);
+            box-shadow: var(--m-sh-soft);
             padding: 12px;
         }
         .jcal-popup.open { display: block; }
@@ -42,7 +42,7 @@
             padding: 4px 8px;
             border-radius: 6px;
         }
-        .jcal-header button:hover { background-color: rgba(201,162,75,0.12); }
+        .jcal-header button:hover { background-color: rgb(var(--m-gold) / 0.12); }
         .jcal-title { color: var(--rasta-gold-light); font-weight: bold; font-size: 13px; }
         .jcal-grid {
             display: grid;
@@ -58,12 +58,12 @@
             border-radius: 6px;
             cursor: pointer;
         }
-        .jcal-day:hover { background-color: rgba(201,162,75,0.15); }
+        .jcal-day:hover { background-color: rgb(var(--m-gold) / 0.15); }
         .jcal-day.jcal-empty { cursor: default; }
         .jcal-day.jcal-empty:hover { background-color: transparent; }
         .jcal-day.jcal-selected {
-            background-color: var(--rasta-gold);
-            color: var(--rasta-dark);
+            background: var(--m-btn);
+            color: var(--m-on-gold);
             font-weight: bold;
         }
         .jcal-day.jcal-today { border: 1px solid var(--rasta-gold); }
@@ -83,8 +83,8 @@
                 <p class="mt-2 text-sm" style="color: var(--rasta-gold-light); opacity: 0.8;">مشاهده تمام تراکنش‌های مالی</p>
             </div>
             <a href="{{ route('wallet.index') }}"
-               class="inline-flex items-center px-4 py-2 rounded-lg transition hover:bg-white/5"
-               style="border: 1px solid rgba(201,162,75,0.25); color: var(--rasta-cream); opacity: 0.85;">
+               class="inline-flex items-center px-4 py-2 rounded-lg transition hover:bg-m-tx/5"
+               style="border: 1px solid rgb(var(--m-gold) / 0.25); color: var(--rasta-cream); opacity: 0.85;">
                 <svg class="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
                 </svg>
@@ -93,32 +93,32 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div class="rounded-xl p-5" style="background-color: var(--rasta-brown); border: 1px solid rgba(201,162,75,0.2);">
+            <div class="rounded-xl p-5" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.2);">
                 <p class="text-sm mb-1" style="color: var(--rasta-cream); opacity: 0.6;">موجودی فعلی</p>
                 <p class="text-2xl font-bold persian-number" style="color: var(--rasta-gold-light);">{{ number_format($wallet->balance) }}</p>
                 <p class="text-xs mt-1" style="color: var(--rasta-cream); opacity: 0.5;">تومان</p>
             </div>
 
-            <div class="rounded-xl p-5" style="background-color: var(--rasta-brown); border: 1px solid rgba(201,162,75,0.2);">
+            <div class="rounded-xl p-5" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.2);">
                 <p class="text-sm mb-1" style="color: var(--rasta-cream); opacity: 0.6;">کل واریزی‌ها</p>
-                <p class="text-2xl font-bold persian-number" style="color: #6FCF97;">{{ number_format($wallet->total_deposited) }}</p>
+                <p class="text-2xl font-bold persian-number" style="color: rgb(var(--m-ok));">{{ number_format($wallet->total_deposited) }}</p>
                 <p class="text-xs mt-1" style="color: var(--rasta-cream); opacity: 0.5;">تومان</p>
             </div>
 
-            <div class="rounded-xl p-5" style="background-color: var(--rasta-brown); border: 1px solid rgba(201,162,75,0.2);">
+            <div class="rounded-xl p-5" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.2);">
                 <p class="text-sm mb-1" style="color: var(--rasta-cream); opacity: 0.6;">کل پرداختی‌ها</p>
-                <p class="text-2xl font-bold persian-number" style="color: #E08989;">{{ number_format($wallet->total_spent) }}</p>
+                <p class="text-2xl font-bold persian-number" style="color: rgb(var(--m-bad));">{{ number_format($wallet->total_spent) }}</p>
                 <p class="text-xs mt-1" style="color: var(--rasta-cream); opacity: 0.5;">تومان</p>
             </div>
         </div>
 
-        <div class="rounded-xl p-6 mb-6" style="background-color: var(--rasta-brown); border: 1px solid rgba(201,162,75,0.2);">
+        <div class="rounded-xl p-6 mb-6" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.2);">
             <form method="GET" action="{{ route('wallet.transactions') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                     <label class="block text-xs mb-2" style="color: var(--rasta-gold-light); opacity: 0.8;">نوع تراکنش</label>
                     <select name="type"
-                            class="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--rasta-gold)]"
-                            style="background-color: var(--rasta-dark); border: 1px solid rgba(201,162,75,0.25); color: var(--rasta-cream);">
+                            class="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-m-gold"
+                            style="background-color: var(--rasta-dark); border: 1px solid rgb(var(--m-gold) / 0.25); color: var(--rasta-cream);">
                         <option value="">همه تراکنش‌ها</option>
                         <option value="deposit" {{ request('type') === 'deposit' ? 'selected' : '' }}>واریز</option>
                         <option value="payment" {{ request('type') === 'payment' ? 'selected' : '' }}>پرداخت</option>
@@ -132,8 +132,8 @@
                     <div class="jcal-wrapper">
                         <input type="text" id="date_from" name="date_from" value="{{ request('date_from') }}"
                                placeholder="1403/09/15" readonly
-                               class="w-full px-4 py-2 rounded-lg text-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--rasta-gold)]"
-                               style="background-color: var(--rasta-dark); border: 1px solid rgba(201,162,75,0.25); color: var(--rasta-cream);"
+                               class="w-full px-4 py-2 rounded-lg text-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-m-gold"
+                               style="background-color: var(--rasta-dark); border: 1px solid rgb(var(--m-gold) / 0.25); color: var(--rasta-cream);"
                                dir="ltr" autocomplete="off">
                         <div class="jcal-popup" id="jcal-popup-date_from"></div>
                     </div>
@@ -144,8 +144,8 @@
                     <div class="jcal-wrapper">
                         <input type="text" id="date_to" name="date_to" value="{{ request('date_to') }}"
                                placeholder="1403/09/20" readonly
-                               class="w-full px-4 py-2 rounded-lg text-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--rasta-gold)]"
-                               style="background-color: var(--rasta-dark); border: 1px solid rgba(201,162,75,0.25); color: var(--rasta-cream);"
+                               class="w-full px-4 py-2 rounded-lg text-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-m-gold"
+                               style="background-color: var(--rasta-dark); border: 1px solid rgb(var(--m-gold) / 0.25); color: var(--rasta-cream);"
                                dir="ltr" autocomplete="off">
                         <div class="jcal-popup" id="jcal-popup-date_to"></div>
                     </div>
@@ -154,7 +154,7 @@
                 <div class="flex items-end gap-2">
                     <button type="submit"
                             class="flex-1 px-4 py-2 rounded-lg font-bold transition-opacity hover:opacity-90 flex items-center justify-center"
-                            style="background: linear-gradient(135deg, var(--rasta-gold-light), var(--rasta-gold)); color: var(--rasta-dark);">
+                            style="background: var(--m-btn); color: var(--m-on-gold);">
                         <svg class="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                         </svg>
@@ -162,8 +162,8 @@
                     </button>
                     @if(request()->hasAny(['type', 'date_from', 'date_to']))
                         <a href="{{ route('wallet.transactions') }}"
-                           class="px-4 py-2 rounded-lg transition hover:bg-white/5 flex items-center justify-center"
-                           style="border: 1px solid rgba(201,162,75,0.25); color: var(--rasta-cream); opacity: 0.8;">
+                           class="px-4 py-2 rounded-lg transition hover:bg-m-tx/5 flex items-center justify-center"
+                           style="border: 1px solid rgb(var(--m-gold) / 0.25); color: var(--rasta-cream); opacity: 0.8;">
                             حذف فیلتر
                         </a>
                     @endif
@@ -171,23 +171,23 @@
             </form>
         </div>
 
-        <div class="rounded-xl overflow-hidden" style="background-color: var(--rasta-brown); border: 1px solid rgba(201,162,75,0.2);">
-            <div class="p-5 border-b" style="border-color: rgba(201,162,75,0.15);">
+        <div class="rounded-xl overflow-hidden" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.2);">
+            <div class="p-5 border-b" style="border-color: rgb(var(--m-gold) / 0.15);">
                 <h2 class="font-bold" style="color: var(--rasta-gold-light);">لیست تراکنش‌ها</h2>
             </div>
 
-            <div class="divide-y" style="border-color: rgba(201,162,75,0.1);">
+            <div class="divide-y" style="border-color: rgb(var(--m-gold) / 0.1);">
                 @forelse($transactions as $transaction)
                     @php
-                        $typeInfo = $typeBadgeMap[$transaction->type] ?? ['label' => $transaction->type_text, 'class' => 'background-color: rgba(248,243,233,0.08); color: var(--rasta-cream);'];
+                        $typeInfo = $typeBadgeMap[$transaction->type] ?? ['label' => $transaction->type_text, 'class' => 'background-color: rgb(var(--m-tx) / 0.08); color: var(--rasta-cream);'];
                     @endphp
                     <a href="{{ route('wallet.transactions.show', $transaction) }}"
-                       class="p-5 flex items-center justify-between flex-wrap gap-4 transition hover:bg-white/5">
+                       class="p-5 flex items-center justify-between flex-wrap gap-4 transition hover:bg-m-tx/5">
                         <div class="flex items-center gap-4 flex-1 min-w-[260px]">
                             <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
-                                 style="background-color: rgba(201,162,75,0.1);">
+                                 style="background-color: rgb(var(--m-gold) / 0.1);">
                                 @if($transaction->type === 'payment')
-                                    <svg class="w-6 h-6" style="color: #E08989;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg class="w-6 h-6" style="color: rgb(var(--m-bad));" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                                     </svg>
                                 @elseif($transaction->type === 'refund')
@@ -195,7 +195,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                                     </svg>
                                 @elseif($transaction->type === 'deposit')
-                                    <svg class="w-6 h-6" style="color: #6FCF97;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg class="w-6 h-6" style="color: rgb(var(--m-ok));" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                 @else
@@ -225,7 +225,7 @@
                         </div>
 
                         <div class="text-left">
-                            <p class="text-xl font-bold persian-number" style="color: {{ $transaction->amount >= 0 ? '#6FCF97' : '#E08989' }};">
+                            <p class="text-xl font-bold persian-number" style="color: {{ $transaction->amount >= 0 ? 'rgb(var(--m-ok))' : 'rgb(var(--m-bad))' }};">
                                 {{ $transaction->amount >= 0 ? '+' : '' }}{{ number_format($transaction->amount) }}
                             </p>
                             <p class="text-xs mt-0.5 persian-number" style="color: var(--rasta-cream); opacity: 0.5;">
@@ -245,7 +245,7 @@
             </div>
 
             @if($transactions->hasPages())
-                <div class="p-4 border-t" style="border-color: rgba(201,162,75,0.15);">
+                <div class="p-4 border-t" style="border-color: rgb(var(--m-gold) / 0.15);">
                     {{ $transactions->links() }}
                 </div>
             @endif

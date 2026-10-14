@@ -12,84 +12,7 @@
     <title>@yield('title') | {{ $currentSalonName }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@500;700&display=swap" rel="stylesheet">
-
-    <style>
-        :root {
-            --rasta-gold: #C9A24B;
-            --rasta-gold-light: #E6CD8A;
-            --rasta-cream: #F8F3E9;
-            --rasta-dark: #1A1410;
-            --rasta-brown: #2E2117;
-        }
-
-        .font-serif-fa {
-            font-family: 'Noto Naskh Arabic', 'Vazirmatn', serif;
-        }
-
-        body {
-            background-color: var(--rasta-dark);
-            color: var(--rasta-cream);
-        }
-
-        .persian-number {
-            -moz-font-feature-settings: "ss02";
-            -webkit-font-feature-settings: "ss02";
-            font-feature-settings: "ss02";
-        }
-
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: var(--rasta-brown); }
-        ::-webkit-scrollbar-thumb { background: var(--rasta-gold); border-radius: 10px; }
-
-        .fade-in { animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .hover-shadow { transition: box-shadow 0.3s, transform 0.3s; }
-        .hover-shadow:hover {
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-            transform: translateY(-2px);
-        }
-
-        /* Glass navbar */
-        #main-navbar {
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            background-color: rgba(26, 20, 16, 0.25);
-            transition: background-color 0.4s ease, box-shadow 0.4s ease;
-            border-bottom: 1px solid rgba(201, 162, 75, 0.15);
-        }
-        #main-navbar.scrolled {
-            background-color: rgba(26, 20, 16, 0.9);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        .nav-link { transition: color 0.25s ease; }
-        .nav-link:hover { color: var(--rasta-gold-light); }
-
-        .btn-gold {
-            background: linear-gradient(135deg, var(--rasta-gold-light), var(--rasta-gold));
-            color: var(--rasta-dark);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .btn-gold:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 25px -5px rgba(201, 162, 75, 0.5);
-        }
-
-        .btn-glass {
-            background: rgba(255,255,255,0.06);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255,255,255,0.18);
-            transition: background 0.3s ease, transform 0.3s ease;
-        }
-        .btn-glass:hover { background: rgba(255,255,255,0.14); }
-    </style>
+    @include('partials.mahru-theme')
     @stack('styles')
 </head>
 <body class="font-vazir min-h-screen flex flex-col" dir="rtl">
@@ -102,10 +25,11 @@
         <a href="{{ route('home') }}" class="flex items-center gap-2 shrink-0">
             {{-- ⭐ لوگوی اختصاصی سالن (۲۰۲۶-۰۹-۲۴) به‌جای آیکون پیش‌فرض، وقتی سالن لوگو داره. --}}
             <x-brand-emblem class="h-10 md:h-11 w-auto max-w-[140px]" />
-            <span class="text-xl md:text-2xl font-serif-fa font-bold text-[var(--rasta-gold-light)]">{{ $currentSalonName }}</span>
+            <span class="text-xl md:text-2xl font-serif-fa font-bold text-m-gold2">{{ $currentSalonName }}</span>
         </a>
 
         <div class="hidden md:flex items-center gap-6 text-sm">
+            @include('partials.mahru-theme-toggle')
             <a href="{{ route('services.index') }}" class="nav-link">خدمات</a>
             <a href="{{ route('specialists.search') }}" class="nav-link">متخصص‌ها</a>
             <a href="{{ route('blog.index') }}" class="nav-link">وبلاگ</a>
@@ -158,7 +82,7 @@
                             }
                         @endphp
                         @if($userPoints > 0)
-                            <span class="absolute -top-2 -left-3 bg-[var(--rasta-gold)] text-[var(--rasta-dark)] text-[10px] px-1.5 py-0.5 rounded-full persian-number min-w-[20px] text-center font-bold">
+                            <span class="absolute -top-2 -left-3 bg-[#D8B96A] text-m-ongold text-[10px] px-1.5 py-0.5 rounded-full persian-number min-w-[20px] text-center font-bold">
                                 {{ number_format($userPoints) }}
                             </span>
                         @endif
@@ -188,14 +112,17 @@
             @endauth
         </div>
 
-        <button id="mobile-menu-button" class="md:hidden p-2 rounded-lg border border-[var(--rasta-gold)]/30" aria-label="باز کردن منو">
+        <div class="flex md:hidden items-center gap-2">
+        @include('partials.mahru-theme-toggle')
+        <button id="mobile-menu-button" class="p-2 rounded-full border border-m-gold/30 text-m-tx" aria-label="باز کردن منو">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
             </svg>
         </button>
+        </div>
     </nav>
 
-    <div id="mobile-menu" class="hidden md:hidden bg-[var(--rasta-dark)]/95 border-t border-[var(--rasta-gold)]/15">
+    <div id="mobile-menu" class="hidden md:hidden bg-m-bg/95 border-t border-m-gold/15">
         <div class="container mx-auto px-4 py-4 flex flex-col gap-1 text-sm">
             <a href="{{ route('services.index') }}" class="block py-2 nav-link">خدمات</a>
             <a href="{{ route('specialists.search') }}" class="block py-2 nav-link">متخصص‌ها</a>
@@ -211,7 +138,7 @@
                     <a href="{{ route('loyalty.index') }}" class="block py-2 nav-link flex items-center">
                         امتیازات من
                         @if(isset($userPoints) && $userPoints > 0)
-                            <span class="mr-2 text-[var(--rasta-gold-light)] text-sm persian-number">({{ number_format($userPoints) }})</span>
+                            <span class="mr-2 text-m-gold2 text-sm persian-number">({{ number_format($userPoints) }})</span>
                         @endif
                     </a>
                     <a href="{{ route('wallet.index') }}" class="block py-2 nav-link">کیف پول</a>
@@ -227,7 +154,7 @@
                 </form>
             @else
                 <a href="{{ route('salon.login') }}" class="block py-2 nav-link">ورود</a>
-                <a href="{{ route('salon.register') }}" class="block py-2 text-[var(--rasta-gold-light)] font-bold">ثبت نام</a>
+                <a href="{{ route('salon.register') }}" class="block py-2 text-m-gold2 font-bold">ثبت نام</a>
             @endauth
         </div>
     </div>
@@ -250,10 +177,10 @@
     if (!mount) return;
 
     var TIERS = [
-        { min: 100, bg: 'bg-red-100 border-red-500', text: 'text-red-900', icon: 'text-red-600', path: 'M12 9v3.75m-9.303 3.376C1.83 17.502 2.626 19 3.928 19h16.144c1.302 0 2.098-1.498 1.231-2.874L13.06 4.75c-.65-1.05-2.17-1.05-2.82 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z' },
-        { min: 71, bg: 'bg-orange-100 border-orange-500', text: 'text-orange-900', icon: 'text-orange-600', path: 'M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z' },
-        { min: 31, bg: 'bg-yellow-100 border-yellow-500', text: 'text-yellow-900', icon: 'text-yellow-600', path: 'M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z' },
-        { min: -Infinity, bg: 'bg-blue-100 border-blue-500', text: 'text-blue-900', icon: 'text-blue-600', path: 'M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z' },
+        { min: 100, bg: 'bg-m-bad/10 border-m-bad', text: 'text-m-tx', icon: 'text-m-bad', path: 'M12 9v3.75m-9.303 3.376C1.83 17.502 2.626 19 3.928 19h16.144c1.302 0 2.098-1.498 1.231-2.874L13.06 4.75c-.65-1.05-2.17-1.05-2.82 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z' },
+        { min: 71, bg: 'bg-m-warn/10 border-m-warn', text: 'text-m-tx', icon: 'text-m-warn', path: 'M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z' },
+        { min: 31, bg: 'bg-m-gold/10 border-m-gold', text: 'text-m-tx', icon: 'text-m-gold', path: 'M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z' },
+        { min: -Infinity, bg: 'bg-m-card border-m-gold/40', text: 'text-m-tx', icon: 'text-m-gold2', path: 'M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z' },
     ];
 
     var TYPE_LABELS = { general: '📢 عمومی', maintenance: '🔧 تعمیرات', promotion: '🎉 تبلیغاتی' };
@@ -289,16 +216,16 @@
             var tier = tierFor(announcement.priority);
 
             var card = document.createElement('div');
-            card.className = tier.bg + ' border-r-4 rounded-lg p-4 shadow-md relative fade-in';
+            card.className = tier.bg + ' border-r-4 rounded-2xl p-4 relative fade-in';
             card.setAttribute('data-announcement-id', announcement.id);
 
             var badge = '';
             if (announcement.priority >= 31) {
                 var typeLabel = announcement.type && TYPE_LABELS[announcement.type]
-                    ? '<span class="inline-block px-2 py-1 bg-white bg-opacity-50 rounded text-xs">' + TYPE_LABELS[announcement.type] + '</span>'
+                    ? '<span class="inline-block px-2 py-1 bg-m-tx/10 rounded-full text-xs">' + TYPE_LABELS[announcement.type] + '</span>'
                     : '';
                 badge = '<div class="mt-2 flex items-center gap-2">'
-                    + '<span class="inline-block px-2 py-1 bg-white bg-opacity-50 rounded text-xs font-semibold">اولویت بالا: ' + announcement.priority + '</span>'
+                    + '<span class="inline-block px-2 py-1 bg-m-tx/10 rounded-full text-xs font-semibold">اولویت بالا: ' + announcement.priority + '</span>'
                     + typeLabel
                     + '</div>';
             }
@@ -344,8 +271,8 @@
 
 <main class="container mx-auto px-4 pb-8 flex-grow fade-in @unless(trim($__env->yieldContent('full-width'))) pt-4 @endunless">
     @if(session('success'))
-        <div class="bg-emerald-900/30 border-r-4 border-[var(--rasta-gold)] p-4 text-emerald-200 rounded mb-4 flex items-start">
-            <svg class="h-5 w-5 ml-2 text-[var(--rasta-gold-light)] mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+        <div class="bg-m-ok/30 border-r-4 border-m-gold p-4 text-m-ok rounded mb-4 flex items-start">
+            <svg class="h-5 w-5 ml-2 text-m-gold2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
             </svg>
             <div>{{ session('success') }}</div>
@@ -353,8 +280,8 @@
     @endif
 
     @if(session('error'))
-        <div class="bg-red-900/30 border-r-4 border-red-500 p-4 text-red-200 rounded mb-4 flex items-start">
-            <svg class="h-5 w-5 ml-2 text-red-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+        <div class="bg-m-bad/30 border-r-4 border-m-bad p-4 text-m-bad rounded mb-4 flex items-start">
+            <svg class="h-5 w-5 ml-2 text-m-bad mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
             </svg>
             <div>{{ session('error') }}</div>
@@ -362,8 +289,8 @@
     @endif
 
     @if(session('info'))
-        <div class="bg-sky-900/30 border-r-4 border-sky-400 p-4 text-sky-200 rounded mb-4 flex items-start">
-            <svg class="h-5 w-5 ml-2 text-sky-300 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+        <div class="bg-m-info/30 border-r-4 border-m-info p-4 text-m-info rounded mb-4 flex items-start">
+            <svg class="h-5 w-5 ml-2 text-m-info mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
             </svg>
             <div>{{ session('info') }}</div>
@@ -376,32 +303,32 @@
 {{-- =========================================================
      National footer
 ========================================================= --}}
-<footer class="bg-[var(--rasta-brown)] border-t border-[var(--rasta-gold)]/10 mt-auto">
+<footer class="bg-m-bg2 border-t border-m-gold/10 mt-auto">
     <div class="container mx-auto px-4 py-12">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
             <div>
                 @if ($currentSalonLogoUrl)
                     <img src="{{ $currentSalonLogoUrl }}" alt="لوگوی {{ $currentSalonName }}" class="h-14 w-auto max-w-[160px] object-contain mb-3" loading="lazy">
                 @endif
-                <h3 class="font-serif-fa text-xl font-bold text-[var(--rasta-gold-light)] mb-3">{{ $currentSalonName }}</h3>
-                <p class="text-[var(--rasta-cream)]/60 text-sm leading-7">
+                <h3 class="font-serif-fa text-xl font-bold text-m-gold2 mb-3">{{ $currentSalonName }}</h3>
+                <p class="text-m-tx/60 text-sm leading-7">
                     {{ $currentSalonBio }}
                 </p>
             </div>
 
             <div>
-                <h3 class="font-bold mb-4 flex items-center text-[var(--rasta-cream)]">
-                    <svg class="w-5 h-5 ml-1 text-[var(--rasta-gold-light)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <h3 class="font-bold mb-4 flex items-center text-m-tx">
+                    <svg class="w-5 h-5 ml-1 text-m-gold2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
                     تماس با ما
                 </h3>
-                <div class="text-[var(--rasta-cream)]/60 text-sm space-y-2">
+                <div class="text-m-tx/60 text-sm space-y-2">
                     {{-- ⭐ ۲۰۲۶-۰۹-۲۳: از اطلاعات همین سالن (ViewComposer)، نه متن ثابت مشترک. ایمیل
                          ساختگی مشترک (info@rasta-salon.ir) حذف شد چون مال هیچ سالنی نبود. --}}
                     @if ($currentSalonAddress)
                         <p class="flex items-start">
-                            <svg class="w-4 h-4 ml-2 mt-1 shrink-0 text-[var(--rasta-gold)]/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="w-4 h-4 ml-2 mt-1 shrink-0 text-m-gold/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
@@ -410,10 +337,10 @@
                     @endif
                     @if ($currentSalonPhone)
                         <p class="flex items-center persian-number">
-                            <svg class="w-4 h-4 ml-2 text-[var(--rasta-gold)]/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="w-4 h-4 ml-2 text-m-gold/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                             </svg>
-                            تلفن: <a href="tel:{{ $currentSalonPhone }}" class="mr-1 hover:text-[var(--rasta-gold-light)]" dir="ltr">{{ $currentSalonPhone }}</a>
+                            تلفن: <a href="tel:{{ $currentSalonPhone }}" class="mr-1 hover:text-m-gold2" dir="ltr">{{ $currentSalonPhone }}</a>
                         </p>
                     @endif
                     @unless ($currentSalonAddress || $currentSalonPhone)
@@ -423,13 +350,13 @@
             </div>
 
             <div>
-                <h3 class="font-bold mb-4 flex items-center text-[var(--rasta-cream)]">
-                    <svg class="w-5 h-5 ml-1 text-[var(--rasta-gold-light)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <h3 class="font-bold mb-4 flex items-center text-m-tx">
+                    <svg class="w-5 h-5 ml-1 text-m-gold2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     ساعات کاری
                 </h3>
-                <div class="text-[var(--rasta-cream)]/60 text-sm space-y-2 persian-number">
+                <div class="text-m-tx/60 text-sm space-y-2 persian-number">
                     @forelse ($currentSalonHours as $line)
                         <p>{{ $line }}</p>
                     @empty
@@ -439,7 +366,7 @@
             </div>
         </div>
 
-        <div class="border-t border-[var(--rasta-gold)]/10 mt-8 pt-6 text-center text-[var(--rasta-cream)]/40 text-sm">
+        <div class="border-t border-m-gold/10 mt-8 pt-6 text-center text-m-tx/40 text-sm">
             <p>© {{ date('Y') }} سالن زیبایی {{ $currentSalonName }}. تمامی حقوق محفوظ است.</p>
         </div>
     </div>

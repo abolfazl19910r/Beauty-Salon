@@ -5,14 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
     <title>انصراف از پیامک‌ها — {{ $salon->name }}</title>
+    @include('partials.mahru-theme')
     <style>
-        body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:#1A1410; color:#F8F3E9; font-family:Vazirmatn, Tahoma, sans-serif; line-height:1.9; }
+        body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:rgb(var(--m-bg)); color:rgb(var(--m-tx)); font-family:"Mahru", Vazirmatn, Tahoma, sans-serif; line-height:1.9; }
         .box { max-width:26rem; text-align:center; padding:2rem 1.5rem; }
-        h1 { font-size:1.25rem; margin:.25rem 0 .75rem; color:#E6CD8A; }
-        p { margin:.5rem 0; color:rgba(248,243,233,.85); }
-        button { margin-top:1.25rem; padding:.85rem 1.75rem; border:0; border-radius:.75rem; background:#C9A24B; color:#1A1410; font:inherit; font-weight:700; cursor:pointer; }
-        a { color:#E6CD8A; }
-        .hint { font-size:.85rem; color:rgba(248,243,233,.55); margin-top:1rem; }
+        h1 { font-size:1.25rem; margin:.25rem 0 .75rem; color:rgb(var(--m-gold2)); }
+        p { margin:.5rem 0; color:rgb(var(--m-tx) / .85); }
+        button { margin-top:1.25rem; padding:.85rem 1.75rem; border:0; border-radius:999px; background:var(--m-btn); color:var(--m-on-gold); font:inherit; font-weight:700; cursor:pointer; }
+        a { color:rgb(var(--m-gold2)); }
+        .hint { font-size:.85rem; color:rgb(var(--m-tx) / .55); margin-top:1rem; }
     </style>
 </head>
 <body>

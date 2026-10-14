@@ -15,11 +15,11 @@
                     <h1 class="text-2xl font-bold" style="{{ $gold }}">{{ $course->name }}</h1>
                     <p class="text-sm mt-1" style="{{ $dim }}">{{ $course->servicesLabel() }}@if ($course->specialist) — {{ $course->specialist->name }}@endif</p>
                 </div>
-                <span class="text-xs px-3 py-1 rounded-full" style="background: rgba(201,162,75,0.12); color: var(--rasta-gold);">{{ $course->statusLabel() }}</span>
+                <span class="text-xs px-3 py-1 rounded-full" style="background: rgb(var(--m-gold) / 0.12); color: var(--rasta-gold);">{{ $course->statusLabel() }}</span>
             </div>
 
-            <div class="mt-5 h-3 rounded-full overflow-hidden" style="background: rgba(201,162,75,0.12);">
-                <div class="h-full" style="width: {{ round($course->sessions_used * 100 / max(1, $course->sessions_total)) }}%; background: var(--rasta-gold);"></div>
+            <div class="mt-5 h-3 rounded-full overflow-hidden" style="background: rgb(var(--m-gold) / 0.12);">
+                <div class="h-full" style="width: {{ round($course->sessions_used * 100 / max(1, $course->sessions_total)) }}%; background: var(--m-btn);"></div>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 text-sm persian-number">
                 <div class="rounded-lg p-3" style="{{ $inner }}"><div style="{{ $dim }}">انجام‌شده</div><div class="font-bold mt-1" style="color: var(--rasta-cream);">{{ to_persian_num((string) $course->sessions_used) }} از {{ to_persian_num((string) $course->sessions_total) }}</div></div>
@@ -47,7 +47,7 @@
         <div class="rounded-xl p-6 mt-5" style="{{ $card }}">
             <h2 class="font-bold mb-4" style="{{ $gold }}">جلسه‌ها</h2>
             @forelse ($bookings as $booking)
-                <div class="py-3 {{ $loop->last ? '' : 'border-b' }}" style="border-color: rgba(201,162,75,0.12);" data-course-session="{{ $booking->id }}">
+                <div class="py-3 {{ $loop->last ? '' : 'border-b' }}" style="border-color: rgb(var(--m-gold) / 0.12);" data-course-session="{{ $booking->id }}">
                     <div class="flex justify-between gap-3 text-sm persian-number">
                         <span style="color: var(--rasta-cream);">{{ $booking->course_session_number ? $course->sessionLabel($booking->course_session_number) : 'جلسه' }} — {{ verta($booking->booking_time)->format('Y/m/d') }} ساعت {{ $booking->booking_time->format('H:i') }}</span>
                         <span style="{{ $dim }}">{{ $booking->course_session_burned ? 'سوخت (لغو دیرهنگام)' : ($statusLabels[$booking->status] ?? $booking->status) }}</span>

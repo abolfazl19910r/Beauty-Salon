@@ -19,10 +19,10 @@
             </div>
         </div>
 
-        <div class="rounded-xl overflow-hidden" style="background-color: var(--rasta-brown); border: 1px solid rgba(201,162,75,0.2);">
+        <div class="rounded-xl overflow-hidden" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.2);">
 
             {{-- سرویس و زمان فعلی --}}
-            <div class="p-5 border-b" style="border-color: rgba(201,162,75,0.15);">
+            <div class="p-5 border-b" style="border-color: rgb(var(--m-gold) / 0.15);">
                 <div class="flex items-center justify-between flex-wrap gap-3">
                     <div>
                         <p class="text-xs mb-1" style="color: var(--rasta-gold-light); opacity: 0.7;">خدمت</p>
@@ -57,7 +57,7 @@
                         <p class="text-sm mt-2" style="color: var(--rasta-cream); opacity: 0.6;">در حال بارگذاری تاریخ‌ها...</p>
                     </div>
 
-                    <div id="dates-empty" class="hidden text-center py-6 rounded-lg" style="background-color: rgba(201,162,75,0.05); border: 1px dashed rgba(201,162,75,0.3);">
+                    <div id="dates-empty" class="hidden text-center py-6 rounded-lg" style="background-color: rgb(var(--m-gold) / 0.05); border: 1px dashed rgb(var(--m-gold) / 0.3);">
                         <p class="text-sm" style="color: var(--rasta-cream); opacity: 0.6;">تاریخ خالی یافت نشد</p>
                     </div>
 
@@ -79,7 +79,7 @@
                              style="border-color: var(--rasta-gold); border-top-color: transparent;"></div>
                     </div>
 
-                    <div id="times-empty" class="hidden text-center py-4 rounded-lg" style="background-color: rgba(201,162,75,0.05); border: 1px dashed rgba(201,162,75,0.3);">
+                    <div id="times-empty" class="hidden text-center py-4 rounded-lg" style="background-color: rgb(var(--m-gold) / 0.05); border: 1px dashed rgb(var(--m-gold) / 0.3);">
                         <p class="text-sm" style="color: var(--rasta-cream); opacity: 0.6;">ساعت خالی در این روز وجود ندارد</p>
                     </div>
 
@@ -87,16 +87,16 @@
                 </div>
 
                 {{-- خلاصه تغییرات --}}
-                <div id="summary" class="hidden rounded-lg p-5" style="background-color: rgba(201,162,75,0.07); border: 1px solid rgba(201,162,75,0.2);">
+                <div id="summary" class="hidden rounded-lg p-5" style="background-color: rgb(var(--m-gold) / 0.07); border: 1px solid rgb(var(--m-gold) / 0.2);">
                     <h3 class="font-bold mb-4" style="color: var(--rasta-gold-light);">خلاصه تغییرات</h3>
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="rounded-lg p-3" style="background-color: var(--rasta-bg); border: 1px solid rgba(201,162,75,0.15);">
+                        <div class="rounded-lg p-3" style="background-color: var(--rasta-bg); border: 1px solid rgb(var(--m-gold) / 0.15);">
                             <p class="text-xs mb-1" style="color: var(--rasta-cream); opacity: 0.6;">زمان فعلی:</p>
                             <p class="font-medium persian-number" dir="ltr" style="color: var(--rasta-cream);">
                                 {{ verta($booking->booking_time)->format('Y/m/d H:i') }}
                             </p>
                         </div>
-                        <div class="rounded-lg p-3" style="background: linear-gradient(135deg, rgba(201,162,75,0.2), rgba(230,205,138,0.15)); border: 1px solid rgba(201,162,75,0.3);">
+                        <div class="rounded-lg p-3" style="background: linear-gradient(135deg, rgb(var(--m-gold) / 0.2), rgb(var(--m-gold2) / 0.15)); border: 1px solid rgb(var(--m-gold) / 0.3);">
                             <p class="text-xs mb-1" style="color: var(--rasta-gold-light); opacity: 0.8;">زمان جدید:</p>
                             <p id="summary-new-time" class="font-bold persian-number" dir="ltr" style="color: var(--rasta-gold-light);">—</p>
                         </div>
@@ -108,7 +108,7 @@
                     <button id="submit-btn"
                             disabled
                             class="flex-1 py-3 rounded-lg font-bold transition-opacity flex items-center justify-center gap-2"
-                            style="background: linear-gradient(135deg, var(--rasta-gold-light), var(--rasta-gold)); color: var(--rasta-dark); opacity: 0.4; cursor: not-allowed;">
+                            style="background: var(--m-btn); color: var(--m-on-gold); opacity: 0.4; cursor: not-allowed;">
                         <svg id="submit-spinner" class="hidden w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -116,8 +116,8 @@
                         <span id="submit-label">ثبت تغییرات</span>
                     </button>
                     <a href="{{ route('bookings.show', $booking) }}"
-                       class="px-6 py-3 rounded-lg font-medium transition hover:bg-white/5"
-                       style="border: 1px solid rgba(201,162,75,0.3); color: var(--rasta-cream); opacity: 0.7;">
+                       class="px-6 py-3 rounded-lg font-medium transition hover:bg-m-tx/5"
+                       style="border: 1px solid rgb(var(--m-gold) / 0.3); color: var(--rasta-cream); opacity: 0.7;">
                         انصراف
                     </a>
                 </div>
@@ -232,7 +232,7 @@
                     btn.dataset.date = d;
                     btn.innerHTML = formatDayLabel(d);
                     btn.className = 'p-2 rounded-lg text-center transition';
-                    btn.style.cssText = 'border: 1px solid rgba(201,162,75,0.25); color: var(--rasta-cream);';
+                    btn.style.cssText = 'border: 1px solid rgb(var(--m-gold) / 0.25); color: var(--rasta-cream);';
 
                     btn.addEventListener('click', () => selectDate(d));
                     grid.appendChild(btn);
@@ -248,12 +248,12 @@
                 document.querySelectorAll('#dates-grid button').forEach(btn => {
                     const active = btn.dataset.date === date;
                     btn.style.background = active
-                        ? 'linear-gradient(135deg, var(--rasta-gold-light), var(--rasta-gold))'
+                        ? 'var(--m-btn)'
                         : '';
-                    btn.style.color  = active ? 'var(--rasta-dark)' : 'var(--rasta-cream)';
+                    btn.style.color  = active ? 'var(--m-on-gold)' : 'var(--rasta-cream)';
                     btn.style.border = active
                         ? '1px solid var(--rasta-gold)'
-                        : '1px solid rgba(201,162,75,0.25)';
+                        : '1px solid rgb(var(--m-gold) / 0.25)';
                 });
 
                 showEl('time-section');
@@ -276,7 +276,7 @@
                     btn.dataset.time = t;
                     btn.textContent = t;
                     btn.className = 'p-2 rounded-lg text-center transition font-medium';
-                    btn.style.cssText = 'border: 1px solid rgba(201,162,75,0.25); color: var(--rasta-cream);';
+                    btn.style.cssText = 'border: 1px solid rgb(var(--m-gold) / 0.25); color: var(--rasta-cream);';
 
                     btn.addEventListener('click', () => selectTime(t));
                     grid.appendChild(btn);
@@ -291,12 +291,12 @@
                 document.querySelectorAll('#times-grid button').forEach(btn => {
                     const active = btn.dataset.time === time;
                     btn.style.background = active
-                        ? 'linear-gradient(135deg, var(--rasta-gold-light), var(--rasta-gold))'
+                        ? 'var(--m-btn)'
                         : '';
-                    btn.style.color  = active ? 'var(--rasta-dark)' : 'var(--rasta-cream)';
+                    btn.style.color  = active ? 'var(--m-on-gold)' : 'var(--rasta-cream)';
                     btn.style.border = active
                         ? '1px solid var(--rasta-gold)'
-                        : '1px solid rgba(201,162,75,0.25)';
+                        : '1px solid rgb(var(--m-gold) / 0.25)';
                 });
             }
 

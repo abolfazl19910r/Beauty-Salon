@@ -4,9 +4,9 @@
 
 @php
     $typeIconMap = [
-        'refund'  => ['bg' => 'rgba(198, 162, 75, 0.12)', 'color' => 'var(--rasta-gold-light)'],
-        'payment' => ['bg' => 'rgba(220, 90, 90, 0.12)',  'color' => '#E08989'],
-        'default' => ['bg' => 'rgba(248, 243, 233, 0.08)','color' => 'var(--rasta-cream)'],
+        'refund'  => ['bg' => 'rgb(var(--m-gold) / 0.12)', 'color' => 'var(--rasta-gold-light)'],
+        'payment' => ['bg' => 'rgb(var(--m-bad) / 0.12)',  'color' => 'rgb(var(--m-bad))'],
+        'default' => ['bg' => 'rgb(var(--m-tx) / 0.08)','color' => 'var(--rasta-cream)'],
     ];
 @endphp
 
@@ -24,7 +24,7 @@
             </div>
             <a href="{{ route('wallet.charge') }}"
                class="px-6 py-3 rounded-xl flex items-center font-bold transition-opacity hover:opacity-90"
-               style="background: linear-gradient(135deg, var(--rasta-gold-light), var(--rasta-gold)); color: var(--rasta-dark);">
+               style="background: var(--m-btn); color: var(--m-on-gold);">
                 <svg class="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
@@ -33,7 +33,7 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="rounded-xl p-6" style="background: linear-gradient(135deg, var(--rasta-gold-light), var(--rasta-gold)); color: var(--rasta-dark);">
+            <div class="rounded-xl p-6" style="background: var(--m-btn); color: var(--m-on-gold);">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold opacity-90">موجودی فعلی</h3>
                     <svg class="w-8 h-8 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -44,7 +44,7 @@
                 <p class="text-sm opacity-80 mt-1">تومان</p>
             </div>
 
-            <div class="rounded-xl p-6" style="background-color: var(--rasta-brown); border: 1px solid rgba(201, 162, 75, 0.25);">
+            <div class="rounded-xl p-6" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.25);">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold" style="color: var(--rasta-cream); opacity: 0.85;">بازگشت وجه این ماه</h3>
                     <svg class="w-8 h-8" style="color: var(--rasta-gold-light);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -55,7 +55,7 @@
                 <p class="text-sm mt-1" style="color: var(--rasta-cream); opacity: 0.6;">تومان</p>
             </div>
 
-            <div class="rounded-xl p-6" style="background-color: var(--rasta-brown); border: 1px solid rgba(201, 162, 75, 0.25);">
+            <div class="rounded-xl p-6" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.25);">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold" style="color: var(--rasta-cream); opacity: 0.85;">پرداختی این ماه</h3>
                     <svg class="w-8 h-8" style="color: var(--rasta-gold);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -69,7 +69,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2">
-                <div class="rounded-xl overflow-hidden" style="background-color: var(--rasta-brown); border: 1px solid rgba(201, 162, 75, 0.2);">
+                <div class="rounded-xl overflow-hidden" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.2);">
                     <div class="p-6" style="background: linear-gradient(90deg, var(--rasta-dark), var(--rasta-brown));">
                         <div class="flex items-center justify-between">
                             <h2 class="text-xl font-bold flex items-center" style="color: var(--rasta-gold-light);">
@@ -94,8 +94,8 @@
                                 $iconInfo = $typeIconMap[$transaction->type] ?? $typeIconMap['default'];
                             @endphp
                             <a href="{{ route('wallet.transactions.show', $transaction) }}"
-                               class="flex items-center justify-between py-4 border-b last:border-0 transition rounded-lg px-3 -mx-3 hover:bg-white/5"
-                               style="border-color: rgba(201, 162, 75, 0.15);">
+                               class="flex items-center justify-between py-4 border-b last:border-0 transition rounded-lg px-3 -mx-3 hover:bg-m-tx/5"
+                               style="border-color: rgb(var(--m-gold) / 0.15);">
                                 <div class="flex items-center gap-4 flex-1">
                                     <div class="flex-shrink-0">
                                         <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background-color: {{ $iconInfo['bg'] }};">
@@ -137,7 +137,7 @@
                                 </div>
 
                                 <div class="text-left mr-4">
-                                    <p class="text-lg font-bold persian-number" style="color: {{ $transaction->amount >= 0 ? 'var(--rasta-gold-light)' : '#E08989' }};">
+                                    <p class="text-lg font-bold persian-number" style="color: {{ $transaction->amount >= 0 ? 'var(--rasta-gold-light)' : 'rgb(var(--m-bad))' }};">
                                         {{ $transaction->amount >= 0 ? '+' : '' }}{{ number_format($transaction->amount) }}
                                     </p>
                                     <p class="text-xs" style="color: var(--rasta-cream); opacity: 0.5;">تومان</p>
@@ -157,7 +157,7 @@
             </div>
 
             <div class="space-y-6">
-                <div class="rounded-xl p-6" style="background-color: var(--rasta-brown); border: 1px solid rgba(201, 162, 75, 0.2);">
+                <div class="rounded-xl p-6" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.2);">
                     <h3 class="text-lg font-bold mb-4 flex items-center" style="color: var(--rasta-gold-light);">
                         <svg class="w-5 h-5 ml-2" style="color: var(--rasta-gold);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -166,19 +166,19 @@
                     </h3>
 
                     <div class="space-y-4">
-                        <div class="flex justify-between items-center pb-3 border-b" style="border-color: rgba(201, 162, 75, 0.15);">
+                        <div class="flex justify-between items-center pb-3 border-b" style="border-color: rgb(var(--m-gold) / 0.15);">
                             <span class="text-sm" style="color: var(--rasta-cream); opacity: 0.7;">موجودی کل</span>
                             <span class="text-lg font-bold persian-number" style="color: var(--rasta-cream);">{{ number_format($wallet->balance) }} تومان</span>
                         </div>
 
-                        <div class="flex justify-between items-center pb-3 border-b" style="border-color: rgba(201, 162, 75, 0.15);">
+                        <div class="flex justify-between items-center pb-3 border-b" style="border-color: rgb(var(--m-gold) / 0.15);">
                             <span class="text-sm" style="color: var(--rasta-cream); opacity: 0.7;">کل واریزی‌ها</span>
                             <span class="text-sm font-semibold persian-number" style="color: var(--rasta-gold-light);">{{ number_format($wallet->total_deposited) }} تومان</span>
                         </div>
 
-                        <div class="flex justify-between items-center pb-3 border-b" style="border-color: rgba(201, 162, 75, 0.15);">
+                        <div class="flex justify-between items-center pb-3 border-b" style="border-color: rgb(var(--m-gold) / 0.15);">
                             <span class="text-sm" style="color: var(--rasta-cream); opacity: 0.7;">کل پرداختی‌ها</span>
-                            <span class="text-sm font-semibold persian-number" style="color: #E08989;">{{ number_format($wallet->total_spent) }} تومان</span>
+                            <span class="text-sm font-semibold persian-number" style="color: rgb(var(--m-bad));">{{ number_format($wallet->total_spent) }} تومان</span>
                         </div>
 
                         <div class="flex justify-between items-center">
@@ -190,7 +190,7 @@
                     </div>
                 </div>
 
-                <div class="rounded-xl p-6" style="background-color: rgba(201, 162, 75, 0.08); border: 1px solid rgba(201, 162, 75, 0.25);">
+                <div class="rounded-xl p-6" style="background-color: rgb(var(--m-gold) / 0.08); border: 1px solid rgb(var(--m-gold) / 0.25);">
                     <h3 class="text-lg font-bold mb-3 flex items-center" style="color: var(--rasta-gold-light);">
                         <svg class="w-5 h-5 ml-2" style="color: var(--rasta-gold);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />

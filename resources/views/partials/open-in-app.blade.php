@@ -5,7 +5,7 @@
 --}}
 @php($appLink = \App\Support\CustomerAppLink::forSalon($appSalon))
 <div data-open-in-app hidden
-     style="position:fixed;left:1rem;right:1rem;bottom:1rem;z-index:60;background:#1A1410;color:#F3EBDD;border:1px solid rgba(201,162,75,.45);border-radius:1rem;box-shadow:0 10px 30px rgba(0,0,0,.35);padding:.85rem 1rem;font-family:Vazirmatn,sans-serif;"
+     style="position:fixed;left:1rem;right:1rem;bottom:1rem;z-index:60;background:rgb(var(--m-card));color:rgb(var(--m-tx));border:1px solid rgb(var(--m-gold) / .45);border-radius:1rem;box-shadow:var(--m-sh-soft);padding:.85rem 1rem;font-family:"Mahru",Vazirmatn,sans-serif;"
      dir="rtl">
     <div style="display:flex;align-items:center;gap:.75rem;">
         <img src="{{ asset('brand/mahru-customer-app-192.png') }}" alt="" width="40" height="40" style="border-radius:10px;flex-shrink:0;">
@@ -18,10 +18,10 @@
     </div>
     <div style="display:flex;gap:.5rem;margin-top:.7rem;">
         <a href="{{ $appLink['intent_url'] }}" data-open-in-app-link
-           style="flex:1;text-align:center;background:#C9A24B;color:#1A1410;font-weight:700;border-radius:.7rem;padding:.6rem .75rem;text-decoration:none;">باز کردن در اپ</a>
+           style="flex:1;text-align:center;background:var(--m-btn);color:var(--m-on-gold);font-weight:700;border-radius:999px;padding:.6rem .75rem;text-decoration:none;">باز کردن در اپ</a>
         @if ($appLink['download_url'])
             <a href="{{ $appLink['download_url'] }}" data-open-in-app-download
-               style="flex:1;text-align:center;border:1px solid rgba(201,162,75,.6);color:#E6CD8A;font-weight:700;border-radius:.7rem;padding:.6rem .75rem;text-decoration:none;">دانلود اپ</a>
+               style="flex:1;text-align:center;border:1px solid rgb(var(--m-gold) / .6);color:rgb(var(--m-gold2));font-weight:700;border-radius:999px;padding:.6rem .75rem;text-decoration:none;">دانلود اپ</a>
         @endif
     </div>
 </div>

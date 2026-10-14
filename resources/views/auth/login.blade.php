@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Route;
         <div class="flex items-center justify-center mx-auto mb-4">
             <x-brand-emblem class="h-16 w-auto max-w-[180px]" />
         </div>
-        <h2 class="text-2xl font-bold" style="font-family:'Noto Naskh Arabic','Vazirmatn',serif; color:#E6CD8A">ورود به {{ $currentSalonName }}</h2>
-        <p class="text-sm text-[#F8F3E9]/60 mt-1">برای رزرو نوبت وارد شوید</p>
+        <h2 class="text-2xl font-bold" style="font-family:'Mahru','Vazirmatn',sans-serif;font-weight:800;color:rgb(var(--m-gold2))">ورود به {{ $currentSalonName }}</h2>
+        <p class="text-sm text-m-tx/60 mt-1">برای رزرو نوبت وارد شوید</p>
     </div>
 
     <x-auth-session-status class="mb-5" :status="session('status')" />
@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Route;
             <x-input-label for="phone" :value="__('شماره موبایل')" />
             <div class="relative">
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                    <svg class="h-4 w-4 text-[#C9A24B]/60" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="h-4 w-4 text-m-gold/60" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
                     </svg>
                 </div>
@@ -37,7 +37,7 @@ use Illuminate\Support\Facades\Route;
             <x-input-label for="password" :value="__('رمز عبور')" />
             <div class="relative">
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                    <svg class="h-4 w-4 text-[#C9A24B]/60" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="h-4 w-4 text-m-gold/60" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
                     </svg>
                 </div>
@@ -51,11 +51,11 @@ use Illuminate\Support\Facades\Route;
         <div class="flex items-center justify-between text-sm">
             <label for="remember_me" class="inline-flex items-center gap-2 cursor-pointer">
                 <input id="remember_me" type="checkbox" name="remember"
-                       class="w-4 h-4 rounded border-[#C9A24B]/30 bg-white/5 text-[#C9A24B] focus:ring-[#C9A24B]/30">
-                <span class="text-[#F8F3E9]/70">مرا به خاطر بسپار</span>
+                       class="w-4 h-4 rounded border-m-gold/30 bg-m-tx/5 text-m-gold focus:ring-m-gold/30">
+                <span class="text-m-tx/70">مرا به خاطر بسپار</span>
             </label>
             @if (Route::has('password.request'))
-                <a href="{{ route('password.request') }}" class="text-[#E6CD8A] hover:text-[#C9A24B] transition-colors">
+                <a href="{{ route('password.request') }}" class="text-m-gold2 hover:text-m-gold transition-colors">
                     فراموشی رمز عبور
                 </a>
             @endif
@@ -64,14 +64,14 @@ use Illuminate\Support\Facades\Route;
         {{-- Login button --}}
         <button type="submit"
                 class="w-full py-3 rounded-lg font-semibold text-sm transition-all duration-300
-                   bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-[#1A1410]
+                   bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-m-ongold
                    hover:shadow-lg hover:shadow-[#C9A24B]/30 hover:-translate-y-0.5">
             ورود به حساب
         </button>
 
-        <p class="text-center text-sm text-[#F8F3E9]/60">
+        <p class="text-center text-sm text-m-tx/60">
             حساب کاربری ندارید؟
-            <a href="{{ route('register') }}" class="text-[#E6CD8A] hover:text-[#C9A24B] transition-colors font-medium mr-1">
+            <a href="{{ route('register') }}" class="text-m-gold2 hover:text-m-gold transition-colors font-medium mr-1">
                 ثبت نام کنید
             </a>
         </p>

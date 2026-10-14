@@ -4,14 +4,14 @@
 
 @section('content')
     <div class="max-w-2xl mx-auto fade-in">
-        <div class="rounded-xl p-6" style="background-color: var(--rasta-brown); border: 1px solid rgba(201,162,75,0.2);">
+        <div class="rounded-xl p-6" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.2);">
 
             {{-- Header --}}
-            <div class="flex items-center justify-between mb-6 pb-4" style="border-bottom: 1px solid rgba(201,162,75,0.15);">
+            <div class="flex items-center justify-between mb-6 pb-4" style="border-bottom: 1px solid rgb(var(--m-gold) / 0.15);">
                 <div class="flex items-center">
                     <div class="w-12 h-12 rounded-full flex items-center justify-center ml-3"
-                         style="background: linear-gradient(135deg, var(--rasta-gold), var(--rasta-gold-light));">
-                        <svg class="w-6 h-6" style="color: var(--rasta-dark);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                         style="background: var(--m-btn);">
+                        <svg class="w-6 h-6" style="color: var(--m-on-gold);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
                     </div>
@@ -29,7 +29,7 @@
             </div>
 
             {{-- Current inventory --}}
-            <div class="rounded-xl p-5 mb-6" style="background-color: var(--rasta-dark); border: 1px solid rgba(201,162,75,0.15);">
+            <div class="rounded-xl p-5 mb-6" style="background-color: var(--rasta-dark); border: 1px solid rgb(var(--m-gold) / 0.15);">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm mb-1" style="color: var(--rasta-gold);">موجودی فعلی کیف پول</p>
@@ -39,7 +39,7 @@
                         <p class="text-sm mt-1" style="color: var(--rasta-cream); opacity: 0.6;">تومان</p>
                     </div>
                     <div class="w-16 h-16 rounded-full flex items-center justify-center"
-                         style="background-color: rgba(201,162,75,0.1);">
+                         style="background-color: rgb(var(--m-gold) / 0.1);">
                         <svg class="w-8 h-8" style="color: var(--rasta-gold);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -59,7 +59,7 @@
                             <button type="button"
                                     onclick="selectAmount({{ $suggested }}, this)"
                                     class="amount-btn p-4 rounded-xl transition-all text-center"
-                                    style="border: 1px solid rgba(201,162,75,0.3); background-color: rgba(201,162,75,0.05);">
+                                    style="border: 1px solid rgb(var(--m-gold) / 0.3); background-color: rgb(var(--m-gold) / 0.05);">
                                 <div class="text-xl font-bold persian-number" style="color: var(--rasta-cream);">
                                     {{ number_format($suggested) }}
                                 </div>
@@ -81,7 +81,7 @@
                                placeholder="مثال: ۱۰۰٬۰۰۰"
                                class="w-full px-4 py-4 rounded-xl text-lg text-center persian-number focus:outline-none"
                                style="background-color: var(--rasta-dark);
-                                      border: 1px solid {{ $errors->has('amount') ? '#ef4444' : 'rgba(201,162,75,0.3)' }};
+                                      border: 1px solid {{ $errors->has('amount') ? '#ef4444' : 'rgb(var(--m-gold) / 0.3)' }};
                                       color: var(--rasta-cream);"
                                value="{{ old('amount') }}"
                                oninput="formatAmountInput(this)">
@@ -95,11 +95,11 @@
                     @error('amount')
                     <div class="mt-2 rounded-lg p-3 flex items-start"
                          style="background-color: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);">
-                        <svg class="w-5 h-5 text-red-400 ml-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg class="w-5 h-5 text-m-bad ml-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <p class="text-red-400 text-sm">{{ $message }}</p>
+                        <p class="text-m-bad text-sm">{{ $message }}</p>
                     </div>
                     @enderror
                     <p class="text-sm mt-2 flex items-center" style="color: var(--rasta-cream); opacity: 0.5;">
@@ -114,7 +114,7 @@
 
                 {{-- Preview --}}
                 <div id="preview-box" class="hidden mb-6 rounded-xl p-5"
-                     style="background-color: rgba(201,162,75,0.08); border: 1px solid rgba(201,162,75,0.3);">
+                     style="background-color: rgb(var(--m-gold) / 0.08); border: 1px solid rgb(var(--m-gold) / 0.3);">
                     <h3 class="font-bold mb-3 flex items-center" style="color: var(--rasta-gold-light);">
                         <svg class="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -124,13 +124,13 @@
                     </h3>
                     <div class="space-y-2">
                         <div class="flex justify-between items-center pb-2"
-                             style="border-bottom: 1px solid rgba(201,162,75,0.2);">
+                             style="border-bottom: 1px solid rgb(var(--m-gold) / 0.2);">
                             <span style="color: var(--rasta-cream); opacity: 0.7;">مبلغ شارژ:</span>
                             <span class="font-bold persian-number" id="preview-amount"
                                   style="color: var(--rasta-gold-light);">0 تومان</span>
                         </div>
                         <div class="flex justify-between items-center pb-2"
-                             style="border-bottom: 1px solid rgba(201,162,75,0.2);">
+                             style="border-bottom: 1px solid rgb(var(--m-gold) / 0.2);">
                             <span style="color: var(--rasta-cream); opacity: 0.7;">موجودی فعلی:</span>
                             <span class="persian-number" style="color: var(--rasta-cream);">
                                 {{ number_format($wallet->balance) }} تومان
@@ -138,7 +138,7 @@
                         </div>
                         {{-- ⭐ مرحله‌ی ۱ چند درگاه: کارمزد درگاه به مبلغ پرداختی اضافه می‌شود، نه از شارژ کم --}}
                         <div class="flex justify-between items-center pb-2" id="preview-fee-row"
-                             style="border-bottom: 1px solid rgba(201,162,75,0.2); display:none;">
+                             style="border-bottom: 1px solid rgb(var(--m-gold) / 0.2); display:none;">
                             <span style="color: var(--rasta-cream); opacity: 0.7;">کارمزد درگاه / مبلغ پرداختی:</span>
                             <span class="persian-number" id="preview-fee" style="color: var(--rasta-cream);"></span>
                         </div>
@@ -156,7 +156,7 @@
 
                 {{-- Important points --}}
                 <div class="rounded-xl p-4 mb-6"
-                     style="background-color: rgba(201,162,75,0.05); border: 1px solid rgba(201,162,75,0.15);">
+                     style="background-color: rgb(var(--m-gold) / 0.05); border: 1px solid rgb(var(--m-gold) / 0.15);">
                     <div class="flex items-start">
                         <svg class="w-5 h-5 ml-2 mt-0.5 flex-shrink-0" style="color: var(--rasta-gold);"
                              fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -178,17 +178,17 @@
                 <div class="flex gap-3">
                     <a href="{{ route('wallet.index') }}"
                        class="flex-1 py-3 px-4 rounded-xl transition text-center font-semibold"
-                       style="background-color: rgba(201,162,75,0.1);
+                       style="background-color: rgb(var(--m-gold) / 0.1);
                               color: var(--rasta-cream);
-                              border: 1px solid rgba(201,162,75,0.2);">
+                              border: 1px solid rgb(var(--m-gold) / 0.2);">
                         انصراف
                     </a>
                     <button type="submit"
                             id="submit-btn"
                             disabled
                             class="flex-1 py-3 px-4 rounded-xl transition font-semibold disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
-                            style="background: linear-gradient(135deg, var(--rasta-gold), var(--rasta-gold-light));
-                                   color: var(--rasta-dark);">
+                            style="background: var(--m-btn);
+                                   color: var(--m-on-gold);">
                         <svg class="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -200,7 +200,7 @@
 
             {{-- Security Footer --}}
             <div class="mt-6 pt-4 flex items-start text-sm"
-                 style="border-top: 1px solid rgba(201,162,75,0.1); color: var(--rasta-cream); opacity: 0.5;">
+                 style="border-top: 1px solid rgb(var(--m-gold) / 0.1); color: var(--rasta-cream); opacity: 0.5;">
                 <svg class="w-5 h-5 ml-2 mt-0.5 flex-shrink-0" style="color: var(--rasta-gold);"
                      fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -238,11 +238,11 @@
             updatePreview(amount);
             validateAmount(amount);
             document.querySelectorAll('.amount-btn').forEach(b => {
-                b.style.borderColor = 'rgba(201,162,75,0.3)';
-                b.style.backgroundColor = 'rgba(201,162,75,0.05)';
+                b.style.borderColor = 'rgb(var(--m-gold) / 0.3)';
+                b.style.backgroundColor = 'rgb(var(--m-gold) / 0.05)';
             });
             btn.style.borderColor = 'var(--rasta-gold)';
-            btn.style.backgroundColor = 'rgba(201,162,75,0.15)';
+            btn.style.backgroundColor = 'rgb(var(--m-gold) / 0.15)';
         }
 
         function formatAmountInput(input) {

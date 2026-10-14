@@ -5,14 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
     <title>{{ $title }} — {{ $salonName }}</title>
+    @include('partials.mahru-theme')
     <style>
-        body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:#1A1410; color:#F8F3E9; font-family:Vazirmatn, Tahoma, sans-serif; line-height:1.9; }
+        body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:rgb(var(--m-bg)); color:rgb(var(--m-tx)); font-family:"Mahru", Vazirmatn, Tahoma, sans-serif; line-height:1.9; }
         .box { max-width:26rem; text-align:center; padding:2rem 1.5rem; }
-        .icon { font-size:2.75rem; margin-bottom:.5rem; color:{{ $state === 'paid' ? '#7FCB97' : ($state === 'pending' ? '#E6CD8A' : '#E8907E') }}; }
-        h1 { font-size:1.25rem; margin:.25rem 0 .75rem; color:#E6CD8A; }
-        p { margin:.5rem 0; color:rgba(248,243,233,.85); }
-        a.btn { display:inline-block; margin-top:1.25rem; padding:.85rem 1.75rem; border-radius:.75rem; background:#C9A24B; color:#1A1410; font-weight:700; text-decoration:none; }
-        .hint { font-size:.85rem; color:rgba(248,243,233,.55); margin-top:1rem; }
+        .icon { font-size:2.75rem; margin-bottom:.5rem; color:{{ $state === 'paid' ? 'rgb(var(--m-ok))' : ($state === 'pending' ? 'rgb(var(--m-gold2))' : 'rgb(var(--m-bad))') }}; }
+        h1 { font-size:1.25rem; margin:.25rem 0 .75rem; color:rgb(var(--m-gold2)); }
+        p { margin:.5rem 0; color:rgb(var(--m-tx) / .85); }
+        a.btn { display:inline-block; margin-top:1.25rem; padding:.85rem 1.75rem; border-radius:999px; background:var(--m-btn); color:var(--m-on-gold); font-weight:700; text-decoration:none; }
+        .hint { font-size:.85rem; color:rgb(var(--m-tx) / .55); margin-top:1rem; }
     </style>
 </head>
 <body>

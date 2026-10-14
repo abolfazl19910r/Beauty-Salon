@@ -32,7 +32,7 @@
                     <label class="block text-sm mb-1" style="{{ $dim }}" for="discount_code">کد تخفیف (اختیاری)</label>
                     <div class="flex gap-2">
                         <input id="discount_code" name="discount_code" value="{{ old('discount_code') }}" dir="ltr" class="flex-1 px-3 py-2 rounded-lg"
-                               style="background-color: var(--rasta-dark); border: 1px solid rgba(201,162,75,0.25); color: var(--rasta-cream);">
+                               style="background-color: var(--rasta-dark); border: 1px solid rgb(var(--m-gold) / 0.25); color: var(--rasta-cream);">
                         <button type="submit" class="px-6 py-2 rounded-lg font-bold" style="{{ $btn }}">خرید دوره</button>
                     </div>
                 </form>

@@ -22,7 +22,7 @@
                     <label class="block text-sm mb-1" style="color: var(--rasta-cream);" for="amount">مبلغ این پرداخت (تومان)</label>
                     <input id="amount" name="amount" inputmode="numeric" dir="ltr" class="w-full px-3 py-3 rounded-lg text-center persian-number"
                            value="{{ old('amount', (int) $course->balanceDue()) }}"
-                           style="background-color: var(--rasta-dark); border: 1px solid rgba(201,162,75,0.3); color: var(--rasta-cream);">
+                           style="background-color: var(--rasta-dark); border: 1px solid rgb(var(--m-gold) / 0.3); color: var(--rasta-cream);">
                     <p class="text-xs mt-1 persian-number" style="{{ $dim }}">
                         @if ($minAmount < $course->balanceDue())
                             حداقل {{ number_format($minAmount) }} و حداکثر {{ number_format($course->balanceDue()) }} تومان. جلسه‌ها به اندازه‌ی مبلغ پرداخت‌شده رزرو می‌شوند (هر جلسه {{ number_format($course->per_session_value) }} تومان).

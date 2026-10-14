@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
     <title>در حال انتقال به درگاه پرداخت…</title>
+    @include('partials.mahru-theme')
     <style>
-        body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:#1A1410; color:#F8F3E9; font-family:Vazirmatn, Tahoma, sans-serif; }
+        body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:rgb(var(--m-bg)); color:rgb(var(--m-tx)); font-family:"Mahru", Vazirmatn, Tahoma, sans-serif; }
         .box { text-align:center; padding:2rem; }
-        button { margin-top:1rem; padding:.75rem 1.5rem; border:0; border-radius:.75rem; background:#C9A24B; color:#1A1410; font-weight:700; cursor:pointer; }
+        button { margin-top:1rem; padding:.75rem 1.5rem; border:0; border-radius:999px; background:var(--m-btn); color:var(--m-on-gold); font-weight:700; cursor:pointer; }
     </style>
 </head>
 <body>

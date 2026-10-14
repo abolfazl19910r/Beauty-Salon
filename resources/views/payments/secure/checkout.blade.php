@@ -4,7 +4,7 @@
 @section('content')
     <style>
         .secure-btn {
-            background: linear-gradient(135deg, #C9A24B, #E6CD8A); color: #1A1410;
+            background: var(--m-btn); color: var(--m-on-gold);
         }
         .secure-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
@@ -13,49 +13,49 @@
 
         {{-- Header --}}
         <div class="flex items-center gap-3 mb-8">
-            <div class="w-10 h-10 rounded-xl bg-[#C9A24B]/15 flex items-center justify-center shrink-0">
-                <svg class="w-5 h-5 text-[#E6CD8A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <div class="w-10 h-10 rounded-xl bg-m-gold/15 flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-m-gold2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                 </svg>
             </div>
             <div>
-                <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase mb-0.5">پرداخت امن</p>
-                <h1 class="text-2xl font-bold text-[#E6CD8A]" style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">پرداخت با تایید دو مرحله‌ای</h1>
-                <p class="text-[#F8F3E9]/50 text-sm persian-number">شماره نوبت: {{ $booking->id }}</p>
+                <p class="text-xs font-semibold text-m-gold tracking-[0.3em] uppercase mb-0.5">پرداخت امن</p>
+                <h1 class="text-2xl font-bold text-m-gold2" style="font-family:'Mahru','Vazirmatn',sans-serif;font-weight:800;">پرداخت با تایید دو مرحله‌ای</h1>
+                <p class="text-m-tx/50 text-sm persian-number">شماره نوبت: {{ $booking->id }}</p>
             </div>
         </div>
 
         {{-- Appointment details --}}
-        <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 overflow-hidden mb-5">
-            <div class="px-5 py-3.5 border-b border-[#C9A24B]/10">
-                <h2 class="font-bold text-sm text-[#E6CD8A]">جزئیات نوبت</h2>
+        <div class="bg-m-card rounded-2xl border border-m-gold/10 overflow-hidden mb-5">
+            <div class="px-5 py-3.5 border-b border-m-gold/10">
+                <h2 class="font-bold text-sm text-m-gold2">جزئیات نوبت</h2>
             </div>
-            <div class="divide-y divide-[#C9A24B]/8">
+            <div class="divide-y divide-m-gold/8">
                 <div class="flex justify-between items-center px-5 py-3.5 text-sm">
-                    <span class="text-[#F8F3E9]/55">خدمت</span>
-                    <span class="font-medium text-[#F8F3E9]">{{ $booking->service?->name ?? 'خدمت نامشخص' }}</span>
+                    <span class="text-m-tx/55">خدمت</span>
+                    <span class="font-medium text-m-tx">{{ $booking->service?->name ?? 'خدمت نامشخص' }}</span>
                 </div>
                 <div class="flex justify-between items-center px-5 py-3.5 text-sm">
-                    <span class="text-[#F8F3E9]/55">متخصص</span>
-                    <span class="font-medium text-[#F8F3E9]">{{ $booking->specialist?->name ?? 'متخصص نامشخص' }}</span>
+                    <span class="text-m-tx/55">متخصص</span>
+                    <span class="font-medium text-m-tx">{{ $booking->specialist?->name ?? 'متخصص نامشخص' }}</span>
                 </div>
                 <div class="flex justify-between items-center px-5 py-3.5 text-sm">
-                    <span class="text-[#F8F3E9]/55">تاریخ و ساعت</span>
-                    <span class="font-medium text-[#F8F3E9] persian-number" dir="ltr">{{ verta($booking->booking_time)->format('Y/m/d H:i') }}</span>
+                    <span class="text-m-tx/55">تاریخ و ساعت</span>
+                    <span class="font-medium text-m-tx persian-number" dir="ltr">{{ verta($booking->booking_time)->format('Y/m/d H:i') }}</span>
                 </div>
                 <div class="flex justify-between items-center px-5 py-3.5 text-sm">
-                    <span class="text-[#F8F3E9]/55">مبلغ قابل پرداخت</span>
-                    <span class="font-bold text-[#E6CD8A] persian-number">{{ number_format($booking->prepayment_amount) }} تومان</span>
+                    <span class="text-m-tx/55">مبلغ قابل پرداخت</span>
+                    <span class="font-bold text-m-gold2 persian-number">{{ number_format($booking->prepayment_amount) }} تومان</span>
                 </div>
             </div>
         </div>
 
-        <div class="bg-emerald-900/12 border border-emerald-500/20 rounded-2xl p-5 mb-5 flex items-start gap-3">
-            <svg class="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <div class="bg-m-ok/12 border border-m-ok/20 rounded-2xl p-5 mb-5 flex items-start gap-3">
+            <svg class="w-5 h-5 text-m-ok shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
             </svg>
-            <p class="text-sm text-emerald-300/90">
+            <p class="text-sm text-m-ok/90">
                 این مسیر پرداخت با یک لایه‌ی امنیتی اضافه (تایید دو مرحله‌ای) محافظت می‌شود. هویت شما پیش‌تر در همین نشست تایید شده و پس از تایید تراکنش، نوبت شما بلافاصله نهایی می‌شود.
             </p>
         </div>
@@ -68,7 +68,7 @@
         </button>
 
         <div class="mt-4 text-center">
-            <a href="{{ route('payment.show', $booking) }}" class="text-sm text-[#F8F3E9]/50 hover:text-[#E6CD8A] transition-colors">
+            <a href="{{ route('payment.show', $booking) }}" class="text-sm text-m-tx/50 hover:text-m-gold2 transition-colors">
                 بازگشت به پرداخت معمولی
             </a>
         </div>
@@ -114,7 +114,7 @@
             const el = document.getElementById('checkout-message');
             el.textContent = msg;
             el.classList.remove('hidden');
-            el.classList.add('bg-red-500/10', 'text-red-400', 'border', 'border-red-500/20');
+            el.classList.add('bg-m-bad/10', 'text-m-bad', 'border', 'border-m-bad/20');
         }
     </script>
 @endsection

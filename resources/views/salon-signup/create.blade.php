@@ -7,9 +7,6 @@
     <title>ثبت‌نام سالن جدید — {{ config('brand.name') }}</title>
     @include('partials.platform-icons')
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800&display=swap" rel="stylesheet">
 
     {{--
         ⭐ عمداً یک صفحه‌ی کاملاً self-contained (بدون @vite، بدون x-guest-layout) — دقیقاً
@@ -17,14 +14,8 @@
         و $currentSalonName وابسته‌ست که هر دو فقط داخل یک درخواست /s/{slug} معنی دارن؛ این صفحه
         global است (بیرون از هر سالن)، پس اون layout اینجا کرش می‌کنه.
     --}}
+    @include('partials.mahru-theme')
     <style>
-        :root {
-            --rasta-gold: #C9A24B;
-            --rasta-gold-light: #E6CD8A;
-            --rasta-cream: #F8F3E9;
-            --rasta-dark: #1A1410;
-            --rasta-brown: #2E2117;
-        }
         * { box-sizing: border-box; }
         .signup-logo { display: inline-block; margin-bottom: 1.25rem; }
         .signup-logo img { height: 52px; width: auto; display: block; }
@@ -33,7 +24,7 @@
             min-height: 100vh;
             background-color: var(--rasta-dark);
             color: var(--rasta-cream);
-            font-family: 'Vazirmatn', Tahoma, sans-serif;
+            font-family: "Mahru", 'Vazirmatn', Tahoma, sans-serif;
             padding: 2.5rem 1rem;
         }
         .wrap { max-width: 40rem; margin: 0 auto; }
@@ -41,7 +32,7 @@
         .sub { text-align: center; opacity: .75; margin-bottom: 2rem; line-height: 1.8; }
         .card {
             background-color: var(--rasta-brown);
-            border: 1px solid rgba(201, 162, 75, 0.15);
+            border: 1px solid rgb(var(--m-gold) / 0.15);
             border-radius: 1rem;
             padding: 1.75rem;
         }
@@ -51,14 +42,14 @@
         .row { margin-bottom: 1rem; }
         input[type=text], input[type=password], input[type=tel], input[type=number], input[type=time], textarea {
             width: 100%;
-            background-color: rgba(248, 243, 233, 0.04);
-            border: 1px solid rgba(201, 162, 75, 0.25);
+            background-color: rgb(var(--m-tx) / 0.04);
+            border: 1px solid rgb(var(--m-gold) / 0.25);
             color: var(--rasta-cream);
             border-radius: .5rem;
             padding: .6rem .75rem;
             font-size: .95rem;
         }
-        input:focus { outline: none; border-color: var(--rasta-gold); box-shadow: 0 0 0 3px rgba(201, 162, 75, 0.2); }
+        input:focus { outline: none; border-color: var(--rasta-gold); box-shadow: 0 0 0 3px rgb(var(--m-gold) / 0.2); }
         textarea { resize: vertical; min-height: 4.5rem; font-family: inherit; line-height: 1.8; }
         .hint { font-size: .78rem; opacity: .6; margin-top: .3rem; }
         .two { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
@@ -70,29 +61,29 @@
         .hours-row input[type=time] { padding: .4rem .5rem; direction: ltr; }
         .hours-row.is-closed input[type=time] { opacity: .35; }
         @media (max-width: 520px) { .hours-row { grid-template-columns: 4.5rem auto 1fr 1fr; gap: .35rem; } }
-        .buy-summary { display: flex; justify-content: space-between; align-items: center; gap: 1rem; border: 1px solid var(--rasta-gold); border-radius: .7rem; padding: .8rem 1rem; margin-bottom: 1.5rem; background: rgba(201, 162, 75, .08); }
+        .buy-summary { display: flex; justify-content: space-between; align-items: center; gap: 1rem; border: 1px solid var(--rasta-gold); border-radius: .7rem; padding: .8rem 1rem; margin-bottom: 1.5rem; background: rgb(var(--m-gold) / .08); }
         .buy-title { font-weight: 800; color: var(--rasta-gold-light); }
         .buy-price { font-size: .85rem; opacity: .8; margin-top: .15rem; }
         .buy-summary a { color: var(--rasta-gold-light); font-size: .85rem; white-space: nowrap; }
         .logo-pick { display: flex; align-items: center; gap: .8rem; }
-        .logo-pick img { width: 56px; height: 56px; object-fit: contain; border-radius: .6rem; background: rgba(248, 243, 233, .08); border: 1px solid rgba(201, 162, 75, .3); padding: .25rem; }
+        .logo-pick img { width: 56px; height: 56px; object-fit: contain; border-radius: .6rem; background: rgb(var(--m-tx) / .08); border: 1px solid rgb(var(--m-gold) / .3); padding: .25rem; }
         .logo-pick input[type=file] { font-family: inherit; font-size: .85rem; color: inherit; }
-        .notice { border: 1px solid rgba(201, 162, 75, .45); background: rgba(201, 162, 75, .08); border-radius: .7rem; padding: .8rem 1rem; font-size: .85rem; line-height: 1.9; margin-bottom: 1rem; }
-        .err { color: #ff8a8a; font-size: .8rem; margin-top: .3rem; }
+        .notice { border: 1px solid rgb(var(--m-gold) / .45); background: rgb(var(--m-gold) / .08); border-radius: .7rem; padding: .8rem 1rem; font-size: .85rem; line-height: 1.9; margin-bottom: 1rem; }
+        .err { color: rgb(var(--m-bad)); font-size: .8rem; margin-top: .3rem; }
         .check-status { font-size: .78rem; margin-top: .35rem; min-height: 1em; }
-        .check-status.ok { color: #7ee0a6; }
-        .check-status.bad { color: #ff8a8a; }
-        .check-status.pending { color: rgba(248, 243, 233, 0.45); }
+        .check-status.ok { color: rgb(var(--m-ok)); }
+        .check-status.bad { color: rgb(var(--m-bad)); }
+        .check-status.pending { color: rgb(var(--m-tx) / 0.45); }
         .flash-err {
-            background: rgba(220,38,38,.15); border-right: 4px solid #dc2626;
+            background: rgb(var(--m-bad) / .12); border-right: 4px solid rgb(var(--m-bad));
             padding: .75rem 1rem; border-radius: .4rem; margin-bottom: 1.25rem; font-size: .875rem;
         }
         button {
             width: 100%;
-            background: linear-gradient(135deg, var(--rasta-gold-light), var(--rasta-gold));
-            color: var(--rasta-dark);
+            background: var(--m-btn);
+            color: var(--m-on-gold);
             border: none;
-            border-radius: .6rem;
+            border-radius: 999px;
             padding: .8rem;
             font-size: 1rem;
             font-weight: bold;
@@ -102,8 +93,9 @@
     </style>
 </head>
 <body>
+    <div style="position:fixed;top:1rem;left:1rem;z-index:50">@include('partials.mahru-theme-toggle')</div>
     <div class="wrap">
-        <a href="{{ route('central.home') }}" class="signup-logo"><img src="{{ asset('brand/mahru-logo-horizontal-on-dark.svg') }}" alt="{{ config('brand.name') }}" height="52"></a>
+        <a href="{{ route('central.home') }}" class="signup-logo"><img class="m-logo-dark" src="{{ asset('brand/mahru-logo-horizontal-on-dark.svg') }}" alt="{{ config('brand.name') }}" height="52"><img class="m-logo-light" src="{{ asset('brand/mahru-logo-horizontal-on-light.svg') }}" alt="{{ config('brand.name') }}" height="52"></a>
         <h1>ساخت سالن خودتان روی {{ config('brand.name') }}</h1>
         <p class="sub">
             در چند دقیقه، پنل مدیریت اختصاصی سالن خودتان را راه‌اندازی کنید.

@@ -23,7 +23,7 @@
                     <a href="{{ route('courses.show', $package) }}" class="block rounded-xl p-5 transition hover:opacity-95" style="{{ $card }}" data-course-package="{{ $package->id }}">
                         <div class="flex justify-between items-start gap-3">
                             <h2 class="font-bold text-lg" style="{{ $gold }}">{{ $package->name }}</h2>
-                            <span class="text-xs px-2 py-1 rounded-full persian-number" style="background: rgba(201,162,75,0.12); color: var(--rasta-gold);">{{ to_persian_num((string) $package->sessions_count) }} جلسه</span>
+                            <span class="text-xs px-2 py-1 rounded-full persian-number" style="background: rgb(var(--m-gold) / 0.12); color: var(--rasta-gold);">{{ to_persian_num((string) $package->sessions_count) }} جلسه</span>
                         </div>
                         <p class="text-sm mt-1" style="{{ $dim }}">{{ $package->sessionServices()->pluck('name')->implode(' + ') }}@if ($package->specialist) — {{ $package->specialist->name }}@endif</p>
                         <div class="mt-4 flex items-end justify-between">

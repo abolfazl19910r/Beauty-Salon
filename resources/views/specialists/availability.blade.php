@@ -30,9 +30,9 @@
         </div>
 
         <div class="flex items-center justify-between mb-4 text-sm">
-            <a href="{{ route('specialists.availability', ['specialist' => $specialist, 'year' => $prev->year, 'month' => $prev->month]) }}" class="px-3 py-1 rounded-full" style="border: 1px solid rgba(201,162,75,.35);">ماه قبل</a>
+            <a href="{{ route('specialists.availability', ['specialist' => $specialist, 'year' => $prev->year, 'month' => $prev->month]) }}" class="px-3 py-1 rounded-full" style="border: 1px solid rgb(var(--m-gold) / .35);">ماه قبل</a>
             <span class="font-bold persian-number">{{ to_persian_num($jalaliTitle) }}</span>
-            <a href="{{ route('specialists.availability', ['specialist' => $specialist, 'year' => $next->year, 'month' => $next->month]) }}" class="px-3 py-1 rounded-full" style="border: 1px solid rgba(201,162,75,.35);">ماه بعد</a>
+            <a href="{{ route('specialists.availability', ['specialist' => $specialist, 'year' => $next->year, 'month' => $next->month]) }}" class="px-3 py-1 rounded-full" style="border: 1px solid rgb(var(--m-gold) / .35);">ماه بعد</a>
         </div>
 
         <div class="grid grid-cols-7 gap-1 text-center text-xs mb-1 opacity-70">
@@ -51,13 +51,13 @@
                     $jDay = \Morilog\Jalali\Jalalian::fromCarbon($date)->getDay();
                     $isPast = $date->lt(today());
                     if ($isPast) {
-                        [$bg, $label] = ['rgba(248,243,233,.04)', 'گذشته'];
+                        [$bg, $label] = ['rgb(var(--m-tx) / .04)', 'گذشته'];
                     } elseif ($available->has($key)) {
                         [$bg, $label] = ['rgba(34,197,94,.22)', to_persian_num((string) $available[$key]['slots_count']).' نوبت'];
                     } elseif ($holidays->has($key)) {
                         [$bg, $label] = ['rgba(239,68,68,.18)', 'تعطیل'];
                     } else {
-                        [$bg, $label] = ['rgba(248,243,233,.07)', 'پر / غیرکاری'];
+                        [$bg, $label] = ['rgb(var(--m-tx) / .07)', 'پر / غیرکاری'];
                     }
                 @endphp
                 <div class="rounded-lg py-2 px-1" style="background: {{ $bg }}; {{ $isPast ? 'opacity:.45;' : '' }}" title="{{ jalali_date($date) }}">
@@ -70,11 +70,11 @@
         <div class="flex flex-wrap gap-4 mt-5 text-xs opacity-80">
             <span><span class="inline-block w-3 h-3 rounded ml-1 align-middle" style="background: rgba(34,197,94,.5);"></span>نوبت خالی</span>
             <span><span class="inline-block w-3 h-3 rounded ml-1 align-middle" style="background: rgba(239,68,68,.4);"></span>تعطیل / مرخصی</span>
-            <span><span class="inline-block w-3 h-3 rounded ml-1 align-middle" style="background: rgba(248,243,233,.2);"></span>پر یا روز غیرکاری</span>
+            <span><span class="inline-block w-3 h-3 rounded ml-1 align-middle" style="background: rgb(var(--m-tx) / .2);"></span>پر یا روز غیرکاری</span>
         </div>
 
         <div class="mt-8 text-center">
-            <a href="{{ route('bookings.create') }}" class="px-6 py-3 rounded-full font-bold" style="background: var(--rasta-gold); color: #1A1410;">رزرو نوبت</a>
+            <a href="{{ route('bookings.create') }}" class="px-6 py-3 rounded-full font-bold" style="background: var(--m-btn); color: var(--m-on-gold);">رزرو نوبت</a>
         </div>
     </div>
 @endsection

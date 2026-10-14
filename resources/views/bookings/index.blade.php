@@ -13,23 +13,23 @@
             z-index: 9999;
             width: 280px;
             background-color: var(--rasta-brown);
-            border: 1px solid rgba(201,162,75,0.25);
+            border: 1px solid rgb(var(--m-gold) / 0.25);
             border-radius: 10px;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.6);
+            box-shadow: var(--m-sh-soft);
             padding: 12px;
         }
         .jcal-popup.open { display: block; }
         .jcal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
         .jcal-header button { background: none; border: none; color: var(--rasta-cream); cursor: pointer; padding: 4px 8px; border-radius: 6px; }
-        .jcal-header button:hover { background-color: rgba(201,162,75,0.12); }
+        .jcal-header button:hover { background-color: rgb(var(--m-gold) / 0.12); }
         .jcal-title { color: var(--rasta-gold-light); font-weight: bold; font-size: 13px; }
         .jcal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
         .jcal-weekday { font-size: 10px; color: var(--rasta-cream); opacity: 0.5; padding: 4px 0; }
         .jcal-day { font-size: 12px; color: var(--rasta-cream); padding: 6px 0; border-radius: 6px; cursor: pointer; }
-        .jcal-day:hover { background-color: rgba(201,162,75,0.15); }
+        .jcal-day:hover { background-color: rgb(var(--m-gold) / 0.15); }
         .jcal-day.jcal-empty { cursor: default; }
         .jcal-day.jcal-empty:hover { background-color: transparent; }
-        .jcal-day.jcal-selected { background-color: var(--rasta-gold); color: var(--rasta-dark); font-weight: bold; }
+        .jcal-day.jcal-selected { background: var(--m-btn); color: var(--m-on-gold); font-weight: bold; }
         .jcal-day.jcal-today { border: 1px solid var(--rasta-gold); }
     </style>
 @endpush
@@ -40,7 +40,7 @@
             <h1 class="text-2xl font-bold" style="color: var(--rasta-gold-light);">نوبت‌های من</h1>
             <a href="{{ route('bookings.create') }}"
                class="px-5 py-2 rounded-lg font-bold transition-opacity hover:opacity-90 flex items-center"
-               style="background: linear-gradient(135deg, var(--rasta-gold-light), var(--rasta-gold)); color: var(--rasta-dark);">
+               style="background: var(--m-btn); color: var(--m-on-gold);">
                 <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -49,14 +49,14 @@
             </a>
         </div>
 
-        <div class="rounded-xl overflow-hidden" style="background-color: var(--rasta-brown); border: 1px solid rgba(201,162,75,0.2);">
-            <div class="p-4 border-b" style="border-color: rgba(201,162,75,0.15);">
+        <div class="rounded-xl overflow-hidden" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.2);">
+            <div class="p-4 border-b" style="border-color: rgb(var(--m-gold) / 0.15);">
                 <form action="{{ route('bookings.index') }}" method="GET" class="flex flex-wrap gap-4 items-end">
                     <div>
                         <label class="block text-xs mb-1" style="color: var(--rasta-gold-light); opacity: 0.8;">وضعیت</label>
                         <select name="status"
-                                class="px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--rasta-gold)]"
-                                style="background-color: var(--rasta-dark); border: 1px solid rgba(201,162,75,0.25); color: var(--rasta-cream);">
+                                class="px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-m-gold"
+                                style="background-color: var(--rasta-dark); border: 1px solid rgb(var(--m-gold) / 0.25); color: var(--rasta-cream);">
                             <option value="">همه وضعیت‌ها</option>
                             <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>در انتظار تایید</option>
                             <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>تایید شده</option>
@@ -70,8 +70,8 @@
                         <div class="jcal-wrapper">
                             <input type="text" id="date_filter" name="date" value="{{ request('date') }}"
                                    placeholder="1403/09/15" readonly
-                                   class="px-3 py-2 rounded-lg cursor-pointer text-center focus:outline-none focus:ring-2 focus:ring-[var(--rasta-gold)]"
-                                   style="background-color: var(--rasta-dark); border: 1px solid rgba(201,162,75,0.25); color: var(--rasta-cream); width: 140px;"
+                                   class="px-3 py-2 rounded-lg cursor-pointer text-center focus:outline-none focus:ring-2 focus:ring-m-gold"
+                                   style="background-color: var(--rasta-dark); border: 1px solid rgb(var(--m-gold) / 0.25); color: var(--rasta-cream); width: 140px;"
                                    dir="ltr" autocomplete="off">
                             <div class="jcal-popup" id="jcal-popup-date_filter"></div>
                         </div>
@@ -79,7 +79,7 @@
 
                     <button type="submit"
                             class="px-4 py-2 rounded-lg font-bold transition-opacity hover:opacity-90 flex items-center"
-                            style="background: linear-gradient(135deg, var(--rasta-gold-light), var(--rasta-gold)); color: var(--rasta-dark);">
+                            style="background: var(--m-btn); color: var(--m-on-gold);">
                         <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
                         </svg>
@@ -88,8 +88,8 @@
 
                     @if(request()->hasAny(['status', 'date']))
                         <a href="{{ route('bookings.index') }}"
-                           class="px-4 py-2 rounded-lg transition hover:bg-white/5"
-                           style="border: 1px solid rgba(201,162,75,0.25); color: var(--rasta-cream); opacity: 0.8;">
+                           class="px-4 py-2 rounded-lg transition hover:bg-m-tx/5"
+                           style="border: 1px solid rgb(var(--m-gold) / 0.25); color: var(--rasta-cream); opacity: 0.8;">
                             حذف فیلترها
                         </a>
                     @endif
@@ -122,24 +122,24 @@
                             <th class="px-6 py-3 text-right" style="color: var(--rasta-gold-light);">عملیات</th>
                         </tr>
                         </thead>
-                        <tbody class="divide-y" style="border-color: rgba(201,162,75,0.1);">
+                        <tbody class="divide-y" style="border-color: rgb(var(--m-gold) / 0.1);">
                         @foreach($bookings as $booking)
-                            <tr class="transition hover:bg-white/5">
-                                <td class="px-6 py-4" style="color: var(--rasta-cream);">{{ $booking->service->name }} @if ($__courseLabel = $booking->courseSessionLabel())<span class="text-xs mr-1 px-2 py-0.5 rounded-full" style="background:rgba(201,162,75,0.15); color:#C9A24B;">{{ $__courseLabel }}</span>@endif</td>
+                            <tr class="transition hover:bg-m-tx/5">
+                                <td class="px-6 py-4" style="color: var(--rasta-cream);">{{ $booking->service->name }} @if ($__courseLabel = $booking->courseSessionLabel())<span class="text-xs mr-1 px-2 py-0.5 rounded-full" style="background:rgb(var(--m-gold) / 0.15); color:rgb(var(--m-gold));">{{ $__courseLabel }}</span>@endif</td>
                                 <td class="px-6 py-4" style="color: var(--rasta-cream);">{{ $booking->specialist->name }}</td>
                                 <td class="px-6 py-4 persian-number" dir="ltr" style="color: var(--rasta-cream);">
                                     {{ verta($booking->booking_time)->format('Y/m/d H:i') }}
                                 </td>
                                 <td class="px-6 py-4">
                                     @if($booking->payment_status == 'paid')
-                                        <span class="px-2 py-1 rounded-full text-xs inline-flex items-center" style="background-color: rgba(111,207,151,0.12); color: #6FCF97;">
+                                        <span class="px-2 py-1 rounded-full text-xs inline-flex items-center" style="background-color: rgb(var(--m-ok) / 0.12); color: rgb(var(--m-ok));">
                                             <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                             </svg>
                                             پرداخت شده
                                         </span>
                                     @else
-                                        <span class="px-2 py-1 rounded-full text-xs inline-flex items-center" style="background-color: rgba(224,137,137,0.12); color: #E08989;">
+                                        <span class="px-2 py-1 rounded-full text-xs inline-flex items-center" style="background-color: rgb(var(--m-bad) / 0.12); color: rgb(var(--m-bad));">
                                             <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                             </svg>
@@ -158,7 +158,7 @@
                                             </span>
                                             @break
                                         @case('confirmed')
-                                            <span class="px-2 py-1 rounded-full text-xs inline-flex items-center" style="background-color: rgba(111,207,151,0.12); color: #6FCF97;">
+                                            <span class="px-2 py-1 rounded-full text-xs inline-flex items-center" style="background-color: rgb(var(--m-ok) / 0.12); color: rgb(var(--m-ok));">
                                                 <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                 </svg>
@@ -166,7 +166,7 @@
                                             </span>
                                             @break
                                         @case('pending_payment')
-                                            <span class="px-2 py-1 rounded-full text-xs inline-flex items-center" style="background-color: rgba(201,162,75,0.15); color: var(--rasta-gold-light);">
+                                            <span class="px-2 py-1 rounded-full text-xs inline-flex items-center" style="background-color: rgb(var(--m-gold) / 0.15); color: var(--rasta-gold-light);">
                                                 <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
                                                 </svg>
@@ -174,7 +174,7 @@
                                             </span>
                                             @break
                                         @case('cancelled')
-                                            <span class="px-2 py-1 rounded-full text-xs inline-flex items-center" style="background-color: rgba(224,137,137,0.12); color: #E08989;">
+                                            <span class="px-2 py-1 rounded-full text-xs inline-flex items-center" style="background-color: rgb(var(--m-bad) / 0.12); color: rgb(var(--m-bad));">
                                                 <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                 </svg>
@@ -195,7 +195,7 @@
 
                                         @if($booking->isPayable())
                                             <a href="{{ route('payment.show', $booking) }}"
-                                               class="transition hover:opacity-70" style="color: #6FCF97;" title="پرداخت">
+                                               class="transition hover:opacity-70" style="color: rgb(var(--m-ok));" title="پرداخت">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
                                                 </svg>
@@ -215,7 +215,7 @@
                                             <form action="{{ route('bookings.cancel', $booking) }}" method="POST" class="inline">
                                                 @csrf
                                                 @method('PUT')
-                                                <button type="submit" class="transition hover:opacity-70" style="color: #E08989;" title="لغو نوبت"
+                                                <button type="submit" class="transition hover:opacity-70" style="color: rgb(var(--m-bad));" title="لغو نوبت"
                                                         onclick="return confirm('آیا مطمئن هستید؟')">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>

@@ -6,26 +6,26 @@
 
         <div class="flex items-center gap-3 mb-8">
             <a href="{{ route('security.2fa') }}"
-               class="w-9 h-9 rounded-xl bg-[#2E2117] border border-[#C9A24B]/15 flex items-center justify-center
-                  text-[#F8F3E9]/60 hover:text-[#E6CD8A] transition-colors">
+               class="w-9 h-9 rounded-xl bg-m-card border border-m-gold/15 flex items-center justify-center
+                  text-m-tx/60 hover:text-m-gold2 transition-colors">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
                 </svg>
             </a>
             <div>
-                <p class="text-xs font-semibold text-[#C9A24B] tracking-[0.3em] uppercase mb-0.5">امنیت حساب</p>
-                <h1 class="text-xl font-bold text-[#E6CD8A]" style="font-family:'Noto Naskh Arabic','Vazirmatn',serif">فعال‌سازی احراز هویت دو مرحله‌ای</h1>
+                <p class="text-xs font-semibold text-m-gold tracking-[0.3em] uppercase mb-0.5">امنیت حساب</p>
+                <h1 class="text-xl font-bold text-m-gold2" style="font-family:'Mahru','Vazirmatn',sans-serif;font-weight:800;">فعال‌سازی احراز هویت دو مرحله‌ای</h1>
             </div>
         </div>
 
-        <div class="bg-[#2E2117] rounded-2xl border border-[#C9A24B]/10 p-6">
-            <p class="text-sm text-[#F8F3E9]/60 mb-5">
+        <div class="bg-m-card rounded-2xl border border-m-gold/10 p-6">
+            <p class="text-sm text-m-tx/60 mb-5">
                 کد ۶ رقمی به موبایل شما پیامک شد. برای فعال‌سازی، آن را وارد کنید.
             </p>
 
             <div class="flex justify-center gap-2" dir="ltr">
                 @for($i = 0; $i < 6; $i++)
-                    <input type="text" maxlength="1" inputmode="numeric" class="otp-digit w-11 h-12 text-center rounded-lg text-xl font-bold bg-white/5 border border-[#C9A24B]/25 text-[#F8F3E9] focus:outline-none focus:border-[#C9A24B] focus:ring-2 focus:ring-[#C9A24B]/25 transition-colors">
+                    <input type="text" maxlength="1" inputmode="numeric" class="otp-digit w-11 h-12 text-center rounded-lg text-xl font-bold bg-m-tx/5 border border-m-gold/25 text-m-tx focus:outline-none focus:border-m-gold focus:ring-2 focus:ring-m-gold/25 transition-colors">
                 @endfor
             </div>
 
@@ -33,13 +33,13 @@
 
             <button id="enable-btn" onclick="submitEnable()"
                     class="w-full mt-5 py-3 rounded-lg font-semibold text-sm transition-all duration-300
-                       bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-[#1A1410]
+                       bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-m-ongold
                        hover:shadow-lg hover:shadow-[#C9A24B]/30 disabled:opacity-50 disabled:cursor-not-allowed">
                 <span id="enable-btn-text">تایید و فعال‌سازی</span>
             </button>
 
             <div class="text-center mt-3">
-                <button onclick="resendCode()" id="resend-btn" class="text-sm text-[#E6CD8A]/70 hover:text-[#E6CD8A] transition-colors">
+                <button onclick="resendCode()" id="resend-btn" class="text-sm text-m-gold2/70 hover:text-m-gold2 transition-colors">
                     ارسال مجدد کد
                 </button>
             </div>
@@ -71,8 +71,8 @@
         function showMessage(text, isError) {
             const el = document.getElementById('setup-message');
             el.textContent = text;
-            el.classList.remove('hidden', 'bg-red-500/10', 'text-red-400', 'border-red-500/20', 'bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
-            el.classList.add('border', isError ? 'bg-red-500/10' : 'bg-emerald-500/10', isError ? 'text-red-400' : 'text-emerald-400', isError ? 'border-red-500/20' : 'border-emerald-500/20');
+            el.classList.remove('hidden', 'bg-m-bad/10', 'text-m-bad', 'border-m-bad/20', 'bg-m-ok/10', 'text-m-ok', 'border-m-ok/20');
+            el.classList.add('border', isError ? 'bg-m-bad/10' : 'bg-m-ok/10', isError ? 'text-m-bad' : 'text-m-ok', isError ? 'border-m-bad/20' : 'border-m-ok/20');
         }
 
         function submitEnable() {
