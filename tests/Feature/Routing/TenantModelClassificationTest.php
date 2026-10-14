@@ -56,6 +56,7 @@ class TenantModelClassificationTest extends TestCase
         'ScheduledReport' => 'مال کاربر',
         'ScheduledReportRun' => 'از رابطه‌ی گزارش زمان‌بندی‌شده',
         'SecurityLog' => 'از کاربر؛ بخش امنیت با querySalonMembers فیلتر می‌کند',
+        'DemoRequest' => 'درخواست دموی صفحه‌ی فروش؛ پیش از وجود هر سالنی، فقط سوپرادمین',
         'SupportTicket' => 'تیکت سالن به پلتفرم',
         'SupportTicketMessage' => 'از رابطه‌ی تیکت',
     ];

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SuperAdmin\DemoRequestController;
 use App\Http\Controllers\SuperAdmin\SuperAdminController;
 use App\Http\Controllers\SuperAdmin\SuperAdminPaymentController;
 use App\Http\Controllers\SuperAdmin\SupportTicketController;
@@ -43,3 +44,7 @@ Route::prefix('support-tickets')->name('support-tickets.')->group(function () {
     Route::post('/{ticket}/close', [SupportTicketController::class, 'close'])->name('close');
     Route::post('/{ticket}/reopen', [SupportTicketController::class, 'reopen'])->name('reopen');
 });
+
+// درخواست‌های دموی صفحه‌ی فروش (۲۰۲۶-۱۰-۱۴)
+Route::get('/demo-requests', [DemoRequestController::class, 'index'])->name('demo-requests.index');
+Route::patch('/demo-requests/{demoRequest}', [DemoRequestController::class, 'update'])->name('demo-requests.update');

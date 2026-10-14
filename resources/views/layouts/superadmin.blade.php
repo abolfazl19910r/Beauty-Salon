@@ -57,6 +57,13 @@
                 <a href="{{ route('superadmin.salons.index') }}" class="sa-nav-link {{ request()->routeIs('superadmin.salons.*') ? 'active' : '' }}">مدیریت سالن‌ها</a>
                 <a href="{{ route('superadmin.payments.index') }}" class="sa-nav-link {{ request()->routeIs('superadmin.payments.*') ? 'active' : '' }}">کیف پول و درآمد اشتراک</a>
                 <a href="{{ route('superadmin.support-tickets.index') }}" class="sa-nav-link {{ request()->routeIs('superadmin.support-tickets.*') ? 'active' : '' }}">تیکت‌های پشتیبانی</a>
+                @php($openDemoRequests = \App\Models\DemoRequest::query()->open()->count())
+                <a href="{{ route('superadmin.demo-requests.index') }}" class="sa-nav-link {{ request()->routeIs('superadmin.demo-requests.*') ? 'active' : '' }}">
+                    درخواست‌های دمو
+                    @if ($openDemoRequests > 0)
+                        <span data-demo-requests-badge style="background: var(--sa-accent); color: #0F172A; border-radius: 999px; padding: 0 .5rem; font-size: .75rem; font-weight: 700; margin-inline-start: .35rem;">{{ to_persian_num((string) $openDemoRequests) }}</span>
+                    @endif
+                </a>
             </nav>
         </aside>
 
