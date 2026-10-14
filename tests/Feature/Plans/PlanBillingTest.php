@@ -273,6 +273,7 @@ class PlanBillingTest extends TestCase
     {
         app(DefaultPlans::class)->sync();
         Plan::byKey('basic')->update(['is_public' => true]);
+        Plan::byKey('clinic')->update(['is_public' => false]); // کلینیک از ادامه ۷ پیش‌فرض عمومی است؛ اینجا غیرعمومی‌اش می‌کنیم
         $salon = $this->salon();
         $salon->update(['plan_id' => Plan::byKey('basic')->id, 'max_specialists_count' => 5, 'subscription_ends_at' => now()->addDays(15)]);
         $admin = User::factory()->create(['is_admin' => true]);
