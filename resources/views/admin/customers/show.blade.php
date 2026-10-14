@@ -58,7 +58,7 @@
                         {{ $booking->service?->name ?? '—' }} · {{ $booking->specialist?->name ?? '—' }}
                         @if ($label = $booking->courseSessionLabel()) <span class="text-xs" style="color:var(--admin-accent);">({{ $label }})</span>@endif
                     </span>
-                    <span class="persian-number text-xs" style="{{ $dim }}">{{ verta($booking->booking_time)->format('Y/m/d H:i') }} · {{ ['pending_payment' => 'در انتظار پرداخت', 'pending' => 'در انتظار تأیید', 'confirmed' => 'تأییدشده', 'completed' => 'انجام‌شده', 'cancelled' => 'لغوشده'][$booking->status] ?? $booking->status }}</span>
+                    <span class="persian-number text-xs" style="{{ $dim }}">{{ verta($booking->booking_time)->format('Y/m/d H:i') }} · {{ ['pending_payment' => 'در انتظار پرداخت', 'pending' => 'در انتظار تأیید', 'confirmed' => 'تأییدشده', 'completed' => 'انجام‌شده', 'cancelled' => 'لغوشده', 'no_show' => 'لغوشده'][$booking->status] ?? $booking->status }}</span>
                 </a>
             @empty
                 <p class="px-4 py-6 text-center text-sm" style="{{ $dim }}">نوبتی ثبت نشده.</p>

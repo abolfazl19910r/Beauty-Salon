@@ -84,7 +84,7 @@
                         @if ($booking->service?->duration)
                             <div class="result-row flex justify-between py-3">
                                 <span class="text-[#F8F3E9]/60">مدت زمان</span>
-                                <span class="font-medium text-[#F8F3E9] persian-number">{{ $booking->service->duration }} دقیقه</span>
+                                <span class="font-medium text-[#F8F3E9] persian-number">{{ $booking->durationMinutes() }} دقیقه</span>
                             </div>
                         @endif
                     </div>

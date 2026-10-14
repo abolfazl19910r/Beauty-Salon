@@ -119,6 +119,20 @@ class CoursePanelsTest extends TestCase
         $this->assertTrue((bool) CourseSetting::forSalon(app(CurrentSalon::class)->id())->burn_late_cancellation);
     }
 
+    public function test_admin_defines_a_multi_service_package(): void
+    {
+        $underarm = \App\Models\BeautyService::factory()->create(['name' => 'زیربغل', 'duration' => 30, 'price' => 600000]);
+        $this->actingAs($this->admin())->post(route('admin.courses.packages.store'), [
+            'name' => 'لیزر صورت و زیربغل', 'service_id' => $this->courseService->id, 'extra_service_ids' => [$underarm->id, $this->courseService->id],
+            'sessions_count' => 6, 'price' => 8000000, 'interval_days' => 35, 'min_interval_days' => 28, 'is_active' => 1, 'is_public' => 1,
+        ])->assertRedirect(route('admin.courses.packages.index'));
+
+        $package = CoursePackage::sole();
+        $this->assertSame([$underarm->id], $package->extra_service_ids, 'خدمت اصلی در همراه‌ها تکرار نمی‌شود');
+        $this->get(route('admin.courses.packages.index'))->assertSee('لیزر صورت + زیربغل');
+        $this->get(route('courses.show', $package))->assertOk()->assertSee('لیزر صورت + زیربغل');
+    }
+
     public function test_after_a_downgrade_admin_cannot_sell_but_still_manages_sold_courses(): void
     {
         $course = $this->paidCourse();

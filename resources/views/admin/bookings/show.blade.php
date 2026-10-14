@@ -46,7 +46,7 @@
                 'pending'   => ['label'=>'در انتظار تایید', 'bg'=>'#FFFBEB', 'color'=>'#92400E', 'border'=>'#FCD34D'],
                 'confirmed' => ['label'=>'تایید شده',       'bg'=>'#F0FDF4', 'color'=>'#166534', 'border'=>'#86EFAC'],
                 'completed' => ['label'=>'انجام شده',       'bg'=>'#EFF6FF', 'color'=>'#1D4ED8', 'border'=>'#93C5FD'],
-                'cancelled' => ['label'=>'لغو شده',         'bg'=>'#FEF2F2', 'color'=>'#991B1B', 'border'=>'#FCA5A5'],
+                'cancelled' => ['label'=>'لغو شده',         'bg'=>'#FEF2F2', 'color'=>'#991B1B', 'border'=>'#FCA5A5'], 'no_show' => ['label'=>'نیامد',         'bg'=>'#FEF2F2', 'color'=>'#991B1B', 'border'=>'#FCA5A5'],
             ];
             $s = $statusMap[$booking->status] ?? ['label'=>$booking->status,'bg'=>'#F1F5F9','color'=>'#475569','border'=>'#CBD5E1'];
         @endphp
@@ -148,7 +148,7 @@
                         </div>
                         <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
                             <span style="color:var(--admin-text-dim);">مدت زمان</span>
-                            <span class="persian-number" style="color:var(--admin-text);">{{ $booking->service->duration ?? 60 }} دقیقه</span>
+                            <span class="persian-number" style="color:var(--admin-text);">{{ $booking->durationMinutes() }} دقیقه</span>
                         </div>
                     @endif
                     <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
@@ -286,6 +286,12 @@
                     @endpermission
 
                     @permission('edit-bookings')
+                    @if ($booking->canBeMarkedNoShow())
+                        <form method="POST" action="{{ route('admin.bookings.no-show', $booking) }}" onsubmit="return confirm('مشتری نیامد؟ پیش‌پرداخت برنمی‌گردد و جلسه‌ی دوره (اگر هست) می‌سوزد.')">
+                            @csrf
+                            <button type="submit" class="w-full py-2.5 px-4 rounded-lg text-sm font-medium" style="border:1px solid var(--admin-border); color:var(--admin-text);">ثبت «نیامد»</button>
+                        </form>
+                    @endif
                     <a href="{{ route('admin.bookings.edit', $booking) }}"
                        class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors"
                        style="background:var(--admin-accent-light); color:var(--admin-accent);"

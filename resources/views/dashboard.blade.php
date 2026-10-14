@@ -77,7 +77,7 @@
                                         'pending'         => ['label' => 'در انتظار تایید', 'color' => '#F5C56B'],
                                         'confirmed'       => ['label' => 'تایید شده',       'color' => '#6FCF97'],
                                         'completed'       => ['label' => 'انجام شده',       'color' => 'var(--rasta-gold-light)'],
-                                        'cancelled'       => ['label' => 'لغو شده',         'color' => '#E08989'],
+                                        'cancelled'       => ['label' => 'لغو شده',         'color' => '#E08989'], 'no_show' => ['label' => 'نیامد',         'color' => '#E08989'],
                                         'pending_payment' => ['label' => 'در انتظار پرداخت','color' => '#F5A623'],
                                     ];
                                     $statusInfo = $statusMap[$booking->status] ?? ['label' => $booking->status, 'color' => 'var(--rasta-cream)'];

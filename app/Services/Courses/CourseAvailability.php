@@ -18,8 +18,10 @@ class CourseAvailability
     /** متخصص‌هایی که این دوره را انجام می‌دهند (ثابت دوره، یا همه‌ی متخصص‌های فعال آن خدمت) */
     public function specialists(CustomerCourse $course): Collection
     {
-        $query = Specialist::query()
-            ->whereHas('services', fn ($q) => $q->whereKey($course->service_id));
+        $query = Specialist::query();
+        foreach ($course->sessionServices() as $service) {
+            $query->whereHas('services', fn ($q) => $q->whereKey($service->id)); // همه‌ی خدمت‌های جلسه
+        }
 
         return $course->specialist_id ? $query->whereKey($course->specialist_id)->get() : $query->orderBy('name')->get();
     }
@@ -39,7 +41,7 @@ class CourseAvailability
     public function dates(CustomerCourse $course, Specialist $specialist, bool $byStaff = false): array
     {
         [$from, $to] = $this->window($course, $byStaff);
-        $duration = (int) ($course->service?->duration ?: 30);
+        $duration = $course->sessionMinutes();
         $dates = [];
 
         for ($day = $from->copy(); $day->lte($to); $day->addDay()) {
@@ -54,7 +56,7 @@ class CourseAvailability
     /** @return list<string> H:i */
     public function slots(CustomerCourse $course, Specialist $specialist, string $date, ?int $duration = null): array
     {
-        $duration ??= (int) ($course->service?->duration ?: 30);
+        $duration ??= $course->sessionMinutes();
         $slots = $specialist->getAvailableSlots($date, $duration);
 
         // امروز: فقط ساعت‌های آینده

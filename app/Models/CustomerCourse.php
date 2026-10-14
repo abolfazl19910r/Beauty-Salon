@@ -31,7 +31,7 @@ class CustomerCourse extends Model
     ];
 
     protected $fillable = [
-        'salon_id', 'user_id', 'course_package_id', 'name', 'service_id', 'specialist_id', 'sessions_total', 'interval_days',
+        'salon_id', 'user_id', 'course_package_id', 'name', 'service_id', 'extra_service_ids', 'session_duration', 'specialist_id', 'sessions_total', 'interval_days',
         'min_interval_days', 'validity_days', 'list_price', 'discount_code', 'discount_amount', 'price_total', 'per_session_value',
         'min_prepayment', 'amount_paid', 'sessions_used', 'sessions_burned', 'status', 'purchased_at', 'expires_at', 'last_session_at',
         'next_due_at', 'photo_consent_at', 'photo_consent_by', 'sold_by', 'cancelled_at', 'cancelled_by', 'cancel_reason',
@@ -40,6 +40,8 @@ class CustomerCourse extends Model
 
     protected $casts = [
         'sessions_total' => 'integer',
+        'extra_service_ids' => 'array',
+        'session_duration' => 'integer',
         'interval_days' => 'integer',
         'min_interval_days' => 'integer',
         'validity_days' => 'integer',
@@ -173,6 +175,24 @@ class CustomerCourse extends Model
         $from = $last ? Carbon::parse($last)->startOfDay()->addDays($this->min_interval_days) : now()->startOfDay();
 
         return $from->lt(now()->startOfDay()) ? now()->startOfDay() : $from;
+    }
+
+    /** خدمت‌های هر جلسه (اصلی + همراه‌ها؛ snapshot خرید) */
+    public function sessionServices(): \Illuminate\Support\Collection
+    {
+        return CoursePackage::servicesFor((int) $this->service_id, (array) ($this->extra_service_ids ?? []), (int) $this->salon_id);
+    }
+
+    /** «لیزر صورت + زیربغل» */
+    public function servicesLabel(): string
+    {
+        return $this->sessionServices()->pluck('name')->implode(' + ');
+    }
+
+    /** مدت هر جلسه (دقیقه) */
+    public function sessionMinutes(): int
+    {
+        return (int) ($this->session_duration ?: $this->service?->duration ?: 30);
     }
 
     public function sessionLabel(int $number): string

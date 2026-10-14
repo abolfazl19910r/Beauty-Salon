@@ -240,7 +240,7 @@
                                 <tbody>
                                 @foreach($todayBookings as $booking)
                                     @php
-                                        $sm=['pending'=>['در انتظار','#FFFBEB','#92400E'],'confirmed'=>['تایید شده','#F0FDF4','#166534'],'cancelled'=>['لغو شده','#FEF2F2','#991B1B'],'completed'=>['انجام شده','#EFF6FF','#1D4ED8']];
+                                        $sm=['pending'=>['در انتظار','#FFFBEB','#92400E'],'confirmed'=>['تایید شده','#F0FDF4','#166534'],'cancelled'=>['لغو شده','#FEF2F2','#991B1B'], 'no_show' => ['نیامد','#FEF2F2','#991B1B'],'completed'=>['انجام شده','#EFF6FF','#1D4ED8']];
                                         $bs=$sm[$booking->status]??[$booking->status,'#F1F5F9','#475569'];
                                     @endphp
                                     <tr style="border-top:1px solid var(--admin-border);">

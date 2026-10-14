@@ -28,10 +28,13 @@ class CoursePresenter
             'interval_days' => (int) $package->interval_days,
             'validity_days' => (int) $package->validity_days,
             'price' => (float) $package->price,
-            'list_price' => (float) ($package->service?->price ?? 0) * (int) $package->sessions_count,
+            'list_price' => $package->listPrice(),
             'saving' => (float) $package->savingAmount(),
             'min_prepayment' => (float) $package->minPrepaymentFor((float) $package->price),
             'service' => $package->service ? ['id' => $package->service->id, 'name' => $package->service->name, 'duration_minutes' => (int) $package->service->duration] : null,
+            // بسته‌ی چندخدمتی (ادامه ۷): همه‌ی خدمت‌های هر جلسه و مدت جلسه
+            'services' => $package->sessionServices()->map(fn ($s) => ['id' => $s->id, 'name' => $s->name])->values(),
+            'session_minutes' => $package->sessionDuration(),
             'specialist' => $package->specialist ? ['id' => $package->specialist->id, 'name' => $package->specialist->name] : null,
         ];
     }
@@ -58,6 +61,8 @@ class CoursePresenter
             'min_prepayment' => $course->min_prepayment,
             'discount_amount' => $course->discount_amount,
             'service_id' => $course->service_id,
+            'services_label' => $course->servicesLabel(),
+            'session_minutes' => $course->sessionMinutes(),
             'specialist_id' => $course->specialist_id,
             'purchased_at' => self::time($course->purchased_at),
             'expires_at' => self::time($course->expires_at),

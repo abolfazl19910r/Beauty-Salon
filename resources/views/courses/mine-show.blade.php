@@ -4,7 +4,7 @@
 @section('content')
     @php extract(\App\Support\Courses\CourseUi::customer()) @endphp
     @php
-        $statusLabels = ['pending' => 'منتظر تایید', 'confirmed' => 'تایید شده', 'completed' => 'انجام شد', 'cancelled' => 'لغو شد', 'pending_payment' => 'در انتظار پرداخت'];
+        $statusLabels = ['pending' => 'منتظر تایید', 'confirmed' => 'تایید شده', 'completed' => 'انجام شد', 'cancelled' => 'لغو شد', 'no_show' => 'نیامد', 'pending_payment' => 'در انتظار پرداخت'];
     @endphp
     <div class="max-w-3xl mx-auto fade-in">
         <a href="{{ route('my-courses.index') }}" class="text-sm" style="{{ $dim }}">→ دوره‌های من</a>
@@ -13,7 +13,7 @@
             <div class="flex justify-between items-start gap-3">
                 <div>
                     <h1 class="text-2xl font-bold" style="{{ $gold }}">{{ $course->name }}</h1>
-                    <p class="text-sm mt-1" style="{{ $dim }}">{{ $course->service?->name }}@if ($course->specialist) — {{ $course->specialist->name }}@endif</p>
+                    <p class="text-sm mt-1" style="{{ $dim }}">{{ $course->servicesLabel() }}@if ($course->specialist) — {{ $course->specialist->name }}@endif</p>
                 </div>
                 <span class="text-xs px-3 py-1 rounded-full" style="background: rgba(201,162,75,0.12); color: var(--rasta-gold);">{{ $course->statusLabel() }}</span>
             </div>

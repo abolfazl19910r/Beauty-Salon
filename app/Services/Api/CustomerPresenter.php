@@ -26,7 +26,7 @@ class CustomerPresenter
         'pending' => 'در انتظار تأیید سالن',
         'confirmed' => 'تأیید شده',
         'completed' => 'انجام شده',
-        'cancelled' => 'لغو شده',
+        'cancelled' => 'لغو شده', 'no_show' => 'نیامد',
     ];
 
     /** کارت عمومی سالن — تنها چیزی که پیش از ورود دیده می‌شود (تصمیم ۲۰۲۶-۱۰-۱۱). */
@@ -96,7 +96,7 @@ class CustomerPresenter
             'booking_time' => $time?->toIso8601String(),
             'booking_time_jalali' => $time ? Jalalian::fromCarbon($time)->format('Y/m/d H:i') : null,
             'booking_time_label' => $time ? Jalalian::fromCarbon($time)->format('l j F، H:i') : null,
-            'duration_minutes' => $booking->service?->duration !== null ? (int) $booking->service->duration : null,
+            'duration_minutes' => $booking->duration_minutes ? (int) $booking->duration_minutes : ($booking->service?->duration !== null ? (int) $booking->service->duration : null),
             'service' => $booking->service ? [
                 'id' => $booking->service->id,
                 'name' => $booking->service->name,

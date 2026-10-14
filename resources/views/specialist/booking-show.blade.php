@@ -7,7 +7,7 @@
         'pending'         => ['label' => 'در انتظار تایید', 'class' => 'bg-amber-400/10 text-amber-300'],
         'confirmed'       => ['label' => 'تایید شده',       'class' => 'bg-emerald-400/10 text-emerald-300'],
         'completed'       => ['label' => 'انجام شده',        'class' => 'bg-[var(--specialist-plum-mid)]/15 text-[var(--specialist-plum-light)]'],
-        'cancelled'       => ['label' => 'لغو شده',          'class' => 'bg-red-500/10 text-red-300'],
+        'cancelled'       => ['label' => 'لغو شده',          'class' => 'bg-red-500/10 text-red-300'], 'no_show' => ['label' => 'نیامد',          'class' => 'bg-red-500/10 text-red-300'],
         'pending_payment' => ['label' => 'در انتظار پرداخت', 'class' => 'bg-orange-400/10 text-orange-300'],
     ];
 
@@ -21,7 +21,7 @@
     $statusInfo = $statusBadgeMap[$status] ?? ['label' => 'نامشخص', 'class' => 'bg-white/5 text-[var(--specialist-text-dim)]'];
     $paymentInfo = $paymentBadgeMap[$booking->payment_status] ?? ['label' => $booking->payment_status, 'class' => 'text-[var(--specialist-text-dim)]'];
     $isAutoConfirm = $specialist->auto_confirm_bookings ?? false;
-    $canShowButtons = !in_array($status, ['completed', 'cancelled', 'pending_payment']);
+    $canShowButtons = !in_array($status, ['completed', 'cancelled', 'pending_payment', 'no_show']);
 @endphp
 
 @section('content')
@@ -89,6 +89,13 @@
                                     class="bg-red-600/90 hover:bg-red-600 text-white px-8 py-3 rounded-lg font-bold transition">
                                 لغو این نوبت
                             </button>
+                        @endif
+
+                        @if($booking->canBeMarkedNoShow())
+                            <form action="{{ route('specialist.bookings.no-show', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('مشتری نیامد؟ پیش‌پرداخت برنمی‌گردد و جلسه‌ی دوره (اگر هست) می‌سوزد.')">
+                                @csrf @method('PUT')
+                                <button type="submit" class="px-8 py-3 rounded-lg font-bold transition" style="border: 1px solid var(--specialist-border);">نیامد</button>
+                            </form>
                         @endif
 
                         @if($status == 'confirmed')

@@ -86,6 +86,8 @@
                         {{ request('status') == 'completed' ? 'selected' : '' }}>انجام شده</option>
                     <option value="{{ route('admin.bookings.index', array_filter(['status' => 'cancelled', 'date' => request('date')])) }}"
                         {{ request('status') == 'cancelled' ? 'selected' : '' }}>لغو شده</option>
+                    <option value="{{ route('admin.bookings.index', array_filter(['status' => 'no_show', 'date' => request('date')])) }}"
+                        {{ request('status') == 'no_show' ? 'selected' : '' }}>نیامد</option>
                 </select>
 
                 <div class="relative jcal-wrapper">
@@ -213,7 +215,7 @@
                                         'pending'   => ['label' => 'در انتظار', 'bg' => '#FFFBEB', 'color' => '#92400E'],
                                         'confirmed' => ['label' => 'تایید شده', 'bg' => '#F0FDF4', 'color' => '#166534'],
                                         'completed' => ['label' => 'انجام شده', 'bg' => '#EFF6FF', 'color' => '#1D4ED8'],
-                                        'cancelled' => ['label' => 'لغو شده',   'bg' => '#FEF2F2', 'color' => '#991B1B'],
+                                        'cancelled' => ['label' => 'لغو شده',   'bg' => '#FEF2F2', 'color' => '#991B1B'], 'no_show' => ['label' => 'نیامد',   'bg' => '#FEF2F2', 'color' => '#991B1B'],
                                     ];
                                     $s = $statusMap[$booking->status] ?? ['label' => $booking->status, 'bg' => '#F1F5F9', 'color' => '#475569'];
                                 @endphp

@@ -86,6 +86,7 @@ Route::prefix('staff')->name('staff.')->middleware(['auth:sanctum', 'api.audienc
         Route::post('{bookingId}/confirm', 'confirm')->whereNumber('bookingId')->name('confirm');
         Route::post('{bookingId}/cancel', 'cancel')->whereNumber('bookingId')->name('cancel');
         Route::post('{bookingId}/complete', 'complete')->whereNumber('bookingId')->name('complete');
+        Route::post('{bookingId}/no-show', 'noShow')->whereNumber('bookingId')->name('no-show');
     });
 
     // پرونده‌ی جلسه‌ی دوره‌ی درمانی (بسته‌ی ب) — بعد از تنزل پلن هم (دوره‌های خریده‌شده ادامه دارند)

@@ -90,6 +90,8 @@ class AdminCoursePackageController extends Controller
             'description' => ['nullable', 'string', 'max:2000'],
             'service_id' => ['required', 'integer', Rule::exists('beauty_services', 'id')->where('salon_id', $salonId)],
             'specialist_id' => ['nullable', 'integer', Rule::exists('specialists', 'id')->where('salon_id', $salonId)],
+            'extra_service_ids' => ['nullable', 'array', 'max:5'],
+            'extra_service_ids.*' => ['integer', Rule::exists('beauty_services', 'id')->where('salon_id', $salonId)],
             'sessions_count' => ['required', 'integer', 'min:2', 'max:30'],
             'price' => ['required', 'integer', 'min:0', 'max:9999999999'],
             'min_prepayment_percent' => ['nullable', 'integer', 'min:10', 'max:99'],
@@ -109,6 +111,7 @@ class AdminCoursePackageController extends Controller
             'is_public' => $request->boolean('is_public'),
             'sort' => $data['sort'] ?? 0,
             'specialist_id' => $data['specialist_id'] ?? null,
+            'extra_service_ids' => array_values(array_unique(array_diff(array_map('intval', $data['extra_service_ids'] ?? []), [(int) $data['service_id']]))) ?: null,
             'validity_days' => $data['validity_days'] ?? null,
             'min_prepayment_percent' => $data['min_prepayment_percent'] ?? null,
         ]);

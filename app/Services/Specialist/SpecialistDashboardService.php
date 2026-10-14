@@ -110,7 +110,7 @@ class SpecialistDashboardService
                 'pending' => 'در انتظار تایید',
                 'confirmed' => 'تایید شده',
                 'completed' => 'انجام شده',
-                'cancelled' => 'لغو شده',
+                'cancelled' => 'لغو شده', 'no_show' => 'نیامد',
                 default => 'نامشخص',
             };
         });

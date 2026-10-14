@@ -3,7 +3,7 @@
 
 @section('content')
     @php
-        $statusLabels = ['pending' => 'منتظر تایید', 'confirmed' => 'تایید شده', 'completed' => 'انجام شد', 'cancelled' => 'لغو شد', 'pending_payment' => 'در انتظار پرداخت'];
+        $statusLabels = ['pending' => 'منتظر تایید', 'confirmed' => 'تایید شده', 'completed' => 'انجام شد', 'cancelled' => 'لغو شد', 'no_show' => 'نیامد', 'pending_payment' => 'در انتظار پرداخت'];
         $open = ! in_array($course->status, ['cancelled', 'completed'], true);
     @endphp
     <div class="fade-in" style="max-width: 64rem;">
@@ -15,7 +15,7 @@
             <div class="flex justify-between items-start flex-wrap gap-3">
                 <div>
                     <h1 class="text-xl font-bold" style="color:var(--admin-text);">{{ $course->name }}</h1>
-                    <p class="text-sm mt-1" style="{{ $dim }}">@if ($course->user)<a href="{{ route('admin.customers.show', $course->user_id) }}" style="color:var(--admin-accent);">{{ $course->user->name }}</a>@endif <span dir="ltr">{{ $course->user?->phone }}</span> — {{ $course->service?->name }}@if ($course->specialist) · فقط {{ $course->specialist->name }}@endif</p>
+                    <p class="text-sm mt-1" style="{{ $dim }}">@if ($course->user)<a href="{{ route('admin.customers.show', $course->user_id) }}" style="color:var(--admin-accent);">{{ $course->user->name }}</a>@endif <span dir="ltr">{{ $course->user?->phone }}</span> — {{ $course->servicesLabel() }}@if ($course->specialist) · فقط {{ $course->specialist->name }}@endif</p>
                 </div>
                 <span class="px-3 py-1 rounded-full text-sm" style="background:var(--admin-accent-light); color:var(--admin-accent);">{{ $course->statusLabel() }}</span>
             </div>

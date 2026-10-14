@@ -25,7 +25,7 @@
                     @forelse ($packages as $package)
                         <tr style="border-bottom:1px solid var(--admin-border);" data-package="{{ $package->id }}">
                             <td class="p-3 font-medium" style="color:var(--admin-text);">{{ $package->name }}</td>
-                            <td class="p-3">{{ $package->service?->name }}@if ($package->specialist)<div class="text-xs" style="{{ $dim }}">{{ $package->specialist->name }}</div>@endif</td>
+                            <td class="p-3">{{ $package->sessionServices()->pluck('name')->implode(' + ') }}@if ($package->specialist)<div class="text-xs" style="{{ $dim }}">{{ $package->specialist->name }}</div>@endif</td>
                             <td class="p-3 persian-number">{{ to_persian_num((string) $package->sessions_count) }} جلسه، هر {{ to_persian_num((string) $package->interval_days) }} روز</td>
                             <td class="p-3 persian-number">{{ number_format($package->price) }}</td>
                             <td class="p-3 persian-number">{{ $package->min_prepayment_percent ? to_persian_num((string) $package->min_prepayment_percent).'٪' : 'فقط کل' }}</td>

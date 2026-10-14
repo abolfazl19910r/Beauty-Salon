@@ -19,6 +19,8 @@ class Booking extends Model
     protected $casts = [
         'course_session_burned' => 'boolean',
         'course_income_at' => 'datetime',
+        'no_show_at' => 'datetime',
+        'duration_minutes' => 'integer',
         'booking_time' => 'datetime',
         'payment_details' => 'array',
         'refund_details' => 'array',
@@ -28,6 +30,7 @@ class Booking extends Model
 
     protected $fillable = [
         'service_id',
+        'duration_minutes',
         'specialist_id',
         'user_id',
         'booking_time',
@@ -57,6 +60,8 @@ class Booking extends Model
         'course_session_number',
         'course_session_burned',
         'course_income_at',
+        'no_show_at',
+        'no_show_by',
     ];
 
     public function user(): BelongsTo
@@ -115,6 +120,18 @@ class Booking extends Model
     }
 
     /** «جلسه‌ی ۳ از ۶» برای کارت/فهرست نوبت؛ null برای نوبت عادی */
+    /** مدت این نوبت: مدت خود نوبت (جلسه‌ی دوره‌ی چندخدمتی) یا مدت خدمت */
+    public function durationMinutes(): int
+    {
+        return (int) ($this->duration_minutes ?: $this->service?->duration ?: 30);
+    }
+
+    /** «نیامد» فقط برای نوبت فعالی که ساعت شروعش گذشته (بسته‌ی ب، ادامه ۷) */
+    public function canBeMarkedNoShow(): bool
+    {
+        return in_array($this->status, ['pending', 'confirmed'], true) && $this->booking_time !== null && $this->booking_time->lte(now());
+    }
+
     public function courseSessionLabel(): ?string
     {
         if (! $this->customer_course_id || ! $this->course_session_number) {

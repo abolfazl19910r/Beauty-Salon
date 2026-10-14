@@ -166,14 +166,14 @@
                         'completed' => 'bg-emerald-400/10 text-emerald-300',
                         'confirmed' => 'bg-sky-400/10 text-sky-300',
                         'pending' => 'bg-amber-400/10 text-amber-300',
-                        'cancelled' => 'bg-red-500/10 text-red-300',
+                        'cancelled' => 'bg-red-500/10 text-red-300', 'no_show' => 'bg-red-500/10 text-red-300',
                         default => 'bg-white/5 text-[var(--specialist-text-dim)]'
                     };
                     $statusText = match($booking->status) {
                         'completed' => 'انجام شده',
                         'confirmed' => 'تایید شده',
                         'pending' => 'در انتظار',
-                        'cancelled' => 'لغو شده',
+                        'cancelled' => 'لغو شده', 'no_show' => 'نیامد',
                         default => 'نامشخص'
                     };
                 @endphp

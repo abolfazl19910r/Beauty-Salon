@@ -346,10 +346,11 @@ class BookingService
      * با ساعت کاری، استراحت و نوبت‌های دیگر می‌سنجد (۲۰۲۶-۱۰-۰۱). قید یکتای active_slot فقط شروع یکسان را می‌گرفت.
      * ⚠️ پیش از این قفل هیچ خواندن عادی در همین تراکنش نباشد (snapshot در REPEATABLE READ).
      */
-    public function assertBookingFits(int $specialistId, string $bookingTime, int $serviceId, ?int $excludeBookingId = null): void
+    public function assertBookingFits(int $specialistId, string $bookingTime, int $serviceId, ?int $excludeBookingId = null, ?int $durationMinutes = null): void
     {
         $specialist = $this->specialistRepository->lockById($specialistId);
-        $duration = (int) (\Illuminate\Support\Facades\DB::table('beauty_services')->where('id', $serviceId)->value('duration') ?: 30);
+        // $durationMinutes: مدت خود نوبت وقتی با مدت خدمت فرق دارد (جلسه‌ی دوره‌ی چندخدمتی، بسته‌ی ب)
+        $duration = $durationMinutes ?: (int) (\Illuminate\Support\Facades\DB::table('beauty_services')->where('id', $serviceId)->value('duration') ?: 30);
 
         $reason = $specialist
             ? $specialist->conflictFor(Carbon::parse($bookingTime), $duration, $excludeBookingId)

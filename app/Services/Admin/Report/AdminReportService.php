@@ -374,7 +374,7 @@ class AdminReportService
             'pending_payment' => 'در انتظار پرداخت',
             'confirmed' => 'تایید شده',
             'completed' => 'انجام شده',
-            'cancelled' => 'لغو شده',
+            'cancelled' => 'لغو شده', 'no_show' => 'نیامد',
         ];
 
         $paymentStatusLabels = [

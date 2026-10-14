@@ -202,7 +202,7 @@
         @php
             $statusLabels = [
                 'completed'       => 'انجام شده',
-                'cancelled'       => 'لغو شده',
+                'cancelled'       => 'لغو شده', 'no_show' => 'نیامد',
                 'confirmed'       => 'تایید شده',
                 'pending'         => 'در انتظار',
                 'pending_payment' => 'در انتظار پرداخت',

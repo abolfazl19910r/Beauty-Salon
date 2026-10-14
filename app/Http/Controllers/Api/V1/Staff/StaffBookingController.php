@@ -107,6 +107,18 @@ class StaffBookingController extends StaffController
         return $this->afterAction($booking, $changed);
     }
 
+    /** POST bookings/{id}/no-show — «نیامد» (ادامه ۷): فقط نوبت فعالی که ساعتش گذشته */
+    public function noShow(Request $request, int $bookingId): JsonResponse
+    {
+        $booking = $this->ownBooking($request, $bookingId);
+        if (! $booking->canBeMarkedNoShow()) {
+            throw new \App\Exceptions\Api\ApiException('not_allowed', 'فقط نوبت فعالی که ساعتش گذشته «نیامد» می‌شود.', 422);
+        }
+        $changed = app(\App\Services\Booking\BookingNoShowService::class)->mark($booking, $request->user());
+
+        return $this->afterAction($booking, $changed);
+    }
+
     protected function ownBooking(Request $request, int $bookingId): Booking
     {
         $booking = Booking::query()

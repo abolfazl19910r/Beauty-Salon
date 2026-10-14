@@ -58,6 +58,7 @@ class CourseService
 
         return DB::transaction(function () use ($customer, $package, $discountCode, $soldBy) {
             $listPrice = (float) $package->price;
+            $multi = $package->isMultiService();
             $discount = 0.0;
             $code = null;
 
@@ -80,6 +81,8 @@ class CourseService
                 'course_package_id' => $package->id,
                 'name' => $package->name,
                 'service_id' => $package->service_id,
+                'extra_service_ids' => $multi ? array_values(array_map('intval', $package->extra_service_ids)) : null,
+                'session_duration' => $multi ? $package->sessionDuration() : null,
                 'specialist_id' => $package->specialist_id,
                 'sessions_total' => $package->sessions_count,
                 'interval_days' => $package->interval_days,
@@ -239,8 +242,10 @@ class CourseService
             if ($locked->specialist_id && (int) $locked->specialist_id !== $specialistId) {
                 throw new CourseException('این دوره فقط با متخصص تعیین‌شده انجام می‌شود.');
             }
-            if (! $this->specialistOffersService($specialistId, (int) $locked->service_id)) {
-                throw new CourseException('این متخصص خدمت این دوره را انجام نمی‌دهد.');
+            foreach ($locked->sessionServices() as $service) {
+                if (! $this->specialistOffersService($specialistId, (int) $service->id)) {
+                    throw new CourseException('این متخصص همه‌ی خدمت‌های این دوره را انجام نمی‌دهد.');
+                }
             }
             if (! $time->isFuture()) {
                 throw new CourseException('زمان جلسه باید در آینده باشد.');
@@ -253,12 +258,14 @@ class CourseService
                     verta($locked->earliestNextSession())->format('Y/m/d'), to_persian_num((string) $locked->min_interval_days)));
             }
 
-            $this->bookingService->assertBookingFits($specialistId, $time->format('Y-m-d H:i:s'), (int) $locked->service_id);
+            // جلسه‌ی چندخدمتی: یک نوبت با مدت جمع خدمت‌ها
+            $this->bookingService->assertBookingFits($specialistId, $time->format('Y-m-d H:i:s'), (int) $locked->service_id, null, $locked->session_duration ?: null);
             $specialist = \App\Models\Specialist::withoutGlobalScopes()->find($specialistId);
 
             try {
                 return Booking::create([
                     'service_id' => $locked->service_id,
+                    'duration_minutes' => $locked->session_duration ?: null,
                     'specialist_id' => $specialistId,
                     'user_id' => $locked->user_id,
                     'booking_time' => $time->format('Y-m-d H:i:s'),
@@ -355,6 +362,20 @@ class CourseService
             return; // جلسه برمی‌گردد: نوبت لغوشده دیگر «رزروشده» شمرده نمی‌شود
         }
 
+        $this->burnSession($booking);
+    }
+
+    /** «نیامد» (ادامه ۷): جلسه‌ی دوره همیشه می‌سوزد، بدون درآمد متخصص (مثل لغو دیرهنگام) */
+    public function onBookingNoShow(Booking $booking): void
+    {
+        if ($booking->customer_course_id && ! $booking->course_session_burned) {
+            $this->burnSession($booking);
+        }
+    }
+
+    /** یک بار برای هر نوبت (claim اتمی روی course_session_burned)، زیر قفل دوره */
+    private function burnSession(Booking $booking): void
+    {
         DB::transaction(function () use ($booking) {
             $burned = Booking::withoutGlobalScopes()->whereKey($booking->id)->where('course_session_burned', false)
                 ->toBase()->update(['course_session_burned' => true]);

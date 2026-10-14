@@ -54,7 +54,7 @@ class SpecialistBookingsExport implements FromCollection, ShouldAutoSize, WithHe
     {
         return match ($status) {
             'completed' => 'انجام شده',
-            'cancelled' => 'لغو شده',
+            'cancelled' => 'لغو شده', 'no_show' => 'نیامد',
             'pending' => 'در انتظار',
             'confirmed' => 'تایید شده',
             default => $status

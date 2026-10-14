@@ -196,8 +196,9 @@ class Specialist extends Model
             ->when($excludeBookingId, fn ($q) => $q->where('bookings.id', '!=', $excludeBookingId))
             ->where('bookings.booking_time', '<', $end->format('Y-m-d H:i:s'))
             ->where('bookings.booking_time', '>=', $start->copy()->subDay()->format('Y-m-d H:i:s'))
-            ->get(['bookings.booking_time', 'beauty_services.duration'])
-            ->first(fn ($b) => Carbon::parse($b->booking_time)->addMinutes((int) ($b->duration ?: 30))->gt($start));
+            // مدت خود نوبت (جلسه‌ی دوره‌ی چندخدمتی) بر مدت خدمت مقدم است — بسته‌ی ب، ادامه ۷
+            ->get(['bookings.booking_time', 'beauty_services.duration', 'bookings.duration_minutes'])
+            ->first(fn ($b) => Carbon::parse($b->booking_time)->addMinutes((int) ($b->duration_minutes ?: $b->duration ?: 30))->gt($start));
 
         return $overlapping ? 'overlapping_booking' : null;
     }
@@ -246,7 +247,7 @@ class Specialist extends Model
                 ->get()
                 ->map(fn ($b) => [
                     'start' => Carbon::parse($b->booking_time),
-                    'end' => Carbon::parse($b->booking_time)->addMinutes($b->service->duration ?? 30),
+                    'end' => Carbon::parse($b->booking_time)->addMinutes($b->durationMinutes()),
                 ]);
 
             $slots = [];

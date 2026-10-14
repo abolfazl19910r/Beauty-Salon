@@ -60,7 +60,7 @@
              style="background:var(--admin-accent-light); border:1px solid var(--admin-border);">
             <span style="color:var(--admin-text-dim);">وضعیت فعلی:</span>
             @php
-                $statusMap=['pending'=>['در انتظار','#FFFBEB','#92400E'],'confirmed'=>['تایید شده','#F0FDF4','#166534'],'completed'=>['انجام شده','#EFF6FF','#1D4ED8'],'cancelled'=>['لغو شده','#FEF2F2','#991B1B']];
+                $statusMap=['pending'=>['در انتظار','#FFFBEB','#92400E'],'confirmed'=>['تایید شده','#F0FDF4','#166534'],'completed'=>['انجام شده','#EFF6FF','#1D4ED8'],'cancelled'=>['لغو شده','#FEF2F2','#991B1B'], 'no_show' => ['نیامد','#FEF2F2','#991B1B']];
                 $st=$statusMap[$booking->status]??[$booking->status,'#F1F5F9','#475569'];
             @endphp
             <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:{{ $st[1] }}; color:{{ $st[2] }};">{{ $st[0] }}</span>

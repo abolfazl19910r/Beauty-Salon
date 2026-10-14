@@ -266,4 +266,47 @@ class CourseServiceTest extends TestCase
             $this->assertNull(CustomerCourse::find($course->id));
         });
     }
+
+    // ─── بسته‌ی چندخدمتی (ادامه ۷): هر جلسه همه‌ی خدمت‌ها با هم، یک نوبت با مدت جمع ───
+
+    public function test_a_multi_service_session_is_one_booking_with_the_summed_duration(): void
+    {
+        $underarm = \App\Models\BeautyService::factory()->create(['name' => 'زیربغل', 'duration' => 30, 'price' => 600000]);
+        $this->courseSpecialist->services()->attach($underarm->id);
+        $package = $this->coursePackage(['extra_service_ids' => [$underarm->id], 'price' => 8000000]);
+
+        $this->assertSame(60, $package->sessionDuration());
+        $this->assertSame(9600000.0, $package->listPrice());
+        $this->assertSame(1600000.0, $package->savingAmount());
+
+        $course = $this->service()->purchase($this->courseCustomer, $package);
+        $this->service()->recordPayment($course, $course->price_total, 'in_person');
+        $course->refresh();
+        $this->assertSame(60, $course->session_duration);
+        $this->assertSame('لیزر صورت + زیربغل', $course->servicesLabel());
+
+        $booking = $this->book($course, 1, false, '10:00');
+        $this->assertSame(60, (int) $booking->duration_minutes);
+        $this->assertSame(60, $booking->durationMinutes());
+
+        // ساعت ۱۰:۳۰ همان متخصص (داخل جلسه‌ی ۶۰ دقیقه‌ای) آزاد نیست
+        $slots = $this->courseSpecialist->getAvailableSlots(now()->addDay()->format('Y-m-d'), 30);
+        $this->assertNotContains('10:30', $slots);
+        $this->assertContains('11:00', $slots);
+        $this->expectException(\App\Exceptions\BookingNotAvailableException::class);
+        app(\App\Services\Booking\BookingService::class)->assertBookingFits($this->courseSpecialist->id, $this->sessionAt(1, '10:30'), $this->courseService->id);
+    }
+
+    public function test_only_specialists_offering_every_service_of_the_session(): void
+    {
+        $underarm = \App\Models\BeautyService::factory()->create(['duration' => 30, 'price' => 600000]);
+        $partial = \App\Models\Specialist::factory()->create();
+        $partial->services()->attach($this->courseService->id);
+        $this->courseSpecialist->services()->attach($underarm->id);
+        $course = $this->paidCourse(['extra_service_ids' => [$underarm->id]]);
+
+        $this->assertSame([$this->courseSpecialist->id], app(\App\Services\Courses\CourseAvailability::class)->specialists($course)->pluck('id')->all());
+        $this->expectException(CourseException::class);
+        $this->service()->bookSession($course, $partial->id, $this->sessionAt(1));
+    }
 }

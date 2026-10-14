@@ -23,6 +23,17 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="sm:col-span-2">
+                    @php $extras = array_map('intval', (array) old('extra_service_ids', $package->extra_service_ids ?? [])); @endphp
+                    <div class="block text-sm font-medium mb-1">خدمت‌های همراه در هر جلسه (اختیاری — بسته‌ی چندخدمتی)</div>
+                    <div class="flex flex-wrap gap-3">
+                        @foreach ($services as $service)
+                            <label class="text-sm flex items-center gap-1"><input type="checkbox" name="extra_service_ids[]" value="{{ $service->id }}" @checked(in_array($service->id, $extras, true))> {{ $service->name }}</label>
+                        @endforeach
+                    </div>
+                    <p class="text-xs mt-1" style="{{ $dim }}">مثلاً «لیزر صورت + زیربغل»: هر جلسه همه‌ی خدمت‌ها با هم در یک نوبت، با مدتِ جمع آن‌ها. متخصص باید همه را انجام دهد.</p>
+                    @error('extra_service_ids') <p class="text-xs mt-1" style="color:#DC2626;">{{ $message }}</p> @enderror
+                </div>
                 <div>
                     <label class="block text-sm font-medium mb-1" for="specialist_id">فقط این متخصص (اختیاری)</label>
                     <select id="specialist_id" name="specialist_id" class="{{ $input }}" style="{{ $inputStyle }}">

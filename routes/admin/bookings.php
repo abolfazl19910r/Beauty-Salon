@@ -13,6 +13,8 @@ Route::prefix('bookings')->name('bookings.')->group(function () {
     Route::get('/customers/search', [AdminBookingCustomerController::class, 'search'])->name('customers.search');
     Route::post('/customers/quick-create', [AdminBookingCustomerController::class, 'quickCreate'])->name('customers.quick-create');
     Route::get('/{booking}/edit', [AdminBookingController::class, 'edit'])->name('edit');
+    // «نیامد» (بسته‌ی ب، ادامه ۷)
+    Route::post('/{booking}/no-show', \App\Http\Controllers\Admin\Booking\AdminBookingNoShowController::class)->name('no-show');
     Route::get('/{booking}', [AdminBookingController::class, 'show'])->name('show');
     Route::put('/{booking}', [AdminBookingController::class, 'update'])->name('update');
     Route::delete('/{booking}', [AdminBookingController::class, 'destroy'])->name('destroy');

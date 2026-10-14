@@ -129,6 +129,7 @@ class BookingRepository extends BaseRepository implements BookingRepositoryInter
             'total' => (clone $statsQuery)->count(),
             'confirmed' => (clone $statsQuery)->where('status', 'confirmed')->count(),
             'cancelled' => (clone $statsQuery)->where('status', 'cancelled')->count(),
+            'no_show' => (clone $statsQuery)->where('status', 'no_show')->count(),
         ];
     }
 

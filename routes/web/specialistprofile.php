@@ -63,6 +63,7 @@ Route::middleware(['auth', 'verified', 'salon.specialist'])->name('specialist.')
         Route::put('/{booking}/complete', [SpecialistBookingManagementController::class, 'complete'])->name('complete');
         Route::put('/{booking}/mark-completed', [SpecialistBookingManagementController::class, 'markAsCompleted'])->name('mark-completed');
         Route::put('/{booking}/cancel', [SpecialistBookingManagementController::class, 'cancel'])->name('cancel');
+        Route::put('/{booking}/no-show', \App\Http\Controllers\Specialist\Booking\SpecialistBookingNoShowController::class)->name('no-show');
         // جلسه‌ی دوره‌ی درمانی (بسته‌ی ب): یادداشت، عکس قبل/بعد، رضایت مشتری
         Route::put('/{booking}/course-note', [\App\Http\Controllers\Specialist\Booking\SpecialistCourseSessionController::class, 'saveNote'])->name('course-note');
         Route::post('/{booking}/course-photos', [\App\Http\Controllers\Specialist\Booking\SpecialistCourseSessionController::class, 'uploadPhoto'])->name('course-photos.store');

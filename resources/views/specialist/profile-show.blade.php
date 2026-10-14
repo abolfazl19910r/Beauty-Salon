@@ -7,7 +7,7 @@
         'pending'         => ['label' => 'در انتظار تایید', 'class' => 'bg-amber-400/10 text-amber-300'],
         'confirmed'       => ['label' => 'تایید شده',       'class' => 'bg-emerald-400/10 text-emerald-300'],
         'completed'       => ['label' => 'انجام شده',        'class' => 'bg-[var(--specialist-plum-mid)]/15 text-[var(--specialist-plum-light)]'],
-        'cancelled'       => ['label' => 'لغو شده',          'class' => 'bg-red-500/10 text-red-300'],
+        'cancelled'       => ['label' => 'لغو شده',          'class' => 'bg-red-500/10 text-red-300'], 'no_show' => ['label' => 'نیامد',          'class' => 'bg-red-500/10 text-red-300'],
         'pending_payment' => ['label' => 'در انتظار پرداخت', 'class' => 'bg-orange-400/10 text-orange-300'],
     ];
 @endphp

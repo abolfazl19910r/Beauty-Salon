@@ -15,7 +15,7 @@ class StaffBookingPresenter
         'pending' => 'در انتظار تأیید',
         'confirmed' => 'تأیید شده',
         'completed' => 'انجام شده',
-        'cancelled' => 'لغو شده',
+        'cancelled' => 'لغو شده', 'no_show' => 'نیامد',
         'pending_payment' => 'در انتظار پرداخت',
     ];
 
@@ -30,7 +30,7 @@ class StaffBookingPresenter
             'payment_status' => $booking->payment_status,
             'booking_time' => $time?->toIso8601String(),
             'booking_time_jalali' => $time ? Jalalian::fromCarbon($time)->format('Y/m/d H:i') : null,
-            'duration_minutes' => $booking->service?->duration !== null ? (int) $booking->service->duration : null,
+            'duration_minutes' => $booking->duration_minutes ? (int) $booking->duration_minutes : ($booking->service?->duration !== null ? (int) $booking->service->duration : null),
             'service' => $booking->service ? [
                 'id' => $booking->service->id,
                 'name' => $booking->service->name,
@@ -54,6 +54,7 @@ class StaffBookingPresenter
                 'confirm' => $booking->status === 'pending',
                 'cancel' => ! in_array($booking->status, ['cancelled', 'completed'], true),
                 'complete' => $booking->status === 'confirmed',
+                'no_show' => $booking->canBeMarkedNoShow(),
             ],
         ];
     }

@@ -18,12 +18,13 @@ class CoursePackage extends Model
     use BelongsToSalon, SoftDeletes;
 
     protected $fillable = [
-        'salon_id', 'service_id', 'specialist_id', 'name', 'description', 'sessions_count', 'price', 'min_prepayment_percent',
+        'salon_id', 'service_id', 'extra_service_ids', 'specialist_id', 'name', 'description', 'sessions_count', 'price', 'min_prepayment_percent',
         'interval_days', 'min_interval_days', 'validity_days', 'is_active', 'is_public', 'sort',
     ];
 
     protected $casts = [
         'sessions_count' => 'integer',
+        'extra_service_ids' => 'array',
         'price' => 'float',
         'min_prepayment_percent' => 'integer',
         'interval_days' => 'integer',
@@ -55,10 +56,46 @@ class CoursePackage extends Model
         return $query->where('is_active', true)->where('is_public', true)->orderBy('sort')->orderBy('id');
     }
 
+    /**
+     * خدمت‌های هر جلسه: خدمت اصلی + خدمت‌های همراه (بسته‌ی چندخدمتی، ادامه ۷ — هر جلسه همه با هم در یک نوبت).
+     *
+     * @return \Illuminate\Support\Collection<int, BeautyService>
+     */
+    public function sessionServices(): \Illuminate\Support\Collection
+    {
+        return self::servicesFor((int) $this->service_id, (array) ($this->extra_service_ids ?? []), (int) $this->salon_id);
+    }
+
+    /** @return \Illuminate\Support\Collection<int, BeautyService> به ترتیب: اصلی، بعد همراه‌ها */
+    public static function servicesFor(int $serviceId, array $extraIds, int $salonId): \Illuminate\Support\Collection
+    {
+        $ids = array_values(array_unique(array_merge([$serviceId], array_map('intval', $extraIds))));
+        $services = BeautyService::withoutGlobalScopes()->where('salon_id', $salonId)->whereIn('id', $ids)->get()->keyBy('id');
+
+        return collect($ids)->map(fn ($id) => $services->get($id))->filter()->values();
+    }
+
+    public function isMultiService(): bool
+    {
+        return ! empty($this->extra_service_ids);
+    }
+
+    /** قیمت همین جلسه‌ها به‌صورت تکی */
+    public function listPrice(): float
+    {
+        return (float) $this->sessionServices()->sum(fn ($s) => (float) $s->price) * $this->sessions_count;
+    }
+
+    /** مدت هر جلسه: جمع مدت خدمت‌ها */
+    public function sessionDuration(): int
+    {
+        return (int) $this->sessionServices()->sum(fn ($s) => (int) ($s->duration ?: 30));
+    }
+
     /** صرفه‌جویی نسبت به جلسه‌های تکی (۰ اگر نیست) */
     public function savingAmount(): float
     {
-        return max(0.0, (float) ($this->service?->price ?? 0) * $this->sessions_count - (float) $this->price);
+        return max(0.0, $this->listPrice() - (float) $this->price);
     }
 
     /** حداقل مبلغ پرداخت اول برای این قیمت (تومان، رو به بالا به هزار)؛ برابر قیمت وقتی پیش‌پرداخت ندارد */

@@ -73,7 +73,7 @@
                     @if($booking->service->duration)
                         <div class="flex justify-between items-center">
                             <span style="color: var(--rasta-cream); opacity: 0.6;">مدت زمان:</span>
-                            <span class="font-medium persian-number" style="color: var(--rasta-cream);">{{ $booking->service->duration }} دقیقه</span>
+                            <span class="font-medium persian-number" style="color: var(--rasta-cream);">{{ $booking->durationMinutes() }} دقیقه</span>
                         </div>
                     @endif
                 </div>

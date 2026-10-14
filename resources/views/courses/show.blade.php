@@ -8,7 +8,7 @@
         <div class="rounded-xl p-6 mt-3" style="{{ $card }}">
             @include('courses._flash')
             <h1 class="text-2xl font-bold" style="{{ $gold }}">{{ $package->name }}</h1>
-            <p class="text-sm mt-1" style="{{ $dim }}">{{ $package->service?->name }}@if ($package->specialist) — با {{ $package->specialist->name }}@endif</p>
+            <p class="text-sm mt-1" style="{{ $dim }}">{{ $package->sessionServices()->pluck('name')->implode(' + ') }}@if ($package->specialist) — با {{ $package->specialist->name }}@endif</p>
             @if ($package->description)
                 <p class="mt-4 leading-8" style="color: var(--rasta-cream);">{{ $package->description }}</p>
             @endif

@@ -54,7 +54,7 @@ class BookingRescheduleService
 
         DB::transaction(function () use ($booking, $bookingTime) {
             // کل مدت خدمت با نوبت‌های دیگر، استراحت و ساعت کاری؛ با قفل ردیف متخصص (۲۰۲۶-۱۰-۰۱)
-            $this->bookingService->assertBookingFits((int) $booking->specialist_id, $bookingTime, (int) $booking->service_id, $booking->id);
+            $this->bookingService->assertBookingFits((int) $booking->specialist_id, $bookingTime, (int) $booking->service_id, $booking->id, $booking->duration_minutes ? (int) $booking->duration_minutes : null);
 
             $oldTime = $booking->booking_time;
             $newStatus = $booking->specialist->auto_confirm_bookings ? 'confirmed' : 'pending';
