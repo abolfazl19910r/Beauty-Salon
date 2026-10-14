@@ -142,7 +142,7 @@
             @php $adminSalon = app(\App\Support\CurrentSalon::class)->get(); @endphp
             @if ($adminSalon)
                 <div class="flex items-center gap-2 mt-3">
-                    <x-brand-emblem class="w-9 h-9 rounded" :light="true" />
+                    <x-brand-emblem class="w-9 h-9 rounded" surface="light" pad="3px" />
                     <span class="text-sm font-bold" style="color: var(--admin-text);">{{ $adminSalon->name }}</span>
                 </div>
             @else

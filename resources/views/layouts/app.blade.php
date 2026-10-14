@@ -308,7 +308,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
             <div>
                 @if ($currentSalonLogoUrl)
-                    <img src="{{ $currentSalonLogoUrl }}" alt="لوگوی {{ $currentSalonName }}" class="h-14 w-auto max-w-[160px] object-contain mb-3" loading="lazy">
+                    <x-brand-emblem class="h-14 w-auto max-w-[160px] mb-3" loading="lazy" />
                 @endif
                 <h3 class="font-serif-fa text-xl font-bold text-m-gold2 mb-3">{{ $currentSalonName }}</h3>
                 <p class="text-m-tx/60 text-sm leading-7">

@@ -103,7 +103,7 @@
         <div class="p-5 border-b flex items-center justify-between" style="border-color: var(--specialist-border);">
             <a href="{{ route('home') }}" class="flex items-center gap-2">
                 {{-- ⭐ لوگوی سالن متخصص (۲۰۲۶-۰۹-۲۴)، وگرنه آیکون پیش‌فرض. --}}
-                <x-brand-emblem class="w-9 h-9 rounded" :light="true" />
+                <x-brand-emblem class="w-9 h-9 rounded" surface="light" pad="3px" />
                 <span class="text-lg font-bold font-serif-fa" style="color: var(--specialist-plum-light);">پنل متخصص</span>
             </a>
         </div>

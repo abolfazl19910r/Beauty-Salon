@@ -67,6 +67,8 @@ class ViewComposer
             'currentSalonAddress' => $salon?->address,
             // ⭐ لوگوی اختصاصی سالن (۲۰۲۶-۰۹-۲۴)؛ null = آیکون پیش‌فرض.
             'currentSalonLogoUrl' => $salon?->logoUrl(),
+            // ⭐ بسته‌ی د: لوگوی هر تم + پلاک (x-brand-emblem)
+            'currentSalonLogo' => $salon?->logoAppearance(),
             'currentSalonPhone' => $salon?->phone,
             'currentSalonExperienceYears' => $salon?->experienceYears(),
             'currentSalonHours' => $salon?->workingHoursLines() ?? [],

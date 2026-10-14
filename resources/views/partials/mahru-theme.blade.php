@@ -76,6 +76,10 @@ body{
 ::-webkit-scrollbar-track{background:rgb(var(--m-bg2))}
 ::-webkit-scrollbar-thumb{background:rgb(var(--m-gold) / .45);border-radius:10px}
 
+/* بسته‌ی د: تصویری که فقط در یک تم دیده می‌شود (لوگوی سالن در x-brand-emblem) */
+html[data-theme=dark] .m-only-light,html:not([data-theme]) .m-only-light{display:none!important}
+html[data-theme=light] .m-only-dark{display:none!important}
+
 /* متن طلایی گرادیانی مثل تیتر لندینگ */
 .m-gold-text{background:var(--m-tgrad);-webkit-background-clip:text;background-clip:text;color:transparent}
 
