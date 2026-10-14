@@ -20,10 +20,10 @@ const VARIANTS = {
 
 type Variant = keyof typeof VARIANTS;
 
-/** پروژه‌ی expo.dev ‏@abolfazl1991/mahru-staff (ساخته‌شده با `eas init`، ۲۰۲۶-۱۰-۱۰). اپ مشتری (بسته‌ی ۳) پروژه‌ی جدا می‌گیرد. */
+/** پروژه‌های expo.dev (ساخته‌شده با `eas init`): همکار ‏@abolfazl1991/mahru-staff (۲۰۲۶-۱۰-۱۰)، مشتری ‏@abolfazl1991/mahru (۲۰۲۶-۱۰-۱۴). */
 const EAS_PROJECT_IDS: Record<Variant, string> = {
   staff: '1ae539ab-5b39-43c1-8f62-db0b1648abdc',
-  customer: '', // بعد از اولین `APP_VARIANT=customer eas init` پر شود (README)
+  customer: '0bc2a030-263a-4a66-8f80-d8e83e017298', // @abolfazl1991/mahru (`eas init`، ۲۰۲۶-۱۰-۱۴)
 };
 
 export default ({ config }: ConfigContext): ExpoConfig => {
