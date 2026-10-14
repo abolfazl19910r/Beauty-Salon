@@ -1,7 +1,4 @@
-{{-- پیام‌های موفقیت/خطای صفحه‌های دوره‌ی پنل مدیر (بسته‌ی ب)؛ styleها: CourseUi::admin() --}}
-@if (session('success'))
-    <div class="mb-4 p-3 rounded-lg text-sm" style="background:var(--admin-accent-light); color:var(--admin-accent);">{{ session('success') }}</div>
-@endif
-@if (session('error') || $errors->any())
-    <div class="mb-4 p-3 rounded-lg text-sm" style="background:#fee2e2; color:#b91c1c;">{{ session('error') ?? $errors->first() }}</div>
+{{-- خطای اعتبارسنجی فرم در صفحه‌های دوره و کمپین پنل مدیر؛ پیام‌های success/error خود layouts.admin نشان می‌دهد (این‌جا تکرار نشود). styleها: CourseUi::admin() --}}
+@if ($errors->any() && ! session('error'))
+    <div class="mb-4 p-3 rounded-lg text-sm" style="background:#fee2e2; color:#b91c1c;">{{ $errors->first() }}</div>
 @endif
