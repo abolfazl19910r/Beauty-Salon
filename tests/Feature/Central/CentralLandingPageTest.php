@@ -19,9 +19,41 @@ class CentralLandingPageTest extends TestCase
             ->assertOk()
             ->assertSee(route('salon-signup.create'), false)
             ->assertSee(route('login'), false)
-            ->assertSee('پنل متخصص')
             ->assertSee('پنل مدیریت')
-            ->assertSee('پیش‌نمایش پلن');
+            ->assertSee('action="'.route('demo-requests.store').'"', false)
+            ->assertSee('name="_token"', false)
+            ->assertSee(asset('brand/mahru-og.png'), false)
+            // فونت‌ها روی همین سرور؛ هیچ CDN خارجی (MAHRU_UI_PROMPT قانون ۴)
+            ->assertSee(asset('fonts/mahru/Vazirmatn-Regular.woff2'), false)
+            ->assertDontSee('fonts.googleapis.com', false);
+        foreach (['Vazirmatn-Regular', 'Vazirmatn-ExtraBold', 'Sora-600'] as $font) {
+            $this->assertFileExists(public_path("fonts/mahru/{$font}.woff2"));
+        }
+    }
+
+    /**
+     * لندینگ تازه (۲۰۲۶-۱۰-۱۴) از فایل طراح آمد که نام «مهرو»، پلن‌های «پایه/حرفه‌ای/مجموعه»، شماره‌ی نمونه و چند ادعای
+     * بی‌پشتوانه داشت. نام فارسی «ماهرو» می‌ماند و صفحه فقط امکاناتی را وعده می‌دهد که نرم‌افزار دارد.
+     */
+    public function test_new_landing_keeps_the_brand_name_and_promises_only_real_features(): void
+    {
+        $html = $this->get(route('central.home'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('ماهرو', $html);
+        $this->assertSame(0, preg_match('/(?<!ا)مهرو/u', $html), 'نام فارسی «ماهرو» است، نه «مهرو»');
+        foreach (['چند شعبه، یک پنل', 'شعبه‌های نامحدود', 'پیگیری خودکار مشتریانی', 'یادآوری خودکار جلسه‌ی بعد', 'کاملاً قابل تنظیم', '۲۹۰٬۰۰۰', '۵۹۰٬۰۰۰', '0900 000 0000', 'href="#">اینستاگرام'] as $claim) {
+            $this->assertStringNotContainsString($claim, $html, $claim);
+        }
+    }
+
+    public function test_contact_links_appear_only_when_configured(): void
+    {
+        $this->get(route('central.home'))->assertDontSee('tel:', false)->assertDontSee('>اینستاگرام<', false);
+
+        config(['brand.support_phone' => '02112345678', 'brand.instagram_url' => 'https://instagram.com/mahru.ir']);
+        $this->get(route('central.home'))
+            ->assertSee('href="tel:02112345678"', false)
+            ->assertSee('href="https://instagram.com/mahru.ir"', false);
     }
 
     public function test_plan_prices_come_from_billing_config(): void

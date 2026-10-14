@@ -20,10 +20,11 @@ class PlatformBrandTest extends TestCase
     {
         $this->get(route('central.home'))
             ->assertOk()
-            ->assertSee('<title>ماهرو — نوبت‌دهی آنلاین سالن زیبایی</title>', false)
-            ->assertSee('brand/mahru-logo-horizontal-on-dark.svg', false)
+            ->assertSee('<title>ماهرو | نرم‌افزار نوبت‌دهی و مدیریت سالن زیبایی</title>', false)
+            // لندینگ تازه (۲۰۲۶-۱۰-۱۴) نشان را یک بار به‌صورت symbol می‌گذارد و با <use> و رنگ تم استفاده می‌کند
+            ->assertSee('<symbol id="mark"', false)
+            ->assertSee('<span>ماهرو<small>MAHRU</small></span>', false)
             ->assertSee('site.webmanifest', false)
-            ->assertSee('ماهرو برای سالن شما یک سایت')
             ->assertDontSee('راستا');
     }
 
