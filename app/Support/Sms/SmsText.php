@@ -174,6 +174,32 @@ final class SmsText
         return SmsTemplateStore::render($salon?->id, 'discount_code_used_up', ['کد' => $code, 'سالن' => (string) $salon?->smsName()]);
     }
 
+    // ─── دوره‌ی درمانی (بسته‌ی ب) ───────────────────────────────────────
+
+    /** یادآوری رزرو جلسه‌ی بعد — $link لینک کوتاه رزرو (Closure تا فقط اگر در متن سالن هست ساخته شود) */
+    public static function courseNextSession(\App\Models\CustomerCourse $course, int $remaining, string|\Closure $link): string
+    {
+        return self::renderCourse($course, 'course_next_session', $remaining, $link);
+    }
+
+    public static function courseExpiring(\App\Models\CustomerCourse $course, int $remaining, string|\Closure $link): string
+    {
+        return self::renderCourse($course, 'course_expiring', $remaining, $link);
+    }
+
+    private static function renderCourse(\App\Models\CustomerCourse $course, string $key, int $remaining, string|\Closure $link): string
+    {
+        return SmsTemplateStore::render($course->salon_id, $key, [
+            'دوره' => (string) self::clip($course->name, 25),
+            'شماره_جلسه' => to_persian_num((string) ($course->sessions_used + 1)),
+            'مانده_جلسه' => to_persian_num((string) $remaining),
+            'لینک_رزرو' => $link,
+            'انقضا' => $course->expires_at ? verta($course->expires_at)->format('Y/m/d') : '',
+            'سالن' => fn () => (string) Salon::withoutGlobalScopes()->find($course->salon_id)?->smsName(),
+            'مشتری' => fn () => (string) self::clip($course->user?->name, 25),
+        ]);
+    }
+
     public static function quotaExhausted(Salon $salon): string
     {
         return sprintf('پیامک این ماه %s تمام شد؛ برای ادامه از صورتحساب بسته بخرید.', $salon->smsName());
@@ -195,6 +221,7 @@ final class SmsText
             'خدمت' => fn () => self::service($b),
             'کل' => fn () => self::money($b->service?->price),
             'مانده' => fn () => self::money($b->remaining_amount),
+            'جلسه' => fn () => (string) $b->courseSessionLabel(),
         ]);
     }
 

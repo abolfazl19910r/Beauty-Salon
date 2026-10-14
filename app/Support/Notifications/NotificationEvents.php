@@ -70,6 +70,9 @@ class NotificationEvents
 
     public const LOYALTY_REWARD_REDEEMED_CUSTOMER = 'loyalty.reward_redeemed.customer';
 
+    // دوره‌ی درمانی (بسته‌ی ب، ۲۰۲۶-۱۰-۱۴): یادآوری جلسه‌ی بعد و پایان مهلت — courses:remind
+    public const COURSE_REMINDER_CUSTOMER = 'course.reminder.customer';
+
     // ⭐ فیچر «سقف/قطع پیامک ماهانه» (تصمیم صریح ابوالفضل، ۲۰۲۶-۰۹-۲۰): وقتی سهمیه‌ی پیامک
     // ماهانه‌ی یک سالن تمام می‌شود، این رویداد یک‌بار در همان ماه (نه هر بار) به ادمین‌های همان
     // سالن و به سوپرادمین اطلاع می‌دهد. پیامک این رویداد عمداً از مسیر گیت‌شده‌ی معمول SMSService
@@ -122,6 +125,9 @@ class NotificationEvents
             'وفاداری' => [
                 self::LOYALTY_POINTS_EARNED_CUSTOMER => ['label' => 'کسب امتیاز وفاداری — اطلاع به مشتری', 'sms' => true],
                 self::LOYALTY_REWARD_REDEEMED_CUSTOMER => ['label' => 'استفاده از امتیاز برای پاداش — اطلاع به مشتری', 'sms' => true],
+            ],
+            'دوره‌های درمانی' => [
+                self::COURSE_REMINDER_CUSTOMER => ['label' => 'یادآوری جلسه‌ی بعد و پایان مهلت دوره — اطلاع به مشتری', 'sms' => true],
             ],
             'سهمیه‌ی پیامک' => [
                 self::SMS_QUOTA_WARNING_ADMIN => ['label' => 'مصرف ۸۰٪ سهمیه‌ی پیامک ماهانه — اطلاع به ادمین سالن', 'sms' => true],

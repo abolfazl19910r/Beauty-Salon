@@ -122,6 +122,15 @@ return Application::configure(basePath: dirname(__DIR__))
             ->dailyAt('07:30')
             ->withoutOverlapping()
             ->onOneServer();
+        // دوره‌های درمانی (بسته‌ی ب): یادآوری هم‌ساعت پیگیری مشتری غایب؛ انقضا و رهاشده‌ها هر ساعت
+        $schedule->command('courses:remind')
+            ->dailyAt('07:40')
+            ->withoutOverlapping()
+            ->onOneServer();
+        $schedule->command('courses:expire')
+            ->hourlyAt(17)
+            ->withoutOverlapping()
+            ->onOneServer();
         // پلن بعدیِ زمان‌بندی‌شده (خرید پلن دیگر وسط اشتراک) — بسته‌ی پلن‌ها ۲۰۲۶-۱۰-۱۴
         $schedule->command('plans:apply-scheduled')
             ->hourlyAt(7)
