@@ -53,8 +53,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         // آیکون تک‌رنگ اندروید ۱۳ (همکار با نشان «همکار» بریده‌شده)
         monochromeImage: `${v.assets}/android-icon-monochrome.png`,
       },
-      // expo-camera (اسکن QR سالن، فقط اپ مشتری) مجوز دوربین را در manifest کتابخانه دارد؛ اپ همکار آن را نمی‌خواهد
-      blockedPermissions: variant === 'staff' ? ['android.permission.CAMERA', 'android.permission.RECORD_AUDIO'] : ['android.permission.RECORD_AUDIO'],
+      // دوربین: اپ مشتری برای اسکن QR سالن، اپ همکار برای عکس قبل/بعد جلسه‌ی دوره (بسته‌ی ب)؛ میکروفون هیچ‌کدام
+      blockedPermissions: ['android.permission.RECORD_AUDIO'],
       predictiveBackGestureEnabled: false,
     },
     plugins: [
@@ -67,6 +67,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       // اسکن QR سالن (فقط اپ مشتری)؛ بدون میکروفون
       ...(variant === 'customer'
         ? [['expo-camera', { cameraPermission: 'برای اسکن QR سالن', recordAudioAndroid: false, microphonePermission: false }] as [string, object]]
+        : []),
+      // عکس قبل/بعد جلسه‌ی دوره‌ی درمانی (فقط اپ همکار، بسته‌ی ب)؛ بدون میکروفون
+      ...(variant === 'staff'
+        ? [['expo-image-picker', { cameraPermission: 'برای عکس قبل و بعد جلسه‌ی دوره، با رضایت مشتری', photosPermission: 'برای انتخاب عکس قبل و بعد جلسه‌ی دوره', microphonePermission: false }] as [string, object]]
         : []),
       // سرور آزمایشی روی شبکه‌ی محلی (XAMPP) با http است؛ در نسخه‌ی production خاموش
       ['expo-build-properties', { android: { usesCleartextTraffic: !production } }],

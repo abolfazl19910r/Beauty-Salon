@@ -144,6 +144,37 @@ export function createClient(config: ClientConfig) {
     put: <T>(path: string, body?: unknown) => request<T>('PUT', path, { body: body ?? {} }),
     del: <T>(path: string) => request<T>('DELETE', path),
     /** آدرس کامل یک مسیر API و هدر توکن — برای فایل‌هایی که خود Image بار می‌کند (عکس‌های خصوصی دوره) */
+    /** آپلود فایل (multipart)؛ Content-Type را fetch با boundary می‌گذارد */
+    upload: async <T>(path: string, form: FormData, timeoutMs = 60000): Promise<{ data: T; meta: ApiMeta }> => {
+      const headers: Record<string, string> = { Accept: 'application/json', 'X-App-Version': config.appVersion };
+      const token = config.token();
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      let response: Response;
+      try {
+        response = await doFetch(buildUrl(config.baseUrl(), path), { method: 'POST', headers, body: form, signal: controller.signal });
+      } catch {
+        throw new ApiError('network_error', NETWORK_ERROR_MESSAGE, 0);
+      } finally {
+        clearTimeout(timer);
+      }
+      let payload: { success?: boolean; data?: T; meta?: ApiMeta; error?: { code?: string; message?: string; fields?: Record<string, string[]> } };
+      try {
+        payload = await response.json();
+      } catch {
+        throw new ApiError('server_error', 'پاسخ سرور قابل خواندن نیست.', response.status);
+      }
+      if (response.ok && payload?.success === true) {
+        return { data: payload.data as T, meta: payload.meta ?? {} };
+      }
+      if (response.status === 401 && token && config.onUnauthorized) {
+        config.onUnauthorized();
+      }
+      throw new ApiError(payload?.error?.code ?? `http_${response.status}`, payload?.error?.message ?? 'خطای ناشناخته از سرور.', response.status, payload?.error?.fields ?? null, payload?.meta ?? {});
+    },
     imageSource: (path: string) => {
       const token = config.token();
       return { uri: buildUrl(config.baseUrl(), path), headers: token ? { Authorization: `Bearer ${token}` } : undefined };

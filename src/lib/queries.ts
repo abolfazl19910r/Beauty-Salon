@@ -201,5 +201,17 @@ export function useCourseFileMutations(bookingId: number) {
       onSuccess: refresh,
     }),
     consent: useMutation({ mutationFn: async () => api.post(`/staff/bookings/${bookingId}/course-consent`), onSuccess: refresh }),
+    uploadPhoto: useMutation({
+      mutationFn: async (args: { uri: string; kind: 'before' | 'after'; mimeType?: string | null }) => {
+        const form = new FormData();
+        const type = args.mimeType || 'image/jpeg';
+        const ext = type.split('/')[1] === 'png' ? 'png' : type.split('/')[1] === 'webp' ? 'webp' : 'jpg';
+        // React Native: فایل با {uri, name, type}
+        form.append('photo', { uri: args.uri, name: `photo.${ext}`, type } as unknown as Blob);
+        form.append('kind', args.kind);
+        return api.upload(`/staff/bookings/${bookingId}/photos`, form);
+      },
+      onSuccess: refresh,
+    }),
   };
 }

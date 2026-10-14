@@ -4,6 +4,7 @@
  * ورود، نمایش «امروز» و خروج اجباری با ۴۰۱ را از ابتدا تا انتها می‌گذراند.
  */
 import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import { Alert } from 'react-native';
 
 // اولین رندر expo-router روی ویندوز (تبدیل سرد فایل‌ها) از ۵ ثانیه‌ی پیش‌فرض Jest بیشتر طول می‌کشد (گزارش ۲۰۲۶-۱۰-۱۰)
 jest.setTimeout(60_000);
@@ -11,6 +12,12 @@ jest.setTimeout(60_000);
 jest.mock('@react-native-async-storage/async-storage', () => require('@react-native-async-storage/async-storage/jest/async-storage-mock'));
 jest.mock('expo-font', () => ({ ...jest.requireActual('expo-font'), useFonts: () => [true] }));
 jest.mock('expo-device', () => ({ modelName: 'Galaxy A17' }));
+jest.mock('expo-image-picker', () => ({
+  requestCameraPermissionsAsync: jest.fn(async () => ({ granted: true })),
+  requestMediaLibraryPermissionsAsync: jest.fn(async () => ({ granted: true })),
+  launchCameraAsync: jest.fn(async () => ({ canceled: false, assets: [{ uri: 'file:///tmp/after.jpg', mimeType: 'image/jpeg' }] })),
+  launchImageLibraryAsync: jest.fn(async () => ({ canceled: true, assets: null })),
+}));
 
 const mockSecure = new Map<string, string>();
 jest.mock('expo-secure-store', () => ({
@@ -42,7 +49,7 @@ beforeEach(async () => {
   await require('@react-native-async-storage/async-storage').clear();
   globalThis.fetch = jest.fn(async (url: string, init: RequestInit) => {
     const headers = init.headers as Record<string, string>;
-    calls.push({ url, body: init.body ? JSON.parse(String(init.body)) : undefined, auth: headers.Authorization });
+    calls.push({ url, body: init.body instanceof FormData ? init.body : init.body ? JSON.parse(String(init.body)) : undefined, auth: headers.Authorization });
     const [status, body] = routes(url, init);
     return { ok: status < 300, status, json: async () => body } as Response;
   }) as unknown as typeof fetch;
@@ -129,4 +136,44 @@ it('a treatment-course session shows its label and saves the session note', asyn
   fireEvent(screen.getByLabelText('نمایش یادداشت به مشتری'), 'valueChange', true);
   fireEvent.press(screen.getByText('ذخیره‌ی یادداشت'));
   await waitFor(() => expect(calls.find((c) => c.url.includes('/session-note'))?.body).toEqual({ note: 'شدت ۱۸', visible_to_customer: true }));
+});
+
+it('takes an after photo for a course session with the camera and uploads it', async () => {
+  mockSecure.set('mahru.token', '5|abc');
+  await require('@react-native-async-storage/async-storage').setItem('mahru.account', JSON.stringify(ACCOUNT));
+  const course = { id: 12, name: 'لیزر ۶ جلسه', session_number: 2, sessions_total: 6, label: 'جلسه‌ی ۲ از ۶', photo_consent: true };
+  let photos: { id: number; kind: string; url: string }[] = [];
+  routes = (url, init) => {
+    if (url.includes('/staff/bookings/41/photos') && init.method === 'POST') {
+      photos = [{ id: 7, kind: 'after', url: 'http://x/api/v1/staff/course-photos/7' }];
+      return [201, ok(photos[0])];
+    }
+    if (url.includes('/staff/bookings/41/course')) {
+      return [200, ok({ id: 12, name: 'لیزر ۶ جلسه', status: 'active', status_label: 'فعال', sessions_total: 6, sessions_used: 1, photo_consent: true, sessions: [
+        { booking_id: 41, session_number: 2, label: 'جلسه‌ی ۲ از ۶', status: 'confirmed', burned: false, booking_time_jalali: '1405/07/19 10:00', specialist: { id: 3, name: 'سارا احمدی' }, note: null, note_visible_to_customer: null, photos },
+      ] })];
+    }
+    if (url.includes('/staff/bookings/41')) return [200, ok({ ...BOOKING, status: 'confirmed', course, actions: { confirm: false, cancel: true, complete: true } })];
+    if (url.includes('/staff/notifications')) return [200, ok([], { current_page: 1, last_page: 1, total: 0, per_page: 20, unread_count: 0 })];
+    return [404, { success: false, error: { code: 'not_found', message: 'x' } }];
+  };
+  jest.spyOn(Alert, 'alert').mockImplementation((_t, _m, buttons) => buttons?.find((b) => b.text === 'دوربین')?.onPress?.());
+  // FormData در jest همان Node است (فایل RN را رشته می‌کند)؛ append را می‌پاییم
+  const appended: [string, unknown][] = [];
+  const append = jest.spyOn(FormData.prototype, 'append').mockImplementation(function (this: FormData, k: string, v: unknown) {
+    appended.push([k, v]);
+  } as any);
+
+  renderRouter('./src/app', { initialUrl: '/booking/41' });
+
+  expect(await screen.findByText(/عکس‌های این جلسه/)).toBeTruthy();
+  fireEvent.press(screen.getByText('عکس بعد'));
+
+  await waitFor(() => expect(calls.some((c) => c.url.includes('/staff/bookings/41/photos'))).toBe(true));
+  const upload = calls.find((c) => c.url.includes('/photos'))!;
+  expect(upload.body).toBeInstanceOf(FormData);
+  expect(upload.auth).toBe('Bearer 5|abc');
+  expect(appended.find(([k]) => k === 'kind')?.[1]).toBe('after');
+  expect(appended.find(([k]) => k === 'photo')?.[1]).toMatchObject({ uri: 'file:///tmp/after.jpg', type: 'image/jpeg', name: 'photo.jpg' });
+  append.mockRestore();
 });

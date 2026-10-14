@@ -1,3 +1,4 @@
+import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import { Alert, Image, Switch, View } from 'react-native';
 
@@ -11,13 +12,13 @@ import { radius, space, usePalette } from './theme';
 
 /**
  * پرونده‌ی جلسه‌ی دوره‌ی درمانی روی صفحه‌ی نوبت (بسته‌ی ب): یادداشت همین جلسه (با «نمایش به مشتری»)، رضایت عکس، و یادداشت‌ها و
- * عکس‌های جلسه‌های قبلی همان دوره. عکس از پنل وب گرفته می‌شود؛ این‌جا فقط دیده می‌شود (خصوصی، با توکن).
+ * عکس‌های جلسه‌های قبلی همان دوره. عکس قبل/بعد با دوربین یا از گالری (فقط بعد از رضایت، حداکثر ۴ برای هر جلسه)؛ دیدن عکس‌ها با توکن.
  */
 export function CourseFilePanel({ booking }: { booking: Booking }) {
   const p = usePalette();
   const api = useApi();
   const file = useCourseFile(booking.id, !!booking.course);
-  const { saveNote, consent } = useCourseFileMutations(booking.id);
+  const { saveNote, consent, uploadPhoto } = useCourseFileMutations(booking.id);
   const mine = file.data?.sessions.find((s) => s.booking_id === booking.id);
   const [note, setNote] = useState('');
   const [visible, setVisible] = useState(false);
@@ -32,6 +33,32 @@ export function CourseFilePanel({ booking }: { booking: Booking }) {
   if (!booking.course) {
     return null;
   }
+  const MAX_PHOTOS = 4;
+
+  const pick = async (kind: 'before' | 'after', source: 'camera' | 'library') => {
+    const permission = source === 'camera'
+      ? await ImagePicker.requestCameraPermissionsAsync()
+      : await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert('اجازه داده نشد', source === 'camera' ? 'برای عکس گرفتن، اجازه‌ی دوربین را در تنظیمات گوشی بدهید.' : 'برای انتخاب عکس، اجازه‌ی گالری را در تنظیمات گوشی بدهید.');
+      return;
+    }
+    const options: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: 0.7, exif: false };
+    const result = source === 'camera' ? await ImagePicker.launchCameraAsync(options) : await ImagePicker.launchImageLibraryAsync(options);
+    if (result.canceled || !result.assets[0]) {
+      return;
+    }
+    const asset = result.assets[0];
+    uploadPhoto.mutate({ uri: asset.uri, kind, mimeType: asset.mimeType }, { onError: (e) => Alert.alert('عکس ذخیره نشد', errorMessage(e)) });
+  };
+
+  const askPhoto = (kind: 'before' | 'after') =>
+    Alert.alert(kind === 'before' ? 'عکس قبل' : 'عکس بعد', 'عکس فقط برای کادر سالن و خود مشتری دیده می‌شود.', [
+      { text: 'انصراف', style: 'cancel' },
+      { text: 'گالری', onPress: () => void pick(kind, 'library') },
+      { text: 'دوربین', onPress: () => void pick(kind, 'camera') },
+    ]);
+
   const others = (file.data?.sessions ?? []).filter((s) => s.booking_id !== booking.id && (s.note || s.photos.length > 0));
 
   return (
@@ -71,7 +98,18 @@ export function CourseFilePanel({ booking }: { booking: Booking }) {
         </Card>
       ) : null}
 
-      {mine && mine.photos.length > 0 ? <PhotoStrip photos={mine.photos} source={(id) => api.imageSource(`/staff/course-photos/${id}`)} /> : null}
+      {file.data?.photo_consent && mine ? (
+        <Card>
+          <T weight="medium">عکس‌های این جلسه ({faDigits(mine.photos.length)} از {faDigits(MAX_PHOTOS)})</T>
+          {mine.photos.length > 0 ? <PhotoStrip photos={mine.photos} source={(id) => api.imageSource(`/staff/course-photos/${id}`)} /> : null}
+          {mine.photos.length < MAX_PHOTOS ? (
+            <Row>
+              <Button small kind="secondary" title="عکس قبل" onPress={() => askPhoto('before')} loading={uploadPhoto.isPending} />
+              <Button small kind="secondary" title="عکس بعد" onPress={() => askPhoto('after')} loading={uploadPhoto.isPending} />
+            </Row>
+          ) : null}
+        </Card>
+      ) : null}
 
       {others.length > 0 ? (
         <>

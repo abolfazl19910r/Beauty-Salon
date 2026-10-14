@@ -82,7 +82,7 @@ eas build --platform android --profile customer-production   # نهایی
 - `src/lib/jalali.ts`، `src/lib/format.ts` — شمسی (شنبه تا جمعه)، تومان و ارقام فارسی.
 - `src/ui/` — رنگ برند (روشن/تیره از گوشی)، فونت وزیرمتن (OFL، `assets/fonts/OFL.txt`).
 - راست‌به‌چپ از اولین اجرا با plugin `expo-localization` (`forcesRTL`).
-- دوربین (`expo-camera`) فقط برای اپ مشتری؛ در اپ همکار مجوز دوربین با `blockedPermissions` از manifest حذف می‌شود.
+- دوربین: اپ مشتری `expo-camera` برای اسکن QR سالن؛ اپ همکار `expo-image-picker` برای عکس قبل/بعد جلسه‌ی دوره‌ی درمانی (دوربین یا گالری، فقط بعد از ثبت رضایت مشتری). میکروفون در هر دو با `blockedPermissions` حذف است. پس از این تغییر اپ همکار باید دوباره build شود (پلاگین بومی تازه).
 
 ## بررسی‌ها
 ```powershell
