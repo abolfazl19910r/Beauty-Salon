@@ -72,15 +72,24 @@ class PlatformBrandTest extends TestCase
         }
 
         // لوگوها به هیچ فونتی وابسته نیستن (نوشته‌ها به outline تبدیل شدن)
-        $this->assertStringNotContainsString('<text', file_get_contents(public_path('brand/mahru-logo-vertical-on-dark.svg')));
+        foreach (['vertical-on-dark', 'vertical-on-light', 'horizontal-on-dark', 'horizontal-on-light'] as $lockup) {
+            $this->assertStringNotContainsString('<text', file_get_contents(public_path("brand/mahru-logo-{$lockup}.svg")));
+        }
 
         $manifest = json_decode(file_get_contents(public_path('site.webmanifest')), true, flags: JSON_THROW_ON_ERROR);
         $this->assertSame('ماهرو', $manifest['short_name']);
         foreach ($manifest['icons'] as $icon) {
             $this->assertFileExists(public_path(ltrim($icon['src'], '/')));
+            // آیکون SVG کیت (۲۰۲۶-۱۰-۱۴) اندازه‌ی «any» دارد؛ بقیه PNG با ابعاد دقیق
+            if ($icon['type'] === 'image/svg+xml') {
+                $this->assertSame('any', $icon['sizes']);
+
+                continue;
+            }
             [$w, $h] = getimagesize(public_path(ltrim($icon['src'], '/')));
             $this->assertSame($icon['sizes'], "{$w}x{$h}");
         }
+        $this->assertContains('maskable', array_column($manifest['icons'], 'purpose'));
         $this->assertSame([180, 180], array_slice(getimagesize(public_path('apple-touch-icon.png')), 0, 2));
     }
 

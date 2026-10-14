@@ -1,1 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200.00 200.00" width="200" height="200" role="img" aria-label="نشان ماهرو"><title>نشان ماهرو</title><defs><linearGradient id="mahru-gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EBD69B"/><stop offset="0.55" stop-color="#C9A24B"/><stop offset="1" stop-color="#A67F2E"/></linearGradient></defs><path d="M87.835 26.954 A78.000 78.000 0 1 0 174.749 126.284 A66.000 66.000 0 0 1 87.835 26.954 Z" fill="url(#mahru-gold)"/><path d="M142.000 67.000 C144.000 78.000 146.000 80.000 157.000 82.000 C146.000 84.000 144.000 86.000 142.000 97.000 C140.000 86.000 138.000 84.000 127.000 82.000 C138.000 80.000 140.000 78.000 142.000 67.000 Z" fill="#F3E4B8"/><path d="M168.000 117.250 C168.900 122.200 169.800 123.100 174.750 124.000 C169.800 124.900 168.900 125.800 168.000 130.750 C167.100 125.800 166.200 124.900 161.250 124.000 C166.200 123.100 167.100 122.200 168.000 117.250 Z" fill="#EBD69B"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="140 140 232 232" width="232" height="232" role="img" aria-label="نشان ماهرو"><title>نشان ماهرو</title><defs><linearGradient id="mahru-gold" gradientUnits="userSpaceOnUse" x1="160" y1="145" x2="360" y2="370"><stop offset="0" stop-color="#EBD69B"/><stop offset="1" stop-color="#A67F2E"/></linearGradient></defs><g id="crescent" fill="url(#mahru-gold)">
+    <path id="crescent-outer" d="M308.1 158A111 111 0 1 0 366.9 252.1A107.3 107.3 0 1 1 308.1 158Z"/>
+    <path id="crescent-inner" d="M247.2 162.4A94 94 0 1 0 320.7 324.1A89 89 0 0 1 247.2 162.4Z"/>
+  </g>
+  <g id="figures" fill="url(#mahru-gold)">
+    <g id="heads">
+      <circle cx="241" cy="259" r="13"/>
+      <circle cx="283" cy="259" r="13"/>
+      <circle cx="325" cy="259" r="13"/>
+    </g>
+    <g id="shoulders">
+      <path d="M212 308A29 28 0 0 1 270 308V349A94 94 0 0 1 212 339.1Z"/>
+      <path d="M263.2 287.5A29 28 0 0 1 312 308V331.5A94 94 0 0 1 254 350V342.3A28 28 0 1 0 263.2 287.5Z"/>
+      <path d="M305.2 287.5A29 28 0 0 1 344.6 287.4A94 94 0 0 1 331.7 311.7A28 28 0 0 0 305.2 287.5Z"/>
+    </g>
+  </g>
+  <g id="constellation">
+    <line id="constellation-link" x1="249" y1="196" x2="321" y2="221" stroke="url(#mahru-gold)" stroke-width="5" stroke-linecap="round"/>
+    <g id="stars" fill="url(#mahru-gold)">
+      <circle cx="249" cy="196" r="8"/>
+      <circle cx="321" cy="221" r="8"/>
+      <circle cx="314" cy="183" r="7"/>
+    </g>
+  </g></svg>

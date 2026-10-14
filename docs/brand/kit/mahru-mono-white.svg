@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="title">
+  <title id="title">Mahru</title>
+  <g id="crescent" fill="#FFFFFF">
+    <path id="crescent-outer" d="M308.1 158A111 111 0 1 0 366.9 252.1A107.3 107.3 0 1 1 308.1 158Z"/>
+    <path id="crescent-inner" d="M247.2 162.4A94 94 0 1 0 320.7 324.1A89 89 0 0 1 247.2 162.4Z"/>
+  </g>
+  <g id="figures" fill="#FFFFFF">
+    <g id="heads">
+      <circle cx="241" cy="259" r="13"/>
+      <circle cx="283" cy="259" r="13"/>
+      <circle cx="325" cy="259" r="13"/>
+    </g>
+    <g id="shoulders">
+      <path d="M212 308A29 28 0 0 1 270 308V349A94 94 0 0 1 212 339.1Z"/>
+      <path d="M263.2 287.5A29 28 0 0 1 312 308V331.5A94 94 0 0 1 254 350V342.3A28 28 0 1 0 263.2 287.5Z"/>
+      <path d="M305.2 287.5A29 28 0 0 1 344.6 287.4A94 94 0 0 1 331.7 311.7A28 28 0 0 0 305.2 287.5Z"/>
+    </g>
+  </g>
+  <g id="constellation">
+    <line id="constellation-link" x1="249" y1="196" x2="321" y2="221" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+    <g id="stars" fill="#FFFFFF">
+      <circle cx="249" cy="196" r="8"/>
+      <circle cx="321" cy="221" r="8"/>
+      <circle cx="314" cy="183" r="7"/>
+    </g>
+  </g>
+</svg>
