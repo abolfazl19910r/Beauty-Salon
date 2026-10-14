@@ -72,5 +72,8 @@ class DatabaseSeeder extends Seeder
             NotificationSeeder::class,
             UserNotificationSeeder::class,
         ]);
+
+        // پلن‌های پیش‌فرض و وصل کردن سالن‌ها (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴) — همان دستور plans:sync-defaults
+        app(\App\Services\Plans\DefaultPlans::class)->sync();
     }
 }

@@ -35,6 +35,9 @@ class Salon extends Model
         'module_permissions',
         'sms_quota_per_month',
         'subscription_type',
+        'plan_id',
+        'next_plan_id',
+        'next_plan_starts_at',
         'subscription_started_at',
         'subscription_ends_at',
         'trial_ends_at',
@@ -49,8 +52,90 @@ class Salon extends Model
         'subscription_started_at' => 'datetime',
         'subscription_ends_at' => 'datetime',
         'trial_ends_at' => 'datetime',
+        'next_plan_starts_at' => 'datetime',
         'is_suspended' => 'boolean',
     ];
+
+    // ─── پلن و امکانات (بسته‌ی الف، ۲۰۲۶-۱۰-۱۴) ─────────────────────────────
+
+    public function plan(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Plan::class);
+    }
+
+    public function nextPlan(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Plan::class, 'next_plan_id');
+    }
+
+    public function featureOverrides(): HasMany
+    {
+        return $this->hasMany(SalonFeatureOverride::class);
+    }
+
+    /**
+     * پلنی که الان اثر دارد: پلن بعدیِ زمان‌بندی‌شده (خرید پلن دیگر وسط اشتراک فعال) از لحظه‌ی شروعش، وگرنه plan_id.
+     * null = سالن پیش از پلن‌ها (همه‌ی امکانات، قیمت و سهمیه از config/billing.php).
+     */
+    public function effectivePlanId(): ?int
+    {
+        if ($this->next_plan_id && $this->next_plan_starts_at && ! $this->next_plan_starts_at->isFuture()) {
+            return (int) $this->next_plan_id;
+        }
+
+        return $this->plan_id ? (int) $this->plan_id : null;
+    }
+
+    public function effectivePlan(): ?Plan
+    {
+        $id = $this->effectivePlanId();
+        if ($id === null) {
+            return null;
+        }
+
+        return $id === (int) $this->plan_id ? $this->plan : $this->nextPlan;
+    }
+
+    public function hasFeature(\App\Support\Features\Feature $feature): bool
+    {
+        return app(\App\Services\Plans\FeatureResolver::class)->enabled($this, $feature);
+    }
+
+    /** @return list<string> کلید امکانات روشن (برای API اپ‌ها و صفحه‌ی صورتحساب) */
+    public function enabledFeatureKeys(): array
+    {
+        return app(\App\Services\Plans\FeatureResolver::class)->enabledKeys($this);
+    }
+
+    public static function featureEnabledFor(?int $salonId, \App\Support\Features\Feature $feature): bool
+    {
+        return app(\App\Services\Plans\FeatureResolver::class)->enabled($salonId, $feature);
+    }
+
+    /**
+     * فقط سالن‌هایی که این امکان را دارند — همان قاعده‌ی FeatureResolver، ولی در خود کوئری (برای دستورهای زمان‌بندی‌شده،
+     * تا سالن بدون امکان اصلاً خوانده نشود).
+     */
+    public function scopeWithFeature(\Illuminate\Database\Eloquent\Builder $query, \App\Support\Features\Feature $feature): \Illuminate\Database\Eloquent\Builder
+    {
+        $key = $feature->value;
+        $override = fn (bool $enabled) => fn ($q) => $q->where('feature', $key)->where('enabled', $enabled)
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()));
+        $planHas = fn (string $column) => fn ($q) => $q->selectRaw('1')->from('plan_features')
+            ->whereColumn('plan_features.plan_id', 'salons.'.$column)->where('plan_features.feature', $key);
+
+        return $query->where(fn ($q) => $q
+            ->whereHas('featureOverrides', $override(true))
+            ->orWhere(fn ($q) => $q
+                ->whereDoesntHave('featureOverrides', $override(false))
+                ->where(fn ($q) => $q
+                    // پلن بعدی شروع شده
+                    ->where(fn ($q) => $q->whereNotNull('next_plan_id')->where('next_plan_starts_at', '<=', now())->whereExists($planHas('next_plan_id')))
+                    // وگرنه پلن فعلی (یا بی‌پلن)
+                    ->orWhere(fn ($q) => $q
+                        ->where(fn ($q) => $q->whereNull('next_plan_id')->orWhereNull('next_plan_starts_at')->orWhere('next_plan_starts_at', '>', now()))
+                        ->where(fn ($q) => $q->whereNull('plan_id')->orWhereExists($planHas('plan_id')))))));
+    }
 
     /**
      * v1: exactly one 'owner' row per salon (enforced in SuperAdminService::createSalonWithAdmin(),
@@ -169,7 +254,7 @@ class Salon extends Model
     {
         return $this->trial_ends_at !== null
             && $this->sms_quota_per_month !== null
-            && (int) $this->sms_quota_per_month === (int) config('billing.trial_sms_quota')
+            && in_array((int) $this->sms_quota_per_month, [(int) config('billing.trial_sms_quota'), (int) Plan::trial()?->sms_quota_per_month], true)
             && ! $this->hasPaidInvoice();
     }
 
@@ -214,7 +299,18 @@ class Salon extends Model
     }
 
     /** ⭐ لوگوی اختصاصی سالن (۲۰۲۶-۰۹-۲۴)؛ null = بدون لوگو (ویوها آیکون پیش‌فرض رو نشون می‌دن). */
+    /** لوگوی نمایشی؛ بدون امکان «لوگوی اختصاصی» در پلن، null (= لوگوی پیش‌فرض). فایل پاک نمی‌شود — storedLogoUrl() */
     public function logoUrl(): ?string
+    {
+        if (! $this->hasFeature(\App\Support\Features\Feature::CustomLogo)) {
+            return null;
+        }
+
+        return $this->storedLogoUrl();
+    }
+
+    /** لوگوی آپلودشده، بدون توجه به پلن (پیش‌نمایش در تنظیمات سالن و سوپرادمین) */
+    public function storedLogoUrl(): ?string
     {
         return $this->logo_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->logo_path) : null;
     }
@@ -226,7 +322,9 @@ class Salon extends Model
     public function acceptsOnlinePayments(): bool
     {
         // ⭐ لایه‌ی چند درگاه (۲۰۲۶-۰۹-۲۵): «حداقل یک درگاه فعال» به‌جای فقط ستون زرین‌پال.
-        return $this->paymentGateways()->where('is_active', true)->exists();
+        // + امکان «پرداخت آنلاین مشتری» پلن (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴) — همان قاعده‌ی GatewayManager::gatewaysFor
+        return $this->hasFeature(\App\Support\Features\Feature::OnlinePayment)
+            && $this->paymentGateways()->where('is_active', true)->exists();
     }
 
     public function paymentGateways(): \Illuminate\Database\Eloquent\Relations\HasMany
@@ -284,6 +382,13 @@ class Salon extends Model
 
     protected static function booted(): void
     {
+        // کش امکانات (FeatureResolver) با هر تغییر پلن سالن پاک می‌شود — بسته‌ی پلن‌ها ۲۰۲۶-۱۰-۱۴
+        static::saved(function (Salon $salon) {
+            if ($salon->wasChanged(['plan_id', 'next_plan_id', 'next_plan_starts_at'])) {
+                app(\App\Services\Plans\FeatureResolver::class)->forget((int) $salon->id);
+            }
+        });
+
         static::saved(function (Salon $salon) {
             $pending = $salon->pendingZarinpal;
             $salon->pendingZarinpal = null;

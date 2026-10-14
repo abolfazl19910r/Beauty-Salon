@@ -72,6 +72,8 @@ return Application::configure(basePath: dirname(__DIR__))
             // ⭐ Phase 1 SaaS multi-tenant (feat/saas-multi-tenant-salons, commit 3).
             'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
             'salon.active' => \App\Http\Middleware\EnsureAdminSalonActive::class,
+            // امکان پلن (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴): feature:winback و …
+            'feature' => \App\Http\Middleware\EnsureSalonFeature::class,
             'salon.resolve' => \App\Http\Middleware\ResolveSalonFromRoute::class,
             'salon.customer' => \App\Http\Middleware\EnsureCustomerBelongsToSalon::class,
             'salon.specialist' => \App\Http\Middleware\EnsureSpecialistSalonActive::class,
@@ -118,6 +120,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // پیگیری مشتریان غایب (۲۰۲۶-۱۰-۱۴): ساعت معقول برای پیامک تبلیغاتی — ۰۷:۳۰ UTC همان ۱۱:۰۰ تهران است (ایران از ۱۴۰۱ ساعت تابستانی ندارد)
         $schedule->command('customers:winback')
             ->dailyAt('07:30')
+            ->withoutOverlapping()
+            ->onOneServer();
+        // پلن بعدیِ زمان‌بندی‌شده (خرید پلن دیگر وسط اشتراک) — بسته‌ی پلن‌ها ۲۰۲۶-۱۰-۱۴
+        $schedule->command('plans:apply-scheduled')
+            ->hourlyAt(7)
             ->withoutOverlapping()
             ->onOneServer();
         $schedule->command('sanctum:prune-expired', ['--hours' => 24])

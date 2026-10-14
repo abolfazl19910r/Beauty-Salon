@@ -31,6 +31,12 @@ class SalonFactory extends Factory
         ];
     }
 
+    /** سالن روی یک پلن (بسته‌ی پلن‌ها)؛ بدون این state سالن بی‌پلن است = همه‌ی امکانات، مثل پیش از پلن‌ها */
+    public function onPlan(\App\Models\Plan $plan): static
+    {
+        return $this->state(fn (array $attributes) => ['plan_id' => $plan->id]);
+    }
+
     public function suspended(): static
     {
         return $this->state(fn (array $attributes) => ['is_suspended' => true]);

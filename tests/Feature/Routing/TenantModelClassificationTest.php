@@ -58,6 +58,9 @@ class TenantModelClassificationTest extends TestCase
         'SecurityLog' => 'از کاربر؛ بخش امنیت با querySalonMembers فیلتر می‌کند',
         'DemoRequest' => 'درخواست دموی صفحه‌ی فروش؛ پیش از وجود هر سالنی، فقط سوپرادمین',
         'PlatformSetting' => 'تنظیم سطح پلتفرم (سوپرادمین)',
+        'Plan' => 'پلن اشتراک، سطح پلتفرم (سوپرادمین)',
+        'PlanFeature' => 'امکان یک پلن، از رابطه‌ی پلن',
+        'SalonFeatureOverride' => 'استثنای سوپرادمین؛ FeatureResolver همیشه با salon_id صریح می‌خواند',
         'SupportTicket' => 'تیکت سالن به پلتفرم',
         'SupportTicketMessage' => 'از رابطه‌ی تیکت',
     ];
