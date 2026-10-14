@@ -47,6 +47,8 @@ class CustomerPresenter
         $settings = WalletSetting::get();
 
         return self::salonCard($salon) + [
+            // امکانات پلن سالن (بسته‌ی پلن‌ها/ب) — اپ بخش‌هایی مثل «دوره‌ها» را فقط با کلیدشان نشان می‌دهد
+            'features' => app(\App\Services\Plans\FeatureResolver::class)->enabledKeys($salon),
             'bio' => $salon->bio,
             'address' => $salon->address,
             'phone' => $salon->phone,
@@ -115,6 +117,7 @@ class CustomerPresenter
                 : null,
             'cancellation_reason' => $booking->cancellation_reason,
             'cancelled_by' => $booking->cancelled_by,
+            'course' => CoursePresenter::bookingCourse($booking),
             'rating' => $booking->rating !== null ? (int) $booking->rating : null,
             'review' => $booking->review,
             'actions' => [

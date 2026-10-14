@@ -50,6 +50,7 @@ class CustomerCatalogController extends CustomerController
 
         return ApiResponse::success([
             'salon' => CustomerPresenter::salonCard($this->salon()),
+            'features' => app(\App\Services\Plans\FeatureResolver::class)->enabledKeys($this->salon()),
             'upcoming_bookings' => $upcoming->map(fn (Booking $b) => CustomerPresenter::booking($b))->values(),
             'awaiting_payment_count' => $upcoming->filter(fn (Booking $b) => $b->isPayable() && $b->status === 'pending_payment')->count(),
             'loyalty_points' => $loyalty->getCurrentPoints($user->id),

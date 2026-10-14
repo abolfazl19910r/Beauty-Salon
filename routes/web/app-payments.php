@@ -11,4 +11,6 @@ Route::prefix('app')->name('app.')->middleware('throttle:60,1')->controller(AppP
     Route::get('checkout/{publicId}', 'checkout')->whereUuid('publicId')->middleware('signed')->name('checkout');
     Route::get('payment/callback', 'booking')->name('payment.callback');
     Route::get('wallet/callback', 'wallet')->name('wallet.callback');
+    // پرداخت دوره‌ی درمانی از اپ (بسته‌ی ب)
+    Route::get('course/callback', 'course')->name('course.callback');
 });

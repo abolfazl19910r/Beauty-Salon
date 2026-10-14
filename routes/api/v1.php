@@ -9,9 +9,11 @@ use App\Http\Controllers\Api\V1\Customer\CustomerAccountController;
 use App\Http\Controllers\Api\V1\Customer\CustomerAuthController;
 use App\Http\Controllers\Api\V1\Customer\CustomerBookingController;
 use App\Http\Controllers\Api\V1\Customer\CustomerCatalogController;
+use App\Http\Controllers\Api\V1\Customer\CustomerCourseController;
 use App\Http\Controllers\Api\V1\Customer\CustomerPaymentController;
 use App\Http\Controllers\Api\V1\Staff\StaffBookingController;
 use App\Http\Controllers\Api\V1\Staff\StaffCalendarController;
+use App\Http\Controllers\Api\V1\Staff\StaffCourseController;
 use App\Http\Controllers\Api\V1\Staff\StaffNotificationController;
 use App\Http\Controllers\Api\V1\Staff\StaffWalletController;
 use App\Http\Controllers\Api\V1\StatusController;
@@ -86,6 +88,15 @@ Route::prefix('staff')->name('staff.')->middleware(['auth:sanctum', 'api.audienc
         Route::post('{bookingId}/complete', 'complete')->whereNumber('bookingId')->name('complete');
     });
 
+    // پرونده‌ی جلسه‌ی دوره‌ی درمانی (بسته‌ی ب) — بعد از تنزل پلن هم (دوره‌های خریده‌شده ادامه دارند)
+    Route::controller(StaffCourseController::class)->group(function () {
+        Route::get('bookings/{bookingId}/course', 'show')->whereNumber('bookingId')->name('bookings.course');
+        Route::post('bookings/{bookingId}/session-note', 'saveNote')->whereNumber('bookingId')->name('bookings.session-note');
+        Route::post('bookings/{bookingId}/photos', 'uploadPhoto')->whereNumber('bookingId')->middleware('throttle:30,1')->name('bookings.photos.store');
+        Route::post('bookings/{bookingId}/course-consent', 'consent')->whereNumber('bookingId')->name('bookings.course-consent');
+        Route::get('course-photos/{photoId}', 'photo')->whereNumber('photoId')->name('course-photos.show');
+    });
+
     Route::controller(StaffCalendarController::class)->group(function () {
         Route::get('calendar', 'calendar')->name('calendar');
         Route::get('schedule', 'schedule')->name('schedule');
@@ -134,6 +145,24 @@ Route::prefix('customer')->name('customer.')->middleware(['auth:sanctum', 'api.a
         Route::post('{bookingId}/cancel', 'cancel')->whereNumber('bookingId')->name('cancel');
         Route::post('{bookingId}/reschedule', 'reschedule')->whereNumber('bookingId')->name('reschedule');
         Route::post('{bookingId}/rate', 'rate')->whereNumber('bookingId')->name('rate');
+    });
+
+    // دوره‌های درمانی (بسته‌ی ب): بسته‌ها و خرید فقط با امکان پلن؛ «دوره‌های من»، پرداخت و رزرو جلسه همیشه
+    Route::controller(CustomerCourseController::class)->group(function () {
+        Route::middleware('feature:treatment_courses,hide')->group(function () {
+            Route::get('courses/packages', 'packages')->name('courses.packages');
+            Route::post('courses/packages/{packageId}/purchase', 'purchase')->whereNumber('packageId')->name('courses.purchase');
+        });
+        Route::get('courses', 'index')->name('courses.index');
+        Route::get('courses/{courseId}', 'show')->whereNumber('courseId')->name('courses.show');
+        Route::get('courses/{courseId}/specialists', 'specialists')->whereNumber('courseId')->name('courses.specialists');
+        Route::get('courses/{courseId}/dates', 'dates')->whereNumber('courseId')->name('courses.dates');
+        Route::get('courses/{courseId}/slots', 'slots')->whereNumber('courseId')->name('courses.slots');
+        Route::post('courses/{courseId}/bookings', 'book')->whereNumber('courseId')->name('courses.book');
+        Route::get('courses/{courseId}/pay', 'payOptions')->whereNumber('courseId')->name('courses.pay.options');
+        Route::post('courses/{courseId}/pay', 'pay')->whereNumber('courseId')->name('courses.pay');
+        Route::get('course-photos/{photoId}', 'photo')->whereNumber('photoId')->name('courses.photos.show');
+        Route::delete('course-photos/{photoId}', 'destroyPhoto')->whereNumber('photoId')->name('courses.photos.destroy');
     });
 
     Route::controller(CustomerPaymentController::class)->group(function () {

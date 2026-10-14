@@ -93,6 +93,32 @@ class AppPaymentController extends Controller
             : number_format($amount).' تومان به کیف پول شما اضافه شد.');
     }
 
+    /** پرداخت دوره‌ی درمانی از اپ (بسته‌ی ب) — همان CoursePaymentService وب */
+    public function course(Request $request, \App\Services\Courses\CoursePaymentService $coursePayments): Response
+    {
+        $transaction = $this->transaction($request, 'course');
+        if (! $transaction) {
+            return $this->page((string) $request->query('tx'), 'failed', 'course', 'پرداخت پیدا نشد', 'به اپ برگردید و وضعیت دوره را ببینید.');
+        }
+
+        $request->merge(['tx' => $transaction->public_id]);
+
+        try {
+            $outcome = $coursePayments->finalize($request);
+        } catch (\Throwable $e) {
+            Log::error('App course payment callback failed', ['transaction_id' => $transaction->id, 'error' => $e->getMessage()]);
+            $outcome = ['state' => 'failed', 'message' => 'خطا در تأیید پرداخت. وضعیت دوره را در اپ ببینید.'];
+        }
+
+        $title = match ($outcome['state']) {
+            'paid' => 'پرداخت انجام شد',
+            'refunded' => 'مبلغ به کیف پول برگشت داده شد',
+            default => 'پرداخت ناموفق بود',
+        };
+
+        return $this->page($transaction->public_id, $outcome['state'], 'course', $title, $outcome['message']);
+    }
+
     private function transaction(Request $request, string $purpose): ?PaymentTransaction
     {
         $publicId = $request->query('tx');

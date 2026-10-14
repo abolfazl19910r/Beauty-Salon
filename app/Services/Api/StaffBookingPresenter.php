@@ -48,6 +48,8 @@ class StaffBookingPresenter
             'notes' => $booking->notes,
             'cancellation_reason' => $booking->cancellation_reason,
             'cancelled_by' => $booking->cancelled_by,
+            // جلسه‌ی دوره‌ی درمانی (بسته‌ی ب) — null برای نوبت عادی
+            'course' => CoursePresenter::bookingCourse($booking),
             'actions' => [
                 'confirm' => $booking->status === 'pending',
                 'cancel' => ! in_array($booking->status, ['cancelled', 'completed'], true),

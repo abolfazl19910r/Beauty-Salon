@@ -110,7 +110,7 @@ class CustomerPaymentController extends CustomerController
             ->where('public_id', $publicId)
             ->where('user_id', $this->customer($request)->id)
             ->where('salon_id', $this->salon()->id)
-            ->whereIn('purpose', ['booking', 'wallet_charge'])
+            ->whereIn('purpose', ['booking', 'wallet_charge', 'course'])
             ->first();
 
         if (! $transaction) {
@@ -135,6 +135,15 @@ class CustomerPaymentController extends CustomerController
                 $data['state'] = 'pending';
             }
             $data['booking'] = $booking ? CustomerPresenter::booking($booking) : null;
+        } elseif ($transaction->purpose === 'course') {
+            // دوره‌ی درمانی (بسته‌ی ب): پرداخت تأییدشده‌ای که هنوز روی دوره ثبت نشده ← pending (اپ دوباره می‌پرسد)
+            $course = \App\Models\CustomerCourse::query()->find($transaction->payable_id);
+            $recorded = $course && $course->payments()->withoutGlobalScopes()->where('payment_transaction_id', $transaction->id)->exists();
+            if ($state === 'paid' && ! $recorded) {
+                $data['state'] = 'pending'; // برگشت به کیف پول خودش status=refunded تراکنش است
+            }
+            $data['course'] = $course ? \App\Services\Api\CoursePresenter::course($course) : null;
+            $data['wallet_balance'] = (float) ($this->customer($request)->wallet()->first()?->balance ?? 0);
         } else {
             $data['credited'] = $transaction->wallet_state === WalletChargeService::CREDITED;
             if ($state === 'paid' && ! $data['credited']) {
