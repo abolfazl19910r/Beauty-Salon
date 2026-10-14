@@ -155,6 +155,7 @@ class DemoRequestTest extends TestCase
     public function test_repeats_and_bots_do_not_notify_and_without_an_address_no_email_goes_out(): void
     {
         Notification::fake();
+        config(['brand.demo_notify_email' => null]); // مستقل از BRAND_DEMO_NOTIFY_EMAIL در .env لوکال
         $admin = $this->superAdmin();
 
         $this->postJson(route('demo-requests.store'), $this->valid())->assertCreated();
