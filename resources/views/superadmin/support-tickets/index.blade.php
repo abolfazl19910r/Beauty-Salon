@@ -10,7 +10,7 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
         <div class="sa-card">
             <p style="color: var(--sa-text-dim);">باز</p>
-            <p class="text-xl font-bold mt-1" style="color: #D97706;">{{ $stats['open'] }}</p>
+            <p class="text-xl font-bold mt-1" style="color: var(--sa-warn);">{{ $stats['open'] }}</p>
         </div>
         <div class="sa-card">
             <p style="color: var(--sa-text-dim);">در حال بررسی</p>
@@ -82,7 +82,7 @@
                         <td class="py-3 px-4">{{ $ticket->priority_text }}</td>
                         <td class="py-3 px-4">
                             @if ($ticket->isOpen())
-                                <span style="color: #D97706;">{{ $ticket->status_text }}</span>
+                                <span style="color: var(--sa-warn);">{{ $ticket->status_text }}</span>
                             @elseif ($ticket->isInProgress())
                                 <span style="color: var(--sa-accent);">{{ $ticket->status_text }}</span>
                             @elseif ($ticket->isResolved())

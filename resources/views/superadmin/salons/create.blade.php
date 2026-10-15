@@ -119,8 +119,8 @@
     @push('styles')
         <style>
             .check-status { font-size: .78rem; margin-top: .3rem; min-height: 1em; }
-            .check-status.ok { color: #4ADE80; }
-            .check-status.bad { color: #F87171; }
+            .check-status.ok { color: var(--sa-success); }
+            .check-status.bad { color: var(--sa-danger); }
             .check-status.pending { color: var(--sa-text-dim); }
         </style>
     @endpush

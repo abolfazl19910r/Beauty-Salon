@@ -27,6 +27,8 @@ class AdminPaymentAttentionController extends Controller
         $transactions = PaymentTransaction::query()
             ->where('salon_id', $current->get()->id)
             ->where('needs_attention', true)
+            // اشتراک و بسته‌ی پیامک به درگاه پلتفرم می‌روند؛ رسیدگی‌شان در پنل ابرمدیر است (۲۰۲۶-۱۰-۱۵)
+            ->whereNotIn('purpose', \App\Services\SuperAdmin\PlatformOverview::PLATFORM_PURPOSES)
             ->with('user')
             ->latest('updated_at')
             ->paginate(20);
@@ -46,6 +48,7 @@ class AdminPaymentAttentionController extends Controller
         $tx = PaymentTransaction::query()
             ->where('salon_id', $current->get()->id)
             ->where('needs_attention', true)
+            ->whereNotIn('purpose', \App\Services\SuperAdmin\PlatformOverview::PLATFORM_PURPOSES)
             ->findOrFail($transactionId);
 
         if ($data['action'] === 'wallet_credit') {

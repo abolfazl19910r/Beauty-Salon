@@ -37,4 +37,28 @@
             <div><button type="submit" class="sa-btn">ذخیره</button></div>
         </form>
     </div>
+
+    <div class="sa-card p-6 mt-6" style="max-width: 42rem;" data-bot-status>
+        <h2 class="font-bold mb-1">ربات اعلان (بله / تلگرام)</h2>
+        <p class="text-sm mb-4" style="color: var(--sa-text-dim);">روشن یا خاموش بودن از کلیدهای <span dir="ltr">BALE_BOT_TOKEN</span> و <span dir="ltr">TELEGRAM_BOT_TOKEN</span> در فایل .env سرور است؛ اینجا فقط نمایش.</p>
+        <table class="w-full text-sm text-right">
+            <thead><tr style="color: var(--sa-text-dim);"><th class="py-2 px-3">پیام‌رسان</th><th class="py-2 px-3">وضعیت</th><th class="py-2 px-3">نام ربات</th><th class="py-2 px-3">کاربران وصل</th></tr></thead>
+            <tbody>
+            @foreach (['bale' => 'بله', 'telegram' => 'تلگرام'] as $key => $label)
+                <tr style="border-top: 1px solid var(--sa-border);">
+                    <td class="py-2 px-3 font-bold">{{ $label }}</td>
+                    <td class="py-2 px-3">
+                        @if (in_array($key, $bot['enabled'], true))
+                            <span style="color: var(--sa-success);">روشن</span>
+                        @else
+                            <span style="color: var(--sa-text-dim);">خاموش</span>
+                        @endif
+                    </td>
+                    <td class="py-2 px-3" dir="ltr" style="text-align: right;">{{ $bot['usernames'][$key] ? '@'.$bot['usernames'][$key] : '—' }}</td>
+                    <td class="py-2 px-3">{{ number_format($bot['links'][$key] ?? 0) }}</td>
+                </tr>
+            @endforeach
+            </tbody>
+        </table>
+    </div>
 @endsection

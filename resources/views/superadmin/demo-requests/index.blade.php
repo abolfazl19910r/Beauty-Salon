@@ -10,7 +10,7 @@
     <div class="grid grid-cols-2 gap-4 mb-5" style="max-width: 32rem;">
         <div class="sa-card">
             <p style="color: var(--sa-text-dim);">پیگیری‌نشده</p>
-            <p class="text-xl font-bold mt-1" style="color: #D97706;">{{ to_persian_num((string) $stats['open']) }}</p>
+            <p class="text-xl font-bold mt-1" style="color: var(--sa-warn);">{{ to_persian_num((string) $stats['open']) }}</p>
         </div>
         <div class="sa-card">
             <p style="color: var(--sa-text-dim);">پیگیری‌شده</p>

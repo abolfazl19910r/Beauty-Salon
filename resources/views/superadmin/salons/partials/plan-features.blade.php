@@ -31,7 +31,7 @@
     <div class="flex flex-wrap gap-2 mb-4">
         @foreach (\App\Support\Features\Feature::cases() as $feature)
             @php $on = in_array($feature->value, $enabledFeatures, true); @endphp
-            <span class="px-2 py-1 rounded-full text-xs" style="{{ $on ? 'background: rgba(34,197,94,0.15); color:#86EFAC;' : 'background: var(--sa-bg); color: var(--sa-text-dim);' }}">
+            <span class="px-2 py-1 rounded-full text-xs" style="{{ $on ? 'background: var(--sa-success-bg); color: var(--sa-success);' : 'background: var(--sa-bg); color: var(--sa-text-dim);' }}">
                 {{ $on ? '✓' : '✗' }} {{ $feature->label() }}
             </span>
         @endforeach

@@ -1,56 +1,113 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl" class="rtl">
 <head>
-    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css" rel="stylesheet" type="text/css" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>پنل مدیریت کل {{ config('brand.name') }} | @yield('title')</title>
     @include('partials.platform-icons')
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     @vite(['resources/css/app.css'])
     @stack('styles')
+    <script>
+    (function(){var d=document.documentElement,t=null;try{t=new URLSearchParams(location.search).get('theme');if(t!=='light'&&t!=='dark')t=localStorage.getItem('mahru-theme')}catch(e){}
+    if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'}d.dataset.theme=t})();
+    </script>
+    <link rel="preload" href="{{ asset('fonts/mahru/Vazirmatn-Regular.woff2') }}" as="font" type="font/woff2" crossorigin>
     <style>
-        :root {
-            /* ⭐ Design tokens from Rasta_unified_prompt.md's SaaS section — deliberately dark +
-               gold, distinct from the admin panel's light theme, so nobody mistakes which panel
-               they're in. */
-            --sa-bg: #0F172A;
-            --sa-surface: #1E293B;
-            --sa-border: #334155;
-            --sa-text: #F1F5F9;
-            --sa-text-dim: #94A3B8;
-            --sa-accent: #C9A24B;
-            --sa-accent-hover: #E6CD8A;
-            --sa-danger: #EF4444;
-            --sa-success: #22C55E;
+        @font-face{font-family:"Mahru";src:url("{{ asset('fonts/mahru/Vazirmatn-Regular.woff2') }}") format("woff2");font-weight:400;font-display:swap}
+        @font-face{font-family:"Mahru";src:url("{{ asset('fonts/mahru/Vazirmatn-Medium.woff2') }}") format("woff2");font-weight:500;font-display:swap}
+        @font-face{font-family:"Mahru";src:url("{{ asset('fonts/mahru/Vazirmatn-SemiBold.woff2') }}") format("woff2");font-weight:600;font-display:swap}
+        @font-face{font-family:"Mahru";src:url("{{ asset('fonts/mahru/Vazirmatn-Bold.woff2') }}") format("woff2");font-weight:700;font-display:swap}
+        @font-face{font-family:"Mahru";src:url("{{ asset('fonts/mahru/Vazirmatn-ExtraBold.woff2') }}") format("woff2");font-weight:800 900;font-display:swap}
+
+        /* پنل ابرمدیر (۲۰۲۶-۱۰-۱۵): سفید + آبی کم‌رنگ + آبی نفتی، با تم تیره‌ی «نفتی شب» — عمداً جدا از طلایی پنل سالن‌ها
+           تا معلوم باشد کجایی. همان کلید localStorage «mahru-theme» و پیش‌فرض تنظیم دستگاه. */
+        :root, html[data-theme=light] {
+            color-scheme: light;
+            --sa-bg: #F2F7FA;          /* آبی خیلی کم‌رنگ */
+            --sa-surface: #FFFFFF;
+            --sa-soft: #E4F0F6;        /* آبی کم‌رنگ: هاور، ردیف فعال، سرستون، برچسب */
+            --sa-border: #D3E2EA;
+            --sa-text: #0F2F3A;
+            --sa-text-dim: #557280;
+            --sa-accent: #0E5A6E;      /* آبی نفتی */
+            --sa-accent-hover: #0A4757;
+            --sa-on-accent: #FFFFFF;
+            --sa-side: #0D4B5C;        /* منوی کناری نفتی */
+            --sa-side-text: #CFE6EE;
+            --sa-danger: #B4372A;
+            --sa-success: #23775A;
+            --sa-warn: #A86410;
+            --sa-danger-bg: #FBECEA;
+            --sa-success-bg: #E6F4EE;
+            --sa-shadow: 0 10px 30px -22px rgba(14, 90, 110, .45);
+        }
+        html[data-theme=dark] {
+            color-scheme: dark;
+            --sa-bg: #0A1D24;          /* نفتی شب */
+            --sa-surface: #0F2A33;
+            --sa-soft: #15404C;
+            --sa-border: #1E4754;
+            --sa-text: #E4F1F5;
+            --sa-text-dim: #8DB0BC;
+            --sa-accent: #63B7CE;      /* نفتی روشن روی زمینه‌ی تیره */
+            --sa-accent-hover: #82C8DB;
+            --sa-on-accent: #05222A;
+            --sa-side: #072630;
+            --sa-side-text: #A7C9D4;
+            --sa-danger: #E99083;
+            --sa-success: #72C9A2;
+            --sa-warn: #E5B262;
+            --sa-danger-bg: rgba(233, 144, 131, .12);
+            --sa-success-bg: rgba(114, 201, 162, .12);
+            --sa-shadow: 0 18px 40px -24px rgba(0, 0, 0, .8);
         }
 
-        body { background: var(--sa-bg); color: var(--sa-text); font-family: 'Vazir', sans-serif; }
+        html { background: var(--sa-bg); }
+        body { background: var(--sa-bg); color: var(--sa-text); font-family: "Mahru", "Vazirmatn", system-ui, sans-serif; -webkit-font-smoothing: antialiased; transition: background-color .3s ease, color .3s ease; }
 
-        .sa-card { background: var(--sa-surface); border: 1px solid var(--sa-border); border-radius: 0.75rem; }
+        .sa-card { background: var(--sa-surface); border: 1px solid var(--sa-border); border-radius: 16px; box-shadow: var(--sa-shadow); }
         .sa-input {
-            background: var(--sa-bg); border: 1px solid var(--sa-border); color: var(--sa-text);
-            border-radius: 0.5rem; padding: 0.6rem 0.9rem; width: 100%;
+            background: var(--sa-surface); border: 1px solid var(--sa-border); color: var(--sa-text);
+            border-radius: 10px; padding: 0.6rem 0.9rem; width: 100%;
         }
-        .sa-input:focus { outline: none; border-color: var(--sa-accent); }
+        .sa-input:focus { outline: none; border-color: var(--sa-accent); box-shadow: 0 0 0 3px rgba(14, 90, 110, .14); }
         .sa-label { color: var(--sa-text-dim); font-size: 0.85rem; margin-bottom: 0.3rem; display: block; }
         .sa-btn {
-            background: var(--sa-accent); color: #0F172A; font-weight: 600; padding: 0.6rem 1.5rem;
-            border-radius: 0.5rem; transition: background 0.15s; display: inline-block;
+            background: var(--sa-accent); color: var(--sa-on-accent); font-weight: 700; padding: 0.6rem 1.5rem;
+            border-radius: 10px; transition: background 0.15s; display: inline-block;
         }
         .sa-btn:hover { background: var(--sa-accent-hover); }
-        .sa-nav-link { color: var(--sa-text-dim); padding: 0.7rem 1rem; display: block; border-right: 3px solid transparent; }
-        .sa-nav-link:hover, .sa-nav-link.active { color: var(--sa-text); border-right-color: var(--sa-accent); background: rgba(201,162,75,0.08); }
+        .sa-side { background: var(--sa-side); }
+        .sa-nav-link { color: var(--sa-side-text); padding: 0.7rem 1rem; display: block; border-radius: 10px; margin-bottom: 2px; transition: background .15s, color .15s; }
+        .sa-nav-link:hover { color: #FFFFFF; background: rgba(255, 255, 255, .08); }
+        .sa-nav-link.active { color: var(--sa-accent); background: var(--sa-soft); font-weight: 700; }
+        /* دکمه‌هایی که با رنگ اصلی پر شده‌اند: متن سفید */
+        [style*="background: var(--sa-accent)"], [style*="background:var(--sa-accent)"] { color: var(--sa-on-accent) !important; }
+        table thead { background: var(--sa-soft); }
+        .sa-badge { border-radius: 999px; padding: 0 .5rem; font-size: .75rem; font-weight: 700; margin-inline-start: .35rem; background: var(--sa-soft); color: var(--sa-accent); }
+        .sa-badge-bad { background: var(--sa-danger); color: #FFFFFF; }
+        /* ورودی‌های بی‌کلاس (پلاگین forms پس‌زمینه‌ی سفید ثابت می‌دهد) */
+        input:not([type=checkbox]):not([type=radio]):not([type=file]), select, textarea { background-color: var(--sa-surface); color: var(--sa-text); border-color: var(--sa-border); }
+        select option { background: var(--sa-surface); color: var(--sa-text); }
+        input[type=checkbox], input[type=radio] { accent-color: var(--sa-accent); color: var(--sa-accent); }
+        input::placeholder, textarea::placeholder { color: var(--sa-text-dim); opacity: .7; }
+        /* دکمه‌ی تم (همان partials/mahru-theme-toggle) */
+        .m-theme-btn { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 999px;
+            border: 1px solid var(--sa-border); color: var(--sa-accent); background: var(--sa-soft); transition: transform .25s ease; }
+        .m-theme-btn:hover { transform: rotate(-12deg); }
+        .m-theme-btn svg { width: 18px; height: 18px; }
+        html[data-theme=dark] .m-theme-btn .m-sun, html:not([data-theme=dark]) .m-theme-btn .m-moon { display: none; }
+        ::selection { background: rgba(14, 90, 110, .2); }
     </style>
 </head>
 <body>
     <div class="flex min-h-screen">
-        <aside class="w-64 flex-shrink-0 hidden md:block" style="background: var(--sa-surface); border-left: 1px solid var(--sa-border);">
-            <div class="p-5 border-b" style="border-color: var(--sa-border);">
+        <aside class="w-64 flex-shrink-0 hidden md:block sa-side">
+            <div class="p-5 border-b" style="border-color: rgba(255,255,255,.12);">
                 <img src="{{ asset('brand/mahru-logo-horizontal-on-dark.svg') }}" alt="{{ config('brand.name') }}" style="height: 40px; width: auto; display: block; margin-bottom: .5rem;">
-                <div class="text-lg font-bold" style="color: var(--sa-accent);">پنل مدیریت کل</div>
+                <div class="text-lg font-bold" style="color: #FFFFFF;">پنل مدیریت کل</div>
             </div>
             <nav class="p-3">
                 <a href="{{ route('superadmin.dashboard') }}" class="sa-nav-link {{ request()->routeIs('superadmin.dashboard') ? 'active' : '' }}">داشبورد</a>
@@ -62,8 +119,20 @@
                 <a href="{{ route('superadmin.demo-requests.index') }}" class="sa-nav-link {{ request()->routeIs('superadmin.demo-requests.*') ? 'active' : '' }}">
                     درخواست‌های دمو
                     @if ($openDemoRequests > 0)
-                        <span data-demo-requests-badge style="background: var(--sa-accent); color: #0F172A; border-radius: 999px; padding: 0 .5rem; font-size: .75rem; font-weight: 700; margin-inline-start: .35rem;">{{ to_persian_num((string) $openDemoRequests) }}</span>
+                        <span data-demo-requests-badge style="background: var(--sa-soft); color: var(--sa-accent); border-radius: 999px; padding: 0 .5rem; font-size: .75rem; font-weight: 700; margin-inline-start: .35rem;">{{ to_persian_num((string) $openDemoRequests) }}</span>
                     @endif
+                </a>
+                <a href="{{ route('superadmin.sms.index') }}" class="sa-nav-link {{ request()->routeIs('superadmin.sms.*') ? 'active' : '' }}">پیامک سالن‌ها</a>
+                @php($saOverview = app(\App\Services\SuperAdmin\PlatformOverview::class))
+                @php($saAttention = $saOverview->attentionQuery()->count())
+                @php($saFailedJobs = $saOverview->failedJobsCount())
+                <a href="{{ route('superadmin.payment-attention.index') }}" class="sa-nav-link {{ request()->routeIs('superadmin.payment-attention.*') ? 'active' : '' }}">
+                    پرداخت‌های نیازمند بررسی
+                    @if ($saAttention > 0)<span data-attention-badge class="sa-badge sa-badge-bad">{{ to_persian_num((string) $saAttention) }}</span>@endif
+                </a>
+                <a href="{{ route('superadmin.failed-jobs.index') }}" class="sa-nav-link {{ request()->routeIs('superadmin.failed-jobs.*') ? 'active' : '' }}">
+                    کارهای ناموفق صف
+                    @if ($saFailedJobs > 0)<span data-failed-jobs-badge class="sa-badge sa-badge-bad">{{ to_persian_num((string) $saFailedJobs) }}</span>@endif
                 </a>
                 <a href="{{ route('superadmin.settings.edit') }}" class="sa-nav-link {{ request()->routeIs('superadmin.settings.*') ? 'active' : '' }}">تنظیمات پلتفرم</a>
             </nav>
@@ -73,6 +142,7 @@
             <header class="flex items-center justify-between px-6 py-4" style="background: var(--sa-surface); border-bottom: 1px solid var(--sa-border);">
                 <h1 class="text-lg font-bold">@yield('title')</h1>
                 <div class="flex items-center gap-4">
+                    @include('partials.mahru-theme-toggle')
                     <span class="text-sm" style="color: var(--sa-text-dim);">{{ auth()->user()->name }}</span>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
@@ -83,13 +153,13 @@
 
             <main class="flex-1 p-6">
                 @if (session('success'))
-                    <div class="mb-4 p-4 rounded-lg" style="background: rgba(34,197,94,0.1); border: 1px solid var(--sa-success); color: var(--sa-success);">
+                    <div class="mb-4 p-4 rounded-lg" style="background: var(--sa-success-bg); border: 1px solid var(--sa-success); color: var(--sa-success);">
                         {{ session('success') }}
                     </div>
                 @endif
 
                 @if (session('error') || $errors->any())
-                    <div class="mb-4 p-4 rounded-lg" style="background: rgba(239,68,68,0.1); border: 1px solid var(--sa-danger); color: #FCA5A5;">
+                    <div class="mb-4 p-4 rounded-lg" style="background: var(--sa-danger-bg); border: 1px solid var(--sa-danger); color: var(--sa-danger);">
                         @if (session('error'))
                             {{ session('error') }}
                         @endif

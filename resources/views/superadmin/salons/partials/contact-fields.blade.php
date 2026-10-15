@@ -42,7 +42,7 @@
             @endif
             <input type="file" name="logo_dark" accept="image/png,image/jpeg,image/webp" class="text-sm">
         </div>
-        @error('logo_dark') <p class="text-xs mt-1" style="color:#b91c1c;">{{ $message }}</p> @enderror
+        @error('logo_dark') <p class="text-xs mt-1" style="color: var(--sa-danger);">{{ $message }}</p> @enderror
         @if ($salon?->logo_dark_path)
             <label class="flex items-center gap-2 mt-2 text-sm">
                 <input type="checkbox" name="remove_logo_dark" value="1">

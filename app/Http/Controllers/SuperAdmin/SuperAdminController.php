@@ -45,7 +45,9 @@ class SuperAdminController extends Controller
 
         $recentSalons = $this->salonRepository->getRecentWithSpecialistCount(5);
 
-        return view('superadmin.dashboard', compact('stats', 'recentSalons'));
+        $overview = app(\App\Services\SuperAdmin\PlatformOverview::class)->dashboard();
+
+        return view('superadmin.dashboard', compact('stats', 'recentSalons', 'overview'));
     }
 
     /**

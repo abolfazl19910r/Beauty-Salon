@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\SuperAdmin\DemoRequestController;
+use App\Http\Controllers\SuperAdmin\PlatformOperationsController;
 use App\Http\Controllers\SuperAdmin\PlatformSettingsController;
 use App\Http\Controllers\SuperAdmin\SuperAdminController;
 use App\Http\Controllers\SuperAdmin\SuperAdminPaymentController;
@@ -65,3 +66,12 @@ Route::delete('/plans/{plan}', [SuperAdminPlanController::class, 'destroy'])->na
 Route::put('/salons/{salon}/plan', [SuperAdminPlanController::class, 'assign'])->name('salons.plan');
 Route::post('/salons/{salon}/feature-overrides', [SuperAdminPlanController::class, 'storeOverride'])->name('salons.feature-overrides.store');
 Route::delete('/salons/{salon}/feature-overrides/{override}', [SuperAdminPlanController::class, 'destroyOverride'])->name('salons.feature-overrides.destroy');
+
+// ⭐ بخش‌هایی که داده‌شان بود ولی در ابرمدیر دیده نمی‌شد (۲۰۲۶-۱۰-۱۵)
+Route::get('/sms', [PlatformOperationsController::class, 'sms'])->name('sms.index');
+Route::get('/payment-attention', [PlatformOperationsController::class, 'attention'])->name('payment-attention.index');
+Route::post('/payment-attention/{transaction}/resolve', [PlatformOperationsController::class, 'resolveAttention'])->whereNumber('transaction')->name('payment-attention.resolve');
+Route::get('/failed-jobs', [PlatformOperationsController::class, 'failedJobs'])->name('failed-jobs.index');
+Route::post('/failed-jobs/retry-all', [PlatformOperationsController::class, 'retryAllFailedJobs'])->name('failed-jobs.retry-all');
+Route::post('/failed-jobs/{uuid}/retry', [PlatformOperationsController::class, 'retryFailedJob'])->name('failed-jobs.retry');
+Route::delete('/failed-jobs/{uuid}', [PlatformOperationsController::class, 'forgetFailedJob'])->name('failed-jobs.forget');

@@ -70,14 +70,38 @@ class MahruThemeTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('/style="[^"]*#(334155|F8FAFC|E2E8F0|1E293B)\b/i', $html);
     }
 
-    /** پنل ابرمدیر بیرون از بسته‌ی ه است (قالب سفید و آبی جدا، پس از پیش‌نمایش) */
-    public function test_the_super_admin_panel_is_not_on_the_salon_theme(): void
+    /**
+     * پنل ابرمدیر (۲۰۲۶-۱۰-۱۵): ترکیب جدای سفید/آبی کم‌رنگ/نفتی با تم تیره، نه طلایی سالن‌ها؛ همان کلید تم و دکمه؛ بی CDN.
+     */
+    public function test_the_super_admin_panel_has_its_own_petrol_theme(): void
     {
         $super = User::factory()->create(['is_admin' => true]);
         $super->roles()->attach(\App\Models\Role::firstOrCreate(['name' => 'super-admin'], ['label' => 'سوپر ادمین']));
 
-        $html = $this->actingAs($super)->get(route('superadmin.plans.index'))->assertOk()->getContent();
+        foreach ([route('superadmin.dashboard'), route('superadmin.plans.index'), route('superadmin.salons.index')] as $url) {
+            $html = $this->actingAs($super)->get($url)->assertOk()->getContent();
 
-        $this->assertStringNotContainsString('data-m-theme-toggle', $html);
+            $this->assertStringContainsString('--sa-accent: #0E5A6E', $html, 'نفتی تم روشن');
+            $this->assertStringContainsString('html[data-theme=dark]', $html, 'تم تیره');
+            $this->assertStringContainsString("localStorage.getItem('mahru-theme')", $html);
+            $this->assertStringContainsString('data-m-theme-toggle', $html);
+            $this->assertStringContainsString('fonts/mahru/Vazirmatn-Regular.woff2', $html);
+            $this->assertStringNotContainsString('--admin-accent:rgb(var(--m-gold))', $html, 'طلایی سالن‌ها نیست');
+            $this->assertStringNotContainsString('cdn.jsdelivr.net', $html);
+        }
+    }
+
+    /** کتابخانه‌های جاوااسکریپت پنل‌ها از Vite (npm) می‌آیند، نه jsDelivr (قانون ۴ MAHRU_UI_PROMPT) */
+    public function test_panel_pages_load_no_script_or_style_from_a_cdn(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        foreach ([route('admin.dashboard'), route('admin.notifications.index'), route('admin.bookings.index')] as $url) {
+            $html = $this->actingAs($admin)->get($url)->assertOk()->getContent();
+            $this->assertDoesNotMatchRegularExpression('#(src|href)="https://(cdn\.jsdelivr\.net|unpkg\.com|cdnjs\.cloudflare\.com|fonts\.googleapis\.com)#', $html);
+        }
+
+        $specialist = \App\Models\Specialist::factory()->create();
+        $html = $this->actingAs(User::find($specialist->user_id))->get(route('specialist.my-dashboard'))->assertOk()->getContent();
+        $this->assertStringNotContainsString('cdn.jsdelivr.net', $html);
     }
 }

@@ -19,6 +19,8 @@ class PlatformSettingsController extends Controller
         return view('superadmin.settings.edit', [
             'fields' => PlatformSettings::FIELDS,
             'stored' => PlatformSettings::stored(),
+            // ⭐ ۲۰۲۶-۱۰-۱۵: وضعیت ربات بله/تلگرام (قبلاً فقط در .env معلوم بود)
+            'bot' => app(\App\Services\SuperAdmin\PlatformOverview::class)->botStatus(),
         ]);
     }
 

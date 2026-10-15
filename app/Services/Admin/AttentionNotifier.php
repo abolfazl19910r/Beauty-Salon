@@ -18,7 +18,13 @@ class AttentionNotifier
 {
     public function paymentFlagged(int $transactionId): void
     {
-        $salonId = PaymentTransaction::withoutGlobalScopes()->whereKey($transactionId)->value('salon_id');
+        $tx = PaymentTransaction::withoutGlobalScopes()->whereKey($transactionId)->first(['salon_id', 'purpose']);
+        $salonId = $tx?->salon_id;
+
+        // پرداخت اشتراک/بسته‌ی پیامک مال پلتفرم است؛ مدیر سالن کاری با آن ندارد (پنل ابرمدیر «پرداخت‌های نیازمند بررسی»)
+        if ($tx && in_array($tx->purpose, \App\Services\SuperAdmin\PlatformOverview::PLATFORM_PURPOSES, true)) {
+            return;
+        }
 
         if ($salonId && $this->claim(PaymentTransaction::withoutGlobalScopes(), $transactionId)) {
             $this->send('payment', $transactionId, (int) $salonId);
