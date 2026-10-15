@@ -12,7 +12,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Queue\SerializesModels;
 
-class WithdrawalRejectedNotification extends Notification implements ShouldQueue
+class WithdrawalRejectedNotification extends Notification implements \App\Notifications\Contracts\PushesToApp, ShouldQueue
 {
     use Queueable, QueuesOnlySmsChannel, RespectsNotificationSettings, SerializesModels;
 
@@ -54,5 +54,16 @@ class WithdrawalRejectedNotification extends Notification implements ShouldQueue
         $message = \App\Support\Sms\SmsText::withdrawalRejected((float) $this->withdrawalRequest->amount, $this->reason);
 
         return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId(), \App\Support\Features\Feature::SmsStaff);
+    }
+
+    /** پوش اپ (بسته‌ی ۴): کلید رویداد برای سوییچ «اپ» و دسته‌ی پیام */
+    public function pushKey(object $notifiable): string
+    {
+        return \App\Support\Notifications\NotificationEvents::WITHDRAWAL_REJECTED_SPECIALIST;
+    }
+
+    public function pushData(): array
+    {
+        return ['withdrawal_id' => $this->withdrawalRequest->id];
     }
 }

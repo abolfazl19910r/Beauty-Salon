@@ -16,6 +16,10 @@
                     برای هر رویداد مشخص کنید که آیا پیامک ارسال شود، نوتیفیکیشن داخل‌برنامه‌ای ثبت شود، و/یا از طریق ربات (تلگرام/بله) اطلاع‌رسانی شود.
                     خاموش‌کردن یک ستون فقط همان کانال را برای همان رویداد غیرفعال می‌کند؛ رویدادهای دیگر تحت تأثیر قرار نمی‌گیرند.
                 </p>
+                <p class="text-sm mt-1" style="color:var(--admin-text-dim);" data-push-help>
+                    ستون «اپ»: مشتری یا متخصصی که اپ ماهرو را دارد، اعلان را در اپ می‌گیرد و پیامک فقط وقتی می‌رود که اپ رسید نفرستد
+                    (لغو و تغییر نوبت ۱ دقیقه، بقیه ۱۰ دقیقه؛ امتیاز، کد تخفیف و درخواست نظر فقط در اپ). پوش رایگان است و از سهمیه‌ی پیامک کم نمی‌کند.
+                </p>
             </div>
             <a href="{{ route('admin.sms-templates.index') }}" class="px-4 py-2 rounded-lg text-sm font-medium" style="border:1px solid var(--admin-accent); color:var(--admin-accent);">ویرایش متن پیامک‌ها{{ app(\App\Support\CurrentSalon::class)->get()?->hasFeature(\App\Support\Features\Feature::SmsTemplates) === false ? ' 🔒' : '' }}</a>
         </div>
@@ -48,6 +52,7 @@
                                 <th class="px-4 py-2.5 text-right font-medium" style="color:var(--admin-text-dim);">رویداد</th>
                                 <th class="px-4 py-2.5 text-center font-medium w-28" style="color:var(--admin-text-dim);">پیامک</th>
                                 <th class="px-4 py-2.5 text-center font-medium w-32" style="color:var(--admin-text-dim);">نوتیفیکیشن</th>
+                                <th class="px-4 py-2.5 text-center font-medium w-24" style="color:var(--admin-text-dim);" title="پوش در اپ‌های ماهرو و ماهرو همکار؛ پیامک فقط وقتی اپ رسید نفرستد">اپ</th>
                                 <th class="px-4 py-2.5 text-center font-medium w-24" style="color:var(--admin-text-dim);">ربات</th>
                             </tr>
                             </thead>
@@ -77,6 +82,14 @@
                                     <td class="px-4 py-3 text-center">
                                         <input type="checkbox" name="database[{{ $safeKey }}]" value="1"
                                                @checked($row?->database_enabled ?? true) class="w-4 h-4 rounded cursor-pointer" style="accent-color:var(--admin-accent);">
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        @if(\App\Services\Push\PushPolicy::hasAppColumn($key))
+                                            <input type="checkbox" name="push[{{ $safeKey }}]" value="1" data-push-toggle="{{ $key }}"
+                                                   @checked($row?->push_enabled ?? true) class="w-4 h-4 rounded cursor-pointer" style="accent-color:var(--admin-accent);">
+                                        @else
+                                            <span class="text-xs" style="color:var(--admin-text-light);">—</span>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         @if($botImplemented)

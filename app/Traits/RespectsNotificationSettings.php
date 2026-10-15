@@ -25,6 +25,12 @@ trait RespectsNotificationSettings
             $this->notificationSalonId($notifiable)
         );
 
+        // پوش اپ (بسته‌ی ۴): کانال پیامک حامل پوش هم هست؛ با پیامکِ خاموش ولی «اپ» روشن، برای گیرنده‌ی دارای اپ می‌ماند
+        if ($this instanceof \App\Notifications\Contracts\PushesToApp && in_array('sms', $base, true) && ! in_array('sms', $channels, true)
+            && app(\App\Services\Push\AppMessenger::class)->hasDevices($notifiable, $this->notificationSalonId($notifiable), $eventKey)) {
+            $channels[] = 'sms';
+        }
+
         // کانال ربات فقط وقتی گیرنده واقعاً بله/تلگرام را وصل کرده — ۲۰۲۶-۱۰-۰۱
         return app(\App\Services\Bot\BotMessenger::class)->onlyIfLinked($channels, $notifiable);
     }

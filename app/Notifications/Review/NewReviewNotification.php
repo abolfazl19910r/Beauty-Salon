@@ -12,7 +12,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Queue\SerializesModels;
 
-class NewReviewNotification extends Notification implements ShouldQueue
+class NewReviewNotification extends Notification implements \App\Notifications\Contracts\PushesToApp, ShouldQueue
 {
     use Queueable, QueuesOnlySmsChannel, RespectsNotificationSettings, SerializesModels;
 
@@ -58,5 +58,16 @@ class NewReviewNotification extends Notification implements ShouldQueue
         );
 
         return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId(), \App\Support\Features\Feature::SmsStaff);
+    }
+
+    /** پوش اپ (بسته‌ی ۴): کلید رویداد برای سوییچ «اپ» و دسته‌ی پیام */
+    public function pushKey(object $notifiable): string
+    {
+        return \App\Support\Notifications\NotificationEvents::REVIEW_NEW_SPECIALIST;
+    }
+
+    public function pushData(): array
+    {
+        return ['booking_id' => $this->booking->id];
     }
 }

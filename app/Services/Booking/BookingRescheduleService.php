@@ -68,9 +68,29 @@ class BookingRescheduleService
 
             $message = SmsText::rescheduledForCustomer($booking->fresh(['service']), $newStatus !== 'confirmed');
             app(BotMessenger::class)->send($booking->user, $message, NotificationEvents::BOOKING_RESCHEDULED_CUSTOMER, $booking->salon_id);
-            $this->smsService->send($booking->user->phone, $message, $booking->salon_id, \App\Support\Features\Feature::SmsCustomer);
+            // پوش اپ یا پیامک (بسته‌ی ۴). پیامک این پیام از پیش پشت سوییچ تنظیمات نبود (همان رفتار)؛ سوییچ «اپ» رویداد اعمال می‌شود.
+            $messenger = app(\App\Services\Push\AppMessenger::class);
+            $outgoing = new \App\Services\Push\Outgoing(
+                recipient: $booking->user,
+                phone: $booking->user->phone,
+                text: $message,
+                salonId: $booking->salon_id,
+                smsFeature: \App\Support\Features\Feature::SmsCustomer,
+                pushKey: NotificationEvents::BOOKING_RESCHEDULED_CUSTOMER,
+                // جابه‌جایی را خود مشتری کرده (وب یا اپ) — برای خودش فوری نیست
+                urgency: \App\Services\Push\PushUrgency::Normal,
+                data: ['booking_id' => $booking->id],
+                inbox: true,
+            );
+            $this->settingsAllowPush($booking) ? $messenger->deliver($outgoing) : $this->smsService->send($booking->user->phone, $message, $booking->salon_id, \App\Support\Features\Feature::SmsCustomer);
         });
 
         return $booking->refresh();
+    }
+
+    private function settingsAllowPush(Booking $booking): bool
+    {
+        return app(\App\Services\Notification\NotificationSettingService::class)
+            ->isEnabled(NotificationEvents::BOOKING_RESCHEDULED_CUSTOMER, 'push', $booking->salon_id);
     }
 }

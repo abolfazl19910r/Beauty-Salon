@@ -20,10 +20,24 @@ class DiscountCodeObserver
                 \App\Models\Salon::withoutGlobalScopes()->find($discountCode->salon_id)
             );
 
-            $this->smsService->send($discountCode->user->phone, $message, $discountCode->salon_id, \App\Support\Features\Feature::SmsCustomer);
+            $this->message($discountCode, $message);
         }
 
         $this->cacheService->flush();
+    }
+
+    /** کد تخفیف شخصی: برای کاربر اپ فقط پوش (در صندوق اعلان می‌ماند)؛ بی‌اپ همان پیامک — بسته‌ی ۴ */
+    private function message(DiscountCode $discountCode, string $text): void
+    {
+        app(\App\Services\Push\AppMessenger::class)->deliver(new \App\Services\Push\Outgoing(
+            recipient: $discountCode->user,
+            phone: $discountCode->user->phone,
+            text: $text,
+            salonId: $discountCode->salon_id,
+            smsFeature: \App\Support\Features\Feature::SmsCustomer,
+            pushKey: \App\Services\Push\PushPolicy::DISCOUNT_CODE_CUSTOMER,
+            inbox: true,
+        ));
     }
 
     public function updated(DiscountCode $discountCode): void
@@ -37,7 +51,7 @@ class DiscountCodeObserver
             if ($discountCode->user_id && $discountCode->user && $discountCode->user->phone) {
                 $message = \App\Support\Sms\SmsText::discountCodeUsedUp((string) $discountCode->code, \App\Models\Salon::withoutGlobalScopes()->find($discountCode->salon_id));
 
-                $this->smsService->send($discountCode->user->phone, $message, $discountCode->salon_id, \App\Support\Features\Feature::SmsCustomer);
+                $this->message($discountCode, $message);
             }
         }
 

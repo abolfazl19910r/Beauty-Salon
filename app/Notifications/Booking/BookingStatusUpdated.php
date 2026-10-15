@@ -12,7 +12,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Queue\SerializesModels;
 
-class BookingStatusUpdated extends Notification implements ShouldQueue
+class BookingStatusUpdated extends Notification implements \App\Notifications\Contracts\PushesToApp, ShouldQueue
 {
     use Queueable, QueuesOnlySmsChannel, RespectsNotificationSettings, SerializesModels;
 
@@ -103,5 +103,16 @@ class BookingStatusUpdated extends Notification implements ShouldQueue
             'cancelled' => 'نوبت شما لغو شد.',
             default => 'وضعیت نوبت تغییر کرد.'
         };
+    }
+
+    /** پوش اپ (بسته‌ی ۴): کلید رویداد برای سوییچ «اپ» و دسته‌ی پیام */
+    public function pushKey(object $notifiable): string
+    {
+        return \App\Support\Notifications\NotificationEvents::BOOKING_CONFIRMED_CUSTOMER;
+    }
+
+    public function pushData(): array
+    {
+        return ['booking_id' => $this->booking->id];
     }
 }

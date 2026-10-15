@@ -59,7 +59,8 @@ class CourseReminderService
             if (! $salon || ! $salon->hasActiveSubscription()) {
                 continue;
             }
-            if (! $this->settings->isEnabled(NotificationEvents::COURSE_REMINDER_CUSTOMER, 'sms', $salon->id)) {
+            if (! $this->settings->isEnabled(NotificationEvents::COURSE_REMINDER_CUSTOMER, 'sms', $salon->id)
+                && ! $this->settings->isEnabled(NotificationEvents::COURSE_REMINDER_CUSTOMER, 'push', $salon->id)) {
                 continue;
             }
 
@@ -175,7 +176,20 @@ class CourseReminderService
             return false;
         }
 
-        if (! $this->sms->send($course->user->phone, $text, $salon->id, Feature::SmsCustomer)) {
+        // پوش اپ یا پیامک (بسته‌ی ۴)؛ یادآوری دوره «عادی» است: پیامک فقط اگر اپ در ۱۰ دقیقه رسید نفرستد
+        $delivered = app(\App\Services\Push\AppMessenger::class)->deliver(new \App\Services\Push\Outgoing(
+            recipient: $course->user,
+            phone: $course->user->phone,
+            text: $text,
+            salonId: $salon->id,
+            smsFeature: Feature::SmsCustomer,
+            pushKey: NotificationEvents::COURSE_REMINDER_CUSTOMER,
+            settingsEvent: NotificationEvents::COURSE_REMINDER_CUSTOMER,
+            data: ['course_id' => $course->id],
+            inbox: true,
+        ));
+
+        if (! $delivered) {
             $row->delete();
 
             return null;

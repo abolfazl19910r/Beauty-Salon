@@ -13,7 +13,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Queue\SerializesModels;
 
-class BookingRescheduledNotification extends Notification implements ShouldQueue
+class BookingRescheduledNotification extends Notification implements \App\Notifications\Contracts\PushesToApp, ShouldQueue
 {
     use Queueable, QueuesOnlySmsChannel, RespectsNotificationSettings, SerializesModels;
 
@@ -67,5 +67,16 @@ class BookingRescheduledNotification extends Notification implements ShouldQueue
 
         return app(SMSService::class)->send($notifiable->phone, $message, $this->settingsSalonId(),
             $toSpecialist ? \App\Support\Features\Feature::SmsStaff : \App\Support\Features\Feature::SmsCustomer);
+    }
+
+    /** پوش اپ (بسته‌ی ۴): کلید رویداد برای سوییچ «اپ» و دسته‌ی پیام */
+    public function pushKey(object $notifiable): string
+    {
+        return $notifiable instanceof \App\Models\Specialist ? \App\Support\Notifications\NotificationEvents::BOOKING_RESCHEDULED_SPECIALIST : \App\Support\Notifications\NotificationEvents::BOOKING_RESCHEDULED_CUSTOMER;
+    }
+
+    public function pushData(): array
+    {
+        return ['booking_id' => $this->booking->id];
     }
 }

@@ -66,8 +66,28 @@ class SendBookingReminderJob implements ShouldQueue
         $bot->send($booking->user, $customerMessage, null, $booking->salon_id);
         $bot->send($booking->specialist, $specialistMessage, null, $booking->salon_id);
 
-        $customerSent = $smsService->send($booking->user->phone, $customerMessage, $booking->salon_id, \App\Support\Features\Feature::SmsReminders);
-        $specialistSent = $smsService->send($booking->specialist->phone, $specialistMessage, $booking->salon_id, \App\Support\Features\Feature::SmsReminders);
+        // پوش اپ یا پیامک (بسته‌ی ۴): یادآوری «فوری» است — بدون رسید در ۶۰ ثانیه پیامک. یادآوری مثل قبل سوییچ تنظیمات ندارد.
+        $messenger = app(\App\Services\Push\AppMessenger::class);
+        $customerSent = $messenger->deliver(new \App\Services\Push\Outgoing(
+            recipient: $booking->user,
+            phone: $booking->user->phone,
+            text: $customerMessage,
+            salonId: $booking->salon_id,
+            smsFeature: \App\Support\Features\Feature::SmsReminders,
+            pushKey: \App\Services\Push\PushPolicy::BOOKING_REMINDER_CUSTOMER,
+            data: ['booking_id' => $booking->id],
+            inbox: true,
+        ));
+        $specialistSent = $messenger->deliver(new \App\Services\Push\Outgoing(
+            recipient: $booking->specialist,
+            phone: $booking->specialist->phone,
+            text: $specialistMessage,
+            salonId: $booking->salon_id,
+            smsFeature: \App\Support\Features\Feature::SmsReminders,
+            pushKey: \App\Services\Push\PushPolicy::BOOKING_REMINDER_SPECIALIST,
+            data: ['booking_id' => $booking->id],
+            inbox: true,
+        ));
 
         // یادآوری پیامکی در پلن سالن نیست (بسته‌ی پلن‌ها) — نفرستادن عمدی است، نه خطا
         if (! \App\Models\Salon::featureEnabledFor($booking->salon_id, \App\Support\Features\Feature::SmsReminders)) {

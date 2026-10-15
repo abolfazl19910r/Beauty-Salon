@@ -36,7 +36,9 @@ class ReviewService
                 return false;
             }
 
-            if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_COMPLETED_REVIEW_REQUEST, 'sms', $booking->salon_id)) {
+            // پیامک و «اپ» هر دو خاموش ← چیزی نمی‌رود (بسته‌ی ۴: درخواست نظر برای کاربر اپ فقط پوش است)
+            if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_COMPLETED_REVIEW_REQUEST, 'sms', $booking->salon_id)
+                && ! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_COMPLETED_REVIEW_REQUEST, 'push', $booking->salon_id)) {
                 return false;
             }
 
@@ -51,7 +53,17 @@ class ReviewService
 
             $message = \App\Support\Sms\SmsText::reviewRequest($booking, $reviewUrl);
 
-            $sent = $this->smsService->send($booking->user->phone, $message, $booking->salon_id, \App\Support\Features\Feature::SmsCustomer);
+            $sent = app(\App\Services\Push\AppMessenger::class)->deliver(new \App\Services\Push\Outgoing(
+                recipient: $booking->user,
+                phone: $booking->user->phone,
+                text: $message,
+                salonId: $booking->salon_id,
+                smsFeature: \App\Support\Features\Feature::SmsCustomer,
+                pushKey: NotificationEvents::BOOKING_COMPLETED_REVIEW_REQUEST,
+                settingsEvent: NotificationEvents::BOOKING_COMPLETED_REVIEW_REQUEST,
+                data: ['booking_id' => $booking->id],
+                inbox: true,
+            ));
 
             if ($sent) {
                 $this->bookingRepository->update($booking, ['review_sent_at' => now()]);

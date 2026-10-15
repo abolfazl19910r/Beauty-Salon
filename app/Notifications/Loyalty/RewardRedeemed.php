@@ -11,7 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Queue\SerializesModels;
 
-class RewardRedeemed extends Notification implements ShouldQueue
+class RewardRedeemed extends Notification implements \App\Notifications\Contracts\PushesToApp, ShouldQueue
 {
     use Queueable, QueuesOnlySmsChannel, RespectsNotificationSettings, SerializesModels;
 
@@ -59,5 +59,16 @@ class RewardRedeemed extends Notification implements ShouldQueue
         );
 
         return app(SMSService::class)->send($notifiable->phone, $message, $salonId, \App\Support\Features\Feature::SmsCustomer);
+    }
+
+    /** پوش اپ (بسته‌ی ۴): کلید رویداد برای سوییچ «اپ» و دسته‌ی پیام */
+    public function pushKey(object $notifiable): string
+    {
+        return \App\Support\Notifications\NotificationEvents::LOYALTY_REWARD_REDEEMED_CUSTOMER;
+    }
+
+    public function pushData(): array
+    {
+        return [];
     }
 }

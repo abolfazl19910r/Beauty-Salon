@@ -11,6 +11,9 @@ use App\Models\WalletSetting;
 use App\Notifications\Booking\BookingNotification;
 use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Services\Notification\NotificationSettingService;
+use App\Services\Push\AppMessenger;
+use App\Services\Push\Outgoing;
+use App\Services\Push\PushUrgency;
 use App\Services\ReportCacheService;
 use App\Services\SMSService;
 use App\Support\Notifications\NotificationEvents;
@@ -455,26 +458,39 @@ class BookingObserver
         // ربات (اگر مشتری وصل کرده و کانال ربات این رویداد روشن است) جدا از پیامک — ۲۰۲۶-۱۰-۰۱
         $this->botMessage($booking, $message, NotificationEvents::BOOKING_CANCELLED_CUSTOMER);
 
-        if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_CANCELLED_CUSTOMER, 'sms', $booking->salon_id)) {
-            return;
-        }
-
-        $this->smsService->send($booking->user->phone, $message, $booking->salon_id, \App\Support\Features\Feature::SmsCustomer);
+        // پوش اپ یا پیامک (بسته‌ی ۴)؛ سوییچ «پیامک» و «اپ» این رویداد در AppMessenger. لغو به دست خود مشتری فوری نیست.
+        $this->appMessage(new Outgoing(
+            recipient: $booking->user,
+            phone: $booking->user->phone,
+            text: $message,
+            salonId: $booking->salon_id,
+            smsFeature: \App\Support\Features\Feature::SmsCustomer,
+            pushKey: NotificationEvents::BOOKING_CANCELLED_CUSTOMER,
+            settingsEvent: NotificationEvents::BOOKING_CANCELLED_CUSTOMER,
+            urgency: ($booking->cancelled_by ?? null) === 'customer' ? PushUrgency::Normal : PushUrgency::Urgent,
+            data: ['booking_id' => $booking->id],
+        ));
     }
 
     protected function sendSpecialistCancellationSMS(Booking $booking, string $cancelledBy): void
     {
-        if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_CANCELLED_SPECIALIST, 'sms', $booking->salon_id)) {
-            return;
-        }
-
         $specialist = $booking->specialist;
-        $user = $booking->user;
 
         $penalty = $cancelledBy === 'specialist' ? (float) ($booking->refund_details['specialist_penalty'] ?? 0) : 0.0;
         $message = \App\Support\Sms\SmsText::cancelledForSpecialist($booking, $cancelledBy, $penalty);
 
-        $this->smsService->send($specialist->phone, $message, $booking->salon_id, \App\Support\Features\Feature::SmsStaff);
+        // لغو به دست خود متخصص برای خودش فوری نیست
+        $this->appMessage(new Outgoing(
+            recipient: $specialist,
+            phone: $specialist->phone,
+            text: $message,
+            salonId: $booking->salon_id,
+            smsFeature: \App\Support\Features\Feature::SmsStaff,
+            pushKey: NotificationEvents::BOOKING_CANCELLED_SPECIALIST,
+            settingsEvent: NotificationEvents::BOOKING_CANCELLED_SPECIALIST,
+            urgency: $cancelledBy === 'specialist' ? PushUrgency::Normal : PushUrgency::Urgent,
+            data: ['booking_id' => $booking->id],
+        ));
     }
 
     protected function sendCustomerConfirmationSMS(Booking $booking): void
@@ -482,11 +498,17 @@ class BookingObserver
         $message = \App\Support\Sms\SmsText::bookingConfirmed($booking);
         $this->botMessage($booking, $message, NotificationEvents::BOOKING_CONFIRMED_CUSTOMER);
 
-        if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_CONFIRMED_CUSTOMER, 'sms', $booking->salon_id)) {
-            return;
-        }
-
-        $this->smsService->send($booking->user->phone, $message, $booking->salon_id, \App\Support\Features\Feature::SmsCustomer);
+        $this->appMessage(new Outgoing(
+            recipient: $booking->user,
+            phone: $booking->user->phone,
+            text: $message,
+            salonId: $booking->salon_id,
+            smsFeature: \App\Support\Features\Feature::SmsCustomer,
+            pushKey: NotificationEvents::BOOKING_CONFIRMED_CUSTOMER,
+            settingsEvent: NotificationEvents::BOOKING_CONFIRMED_CUSTOMER,
+            data: ['booking_id' => $booking->id],
+            inbox: true,
+        ));
     }
 
     protected function sendCustomerPendingSMS(Booking $booking): void
@@ -494,11 +516,27 @@ class BookingObserver
         $message = \App\Support\Sms\SmsText::bookingPending($booking);
         $this->botMessage($booking, $message, NotificationEvents::BOOKING_PAID_PENDING_APPROVAL_CUSTOMER);
 
-        if (! $this->notificationSettings->isEnabled(NotificationEvents::BOOKING_PAID_PENDING_APPROVAL_CUSTOMER, 'sms', $booking->salon_id)) {
+        $this->appMessage(new Outgoing(
+            recipient: $booking->user,
+            phone: $booking->user->phone,
+            text: $message,
+            salonId: $booking->salon_id,
+            smsFeature: \App\Support\Features\Feature::SmsCustomer,
+            pushKey: NotificationEvents::BOOKING_PAID_PENDING_APPROVAL_CUSTOMER,
+            settingsEvent: NotificationEvents::BOOKING_PAID_PENDING_APPROVAL_CUSTOMER,
+            data: ['booking_id' => $booking->id],
+            inbox: true,
+        ));
+    }
+
+    /** پوش اپ یا پیامک (بسته‌ی ۴)؛ خطای پوش هرگز جلوی بقیه‌ی کار observer را نمی‌گیرد. */
+    protected function appMessage(Outgoing $outgoing): void
+    {
+        if (! $outgoing->phone) {
             return;
         }
 
-        $this->smsService->send($booking->user->phone, $message, $booking->salon_id, \App\Support\Features\Feature::SmsCustomer);
+        app(AppMessenger::class)->deliver($outgoing);
     }
 
     /** پیام ربات به مشتری نوبت؛ خطای ربات هیچ‌وقت جلوی پیامک را نمی‌گیرد. */

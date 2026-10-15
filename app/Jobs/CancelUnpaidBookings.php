@@ -43,7 +43,7 @@ class CancelUnpaidBookings implements ShouldQueue
 
         foreach ($expiredBookings as $booking) {
             try {
-                $currentSalon->withSalon((int) $booking->salon_id, fn () => DB::transaction(function () use ($booking, $smsService, &$cancelledCount) {
+                $currentSalon->withSalon((int) $booking->salon_id, fn () => DB::transaction(function () use ($booking, &$cancelledCount) {
                     $booking->update([
                         'status' => 'cancelled',
                         'cancelled_by' => 'system',
@@ -54,7 +54,17 @@ class CancelUnpaidBookings implements ShouldQueue
                     if ($booking->user && $booking->user->phone) {
                         $message = \App\Support\Sms\SmsText::bookingCancelledUnpaid($booking);
                         try {
-                            $smsService->send($booking->user->phone, $message, $booking->salon_id, \App\Support\Features\Feature::SmsCustomer); // از سهمیه‌ی سالن (تصمیم ۲۰۲۶-۰۹-۳۰)
+                            // پوش اپ یا پیامک از سهمیه‌ی سالن (تصمیم ۲۰۲۶-۰۹-۳۰، بسته‌ی ۴)
+                            app(\App\Services\Push\AppMessenger::class)->deliver(new \App\Services\Push\Outgoing(
+                                recipient: $booking->user,
+                                phone: $booking->user->phone,
+                                text: $message,
+                                salonId: $booking->salon_id,
+                                smsFeature: \App\Support\Features\Feature::SmsCustomer,
+                                pushKey: \App\Services\Push\PushPolicy::BOOKING_CANCELLED_UNPAID_CUSTOMER,
+                                data: ['booking_id' => $booking->id],
+                                inbox: true,
+                            ));
                         } catch (\Exception $smsException) {
                             Log::warning('Failed to send SMS for cancelled booking', [
                                 'booking_id' => $booking->id,

@@ -59,6 +59,8 @@ class AdminNotificationSettingController extends Controller
                 'sms_enabled' => $request->boolean("sms.{$safeKey}"),
                 'database_enabled' => $request->boolean("database.{$safeKey}"),
                 'telegram_enabled' => NotificationSettingService::BOT_CHANNEL_IMPLEMENTED && $request->boolean("telegram.{$safeKey}"),
+                // ستون «اپ» فقط برای رویدادهای مشتری/متخصص؛ بقیه دست‌نخورده (پیش‌فرض روشن)
+                ...(\App\Services\Push\PushPolicy::hasAppColumn($key) ? ['push_enabled' => $request->boolean("push.{$safeKey}")] : []),
             ], $salonId);
         }
 
