@@ -42,6 +42,7 @@ class SuperAdminPlanController extends Controller
     public function store(SavePlanRequest $request): RedirectResponse
     {
         $this->plans->save(null, $request->planAttributes(), $request->validated('features', []), $request->user());
+        $this->audit()->record('plan.saved', 'ساخت پلن «'.$request->planAttributes()['name'].'»', null, ['features' => $request->validated('features', [])]);
 
         return redirect()->route('superadmin.plans.index')->with('success', 'پلن ساخته شد.');
     }
@@ -53,7 +54,15 @@ class SuperAdminPlanController extends Controller
 
     public function update(SavePlanRequest $request, Plan $plan): RedirectResponse
     {
+        $beforeAttrs = $plan->only(array_keys($request->planAttributes()));
+        $beforeFeatures = $plan->featureKeys();
         $removed = $this->plans->save($plan, $request->planAttributes(), $request->validated('features', []), $request->user());
+        $changes = \App\Services\SuperAdmin\SuperAdminAudit::diff($beforeAttrs, $plan->fresh()->only(array_keys($beforeAttrs)));
+        $afterFeatures = $plan->fresh()->featureKeys();
+        if ($beforeFeatures !== $afterFeatures) {
+            $changes['features'] = [array_values(array_diff($beforeFeatures, $afterFeatures)), array_values(array_diff($afterFeatures, $beforeFeatures))];
+        }
+        $this->audit()->record('plan.saved', "ویرایش پلن «{$plan->name}»", null, $changes ?: null);
         $count = $this->plans->salonCount($plan);
 
         $message = 'پلن ذخیره شد.';
@@ -69,6 +78,7 @@ class SuperAdminPlanController extends Controller
     {
         try {
             $this->plans->delete($plan, $request->user());
+            $this->audit()->record('plan.deleted', "حذف پلن «{$plan->name}»");
         } catch (\InvalidArgumentException $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -83,7 +93,9 @@ class SuperAdminPlanController extends Controller
         $validated = $request->validate(['plan_id' => ['required', 'integer', 'exists:plans,id']]);
         $plan = Plan::findOrFail($validated['plan_id']);
 
+        $oldPlan = $salon->plan?->name;
         $this->plans->assignPlan($salon, $plan, $request->user());
+        $this->audit()->record('salon.plan', "پلن «{$salon->name}»: ".($oldPlan ?? '—')." ← {$plan->name}", $salon);
 
         return redirect()->route('superadmin.salons.edit', $salon)->with('success', "پلن سالن به «{$plan->name}» تغییر کرد.");
     }
@@ -111,6 +123,8 @@ class SuperAdminPlanController extends Controller
             $validated['note'] ?? null,
             $request->user(),
         );
+        $this->audit()->record('salon.feature_override', sprintf('استثنای «%s» برای «%s»: %s%s', Feature::from($validated['feature'])->label(), $salon->name,
+            $validated['enabled'] ? 'روشن' : 'خاموش', $expiresAt ? ' تا '.jalali_date($expiresAt) : ''), $salon);
 
         return redirect()->route('superadmin.salons.edit', $salon)->with('success', 'استثنای امکان ذخیره شد.');
     }
@@ -120,7 +134,13 @@ class SuperAdminPlanController extends Controller
         abort_unless((int) $override->salon_id === (int) $salon->id, 404);
 
         $this->plans->removeOverride($override, $request->user());
+        $this->audit()->record('salon.feature_override', sprintf('برداشتن استثنای «%s» از «%s»', Feature::tryFrom($override->feature)?->label() ?? $override->feature, $salon->name), $salon);
 
         return redirect()->route('superadmin.salons.edit', $salon)->with('success', 'استثنا برداشته شد؛ سالن دوباره از پلنش پیروی می‌کند.');
+    }
+
+    private function audit(): \App\Services\SuperAdmin\SuperAdminAudit
+    {
+        return app(\App\Services\SuperAdmin\SuperAdminAudit::class);
     }
 }

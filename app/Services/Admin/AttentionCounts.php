@@ -19,7 +19,8 @@ class AttentionCounts
     {
         $salon = $this->current->get();
 
-        return $salon ? PaymentTransaction::where('salon_id', $salon->id)->where('needs_attention', true)->count() : 0;
+        return $salon ? PaymentTransaction::where('salon_id', $salon->id)->where('needs_attention', true)
+            ->whereNotIn('purpose', \App\Services\SuperAdmin\PlatformOverview::PLATFORM_PURPOSES)->count() : 0;
     }
 
     public function withdrawals(): int

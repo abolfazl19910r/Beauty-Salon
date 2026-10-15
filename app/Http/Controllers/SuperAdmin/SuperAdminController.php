@@ -46,8 +46,9 @@ class SuperAdminController extends Controller
         $recentSalons = $this->salonRepository->getRecentWithSpecialistCount(5);
 
         $overview = app(\App\Services\SuperAdmin\PlatformOverview::class)->dashboard();
+        $backup = app(\App\Services\SuperAdmin\PlatformOverview::class)->backup();
 
-        return view('superadmin.dashboard', compact('stats', 'recentSalons', 'overview'));
+        return view('superadmin.dashboard', compact('stats', 'recentSalons', 'overview', 'backup'));
     }
 
     /**
@@ -82,6 +83,7 @@ class SuperAdminController extends Controller
             $request->validated() + ['contact' => $request->salonContactAttributes()],
             auth()->user(),
         );
+        $this->audit()->record('salon.created', "ساخت سالن «{$salon->name}» (/s/{$salon->slug})", $salon);
 
         // ⭐ بسته‌ی د: لوگوی اصلی + لوگوی پس‌زمینه‌ی تیره (سالن ساخته شده؛ خطای لوگوی دوم در صفحه‌ی ویرایش نشان داده می‌شود)
         if ($error = app(\App\Services\Salon\SalonLogoService::class)->syncFromRequest($salon, $request)) {
@@ -109,7 +111,9 @@ class SuperAdminController extends Controller
         $overrides = $salon->featureOverrides()->with('setBy')->orderBy('feature')->get();
         $enabledFeatures = $salon->enabledFeatureKeys();
 
-        return view('superadmin.salons.edit', compact('salon', 'smsUsage', 'plans', 'overrides', 'enabledFeatures'));
+        $owner = app(\App\Services\SuperAdmin\SalonOwnerService::class)->owner($salon);
+
+        return view('superadmin.salons.edit', compact('salon', 'smsUsage', 'plans', 'overrides', 'enabledFeatures', 'owner'));
     }
 
     /** اعطای دستی اعتبار پیامک (هدیه، جبران خطا) — ۲۰۲۶-۰۹-۳۰؛ در تاریخچه‌ی خرید سالن با مبلغ ۰ ثبت می‌شود */
@@ -121,6 +125,8 @@ class SuperAdminController extends Controller
         ]);
 
         app(\App\Services\Sms\SmsCreditService::class)->grant($salon, (int) $validated['parts'], $request->user(), $validated['note'] ?? null);
+        $this->audit()->record('salon.sms_credit', sprintf('%s قطعه اعتبار پیامک به «%s»%s', number_format((int) $validated['parts']), $salon->name,
+            ! empty($validated['note']) ? ' — '.$validated['note'] : ''), $salon);
 
         return redirect()->route('superadmin.salons.edit', $salon)
             ->with('success', sprintf('%s قطعه اعتبار پیامک به سالن «%s» داده شد.', number_format((int) $validated['parts']), $salon->name));
@@ -129,7 +135,12 @@ class SuperAdminController extends Controller
     public function update(UpdateSalonRequest $request, Salon $salon): RedirectResponse
     {
         try {
+            $auditFields = ['name', 'max_specialists_count', 'subscription_ends_at', 'sms_quota_per_month', 'address', 'phone', 'zarinpal_merchant_id'];
+            $before = collect($salon->only($auditFields))->map(fn ($v) => $v instanceof \DateTimeInterface ? $v->format('Y-m-d') : $v)->all();
             $this->superAdminService->updateSalon($salon, $request->validated() + ['contact' => $request->salonContactAttributes()]);
+            $after = collect($salon->fresh()->only($auditFields))->map(fn ($v) => $v instanceof \DateTimeInterface ? $v->format('Y-m-d') : $v)->all();
+            $this->audit()->record('salon.updated', "ویرایش سالن «{$salon->name}»", $salon,
+                \App\Services\SuperAdmin\SuperAdminAudit::diff($before, $after) ?: null);
 
             // ⭐ لوگو (۲۰۲۶-۰۹-۲۴): آپلود جدید جایگزین می‌شه؛ «حذف لوگو» فقط وقتی فایل جدیدی نیومده.
             // ⭐ بسته‌ی د: + لوگوی پس‌زمینه‌ی تیره (فقط کنار لوگوی اصلی)
@@ -157,6 +168,7 @@ class SuperAdminController extends Controller
         ]);
 
         $this->invoiceService->recordManualRenewal($salon, $validated['subscription_type'], auth()->user());
+        $this->audit()->record('salon.renewed', "تمدید دستی اشتراک «{$salon->name}» ({$validated['subscription_type']}) تا ".jalali_date($salon->fresh()->subscription_ends_at), $salon);
 
         return redirect()->route('superadmin.salons.index')
             ->with('success', "اشتراک سالن «{$salon->name}» تمدید شد.");
@@ -182,8 +194,14 @@ class SuperAdminController extends Controller
         }
 
         $status = $salon->fresh()->is_suspended ? 'غیرفعال' : 'فعال';
+        $this->audit()->record('salon.suspended', "سالن «{$salon->name}» {$status} شد", $salon);
 
         return redirect()->route('superadmin.salons.index')
             ->with('success', "سالن «{$salon->name}» {$status} شد.");
+    }
+
+    private function audit(): \App\Services\SuperAdmin\SuperAdminAudit
+    {
+        return app(\App\Services\SuperAdmin\SuperAdminAudit::class);
     }
 }

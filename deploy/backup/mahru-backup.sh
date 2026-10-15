@@ -48,6 +48,27 @@ DB_DATABASE="$(env_value DB_DATABASE)"
 DB_USERNAME="$(env_value DB_USERNAME)"
 DB_PASSWORD="$(env_value DB_PASSWORD)"
 
+# ─── وضعیت برای پنل ابرمدیر (۲۰۲۶-۱۰-۱۵) ─────────────────────
+# storage/app/backup-status.json را داشبورد ابرمدیر می‌خواند («آخرین پشتیبان‌گیری»). موفق یا ناموفق، هر اجرا آن را می‌نویسد.
+STATUS_FILE="$APP_DIR/storage/app/backup-status.json"
+CNF=""
+write_status() {
+    local status="$1" message="$2" size=""
+    [[ "$status" == "ok" ]] && size="$(du -sh "$DEST" 2>/dev/null | cut -f1)"
+    message="${message//\\/\\\\}"; message="${message//\"/\\\"}"
+    printf '{"status":"%s","at":"%s","dest":"%s","size":"%s","message":"%s"}\n' \
+        "$status" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$DEST" "$size" "$message" > "$STATUS_FILE.tmp" 2>/dev/null \
+        && mv -f "$STATUS_FILE.tmp" "$STATUS_FILE" 2>/dev/null || true
+}
+on_exit() {
+    local code=$?
+    [[ -n "$CNF" ]] && rm -f "$CNF"
+    if [[ $code -ne 0 ]]; then
+        write_status "failed" "exit code $code"
+    fi
+}
+trap on_exit EXIT
+
 mkdir -p "$DEST"
 
 # ─── ۱) دیتابیس ───────────────────────────────────────────
@@ -55,7 +76,6 @@ if [[ "$DB_CONNECTION" == "mysql" || "$DB_CONNECTION" == "mariadb" ]]; then
     DUMP="$(command -v mariadb-dump || command -v mysqldump)"
     # رمز از فایل موقت (نه خط فرمان، تا در ps دیده نشود)
     CNF="$(mktemp)"
-    trap 'rm -f "$CNF"' EXIT
     printf '[client]\nuser=%s\npassword=%s\nhost=%s\nport=%s\n' "$DB_USERNAME" "$DB_PASSWORD" "$DB_HOST" "$DB_PORT" > "$CNF"
     "$DUMP" --defaults-extra-file="$CNF" --single-transaction --quick --routines --no-tablespaces "$DB_DATABASE" | gzip -9 > "$DEST/database.sql.gz"
 elif [[ "$DB_CONNECTION" == "sqlite" ]]; then
@@ -77,4 +97,5 @@ fi
 # ─── ۳) نگه‌داری ──────────────────────────────────────────
 find "$BACKUP_ROOT" -mindepth 1 -maxdepth 1 -type d -name '20*' -mtime +"$KEEP_DAYS" -exec rm -rf {} +
 
+write_status "ok" "files: ${DIRS[*]:-none}"
 echo "[$STAMP] backup OK → $DEST ($(du -sh "$DEST" | cut -f1)); files: ${DIRS[*]:-none}"

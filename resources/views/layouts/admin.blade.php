@@ -537,6 +537,16 @@
     <div id="sidebar-backdrop" class="md:hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-40 hidden" onclick="toggleSidebar()"></div>
 
     <div class="flex-1 flex flex-col relative overflow-hidden">
+        @if (\App\Services\SuperAdmin\SuperAdminImpersonation::active())
+            {{-- ⭐ «ورود اضطراری» ابرمدیر (۲۰۲۶-۱۰-۱۵) --}}
+            <div data-impersonation-banner style="background: #0D4B5C; color: #FFFFFF;" class="px-4 py-2 text-sm flex flex-wrap items-center justify-between gap-2">
+                <span>حالت پشتیبانی ابرمدیر: با حساب <b>{{ auth()->user()->name }}</b> در پنل این سالن هستید. هر کاری به نام مالک انجام می‌شود.</span>
+                <form method="POST" action="{{ route('impersonation.leave') }}">
+                    @csrf
+                    <button type="submit" class="px-3 py-1 rounded-full font-bold" style="background: #FFFFFF; color: #0D4B5C;">بازگشت به پنل ابرمدیر</button>
+                </form>
+            </div>
+        @endif
         <!-- Header -->
         <header class="sticky top-0 z-30 shadow-sm" style="background: var(--admin-surface); border-bottom: 1px solid var(--admin-border);">
             <div class="px-4 py-3 flex justify-between items-center">
@@ -678,6 +688,7 @@
                 <span style="color: var(--admin-text-dim);">@yield('title')</span>
             </div>
         </header>
+        @include('partials.platform-announcements', ['panel' => 'admins'])
 
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto p-4" style="background: var(--admin-bg);">

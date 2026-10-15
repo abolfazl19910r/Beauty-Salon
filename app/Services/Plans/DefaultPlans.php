@@ -38,6 +38,7 @@ class DefaultPlans
                 'extra_specialist_price_per_month' => 0,
                 'sms_quota_per_month' => (int) config('billing.trial_sms_quota'),
                 'trial_days' => max(0, (int) config('billing.trial_days', 0)),
+                'theme_site_count' => 0, 'theme_site_count_6m' => 0, 'theme_site_count_12m' => 0, 'theme_admin_count' => 0,
                 'features' => $existing,
             ],
             [
@@ -49,6 +50,7 @@ class DefaultPlans
                 'extra_specialist_price_per_month' => max(0, (int) config('billing.extra_specialist_price_per_month', 0)),
                 'sms_quota_per_month' => (int) config('billing.sms_quota_per_month'),
                 'trial_days' => null,
+                'theme_site_count' => 4, 'theme_site_count_6m' => 6, 'theme_site_count_12m' => 12, 'theme_admin_count' => 1,
                 'features' => $existing,
             ],
             [
@@ -57,6 +59,7 @@ class DefaultPlans
                 'price_1m' => 990000, 'price_3m' => 2750000, 'price_6m' => 5050000, 'price_12m' => 9150000,
                 'included_specialists' => 5, 'extra_specialist_price_per_month' => 250000, 'sms_quota_per_month' => 1000,
                 'trial_days' => null,
+                'theme_site_count' => 0, 'theme_site_count_6m' => 1, 'theme_site_count_12m' => 2, 'theme_admin_count' => 0,
                 'features' => array_values(array_diff($existing, [Feature::Winback->value, Feature::Loyalty->value, Feature::ReportsExport->value])),
             ],
             [
@@ -65,6 +68,7 @@ class DefaultPlans
                 'price_1m' => 1500000, 'price_3m' => 4150000, 'price_6m' => 7650000, 'price_12m' => 13850000,
                 'included_specialists' => 10, 'extra_specialist_price_per_month' => 250000, 'sms_quota_per_month' => 2000,
                 'trial_days' => null,
+                'theme_site_count' => 4, 'theme_site_count_6m' => 5, 'theme_site_count_12m' => 6, 'theme_admin_count' => 1,
                 'features' => $existing,
             ],
             [
@@ -73,6 +77,7 @@ class DefaultPlans
                 'price_1m' => 2400000, 'price_3m' => 6650000, 'price_6m' => 12250000, 'price_12m' => 22150000,
                 'included_specialists' => 15, 'extra_specialist_price_per_month' => 250000, 'sms_quota_per_month' => 4000,
                 'trial_days' => null,
+                'theme_site_count' => 12, 'theme_site_count_6m' => 12, 'theme_site_count_12m' => 12, 'theme_admin_count' => 3,
                 'features' => $current,
             ],
         ];

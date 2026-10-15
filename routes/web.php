@@ -135,7 +135,7 @@ require __DIR__.'/web/salon-signup.php';
 // salon's /s/{slug}/login.
 require __DIR__.'/web/specialistprofile.php';
 
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_admin_panel', 'salon.active'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_admin_panel', 'salon.active', 'not_impersonating'])->group(function () {
 
     Route::get('/', [\App\Http\Controllers\Admin\Dashboard\AdminDashboardController::class, 'dashboard'])->name('home');
 
@@ -195,6 +195,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_a
         require __DIR__.'/admin/reports.php';
     });
 });
+
+// ⭐ پایان «ورود اضطراری» ابرمدیر (۲۰۲۶-۱۰-۱۵): کاربر فعلی مالک سالن است، پس فقط auth
+Route::post('/impersonation/leave', [\App\Http\Controllers\SuperAdmin\ImpersonationController::class, 'stop'])
+    ->middleware('auth')->name('impersonation.leave');
 
 // ⭐ Phase 1 SaaS multi-tenant (feat/saas-multi-tenant-salons, commit 4).
 Route::prefix('superadmin')->name('superadmin.')->middleware(['auth', 'super_admin'])->group(function () {

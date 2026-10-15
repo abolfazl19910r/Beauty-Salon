@@ -80,7 +80,7 @@ class PlatformOperationsTest extends TestCase
         $this->assertSame('مبلغ گرفته نشده بود', $fresh->verify_response['manual_resolution']['note']);
     }
 
-    public function test_salon_owners_are_not_notified_about_platform_payments(): void
+    public function test_platform_payments_notify_super_admins_not_salon_owners(): void
     {
         Notification::fake();
         $tx = $this->platformAttention('sms_pack');
@@ -88,8 +88,10 @@ class PlatformOperationsTest extends TestCase
 
         app(AttentionNotifier::class)->paymentFlagged($tx->id);
 
-        Notification::assertNothingSent();
         Notification::assertNotSentTo(User::query()->get(), AttentionRequiredNotification::class);
+        // به‌جایش «صندوق اعلان» ابرمدیر
+        Notification::assertSentTo($this->super, \App\Notifications\SuperAdmin\PlatformAlertNotification::class,
+            fn ($n) => $n->kind === 'payment_attention');
     }
 
     public function test_failed_jobs_are_listed_and_can_be_forgotten(): void

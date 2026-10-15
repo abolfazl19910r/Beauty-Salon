@@ -90,6 +90,9 @@ class SalonSignupService
             // ساخته شده، عملاً هیچ owner دیگری تا این لحظه وجود نداره.
             $salon->admins()->attach($owner->id, ['role' => 'owner']);
 
+            app(\App\Services\SuperAdmin\SuperAdminNotifier::class)->send('signup', sprintf('سالن تازه ثبت‌نام کرد: «%s» (/s/%s)، مالک %s.', $salon->name, $salon->slug, $owner->phone),
+                route('superadmin.salons.edit', $salon->id, false), (int) $salon->id);
+
             return ['salon' => $salon->fresh(), 'owner' => $owner];
         });
     }

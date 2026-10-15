@@ -77,6 +77,8 @@ class PlatformOperationsController extends Controller
             ]],
         ]);
 
+        app(\App\Services\SuperAdmin\SuperAdminAudit::class)->record('payment.resolved', sprintf('رسیدگی تراکنش #%d (%s): %s', $tx->id,
+            $tx->purpose === 'subscription' ? 'اشتراک' : 'بسته‌ی پیامک', $data['note']), $tx->salon_id);
         Log::info('Platform payment needing attention marked resolved', ['transaction_id' => $tx->id, 'by' => $request->user()->id]);
 
         return back()->with('success', 'رسیدگی ثبت شد.');
@@ -102,7 +104,9 @@ class PlatformOperationsController extends Controller
     public function retryFailedJob(string $uuid): RedirectResponse
     {
         abort_unless(DB::table('failed_jobs')->where('uuid', $uuid)->exists(), 404);
+        $name = $this->jobName($uuid);
         Artisan::call('queue:retry', ['id' => [$uuid]]);
+        app(\App\Services\SuperAdmin\SuperAdminAudit::class)->record('queue.retried', "تلاش دوباره‌ی کار ناموفق {$name}");
 
         return back()->with('success', 'کار دوباره در صف قرار گرفت.');
     }
@@ -110,15 +114,26 @@ class PlatformOperationsController extends Controller
     public function forgetFailedJob(string $uuid): RedirectResponse
     {
         abort_unless(DB::table('failed_jobs')->where('uuid', $uuid)->exists(), 404);
+        $name = $this->jobName($uuid);
         Artisan::call('queue:forget', ['id' => $uuid]);
+        app(\App\Services\SuperAdmin\SuperAdminAudit::class)->record('queue.forgotten', "حذف کار ناموفق {$name}");
 
         return back()->with('success', 'از فهرست حذف شد.');
     }
 
     public function retryAllFailedJobs(): RedirectResponse
     {
+        $count = DB::table('failed_jobs')->count();
         Artisan::call('queue:retry', ['id' => ['all']]);
+        app(\App\Services\SuperAdmin\SuperAdminAudit::class)->record('queue.retried', "تلاش دوباره‌ی همه‌ی کارهای ناموفق ({$count})");
 
         return back()->with('success', 'همه‌ی کارهای ناموفق دوباره در صف قرار گرفتند.');
+    }
+
+    private function jobName(string $uuid): string
+    {
+        $payload = json_decode((string) DB::table('failed_jobs')->where('uuid', $uuid)->value('payload'), true) ?: [];
+
+        return class_basename((string) ($payload['displayName'] ?? 'Job'));
     }
 }

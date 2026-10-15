@@ -77,6 +77,16 @@ class AppServiceProvider extends ServiceProvider
             \Illuminate\Support\Facades\Event::listen($queueEvent, [\App\Support\SalonForQueuePayload::class, 'finished']);
         }
         // اعلانی که بدون سالن جاری فرستاده می‌شود (دستور کنسول، worker): سالنِ رکوردِ اعلان یا گیرنده فقط برای همان ارسال
+        // ⭐ «صندوق اعلان» ابرمدیر (۲۰۲۶-۱۰-۱۵): کار ناموفق صف — هر نوع کار حداکثر یک اعلان در ۳۰ دقیقه
+        \Illuminate\Support\Facades\Queue::failing(function (\Illuminate\Queue\Events\JobFailed $event) {
+            $name = class_basename((string) ($event->job->payload()['displayName'] ?? $event->job->resolveName()));
+            if (\Illuminate\Support\Facades\Cache::add('superadmin:job-failed-alert:'.$name, true, now()->addMinutes(30))) {
+                app(\App\Services\SuperAdmin\SuperAdminNotifier::class)->send('job_failed',
+                    sprintf('کار %s در صف «%s» ناموفق شد: %s', $name, $event->job->getQueue(), \Illuminate\Support\Str::limit(strtok($event->exception->getMessage(), "\n") ?: '', 140)),
+                    route('superadmin.failed-jobs.index', [], false));
+            }
+        });
+
         \Illuminate\Support\Facades\Event::listen(\Illuminate\Notifications\Events\NotificationSending::class, [\App\Support\SalonForNotification::class, 'sending']);
         \Illuminate\Support\Facades\Event::listen(\Illuminate\Notifications\Events\NotificationSent::class, [\App\Support\SalonForNotification::class, 'finished']);
         \Illuminate\Support\Facades\Event::listen(\Illuminate\Notifications\Events\NotificationFailed::class, [\App\Support\SalonForNotification::class, 'finished']);

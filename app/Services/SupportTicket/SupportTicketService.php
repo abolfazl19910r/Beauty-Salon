@@ -16,7 +16,7 @@ class SupportTicketService
 
     public function createTicket(int $userId, array $data): SupportTicket
     {
-        return $this->supportTicketRepository->create([
+        $ticket = $this->supportTicketRepository->create([
             'user_id' => $userId,
             'title' => $data['title'],
             'description' => $data['description'],
@@ -24,6 +24,11 @@ class SupportTicketService
             'priority' => $data['priority'] ?? 'medium',
             'status' => 'open',
         ]);
+
+        app(\App\Services\SuperAdmin\SuperAdminNotifier::class)->send('ticket', sprintf('تیکت تازه از «%s»: %s', $this->salonNameOf($ticket), $ticket->title),
+            route('superadmin.support-tickets.show', $ticket->id, false), $this->salonOf($ticket)?->id);
+
+        return $ticket;
     }
 
     public function addReply(SupportTicket $ticket, int $userId, string $message, bool $isStaffReply): SupportTicketMessage
@@ -39,6 +44,11 @@ class SupportTicketService
             $this->supportTicketRepository->update($ticket, ['status' => 'in_progress']);
         } elseif (! $isStaffReply && ($ticket->isResolved() || $ticket->isClosed())) {
             $ticket->reopen();
+        }
+
+        if (! $isStaffReply) {
+            app(\App\Services\SuperAdmin\SuperAdminNotifier::class)->send('ticket_reply', sprintf('پاسخ تازه‌ی «%s» در تیکت «%s».', $this->salonNameOf($ticket), $ticket->title),
+                route('superadmin.support-tickets.show', $ticket->id, false), $this->salonOf($ticket)?->id);
         }
 
         return $reply;
@@ -62,5 +72,19 @@ class SupportTicketService
     public function reopen(SupportTicket $ticket): void
     {
         $ticket->reopen();
+    }
+
+    private function salonNameOf(SupportTicket $ticket): string
+    {
+        return (string) ($this->salonOf($ticket)?->name ?? 'بدون سالن');
+    }
+
+    /** تیکت ستون سالن ندارد؛ سالن از کاربر ثبت‌کننده (مدیر سالن یا مشتری) */
+    private function salonOf(SupportTicket $ticket): ?\App\Models\Salon
+    {
+        $user = \App\Models\User::find($ticket->user_id);
+
+        return $user?->salons()->withoutGlobalScopes()->first()
+            ?? ($user?->salon_id ? \App\Models\Salon::withoutGlobalScopes()->find($user->salon_id) : null);
     }
 }

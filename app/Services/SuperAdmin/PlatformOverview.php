@@ -53,6 +53,12 @@ class PlatformOverview
         ];
     }
 
+    /** @return array{state: string, at: ?\Illuminate\Support\Carbon, size: ?string, dest: ?string, message: ?string} */
+    public function backup(): array
+    {
+        return \App\Support\BackupStatus::read();
+    }
+
     /** تراکنش‌های اشتراک/بسته‌ی پیامک که خودکارسازی کنار کشیده و آدم باید ببیند. */
     public function attentionQuery()
     {

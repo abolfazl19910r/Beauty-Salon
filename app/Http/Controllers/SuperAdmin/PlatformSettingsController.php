@@ -43,7 +43,12 @@ class PlatformSettingsController extends Controller
             '*.url' => 'آدرس باید با https:// شروع شود.',
         ]);
 
+        $before = PlatformSettings::stored();
         PlatformSettings::save($data);
+        $changes = \App\Services\SuperAdmin\SuperAdminAudit::diff(array_intersect_key($before, $data), PlatformSettings::stored());
+        if ($changes) {
+            app(\App\Services\SuperAdmin\SuperAdminAudit::class)->record('settings.updated', 'تنظیمات پلتفرم', null, $changes);
+        }
 
         return back()->with('success', 'تنظیمات پلتفرم ذخیره شد.');
     }

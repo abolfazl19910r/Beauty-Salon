@@ -9,6 +9,53 @@
             (غیرقابل‌تغییر)
         </div>
 
+        {{-- ⭐ مالک سالن + ورود اضطراری (۲۰۲۶-۱۰-۱۵) --}}
+        <div class="mb-5 p-4 rounded-lg text-sm" style="border:1px solid var(--sa-border);" data-owner-card>
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                <div>
+                    <div class="font-bold">مالک سالن</div>
+                    @if ($owner)
+                        <div style="color: var(--sa-text-dim);">{{ $owner->name }} · <span dir="ltr">{{ $owner->phone }}</span></div>
+                    @else
+                        <div style="color: var(--sa-danger);">این سالن مالک ندارد.</div>
+                    @endif
+                </div>
+                @if ($owner)
+                    <form method="POST" action="{{ route('superadmin.salons.impersonate', $salon) }}">
+                        @csrf
+                        <button type="submit" class="sa-btn" title="با حساب مالک وارد پنل مدیر این سالن می‌شوید؛ در گزارش کارها ثبت می‌شود">ورود به پنل مدیر سالن</button>
+                    </form>
+                @endif
+            </div>
+            <details @if($errors->hasAny(['owner_name', 'owner_phone', 'owner_password']) || ! $owner) open @endif>
+                <summary class="cursor-pointer" style="color: var(--sa-accent);">{{ $owner ? 'ویرایش مالک (نام، موبایل، رمز تازه)' : 'تعیین مالک' }}</summary>
+                <form method="POST" action="{{ route('superadmin.salons.owner', $salon) }}" class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                    @csrf
+                    @method('PUT')
+                    <div>
+                        <label class="sa-label" for="owner_name">نام مالک</label>
+                        <input id="owner_name" name="owner_name" class="sa-input" value="{{ old('owner_name', $owner?->name) }}" required>
+                        @error('owner_name')<p class="text-xs mt-1" style="color: var(--sa-danger);">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <label class="sa-label" for="owner_phone">موبایل مالک (شماره‌ی ورود)</label>
+                        <input id="owner_phone" name="owner_phone" dir="ltr" class="sa-input" value="{{ old('owner_phone', $owner?->phone) }}" required>
+                        @error('owner_phone')<p class="text-xs mt-1" style="color: var(--sa-danger);">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <label class="sa-label" for="owner_password">رمز تازه {{ $owner ? '(خالی = بدون تغییر)' : '' }}</label>
+                        <input id="owner_password" type="password" name="owner_password" class="sa-input" autocomplete="new-password" {{ $owner ? '' : 'required' }}>
+                        @error('owner_password')<p class="text-xs mt-1" style="color: var(--sa-danger);">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <label class="sa-label" for="owner_password_confirmation">تکرار رمز</label>
+                        <input id="owner_password_confirmation" type="password" name="owner_password_confirmation" class="sa-input" autocomplete="new-password">
+                    </div>
+                    <div class="md:col-span-2"><button type="submit" class="sa-btn">ذخیره‌ی مالک</button></div>
+                </form>
+            </details>
+        </div>
+
         {{-- پیامک‌های این ماه: سقف سالن در برابر کدهای تأیید (خرج پلتفرم) — برای دیدن مصرف غیرعادی --}}
         <div class="mb-5 p-4 rounded-lg text-sm persian-number" style="border:1px solid var(--sa-border); color: var(--sa-text);">
             <div class="font-bold mb-2">پیامک‌های این ماه</div>

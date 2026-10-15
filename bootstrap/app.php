@@ -71,6 +71,8 @@ return Application::configure(basePath: dirname(__DIR__))
             '2fa.enabled' => \App\Http\Middleware\EnsureTwoFactorVerifiedForPayment::class,
             // ⭐ Phase 1 SaaS multi-tenant (feat/saas-multi-tenant-salons, commit 3).
             'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
+            // «ورود اضطراری» ابرمدیر (۲۰۲۶-۱۰-۱۵): رمز/مشخصات ورود مالک در حالت پشتیبانی عوض نشود
+            'not_impersonating' => \App\Http\Middleware\BlockWhileImpersonating::class,
             'salon.active' => \App\Http\Middleware\EnsureAdminSalonActive::class,
             // امکان پلن (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴): feature:winback و …
             'feature' => \App\Http\Middleware\EnsureSalonFeature::class,

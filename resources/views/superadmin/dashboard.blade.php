@@ -11,13 +11,22 @@
             ['n' => $overview['open_tickets'], 'label' => 'تیکت باز', 'url' => route('superadmin.support-tickets.index'), 'bad' => false],
             ['n' => $overview['open_demo_requests'], 'label' => 'درخواست دموی پیگیری‌نشده', 'url' => route('superadmin.demo-requests.index'), 'bad' => false],
         ], fn ($a) => $a['n'] > 0);
+        $backupLabel = match ($backup['state']) {
+            'ok' => 'آخرین پشتیبان موفق',
+            'stale' => 'آخرین پشتیبان قدیمی است',
+            'failed' => 'آخرین پشتیبان‌گیری ناموفق بود',
+            default => 'هیچ پشتیبانی ثبت نشده',
+        };
+        if ($backup['state'] !== 'ok') {
+            $alerts[] = ['n' => '!', 'label' => $backupLabel, 'url' => '#backup-status', 'bad' => true];
+        }
     @endphp
     @if ($alerts)
         <div class="sa-card p-4 mb-6 flex flex-wrap gap-3 items-center" data-dashboard-alerts>
             <span class="text-sm font-bold">نیاز به رسیدگی:</span>
             @foreach ($alerts as $alert)
                 <a href="{{ $alert['url'] }}" class="text-sm px-3 py-1 rounded-full" style="background: {{ $alert['bad'] ? 'var(--sa-danger-bg)' : 'var(--sa-soft)' }}; color: {{ $alert['bad'] ? 'var(--sa-danger)' : 'var(--sa-accent)' }};">
-                    {{ to_persian_num((string) $alert['n']) }} {{ $alert['label'] }}
+                    {{ $alert['n'] === '!' ? '' : to_persian_num((string) $alert['n']) }} {{ $alert['label'] }}
                 </a>
             @endforeach
         </div>
@@ -61,6 +70,26 @@
         <div class="sa-card p-5">
             <div class="sa-label">منقضی‌شده</div>
             <div class="text-2xl font-bold" style="color: var(--sa-danger);">{{ $stats['expired'] }}</div>
+        </div>
+    </div>
+
+    {{-- ⭐ وضعیت آخرین پشتیبان‌گیری (deploy/backup/mahru-backup.sh → storage/app/backup-status.json) --}}
+    <div class="sa-card p-5 mb-6 flex flex-wrap items-center gap-4" id="backup-status" data-backup-state="{{ $backup['state'] }}">
+        <span class="inline-flex w-10 h-10 items-center justify-center rounded-full shrink-0"
+              style="background: {{ $backup['state'] === 'ok' ? 'var(--sa-success-bg)' : 'var(--sa-danger-bg)' }}; color: {{ $backup['state'] === 'ok' ? 'var(--sa-success)' : 'var(--sa-danger)' }};">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+        </span>
+        <div class="flex-1 min-w-0">
+            <div class="font-bold">{{ $backupLabel }}</div>
+            <div class="text-sm" style="color: var(--sa-text-dim);">
+                @if ($backup['at'])
+                    {{ \Morilog\Jalali\Jalalian::fromCarbon($backup['at'])->format('Y/m/d H:i') }} ({{ $backup['at']->diffForHumans() }})
+                    @if ($backup['size']) · حجم {{ $backup['size'] }} @endif
+                    @if ($backup['state'] === 'failed' && $backup['message']) · {{ $backup['message'] }} @endif
+                @else
+                    اسکریپت deploy/backup/mahru-backup.sh هنوز روی سرور اجرا نشده یا cron آن تنظیم نیست (راهنما: docs/deployment/BACKUP.md).
+                @endif
+            </div>
         </div>
     </div>
 

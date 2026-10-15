@@ -60,6 +60,8 @@ class DemoRequestController extends Controller
     private function notifyPlatform(DemoRequest $demo): void
     {
         $notification = new DemoRequestReceivedNotification($demo);
+        app(\App\Services\SuperAdmin\SuperAdminNotifier::class)->send('demo', sprintf('درخواست دموی تازه: %s%s، %s', $demo->name, $demo->salon_name ? ' («'.$demo->salon_name.'»)' : '', $demo->phone),
+            route('superadmin.demo-requests.index', [], false));
 
         $superAdmins = app(UserRepositoryInterface::class)->getSuperAdmins();
         if ($superAdmins->isNotEmpty()) {

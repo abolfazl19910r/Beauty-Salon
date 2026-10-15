@@ -75,3 +75,15 @@ Route::get('/failed-jobs', [PlatformOperationsController::class, 'failedJobs'])-
 Route::post('/failed-jobs/retry-all', [PlatformOperationsController::class, 'retryAllFailedJobs'])->name('failed-jobs.retry-all');
 Route::post('/failed-jobs/{uuid}/retry', [PlatformOperationsController::class, 'retryFailedJob'])->name('failed-jobs.retry');
 Route::delete('/failed-jobs/{uuid}', [PlatformOperationsController::class, 'forgetFailedJob'])->name('failed-jobs.forget');
+
+// ⭐ ابزارهای ابرمدیر (۲۰۲۶-۱۰-۱۵)
+Route::post('/salons/{salon}/impersonate', [\App\Http\Controllers\SuperAdmin\ImpersonationController::class, 'start'])->middleware('throttle:20,1')->name('salons.impersonate');
+Route::put('/salons/{salon}/owner', [\App\Http\Controllers\SuperAdmin\SalonOwnerController::class, 'update'])->name('salons.owner');
+Route::get('/notifications', [\App\Http\Controllers\SuperAdmin\NotificationInboxController::class, 'index'])->name('notifications.index');
+Route::post('/notifications/read-all', [\App\Http\Controllers\SuperAdmin\NotificationInboxController::class, 'readAll'])->name('notifications.read-all');
+Route::get('/notifications/{id}', [\App\Http\Controllers\SuperAdmin\NotificationInboxController::class, 'open'])->name('notifications.open');
+Route::resource('announcements', \App\Http\Controllers\SuperAdmin\PlatformAnnouncementController::class)->except(['show']);
+Route::get('/audit-log', [\App\Http\Controllers\SuperAdmin\AuditLogController::class, 'index'])->name('audit-log.index');
+Route::get('/search', [\App\Http\Controllers\SuperAdmin\PhoneSearchController::class, 'index'])->name('search.index');
+Route::get('/templates', [\App\Http\Controllers\SuperAdmin\TemplateAccessController::class, 'index'])->name('templates.index');
+Route::put('/templates', [\App\Http\Controllers\SuperAdmin\TemplateAccessController::class, 'update'])->name('templates.update');

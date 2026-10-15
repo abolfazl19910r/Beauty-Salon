@@ -23,6 +23,11 @@ class AttentionNotifier
 
         // پرداخت اشتراک/بسته‌ی پیامک مال پلتفرم است؛ مدیر سالن کاری با آن ندارد (پنل ابرمدیر «پرداخت‌های نیازمند بررسی»)
         if ($tx && in_array($tx->purpose, \App\Services\SuperAdmin\PlatformOverview::PLATFORM_PURPOSES, true)) {
+            if ($this->claim(PaymentTransaction::withoutGlobalScopes(), $transactionId)) {
+                app(\App\Services\SuperAdmin\SuperAdminNotifier::class)->send('payment_attention', sprintf('پرداخت %s تراکنش #%d نیاز به بررسی دارد.',
+                    $tx->purpose === 'subscription' ? 'اشتراک' : 'بسته‌ی پیامک', $transactionId), route('superadmin.payment-attention.index', [], false), $salonId ? (int) $salonId : null);
+            }
+
             return;
         }
 

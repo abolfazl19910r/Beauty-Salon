@@ -23,10 +23,15 @@ class Plan extends Model
         'key', 'name', 'description', 'is_trial', 'is_public', 'is_active', 'sort',
         'price_1m', 'price_3m', 'price_6m', 'price_12m',
         'included_specialists', 'extra_specialist_price_per_month', 'sms_quota_per_month', 'trial_days',
+        'theme_site_count', 'theme_site_count_6m', 'theme_site_count_12m', 'theme_admin_count',
     ];
 
     protected $casts = [
         'is_trial' => 'boolean',
+        'theme_site_count' => 'integer',
+        'theme_site_count_6m' => 'integer',
+        'theme_site_count_12m' => 'integer',
+        'theme_admin_count' => 'integer',
         'is_public' => 'boolean',
         'is_active' => 'boolean',
         'sort' => 'integer',
@@ -133,5 +138,27 @@ class Plan extends Model
             'sms_quota_per_month' => (int) $this->sms_quota_per_month,
             'features' => $this->featureKeys(),
         ];
+    }
+
+    /**
+     * چند قالب سایت/پنل مشتری/اپ (علاوه بر «طلایی ماهرو») برای این پلن در این بازه‌ی اشتراک باز است (۲۰۲۶-۱۰-۱۵).
+     * ۶ و ۱۲ ماهه هرگز کمتر از ۱ و ۳ ماهه نیستند؛ سقف config('themes.site_total').
+     */
+    public function siteThemeAllowance(?string $period): int
+    {
+        $base = (int) $this->theme_site_count;
+        $count = match ($period) {
+            '12m' => max($base, (int) $this->theme_site_count_12m),
+            '6m' => max($base, (int) $this->theme_site_count_6m),
+            default => $base,
+        };
+
+        return min($count, (int) config('themes.site_total', 12));
+    }
+
+    /** چند قالب پنل مدیر (علاوه بر منوی کناری پیش‌فرض) — به بازه بستگی ندارد */
+    public function adminThemeAllowance(): int
+    {
+        return min((int) $this->theme_admin_count, (int) config('themes.admin_total', 3));
     }
 }

@@ -61,7 +61,10 @@ class SmsCreditService
             }
 
             $locked->update(['status' => 'paid', 'ref_id' => $refId, 'paid_at' => now()]);
-            $this->quota->addCredit($locked->salon()->withoutGlobalScopes()->firstOrFail(), $locked->parts);
+            $salon = $locked->salon()->withoutGlobalScopes()->firstOrFail();
+            $this->quota->addCredit($salon, $locked->parts);
+            app(\App\Services\SuperAdmin\SuperAdminNotifier::class)->send('sms_pack_paid', sprintf('سالن «%s» بسته‌ی %s قطعه‌ای پیامک خرید: %s تومان.', $salon->name,
+                number_format($locked->parts), number_format((int) $locked->amount)), route('superadmin.sms.index', [], false), (int) $salon->id);
 
             return true;
         });

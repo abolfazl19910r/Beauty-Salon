@@ -58,6 +58,8 @@ class TenantModelClassificationTest extends TestCase
         'SecurityLog' => 'از کاربر؛ بخش امنیت با querySalonMembers فیلتر می‌کند',
         'DemoRequest' => 'درخواست دموی صفحه‌ی فروش؛ پیش از وجود هر سالنی، فقط سوپرادمین',
         'PlatformSetting' => 'تنظیم سطح پلتفرم (سوپرادمین)',
+        'SuperAdminAuditLog' => 'گزارش کارهای ابرمدیر، سطح پلتفرم (salon_id فقط «درباره‌ی کدام سالن»)',
+        'PlatformAnnouncement' => 'اطلاعیه‌ی سراسری ابرمدیر به همه‌ی سالن‌ها، سطح پلتفرم',
         'Plan' => 'پلن اشتراک، سطح پلتفرم (سوپرادمین)',
         'PlanFeature' => 'امکان یک پلن، از رابطه‌ی پلن',
         'CourseReminder' => 'ثبت یادآوری یک دوره؛ از رابطه‌ی دوره (دستور courses:remind با salon_id صریح)',

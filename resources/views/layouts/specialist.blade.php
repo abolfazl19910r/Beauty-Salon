@@ -259,6 +259,7 @@
                 </div>
             </div>
         </header>
+        @include('partials.platform-announcements', ['panel' => 'specialists'])
 
         <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6 pb-24 md:pb-6" style="background-color: var(--specialist-bg);">
             @if(session('success'))

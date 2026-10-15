@@ -75,6 +75,8 @@ class InvoiceService
                     'period_end' => $salon->subscription_ends_at,
                 ]);
 
+                $this->notifyPlatformOfPayment($invoice);
+
                 return $invoice->fresh();
             }
 
@@ -89,6 +91,8 @@ class InvoiceService
                 'period_start' => $periodStart,
                 'period_end' => $salon->fresh()->subscription_ends_at,
             ]);
+
+            $this->notifyPlatformOfPayment($invoice);
 
             return $invoice->fresh();
         });
@@ -134,5 +138,14 @@ class InvoiceService
     public function priceFor(string $subscriptionType, Salon $salon, ?Plan $plan = null): int
     {
         return app(SubscriptionPricing::class)->price($subscriptionType, (int) $salon->max_specialists_count, $plan);
+    }
+
+    /** «صندوق اعلان» ابرمدیر (۲۰۲۶-۱۰-۱۵): پرداخت آنلاین اشتراک یا ارتقا */
+    private function notifyPlatformOfPayment(Invoice $invoice): void
+    {
+        $salonName = \App\Models\Salon::withoutGlobalScopes()->whereKey($invoice->salon_id)->value('name');
+        app(\App\Services\SuperAdmin\SuperAdminNotifier::class)->send('subscription_paid', sprintf('سالن «%s» %s را آنلاین پرداخت کرد: %s تومان.', $salonName,
+            $invoice->kind === 'upgrade' ? 'ارتقای پلن' : 'اشتراک '.$invoice->subscription_type, number_format((int) $invoice->amount)),
+            route('superadmin.payments.show', $invoice->id, false), (int) $invoice->salon_id);
     }
 }

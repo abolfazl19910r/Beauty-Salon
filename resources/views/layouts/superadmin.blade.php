@@ -86,6 +86,7 @@
         /* دکمه‌هایی که با رنگ اصلی پر شده‌اند: متن سفید */
         [style*="background: var(--sa-accent)"], [style*="background:var(--sa-accent)"] { color: var(--sa-on-accent) !important; }
         table thead { background: var(--sa-soft); }
+        .sa-nav-group { font-size: .72rem; letter-spacing: .04em; color: var(--sa-side-text); opacity: .65; padding: .9rem 1rem .3rem; }
         .sa-badge { border-radius: 999px; padding: 0 .5rem; font-size: .75rem; font-weight: 700; margin-inline-start: .35rem; background: var(--sa-soft); color: var(--sa-accent); }
         .sa-badge-bad { background: var(--sa-danger); color: #FFFFFF; }
         /* ورودی‌های بی‌کلاس (پلاگین forms پس‌زمینه‌ی سفید ثابت می‌دهد) */
@@ -110,31 +111,52 @@
                 <div class="text-lg font-bold" style="color: #FFFFFF;">پنل مدیریت کل</div>
             </div>
             <nav class="p-3">
-                <a href="{{ route('superadmin.dashboard') }}" class="sa-nav-link {{ request()->routeIs('superadmin.dashboard') ? 'active' : '' }}">داشبورد</a>
-                <a href="{{ route('superadmin.salons.index') }}" class="sa-nav-link {{ request()->routeIs('superadmin.salons.*') ? 'active' : '' }}">مدیریت سالن‌ها</a>
-                <a href="{{ route('superadmin.plans.index') }}" class="sa-nav-link {{ request()->routeIs('superadmin.plans.*') ? 'active' : '' }}">پلن‌ها و امکانات</a>
-                <a href="{{ route('superadmin.payments.index') }}" class="sa-nav-link {{ request()->routeIs('superadmin.payments.*') ? 'active' : '' }}">کیف پول و درآمد اشتراک</a>
-                <a href="{{ route('superadmin.support-tickets.index') }}" class="sa-nav-link {{ request()->routeIs('superadmin.support-tickets.*') ? 'active' : '' }}">تیکت‌های پشتیبانی</a>
-                @php($openDemoRequests = \App\Models\DemoRequest::query()->open()->count())
-                <a href="{{ route('superadmin.demo-requests.index') }}" class="sa-nav-link {{ request()->routeIs('superadmin.demo-requests.*') ? 'active' : '' }}">
-                    درخواست‌های دمو
-                    @if ($openDemoRequests > 0)
-                        <span data-demo-requests-badge style="background: var(--sa-soft); color: var(--sa-accent); border-radius: 999px; padding: 0 .5rem; font-size: .75rem; font-weight: 700; margin-inline-start: .35rem;">{{ to_persian_num((string) $openDemoRequests) }}</span>
-                    @endif
-                </a>
-                <a href="{{ route('superadmin.sms.index') }}" class="sa-nav-link {{ request()->routeIs('superadmin.sms.*') ? 'active' : '' }}">پیامک سالن‌ها</a>
-                @php($saOverview = app(\App\Services\SuperAdmin\PlatformOverview::class))
-                @php($saAttention = $saOverview->attentionQuery()->count())
-                @php($saFailedJobs = $saOverview->failedJobsCount())
-                <a href="{{ route('superadmin.payment-attention.index') }}" class="sa-nav-link {{ request()->routeIs('superadmin.payment-attention.*') ? 'active' : '' }}">
-                    پرداخت‌های نیازمند بررسی
-                    @if ($saAttention > 0)<span data-attention-badge class="sa-badge sa-badge-bad">{{ to_persian_num((string) $saAttention) }}</span>@endif
-                </a>
-                <a href="{{ route('superadmin.failed-jobs.index') }}" class="sa-nav-link {{ request()->routeIs('superadmin.failed-jobs.*') ? 'active' : '' }}">
-                    کارهای ناموفق صف
-                    @if ($saFailedJobs > 0)<span data-failed-jobs-badge class="sa-badge sa-badge-bad">{{ to_persian_num((string) $saFailedJobs) }}</span>@endif
-                </a>
-                <a href="{{ route('superadmin.settings.edit') }}" class="sa-nav-link {{ request()->routeIs('superadmin.settings.*') ? 'active' : '' }}">تنظیمات پلتفرم</a>
+                @php
+                    $saOverview = app(\App\Services\SuperAdmin\PlatformOverview::class);
+                    $saAttention = $saOverview->attentionQuery()->count();
+                    $saFailedJobs = $saOverview->failedJobsCount();
+                    $saUnread = \App\Http\Controllers\SuperAdmin\NotificationInboxController::query(auth()->id())->whereNull('read_at')->count();
+                    $openDemoRequests = \App\Models\DemoRequest::query()->open()->count();
+                    $saNav = [
+                        'سالن‌ها' => [
+                            ['superadmin.dashboard', 'superadmin.dashboard', 'داشبورد', 0],
+                            ['superadmin.salons.index', 'superadmin.salons.*', 'مدیریت سالن‌ها', 0],
+                            ['superadmin.search.index', 'superadmin.search.*', 'جستجوی شماره', 0],
+                            ['superadmin.plans.index', 'superadmin.plans.*', 'پلن‌ها و امکانات', 0],
+                            ['superadmin.templates.index', 'superadmin.templates.*', 'قالب‌ها', 0],
+                        ],
+                        'مالی و پیامک' => [
+                            ['superadmin.payments.index', 'superadmin.payments.*', 'کیف پول و درآمد اشتراک', 0],
+                            ['superadmin.sms.index', 'superadmin.sms.*', 'پیامک سالن‌ها', 0],
+                            ['superadmin.payment-attention.index', 'superadmin.payment-attention.*', 'پرداخت‌های نیازمند بررسی', -$saAttention],
+                        ],
+                        'ارتباط' => [
+                            ['superadmin.notifications.index', 'superadmin.notifications.*', 'اعلان‌ها', $saUnread],
+                            ['superadmin.support-tickets.index', 'superadmin.support-tickets.*', 'تیکت‌های پشتیبانی', 0],
+                            ['superadmin.demo-requests.index', 'superadmin.demo-requests.*', 'درخواست‌های دمو', $openDemoRequests],
+                            ['superadmin.announcements.index', 'superadmin.announcements.*', 'اطلاعیه‌های سراسری', 0],
+                        ],
+                        'سیستم' => [
+                            ['superadmin.failed-jobs.index', 'superadmin.failed-jobs.*', 'کارهای ناموفق صف', -$saFailedJobs],
+                            ['superadmin.audit-log.index', 'superadmin.audit-log.*', 'گزارش کارهای ابرمدیر', 0],
+                            ['superadmin.settings.edit', 'superadmin.settings.*', 'تنظیمات پلتفرم', 0],
+                        ],
+                    ];
+                @endphp
+                @foreach ($saNav as $group => $items)
+                    <div class="sa-nav-group">{{ $group }}</div>
+                    @foreach ($items as [$route, $pattern, $label, $count])
+                        <a href="{{ route($route) }}" class="sa-nav-link {{ request()->routeIs($pattern) ? 'active' : '' }}">
+                            {{ $label }}
+                            {{-- عدد منفی = هشدار قرمز --}}
+                            @if ($count !== 0)
+                                <span class="sa-badge {{ $count < 0 ? 'sa-badge-bad' : '' }}"
+                                      @if ($route === 'superadmin.demo-requests.index') data-demo-requests-badge @elseif ($route === 'superadmin.payment-attention.index') data-attention-badge @elseif ($route === 'superadmin.failed-jobs.index') data-failed-jobs-badge @elseif ($route === 'superadmin.notifications.index') data-inbox-badge @endif
+                                >{{ to_persian_num((string) abs($count)) }}</span>
+                            @endif
+                        </a>
+                    @endforeach
+                @endforeach
             </nav>
         </aside>
 
@@ -143,6 +165,10 @@
                 <h1 class="text-lg font-bold">@yield('title')</h1>
                 <div class="flex items-center gap-4">
                     @include('partials.mahru-theme-toggle')
+                    <a href="{{ route('superadmin.notifications.index') }}" class="relative inline-flex w-[38px] h-[38px] items-center justify-center rounded-full" style="border: 1px solid var(--sa-border); color: var(--sa-accent); background: var(--sa-soft);" aria-label="اعلان‌ها">
+                        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+                        @if ($saUnread > 0)<span class="absolute -top-1 -right-1 sa-badge sa-badge-bad" style="margin: 0; padding: 0 .35rem;">{{ to_persian_num((string) $saUnread) }}</span>@endif
+                    </a>
                     <span class="text-sm" style="color: var(--sa-text-dim);">{{ auth()->user()->name }}</span>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
