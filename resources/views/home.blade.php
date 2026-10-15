@@ -239,15 +239,15 @@
                     </p>
                     <ul class="space-y-3">
                         <li class="flex items-center gap-3 text-sm text-m-tx/80">
-                            <span class="w-2 h-2 rounded-full bg-[#E3C985] shrink-0"></span>
+                            <span class="w-2 h-2 rounded-full bg-m-gold2 shrink-0"></span>
                             استفاده از برندهای معتبر و محصولات ارگانیک
                         </li>
                         <li class="flex items-center gap-3 text-sm text-m-tx/80">
-                            <span class="w-2 h-2 rounded-full bg-[#E3C985] shrink-0"></span>
+                            <span class="w-2 h-2 rounded-full bg-m-gold2 shrink-0"></span>
                             تیم متخصص با گواهینامه‌های معتبر بین‌المللی
                         </li>
                         <li class="flex items-center gap-3 text-sm text-m-tx/80">
-                            <span class="w-2 h-2 rounded-full bg-[#E3C985] shrink-0"></span>
+                            <span class="w-2 h-2 rounded-full bg-m-gold2 shrink-0"></span>
                             فضای اختصاصی و بهداشتی برای آرامش کامل
                         </li>
                     </ul>
@@ -298,7 +298,7 @@
                                 <h3 class="font-serif-fa font-bold text-lg">{{ $name }}</h3>
                                 <p class="text-xs text-m-gold2 mb-2">متخصص زیبایی</p>
                                 <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    <a href="#" class="w-8 h-8 flex items-center justify-center rounded-full bg-m-tx/10 hover:bg-[#D8B96A] transition-colors" aria-label="اینستاگرام">
+                                    <a href="#" class="w-8 h-8 flex items-center justify-center rounded-full bg-m-tx/10 hover:bg-m-gold transition-colors" aria-label="اینستاگرام">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.25.07 1.62.07 4.81s-.01 3.56-.07 4.81c-.15 3.23-1.66 4.77-4.92 4.92-1.25.06-1.62.07-4.85.07s-3.6 0-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92-.06-1.25-.07-1.62-.07-4.81s.01-3.56.07-4.81c.15-3.23 1.67-4.77 4.92-4.92C8.4 2.2 8.8 2.2 12 2.2zm0 1.8c-3.14 0-3.5.01-4.74.07-2.27.1-3.39 1.24-3.49 3.49C3.7 8.8 3.7 9.16 3.7 12s0 3.2.06 4.44c.1 2.25 1.22 3.4 3.49 3.49 1.24.06 1.6.07 4.74.07s3.5-.01 4.74-.07c2.27-.1 3.39-1.24 3.49-3.49.06-1.24.07-1.6.07-4.44s0-3.2-.06-4.44c-.1-2.25-1.23-3.39-3.49-3.49C15.5 4.01 15.14 4 12 4zm0 3.4a4.6 4.6 0 110 9.2 4.6 4.6 0 010-9.2zm0 1.8a2.8 2.8 0 100 5.6 2.8 2.8 0 000-5.6zm5.85-3.05a1.1 1.1 0 110 2.2 1.1 1.1 0 010-2.2z"/></svg>
                                     </a>
                                 </div>
@@ -467,7 +467,7 @@
 
             slides.forEach((_, i) => {
                 const bullet = document.createElement('button');
-                bullet.className = 'w-2.5 h-2.5 rounded-full transition-colors ' + (i === 0 ? 'bg-[#E3C985]' : 'bg-m-gold/30');
+                bullet.className = 'w-2.5 h-2.5 rounded-full transition-colors ' + (i === 0 ? 'bg-m-gold2' : 'bg-m-gold/30');
                 bullet.setAttribute('aria-label', 'نظر شماره ' + (i + 1));
                 bullet.addEventListener('click', () => showSlide(i));
                 bulletsWrap.appendChild(bullet);
@@ -480,13 +480,13 @@
                 if (index >= slides.length) index = 0;
 
                 slides[current].classList.add('hidden');
-                bullets[current].classList.remove('bg-[#E3C985]');
+                bullets[current].classList.remove('bg-m-gold2');
                 bullets[current].classList.add('bg-m-gold/30');
 
                 current = index;
 
                 slides[current].classList.remove('hidden');
-                bullets[current].classList.add('bg-[#E3C985]');
+                bullets[current].classList.add('bg-m-gold2');
                 bullets[current].classList.remove('bg-m-gold/30');
             }
 

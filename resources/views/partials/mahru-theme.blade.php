@@ -8,12 +8,29 @@
     هر دو شفافیت بگیرند. متغیرهای قدیمی --rasta-* هم به همین‌ها وصل شده‌اند تا صفحه‌ای جا نماند.
     --rasta-dark فقط «پس‌زمینه» است؛ متن روی دکمه‌ی طلایی همیشه --m-on-gold (ثابت در هر دو تم).
 
-    پنل‌های مدیر/متخصص/ابرمدیر این partial را ندارند و دست نخورده‌اند.
+    پنل‌های مدیر و متخصص هم این partial را دارند (بسته‌ی ه)؛ پنل ابرمدیر نه. بسته‌ی «و»: پالت و چیدمان قالب، پایین همین فایل.
 --}}
+@php
+    /*
+     * ⭐ بسته‌ی «و»: قالب سالن جاری. صفحه‌های سالن (سایت، مشتری، متخصص، ورود) پالت و چیدمان «قالب سایت» را می‌گیرند؛
+     * پنل مدیر با ['themeScope' => 'admin'] فقط پالت قالب پنل مدیر را (چیدمان پنل مدیر در layouts/admin است).
+     */
+    $__appearance = app(\App\Support\Themes\CurrentAppearance::class)->get();
+    if (($themeScope ?? 'site') === 'admin') {
+        $__themeTokens = \App\Support\Themes\ThemeCatalog::adminPaletteTokens($__appearance->admin);
+        $__themeLayout = null;
+    } else {
+        $__themeTokens = $__appearance->palette ? \App\Support\Themes\ThemeCatalog::sitePaletteTokens($__appearance->palette) : null;
+        $__themeLayout = $__appearance->isDefaultSite() ? null : $__appearance->layout;
+    }
+@endphp
 <script>
 (function(){var d=document.documentElement,t=null;try{t=new URLSearchParams(location.search).get('theme');if(t!=='light'&&t!=='dark')t=localStorage.getItem('mahru-theme')}catch(e){}
 if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark'}d.dataset.theme=t})();
 </script>
+@if ($__themeLayout)
+<script>document.documentElement.dataset.layout=@json($__themeLayout);</script>
+@endif
 <link rel="preload" href="{{ asset('fonts/mahru/Vazirmatn-Regular.woff2') }}" as="font" type="font/woff2" crossorigin>
 <style>
 @font-face{font-family:"Mahru";src:url("{{ asset('fonts/mahru/Vazirmatn-Regular.woff2') }}") format("woff2");font-weight:400;font-display:swap}
@@ -150,3 +167,9 @@ html[data-theme=light] .m-logo-light{display:block!important}
 @keyframes mFadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
+@if ($__themeTokens)
+    @include('partials.theme-tokens', ['tokens' => $__themeTokens])
+@endif
+@if ($__themeLayout)
+    @include('partials.theme-layout', ['layout' => $__themeLayout])
+@endif

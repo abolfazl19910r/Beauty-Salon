@@ -49,6 +49,21 @@
                 transform: translateY(-10px);
             }
         }
+
+        /* بسته‌ی «و»: منوی بالایی پنل متخصص */
+        .spec-top{gap:4px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--specialist-border);background:var(--specialist-surface);overflow-x:auto;white-space:nowrap}
+        .spec-top a{font-size:14px;color:var(--specialist-text-dim);padding:8px 14px;text-decoration:none}
+        .spec-top a[aria-current=page]{color:var(--specialist-text);font-weight:700}
+        .spec-top .spec-top__site{margin-inline-start:auto}
+        .spec-top--majalle a{border-bottom:2px solid transparent;padding:8px 6px;margin:0 8px}
+        .spec-top--majalle a[aria-current=page]{border-bottom-color:rgb(var(--m-gold))}
+        .spec-top--aram{justify-content:center;background:transparent;border:0;padding-top:14px}
+        .spec-top--aram a{border-radius:12px;background:rgb(var(--m-tx) / .04)}
+        .spec-top--aram a[aria-current=page]{background:rgb(var(--m-bg2));box-shadow:0 1px 3px rgba(0,0,0,.12)}
+        .spec-top--bento{margin:12px 16px 0;border:1px solid var(--specialist-border);border-radius:24px}
+        .spec-top--bento a{border-radius:999px;background:rgb(var(--m-tx) / .05)}
+        .spec-top--bento a[aria-current=page]{background:rgb(var(--m-gold) / .14);color:rgb(var(--m-gold))}
+        html[data-layout=aram] .spec-main-inner{max-width:960px;margin:0 auto}
     </style>
     @stack('styles')
 </head>
@@ -56,7 +71,25 @@
 
 <div class="flex h-screen overflow-hidden">
 
-    <aside id="sidebar" class="w-64 min-h-screen overflow-y-auto hidden md:block transition-all duration-300 z-30 border-l" style="background-color: var(--specialist-surface); border-color: var(--specialist-border);">
+    @php
+        /*
+         * ⭐ بسته‌ی «و»: پنل متخصص هم قالب سایت سالن را می‌گیرد. فهرست منو یک‌جا (همین آرایه) و دو شکل نمایش:
+         * منوی کناری (طلایی ماهرو، ویترین) یا نوار بالایی (مجله: زبانه‌ی زیرخط‌دار، آرام: کلید قرصی، بنتو: کاشی). روی موبایل همیشه کشو + نوار پایین.
+         */
+        $__specLayout = app(\App\Support\Themes\CurrentAppearance::class)->get()->layout;
+        $__specTop = in_array($__specLayout, ['majalle', 'aram', 'bento'], true);
+        $__specNav = [
+            ['specialist.my-dashboard', 'specialist.my-dashboard', 'داشبورد', 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z'],
+            ['specialist.profile.show', 'specialist.profile*', 'پروفایل', 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'],
+            ['specialist.bookings.index', 'specialist.bookings*', 'نوبت‌ها', 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'],
+            ['specialist.reviews.index', 'specialist.reviews*', 'نظرات و ارزیابی‌ها', 'M11.48 3.5a.56.56 0 011.04 0l2.13 5.11a.56.56 0 00.47.35l5.52.44c.5.04.7.66.32.99l-4.2 3.6a.56.56 0 00-.18.56l1.28 5.38a.56.56 0 01-.84.61l-4.72-2.88a.56.56 0 00-.59 0l-4.72 2.88a.56.56 0 01-.84-.61l1.28-5.38a.56.56 0 00-.18-.56l-4.2-3.6a.56.56 0 01.32-.99l5.52-.44a.56.56 0 00.47-.35z'],
+            ['specialist.wallet.index', 'specialist.wallet*', 'کیف پول', 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'],
+            ['specialist.schedule', 'specialist.schedule*', 'ساعات کاری هفتگی', 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'],
+            ['specialist.leaves.index', 'specialist.leaves*', 'مرخصی‌ها', 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'],
+            ['specialist.reports.index', 'specialist.reports*', 'گزارش', 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'],
+        ];
+    @endphp
+    <aside id="sidebar" class="w-64 min-h-screen overflow-y-auto hidden {{ $__specTop ? '' : 'md:block' }} transition-all duration-300 z-30 border-l" style="background-color: var(--specialist-surface); border-color: var(--specialist-border);">
         <div class="p-5 border-b flex items-center justify-between" style="border-color: var(--specialist-border);">
             <a href="{{ route('home') }}" class="flex items-center gap-2">
                 {{-- ⭐ لوگوی سالن متخصص (۲۰۲۶-۰۹-۲۴)، وگرنه آیکون پیش‌فرض. --}}
@@ -66,70 +99,15 @@
         </div>
 
         <nav class="mt-6 px-3 space-y-2">
-
-            <a href="{{ route('specialist.my-dashboard') }}"
-               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.my-dashboard') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-plum-light)]' }}">
-                <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                </svg>
-                داشبورد
-            </a>
-
-            <a href="{{ route('specialist.profile.show') }}"
-               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.profile*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-plum-light)]' }}">
-                <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                پروفایل
-            </a>
-
-            <a href="{{ route('specialist.bookings.index') }}"
-               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.bookings*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-plum-light)]' }}">
-                <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                نوبت‌ها
-            </a>
-
-            <a href="{{ route('specialist.reviews.index') }}"
-               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.reviews*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-plum-light)]' }}">
-                <svg class="w-5 h-5 ml-3 opacity-75" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-                نظرات و ارزیابی‌ها
-            </a>
-
-            <a href="{{ route('specialist.wallet.index') }}"
-               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.wallet*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-plum-light)]' }}">
-                <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                کیف پول
-            </a>
-
-            <a href="{{ route('specialist.schedule') }}"
-               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.schedule*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-plum-light)]' }}">
-                <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                ساعات کاری هفتگی
-            </a>
-
-            <a href="{{ route('specialist.leaves.index') }}"
-               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.leaves*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-plum-light)]' }}">
-                <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                مرخصی‌ها
-            </a>
-
-            <a href="{{ route('specialist.reports.index') }}"
-               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.reports*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-plum-light)]' }}">
-                <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                گزارش
-            </a>
+            @foreach ($__specNav as [$__route, $__pattern, $__label, $__icon])
+                <a href="{{ route($__route) }}"
+                   class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs($__pattern) ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-plum-light)]' }}">
+                    <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $__icon }}" />
+                    </svg>
+                    {{ $__label }}
+                </a>
+            @endforeach
 
             <div class="border-t my-4 pt-4" style="border-color: var(--specialist-border);">
                 <a href="{{ route('home') }}" class="flex items-center px-4 py-3 text-sm font-medium text-[var(--specialist-inactive)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)] rounded-lg transition-colors">
@@ -259,6 +237,15 @@
                 </div>
             </div>
         </header>
+        @if ($__specTop)
+            {{-- بسته‌ی «و»: منوی بالایی پنل متخصص در چیدمان‌های مجله/آرام/بنتو (روی موبایل همان کشو و نوار پایین) --}}
+            <nav class="spec-top spec-top--{{ $__specLayout }} hidden md:flex" aria-label="منوی پنل متخصص">
+                @foreach ($__specNav as [$__route, $__pattern, $__label])
+                    <a href="{{ route($__route) }}" @if (request()->routeIs($__pattern)) aria-current="page" @endif>{{ $__label }}</a>
+                @endforeach
+                <a href="{{ route('home') }}" class="spec-top__site">بازگشت به سایت</a>
+            </nav>
+        @endif
         @include('partials.platform-announcements', ['panel' => 'specialists'])
 
         <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6 pb-24 md:pb-6" style="background-color: var(--specialist-bg);">
@@ -294,7 +281,9 @@
                 </div>
             @endif
 
+            <div class="spec-main-inner">
             @yield('content')
+            </div>
         </main>
 
         <footer class="hidden md:block border-t p-4 text-center text-sm" style="background-color: var(--specialist-surface); border-color: var(--specialist-border); color: var(--specialist-text-dim);">

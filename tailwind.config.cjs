@@ -43,7 +43,8 @@ module.exports = {
                     bad: "rgb(var(--m-bad) / <alpha-value>)",
                     info: "rgb(var(--m-info) / <alpha-value>)",
                     warn: "rgb(var(--m-warn) / <alpha-value>)",
-                    ongold: "#221A0C",
+                    // بسته‌ی «و»: متن روی دکمه‌ی رنگ قالب (طلایی ماهرو: #221A0C؛ پالت‌های روشن: سفید)
+                    ongold: "var(--m-on-gold)",
                     onsolid: "rgb(var(--m-on-solid) / <alpha-value>)",
                 },
                 border: "hsl(var(--border))",

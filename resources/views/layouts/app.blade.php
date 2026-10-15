@@ -42,6 +42,10 @@
             @if ($__coursesOn)
                 <a href="{{ route('courses.index') }}" class="nav-link">دوره‌ها</a>
             @endif
+            {{-- بسته‌ی «و»: چیدمان‌های رزرومحور (ویترین، بنتو) دکمه‌ی رزرو را همیشه در هدر دارند --}}
+            @if (in_array(app(\App\Support\Themes\CurrentAppearance::class)->get()->layout, ['vitrin', 'bento'], true) && ! auth()->user()?->hasRole('specialists'))
+                <a href="{{ route('bookings.create') }}" class="btn-gold rounded-full px-5 py-2 text-sm font-semibold" data-header-book>رزرو نوبت</a>
+            @endif
 
             @auth
                 @if(auth()->user()->hasRole('specialists'))
@@ -82,7 +86,7 @@
                             }
                         @endphp
                         @if($userPoints > 0)
-                            <span class="absolute -top-2 -left-3 bg-[#D8B96A] text-m-ongold text-[10px] px-1.5 py-0.5 rounded-full persian-number min-w-[20px] text-center font-bold">
+                            <span class="absolute -top-2 -left-3 bg-m-gold text-m-ongold text-[10px] px-1.5 py-0.5 rounded-full persian-number min-w-[20px] text-center font-bold">
                                 {{ number_format($userPoints) }}
                             </span>
                         @endif

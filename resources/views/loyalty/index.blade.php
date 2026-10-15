@@ -7,8 +7,8 @@
         {{-- Header --}}
         <div class="bg-m-card rounded-2xl border border-m-gold/20 p-8 mb-8 overflow-hidden relative">
             <div class="absolute inset-0 opacity-5">
-                <div class="absolute top-0 left-0 w-64 h-64 rounded-full bg-[#D8B96A] -translate-x-1/2 -translate-y-1/2"></div>
-                <div class="absolute bottom-0 right-0 w-96 h-96 rounded-full bg-[#D8B96A] translate-x-1/2 translate-y-1/2"></div>
+                <div class="absolute top-0 left-0 w-64 h-64 rounded-full bg-m-gold -translate-x-1/2 -translate-y-1/2"></div>
+                <div class="absolute bottom-0 right-0 w-96 h-96 rounded-full bg-m-gold translate-x-1/2 translate-y-1/2"></div>
             </div>
             <div class="relative flex flex-col sm:flex-row items-center justify-between gap-6">
                 <div>

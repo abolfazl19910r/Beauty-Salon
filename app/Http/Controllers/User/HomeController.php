@@ -47,6 +47,19 @@ class HomeController extends Controller
                 ->get();
         });
 
-        return view('home', compact('services', 'specialists'));
+        // ⭐ بسته‌ی «و»: هر چیدمان قالب سایت صفحه‌ی خانه‌ی خودش را دارد (salon-home/*)؛ پیش‌فرض همان home
+        $appearance = app(\App\Support\Themes\CurrentAppearance::class)->get();
+        if ($appearance->isDefaultSite()) {
+            return view('home', compact('services', 'specialists'));
+        }
+
+        // آمار واقعی نظرهای تأییدشده (نه عدد ساختگی): اگر نظری نیست، چیدمان‌ها کاشی امتیاز را نشان نمی‌دهند
+        $reviewStats = Cache::remember("home_reviews:{$salonId}", 1800, function () {
+            $query = \App\Models\Review::query()->where('is_approved', true);
+
+            return ['count' => (clone $query)->count(), 'avg' => round((float) (clone $query)->avg('overall_rating'), 1)];
+        });
+
+        return view($appearance->homeView(), compact('services', 'specialists', 'reviewStats'));
     }
 }
