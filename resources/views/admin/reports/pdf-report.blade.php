@@ -2,383 +2,171 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>گزارش {{ $typeLabel ?? 'مدیریتی' }} — سالن زیبایی {{ $currentSalonName }}</title>
-    <style>
-        @font-face {
-            font-family: 'vazir';
-            src: url('{{ storage_path("fonts/Vazirmatn-Regular.ttf") }}') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }
-        @font-face {
-            font-family: 'vazir-bold';
-            src: url('{{ storage_path("fonts/Vazirmatn-Bold.ttf") }}') format('truetype');
-            font-weight: bold;
-            font-style: normal;
-        }
-
-        body {
-            font-family: 'vazir', sans-serif;
-            direction: rtl;
-            text-align: right;
-            unicode-bidi: embed;
-            font-size: 10pt;
-            color: #1e293b;
-            line-height: 1.8;
-            margin: 0;
-            padding: 0;
-            background: #fff;
-        }
-
-        /* ── Letterhead ── */
-        .report-header {
-            border-bottom: 2px solid #334155;
-            padding-bottom: 12px;
-            margin-bottom: 18px;
-            overflow: hidden;
-        }
-        .report-header .brand {
-            float: right;
-            font-family: 'vazir-bold', sans-serif;
-            font-size: 15pt;
-            color: #0f172a;
-            direction: rtl;
-        }
-        .report-header .doc-title {
-            float: left;
-            text-align: left;
-            font-size: 9pt;
-            color: #64748b;
-            margin-top: 4px;
-            direction: rtl;
-        }
-        .report-header .doc-title strong {
-            display: block;
-            font-size: 11pt;
-            color: #334155;
-            font-family: 'vazir-bold', sans-serif;
-            margin-bottom: 3px;
-        }
-
-        /* ── Period ── */
-        .period-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 16px;
-            font-size: 9pt;
-        }
-        .period-table td {
-            padding: 6px 12px;
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
-            color: #475569;
-            direction: rtl;
-        }
-
-        /* ── Summary ── */
-        .stats-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 18px;
-        }
-        .stats-table td {
-            width: 25%;
-            border: 1px solid #e2e8f0;
-            padding: 10px 8px;
-            text-align: center;
-            vertical-align: middle;
-            background: #f8fafc;
-            direction: rtl;
-        }
-        .stat-label {
-            font-size: 8pt;
-            color: #64748b;
-            display: block;
-            margin-bottom: 4px;
-        }
-        .stat-value {
-            font-family: 'vazir-bold', sans-serif;
-            font-size: 13pt;
-            color: #0f172a;
-            display: block;
-        }
-        .stat-unit {
-            font-size: 7.5pt;
-            color: #94a3b8;
-            display: block;
-            margin-top: 1px;
-        }
-
-        /* ── Section title ── */
-        .section-title {
-            font-family: 'vazir-bold', sans-serif;
-            font-size: 11pt;
-            color: #334155;
-            margin: 16px 0 8px;
-            padding-bottom: 4px;
-            border-bottom: 1px solid #e2e8f0;
-            direction: rtl;
-        }
-
-        /* ── Data table ── */
-        table.data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 14px;
-            direction: rtl;
-        }
-        table.data-table thead tr {
-            background: #334155;
-            color: #ffffff;
-        }
-        table.data-table th {
-            padding: 8px 10px;
-            text-align: right;
-            font-family: 'vazir-bold', sans-serif;
-            font-size: 9pt;
-            border: 1px solid #2d3f55;
-            color: #fff;
-            direction: rtl;
-        }
-        table.data-table tbody tr:nth-child(even) { background: #f8fafc; }
-        table.data-table tbody tr:nth-child(odd)  { background: #ffffff; }
-        table.data-table td {
-            padding: 7px 10px;
-            border: 1px solid #e2e8f0;
-            color: #1e293b;
-            font-size: 9.5pt;
-            text-align: right;
-            direction: rtl;
-        }
-
-        /* ── Raw bookings appendix (compact, landscape) ── */
-        table.raw-table th {
-            padding: 5px 6px;
-            font-size: 7.5pt;
-        }
-        table.raw-table td {
-            padding: 4px 6px;
-            font-size: 7.5pt;
-        }
-        .status-bad  { background: #fef2f2 !important; color: #991b1b !important; }
-        .status-warn { background: #fffbeb !important; color: #92400e !important; }
-        .status-good { background: #f0fdf4 !important; color: #166534 !important; }
-
-        /* ── Footer ── */
-        .footer {
-            position: fixed;
-            bottom: 10px;
-            width: 100%;
-            overflow: hidden;
-            font-size: 8pt;
-            color: #94a3b8;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 5px;
-        }
-        .footer .f-right { float: right; direction: rtl; }
-        .footer .f-left  { float: left; }
-    </style>
+    <title>گزارش {{ $typeLabel ?? 'مدیریتی' }} — {{ $currentSalonName }}</title>
+    @include('partials.pdf-report-style')
 </head>
 <body>
+{{-- ⭐ ظاهر تازه (۲۰۲۶-۱۰-۱۵): همان داده‌ها و بخش‌های قبلی؛ رنگ‌ها و چیدمان از partials/pdf-report-style. --}}
 
-{{-- Letterhead --}}
-<div class="report-header">
-    <div class="brand">سالن زیبایی {{ $currentSalonName }}</div>
-    <div class="doc-title">
-        <strong>گزارش {{ $typeLabel ?? 'مدیریتی' }}</strong>
-        تاریخ: {{ jalali_date(now(), 'Y/m/d') }} &nbsp; ساعت: {{ now()->format('H:i') }}
-    </div>
-</div>
+<htmlpagefooter name="reportFooter">
+    <table class="foot"><tr>
+        <td>گزارش {{ $typeLabel ?? 'مدیریتی' }} · {{ $currentSalonName }} · ساخته‌شده با {{ config('brand.name') }}</td>
+        <td style="text-align:left;">صفحه {PAGENO} از {nbpg}</td>
+    </tr></table>
+</htmlpagefooter>
+<sethtmlpagefooter name="reportFooter" value="on" />
 
-{{-- Period --}}
+<table class="masthead"><tr>
+    <td>
+        <div class="ms-kicker">گزارش مدیریتی سالن</div>
+        <div class="ms-salon">{{ $currentSalonName }}</div>
+    </td>
+    <td class="ms-doc">
+        <div class="ms-title">گزارش {{ $typeLabel ?? 'مدیریتی' }}</div>
+        صادر شده {{ jalali_date(now(), 'Y/m/d') }} · ساعت {{ now()->format('H:i') }}
+    </td>
+</tr></table>
+<div class="masthead-rule"></div>
+
 @if(isset($period))
-    <table class="period-table">
-        <tr>
-            <td>
-                بازه زمانی: &nbsp;
-                <strong>{{ jalali_date($period['start'], 'Y/m/d') }}</strong>
-                &nbsp; تا &nbsp;
-                <strong>{{ jalali_date($period['end'], 'Y/m/d') }}</strong>
-            </td>
-        </tr>
-    </table>
+    <table class="meta"><tr>
+        <td>بازه‌ی گزارش: <b>{{ jalali_date($period['start'], 'Y/m/d') }}</b> تا <b>{{ jalali_date($period['end'], 'Y/m/d') }}</b></td>
+    </tr></table>
 @endif
 
-{{-- Summary --}}
 @php $s = $data['summary'] ?? []; @endphp
 @if(!empty($s))
-    <table class="stats-table">
-        <tr>
-            <td>
-                <span class="stat-label">درآمد کل</span>
-                <span class="stat-value">{{ number_format($s['total_revenue'] ?? 0) }}</span>
-                <span class="stat-unit">تومان</span>
-            </td>
-            <td>
-                <span class="stat-label">کل نوبت‌ها</span>
-                <span class="stat-value">{{ number_format($s['total_bookings'] ?? 0) }}</span>
-            </td>
-            <td>
-                <span class="stat-label">انجام‌شده</span>
-                <span class="stat-value">{{ number_format($s['completed_bookings'] ?? 0) }}</span>
-            </td>
-            <td>
-                <span class="stat-label">لغو شده</span>
-                <span class="stat-value">{{ number_format($s['cancelled_bookings'] ?? 0) }}</span>
-            </td>
-        </tr>
-    </table>
+    <table class="kpis"><tr>
+        <td class="lead">
+            <div class="kpi-label">درآمد کل</div>
+            <div class="kpi-value">{{ number_format($s['total_revenue'] ?? 0) }}</div>
+            <div class="kpi-unit">تومان</div>
+        </td>
+        <td class="info">
+            <div class="kpi-label">کل نوبت‌ها</div>
+            <div class="kpi-value">{{ number_format($s['total_bookings'] ?? 0) }}</div>
+            <div class="kpi-unit">نوبت</div>
+        </td>
+        <td class="good">
+            <div class="kpi-label">انجام‌شده</div>
+            <div class="kpi-value">{{ number_format($s['completed_bookings'] ?? 0) }}</div>
+            <div class="kpi-unit">نوبت</div>
+        </td>
+        <td class="bad">
+            <div class="kpi-label">لغو شده</div>
+            <div class="kpi-value">{{ number_format($s['cancelled_bookings'] ?? 0) }}</div>
+            <div class="kpi-unit">نوبت</div>
+        </td>
+    </tr></table>
 @endif
 
-{{-- Payment method breakdown (wallet / gateway / admin-manual) — same data now shown in admin/reports/index.blade.php --}}
+{{-- نحوه‌ی پرداخت (کیف پول / درگاه / ثبت دستی) — همان داده‌ی admin/reports/index --}}
 @php $pb = $data['paymentBreakdown'] ?? []; @endphp
 @if(!empty($pb) && ($pb['total'] ?? 0) > 0)
-    <div class="section-title">نحوه‌ی پرداخت نوبت‌های پرداخت‌شده</div>
-    <table class="stats-table">
-        <tr>
-            <td>
-                <span class="stat-label">کیف پول</span>
-                <span class="stat-value">{{ number_format($pb['wallet']) }}</span>
-                <span class="stat-unit">نوبت ({{ $pb['wallet_percent'] }}٪)</span>
-            </td>
-            <td>
-                <span class="stat-label">درگاه بانکی</span>
-                <span class="stat-value">{{ number_format($pb['gateway']) }}</span>
-                <span class="stat-unit">نوبت ({{ $pb['gateway_percent'] }}٪)</span>
-            </td>
-            <td>
-                <span class="stat-label">ثبت دستی ادمین</span>
-                <span class="stat-value">{{ number_format($pb['admin_manual']) }}</span>
-                <span class="stat-unit">نوبت ({{ $pb['admin_manual_percent'] }}٪)</span>
-            </td>
-        </tr>
-    </table>
-@endif
-
-{{-- Income table --}}
-@php $rows = $data['rows'] ?? collect(); @endphp
-@if($rows->count())
-    <div class="section-title">جزئیات درآمد</div>
-    <table class="data-table">
-        <thead>
-        <tr>
-            @if(isset($rows[0]['date']))<th>تاریخ</th>@endif
-            @if($type !== 'daily')<th>دوره</th>@endif
-            <th>تعداد نوبت</th>
-            <th>درآمد (تومان)</th>
-        </tr>
-        </thead>
+    <div class="section">نحوه‌ی پرداخت نوبت‌های پرداخت‌شده</div>
+    <table class="data">
+        <thead><tr><th>روش</th><th class="num">تعداد نوبت</th><th class="num">سهم</th><th style="width:38%"></th></tr></thead>
         <tbody>
-        @php
-            $jm = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
-        @endphp
-        @foreach($rows as $row)
-            <tr>
-                @if(isset($row['date']))
-                    <td>{{ jalali_date($row['date'], 'Y/m/d') }}</td>
-                @endif
-                @if($type !== 'daily')
-                    <td>{{ $row['label'] ?? '' }}</td>
-                @endif
-                <td>{{ number_format($row['bookings'] ?? 0) }}</td>
-                <td>{{ number_format($row['revenue'] ?? 0) }}</td>
+        @foreach ([['کیف پول', 'wallet'], ['درگاه بانکی', 'gateway'], ['ثبت دستی مدیر', 'admin_manual']] as $i => [$label, $key])
+            <tr class="{{ $i % 2 ? 'alt' : '' }}">
+                <td class="strong">{{ $label }}</td>
+                <td class="num">{{ number_format($pb[$key] ?? 0) }}</td>
+                <td class="num">{{ $pb[$key.'_percent'] ?? 0 }}٪</td>
+                <td>@include('partials.pdf-bar', ['percent' => max(0, min(100, (float) ($pb[$key.'_percent'] ?? 0)))])</td>
             </tr>
         @endforeach
         </tbody>
     </table>
 @endif
 
-{{-- Experts table --}}
-@php $specialists = $data['specialists'] ?? collect(); $hasSpecialists = $specialists->filter(fn($sp) => ($sp->total_bookings ?? 0) > 0)->count() > 0; @endphp
-@if($hasSpecialists)
-    <div class="section-title">عملکرد متخصصین</div>
-    <table class="data-table">
+@php $rows = $data['rows'] ?? collect(); @endphp
+@if($rows->count())
+    <div class="section">جزئیات درآمد</div>
+    <table class="data">
         <thead>
         <tr>
-            <th>نام متخصص</th>
-            <th>تعداد نوبت</th>
-            <th>درآمد (تومان)</th>
+            @if(isset($rows[0]['date']))<th>تاریخ</th>@endif
+            @if($type !== 'daily')<th>دوره</th>@endif
+            <th class="num">تعداد نوبت</th>
+            <th class="num">درآمد (تومان)</th>
         </tr>
         </thead>
+        <tbody>
+        @foreach($rows as $row)
+            <tr class="{{ $loop->odd ? '' : 'alt' }}">
+                @if(isset($row['date']))<td>{{ jalali_date($row['date'], 'Y/m/d') }}</td>@endif
+                @if($type !== 'daily')<td>{{ $row['label'] ?? '' }}</td>@endif
+                <td class="num">{{ number_format($row['bookings'] ?? 0) }}</td>
+                <td class="num strong">{{ number_format($row['revenue'] ?? 0) }}</td>
+            </tr>
+        @endforeach
+        <tr class="total">
+            @if(isset($rows[0]['date']))<td>جمع</td>@endif
+            @if($type !== 'daily')<td>{{ isset($rows[0]['date']) ? '' : 'جمع' }}</td>@endif
+            <td class="num">{{ number_format($rows->sum(fn ($r) => $r['bookings'] ?? 0)) }}</td>
+            <td class="num">{{ number_format($rows->sum(fn ($r) => $r['revenue'] ?? 0)) }}</td>
+        </tr>
+        </tbody>
+    </table>
+@endif
+
+@php
+    $specialists = ($data['specialists'] ?? collect())->filter(fn ($sp) => ($sp->total_bookings ?? 0) > 0)->values();
+    $maxSpRevenue = max(1, (float) $specialists->max(fn ($sp) => $sp->total_revenue ?? 0));
+@endphp
+@if($specialists->count())
+    <div class="section">عملکرد متخصص‌ها</div>
+    <table class="data">
+        <thead><tr><th>متخصص</th><th class="num">تعداد نوبت</th><th class="num">درآمد (تومان)</th><th style="width:30%"></th></tr></thead>
         <tbody>
         @foreach($specialists as $sp)
-            @if(($sp->total_bookings ?? 0) > 0)
-                <tr>
-                    <td>{{ $sp->name }}</td>
-                    <td>{{ number_format($sp->total_bookings ?? 0) }}</td>
-                    <td>{{ number_format($sp->total_revenue ?? 0) }}</td>
-                </tr>
-            @endif
+            <tr class="{{ $loop->odd ? '' : 'alt' }}">
+                <td class="strong">{{ $sp->name }}</td>
+                <td class="num">{{ number_format($sp->total_bookings ?? 0) }}</td>
+                <td class="num">{{ number_format($sp->total_revenue ?? 0) }}</td>
+                <td>@include('partials.pdf-bar', ['percent' => round(100 * ($sp->total_revenue ?? 0) / $maxSpRevenue)])</td>
+            </tr>
         @endforeach
         </tbody>
     </table>
 @endif
 
-{{-- Service table --}}
-@php $services = $data['services'] ?? collect(); $hasServices = $services->filter(fn($svc) => ($svc->bookings_count ?? 0) > 0)->count() > 0; @endphp
-@if($hasServices)
-    <div class="section-title">خدمات پرطرفدار</div>
-    <table class="data-table">
-        <thead>
-        <tr>
-            <th>نام خدمت</th>
-            <th>تعداد نوبت</th>
-            <th>درآمد (تومان)</th>
-        </tr>
-        </thead>
+@php
+    $services = ($data['services'] ?? collect())->filter(fn ($svc) => ($svc->bookings_count ?? 0) > 0)->values();
+    $maxSvcCount = max(1, (int) $services->max(fn ($svc) => $svc->bookings_count ?? 0));
+@endphp
+@if($services->count())
+    <div class="section">خدمات پرطرفدار</div>
+    <table class="data">
+        <thead><tr><th>خدمت</th><th class="num">تعداد نوبت</th><th class="num">درآمد (تومان)</th><th style="width:30%"></th></tr></thead>
         <tbody>
         @foreach($services as $svc)
-            @if(($svc->bookings_count ?? 0) > 0)
-                <tr>
-                    <td>{{ $svc->name }}</td>
-                    <td>{{ number_format($svc->bookings_count ?? 0) }}</td>
-                    <td>{{ number_format($svc->revenue ?? 0) }}</td>
-                </tr>
-            @endif
+            <tr class="{{ $loop->odd ? '' : 'alt' }}">
+                <td class="strong">{{ $svc->name }}</td>
+                <td class="num">{{ number_format($svc->bookings_count ?? 0) }}</td>
+                <td class="num">{{ number_format($svc->revenue ?? 0) }}</td>
+                <td>@include('partials.pdf-bar', ['percent' => round(100 * ($svc->bookings_count ?? 0) / $maxSvcCount)])</td>
+            </tr>
         @endforeach
         </tbody>
     </table>
 @endif
 
-{{-- Footer --}}
-<div class="footer">
-    <div class="f-right">سیستم مدیریت سالن زیبایی {{ $currentSalonName }}</div>
-    <div class="f-left">صفحه {PAGENO} از {nbpg}</div>
-</div>
-
 {{--
-    Raw bookings appendix — every booking in the period, any status (matches the Excel "جزئیات خام
-    نوبت‌ها" sheet exactly), so numbers in the summary sections above (e.g. کل نوبت‌ها vs. paid-only
-    breakdowns) can be manually reconciled against real rows instead of trusted blindly. Landscape
-    orientation + compact font because 20 columns don't fit a portrait A4 page at readable size.
+    پیوست: همه‌ی نوبت‌های بازه با هر وضعیت (برابر برگه‌ی «جزئیات خام نوبت‌ها»ی Excel) تا عددهای بالا با ردیف واقعی تطبیق داده شوند.
+    افقی و فشرده چون ۲۰ ستون در A4 عمودی جا نمی‌شود.
 --}}
 @php $rawBookings = $data['rawBookings'] ?? collect(); @endphp
 @if($rawBookings->count())
     <pagebreak orientation="L" />
-    <div class="section-title">جزئیات خام نوبت‌ها (پیوست)</div>
-    <table class="data-table raw-table">
+    <div class="section">پیوست: جزئیات خام نوبت‌ها <span class="muted" style="font-weight:normal; font-size:8pt;">({{ number_format($rawBookings->count()) }} ردیف)</span></div>
+    <table class="data compact">
         <thead>
         <tr>
-            <th>تاریخ ثبت</th>
-            <th>ساعت ثبت</th>
-            <th>تاریخ نوبت</th>
-            <th>ساعت نوبت</th>
-            <th>مشتری</th>
-            <th>شماره تماس</th>
-            <th>خدمت</th>
-            <th>متخصص</th>
-            <th>وضعیت نوبت</th>
-            <th>وضعیت پرداخت</th>
-            <th>روش پرداخت</th>
-            <th>مبلغ (تومان)</th>
-            <th>سهم متخصص (تومان)</th>
-            <th>کد تخفیف</th>
-            <th>مبلغ تخفیف</th>
-            <th>کد پیگیری</th>
-            <th>امتیاز</th>
-            <th>دلیل لغو</th>
-            <th>بازگشت وجه</th>
-            <th>مبلغ بازگشتی</th>
+            <th>تاریخ ثبت</th><th>ساعت ثبت</th><th>تاریخ نوبت</th><th>ساعت نوبت</th><th>مشتری</th><th>شماره تماس</th>
+            <th>خدمت</th><th>متخصص</th><th>وضعیت نوبت</th><th>وضعیت پرداخت</th><th>روش پرداخت</th><th class="num">مبلغ (تومان)</th>
+            <th class="num">سهم متخصص</th><th>کد تخفیف</th><th class="num">مبلغ تخفیف</th><th>کد پیگیری</th><th>امتیاز</th>
+            <th>دلیل لغو</th><th>بازگشت وجه</th><th class="num">مبلغ بازگشتی</th>
         </tr>
         </thead>
         <tbody>
@@ -386,18 +174,18 @@
             @php
                 $b = (array) $b;
                 $statusClass = match ($b['status'] ?? '') {
-                    'در انتظار پرداخت', 'لغو شده' => 'status-bad',
-                    'در انتظار' => 'status-warn',
-                    'تایید شده', 'انجام شده' => 'status-good',
+                    'در انتظار پرداخت', 'لغو شده', 'نیامد' => 'cell-bad',
+                    'در انتظار' => 'cell-warn',
+                    'تایید شده', 'انجام شده' => 'cell-good',
                     default => '',
                 };
                 $paymentStatusClass = match ($b['payment_status'] ?? '') {
-                    'پرداخت‌نشده' => 'status-bad',
-                    'پرداخت‌شده' => 'status-good',
+                    'پرداخت‌نشده' => 'cell-bad',
+                    'پرداخت‌شده' => 'cell-good',
                     default => '',
                 };
             @endphp
-            <tr>
+            <tr class="{{ $loop->odd ? '' : 'alt' }}">
                 <td>{{ $b['created_date'] ?? '' }}</td>
                 <td>{{ $b['created_time'] ?? '' }}</td>
                 <td>{{ $b['booking_date'] ?? '' }}</td>
@@ -409,15 +197,15 @@
                 <td class="{{ $statusClass }}">{{ $b['status'] ?? '' }}</td>
                 <td class="{{ $paymentStatusClass }}">{{ $b['payment_status'] ?? '' }}</td>
                 <td>{{ $b['payment_method'] ?? '' }}</td>
-                <td>{{ number_format($b['amount'] ?? 0) }}</td>
-                <td>{{ $b['specialist_share'] !== null ? number_format($b['specialist_share']) : '—' }}</td>
+                <td class="num">{{ number_format($b['amount'] ?? 0) }}</td>
+                <td class="num">{{ $b['specialist_share'] !== null ? number_format($b['specialist_share']) : '—' }}</td>
                 <td>{{ $b['discount_code'] ?? '' }}</td>
-                <td>{{ number_format($b['discount_amount'] ?? 0) }}</td>
+                <td class="num">{{ number_format($b['discount_amount'] ?? 0) }}</td>
                 <td>{{ $b['payment_reference'] ?? '' }}</td>
                 <td>{{ $b['rating'] ?? '' }}</td>
                 <td>{{ $b['cancellation_reason'] ?? '' }}</td>
                 <td>{{ $b['refund_status'] ?? '' }}</td>
-                <td>{{ $b['refunded_amount'] !== null ? number_format($b['refunded_amount']) : '—' }}</td>
+                <td class="num">{{ $b['refunded_amount'] !== null ? number_format($b['refunded_amount']) : '—' }}</td>
             </tr>
         @endforeach
         </tbody>

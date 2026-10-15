@@ -179,27 +179,7 @@ class GeneratePdfReportJob implements ShouldQueue
             default => 'روزانه',
         };
 
-        $defaultConfig = (new \Mpdf\Config\ConfigVariables)->getDefaults();
-        $defaultFontConfig = (new \Mpdf\Config\FontVariables)->getDefaults();
-
-        $mpdf = new \Mpdf\Mpdf([
-            'mode' => 'utf-8',
-            'format' => 'A4',
-            'fontDir' => array_merge($defaultConfig['fontDir'], [storage_path('fonts')]),
-            'fontdata' => $defaultFontConfig['fontdata'] + [
-                'vazir' => ['R' => 'Vazirmatn-Regular.ttf', 'B' => 'Vazirmatn-Bold.ttf'],
-            ],
-            'default_font' => 'vazir',
-            'autoScriptToLang' => true,
-            'autoLangToFont' => true,
-            'margin_left' => 12,
-            'margin_right' => 12,
-            'margin_top' => 15,
-            'margin_bottom' => 20,
-            'tempDir' => sys_get_temp_dir(),
-        ]);
-
-        $mpdf->SetDirectionality('rtl');
+        $mpdf = \App\Support\Pdf\ReportPdf::make();
         $mpdf->WriteHTML(view('admin.reports.pdf-report', [
             'data' => $exportData,
             'typeLabel' => $typeLabel,

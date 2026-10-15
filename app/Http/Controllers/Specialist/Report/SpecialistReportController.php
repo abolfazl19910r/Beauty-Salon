@@ -28,7 +28,7 @@ class SpecialistReportController extends Controller
      * declared type and threw a real TypeError, meaning the Excel/PDF export links on
      * this page were completely broken for every specialist.
      */
-    public function index(Request $request): View|\Symfony\Component\HttpFoundation\BinaryFileResponse|string|null
+    public function index(Request $request): View|\Symfony\Component\HttpFoundation\Response|string|null
     {
         $user = auth()->user();
         $specialist = $this->resolveSpecialist();
@@ -92,21 +92,17 @@ class SpecialistReportController extends Controller
                 'commissionRate' => $commissionRate,
             ];
 
-            $mpdf = new \Mpdf\Mpdf([
-                'mode' => 'utf-8',
-                'format' => 'A4',
-                'orientation' => 'P',
-                'margin_left' => 10,
-                'margin_right' => 10,
-                'margin_top' => 10,
-                'margin_bottom' => 10,
-                'default_font' => 'vazir',
-            ]);
+            // فونت Vazirmatn ثبت‌شده و جهت راست‌به‌چپ (قبلاً vazir ثبت نشده بود و mPDF فونت پیش‌فرض خودش را می‌گذاشت)
+            $mpdf = \App\Support\Pdf\ReportPdf::make(['margin_left' => 10, 'margin_right' => 10]);
 
             $html = view('specialist.reports.pdf', $data)->render();
             $mpdf->WriteHTML($html);
 
-            return $mpdf->Output('Specialist-Report.pdf', 'D');
+            // پاسخ Laravel (قبلاً Output(…, 'D') خودش echo و header می‌فرستاد و پاسخ واقعی خالی بود)
+            return response($mpdf->Output('', \Mpdf\Output\Destination::STRING_RETURN), 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="Specialist-Report.pdf"',
+            ]);
         }
 
         $bookings = $query->with(['user', 'service'])
