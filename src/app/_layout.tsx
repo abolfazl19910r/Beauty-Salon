@@ -6,7 +6,7 @@ import { I18nManager, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { SessionProvider, useSession } from '@/lib/session';
-import { fonts, usePalette } from '@/ui/theme';
+import { fontFiles, fonts, usePalette } from '@/ui/theme';
 
 // پشتیبان plugin بومی expo-localization (forcesRTL): اگر به هر دلیل چپ‌به‌راست بود، از اجرای بعد راست‌به‌چپ
 if (!I18nManager.isRTL) {
@@ -23,11 +23,7 @@ function Navigator() {
   const segments = useSegments();
   const p = usePalette();
   const scheme = useColorScheme();
-  const [fontsLoaded] = useFonts({
-    [fonts.regular]: require('../../assets/fonts/Vazirmatn-Regular.ttf'),
-    [fonts.medium]: require('../../assets/fonts/Vazirmatn-Medium.ttf'),
-    [fonts.bold]: require('../../assets/fonts/Vazirmatn-Bold.ttf'),
-  });
+  const [fontsLoaded] = useFonts(fontFiles);
 
   useEffect(() => {
     if (fontsLoaded && status !== 'loading') {

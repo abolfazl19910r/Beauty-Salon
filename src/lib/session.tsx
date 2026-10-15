@@ -3,6 +3,7 @@ import { createContext, type ReactNode, useCallback, useContext, useEffect, useM
 
 import { ApiError, type ApiClient, createClient } from './api';
 import { APP_VERSION, DEFAULT_API_URL } from './config';
+import { loadSalonTheme, setSalonTheme } from './salonTheme';
 import { clearSession, loadServerOverride, loadSession, saveServerOverride, saveSession } from './storage';
 import type { Account, TokenResponse } from './types';
 
@@ -102,6 +103,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     (async () => {
+      await loadSalonTheme();
       const override = await loadServerOverride();
       if (override) {
         serverRef.current = override;
@@ -117,6 +119,28 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       }
     })();
   }, []);
+
+  // ⭐ بسته‌ی «و»: قالب سالن از حساب (ورود یا نشست ذخیره‌شده) و یک بار تازه از /me هر بار که اپ باز می‌شود
+  useEffect(() => {
+    if (account?.salon && 'theme' in account.salon) {
+      setSalonTheme(account.salon.theme);
+    }
+  }, [account]);
+
+  useEffect(() => {
+    if (status !== 'signedIn') {
+      return;
+    }
+    api
+      .get<Account>('/me')
+      .then((res) => {
+        const salon = (res.data as Account | undefined)?.salon;
+        if (salon && 'theme' in salon) {
+          setSalonTheme(salon.theme);
+        }
+      })
+      .catch(() => undefined);
+  }, [status, api]);
 
   const value: SessionValue = {
     status,

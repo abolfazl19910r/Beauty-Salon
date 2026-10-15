@@ -8,7 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { usePendingPaymentWatcher } from '@/lib/customer/payments';
 import { CustomerSalonProvider, useCustomerSalon } from '@/lib/customer/salon';
 import { SessionProvider, useSession } from '@/lib/session';
-import { fonts, usePalette } from '@/ui/theme';
+import { fontFiles, fonts, usePalette } from '@/ui/theme';
 
 /**
  * اپ «ماهرو» (مشتری، بسته‌ی ۳ب) — ریشه‌ی جدای expo-router (app.config.ts: APP_VARIANT=customer → src/customer).
@@ -30,11 +30,7 @@ function Navigator() {
   const segments = useSegments();
   const p = usePalette();
   const scheme = useColorScheme();
-  const [fontsLoaded] = useFonts({
-    [fonts.regular]: require('../../assets/fonts/Vazirmatn-Regular.ttf'),
-    [fonts.medium]: require('../../assets/fonts/Vazirmatn-Medium.ttf'),
-    [fonts.bold]: require('../../assets/fonts/Vazirmatn-Bold.ttf'),
-  });
+  const [fontsLoaded] = useFonts(fontFiles);
   const loading = !fontsLoaded || status === 'loading' || !ready;
 
   usePendingPaymentWatcher(status === 'signedIn');

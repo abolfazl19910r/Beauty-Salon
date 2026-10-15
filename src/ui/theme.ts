@@ -1,5 +1,7 @@
 import { useColorScheme } from 'react-native';
 
+import { type SalonTheme, type ThemeLayout, useSalonTheme, withAlpha } from '@/lib/salonTheme';
+
 /**
  * رنگ‌های برند ماهرو — همان توکن‌های لندینگ و پنل‌ها (MAHRU_UI_PROMPT، بخش ۴، ۲۰۲۶-۱۰-۱۴)؛ روشن/تیره از تنظیم گوشی.
  * نگاشت: background=--bg، surface=--bg2، surfaceMuted=--bg3، border=--ln، text=--tx، textMuted=--mu، gold=--gl (متن/آیکن تأکیدی)،
@@ -52,16 +54,73 @@ const dark: typeof light = {
 
 export type Palette = typeof light;
 
+/**
+ * ⭐ بسته‌ی «و»: رنگ‌های قالب سالن روی پالت پایه (وضعیت‌ها — موفق/هشدار/خطا/اطلاع — همان ماهرو می‌مانند).
+ * «طلایی ماهرو» یا بدون قالب ← همان پالت پایه، بایت به بایت.
+ */
+export function applySalonTheme(base: Palette, theme: SalonTheme | null, scheme: 'dark' | 'light'): Palette {
+  if (!theme || theme.layout === 'mahru') {
+    return base;
+  }
+  const c = theme.colors[scheme];
+  return {
+    ...base,
+    background: c.bg,
+    surface: c.surface,
+    surfaceMuted: c.surfaceAlt,
+    border: c.line || base.border,
+    borderStrong: c.lineStrong || base.borderStrong,
+    text: c.text,
+    textMuted: c.muted,
+    gold: scheme === 'dark' ? c.accentStrong : c.accent,
+    goldSoft: withAlpha(c.accent, 0.16),
+    button: c.accent,
+    onGold: c.onAccent,
+  };
+}
+
 export function usePalette(): Palette {
-  return useColorScheme() === 'dark' ? dark : light;
+  const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
+  const theme = useSalonTheme();
+  return applySalonTheme(scheme === 'dark' ? dark : light, theme, scheme);
 }
 
 export const fonts = {
   regular: 'Vazirmatn-Regular',
   medium: 'Vazirmatn-Medium',
   bold: 'Vazirmatn-Bold',
+  light: 'Vazirmatn-Light',
+  naskh: 'NotoNaskhArabic-Bold',
+  kufi: 'NotoKufiArabic-ExtraBold',
+};
+
+/** فایل فونت‌ها برای useFonts هر دو اپ (فونت تیتر چیدمان‌های مجله/بنتو/آرام در خود اپ است، نه از اینترنت) */
+export const fontFiles = {
+  [fonts.regular]: require('../../assets/fonts/Vazirmatn-Regular.ttf'),
+  [fonts.medium]: require('../../assets/fonts/Vazirmatn-Medium.ttf'),
+  [fonts.bold]: require('../../assets/fonts/Vazirmatn-Bold.ttf'),
+  [fonts.light]: require('../../assets/fonts/Vazirmatn-Light.ttf'),
+  [fonts.naskh]: require('../../assets/fonts/NotoNaskhArabic-Bold.ttf'),
+  [fonts.kufi]: require('../../assets/fonts/NotoKufiArabic-ExtraBold.ttf'),
 };
 
 /** گردی گوشه‌ها: --r-xs/--r-sm/--r-md لندینگ */
 export const radius = { sm: 10, md: 14, lg: 20 };
+
+/**
+ * چیدمان قالب در اپ: گردی کارت/دکمه/فیلد و فونت تیترها (همان قواعد partials/theme-layout وب). اپ چیدمان صفحه‌ها را
+ * عوض نمی‌کند؛ چند واریانت آماده است.
+ */
+export const layoutMetrics: Record<ThemeLayout, { radius: typeof radius; display: string; displayWeightLight?: boolean }> = {
+  mahru: { radius, display: fonts.bold },
+  vitrin: { radius: { sm: 12, md: 16, lg: 22 }, display: fonts.bold },
+  majalle: { radius: { sm: 2, md: 3, lg: 4 }, display: fonts.naskh },
+  aram: { radius: { sm: 10, md: 12, lg: 16 }, display: fonts.light, displayWeightLight: true },
+  bento: { radius: { sm: 16, md: 22, lg: 28 }, display: fonts.kufi },
+};
+
+export function useLayoutMetrics() {
+  const theme = useSalonTheme();
+  return layoutMetrics[theme?.layout ?? 'mahru'];
+}
 export const space = (n: number) => n * 4;

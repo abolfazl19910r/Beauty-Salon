@@ -4,7 +4,7 @@ import type { LogoTone } from './logo';
 
 export type Account = {
   user: { id: number; name: string; phone: string; type: 'staff' | 'customer' };
-  salon: { id: number; slug: string; name: string; logo_url: string | null; logo_tone?: LogoTone; logo_dark_url?: string | null; logo_dark_tone?: LogoTone; public_url: string };
+  salon: { id: number; slug: string; name: string; logo_url: string | null; logo_tone?: LogoTone; logo_dark_url?: string | null; logo_dark_tone?: LogoTone; public_url: string; theme?: unknown };
   specialist?: { id: number; name: string };
 };
 

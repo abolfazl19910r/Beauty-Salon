@@ -13,6 +13,8 @@ export type SalonCard = {
   logo_dark_url?: string | null;
   logo_dark_tone?: LogoTone;
   public_url: string;
+  /** بسته‌ی «و» — قالب سالن (lib/salonTheme)؛ سرور قدیمی ندارد */
+  theme?: unknown;
 };
 
 export type SalonDetail = SalonCard & {

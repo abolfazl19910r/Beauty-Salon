@@ -1,5 +1,6 @@
 import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
 
+import { loadSalonTheme, setSalonTheme } from '../salonTheme';
 import { loadSalon, saveSalon } from './store';
 import type { SalonCard } from './types';
 
@@ -25,8 +26,13 @@ export function CustomerSalonProvider({ children }: { children: ReactNode }) {
   const [salon, setSalonState] = useState<SalonCard | null>(null);
 
   useEffect(() => {
+    // بسته‌ی «و»: آخرین قالب ذخیره‌شده پیش از رسیدن پاسخ سرور، بعد قالب کارت همین سالن
+    void loadSalonTheme();
     loadSalon().then((s) => {
       setSalonState(s);
+      if (s && 'theme' in s) {
+        setSalonTheme(s.theme);
+      }
       setReady(true);
     });
   }, []);
@@ -34,6 +40,8 @@ export function CustomerSalonProvider({ children }: { children: ReactNode }) {
   const setSalon = async (next: SalonCard | null) => {
     await saveSalon(next);
     setSalonState(next);
+    // سالن دیگر ← قالب همان سالن؛ بی سالن ← پیش‌فرض
+    setSalonTheme(next?.theme ?? null);
   };
 
   return <SalonContext.Provider value={{ ready, salon, setSalon }}>{children}</SalonContext.Provider>;

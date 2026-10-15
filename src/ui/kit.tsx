@@ -15,7 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { errorMessage } from '@/lib/api';
-import { fonts, type Palette, radius, space, usePalette } from './theme';
+import { fonts, type Palette, radius as baseRadius, space, useLayoutMetrics, usePalette } from './theme';
 
 type Weight = 'regular' | 'medium' | 'bold';
 
@@ -70,6 +70,7 @@ export function Screen({ children, scroll = true, padded = true, refreshControl 
 
 export function Card({ children, style, onPress }: { children: ReactNode; style?: StyleProp<ViewStyle>; onPress?: () => void }) {
   const p = usePalette();
+  const { radius } = useLayoutMetrics();
   const base = [{ backgroundColor: p.surface, borderColor: p.border, borderWidth: StyleSheet.hairlineWidth, borderRadius: radius.lg, padding: space(4), gap: space(2) }, style];
   return onPress ? (
     <Pressable onPress={onPress} style={({ pressed }) => [base, pressed && { opacity: 0.85 }]} accessibilityRole="button">
@@ -88,6 +89,7 @@ type ButtonKind = 'primary' | 'secondary' | 'danger' | 'ghost';
 
 export function Button({ title, onPress, kind = 'primary', loading, disabled, small }: { title: string; onPress: () => void; kind?: ButtonKind; loading?: boolean; disabled?: boolean; small?: boolean }) {
   const p = usePalette();
+  const { radius } = useLayoutMetrics();
   const colors: Record<ButtonKind, { bg: string; fg: string; border: string }> = {
     primary: { bg: p.button, fg: p.onGold, border: p.button },
     secondary: { bg: p.surface, fg: p.text, border: p.border },
@@ -121,6 +123,7 @@ export function Button({ title, onPress, kind = 'primary', loading, disabled, sm
 
 export function Field({ label, error, hint, ...input }: TextInputProps & { label: string; error?: string; hint?: string }) {
   const p = usePalette();
+  const { radius } = useLayoutMetrics();
   return (
     <View style={{ gap: space(1) }}>
       <T weight="medium" size={13}>{label}</T>
@@ -153,7 +156,7 @@ export { errorMessage };
 export function ErrorBox({ error, onRetry }: { error: unknown; onRetry?: () => void }) {
   const p = usePalette();
   return (
-    <View style={{ backgroundColor: p.dangerSoft, borderRadius: radius.md, padding: space(3), gap: space(2) }}>
+    <View style={{ backgroundColor: p.dangerSoft, borderRadius: baseRadius.md, padding: space(3), gap: space(2) }}>
       <T color={p.danger}>{errorMessage(error)}</T>
       {onRetry ? <Button small kind="secondary" title="تلاش دوباره" onPress={onRetry} /> : null}
     </View>
@@ -164,7 +167,7 @@ export function Notice({ text, tone = 'info' }: { text: string; tone?: 'info' | 
   const p = usePalette();
   const map = { info: [p.infoSoft, p.info], success: [p.successSoft, p.success], warning: [p.warningSoft, p.warning] } as const;
   return (
-    <View style={{ backgroundColor: map[tone][0], borderRadius: radius.md, padding: space(3) }}>
+    <View style={{ backgroundColor: map[tone][0], borderRadius: baseRadius.md, padding: space(3) }}>
       <T color={map[tone][1]}>{text}</T>
     </View>
   );
@@ -219,7 +222,9 @@ export function KeyValue({ label, value }: { label: string; value: ReactNode }) 
 }
 
 export function SectionTitle({ children }: { children: ReactNode }) {
-  return <T weight="bold" size={16} style={{ marginTop: space(2) }}>{children}</T>;
+  // بسته‌ی «و»: فونت تیتر چیدمان قالب (مجله: نسخ، بنتو: کوفی، آرام: نازک)
+  const { display } = useLayoutMetrics();
+  return <T weight="bold" size={16} style={{ marginTop: space(2), fontFamily: display }}>{children}</T>;
 }
 
 export type { Palette };
