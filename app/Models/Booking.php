@@ -51,6 +51,7 @@ class Booking extends Model
         'cancelled_at',
         'reminder_sent',
         'reviewed_at',
+        'review_sent_at',
         'refund_status',
         'refunded_at',
         'refunded_amount',
