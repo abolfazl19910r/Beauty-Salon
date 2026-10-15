@@ -89,6 +89,11 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by('user:'.($request->user()?->id ?? $request->ip()));
         });
 
+        // پوش آزمایشی از صفحه‌ی «دریافت اعلان» اپ (بسته‌ی ۴): ۳ در دقیقه برای هر کاربر
+        RateLimiter::for('api-v1-push-test', function (Request $request) {
+            return Limit::perMinute(3)->by('user:'.($request->user()?->id ?? $request->ip()));
+        });
+
         RateLimiter::for('auth', function (Request $request) {
             return Limit::perMinute(
                 (int) config('auth.max_login_attempts', 5),

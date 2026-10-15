@@ -74,6 +74,15 @@ Route::middleware(['auth:sanctum', 'api.audience', 'throttle:api-v1'])->group(fu
     Route::get('tokens', [TokenController::class, 'index'])->name('tokens.index');
     Route::post('tokens/revoke-others', [TokenController::class, 'revokeOthers'])->name('tokens.revoke-others');
     Route::delete('tokens/{tokenId}', [TokenController::class, 'destroy'])->whereNumber('tokenId')->name('tokens.destroy');
+
+    // پوش اپ‌ها (بسته‌ی ۴): گیرنده‌ی همین نشست، رسید و پوش آزمایشی
+    Route::prefix('push')->name('push.')->controller(\App\Http\Controllers\Api\V1\Push\PushDeviceController::class)->group(function () {
+        Route::put('device', 'upsert')->name('device.upsert');
+        Route::get('device', 'show')->name('device.show');
+        Route::delete('device', 'destroy')->name('device.destroy');
+        Route::post('receipts', 'receipts')->name('receipts');
+        Route::post('test', 'test')->middleware('throttle:api-v1-push-test')->name('test');
+    });
 });
 
 // اپ «ماهرو همکار» — فقط متخصص (بسته‌ی ۲ اپلیکیشن)؛ متخصص و سالن از توکن
