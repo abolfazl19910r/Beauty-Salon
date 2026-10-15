@@ -9,7 +9,11 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/js/app.jsx',
                 'resources/js/admin.jsx',
-                'resources/js/salon-qr.js'
+                'resources/js/salon-qr.js',
+                // کتابخانه‌هایی که قبلاً از CDN می‌آمدند (۲۰۲۶-۱۰-۱۵)؛ هر کدام فقط در صفحه‌ی خودش
+                'resources/js/vendor/sweetalert.js',
+                'resources/js/vendor/apexcharts.js',
+                'resources/js/vendor/chartjs.js'
             ],
             refresh: true,
         }),
@@ -33,6 +37,12 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 manualChunks(id) {
+                    // کتابخانه‌های سنگین صفحه‌ای در chunk جدا تا روی بقیه‌ی صفحه‌ها بار نشوند
+                    for (const lib of ['apexcharts', 'chart.js', 'sweetalert2']) {
+                        if (id.includes(`node_modules/${lib}/`)) {
+                            return lib.replace('.', '');
+                        }
+                    }
                     if (id.includes('node_modules')) {
                         return 'vendor';
                     }

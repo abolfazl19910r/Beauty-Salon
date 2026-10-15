@@ -116,7 +116,7 @@
                                 <div class="flex justify-between items-start border-b pb-3" style="border-color: var(--specialist-border);">
                                     <div>
                                         <p class="font-semibold text-[var(--specialist-text)]">{{ $booking->user->name }}</p>
-                                        <p class="text-sm text-[var(--specialist-text-dim)]">{{ $booking->service?->name ?? '—' }} @if ($__courseLabel = $booking->courseSessionLabel())<span class="text-xs mr-1 px-2 py-0.5 rounded-full" style="background:rgba(201,162,75,0.15); color:#C9A24B;">{{ $__courseLabel }}</span>@endif</p>
+                                        <p class="text-sm text-[var(--specialist-text-dim)]">{{ $booking->service?->name ?? '—' }} @if ($__courseLabel = $booking->courseSessionLabel())<span class="text-xs mr-1 px-2 py-0.5 rounded-full" style="background:rgb(var(--m-gold) / .15); color:rgb(var(--m-gold2));">{{ $__courseLabel }}</span>@endif</p>
                                     </div>
                                     <div class="text-left">
                                         <p class="font-bold text-[var(--specialist-plum-mid)] persian-number" dir="ltr">{{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }}</p>
@@ -207,9 +207,11 @@
 @endsection
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    @vite('resources/js/vendor/apexcharts.js')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // بسته‌ی ه: رنگ نمودار از توکن تم؛ با عوض شدن تم صفحه دوباره بار می‌شود تا نمودار هم تم را بگیرد
+            document.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-m-theme-toggle]') && document.querySelector('.apexcharts-canvas')) setTimeout(() => location.reload(), 0); });
             const weeklyRevenue = @json($weeklyRevenue);
 
             if (weeklyRevenue && weeklyRevenue.length > 0) {
@@ -223,11 +225,11 @@
                     chart: {
                         type: 'area',
                         height: 320,
-                        fontFamily: 'Vazirmatn, sans-serif',
+                        fontFamily: 'Mahru, Vazirmatn, sans-serif',
                         toolbar: { show: false },
                         background: 'transparent'
                     },
-                    colors: ['#D8AEE0'],
+                    colors: [window.mToken('gold')],
                     dataLabels: { enabled: false },
                     stroke: { curve: 'smooth', width: 2 },
                     fill: {
@@ -235,28 +237,28 @@
                         gradient: {
                             shadeIntensity: 1,
                             colorStops: [
-                                { offset: 0, color: '#D8AEE0', opacity: 0.5 },
-                                { offset: 100, color: '#2C1B32', opacity: 0.05 }
+                                { offset: 0, color: window.mToken('gold'), opacity: 0.45 },
+                                { offset: 100, color: window.mToken('bg2'), opacity: 0.05 }
                             ]
                         }
                     },
                     grid: {
-                        borderColor: '#3A2640'
+                        borderColor: window.mToken('tx', .08)
                     },
                     xaxis: {
                         categories: categories,
-                        labels: { style: { fontFamily: 'Vazirmatn, sans-serif', colors: '#C9A6D1' } },
-                        axisBorder: { color: '#3A2640' },
-                        axisTicks: { color: '#3A2640' }
+                        labels: { style: { fontFamily: 'Mahru, Vazirmatn, sans-serif', colors: window.mToken('mu') } },
+                        axisBorder: { color: window.mToken('tx', .12) },
+                        axisTicks: { color: window.mToken('tx', .12) }
                     },
                     yaxis: {
                         labels: {
                             formatter: (val) => new Intl.NumberFormat('fa-IR').format(val),
-                            style: { fontFamily: 'Vazirmatn, sans-serif', colors: '#C9A6D1' }
+                            style: { fontFamily: 'Mahru, Vazirmatn, sans-serif', colors: window.mToken('mu') }
                         }
                     },
                     tooltip: {
-                        theme: 'dark',
+                        theme: document.documentElement.dataset.theme === 'light' ? 'light' : 'dark',
                         y: {
                             formatter: (val) => new Intl.NumberFormat('fa-IR').format(val) + ' تومان'
                         }

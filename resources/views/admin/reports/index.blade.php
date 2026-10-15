@@ -366,7 +366,7 @@
 @endsection
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    @vite('resources/js/vendor/chartjs.js')
     <script>
         /* ── Data from PHP ── */
         const revenueData    = @json($revenueChart ?? []);
@@ -374,6 +374,7 @@
         const specialistData = @json($specialists ?? collect());
         const serviceData    = @json($serviceRevenue ? $serviceRevenue->values() : collect());
 
+        document.addEventListener('DOMContentLoaded', function () {
         // بسته‌ی ه: رنگ نمودارها از توکن‌های تم (Chart.js متغیر CSS نمی‌فهمد)؛ با عوض شدن تم صفحه دوباره کشیده می‌شود
         const CHART_COLORS = ['gold', 'ok', 'info', 'warn', 'bad', 'gold2', 'mu'].map(n => window.mToken(n));
         Chart.defaults.color = window.mToken('mu');
@@ -514,6 +515,7 @@
                 }
             });
         }
+        }); // Chart.js از Vite (ماژول) بار می‌شود و پیش از DOMContentLoaded آماده است
 
         /* ── tab ── */
         function showTab(id, btn) {

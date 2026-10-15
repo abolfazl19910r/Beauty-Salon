@@ -6,10 +6,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title') | پنل مدیریت سالن زیبایی</title>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     @include('partials.favicons')
     @viteReactRefresh
-    @vite(['resources/css/app.css', 'resources/js/app.jsx'])
+    @vite(['resources/css/app.css', 'resources/js/app.jsx', 'resources/js/vendor/sweetalert.js'])
     @include('partials.mahru-theme')
     @include('partials.mahru-panel')
     @stack('styles')
@@ -796,7 +795,6 @@
     }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     window.AdminRoutes = {
         notificationsIndex: '{{ route("admin.notifications.index") }}',

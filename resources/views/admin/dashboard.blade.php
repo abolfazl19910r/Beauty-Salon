@@ -370,12 +370,14 @@
 @endsection
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    @vite('resources/js/vendor/apexcharts.js')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
 
             // Keep a reference to the chart to destroy before re-rendering
             let chartInstance = null;
+            // آخرین داده‌ی نمودار برای کشیدن دوباره بعد از عوض شدن تم (باید پیش از اولین renderChart تعریف شود)
+            let lastChartData = null;
 
             // Initial rendering with week data (server-side)
             // initialData format from PHP: [{date, total}]
@@ -429,7 +431,6 @@
             window.updateTimeFilter = updateTimeFilter;
 
             // --- ApexCharts chart rendering ---
-            let lastChartData = null;
             // بسته‌ی ه: نمودار رنگ را از توکن تم می‌خواند؛ با عوض شدن تم دوباره کشیده می‌شود
             document.addEventListener('click', e => {
                 if (e.target.closest && e.target.closest('[data-m-theme-toggle]') && lastChartData) setTimeout(() => renderChart(lastChartData), 0);

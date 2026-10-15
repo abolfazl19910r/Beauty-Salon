@@ -233,7 +233,7 @@
                             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2 mb-2 flex-wrap">
-                                        <h3 class="font-bold text-[var(--specialist-text)]">{{ $booking->service?->name ?? '—' }} @if ($__courseLabel = $booking->courseSessionLabel())<span class="text-xs mr-1 px-2 py-0.5 rounded-full" style="background:rgba(201,162,75,0.15); color:#C9A24B;">{{ $__courseLabel }}</span>@endif</h3>
+                                        <h3 class="font-bold text-[var(--specialist-text)]">{{ $booking->service?->name ?? '—' }} @if ($__courseLabel = $booking->courseSessionLabel())<span class="text-xs mr-1 px-2 py-0.5 rounded-full" style="background:rgb(var(--m-gold) / .15); color:rgb(var(--m-gold2));">{{ $__courseLabel }}</span>@endif</h3>
                                         <span class="text-xs px-3 py-1 rounded-full font-bold {{ $statusInfo['class'] }}">{{ $statusInfo['label'] }}</span>
                                     </div>
 
