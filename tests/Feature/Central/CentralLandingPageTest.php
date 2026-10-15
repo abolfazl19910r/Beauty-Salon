@@ -104,14 +104,39 @@ class CentralLandingPageTest extends TestCase
         $response->assertSee('۲,۷۰۰,۰۰۰');
     }
 
-    public function test_sms_total_scales_with_plan_months(): void
+    /**
+     * سهمیه‌ی پیامک ماهانه است و هر ماه تازه می‌شود (SmsQuotaService::currentPeriod)؛ کارت ۳/۶/۱۲ ماهه قبلاً «۶٬۰۰۰ قطعه
+     * پیامک (۲٬۰۰۰ در ماه)» می‌نوشت که متناقض و گمراه‌کننده بود (۲۰۲۶-۱۰-۱۵) — حالا همه‌ی کارت‌ها فقط عدد ماهانه.
+     */
+    public function test_every_plan_card_shows_the_monthly_sms_quota_only(): void
     {
         config(['billing.sms_quota_per_month' => 1500]);
 
-        $plans = collect($this->get(route('central.home'))->viewData('plans'))->keyBy('type');
+        $html = $this->get(route('central.home'))->assertOk()->getContent();
 
-        $this->assertSame(1500, $plans['1m']['sms_total']);
-        $this->assertSame(18000, $plans['12m']['sms_total']);
+        $this->assertSame(4, substr_count($html, '۱,۵۰۰ قطعه پیامک در هر ماه'));
+        foreach (['۴,۵۰۰', '۹,۰۰۰', '۱۸,۰۰۰'] as $total) {
+            $this->assertStringNotContainsString($total.' قطعه پیامک', $html);
+        }
+    }
+
+    /** پرسش محدودیت دوره‌ی رایگان از خود پلن آزمایشی می‌آید، نه جمله‌ی ثابت «تنها تفاوت، سقف پیامک است» */
+    public function test_trial_faq_lists_what_the_trial_plan_lacks(): void
+    {
+        config(['billing.trial_days' => 14]);
+        $this->get(route('central.home'))->assertSee('خیر؛ همه‌ی امکانات')->assertDontSee('سقف پیامک');
+
+        $full = \App\Models\Plan::create(['key' => 'full', 'name' => 'کامل', 'price_1m' => 1500000, 'is_active' => true, 'is_public' => true, 'sms_quota_per_month' => 2000]);
+        $full->syncFeatures(\App\Support\Features\Feature::keys());
+        $trial = \App\Models\Plan::create(['key' => 'trial', 'name' => 'آزمایشی', 'is_trial' => true, 'is_active' => true, 'trial_days' => 14, 'sms_quota_per_month' => 400]);
+        $trial->syncFeatures(array_diff(\App\Support\Features\Feature::keys(), ['sms_reminders']));
+
+        $this->get(route('central.home'))->assertOk()
+            ->assertSee('این‌ها فقط بعد از خرید اشتراک فعال می‌شوند: یادآوری پیامکی پیش از نوبت.')
+            ->assertDontSee('سقف پیامک');
+
+        $trial->syncFeatures(\App\Support\Features\Feature::keys());
+        $this->get(route('central.home'))->assertSee('خیر؛ همه‌ی امکانات پلن کامل در دوره‌ی رایگان باز است.');
     }
 
     public function test_trial_messaging_follows_trial_days_config(): void

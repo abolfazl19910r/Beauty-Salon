@@ -799,7 +799,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 <ul>
 <li>{{ $saleHasAll ? 'همه‌ی امکانات ماهرو' : 'نوبت‌دهی، پیامک، باشگاه، بیعانه و گزارش' }}</li>
 <li>{{ to_persian_num((string) $maxSpecialists) }} متخصص در قیمت پلن</li>
-<li>{{ to_persian_num(number_format($plan['sms_total'])) }} قطعه پیامک ({{ to_persian_num(number_format($smsQuota)) }} در ماه)</li>
+<li>{{ to_persian_num(number_format($smsQuota)) }} قطعه پیامک در هر ماه</li>
 @if ($plan['saving'] > 0)<li>{{ to_persian_num((string) $plan['saving_percent']) }} درصد صرفه‌جویی ({{ to_persian_num(number_format($plan['saving'])) }} تومان)</li>@endif
 </ul>
 @if ($trialDays > 0)
@@ -845,7 +845,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 <details><summary>پیامک یادآوری چطور کار می‌کند؟</summary><p>پس از ثبت نوبت پیامک تأیید ارسال می‌شود و پیش از نوبت هم یادآوری می‌رسد. پیامک‌ها از سهمیه‌ی ماهانه‌ی پلن ({{ to_persian_num(number_format($smsQuota)) }} قطعه) ارسال می‌شوند و هر نوع اعلان را در تنظیمات سالن روشن یا خاموش می‌کنید. متن پیامک‌های نوبت و باشگاه را هم می‌توانید به سلیقه‌ی سالن خودتان بنویسید.</p></details>
 @if ($trialDays > 0)
 <details><summary>بعد از تمام شدن دوره‌ی رایگان چه می‌شود؟</summary><p>پنل مدیریت فقط صفحه‌ی خرید اشتراک را نشان می‌دهد و آدرس رزرو سالن برای مشتری‌ها موقتاً بسته می‌شود. هیچ اطلاعاتی پاک نمی‌شود؛ به محض خرید، همه‌چیز همان‌طور که بود ادامه پیدا می‌کند. اگر وسط دوره‌ی رایگان بخرید، اشتراک از همان روز خرید فعال می‌شود.</p></details>
-<details><summary>در دوره‌ی رایگان محدودیتی هست؟</summary><p>همه‌ی امکانات باز است. تنها تفاوت، سقف پیامک است: در دوره‌ی رایگان {{ to_persian_num(number_format($trialSmsQuota)) }} قطعه پیامک در ماه و بعد از خرید {{ to_persian_num(number_format($smsQuota)) }} قطعه پیامک در ماه.</p></details>
+<details><summary>در دوره‌ی رایگان محدودیتی هست؟</summary><p>@if ($trialMissing === [])خیر؛ همه‌ی امکانات@if ($salePlanName) پلن {{ $salePlanName }}@endif در دوره‌ی رایگان باز است.@else بیشتر امکانات باز است. این‌ها فقط بعد از خرید اشتراک فعال می‌شوند: {{ implode('، ', $trialMissing) }}.@endif</p></details>
 @endif
 <details><summary>اگر بیشتر از {{ to_persian_num((string) $maxSpecialists) }} متخصص داشته باشم؟</summary><p>موقع ساخت سالن تعداد متخصص‌ها را وارد کنید؛ هر متخصص بیشتر ماهانه {{ to_persian_num(number_format($extraSpecialistPrice)) }} تومان به قیمت پلن اضافه می‌شود (در پلن‌های چندماهه با همان تخفیف).</p></details>
 <details><summary>پول پیش‌پرداخت مشتری‌ها به حساب چه کسی واریز می‌شود؟</summary><p>مستقیم به حساب درگاه پرداخت خود سالن. اطلاعات درگاه را موقع ساخت سالن یا بعداً از پنل مدیریت وارد می‌کنید؛ تا درگاهی ثبت نشود، پرداخت آنلاین برای مشتری‌های سالن ممکن نیست.</p></details>

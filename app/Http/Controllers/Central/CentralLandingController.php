@@ -63,7 +63,6 @@ class CentralLandingController extends Controller
                 'per_month' => (int) round($price / $months),
                 'saving' => max(0, $fullPrice - $price),
                 'saving_percent' => $fullPrice > 0 ? (int) round((1 - $price / $fullPrice) * 100) : 0,
-                'sms_total' => $smsQuota * $months,
                 'trial_end_label' => $this->jalaliLabel(now()->addDays($trialDays)),
                 'period_end_label' => $this->jalaliLabel($paidFrom->copy()->addMonths($months)),
                 'signup_url' => route('salon-signup.create', ['plan' => $type]),
@@ -75,7 +74,14 @@ class CentralLandingController extends Controller
         return view('central.landing', [
             'plans' => $plans,
             'trialDays' => $trialDays,
-            'trialSmsQuota' => (int) ($trialPlan?->sms_quota_per_month ?? config('billing.trial_sms_quota')),
+            // پرسش «در دوره‌ی رایگان محدودیتی هست؟» (۲۰۲۶-۱۰-۱۵): از خود پلن آزمایشی — امکاناتی که پلن فروش دارد و آزمایشی ندارد
+            // (مثلاً «یادآوری پیامکی» که سوپرادمین از آزمایشی برمی‌دارد). بدون پلن آزمایشی همه‌چیز باز است.
+            'trialMissing' => $trialPlan
+                ? collect(\App\Support\Features\Feature::cases())
+                    ->filter(fn ($f) => ($salePlan?->hasFeature($f) ?? true) && ! $trialPlan->hasFeature($f))
+                    ->map(fn ($f) => $f->label())->values()->all()
+                : [],
+            'salePlanName' => $salePlan?->name,
             'smsQuota' => $smsQuota,
             'maxSpecialists' => $maxSpecialists,
             'extraSpecialistPrice' => $extraSpecialistPrice,
