@@ -27,6 +27,8 @@ class Salon extends Model
         'logo_tone',
         'logo_dark_path',
         'logo_dark_tone',
+        'site_theme',
+        'admin_theme',
         'address',
         'phone',
         'established_year',

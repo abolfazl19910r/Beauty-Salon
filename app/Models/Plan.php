@@ -23,14 +23,24 @@ class Plan extends Model
         'key', 'name', 'description', 'is_trial', 'is_public', 'is_active', 'sort',
         'price_1m', 'price_3m', 'price_6m', 'price_12m',
         'included_specialists', 'extra_specialist_price_per_month', 'sms_quota_per_month', 'trial_days',
-        'theme_site_count', 'theme_site_count_6m', 'theme_site_count_12m', 'theme_admin_count',
+        'theme_layouts', 'theme_palettes', 'theme_layouts_6m', 'theme_palettes_6m', 'theme_layouts_12m', 'theme_palettes_12m',
+        'theme_admin_count',
+    ];
+
+    /** ستون‌های دسترسی قالب‌ها (بسته‌ی «و»): چند چیدمان × چند پالت در هر بازه + قالب پنل مدیر */
+    public const THEME_FIELDS = [
+        'theme_layouts', 'theme_palettes', 'theme_layouts_6m', 'theme_palettes_6m', 'theme_layouts_12m', 'theme_palettes_12m',
+        'theme_admin_count',
     ];
 
     protected $casts = [
         'is_trial' => 'boolean',
-        'theme_site_count' => 'integer',
-        'theme_site_count_6m' => 'integer',
-        'theme_site_count_12m' => 'integer',
+        'theme_layouts' => 'integer',
+        'theme_palettes' => 'integer',
+        'theme_layouts_6m' => 'integer',
+        'theme_palettes_6m' => 'integer',
+        'theme_layouts_12m' => 'integer',
+        'theme_palettes_12m' => 'integer',
         'theme_admin_count' => 'integer',
         'is_public' => 'boolean',
         'is_active' => 'boolean',
@@ -141,24 +151,44 @@ class Plan extends Model
     }
 
     /**
-     * چند قالب سایت/پنل مشتری/اپ (علاوه بر «طلایی ماهرو») برای این پلن در این بازه‌ی اشتراک باز است (۲۰۲۶-۱۰-۱۵).
-     * ۶ و ۱۲ ماهه هرگز کمتر از ۱ و ۳ ماهه نیستند؛ سقف config('themes.site_total').
+     * چند چیدمان و چند پالت (بسته‌ی «و»، ۲۰۲۶-۱۰-۱۵) برای این پلن در این بازه‌ی اشتراک باز است — قالب‌های باز = حاصل‌ضرب، به ترتیبی
+     * که ابرمدیر چیده (ThemeCatalog). ۶ و ۱۲ ماهه هرگز کمتر از بازه‌ی کوتاه‌تر نیستند؛ سقف تعداد چیدمان‌ها و پالت‌های config.
+     *
+     * @return array{0: int, 1: int}
      */
+    public function siteThemeGrid(?string $period): array
+    {
+        $layouts = (int) $this->theme_layouts;
+        $palettes = (int) $this->theme_palettes;
+        if ($period === '6m' || $period === '12m') {
+            $layouts = max($layouts, (int) $this->theme_layouts_6m);
+            $palettes = max($palettes, (int) $this->theme_palettes_6m);
+        }
+        if ($period === '12m') {
+            $layouts = max($layouts, (int) $this->theme_layouts_12m);
+            $palettes = max($palettes, (int) $this->theme_palettes_12m);
+        }
+        if ($layouts === 0 || $palettes === 0) {
+            return [0, 0];
+        }
+
+        return [
+            min($layouts, \App\Support\Themes\ThemeCatalog::layoutCount()),
+            min($palettes, \App\Support\Themes\ThemeCatalog::paletteCount()),
+        ];
+    }
+
+    /** چند قالب سایت/پنل مشتری/اپ (علاوه بر «طلایی ماهرو») در این بازه باز است */
     public function siteThemeAllowance(?string $period): int
     {
-        $base = (int) $this->theme_site_count;
-        $count = match ($period) {
-            '12m' => max($base, (int) $this->theme_site_count_12m),
-            '6m' => max($base, (int) $this->theme_site_count_6m),
-            default => $base,
-        };
+        [$layouts, $palettes] = $this->siteThemeGrid($period);
 
-        return min($count, (int) config('themes.site_total', 12));
+        return $layouts * $palettes;
     }
 
     /** چند قالب پنل مدیر (علاوه بر منوی کناری پیش‌فرض) — به بازه بستگی ندارد */
     public function adminThemeAllowance(): int
     {
-        return min((int) $this->theme_admin_count, (int) config('themes.admin_total', 3));
+        return min((int) $this->theme_admin_count, \App\Support\Themes\ThemeCatalog::adminTotal());
     }
 }

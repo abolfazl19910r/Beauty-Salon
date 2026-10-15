@@ -38,6 +38,8 @@ class AppServiceProvider extends ServiceProvider
         // scoped (نه singleton): queue:work پیش از هر job نمونه‌های scoped را فراموش می‌کند، پس سالنی که یک job
         // ست کرده به job بعدیِ همان پردازه نمی‌رسد. در درخواست HTTP معمولی رفتارش دقیقاً مثل singleton است.
         $this->app->scoped(CurrentSalon::class);
+        // ظاهر سالن جاری (بسته‌ی «و») — همان چرخه‌ی عمر CurrentSalon
+        $this->app->scoped(\App\Support\Themes\CurrentAppearance::class);
 
         // ⭐ laravel/telescope در require-dev است. قبلاً App\Providers\TelescopeServiceProvider در bootstrap/providers.php
         // بی‌قید ثبت بود؛ با «composer install --no-dev» (image داکر و هر نصب production استاندارد) کلاس والدش

@@ -10,12 +10,13 @@ use Illuminate\Support\Facades\DB;
 /**
  * پلن‌های پیش‌فرض (تصمیم ۲۰۲۶-۱۰-۱۴): آزمایشی + کامل + پایه/حرفه‌ای/کلینیک، هر پلن پولی با چهار بازه‌ی ۱/۳/۶/۱۲ ماهه.
  *
- * - «آزمایشی» و «کامل» دقیقاً رفتار امروز سالن‌ها (دوره‌ی درمانی و ارسال دستی هنوز ساخته نشده‌اند و در «کامل» نیستند؛ اضافه‌کردنشان
- *   به «کامل» بعداً تصمیم قیمتی است): قیمت، سهمیه، متخصص شامل و روزهای آزمایشی از config/billing.php (یعنی همان
- *   کلیدهای .env)، و همه‌ی امکاناتی که امروز وجود دارند. کلیدهای .env فقط مقدار اولیه‌اند؛ بعد از ساخت، منبع حقیقت جدول است.
- *   برداشتن «یادآوری پیامکی» از آزمایشی کار سوپرادمین در صفحه‌ی پلن‌هاست (تا سالن‌های در آزمایشی ناگهان چیزی از دست ندهند).
- * - «کامل» تنها پلن عمومی می‌ماند تا صفحه‌ی فروش و صورتحساب امروز عوض نشوند؛ سه پلن تازه فعال ولی غیرعمومی‌اند (سوپرادمین
- *   تخصیصشان می‌دهد یا عمومی‌شان می‌کند). قیمت بازه‌های بلندتر با همان نردبان تخفیف امروز (≈۸٪/۱۵٪/۲۳٪)، رُند به ۵۰ هزار.
+ * - «آزمایشی» رفتار امروز سالن تازه: سهمیه و روزهای آزمایشی از config/billing.php (کلیدهای .env فقط مقدار اولیه‌اند؛ بعد از ساخت،
+ *   منبع حقیقت جدول است). برداشتن «یادآوری پیامکی» از آزمایشی کار سوپرادمین در صفحه‌ی پلن‌هاست.
+ * - ⭐ بسته‌ی «و» (۲۰۲۶-۱۰-۱۵): چهار پلن عمومی و متفاوت، به ترتیب پایه ← حرفه‌ای ← کامل ← کلینیک:
+ *   پایه (۵ متخصص، ۱٬۰۰۰ پیامک، بی باشگاه/بازگشت مشتری/خروجی گزارش) · حرفه‌ای (۱۰ متخصص، ۲٬۰۰۰ پیامک، همه‌ی امکانات اصلی) ·
+ *   کامل (حرفه‌ای + ارسال دستی به مشتری‌های قدیمی، ۱۲ متخصص، ۳٬۰۰۰ پیامک، ۱٫۹ میلیون) · کلینیک (کامل + دوره‌های درمانی، ۱۵ متخصص،
+ *   ۴٬۰۰۰ پیامک). قالب‌ها: چند چیدمان × چند پالت در هر بازه (Plan::siteThemeGrid). قیمت بازه‌های بلندتر با نردبان ≈۸٪/۱۵٪/۲۳٪.
+ *   پلن‌هایی که پیش از این بسته ساخته شده‌اند را migration 2026_10_15_000004 (فقط اگر هنوز پیش‌فرض‌اند) به همین جدول می‌رساند.
  *
  * sync() فقط پلن‌هایی را که با این key وجود ندارند می‌سازد (هرگز پلن ویرایش‌شده را بازنویسی نمی‌کند) و سالن‌های بی‌پلن را وصل می‌کند.
  */
@@ -38,46 +39,45 @@ class DefaultPlans
                 'extra_specialist_price_per_month' => 0,
                 'sms_quota_per_month' => (int) config('billing.trial_sms_quota'),
                 'trial_days' => max(0, (int) config('billing.trial_days', 0)),
-                'theme_site_count' => 0, 'theme_site_count_6m' => 0, 'theme_site_count_12m' => 0, 'theme_admin_count' => 0,
+                'theme_layouts' => 0, 'theme_palettes' => 0, 'theme_layouts_6m' => 0, 'theme_palettes_6m' => 0, 'theme_layouts_12m' => 0, 'theme_palettes_12m' => 0, 'theme_admin_count' => 0,
                 'features' => $existing,
             ],
             [
-                'key' => Plan::FULL, 'name' => 'کامل', 'description' => 'همه‌ی امکانات امروز؛ پلن سالن‌های پیش از پلن‌بندی.',
-                'is_trial' => false, 'is_public' => true, 'is_active' => true, 'sort' => 10,
-                'price_1m' => (int) $prices['1m'], 'price_3m' => (int) $prices['3m'],
-                'price_6m' => (int) $prices['6m'], 'price_12m' => (int) $prices['12m'],
-                'included_specialists' => max(1, (int) config('billing.included_specialists', 10)),
+                'key' => Plan::FULL, 'name' => 'کامل', 'description' => 'حرفه‌ای + ارسال دستی به مشتری‌های قدیمی، ۱۲ متخصص و ۳٬۰۰۰ پیامک در ماه.',
+                'is_trial' => false, 'is_public' => true, 'is_active' => true, 'sort' => 35,
+                'price_1m' => 1900000, 'price_3m' => 5250000, 'price_6m' => 9700000, 'price_12m' => 17550000,
+                'included_specialists' => 12,
                 'extra_specialist_price_per_month' => max(0, (int) config('billing.extra_specialist_price_per_month', 0)),
-                'sms_quota_per_month' => (int) config('billing.sms_quota_per_month'),
+                'sms_quota_per_month' => 3000,
                 'trial_days' => null,
-                'theme_site_count' => 4, 'theme_site_count_6m' => 6, 'theme_site_count_12m' => 12, 'theme_admin_count' => 1,
-                'features' => $existing,
+                'theme_layouts' => 4, 'theme_palettes' => 2, 'theme_layouts_6m' => 4, 'theme_palettes_6m' => 3, 'theme_layouts_12m' => 4, 'theme_palettes_12m' => 4, 'theme_admin_count' => 2,
+                'features' => array_values(array_merge($existing, [Feature::WinbackManual->value])),
             ],
             [
                 'key' => 'basic', 'name' => 'پایه', 'description' => 'رزرو آنلاین و پیامک‌های نوبت برای سالن کوچک.',
-                'is_trial' => false, 'is_public' => false, 'is_active' => true, 'sort' => 20,
+                'is_trial' => false, 'is_public' => true, 'is_active' => true, 'sort' => 20,
                 'price_1m' => 990000, 'price_3m' => 2750000, 'price_6m' => 5050000, 'price_12m' => 9150000,
                 'included_specialists' => 5, 'extra_specialist_price_per_month' => 250000, 'sms_quota_per_month' => 1000,
                 'trial_days' => null,
-                'theme_site_count' => 0, 'theme_site_count_6m' => 1, 'theme_site_count_12m' => 2, 'theme_admin_count' => 0,
+                'theme_layouts' => 0, 'theme_palettes' => 0, 'theme_layouts_6m' => 1, 'theme_palettes_6m' => 1, 'theme_layouts_12m' => 2, 'theme_palettes_12m' => 1, 'theme_admin_count' => 0,
                 'features' => array_values(array_diff($existing, [Feature::Winback->value, Feature::Loyalty->value, Feature::ReportsExport->value])),
             ],
             [
-                'key' => 'pro', 'name' => 'حرفه‌ای', 'description' => 'همه‌ی امکانات موجود.',
-                'is_trial' => false, 'is_public' => false, 'is_active' => true, 'sort' => 30,
+                'key' => 'pro', 'name' => 'حرفه‌ای', 'description' => 'همه‌ی امکانات اصلی سالن، با ۱۰ متخصص و ۲٬۰۰۰ پیامک در ماه.',
+                'is_trial' => false, 'is_public' => true, 'is_active' => true, 'sort' => 30,
                 'price_1m' => 1500000, 'price_3m' => 4150000, 'price_6m' => 7650000, 'price_12m' => 13850000,
                 'included_specialists' => 10, 'extra_specialist_price_per_month' => 250000, 'sms_quota_per_month' => 2000,
                 'trial_days' => null,
-                'theme_site_count' => 4, 'theme_site_count_6m' => 5, 'theme_site_count_12m' => 6, 'theme_admin_count' => 1,
+                'theme_layouts' => 2, 'theme_palettes' => 2, 'theme_layouts_6m' => 3, 'theme_palettes_6m' => 2, 'theme_layouts_12m' => 4, 'theme_palettes_12m' => 2, 'theme_admin_count' => 1,
                 'features' => $existing,
             ],
             [
-                'key' => 'clinic', 'name' => 'کلینیک', 'description' => 'حرفه‌ای + دوره‌های درمانی و ارسال دستی به مشتری‌های قدیمی.',
+                'key' => 'clinic', 'name' => 'کلینیک', 'description' => 'کامل + دوره‌های درمانی چندجلسه‌ای، ۱۵ متخصص و ۴٬۰۰۰ پیامک در ماه.',
                 'is_trial' => false, 'is_public' => true, 'is_active' => true, 'sort' => 40,
                 'price_1m' => 2400000, 'price_3m' => 6650000, 'price_6m' => 12250000, 'price_12m' => 22150000,
                 'included_specialists' => 15, 'extra_specialist_price_per_month' => 250000, 'sms_quota_per_month' => 4000,
                 'trial_days' => null,
-                'theme_site_count' => 12, 'theme_site_count_6m' => 12, 'theme_site_count_12m' => 12, 'theme_admin_count' => 3,
+                'theme_layouts' => 4, 'theme_palettes' => 4, 'theme_layouts_6m' => 4, 'theme_palettes_6m' => 4, 'theme_layouts_12m' => 4, 'theme_palettes_12m' => 4, 'theme_admin_count' => 3,
                 'features' => $current,
             ],
         ];
