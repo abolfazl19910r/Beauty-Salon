@@ -30,6 +30,7 @@ export default function Account() {
         <MenuRow icon="wallet-outline" title="کیف پول" subtitle={home.data ? toman(home.data.wallet_balance) : undefined} onPress={() => router.push('/wallet')} />
         <MenuRow icon="medkit-outline" title="دوره‌های درمانی" subtitle="دوره‌های من و خرید دوره" onPress={() => router.push('/courses')} />
         <MenuRow icon="notifications-outline" title="اعلان‌ها" onPress={() => router.push('/notifications')} trailing={unread > 0 ? <Badge text={faDigits(unread)} tone="gold" /> : null} />
+        <MenuRow icon="notifications-circle-outline" title="دریافت اعلان" subtitle="اجازه، اعلان آزمایشی و تنظیم باتری گوشی" onPress={() => router.push('/push')} />
         <MenuRow icon="storefront-outline" title="درباره‌ی سالن" subtitle="آدرس، تلفن، ساعت کاری، قوانین" onPress={() => router.push('/salon-info')} />
         <MenuRow icon="people-outline" title="متخصص‌ها" onPress={() => router.push('/specialists')} />
         <MenuRow icon="create-outline" title="نام و شماره" onPress={() => router.push('/profile')} />

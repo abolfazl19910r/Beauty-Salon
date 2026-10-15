@@ -26,6 +26,10 @@ export default function More() {
           {unread > 0 ? <Badge text={`${faDigits(unread)} خوانده‌نشده`} tone="gold" /> : null}
         </Row>
       </Card>
+      <Card onPress={() => router.push('/push')}>
+        <T weight="medium">دریافت اعلان</T>
+        <T muted size={13}>اجازه، اعلان آزمایشی و تنظیم باتری گوشی</T>
+      </Card>
       <Card onPress={() => router.push('/devices')}>
         <T weight="medium">دستگاه‌های من</T>
         <T muted size={13}>خروج از گوشی‌های دیگر</T>

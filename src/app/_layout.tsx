@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { I18nManager, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { usePushSetup } from '@/lib/pushRuntime';
 import { SessionProvider, useSession } from '@/lib/session';
 import { fontFiles, fonts, usePalette } from '@/ui/theme';
 
@@ -19,11 +20,14 @@ void SplashScreen.preventAutoHideAsync();
 const PUBLIC_SCREENS = ['login', 'verify', 'forgot', 'reset', 'server'];
 
 function Navigator() {
-  const { status, salonInactive } = useSession();
+  const { status, salonInactive, api } = useSession();
   const segments = useSegments();
   const p = usePalette();
   const scheme = useColorScheme();
   const [fontsLoaded] = useFonts(fontFiles);
+
+  // پوش (بسته‌ی ۴): ثبت گوشی بعد از ورود، رسید، و باز کردن صفحه‌ی درست با لمس اعلان
+  usePushSetup(api, status === 'signedIn');
 
   useEffect(() => {
     if (fontsLoaded && status !== 'loading') {
@@ -73,6 +77,7 @@ function Navigator() {
         <Stack.Screen name="transactions" options={{ title: 'تراکنش‌ها' }} />
         <Stack.Screen name="notifications" options={{ title: 'اعلان‌ها' }} />
         <Stack.Screen name="devices" options={{ title: 'دستگاه‌های من' }} />
+        <Stack.Screen name="push" options={{ title: 'دریافت اعلان' }} />
         <Stack.Screen name="server" options={{ title: 'آدرس سرور', presentation: 'modal' }} />
         <Stack.Screen name="salon-inactive" options={{ headerShown: false }} />
       </Stack>

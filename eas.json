@@ -3,19 +3,23 @@
   "build": {
     "staff-apk": {
       "distribution": "internal",
+      "environment": "preview",
       "env": { "APP_VARIANT": "staff", "APP_ENV": "preview" },
       "android": { "buildType": "apk" }
     },
     "staff-production": {
+      "environment": "production",
       "env": { "APP_VARIANT": "staff", "APP_ENV": "production" },
       "android": { "buildType": "apk" }
     },
     "customer-apk": {
       "distribution": "internal",
+      "environment": "preview",
       "env": { "APP_VARIANT": "customer", "APP_ENV": "preview" },
       "android": { "buildType": "apk" }
     },
     "customer-production": {
+      "environment": "production",
       "env": { "APP_VARIANT": "customer", "APP_ENV": "production" },
       "android": { "buildType": "apk" }
     }

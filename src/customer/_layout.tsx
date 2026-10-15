@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { usePendingPaymentWatcher } from '@/lib/customer/payments';
 import { CustomerSalonProvider, useCustomerSalon } from '@/lib/customer/salon';
+import { usePushSetup } from '@/lib/pushRuntime';
 import { SessionProvider, useSession } from '@/lib/session';
 import { fontFiles, fonts, usePalette } from '@/ui/theme';
 
@@ -25,12 +26,15 @@ void SplashScreen.preventAutoHideAsync();
 const PUBLIC_SCREENS = ['welcome', 'scan', 'salon', 'login', 'verify', 'register', 'forgot', 'reset', 'server'];
 
 function Navigator() {
-  const { status, salonInactive } = useSession();
+  const { status, salonInactive, api } = useSession();
   const { ready, salon } = useCustomerSalon();
   const segments = useSegments();
   const p = usePalette();
   const scheme = useColorScheme();
   const [fontsLoaded] = useFonts(fontFiles);
+
+  // پوش (بسته‌ی ۴): ثبت گوشی بعد از ورود، رسید، و باز کردن صفحه‌ی درست با لمس اعلان
+  usePushSetup(api, status === 'signedIn');
   const loading = !fontsLoaded || status === 'loading' || !ready;
 
   usePendingPaymentWatcher(status === 'signedIn');
@@ -103,6 +107,7 @@ function Navigator() {
         <Stack.Screen name="profile" options={{ title: 'نام و شماره' }} />
         <Stack.Screen name="password" options={{ title: 'تغییر رمز' }} />
         <Stack.Screen name="devices" options={{ title: 'دستگاه‌های من' }} />
+        <Stack.Screen name="push" options={{ title: 'دریافت اعلان' }} />
         <Stack.Screen name="delete-account" options={{ title: 'حذف حساب' }} />
         <Stack.Screen name="salon-inactive" options={{ headerShown: false }} />
       </Stack>

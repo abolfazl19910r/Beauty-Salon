@@ -63,6 +63,7 @@ it('logs in with password then code and lands on today', async () => {
     if (url.endsWith('/staff/login/verify')) return [201, ok({ token: '5|abc', token_type: 'Bearer', token_id: 5, expires_at: '2027-01-08T00:00:00Z', account: ACCOUNT })];
     if (url.includes('/staff/today')) return [200, ok({ date: '2026-10-11', date_jalali: '1405/07/19', date_label: 'یکشنبه، ۱۹ مهر ۱۴۰۵', summary: { count: 1, pending_count: 1, revenue: 100000 }, bookings: [BOOKING] })];
     if (url.includes('/staff/notifications')) return [200, ok([], { current_page: 1, last_page: 1, total: 0, per_page: 20, unread_count: 0 })];
+    if (url.endsWith('/push/device')) return [200, ok({ registered: true, provider: 'fcm', server_enabled: true, last_receipt_at: null, disabled_reason: null })];
     return [404, { success: false, error: { code: 'not_found', message: 'x' } }];
   };
 
@@ -85,6 +86,35 @@ it('logs in with password then code and lands on today', async () => {
   expect(calls.find((c) => c.url.includes('/staff/today'))?.auth).toBe('Bearer 5|abc');
   expect(screen.getAllByText('در انتظار تأیید')).toHaveLength(2); // کارت خلاصه + نشان نوبت
   expect(screen.getByText('سلام سارا احمدی')).toBeTruthy();
+
+  // پوش (بسته‌ی ۴): بعد از ورود گوشی با توکن FCM برای همین نشست ثبت می‌شود
+  await waitFor(() => expect(calls.find((c) => c.url.endsWith('/push/device'))?.body).toMatchObject({ provider: 'fcm', token: 'fcm-test-token-0001', manufacturer: null }));
+  expect(calls.find((c) => c.url.endsWith('/push/device'))?.auth).toBe('Bearer 5|abc');
+});
+
+it('tapping a push opens its booking and sends an opened receipt; a push received in the app is acknowledged', async () => {
+  const { mockPushResponse, mockPushReceived } = require('expo-notifications');
+  mockSecure.set('mahru.token', '5|abc');
+  await require('@react-native-async-storage/async-storage').setItem('mahru.account', JSON.stringify(ACCOUNT));
+  routes = (url) => {
+    if (url.includes('/staff/bookings/41/course')) return [404, { success: false, error: { code: 'not_found', message: 'x' } }];
+    if (url.includes('/staff/bookings/41')) return [200, ok(BOOKING)];
+    if (url.includes('/staff/today')) return [200, ok({ date: '2026-10-11', date_jalali: '1405/07/19', date_label: 'x', summary: { count: 0, pending_count: 0, revenue: 0 }, bookings: [] })];
+    if (url.includes('/staff/notifications')) return [200, ok([], { current_page: 1, last_page: 1, total: 0, per_page: 20, unread_count: 0 })];
+    if (url.endsWith('/push/device') || url.endsWith('/push/receipts')) return [200, ok({ acknowledged: 1 })];
+    return [404, { success: false, error: { code: 'not_found', message: 'x' } }];
+  };
+
+  renderRouter('./src/app', { initialUrl: '/' });
+  await waitFor(() => expect(calls.some((c) => c.url.endsWith('/push/device'))).toBe(true));
+
+  const id = '9b2f7c1e-1111-4a2b-8c3d-0123456789ab';
+  await act(async () => mockPushReceived({ message_id: id, type: 'booking.created.specialist', booking_id: '41' }));
+  await waitFor(() => expect(calls.find((c) => c.url.endsWith('/push/receipts'))?.body).toEqual({ ids: [id], opened: false }));
+
+  await act(async () => mockPushResponse({ message_id: id, type: 'booking.created.specialist', booking_id: '41' }));
+  expect(await screen.findByText('مریم')).toBeTruthy();
+  await waitFor(() => expect(calls.filter((c) => c.url.endsWith('/push/receipts')).pop()?.body).toEqual({ ids: [id], opened: true }));
 });
 
 it('a 401 on an authenticated call clears the session and returns to login', async () => {

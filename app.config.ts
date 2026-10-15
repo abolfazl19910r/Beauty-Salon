@@ -21,6 +21,13 @@ const VARIANTS = {
 
 type Variant = keyof typeof VARIANTS;
 
+/**
+ * google-services.json هر اپ (بسته‌ی ۴، پوش FCM): در EAS متغیر محیطی نوع «File» به نام GOOGLE_SERVICES_JSON که مسیر فایل را می‌دهد
+ * (هر پروژه‌ی expo.dev فایل اپ خودش). روی سیستم خودتان: GOOGLE_SERVICES_JSON=./google-services.staff.json (در .gitignore).
+ * بدون آن build ساخته می‌شود ولی اپ توکن پوش نمی‌گیرد (صفحه‌ی «دریافت اعلان»: ثبت نشده).
+ */
+const GOOGLE_SERVICES_JSON = process.env.GOOGLE_SERVICES_JSON || undefined;
+
 /** پروژه‌های expo.dev (ساخته‌شده با `eas init`): همکار ‏@abolfazl1991/mahru-staff (۲۰۲۶-۱۰-۱۰)، مشتری ‏@abolfazl1991/mahru (۲۰۲۶-۱۰-۱۴). */
 const EAS_PROJECT_IDS: Record<Variant, string> = {
   staff: '1ae539ab-5b39-43c1-8f62-db0b1648abdc',
@@ -38,14 +45,16 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     name: v.name,
     slug: v.slug,
     scheme: v.scheme,
-    version: '0.1.0',
+    version: '0.2.0',
     orientation: 'portrait',
     icon: `${v.assets}/icon.png`,
     userInterfaceStyle: 'automatic',
     platforms: ['android'],
     android: {
       package: v.package,
-      versionCode: 1,
+      // ۲: بسته‌ی ۴ (پوش، ماژول بومی تازه) — نصب روی نسخه‌ی قبلی به‌صورت Update
+      versionCode: 2,
+      googleServicesFile: GOOGLE_SERVICES_JSON,
       adaptiveIcon: {
         backgroundColor: v.background,
         foregroundImage: `${v.assets}/android-icon-foreground.png`,
@@ -60,6 +69,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     plugins: [
       ['expo-router', { root: v.routerRoot }],
       'expo-secure-store',
+      // پوش (بسته‌ی ۴): آیکون سفید نوار اعلان و کانال پیش‌فرض (کانال‌ها در src/lib/pushRuntime.ts ساخته می‌شوند)
+      ['expo-notifications', { icon: './assets/notification-icon.png', color: '#A67F2E', defaultChannel: 'bookings' }],
       ['expo-splash-screen', { image: `${v.assets}/splash-icon.png`, imageWidth: 180, resizeMode: 'contain', backgroundColor: v.background }],
       // راست‌به‌چپ از اولین اجرا، در سطح بومی (نه فقط I18nManager که بعد از راه‌اندازی دوباره اثر می‌کند)
       ['expo-localization', { supportsRTL: true, forcesRTL: true }],

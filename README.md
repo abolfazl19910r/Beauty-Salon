@@ -66,7 +66,22 @@ eas build --platform android --profile customer-production   # نهایی
 ```
 (در **cmd**: `set APP_VARIANT=customer` و بعد `eas init`.) تا شناسه گذاشته نشده، `eas build` پروفایل‌های مشتری را به پروژه‌ی درست وصل نمی‌کند.
 آدرس پیش‌فرض سرور: متغیر `EXPO_PUBLIC_API_URL` در expo.dev (Environment variables) — وگرنه `https://mahru.ir`.
-پوش (Firebase، `google-services.json`) در بسته‌ی ۴ اضافه می‌شود؛ مثل بقیه‌ی اپ‌ها فایل را در expo.dev بگذارید، نه در ریپو.
+
+## پوش (بسته‌ی ۴، نسخه‌ی 0.2.0 / versionCode 2)
+- **پیش‌نیاز هر build:** متغیر محیطی `GOOGLE_SERVICES_JSON` از نوع **File** (Secret، محیط‌های preview و production) در **هر دو**
+  پروژه‌ی expo.dev — `mahru` با `google-services.json` اپ `ir.mahru` و `mahru-staff` با فایل `ir.mahru.staff` (پروژه‌ی Firebase
+  تولیدی «mahru»). پروفایل‌های `eas.json` محیط را صریح می‌گیرند. بدون آن APK ساخته می‌شود ولی گوشی توکن پوش نمی‌گیرد.
+  ```powershell
+  eas env:create --name GOOGLE_SERVICES_JSON --type file --visibility secret --environment preview --environment production --value .\google-services.staff.json
+  ```
+  (برای اپ مشتری اول `$env:APP_VARIANT="customer"` تا پروژه‌ی `mahru` انتخاب شود.) روی سیستم خودتان برای `expo prebuild`:
+  `$env:GOOGLE_SERVICES_JSON=".\google-services.staff.json"` — فایل‌های `google-services*.json` در `.gitignore` و `.easignore` هستند.
+- `index.ts` ورودی اپ است: task پس‌زمینه‌ی رسید (`src/lib/pushTask.ts`) پیش از expo-router تعریف می‌شود (اپ بسته فقط همین را اجرا می‌کند).
+- پیام سرور data-only با اولویت بالاست؛ اعلان را خود expo-notifications از `title`/`message`/`channelId` می‌سازد (بومی، حتی اگر JS اجرا
+  نشود) و task فقط رسید می‌فرستد (`/api/v1/push/receipts`؛ بی‌اینترنت در صف می‌ماند). لمس اعلان صفحه‌ی نوبت/دوره را باز می‌کند.
+- کانال‌ها: «نوبت‌ها و یادآوری‌ها» (MAX، صدا) و «باشگاه، تخفیف و اطلاع‌رسانی». آیکون نوار اعلان `assets/notification-icon.png`.
+- صفحه‌ی **«دریافت اعلان»** (همکار: بیشتر؛ مشتری: حساب): اجازه، ثبت، «اعلان آزمایشی» و راهنمای Autostart شیائومی / Deep sleeping سامسونگ.
+- اگر روی گوشی‌ای رسید از اپ بسته نیامد، روی سرور `PUSH_FCM_STYLE=notification` (اعلان را اندروید می‌سازد؛ رسید فقط با باز کردن اپ).
 
 ## ساختار
 - `src/app/` — صفحه‌های **همکار** (expo-router): ورود، کد، فراموشی رمز، آدرس سرور؛ زبانه‌ها: امروز، نوبت‌ها، تقویم، کیف پول، بیشتر؛
@@ -77,6 +92,8 @@ eas build --platform android --profile customer-production   # نهایی
 - `src/lib/customer/` — تایپ‌ها و کوئری‌های `/api/v1/customer/*`، تشخیص لینک/QR/کد سالن، سالن ذخیره‌شده و پرداخت در جریان، کارمزد درگاه.
 - آیکون‌ها (نشان تازه‌ی برند، ۲۰۲۶-۱۰-۱۴): `assets/` همکار (اسپرسو + نشان «همکار»)، `assets/customer/` مشتری (اسپرسو). سازنده: `docs/brand/generate_brand_assets.py` پروژه‌ی لاراول (برنچ develop) با آرگومان سوم = پوشه‌ی همین اپ.
 - رنگ‌ها (`src/ui/theme.ts`): همان توکن‌های روشن/تیره‌ی لندینگ و پنل‌ها.
+- `src/lib/push.ts` (منطق خالص)، `pushRuntime.ts` (اجازه، ثبت، لمس)، `pushReceipts.ts` (رسید بدون React)، `pushTask.ts` (task پس‌زمینه)؛
+  `__mocks__/expo-notifications.ts` نسخه‌ی Jest.
 - `src/lib/api.ts` — کلاینت `/api/v1` (قالب `{success, data, meta}` / `{success:false, error:{code, message, fields}}`).
 - `src/lib/session.tsx` — توکن (SecureStore)، ۴۰۱ ← خروج، `salon_inactive` ← صفحه‌ی خودش، `wrong_app` ← خروج.
 - `src/lib/jalali.ts`، `src/lib/format.ts` — شمسی (شنبه تا جمعه)، تومان و ارقام فارسی.
