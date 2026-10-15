@@ -9,7 +9,7 @@
     @include('partials.favicons')
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/app.jsx', 'resources/js/vendor/sweetalert.js'])
-    @include('partials.mahru-theme')
+    @include('partials.mahru-theme', ['themeScope' => 'admin'])
     @include('partials.mahru-panel')
     @stack('styles')
     <style>
@@ -49,6 +49,61 @@
             50% { opacity: 0.7; }
         }
 
+        /* ⭐ بسته‌ی «و»: قالب‌های پنل مدیر */
+        .adm-drawer{width:16rem}
+        .adm-link{color:var(--admin-text-dim)}
+        .adm-link:not(.sidebar-active):hover{background-color:var(--admin-accent-light)}
+        .adm-logout{color:var(--admin-text-dim)}
+        .adm-logout:hover{background-color:rgb(var(--m-bad) / .1);color:rgb(var(--m-bad))}
+        /* ریل آیکونی */
+        .adm-rail-slot{position:relative;width:72px;flex:0 0 72px}
+        .adm-rail{position:absolute;top:0;right:0;bottom:0;width:72px;z-index:45;overflow-y:auto;overflow-x:hidden;background:var(--admin-surface);border-left:1px solid var(--admin-border);padding:12px 12px;transition:width .2s ease,box-shadow .2s ease;display:flex;flex-direction:column;gap:6px}
+        .adm-rail:hover,.adm-rail:focus-within{width:248px;box-shadow:var(--m-sh-soft)}
+        .adm-rail__brand{display:flex;align-items:center;gap:10px;padding:4px 2px 10px;color:var(--admin-text);white-space:nowrap}
+        .adm-rail__mark{width:36px;height:36px;border-radius:10px;background:var(--m-btn);color:var(--m-on-gold);display:flex;align-items:center;justify-content:center;font-weight:900}
+        .adm-rail__group{display:flex;flex-direction:column;gap:2px;padding-top:6px;border-top:1px solid var(--admin-border)}
+        .adm-rail__glabel{font-size:11px;color:var(--admin-text-light);padding:2px 12px;white-space:nowrap;opacity:0;height:0;overflow:hidden;transition:opacity .15s}
+        .adm-rail:hover .adm-rail__glabel,.adm-rail:focus-within .adm-rail__glabel{opacity:1;height:auto}
+        .adm-rail__item{position:relative;display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;color:var(--admin-text-dim);white-space:nowrap;font-size:14px;width:100%;text-align:right}
+        .adm-rail__item:hover{background:var(--admin-accent-light);color:var(--admin-text)}
+        .adm-rail__item.is-active{background:rgb(var(--m-gold) / .14);color:rgb(var(--m-gold))}
+        .adm-rail__item.is-active::before{content:"";position:absolute;right:-12px;top:10px;bottom:10px;width:3px;border-radius:3px;background:rgb(var(--m-gold))}
+        .adm-rail__label{opacity:0;transition:opacity .15s}
+        .adm-rail:hover .adm-rail__label,.adm-rail:focus-within .adm-rail__label{opacity:1}
+        .adm-rail__badge{position:absolute;top:6px;left:6px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;font-size:10px;font-weight:700;background:rgb(var(--m-bad));color:rgb(var(--m-on-solid));display:flex;align-items:center;justify-content:center}
+        .adm-rail__badge.hidden{display:none}
+        .adm-rail__logout:hover{background:rgb(var(--m-bad) / .1);color:rgb(var(--m-bad))}
+        .adm-cmd{align-items:center;gap:10px;min-width:22rem;min-height:40px;padding:0 14px;border-radius:10px;background:var(--admin-accent-light);color:var(--admin-text-dim);font-size:14px}
+        .adm-cmd kbd{margin-inline-start:auto;font-size:11px;border:1px solid var(--admin-border);border-radius:6px;padding:1px 7px;font-family:inherit}
+        .adm--rail .admin-btn-primary,.adm--rail button,.adm--rail .rounded-xl{border-radius:10px}
+        /* منوی بالایی */
+        .adm-top{gap:2px;padding:0 12px;border-top:1px solid var(--admin-border);align-items:stretch;flex-wrap:wrap}
+        .adm-top__link{display:flex;align-items:center;gap:6px;padding:12px 14px;font-size:14px;color:var(--admin-text-dim);border-bottom:2px solid transparent;cursor:pointer;list-style:none;white-space:nowrap}
+        .adm-top__link::-webkit-details-marker{display:none}
+        .adm-top__link:hover{color:var(--admin-text)}
+        .adm-top__link.is-active{color:var(--admin-text);font-weight:700;border-bottom-color:rgb(var(--m-gold))}
+        .adm-top__group{position:relative}
+        .adm-top__panel{position:absolute;top:100%;right:0;z-index:50;min-width:15rem;padding:6px;border-radius:14px;background:var(--admin-surface);border:1px solid var(--admin-border);box-shadow:var(--m-sh-soft)}
+        .adm-top__item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;font-size:14px;color:var(--admin-text-dim)}
+        .adm-top__item:hover{background:var(--admin-accent-light);color:var(--admin-text)}
+        .adm-top__item.is-active{background:rgb(var(--m-gold) / .12);color:rgb(var(--m-gold));font-weight:700}
+        .adm--top main{padding-left:max(1rem,calc((100% - 1400px) / 2));padding-right:max(1rem,calc((100% - 1400px) / 2))}
+        .adm--top .rounded-lg,.adm--top .rounded-xl{border-radius:16px}
+        /* فشرده‌ی پرتراکم */
+        .adm--dense .adm-drawer{width:13rem}
+        .adm--dense .adm-link{padding-top:.35rem;padding-bottom:.35rem;font-size:13px;margin-bottom:1px}
+        .adm--dense .adm-drawer h3{margin-bottom:.25rem}
+        .adm--dense .adm-drawer .py-2{padding-top:.25rem;padding-bottom:.25rem}
+        .adm--dense main{padding:.6rem .8rem;font-size:13px}
+        .adm--dense main table th,.adm--dense main table td{padding-top:.4rem!important;padding-bottom:.4rem!important}
+        .adm--dense main .p-6{padding:.9rem}
+        .adm--dense main .p-5{padding:.8rem}
+        .adm--dense main .p-4{padding:.7rem}
+        .adm--dense main .gap-6{gap:.8rem}
+        .adm--dense main .mb-6{margin-bottom:.8rem}
+        .adm--dense .rounded-xl,.adm--dense .rounded-2xl,.adm--dense .admin-card{border-radius:8px}
+        .adm--dense header .py-3{padding-top:.4rem;padding-bottom:.4rem}
+
         .notification-item-unread {
             background: var(--admin-accent-light);
             border-right: 3px solid var(--admin-accent);
@@ -56,483 +111,18 @@
 
     </style>
 </head>
-<body class="rtl m-panel" style="background-color: var(--admin-bg); color: var(--admin-text);">
+@php
+    // ⭐ بسته‌ی «و»: قالب پنل مدیر (side / rail / top / dense) و منوی یکتای AdminMenu
+    $adminSalon = app(\App\Support\CurrentSalon::class)->get();
+    $adminShell = app(\App\Support\Themes\CurrentAppearance::class)->get()->admin;
+    $adminMenu = \App\Support\Admin\AdminMenu::groups(auth()->user(), $adminSalon);
+@endphp
+<body class="rtl m-panel adm adm--{{ $adminShell }}" data-admin-shell="{{ $adminShell }}" style="background-color: var(--admin-bg); color: var(--admin-text);">
 <div class="flex h-screen overflow-hidden">
-    <!-- Sidebar -->
-    <aside class="w-64 min-h-screen shadow-sm border-l overflow-y-auto hidden md:block"
-           style="background: var(--admin-surface); border-color: var(--admin-border);">
-        <div class="p-4 border-b" style="border-color: var(--admin-border);">
-            <div class="flex items-center justify-between">
-                <h2 class="text-xl font-bold flex items-center" style="color: var(--admin-text);">
-                    <svg class="w-8 h-8 ml-2" style="color: var(--admin-accent);" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="8.5" cy="7" r="4"></circle>
-                        <path d="M20 8v6M23 11h-6"></path>
-                    </svg>
-                    <span style="color: var(--admin-accent);">پنل مدیریت</span>
-                </h2>
-            </div>
-            {{-- ⭐ ۲۰۲۶-۰۹-۲۴: لوگو و نام همین سالن (وقتی CurrentSalon داریم)؛ سوپرادمین همون متن قبلی رو می‌بینه. --}}
-            @php $adminSalon = app(\App\Support\CurrentSalon::class)->get(); @endphp
-            @if ($adminSalon)
-                <div class="flex items-center gap-2 mt-3">
-                    <x-brand-emblem class="w-9 h-9 rounded" pad="3px" />
-                    <span class="text-sm font-bold" style="color: var(--admin-text);">{{ $adminSalon->name }}</span>
-                </div>
-            @else
-                <p class="text-xs mt-2" style="color: var(--admin-text-light);">سیستم مدیریت سالن زیبایی</p>
-            @endif
-        </div>
-
-        <nav class="mt-4 px-2">
-            <div class="py-2">
-                <h3 class="text-xs font-semibold px-3 mb-2 uppercase tracking-wider" style="color: var(--admin-text-light);">داشبورد</h3>
-                <a href="{{ route('admin.dashboard') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.dashboard') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.dashboard') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.dashboard') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.dashboard') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="3" width="7" height="7"></rect>
-                        <rect x="14" y="3" width="7" height="7"></rect>
-                        <rect x="14" y="14" width="7" height="7"></rect>
-                        <rect x="3" y="14" width="7" height="7"></rect>
-                    </svg>
-                    داشبورد
-                </a>
-
-                @permission('view-reports')
-                <a href="{{ route('admin.reports.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.reports*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.reports*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.reports*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.reports*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
-                        <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
-                    </svg>
-                    گزارشات
-                </a>
-                @endpermission
-            </div>
-
-            <div class="py-2">
-                <h3 class="text-xs font-semibold px-3 mb-2 uppercase tracking-wider" style="color: var(--admin-text-light);">مدیریت</h3>
-                @permission('view-services')
-                <a href="{{ route('admin.services.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.services*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.services*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.services*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.services*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                    </svg>
-                    خدمات
-                </a>
-                @endpermission
-
-                @permission('view-specialists')
-                <a href="{{ route('admin.specialists.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.specialists*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.specialists*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.specialists*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.specialists*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                    متخصصین
-                </a>
-                @endpermission
-
-                @permission('view-specialists')
-                <a href="{{ route('admin.leaves.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.leaves*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.leaves*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.leaves*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.leaves*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                    مرخصی‌ها
-                </a>
-                @endpermission
-
-                @permission('view-bookings')
-                <a href="{{ route('admin.bookings.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.bookings*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.bookings*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.bookings*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.bookings*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                    نوبت‌ها
-                </a>
-                @endpermission
-
-                {{-- پرونده‌ی مشتری‌ها (همراه بسته‌ی ب) --}}
-                @permission('view-bookings')
-                <a href="{{ route('admin.customers.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.customers*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.customers*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.customers*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.customers*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                    مشتری‌ها
-                </a>
-                @endpermission
-
-                {{-- دوره‌های درمانی (بسته‌ی ب): با قفل وقتی در پلن نیست؛ دوره‌های موجود همیشه دیدنی --}}
-                @permission('view-bookings')
-                <a href="{{ route('admin.courses.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.courses*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.courses*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.courses*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.courses*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                    </svg>
-                    دوره‌های درمانی
-                    @unless ($adminSalon?->hasFeature(\App\Support\Features\Feature::TreatmentCourses) ?? true)
-                        <span class="mr-auto text-xs" title="در پلن سالن شما نیست">🔒</span>
-                    @endunless
-                </a>
-                @endpermission
-
-                @permission('view-reviews')
-                <a href="{{ route('admin.reviews.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.reviews*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.reviews*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.reviews*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.reviews*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                    </svg>
-                    نظرات و ارزیابی‌ها
-                </a>
-                @endpermission
-
-                @permission('view-categories')
-                <a href="{{ route('admin.categories.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.categories*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.categories*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.categories*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.categories*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                        <polyline points="2 17 12 22 22 17"></polyline>
-                        <polyline points="2 12 12 17 22 12"></polyline>
-                    </svg>
-                    دسته‌بندی‌ها
-                </a>
-                @endpermission
-            </div>
-
-            <div class="py-2">
-                <h3 class="text-xs font-semibold px-3 mb-2 uppercase tracking-wider" style="color: var(--admin-text-light);">سیستم‌ها</h3>
-
-                <a href="{{ route('admin.notifications.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors justify-between {{ request()->routeIs('admin.notifications*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.notifications*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.notifications*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.notifications*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <span class="flex items-center">
-                        <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                        </svg>
-                        اعلانات
-                    </span>
-                    <span id="sidebar-notification-count" class="mr-2 px-2.5 py-0.5 rounded-full text-xs font-medium hidden"
-                          style="background: rgb(var(--m-bad) / .14); color: rgb(var(--m-bad));">
-                    </span>
-                </a>
-
-                @permission('view-loyalty')
-                <a href="{{ route('admin.loyalty.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.loyalty*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.loyalty*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.loyalty*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.loyalty*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                    </svg>
-                    امتیازات
-                    @unless ($adminSalon?->hasFeature(\App\Support\Features\Feature::Loyalty) ?? true)
-                        <span class="mr-auto text-xs" title="در پلن سالن شما نیست">🔒</span>
-                    @endunless
-                </a>
-                @endpermission
-
-                @permission('view-loyalty')
-                <a href="{{ route('admin.winback.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.winback*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.winback*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.winback*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.winback*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path>
-                    </svg>
-                    پیگیری مشتریان غایب
-                    @unless ($adminSalon?->hasFeature(\App\Support\Features\Feature::Winback) ?? true)
-                        <span class="mr-auto text-xs" title="در پلن سالن شما نیست">🔒</span>
-                    @endunless
-                </a>
-                @endpermission
-
-                @permission('view-blog')
-                <a href="{{ route('admin.blog.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.blog*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.blog*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.blog*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.blog*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                    </svg>
-                    وبلاگ
-                </a>
-                @endpermission
-
-                @permission('view-gallery')
-                <a href="{{ route('admin.gallery.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.gallery*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.gallery*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.gallery*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.gallery*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                        <polyline points="21 15 16 10 5 21"></polyline>
-                    </svg>
-                    گالری
-                </a>
-                @endpermission
-
-                @permission('view-announcements')
-                <a href="{{ route('admin.announcements.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.announcements*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.announcements*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.announcements*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.announcements*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                        <polyline points="10 9 9 9 8 9"></polyline>
-                    </svg>
-                    اطلاعیه
-                </a>
-                @endpermission
-
-                @permission('view-discount-codes')
-                <a href="{{ route('admin.discount-codes.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.discount-codes*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.discount-codes*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.discount-codes*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.discount-codes*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                        <line x1="7" y1="7" x2="7.01" y2="7"></line>
-                    </svg>
-                    کدهای تخفیف
-                </a>
-                @endpermission
-
-                @permission('view-security-logs')
-                <a href="{{ route('admin.security.logs') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.security*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.security*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.security*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.security*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                    </svg>
-                    امنیت
-                </a>
-                @endpermission
-
-                @permission('view-security-logs')
-                <a href="{{ route('admin.notification-settings.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.notification-settings*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.notification-settings*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.notification-settings*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.notification-settings*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                    </svg>
-                    تنظیمات اطلاع‌رسانی
-                </a>
-                @endpermission
-            </div>
-
-            {{-- ⭐ «اطلاعات سالن» (۲۰۲۶-۰۹-۲۴) — فقط برای مالک سالن (همون قاعده‌ی EnsureSalonOwner). --}}
-            @php
-                $sidebarSalon = app(\App\Support\CurrentSalon::class)->get();
-                $sidebarIsOwner = auth()->check() && (auth()->user()->hasRole('super-admin')
-                    || ($sidebarSalon && $sidebarSalon->admins()->wherePivot('user_id', auth()->id())->wherePivot('role', 'owner')->exists()));
-            @endphp
-            @if ($sidebarSalon && $sidebarIsOwner)
-                <div class="py-2">
-                    <h3 class="text-xs font-semibold px-3 mb-2 uppercase tracking-wider" style="color: var(--admin-text-light);">سالن</h3>
-                    <a href="{{ route('admin.salon-settings.edit') }}"
-                       class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.salon-settings.*') ? 'sidebar-active' : '' }}"
-                       style="{{ request()->routeIs('admin.salon-settings.*') ? '' : 'color: var(--admin-text-dim);' }}">
-                        <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                        </svg>
-                        اطلاعات سالن
-                    </a>
-                    <a href="{{ route('admin.payment-gateways.index') }}"
-                       class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.payment-gateways.*') ? 'sidebar-active' : '' }}"
-                       style="{{ request()->routeIs('admin.payment-gateways.*') ? '' : 'color: var(--admin-text-dim);' }}">
-                        <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                            <line x1="1" y1="10" x2="23" y2="10"></line>
-                        </svg>
-                        درگاه‌های پرداخت
-                    </a>
-                </div>
-            @endif
-
-            <div class="py-2">
-                <h3 class="text-xs font-semibold px-3 mb-2 uppercase tracking-wider" style="color: var(--admin-text-light);">مدیریت کاربران</h3>
-                @permission('view-users')
-                <a href="{{ route('admin.users.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.users*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.users*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.users*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.users*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                    کاربران
-                </a>
-                @endpermission
-
-                @permission('manage-roles')
-                <a href="{{ route('admin.permissions.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.permissions*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.permissions*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.permissions*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.permissions*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                    دسترسی‌ها
-                </a>
-                @endpermission
-
-                @permission('manage-roles')
-                <a href="{{ route('admin.roles.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.roles*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.roles*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.roles*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.roles*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M9 11h6m-3-3v6M17 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h10z"></path>
-                    </svg>
-                    نقش‌ها
-                </a>
-                @endpermission
-            </div>
-
-            <div class="py-2">
-                <h3 class="text-xs font-semibold px-3 mb-2 uppercase tracking-wider" style="color: var(--admin-text-light);">امور مالی</h3>
-
-                <a href="{{ route('admin.wallet.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.wallet.index') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.wallet.index') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.wallet.index') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.wallet.index') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                    </svg>
-                    کیف پول‌ها
-                </a>
-
-                <a href="{{ route('admin.wallet.withdrawals') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.wallet.withdrawals*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.wallet.withdrawals*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.wallet.withdrawals*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.wallet.withdrawals*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    درخواست‌های برداشت
-                </a>
-
-                <a href="{{ route('admin.wallet.settings') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.wallet.settings') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.wallet.settings') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.wallet.settings') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.wallet.settings') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    تنظیمات مالی
-                </a>
-            </div>
-
-            <div class="py-2">
-                <h3 class="text-xs font-semibold px-3 mb-2 uppercase tracking-wider" style="color: var(--admin-text-light);">تنظیمات</h3>
-                <a href="{{ route('admin.support-tickets.index') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.support-tickets*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.support-tickets*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.support-tickets*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.support-tickets*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                    </svg>
-                    پشتیبانی
-                </a>
-                <a href="{{ route('admin.profile.edit') }}"
-                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.profile*') ? 'sidebar-active' : '' }}"
-                   style="{{ request()->routeIs('admin.profile*') ? '' : 'color: var(--admin-text-dim);' }}"
-                   onmouseover="{{ request()->routeIs('admin.profile*') ? '' : 'this.style.backgroundColor=\"var(--admin-accent-light)\"' }}"
-                   onmouseout="{{ request()->routeIs('admin.profile*') ? '' : 'this.style.backgroundColor=\"\"' }}">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                    پروفایل
-                </a>
-
-                <form method="POST" action="{{ route('logout') }}" class="w-full">
-                    @csrf
-                    <button type="submit"
-                            class="w-full flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors text-right"
-                            style="color: var(--admin-text-dim);"
-                            onmouseover="this.style.backgroundColor='rgb(var(--m-bad) / .1)'; this.style.color='rgb(var(--m-bad))';"
-                            onmouseout="this.style.backgroundColor=''; this.style.color='var(--admin-text-dim)';">
-                        <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                            <polyline points="16 17 21 12 16 7"></polyline>
-                            <line x1="21" y1="12" x2="9" y2="12"></line>
-                        </svg>
-                        خروج
-                    </button>
-                </form>
-            </div>
-        </nav>
-    </aside>
+    @include('layouts.admin-shell.drawer', ['menu' => $adminMenu, 'desktop' => in_array($adminShell, ['side', 'dense'], true)])
+    @if ($adminShell === 'rail')
+        @include('layouts.admin-shell.rail', ['menu' => $adminMenu])
+    @endif
 
     <div id="sidebar-backdrop" class="md:hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-40 hidden" onclick="toggleSidebar()"></div>
 
@@ -559,6 +149,18 @@
                 </button>
 
                 <h1 class="text-lg font-bold md:hidden" style="color: var(--admin-text);">@yield('title')</h1>
+                @if ($adminShell === 'top')
+                    <a href="{{ route('admin.dashboard') }}" class="hidden md:flex items-center gap-2 font-bold" style="color: var(--admin-text);">
+                        @if ($adminSalon)<x-brand-emblem class="w-9 h-9 rounded" pad="3px" />@endif
+                        {{ $adminSalon?->name ?? 'پنل مدیریت' }}
+                    </a>
+                @elseif ($adminShell === 'rail')
+                    <button type="button" class="adm-cmd hidden md:flex" onclick="toggleSearchModal()">
+                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">{!! \App\Support\Admin\AdminMenu::ICONS['search'] !!}</svg>
+                        <span>جستجوی خدمت، متخصص یا کاربر…</span>
+                        <kbd dir="ltr">Ctrl K</kbd>
+                    </button>
+                @endif
 
                 <div class="flex items-center space-x-3 space-x-reverse">
                     @include('partials.mahru-theme-toggle')
@@ -679,6 +281,9 @@
                 </div>
             </div>
 
+            @if ($adminShell === 'top')
+                @include('layouts.admin-shell.top', ['menu' => $adminMenu])
+            @endif
             <!-- Breadcrumb -->
             <div class="hidden md:flex px-4 py-2 border-t text-sm" style="background: var(--admin-accent-light); border-color: var(--admin-border);">
                 <a href="{{ route('admin.dashboard') }}" class="transition-colors" style="color: var(--admin-accent);"
@@ -820,7 +425,8 @@
             .then(response => response.json())
             .then(data => {
                 const countElement = document.getElementById('notification-count');
-                const sidebarCount = document.getElementById('sidebar-notification-count');
+                // همه‌ی شمارنده‌های منو (کشو، ریل، منوی بالایی) — بسته‌ی «و»
+                const menuBadges = document.querySelectorAll('[data-notif-badge]');
                 const count = data.count;
 
                 if (count > 0) {
@@ -828,14 +434,14 @@
                     countElement.textContent = label;
                     countElement.classList.remove('hidden');
                     countElement.classList.add('flex');
-                    if (sidebarCount) {
-                        sidebarCount.textContent = label;
-                        sidebarCount.classList.remove('hidden');
-                    }
+                    menuBadges.forEach(function (badge) {
+                        badge.textContent = label;
+                        badge.classList.remove('hidden');
+                    });
                 } else {
                     countElement.classList.add('hidden');
                     countElement.classList.remove('flex');
-                    if (sidebarCount) sidebarCount.classList.add('hidden');
+                    menuBadges.forEach(function (badge) { badge.classList.add('hidden'); });
                 }
             })
             .catch(error => console.error('Error fetching notification count:', error));
@@ -960,7 +566,7 @@
     }
 
     function toggleSidebar() {
-        const sidebar = document.querySelector('aside');
+        const sidebar = document.getElementById('admin-drawer');
         const backdrop = document.getElementById('sidebar-backdrop');
         if (sidebar) sidebar.classList.toggle('hidden');
         if (backdrop) backdrop.classList.toggle('hidden');
@@ -1106,6 +712,25 @@
                     }
                 });
             });
+        });
+
+        // بسته‌ی «و»: منوی بالایی — با باز شدن یک گروه بقیه بسته شوند؛ کلیک بیرون همه را می‌بندد
+        const topGroups = document.querySelectorAll('[data-adm-top-group]');
+        topGroups.forEach(function (group) {
+            group.addEventListener('toggle', function () {
+                if (group.open) topGroups.forEach(function (other) { if (other !== group) other.open = false; });
+            });
+        });
+        document.addEventListener('click', function (event) {
+            topGroups.forEach(function (group) { if (group.open && !group.contains(event.target)) group.open = false; });
+        });
+
+        // Ctrl+K / ⌘K: جستجوی سریع پنل
+        document.addEventListener('keydown', function (e) {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+                e.preventDefault();
+                toggleSearchModal();
+            }
         });
 
         // Close the search modal with Escape
