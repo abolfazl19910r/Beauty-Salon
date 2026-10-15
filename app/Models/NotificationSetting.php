@@ -30,11 +30,13 @@ class NotificationSetting extends Model
         'sms_enabled',
         'database_enabled',
         'telegram_enabled',
+        'push_enabled',
     ];
 
     protected $casts = [
         'sms_enabled' => 'boolean',
         'database_enabled' => 'boolean',
         'telegram_enabled' => 'boolean',
+        'push_enabled' => 'boolean',
     ];
 }

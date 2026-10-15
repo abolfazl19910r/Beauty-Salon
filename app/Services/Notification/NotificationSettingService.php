@@ -55,6 +55,8 @@ class NotificationSettingService
             'sms' => (bool) $row->sms_enabled,
             'database' => (bool) $row->database_enabled,
             'telegram' => self::BOT_CHANNEL_IMPLEMENTED && (bool) $row->telegram_enabled,
+            // ستون «اپ» (بسته‌ی ۴): ردیف قدیمی پیش از migration مقدار null دارد = روشن
+            'push' => $row->push_enabled === null || (bool) $row->push_enabled,
             default => false,
         };
     }
@@ -121,6 +123,8 @@ class NotificationSettingService
                 'database_enabled' => true,
                 // ربات پیش‌فرض روشن: فقط به کسی می‌رود که خودش ربات را وصل کرده (۲۰۲۶-۱۰-۰۱)
                 'telegram_enabled' => true,
+                // پوش اپ پیش‌فرض روشن: فقط به کسی می‌رود که اپ دارد (بسته‌ی ۴)
+                'push_enabled' => true,
             ], $overrides),
             $salonId
         );

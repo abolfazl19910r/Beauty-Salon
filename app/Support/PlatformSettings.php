@@ -55,6 +55,23 @@ final class PlatformSettings
         });
     }
 
+    /**
+     * تنظیم سطح پلتفرم بیرون از فرم راه‌های تماس (حالت پوش، توکن ربات؛ بسته‌ی ۴). null = حذف و برگشت به پیش‌فرض.
+     */
+    public static function raw(string $key): ?string
+    {
+        $value = self::stored()[$key] ?? null;
+
+        return $value === null || $value === '' ? null : (string) $value;
+    }
+
+    public static function put(string $key, ?string $value): void
+    {
+        $value = $value === null ? null : trim($value);
+        PlatformSetting::query()->updateOrCreate(['key' => $key], ['value' => $value === '' ? null : $value]);
+        Cache::forget(self::CACHE_KEY);
+    }
+
     /** @param array<string, ?string> $values */
     public static function save(array $values): void
     {

@@ -142,7 +142,7 @@ services:
     container_name: beauty_salon_queue
     # entrypoint با آرگومان → نقش worker: بدون migrate/nginx، اجرای همین دستور با کاربر www
     # ترتیب صف‌ها (App\\Support\\Queues::workerOrder): کد تأیید، پیامک، پول، پیش‌فرض، گزارش
-    command: php artisan queue:work --queue=otp,sms,payments,default,reports --sleep=3 --tries=3 --max-time=3600 --timeout=90
+    command: php artisan queue:work --queue=otp,push,sms,payments,default,reports --sleep=3 --tries=3 --max-time=3600 --timeout=90
     depends_on:
       mysql:
         condition: service_healthy

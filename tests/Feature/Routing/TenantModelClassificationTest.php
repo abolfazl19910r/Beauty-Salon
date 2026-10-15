@@ -66,6 +66,9 @@ class TenantModelClassificationTest extends TestCase
         'SalonFeatureOverride' => 'استثنای سوپرادمین؛ FeatureResolver همیشه با salon_id صریح می‌خواند',
         'SupportTicket' => 'تیکت سالن به پلتفرم',
         'SupportTicketMessage' => 'از رابطه‌ی تیکت',
+        'PushDevice' => 'گیرنده‌ی پوش یک توکن اپ؛ همیشه با user_id/توکن جاری خوانده می‌شود (بسته‌ی ۴)',
+        'PushMessage' => 'پیام اپ به یک کاربر؛ با user_id یا شناسه‌ی پیام از رسید همان کاربر (بسته‌ی ۴)',
+        'PushDelivery' => 'از رابطه‌ی پیام و دستگاه',
     ];
 
     private function models(): array

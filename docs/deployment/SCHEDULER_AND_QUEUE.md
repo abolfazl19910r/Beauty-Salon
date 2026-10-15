@@ -32,17 +32,20 @@
 | صف | چه چیزی | worker |
 |---|---|---|
 | `otp` | کد ورود، ۲FA، تأیید تلفن، بازیابی رمز | worker اختصاصی (فقط `otp`) + اولین صف worker اصلی |
-| `sms` | یادآوری نوبت و کانال پیامک همه‌ی اعلان‌ها | worker اصلی |
+| `push` | پوش اپ‌ها (بسته‌ی ۴)؛ پیش از `sms` چون مهلت «بدون رسید → پیامک» از لحظه‌ی صف شدن شمرده می‌شود | worker اصلی |
+| `sms` | یادآوری نوبت، کانال پیامک همه‌ی اعلان‌ها و پیامک پشتیبان پوش | worker اصلی |
 | `payments` | تسویه‌ی درگاه متخصص، لغو نوبت‌های پرداخت‌نشده | worker اصلی |
 | `default` | listenerها و بقیه‌ی اعلان‌ها | worker اصلی |
 | `reports` | تولید PDF گزارش (آخر، چون کند است) | worker اصلی |
 
-ترتیب worker اصلی: `--queue=otp,sms,payments,default,reports` (`App\Support\Queues::workerOrder()`).
+ترتیب worker اصلی: `--queue=otp,push,sms,payments,default,reports` (`App\Support\Queues::workerOrder()`).
 ⚠️ `queue:work` بدون `--queue` فقط صف `default` را می‌خواند — پیامک، پول و گزارش هرگز اجرا نمی‌شوند. خط‌های قدیمی را عوض کنید.
 
 روی هاست بدون worker دائمی (`QUEUE_WORK_VIA_SCHEDULER=true`، DirectAdmin) صف فقط هر دقیقه خالی می‌شود؛ برای همین کد تأیید آنجا
 وارد صف نمی‌شود و بلافاصله بعد از فرستادن پاسخ، در همان درخواست ارسال می‌شود (`Queues::dispatchOtp`). بقیه‌ی صف‌ها با خط
-`queue:work --queue=... --stop-when-empty` داخل scheduler اجرا می‌شوند و در کرون تغییری لازم نیست.
+`queue:work --queue=... --stop-when-empty` داخل scheduler اجرا می‌شوند و در کرون تغییری لازم نیست. پوشی که در یک درخواست وب ساخته
+می‌شود هم مثل کد تأیید بعد از پاسخ فرستاده می‌شود (`Queues::dispatchPush`)؛ پیامک پشتیبان پوش (مهلت ۱ یا ۱۰ دقیقه) روی صف `sms` با
+تأخیر است و روی این هاست‌ها تا یک دقیقه دیرتر از مهلت می‌رود.
 
 ## ۲. کدام روش مال شماست؟
 
@@ -168,7 +171,7 @@ make status && make logs-scheduler
 
 ```bash
 php artisan schedule:work
-php artisan queue:work --queue=otp,sms,payments,default,reports
+php artisan queue:work --queue=otp,push,sms,payments,default,reports
 ```
 
 یا `composer dev`، که سرور و `queue:listen` و vite را با هم اجرا می‌کند؛ `schedule:work` را جدا بزنید.

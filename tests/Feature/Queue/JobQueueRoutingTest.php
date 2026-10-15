@@ -63,6 +63,6 @@ class JobQueueRoutingTest extends TestCase
 
     public function test_worker_order_puts_codes_first_and_reports_last(): void
     {
-        $this->assertSame('otp,sms,payments,default,reports', Queues::workerOrder());
+        $this->assertSame('otp,push,sms,payments,default,reports', Queues::workerOrder());
     }
 }
