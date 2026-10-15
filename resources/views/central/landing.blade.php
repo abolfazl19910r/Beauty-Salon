@@ -542,6 +542,8 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 .prc.p4 .pl{padding:32px 24px}
 .prc.p4 .pl .pr{font-size:clamp(26px,2.4vw,32px);white-space:nowrap}
 .prc.p4 .pl ul{align-content:start}
+#plans[data-period="1m"] .pp:not([data-p="1m"]),#plans[data-period="3m"] .pp:not([data-p="3m"]),#plans[data-period="6m"] .pp:not([data-p="6m"]),#plans[data-period="12m"] .pp:not([data-p="12m"]){display:none}
+[data-period-switch] button[aria-pressed="true"]{background:var(--btn);color:var(--on-gold);border-color:transparent;font-weight:700}
 .pl .buy{display:block;text-align:center;margin-top:12px;font-size:13.5px;color:var(--gl);font-weight:700}
 @media(max-width:560px){.nav-login{display:none}}
 </style>
@@ -786,44 +788,67 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 </div></div></section>
 
 <!-- ============ PRICING ============ -->
-<section id="plans" style="padding-top:0"><div class="wrap">
-<div class="sh rv"><span class="kicker">Pricing</span><h2>یک نرم‌افزار کامل، <span class="gold">چهار مدت اشتراک</span></h2><p>@if ($trialDays > 0){{ to_persian_num((string) $trialDays) }} روز رایگان، بدون نیاز به کارت بانکی. هر وقت راضی بودید، پلن را از داخل پنل سالن می‌خرید.@else همه‌ی امکانات در همه‌ی پلن‌ها؛ فقط مدت و تخفیف فرق می‌کند.@endif</p></div>
+<section id="plans" style="padding-top:0" data-period="1m"><div class="wrap">
+<div class="sh rv"><span class="kicker">Pricing</span><h2>چهار پلن، <span class="gold">هر کدام برای یک اندازه سالن</span></h2><p>@if ($trialDays > 0){{ to_persian_num((string) $trialDays) }} روز رایگان، بدون نیاز به کارت بانکی. هر وقت راضی بودید، پلن را از داخل پنل سالن می‌خرید.@else پلن و مدت اشتراک را انتخاب کنید؛ اشتراک بلندتر ارزان‌تر است و قالب‌های بیشتری باز می‌کند.@endif</p></div>
+@if ($planCards !== [])
+{{-- ⭐ بسته‌ی «و»: یک کلید بازه برای هر چهار کارت (بدون جاوااسکریپت: یک‌ماهه) --}}
+<div class="tabs rv" role="group" aria-label="مدت اشتراک" data-period-switch>
+@foreach ($periodLabels as $type => $label)
+<button type="button" data-period-btn="{{ $type }}" aria-pressed="{{ $type === '1m' ? 'true' : 'false' }}" @if ($type === '1m') aria-selected="true" @endif>{{ $label }}</button>
+@endforeach
+</div>
+<div class="prc p4">
+@foreach ($planCards as $card)
+<div class="card pl rv {{ $card['recommended'] ? 'hot' : '' }}" data-plan-card="{{ $card['key'] }}">
+@if ($card['recommended'])<span class="ribbon">پیشنهاد ما</span>@endif
+<h3>{{ $card['name'] }}</h3>
+<p class="for">{{ $card['description'] }}</p>
+@foreach ($card['periods'] as $type => $period)
+<div class="pp" data-p="{{ $type }}">
+<div class="pr gold num">{{ to_persian_num(number_format($period['price'])) }} <small>تومان</small></div>
+<p class="per">@if ($type !== '1m')ماهانه حدود {{ to_persian_num(number_format($period['per_month'])) }} تومان@if ($period['saving_percent'] > 0) · {{ to_persian_num((string) $period['saving_percent']) }}٪ کمتر@endif @else پرداخت ماه‌به‌ماه@endif</p>
+</div>
+@endforeach
+<ul>
+@if ($card['previous'])<li>همه‌ی امکانات {{ $card['previous'] }}</li>@else<li>نوبت‌دهی آنلاین، پیامک تأیید و یادآوری، بیعانه</li>@endif
+@foreach ($card['adds'] as $label)<li>{{ $label }}</li>@endforeach
+<li>{{ to_persian_num((string) $card['specialists']) }} متخصص در قیمت پلن</li>
+<li>{{ to_persian_num(number_format($card['sms'])) }} قطعه پیامک در هر ماه</li>
+@foreach ($card['periods'] as $type => $period)
+<li class="pp" data-p="{{ $type }}" data-themes="{{ $period['themes'] }}">@if ($period['themes'] >= \App\Support\Themes\ThemeCatalog::siteTotal())همه‌ی {{ to_persian_num((string) $period['themes']) }} قالب ظاهری@elseif ($period['themes'] > 0){{ to_persian_num((string) $period['themes']) }} قالب ظاهری + طلایی ماهرو@else قالب طلایی ماهرو (تیره و روشن)@endif</li>
+@endforeach
+@if ($card['admin_themes'] > 0)<li>{{ to_persian_num((string) $card['admin_themes']) }} قالب دیگر برای پنل مدیر</li>@endif
+</ul>
+@foreach ($card['periods'] as $type => $period)
+<div class="pp" data-p="{{ $type }}">
+@if ($card['trial'])
+<a class="btn {{ $card['recommended'] ? 'btn-gold' : 'btn-line' }} btn-block" href="{{ $period['signup_url'] }}">شروع {{ to_persian_num((string) $trialDays) }} روز رایگان</a>
+<a class="buy" href="{{ $period['buy_url'] }}">خرید فوری {{ $card['name'] }}، بدون دوره‌ی رایگان</a>
+@else
+<a class="btn {{ $card['recommended'] ? 'btn-gold' : 'btn-line' }} btn-block" href="{{ $period['buy_url'] }}">خرید و پرداخت آنلاین</a>
+@endif
+</div>
+@endforeach
+</div>
+@endforeach
+</div>
+@else
 <div class="prc p4">
 @foreach ($plans as $plan)
-<div class="card pl rv {{ $plan['type'] === '6m' ? 'hot' : '' }}" data-plan="{{ $plan['type'] }}">
-@if ($plan['type'] === '6m')<span class="ribbon">انتخاب بیشتر سالن‌ها</span>@endif
+<div class="card pl rv" data-plan="{{ $plan['type'] }}">
 <h3>{{ $plan['label'] }}</h3>
-<p class="for">{{ $plan['months'] > 1 ? 'پرداخت یک‌جا برای '.to_persian_num((string) $plan['months']).' ماه' : 'پرداخت ماه‌به‌ماه' }}</p>
 <div class="pr gold num">{{ to_persian_num(number_format($plan['price'])) }} <small>تومان</small></div>
-<p class="per">@if ($plan['months'] > 1)ماهانه حدود {{ to_persian_num(number_format($plan['per_month'])) }} تومان@endif</p>
-<ul>
-<li>{{ $saleHasAll ? 'همه‌ی امکانات ماهرو' : 'نوبت‌دهی، پیامک، باشگاه، بیعانه و گزارش' }}</li>
-<li>{{ to_persian_num((string) $maxSpecialists) }} متخصص در قیمت پلن</li>
-<li>{{ to_persian_num(number_format($smsQuota)) }} قطعه پیامک در هر ماه</li>
-@if ($plan['saving'] > 0)<li>{{ to_persian_num((string) $plan['saving_percent']) }} درصد صرفه‌جویی ({{ to_persian_num(number_format($plan['saving'])) }} تومان)</li>@endif
-</ul>
+<ul><li>{{ to_persian_num((string) $maxSpecialists) }} متخصص در قیمت پلن</li><li>{{ to_persian_num(number_format($smsQuota)) }} قطعه پیامک در هر ماه</li></ul>
 @if ($trialDays > 0)
-<a class="btn {{ $plan['type'] === '6m' ? 'btn-gold' : 'btn-line' }} btn-block" href="{{ $plan['signup_url'] }}">شروع {{ to_persian_num((string) $trialDays) }} روز رایگان</a>
+<a class="btn btn-line btn-block" href="{{ $plan['signup_url'] }}">شروع {{ to_persian_num((string) $trialDays) }} روز رایگان</a>
 <a class="buy" href="{{ $plan['buy_url'] }}">خرید فوری، بدون دوره‌ی رایگان</a>
 @else
-<a class="btn {{ $plan['type'] === '6m' ? 'btn-gold' : 'btn-line' }} btn-block" href="{{ $plan['buy_url'] }}">خرید و پرداخت آنلاین</a>
+<a class="btn btn-line btn-block" href="{{ $plan['buy_url'] }}">خرید و پرداخت آنلاین</a>
 @endif
 </div>
 @endforeach
 </div>
-@foreach ($otherPlans as $other)
-@if ($other['price_1m'])
-<div class="card pl rv" style="margin-top:22px;flex-direction:row;flex-wrap:wrap;gap:24px;align-items:center" data-plan-extra="{{ $other['name'] }}">
-<div style="flex:1 1 260px"><h3>پلن {{ $other['name'] }}</h3><p class="for" style="margin-bottom:8px">{{ $other['description'] }}</p>
-<div class="pr gold num" style="font-size:32px">{{ to_persian_num(number_format($other['price_1m'])) }} <small>تومان / ماه</small></div></div>
-<ul style="flex:1 1 260px;margin:0;border-top:0;padding-top:0">
-@foreach ($other['extra'] as $label)<li>{{ $label }}</li>@endforeach
-<li>{{ to_persian_num((string) $other['specialists']) }} متخصص و {{ to_persian_num(number_format($other['sms'])) }} قطعه پیامک در ماه</li>
-</ul>
-<a class="btn btn-line" style="flex:0 0 auto" href="{{ route('salon-signup.create') }}">شروع رایگان و انتخاب این پلن</a>
-</div>
 @endif
-@endforeach
 <div class="incl rv"><span>هر متخصص بیشتر ماهانه {{ to_persian_num(number_format($extraSpecialistPrice)) }} تومان</span><span>بدون هزینه‌ی راه‌اندازی</span><span>تیکت پشتیبانی فارسی</span><span>به‌روزرسانی رایگان</span></div>
 </div></section>
 
@@ -847,6 +872,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 <details><summary>بعد از تمام شدن دوره‌ی رایگان چه می‌شود؟</summary><p>پنل مدیریت فقط صفحه‌ی خرید اشتراک را نشان می‌دهد و آدرس رزرو سالن برای مشتری‌ها موقتاً بسته می‌شود. هیچ اطلاعاتی پاک نمی‌شود؛ به محض خرید، همه‌چیز همان‌طور که بود ادامه پیدا می‌کند. اگر وسط دوره‌ی رایگان بخرید، اشتراک از همان روز خرید فعال می‌شود.</p></details>
 <details><summary>در دوره‌ی رایگان محدودیتی هست؟</summary><p>@if ($trialMissing === [])خیر؛ همه‌ی امکانات@if ($salePlanName) پلن {{ $salePlanName }}@endif در دوره‌ی رایگان باز است.@else بیشتر امکانات باز است. این‌ها فقط بعد از خرید اشتراک فعال می‌شوند: {{ implode('، ', $trialMissing) }}.@endif</p></details>
 @endif
+@if ($themeFaq !== '')<details><summary>قالب سایت و پنل به پلن بستگی دارد؟</summary><p>بله. قالب پیش‌فرض «طلایی ماهرو» (تیره و روشن) در همه‌ی پلن‌ها و دوره‌ی رایگان هست. بقیه‌ی قالب‌ها ({{ to_persian_num((string) \App\Support\Themes\ThemeCatalog::siteTotal()) }} قالب برای سایت، پنل مشتری و اپ) با پلن و مدت اشتراک باز می‌شوند: {{ $themeFaq }}. با پایان اشتراک یا پایین آمدن پلن، سایت به قالب پیش‌فرض برمی‌گردد و انتخاب‌تان ذخیره می‌ماند تا با تمدید برگردد.</p></details>@endif
 <details><summary>اگر بیشتر از {{ to_persian_num((string) $maxSpecialists) }} متخصص داشته باشم؟</summary><p>موقع ساخت سالن تعداد متخصص‌ها را وارد کنید؛ هر متخصص بیشتر ماهانه {{ to_persian_num(number_format($extraSpecialistPrice)) }} تومان به قیمت پلن اضافه می‌شود (در پلن‌های چندماهه با همان تخفیف).</p></details>
 <details><summary>پول پیش‌پرداخت مشتری‌ها به حساب چه کسی واریز می‌شود؟</summary><p>مستقیم به حساب درگاه پرداخت خود سالن. اطلاعات درگاه را موقع ساخت سالن یا بعداً از پنل مدیریت وارد می‌کنید؛ تا درگاهی ثبت نشود، پرداخت آنلاین برای مشتری‌های سالن ممکن نیست.</p></details>
 <details><summary>اطلاعات مشتریانم امن است؟</summary><p>داده‌های هر سالن فقط برای خود آن سالن قابل دسترس است، با رمزنگاری منتقل می‌شود و بین سالن‌ها هیچ اشتراکی وجود ندارد.</p></details>
@@ -982,6 +1008,9 @@ function go(i,manual){cur=i;st.forEach((s,k)=>{s.classList.remove('on','hold');v
 st.forEach((s,i)=>s.addEventListener('click',()=>go(i,true)));
 new IntersectionObserver(es=>{if(es[0].isIntersecting&&!stepsSeen){stepsSeen=true;go(0)}},{threshold:.35}).observe($1('#steps'));
 go(0,true);
+
+/* ---------- plans: period switch (بسته‌ی «و») ---------- */
+$('[data-period-btn]').forEach(b=>b.addEventListener('click',()=>{$1('#plans').dataset.period=b.dataset.periodBtn;$('[data-period-btn]').forEach(o=>{const on=o===b;o.setAttribute('aria-pressed',on?'true':'false');on?o.setAttribute('aria-selected','true'):o.removeAttribute('aria-selected')})}));
 
 /* ---------- faq: one open at a time ---------- */
 $('.faq details').forEach(d=>d.addEventListener('toggle',()=>{if(d.open)$('.faq details').forEach(o=>{if(o!==d)o.open=false})}));

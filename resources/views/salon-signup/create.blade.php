@@ -127,6 +127,7 @@
                      صفحه‌ی خرید ذخیره می‌شه (salons.subscription_type). --}}
                 <input type="hidden" name="subscription_type" value="{{ old('subscription_type', $selectedPlan) }}">
                 <input type="hidden" name="intent" value="{{ old('intent', $intent) }}">
+                <input type="hidden" name="plan_key" value="{{ old('plan_key', $planKey) }}">
 
                 {{-- ⭐ «خرید مستقیم» (۲۰۲۶-۰۹-۲۳): فقط خلاصه‌ی فقط‌خواندنی پلنی که از صفحه‌ی فروش انتخاب شده،
                      نه دوباره یک انتخاب‌گر پلن (تصمیم «پلن فقط یک‌جا انتخاب می‌شه» سر جاشه). --}}
@@ -134,7 +135,7 @@
                     @php $planLabels = ['1m' => 'یک‌ماهه', '3m' => 'سه‌ماهه', '6m' => 'شش‌ماهه', '12m' => 'یک‌ساله']; @endphp
                     <div class="buy-summary">
                         <div>
-                            <div class="buy-title">پلن {{ $planLabels[old('subscription_type', $selectedPlan)] ?? '' }}</div>
+                            <div class="buy-title">پلن {{ $planName ? $planName.' · ' : '' }}{{ $planLabels[old('subscription_type', $selectedPlan)] ?? '' }}</div>
                             <div class="buy-price">{{ to_persian_num(number_format($selectedPlanPrice)) }} تومان برای {{ to_persian_num((string) $includedSpecialists) }} متخصص (هر متخصص بیشتر هم اضافه می‌شود) — پرداخت آنلاین بعد از تایید موبایل</div>
                         </div>
                         <a href="{{ route('central.home') }}#pricing">تغییر پلن</a>

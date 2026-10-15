@@ -69,7 +69,7 @@ class SalonSignupChallenge extends SmsCodeChallenge
     /**
      * کد درست → سالن، مالک (تأییدشده) و لوگو ساخته می‌شوند.
      *
-     * @return array{salon: Salon, owner: User, intent: string}
+     * @return array{salon: Salon, owner: User, intent: string, plan_key: ?string}
      */
     public function complete(string $challenge, string $code): array
     {
@@ -102,7 +102,7 @@ class SalonSignupChallenge extends SmsCodeChallenge
             $this->dropLogo($data);
         }
 
-        return ['salon' => $result['salon']->fresh(), 'owner' => $result['owner'], 'intent' => $data['intent'] ?? 'trial'];
+        return ['salon' => $result['salon']->fresh(), 'owner' => $result['owner'], 'intent' => $data['intent'] ?? 'trial', 'plan_key' => $data['plan_key'] ?? null];
     }
 
     private function dropLogo(array $data): void

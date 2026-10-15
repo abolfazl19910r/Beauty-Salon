@@ -71,14 +71,22 @@ class CentralLandingController extends Controller
             ];
         }
 
+        // ⭐ بسته‌ی «و» (۲۰۲۶-۱۰-۱۵): لندینگ چهارپلنی — همه‌ی پلن‌های عمومی کنار هم، با یک کلید بازه
+        $planCards = $this->planCards($offered, $pricing, $trialDays);
+        // پرسش «محدودیت دوره‌ی رایگان»: مقایسه با کامل‌ترین پلن عمومی (نه ارزان‌ترین، که از آزمایشی کمتر دارد)
+        $richest = $offered->sortByDesc(fn (\App\Models\Plan $p) => count($p->featureKeys()))->first() ?? $salePlan;
+
         return view('central.landing', [
             'plans' => $plans,
+            'planCards' => $planCards,
+            'periodLabels' => self::PLAN_LABELS,
+            'themeFaq' => $this->themeFaq($offered),
             'trialDays' => $trialDays,
             // پرسش «در دوره‌ی رایگان محدودیتی هست؟» (۲۰۲۶-۱۰-۱۵): از خود پلن آزمایشی — امکاناتی که پلن فروش دارد و آزمایشی ندارد
             // (مثلاً «یادآوری پیامکی» که سوپرادمین از آزمایشی برمی‌دارد). بدون پلن آزمایشی همه‌چیز باز است.
             'trialMissing' => $trialPlan
                 ? collect(\App\Support\Features\Feature::cases())
-                    ->filter(fn ($f) => ($salePlan?->hasFeature($f) ?? true) && ! $trialPlan->hasFeature($f))
+                    ->filter(fn ($f) => ($richest?->hasFeature($f) ?? true) && ! $trialPlan->hasFeature($f))
                     ->map(fn ($f) => $f->label())->values()->all()
                 : [],
             'salePlanName' => $salePlan?->name,
@@ -108,6 +116,88 @@ class CentralLandingController extends Controller
             'contact' => collect(['support_phone', 'public_email', 'instagram_url', 'linkedin_url', 'telegram_url', 'bale_url'])
                 ->mapWithKeys(fn (string $key) => [$key => \App\Support\PlatformSettings::get($key)])->all(),
         ]);
+    }
+
+    /**
+     * کارت‌های لندینگ چهارپلنی: قیمت هر بازه، امکاناتی که هر پلن به پلن ارزان‌تر قبلی اضافه می‌کند، و تعداد قالب‌های ظاهری
+     * همان بازه (پلن‌ها به ترتیب sort؛ «حرفه‌ای» با برچسب «پیشنهاد ما»).
+     *
+     * @param  \Illuminate\Support\Collection<int, \App\Models\Plan>  $offered
+     * @return list<array<string, mixed>>
+     */
+    private function planCards(\Illuminate\Support\Collection $offered, \App\Support\Billing\SubscriptionPricing $pricing, int $trialDays): array
+    {
+        $cards = [];
+        $previous = null;
+        foreach ($offered as $plan) {
+            $monthly = (int) ($plan->priceFor('1m') ?? 0);
+            $periods = [];
+            foreach (self::PLAN_MONTHS as $type => $months) {
+                $price = $plan->priceFor($type);
+                if ($price === null) {
+                    continue;
+                }
+                $full = $monthly * $months;
+                $periods[$type] = [
+                    'price' => (int) $price,
+                    'per_month' => (int) round($price / $months),
+                    'saving_percent' => $full > 0 && $months > 1 ? max(0, (int) round((1 - $price / $full) * 100)) : 0,
+                    'themes' => $plan->siteThemeAllowance($type),
+                    'signup_url' => route('salon-signup.create', ['plan' => $type]),
+                    'buy_url' => route('salon-signup.create', ['plan' => $type, 'intent' => 'buy', 'plan_key' => $plan->key]),
+                ];
+            }
+            if ($periods === []) {
+                continue;
+            }
+
+            $adds = $previous
+                ? collect(\App\Support\Features\Feature::cases())->filter(fn ($f) => $plan->hasFeature($f) && ! $previous->hasFeature($f))->map(fn ($f) => $f->label())->values()->all()
+                : [];
+
+            $cards[] = [
+                'key' => $plan->key,
+                'name' => $plan->name,
+                'description' => $plan->description,
+                'recommended' => $plan->key === 'pro',
+                'previous' => $previous?->name,
+                'adds' => $adds,
+                'specialists' => $pricing->includedSpecialists($plan),
+                'sms' => (int) $plan->sms_quota_per_month,
+                'admin_themes' => $plan->adminThemeAllowance(),
+                'periods' => $periods,
+                'trial' => $trialDays > 0,
+            ];
+            $previous = $plan;
+        }
+
+        return $cards;
+    }
+
+    /**
+     * متن پرسش «قالب سایت و پنل به پلن بستگی دارد؟» از جدول دسترسی همان پلن‌ها (تصمیم ۲۰۲۶-۱۰-۱۵).
+     *
+     * @param  \Illuminate\Support\Collection<int, \App\Models\Plan>  $offered
+     */
+    private function themeFaq(\Illuminate\Support\Collection $offered): string
+    {
+        $total = \App\Support\Themes\ThemeCatalog::siteTotal();
+        $lines = $offered->map(function (\App\Models\Plan $p) use ($total) {
+            $base = $p->siteThemeAllowance('1m');
+            $six = $p->siteThemeAllowance('6m');
+            $twelve = $p->siteThemeAllowance('12m');
+            if ($base >= $total) {
+                return "پلن {$p->name}: همه‌ی قالب‌ها";
+            }
+            $text = "پلن {$p->name}: ".($base > 0 ? to_persian_num((string) $base).' قالب دیگر' : 'فقط پیش‌فرض');
+            if ($six > $base || $twelve > $six) {
+                $text .= '؛ اشتراک ۶ ماهه '.to_persian_num((string) $six).' و یک‌ساله '.($twelve >= $total ? 'همه‌ی قالب‌ها' : to_persian_num((string) $twelve).' قالب');
+            }
+
+            return $text;
+        })->implode('. ');
+
+        return $lines;
     }
 
     /**

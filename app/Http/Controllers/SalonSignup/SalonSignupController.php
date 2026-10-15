@@ -39,8 +39,9 @@ class SalonSignupController extends Controller
 
     public function create(): View
     {
-        // پلن فروش همان صفحه‌ی فروش (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴)؛ بدون پلن، config
-        $salePlan = \App\Models\Plan::query()->offered()->get()->first(fn (\App\Models\Plan $p) => $p->isSellable());
+        // پلن فروش همان صفحه‌ی فروش (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴)؛ بدون پلن، config. بسته‌ی «و»: ?plan_key= از کارت همان پلن در
+        // لندینگ چهارپلنی (فقط برای «خرید فوری»؛ مسیر آزمایشی همچنان پلن را بعداً در صفحه‌ی صورتحساب انتخاب می‌کند)
+        $salePlan = $this->offeredPlan((string) request()->query('plan_key', ''));
         $prices = $salePlan
             ? collect($salePlan->periods())->mapWithKeys(fn ($type) => [$type => $salePlan->priceFor($type)])->all()
             : config('billing.subscription_prices');
@@ -58,7 +59,17 @@ class SalonSignupController extends Controller
             // ⭐ «خرید مستقیم بدون دوره‌ی رایگان» (۲۰۲۶-۰۹-۲۳): ?intent=buy از دکمه‌ی «خرید و پرداخت
             // آنلاین» صفحه‌ی فروش میاد؛ هر مقدار دیگه‌ای یعنی مسیر عادی (آزمایشی).
             'intent' => request()->query('intent') === 'buy' ? 'buy' : 'trial',
+            'planKey' => $salePlan?->key,
+            'planName' => $salePlan?->name,
         ]);
+    }
+
+    /** پلن عمومیِ قابل فروش با این کلید، وگرنه اولین پلن عمومی (همان رفتار پیش از بسته‌ی «و») */
+    private function offeredPlan(string $key): ?\App\Models\Plan
+    {
+        $offered = \App\Models\Plan::query()->offered()->get()->filter(fn (\App\Models\Plan $p) => $p->isSellable())->values();
+
+        return ($key !== '' ? $offered->firstWhere('key', $key) : null) ?? $offered->first();
     }
 
     /**
@@ -105,6 +116,7 @@ class SalonSignupController extends Controller
             $request->validated() + [
                 'contact' => $request->salonContactAttributes(),
                 'intent' => $request->input('intent') === 'buy' ? 'buy' : 'trial',
+                'plan_key' => is_string($request->input('plan_key')) ? mb_substr($request->input('plan_key'), 0, 40) : null,
             ],
             $request->file('logo'),
         );
@@ -143,7 +155,7 @@ class SalonSignupController extends Controller
         }
 
         try {
-            ['salon' => $salon, 'owner' => $owner, 'intent' => $intent] = $this->signupChallenge->complete($challenge, (string) $request->code);
+            ['salon' => $salon, 'owner' => $owner, 'intent' => $intent, 'plan_key' => $planKey] = $this->signupChallenge->complete($challenge, (string) $request->code);
         } catch (ApiException $e) {
             if (in_array($e->errorCode, ['invalid_code', 'code_expired'], true)) {
                 return back()->withErrors(['code' => 'کد وارد شده نامعتبر یا منقضی شده است.']);
@@ -161,7 +173,7 @@ class SalonSignupController extends Controller
         $owner->notify(new \App\Notifications\Salon\SalonWelcomeNotification($salon, $salon->isOnTrial() ? $this->salonSignupService->trialDays() : 0));
 
         if ($intent === 'buy') {
-            return $this->startImmediatePurchase($salon, $owner);
+            return $this->startImmediatePurchase($salon, $owner, $planKey);
         }
 
         if ($salon->isOnTrial()) {
@@ -173,9 +185,11 @@ class SalonSignupController extends Controller
             ->with('success', "سالن «{$salon->name}» با موفقیت ساخته شد! برای فعال‌سازی، یکی از پلن‌های زیر را خریداری کنید.");
     }
 
-    private function startImmediatePurchase(\App\Models\Salon $salon, \App\Models\User $owner): RedirectResponse
+    private function startImmediatePurchase(\App\Models\Salon $salon, \App\Models\User $owner, ?string $planKey = null): RedirectResponse
     {
-        $plan = app(\App\Services\Plans\PlanBilling::class)->defaultPurchasePlan($salon);
+        // بسته‌ی «و»: پلنی که روی کارتش «خرید فوری» زده شد، اگر هنوز عمومی و قابل فروش است
+        $chosen = $planKey ? \App\Models\Plan::query()->offered()->where('key', $planKey)->first() : null;
+        $plan = $chosen && $chosen->isSellable() ? $chosen : app(\App\Services\Plans\PlanBilling::class)->defaultPurchasePlan($salon);
         $type = $plan && $plan->priceFor($salon->subscription_type) === null ? $plan->periods()[0] : $salon->subscription_type;
         $invoice = $this->invoiceService->createPendingOnlinePurchase($salon, $type, $owner, $plan);
         $result = $this->subscriptionPaymentService->createPayment($invoice);
