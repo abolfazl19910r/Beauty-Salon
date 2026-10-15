@@ -243,28 +243,34 @@ class SuperAdminToolsTest extends TestCase
 
     public function test_template_allowances_follow_the_decided_table_and_are_editable(): void
     {
+        // بسته‌ی «و»: چند چیدمان × چند پالت (۴ × ۴) — جدول تأییدشده‌ی ۲۰۲۶-۱۰-۱۵
         app(DefaultPlans::class)->sync();
         $full = Plan::byKey('full');
         $pro = Plan::byKey('pro');
 
-        $this->assertSame([4, 4, 6, 12], [$full->siteThemeAllowance('1m'), $full->siteThemeAllowance('3m'), $full->siteThemeAllowance('6m'), $full->siteThemeAllowance('12m')]);
-        $this->assertSame([4, 5, 6], [$pro->siteThemeAllowance('1m'), $pro->siteThemeAllowance('6m'), $pro->siteThemeAllowance('12m')]);
-        $this->assertSame(12, Plan::byKey('clinic')->siteThemeAllowance('1m'));
+        $this->assertSame([8, 8, 12, 16], [$full->siteThemeAllowance('1m'), $full->siteThemeAllowance('3m'), $full->siteThemeAllowance('6m'), $full->siteThemeAllowance('12m')]);
+        $this->assertSame([4, 6, 8], [$pro->siteThemeAllowance('1m'), $pro->siteThemeAllowance('6m'), $pro->siteThemeAllowance('12m')]);
+        $this->assertSame([4, 2], $pro->siteThemeGrid('12m'));
+        $this->assertSame(16, Plan::byKey('clinic')->siteThemeAllowance('1m'));
         $this->assertSame(3, Plan::byKey('clinic')->adminThemeAllowance());
+        $this->assertSame(2, $full->adminThemeAllowance());
         $this->assertSame(0, Plan::byKey('basic')->siteThemeAllowance('3m'));
+        $this->assertSame(1, Plan::byKey('basic')->siteThemeAllowance('6m'));
         $this->assertSame(2, Plan::byKey('basic')->siteThemeAllowance('12m'));
+        $this->assertSame(0, Plan::trial()->siteThemeAllowance(null));
 
-        $this->actingAs($this->super)->get(route('superadmin.templates.index'))->assertOk()->assertSee('data-template-plan="clinic"', false);
+        $this->actingAs($this->super)->get(route('superadmin.templates.index'))->assertOk()
+            ->assertSee('data-template-plan="clinic"', false)->assertSee('data-template-usage="bento:turquoise"', false);
 
-        $payload = Plan::query()->get()->mapWithKeys(fn (Plan $p) => [$p->id => $p->only(['theme_site_count', 'theme_site_count_6m', 'theme_site_count_12m', 'theme_admin_count'])])->all();
-        $payload[$pro->id] = ['theme_site_count' => 4, 'theme_site_count_6m' => 6, 'theme_site_count_12m' => 12, 'theme_admin_count' => 1];
+        $payload = Plan::query()->get()->mapWithKeys(fn (Plan $p) => [$p->id => $p->only(Plan::THEME_FIELDS)])->all();
+        $payload[$pro->id] = ['theme_layouts' => 2, 'theme_palettes' => 2, 'theme_layouts_6m' => 4, 'theme_palettes_6m' => 2, 'theme_layouts_12m' => 4, 'theme_palettes_12m' => 4, 'theme_admin_count' => 1];
         $this->actingAs($this->super)->put(route('superadmin.templates.update'), ['plans' => $payload])->assertSessionHas('success');
-        $this->assertSame(12, $pro->fresh()->siteThemeAllowance('12m'));
+        $this->assertSame(16, $pro->fresh()->siteThemeAllowance('12m'));
         $this->assertSame(1, SuperAdminAuditLog::where('action', 'template_access.updated')->count(), 'فقط پلنی که عوض شد');
 
-        $payload[$pro->id]['theme_site_count_12m'] = 5;
+        $payload[$pro->id]['theme_palettes_12m'] = 1;
         $this->actingAs($this->super)->from(route('superadmin.templates.index'))->put(route('superadmin.templates.update'), ['plans' => $payload])
-            ->assertSessionHasErrors("plans.{$pro->id}.theme_site_count_12m");
-        $this->assertSame(12, $pro->fresh()->theme_site_count_12m);
+            ->assertSessionHasErrors("plans.{$pro->id}.theme_layouts_12m");
+        $this->assertSame(4, $pro->fresh()->theme_palettes_12m);
     }
 }

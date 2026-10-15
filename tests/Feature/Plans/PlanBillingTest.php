@@ -53,13 +53,12 @@ class PlanBillingTest extends TestCase
 
     // ─── پلن‌های پیش‌فرض: بدون هیچ تغییر رفتاری ─────────────────────────
 
-    public function test_default_plans_mirror_todays_config_and_attach_salons_without_changing_anything(): void
+    public function test_default_plans_follow_the_four_plan_table_and_attach_salons(): void
     {
+        // بسته‌ی «و» (۲۰۲۶-۱۰-۱۵): چهار پلن عمومی و متفاوت؛ «کامل» دیگر آینه‌ی config امروز نیست
         config(['billing.trial_sms_quota' => 400]);
         $paid = $this->salon();
         $paid->update(['max_specialists_count' => 12]);
-        $pricing = app(SubscriptionPricing::class);
-        $before = collect(SubscriptionPricing::PLAN_MONTHS)->keys()->mapWithKeys(fn ($t) => [$t => $pricing->price($t, 12)])->all();
         $trial = Salon::factory()->create(['trial_ends_at' => now()->addDays(5), 'subscription_ends_at' => now()->addDays(5), 'sms_quota_per_month' => 400]);
 
         $result = app(DefaultPlans::class)->sync();
@@ -71,14 +70,21 @@ class PlanBillingTest extends TestCase
         $this->assertSame('trial', $trial->plan->key);
         $this->assertNull($trial->sms_quota_per_month); // حالا از خود پلن آزمایشی، همان ۴۰۰
         $this->assertSame(400, app(SmsQuotaService::class)->quotaFor($trial));
-        $this->assertSame((int) config('billing.sms_quota_per_month'), app(SmsQuotaService::class)->quotaFor($paid));
+        $this->assertSame(3000, app(SmsQuotaService::class)->quotaFor($paid));
 
-        $after = collect(SubscriptionPricing::PLAN_MONTHS)->keys()->mapWithKeys(fn ($t) => [$t => $pricing->price($t, 12, $paid->plan)])->all();
-        $this->assertSame($before, $after);
+        $full = $paid->plan;
+        $this->assertSame([1900000, 5250000, 9700000, 17550000], [$full->price_1m, $full->price_3m, $full->price_6m, $full->price_12m]);
+        $this->assertSame(12, $full->included_specialists);
+        $this->assertSame(0, app(SubscriptionPricing::class)->price('1m', 12, $full) - 1900000, '۱۲ متخصص در قیمت کامل است');
 
-        // همه‌ی امکاناتی که امروز وجود دارند؛ دو امکانِ هنوز ساخته‌نشده نه
-        $this->assertSame([], array_diff(Feature::keys(), $paid->enabledFeatureKeys(), ['winback_manual', 'treatment_courses']));
-        $this->assertSame($paid->enabledFeatureKeys(), $trial->enabledFeatureKeys());
+        // کامل = همه‌ی امکانات جز دوره‌های درمانی (آن فقط کلینیک)؛ ارسال دستی فرق کامل با حرفه‌ای است
+        $this->assertSame(['treatment_courses'], array_values(array_diff(Feature::keys(), $paid->enabledFeatureKeys())));
+        $this->assertSame(['winback_manual'], array_values(array_diff($paid->enabledFeatureKeys(), $trial->enabledFeatureKeys())));
+        $this->assertNotContains('winback_manual', Plan::byKey('pro')->featureKeys());
+        $this->assertContains('treatment_courses', Plan::byKey('clinic')->featureKeys());
+
+        // ترتیب و عمومی بودن: پایه ← حرفه‌ای ← کامل ← کلینیک
+        $this->assertSame(['basic', 'pro', 'full', 'clinic'], Plan::query()->where('is_public', true)->where('is_trial', false)->orderBy('sort')->pluck('key')->all());
 
         // دوباره اجرا: هیچ چیز تازه‌ای
         $this->assertSame([], app(DefaultPlans::class)->sync()['created']);

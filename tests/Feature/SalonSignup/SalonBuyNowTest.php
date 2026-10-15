@@ -96,6 +96,26 @@ class SalonBuyNowTest extends TestCase
         $this->assertSame($this->owner()->id, $invoice->created_by);
     }
 
+    public function test_buy_now_from_a_plan_card_buys_that_plan(): void
+    {
+        // بسته‌ی «و»: لندینگ چهارپلنی — «خرید فوری» روی کارت «کلینیک» همان کلینیک را می‌خرد (نه اولین پلن عمومی)
+        app(\App\Services\Plans\DefaultPlans::class)->sync();
+        $clinic = \App\Models\Plan::byKey('clinic');
+        $card = collect($this->get(route('central.home'))->assertOk()->viewData('planCards'))->firstWhere('key', 'clinic');
+        $this->assertSame(route('salon-signup.create', ['plan' => '6m', 'intent' => 'buy', 'plan_key' => 'clinic']), $card['periods']['6m']['buy_url']);
+        $this->assertSame(16, $card['periods']['6m']['themes']);
+        $this->get($card['periods']['6m']['buy_url'])->assertOk()->assertSee('پلن کلینیک · شش‌ماهه');
+
+        $this->fakeGatewayRequest();
+        $this->signUpAndVerify(['plan_key' => 'clinic']);
+        $this->confirmSalonSignup();
+
+        $invoice = Invoice::withoutGlobalScopes()->firstOrFail();
+        $this->assertSame($clinic->id, (int) $invoice->plan_id);
+        $this->assertSame('6m', $invoice->subscription_type);
+        $this->assertSame((int) $clinic->price_6m, (int) $invoice->amount);
+    }
+
     public function test_successful_payment_activates_the_plan_from_that_moment(): void
     {
         $this->fakeGatewayRequest();

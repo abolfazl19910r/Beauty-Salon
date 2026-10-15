@@ -61,7 +61,7 @@ class CentralLandingPageTest extends TestCase
     }
 
     /** پلن «کلینیک» عمومی (ادامه ۷): کارت جدا با امکانات اضافه؛ ادعای دوره با نام همان پلن؛ «کامل» دیگر «همه‌ی امکانات» نیست */
-    public function test_a_second_public_plan_gets_its_own_card(): void
+    public function test_every_public_plan_gets_its_own_card_with_what_it_adds(): void
     {
         $full = \App\Models\Plan::create(['key' => 'full', 'name' => 'کامل', 'price_1m' => 1500000, 'is_active' => true, 'is_public' => true, 'sort' => 10, 'sms_quota_per_month' => 2000]);
         $full->syncFeatures(array_diff(\App\Support\Features\Feature::keys(), ['treatment_courses', 'winback_manual']));
@@ -69,11 +69,15 @@ class CentralLandingPageTest extends TestCase
         $clinic->syncFeatures(\App\Support\Features\Feature::keys());
 
         $this->get(route('central.home'))->assertOk()
-            ->assertSee('data-plan-extra="کلینیک"', false)
+            // بسته‌ی «و»: لندینگ چهارپلنی — هر پلن عمومی کارت خودش را دارد و فقط چیزی که به پلن قبلی اضافه می‌کند فهرست می‌شود
+            ->assertSee('data-plan-card="full"', false)
+            ->assertSee('data-plan-card="clinic"', false)
             ->assertSee('۲,۴۰۰,۰۰۰')
+            ->assertSee('همه‌ی امکانات کامل')
             ->assertSee('دوره‌های درمانی چندجلسه‌ای')
             ->assertSee('ارسال دستی به مشتری‌های قدیمی')
             ->assertSee('یادآوری خودکار جلسه‌ی بعد (پلن کلینیک)')
+            ->assertSee('data-period-btn="12m"', false)
             ->assertDontSee('همه‌ی امکانات ماهرو');
     }
 
