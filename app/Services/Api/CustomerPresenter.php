@@ -43,6 +43,8 @@ class CustomerPresenter
             'logo_dark_url' => $salon->logoDarkUrl(),
             'logo_dark_tone' => $salon->logoDarkUrl() ? $salon->logo_dark_tone : null,
             'public_url' => $salon->publicUrl(),
+            // ⭐ بسته‌ی «و»: قالب سالن (کلید، چیدمان، پالت و رنگ‌های هگز تیره/روشن) — اپ‌ها هنگام باز شدن اعمال می‌کنند، بی build تازه
+            'theme' => \App\Support\Themes\SalonAppearance::for($salon)->toApi(),
         ];
     }
 
