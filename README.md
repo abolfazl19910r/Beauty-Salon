@@ -46,25 +46,28 @@ npm ci
 - **لینک اپ:** `mahru://salon/rasta` اپ را روی همان سالن باز می‌کند (دکمه‌ی «باز کردن در اپ ماهرو» صفحه‌ی وب سالن روی اندروید).
 - ورود مشتری با حساب **مشتری همان سالن** است (موبایل + رمز ← کد)؛ ثبت‌نام هم از داخل اپ (حساب فقط بعد از کد ساخته می‌شود).
 
-## ساخت APK با EAS (حساب expo.dev: abolfazl1991)
-```powershell
+## ساخت APK با EAS (حساب expo.dev: abolfazl19910r)
+از ۲۰۲۶-۱۰-۱۶ هر دو اپ با حساب **`abolfazl19910r`** ساخته می‌شوند (`EAS_OWNER` و `EAS_PROJECT_IDS` در `app.config.ts`):
+`@abolfazl19910r/mahru-staff` و `@abolfazl19910r/mahru`. پروژه‌های قبلی `@abolfazl1991/*` دست‌نخورده‌اند ولی دیگر استفاده نمی‌شوند.
+کلید امضای APK مال پروژه‌ی expo.dev است؛ اولین APK از حساب تازه روی نسخه‌ی قبلی Update نمی‌شود (یک بار حذف و نصب).
+```cmd
 npm i -g eas-cli
-eas login
-eas init            # پروژه‌ی mahru-staff را می‌سازد و projectId می‌دهد
+eas login            :: با abolfazl19910r
+eas whoami
 ```
-پروژه‌ی `mahru-staff` ساخته شده و شناسه‌اش در `EAS_PROJECT_IDS` داخل `app.config.ts` هست (`eas init` پیام «Cannot automatically
-write to dynamic config» می‌دهد که طبیعی است — config پویاست). برای پروژه‌ی تازه (مثلاً اپ مشتری) شناسه‌ی چاپ‌شده را همان‌جا بگذارید. بعد:
-```powershell
-eas build --platform android --profile staff-apk          # آزمایشی: فیلد آدرس سرور + http محلی
-eas build --platform android --profile staff-production   # نهایی: فقط https
+در **cmd** (در PowerShell به‌جای `set` بنویسید `$env:APP_VARIANT="customer"`):
+```cmd
+set APP_VARIANT=staff
+eas build --platform android --profile staff-apk          :: آزمایشی: فیلد آدرس سرور + http محلی
+eas build --platform android --profile staff-production   :: نهایی: فقط https
+
+set APP_VARIANT=customer
+eas build --platform android --profile customer-apk
+eas build --platform android --profile customer-production
 ```
-**اپ مشتری** پروژه‌ی جدای expo.dev دارد (`mahru`). یک بار در **PowerShell**:
-```powershell
-$env:APP_VARIANT="customer"; eas init      # پروژه‌ی mahru را می‌سازد؛ شناسه را در EAS_PROJECT_IDS.customer (app.config.ts) بگذارید
-eas build --platform android --profile customer-apk          # آزمایشی
-eas build --platform android --profile customer-production   # نهایی
-```
-(در **cmd**: `set APP_VARIANT=customer` و بعد `eas init`.) تا شناسه گذاشته نشده، `eas build` پروفایل‌های مشتری را به پروژه‌ی درست وصل نمی‌کند.
+به پرسش «Install and run on an emulator?» جواب No بدهید (بدون Android Studio خطای adb می‌دهد؛ build سالم است).
+پروژه‌ی تازه (مثلاً حساب دیگر) = `eas init` با `APP_VARIANT` همان اپ، و گذاشتن شناسه‌ی چاپ‌شده در `EAS_PROJECT_IDS` (config پویاست و
+`eas init` خودش نمی‌تواند بنویسد؛ اگر شناسه‌ی قبلی در فایل باشد `eas init` پروژه‌ی تازه نمی‌سازد — اول خالی‌اش کنید).
 آدرس پیش‌فرض سرور: متغیر `EXPO_PUBLIC_API_URL` در expo.dev (Environment variables) — وگرنه `https://mahru.ir`.
 
 ## پوش (بسته‌ی ۴، نسخه‌ی 0.2.0 / versionCode 2)

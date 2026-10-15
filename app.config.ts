@@ -28,10 +28,14 @@ type Variant = keyof typeof VARIANTS;
  */
 const GOOGLE_SERVICES_JSON = process.env.GOOGLE_SERVICES_JSON || undefined;
 
-/** پروژه‌های expo.dev (ساخته‌شده با `eas init`): همکار ‏@abolfazl1991/mahru-staff (۲۰۲۶-۱۰-۱۰)، مشتری ‏@abolfazl1991/mahru (۲۰۲۶-۱۰-۱۴). */
+/**
+ * حساب expo.dev که buildها با آن گرفته می‌شود (تصمیم ۲۰۲۶-۱۰-۱۶: حساب ‏abolfazl19910r؛ پروژه‌های قبلی ‏@abolfazl1991 دست‌نخورده‌اند).
+ * پروژه‌ها با `eas init` ساخته شدند: ‏@abolfazl19910r/mahru-staff و ‏@abolfazl19910r/mahru. کلید امضای APK هم مال همین پروژه‌هاست.
+ */
+const EAS_OWNER = 'abolfazl19910r';
 const EAS_PROJECT_IDS: Record<Variant, string> = {
-  staff: '1ae539ab-5b39-43c1-8f62-db0b1648abdc',
-  customer: '0bc2a030-263a-4a66-8f80-d8e83e017298', // @abolfazl1991/mahru (`eas init`، ۲۰۲۶-۱۰-۱۴)
+  staff: 'e4dde0c7-c83e-45d6-a466-a5f2237d9e10',
+  customer: 'c9ebfbca-701b-44a8-8c10-68f979a83e94',
 };
 
 export default ({ config }: ConfigContext): ExpoConfig => {
@@ -41,7 +45,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   return {
     ...config,
-    owner: 'abolfazl1991',
+    owner: EAS_OWNER,
     name: v.name,
     slug: v.slug,
     scheme: v.scheme,
