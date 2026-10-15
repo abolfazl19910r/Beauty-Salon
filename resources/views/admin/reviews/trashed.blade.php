@@ -46,12 +46,12 @@
                                     <div class="flex gap-2">
                                         <form action="{{ route('admin.reviews.restore', $review->id) }}" method="POST">
                                             @csrf
-                                            <button type="submit" class="text-xs px-3 py-1.5 rounded-lg" style="background:#DCFCE7; color:#16A34A;">بازگردانی</button>
+                                            <button type="submit" class="text-xs px-3 py-1.5 rounded-lg" style="background:rgb(var(--m-ok) / .14); color:rgb(var(--m-ok));">بازگردانی</button>
                                         </form>
                                         <form action="{{ route('admin.reviews.force-delete', $review->id) }}" method="POST" data-confirm-delete>
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="text-xs px-3 py-1.5 rounded-lg" style="background:#FEE2E2; color:#DC2626;">حذف دائمی</button>
+                                            <button type="submit" class="text-xs px-3 py-1.5 rounded-lg" style="background:rgb(var(--m-bad) / .14); color:rgb(var(--m-bad));">حذف دائمی</button>
                                         </form>
                                     </div>
                                 </td>

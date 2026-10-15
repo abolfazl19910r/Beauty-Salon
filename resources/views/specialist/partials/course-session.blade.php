@@ -7,10 +7,10 @@
 @endphp
 <div class="specialist-card p-6" data-course-session-panel>
     @if (session('success'))
-        <div class="mb-3 p-3 rounded-lg text-sm bg-emerald-400/10 text-emerald-300">{{ session('success') }}</div>
+        <div class="mb-3 p-3 rounded-lg text-sm bg-m-ok/10 text-m-ok">{{ session('success') }}</div>
     @endif
     @if (session('error') || $errors->any())
-        <div class="mb-3 p-3 rounded-lg text-sm bg-red-500/10 text-red-300">{{ session('error') ?? $errors->first() }}</div>
+        <div class="mb-3 p-3 rounded-lg text-sm bg-m-bad/10 text-m-bad">{{ session('error') ?? $errors->first() }}</div>
     @endif
 
     <div class="flex justify-between items-center flex-wrap gap-2">

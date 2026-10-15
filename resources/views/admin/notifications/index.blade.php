@@ -14,7 +14,7 @@
                 <form action="{{ route('admin.notifications.read-all') }}" method="POST">
                     @csrf
                     <button type="submit"
-                            class="inline-flex items-center gap-1 px-4 py-2 text-sm text-white rounded-lg"
+                            class="inline-flex items-center gap-1 px-4 py-2 text-sm text-m-onsolid rounded-lg"
                             style="background:var(--admin-accent)">
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
                         خواندن همه
@@ -25,8 +25,8 @@
                     @method('DELETE')
                     <button type="submit" data-confirm-delete
                             data-confirm-message="آیا از حذف تمام اعلانات اطمینان دارید؟"
-                            class="inline-flex items-center gap-1 px-4 py-2 text-sm text-white rounded-lg"
-                            style="background:#dc2626">
+                            class="inline-flex items-center gap-1 px-4 py-2 text-sm text-m-onsolid rounded-lg"
+                            style="background:rgb(var(--m-bad))">
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                         حذف همه
                     </button>
@@ -35,7 +35,7 @@
         </div>
 
         @if(session('success'))
-            <div class="rounded-lg px-4 py-3 mb-4 text-sm" style="background:#f0fdf4;border:1px solid #86efac;color:#166534">
+            <div class="rounded-lg px-4 py-3 mb-4 text-sm" style="background:rgb(var(--m-ok) / .1);border:1px solid rgb(var(--m-ok) / .35);color:rgb(var(--m-ok))">
                 {{ session('success') }}
             </div>
         @endif
@@ -71,7 +71,7 @@
                                 <p class="text-sm message-text {{ $isRead ? '' : 'font-medium' }}" style="color:var(--admin-text)">
                                     {!! $message !!}
                                     @if(!$isRead)
-                                        <span class="new-tag mr-2 px-2 py-0.5 text-xs rounded-full" style="background:var(--admin-accent);color:#fff">جدید</span>
+                                        <span class="new-tag mr-2 px-2 py-0.5 text-xs rounded-full" style="background:var(--admin-accent);color:rgb(var(--m-on-solid))">جدید</span>
                                     @endif
                                 </p>
                                 <p class="text-xs mt-1" style="color:var(--admin-text-light)">{{ $time }}</p>
@@ -88,13 +88,13 @@
                                         onclick="toggleReadStatus('{{ $notification->id }}', this)"
                                         class="toggle-btn p-2 rounded-lg transition-colors"
                                         title="{{ $isRead ? 'علامت‌گذاری خوانده‌نشده' : 'علامت‌گذاری خوانده‌شده' }}"
-                                        style="{{ $isRead ? 'color:#d97706;background:#fffbeb' : 'color:#16a34a;background:#f0fdf4' }}">
+                                        style="{{ $isRead ? 'color:rgb(var(--m-warn));background:rgb(var(--m-warn) / .1)' : 'color:rgb(var(--m-ok));background:rgb(var(--m-ok) / .1)' }}">
                                     <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
                                 </button>
                                 <button type="button"
                                         onclick="deleteSingleNotification('{{ $notification->id }}')"
                                         class="p-2 rounded-lg transition-colors" title="حذف"
-                                        style="color:#dc2626;background:#fef2f2">
+                                        style="color:rgb(var(--m-bad));background:rgb(var(--m-bad) / .1)">
                                     <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                                 </button>
                             </div>

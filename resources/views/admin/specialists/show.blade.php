@@ -11,7 +11,7 @@
                     <img src="{{ $specialist->photoUrl() }}" alt="{{ $specialist->name }}" class="w-12 h-12 rounded-full object-cover flex-shrink-0">
                 @else
                 <div class="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0"
-                     style="background:var(--admin-accent); color:#fff;">
+                     style="background:var(--admin-accent); color:rgb(var(--m-on-solid));">
                     {{ mb_substr($specialist->name, 0, 1) }}
                 </div>
                 @endif
@@ -23,7 +23,7 @@
             <div class="flex flex-wrap gap-2">
                 @permission('edit-specialists')
                 <a href="{{ route('admin.specialists.edit', $specialist) }}"
-                   class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-white"
+                   class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                    style="background:var(--admin-accent);"
                    onmouseover="this.style.background='var(--admin-accent-hover)'"
                    onmouseout="this.style.background='var(--admin-accent)'">
@@ -36,9 +36,9 @@
                 @endpermission
                 <a href="{{ route('admin.schedule.index', $specialist) }}"
                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium"
-                   style="background:#F0FDF4; color:#166534;"
-                   onmouseover="this.style.background='#DCFCE7'"
-                   onmouseout="this.style.background='#F0FDF4'">
+                   style="background:rgb(var(--m-ok) / .1); color:rgb(var(--m-ok));"
+                   onmouseover="this.style.background='rgb(var(--m-ok) / .14)'"
+                   onmouseout="this.style.background='rgb(var(--m-ok) / .1)'">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                         <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
@@ -47,9 +47,9 @@
                 </a>
                 <a href="{{ route('admin.specialists.leaves.index', $specialist) }}"
                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium"
-                   style="background:#F5F3FF; color:#7C3AED;"
-                   onmouseover="this.style.background='#EDE9FE'"
-                   onmouseout="this.style.background='#F5F3FF'">
+                   style="background:rgb(var(--m-gold) / .1); color:rgb(var(--m-gold));"
+                   onmouseover="this.style.background='rgb(var(--m-gold) / .14)'"
+                   onmouseout="this.style.background='rgb(var(--m-gold) / .1)'">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                     </svg>
@@ -96,7 +96,7 @@
                         <div class="pt-2" style="border-top:1px solid var(--admin-border);">
                             @if($linkedUser)
                                 <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium"
-                                     style="background:#F0FDF4; color:#166534;">
+                                     style="background:rgb(var(--m-ok) / .1); color:rgb(var(--m-ok));">
                                     <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <polyline points="20 6 9 17 4 12"/>
                                     </svg>
@@ -104,7 +104,7 @@
                                 </div>
                             @else
                                 <div class="flex items-start gap-2 px-3 py-2 rounded-lg text-xs"
-                                     style="background:#FFFBEB; color:#92400E;">
+                                     style="background:rgb(var(--m-warn) / .1); color:rgb(var(--m-warn));">
                                     <svg class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
                                         <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
@@ -127,7 +127,7 @@
                         @forelse($specialist->services as $service)
                             <div class="flex justify-between items-center px-4 py-2.5 text-sm">
                                 <div class="flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full" style="background:#16A34A;"></span>
+                                    <span class="w-2 h-2 rounded-full" style="background:rgb(var(--m-ok));"></span>
                                     <span style="color:var(--admin-text);">{{ $service->name }}</span>
                                 </div>
                                 <span class="persian-number" style="color:var(--admin-text-dim);">{{ number_format($service->price) }} تومان</span>
@@ -157,16 +157,16 @@
                                         ->where('day_of_week', $index)->where('is_active', true)->first();
                                 @endphp
                                 <div class="rounded-lg p-2 text-center text-xs"
-                                     style="{{ $schedule ? 'background:#F0FDF4; border:1px solid #86EFAC;' : 'background:#FEF2F2; border:1px solid #FCA5A5;' }}">
+                                     style="{{ $schedule ? 'background:rgb(var(--m-ok) / .1); border:1px solid rgb(var(--m-ok) / .35);' : 'background:rgb(var(--m-bad) / .1); border:1px solid rgb(var(--m-bad) / .35);' }}">
                                     <div class="font-bold mb-1" style="color:var(--admin-text);">{{ $day }}</div>
                                     @if($schedule)
-                                        <div class="persian-number" style="color:#166534;">
+                                        <div class="persian-number" style="color:rgb(var(--m-ok));">
                                             {{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }}
                                             <br>تا<br>
                                             {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}
                                         </div>
                                     @else
-                                        <div style="color:#991B1B;">تعطیل</div>
+                                        <div style="color:rgb(var(--m-bad));">تعطیل</div>
                                     @endif
                                 </div>
                             @endforeach
@@ -204,7 +204,7 @@
                                         <td class="px-4 py-2.5 persian-number" style="color:var(--admin-text);">{{ verta($leave->end_date)->format('Y/m/d') }}</td>
                                         <td class="px-4 py-2.5" style="color:var(--admin-text-dim);">{{ $leave->reason ?: '—' }}</td>
                                         <td class="px-4 py-2.5">
-                                            <span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background:#F0FDF4; color:#166534;">تایید شده</span>
+                                            <span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background:rgb(var(--m-ok) / .1); color:rgb(var(--m-ok));">تایید شده</span>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -240,8 +240,8 @@
                                 <tbody>
                                 @foreach($todayBookings as $booking)
                                     @php
-                                        $sm=['pending'=>['در انتظار','#FFFBEB','#92400E'],'confirmed'=>['تایید شده','#F0FDF4','#166534'],'cancelled'=>['لغو شده','#FEF2F2','#991B1B'], 'no_show' => ['نیامد','#FEF2F2','#991B1B'],'completed'=>['انجام شده','#EFF6FF','#1D4ED8']];
-                                        $bs=$sm[$booking->status]??[$booking->status,'#F1F5F9','#475569'];
+                                        $sm=['pending'=>['در انتظار','rgb(var(--m-warn) / .1)','rgb(var(--m-warn))'],'confirmed'=>['تایید شده','rgb(var(--m-ok) / .1)','rgb(var(--m-ok))'],'cancelled'=>['لغو شده','rgb(var(--m-bad) / .1)','rgb(var(--m-bad))'], 'no_show' => ['نیامد','rgb(var(--m-bad) / .1)','rgb(var(--m-bad))'],'completed'=>['انجام شده','rgb(var(--m-info) / .1)','rgb(var(--m-info))']];
+                                        $bs=$sm[$booking->status]??[$booking->status,'rgb(var(--m-tx) / .05)','rgb(var(--m-tx))'];
                                     @endphp
                                     <tr style="border-top:1px solid var(--admin-border);">
                                         <td class="px-4 py-2.5 persian-number font-medium" style="color:var(--admin-text);">{{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }}</td>

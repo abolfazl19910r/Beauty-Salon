@@ -33,7 +33,7 @@
         <form method="GET" action="{{ route('admin.security.users') }}" class="mb-5 flex gap-2">
             <input type="text" name="search" value="{{ $search }}" placeholder="جست‌وجو بر اساس نام یا شماره موبایل..."
                    class="flex-1 rounded-lg px-3 py-2 text-sm" style="background:var(--admin-surface); border:1px solid var(--admin-border); color:var(--admin-text);">
-            <button type="submit" class="px-4 py-2 rounded-lg text-sm font-medium text-white" style="background-color: var(--admin-accent);">جست‌وجو</button>
+            <button type="submit" class="px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid" style="background-color: var(--admin-accent);">جست‌وجو</button>
         </form>
 
         <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
@@ -56,12 +56,12 @@
                             </td>
                             <td class="px-4 py-3">
                                 @if($user->two_factor_enabled)
-                                    <span class="px-2 py-0.5 rounded-full text-xs" style="background:rgba(22,163,74,0.12); color:#16A34A;">فعال</span>
+                                    <span class="px-2 py-0.5 rounded-full text-xs" style="background:rgba(22,163,74,0.12); color:rgb(var(--m-ok));">فعال</span>
                                 @else
                                     <span class="px-2 py-0.5 rounded-full text-xs" style="background:var(--admin-accent-light); color:var(--admin-text-dim);">غیرفعال</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-3 persian-number" style="color: {{ $user->suspicious_activity_count > 2 ? '#DC2626' : 'var(--admin-text-dim)' }};">
+                            <td class="px-4 py-3 persian-number" style="color: {{ $user->suspicious_activity_count > 2 ? 'rgb(var(--m-bad))' : 'var(--admin-text-dim)' }};">
                                 {{ $user->suspicious_activity_count }}
                             </td>
                             <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">

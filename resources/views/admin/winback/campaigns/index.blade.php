@@ -20,7 +20,7 @@
             پیگیری گرفته یا انصراف داده، پیامک نمی‌گیرد.
         </p>
         @if ($limitsError)
-            <div class="rounded-lg p-3 text-sm mb-5" style="background:#FEF3C7; color:#92400E;">{{ $limitsError }}</div>
+            <div class="rounded-lg p-3 text-sm mb-5" style="background:rgb(var(--m-warn) / .14); color:rgb(var(--m-warn));">{{ $limitsError }}</div>
         @endif
 
         <div class="rounded-xl overflow-hidden" style="{{ $box }}">

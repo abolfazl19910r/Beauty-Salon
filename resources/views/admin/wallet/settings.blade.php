@@ -204,7 +204,7 @@
                 {{-- Save --}}
                 <div class="flex justify-end">
                     <button type="submit"
-                            class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-white"
+                            class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-m-onsolid"
                             style="background:var(--admin-accent);"
                             onmouseover="this.style.background='var(--admin-accent-hover)'"
                             onmouseout="this.style.background='var(--admin-accent)'">

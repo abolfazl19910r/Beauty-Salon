@@ -4,11 +4,11 @@
 
 @php
     $transactionTypeMap = [
-        'income'           => ['label' => 'درآمد',       'class' => 'bg-emerald-400/10 text-emerald-300'],
-        'withdrawal'       => ['label' => 'برداشت',       'class' => 'bg-sky-400/10 text-sky-300'],
-        'cancellation_fee' => ['label' => 'جریمه لغو',     'class' => 'bg-red-500/10 text-red-300'],
-        'refund'           => ['label' => 'بازگشت وجه',    'class' => 'bg-amber-400/10 text-amber-300'],
-        'adjustment'       => ['label' => 'تعدیل',        'class' => 'bg-white/5 text-[var(--specialist-text-dim)]'],
+        'income'           => ['label' => 'درآمد',       'class' => 'bg-m-ok/10 text-m-ok'],
+        'withdrawal'       => ['label' => 'برداشت',       'class' => 'bg-m-info/10 text-m-info'],
+        'cancellation_fee' => ['label' => 'جریمه لغو',     'class' => 'bg-m-bad/10 text-m-bad'],
+        'refund'           => ['label' => 'بازگشت وجه',    'class' => 'bg-m-warn/10 text-m-warn'],
+        'adjustment'       => ['label' => 'تعدیل',        'class' => 'bg-m-tx/5 text-[var(--specialist-text-dim)]'],
     ];
 @endphp
 
@@ -39,7 +39,7 @@
         .jcal-day:hover { background-color: rgba(216,174,224,0.15); }
         .jcal-day.jcal-empty { cursor: default; }
         .jcal-day.jcal-empty:hover { background-color: transparent; }
-        .jcal-day.jcal-selected { background-color: var(--specialist-plum-mid); color: #250D2B; font-weight: bold; }
+        .jcal-day.jcal-selected { background-color: var(--specialist-plum-mid); color: var(--m-on-gold); font-weight: bold; }
         .jcal-day.jcal-today { border: 1px solid var(--specialist-plum-mid); }
     </style>
 @endpush
@@ -50,7 +50,7 @@
         <div class="flex items-center justify-between">
             <h1 class="text-xl font-bold text-[var(--specialist-text)] font-serif-fa">تاریخچه تراکنش‌ها</h1>
             <a href="{{ route('specialist.wallet.index') }}"
-               class="flex items-center px-4 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-text)] transition"
+               class="flex items-center px-4 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)] transition"
                style="border: 1px solid var(--specialist-border);">
                 <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -102,7 +102,7 @@
                         <button type="submit" class="specialist-cta px-5 py-2 rounded-lg font-bold transition-opacity hover:opacity-90 flex-1">
                             اعمال فیلتر
                         </button>
-                        <a href="{{ route('specialist.wallet.transactions') }}" class="px-5 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-text)] transition" style="border: 1px solid var(--specialist-border);">
+                        <a href="{{ route('specialist.wallet.transactions') }}" class="px-5 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)] transition" style="border: 1px solid var(--specialist-border);">
                             حذف
                         </a>
                     </div>
@@ -123,7 +123,7 @@
                 <div class="divide-y" style="border-color: var(--specialist-border);">
                     @foreach($transactions as $transaction)
                         @php
-                            $typeInfo = $transactionTypeMap[$transaction->type] ?? ['label' => 'نامشخص', 'class' => 'bg-white/5 text-[var(--specialist-text-dim)]'];
+                            $typeInfo = $transactionTypeMap[$transaction->type] ?? ['label' => 'نامشخص', 'class' => 'bg-m-tx/5 text-[var(--specialist-text-dim)]'];
                         @endphp
                         <div class="p-4 flex items-center justify-between gap-4 flex-wrap">
                             <div class="flex items-center gap-3">
@@ -137,7 +137,7 @@
                             </div>
                             <div class="flex items-center gap-4">
                                 <span class="text-sm text-[var(--specialist-plum-muted)] persian-number">{{ verta($transaction->created_at)->format('Y/m/d H:i') }}</span>
-                                <span class="persian-number font-semibold {{ $transaction->amount >= 0 ? 'text-emerald-300' : 'text-red-300' }}">
+                                <span class="persian-number font-semibold {{ $transaction->amount >= 0 ? 'text-m-ok' : 'text-m-bad' }}">
                                     {{ $transaction->formatted_amount }}
                                 </span>
                             </div>

@@ -20,18 +20,18 @@
                 @csrf
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium mb-1" style="color:var(--admin-text-dim);">نام دسته‌بندی <span style="color:#DC2626;">*</span></label>
+                        <label class="block text-sm font-medium mb-1" style="color:var(--admin-text-dim);">نام دسته‌بندی <span style="color:rgb(var(--m-bad));">*</span></label>
                         <input type="text" name="name" value="{{ old('name') }}" required
                                class="w-full rounded-lg px-3 py-2 text-sm"
                                style="border:1px solid var(--admin-border); background:var(--admin-bg); color:var(--admin-text);">
-                        @error('name') <p class="text-xs mt-1" style="color:#DC2626;">{{ $message }}</p> @enderror
+                        @error('name') <p class="text-xs mt-1" style="color:rgb(var(--m-bad));">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1" style="color:var(--admin-text-dim);">توضیحات</label>
                         <textarea name="description" rows="3"
                                   class="w-full rounded-lg px-3 py-2 text-sm"
                                   style="border:1px solid var(--admin-border); background:var(--admin-bg); color:var(--admin-text);">{{ old('description') }}</textarea>
-                        @error('description') <p class="text-xs mt-1" style="color:#DC2626;">{{ $message }}</p> @enderror
+                        @error('description') <p class="text-xs mt-1" style="color:rgb(var(--m-bad));">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1" style="color:var(--admin-text-dim);">ترتیب نمایش</label>
@@ -39,13 +39,13 @@
                                class="w-full rounded-lg px-3 py-2 text-sm"
                                style="border:1px solid var(--admin-border); background:var(--admin-bg); color:var(--admin-text);">
                         <p class="text-xs mt-1" style="color:var(--admin-text-light);">اگر خالی بماند، به‌صورت خودکار بعد از آخرین دسته‌بندی قرار می‌گیرد.</p>
-                        @error('order') <p class="text-xs mt-1" style="color:#DC2626;">{{ $message }}</p> @enderror
+                        @error('order') <p class="text-xs mt-1" style="color:rgb(var(--m-bad));">{{ $message }}</p> @enderror
                     </div>
                 </div>
 
                 <div class="mt-6 pt-4" style="border-top:1px solid var(--admin-border);">
                     <button type="submit"
-                            class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-lg transition-colors"
+                            class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-m-onsolid rounded-lg transition-colors"
                             style="background:var(--admin-accent);"
                             onmouseover="this.style.background='var(--admin-accent-hover)'"
                             onmouseout="this.style.background='var(--admin-accent)'">

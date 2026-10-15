@@ -29,19 +29,19 @@
 
         {{-- Statistics cards --}}
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
-            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid #3B82F6;">
+            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-info));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل نظرات</p>
                 <p class="text-2xl font-bold persian-number" style="color:var(--admin-text);">{{ number_format($totalReviews) }}</p>
             </div>
-            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid #16A34A;">
+            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-ok));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">تایید شده</p>
                 <p class="text-2xl font-bold persian-number" style="color:var(--admin-text);">{{ number_format($approvedReviews) }}</p>
             </div>
-            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid #DC2626;">
+            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-bad));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">نظرات منفی</p>
                 <p class="text-2xl font-bold persian-number" style="color:var(--admin-text);">{{ number_format($negativeReviews) }}</p>
             </div>
-            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid #F59E0B;">
+            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-warn));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">میانگین امتیاز</p>
                 <p class="text-2xl font-bold persian-number" style="color:var(--admin-text);">{{ number_format($averageRating, 1) }}</p>
             </div>
@@ -72,7 +72,7 @@
                 </div>
                 <div class="flex gap-2">
                     <button type="submit"
-                            class="px-4 py-2 rounded-lg text-sm font-medium text-white"
+                            class="px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                             style="background:var(--admin-accent);"
                             onmouseover="this.style.background='var(--admin-accent-hover)'"
                             onmouseout="this.style.background='var(--admin-accent)'">اعمال فیلتر</button>
@@ -108,7 +108,7 @@
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
                                     <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-                                         style="background:var(--admin-accent); color:#fff;">
+                                         style="background:var(--admin-accent); color:rgb(var(--m-on-solid));">
                                         {{ mb_substr($review->user->name ?? '?', 0, 1) }}
                                     </div>
                                     <span style="color:var(--admin-text);">{{ $review->user->name ?? '—' }}</span>
@@ -119,8 +119,8 @@
                             <td class="px-4 py-3">
                                 @php $r = $review->overall_rating ?? 0; @endphp
                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold persian-number"
-                                      style="background:{{ $r>=4 ? '#F0FDF4' : ($r>=3 ? '#FFFBEB' : '#FEF2F2') }};
-                                         color:{{ $r>=4 ? '#166534' : ($r>=3 ? '#92400E' : '#991B1B') }};">
+                                      style="background:{{ $r>=4 ? 'rgb(var(--m-ok) / .1)' : ($r>=3 ? 'rgb(var(--m-warn) / .1)' : 'rgb(var(--m-bad) / .1)') }};
+                                         color:{{ $r>=4 ? 'rgb(var(--m-ok))' : ($r>=3 ? 'rgb(var(--m-warn))' : 'rgb(var(--m-bad))') }};">
                                 ★ {{ $r }}
                             </span>
                             </td>
@@ -130,12 +130,12 @@
                             <td class="px-4 py-3">
                                 <div class="flex flex-col gap-1">
                                     @if($review->is_approved)
-                                        <span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background:#F0FDF4; color:#166534;">تایید شده</span>
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background:rgb(var(--m-ok) / .1); color:rgb(var(--m-ok));">تایید شده</span>
                                     @else
-                                        <span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background:#FFFBEB; color:#92400E;">در انتظار</span>
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background:rgb(var(--m-warn) / .1); color:rgb(var(--m-warn));">در انتظار</span>
                                     @endif
                                     @if($review->is_featured)
-                                        <span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background:#EFF6FF; color:#1D4ED8;">ویژه</span>
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background:rgb(var(--m-info) / .1); color:rgb(var(--m-info));">ویژه</span>
                                     @endif
                                 </div>
                             </td>
@@ -155,8 +155,8 @@
                                             @csrf @method('PUT')
                                             <button type="submit" title="تایید"
                                                     class="w-7 h-7 rounded flex items-center justify-center transition-colors"
-                                                    style="color:#16A34A;"
-                                                    onmouseover="this.style.background='#F0FDF4'"
+                                                    style="color:rgb(var(--m-ok));"
+                                                    onmouseover="this.style.background='rgb(var(--m-ok) / .1)'"
                                                     onmouseout="this.style.background=''">
                                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                                             </button>
@@ -167,8 +167,8 @@
                                         <button type="button" title="حذف"
                                                 data-confirm-delete data-confirm-message="آیا از حذف این نظر اطمینان دارید؟"
                                                 class="w-7 h-7 rounded flex items-center justify-center transition-colors"
-                                                style="color:#DC2626;"
-                                                onmouseover="this.style.background='#FEF2F2'"
+                                                style="color:rgb(var(--m-bad));"
+                                                onmouseover="this.style.background='rgb(var(--m-bad) / .1)'"
                                                 onmouseout="this.style.background=''">
                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <polyline points="3 6 5 6 21 6"/>

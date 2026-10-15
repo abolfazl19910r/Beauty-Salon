@@ -23,7 +23,7 @@
                 <div class="h-full" style="width: {{ round($course->sessions_used * 100 / max(1, $course->sessions_total)) }}%; background:var(--admin-accent);"></div>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4 text-sm persian-number">
-                <div><div style="{{ $dim }}">انجام/سوخت</div><div class="font-bold">{{ to_persian_num((string) $course->sessions_used) }} از {{ to_persian_num((string) $course->sessions_total) }}@if ($course->sessions_burned) <span class="text-xs" style="color:#b45309;">({{ to_persian_num((string) $course->sessions_burned) }} سوخت)</span>@endif</div></div>
+                <div><div style="{{ $dim }}">انجام/سوخت</div><div class="font-bold">{{ to_persian_num((string) $course->sessions_used) }} از {{ to_persian_num((string) $course->sessions_total) }}@if ($course->sessions_burned) <span class="text-xs" style="color:rgb(var(--m-warn));">({{ to_persian_num((string) $course->sessions_burned) }} سوخت)</span>@endif</div></div>
                 <div><div style="{{ $dim }}">پرداخت‌شده</div><div class="font-bold">{{ number_format($course->amount_paid) }} از {{ number_format($course->price_total) }}</div></div>
                 <div><div style="{{ $dim }}">ارزش هر جلسه</div><div class="font-bold">{{ number_format($course->per_session_value) }}</div></div>
                 <div><div style="{{ $dim }}">موعد جلسه‌ی بعد</div><div class="font-bold">{{ $course->next_due_at && $course->status === 'active' ? verta($course->next_due_at)->format('Y/m/d') : '—' }}</div></div>
@@ -40,7 +40,7 @@
                     @csrf
                     <h2 class="font-bold mb-1" style="color:var(--admin-text);">رزرو جلسه</h2>
                     @if ($blocker)
-                        <p class="text-sm" style="color:#b45309;">{{ $blocker }}</p>
+                        <p class="text-sm" style="color:rgb(var(--m-warn));">{{ $blocker }}</p>
                     @else
                         <p class="text-xs mb-3" style="{{ $dim }}">زودترین روز طبق فاصله‌ی حداقل: {{ verta($course->earliestNextSession())->format('Y/m/d') }} (مدیر می‌تواند زودتر بگذارد).</p>
                         <div class="grid grid-cols-3 gap-2">
@@ -100,7 +100,7 @@
                             @foreach ($photos[$booking->id] ?? [] as $photo)
                                 <div class="text-center">
                                     <a href="{{ route('admin.courses.photos.show', [$course, $photo]) }}" target="_blank"><img src="{{ route('admin.courses.photos.show', [$course, $photo]) }}" class="w-16 h-16 object-cover rounded" alt="" loading="lazy"></a>
-                                    <form method="POST" action="{{ route('admin.courses.photos.destroy', [$course, $photo]) }}">@csrf @method('DELETE')<button type="submit" data-confirm-delete class="text-xs" style="color:#b91c1c;">{{ \App\Models\CourseSessionPhoto::KINDS[$photo->kind] }} ×</button></form>
+                                    <form method="POST" action="{{ route('admin.courses.photos.destroy', [$course, $photo]) }}">@csrf @method('DELETE')<button type="submit" data-confirm-delete class="text-xs" style="color:rgb(var(--m-bad));">{{ \App\Models\CourseSessionPhoto::KINDS[$photo->kind] }} ×</button></form>
                                 </div>
                             @endforeach
                             @if ($course->hasPhotoConsent() && count($photos[$booking->id] ?? []) < \App\Models\CourseSessionPhoto::MAX_PER_SESSION)
@@ -144,13 +144,13 @@
                     </form>
                     <form method="POST" action="{{ route('admin.courses.cancel', $course) }}">
                         @csrf
-                        <h2 class="font-bold mb-2" style="color:#b91c1c;">لغو دوره و برگشت پول</h2>
+                        <h2 class="font-bold mb-2" style="color:rgb(var(--m-bad));">لغو دوره و برگشت پول</h2>
                         <p class="text-xs mb-2 persian-number" style="{{ $dim }}">پیشنهاد: {{ number_format($refundable) }} تومان (پرداخت‌شده − جلسه‌های مصرف‌شده × ارزش هر جلسه) به کیف پول مشتری. نوبت‌های آینده‌ی دوره هم لغو می‌شوند.</p>
                         <div class="grid grid-cols-2 gap-2">
                             <input name="refund" dir="ltr" inputmode="numeric" class="{{ $input }}" style="{{ $inputStyle }}" value="{{ (int) $refundable }}">
                             <input name="reason" class="{{ $input }}" style="{{ $inputStyle }}" placeholder="دلیل">
                         </div>
-                        <button type="submit" class="mt-2 px-4 py-2 rounded-lg text-sm font-bold" style="background:#b91c1c; color:#fff;" data-confirm-action="دوره لغو و مبلغ به کیف پول مشتری برگردانده شود؟">لغو دوره</button>
+                        <button type="submit" class="mt-2 px-4 py-2 rounded-lg text-sm font-bold" style="background:rgb(var(--m-bad)); color:rgb(var(--m-on-solid));" data-confirm-action="دوره لغو و مبلغ به کیف پول مشتری برگردانده شود؟">لغو دوره</button>
                     </form>
                 </div>
             @endif

@@ -20,12 +20,12 @@
         </div>
 
         @if(session('success'))
-            <div class="mb-4 px-4 py-3 rounded-lg text-sm" style="background-color: rgba(34,197,94,0.1); color: #16A34A;">
+            <div class="mb-4 px-4 py-3 rounded-lg text-sm" style="background-color: rgba(34,197,94,0.1); color: rgb(var(--m-ok));">
                 {{ session('success') }}
             </div>
         @endif
         @if($errors->any())
-            <div class="mb-4 px-4 py-3 rounded-lg text-sm" style="background-color: rgba(220,38,38,0.1); color: #DC2626;">
+            <div class="mb-4 px-4 py-3 rounded-lg text-sm" style="background-color: rgba(220,38,38,0.1); color: rgb(var(--m-bad));">
                 <ul class="list-disc pr-4">
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -53,7 +53,7 @@
                        class="w-full px-3 py-2 rounded-lg" style="border:1px solid var(--admin-border); color:var(--admin-text);">
             </div>
             <div class="md:col-span-1">
-                <button type="submit" class="w-full px-4 py-2 rounded-lg text-sm text-white" style="background-color: var(--admin-accent);">
+                <button type="submit" class="w-full px-4 py-2 rounded-lg text-sm text-m-onsolid" style="background-color: var(--admin-accent);">
                     افزودن تصویر
                 </button>
             </div>
@@ -82,7 +82,7 @@
                             <form action="{{ route('admin.gallery.destroy', $image) }}" method="POST">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" data-confirm-delete class="text-xs px-2 py-1 rounded" style="color:#DC2626;">حذف</button>
+                                <button type="submit" data-confirm-delete class="text-xs px-2 py-1 rounded" style="color:rgb(var(--m-bad));">حذف</button>
                             </form>
                         </div>
                     </div>

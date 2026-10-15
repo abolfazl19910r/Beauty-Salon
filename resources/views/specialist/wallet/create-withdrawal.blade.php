@@ -14,7 +14,7 @@
                         <p class="text-3xl font-bold persian-number">{{ number_format($wallet->balance) }}</p>
                         <p class="text-xs opacity-70 mt-1">تومان</p>
                     </div>
-                    <div class="bg-white/15 rounded-full p-4">
+                    <div class="bg-m-tx/15 rounded-full p-4">
                         <svg class="w-9 h-9" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
@@ -60,7 +60,7 @@
                     </div>
 
                     @error('amount')
-                    <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                    <p class="text-m-bad text-sm mt-1">{{ $message }}</p>
                     @enderror
 
                     <p class="text-xs text-[var(--specialist-text-dim)] mt-1 persian-number">
@@ -79,7 +79,7 @@
                                  style="border: 2px solid var(--specialist-border); background-color: var(--specialist-bg);">
                                 <div class="flex items-center justify-between mb-2">
                                     <span class="font-semibold text-[var(--specialist-text)]">انتقال به شبا</span>
-                                    <span class="text-xs px-2 py-1 rounded-full bg-sky-400/10 text-sky-300">پیشنهادی</span>
+                                    <span class="text-xs px-2 py-1 rounded-full bg-m-info/10 text-m-info">پیشنهادی</span>
                                 </div>
                                 <p class="text-sm text-[var(--specialist-text-dim)] mb-1">انتقال به حساب بانکی شما</p>
                                 <p class="text-xs text-[var(--specialist-plum-muted)] persian-number">کارمزد: {{ $settings->withdrawal_fee_percentage }}٪</p>
@@ -93,7 +93,7 @@
                                      style="border: 2px solid var(--specialist-border); background-color: var(--specialist-bg);">
                                     <div class="flex items-center justify-between mb-2">
                                         <span class="font-semibold text-[var(--specialist-text)]">برداشت فوری</span>
-                                        <span class="text-xs px-2 py-1 rounded-full bg-amber-400/10 text-amber-300">سریع</span>
+                                        <span class="text-xs px-2 py-1 rounded-full bg-m-warn/10 text-m-warn">سریع</span>
                                     </div>
                                     <p class="text-sm text-[var(--specialist-text-dim)] mb-1">واریز فوری به حساب شما</p>
                                     <p class="text-xs text-[var(--specialist-plum-muted)] persian-number">کارمزد ثابت: {{ number_format($settings->instant_withdrawal_fee) }} تومان</p>
@@ -139,22 +139,22 @@
                         </div>
                         <div class="flex justify-between">
                             <span class="text-[var(--specialist-text-dim)]">کارمزد برداشت:</span>
-                            <span id="fee-amount" class="font-semibold text-red-300 persian-number">0</span>
+                            <span id="fee-amount" class="font-semibold text-m-bad persian-number">0</span>
                         </div>
                         <div class="flex justify-between pt-2 border-t" style="border-color: var(--specialist-border);">
                             <span class="text-[var(--specialist-text)] font-semibold">مبلغ قابل واریز:</span>
-                            <span id="net-amount" class="font-bold text-emerald-300 text-lg persian-number">0</span>
+                            <span id="net-amount" class="font-bold text-m-ok text-lg persian-number">0</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="mb-6 rounded-lg p-4" style="background-color: rgba(251, 191, 36, 0.07); border: 1px solid var(--specialist-border);">
                     <div class="flex items-start">
-                        <svg class="w-5 h-5 text-amber-400 ml-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 text-m-warn ml-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                         <div class="text-sm text-[var(--specialist-text-dim)]">
-                            <p class="font-semibold text-amber-300 mb-1">نکات مهم:</p>
+                            <p class="font-semibold text-m-warn mb-1">نکات مهم:</p>
                             <ul class="list-disc list-inside space-y-1 mr-2 text-xs">
                                 <li>پس از ثبت درخواست، مبلغ از موجودی شما کسر می‌شود</li>
                                 <li>درخواست‌های برداشت توسط تیم پشتیبانی بررسی و پردازش می‌شوند</li>
@@ -173,7 +173,7 @@
                         ثبت درخواست برداشت
                     </button>
                     <a href="{{ route('specialist.wallet.index') }}"
-                       class="px-6 py-3 rounded-lg font-semibold transition-colors text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-text)]"
+                       class="px-6 py-3 rounded-lg font-semibold transition-colors text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)]"
                        style="border: 1px solid var(--specialist-border);">
                         انصراف
                     </a>

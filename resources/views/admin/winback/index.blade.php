@@ -24,7 +24,7 @@
                 <p class="text-xs mt-1" style="color:var(--admin-text-dim);">پیگیری خودکار فقط مشتری‌هایی را می‌گیرد که تازه از مرز غیبت گذشته‌اند؛ برای قدیمی‌ترها (تا ۲ سال) کمپین دستی بسازید.</p>
             </div>
             @if (app(\App\Support\CurrentSalon::class)->get()?->hasFeature(\App\Support\Features\Feature::WinbackManual))
-                <a href="{{ route('admin.winback.campaigns.index') }}" class="px-4 py-2 rounded-lg text-sm font-bold" style="background:var(--admin-accent); color:#fff;">کمپین‌ها</a>
+                <a href="{{ route('admin.winback.campaigns.index') }}" class="px-4 py-2 rounded-lg text-sm font-bold" style="background:var(--admin-accent); color:rgb(var(--m-on-solid));">کمپین‌ها</a>
             @else
                 @include('admin.partials.feature-locked', ['feature' => \App\Support\Features\Feature::WinbackManual])
             @endif
@@ -66,7 +66,7 @@
                     <input id="lapse_days" name="lapse_days" type="number" min="14" max="365" required class="{{ $input }}" style="{{ $inputStyle }}"
                            value="{{ old('lapse_days', $setting->lapse_days) }}">
                     <p class="text-xs mt-1" style="color:var(--admin-text-dim);">از آخرین نوبت انجام‌شده. پیش‌فرض ۶۰ روز؛ برای خدماتی که فاصله‌ی کوتاه‌تری دارند (مثل ناخن) کمتر بگذارید.</p>
-                    @error('lapse_days') <p class="text-sm mt-1" style="color:#DC2626;">{{ $message }}</p> @enderror
+                    @error('lapse_days') <p class="text-sm mt-1" style="color:rgb(var(--m-bad));">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="discount_type" class="block text-sm font-medium mb-1" style="color:var(--admin-text);">کد تخفیف همراه پیامک</label>
@@ -83,19 +83,19 @@
                     <label for="discount_amount" class="block text-sm font-medium mb-1" style="color:var(--admin-text);">مقدار تخفیف <span data-unit>{{ $type === 'fixed' ? '(تومان)' : '(درصد)' }}</span></label>
                     <input id="discount_amount" name="discount_amount" inputmode="numeric" class="{{ $input }}" style="{{ $inputStyle }}" dir="ltr"
                            value="{{ old('discount_amount', $setting->discount_amount !== null ? rtrim(rtrim((string) $setting->discount_amount, '0'), '.') : '') }}">
-                    @error('discount_amount') <p class="text-sm mt-1" style="color:#DC2626;">{{ $message }}</p> @enderror
+                    @error('discount_amount') <p class="text-sm mt-1" style="color:rgb(var(--m-bad));">{{ $message }}</p> @enderror
                 </div>
                 <div data-max-field>
                     <label for="discount_max_amount" class="block text-sm font-medium mb-1" style="color:var(--admin-text);">سقف تخفیف (تومان، اختیاری)</label>
                     <input id="discount_max_amount" name="discount_max_amount" inputmode="numeric" class="{{ $input }}" style="{{ $inputStyle }}" dir="ltr"
                            value="{{ old('discount_max_amount', $setting->discount_max_amount !== null ? (int) $setting->discount_max_amount : '') }}">
-                    @error('discount_max_amount') <p class="text-sm mt-1" style="color:#DC2626;">{{ $message }}</p> @enderror
+                    @error('discount_max_amount') <p class="text-sm mt-1" style="color:rgb(var(--m-bad));">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="discount_valid_days" class="block text-sm font-medium mb-1" style="color:var(--admin-text);">مهلت استفاده (روز)</label>
                     <input id="discount_valid_days" name="discount_valid_days" type="number" min="3" max="90" required class="{{ $input }}" style="{{ $inputStyle }}"
                            value="{{ old('discount_valid_days', $setting->discount_valid_days) }}">
-                    @error('discount_valid_days') <p class="text-sm mt-1" style="color:#DC2626;">{{ $message }}</p> @enderror
+                    @error('discount_valid_days') <p class="text-sm mt-1" style="color:rgb(var(--m-bad));">{{ $message }}</p> @enderror
                 </div>
             </div>
 
@@ -105,7 +105,7 @@
                 <a href="{{ route('admin.sms-templates.index') }}#sms-winback" class="inline-block text-xs mt-2 font-medium" style="color:var(--admin-accent);">ویرایش متن این پیامک ←</a>
             </div>
 
-            <button type="submit" class="mt-5 px-5 py-2 rounded-lg text-sm font-medium text-white" style="background-color: var(--admin-accent);">ذخیره</button>
+            <button type="submit" class="mt-5 px-5 py-2 rounded-lg text-sm font-medium text-m-onsolid" style="background-color: var(--admin-accent);">ذخیره</button>
         </form>
 
         <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
@@ -133,7 +133,7 @@
                                     <td class="py-2" dir="ltr" style="text-align:right;">{{ $m->discountCode?->code ?? '—' }}</td>
                                     <td class="py-2">
                                         @if ($m->returned)
-                                            <span class="text-xs px-2 py-0.5 rounded-full" style="background:#DCFCE7; color:#166534;">نوبت گرفت</span>
+                                            <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgb(var(--m-ok) / .14); color:rgb(var(--m-ok));">نوبت گرفت</span>
                                         @else
                                             <span class="text-xs" style="color:var(--admin-text-dim);">هنوز نه</span>
                                         @endif

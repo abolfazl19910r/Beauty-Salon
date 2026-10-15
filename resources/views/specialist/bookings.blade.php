@@ -29,24 +29,24 @@
         .jcal-day:hover { background-color: rgba(216,174,224,0.15); }
         .jcal-day.jcal-empty { cursor: default; }
         .jcal-day.jcal-empty:hover { background-color: transparent; }
-        .jcal-day.jcal-selected { background-color: var(--specialist-plum-mid); color: #250D2B; font-weight: bold; }
+        .jcal-day.jcal-selected { background-color: var(--specialist-plum-mid); color: var(--m-on-gold); font-weight: bold; }
         .jcal-day.jcal-today { border: 1px solid var(--specialist-plum-mid); }
     </style>
 @endpush
 
 @php
     $statusBadgeMap = [
-        'pending'         => ['label' => 'در انتظار تایید', 'class' => 'bg-amber-400/10 text-amber-300'],
-        'confirmed'       => ['label' => 'تایید شده',       'class' => 'bg-emerald-400/10 text-emerald-300'],
+        'pending'         => ['label' => 'در انتظار تایید', 'class' => 'bg-m-warn/10 text-m-warn'],
+        'confirmed'       => ['label' => 'تایید شده',       'class' => 'bg-m-ok/10 text-m-ok'],
         'completed'       => ['label' => 'انجام شده',        'class' => 'bg-[var(--specialist-plum-mid)]/15 text-[var(--specialist-plum-light)]'],
-        'cancelled'       => ['label' => 'لغو شده',          'class' => 'bg-red-500/10 text-red-300'], 'no_show' => ['label' => 'نیامد',          'class' => 'bg-red-500/10 text-red-300'],
-        'pending_payment' => ['label' => 'در انتظار پرداخت', 'class' => 'bg-orange-400/10 text-orange-300'],
+        'cancelled'       => ['label' => 'لغو شده',          'class' => 'bg-m-bad/10 text-m-bad'], 'no_show' => ['label' => 'نیامد',          'class' => 'bg-m-bad/10 text-m-bad'],
+        'pending_payment' => ['label' => 'در انتظار پرداخت', 'class' => 'bg-m-warn/10 text-m-warn'],
     ];
 
     $paymentBadgeMap = [
-        'paid'            => ['label' => 'پرداخت شده',       'class' => 'text-emerald-300'],
-        'pending_payment' => ['label' => 'در انتظار پرداخت',  'class' => 'text-amber-300'],
-        'unpaid'          => ['label' => 'پرداخت نشده',       'class' => 'text-red-300'],
+        'paid'            => ['label' => 'پرداخت شده',       'class' => 'text-m-ok'],
+        'pending_payment' => ['label' => 'در انتظار پرداخت',  'class' => 'text-m-warn'],
+        'unpaid'          => ['label' => 'پرداخت نشده',       'class' => 'text-m-bad'],
     ];
 @endphp
 
@@ -165,7 +165,7 @@
                         </svg>
                         اعمال فیلتر
                     </button>
-                    <a href="{{ route('specialist.bookings.index') }}" class="px-6 py-2 rounded-lg font-medium text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-text)] transition flex items-center gap-2" style="border: 1px solid var(--specialist-border);">
+                    <a href="{{ route('specialist.bookings.index') }}" class="px-6 py-2 rounded-lg font-medium text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)] transition flex items-center gap-2" style="border: 1px solid var(--specialist-border);">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -226,7 +226,7 @@
                     @foreach($bookings as $booking)
                         @php
                             $status = trim($booking->status);
-                            $statusInfo = $statusBadgeMap[$status] ?? ['label' => 'نامشخص', 'class' => 'bg-white/5 text-[var(--specialist-text-dim)]'];
+                            $statusInfo = $statusBadgeMap[$status] ?? ['label' => 'نامشخص', 'class' => 'bg-m-tx/5 text-[var(--specialist-text-dim)]'];
                             $paymentInfo = $paymentBadgeMap[$booking->payment_status] ?? ['label' => $booking->payment_status, 'class' => 'text-[var(--specialist-text-dim)]'];
                         @endphp
                         <div class="p-5 booking-row" style="border-color: var(--specialist-border);">
@@ -246,7 +246,7 @@
 
                                 <div class="flex items-center gap-2 booking-actions">
                                     <a href="{{ route('specialist.bookings.show', $booking->id) }}"
-                                       class="p-2 rounded-lg transition text-[var(--specialist-plum-mid)] hover:bg-white/5"
+                                       class="p-2 rounded-lg transition text-[var(--specialist-plum-mid)] hover:bg-m-tx/5"
                                        title="مشاهده جزئیات">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -258,12 +258,12 @@
 
                                         @if($status == 'pending')
                                             <button onclick="confirmBooking('{{ route('specialist.bookings.complete', $booking->id) }}', '{{ addslashes($booking->user->name) }}', '{{ addslashes($booking->service?->name ?? '—') }}')"
-                                                    class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-emerald-500 transition">
+                                                    class="bg-m-ok text-m-onsolid px-4 py-2 rounded-lg text-sm font-bold hover:bg-m-ok transition">
                                                 تایید
                                             </button>
 
                                             <button onclick="showCancelModal({{ $booking->id }}, '{{ addslashes($booking->user->name) }}', '{{ addslashes($booking->service?->name ?? '—') }}')"
-                                                    class="bg-red-600/90 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-600 transition">
+                                                    class="bg-m-bad/90 text-m-onsolid px-4 py-2 rounded-lg text-sm font-bold hover:bg-m-bad transition">
                                                 لغو
                                             </button>
                                         @endif
@@ -275,7 +275,7 @@
                                             </button>
 
                                             <button onclick="showCancelModal({{ $booking->id }}, '{{ addslashes($booking->user->name) }}', '{{ addslashes($booking->service?->name ?? '—') }}')"
-                                                    class="bg-red-600/90 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-600 transition">
+                                                    class="bg-m-bad/90 text-m-onsolid px-4 py-2 rounded-lg text-sm font-bold hover:bg-m-bad transition">
                                                 لغو نوبت
                                             </button>
                                         @endif
@@ -295,13 +295,13 @@
     {{-- Confirm modal --}}
     <div id="confirmModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="specialist-card p-6 max-w-md w-full border" style="border-color: var(--specialist-border);">
-            <h3 class="text-lg font-bold mb-4 text-emerald-300 font-serif-fa">تایید نوبت رزرو شده</h3>
+            <h3 class="text-lg font-bold mb-4 text-m-ok font-serif-fa">تایید نوبت رزرو شده</h3>
             <p class="text-[var(--specialist-text-dim)] mb-6" id="confirmMessage"></p>
             <form id="confirmForm" method="POST">
                 @csrf @method('PUT')
                 <div class="flex gap-3">
-                    <button type="submit" class="flex-1 bg-emerald-600 text-white py-2 rounded-lg font-bold hover:bg-emerald-500 transition">بله، تایید شود</button>
-                    <button type="button" onclick="hideConfirmModal()" class="flex-1 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-white/5 transition" style="border: 1px solid var(--specialist-border);">انصراف</button>
+                    <button type="submit" class="flex-1 bg-m-ok text-m-onsolid py-2 rounded-lg font-bold hover:bg-m-ok transition">بله، تایید شود</button>
+                    <button type="button" onclick="hideConfirmModal()" class="flex-1 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-m-tx/5 transition" style="border: 1px solid var(--specialist-border);">انصراف</button>
                 </div>
             </form>
         </div>
@@ -316,7 +316,7 @@
                 @csrf @method('PUT')
                 <div class="flex gap-3">
                     <button type="submit" class="specialist-cta flex-1 py-2 rounded-lg font-bold transition-opacity hover:opacity-90">بله، انجام شد</button>
-                    <button type="button" onclick="hideCompletedModal()" class="flex-1 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-white/5 transition" style="border: 1px solid var(--specialist-border);">انصراف</button>
+                    <button type="button" onclick="hideCompletedModal()" class="flex-1 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-m-tx/5 transition" style="border: 1px solid var(--specialist-border);">انصراف</button>
                 </div>
             </form>
         </div>
@@ -325,7 +325,7 @@
     {{-- Cancel modal --}}
     <div id="cancelListModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="specialist-card p-6 max-w-md w-full border" style="border-color: var(--specialist-border);">
-            <h3 class="text-lg font-bold mb-4 text-red-300 font-serif-fa">لغو نوبت</h3>
+            <h3 class="text-lg font-bold mb-4 text-m-bad font-serif-fa">لغو نوبت</h3>
             <p class="text-[var(--specialist-text-dim)] mb-4" id="cancelMessage"></p>
             <form id="cancelListForm" method="POST">
                 @csrf @method('PUT')
@@ -334,8 +334,8 @@
                           style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);"
                           placeholder="دلیل لغو را بنویسید..."></textarea>
                 <div class="flex gap-3">
-                    <button type="submit" class="flex-1 bg-red-600 text-white py-2 rounded-lg font-bold hover:bg-red-500 transition">لغو نوبت</button>
-                    <button type="button" onclick="hideCancelModal()" class="flex-1 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-white/5 transition" style="border: 1px solid var(--specialist-border);">انصراف</button>
+                    <button type="submit" class="flex-1 bg-m-bad text-m-onsolid py-2 rounded-lg font-bold hover:bg-m-bad transition">لغو نوبت</button>
+                    <button type="button" onclick="hideCancelModal()" class="flex-1 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-m-tx/5 transition" style="border: 1px solid var(--specialist-border);">انصراف</button>
                 </div>
             </form>
         </div>

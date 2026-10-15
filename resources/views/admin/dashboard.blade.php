@@ -34,7 +34,7 @@
         .filter-btn:hover { background: var(--admin-accent-light); }
         .filter-btn.active {
             background: var(--admin-accent);
-            color: #fff;
+            color: rgb(var(--m-on-solid));
         }
         .section-card {
             background: var(--admin-surface);
@@ -87,7 +87,7 @@
         {{-- ⭐ مواردی که پیگیری خودکار پرداخت/تسویه به نتیجه نرسید (۲۰۲۶-۰۹-۲۶) — فقط owner (صفحه‌هاش owner-only‌اند) --}}
         @if((auth()->user()->hasRole('super-admin') || (($__salon = app(\App\Support\CurrentSalon::class)->get()) && $__salon->admins()->wherePivot('user_id', auth()->id())->wherePivot('role', 'owner')->exists()))
             && ($__attention = app(\App\Services\Admin\AttentionCounts::class))->total() > 0)
-            <div class="rounded-xl p-4 mb-5 text-sm" style="background:#FFFBEB; border:1px solid #FCD34D; color:#92400E;" data-attention-alert>
+            <div class="rounded-xl p-4 mb-5 text-sm" style="background:rgb(var(--m-warn) / .1); border:1px solid rgb(var(--m-warn) / .35); color:rgb(var(--m-warn));" data-attention-alert>
                 <p class="font-bold mb-1">پرداخت‌هایی که به بررسی شما نیاز دارند</p>
                 <div class="flex flex-wrap gap-4">
                     @if($__attention->payments() > 0)
@@ -123,7 +123,7 @@
 
             {{-- Today's shifts --}}
             <div class="stat-card p-5 flex items-center gap-4">
-                <div class="stat-icon" style="background:#EFF6FF; color:#2563EB;">
+                <div class="stat-icon" style="background:rgb(var(--m-info) / .1); color:rgb(var(--m-info));">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
@@ -138,7 +138,7 @@
             {{-- Income --}}
             @permission('manage-wallet')
             <div class="stat-card p-5 flex items-center gap-4">
-                <div class="stat-icon" style="background:#F0FDF4; color:#16A34A;">
+                <div class="stat-icon" style="background:rgb(var(--m-ok) / .1); color:rgb(var(--m-ok));">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
@@ -146,17 +146,17 @@
                 <div class="flex-1 min-w-0">
                     <p class="text-xs mb-1" style="color:var(--admin-text-dim);">
                         درآمد سالن
-                        <span class="text-xs px-1.5 py-0.5 rounded mr-1" style="background:#DCFCE7; color:#166534;">%{{ $commissionRate ?? 10 }} کمیسیون</span>
+                        <span class="text-xs px-1.5 py-0.5 rounded mr-1" style="background:rgb(var(--m-ok) / .14); color:rgb(var(--m-ok));">%{{ $commissionRate ?? 10 }} کمیسیون</span>
                     </p>
                     <p class="text-2xl font-bold persian-number" id="total-revenue" style="color:var(--admin-text);">{{ number_format($totalRevenue ?? 0) }}</p>
                 </div>
-                <a href="{{ route('admin.reports.index') }}" class="text-xs px-2 py-1 rounded" style="color:#16A34A; background:#F0FDF4;">گزارش</a>
+                <a href="{{ route('admin.reports.index') }}" class="text-xs px-2 py-1 rounded" style="color:rgb(var(--m-ok)); background:rgb(var(--m-ok) / .1);">گزارش</a>
             </div>
             @endpermission
 
             {{-- Users --}}
             <div class="stat-card p-5 flex items-center gap-4">
-                <div class="stat-icon" style="background:#F5F3FF; color:#7C3AED;">
+                <div class="stat-icon" style="background:rgb(var(--m-gold) / .1); color:rgb(var(--m-gold));">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 108 0 4 4 0 00-8 0zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
                     </svg>
@@ -165,12 +165,12 @@
                     <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کاربران</p>
                     <p class="text-2xl font-bold persian-number" id="users-count" style="color:var(--admin-text);">{{ $usersCount }}</p>
                 </div>
-                <a href="{{ route('admin.users.index') }}" class="text-xs px-2 py-1 rounded" style="color:#7C3AED; background:#F5F3FF;">مشاهده</a>
+                <a href="{{ route('admin.users.index') }}" class="text-xs px-2 py-1 rounded" style="color:rgb(var(--m-gold)); background:rgb(var(--m-gold) / .1);">مشاهده</a>
             </div>
 
             {{-- Experts --}}
             <div class="stat-card p-5 flex items-center gap-4">
-                <div class="stat-icon" style="background:#FFF7ED; color:#EA580C;">
+                <div class="stat-icon" style="background:rgb(var(--m-warn) / .1); color:rgb(var(--m-warn));">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                     </svg>
@@ -179,7 +179,7 @@
                     <p class="text-xs mb-1" style="color:var(--admin-text-dim);">متخصصین</p>
                     <p class="text-2xl font-bold persian-number" id="specialists-count" style="color:var(--admin-text);">{{ $specialistsCount }}</p>
                 </div>
-                <a href="{{ route('admin.specialists.index') }}" class="text-xs px-2 py-1 rounded" style="color:#EA580C; background:#FFF7ED;">مشاهده</a>
+                <a href="{{ route('admin.specialists.index') }}" class="text-xs px-2 py-1 rounded" style="color:rgb(var(--m-warn)); background:rgb(var(--m-warn) / .1);">مشاهده</a>
             </div>
         </div>
 
@@ -213,7 +213,7 @@
                                 <span style="color:var(--admin-text);">{{ $service->name }}</span>
                                 <span class="flex items-center gap-2">
                                     <span style="color:var(--admin-text-dim);">{{ $service->bookings_count }} نوبت</span>
-                                    <span class="text-xs persian-number" style="color: {{ $service->trend >= 0 ? '#16A34A' : '#DC2626' }};">
+                                    <span class="text-xs persian-number" style="color: {{ $service->trend >= 0 ? 'rgb(var(--m-ok))' : 'rgb(var(--m-bad))' }};">
                                         {{ $service->trend >= 0 ? '▲' : '▼' }}{{ number_format(abs($service->trend), 0) }}٪
                                     </span>
                                 </span>
@@ -255,7 +255,7 @@
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-2">
                                         <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-                                             style="background:var(--admin-accent); color:#fff;">
+                                             style="background:var(--admin-accent); color:rgb(var(--m-on-solid));">
                                             {{ mb_substr($specialist->name, 0, 1) }}
                                         </div>
                                         <span style="color:var(--admin-text);">{{ $specialist->name }}</span>
@@ -265,7 +265,7 @@
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-2">
                                         <div class="progress-bar-track" style="width:64px;">
-                                            <div class="progress-bar-fill" style="width:{{ $specialist->completion_rate }}%; background:#16A34A;"></div>
+                                            <div class="progress-bar-fill" style="width:{{ $specialist->completion_rate }}%; background:rgb(var(--m-ok));"></div>
                                         </div>
                                         <span class="text-xs persian-number" style="color:var(--admin-text-dim);">{{ number_format($specialist->completion_rate, 0) }}%</span>
                                     </div>
@@ -274,11 +274,11 @@
                                 <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ number_format($specialist->revenue ?? 0) }}</td>
                                 <td class="px-4 py-3">
                                     @if($specialist->completion_rate >= 80)
-                                        <span class="badge-status" style="background:#F0FDF4;color:#166534;">عالی</span>
+                                        <span class="badge-status" style="background:rgb(var(--m-ok) / .1);color:rgb(var(--m-ok));">عالی</span>
                                     @elseif($specialist->completion_rate >= 60)
-                                        <span class="badge-status" style="background:#FFFBEB;color:#92400E;">خوب</span>
+                                        <span class="badge-status" style="background:rgb(var(--m-warn) / .1);color:rgb(var(--m-warn));">خوب</span>
                                     @else
-                                        <span class="badge-status" style="background:#FEF2F2;color:#991B1B;">ضعیف</span>
+                                        <span class="badge-status" style="background:rgb(var(--m-bad) / .1);color:rgb(var(--m-bad));">ضعیف</span>
                                     @endif
                                 </td>
                             </tr>
@@ -310,10 +310,10 @@
                                 </div>
                             </div>
                             <span class="badge-status flex-shrink-0 mr-2
-                            @if($booking->status=='confirmed') " style="background:#EFF6FF;color:#1D4ED8;"
-                            @elseif($booking->status=='completed') " style="background:#F0FDF4;color:#166534;"
-                            @elseif($booking->status=='cancelled') " style="background:#FEF2F2;color:#991B1B;"
-                            @else " style="background:#FFFBEB;color:#92400E;"
+                            @if($booking->status=='confirmed') " style="background:rgb(var(--m-info) / .1);color:rgb(var(--m-info));"
+                            @elseif($booking->status=='completed') " style="background:rgb(var(--m-ok) / .1);color:rgb(var(--m-ok));"
+                            @elseif($booking->status=='cancelled') " style="background:rgb(var(--m-bad) / .1);color:rgb(var(--m-bad));"
+                            @else " style="background:rgb(var(--m-warn) / .1);color:rgb(var(--m-warn));"
                             @endif>
                             @if(in_array($booking->status, ['pending','confirmed']))
                                 {{ verta($booking->booking_time)->format('H:i') }}
@@ -429,7 +429,14 @@
             window.updateTimeFilter = updateTimeFilter;
 
             // --- ApexCharts chart rendering ---
+            let lastChartData = null;
+            // بسته‌ی ه: نمودار رنگ را از توکن تم می‌خواند؛ با عوض شدن تم دوباره کشیده می‌شود
+            document.addEventListener('click', e => {
+                if (e.target.closest && e.target.closest('[data-m-theme-toggle]') && lastChartData) setTimeout(() => renderChart(lastChartData), 0);
+            });
+
             function renderChart(data) {
+                lastChartData = data;
                 const el = document.getElementById('revenue-chart');
 
                 // Destroy previous chart before creating new one
@@ -449,7 +456,9 @@
                     chart: {
                         type: 'area',
                         height: 280,
-                        fontFamily: 'Vazirmatn, Vazir, sans-serif',
+                        fontFamily: 'Mahru, Vazirmatn, sans-serif',
+                        foreColor: window.mToken('mu'),
+                        background: 'transparent',
                         toolbar: { show: false },
                         zoom: { enabled: false },
                     },
@@ -476,13 +485,14 @@
                         type: 'gradient',
                         gradient: { shadeIntensity: 1, opacityFrom: 0.5, opacityTo: 0.05 },
                     },
-                    colors: ['#334155'],
+                    colors: [window.mToken('gold')],
                     grid: {
-                        borderColor: '#E2E8F0',
+                        borderColor: window.mToken('tx', .08),
                         row: { colors: ['transparent'], opacity: 0.5 },
                     },
                     dataLabels: { enabled: false },
                     tooltip: {
+                        theme: document.documentElement.dataset.theme === 'light' ? 'light' : 'dark',
                         y: { formatter: val => new Intl.NumberFormat('fa-IR').format(val) + ' تومان' },
                     },
                 });

@@ -7,7 +7,7 @@
             <h1 class="text-xl font-bold" style="color:var(--admin-text);">دسته‌بندی‌های وبلاگ</h1>
             <div class="flex items-center gap-2">
                 <a href="{{ route('admin.blog.categories.create') }}"
-                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white"
+                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                    style="background:var(--admin-accent);"
                    onmouseover="this.style.background='var(--admin-accent-hover)'"
                    onmouseout="this.style.background='var(--admin-accent)'">
@@ -57,7 +57,7 @@
                                         <form action="{{ route('admin.blog.categories.destroy', $category) }}" method="POST" class="inline-block">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" data-confirm-delete class="text-xs font-medium" style="color:#dc2626;">حذف</button>
+                                            <button type="submit" data-confirm-delete class="text-xs font-medium" style="color:rgb(var(--m-bad));">حذف</button>
                                         </form>
                                     </div>
                                 </td>

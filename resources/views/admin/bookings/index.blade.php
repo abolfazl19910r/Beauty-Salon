@@ -26,7 +26,7 @@
         .jcal-day:hover { background: var(--admin-accent-light); }
         .jcal-day.jcal-empty { cursor: default; }
         .jcal-day.jcal-empty:hover { background: transparent; }
-        .jcal-day.jcal-selected { background: var(--admin-accent); color: #fff; font-weight: bold; }
+        .jcal-day.jcal-selected { background: var(--admin-accent); color: rgb(var(--m-on-solid)); font-weight: bold; }
         .jcal-day.jcal-today { border: 1px solid var(--admin-accent); }
 
         .stat-mini {
@@ -51,7 +51,7 @@
             </h1>
             @permission('create-bookings')
             <a href="{{ route('admin.bookings.create') }}"
-               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
+               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid transition-colors"
                style="background:var(--admin-accent);"
                onmouseover="this.style.background='var(--admin-accent-hover)'"
                onmouseout="this.style.background='var(--admin-accent)'">
@@ -125,17 +125,17 @@
                 <p class="text-xs ml-2" style="color:var(--admin-text-light);">
                     {{ $hasDateFilter ? 'آمار تاریخ انتخابی' : 'آمار کل' }}
                 </p>
-                <div class="stat-mini" style="background:#EFF6FF;">
-                    <div class="text-xs mb-0.5" style="color:#3B82F6;">کل</div>
-                    <div class="text-lg font-bold persian-number" style="color:#1D4ED8;">{{ $totalBookings ?? 0 }}</div>
+                <div class="stat-mini" style="background:rgb(var(--m-info) / .1);">
+                    <div class="text-xs mb-0.5" style="color:rgb(var(--m-info));">کل</div>
+                    <div class="text-lg font-bold persian-number" style="color:rgb(var(--m-info));">{{ $totalBookings ?? 0 }}</div>
                 </div>
-                <div class="stat-mini" style="background:#F0FDF4;">
-                    <div class="text-xs mb-0.5" style="color:#16A34A;">تایید</div>
-                    <div class="text-lg font-bold persian-number" style="color:#166534;">{{ $confirmedBookings ?? 0 }}</div>
+                <div class="stat-mini" style="background:rgb(var(--m-ok) / .1);">
+                    <div class="text-xs mb-0.5" style="color:rgb(var(--m-ok));">تایید</div>
+                    <div class="text-lg font-bold persian-number" style="color:rgb(var(--m-ok));">{{ $confirmedBookings ?? 0 }}</div>
                 </div>
-                <div class="stat-mini" style="background:#FEF2F2;">
-                    <div class="text-xs mb-0.5" style="color:#EF4444;">لغو</div>
-                    <div class="text-lg font-bold persian-number" style="color:#991B1B;">{{ $cancelledBookings ?? 0 }}</div>
+                <div class="stat-mini" style="background:rgb(var(--m-bad) / .1);">
+                    <div class="text-xs mb-0.5" style="color:rgb(var(--m-bad));">لغو</div>
+                    <div class="text-lg font-bold persian-number" style="color:rgb(var(--m-bad));">{{ $cancelledBookings ?? 0 }}</div>
                 </div>
             </div>
         </div>
@@ -196,13 +196,13 @@
                             <td class="px-4 py-3">
                                 @if($booking->payment_status == 'paid')
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"
-                                          style="background:#F0FDF4; color:#166534;">
+                                          style="background:rgb(var(--m-ok) / .1); color:rgb(var(--m-ok));">
                                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                                     پرداخت شده
                                 </span>
                                 @else
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"
-                                          style="background:#FEF2F2; color:#991B1B;">
+                                          style="background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad));">
                                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                                     پرداخت نشده
                                 </span>
@@ -212,12 +212,12 @@
                             <td class="px-4 py-3">
                                 @php
                                     $statusMap = [
-                                        'pending'   => ['label' => 'در انتظار', 'bg' => '#FFFBEB', 'color' => '#92400E'],
-                                        'confirmed' => ['label' => 'تایید شده', 'bg' => '#F0FDF4', 'color' => '#166534'],
-                                        'completed' => ['label' => 'انجام شده', 'bg' => '#EFF6FF', 'color' => '#1D4ED8'],
-                                        'cancelled' => ['label' => 'لغو شده',   'bg' => '#FEF2F2', 'color' => '#991B1B'], 'no_show' => ['label' => 'نیامد',   'bg' => '#FEF2F2', 'color' => '#991B1B'],
+                                        'pending'   => ['label' => 'در انتظار', 'bg' => 'rgb(var(--m-warn) / .1)', 'color' => 'rgb(var(--m-warn))'],
+                                        'confirmed' => ['label' => 'تایید شده', 'bg' => 'rgb(var(--m-ok) / .1)', 'color' => 'rgb(var(--m-ok))'],
+                                        'completed' => ['label' => 'انجام شده', 'bg' => 'rgb(var(--m-info) / .1)', 'color' => 'rgb(var(--m-info))'],
+                                        'cancelled' => ['label' => 'لغو شده',   'bg' => 'rgb(var(--m-bad) / .1)', 'color' => 'rgb(var(--m-bad))'], 'no_show' => ['label' => 'نیامد',   'bg' => 'rgb(var(--m-bad) / .1)', 'color' => 'rgb(var(--m-bad))'],
                                     ];
-                                    $s = $statusMap[$booking->status] ?? ['label' => $booking->status, 'bg' => '#F1F5F9', 'color' => '#475569'];
+                                    $s = $statusMap[$booking->status] ?? ['label' => $booking->status, 'bg' => 'rgb(var(--m-tx) / .05)', 'color' => 'rgb(var(--m-tx))'];
                                 @endphp
                                 <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium"
                                       style="background:{{ $s['bg'] }}; color:{{ $s['color'] }};">
@@ -242,8 +242,8 @@
                                     <a href="{{ route('admin.bookings.edit', $booking) }}"
                                        title="ویرایش"
                                        class="w-7 h-7 rounded flex items-center justify-center transition-colors"
-                                       style="color:#7C3AED;"
-                                       onmouseover="this.style.background='#F5F3FF'"
+                                       style="color:rgb(var(--m-gold));"
+                                       onmouseover="this.style.background='rgb(var(--m-gold) / .1)'"
                                        onmouseout="this.style.background=''">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
@@ -259,8 +259,8 @@
                                             <input type="hidden" name="status" value="confirmed">
                                             <button type="submit" title="تایید نوبت"
                                                     class="w-7 h-7 rounded flex items-center justify-center transition-colors"
-                                                    style="color:#16A34A;"
-                                                    onmouseover="this.style.background='#F0FDF4'"
+                                                    style="color:rgb(var(--m-ok));"
+                                                    onmouseover="this.style.background='rgb(var(--m-ok) / .1)'"
                                                     onmouseout="this.style.background=''">
                                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                     <polyline points="20 6 9 17 4 12"/>
@@ -278,8 +278,8 @@
                                             <button type="submit" title="لغو نوبت"
                                                     data-confirm-delete data-confirm-message="آیا از لغو نوبت #{{ $booking->id }} اطمینان دارید؟"
                                                     class="w-7 h-7 rounded flex items-center justify-center transition-colors"
-                                                    style="color:#DC2626;"
-                                                    onmouseover="this.style.background='#FEF2F2'"
+                                                    style="color:rgb(var(--m-bad));"
+                                                    onmouseover="this.style.background='rgb(var(--m-bad) / .1)'"
                                                     onmouseout="this.style.background=''">
                                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                     <circle cx="12" cy="12" r="10"/>

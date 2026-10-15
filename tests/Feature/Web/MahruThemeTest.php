@@ -8,7 +8,7 @@ use Tests\TestCase;
 
 /**
  * سیستم طراحی لندینگ روی صفحه‌های عمومی و مشتری (ادامه ۷): تم تیره/روشن با کلید «mahru-theme»،
- * دکمه‌ی تغییر تم، فونت روی همین سرور (بدون Google Fonts) — و پنل‌ها دست نخورده.
+ * دکمه‌ی تغییر تم، فونت روی همین سرور (بدون Google Fonts). بسته‌ی ه (۲۰۲۶-۱۰-۱۵): پنل‌های مدیر و متخصص هم.
  */
 class MahruThemeTest extends TestCase
 {
@@ -42,11 +42,41 @@ class MahruThemeTest extends TestCase
         }
     }
 
-    public function test_the_admin_panel_keeps_its_own_look(): void
+    /** بسته‌ی ه: پنل مدیر و متخصص همان توکن‌ها، دکمه‌ی تم و فونت محلی؛ متغیرهای قدیمی پنل به توکن‌ها وصل‌اند */
+    public function test_admin_and_specialist_panels_follow_the_mahru_theme(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);
+        foreach ([route('admin.dashboard'), route('admin.bookings.index'), route('admin.profile.show')] as $url) {
+            $html = $this->actingAs($admin)->get($url)->assertOk()->getContent();
+            $this->assertPanelThemed($html);
+            $this->assertStringContainsString('--admin-accent:rgb(var(--m-gold))', $html);
+        }
 
-        $html = $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()->getContent();
+        $specialist = \App\Models\Specialist::factory()->create();
+        foreach ([route('specialist.my-dashboard'), route('specialist.bookings.index'), route('specialist.profile.show')] as $url) {
+            $html = $this->actingAs(User::find($specialist->user_id))->get($url)->assertOk()->getContent();
+            $this->assertPanelThemed($html);
+            $this->assertStringContainsString('--specialist-plum-mid:rgb(var(--m-gold))', $html);
+            $this->assertStringNotContainsString('#1F1424', $html, 'بنفش قدیمی پنل متخصص');
+        }
+    }
+
+    private function assertPanelThemed(string $html): void
+    {
+        $this->assertThemed($html);
+        $this->assertMatchesRegularExpression('/<body class="[^"]*\bm-panel\b/', $html);
+        $this->assertStringNotContainsString('rastikerdar/vazir-font', $html, 'فونت از CDN نمی‌آید');
+        // رنگ‌های ثابت قدیمی (خاکستری/سفید پنل مدیر) در style نمانده‌اند
+        $this->assertDoesNotMatchRegularExpression('/style="[^"]*#(334155|F8FAFC|E2E8F0|1E293B)\b/i', $html);
+    }
+
+    /** پنل ابرمدیر بیرون از بسته‌ی ه است (قالب سفید و آبی جدا، پس از پیش‌نمایش) */
+    public function test_the_super_admin_panel_is_not_on_the_salon_theme(): void
+    {
+        $super = User::factory()->create(['is_admin' => true]);
+        $super->roles()->attach(\App\Models\Role::firstOrCreate(['name' => 'super-admin'], ['label' => 'سوپر ادمین']));
+
+        $html = $this->actingAs($super)->get(route('superadmin.plans.index'))->assertOk()->getContent();
 
         $this->assertStringNotContainsString('data-m-theme-toggle', $html);
     }

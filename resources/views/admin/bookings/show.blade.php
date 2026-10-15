@@ -17,7 +17,7 @@
             <div class="flex items-center gap-2">
                 @permission('edit-bookings')
                 <a href="{{ route('admin.bookings.edit', $booking) }}"
-                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
+                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid transition-colors"
                    style="background:var(--admin-accent);"
                    onmouseover="this.style.background='var(--admin-accent-hover)'"
                    onmouseout="this.style.background='var(--admin-accent)'">
@@ -43,12 +43,12 @@
 
         @php
             $statusMap = [
-                'pending'   => ['label'=>'در انتظار تایید', 'bg'=>'#FFFBEB', 'color'=>'#92400E', 'border'=>'#FCD34D'],
-                'confirmed' => ['label'=>'تایید شده',       'bg'=>'#F0FDF4', 'color'=>'#166534', 'border'=>'#86EFAC'],
-                'completed' => ['label'=>'انجام شده',       'bg'=>'#EFF6FF', 'color'=>'#1D4ED8', 'border'=>'#93C5FD'],
-                'cancelled' => ['label'=>'لغو شده',         'bg'=>'#FEF2F2', 'color'=>'#991B1B', 'border'=>'#FCA5A5'], 'no_show' => ['label'=>'نیامد',         'bg'=>'#FEF2F2', 'color'=>'#991B1B', 'border'=>'#FCA5A5'],
+                'pending'   => ['label'=>'در انتظار تایید', 'bg'=>'rgb(var(--m-warn) / .1)', 'color'=>'rgb(var(--m-warn))', 'border'=>'rgb(var(--m-warn) / .35)'],
+                'confirmed' => ['label'=>'تایید شده',       'bg'=>'rgb(var(--m-ok) / .1)', 'color'=>'rgb(var(--m-ok))', 'border'=>'rgb(var(--m-ok) / .35)'],
+                'completed' => ['label'=>'انجام شده',       'bg'=>'rgb(var(--m-info) / .1)', 'color'=>'rgb(var(--m-info))', 'border'=>'rgb(var(--m-info) / .35)'],
+                'cancelled' => ['label'=>'لغو شده',         'bg'=>'rgb(var(--m-bad) / .1)', 'color'=>'rgb(var(--m-bad))', 'border'=>'rgb(var(--m-bad) / .35)'], 'no_show' => ['label'=>'نیامد',         'bg'=>'rgb(var(--m-bad) / .1)', 'color'=>'rgb(var(--m-bad))', 'border'=>'rgb(var(--m-bad) / .35)'],
             ];
-            $s = $statusMap[$booking->status] ?? ['label'=>$booking->status,'bg'=>'#F1F5F9','color'=>'#475569','border'=>'#CBD5E1'];
+            $s = $statusMap[$booking->status] ?? ['label'=>$booking->status,'bg'=>'rgb(var(--m-tx) / .05)','color'=>'rgb(var(--m-tx))','border'=>'var(--m-line2)'];
         @endphp
         <div class="rounded-xl px-5 py-3 mb-5 flex items-center gap-3 border"
              style="background:{{ $s['bg'] }}; border-color:{{ $s['border'] }};">
@@ -56,13 +56,13 @@
             <span class="text-sm font-bold" style="color:{{ $s['color'] }};">{{ $s['label'] }}</span>
             @if($booking->payment_status == 'paid')
                 <span class="mr-auto inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium"
-                      style="background:#F0FDF4; color:#166534;">
+                      style="background:rgb(var(--m-ok) / .1); color:rgb(var(--m-ok));">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                 پرداخت شده
             </span>
             @else
                 <span class="mr-auto inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium"
-                      style="background:#FEF2F2; color:#991B1B;">
+                      style="background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad));">
                 پرداخت نشده
             </span>
             @endif
@@ -80,7 +80,7 @@
                 @if($booking->user)
                     <div class="flex items-center gap-3 mb-4">
                         <div class="w-12 h-12 rounded-full flex items-center justify-center text-base font-bold flex-shrink-0"
-                             style="background:var(--admin-accent); color:#fff;">
+                             style="background:var(--admin-accent); color:rgb(var(--m-on-solid));">
                             {{ mb_substr($booking->user->name, 0, 1) }}
                         </div>
                         <div>
@@ -111,7 +111,7 @@
                     </div>
                 @else
                     <div class="flex items-center justify-center gap-2 h-24 rounded-lg text-sm"
-                         style="background:#FEF2F2; color:#991B1B;">
+                         style="background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad));">
                         اطلاعات کاربر در دسترس نیست
                     </div>
                 @endif
@@ -178,7 +178,7 @@
             @if($booking->payment_status == 'paid')
                 <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <h2 class="text-sm font-bold flex items-center gap-2 mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">
-                        <svg class="w-4 h-4" style="color:#16A34A;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <svg class="w-4 h-4" style="color:rgb(var(--m-ok));" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
                         </svg>
                         اطلاعات مالی
@@ -195,7 +195,7 @@
                         </div>
                         <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
                             <span style="color:var(--admin-text-dim);">سهم سالن ({{ $commissionRate }}%)</span>
-                            <span class="persian-number font-medium" style="color:#16A34A;">{{ number_format($salonShare) }} تومان</span>
+                            <span class="persian-number font-medium" style="color:rgb(var(--m-ok));">{{ number_format($salonShare) }} تومان</span>
                         </div>
                         <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
                             <span style="color:var(--admin-text-dim);">سهم متخصص</span>
@@ -214,7 +214,7 @@
                         @if($booking->discount_amount)
                             <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
                                 <span style="color:var(--admin-text-dim);">تخفیف ({{ $booking->discount_code }})</span>
-                                <span class="persian-number" style="color:#DC2626;">- {{ number_format($booking->discount_amount) }} تومان</span>
+                                <span class="persian-number" style="color:rgb(var(--m-bad));">- {{ number_format($booking->discount_amount) }} تومان</span>
                             </div>
                         @endif
                         @php
@@ -253,10 +253,10 @@
                             @csrf @method('PUT')
                             <input type="hidden" name="status" value="confirmed">
                             <button type="submit"
-                                    class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium text-white transition-colors"
-                                    style="background:#16A34A;"
-                                    onmouseover="this.style.background='#15803D'"
-                                    onmouseout="this.style.background='#16A34A'">
+                                    class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium text-m-onsolid transition-colors"
+                                    style="background:rgb(var(--m-ok));"
+                                    onmouseover="this.style.background='rgb(var(--m-ok))'"
+                                    onmouseout="this.style.background='rgb(var(--m-ok))'">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                                 تایید نوبت
                             </button>
@@ -271,10 +271,10 @@
                             <input type="hidden" name="status" value="cancelled">
                             <button type="submit"
                                     data-confirm-delete data-confirm-message="آیا از لغو نوبت #{{ $booking->id }} اطمینان دارید؟"
-                                    class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium text-white transition-colors"
-                                    style="background:#DC2626;"
-                                    onmouseover="this.style.background='#B91C1C'"
-                                    onmouseout="this.style.background='#DC2626'">
+                                    class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium text-m-onsolid transition-colors"
+                                    style="background:rgb(var(--m-bad));"
+                                    onmouseover="this.style.background='rgb(var(--m-bad))'"
+                                    onmouseout="this.style.background='rgb(var(--m-bad))'">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"/>
                                     <line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>

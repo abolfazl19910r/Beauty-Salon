@@ -19,7 +19,7 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
             <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">دوره‌های فعال</div><div class="text-2xl font-bold mt-1 persian-number">{{ to_persian_num(number_format($stats['active'])) }}</div></div>
-            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">موعد گذشته، بدون نوبت</div><div class="text-2xl font-bold mt-1 persian-number" style="color:#b45309;">{{ to_persian_num(number_format($stats['overdue'])) }}</div></div>
+            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">موعد گذشته، بدون نوبت</div><div class="text-2xl font-bold mt-1 persian-number" style="color:rgb(var(--m-warn));">{{ to_persian_num(number_format($stats['overdue'])) }}</div></div>
             <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">ارزش جلسه‌های پیش‌فروش‌شده‌ی مانده</div><div class="text-2xl font-bold mt-1 persian-number">{{ to_persian_num(number_format($stats['liability'])) }} <span class="text-xs">تومان</span></div></div>
         </div>
 

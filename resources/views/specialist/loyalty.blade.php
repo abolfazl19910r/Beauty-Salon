@@ -31,11 +31,11 @@
 
         @if($expiringPoints > 0)
             <div class="rounded-lg p-4 flex items-start gap-3" style="background-color: rgba(251, 191, 36, 0.07); border: 1px solid var(--specialist-border);">
-                <svg class="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 text-m-warn flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <p class="text-sm text-[var(--specialist-text-dim)]">
-                    <span class="font-bold text-amber-300 persian-number">{{ number_format($expiringPoints) }}</span>
+                    <span class="font-bold text-m-warn persian-number">{{ number_format($expiringPoints) }}</span>
                     امتیاز شما تا ۳۰ روز آینده منقضی می‌شود.
                 </p>
             </div>

@@ -44,6 +44,7 @@ module.exports = {
                     info: "rgb(var(--m-info) / <alpha-value>)",
                     warn: "rgb(var(--m-warn) / <alpha-value>)",
                     ongold: "#221A0C",
+                    onsolid: "rgb(var(--m-on-solid) / <alpha-value>)",
                 },
                 border: "hsl(var(--border))",
                 input: "hsl(var(--input))",

@@ -4,9 +4,9 @@
 
 @php
     $leaveStatusMap = [
-        'pending'  => ['label' => 'در انتظار تایید', 'class' => 'bg-amber-400/10 text-amber-300'],
-        'approved' => ['label' => 'تایید شده',       'class' => 'bg-emerald-400/10 text-emerald-300'],
-        'rejected' => ['label' => 'رد شده',          'class' => 'bg-red-500/10 text-red-300'],
+        'pending'  => ['label' => 'در انتظار تایید', 'class' => 'bg-m-warn/10 text-m-warn'],
+        'approved' => ['label' => 'تایید شده',       'class' => 'bg-m-ok/10 text-m-ok'],
+        'rejected' => ['label' => 'رد شده',          'class' => 'bg-m-bad/10 text-m-bad'],
     ];
 @endphp
 
@@ -28,7 +28,7 @@
                     ثبت مرخصی جدید
                 </a>
                 <a href="{{ route('specialist.profile.show') }}"
-                   class="flex items-center px-4 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-text)] transition"
+                   class="flex items-center px-4 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)] transition"
                    style="border: 1px solid var(--specialist-border);">
                     <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -47,7 +47,7 @@
 
             @forelse($leaves as $leave)
                 @php
-                    $leaveInfo = $leaveStatusMap[$leave->status] ?? ['label' => 'نامشخص', 'class' => 'bg-white/5 text-[var(--specialist-text-dim)]'];
+                    $leaveInfo = $leaveStatusMap[$leave->status] ?? ['label' => 'نامشخص', 'class' => 'bg-m-tx/5 text-[var(--specialist-text-dim)]'];
                 @endphp
                 <div class="p-5 border-b" style="border-color: var(--specialist-border);">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -80,7 +80,7 @@
 
                             @if($leave->status === 'pending')
                                 <button type="button"
-                                        class="text-red-300 hover:text-red-200 transition-colors text-sm flex items-center gap-1"
+                                        class="text-m-bad hover:text-m-bad transition-colors text-sm flex items-center gap-1"
                                         onclick="showDeleteLeaveModal('{{ route('specialist.leaves.destroy', $leave) }}')">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                         <polyline points="3 6 5 6 21 6"></polyline>
@@ -118,7 +118,7 @@
     {{-- Delete confirmation modal --}}
     <div id="deleteLeaveModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="specialist-card p-6 max-w-sm w-full border" style="border-color: var(--specialist-border);">
-            <h3 class="text-lg font-bold mb-4 text-red-300 font-serif-fa">تایید حذف درخواست</h3>
+            <h3 class="text-lg font-bold mb-4 text-m-bad font-serif-fa">تایید حذف درخواست</h3>
             <p class="text-[var(--specialist-text-dim)] mb-6" id="deleteLeaveMessage">
                 آیا از حذف این درخواست مرخصی اطمینان دارید؟ این عملیات قابل بازگشت نیست.
             </p>
@@ -126,8 +126,8 @@
                 @csrf
                 @method('DELETE')
                 <div class="flex gap-3">
-                    <button type="submit" class="flex-1 bg-red-600 text-white py-2 rounded-lg font-bold hover:bg-red-500 transition">بله، حذف شود</button>
-                    <button type="button" onclick="hideDeleteLeaveModal()" class="flex-1 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-white/5 transition" style="border: 1px solid var(--specialist-border);">انصراف</button>
+                    <button type="submit" class="flex-1 bg-m-bad text-m-onsolid py-2 rounded-lg font-bold hover:bg-m-bad transition">بله، حذف شود</button>
+                    <button type="button" onclick="hideDeleteLeaveModal()" class="flex-1 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-m-tx/5 transition" style="border: 1px solid var(--specialist-border);">انصراف</button>
                 </div>
             </form>
         </div>

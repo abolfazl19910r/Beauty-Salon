@@ -7,7 +7,7 @@
             <h1 class="text-xl font-bold" style="color:var(--admin-text);">نمایش مقاله</h1>
             <div class="flex items-center gap-2">
                 <a href="{{ route('admin.blog.edit', $post) }}"
-                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white"
+                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                    style="background:var(--admin-accent);"
                    onmouseover="this.style.background='var(--admin-accent-hover)'"
                    onmouseout="this.style.background='var(--admin-accent)'">
@@ -31,7 +31,7 @@
 
             <div class="p-6">
                 <div class="flex items-center gap-2 mb-3">
-                    <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $post->is_published ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700' }}">
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $post->is_published ? 'bg-m-ok/10 text-m-ok' : 'bg-m-warn/10 text-m-warn' }}">
                         {{ $post->is_published ? 'منتشر شده' : 'پیش‌نویس' }}
                     </span>
                     @if($post->category)

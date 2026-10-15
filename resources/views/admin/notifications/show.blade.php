@@ -33,9 +33,9 @@
 
             {{-- Top bar --}}
             <div class="px-6 py-4 flex items-center justify-between" style="background:var(--admin-accent)">
-                <span class="text-white font-semibold">اعلان سیستم</span>
+                <span class="text-m-onsolid font-semibold">اعلان سیستم</span>
                 <span id="read-status-badge" class="px-3 py-1 rounded-full text-xs font-medium"
-                      style="{{ $isRead ? 'background:rgba(255,255,255,.2);color:#fff' : 'background:#fff;color:var(--admin-accent)' }}">
+                      style="{{ $isRead ? 'background:rgba(255,255,255,.2);color:rgb(var(--m-on-solid))' : 'background:#fff;color:var(--admin-accent)' }}">
                 {{ $isRead ? '✓ خوانده شده' : '🔔 خوانده نشده' }}
             </span>
             </div>
@@ -80,7 +80,7 @@
                 <div class="flex flex-wrap gap-3 pt-4" style="border-top:1px solid var(--admin-border)">
                     @if($link)
                         <a href="{{ $link }}"
-                           class="inline-flex items-center gap-2 px-5 py-2 text-sm text-white rounded-lg"
+                           class="inline-flex items-center gap-2 px-5 py-2 text-sm text-m-onsolid rounded-lg"
                            style="background:var(--admin-accent)">
                             <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                             مشاهده مورد مرتبط
@@ -90,16 +90,16 @@
                     <button type="button" id="toggle-btn"
                             onclick="toggleNotification('{{ $notification->id }}')"
                             data-read="{{ $isRead ? 'true' : 'false' }}"
-                            class="inline-flex items-center gap-2 px-5 py-2 text-sm text-white rounded-lg"
-                            style="background:{{ $isRead ? '#d97706' : '#16a34a' }}">
+                            class="inline-flex items-center gap-2 px-5 py-2 text-sm text-m-onsolid rounded-lg"
+                            style="background:{{ $isRead ? 'rgb(var(--m-warn))' : 'rgb(var(--m-ok))' }}">
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
                         <span id="toggle-btn-text">{{ $isRead ? 'علامت‌گذاری خوانده‌نشده' : 'علامت‌گذاری خوانده‌شده' }}</span>
                     </button>
 
                     <button type="button"
                             onclick="deleteNotification('{{ $notification->id }}')"
-                            class="inline-flex items-center gap-2 px-5 py-2 text-sm text-white rounded-lg"
-                            style="background:#dc2626">
+                            class="inline-flex items-center gap-2 px-5 py-2 text-sm text-m-onsolid rounded-lg"
+                            style="background:rgb(var(--m-bad))">
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                         حذف اعلان
                     </button>

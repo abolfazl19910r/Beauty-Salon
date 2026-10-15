@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="rtl" class="rtl">
 <head>
-    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css" rel="stylesheet" type="text/css" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -11,53 +10,14 @@
     @include('partials.favicons')
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
+    @include('partials.mahru-theme')
+    @include('partials.mahru-panel')
     @stack('styles')
     <style>
-        :root {
-            --admin-bg: #F8FAFC;
-            --admin-surface: #FFFFFF;
-            --admin-border: #E2E8F0;
-            --admin-text: #1E293B;
-            --admin-text-dim: #64748B;
-            --admin-text-light: #94A3B8;
-            --admin-accent: #334155;
-            --admin-accent-hover: #1E293B;
-            --admin-accent-light: #F1F5F9;
-        }
-
         .persian-number {
             -moz-font-feature-settings: "ss02";
             -webkit-font-feature-settings: "ss02";
             font-feature-settings: "ss02";
-        }
-
-        .sidebar-active {
-            background: linear-gradient(90deg, rgba(51, 65, 85, 0.08) 0%, rgba(51, 65, 85, 0.18) 100%);
-            border-right: 3px solid var(--admin-accent);
-            color: var(--admin-accent) !important;
-        }
-
-        .sidebar-active svg {
-            opacity: 1 !important;
-        }
-
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(241, 245, 249, 0.8);
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(148, 163, 184, 0.5);
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(100, 116, 139, 0.7);
         }
 
         .fade-in {
@@ -67,15 +27,6 @@
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-
-        .hover-shadow-lg {
-            transition: box-shadow 0.3s, transform 0.3s;
-        }
-
-        .hover-shadow-lg:hover {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-            transform: translateY(-2px);
         }
 
         .notification-badge {
@@ -104,25 +55,9 @@
             border-right: 3px solid var(--admin-accent);
         }
 
-        /* Main admin buttons */
-        .admin-btn-primary {
-            background-color: var(--admin-accent);
-            color: #fff;
-            transition: background-color 0.2s;
-        }
-        .admin-btn-primary:hover {
-            background-color: var(--admin-accent-hover);
-        }
-
-        /* Admin card */
-        .admin-card {
-            background: var(--admin-surface);
-            border: 1px solid var(--admin-border);
-            border-radius: 0.75rem;
-        }
     </style>
 </head>
-<body class="rtl font-vazir" style="background-color: var(--admin-bg); color: var(--admin-text);">
+<body class="rtl m-panel" style="background-color: var(--admin-bg); color: var(--admin-text);">
 <div class="flex h-screen overflow-hidden">
     <!-- Sidebar -->
     <aside class="w-64 min-h-screen shadow-sm border-l overflow-y-auto hidden md:block"
@@ -142,7 +77,7 @@
             @php $adminSalon = app(\App\Support\CurrentSalon::class)->get(); @endphp
             @if ($adminSalon)
                 <div class="flex items-center gap-2 mt-3">
-                    <x-brand-emblem class="w-9 h-9 rounded" surface="light" pad="3px" />
+                    <x-brand-emblem class="w-9 h-9 rounded" pad="3px" />
                     <span class="text-sm font-bold" style="color: var(--admin-text);">{{ $adminSalon->name }}</span>
                 </div>
             @else
@@ -321,7 +256,7 @@
                         اعلانات
                     </span>
                     <span id="sidebar-notification-count" class="mr-2 px-2.5 py-0.5 rounded-full text-xs font-medium hidden"
-                          style="background: #FEE2E2; color: #991B1B;">
+                          style="background: rgb(var(--m-bad) / .14); color: rgb(var(--m-bad));">
                     </span>
                 </a>
 
@@ -586,7 +521,7 @@
                     <button type="submit"
                             class="w-full flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors text-right"
                             style="color: var(--admin-text-dim);"
-                            onmouseover="this.style.backgroundColor='#FEF2F2'; this.style.color='#DC2626';"
+                            onmouseover="this.style.backgroundColor='rgb(var(--m-bad) / .1)'; this.style.color='rgb(var(--m-bad))';"
                             onmouseout="this.style.backgroundColor=''; this.style.color='var(--admin-text-dim)';">
                         <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -617,6 +552,7 @@
                 <h1 class="text-lg font-bold md:hidden" style="color: var(--admin-text);">@yield('title')</h1>
 
                 <div class="flex items-center space-x-3 space-x-reverse">
+                    @include('partials.mahru-theme-toggle')
                     <!-- Search button -->
                     <button type="button"
                             id="search-button"
@@ -646,7 +582,7 @@
                             </svg>
                             <span id="notification-count"
                                   class="absolute top-0 right-0 hidden items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none rounded-full"
-                                  style="background: #EF4444; color: #fff; min-width: 18px; text-align: center;">0</span>
+                                  style="background: rgb(var(--m-bad)); color: rgb(var(--m-on-solid)); min-width: 18px; text-align: center;">0</span>
                         </button>
 
                         <div id="notification-dropdown"
@@ -718,8 +654,8 @@
                                     @csrf
                                     <button type="submit"
                                             class="w-full text-right flex items-center px-4 py-2.5 text-sm transition-colors"
-                                            style="color: #DC2626;"
-                                            onmouseover="this.style.backgroundColor='#FEF2F2';"
+                                            style="color: rgb(var(--m-bad));"
+                                            onmouseover="this.style.backgroundColor='rgb(var(--m-bad) / .1)';"
                                             onmouseout="this.style.backgroundColor='';"
                                             role="menuitem" tabindex="-1">
                                         <svg class="w-4 h-4 ml-2 opacity-70" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -747,10 +683,10 @@
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto p-4" style="background: var(--admin-bg);">
             @if(session('success'))
-                <div id="flash-success" class="mb-4 border-r-4 border-green-500 p-4 fade-in rounded-lg shadow-sm flex items-center justify-between"
-                     style="background: #F0FDF4; color: #166534;" role="alert">
+                <div id="flash-success" class="mb-4 border-r-4 border-m-ok p-4 fade-in rounded-lg shadow-sm flex items-center justify-between"
+                     style="background: rgb(var(--m-ok) / .1); color: rgb(var(--m-ok));" role="alert">
                     <div class="flex items-center">
-                        <svg class="h-5 w-5 text-green-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <svg class="h-5 w-5 text-m-ok flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                         </svg>
                         <span class="mr-3">{{ session('success') }}</span>
@@ -770,10 +706,10 @@
             @endif
 
             @if(session('error'))
-                <div id="flash-error" class="mb-4 border-r-4 border-red-500 p-4 fade-in rounded-lg shadow-sm flex items-center justify-between"
-                     style="background: #FEF2F2; color: #991B1B;" role="alert">
+                <div id="flash-error" class="mb-4 border-r-4 border-m-bad p-4 fade-in rounded-lg shadow-sm flex items-center justify-between"
+                     style="background: rgb(var(--m-bad) / .1); color: rgb(var(--m-bad));" role="alert">
                     <div class="flex items-center">
-                        <svg class="h-5 w-5 text-red-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <svg class="h-5 w-5 text-m-bad flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                         </svg>
                         <span class="mr-3">{{ session('error') }}</span>
@@ -807,7 +743,7 @@
 <!-- Search modal -->
 <div id="search-modal"
      class="fixed inset-0 z-[100] hidden flex items-start justify-center pt-16"
-     style="background: rgba(15, 23, 42, 0.5);"
+     style="background: rgba(10, 8, 6, 0.55);"
      aria-modal="true" role="dialog"
      onclick="closeSearchModalIfClickOutside(event)">
     <div class="rounded-xl shadow-xl w-full max-w-lg mx-4 overflow-hidden fade-in"

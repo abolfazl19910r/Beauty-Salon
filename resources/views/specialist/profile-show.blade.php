@@ -4,11 +4,11 @@
 
 @php
     $statusBadgeMap = [
-        'pending'         => ['label' => 'در انتظار تایید', 'class' => 'bg-amber-400/10 text-amber-300'],
-        'confirmed'       => ['label' => 'تایید شده',       'class' => 'bg-emerald-400/10 text-emerald-300'],
+        'pending'         => ['label' => 'در انتظار تایید', 'class' => 'bg-m-warn/10 text-m-warn'],
+        'confirmed'       => ['label' => 'تایید شده',       'class' => 'bg-m-ok/10 text-m-ok'],
         'completed'       => ['label' => 'انجام شده',        'class' => 'bg-[var(--specialist-plum-mid)]/15 text-[var(--specialist-plum-light)]'],
-        'cancelled'       => ['label' => 'لغو شده',          'class' => 'bg-red-500/10 text-red-300'], 'no_show' => ['label' => 'نیامد',          'class' => 'bg-red-500/10 text-red-300'],
-        'pending_payment' => ['label' => 'در انتظار پرداخت', 'class' => 'bg-orange-400/10 text-orange-300'],
+        'cancelled'       => ['label' => 'لغو شده',          'class' => 'bg-m-bad/10 text-m-bad'], 'no_show' => ['label' => 'نیامد',          'class' => 'bg-m-bad/10 text-m-bad'],
+        'pending_payment' => ['label' => 'در انتظار پرداخت', 'class' => 'bg-m-warn/10 text-m-warn'],
     ];
 @endphp
 
@@ -83,7 +83,7 @@
                     </div>
                     <div class="specialist-card p-4 text-center">
                         <p class="text-xs text-[var(--specialist-plum-muted)] mb-1">لغو شده</p>
-                        <p class="text-xl font-bold text-red-300 persian-number">{{ number_format($cancelledBookings) }}</p>
+                        <p class="text-xl font-bold text-m-bad persian-number">{{ number_format($cancelledBookings) }}</p>
                     </div>
                 </div>
             </div>
@@ -99,7 +99,7 @@
                         <div class="p-5 space-y-3">
                             @foreach($upcomingBookings as $booking)
                                 @php
-                                    $upStatus = $statusBadgeMap[$booking->status] ?? ['label' => 'نامشخص', 'class' => 'bg-white/5 text-[var(--specialist-text-dim)]'];
+                                    $upStatus = $statusBadgeMap[$booking->status] ?? ['label' => 'نامشخص', 'class' => 'bg-m-tx/5 text-[var(--specialist-text-dim)]'];
                                 @endphp
                                 <div class="specialist-card p-4" style="background-color: var(--specialist-bg);">
                                     <div class="flex justify-between items-start">
@@ -162,7 +162,7 @@
                             <div class="space-y-3">
                                 @foreach($myBookings as $booking)
                                     @php
-                                        $histStatus = $statusBadgeMap[$booking->status] ?? ['label' => 'نامشخص', 'class' => 'bg-white/5 text-[var(--specialist-text-dim)]'];
+                                        $histStatus = $statusBadgeMap[$booking->status] ?? ['label' => 'نامشخص', 'class' => 'bg-m-tx/5 text-[var(--specialist-text-dim)]'];
                                     @endphp
                                     <div class="rounded-lg p-4" style="border: 1px solid var(--specialist-border);">
                                         <div class="flex justify-between items-start">

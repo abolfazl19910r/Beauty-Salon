@@ -11,7 +11,7 @@
             </div>
             @permission('manage-roles')
             <a href="{{ route('admin.roles.create') }}"
-               class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-lg"
+               class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-m-onsolid rounded-lg"
                style="background:var(--admin-accent)">
                 <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg>
                 افزودن نقش جدید
@@ -26,7 +26,7 @@
                     <p class="mb-4">هیچ نقشی تعریف نشده است</p>
                     @permission('manage-roles')
                     <a href="{{ route('admin.roles.create') }}"
-                       class="inline-flex items-center gap-2 px-4 py-2 text-sm text-white rounded-lg"
+                       class="inline-flex items-center gap-2 px-4 py-2 text-sm text-m-onsolid rounded-lg"
                        style="background:var(--admin-accent)">ایجاد اولین نقش</a>
                     @endpermission
                 </div>
@@ -64,18 +64,18 @@
                                         @permission('manage-roles')
                                         @if($role->name !== 'super-admin' || auth()->user()->hasRole('super-admin'))
                                         <a href="{{ route('admin.roles.edit', $role) }}" title="ویرایش"
-                                           class="p-1.5 rounded-lg transition-colors" style="color:#d97706;background:#fffbeb">
+                                           class="p-1.5 rounded-lg transition-colors" style="color:rgb(var(--m-warn));background:rgb(var(--m-warn) / .1)">
                                             <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                         </a>
                                         <a href="{{ route('admin.roles.assign.form', $role) }}" title="اختصاص به کاربر"
-                                           class="p-1.5 rounded-lg transition-colors" style="color:#16a34a;background:#f0fdf4">
+                                           class="p-1.5 rounded-lg transition-colors" style="color:rgb(var(--m-ok));background:rgb(var(--m-ok) / .1)">
                                             <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
                                         </a>
                                         <form action="{{ route('admin.roles.destroy', $role) }}" method="POST" class="inline-block">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" data-confirm-delete data-confirm-message="آیا از حذف نقش «{{ $role->label }}» اطمینان دارید؟"
-                                                    class="p-1.5 rounded-lg transition-colors" style="color:#dc2626;background:#fef2f2">
+                                                    class="p-1.5 rounded-lg transition-colors" style="color:rgb(var(--m-bad));background:rgb(var(--m-bad) / .1)">
                                                 <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                                             </button>
                                         </form>

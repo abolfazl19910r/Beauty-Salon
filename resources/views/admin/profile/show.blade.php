@@ -8,16 +8,16 @@
         <div class="rounded-t-xl px-6 py-5" style="background:var(--admin-accent)">
             <div class="flex items-center gap-4">
                 <div class="w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold flex-shrink-0"
-                     style="background:rgba(255,255,255,.2);color:#fff">
+                     style="background:rgba(255,255,255,.2);color:rgb(var(--m-on-solid))">
                     {{ mb_substr($user->name, 0, 1) }}
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold text-white">{{ $user->name }}</h1>
+                    <h1 class="text-xl font-bold text-m-onsolid">{{ $user->name }}</h1>
                     <p class="text-sm" style="color:rgba(255,255,255,.7)">مدیر سیستم</p>
                 </div>
                 <a href="{{ route('admin.profile.edit') }}"
                    class="mr-auto inline-flex items-center gap-1 px-4 py-2 text-sm rounded-lg font-medium"
-                   style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)">
+                   style="background:rgba(255,255,255,.15);color:rgb(var(--m-on-solid));border:1px solid rgba(255,255,255,.3)">
                     <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     ویرایش
                 </a>
@@ -55,7 +55,7 @@
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="w-28 flex-shrink-0" style="color:var(--admin-text-dim)">وضعیت</span>
-                        <span class="px-2 py-0.5 text-xs rounded-full font-medium bg-green-100 text-green-700">فعال</span>
+                        <span class="px-2 py-0.5 text-xs rounded-full font-medium bg-m-ok/10 text-m-ok">فعال</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="w-28 flex-shrink-0" style="color:var(--admin-text-dim)">آخرین ورود</span>

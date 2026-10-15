@@ -19,7 +19,7 @@
         @endif
 
         @if ($errors->any())
-            <div class="mb-4 p-3 rounded-lg text-sm" style="background:#fee2e2; color:#b91c1c;">
+            <div class="mb-4 p-3 rounded-lg text-sm" style="background:rgb(var(--m-bad) / .14); color:rgb(var(--m-bad));">
                 {{ $errors->first() }}
             </div>
         @endif
@@ -37,9 +37,9 @@
                     <div style="color:var(--admin-text-dim);">وضعیت</div>
                     <div class="font-bold mt-1">
                         @if ($salon->subscription_ends_at->isPast())
-                            <span style="color:#b91c1c;">منقضی‌شده</span>
+                            <span style="color:rgb(var(--m-bad));">منقضی‌شده</span>
                         @elseif ($salon->isOnTrial())
-                            <span style="color:#92400E;">دوره‌ی آزمایشی رایگان</span>
+                            <span style="color:rgb(var(--m-warn));">دوره‌ی آزمایشی رایگان</span>
                         @else
                             <span style="color:var(--admin-accent);">فعال</span>
                         @endif
@@ -68,7 +68,7 @@
                             @continue($feature->isComingSoon() && ! in_array($feature->value, $enabledFeatures, true))
                             @php $on = in_array($feature->value, $enabledFeatures, true); @endphp
                             <span class="px-2 py-1 rounded-full text-xs" title="{{ $feature->description() }}"
-                                  style="{{ $on ? 'background:var(--admin-accent-light); color:var(--admin-accent);' : 'background:var(--admin-bg, #f3f4f6); color:var(--admin-text-dim);' }}">
+                                  style="{{ $on ? 'background:var(--admin-accent-light); color:var(--admin-accent);' : 'background:var(--admin-bg, rgb(var(--m-tx) / .05)); color:var(--admin-text-dim);' }}">
                                 {{ $on ? '✓' : '🔒' }} {{ $feature->label() }}
                             </span>
                         @endforeach
@@ -91,7 +91,7 @@
                 </div>
                 <div>
                     <div style="color:var(--admin-text-dim);">باقی‌مانده (قطعه)</div>
-                    <div class="font-bold mt-1 persian-number" style="color:{{ $smsUsage['remaining'] > 0 ? 'var(--admin-text)' : '#b91c1c' }};">
+                    <div class="font-bold mt-1 persian-number" style="color:{{ $smsUsage['remaining'] > 0 ? 'var(--admin-text)' : 'rgb(var(--m-bad))' }};">
                         {{ to_persian_num((string) $smsUsage['remaining']) }}
                     </div>
                 </div>
@@ -125,7 +125,7 @@
                             <input type="hidden" name="parts" value="{{ $pack['parts'] }}">
                             <div class="font-bold persian-number">{{ to_persian_num(number_format($pack['parts'])) }} قطعه</div>
                             <div class="mt-1 persian-number">{{ to_persian_num(number_format($pack['price'])) }} تومان</div>
-                            <button type="submit" class="mt-3 px-4 py-2 rounded-lg text-white text-sm" style="background:var(--admin-accent);">خرید</button>
+                            <button type="submit" class="mt-3 px-4 py-2 rounded-lg text-m-onsolid text-sm" style="background:var(--admin-accent);">خرید</button>
                         </form>
                     @endforeach
                 </div>
@@ -176,7 +176,7 @@
                     {{ to_persian_num((string) $includedSpecialists) }} متخصص در قیمت پلن و هر متخصص بیشتر ماهانه {{ to_persian_num(number_format($extraSpecialistPrice)) }} تومان.
                     برای تغییر تعداد متخصص با پشتیبانی تماس بگیرید.
                 </p>
-                <button type="submit" class="mt-4 px-5 py-2.5 rounded-lg text-sm font-bold text-white" style="background:var(--admin-accent);">
+                <button type="submit" class="mt-4 px-5 py-2.5 rounded-lg text-sm font-bold text-m-onsolid" style="background:var(--admin-accent);">
                     پرداخت و تمدید
                 </button>
             </form>
@@ -218,9 +218,9 @@
                                 @if ($invoice->status === 'paid')
                                     <span style="color:var(--admin-accent);">پرداخت‌شده</span>
                                 @elseif ($invoice->status === 'pending')
-                                    <span style="color:#b45309;">در انتظار</span>
+                                    <span style="color:rgb(var(--m-warn));">در انتظار</span>
                                 @else
-                                    <span style="color:#b91c1c;">ناموفق</span>
+                                    <span style="color:rgb(var(--m-bad));">ناموفق</span>
                                 @endif
                             </td>
                             <td class="py-3 px-4">{{ $invoice->ref_id ?? '—' }}</td>

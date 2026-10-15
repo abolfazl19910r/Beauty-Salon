@@ -7,7 +7,7 @@
         .form-label { display:block; font-size:0.875rem; font-weight:500; margin-bottom:6px; color:var(--admin-text-dim); }
         .form-input,.form-select,.form-textarea { width:100%; border:1px solid var(--admin-border); border-radius:8px; padding:9px 14px; font-size:0.875rem; background:var(--admin-bg); color:var(--admin-text); outline:none; transition:border-color 0.15s; font-family:inherit; }
         .form-input:focus,.form-select:focus,.form-textarea:focus { border-color:var(--admin-accent); }
-        .form-error { color:#DC2626; font-size:0.78rem; margin-top:4px; }
+        .form-error { color:rgb(var(--m-bad)); font-size:0.78rem; margin-top:4px; }
         .jcal-wrapper { position:relative; }
         .jcal-popup { display:none; position:absolute; top:calc(100% + 6px); right:0; z-index:9999; width:300px; background:var(--admin-surface); border:1px solid var(--admin-border); border-radius:12px; box-shadow:0 12px 30px -5px rgba(0,0,0,0.15); padding:14px; }
         .jcal-popup.open { display:block; }
@@ -21,13 +21,13 @@
         .jcal-day:hover { background:var(--admin-accent-light); }
         .jcal-day.empty { cursor:default; }
         .jcal-day.empty:hover { background:transparent; }
-        .jcal-day.selected { background:var(--admin-accent); color:#fff; font-weight:bold; }
+        .jcal-day.selected { background:var(--admin-accent); color:rgb(var(--m-on-solid)); font-weight:bold; }
         .jcal-day.today { border:1px solid var(--admin-accent); }
         .jcal-time { display:flex; align-items:center; gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid var(--admin-border); }
         .jcal-time label { font-size:12px; color:var(--admin-text-dim); white-space:nowrap; }
         .jcal-time select { flex:1; border:1px solid var(--admin-border); border-radius:6px; padding:4px 6px; font-size:13px; font-family:inherit; background:var(--admin-bg); color:var(--admin-text); outline:none; }
         .jcal-time select:focus { border-color:var(--admin-accent); }
-        .jcal-confirm { margin-top:10px; width:100%; background:var(--admin-accent); color:#fff; border:none; border-radius:7px; padding:8px; font-size:13px; font-family:inherit; cursor:pointer; }
+        .jcal-confirm { margin-top:10px; width:100%; background:var(--admin-accent); color:rgb(var(--m-on-solid)); border:none; border-radius:7px; padding:8px; font-size:13px; font-family:inherit; cursor:pointer; }
         .jcal-confirm:hover { background:var(--admin-accent-hover); }
     </style>
 @endpush
@@ -60,8 +60,8 @@
              style="background:var(--admin-accent-light); border:1px solid var(--admin-border);">
             <span style="color:var(--admin-text-dim);">وضعیت فعلی:</span>
             @php
-                $statusMap=['pending'=>['در انتظار','#FFFBEB','#92400E'],'confirmed'=>['تایید شده','#F0FDF4','#166534'],'completed'=>['انجام شده','#EFF6FF','#1D4ED8'],'cancelled'=>['لغو شده','#FEF2F2','#991B1B'], 'no_show' => ['نیامد','#FEF2F2','#991B1B']];
-                $st=$statusMap[$booking->status]??[$booking->status,'#F1F5F9','#475569'];
+                $statusMap=['pending'=>['در انتظار','rgb(var(--m-warn) / .1)','rgb(var(--m-warn))'],'confirmed'=>['تایید شده','rgb(var(--m-ok) / .1)','rgb(var(--m-ok))'],'completed'=>['انجام شده','rgb(var(--m-info) / .1)','rgb(var(--m-info))'],'cancelled'=>['لغو شده','rgb(var(--m-bad) / .1)','rgb(var(--m-bad))'], 'no_show' => ['نیامد','rgb(var(--m-bad) / .1)','rgb(var(--m-bad))']];
+                $st=$statusMap[$booking->status]??[$booking->status,'rgb(var(--m-tx) / .05)','rgb(var(--m-tx))'];
             @endphp
             <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:{{ $st[1] }}; color:{{ $st[2] }};">{{ $st[0] }}</span>
             <span style="color:var(--admin-text-dim);">تاریخ نوبت:</span>
@@ -177,7 +177,7 @@
 
                 <div class="flex items-center justify-between mt-6 pt-5" style="border-top:1px solid var(--admin-border);">
                     <button type="submit"
-                            class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-white transition-colors"
+                            class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-m-onsolid transition-colors"
                             style="background:var(--admin-accent);"
                             onmouseover="this.style.background='var(--admin-accent-hover)'"
                             onmouseout="this.style.background='var(--admin-accent)'">

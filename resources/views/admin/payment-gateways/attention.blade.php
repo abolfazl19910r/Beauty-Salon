@@ -5,7 +5,7 @@
     <div class="fade-in">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
             <h1 class="text-xl font-bold flex items-center gap-2" style="color:var(--admin-text);">
-                <svg class="w-5 h-5" style="color:#D97706;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <svg class="w-5 h-5" style="color:rgb(var(--m-warn));" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
                 </svg>
                 پرداخت‌های نیازمند بررسی
@@ -29,7 +29,7 @@
                 $subject = $tx->purpose === 'booking' ? 'پیش‌پرداخت نوبت #'.$tx->payable_id : ($tx->purpose === 'wallet_charge' ? 'شارژ کیف پول' : $tx->purpose);
                 $canCredit = in_array($tx->purpose, ['booking', 'wallet_charge'], true) && $tx->user_id && in_array($tx->status, ['failed', 'reconciling', 'reversing'], true);
             @endphp
-            <div class="rounded-xl p-4 mb-3" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid #F59E0B;" data-attention="{{ $tx->id }}">
+            <div class="rounded-xl p-4 mb-3" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-warn));" data-attention="{{ $tx->id }}">
                 <div class="flex flex-wrap justify-between gap-2 mb-2">
                     <div class="font-bold" style="color:var(--admin-text);">
                         {{ $subject }}
@@ -38,7 +38,7 @@
                     <div class="font-bold persian-number" style="color:var(--admin-text);">{{ number_format($toman) }} <span class="text-xs font-normal">تومان</span></div>
                 </div>
 
-                <p class="text-sm mb-3" style="color:#92400E;">{{ $tx->attentionReason() }}</p>
+                <p class="text-sm mb-3" style="color:rgb(var(--m-warn));">{{ $tx->attentionReason() }}</p>
 
                 <dl class="grid grid-cols-2 lg:grid-cols-4 gap-2 text-xs mb-3" style="color:var(--admin-text-dim);">
                     <div><dt>درگاه</dt><dd style="color:var(--admin-text);">{{ \App\Payments\GatewayCatalog::label($tx->driver) }}</dd></div>
@@ -52,7 +52,7 @@
                     <input type="text" name="note" required minlength="3" maxlength="500" placeholder="نتیجه‌ی بررسی پنل درگاه (مثلاً: در پنل زیبال پرداخت‌شده بود)"
                            class="flex-1 rounded-lg px-3 py-2 text-sm" style="border:1px solid var(--admin-border); background:var(--admin-bg); color:var(--admin-text);">
                     @if($canCredit)
-                        <button type="submit" name="action" value="wallet_credit" class="px-4 py-2 rounded-lg text-sm font-bold text-white" style="background:#16A34A;"
+                        <button type="submit" name="action" value="wallet_credit" class="px-4 py-2 rounded-lg text-sm font-bold text-m-onsolid" style="background:rgb(var(--m-ok));"
                                 onclick="return confirm('{{ number_format($toman) }} تومان به کیف پول مشتری واریز شود؟ فقط اگر در پنل درگاه دیده‌اید مبلغ گرفته شده.')">
                             واریز به کیف پول مشتری
                         </button>

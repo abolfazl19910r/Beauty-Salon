@@ -6,7 +6,7 @@
         <h1 class="text-xl font-bold mb-5" style="color:var(--admin-text);">تیکت پشتیبانی جدید</h1>
 
         @if($errors->any())
-            <div class="mb-4 px-4 py-3 rounded-lg text-sm" style="background-color: rgba(220,38,38,0.1); color: #DC2626;">
+            <div class="mb-4 px-4 py-3 rounded-lg text-sm" style="background-color: rgba(220,38,38,0.1); color: rgb(var(--m-bad));">
                 <ul class="list-disc pr-4">
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -56,7 +56,7 @@
             <div class="flex justify-end gap-3 pt-2">
                 <a href="{{ route('admin.support-tickets.index') }}"
                    class="px-4 py-2 rounded-lg text-sm" style="border:1px solid var(--admin-border); color:var(--admin-text-dim);">انصراف</a>
-                <button type="submit" class="px-4 py-2 rounded-lg text-sm text-white" style="background-color: var(--admin-accent);">
+                <button type="submit" class="px-4 py-2 rounded-lg text-sm text-m-onsolid" style="background-color: var(--admin-accent);">
                     ثبت تیکت
                 </button>
             </div>

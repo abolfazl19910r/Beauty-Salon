@@ -15,13 +15,13 @@
         <div class="px-4 py-3 text-sm font-bold flex items-center justify-between gap-2" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
             <span>آدرس اختصاصی رزرو آنلاین سالن شما</span>
             @if ($salon->isOnTrial())
-                <span class="text-xs px-2 py-1 rounded-full" style="background:#FEF3C7; color:#92400E;">
+                <span class="text-xs px-2 py-1 rounded-full" style="background:rgb(var(--m-warn) / .14); color:rgb(var(--m-warn));">
                     دوره‌ی آزمایشی — <span class="persian-number">{{ $salon->trialDaysLeft() }}</span> روز باقی‌مانده
                 </span>
             @elseif ($isLive)
-                <span class="text-xs px-2 py-1 rounded-full" style="background:#DCFCE7; color:#166534;">فعال</span>
+                <span class="text-xs px-2 py-1 rounded-full" style="background:rgb(var(--m-ok) / .14); color:rgb(var(--m-ok));">فعال</span>
             @else
-                <span class="text-xs px-2 py-1 rounded-full" style="background:#FEE2E2; color:#991B1B;">غیرفعال تا تمدید اشتراک</span>
+                <span class="text-xs px-2 py-1 rounded-full" style="background:rgb(var(--m-bad) / .14); color:rgb(var(--m-bad));">غیرفعال تا تمدید اشتراک</span>
             @endif
         </div>
         <div class="p-5 text-sm space-y-3">
@@ -33,7 +33,7 @@
                 <input type="text" readonly dir="ltr" value="{{ $primaryUrl }}" data-salon-link-input
                        class="flex-1 rounded-lg px-3 py-2 font-mono text-sm" style="border:1px solid var(--admin-border); background:var(--admin-bg); color:var(--admin-text);">
                 <button type="button" data-copy-salon-link="{{ $primaryUrl }}"
-                        class="px-4 py-2 rounded-lg text-sm font-bold text-white" style="background:var(--admin-accent);">کپی لینک</button>
+                        class="px-4 py-2 rounded-lg text-sm font-bold text-m-onsolid" style="background:var(--admin-accent);">کپی لینک</button>
                 <a href="{{ $primaryUrl }}" target="_blank" rel="noopener"
                    class="px-4 py-2 rounded-lg text-sm font-bold text-center" style="border:1px solid var(--admin-border); color:var(--admin-text);">مشاهده</a>
             </div>
@@ -51,7 +51,7 @@
                         کد سالن در اپ ماهرو: <span dir="ltr" class="font-mono font-bold">{{ $salon->slug }}</span>
                     </p>
                     <div class="flex gap-2 justify-center sm:justify-start">
-                        <button type="button" data-salon-qr-download class="px-3 py-1.5 rounded-lg text-xs font-bold text-white" style="background:var(--admin-accent);">دانلود QR</button>
+                        <button type="button" data-salon-qr-download class="px-3 py-1.5 rounded-lg text-xs font-bold text-m-onsolid" style="background:var(--admin-accent);">دانلود QR</button>
                         <button type="button" data-salon-qr-print class="px-3 py-1.5 rounded-lg text-xs font-bold" style="border:1px solid var(--admin-border); color:var(--admin-text);">چاپ</button>
                     </div>
                 </div>
@@ -62,7 +62,7 @@
                 </p>
             @endif
             @unless ($isLive)
-                <p class="text-xs" style="color:#b91c1c;">
+                <p class="text-xs" style="color:rgb(var(--m-bad));">
                     تا زمانی که اشتراک سالن فعال نباشد، این آدرس برای مشتری‌ها در دسترس نیست.
                 </p>
             @endunless

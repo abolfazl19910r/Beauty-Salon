@@ -6,7 +6,7 @@
         .form-label { display:block; font-size:0.875rem; font-weight:500; margin-bottom:6px; color:var(--admin-text-dim); }
         .form-input { width:100%; border:1px solid var(--admin-border); border-radius:8px; padding:9px 14px; font-size:0.875rem; background:var(--admin-bg); color:var(--admin-text); outline:none; transition:border-color 0.15s; font-family:inherit; }
         .form-input:focus { border-color:var(--admin-accent); }
-        .form-error { color:#DC2626; font-size:0.78rem; margin-top:4px; }
+        .form-error { color:rgb(var(--m-bad)); font-size:0.78rem; margin-top:4px; }
         .service-checkbox { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:8px; cursor:pointer; transition:background 0.1s; }
         .service-checkbox:hover { background:var(--admin-accent-light); }
         .service-checkbox input[type=checkbox] { accent-color:var(--admin-accent); width:16px; height:16px; flex-shrink:0; }
@@ -39,12 +39,12 @@
                     <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">اطلاعات شخصی</h2>
                     <div class="space-y-4">
                         <div>
-                            <label class="form-label">نام متخصص <span style="color:#DC2626;">*</span></label>
+                            <label class="form-label">نام متخصص <span style="color:rgb(var(--m-bad));">*</span></label>
                             <input type="text" name="name" value="{{ old('name', $specialist->name) }}" class="form-input" required>
                             @error('name') <p class="form-error">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="form-label">شماره تماس <span style="color:#DC2626;">*</span></label>
+                            <label class="form-label">شماره تماس <span style="color:rgb(var(--m-bad));">*</span></label>
                             <input type="text" name="phone" value="{{ old('phone', $specialist->phone) }}" class="form-input" dir="ltr" required>
                             @error('phone') <p class="form-error">{{ $message }}</p> @enderror
                         </div>
@@ -71,7 +71,7 @@
                         @endif
                     </div>
 
-                    <div class="mt-5 p-3 rounded-lg text-xs" style="background:#EFF6FF; color:#1D4ED8;">
+                    <div class="mt-5 p-3 rounded-lg text-xs" style="background:rgb(var(--m-info) / .1); color:rgb(var(--m-info));">
                         <p class="font-medium mb-1">یادآوری:</p>
                         پس از ذخیره، برنامه کاری و مرخصی‌ها را از صفحه نمایش متخصص تنظیم کنید.
                     </div>
@@ -91,7 +91,7 @@
                             <span class="flex items-center gap-2">
                                 {{ $category->name }}
                                 @if($hasChecked)
-                                    <span class="text-xs px-1.5 py-0.5 rounded-full" style="background:var(--admin-accent); color:#fff;">انتخاب شده</span>
+                                    <span class="text-xs px-1.5 py-0.5 rounded-full" style="background:var(--admin-accent); color:rgb(var(--m-on-solid));">انتخاب شده</span>
                                 @endif
                             </span>
                                     <svg class="w-4 h-4 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -167,7 +167,7 @@
 
             <div class="flex items-center justify-between mt-5 p-4 rounded-xl" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <button type="submit"
-                        class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-white transition-colors"
+                        class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-m-onsolid transition-colors"
                         style="background:var(--admin-accent);"
                         onmouseover="this.style.background='var(--admin-accent-hover)'"
                         onmouseout="this.style.background='var(--admin-accent)'">

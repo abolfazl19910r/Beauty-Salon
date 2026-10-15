@@ -41,10 +41,10 @@
                 @forelse($exports as $export)
                     @php
                         $badgeColors = [
-                            'blue' => ['#EFF6FF', '#1D4ED8'],
-                            'green' => ['#F0FDF4', '#166534'],
-                            'red' => ['#FEF2F2', '#991B1B'],
-                            'gray' => ['#F1F5F9', '#475569'],
+                            'blue' => ['rgb(var(--m-info) / .1)', 'rgb(var(--m-info))'],
+                            'green' => ['rgb(var(--m-ok) / .1)', 'rgb(var(--m-ok))'],
+                            'red' => ['rgb(var(--m-bad) / .1)', 'rgb(var(--m-bad))'],
+                            'gray' => ['rgb(var(--m-tx) / .05)', 'rgb(var(--m-tx))'],
                         ];
                         [$bg, $fg] = $badgeColors[$export->status_badge_color] ?? $badgeColors['gray'];
                     @endphp
@@ -69,7 +69,7 @@
                         <td class="px-4 py-3">
                             @if($export->isDownloadable())
                                 <a href="{{ route('admin.reports.exports.download', $export) }}"
-                                   class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-white"
+                                   class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-m-onsolid"
                                    style="background:var(--admin-accent);">
                                     دانلود
                                 </a>

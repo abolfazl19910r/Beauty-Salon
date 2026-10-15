@@ -42,7 +42,7 @@
                     @endforeach
                     <div class="flex items-center gap-3 py-2">
                         <span class="w-36 text-sm flex-shrink-0" style="color:var(--admin-text-dim)">وضعیت</span>
-                        <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $reward->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $reward->is_active ? 'bg-m-ok/10 text-m-ok' : 'bg-m-bad/10 text-m-bad' }}">
                         {{ $reward->is_active ? 'فعال' : 'غیرفعال' }}
                     </span>
                     </div>
@@ -59,7 +59,7 @@
                 <h2 class="text-base font-semibold mb-4" style="color:var(--admin-text)">اقدامات</h2>
                 <div class="space-y-3">
                     <a href="{{ route('admin.loyalty.rewards.edit', $reward) }}"
-                       class="inline-flex items-center gap-2 px-4 py-2 text-sm text-white rounded-lg transition-colors"
+                       class="inline-flex items-center gap-2 px-4 py-2 text-sm text-m-onsolid rounded-lg transition-colors"
                        style="background:var(--admin-accent)">
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         ویرایش پاداش
@@ -69,8 +69,8 @@
                         @csrf
                         @method('DELETE')
                         <button type="submit" data-confirm-delete
-                                class="inline-flex items-center gap-2 px-4 py-2 text-sm text-white rounded-lg"
-                                style="background:#dc2626">
+                                class="inline-flex items-center gap-2 px-4 py-2 text-sm text-m-onsolid rounded-lg"
+                                style="background:rgb(var(--m-bad))">
                             <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                             حذف پاداش
                         </button>

@@ -25,7 +25,7 @@
                        class="flex-1 rounded-lg px-3 py-2 text-sm"
                        style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
                 <button type="submit"
-                        class="px-5 py-2 text-sm font-medium text-white rounded-lg"
+                        class="px-5 py-2 text-sm font-medium text-m-onsolid rounded-lg"
                         style="background:var(--admin-accent)">
                     جستجو
                 </button>
@@ -86,7 +86,7 @@
             </div>
 
             @if($pointsData['expiring_soon'] > 0)
-                <div class="rounded-xl p-4 mb-6 text-sm" style="background:#fffbeb;color:#92400e;border:1px solid #fde68a">
+                <div class="rounded-xl p-4 mb-6 text-sm" style="background:rgb(var(--m-warn) / .1);color:rgb(var(--m-warn));border:1px solid rgb(var(--m-warn) / .35)">
                     {{ number_format($pointsData['expiring_soon']) }} امتیاز این کاربر تا ۳۰ روز آینده منقضی می‌شود.
                 </div>
             @endif
@@ -104,7 +104,7 @@
                                    class="w-full rounded-lg px-3 py-2 text-sm"
                                    style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
                             @error('points')
-                                <p class="text-xs mt-1" style="color:#dc2626">{{ $message }}</p>
+                                <p class="text-xs mt-1" style="color:rgb(var(--m-bad))">{{ $message }}</p>
                             @enderror
                         </div>
                         <div class="mb-3">
@@ -113,7 +113,7 @@
                                    class="w-full rounded-lg px-3 py-2 text-sm"
                                    style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
                             @error('description')
-                                <p class="text-xs mt-1" style="color:#dc2626">{{ $message }}</p>
+                                <p class="text-xs mt-1" style="color:rgb(var(--m-bad))">{{ $message }}</p>
                             @enderror
                         </div>
                         <div class="mb-4">
@@ -122,12 +122,12 @@
                                    class="w-full rounded-lg px-3 py-2 text-sm"
                                    style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
                             @error('expires_at')
-                                <p class="text-xs mt-1" style="color:#dc2626">{{ $message }}</p>
+                                <p class="text-xs mt-1" style="color:rgb(var(--m-bad))">{{ $message }}</p>
                             @enderror
                         </div>
                         <button type="submit"
-                                class="w-full px-4 py-2 text-sm font-medium text-white rounded-lg"
-                                style="background:#16a34a">
+                                class="w-full px-4 py-2 text-sm font-medium text-m-onsolid rounded-lg"
+                                style="background:rgb(var(--m-ok))">
                             افزودن امتیاز
                         </button>
                     </form>
@@ -143,7 +143,7 @@
                                    class="w-full rounded-lg px-3 py-2 text-sm"
                                    style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
                             @error('points')
-                                <p class="text-xs mt-1" style="color:#dc2626">{{ $message }}</p>
+                                <p class="text-xs mt-1" style="color:rgb(var(--m-bad))">{{ $message }}</p>
                             @enderror
                         </div>
                         <div class="mb-4">
@@ -152,12 +152,12 @@
                                    class="w-full rounded-lg px-3 py-2 text-sm"
                                    style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
                             @error('description')
-                                <p class="text-xs mt-1" style="color:#dc2626">{{ $message }}</p>
+                                <p class="text-xs mt-1" style="color:rgb(var(--m-bad))">{{ $message }}</p>
                             @enderror
                         </div>
                         <button type="submit" data-confirm-action
-                                class="w-full px-4 py-2 text-sm font-medium text-white rounded-lg"
-                                style="background:#dc2626">
+                                class="w-full px-4 py-2 text-sm font-medium text-m-onsolid rounded-lg"
+                                style="background:rgb(var(--m-bad))">
                             کسر امتیاز
                         </button>
                     </form>
@@ -190,7 +190,7 @@
                                 <tr style="border-bottom:1px solid var(--admin-border)">
                                     <td class="p-4" style="color:var(--admin-text)">{{ $point->created_at->format('Y/m/d H:i') }}</td>
                                     <td class="p-4">
-                                        <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $point->type === 'earned' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $point->type === 'earned' ? 'bg-m-ok/10 text-m-ok' : 'bg-m-bad/10 text-m-bad' }}">
                                             {{ $point->type === 'earned' ? 'کسب‌شده' : ($point->type === 'expired' ? 'منقضی‌شده' : 'مصرف‌شده') }}
                                         </span>
                                     </td>

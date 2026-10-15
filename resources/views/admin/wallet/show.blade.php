@@ -11,10 +11,10 @@
             <div class="flex gap-2">
                 @if($wallet->pending_amount > 0)
                     <button onclick="document.getElementById('settlePendingModal').classList.remove('hidden')"
-                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white"
-                            style="background:#16A34A;"
-                            onmouseover="this.style.background='#15803D'"
-                            onmouseout="this.style.background='#16A34A'">
+                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
+                            style="background:rgb(var(--m-ok));"
+                            onmouseover="this.style.background='rgb(var(--m-ok))'"
+                            onmouseout="this.style.background='rgb(var(--m-ok))'">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
@@ -22,10 +22,10 @@
                     </button>
                 @endif
                 <button onclick="document.getElementById('adjustmentModal').classList.remove('hidden')"
-                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white"
-                        style="background:#7C3AED;"
-                        onmouseover="this.style.background='#6D28D9'"
-                        onmouseout="this.style.background='#7C3AED'">
+                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
+                        style="background:rgb(var(--m-gold));"
+                        onmouseover="this.style.background='rgb(var(--m-gold))'"
+                        onmouseout="this.style.background='rgb(var(--m-gold))'">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
@@ -49,19 +49,19 @@
                 <p class="text-xl font-bold persian-number" style="color:var(--admin-text);">{{ number_format($wallet->balance) }}</p>
                 <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">تومان</p>
             </div>
-            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid #F59E0B;">
+            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-warn));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">در انتظار تسویه</p>
-                <p class="text-xl font-bold persian-number" style="color:#D97706;">{{ number_format($wallet->pending_amount) }}</p>
+                <p class="text-xl font-bold persian-number" style="color:rgb(var(--m-warn));">{{ number_format($wallet->pending_amount) }}</p>
                 <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">تومان</p>
             </div>
-            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid #16A34A;">
+            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-ok));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل درآمد</p>
-                <p class="text-xl font-bold persian-number" style="color:#16A34A;">{{ number_format($wallet->total_earned) }}</p>
+                <p class="text-xl font-bold persian-number" style="color:rgb(var(--m-ok));">{{ number_format($wallet->total_earned) }}</p>
                 <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">تومان</p>
             </div>
-            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid #DC2626;">
+            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-bad));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل برداشت شده</p>
-                <p class="text-xl font-bold persian-number" style="color:#DC2626;">{{ number_format($wallet->total_withdrawn) }}</p>
+                <p class="text-xl font-bold persian-number" style="color:rgb(var(--m-bad));">{{ number_format($wallet->total_withdrawn) }}</p>
                 <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">تومان</p>
             </div>
         </div>
@@ -86,9 +86,9 @@
                     </div>
                     <div class="pt-2">
                         @if($wallet->iban && ! $wallet->has_valid_iban)
-                            <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:#FEF2F2; color:#991B1B;">✗ شبا نامعتبر است (رقم کنترلی نمی‌خواند) — متخصص باید اصلاحش کند</span>
+                            <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad));">✗ شبا نامعتبر است (رقم کنترلی نمی‌خواند) — متخصص باید اصلاحش کند</span>
                         @elseif($wallet->iban_verified)
-                            <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:#F0FDF4; color:#166534;">✓ تایید شده</span>
+                            <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:rgb(var(--m-ok) / .1); color:rgb(var(--m-ok));">✓ تایید شده</span>
                             <p class="text-xs mt-2 persian-number" style="color:var(--admin-text-dim);">
                                 توسط {{ $wallet->ibanVerifiedBy?->name ?? '—' }}
                                 @if($wallet->iban_verified_at)
@@ -98,7 +98,7 @@
                             <form action="{{ route('admin.wallet.unverify-iban', $wallet) }}" method="POST" class="mt-2"
                                   data-confirm-action data-confirm-message="تأیید این شبا لغو شود؟ تا تأیید دوباره، تسویه‌ی خودکار برای این متخصص انجام نمی‌شود.">
                                 @csrf
-                                <button type="submit" class="w-full py-2 rounded-lg text-xs font-medium" style="background:#FEF2F2; color:#991B1B;">
+                                <button type="submit" class="w-full py-2 rounded-lg text-xs font-medium" style="background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad));">
                                     لغو تأیید شبا
                                 </button>
                             </form>
@@ -114,7 +114,7 @@
                                     <span>نام صاحب حساب را در بانک دیدم و با این متخصص یکی بود.</span>
                                 </label>
                                 @error('holder_name_checked')
-                                    <p class="text-red-500 text-xs mb-2">{{ $message }}</p>
+                                    <p class="text-m-bad text-xs mb-2">{{ $message }}</p>
                                 @enderror
                                 <button type="submit"
                                         class="w-full py-2 rounded-lg text-xs font-bold transition-colors"
@@ -155,11 +155,11 @@
                                 <td class="px-4 py-2.5 persian-number text-xs" style="color:var(--admin-text-dim);">{{ verta($transaction->created_at)->format('Y/m/d H:i') }}</td>
                                 <td class="px-4 py-2.5">
                                 <span class="px-2 py-0.5 rounded-md text-xs font-medium"
-                                      style="{{ $transaction->type=='income' ? 'background:#F0FDF4; color:#166534;' : ($transaction->type=='withdrawal' ? 'background:#FEF2F2; color:#991B1B;' : 'background:var(--admin-accent-light); color:var(--admin-accent);') }}">
+                                      style="{{ $transaction->type=='income' ? 'background:rgb(var(--m-ok) / .1); color:rgb(var(--m-ok));' : ($transaction->type=='withdrawal' ? 'background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad));' : 'background:var(--admin-accent-light); color:var(--admin-accent);') }}">
                                     {{ $transaction->type_text }}
                                 </span>
                                 </td>
-                                <td class="px-4 py-2.5 font-bold persian-number" style="color:{{ $transaction->amount >= 0 ? '#16A34A' : '#DC2626' }};">
+                                <td class="px-4 py-2.5 font-bold persian-number" style="color:{{ $transaction->amount >= 0 ? 'rgb(var(--m-ok))' : 'rgb(var(--m-bad))' }};">
                                     {{ number_format($transaction->amount) }}
                                 </td>
                                 <td class="px-4 py-2.5 max-w-xs truncate" style="color:var(--admin-text-dim);">{{ $transaction->description }}</td>
@@ -197,7 +197,7 @@
                 <div class="p-5 space-y-3 text-sm">
                     <p style="color:var(--admin-text-dim);">
                         مبلغ در انتظار فعلی این متخصص:
-                        <span class="font-bold persian-number" style="color:#D97706;">{{ number_format($wallet->pending_amount) }}</span>
+                        <span class="font-bold persian-number" style="color:rgb(var(--m-warn));">{{ number_format($wallet->pending_amount) }}</span>
                         تومان
                     </p>
                     <label class="flex items-center gap-2" style="color:var(--admin-text-dim);">
@@ -213,10 +213,10 @@
                             data-confirm-action
                             data-confirm-message="این عملیات مبلغ در انتظار این متخصص را به موجودی قابل‌برداشت او منتقل می‌کند. ادامه می‌دهید؟"
                             data-confirm-text="بله، تسویه شود"
-                            class="px-4 py-2 rounded-lg text-sm font-medium text-white"
-                            style="background:#16A34A;"
-                            onmouseover="this.style.background='#15803D'"
-                            onmouseout="this.style.background='#16A34A'">تسویه شود</button>
+                            class="px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
+                            style="background:rgb(var(--m-ok));"
+                            onmouseover="this.style.background='rgb(var(--m-ok))'"
+                            onmouseout="this.style.background='rgb(var(--m-ok))'">تسویه شود</button>
                 </div>
             </form>
         </div>
@@ -266,7 +266,7 @@
                             class="px-4 py-2 rounded-lg text-sm"
                             style="background:var(--admin-accent-light); color:var(--admin-text-dim);">انصراف</button>
                     <button type="submit"
-                            class="px-4 py-2 rounded-lg text-sm font-medium text-white"
+                            class="px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                             style="background:var(--admin-accent);"
                             onmouseover="this.style.background='var(--admin-accent-hover)'"
                             onmouseout="this.style.background='var(--admin-accent)'">ثبت تغییرات</button>

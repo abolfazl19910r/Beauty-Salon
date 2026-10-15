@@ -15,7 +15,7 @@
             <a href="{{ route('admin.winback.campaigns.index') }}" class="px-4 py-2 rounded-lg text-sm" style="{{ $ghost }}">کمپین‌ها</a>
         </div>
         @if ($limitsError)
-            <div class="rounded-lg p-3 text-sm mb-5" style="background:#FEF3C7; color:#92400E;">{{ $limitsError }}</div>
+            <div class="rounded-lg p-3 text-sm mb-5" style="background:rgb(var(--m-warn) / .14); color:rgb(var(--m-warn));">{{ $limitsError }}</div>
         @endif
 
         <form method="POST" action="{{ route('admin.winback.campaigns.store') }}" class="space-y-5">
@@ -30,13 +30,13 @@
                         <label class="block text-sm font-medium mb-1" for="last_visit_from_days">آخرین مراجعه، از چند روز پیش</label>
                         <input id="last_visit_from_days" name="last_visit_from_days" type="number" min="{{ $minFromDays }}" max="730" class="{{ $input }}" style="{{ $inputStyle }}" value="{{ $v('last_visit_from_days') }}" required>
                         <p class="text-xs mt-1" style="{{ $dim }}">دست‌کم {{ to_persian_num((string) $minFromDays) }} (کمتر از آن را پیگیری خودکار پوشش می‌دهد)</p>
-                        @error('last_visit_from_days') <p class="text-xs mt-1" style="color:#DC2626;">{{ $message }}</p> @enderror
+                        @error('last_visit_from_days') <p class="text-xs mt-1" style="color:rgb(var(--m-bad));">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1" for="last_visit_to_days">تا چند روز پیش</label>
                         <input id="last_visit_to_days" name="last_visit_to_days" type="number" min="{{ $minFromDays }}" max="730" class="{{ $input }}" style="{{ $inputStyle }}" value="{{ $v('last_visit_to_days') }}" required>
                         <p class="text-xs mt-1" style="{{ $dim }}">حداکثر ۷۳۰ (۲ سال)</p>
-                        @error('last_visit_to_days') <p class="text-xs mt-1" style="color:#DC2626;">{{ $message }}</p> @enderror
+                        @error('last_visit_to_days') <p class="text-xs mt-1" style="color:rgb(var(--m-bad));">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1" for="min_visits">حداقل تعداد مراجعه (اختیاری)</label>
@@ -68,7 +68,7 @@
                     <div>
                         <label class="block text-sm font-medium mb-1" for="discount_amount">مقدار</label>
                         <input id="discount_amount" name="discount_amount" class="{{ $input }}" style="{{ $inputStyle }}" value="{{ $v('discount_amount') }}">
-                        @error('discount_amount') <p class="text-xs mt-1" style="color:#DC2626;">{{ $message }}</p> @enderror
+                        @error('discount_amount') <p class="text-xs mt-1" style="color:rgb(var(--m-bad));">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1" for="discount_max_amount">سقف (درصدی)</label>
@@ -86,7 +86,7 @@
                         جای‌خالی‌ها: @foreach (\App\Services\Marketing\WinbackCampaignService::PLACEHOLDERS as $name => [$label]) <code>{{ '{'.$name.'}' }}</code> {{ $label }}@if (! $loop->last)، @endif @endforeach
                         — <code>{لینک_انصراف}</code> لازم است.
                     </p>
-                    @error('message') <p class="text-xs mt-1" style="color:#DC2626;">{{ $message }}</p> @enderror
+                    @error('message') <p class="text-xs mt-1" style="color:rgb(var(--m-bad));">{{ $message }}</p> @enderror
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -97,7 +97,7 @@
                         <label class="block text-sm font-medium mb-1" for="start_date">شروع ارسال (اختیاری، شمسی)</label>
                         <input id="start_date" name="start_date" dir="ltr" placeholder="1405/08/10" class="{{ $input }}" style="{{ $inputStyle }}" value="{{ $v('start_date') }}">
                         <p class="text-xs mt-1" style="{{ $dim }}">خالی = همین حالا (در ساعت ۹ تا ۲۰)؛ با تاریخ، از ساعت ۹ همان روز.</p>
-                        @error('start_date') <p class="text-xs mt-1" style="color:#DC2626;">{{ $message }}</p> @enderror
+                        @error('start_date') <p class="text-xs mt-1" style="color:rgb(var(--m-bad));">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </div>
@@ -106,7 +106,7 @@
                 <div class="rounded-xl p-5 space-y-3" style="{{ $box }}" data-preview>
                     <div class="font-bold">پیش‌نمایش</div>
                     @if ($preview['count'] === 0)
-                        <p class="text-sm" style="color:#B45309;">با این فیلترها مشتری‌ای برای پیامک نیست.</p>
+                        <p class="text-sm" style="color:rgb(var(--m-warn));">با این فیلترها مشتری‌ای برای پیامک نیست.</p>
                     @else
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm persian-number">
                             <div><div class="text-xs" style="{{ $dim }}">گیرنده</div><b>{{ to_persian_num(number_format($preview['capped'])) }}</b>@if ($preview['count'] > $preview['capped']) <span class="text-xs" style="{{ $dim }}">از {{ to_persian_num(number_format($preview['count'])) }}</span>@endif</div>
@@ -116,7 +116,7 @@
                         </div>
                         <div class="rounded-lg p-3 text-sm" style="background:var(--admin-bg); border:1px dashed var(--admin-border); line-height:1.9;">{{ $preview['sample'] }}</div>
                         @if ($preview['allowed'] < $preview['capped'])
-                            <div class="rounded-lg p-3 text-sm" style="background:#FEF3C7; color:#92400E;">
+                            <div class="rounded-lg p-3 text-sm" style="background:rgb(var(--m-warn) / .14); color:rgb(var(--m-warn));">
                                 سهمیه‌ی این ماه (با نگه داشتن ۲۰٪) فقط برای {{ to_persian_num(number_format($preview['allowed'])) }} نفر جا دارد؛ باقی وقتی جا شد (بسته‌ی پیامک یا ماه بعد) فرستاده می‌شوند.
                                 @if ($preview['allowed'] > 0)
                                     <button name="max_recipients" value="{{ $preview['allowed'] }}" class="underline font-bold">فقط {{ to_persian_num(number_format($preview['allowed'])) }} نفر جدیدتر</button>
@@ -134,7 +134,7 @@
                 @if ($preview && $preview['count'] > 0 && ! $limitsError)
                     <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="confirm_marketing" value="1" class="mt-1">
                         <span>می‌دانم این پیامک <b>تبلیغاتی</b> است و از خط خدماتی سالن فرستاده می‌شود؛ هر پیامک لینک انصراف دارد.</span></label>
-                    @error('confirm_marketing') <p class="text-xs" style="color:#DC2626;">{{ $message }}</p> @enderror
+                    @error('confirm_marketing') <p class="text-xs" style="color:rgb(var(--m-bad));">{{ $message }}</p> @enderror
                 @endif
                 <div class="flex gap-2 flex-wrap">
                     <button name="action" value="preview" class="px-4 py-2 rounded-lg text-sm" style="{{ $ghost }}">پیش‌نمایش</button>

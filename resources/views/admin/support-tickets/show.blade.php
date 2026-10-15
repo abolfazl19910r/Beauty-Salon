@@ -9,7 +9,7 @@
         </div>
 
         @if(session('success'))
-            <div class="mb-4 px-4 py-3 rounded-lg text-sm" style="background-color: rgba(34,197,94,0.1); color: #16A34A;">
+            <div class="mb-4 px-4 py-3 rounded-lg text-sm" style="background-color: rgba(34,197,94,0.1); color: rgb(var(--m-ok));">
                 {{ session('success') }}
             </div>
         @endif
@@ -49,7 +49,7 @@
                 <textarea name="message" rows="4" required maxlength="5000"
                           class="w-full px-3 py-2 rounded-lg" style="border:1px solid var(--admin-border); color:var(--admin-text);"></textarea>
                 <div class="flex justify-end">
-                    <button type="submit" class="px-4 py-2 rounded-lg text-sm text-white" style="background-color: var(--admin-accent);">
+                    <button type="submit" class="px-4 py-2 rounded-lg text-sm text-m-onsolid" style="background-color: var(--admin-accent);">
                         ارسال پیام
                     </button>
                 </div>

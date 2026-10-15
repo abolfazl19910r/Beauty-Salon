@@ -46,14 +46,14 @@
                         @endforeach
                     </div>
                     @if ($option['purchase_error'])
-                        <p class="text-xs mt-2" style="color:#b45309;">{{ $option['purchase_error'] }}</p>
+                        <p class="text-xs mt-2" style="color:rgb(var(--m-warn));">{{ $option['purchase_error'] }}</p>
                     @endif
 
                     @if ($option['upgrade_price'] !== null)
                         <div class="mt-3 p-3 rounded-lg text-xs persian-number" style="background:var(--admin-accent-light); color:var(--admin-text);">
                             ارتقای فوری: {{ to_persian_num(number_format($option['upgrade_price'])) }} تومان برای {{ to_persian_num((string) $remainingDays) }} روز مانده‌ی اشتراک؛
                             تاریخ پایان عوض نمی‌شود.
-                            <button type="submit" form="upgrade-{{ $plan->id }}" class="mr-2 px-3 py-1 rounded-lg text-white font-bold" style="background:var(--admin-accent);">ارتقا</button>
+                            <button type="submit" form="upgrade-{{ $plan->id }}" class="mr-2 px-3 py-1 rounded-lg text-m-onsolid font-bold" style="background:var(--admin-accent);">ارتقا</button>
                         </div>
                     @endif
                 </div>
@@ -65,7 +65,7 @@
             خرید پلن دیگر در دوره‌ی آزمایشی یا بعد از پایان اشتراک همان لحظه اثر می‌کند؛ وسط اشتراک فعال، از پایان دوره‌ی فعلی (مبلغی برنمی‌گردد).
             برای پلن گران‌تر، «ارتقای فوری» همین حالا پلن را عوض می‌کند.
         </p>
-        <button type="submit" class="mt-4 px-5 py-2.5 rounded-lg text-sm font-bold text-white" style="background:var(--admin-accent);">
+        <button type="submit" class="mt-4 px-5 py-2.5 rounded-lg text-sm font-bold text-m-onsolid" style="background:var(--admin-accent);">
             پرداخت و تمدید
         </button>
     </form>

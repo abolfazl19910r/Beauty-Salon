@@ -29,7 +29,7 @@
         </div>
 
         @if(session('success'))
-            <div class="mb-4 px-4 py-3 rounded-lg text-sm" style="background-color: rgba(34,197,94,0.1); color: #16A34A;">
+            <div class="mb-4 px-4 py-3 rounded-lg text-sm" style="background-color: rgba(34,197,94,0.1); color: rgb(var(--m-ok));">
                 {{ session('success') }}
             </div>
         @endif
@@ -46,10 +46,10 @@
                    class="w-full rounded-lg px-3 py-2 text-sm persian-number" dir="ltr"
                    style="background:var(--admin-bg); border:1px solid var(--admin-border); color:var(--admin-text);">
             @error('password_expiry_days')
-                <p class="text-xs mt-1" style="color:#DC2626;">{{ $message }}</p>
+                <p class="text-xs mt-1" style="color:rgb(var(--m-bad));">{{ $message }}</p>
             @enderror
 
-            <button type="submit" class="mt-5 px-5 py-2.5 rounded-lg text-sm font-medium text-white" style="background-color: var(--admin-accent);">
+            <button type="submit" class="mt-5 px-5 py-2.5 rounded-lg text-sm font-medium text-m-onsolid" style="background-color: var(--admin-accent);">
                 ذخیره‌ی تغییرات
             </button>
         </form>

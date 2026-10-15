@@ -32,13 +32,13 @@
         </div>
 
         @if ($errors->any())
-            <div class="rounded-lg p-3 text-sm" style="background:#FEE2E2; color:#991B1B;">
+            <div class="rounded-lg p-3 text-sm" style="background:rgb(var(--m-bad) / .14); color:rgb(var(--m-bad));">
                 <ul class="list-disc pr-5 space-y-1">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
             </div>
         @endif
 
         @unless ($gateways->where('is_active', true)->count())
-            <div class="rounded-lg p-3 text-sm leading-7" style="background:#FEE2E2; color:#991B1B;">
+            <div class="rounded-lg p-3 text-sm leading-7" style="background:rgb(var(--m-bad) / .14); color:rgb(var(--m-bad));">
                 <b>پرداخت آنلاین سالن غیرفعال است.</b> تا حداقل یک درگاه فعال اضافه نشود، مشتری‌ها نمی‌توانند پیش‌پرداخت نوبت
                 یا شارژ کیف پول انجام دهند و رزرو خدماتی که پیش‌پرداخت دارند ممکن نیست.
             </div>
@@ -50,7 +50,7 @@
                 <div class="{{ $card }}" style="{{ $cardStyle }}" id="gateway-{{ $gateway->id }}">
                     <div class="flex flex-wrap items-center justify-between gap-3">
                         <div class="flex items-center gap-3">
-                            <span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold" style="background:var(--admin-accent); color:#fff;">{{ $i + 1 }}</span>
+                            <span class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold" style="background:var(--admin-accent); color:rgb(var(--m-on-solid));">{{ $i + 1 }}</span>
                             <div>
                                 <div class="font-bold" style="color: var(--admin-text);">{{ $gateway->displayName() }}
                                     <span class="text-xs font-normal" style="color: var(--admin-text-light);">({{ \App\Payments\GatewayCatalog::label($gateway->driver) }})</span>
@@ -64,9 +64,9 @@
                                 @endif
                             </div>
                             @if ($gateway->is_active)
-                                <span class="text-xs rounded-full px-2 py-0.5" style="background:#DCFCE7; color:#166534;">فعال</span>
+                                <span class="text-xs rounded-full px-2 py-0.5" style="background:rgb(var(--m-ok) / .14); color:rgb(var(--m-ok));">فعال</span>
                             @else
-                                <span class="text-xs rounded-full px-2 py-0.5" style="background:#F1F5F9; color:#475569;">غیرفعال</span>
+                                <span class="text-xs rounded-full px-2 py-0.5" style="background:rgb(var(--m-tx) / .05); color:rgb(var(--m-tx));">غیرفعال</span>
                             @endif
                         </div>
                         <div class="flex flex-wrap items-center gap-2">
@@ -84,7 +84,7 @@
                             </form>
                             <form method="POST" action="{{ route('admin.payment-gateways.destroy', $gateway->id) }}">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="px-3 py-1 rounded text-sm" style="border:1px solid #FCA5A5; color:#B91C1C;"
+                                <button type="submit" class="px-3 py-1 rounded text-sm" style="border:1px solid rgb(var(--m-bad) / .35); color:rgb(var(--m-bad));"
                                         data-confirm-delete data-confirm-message="درگاه «{{ $gateway->displayName() }}» حذف شود؟">حذف</button>
                             </form>
                         </div>
@@ -95,7 +95,7 @@
                         <form method="POST" action="{{ route('admin.payment-gateways.update', $gateway->id) }}" class="mt-3 space-y-3" novalidate>
                             @csrf @method('PUT')
                             @include('admin.payment-gateways._fields', ['driver' => $gateway->driver, 'gateway' => $gateway])
-                            <button type="submit" class="px-4 py-2 rounded-lg text-sm font-bold text-white" style="background: var(--admin-accent);">ذخیره</button>
+                            <button type="submit" class="px-4 py-2 rounded-lg text-sm font-bold text-m-onsolid" style="background: var(--admin-accent);">ذخیره</button>
                         </form>
                     </details>
                 </div>
@@ -124,12 +124,12 @@
                             @include('admin.payment-gateways._fields', ['driver' => $key, 'gateway' => null])
                         </fieldset>
                     @endforeach
-                    <button type="submit" class="px-4 py-2 rounded-lg text-sm font-bold text-white" style="background: var(--admin-accent);">افزودن درگاه</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg text-sm font-bold text-m-onsolid" style="background: var(--admin-accent);">افزودن درگاه</button>
                 </form>
             </section>
         @endif
 
-        <section class="rounded-lg p-4 text-xs leading-6" style="background:#FEF9C3; color:#713F12;">
+        <section class="rounded-lg p-4 text-xs leading-6" style="background:rgb(var(--m-warn) / .14); color:#713F12;">
             <b>نکته‌ها:</b>
             دامنه‌ی سایت سالن (یا ساب‌دامین آن) باید در پنل هر درگاه برای همان درگاه ثبت شده باشد؛ درگاه‌ها آدرس بازگشت را با آن مقایسه می‌کنند.
             کارمزدی که اینجا وارد می‌کنید به مبلغ پرداختی مشتری اضافه می‌شود و در صفحه‌ی پرداخت به او نمایش داده می‌شود —

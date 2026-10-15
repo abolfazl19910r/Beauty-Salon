@@ -36,12 +36,12 @@
                                 <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->phone }})</option>
                             @endforeach
                         </select>
-                        @error('user_id')<p class="text-xs mt-1 text-red-500">{{ $message }}</p>@enderror
+                        @error('user_id')<p class="text-xs mt-1 text-m-bad">{{ $message }}</p>@enderror
                     </div>
 
                     <div class="flex gap-3 pt-4" style="border-top:1px solid var(--admin-border)">
                         <button type="submit"
-                                class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-lg"
+                                class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-m-onsolid rounded-lg"
                                 style="background:var(--admin-accent)">
                             <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
                             اختصاص نقش

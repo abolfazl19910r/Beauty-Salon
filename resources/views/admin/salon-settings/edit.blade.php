@@ -27,7 +27,7 @@
         </div>
 
         @if ($errors->any())
-            <div class="rounded-lg p-3 mb-4 text-sm" style="background:#FEE2E2; color:#991B1B;">
+            <div class="rounded-lg p-3 mb-4 text-sm" style="background:rgb(var(--m-bad) / .14); color:rgb(var(--m-bad));">
                 @foreach ($errors->all() as $error)
                     <div>{{ $error }}</div>
                 @endforeach
@@ -49,7 +49,7 @@
                     <label class="block text-sm mb-1" for="sms_name">نام کوتاه برای پیامک <span style="color:var(--admin-text-light);">(اختیاری، حداکثر ۲۰ نویسه؛ خالی = نام اصلی)</span></label>
                     <input id="sms_name" name="sms_name" value="{{ old('sms_name', $salon->sms_name) }}" maxlength="20" placeholder="مثلاً: رز سفید" class="{{ $input }}" style="{{ $inputStyle }}">
                     <p class="text-xs mt-1" style="color:var(--admin-text-light);">پیامک فارسی تا ۷۰ نویسه یک قطعه است؛ نام کوتاه‌تر پیامک‌ها را یک‌قطعه‌ای و ارزان‌تر نگه می‌دارد. پیشنهاد: تا ۱۵ نویسه.</p>
-                    @error('sms_name') <p class="text-xs mt-1" style="color:#b91c1c;">{{ $message }}</p> @enderror
+                    @error('sms_name') <p class="text-xs mt-1" style="color:rgb(var(--m-bad));">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label class="block text-sm mb-1" for="tagline">شعار کوتاه <span style="color:var(--admin-text-light);">(اختیاری)</span></label>
@@ -88,7 +88,7 @@
                             @endif
                             <input id="logo_dark" type="file" name="logo_dark" accept="image/png,image/jpeg,image/webp" class="text-sm">
                         </div>
-                        @error('logo_dark') <p class="text-xs mt-1" style="color:#b91c1c;">{{ $message }}</p> @enderror
+                        @error('logo_dark') <p class="text-xs mt-1" style="color:rgb(var(--m-bad));">{{ $message }}</p> @enderror
                         @if ($salon->logo_dark_path)
                             <label class="flex items-center gap-2 mt-2 text-sm">
                                 <input type="checkbox" name="remove_logo_dark" value="1"> حذف لوگوی پس‌زمینه‌ی تیره
@@ -106,17 +106,17 @@
                     @include('admin.partials.feature-locked', ['feature' => \App\Support\Features\Feature::OnlinePayment])
                 @endunless
                 @if ($activeGateways->isNotEmpty())
-                    <div class="rounded-lg p-3 text-sm" style="background:#DCFCE7; color:#166534;">
+                    <div class="rounded-lg p-3 text-sm" style="background:rgb(var(--m-ok) / .14); color:rgb(var(--m-ok));">
                         پرداخت آنلاین فعال است؛ پرداخت‌های مشتری‌ها مستقیم به حساب درگاه‌های همین سالن واریز می‌شود:
                         <b>{{ $activeGateways->map->displayName()->implode('، ') }}</b>
                     </div>
                 @else
-                    <div class="rounded-lg p-3 text-sm" style="background:#FEE2E2; color:#991B1B;">
+                    <div class="rounded-lg p-3 text-sm" style="background:rgb(var(--m-bad) / .14); color:rgb(var(--m-bad));">
                         <b>پرداخت آنلاین سالن غیرفعال است.</b> تا حداقل یک درگاه فعال اضافه نشود، مشتری‌ها نمی‌توانند پیش‌پرداخت نوبت
                         یا شارژ کیف پول انجام دهند و رزرو خدماتی که پیش‌پرداخت دارند ممکن نیست.
                     </div>
                 @endif
-                <a href="{{ route('admin.payment-gateways.index') }}" class="inline-block px-4 py-2 rounded-lg text-sm font-bold text-white" style="background: var(--admin-accent);">
+                <a href="{{ route('admin.payment-gateways.index') }}" class="inline-block px-4 py-2 rounded-lg text-sm font-bold text-m-onsolid" style="background: var(--admin-accent);">
                     مدیریت درگاه‌های پرداخت (زرین‌پال، زیبال، آسان پرداخت، وندار)
                 </a>
 
@@ -124,7 +124,7 @@
                 <p class="text-xs" style="color: var(--admin-text-light);">
                     تسویه‌ی خودکار کیف پول متخصص‌ها:
                     @if ($salon->canAutoPayout())
-                        <b style="color:#166534;">فعال</b> — از حساب درگاه سالن.
+                        <b style="color:rgb(var(--m-ok));">فعال</b> — از حساب درگاه سالن.
                     @else
                         غیرفعال — برای فعال‌سازی، در «درگاه‌های پرداخت» اطلاعات تسویه‌ی درگاه زرین‌پال یا زیبال را وارد کنید.
                     @endif
@@ -177,7 +177,7 @@
             </section>
 
             <div class="flex justify-end">
-                <button type="submit" class="px-6 py-2 rounded-lg text-sm font-bold text-white" style="background: var(--admin-accent);">ذخیره‌ی اطلاعات سالن</button>
+                <button type="submit" class="px-6 py-2 rounded-lg text-sm font-bold text-m-onsolid" style="background: var(--admin-accent);">ذخیره‌ی اطلاعات سالن</button>
             </div>
         </form>
     </div>

@@ -13,7 +13,7 @@
 
                 <div class="mb-6">
                     <label for="iban" class="block text-xs text-[var(--specialist-plum-muted)] mb-2">
-                        شماره شبا <span class="text-red-400">*</span>
+                        شماره شبا <span class="text-m-bad">*</span>
                     </label>
                     <div class="relative">
                         <span class="absolute inset-y-0 right-0 flex items-center pr-4 font-mono text-[var(--specialist-plum-muted)]">IR</span>
@@ -31,14 +31,14 @@
                         >
                     </div>
                     @error('iban')
-                    <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                    <p class="text-m-bad text-sm mt-1">{{ $message }}</p>
                     @enderror
                     <p class="text-xs text-[var(--specialist-text-dim)] mt-1">شماره شبا 24 رقمی خود را بدون IR وارد کنید</p>
                 </div>
 
                 <div class="mb-6">
                     <label for="account_holder_name" class="block text-xs text-[var(--specialist-plum-muted)] mb-2">
-                        نام صاحب حساب <span class="text-red-400">*</span>
+                        نام صاحب حساب <span class="text-m-bad">*</span>
                     </label>
                     <input
                         type="text"
@@ -50,14 +50,14 @@
                         required
                     >
                     @error('account_holder_name')
-                    <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                    <p class="text-m-bad text-sm mt-1">{{ $message }}</p>
                     @enderror
                     <p class="text-xs text-[var(--specialist-text-dim)] mt-1">نام باید دقیقاً مطابق با نام روی کارت بانکی باشد</p>
                 </div>
 
                 <div class="mb-6">
                     <label for="bank_name" class="block text-xs text-[var(--specialist-plum-muted)] mb-2">
-                        نام بانک <span class="text-red-400">*</span>
+                        نام بانک <span class="text-m-bad">*</span>
                     </label>
                     <select
                         name="bank_name"
@@ -100,17 +100,17 @@
                         <option value="خاورمیانه" {{ old('bank_name', $wallet->bank_name) == 'خاورمیانه' ? 'selected' : '' }}>بانک خاورمیانه</option>
                     </select>
                     @error('bank_name')
-                    <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                    <p class="text-m-bad text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div class="mb-6 rounded-lg p-4" style="background-color: rgba(251, 191, 36, 0.07); border: 1px solid var(--specialist-border);">
                     <div class="flex items-start">
-                        <svg class="w-5 h-5 text-amber-400 ml-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 text-m-warn ml-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                         <div class="text-sm text-[var(--specialist-text-dim)]">
-                            <p class="font-semibold text-amber-300 mb-1">نکات مهم:</p>
+                            <p class="font-semibold text-m-warn mb-1">نکات مهم:</p>
                             <ul class="list-disc list-inside space-y-1 mr-2 text-xs">
                                 <li>اطلاعات باید دقیقاً مطابق با اطلاعات حساب بانکی شما باشد</li>
                                 <li>شماره شبا باید متعلق به شما باشد</li>
@@ -129,7 +129,7 @@
                         ذخیره اطلاعات
                     </button>
                     <a href="{{ route('specialist.wallet.index') }}"
-                       class="px-6 py-3 rounded-lg font-semibold transition-colors text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-text)]"
+                       class="px-6 py-3 rounded-lg font-semibold transition-colors text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)]"
                        style="border: 1px solid var(--specialist-border);">
                         انصراف
                     </a>

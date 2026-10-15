@@ -15,7 +15,7 @@
             </div>
             @permission('create-specialists')
             <a href="{{ route('admin.specialists.create') }}"
-               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
+               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid transition-colors"
                style="background:var(--admin-accent);"
                onmouseover="this.style.background='var(--admin-accent-hover)'"
                onmouseout="this.style.background='var(--admin-accent)'">
@@ -43,7 +43,7 @@
                            onblur="this.style.borderColor='var(--admin-border)'">
                 </div>
                 <button type="submit"
-                        class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
+                        class="px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid transition-colors"
                         style="background:var(--admin-accent);"
                         onmouseover="this.style.background='var(--admin-accent-hover)'"
                         onmouseout="this.style.background='var(--admin-accent)'">جستجو</button>
@@ -81,7 +81,7 @@
                                         <img src="{{ $specialist->photoUrl() }}" alt="{{ $specialist->name }}" class="w-9 h-9 rounded-full object-cover flex-shrink-0">
                                     @else
                                     <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-                                         style="background:var(--admin-accent); color:#fff;">
+                                         style="background:var(--admin-accent); color:rgb(var(--m-on-solid));">
                                         {{ mb_substr($specialist->name, 0, 1) }}
                                     </div>
                                     @endif
@@ -101,7 +101,7 @@
                             </td>
                             <td class="px-4 py-3">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold persian-number"
-                                  style="background:#EFF6FF; color:#1D4ED8;">
+                                  style="background:rgb(var(--m-info) / .1); color:rgb(var(--m-info));">
                                 {{ $specialist->bookings_count ?? 0 }}
                             </span>
                             </td>
@@ -119,8 +119,8 @@
                                     @permission('edit-specialists')
                                     <a href="{{ route('admin.specialists.edit', $specialist) }}" title="ویرایش"
                                        class="w-7 h-7 rounded flex items-center justify-center transition-colors"
-                                       style="color:#7C3AED;"
-                                       onmouseover="this.style.background='#F5F3FF'"
+                                       style="color:rgb(var(--m-gold));"
+                                       onmouseover="this.style.background='rgb(var(--m-gold) / .1)'"
                                        onmouseout="this.style.background=''">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
@@ -134,8 +134,8 @@
                                         <button type="button" title="حذف"
                                                 data-confirm-delete data-confirm-message="آیا از حذف {{ $specialist->name }} اطمینان دارید؟ تمام نوبت‌ها و برنامه‌های کاری مرتبط حذف خواهند شد."
                                                 class="w-7 h-7 rounded flex items-center justify-center transition-colors"
-                                                style="color:#DC2626;"
-                                                onmouseover="this.style.background='#FEF2F2'"
+                                                style="color:rgb(var(--m-bad));"
+                                                onmouseover="this.style.background='rgb(var(--m-bad) / .1)'"
                                                 onmouseout="this.style.background=''">
                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <polyline points="3 6 5 6 21 6"/>
@@ -155,7 +155,7 @@
                                 </svg>
                                 هیچ متخصصی یافت نشد
                                 @permission('create-specialists')
-                                <br><a href="{{ route('admin.specialists.create') }}" class="inline-block mt-3 text-xs px-3 py-1.5 rounded-lg text-white" style="background:var(--admin-accent);">افزودن متخصص جدید</a>
+                                <br><a href="{{ route('admin.specialists.create') }}" class="inline-block mt-3 text-xs px-3 py-1.5 rounded-lg text-m-onsolid" style="background:var(--admin-accent);">افزودن متخصص جدید</a>
                                 @endpermission
                             </td>
                         </tr>

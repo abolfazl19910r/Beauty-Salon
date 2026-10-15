@@ -11,7 +11,7 @@
             </div>
             <div class="flex gap-2">
                 <a href="{{ route('admin.roles.show', $role) }}"
-                   class="inline-flex items-center gap-1 px-4 py-2 text-sm text-white rounded-lg"
+                   class="inline-flex items-center gap-1 px-4 py-2 text-sm text-m-onsolid rounded-lg"
                    style="background:var(--admin-accent)">
                     <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                     مشاهده
@@ -36,7 +36,7 @@
                         <input type="text" name="name" value="{{ old('name', $role->name) }}" dir="ltr" required
                                class="w-full rounded-lg px-3 py-2 text-sm"
                                style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
-                        @error('name')<p class="text-xs mt-1 text-red-500">{{ $message }}</p>@enderror
+                        @error('name')<p class="text-xs mt-1 text-m-bad">{{ $message }}</p>@enderror
                         <p class="text-xs mt-1" style="color:var(--admin-text-light)">نام انگلیسی برای استفاده در کد</p>
                     </div>
                     <div>
@@ -44,7 +44,7 @@
                         <input type="text" name="label" value="{{ old('label', $role->label) }}" required
                                class="w-full rounded-lg px-3 py-2 text-sm"
                                style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
-                        @error('label')<p class="text-xs mt-1 text-red-500">{{ $message }}</p>@enderror
+                        @error('label')<p class="text-xs mt-1 text-m-bad">{{ $message }}</p>@enderror
                     </div>
                 </div>
 
@@ -76,7 +76,7 @@
 
                 <div class="flex gap-3 pt-4" style="border-top:1px solid var(--admin-border)">
                     <button type="submit"
-                            class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-lg"
+                            class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-m-onsolid rounded-lg"
                             style="background:var(--admin-accent)">
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
                         ذخیره تغییرات

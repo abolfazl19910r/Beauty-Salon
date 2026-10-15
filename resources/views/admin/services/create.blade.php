@@ -6,7 +6,7 @@
         .form-label { display:block; font-size:0.875rem; font-weight:500; margin-bottom:6px; color:var(--admin-text-dim); }
         .form-input,.form-select,.form-textarea { width:100%; border:1px solid var(--admin-border); border-radius:8px; padding:9px 14px; font-size:0.875rem; background:var(--admin-bg); color:var(--admin-text); outline:none; transition:border-color 0.15s; font-family:inherit; }
         .form-input:focus,.form-select:focus,.form-textarea:focus { border-color:var(--admin-accent); }
-        .form-error { color:#DC2626; font-size:0.78rem; margin-top:4px; }
+        .form-error { color:rgb(var(--m-bad)); font-size:0.78rem; margin-top:4px; }
         .upload-zone { border:2px dashed var(--admin-border); border-radius:10px; padding:2rem; text-align:center; cursor:pointer; transition:border-color 0.15s, background 0.15s; }
         .upload-zone:hover { border-color:var(--admin-accent); background:var(--admin-accent-light); }
     </style>
@@ -39,14 +39,14 @@
                         <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">اطلاعات خدمت</h2>
                         <div class="space-y-4">
                             <div>
-                                <label class="form-label">نام خدمت <span style="color:#DC2626;">*</span></label>
+                                <label class="form-label">نام خدمت <span style="color:rgb(var(--m-bad));">*</span></label>
                                 <input type="text" name="name" value="{{ old('name') }}" class="form-input" required placeholder="نام خدمت را وارد کنید">
                                 @error('name') <p class="form-error">{{ $message }}</p> @enderror
                             </div>
                             <div class="form-group">
                                 <label class="form-label">نام کوتاه برای پیامک (اختیاری، حداکثر ۲۰ نویسه)</label>
                                 <input type="text" name="sms_name" value="{{ old('sms_name') }}" maxlength="20" class="form-input" placeholder="خالی = نام اصلی، مثلاً: کراتینه">
-                                <p class="text-xs mt-1" style="color:#6b7280;">پیامک فارسی تا ۷۰ نویسه یک قطعه است؛ نام کوتاه‌تر پیامک‌ها را یک‌قطعه‌ای و ارزان‌تر نگه می‌دارد. پیشنهاد: تا ۱۵ نویسه.</p>
+                                <p class="text-xs mt-1" style="color:rgb(var(--m-mu));">پیامک فارسی تا ۷۰ نویسه یک قطعه است؛ نام کوتاه‌تر پیامک‌ها را یک‌قطعه‌ای و ارزان‌تر نگه می‌دارد. پیشنهاد: تا ۱۵ نویسه.</p>
                                 @error('sms_name') <p class="form-error">{{ $message }}</p> @enderror
                             </div>
                             <div>
@@ -66,12 +66,12 @@
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="form-label">قیمت (تومان) <span style="color:#DC2626;">*</span></label>
+                                    <label class="form-label">قیمت (تومان) <span style="color:rgb(var(--m-bad));">*</span></label>
                                     <input type="number" name="price" value="{{ old('price') }}" class="form-input" required placeholder="0" min="0">
                                     @error('price') <p class="form-error">{{ $message }}</p> @enderror
                                 </div>
                                 <div>
-                                    <label class="form-label">مدت زمان (دقیقه) <span style="color:#DC2626;">*</span></label>
+                                    <label class="form-label">مدت زمان (دقیقه) <span style="color:rgb(var(--m-bad));">*</span></label>
                                     <input type="number" name="duration" value="{{ old('duration') }}" class="form-input" required placeholder="60" min="1">
                                     @error('duration') <p class="form-error">{{ $message }}</p> @enderror
                                 </div>
@@ -97,7 +97,7 @@
 
                     <div class="flex justify-between p-4 rounded-xl" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                         <button type="submit"
-                                class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-white"
+                                class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-m-onsolid"
                                 style="background:var(--admin-accent);"
                                 onmouseover="this.style.background='var(--admin-accent-hover)'"
                                 onmouseout="this.style.background='var(--admin-accent)'">
@@ -122,19 +122,19 @@
                     <h2 class="text-sm font-bold mb-3" style="color:var(--admin-text);">راهنما</h2>
                     <div class="space-y-3 text-sm" style="color:var(--admin-text-dim);">
                         <div class="flex items-start gap-2">
-                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:#3B82F6;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:rgb(var(--m-info));" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                             </svg>
                             <span>نام و قیمت و مدت زمان الزامی هستند.</span>
                         </div>
                         <div class="flex items-start gap-2">
-                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:#3B82F6;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:rgb(var(--m-info));" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                             </svg>
                             <span>پس از ساخت خدمت می‌توانید آن را به متخصصین اختصاص دهید.</span>
                         </div>
                         <div class="flex items-start gap-2">
-                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:#F59E0B;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:rgb(var(--m-warn));" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                             </svg>
                             <span>قیمت پیش‌پرداخت توسط مشتریان پرداخت می‌شود.</span>

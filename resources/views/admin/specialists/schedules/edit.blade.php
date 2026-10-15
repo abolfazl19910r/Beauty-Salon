@@ -9,13 +9,13 @@
             overflow: hidden;
             transition: border-color 0.2s;
         }
-        .day-card.active { border-color: #86EFAC; }
+        .day-card.active { border-color: rgb(var(--m-ok) / .35); }
         .day-header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 12px 16px;
             border-bottom: 1px solid var(--admin-border);
         }
-        .day-card.active .day-header { background: #F0FDF4; }
+        .day-card.active .day-header { background: rgb(var(--m-ok) / .1); }
         .day-card:not(.active) .day-header { background: var(--admin-accent-light); }
         .toggle-switch {
             position: relative; width: 44px; height: 24px; display: inline-block;
@@ -33,7 +33,7 @@
             transition: transform 0.2s;
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
-        .toggle-switch input:checked + .toggle-slider { background: #16A34A; }
+        .toggle-switch input:checked + .toggle-slider { background: rgb(var(--m-ok)); }
         .toggle-switch input:checked + .toggle-slider:before { transform: translateX(-20px); }
         .time-input {
             border: 1px solid var(--admin-border); border-radius: 8px;
@@ -80,7 +80,7 @@
                         <div class="day-header">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold"
-                                     style="background:var(--admin-accent); color:#fff;">
+                                     style="background:var(--admin-accent); color:rgb(var(--m-on-solid));">
                                     {{ mb_substr($dayName, 0, 1) }}
                                 </div>
                                 <span class="font-medium" style="color:var(--admin-text);">{{ $dayName }}</span>
@@ -131,7 +131,7 @@
             </div>
 
             <div class="rounded-xl p-4 mb-5 flex items-start gap-3 text-sm"
-                 style="background:#EFF6FF; border:1px solid #93C5FD; color:#1D4ED8;">
+                 style="background:rgb(var(--m-info) / .1); border:1px solid rgb(var(--m-info) / .35); color:rgb(var(--m-info));">
                 <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
@@ -140,7 +140,7 @@
 
             <div class="flex items-center justify-between p-4 rounded-xl" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <button type="submit"
-                        class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-white transition-colors"
+                        class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-m-onsolid transition-colors"
                         style="background:var(--admin-accent);"
                         onmouseover="this.style.background='var(--admin-accent-hover)'"
                         onmouseout="this.style.background='var(--admin-accent)'">

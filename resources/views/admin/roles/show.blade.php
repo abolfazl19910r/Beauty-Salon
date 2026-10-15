@@ -12,7 +12,7 @@
             <div class="flex gap-2">
                 @if($role->name !== 'super-admin' || auth()->user()->hasRole('super-admin'))
                 <a href="{{ route('admin.roles.edit', $role) }}"
-                   class="inline-flex items-center gap-1 px-4 py-2 text-sm text-white rounded-lg"
+                   class="inline-flex items-center gap-1 px-4 py-2 text-sm text-m-onsolid rounded-lg"
                    style="background:var(--admin-accent)">
                     <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     ویرایش
@@ -59,13 +59,13 @@
                 <div class="space-y-2">
                     <a href="{{ route('admin.roles.edit', $role) }}"
                        class="flex items-center gap-2 p-3 rounded-lg text-sm transition-colors"
-                       style="background:#fffbeb;color:#d97706">
+                       style="background:rgb(var(--m-warn) / .1);color:rgb(var(--m-warn))">
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         ویرایش نقش
                     </a>
                     <a href="{{ route('admin.roles.assign.form', $role) }}"
                        class="flex items-center gap-2 p-3 rounded-lg text-sm transition-colors"
-                       style="background:#f0fdf4;color:#16a34a">
+                       style="background:rgb(var(--m-ok) / .1);color:rgb(var(--m-ok))">
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
                         اختصاص به کاربر
                     </a>
@@ -74,7 +74,7 @@
                         @method('DELETE')
                         <button type="submit" data-confirm-delete data-confirm-message="آیا از حذف این نقش اطمینان دارید؟"
                                 class="flex items-center gap-2 w-full p-3 rounded-lg text-sm transition-colors"
-                                style="background:#fef2f2;color:#dc2626">
+                                style="background:rgb(var(--m-bad) / .1);color:rgb(var(--m-bad))">
                             <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                             حذف نقش
                         </button>
@@ -123,7 +123,7 @@
                 </h2>
                 @if($role->name !== 'super-admin' || auth()->user()->hasRole('super-admin'))
                 <a href="{{ route('admin.roles.assign.form', $role) }}"
-                   class="inline-flex items-center gap-1 px-3 py-1.5 text-xs text-white rounded-lg"
+                   class="inline-flex items-center gap-1 px-3 py-1.5 text-xs text-m-onsolid rounded-lg"
                    style="background:var(--admin-accent)">
                     + افزودن کاربر
                 </a>
@@ -157,7 +157,7 @@
                                     @method('DELETE')
                                     <button type="submit" data-confirm-delete data-confirm-message="آیا از حذف نقش از این کاربر اطمینان دارید؟"
                                             class="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg transition-colors"
-                                            style="color:#dc2626;background:#fef2f2">
+                                            style="color:rgb(var(--m-bad));background:rgb(var(--m-bad) / .1)">
                                         <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                                         حذف نقش
                                     </button>

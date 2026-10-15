@@ -21,7 +21,7 @@
         .jcal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
         .jcal-day { text-align: center; padding: 6px 2px; font-size: .8rem; border-radius: 6px; cursor: pointer; color: var(--admin-text); transition: background .15s; }
         .jcal-day:hover { background: var(--admin-accent-light); color: var(--admin-accent); }
-        .jcal-day.selected { background: var(--admin-accent); color: #fff; font-weight: 600; }
+        .jcal-day.selected { background: var(--admin-accent); color: rgb(var(--m-on-solid)); font-weight: 600; }
         .jcal-day.today { border: 1px solid var(--admin-accent); color: var(--admin-accent); font-weight: 600; }
         .jcal-day.empty { cursor: default; }
         .jcal-day.empty:hover { background: none; }
@@ -65,15 +65,15 @@
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs" style="color:var(--admin-text-dim);">هشدار (۳۰ روز اخیر)</p>
-                <p class="text-xl font-bold mt-1 persian-number" style="color:#D97706;">{{ $stats['warnings_last_30_days'] }}</p>
+                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-warn));">{{ $stats['warnings_last_30_days'] }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs" style="color:var(--admin-text-dim);">ورود ناموفق (۲۴ ساعت اخیر)</p>
-                <p class="text-xl font-bold mt-1 persian-number" style="color:#DC2626;">{{ $stats['failed_logins_last_24h'] }}</p>
+                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-bad));">{{ $stats['failed_logins_last_24h'] }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs" style="color:var(--admin-text-dim);">کاربران با ۲FA فعال</p>
-                <p class="text-xl font-bold mt-1 persian-number" style="color:#16A34A;">{{ $stats['users_with_2fa'] }}</p>
+                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-ok));">{{ $stats['users_with_2fa'] }}</p>
             </div>
         </div>
 
@@ -120,7 +120,7 @@
                         <div class="jcal-popup" id="date-to-popup"></div>
                     </div>
                 </div>
-                <button type="submit" class="px-4 py-2 rounded-lg text-sm font-medium text-white self-end" style="background-color: var(--admin-accent);">فیلتر</button>
+                <button type="submit" class="px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid self-end" style="background-color: var(--admin-accent);">فیلتر</button>
             </div>
         </form>
 
@@ -150,9 +150,9 @@
                             <td class="px-4 py-3" style="color:var(--admin-text-dim);">{{ $log->event_label }}</td>
                             <td class="px-4 py-3">
                                 @if($log->level === 'warning')
-                                    <span class="px-2 py-0.5 rounded-full text-xs" style="background:rgba(217,119,6,0.12); color:#D97706;">هشدار</span>
+                                    <span class="px-2 py-0.5 rounded-full text-xs" style="background:rgba(217,119,6,0.12); color:rgb(var(--m-warn));">هشدار</span>
                                 @else
-                                    <span class="px-2 py-0.5 rounded-full text-xs" style="background:rgba(22,163,74,0.12); color:#16A34A;">عادی</span>
+                                    <span class="px-2 py-0.5 rounded-full text-xs" style="background:rgba(22,163,74,0.12); color:rgb(var(--m-ok));">عادی</span>
                                 @endif
                             </td>
                             <td class="px-4 py-3 persian-number" dir="ltr" style="color:var(--admin-text-dim);">{{ $log->ip_address ?: '—' }}</td>

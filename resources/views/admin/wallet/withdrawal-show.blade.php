@@ -6,7 +6,7 @@
         {{-- ⭐ نتیجه‌ی تسویه‌ی خودکار نامعلوم (۲۰۲۶-۰۹-۲۶) --}}
         @if($withdrawalRequest->needs_manual_check)
             @php $pd = (array) $withdrawalRequest->payment_details; @endphp
-            <div class="rounded-xl p-4 mb-5 text-sm leading-7" style="background:#FFFBEB; border:1px solid #FCD34D; color:#92400E;" data-needs-manual-check>
+            <div class="rounded-xl p-4 mb-5 text-sm leading-7" style="background:rgb(var(--m-warn) / .1); border:1px solid rgb(var(--m-warn) / .35); color:rgb(var(--m-warn));" data-needs-manual-check>
                 <p class="font-bold mb-1">نتیجه‌ی تسویه‌ی خودکار نامعلوم است — ممکن است پول واریز شده باشد.</p>
                 <p>{{ $pd['payout_message'] ?? 'پاسخ درگاه تسویه نرسید.' }}</p>
                 @if(! empty($pd['payout_raw']['track_id']))
@@ -35,12 +35,12 @@
         {{-- Status banner --}}
         @php
             $statusMap = [
-                'pending'    => ['در انتظار بررسی', '#FFFBEB', '#92400E', '#FCD34D'],
-                'processing' => ['در حال پردازش',   '#EFF6FF', '#1D4ED8', '#93C5FD'],
-                'completed'  => ['تکمیل شده',       '#F0FDF4', '#166534', '#86EFAC'],
-                'failed'     => ['ناموفق',           '#FEF2F2', '#991B1B', '#FCA5A5'],
+                'pending'    => ['در انتظار بررسی', 'rgb(var(--m-warn) / .1)', 'rgb(var(--m-warn))', 'rgb(var(--m-warn) / .35)'],
+                'processing' => ['در حال پردازش',   'rgb(var(--m-info) / .1)', 'rgb(var(--m-info))', 'rgb(var(--m-info) / .35)'],
+                'completed'  => ['تکمیل شده',       'rgb(var(--m-ok) / .1)', 'rgb(var(--m-ok))', 'rgb(var(--m-ok) / .35)'],
+                'failed'     => ['ناموفق',           'rgb(var(--m-bad) / .1)', 'rgb(var(--m-bad))', 'rgb(var(--m-bad) / .35)'],
             ];
-            $st = $statusMap[$withdrawalRequest->status] ?? [$withdrawalRequest->status, '#F1F5F9', '#475569', '#CBD5E1'];
+            $st = $statusMap[$withdrawalRequest->status] ?? [$withdrawalRequest->status, 'rgb(var(--m-tx) / .05)', 'rgb(var(--m-tx))', 'var(--m-line2)'];
         @endphp
         <div class="rounded-xl px-5 py-3 mb-5 flex items-center justify-between"
              style="background:{{ $st[1] }}; border:1px solid {{ $st[3] }};">
@@ -70,7 +70,7 @@
                         </div>
                         <div>
                             <p class="mb-1" style="color:var(--admin-text-dim);">موجودی کیف پول</p>
-                            <p class="persian-number font-bold" style="color:#16A34A;">
+                            <p class="persian-number font-bold" style="color:rgb(var(--m-ok));">
                                 {{ number_format($withdrawalRequest->wallet?->balance ?? 0) }} تومان
                             </p>
                         </div>
@@ -101,7 +101,7 @@
                         @if($withdrawalRequest->net_amount)
                             <div class="flex justify-between py-2" style="border-bottom:1px dashed var(--admin-border);">
                                 <span style="color:var(--admin-text-dim);">مبلغ خالص (پس از کارمزد)</span>
-                                <span class="persian-number font-bold" style="color:#16A34A;">
+                                <span class="persian-number font-bold" style="color:rgb(var(--m-ok));">
                             {{ number_format($withdrawalRequest->net_amount) }} تومان
                         </span>
                             </div>
@@ -140,7 +140,7 @@
                         <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">عملیات</h2>
                         @php $manualIbanWarning = $withdrawalRequest->autoPayoutBlocker(); @endphp
                         @if($manualIbanWarning)
-                            <div class="rounded-lg p-3 mb-3 text-xs leading-6" style="background:#FFFBEB; color:#92400E; border:1px solid #FDE68A;">
+                            <div class="rounded-lg p-3 mb-3 text-xs leading-6" style="background:rgb(var(--m-warn) / .1); color:rgb(var(--m-warn)); border:1px solid rgb(var(--m-warn) / .35);">
                                 <strong>هشدار: شبای این درخواست تأیید نشده است.</strong>
                                 {{ $manualIbanWarning }}
                                 پیش از واریز دستی، شبا را در اپ بانک (صفحه‌ی انتقال پایا/ساتنا) وارد کنید و نام صاحب حساب را با
@@ -152,23 +152,23 @@
                                   onsubmit="if (this.dataset.submitted) { return false; } this.dataset.submitted = '1'; this.querySelector('button[type=submit]').disabled = true;">
                                 @csrf @method('PUT')
                                 <div class="mb-2">
-                                    <label class="block text-xs mb-1" style="color:var(--admin-text-dim);">کد پیگیری واقعی تراکنش بانکی <span class="text-red-500">*</span></label>
+                                    <label class="block text-xs mb-1" style="color:var(--admin-text-dim);">کد پیگیری واقعی تراکنش بانکی <span class="text-m-bad">*</span></label>
                                     <input type="text" name="payment_reference" required
                                            value="{{ old('payment_reference') }}"
                                            placeholder="مثلاً کد پیگیری ۱۲ رقمی حواله بانکی"
                                            class="w-full rounded-lg px-3 py-2 text-sm outline-none"
-                                           style="border:1px solid {{ $errors->has('payment_reference') ? '#DC2626' : 'var(--admin-border)' }}; background:var(--admin-bg); color:var(--admin-text); font-family:inherit;"
+                                           style="border:1px solid {{ $errors->has('payment_reference') ? 'rgb(var(--m-bad))' : 'var(--admin-border)' }}; background:var(--admin-bg); color:var(--admin-text); font-family:inherit;"
                                            onfocus="this.style.borderColor='var(--admin-accent)'"
                                            onblur="this.style.borderColor='var(--admin-border)'">
                                     @error('payment_reference')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                    <p class="text-m-bad text-xs mt-1">{{ $message }}</p>
                                     @enderror
                                 </div>
                                 <button type="submit"
-                                        class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-white"
-                                        style="background:#16A34A;"
-                                        onmouseover="this.style.background='#15803D'"
-                                        onmouseout="this.style.background='#16A34A'">
+                                        class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-m-onsolid"
+                                        style="background:rgb(var(--m-ok));"
+                                        onmouseover="this.style.background='rgb(var(--m-ok))'"
+                                        onmouseout="this.style.background='rgb(var(--m-ok))'">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                                     تایید و پردازش پرداخت
                                 </button>
@@ -188,9 +188,9 @@
                                 <button type="button"
                                         data-confirm-delete data-confirm-message="آیا از رد این درخواست اطمینان دارید؟"
                                         class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium"
-                                        style="background:#FEF2F2; color:#991B1B;"
-                                        onmouseover="this.style.background='#FEE2E2'"
-                                        onmouseout="this.style.background='#FEF2F2'">
+                                        style="background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad));"
+                                        onmouseover="this.style.background='rgb(var(--m-bad) / .14)'"
+                                        onmouseout="this.style.background='rgb(var(--m-bad) / .1)'">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                                     </svg>
@@ -209,7 +209,7 @@
                         @php $payoutSalon = app(\App\Support\CurrentSalon::class)->get(); @endphp
                         @php $payoutBlocker = $withdrawalRequest->autoPayoutBlocker(); @endphp
                         @if ($payoutSalon && $payoutSalon->canAutoPayout() && $payoutBlocker)
-                            <div class="rounded-lg p-3 text-xs leading-6" style="background:#FFFBEB; color:#92400E;">
+                            <div class="rounded-lg p-3 text-xs leading-6" style="background:rgb(var(--m-warn) / .1); color:rgb(var(--m-warn));">
                                 {{ $payoutBlocker }}
                             </div>
                         @elseif ($payoutSalon && $payoutSalon->canAutoPayout())
@@ -217,7 +217,7 @@
                               data-confirm-action data-confirm-message="آیا از تسویه‌ی آنلاین خودکار این درخواست اطمینان دارید؟">
                             @csrf
                             <button type="submit"
-                                    class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-white"
+                                    class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-m-onsolid"
                                     style="background:var(--admin-accent);"
                                     onmouseover="this.style.background='var(--admin-accent-hover)'"
                                     onmouseout="this.style.background='var(--admin-accent)'">

@@ -21,13 +21,13 @@
         </div>
 
         @unless($botImplemented)
-            <div class="rounded-xl p-4 mb-5 text-sm" style="background:rgba(217,119,6,0.1); border:1px solid rgba(217,119,6,0.3); color:#B45309;">
+            <div class="rounded-xl p-4 mb-5 text-sm" style="background:rgba(217,119,6,0.1); border:1px solid rgba(217,119,6,0.3); color:rgb(var(--m-warn));">
                 ستون «ربات» (تلگرام/بله): {{ $botNotImplementedMessage }}
             </div>
         @endunless
 
         @error('telegram')
-            <div class="rounded-xl p-4 mb-5 text-sm" style="background:rgba(220,38,38,0.1); border:1px solid rgba(220,38,38,0.3); color:#B91C1C;">
+            <div class="rounded-xl p-4 mb-5 text-sm" style="background:rgba(220,38,38,0.1); border:1px solid rgba(220,38,38,0.3); color:rgb(var(--m-bad));">
                 {{ $message }}
             </div>
         @enderror
@@ -95,7 +95,7 @@
                 </div>
             @endforeach
 
-            <button type="submit" class="px-6 py-2.5 rounded-lg text-sm font-medium text-white" style="background-color: var(--admin-accent);">
+            <button type="submit" class="px-6 py-2.5 rounded-lg text-sm font-medium text-m-onsolid" style="background-color: var(--admin-accent);">
                 ذخیره‌ی تنظیمات
             </button>
         </form>

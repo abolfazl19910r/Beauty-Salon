@@ -29,7 +29,7 @@
         .jcal-day:hover { background-color: rgba(216,174,224,0.15); }
         .jcal-day.jcal-empty { cursor: default; }
         .jcal-day.jcal-empty:hover { background-color: transparent; }
-        .jcal-day.jcal-selected { background-color: var(--specialist-plum-mid); color: #250D2B; font-weight: bold; }
+        .jcal-day.jcal-selected { background-color: var(--specialist-plum-mid); color: var(--m-on-gold); font-weight: bold; }
         .jcal-day.jcal-today { border: 1px solid var(--specialist-plum-mid); }
     </style>
 @endpush
@@ -96,7 +96,7 @@
                                     <polyline points="12 6 12 12 16 14"></polyline>
                                 </svg>
                                 تاریخ شروع مرخصی
-                                <span class="text-red-400">*</span>
+                                <span class="text-m-bad">*</span>
                             </span>
                         </label>
                         <div class="jcal-wrapper">
@@ -111,7 +111,7 @@
                             <div class="jcal-popup" id="jcal-popup-start_date_jalali"></div>
                         </div>
                         @error('start_date_jalali')
-                        <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                        <p class="mt-1 text-sm text-m-bad">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -123,7 +123,7 @@
                                     <polyline points="12 6 12 12 16 14"></polyline>
                                 </svg>
                                 تاریخ پایان مرخصی
-                                <span class="text-red-400">*</span>
+                                <span class="text-m-bad">*</span>
                             </span>
                         </label>
                         <div class="jcal-wrapper">
@@ -138,7 +138,7 @@
                             <div class="jcal-popup" id="jcal-popup-end_date_jalali"></div>
                         </div>
                         @error('end_date_jalali')
-                        <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                        <p class="mt-1 text-sm text-m-bad">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -162,7 +162,7 @@
                                   style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);"
                                   placeholder="توضیحاتی درباره دلیل مرخصی خود بنویسید..."></textarea>
                         @error('reason')
-                        <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                        <p class="mt-1 text-sm text-m-bad">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
@@ -176,7 +176,7 @@
                         ثبت درخواست مرخصی
                     </button>
                     <a href="{{ route('specialist.leaves') }}"
-                       class="px-6 py-3 rounded-lg transition flex items-center justify-center gap-2 text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-text)]"
+                       class="px-6 py-3 rounded-lg transition flex items-center justify-center gap-2 text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)]"
                        style="border: 1px solid var(--specialist-border);">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <line x1="18" y1="6" x2="6" y2="18"></line>

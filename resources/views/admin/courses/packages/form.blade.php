@@ -32,7 +32,7 @@
                         @endforeach
                     </div>
                     <p class="text-xs mt-1" style="{{ $dim }}">مثلاً «لیزر صورت + زیربغل»: هر جلسه همه‌ی خدمت‌ها با هم در یک نوبت، با مدتِ جمع آن‌ها. متخصص باید همه را انجام دهد.</p>
-                    @error('extra_service_ids') <p class="text-xs mt-1" style="color:#DC2626;">{{ $message }}</p> @enderror
+                    @error('extra_service_ids') <p class="text-xs mt-1" style="color:rgb(var(--m-bad));">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1" for="specialist_id">فقط این متخصص (اختیاری)</label>
@@ -91,7 +91,7 @@
         @if ($package->exists)
             <form method="POST" action="{{ route('admin.courses.packages.destroy', $package) }}" class="mt-4">
                 @csrf @method('DELETE')
-                <button type="submit" data-confirm-delete class="text-sm" style="color:#b91c1c;">حذف بسته</button>
+                <button type="submit" data-confirm-delete class="text-sm" style="color:rgb(var(--m-bad));">حذف بسته</button>
             </form>
         @endif
     </div>

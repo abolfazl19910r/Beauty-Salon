@@ -22,7 +22,7 @@
                     دسته‌بندی‌ها
                 </a>
                 <a href="{{ route('admin.blog.create') }}"
-                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white"
+                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                    style="background:var(--admin-accent);"
                    onmouseover="this.style.background='var(--admin-accent-hover)'"
                    onmouseout="this.style.background='var(--admin-accent)'">
@@ -84,7 +84,7 @@
                                 <td class="p-4 persian-number" style="color:var(--admin-text-dim);">{{ $post->published_at_jalali ?? '—' }}</td>
                                 <td class="p-4 persian-number" style="color:var(--admin-text-dim);">{{ number_format($post->views ?? 0) }}</td>
                                 <td class="p-4">
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $post->is_published ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700' }}">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $post->is_published ? 'bg-m-ok/10 text-m-ok' : 'bg-m-warn/10 text-m-warn' }}">
                                         {{ $post->is_published ? 'منتشر شده' : 'پیش‌نویس' }}
                                     </span>
                                 </td>
@@ -95,14 +95,14 @@
                                         <form action="{{ route('admin.blog.toggle-publish', $post) }}" method="POST" class="inline-block">
                                             @csrf
                                             @method('PATCH')
-                                            <button type="submit" class="text-xs font-medium" style="color:#2563eb;">
+                                            <button type="submit" class="text-xs font-medium" style="color:rgb(var(--m-info));">
                                                 {{ $post->is_published ? 'پیش‌نویس کردن' : 'انتشار' }}
                                             </button>
                                         </form>
                                         <form action="{{ route('admin.blog.destroy', $post) }}" method="POST" class="inline-block">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" data-confirm-delete class="text-xs font-medium" style="color:#dc2626;">حذف</button>
+                                            <button type="submit" data-confirm-delete class="text-xs font-medium" style="color:rgb(var(--m-bad));">حذف</button>
                                         </form>
                                     </div>
                                 </td>

@@ -22,14 +22,14 @@
 
         {{-- Statistics --}}
         <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
-            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid #F59E0B;">
+            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-warn));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">در انتظار تایید</p>
-                <p class="text-2xl font-bold persian-number" style="color:#D97706;">{{ $pendingCount }}</p>
+                <p class="text-2xl font-bold persian-number" style="color:rgb(var(--m-warn));">{{ $pendingCount }}</p>
                 <p class="text-xs mt-0.5 persian-number" style="color:var(--admin-text-light);">{{ number_format($pendingAmount) }} تومان</p>
             </div>
-            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid #16A34A;">
+            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-ok));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">تکمیل شده امروز</p>
-                <p class="text-2xl font-bold persian-number" style="color:#16A34A;">{{ $completedToday }}</p>
+                <p class="text-2xl font-bold persian-number" style="color:rgb(var(--m-ok));">{{ $completedToday }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid var(--admin-accent);">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل درخواست‌ها</p>
@@ -39,7 +39,7 @@
 
         {{-- ⭐ نتیجه‌ی تسویه‌ی خودکار نامعلوم (۲۰۲۶-۰۹-۲۶) --}}
         @if(($needsCheckCount ?? 0) > 0)
-            <a href="{{ route('admin.wallet.withdrawals', ['needs_check' => 1]) }}" class="block rounded-xl p-4 mb-4 text-sm" style="background:#FFFBEB; border:1px solid #FCD34D; color:#92400E;">
+            <a href="{{ route('admin.wallet.withdrawals', ['needs_check' => 1]) }}" class="block rounded-xl p-4 mb-4 text-sm" style="background:rgb(var(--m-warn) / .1); border:1px solid rgb(var(--m-warn) / .35); color:rgb(var(--m-warn));">
                 <strong class="persian-number">{{ $needsCheckCount }}</strong> تسویه‌ی خودکار نتیجه‌ی نامعلوم داشت (پاسخ درگاه نرسید) و منتظر بررسی دستی شماست — ممکن است پول واریز شده باشد. ببینید ←
             </a>
         @endif
@@ -55,13 +55,13 @@
             ] as $val => $label)
                 <a href="{{ route('admin.wallet.withdrawals', array_filter(['status' => $val])) }}"
                    class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-                   style="{{ request('status', '') === $val ? 'background:var(--admin-accent);color:#fff;' : 'background:var(--admin-accent-light);color:var(--admin-text-dim);' }}">
+                   style="{{ request('status', '') === $val ? 'background:var(--admin-accent);color:rgb(var(--m-on-solid));' : 'background:var(--admin-accent-light);color:var(--admin-text-dim);' }}">
                     {{ $label }}
                 </a>
             @endforeach
             <a href="{{ route('admin.wallet.withdrawals', ['needs_check' => 1]) }}"
                class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-               style="{{ request('needs_check') ? 'background:#D97706;color:#fff;' : 'background:#FFFBEB;color:#92400E;' }}">
+               style="{{ request('needs_check') ? 'background:rgb(var(--m-warn));color:rgb(var(--m-on-solid));' : 'background:rgb(var(--m-warn) / .1);color:rgb(var(--m-warn));' }}">
                 نیاز به بررسی دستی
             </a>
         </div>
@@ -85,12 +85,12 @@
                     @forelse($withdrawals as $item)
                         @php
                             $statusMap = [
-                                'pending'    => ['در انتظار',       '#FFFBEB', '#92400E'],
-                                'processing' => ['در حال پردازش',   '#EFF6FF', '#1D4ED8'],
-                                'completed'  => ['تکمیل شده',       '#F0FDF4', '#166534'],
-                                'failed'     => ['ناموفق',           '#FEF2F2', '#991B1B'],
+                                'pending'    => ['در انتظار',       'rgb(var(--m-warn) / .1)', 'rgb(var(--m-warn))'],
+                                'processing' => ['در حال پردازش',   'rgb(var(--m-info) / .1)', 'rgb(var(--m-info))'],
+                                'completed'  => ['تکمیل شده',       'rgb(var(--m-ok) / .1)', 'rgb(var(--m-ok))'],
+                                'failed'     => ['ناموفق',           'rgb(var(--m-bad) / .1)', 'rgb(var(--m-bad))'],
                             ];
-                            $st = $statusMap[$item->status] ?? [$item->status, '#F1F5F9', '#475569'];
+                            $st = $statusMap[$item->status] ?? [$item->status, 'rgb(var(--m-tx) / .05)', 'rgb(var(--m-tx))'];
                         @endphp
                         <tr style="border-bottom:1px solid var(--admin-border);"
                             onmouseover="this.style.background='var(--admin-accent-light)'"
@@ -99,7 +99,7 @@
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
                                     <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-                                         style="background:var(--admin-accent); color:#fff;">
+                                         style="background:var(--admin-accent); color:rgb(var(--m-on-solid));">
                                         {{ mb_substr($item->specialist?->name ?? '؟', 0, 1) }}
                                     </div>
                                     <span style="color:var(--admin-text);">{{ $item->specialist?->name ?? '—' }}</span>
@@ -119,7 +119,7 @@
                             <span class="px-2.5 py-0.5 rounded-full text-xs font-medium"
                                   style="background:{{ $st[1] }}; color:{{ $st[2] }};">{{ $st[0] }}</span>
                             @if($item->needs_manual_check)
-                                <span class="px-2 py-0.5 rounded-full text-xs font-medium mr-1" style="background:#FEF3C7; color:#92400E;">بررسی دستی</span>
+                                <span class="px-2 py-0.5 rounded-full text-xs font-medium mr-1" style="background:rgb(var(--m-warn) / .14); color:rgb(var(--m-warn));">بررسی دستی</span>
                             @endif
                             </td>
                             <td class="px-4 py-3">

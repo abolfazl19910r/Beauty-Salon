@@ -4,21 +4,21 @@
 
 @php
     $statusBadgeMap = [
-        'pending'         => ['label' => 'در انتظار تایید', 'class' => 'bg-amber-400/10 text-amber-300'],
-        'confirmed'       => ['label' => 'تایید شده',       'class' => 'bg-emerald-400/10 text-emerald-300'],
+        'pending'         => ['label' => 'در انتظار تایید', 'class' => 'bg-m-warn/10 text-m-warn'],
+        'confirmed'       => ['label' => 'تایید شده',       'class' => 'bg-m-ok/10 text-m-ok'],
         'completed'       => ['label' => 'انجام شده',        'class' => 'bg-[var(--specialist-plum-mid)]/15 text-[var(--specialist-plum-light)]'],
-        'cancelled'       => ['label' => 'لغو شده',          'class' => 'bg-red-500/10 text-red-300'], 'no_show' => ['label' => 'نیامد',          'class' => 'bg-red-500/10 text-red-300'],
-        'pending_payment' => ['label' => 'در انتظار پرداخت', 'class' => 'bg-orange-400/10 text-orange-300'],
+        'cancelled'       => ['label' => 'لغو شده',          'class' => 'bg-m-bad/10 text-m-bad'], 'no_show' => ['label' => 'نیامد',          'class' => 'bg-m-bad/10 text-m-bad'],
+        'pending_payment' => ['label' => 'در انتظار پرداخت', 'class' => 'bg-m-warn/10 text-m-warn'],
     ];
 
     $paymentBadgeMap = [
-        'paid'            => ['label' => 'پرداخت شده',      'class' => 'text-emerald-300'],
-        'pending_payment' => ['label' => 'در انتظار پرداخت', 'class' => 'text-amber-300'],
-        'unpaid'          => ['label' => 'پرداخت نشده',      'class' => 'text-red-300'],
+        'paid'            => ['label' => 'پرداخت شده',      'class' => 'text-m-ok'],
+        'pending_payment' => ['label' => 'در انتظار پرداخت', 'class' => 'text-m-warn'],
+        'unpaid'          => ['label' => 'پرداخت نشده',      'class' => 'text-m-bad'],
     ];
 
     $status = trim($booking->status);
-    $statusInfo = $statusBadgeMap[$status] ?? ['label' => 'نامشخص', 'class' => 'bg-white/5 text-[var(--specialist-text-dim)]'];
+    $statusInfo = $statusBadgeMap[$status] ?? ['label' => 'نامشخص', 'class' => 'bg-m-tx/5 text-[var(--specialist-text-dim)]'];
     $paymentInfo = $paymentBadgeMap[$booking->payment_status] ?? ['label' => $booking->payment_status, 'class' => 'text-[var(--specialist-text-dim)]'];
     $isAutoConfirm = $specialist->auto_confirm_bookings ?? false;
     $canShowButtons = !in_array($status, ['completed', 'cancelled', 'pending_payment', 'no_show']);
@@ -81,12 +81,12 @@
                         @if($status == 'pending')
                             <form action="{{ route('specialist.bookings.complete', $booking->id) }}" method="POST" class="inline">
                                 @csrf @method('PUT')
-                                <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-lg font-bold transition">
+                                <button type="submit" class="bg-m-ok hover:bg-m-ok text-m-onsolid px-8 py-3 rounded-lg font-bold transition">
                                     پذیرش نوبت
                                 </button>
                             </form>
                             <button onclick="document.getElementById('cancelModal').classList.remove('hidden')"
-                                    class="bg-red-600/90 hover:bg-red-600 text-white px-8 py-3 rounded-lg font-bold transition">
+                                    class="bg-m-bad/90 hover:bg-m-bad text-m-onsolid px-8 py-3 rounded-lg font-bold transition">
                                 لغو این نوبت
                             </button>
                         @endif
@@ -107,7 +107,7 @@
                             </form>
 
                             <button onclick="document.getElementById('cancelModal').classList.remove('hidden')"
-                                    class="bg-red-600/90 hover:bg-red-600 text-white px-8 py-3 rounded-lg font-bold transition">
+                                    class="bg-m-bad/90 hover:bg-m-bad text-m-onsolid px-8 py-3 rounded-lg font-bold transition">
                                 لغو این نوبت
                             </button>
                         @endif
@@ -132,7 +132,7 @@
     {{-- Cancel modal --}}
     <div id="cancelModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="specialist-card p-6 max-w-md w-full border" style="border-color: var(--specialist-border);">
-            <h3 class="text-xl font-bold text-red-300 mb-2 font-serif-fa">لغو نوبت</h3>
+            <h3 class="text-xl font-bold text-m-bad mb-2 font-serif-fa">لغو نوبت</h3>
             <p class="text-[var(--specialist-text-dim)] mb-4">آیا از لغو نوبت "{{ $booking->service?->name ?? '—' }}" اطمینان دارید؟</p>
             <form action="{{ route('specialist.bookings.cancel', $booking->id) }}" method="POST">
                 @csrf @method('PUT')
@@ -144,8 +144,8 @@
                               placeholder="مثلاً: تداخل در برنامه کاری..."></textarea>
                 </div>
                 <div class="flex gap-3">
-                    <button type="submit" class="flex-1 bg-red-600 text-white py-2 rounded-lg font-bold hover:bg-red-500 transition">تایید لغو نوبت</button>
-                    <button type="button" onclick="document.getElementById('cancelModal').classList.add('hidden')" class="flex-1 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-white/5 transition" style="border: 1px solid var(--specialist-border);">انصراف</button>
+                    <button type="submit" class="flex-1 bg-m-bad text-m-onsolid py-2 rounded-lg font-bold hover:bg-m-bad transition">تایید لغو نوبت</button>
+                    <button type="button" onclick="document.getElementById('cancelModal').classList.add('hidden')" class="flex-1 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-m-tx/5 transition" style="border: 1px solid var(--specialist-border);">انصراف</button>
                 </div>
             </form>
         </div>

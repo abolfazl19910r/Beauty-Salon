@@ -23,10 +23,10 @@
                             data-confirm-action
                             data-confirm-message="این عملیات درآمدهای سررسیدشده‌ی در انتظار تسویه‌ی همه‌ی متخصصین (یا در صورت انتخاب گزینه‌ی بالا، حتی سررسیدنشده‌ها) را به موجودی قابل‌برداشت منتقل می‌کند. ادامه می‌دهید؟"
                             data-confirm-text="بله، تسویه شود"
-                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white whitespace-nowrap"
-                            style="background:#16A34A;"
-                            onmouseover="this.style.background='#15803D'"
-                            onmouseout="this.style.background='#16A34A'">
+                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid whitespace-nowrap"
+                            style="background:rgb(var(--m-ok));"
+                            onmouseover="this.style.background='rgb(var(--m-ok))'"
+                            onmouseout="this.style.background='rgb(var(--m-ok))'">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
@@ -48,22 +48,22 @@
 
         {{-- Statistics cards --}}
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
-            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid #3B82F6;">
+            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-info));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل موجودی متخصصین</p>
                 <p class="text-xl font-bold persian-number" style="color:var(--admin-text);">{{ number_format($totalBalance) }}</p>
                 <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">تومان</p>
             </div>
-            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid #16A34A;">
+            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-ok));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل درآمد متخصصین</p>
                 <p class="text-xl font-bold persian-number" style="color:var(--admin-text);">{{ number_format($totalEarned) }}</p>
                 <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">تاکنون</p>
             </div>
-            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid #DC2626;">
+            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-bad));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل برداشت‌ها</p>
                 <p class="text-xl font-bold persian-number" style="color:var(--admin-text);">{{ number_format($totalWithdrawn) }}</p>
                 <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">پرداخت شده</p>
             </div>
-            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid #F59E0B;">
+            <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-warn));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">بلوکه شده</p>
                 <p class="text-xl font-bold persian-number" style="color:var(--admin-text);">{{ number_format($totalPending) }}</p>
                 <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">در انتظار تسویه</p>
@@ -93,7 +93,7 @@
                 </div>
                 <div class="flex gap-2">
                     <button type="submit"
-                            class="px-4 py-2 rounded-lg text-sm font-medium text-white"
+                            class="px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                             style="background:var(--admin-accent);"
                             onmouseover="this.style.background='var(--admin-accent-hover)'"
                             onmouseout="this.style.background='var(--admin-accent)'">جستجو</button>
@@ -130,7 +130,7 @@
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
                                     <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-                                         style="background:var(--admin-accent); color:#fff;">
+                                         style="background:var(--admin-accent); color:rgb(var(--m-on-solid));">
                                         {{ mb_substr($wallet->specialist?->name ?? '؟', 0, 1) }}
                                     </div>
                                     <div>
@@ -140,11 +140,11 @@
                                 </div>
                             </td>
                             <td class="px-4 py-3">
-                                <span class="font-bold persian-number" style="color:#16A34A;">{{ number_format($wallet->balance) }}</span>
+                                <span class="font-bold persian-number" style="color:rgb(var(--m-ok));">{{ number_format($wallet->balance) }}</span>
                                 <span class="text-xs" style="color:var(--admin-text-light);"> ت</span>
                             </td>
                             <td class="px-4 py-3">
-                                <span class="persian-number" style="color:#F59E0B;">{{ number_format($wallet->pending_amount ?? 0) }}</span>
+                                <span class="persian-number" style="color:rgb(var(--m-warn));">{{ number_format($wallet->pending_amount ?? 0) }}</span>
                                 <span class="text-xs" style="color:var(--admin-text-light);"> ت</span>
                             </td>
                             <td class="px-4 py-3">
@@ -153,11 +153,11 @@
                             <td class="px-4 py-3">
                                 @if($wallet->iban)
                                     @if(! $wallet->has_valid_iban)
-                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:#FEF2F2; color:#991B1B;">نامعتبر</span>
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad));">نامعتبر</span>
                                     @elseif($wallet->iban_verified)
-                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:#F0FDF4; color:#166534;">تایید شده</span>
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:rgb(var(--m-ok) / .1); color:rgb(var(--m-ok));">تایید شده</span>
                                     @else
-                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:#FFFBEB; color:#92400E;">در انتظار</span>
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:rgb(var(--m-warn) / .1); color:rgb(var(--m-warn));">در انتظار</span>
                                     @endif
                                 @else
                                     <span class="text-xs" style="color:var(--admin-text-light);">ثبت نشده</span>

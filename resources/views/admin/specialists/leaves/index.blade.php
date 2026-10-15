@@ -16,7 +16,7 @@
         .jcal-day:hover { background:var(--admin-accent-light); }
         .jcal-day.empty { cursor:default; }
         .jcal-day.empty:hover { background:transparent; }
-        .jcal-day.selected { background:var(--admin-accent); color:#fff; font-weight:bold; }
+        .jcal-day.selected { background:var(--admin-accent); color:rgb(var(--m-on-solid)); font-weight:bold; }
         .jcal-day.today { border:1px solid var(--admin-accent); }
         .form-input { width:100%; border:1px solid var(--admin-border); border-radius:8px; padding:8px 12px; font-size:0.875rem; background:var(--admin-bg); color:var(--admin-text); outline:none; transition:border-color 0.15s; font-family:inherit; }
         .form-input:focus { border-color:var(--admin-accent); }
@@ -33,7 +33,7 @@
             </div>
             <div class="flex gap-2">
                 <button type="button" onclick="document.getElementById('leave-modal').classList.remove('hidden')"
-                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white"
+                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                         style="background:var(--admin-accent);"
                         onmouseover="this.style.background='var(--admin-accent-hover)'"
                         onmouseout="this.style.background='var(--admin-accent)'">
@@ -75,11 +75,11 @@
                             <td class="px-4 py-3" style="color:var(--admin-text-dim);">{{ $leave->reason ?: '—' }}</td>
                             <td class="px-4 py-3">
                                 @if($leave->status === 'pending')
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:#FFFBEB; color:#92400E;">در انتظار</span>
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:rgb(var(--m-warn) / .1); color:rgb(var(--m-warn));">در انتظار</span>
                                 @elseif($leave->status === 'approved')
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:#F0FDF4; color:#166534;">تایید شده</span>
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:rgb(var(--m-ok) / .1); color:rgb(var(--m-ok));">تایید شده</span>
                                 @else
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:#FEF2F2; color:#991B1B;">رد شده</span>
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad));">رد شده</span>
                                 @endif
                             </td>
                             <td class="px-4 py-3">
@@ -90,8 +90,8 @@
                                             <input type="hidden" name="status" value="approved">
                                             <button type="submit" title="تایید"
                                                     class="w-7 h-7 rounded flex items-center justify-center transition-colors"
-                                                    style="color:#16A34A;"
-                                                    onmouseover="this.style.background='#F0FDF4'"
+                                                    style="color:rgb(var(--m-ok));"
+                                                    onmouseover="this.style.background='rgb(var(--m-ok) / .1)'"
                                                     onmouseout="this.style.background=''">
                                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                                             </button>
@@ -99,8 +99,8 @@
                                         <button type="button" title="رد"
                                                 onclick="openRejectModal('{{ route('admin.specialists.leaves.update', [$specialist, $leave]) }}')"
                                                 class="w-7 h-7 rounded flex items-center justify-center transition-colors"
-                                                style="color:#DC2626;"
-                                                onmouseover="this.style.background='#FEF2F2'"
+                                                style="color:rgb(var(--m-bad));"
+                                                onmouseover="this.style.background='rgb(var(--m-bad) / .1)'"
                                                 onmouseout="this.style.background=''">
                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -176,7 +176,7 @@
                             onmouseover="this.style.background='var(--admin-border)'"
                             onmouseout="this.style.background='var(--admin-accent-light)'">انصراف</button>
                     <button type="submit"
-                            class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
+                            class="px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid transition-colors"
                             style="background:var(--admin-accent);"
                             onmouseover="this.style.background='var(--admin-accent-hover)'"
                             onmouseout="this.style.background='var(--admin-accent)'">ثبت مرخصی</button>
@@ -191,7 +191,7 @@
          onclick="if(event.target===this)document.getElementById('reject-modal').classList.add('hidden')">
         <div class="rounded-xl shadow-xl w-full max-w-md mx-4 fade-in" style="background:var(--admin-surface);">
             <div class="flex items-center justify-between px-5 py-4" style="border-bottom:1px solid var(--admin-border);">
-                <h2 class="text-base font-bold" style="color:#DC2626;">رد درخواست مرخصی</h2>
+                <h2 class="text-base font-bold" style="color:rgb(var(--m-bad));">رد درخواست مرخصی</h2>
                 <button type="button" onclick="document.getElementById('reject-modal').classList.add('hidden')"
                         class="w-7 h-7 rounded flex items-center justify-center transition-colors"
                         style="color:var(--admin-text-dim);">
@@ -211,7 +211,7 @@
                     <button type="button" onclick="document.getElementById('reject-modal').classList.add('hidden')"
                             class="px-4 py-2 rounded-lg text-sm transition-colors"
                             style="background:var(--admin-accent-light); color:var(--admin-text-dim);">انصراف</button>
-                    <button type="submit" class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors" style="background:#DC2626;">رد درخواست</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid transition-colors" style="background:rgb(var(--m-bad));">رد درخواست</button>
                 </div>
             </form>
         </div>

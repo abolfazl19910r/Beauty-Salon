@@ -14,7 +14,7 @@
                 ویرایش پروفایل
             </h1>
             <a href="{{ route('specialist.profile.show') }}"
-               class="px-4 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-text)] transition flex items-center text-sm"
+               class="px-4 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)] transition flex items-center text-sm"
                style="border: 1px solid var(--specialist-border);">
                 <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -57,7 +57,7 @@
                                     <input type="checkbox" name="remove_photo" value="1"> حذف عکس فعلی
                                 </label>
                             @endif
-                            @error('photo') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
+                            @error('photo') <p class="mt-1 text-sm text-m-bad">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
@@ -66,7 +66,7 @@
                                    class="w-full rounded-lg px-4 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]"
                                    style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);"
                                    required>
-                            @error('name') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
+                            @error('name') <p class="mt-1 text-sm text-m-bad">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
@@ -75,7 +75,7 @@
                                    class="w-full rounded-lg px-4 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]"
                                    style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);"
                                    dir="ltr" required>
-                            @error('phone') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
+                            @error('phone') <p class="mt-1 text-sm text-m-bad">{{ $message }}</p> @enderror
                         </div>
 
                     </div>
@@ -95,7 +95,7 @@
             {{-- Password --}}
             <div class="specialist-card overflow-hidden flex flex-col">
                 <div class="p-5 border-b" style="border-color: var(--specialist-border);">
-                    <h2 class="text-sm font-bold text-amber-300 font-serif-fa flex items-center gap-2">
+                    <h2 class="text-sm font-bold text-m-warn font-serif-fa flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
@@ -112,25 +112,25 @@
                         <div>
                             <label for="current_password" class="block text-xs text-[var(--specialist-plum-muted)] mb-2">رمز عبور فعلی</label>
                             <input type="password" name="current_password" id="current_password"
-                                   class="w-full rounded-lg px-4 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                   class="w-full rounded-lg px-4 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-m-warn/30"
                                    style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);"
                                    required>
-                            @error('current_password') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
+                            @error('current_password') <p class="mt-1 text-sm text-m-bad">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
                             <label for="password" class="block text-xs text-[var(--specialist-plum-muted)] mb-2">رمز عبور جدید</label>
                             <input type="password" name="password" id="password"
-                                   class="w-full rounded-lg px-4 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                   class="w-full rounded-lg px-4 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-m-warn/30"
                                    style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);"
                                    required>
-                            @error('password') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
+                            @error('password') <p class="mt-1 text-sm text-m-bad">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
                             <label for="password_confirmation" class="block text-xs text-[var(--specialist-plum-muted)] mb-2">تکرار رمز عبور</label>
                             <input type="password" name="password_confirmation" id="password_confirmation"
-                                   class="w-full rounded-lg px-4 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                   class="w-full rounded-lg px-4 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-m-warn/30"
                                    style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);"
                                    required>
                         </div>

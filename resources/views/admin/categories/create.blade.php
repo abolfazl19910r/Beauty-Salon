@@ -6,7 +6,7 @@
         .form-label { display:block; font-size:0.875rem; font-weight:500; margin-bottom:6px; color:var(--admin-text-dim); }
         .form-input,.form-textarea { width:100%; border:1px solid var(--admin-border); border-radius:8px; padding:9px 14px; font-size:0.875rem; background:var(--admin-bg); color:var(--admin-text); outline:none; transition:border-color 0.15s; font-family:inherit; }
         .form-input:focus,.form-textarea:focus { border-color:var(--admin-accent); }
-        .form-error { color:#DC2626; font-size:0.78rem; margin-top:4px; }
+        .form-error { color:rgb(var(--m-bad)); font-size:0.78rem; margin-top:4px; }
     </style>
 @endpush
 
@@ -29,7 +29,7 @@
                 @csrf
                 <div class="space-y-4 mb-5">
                     <div>
-                        <label class="form-label">نام دسته‌بندی <span style="color:#DC2626;">*</span></label>
+                        <label class="form-label">نام دسته‌بندی <span style="color:rgb(var(--m-bad));">*</span></label>
                         <input type="text" name="name" value="{{ old('name') }}" class="form-input" required placeholder="مثلاً: رنگ مو">
                         @error('name') <p class="form-error">{{ $message }}</p> @enderror
                     </div>
@@ -41,7 +41,7 @@
                 </div>
                 <div class="flex justify-between pt-4" style="border-top:1px solid var(--admin-border);">
                     <button type="submit"
-                            class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-white"
+                            class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-m-onsolid"
                             style="background:var(--admin-accent);"
                             onmouseover="this.style.background='var(--admin-accent-hover)'"
                             onmouseout="this.style.background='var(--admin-accent)'">

@@ -26,7 +26,7 @@
         .form-input:focus, .form-select:focus, .form-textarea:focus {
             border-color: var(--admin-accent);
         }
-        .form-error { color: #DC2626; font-size: 0.78rem; margin-top: 4px; }
+        .form-error { color: rgb(var(--m-bad)); font-size: 0.78rem; margin-top: 4px; }
 
         /* jcal datetime */
         .jcal-wrapper { position: relative; }
@@ -51,7 +51,7 @@
         .jcal-day:hover { background: var(--admin-accent-light); }
         .jcal-day.empty { cursor: default; }
         .jcal-day.empty:hover { background: transparent; }
-        .jcal-day.selected { background: var(--admin-accent); color: #fff; font-weight: bold; }
+        .jcal-day.selected { background: var(--admin-accent); color: rgb(var(--m-on-solid)); font-weight: bold; }
         .jcal-day.today { border: 1px solid var(--admin-accent); }
         .jcal-time {
             display: flex; align-items: center; gap: 8px;
@@ -67,7 +67,7 @@
         .jcal-time select:focus { border-color: var(--admin-accent); }
         .jcal-confirm {
             margin-top: 10px; width: 100%;
-            background: var(--admin-accent); color: #fff;
+            background: var(--admin-accent); color: rgb(var(--m-on-solid));
             border: none; border-radius: 7px; padding: 8px;
             font-size: 13px; font-family: inherit; cursor: pointer;
         }
@@ -235,7 +235,7 @@
 
                 <div class="flex items-center justify-between mt-6 pt-5" style="border-top:1px solid var(--admin-border);">
                     <button type="submit"
-                            class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-white transition-colors"
+                            class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-m-onsolid transition-colors"
                             style="background:var(--admin-accent);"
                             onmouseover="this.style.background='var(--admin-accent-hover)'"
                             onmouseout="this.style.background='var(--admin-accent)'">

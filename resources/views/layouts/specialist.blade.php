@@ -6,62 +6,19 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title') | پنل متخصصین</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@500;700&display=swap" rel="stylesheet">
-
     @include('partials.favicons')
 
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
 
+    @include('partials.mahru-theme')
+    @include('partials.mahru-panel')
+
     <style>
-        :root {
-            --specialist-bg: #1F1424;
-            --specialist-surface: #2C1B32;
-            --specialist-border: #3A2640;
-            --specialist-plum-light: #E0B8E8;
-            --specialist-plum-mid: #D8AEE0;
-            --specialist-plum-muted: #B98FC4;
-            --specialist-text: #F3E1F7;
-            --specialist-text-dim: #C9A6D1;
-            --specialist-inactive: #7A5C82;
-        }
-
-        .font-serif-fa {
-            font-family: 'Noto Naskh Arabic', 'Vazirmatn', serif;
-        }
-
         .persian-number {
             -moz-font-feature-settings: "ss02";
             -webkit-font-feature-settings: "ss02";
             font-feature-settings: "ss02";
         }
-
-        .specialist-card {
-            background: var(--specialist-surface);
-            border-radius: 12px;
-        }
-
-        .specialist-badge {
-            background: #3D2A45;
-            color: var(--specialist-plum-mid);
-            border-radius: 999px;
-        }
-
-        .specialist-cta {
-            background: linear-gradient(135deg, #D8AEE0, #A85FB8);
-            color: #250D2B;
-        }
-
-        .sidebar-active {
-            background: linear-gradient(90deg, rgba(216, 174, 224, 0.08) 0%, rgba(216, 174, 224, 0.18) 100%);
-            border-right: 3px solid var(--specialist-plum-mid);
-            color: var(--specialist-plum-light);
-        }
-
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: var(--specialist-surface); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: var(--specialist-border); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--specialist-plum-muted); }
 
         .fade-in {
             animation: fadeIn 0.5s ease-in-out;
@@ -95,7 +52,7 @@
     </style>
     @stack('styles')
 </head>
-<body class="font-vazir text-[var(--specialist-text)]" style="background-color: var(--specialist-bg);">
+<body class="m-panel text-[var(--specialist-text)]" style="background-color: var(--specialist-bg);">
 
 <div class="flex h-screen overflow-hidden">
 
@@ -103,7 +60,7 @@
         <div class="p-5 border-b flex items-center justify-between" style="border-color: var(--specialist-border);">
             <a href="{{ route('home') }}" class="flex items-center gap-2">
                 {{-- ⭐ لوگوی سالن متخصص (۲۰۲۶-۰۹-۲۴)، وگرنه آیکون پیش‌فرض. --}}
-                <x-brand-emblem class="w-9 h-9 rounded" surface="light" pad="3px" />
+                <x-brand-emblem class="w-9 h-9 rounded" pad="3px" />
                 <span class="text-lg font-bold font-serif-fa" style="color: var(--specialist-plum-light);">پنل متخصص</span>
             </a>
         </div>
@@ -111,7 +68,7 @@
         <nav class="mt-6 px-3 space-y-2">
 
             <a href="{{ route('specialist.my-dashboard') }}"
-               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.my-dashboard') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-plum-light)]' }}">
+               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.my-dashboard') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-plum-light)]' }}">
                 <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                 </svg>
@@ -119,7 +76,7 @@
             </a>
 
             <a href="{{ route('specialist.profile.show') }}"
-               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.profile*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-plum-light)]' }}">
+               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.profile*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-plum-light)]' }}">
                 <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
@@ -127,7 +84,7 @@
             </a>
 
             <a href="{{ route('specialist.bookings.index') }}"
-               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.bookings*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-plum-light)]' }}">
+               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.bookings*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-plum-light)]' }}">
                 <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
@@ -135,7 +92,7 @@
             </a>
 
             <a href="{{ route('specialist.reviews.index') }}"
-               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.reviews*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-plum-light)]' }}">
+               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.reviews*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-plum-light)]' }}">
                 <svg class="w-5 h-5 ml-3 opacity-75" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
@@ -143,7 +100,7 @@
             </a>
 
             <a href="{{ route('specialist.wallet.index') }}"
-               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.wallet*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-plum-light)]' }}">
+               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.wallet*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-plum-light)]' }}">
                 <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
@@ -151,7 +108,7 @@
             </a>
 
             <a href="{{ route('specialist.schedule') }}"
-               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.schedule*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-plum-light)]' }}">
+               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.schedule*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-plum-light)]' }}">
                 <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -159,7 +116,7 @@
             </a>
 
             <a href="{{ route('specialist.leaves.index') }}"
-               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.leaves*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-plum-light)]' }}">
+               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.leaves*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-plum-light)]' }}">
                 <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
@@ -167,7 +124,7 @@
             </a>
 
             <a href="{{ route('specialist.reports.index') }}"
-               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.reports*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-plum-light)]' }}">
+               class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('specialist.reports*') ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-plum-light)]' }}">
                 <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
@@ -175,7 +132,7 @@
             </a>
 
             <div class="border-t my-4 pt-4" style="border-color: var(--specialist-border);">
-                <a href="{{ route('home') }}" class="flex items-center px-4 py-3 text-sm font-medium text-[var(--specialist-inactive)] hover:bg-white/5 hover:text-[var(--specialist-text)] rounded-lg transition-colors">
+                <a href="{{ route('home') }}" class="flex items-center px-4 py-3 text-sm font-medium text-[var(--specialist-inactive)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)] rounded-lg transition-colors">
                     <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                     </svg>
@@ -184,7 +141,7 @@
 
                 <form method="POST" action="{{ route('logout') }}" class="w-full">
                     @csrf
-                    <button type="submit" class="w-full flex items-center px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                    <button type="submit" class="w-full flex items-center px-4 py-3 text-sm font-medium text-m-bad hover:bg-m-bad/10 rounded-lg transition-colors">
                         <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                         </svg>
@@ -210,16 +167,17 @@
             </div>
 
             <div class="flex items-center space-x-4 space-x-reverse">
+                @include('partials.mahru-theme-toggle')
                 <div class="relative inline-block text-left">
                     <button type="button"
                             id="notification-button"
-                            class="p-1 rounded-full text-[var(--specialist-text-dim)] hover:text-[var(--specialist-plum-light)] hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--specialist-plum-mid)] relative transition-colors"
+                            class="p-1 rounded-full text-[var(--specialist-text-dim)] hover:text-[var(--specialist-plum-light)] hover:bg-m-tx/5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--specialist-plum-mid)] relative transition-colors"
                             aria-expanded="false" aria-haspopup="true">
                         <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                         </svg>
-                        <span id="notification-count" class="absolute top-0 right-0 hidden items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-500 rounded-full">0</span>
+                        <span id="notification-count" class="absolute top-0 right-0 hidden items-center justify-center px-2 py-1 text-xs font-bold leading-none text-m-onsolid bg-m-bad rounded-full">0</span>
                     </button>
 
                     <div id="notification-dropdown"
@@ -235,7 +193,7 @@
                         </div>
                         <div class="border-t" style="border-color: var(--specialist-border);">
                             <a href="{{ route('specialist.notifications.index') }}"
-                               class="w-full text-center text-[var(--specialist-plum-mid)] hover:bg-white/5 block px-4 py-2 text-sm"
+                               class="w-full text-center text-[var(--specialist-plum-mid)] hover:bg-m-tx/5 block px-4 py-2 text-sm"
                                role="menuitem"
                                tabindex="-1">
                                 مشاهده همه اعلانات
@@ -267,7 +225,7 @@
                             </div>
 
                             <a href="{{ route('specialist.profile.show') }}"
-                               class="text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-text)] flex items-center px-4 py-2 text-sm"
+                               class="text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)] flex items-center px-4 py-2 text-sm"
                                role="menuitem" tabindex="-1">
                                 <svg class="w-5 h-5 mr-2 text-[var(--specialist-inactive)]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zM8 12a6 6 0 00-5.43 3.59A8 8 0 0118 10a8 8 0 01-4.57 7.59A6 6 0 008 12z" clip-rule="evenodd" />
@@ -276,7 +234,7 @@
                             </a>
 
                             <a href="{{ route('specialist.profile.edit') }}"
-                               class="text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-text)] flex items-center px-4 py-2 text-sm"
+                               class="text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)] flex items-center px-4 py-2 text-sm"
                                role="menuitem" tabindex="-1">
                                 <svg class="w-5 h-5 mr-2 text-[var(--specialist-inactive)]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                     <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
@@ -288,9 +246,9 @@
                             <form method="POST" action="{{ route('logout') }}" role="none" class="border-t" style="border-color: var(--specialist-border);">
                                 @csrf
                                 <button type="submit"
-                                        class="w-full text-right text-red-400 hover:bg-red-500/10 flex items-center px-4 py-2 text-sm"
+                                        class="w-full text-right text-m-bad hover:bg-m-bad/10 flex items-center px-4 py-2 text-sm"
                                         role="menuitem" tabindex="-1">
-                                    <svg class="w-5 h-5 mr-2 text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <svg class="w-5 h-5 mr-2 text-m-bad" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m-3 0l3-3m0 0l-3-3m3 3H9" />
                                     </svg>
                                     خروج
@@ -304,14 +262,14 @@
 
         <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6 pb-24 md:pb-6" style="background-color: var(--specialist-bg);">
             @if(session('success'))
-                <div id="success-notification" class="mb-4 border-r-4 border-green-500 bg-green-500/10 p-4 rounded-lg flex items-center justify-between fade-in">
+                <div id="success-notification" class="mb-4 border-r-4 border-m-ok bg-m-ok/10 p-4 rounded-lg flex items-center justify-between fade-in">
                     <div class="flex items-center">
-                        <svg class="w-6 h-6 text-green-400 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-6 h-6 text-m-ok ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        <span class="text-green-300">{{ session('success') }}</span>
+                        <span class="text-m-ok">{{ session('success') }}</span>
                     </div>
-                    <button onclick="closeNotification('success-notification')" class="text-green-300 hover:text-green-100 transition-colors">
+                    <button onclick="closeNotification('success-notification')" class="text-m-ok hover:text-m-ok transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -320,14 +278,14 @@
             @endif
 
             @if(session('error'))
-                <div id="error-notification" class="mb-4 border-r-4 border-red-500 bg-red-500/10 p-4 rounded-lg flex items-center justify-between fade-in">
+                <div id="error-notification" class="mb-4 border-r-4 border-m-bad bg-m-bad/10 p-4 rounded-lg flex items-center justify-between fade-in">
                     <div class="flex items-center">
-                        <svg class="w-6 h-6 text-red-400 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-6 h-6 text-m-bad ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        <span class="text-red-300">{{ session('error') }}</span>
+                        <span class="text-m-bad">{{ session('error') }}</span>
                     </div>
-                    <button onclick="closeNotification('error-notification')" class="text-red-300 hover:text-red-100 transition-colors">
+                    <button onclick="closeNotification('error-notification')" class="text-m-bad hover:text-m-bad transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -442,12 +400,12 @@
                     data.notifications.forEach(notification => {
                         const link = document.createElement('a');
                         link.href = notification.link;
-                        link.classList.add('text-[var(--specialist-text-dim)]', 'hover:bg-white/5', 'flex', 'flex-col', 'items-start', 'px-4', 'py-2', 'text-sm', 'border-b', 'border-[var(--specialist-border)]');
+                        link.classList.add('text-[var(--specialist-text-dim)]', 'hover:bg-m-tx/5', 'flex', 'flex-col', 'items-start', 'px-4', 'py-2', 'text-sm', 'border-b', 'border-[var(--specialist-border)]');
                         link.setAttribute('role', 'menuitem');
                         link.setAttribute('tabindex', '-1');
 
                         if (!notification.read_at) {
-                            link.classList.add('bg-white/5', 'font-semibold');
+                            link.classList.add('bg-m-tx/5', 'font-semibold');
                         }
 
                         link.innerHTML = `

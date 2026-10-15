@@ -30,7 +30,7 @@
                 <p class="text-sm text-[var(--specialist-text-dim)]">تنظیم ساعات کاری هفتگی</p>
             </div>
             <a href="{{ route('specialist.my-dashboard') }}"
-               class="flex items-center px-4 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-text)] transition"
+               class="flex items-center px-4 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)] transition"
                style="border: 1px solid var(--specialist-border);">
                 <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -61,7 +61,7 @@
                                    class="sr-only toggle-input"
                                 {{ $specialist->auto_confirm_bookings ? 'checked' : '' }}>
                             <span class="toggle-track w-11 h-6 rounded-full block"></span>
-                            <span class="toggle-thumb absolute top-0.5 right-0.5 bg-white w-5 h-5 rounded-full"></span>
+                            <span class="toggle-thumb absolute top-0.5 right-0.5 bg-m-card w-5 h-5 rounded-full"></span>
                         </span>
                         <span class="font-medium text-[var(--specialist-text)]">فعال‌سازی تایید خودکار نوبت‌ها</span>
                     </label>
@@ -140,7 +140,7 @@
                                                    class="sr-only toggle-input day-active-checkbox"
                                                 {{ $isDayActive ? 'checked' : '' }}>
                                             <span class="toggle-track w-11 h-6 rounded-full block"></span>
-                                            <span class="toggle-thumb absolute top-0.5 right-0.5 bg-white w-5 h-5 rounded-full"></span>
+                                            <span class="toggle-thumb absolute top-0.5 right-0.5 bg-m-card w-5 h-5 rounded-full"></span>
                                         </span>
                                     </label>
                                 </div>

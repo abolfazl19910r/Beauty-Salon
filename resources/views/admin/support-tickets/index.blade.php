@@ -9,14 +9,14 @@
                 <p class="text-sm mt-0.5" style="color:var(--admin-text-dim);">پیام‌های شما به تیم پشتیبانی پلتفرم</p>
             </div>
             <a href="{{ route('admin.support-tickets.create') }}"
-               class="px-4 py-2 rounded-lg text-sm font-medium text-white transition hover:opacity-90"
+               class="px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid transition hover:opacity-90"
                style="background-color: var(--admin-accent);">
                 + تیکت جدید
             </a>
         </div>
 
         @if(session('success'))
-            <div class="mb-4 px-4 py-3 rounded-lg text-sm" style="background-color: rgba(34,197,94,0.1); color: #16A34A;">
+            <div class="mb-4 px-4 py-3 rounded-lg text-sm" style="background-color: rgba(34,197,94,0.1); color: rgb(var(--m-ok));">
                 {{ session('success') }}
             </div>
         @endif
@@ -46,11 +46,11 @@
                             </td>
                             <td class="px-4 py-3">
                                 @if($ticket->isOpen())
-                                    <span style="color:#D97706;">{{ $ticket->status_text }}</span>
+                                    <span style="color:rgb(var(--m-warn));">{{ $ticket->status_text }}</span>
                                 @elseif($ticket->isInProgress())
-                                    <span style="color:#2563EB;">{{ $ticket->status_text }}</span>
+                                    <span style="color:rgb(var(--m-info));">{{ $ticket->status_text }}</span>
                                 @elseif($ticket->isResolved())
-                                    <span style="color:#16A34A;">{{ $ticket->status_text }}</span>
+                                    <span style="color:rgb(var(--m-ok));">{{ $ticket->status_text }}</span>
                                 @else
                                     <span style="color:var(--admin-text-dim);">{{ $ticket->status_text }}</span>
                                 @endif

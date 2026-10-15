@@ -16,7 +16,7 @@
             </div>
             @permission('create-users')
             <a href="{{ route('admin.users.create') }}"
-               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white"
+               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                style="background:var(--admin-accent);"
                onmouseover="this.style.background='var(--admin-accent-hover)'"
                onmouseout="this.style.background='var(--admin-accent)'">
@@ -68,7 +68,7 @@
                 </div>
                 <div class="flex gap-2">
                     <button type="submit"
-                            class="px-4 py-2 rounded-lg text-sm font-medium text-white"
+                            class="px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                             style="background:var(--admin-accent);"
                             onmouseover="this.style.background='var(--admin-accent-hover)'"
                             onmouseout="this.style.background='var(--admin-accent)'">جستجو</button>
@@ -106,7 +106,7 @@
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
                                     <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-                                         style="background:var(--admin-accent); color:#fff;">
+                                         style="background:var(--admin-accent); color:rgb(var(--m-on-solid));">
                                         {{ mb_substr($user->name, 0, 1) }}
                                     </div>
                                     <div>
@@ -127,7 +127,7 @@
                             <td class="px-4 py-3">
                                 @php $salonPivotRole = $user->salons->first()?->pivot->role ?? null; @endphp
                                 @if($salonPivotRole === 'owner')
-                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:#FEF3C7; color:#92400E;">مالک</span>
+                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:rgb(var(--m-warn) / .14); color:rgb(var(--m-warn));">مالک</span>
                                 @elseif($salonPivotRole === 'staff')
                                     <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:var(--admin-accent-light); color:var(--admin-accent);">منشی</span>
                                 @else
@@ -136,9 +136,9 @@
                             </td>
                             <td class="px-4 py-3">
                                 @if($user->phone_verified_at)
-                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:#F0FDF4; color:#166534;">فعال</span>
+                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:rgb(var(--m-ok) / .1); color:rgb(var(--m-ok));">فعال</span>
                                 @else
-                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:#FEF2F2; color:#991B1B;">غیرفعال</span>
+                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad));">غیرفعال</span>
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-xs persian-number" style="color:var(--admin-text-dim);">
@@ -158,8 +158,8 @@
                                     @permission('edit-users')
                                     <a href="{{ route('admin.users.edit', $user) }}" title="ویرایش"
                                        class="w-7 h-7 rounded flex items-center justify-center transition-colors"
-                                       style="color:#7C3AED;"
-                                       onmouseover="this.style.background='#F5F3FF'"
+                                       style="color:rgb(var(--m-gold));"
+                                       onmouseover="this.style.background='rgb(var(--m-gold) / .1)'"
                                        onmouseout="this.style.background=''">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
@@ -172,8 +172,8 @@
                                         <input type="hidden" name="is_active" value="{{ $user->phone_verified_at ? 0 : 1 }}">
                                         <button type="submit" title="{{ $user->phone_verified_at ? 'غیرفعال کردن' : 'فعال کردن' }}"
                                                 class="w-7 h-7 rounded flex items-center justify-center transition-colors"
-                                                style="color:{{ $user->phone_verified_at ? '#DC2626' : '#16A34A' }};"
-                                                onmouseover="this.style.background='{{ $user->phone_verified_at ? '#FEF2F2' : '#F0FDF4' }}'"
+                                                style="color:{{ $user->phone_verified_at ? 'rgb(var(--m-bad))' : 'rgb(var(--m-ok))' }};"
+                                                onmouseover="this.style.background='{{ $user->phone_verified_at ? 'rgb(var(--m-bad) / .1)' : 'rgb(var(--m-ok) / .1)' }}'"
                                                 onmouseout="this.style.background=''">
                                             @if($user->phone_verified_at)
                                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -193,8 +193,8 @@
                                         <button type="button" title="حذف"
                                                 data-confirm-delete data-confirm-message="آیا از حذف {{ $user->name }} اطمینان دارید؟"
                                                 class="w-7 h-7 rounded flex items-center justify-center transition-colors"
-                                                style="color:#DC2626;"
-                                                onmouseover="this.style.background='#FEF2F2'"
+                                                style="color:rgb(var(--m-bad));"
+                                                onmouseover="this.style.background='rgb(var(--m-bad) / .1)'"
                                                 onmouseout="this.style.background=''">
                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <polyline points="3 6 5 6 21 6"/>

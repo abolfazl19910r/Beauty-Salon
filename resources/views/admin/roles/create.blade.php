@@ -23,21 +23,21 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
                     <div>
-                        <label class="block text-sm font-medium mb-1" style="color:var(--admin-text-dim)">نام فنی (انگلیسی) <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium mb-1" style="color:var(--admin-text-dim)">نام فنی (انگلیسی) <span class="text-m-bad">*</span></label>
                         <input type="text" name="name" value="{{ old('name') }}" dir="ltr" required
                                placeholder="editor, manager"
                                class="w-full rounded-lg px-3 py-2 text-sm"
                                style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
-                        @error('name')<p class="text-xs mt-1 text-red-500">{{ $message }}</p>@enderror
+                        @error('name')<p class="text-xs mt-1 text-m-bad">{{ $message }}</p>@enderror
                         <p class="text-xs mt-1" style="color:var(--admin-text-light)">به انگلیسی و بدون فاصله</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1" style="color:var(--admin-text-dim)">عنوان نمایشی (فارسی) <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium mb-1" style="color:var(--admin-text-dim)">عنوان نمایشی (فارسی) <span class="text-m-bad">*</span></label>
                         <input type="text" name="label" value="{{ old('label') }}" required
                                placeholder="ویراستار، مدیر"
                                class="w-full rounded-lg px-3 py-2 text-sm"
                                style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
-                        @error('label')<p class="text-xs mt-1 text-red-500">{{ $message }}</p>@enderror
+                        @error('label')<p class="text-xs mt-1 text-m-bad">{{ $message }}</p>@enderror
                     </div>
                 </div>
 
@@ -48,7 +48,7 @@
                 </h2>
 
                 @if($permissions->isEmpty())
-                    <div class="p-4 rounded-lg text-sm mb-4" style="background:#fffbeb;border-right:3px solid #d97706;color:#92400e">
+                    <div class="p-4 rounded-lg text-sm mb-4" style="background:rgb(var(--m-warn) / .1);border-right:3px solid rgb(var(--m-warn));color:rgb(var(--m-warn))">
                         هیچ دسترسی برای تخصیص پیدا نشد. ابتدا دسترسی‌ها را تعریف کنید.
                     </div>
                 @else
@@ -75,7 +75,7 @@
 
                 <div class="flex gap-3 pt-4" style="border-top:1px solid var(--admin-border)">
                     <button type="submit"
-                            class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-lg"
+                            class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-m-onsolid rounded-lg"
                             style="background:var(--admin-accent)">
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
                         ذخیره نقش

@@ -18,14 +18,14 @@
                 <p class="text-sm mt-0.5" style="color:var(--admin-text-dim);">اطلاعیه‌های سیستم برای کاربران</p>
             </div>
             <a href="{{ route('admin.announcements.create') }}"
-               class="px-4 py-2 rounded-lg text-sm font-medium text-white transition hover:opacity-90"
+               class="px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid transition hover:opacity-90"
                style="background-color: var(--admin-accent);">
                 + اطلاعیه جدید
             </a>
         </div>
 
         @if(session('success'))
-            <div class="mb-4 px-4 py-3 rounded-lg text-sm" style="background-color: rgba(34,197,94,0.1); color: #16A34A;">
+            <div class="mb-4 px-4 py-3 rounded-lg text-sm" style="background-color: rgba(34,197,94,0.1); color: rgb(var(--m-ok));">
                 {{ session('success') }}
             </div>
         @endif
@@ -37,15 +37,15 @@
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs" style="color:var(--admin-text-dim);">فعال</p>
-                <p class="text-xl font-bold mt-1 persian-number" style="color:#16A34A;">{{ $activeAnnouncements }}</p>
+                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-ok));">{{ $activeAnnouncements }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs" style="color:var(--admin-text-dim);">در انتظار انتشار</p>
-                <p class="text-xl font-bold mt-1 persian-number" style="color:#D97706;">{{ $pendingAnnouncements }}</p>
+                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-warn));">{{ $pendingAnnouncements }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs" style="color:var(--admin-text-dim);">منقضی‌شده</p>
-                <p class="text-xl font-bold mt-1 persian-number" style="color:#DC2626;">{{ $expiredAnnouncements }}</p>
+                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-bad));">{{ $expiredAnnouncements }}</p>
             </div>
         </div>
 
@@ -76,7 +76,7 @@
                             <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ $announcement->priority }}</td>
                             <td class="px-4 py-3">
                                 @if($announcement->is_active)
-                                    <span class="px-2 py-1 rounded-full text-xs" style="background-color: rgba(34,197,94,0.1); color: #16A34A;">فعال</span>
+                                    <span class="px-2 py-1 rounded-full text-xs" style="background-color: rgba(34,197,94,0.1); color: rgb(var(--m-ok));">فعال</span>
                                 @else
                                     <span class="px-2 py-1 rounded-full text-xs" style="background-color: rgba(148,163,184,0.15); color: var(--admin-text-dim);">غیرفعال</span>
                                 @endif
@@ -92,7 +92,7 @@
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" data-confirm-delete
-                                                class="text-xs px-2 py-1 rounded" style="color:#DC2626;">
+                                                class="text-xs px-2 py-1 rounded" style="color:rgb(var(--m-bad));">
                                             حذف
                                         </button>
                                     </form>

@@ -19,7 +19,7 @@
             <h2 class="text-sm font-bold mb-3 mt-6" style="color:var(--admin-accent);">پیامک‌های {{ $audience }}</h2>
             @foreach ($templates as $t)
                 @php($bag = $errors->getBag('sms_'.$t['key']))
-                <div id="sms-{{ $t['key'] }}" class="rounded-xl p-4 mb-4" style="background:var(--admin-surface); border:1px solid {{ $bag->any() ? '#DC2626' : 'var(--admin-border)' }};"
+                <div id="sms-{{ $t['key'] }}" class="rounded-xl p-4 mb-4" style="background:var(--admin-surface); border:1px solid {{ $bag->any() ? 'rgb(var(--m-bad))' : 'var(--admin-border)' }};"
                      data-sms-template data-placeholders='@json(collect($t['placeholders'])->map(fn ($p) => $p[1]))'>
                     <div class="flex items-center justify-between gap-2 mb-2">
                         <h3 class="font-bold" style="color:var(--admin-text);">{{ $t['label'] }}</h3>
@@ -48,7 +48,7 @@
                         @endif
 
                         @if ($bag->any())
-                            <ul class="text-sm mt-2" style="color:#DC2626;" role="alert">
+                            <ul class="text-sm mt-2" style="color:rgb(var(--m-bad));" role="alert">
                                 @foreach ($bag->get('body') as $message)
                                     <li>{{ $message }}</li>
                                 @endforeach
@@ -61,7 +61,7 @@
                         </div>
 
                         <div class="flex items-center gap-3 mt-3">
-                            <button type="submit" class="px-4 py-2 rounded-lg text-sm font-medium text-white" style="background-color: var(--admin-accent);">ذخیره</button>
+                            <button type="submit" class="px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid" style="background-color: var(--admin-accent);">ذخیره</button>
                         </div>
                     </form>
                     @if ($t['custom'])

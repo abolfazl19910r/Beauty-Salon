@@ -7,9 +7,10 @@
     پلاک با padding روی خود <img> کشیده می‌شود، پس اندازه‌ی جعبه و چیدمان هیچ صفحه‌ای عوض نمی‌شود.
 
     surface:
-      theme (پیش‌فرض) — صفحه‌هایی که partials/mahru-theme دارند و با html[data-theme] تیره/روشن می‌شوند (دو تصویر، CSS یکی را نشان می‌دهد).
-      light / dark    — سطح ثابت (پنل‌های مدیر و متخصص فعلاً روشن‌اند). :light="true" همان surface="light" قدیمی است.
-    استفاده: <x-brand-emblem class="h-12 w-auto" />   <x-brand-emblem class="w-9 h-9 rounded" surface="light" pad="3px" />
+      theme (پیش‌فرض) — صفحه‌هایی که partials/mahru-theme دارند و با html[data-theme] تیره/روشن می‌شوند (دو تصویر، CSS یکی را نشان می‌دهد)؛
+                        از بسته‌ی ه پنل‌های مدیر و متخصص هم.
+      light / dark    — سطح ثابت (مثلاً پنل ابرمدیر). :light="true" همان surface="light" قدیمی است.
+    استفاده: <x-brand-emblem class="h-12 w-auto" />   <x-brand-emblem class="w-9 h-9 rounded" pad="3px" />
 --}}
 @props(['light' => false, 'surface' => null, 'pad' => '6px'])
 @php

@@ -33,7 +33,7 @@
             @endphp
             @foreach($tabs as $key => $label)
                 <a href="{{ route('specialist.notifications.index', $key === 'all' ? [] : ['category' => $key]) }}"
-                   class="px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors {{ $selectedCategory === $key ? 'specialist-cta' : 'text-[var(--specialist-text-dim)] hover:bg-white/5' }}"
+                   class="px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors {{ $selectedCategory === $key ? 'specialist-cta' : 'text-[var(--specialist-text-dim)] hover:bg-m-tx/5' }}"
                    style="{{ $selectedCategory === $key ? '' : 'border: 1px solid var(--specialist-border);' }}">
                     {{ $label }}
                     @if(($counts[$key] ?? 0) > 0)
@@ -70,7 +70,7 @@
                             $readUrl = route('specialist.notifications.read', $notification->id);
                         @endphp
                         <div id="notification-row-{{ $notification->id }}"
-                             class="flex items-start px-6 py-4 transition-colors hover:bg-white/5 {{ $notification->read_at ? '' : 'bg-[var(--specialist-plum-mid)]/5' }}">
+                             class="flex items-start px-6 py-4 transition-colors hover:bg-m-tx/5 {{ $notification->read_at ? '' : 'bg-[var(--specialist-plum-mid)]/5' }}">
                             <div class="flex-shrink-0 mt-2">
                                 <span id="notification-dot-{{ $notification->id }}"
                                       class="inline-block w-2 h-2 rounded-full"

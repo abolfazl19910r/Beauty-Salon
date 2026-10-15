@@ -29,7 +29,7 @@
         .jcal-day:hover { background-color: rgba(216,174,224,0.15); }
         .jcal-day.jcal-empty { cursor: default; }
         .jcal-day.jcal-empty:hover { background-color: transparent; }
-        .jcal-day.jcal-selected { background-color: var(--specialist-plum-mid); color: #250D2B; font-weight: bold; }
+        .jcal-day.jcal-selected { background-color: var(--specialist-plum-mid); color: var(--m-on-gold); font-weight: bold; }
         .jcal-day.jcal-today { border: 1px solid var(--specialist-plum-mid); }
     </style>
 @endpush
@@ -68,9 +68,9 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">نظرات 5 ستاره</p>
-                        <p class="text-2xl font-bold text-emerald-300 persian-number">{{ number_format($stats['five_star']) }}</p>
+                        <p class="text-2xl font-bold text-m-ok persian-number">{{ number_format($stats['five_star']) }}</p>
                     </div>
-                    <svg class="w-8 h-8 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-8 h-8 text-m-ok" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
                     </svg>
                 </div>
@@ -80,9 +80,9 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">نیاز به پاسخ</p>
-                        <p class="text-2xl font-bold text-amber-300 persian-number">{{ $reviews->where('specialist_response', null)->count() }}</p>
+                        <p class="text-2xl font-bold text-m-warn persian-number">{{ $reviews->where('specialist_response', null)->count() }}</p>
                     </div>
-                    <svg class="w-8 h-8 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <svg class="w-8 h-8 text-m-warn" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
@@ -193,7 +193,7 @@
                     <button type="submit" class="specialist-cta px-6 py-2 rounded-lg font-bold transition-opacity hover:opacity-90">
                         اعمال فیلتر
                     </button>
-                    <a href="{{ route('specialist.reviews.index') }}" class="px-6 py-2 rounded-lg font-medium text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-text)] transition" style="border: 1px solid var(--specialist-border);">
+                    <a href="{{ route('specialist.reviews.index') }}" class="px-6 py-2 rounded-lg font-medium text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)] transition" style="border: 1px solid var(--specialist-border);">
                         حذف فیلترها
                     </a>
                 </div>
@@ -230,19 +230,19 @@
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 p-4 rounded-lg" style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);">
                             <div class="text-center">
                                 <p class="text-xs text-[var(--specialist-plum-muted)] mb-1">کیفیت</p>
-                                <p class="font-bold text-sky-300 persian-number">{{ $review->quality_rating }}/5</p>
+                                <p class="font-bold text-m-info persian-number">{{ $review->quality_rating }}/5</p>
                             </div>
                             <div class="text-center">
                                 <p class="text-xs text-[var(--specialist-plum-muted)] mb-1">رفتار</p>
-                                <p class="font-bold text-emerald-300 persian-number">{{ $review->behavior_rating }}/5</p>
+                                <p class="font-bold text-m-ok persian-number">{{ $review->behavior_rating }}/5</p>
                             </div>
                             <div class="text-center">
                                 <p class="text-xs text-[var(--specialist-plum-muted)] mb-1">تمیزی</p>
-                                <p class="font-bold text-teal-300 persian-number">{{ $review->cleanliness_rating }}/5</p>
+                                <p class="font-bold text-m-ok persian-number">{{ $review->cleanliness_rating }}/5</p>
                             </div>
                             <div class="text-center">
                                 <p class="text-xs text-[var(--specialist-plum-muted)] mb-1">سرعت</p>
-                                <p class="font-bold text-amber-300 persian-number">{{ $review->speed_rating }}/5</p>
+                                <p class="font-bold text-m-warn persian-number">{{ $review->speed_rating }}/5</p>
                             </div>
                         </div>
 
@@ -267,7 +267,7 @@
 
                         <div class="flex gap-3">
                             <a href="{{ route('specialist.reviews.show', $review->id) }}"
-                               class="flex-1 px-4 py-2 rounded-lg font-bold text-center transition text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-text)]"
+                               class="flex-1 px-4 py-2 rounded-lg font-bold text-center transition text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)]"
                                style="border: 1px solid var(--specialist-border);">
                                 مشاهده جزئیات
                             </a>

@@ -48,10 +48,10 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         @php
                             $subRatings = [
-                                ['label' => 'کیفیت کار', 'value' => $review->quality_rating, 'class' => 'text-sky-400'],
-                                ['label' => 'رفتار متخصص', 'value' => $review->behavior_rating, 'class' => 'text-emerald-400'],
-                                ['label' => 'تمیزی', 'value' => $review->cleanliness_rating, 'class' => 'text-teal-400'],
-                                ['label' => 'سرعت', 'value' => $review->speed_rating, 'class' => 'text-amber-400'],
+                                ['label' => 'کیفیت کار', 'value' => $review->quality_rating, 'class' => 'text-m-info'],
+                                ['label' => 'رفتار متخصص', 'value' => $review->behavior_rating, 'class' => 'text-m-ok'],
+                                ['label' => 'تمیزی', 'value' => $review->cleanliness_rating, 'class' => 'text-m-ok'],
+                                ['label' => 'سرعت', 'value' => $review->speed_rating, 'class' => 'text-m-warn'],
                             ];
                         @endphp
                         @foreach($subRatings as $sr)
@@ -87,7 +87,7 @@
 
                 @if($review->specialist_response)
                     <div class="mb-8">
-                        <h3 class="text-sm font-bold text-emerald-300 font-serif-fa mb-4 flex items-center">
+                        <h3 class="text-sm font-bold text-m-ok font-serif-fa mb-4 flex items-center">
                             <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                             </svg>
@@ -100,7 +100,7 @@
 
                         <div class="flex gap-3 mt-4">
                             <button onclick="document.getElementById('editResponseModal').classList.remove('hidden')"
-                                    class="px-6 py-2 rounded-lg font-bold transition text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-text)]"
+                                    class="px-6 py-2 rounded-lg font-bold transition text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)]"
                                     style="border: 1px solid var(--specialist-border);">
                                 ویرایش پاسخ
                             </button>
@@ -108,7 +108,7 @@
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" onclick="return confirm('آیا از حذف پاسخ اطمینان دارید؟')"
-                                        class="bg-red-600/90 text-white px-6 py-2 rounded-lg font-bold hover:bg-red-600 transition">
+                                        class="bg-m-bad/90 text-m-onsolid px-6 py-2 rounded-lg font-bold hover:bg-m-bad transition">
                                     حذف پاسخ
                                 </button>
                             </form>
@@ -129,7 +129,7 @@
                                       style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);"
                                       placeholder="پاسخ خود را اینجا بنویسید... (حداکثر 1000 کاراکتر)">{{ old('response') }}</textarea>
                             @error('response')
-                            <p class="text-red-400 text-sm mt-2">{{ $message }}</p>
+                            <p class="text-m-bad text-sm mt-2">{{ $message }}</p>
                             @enderror
                             <button type="submit"
                                     class="specialist-cta mt-4 px-8 py-3 rounded-xl font-bold transition-opacity hover:opacity-90">
@@ -156,7 +156,7 @@
                         </div>
                         <div>
                             <span class="text-[var(--specialist-plum-muted)]">وضعیت پرداخت:</span>
-                            <span class="font-bold mr-2 {{ $review->booking->payment_status === 'paid' ? 'text-emerald-300' : 'text-red-300' }}">
+                            <span class="font-bold mr-2 {{ $review->booking->payment_status === 'paid' ? 'text-m-ok' : 'text-m-bad' }}">
                                 {{ $review->booking->payment_status === 'paid' ? 'پرداخت شده' : 'پرداخت نشده' }}
                             </span>
                         </div>
@@ -181,7 +181,7 @@
                         ذخیره تغییرات
                     </button>
                     <button type="button" onclick="document.getElementById('editResponseModal').classList.add('hidden')"
-                            class="flex-1 py-3 rounded-xl font-bold transition text-[var(--specialist-text-dim)] hover:bg-white/5" style="border: 1px solid var(--specialist-border);">
+                            class="flex-1 py-3 rounded-xl font-bold transition text-[var(--specialist-text-dim)] hover:bg-m-tx/5" style="border: 1px solid var(--specialist-border);">
                         انصراف
                     </button>
                 </div>

@@ -8,7 +8,7 @@
             <div class="flex gap-2">
                 @permission('edit-categories')
                 <a href="{{ route('admin.categories.edit', $category) }}"
-                   class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-white"
+                   class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                    style="background:var(--admin-accent);"
                    onmouseover="this.style.background='var(--admin-accent-hover)'"
                    onmouseout="this.style.background='var(--admin-accent)'">
@@ -59,7 +59,7 @@
                                 onmouseover="this.style.background='var(--admin-accent-light)'"
                                 onmouseout="this.style.background=''">
                                 <td class="px-4 py-3 font-medium" style="color:var(--admin-text);">{{ $service->name }}</td>
-                                <td class="px-4 py-3 persian-number" style="color:#16A34A;">{{ number_format($service->price) }} تومان</td>
+                                <td class="px-4 py-3 persian-number" style="color:rgb(var(--m-ok));">{{ number_format($service->price) }} تومان</td>
                                 <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ $service->duration }} دقیقه</td>
                                 <td class="px-4 py-3">
                                     <a href="{{ route('admin.services.edit', $service) }}"

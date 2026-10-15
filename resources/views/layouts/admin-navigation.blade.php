@@ -1,21 +1,21 @@
-<nav class="w-64 min-h-screen bg-white shadow-lg border-l overflow-y-auto">
-    <div class="p-4 border-b border-gray-100">
+<nav class="w-64 min-h-screen bg-m-card shadow-lg border-l overflow-y-auto">
+    <div class="p-4 border-b border-m-gold/15">
         <div class="flex items-center justify-between">
             <h2 class="text-xl font-bold flex items-center">
-                <svg class="w-8 h-8 ml-2 text-pink-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg class="w-8 h-8 ml-2 text-m-gold" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                     <circle cx="8.5" cy="7" r="4"></circle>
                     <path d="M20 8v6M23 11h-6"></path>
                 </svg>
-                <span class="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">پنل مدیریت</span>
+                <span class="bg-gradient-to-r from-m-gold to-m-gold bg-clip-text text-transparent">پنل مدیریت</span>
             </h2>
         </div>
-        <p class="text-xs text-gray-500 mt-2">سیستم مدیریت سالن زیبایی</p>
+        <p class="text-xs text-m-mu mt-2">سیستم مدیریت سالن زیبایی</p>
     </div>
 
     <nav class="mt-4 px-2">
         <div class="py-2">
-            <h3 class="text-xs font-semibold text-gray-400 px-3 mb-2 uppercase">داشبورد</h3>
+            <h3 class="text-xs font-semibold text-m-mu px-3 mb-2 uppercase">داشبورد</h3>
             <x-admin-nav-link href="{{ route('admin.dashboard') }}" :active="request()->routeIs('admin.dashboard')"
                               class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors">
                 <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -38,7 +38,7 @@
         </div>
 
         <div class="py-2">
-            <h3 class="text-xs font-semibold text-gray-400 px-3 mb-2 uppercase">سیستم‌ها</h3>
+            <h3 class="text-xs font-semibold text-m-mu px-3 mb-2 uppercase">سیستم‌ها</h3>
             <x-admin-nav-link href="{{ route('admin.announcements') }}" :active="request()->routeIs('admin.announcements')"
                               class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors">
                 <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -97,7 +97,7 @@
         </div>
 
         <div class="py-2">
-            <h3 class="text-xs font-semibold text-gray-400 px-3 mb-2 uppercase">مدیریت کاربران</h3>
+            <h3 class="text-xs font-semibold text-m-mu px-3 mb-2 uppercase">مدیریت کاربران</h3>
             {{-- ⭐ فاز ۲ SaaS، محور «۲. چند ادمین برای یک سالن» (تصمیم تأییدشده): مدیریت ادمین‌های
                  سالن فقط برای owner قابل‌مشاهده است — همون قانونی که EnsureSalonOwner اجرا می‌کنه. --}}
             @if(auth()->user()->hasRole('super-admin') || (($__currentSalon = app(\App\Support\CurrentSalon::class)->get()) && $__currentSalon->admins()->wherePivot('user_id', auth()->id())->wherePivot('role', 'owner')->exists()))
@@ -115,7 +115,7 @@
 
             @permission('manage-wallet')
             <div class="py-2">
-                <h3 class="text-xs font-semibold text-gray-400 px-3 mb-2 uppercase">امور مالی</h3>
+                <h3 class="text-xs font-semibold text-m-mu px-3 mb-2 uppercase">امور مالی</h3>
 
                 <x-admin-nav-link href="{{ route('admin.wallet.index') }}" :active="request()->routeIs('admin.wallet.index')"
                                   class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors">
@@ -132,7 +132,7 @@
                     </svg>
                     درخواست‌های برداشت
                     @if(($__withdrawalChecks = app(\App\Services\Admin\AttentionCounts::class)->withdrawals()) > 0)
-                        <span class="mr-auto px-1.5 rounded-full text-xs font-bold persian-number" style="background:#F59E0B; color:#fff;" title="نیاز به بررسی دستی">{{ $__withdrawalChecks }}</span>
+                        <span class="mr-auto px-1.5 rounded-full text-xs font-bold persian-number" style="background:rgb(var(--m-warn)); color:rgb(var(--m-on-solid));" title="نیاز به بررسی دستی">{{ $__withdrawalChecks }}</span>
                     @endif
                 </x-admin-nav-link>
 
@@ -144,7 +144,7 @@
                     </svg>
                     پرداخت‌های نیازمند بررسی
                     @if(($__paymentChecks = app(\App\Services\Admin\AttentionCounts::class)->payments()) > 0)
-                        <span class="mr-auto px-1.5 rounded-full text-xs font-bold persian-number" style="background:#F59E0B; color:#fff;">{{ $__paymentChecks }}</span>
+                        <span class="mr-auto px-1.5 rounded-full text-xs font-bold persian-number" style="background:rgb(var(--m-warn)); color:rgb(var(--m-on-solid));">{{ $__paymentChecks }}</span>
                     @endif
                 </x-admin-nav-link>
 

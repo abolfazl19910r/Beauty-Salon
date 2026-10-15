@@ -7,11 +7,11 @@
         {{-- Header --}}
         <div class="rounded-t-xl px-6 py-4 flex items-center gap-3" style="background:var(--admin-accent)">
             <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0"
-                 style="background:rgba(255,255,255,.2);color:#fff">
+                 style="background:rgba(255,255,255,.2);color:rgb(var(--m-on-solid))">
                 {{ mb_substr($user->name, 0, 1) }}
             </div>
             <div>
-                <h1 class="text-lg font-bold text-white">ویرایش پروفایل</h1>
+                <h1 class="text-lg font-bold text-m-onsolid">ویرایش پروفایل</h1>
                 <p class="text-xs" style="color:rgba(255,255,255,.7)">{{ $user->email }}</p>
             </div>
         </div>
@@ -34,27 +34,27 @@
                             <input type="text" name="name" value="{{ old('name', $user->name) }}" required
                                    class="w-full rounded-lg px-3 py-2 text-sm"
                                    style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
-                            @error('name')<p class="text-xs mt-1 text-red-500">{{ $message }}</p>@enderror
+                            @error('name')<p class="text-xs mt-1 text-m-bad">{{ $message }}</p>@enderror
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-1" style="color:var(--admin-text-dim)">ایمیل</label>
                             <input type="email" name="email" value="{{ old('email', $user->email) }}" required dir="ltr"
                                    class="w-full rounded-lg px-3 py-2 text-sm"
                                    style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
-                            @error('email')<p class="text-xs mt-1 text-red-500">{{ $message }}</p>@enderror
+                            @error('email')<p class="text-xs mt-1 text-m-bad">{{ $message }}</p>@enderror
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-1" style="color:var(--admin-text-dim)">شماره موبایل</label>
                             <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" dir="ltr" placeholder="09123456789"
                                    class="w-full rounded-lg px-3 py-2 text-sm"
                                    style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
-                            @error('phone')<p class="text-xs mt-1 text-red-500">{{ $message }}</p>@enderror
+                            @error('phone')<p class="text-xs mt-1 text-m-bad">{{ $message }}</p>@enderror
                         </div>
                     </div>
 
                     <div class="pt-2">
                         <button type="submit"
-                                class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-lg"
+                                class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-m-onsolid rounded-lg"
                                 style="background:var(--admin-accent)">
                             <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
                             ذخیره تغییرات
@@ -81,14 +81,14 @@
                             <input type="password" name="current_password" required dir="ltr"
                                    class="w-full rounded-lg px-3 py-2 text-sm"
                                    style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
-                            @error('current_password')<p class="text-xs mt-1 text-red-500">{{ $message }}</p>@enderror
+                            @error('current_password')<p class="text-xs mt-1 text-m-bad">{{ $message }}</p>@enderror
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-1" style="color:var(--admin-text-dim)">رمز عبور جدید</label>
                             <input type="password" name="password" id="password" required dir="ltr"
                                    class="w-full rounded-lg px-3 py-2 text-sm"
                                    style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
-                            @error('password')<p class="text-xs mt-1 text-red-500">{{ $message }}</p>@enderror
+                            @error('password')<p class="text-xs mt-1 text-m-bad">{{ $message }}</p>@enderror
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-1" style="color:var(--admin-text-dim)">تکرار رمز جدید</label>
@@ -102,7 +102,7 @@
 
                     <div>
                         <button type="submit"
-                                class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-lg"
+                                class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-m-onsolid rounded-lg"
                                 style="background:var(--admin-accent)">
                             <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
                             بروزرسانی رمز عبور

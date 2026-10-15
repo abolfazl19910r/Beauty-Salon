@@ -28,7 +28,7 @@
                         <input type="text" name="title" value="{{ old('title') }}" required
                                class="w-full rounded-lg px-3 py-2 text-sm"
                                style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
-                        @error('title')<p class="text-xs mt-1" style="color:#DC2626">{{ $message }}</p>@enderror
+                        @error('title')<p class="text-xs mt-1" style="color:rgb(var(--m-bad))">{{ $message }}</p>@enderror
                     </div>
 
                     <div>
@@ -36,7 +36,7 @@
                         <input type="number" name="required_points" value="{{ old('required_points', 0) }}" required min="1"
                                class="w-full rounded-lg px-3 py-2 text-sm"
                                style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
-                        @error('required_points')<p class="text-xs mt-1" style="color:#DC2626">{{ $message }}</p>@enderror
+                        @error('required_points')<p class="text-xs mt-1" style="color:rgb(var(--m-bad))">{{ $message }}</p>@enderror
                     </div>
 
                     <div class="md:col-span-2">
@@ -54,7 +54,7 @@
                             <option value="fixed"      {{ old('discount_type') === 'fixed'      ? 'selected' : '' }}>مبلغ ثابت</option>
                             <option value="percentage" {{ old('discount_type') === 'percentage' ? 'selected' : '' }}>درصدی</option>
                         </select>
-                        @error('discount_type')<p class="text-xs mt-1" style="color:#DC2626">{{ $message }}</p>@enderror
+                        @error('discount_type')<p class="text-xs mt-1" style="color:rgb(var(--m-bad))">{{ $message }}</p>@enderror
                     </div>
 
                     <div>
@@ -63,7 +63,7 @@
                                class="w-full rounded-lg px-3 py-2 text-sm"
                                style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
                         <p id="discount-hint" class="text-xs mt-1" style="color:var(--admin-text-light)"></p>
-                        @error('discount_amount')<p class="text-xs mt-1" style="color:#DC2626">{{ $message }}</p>@enderror
+                        @error('discount_amount')<p class="text-xs mt-1" style="color:rgb(var(--m-bad))">{{ $message }}</p>@enderror
                     </div>
 
                     <div>
@@ -71,7 +71,7 @@
                         <input type="number" name="max_uses" value="{{ old('max_uses') }}" min="1" required
                                class="w-full rounded-lg px-3 py-2 text-sm"
                                style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
-                        @error('max_uses')<p class="text-xs mt-1" style="color:#DC2626">{{ $message }}</p>@enderror
+                        @error('max_uses')<p class="text-xs mt-1" style="color:rgb(var(--m-bad))">{{ $message }}</p>@enderror
                     </div>
 
                     <div class="flex items-center gap-2 mt-2">
@@ -83,7 +83,7 @@
 
                 <div class="mt-6 pt-4" style="border-top:1px solid var(--admin-border)">
                     <button type="submit"
-                            class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-lg transition-colors"
+                            class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-m-onsolid rounded-lg transition-colors"
                             style="background:var(--admin-accent)"
                             onmouseover="this.style.background='var(--admin-accent-hover)'"
                             onmouseout="this.style.background='var(--admin-accent)'">

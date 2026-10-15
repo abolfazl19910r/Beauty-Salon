@@ -12,7 +12,7 @@
             </h1>
             <div class="flex items-center gap-3">
                 <a href="{{ route('admin.loyalty.points.index') }}"
-                   class="inline-flex items-center gap-1 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors"
+                   class="inline-flex items-center gap-1 px-4 py-2 text-sm font-medium text-m-onsolid rounded-lg transition-colors"
                    style="background:var(--admin-accent)">
                     <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     مدیریت امتیاز کاربران
@@ -30,10 +30,10 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             @php
                 $statCards = [
-                    ['icon'=>'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z','bg'=>'#faf5ff','ic'=>'#7c3aed','label'=>'کل امتیازات فعال','value'=>number_format($totalActivePoints)],
-                    ['icon'=>'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75','bg'=>'#eff6ff','ic'=>'#2563eb','label'=>'کاربران دارای امتیاز','value'=>number_format($totalPointUsers)],
-                    ['icon'=>'M23 6 13.5 15.5 8.5 10.5 1 18M17 6h6v6','bg'=>'#f0fdf4','ic'=>'#16a34a','label'=>'میانگین امتیاز','value'=>number_format($averageUserPoints)],
-                    ['icon'=>'M1 4h22v16H1zM1 10h22','bg'=>'#fffbeb','ic'=>'#d97706','label'=>'پاداش‌های استفاده شده','value'=>number_format($totalRedeemedRewards)],
+                    ['icon'=>'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z','bg'=>'rgb(var(--m-gold) / .1)','ic'=>'rgb(var(--m-gold))','label'=>'کل امتیازات فعال','value'=>number_format($totalActivePoints)],
+                    ['icon'=>'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75','bg'=>'rgb(var(--m-info) / .1)','ic'=>'rgb(var(--m-info))','label'=>'کاربران دارای امتیاز','value'=>number_format($totalPointUsers)],
+                    ['icon'=>'M23 6 13.5 15.5 8.5 10.5 1 18M17 6h6v6','bg'=>'rgb(var(--m-ok) / .1)','ic'=>'rgb(var(--m-ok))','label'=>'میانگین امتیاز','value'=>number_format($averageUserPoints)],
+                    ['icon'=>'M1 4h22v16H1zM1 10h22','bg'=>'rgb(var(--m-warn) / .1)','ic'=>'rgb(var(--m-warn))','label'=>'پاداش‌های استفاده شده','value'=>number_format($totalRedeemedRewards)],
                 ];
             @endphp
             @foreach($statCards as $card)
@@ -114,7 +114,7 @@
 
                 <div class="mt-6 pt-4" style="border-top:1px solid var(--admin-border)">
                     <button type="submit"
-                            class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-lg transition-colors"
+                            class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-m-onsolid rounded-lg transition-colors"
                             style="background:var(--admin-accent)"
                             onmouseover="this.style.background='var(--admin-accent-hover)'"
                             onmouseout="this.style.background='var(--admin-accent)'">
@@ -159,7 +159,7 @@
                                     {{ number_format($reward->used_count) }} / {{ number_format($reward->max_uses) }}
                                 </td>
                                 <td class="p-4">
-                                        <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $reward->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $reward->is_active ? 'bg-m-ok/10 text-m-ok' : 'bg-m-bad/10 text-m-bad' }}">
                                             {{ $reward->is_active ? 'فعال' : 'غیرفعال' }}
                                         </span>
                                 </td>
@@ -173,7 +173,7 @@
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" data-confirm-delete
-                                                    class="text-xs font-medium" style="color:#dc2626">
+                                                    class="text-xs font-medium" style="color:rgb(var(--m-bad))">
                                                 حذف
                                             </button>
                                         </form>

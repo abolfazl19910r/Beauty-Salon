@@ -90,11 +90,11 @@
                 </div>
                 <div class="specialist-card p-5">
                     <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">تایید شده</p>
-                    <h3 class="text-2xl font-bold text-emerald-400 persian-number">{{ number_format($confirmedBookingsCount) }}</h3>
+                    <h3 class="text-2xl font-bold text-m-ok persian-number">{{ number_format($confirmedBookingsCount) }}</h3>
                 </div>
                 <div class="specialist-card p-5">
                     <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">در انتظار تایید</p>
-                    <h3 class="text-2xl font-bold text-amber-400 persian-number">{{ number_format($pendingBookingsCount) }}</h3>
+                    <h3 class="text-2xl font-bold text-m-warn persian-number">{{ number_format($pendingBookingsCount) }}</h3>
                 </div>
                 <div class="specialist-card p-5">
                     <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">انجام شده</p>
@@ -172,7 +172,7 @@
                                     <div class="border-b pb-3" style="border-color: var(--specialist-border);">
                                         <div class="flex justify-between items-start mb-2">
                                             <p class="font-semibold text-sm text-[var(--specialist-text)]">{{ $review->user->name }}</p>
-                                            <div class="flex text-amber-400">
+                                            <div class="flex text-m-warn">
                                                 @for($i = 1; $i <= 5; $i++)
                                                     @if($i <= $review->rating)
                                                         <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>

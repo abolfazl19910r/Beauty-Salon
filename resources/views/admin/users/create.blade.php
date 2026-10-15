@@ -6,7 +6,7 @@
         .form-label { display:block; font-size:0.875rem; font-weight:500; margin-bottom:6px; color:var(--admin-text-dim); }
         .form-input { width:100%; border:1px solid var(--admin-border); border-radius:8px; padding:9px 14px; font-size:0.875rem; background:var(--admin-bg); color:var(--admin-text); outline:none; transition:border-color 0.15s; font-family:inherit; }
         .form-input:focus { border-color:var(--admin-accent); }
-        .form-error { color:#DC2626; font-size:0.78rem; margin-top:4px; }
+        .form-error { color:rgb(var(--m-bad)); font-size:0.78rem; margin-top:4px; }
         .role-check { display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:8px; cursor:pointer; font-size:0.875rem; }
         .role-check:hover { background:var(--admin-accent-light); }
         .role-check input[type=checkbox] { accent-color:var(--admin-accent); width:15px; height:15px; flex-shrink:0; }
@@ -43,12 +43,12 @@
                         <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">اطلاعات شخصی</h2>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="form-label">نام و نام خانوادگی <span style="color:#DC2626;">*</span></label>
+                                <label class="form-label">نام و نام خانوادگی <span style="color:rgb(var(--m-bad));">*</span></label>
                                 <input type="text" name="name" value="{{ old('name') }}" class="form-input" required placeholder="نام کامل کاربر">
                                 @error('name') <p class="form-error">{{ $message }}</p> @enderror
                             </div>
                             <div>
-                                <label class="form-label">شماره موبایل <span style="color:#DC2626;">*</span></label>
+                                <label class="form-label">شماره موبایل <span style="color:rgb(var(--m-bad));">*</span></label>
                                 <input type="text" name="phone" value="{{ old('phone') }}" class="form-input" dir="ltr" required placeholder="09123456789">
                                 @error('phone') <p class="form-error">{{ $message }}</p> @enderror
                                 <p class="text-xs mt-1" style="color:var(--admin-text-light);">فرمت: 09123456789</p>
@@ -59,7 +59,7 @@
                                 @error('email') <p class="form-error">{{ $message }}</p> @enderror
                             </div>
                             <div>
-                                <label class="form-label">رمز عبور <span style="color:#DC2626;">*</span></label>
+                                <label class="form-label">رمز عبور <span style="color:rgb(var(--m-bad));">*</span></label>
                                 <input type="password" name="password" class="form-input" dir="ltr" required placeholder="حداقل ۸ کاراکتر">
                                 @error('password') <p class="form-error">{{ $message }}</p> @enderror
                             </div>
@@ -75,7 +75,7 @@
                                  جدید مالک (دسترسی کامل) است یا منشی (دسترسی محدود) — این انتخاب
                                  مستقیم is_admin و نقش سیستمی کاربر را تعیین می‌کند. --}}
                             <div class="space-y-2 mb-4">
-                                <label class="form-label">نقش این نفر در سالن <span style="color:#DC2626;">*</span></label>
+                                <label class="form-label">نقش این نفر در سالن <span style="color:rgb(var(--m-bad));">*</span></label>
                                 <label class="role-check">
                                     <input type="radio" name="salon_role" value="owner"
                                            {{ old('salon_role') === 'owner' ? 'checked' : '' }}
@@ -102,7 +102,7 @@
                             <div class="flex flex-wrap gap-4 mb-4">
                                 <label class="role-check">
                                     <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}
-                                    style="accent-color:#16A34A; width:15px; height:15px;">
+                                    style="accent-color:rgb(var(--m-ok)); width:15px; height:15px;">
                                     <span style="color:var(--admin-text);">حساب فعال</span>
                                 </label>
                             </div>
@@ -115,7 +115,7 @@
                                 </label>
                                 <label class="role-check">
                                     <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}
-                                    style="accent-color:#16A34A; width:15px; height:15px;">
+                                    style="accent-color:rgb(var(--m-ok)); width:15px; height:15px;">
                                     <span style="color:var(--admin-text);">حساب فعال</span>
                                 </label>
                             </div>
@@ -136,7 +136,7 @@
 
                     <div class="flex items-center justify-between mt-5 p-4 rounded-xl" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                         <button type="submit"
-                                class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-white"
+                                class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-m-onsolid"
                                 style="background:var(--admin-accent);"
                                 onmouseover="this.style.background='var(--admin-accent-hover)'"
                                 onmouseout="this.style.background='var(--admin-accent)'">
@@ -161,19 +161,19 @@
                     <h2 class="text-sm font-bold mb-3" style="color:var(--admin-text);">راهنما</h2>
                     <div class="space-y-3 text-sm" style="color:var(--admin-text-dim);">
                         <div class="flex items-start gap-2">
-                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:#3B82F6;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:rgb(var(--m-info));" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                             </svg>
                             <span>شماره موبایل باید یکتا و به فرمت ۱۱ رقمی باشد.</span>
                         </div>
                         <div class="flex items-start gap-2">
-                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:#3B82F6;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:rgb(var(--m-info));" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                             </svg>
                             <span>رمز عبور حداقل ۸ کاراکتر باشد.</span>
                         </div>
                         <div class="flex items-start gap-2">
-                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:#F59E0B;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:rgb(var(--m-warn));" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                             </svg>
                             <span>دسترسی مدیریت به کاربر اجازه ورود به پنل ادمین را می‌دهد.</span>

@@ -29,7 +29,7 @@
         .jcal-day:hover { background-color: rgba(216,174,224,0.15); }
         .jcal-day.jcal-empty { cursor: default; }
         .jcal-day.jcal-empty:hover { background-color: transparent; }
-        .jcal-day.jcal-selected { background-color: var(--specialist-plum-mid); color: #250D2B; font-weight: bold; }
+        .jcal-day.jcal-selected { background-color: var(--specialist-plum-mid); color: var(--m-on-gold); font-weight: bold; }
         .jcal-day.jcal-today { border: 1px solid var(--specialist-plum-mid); }
     </style>
 @endpush
@@ -100,14 +100,14 @@
                         <span>اعمال فیلتر</span>
                     </button>
 
-                    <button type="submit" name="export" value="excel" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
+                    <button type="submit" name="export" value="excel" class="bg-m-ok hover:bg-m-ok text-m-onsolid font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         <span>خروجی اکسل</span>
                     </button>
 
-                    <button type="submit" name="export" value="pdf" class="bg-red-600/90 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
+                    <button type="submit" name="export" value="pdf" class="bg-m-bad/90 hover:bg-m-bad text-m-onsolid font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                         </svg>
@@ -115,7 +115,7 @@
                     </button>
 
                     @if(request()->has('start_date') || request()->has('end_date') || request()->get('service_id') != 'all' || request()->get('status') != 'all')
-                        <a href="{{ route('specialist.reports.index') }}" class="font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2 text-[var(--specialist-text-dim)] hover:bg-white/5 hover:text-[var(--specialist-text)]" style="border: 1px solid var(--specialist-border);">
+                        <a href="{{ route('specialist.reports.index') }}" class="font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2 text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)]" style="border: 1px solid var(--specialist-border);">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                             </svg>
@@ -138,18 +138,18 @@
 
             <div class="specialist-card p-6">
                 <div class="text-sm text-[var(--specialist-plum-muted)] mb-1">کل نوبت‌های دریافتی</div>
-                <div class="text-2xl font-bold text-sky-300 persian-number">{{ $totalBookings }}</div>
+                <div class="text-2xl font-bold text-m-info persian-number">{{ $totalBookings }}</div>
                 <div class="text-[10px] text-[var(--specialist-inactive)] mt-1">شامل همه وضعیت‌ها در این بازه</div>
             </div>
 
             <div class="specialist-card p-6">
                 <div class="text-sm text-[var(--specialist-plum-muted)] mb-1">خدمات ارائه شده</div>
-                <div class="text-2xl font-bold text-emerald-300 persian-number">{{ $completedBookings }}</div>
+                <div class="text-2xl font-bold text-m-ok persian-number">{{ $completedBookings }}</div>
             </div>
 
             <div class="specialist-card p-6">
                 <div class="text-sm text-[var(--specialist-plum-muted)] mb-1">نوبت‌های لغو شده</div>
-                <div class="text-2xl font-bold text-red-300 persian-number">{{ $cancelledBookings }}</div>
+                <div class="text-2xl font-bold text-m-bad persian-number">{{ $cancelledBookings }}</div>
             </div>
         </div>
 
@@ -163,11 +163,11 @@
             @forelse($bookings as $booking)
                 @php
                     $statusClass = match($booking->status) {
-                        'completed' => 'bg-emerald-400/10 text-emerald-300',
-                        'confirmed' => 'bg-sky-400/10 text-sky-300',
-                        'pending' => 'bg-amber-400/10 text-amber-300',
-                        'cancelled' => 'bg-red-500/10 text-red-300', 'no_show' => 'bg-red-500/10 text-red-300',
-                        default => 'bg-white/5 text-[var(--specialist-text-dim)]'
+                        'completed' => 'bg-m-ok/10 text-m-ok',
+                        'confirmed' => 'bg-m-info/10 text-m-info',
+                        'pending' => 'bg-m-warn/10 text-m-warn',
+                        'cancelled' => 'bg-m-bad/10 text-m-bad', 'no_show' => 'bg-m-bad/10 text-m-bad',
+                        default => 'bg-m-tx/5 text-[var(--specialist-text-dim)]'
                     };
                     $statusText = match($booking->status) {
                         'completed' => 'انجام شده',

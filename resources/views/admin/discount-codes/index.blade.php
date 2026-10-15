@@ -17,19 +17,19 @@
                 </p>
             </div>
             <a href="{{ route('admin.discount-codes.create') }}"
-               class="px-4 py-2 rounded-lg text-sm font-medium text-white transition hover:opacity-90"
+               class="px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid transition hover:opacity-90"
                style="background-color: var(--admin-accent);">
                 + کد تخفیف جدید
             </a>
         </div>
 
         @if(session('success'))
-            <div class="mb-4 px-4 py-3 rounded-lg text-sm" style="background-color: rgba(34,197,94,0.1); color: #16A34A;">
+            <div class="mb-4 px-4 py-3 rounded-lg text-sm" style="background-color: rgba(34,197,94,0.1); color: rgb(var(--m-ok));">
                 {{ session('success') }}
             </div>
         @endif
         @if(session('error'))
-            <div class="mb-4 px-4 py-3 rounded-lg text-sm" style="background-color: rgba(220,38,38,0.1); color: #DC2626;">
+            <div class="mb-4 px-4 py-3 rounded-lg text-sm" style="background-color: rgba(220,38,38,0.1); color: rgb(var(--m-bad));">
                 {{ session('error') }}
             </div>
         @endif
@@ -41,15 +41,15 @@
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs" style="color:var(--admin-text-dim);">فعال و قابل استفاده</p>
-                <p class="text-xl font-bold mt-1 persian-number" style="color:#16A34A;">{{ $stats['active'] }}</p>
+                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-ok));">{{ $stats['active'] }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs" style="color:var(--admin-text-dim);">منقضی‌شده</p>
-                <p class="text-xl font-bold mt-1 persian-number" style="color:#DC2626;">{{ $stats['expired'] }}</p>
+                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-bad));">{{ $stats['expired'] }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs" style="color:var(--admin-text-dim);">ظرفیت تمام‌شده</p>
-                <p class="text-xl font-bold mt-1 persian-number" style="color:#D97706;">{{ $stats['used_up'] }}</p>
+                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-warn));">{{ $stats['used_up'] }}</p>
             </div>
         </div>
 
@@ -92,13 +92,13 @@
                             </td>
                             <td class="px-4 py-3">
                                 @if($discountCode->isValid())
-                                    <span class="px-2 py-1 rounded-full text-xs" style="background-color: rgba(34,197,94,0.1); color: #16A34A;">فعال</span>
+                                    <span class="px-2 py-1 rounded-full text-xs" style="background-color: rgba(34,197,94,0.1); color: rgb(var(--m-ok));">فعال</span>
                                 @elseif(!$discountCode->is_active)
                                     <span class="px-2 py-1 rounded-full text-xs" style="background-color: rgba(148,163,184,0.15); color: var(--admin-text-dim);">غیرفعال</span>
                                 @elseif($discountCode->used_count >= $discountCode->max_uses)
-                                    <span class="px-2 py-1 rounded-full text-xs" style="background-color: rgba(217,119,6,0.1); color: #D97706;">ظرفیت تمام</span>
+                                    <span class="px-2 py-1 rounded-full text-xs" style="background-color: rgba(217,119,6,0.1); color: rgb(var(--m-warn));">ظرفیت تمام</span>
                                 @else
-                                    <span class="px-2 py-1 rounded-full text-xs" style="background-color: rgba(220,38,38,0.1); color: #DC2626;">منقضی</span>
+                                    <span class="px-2 py-1 rounded-full text-xs" style="background-color: rgba(220,38,38,0.1); color: rgb(var(--m-bad));">منقضی</span>
                                 @endif
                             </td>
                             <td class="px-4 py-3">
@@ -109,7 +109,7 @@
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" data-confirm-delete
-                                                class="text-xs px-2 py-1 rounded" style="color:#DC2626;">
+                                                class="text-xs px-2 py-1 rounded" style="color:rgb(var(--m-bad));">
                                             حذف
                                         </button>
                                     </form>

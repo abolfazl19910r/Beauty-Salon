@@ -25,12 +25,12 @@
                     <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">امتیازها</h2>
                     @php $r = $review->overall_rating ?? 0; @endphp
                     <div class="flex items-center gap-3 mb-4">
-                        <span class="text-4xl font-bold persian-number" style="color:{{ $r>=4 ? '#16A34A' : ($r>=3 ? '#D97706' : '#DC2626') }};">{{ $r }}</span>
+                        <span class="text-4xl font-bold persian-number" style="color:{{ $r>=4 ? 'rgb(var(--m-ok))' : ($r>=3 ? 'rgb(var(--m-warn))' : 'rgb(var(--m-bad))') }};">{{ $r }}</span>
                         <div>
                             <div class="flex gap-1 mb-1">
                                 @for($i=1;$i<=5;$i++)
                                     <svg class="w-5 h-5" fill="{{ $i<=$r ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"
-                                         style="color:{{ $i<=$r ? '#F59E0B' : 'var(--admin-border)' }};">
+                                         style="color:{{ $i<=$r ? 'rgb(var(--m-warn))' : 'var(--admin-border)' }};">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
                                     </svg>
                                 @endfor
@@ -77,11 +77,11 @@
                     <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">وضعیت و عملیات</h2>
                     <div class="flex flex-wrap gap-2 mb-4">
                     <span class="px-2.5 py-1 rounded-full text-xs font-medium"
-                          style="background:{{ $review->is_approved ? '#F0FDF4' : '#FFFBEB' }}; color:{{ $review->is_approved ? '#166534' : '#92400E' }};">
+                          style="background:{{ $review->is_approved ? 'rgb(var(--m-ok) / .1)' : 'rgb(var(--m-warn) / .1)' }}; color:{{ $review->is_approved ? 'rgb(var(--m-ok))' : 'rgb(var(--m-warn))' }};">
                         {{ $review->is_approved ? 'تایید شده' : 'در انتظار تایید' }}
                     </span>
                         @if($review->is_featured)
-                            <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:#EFF6FF; color:#1D4ED8;">ویژه</span>
+                            <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:rgb(var(--m-info) / .1); color:rgb(var(--m-info));">ویژه</span>
                         @endif
                     </div>
                     <div class="space-y-2">
@@ -89,10 +89,10 @@
                             <form action="{{ route('admin.reviews.approve', $review->id) }}" method="POST">
                                 @csrf @method('PUT')
                                 <button type="submit"
-                                        class="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-white"
-                                        style="background:#16A34A;"
-                                        onmouseover="this.style.background='#15803D'"
-                                        onmouseout="this.style.background='#16A34A'">
+                                        class="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-m-onsolid"
+                                        style="background:rgb(var(--m-ok));"
+                                        onmouseover="this.style.background='rgb(var(--m-ok))'"
+                                        onmouseout="this.style.background='rgb(var(--m-ok))'">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                                     تایید نظر
                                 </button>
@@ -102,7 +102,7 @@
                             @csrf @method('PUT')
                             <button type="submit"
                                     class="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium"
-                                    style="background:#EFF6FF; color:#1D4ED8;"
+                                    style="background:rgb(var(--m-info) / .1); color:rgb(var(--m-info));"
                                     onmouseover="this.style.opacity='0.8'"
                                     onmouseout="this.style.opacity='1'">
                                 <svg class="w-4 h-4" fill="{{ $review->is_featured ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -116,9 +116,9 @@
                             <button type="button"
                                     data-confirm-delete data-confirm-message="آیا از حذف این نظر اطمینان دارید؟"
                                     class="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium"
-                                    style="background:#FEF2F2; color:#991B1B;"
-                                    onmouseover="this.style.background='#FEE2E2'"
-                                    onmouseout="this.style.background='#FEF2F2'">
+                                    style="background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad));"
+                                    onmouseover="this.style.background='rgb(var(--m-bad) / .14)'"
+                                    onmouseout="this.style.background='rgb(var(--m-bad) / .1)'">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <polyline points="3 6 5 6 21 6"/>
                                     <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>

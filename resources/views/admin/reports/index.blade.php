@@ -22,7 +22,7 @@
         .jcal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
         .jcal-day { text-align: center; padding: 6px 2px; font-size: .8rem; border-radius: 6px; cursor: pointer; color: var(--admin-text); transition: background .15s; }
         .jcal-day:hover { background: var(--admin-accent-light); color: var(--admin-accent); }
-        .jcal-day.selected { background: var(--admin-accent); color: #fff; font-weight: 600; }
+        .jcal-day.selected { background: var(--admin-accent); color: rgb(var(--m-on-solid)); font-weight: 600; }
         .jcal-day.today { border: 1px solid var(--admin-accent); color: var(--admin-accent); font-weight: 600; }
         .jcal-day.empty { cursor: default; }
         .jcal-day.empty:hover { background: none; }
@@ -34,7 +34,7 @@
         .stat-card .value { font-size: 1.1rem; font-weight: 700; }
         /* ── table ── */
         .report-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
-        .report-table th { background: var(--admin-accent); color: #fff; padding: 10px 14px; text-align: right; font-weight: 600; }
+        .report-table th { background: var(--admin-accent); color: rgb(var(--m-on-solid)); padding: 10px 14px; text-align: right; font-weight: 600; }
         .report-table td { padding: 9px 14px; border-bottom: 1px solid var(--admin-border); color: var(--admin-text); }
         .report-table tbody tr:nth-child(even) { background: var(--admin-bg); }
         .report-table tbody tr:hover { background: var(--admin-accent-light); }
@@ -118,7 +118,7 @@
                 {{-- Buttons --}}
                 <div class="flex gap-2 mr-auto flex-wrap">
                     <button type="submit"
-                            class="inline-flex items-center gap-1 px-5 py-2 text-sm font-medium text-white rounded-lg"
+                            class="inline-flex items-center gap-1 px-5 py-2 text-sm font-medium text-m-onsolid rounded-lg"
                             style="background:var(--admin-accent)">
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                         اعمال فیلتر
@@ -143,15 +143,15 @@
                         {{-- ⚠️ These buttons are inside the same GET form as the filter at the top of the page (nested <form> is not allowed in HTML), so instead of a separate <form> , they override the destination/method with formaction/formmethod ; name="format" on the button itself also adds the format value to the submit (only the button that was actually clicked is sent in the body). --}}
                         <button type="submit" name="format" value="pdf"
                                 formaction="{{ route('admin.reports.export') }}" formmethod="POST"
-                                class="inline-flex items-center gap-1 px-4 py-2 text-sm text-white rounded-lg"
-                                style="background:#dc2626">
+                                class="inline-flex items-center gap-1 px-4 py-2 text-sm text-m-onsolid rounded-lg"
+                                style="background:rgb(var(--m-bad))">
                             <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                             PDF
                         </button>
                         <button type="submit" name="format" value="excel"
                                 formaction="{{ route('admin.reports.export') }}" formmethod="POST"
-                                class="inline-flex items-center gap-1 px-4 py-2 text-sm text-white rounded-lg"
-                                style="background:#16a34a">
+                                class="inline-flex items-center gap-1 px-4 py-2 text-sm text-m-onsolid rounded-lg"
+                                style="background:rgb(var(--m-ok))">
                             <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                             Excel
                         </button>
@@ -165,12 +165,12 @@
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
             @php
                 $statCards = [
-                    ['label'=>'درآمد کل','value'=>number_format($summary['total_revenue']).' ت','color'=>'#16a34a'],
-                    ['label'=>'کل نوبت‌ها','value'=>number_format($summary['total_bookings']),'color'=>'#334155'],
-                    ['label'=>'انجام‌شده','value'=>number_format($summary['completed_bookings']),'color'=>'#0284c7'],
-                    ['label'=>'لغو شده','value'=>number_format($summary['cancelled_bookings']),'color'=>'#dc2626'],
-                    ['label'=>'درآمد معلق','value'=>number_format($summary['pending_payments']).' ت','color'=>'#d97706'],
-                    ['label'=>'میانگین نوبت','value'=>number_format($summary['average_booking_value']).' ت','color'=>'#7c3aed'],
+                    ['label'=>'درآمد کل','value'=>number_format($summary['total_revenue']).' ت','color'=>'rgb(var(--m-ok))'],
+                    ['label'=>'کل نوبت‌ها','value'=>number_format($summary['total_bookings']),'color'=>'rgb(var(--m-tx))'],
+                    ['label'=>'انجام‌شده','value'=>number_format($summary['completed_bookings']),'color'=>'rgb(var(--m-info))'],
+                    ['label'=>'لغو شده','value'=>number_format($summary['cancelled_bookings']),'color'=>'rgb(var(--m-bad))'],
+                    ['label'=>'درآمد معلق','value'=>number_format($summary['pending_payments']).' ت','color'=>'rgb(var(--m-warn))'],
+                    ['label'=>'میانگین نوبت','value'=>number_format($summary['average_booking_value']).' ت','color'=>'rgb(var(--m-gold))'],
                 ];
             @endphp
             @foreach($statCards as $card)
@@ -212,21 +212,21 @@
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <div class="stat-card">
                             <div class="label">کیف پول</div>
-                            <div class="value" style="color:#0284c7">
+                            <div class="value" style="color:rgb(var(--m-info))">
                                 {{ number_format($paymentBreakdown['wallet']) }} نوبت
                                 <span class="text-xs font-normal" style="color:var(--admin-text-dim)">({{ $paymentBreakdown['wallet_percent'] }}٪)</span>
                             </div>
                         </div>
                         <div class="stat-card">
                             <div class="label">درگاه بانکی</div>
-                            <div class="value" style="color:#16a34a">
+                            <div class="value" style="color:rgb(var(--m-ok))">
                                 {{ number_format($paymentBreakdown['gateway']) }} نوبت
                                 <span class="text-xs font-normal" style="color:var(--admin-text-dim)">({{ $paymentBreakdown['gateway_percent'] }}٪)</span>
                             </div>
                         </div>
                         <div class="stat-card">
                             <div class="label">ثبت دستی توسط ادمین</div>
-                            <div class="value" style="color:#d97706">
+                            <div class="value" style="color:rgb(var(--m-warn))">
                                 {{ number_format($paymentBreakdown['admin_manual']) }} نوبت
                                 <span class="text-xs font-normal" style="color:var(--admin-text-dim)">({{ $paymentBreakdown['admin_manual_percent'] }}٪)</span>
                             </div>
@@ -277,7 +277,7 @@
                             {{ $sp['commission_rate'] }}%
                         </span>
                                 </td>
-                                <td style="color:#16a34a;font-weight:600">{{ number_format($sp['specialist_share']) }}</td>
+                                <td style="color:rgb(var(--m-ok));font-weight:600">{{ number_format($sp['specialist_share']) }}</td>
                                 <td>{{ $sp['booking_completion_rate'] }}%</td>
                                 <td>{{ $sp['customer_return_rate'] }}%</td>
                             </tr>
@@ -346,7 +346,7 @@
                                 <td>
                                     <div class="flex items-center gap-2">
                                         <div class="flex-1 rounded-full h-2" style="background:var(--admin-border)">
-                                            <div class="h-2 rounded-full" style="width:{{ $sat['satisfaction_rate'] }}%;background:#16a34a"></div>
+                                            <div class="h-2 rounded-full" style="width:{{ $sat['satisfaction_rate'] }}%;background:rgb(var(--m-ok))"></div>
                                         </div>
                                         <span class="text-xs font-medium">{{ $sat['satisfaction_rate'] }}%</span>
                                     </div>
@@ -374,9 +374,13 @@
         const specialistData = @json($specialists ?? collect());
         const serviceData    = @json($serviceRevenue ? $serviceRevenue->values() : collect());
 
-        const CHART_COLORS = ['#0088FE','#00C49F','#FFBB28','#FF8042','#8884D8','#82ca9d','#ffc658','#a4de6c'];
+        // بسته‌ی ه: رنگ نمودارها از توکن‌های تم (Chart.js متغیر CSS نمی‌فهمد)؛ با عوض شدن تم صفحه دوباره کشیده می‌شود
+        const CHART_COLORS = ['gold', 'ok', 'info', 'warn', 'bad', 'gold2', 'mu'].map(n => window.mToken(n));
+        Chart.defaults.color = window.mToken('mu');
+        Chart.defaults.borderColor = window.mToken('tx', .08);
+        document.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-m-theme-toggle]')) setTimeout(() => location.reload(), 0); });
 
-        Chart.defaults.font.family = "'Vazirmatn', 'Vazir', sans-serif";
+        Chart.defaults.font.family = "'Mahru', 'Vazirmatn', sans-serif";
         Chart.defaults.plugins.legend.rtl = true;
 
         /* ── Income chart ── */
@@ -389,14 +393,14 @@
                             type: 'bar',
                             label: 'درآمد (تومان)',
                             data: revenueData.map(r => r.revenue),
-                            backgroundColor: 'rgba(51,65,85,.75)',
+                            backgroundColor: window.mToken('gold', .75),
                             yAxisID: 'y'
                         },
                         {
                             type: 'line',
                             label: 'تعداد نوبت',
                             data: revenueData.map(r => r.bookings),
-                            borderColor: '#16a34a',
+                            borderColor: window.mToken('ok'),
                             backgroundColor: 'transparent',
                             yAxisID: 'y1',
                             tension: 0.3,
@@ -416,16 +420,16 @@
                         }
                     },
                     scales: {
-                        x: { ticks: { font: { family: "'Vazirmatn','Vazir',sans-serif" } } },
+                        x: { ticks: { font: { family: "'Mahru','Vazirmatn',sans-serif" } } },
                         y: {
                             position: 'right',
-                            title: { display: true, text: 'درآمد (تومان)', font: { family: "'Vazirmatn','Vazir',sans-serif" } },
+                            title: { display: true, text: 'درآمد (تومان)', font: { family: "'Mahru','Vazirmatn',sans-serif" } },
                             ticks: { callback: v => v.toLocaleString('fa-IR') }
                         },
                         y1: {
                             position: 'left',
                             grid: { drawOnChartArea: false },
-                            title: { display: true, text: 'تعداد نوبت', font: { family: "'Vazirmatn','Vazir',sans-serif" } }
+                            title: { display: true, text: 'تعداد نوبت', font: { family: "'Mahru','Vazirmatn',sans-serif" } }
                         }
                     }
                 }
@@ -443,14 +447,14 @@
                             type: 'bar',
                             label: 'درآمد (تومان)',
                             data: monthlyData.map(r => r.revenue),
-                            backgroundColor: 'rgba(51,65,85,.75)',
+                            backgroundColor: window.mToken('gold', .75),
                             yAxisID: 'y'
                         },
                         {
                             type: 'bar',
                             label: 'تعداد نوبت',
                             data: monthlyData.map(r => r.bookings),
-                            backgroundColor: 'rgba(22,163,74,.65)',
+                            backgroundColor: window.mToken('ok', .7),
                             yAxisID: 'y1'
                         }
                     ]
@@ -474,9 +478,9 @@
                 data: {
                     labels: specialistData.map(s => s.name),
                     datasets: [
-                        { label: 'تعداد نوبت',      data: specialistData.map(s => s.total_bookings),          backgroundColor: 'rgba(51,65,85,.75)' },
-                        { label: 'نرخ تکمیل (%)',    data: specialistData.map(s => s.booking_completion_rate), backgroundColor: 'rgba(22,163,74,.65)' },
-                        { label: 'نرخ بازگشت (%)',   data: specialistData.map(s => s.customer_return_rate),   backgroundColor: 'rgba(124,58,237,.5)' },
+                        { label: 'تعداد نوبت',      data: specialistData.map(s => s.total_bookings),          backgroundColor: window.mToken('gold', .75) },
+                        { label: 'نرخ تکمیل (%)',    data: specialistData.map(s => s.booking_completion_rate), backgroundColor: window.mToken('ok', .7) },
+                        { label: 'نرخ بازگشت (%)',   data: specialistData.map(s => s.customer_return_rate),   backgroundColor: window.mToken('info', .6) },
                     ]
                 },
                 options: {

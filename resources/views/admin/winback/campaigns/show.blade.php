@@ -24,7 +24,7 @@
                     <form method="POST" action="{{ route('admin.winback.campaigns.resume', $campaign) }}">@csrf<button class="px-4 py-2 rounded-lg text-sm font-bold" style="{{ $btn }}">ادامه</button></form>
                 @endif
                 @if ($campaign->isActive())
-                    <form method="POST" action="{{ route('admin.winback.campaigns.cancel', $campaign) }}" onsubmit="return confirm('کمپین لغو شود؟ به باقی مشتری‌ها پیامکی نمی‌رود.')">@csrf<button class="px-4 py-2 rounded-lg text-sm" style="border:1px solid #DC2626; color:#DC2626;">لغو</button></form>
+                    <form method="POST" action="{{ route('admin.winback.campaigns.cancel', $campaign) }}" onsubmit="return confirm('کمپین لغو شود؟ به باقی مشتری‌ها پیامکی نمی‌رود.')">@csrf<button class="px-4 py-2 rounded-lg text-sm" style="border:1px solid rgb(var(--m-bad)); color:rgb(var(--m-bad));">لغو</button></form>
                 @endif
             </div>
         </div>

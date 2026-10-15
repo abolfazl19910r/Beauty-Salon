@@ -15,7 +15,7 @@
             </div>
             @permission('create-services')
             <a href="{{ route('admin.services.create') }}"
-               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white"
+               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                style="background:var(--admin-accent);"
                onmouseover="this.style.background='var(--admin-accent-hover)'"
                onmouseout="this.style.background='var(--admin-accent)'">
@@ -69,7 +69,7 @@
                                     <span style="color:var(--admin-text-light);">بدون دسته‌بندی</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-3 persian-number font-medium" style="color:#16A34A;">
+                            <td class="px-4 py-3 persian-number font-medium" style="color:rgb(var(--m-ok));">
                                 {{ number_format($service->price) }}
                                 <span class="text-xs font-normal" style="color:var(--admin-text-light);">تومان</span>
                             </td>
@@ -81,8 +81,8 @@
                                     @permission('edit-services')
                                     <a href="{{ route('admin.services.edit', $service) }}" title="ویرایش"
                                        class="w-7 h-7 rounded flex items-center justify-center transition-colors"
-                                       style="color:#7C3AED;"
-                                       onmouseover="this.style.background='#F5F3FF'"
+                                       style="color:rgb(var(--m-gold));"
+                                       onmouseover="this.style.background='rgb(var(--m-gold) / .1)'"
                                        onmouseout="this.style.background=''">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
@@ -96,8 +96,8 @@
                                         <button type="button" title="حذف"
                                                 data-confirm-delete data-confirm-message="آیا از حذف خدمت «{{ $service->name }}» اطمینان دارید؟"
                                                 class="w-7 h-7 rounded flex items-center justify-center transition-colors"
-                                                style="color:#DC2626;"
-                                                onmouseover="this.style.background='#FEF2F2'"
+                                                style="color:rgb(var(--m-bad));"
+                                                onmouseover="this.style.background='rgb(var(--m-bad) / .1)'"
                                                 onmouseout="this.style.background=''">
                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <polyline points="3 6 5 6 21 6"/>
@@ -114,7 +114,7 @@
                             <td colspan="6" class="px-4 py-12 text-center text-sm" style="color:var(--admin-text-dim);">
                                 هیچ خدمتی ثبت نشده
                                 @permission('create-services')
-                                <br><a href="{{ route('admin.services.create') }}" class="inline-block mt-3 text-xs px-3 py-1.5 rounded-lg text-white" style="background:var(--admin-accent);">افزودن خدمت جدید</a>
+                                <br><a href="{{ route('admin.services.create') }}" class="inline-block mt-3 text-xs px-3 py-1.5 rounded-lg text-m-onsolid" style="background:var(--admin-accent);">افزودن خدمت جدید</a>
                                 @endpermission
                             </td>
                         </tr>

@@ -23,15 +23,15 @@
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">میانگین امتیاز</p>
-                <p class="text-2xl font-bold persian-number" style="color:#F59E0B;">{{ number_format($averageRating ?? 0, 1) }}</p>
+                <p class="text-2xl font-bold persian-number" style="color:rgb(var(--m-warn));">{{ number_format($averageRating ?? 0, 1) }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">تایید شده</p>
-                <p class="text-2xl font-bold persian-number" style="color:#16A34A;">{{ $approvedReviews ?? 0 ?? 0 }}</p>
+                <p class="text-2xl font-bold persian-number" style="color:rgb(var(--m-ok));">{{ $approvedReviews ?? 0 ?? 0 }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">ویژه</p>
-                <p class="text-2xl font-bold persian-number" style="color:#1D4ED8;">{{ $featuredReviews ?? 0 ?? 0 }}</p>
+                <p class="text-2xl font-bold persian-number" style="color:rgb(var(--m-info));">{{ $featuredReviews ?? 0 ?? 0 }}</p>
             </div>
         </div>
 
@@ -53,7 +53,7 @@
                             <span class="w-12 text-left persian-number" style="color:var(--admin-text-dim);">{{ $i }} ★</span>
                             <div class="flex-1 h-2 rounded-full" style="background:var(--admin-border);">
                                 <div class="h-2 rounded-full transition-all"
-                                     style="width:{{ $pct }}%; background:{{ $i>=4 ? '#16A34A' : ($i>=3 ? '#F59E0B' : '#DC2626') }};"></div>
+                                     style="width:{{ $pct }}%; background:{{ $i>=4 ? 'rgb(var(--m-ok))' : ($i>=3 ? 'rgb(var(--m-warn))' : 'rgb(var(--m-bad))') }};"></div>
                             </div>
                             <span class="w-10 persian-number text-xs" style="color:var(--admin-text-dim);">{{ $count }}</span>
                         </div>
@@ -71,14 +71,14 @@
                         <div class="flex items-center justify-between px-4 py-3 text-sm">
                             <div class="flex items-center gap-2">
                                 <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-                                     style="background:var(--admin-accent); color:#fff;">
+                                     style="background:var(--admin-accent); color:rgb(var(--m-on-solid));">
                                     {{ mb_substr($specialist->name, 0, 1) }}
                                 </div>
                                 <span style="color:var(--admin-text);">{{ $specialist->name }}</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <span class="persian-number text-xs" style="color:var(--admin-text-dim);">{{ $specialist->reviews_count }} نظر</span>
-                                <span class="px-2 py-0.5 rounded-full text-xs font-bold persian-number" style="background:#FFFBEB; color:#92400E;">
+                                <span class="px-2 py-0.5 rounded-full text-xs font-bold persian-number" style="background:rgb(var(--m-warn) / .1); color:rgb(var(--m-warn));">
                                 ★ {{ number_format($specialist->reviews_avg_overall_rating ?? 0, 1) }}
                             </span>
                             </div>

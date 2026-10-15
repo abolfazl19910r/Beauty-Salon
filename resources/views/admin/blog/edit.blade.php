@@ -6,7 +6,7 @@
         .form-label { display:block; font-size:0.875rem; font-weight:500; margin-bottom:6px; color:var(--admin-text-dim); }
         .form-input,.form-select,.form-textarea { width:100%; border:1px solid var(--admin-border); border-radius:8px; padding:9px 14px; font-size:0.875rem; background:var(--admin-bg); color:var(--admin-text); outline:none; transition:border-color 0.15s; font-family:inherit; }
         .form-input:focus,.form-select:focus,.form-textarea:focus { border-color:var(--admin-accent); }
-        .form-error { color:#DC2626; font-size:0.78rem; margin-top:4px; }
+        .form-error { color:rgb(var(--m-bad)); font-size:0.78rem; margin-top:4px; }
     </style>
 @endpush
 
@@ -36,7 +36,7 @@
                         <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">محتوای مقاله</h2>
                         <div class="space-y-4">
                             <div>
-                                <label class="form-label">عنوان مقاله <span style="color:#DC2626;">*</span></label>
+                                <label class="form-label">عنوان مقاله <span style="color:rgb(var(--m-bad));">*</span></label>
                                 <input type="text" name="title" value="{{ old('title', $post->title) }}" class="form-input" required>
                                 @error('title') <p class="form-error">{{ $message }}</p> @enderror
                             </div>
@@ -46,7 +46,7 @@
                                 @error('excerpt') <p class="form-error">{{ $message }}</p> @enderror
                             </div>
                             <div>
-                                <label class="form-label">محتوا <span style="color:#DC2626;">*</span></label>
+                                <label class="form-label">محتوا <span style="color:rgb(var(--m-bad));">*</span></label>
                                 <textarea name="content" rows="10" class="form-textarea" required>{{ old('content', $post->content) }}</textarea>
                                 @error('content') <p class="form-error">{{ $message }}</p> @enderror
                             </div>
@@ -79,7 +79,7 @@
                         <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">تنظیمات انتشار</h2>
                         <div class="space-y-4">
                             <div>
-                                <label class="form-label">دسته‌بندی <span style="color:#DC2626;">*</span></label>
+                                <label class="form-label">دسته‌بندی <span style="color:rgb(var(--m-bad));">*</span></label>
                                 <select name="category_id" class="form-select" required>
                                     <option value="">انتخاب دسته‌بندی</option>
                                     @foreach($categories as $category)
@@ -111,7 +111,7 @@
 
                     <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                         <button type="submit"
-                                class="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium text-white mb-2"
+                                class="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium text-m-onsolid mb-2"
                                 style="background:var(--admin-accent);"
                                 onmouseover="this.style.background='var(--admin-accent-hover)'"
                                 onmouseout="this.style.background='var(--admin-accent)'">

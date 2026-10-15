@@ -6,7 +6,7 @@
         .form-label { display:block; font-size:0.875rem; font-weight:500; margin-bottom:6px; color:var(--admin-text-dim); }
         .form-input,.form-select,.form-textarea { width:100%; border:1px solid var(--admin-border); border-radius:8px; padding:9px 14px; font-size:0.875rem; background:var(--admin-bg); color:var(--admin-text); outline:none; transition:border-color 0.15s; font-family:inherit; }
         .form-input:focus,.form-select:focus,.form-textarea:focus { border-color:var(--admin-accent); }
-        .form-error { color:#DC2626; font-size:0.78rem; margin-top:4px; }
+        .form-error { color:rgb(var(--m-bad)); font-size:0.78rem; margin-top:4px; }
         .upload-zone { border:2px dashed var(--admin-border); border-radius:10px; padding:1.5rem; text-align:center; cursor:pointer; transition:border-color 0.15s, background 0.15s; }
         .upload-zone:hover { border-color:var(--admin-accent); background:var(--admin-accent-light); }
     </style>
@@ -38,14 +38,14 @@
                         <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">اطلاعات خدمت</h2>
                         <div class="space-y-4">
                             <div>
-                                <label class="form-label">نام خدمت <span style="color:#DC2626;">*</span></label>
+                                <label class="form-label">نام خدمت <span style="color:rgb(var(--m-bad));">*</span></label>
                                 <input type="text" name="name" value="{{ old('name', $service->name) }}" class="form-input" required>
                                 @error('name') <p class="form-error">{{ $message }}</p> @enderror
                             </div>
                             <div class="form-group">
                                 <label class="form-label">نام کوتاه برای پیامک (اختیاری، حداکثر ۲۰ نویسه)</label>
                                 <input type="text" name="sms_name" value="{{ old('sms_name', $service->sms_name) }}" maxlength="20" class="form-input" placeholder="خالی = نام اصلی، مثلاً: کراتینه">
-                                <p class="text-xs mt-1" style="color:#6b7280;">پیامک فارسی تا ۷۰ نویسه یک قطعه است؛ نام کوتاه‌تر پیامک‌ها را یک‌قطعه‌ای و ارزان‌تر نگه می‌دارد. پیشنهاد: تا ۱۵ نویسه.</p>
+                                <p class="text-xs mt-1" style="color:rgb(var(--m-mu));">پیامک فارسی تا ۷۰ نویسه یک قطعه است؛ نام کوتاه‌تر پیامک‌ها را یک‌قطعه‌ای و ارزان‌تر نگه می‌دارد. پیشنهاد: تا ۱۵ نویسه.</p>
                                 @error('sms_name') <p class="form-error">{{ $message }}</p> @enderror
                             </div>
                             <div>
@@ -65,12 +65,12 @@
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="form-label">قیمت (تومان) <span style="color:#DC2626;">*</span></label>
+                                    <label class="form-label">قیمت (تومان) <span style="color:rgb(var(--m-bad));">*</span></label>
                                     <input type="number" name="price" value="{{ old('price', $service->price) }}" class="form-input" required min="0">
                                     @error('price') <p class="form-error">{{ $message }}</p> @enderror
                                 </div>
                                 <div>
-                                    <label class="form-label">مدت زمان (دقیقه) <span style="color:#DC2626;">*</span></label>
+                                    <label class="form-label">مدت زمان (دقیقه) <span style="color:rgb(var(--m-bad));">*</span></label>
                                     <input type="number" name="duration" value="{{ old('duration', $service->duration) }}" class="form-input" required min="1">
                                     @error('duration') <p class="form-error">{{ $message }}</p> @enderror
                                 </div>
@@ -107,7 +107,7 @@
 
                     <div class="flex justify-between p-4 rounded-xl" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                         <button type="submit"
-                                class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-white"
+                                class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-m-onsolid"
                                 style="background:var(--admin-accent);"
                                 onmouseover="this.style.background='var(--admin-accent-hover)'"
                                 onmouseout="this.style.background='var(--admin-accent)'">
@@ -133,7 +133,7 @@
                     <div class="space-y-2.5 text-sm">
                         <div class="flex justify-between">
                             <span style="color:var(--admin-text-dim);">قیمت:</span>
-                            <span class="persian-number font-medium" style="color:#16A34A;">{{ number_format($service->price) }} تومان</span>
+                            <span class="persian-number font-medium" style="color:rgb(var(--m-ok));">{{ number_format($service->price) }} تومان</span>
                         </div>
                         <div class="flex justify-between">
                             <span style="color:var(--admin-text-dim);">مدت:</span>
@@ -157,9 +157,9 @@
                         @csrf @method('DELETE')
                         <button type="button" data-confirm-delete data-confirm-message="آیا از حذف خدمت «{{ $service->name }}» اطمینان دارید؟"
                                 class="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm"
-                                style="background:#FEF2F2; color:#991B1B;"
-                                onmouseover="this.style.background='#FEE2E2'"
-                                onmouseout="this.style.background='#FEF2F2'">
+                                style="background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad));"
+                                onmouseover="this.style.background='rgb(var(--m-bad) / .14)'"
+                                onmouseout="this.style.background='rgb(var(--m-bad) / .1)'">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <polyline points="3 6 5 6 21 6"/>
                                 <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
