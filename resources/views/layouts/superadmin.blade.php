@@ -128,6 +128,7 @@
                         'مالی و پیامک' => [
                             ['superadmin.payments.index', 'superadmin.payments.*', 'کیف پول و درآمد اشتراک', 0],
                             ['superadmin.sms.index', 'superadmin.sms.*', 'پیامک سالن‌ها', 0],
+                            ['superadmin.push.index', 'superadmin.push.*', 'اعلان اپ (پوش)', 0],
                             ['superadmin.payment-attention.index', 'superadmin.payment-attention.*', 'پرداخت‌های نیازمند بررسی', -$saAttention],
                         ],
                         'ارتباط' => [
@@ -181,6 +182,12 @@
                 @if (session('success'))
                     <div class="mb-4 p-4 rounded-lg" style="background: var(--sa-success-bg); border: 1px solid var(--sa-success); color: var(--sa-success);">
                         {{ session('success') }}
+                    </div>
+                @endif
+
+                @if (session('warning'))
+                    <div class="mb-4 p-4 rounded-lg" style="background: var(--sa-soft); border: 1px solid var(--sa-border); color: var(--sa-text);" data-flash-warning>
+                        {{ session('warning') }}
                     </div>
                 @endif
 

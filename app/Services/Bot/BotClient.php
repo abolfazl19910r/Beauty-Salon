@@ -19,7 +19,7 @@ class BotClient
 
     public function enabled(string $messenger): bool
     {
-        return in_array($messenger, \App\Models\BotLink::MESSENGERS, true) && (bool) config("services.{$messenger}.bot_token");
+        return in_array($messenger, \App\Models\BotLink::MESSENGERS, true) && (bool) BotSettings::token($messenger);
     }
 
     /** @return list<string> */
@@ -30,7 +30,7 @@ class BotClient
 
     public function username(string $messenger): ?string
     {
-        return config("services.{$messenger}.username") ?: null;
+        return BotSettings::username($messenger);
     }
 
     public function deepLink(string $messenger, string $code): ?string
@@ -100,8 +100,31 @@ class BotClient
         return ['ok' => $response->successful() && $response->json('ok') !== false, 'body' => $response->json() ?? $response->body()];
     }
 
+    /**
+     * بررسی توکن تازه پیش از ذخیره در «تنظیمات پلتفرم» (getMe).
+     *
+     * @return array{ok: bool, reachable: bool, username: ?string, description: ?string}
+     */
+    public function getMe(string $messenger, string $token, ?string $apiBase = null): array
+    {
+        try {
+            $response = Http::timeout(10)->post(rtrim($apiBase ?: BotSettings::apiBase($messenger), '/').'/bot'.$token.'/getMe');
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'reachable' => false, 'username' => null, 'description' => mb_strimwidth($e->getMessage(), 0, 150, '…')];
+        }
+
+        $ok = $response->successful() && $response->json('ok') !== false;
+
+        return [
+            'ok' => $ok,
+            'reachable' => true,
+            'username' => $ok ? ($response->json('result.username') ?: null) : null,
+            'description' => $ok ? null : (string) ($response->json('description') ?? $response->status()),
+        ];
+    }
+
     private function url(string $messenger, string $method): string
     {
-        return rtrim((string) config("services.{$messenger}.api_base"), '/').'/bot'.config("services.{$messenger}.bot_token").'/'.$method;
+        return BotSettings::apiBase($messenger).'/bot'.BotSettings::token($messenger).'/'.$method;
     }
 }

@@ -38,11 +38,49 @@
         </form>
     </div>
 
-    <div class="sa-card p-6 mt-6" style="max-width: 42rem;" data-bot-status>
+    <div class="sa-card p-6 mt-6" style="max-width: 44rem;" data-push-settings>
+        <h2 class="font-bold mb-1">اعلان اپ‌ها (پوش)</h2>
+        <p class="text-sm mb-4" style="color: var(--sa-text-dim);">
+            «آزمایشی»: پیامک مثل قبل همیشه می‌رود و پوش هم؛ فقط نرخ رسید سنجیده می‌شود (۲ تا ۴ هفته). «فعال»: پیامک فقط وقتی اپ رسید نفرستد
+            (لغو و تغییر نوبت و یادآوری ۱ دقیقه، بقیه ۱۰ دقیقه؛ امتیاز، کد تخفیف و درخواست نظر فقط پوش). نتیجه در
+            <a href="{{ route('superadmin.push.index') }}" style="color: var(--sa-accent);">اعلان اپ (پوش)</a>.
+        </p>
+        <form method="POST" action="{{ route('superadmin.settings.push') }}" class="flex flex-wrap items-end gap-3">
+            @csrf
+            @method('PUT')
+            <div class="grow">
+                <label for="push-mode" class="block mb-1 font-medium">حالت</label>
+                <select id="push-mode" name="mode" class="w-full rounded-lg px-3 py-2" style="border:1px solid var(--sa-border); background: var(--sa-bg); color: var(--sa-text);">
+                    @foreach ($push['modes'] as $value => $label)
+                        <option value="{{ $value }}" @selected($push['mode'] === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <button type="submit" class="sa-btn">ذخیره</button>
+        </form>
+        <div class="mt-4 text-sm flex flex-wrap items-center gap-x-6 gap-y-2">
+            <span>FCM: @if ($push['fcm_configured'])<span style="color: var(--sa-success);">کلید حساب سرویس تنظیم شده</span>@else<span style="color: var(--sa-danger);">تنظیم نشده (<span dir="ltr">PUSH_FCM_CREDENTIALS</span>)</span>@endif</span>
+            <span>ntfy: @if ($push['ntfy_configured'])<span style="color: var(--sa-success);">تنظیم شده</span>@else<span style="color: var(--sa-text-dim);">بدون سرور (برای قطعی اینترنت بین‌الملل)</span>@endif</span>
+            <span>گوشی‌های ثبت‌شده: {{ to_persian_num(number_format($push['devices'])) }}</span>
+            @if ($push['fcm_configured'])
+                <form method="POST" action="{{ route('superadmin.settings.push.check') }}">
+                    @csrf
+                    <button type="submit" class="text-sm underline" style="color: var(--sa-accent);">بررسی اتصال به FCM</button>
+                </form>
+            @endif
+        </div>
+    </div>
+
+    <div class="sa-card p-6 mt-6" style="max-width: 44rem;" data-bot-status>
         <h2 class="font-bold mb-1">ربات اعلان (بله / تلگرام)</h2>
-        <p class="text-sm mb-4" style="color: var(--sa-text-dim);">روشن یا خاموش بودن از کلیدهای <span dir="ltr">BALE_BOT_TOKEN</span> و <span dir="ltr">TELEGRAM_BOT_TOKEN</span> در فایل .env سرور است؛ اینجا فقط نمایش.</p>
-        <table class="w-full text-sm text-right">
-            <thead><tr style="color: var(--sa-text-dim);"><th class="py-2 px-3">پیام‌رسان</th><th class="py-2 px-3">وضعیت</th><th class="py-2 px-3">نام ربات</th><th class="py-2 px-3">کاربران وصل</th></tr></thead>
+        <p class="text-sm mb-4" style="color: var(--sa-text-dim);">
+            مدیر، متخصص و مشتری از کارت «دریافت اعلان‌ها در پیام‌رسان» در پروفایل خودشان به ربات وصل می‌شوند و اعلان‌های حسابشان علاوه بر پیامک در پیام‌رسان هم می‌آید.
+            توکن اینجا بر <span dir="ltr">BALE_BOT_TOKEN</span>/<span dir="ltr">TELEGRAM_BOT_TOKEN</span> فایل .env مقدم است. بعد از گذاشتن توکن روی سرور یک بار
+            <span dir="ltr">php artisan bot:webhook bale</span> (روی لوکال <span dir="ltr">php artisan bot:poll bale</span>).
+            ربات پس از پایدار شدن اپ جمع می‌شود (تصمیم ۲۰۲۶-۱۰-۰۲).
+        </p>
+        <table class="w-full text-sm text-right mb-2">
+            <thead><tr style="color: var(--sa-text-dim);"><th class="py-2 px-3">پیام‌رسان</th><th class="py-2 px-3">وضعیت</th><th class="py-2 px-3">نام ربات</th><th class="py-2 px-3">توکن</th><th class="py-2 px-3">کاربران وصل</th></tr></thead>
             <tbody>
             @foreach (['bale' => 'بله', 'telegram' => 'تلگرام'] as $key => $label)
                 <tr style="border-top: 1px solid var(--sa-border);">
@@ -55,10 +93,58 @@
                         @endif
                     </td>
                     <td class="py-2 px-3" dir="ltr" style="text-align: right;">{{ $bot['usernames'][$key] ? '@'.$bot['usernames'][$key] : '—' }}</td>
+                    <td class="py-2 px-3" data-bot-token-source="{{ $key }}">
+                        @if (($bot['sources'][$key] ?? null) === 'panel')
+                            <span dir="ltr">{{ $bot['masked'][$key] }}</span> <span style="color: var(--sa-text-dim);">(از پنل)</span>
+                        @elseif (($bot['sources'][$key] ?? null) === 'env')
+                            <span dir="ltr">{{ $bot['masked'][$key] }}</span> <span style="color: var(--sa-text-dim);">(از .env)</span>
+                        @else
+                            —
+                        @endif
+                    </td>
                     <td class="py-2 px-3">{{ number_format($bot['links'][$key] ?? 0) }}</td>
                 </tr>
             @endforeach
             </tbody>
         </table>
+
+        @foreach (['bale' => 'بله', 'telegram' => 'تلگرام'] as $key => $label)
+            <form method="POST" action="{{ route('superadmin.settings.bot') }}" class="grid gap-3 mt-5 pt-5" style="border-top: 1px solid var(--sa-border);" data-bot-form="{{ $key }}">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="messenger" value="{{ $key }}">
+                <h3 class="font-bold text-sm">ربات {{ $label }}</h3>
+                <div>
+                    <label for="bot-{{ $key }}-token" class="block mb-1 font-medium">توکن</label>
+                    <input id="bot-{{ $key }}-token" name="token" type="password" autocomplete="off" dir="ltr" placeholder="{{ $bot['masked'][$key] ? 'خالی = همان توکن فعلی' : '123456789:AbCd…' }}" class="w-full rounded-lg px-3 py-2" style="border:1px solid var(--sa-border); background: var(--sa-bg); color: var(--sa-text); text-align: left;">
+                    <p class="mt-1 text-xs" style="color: var(--sa-text-dim);">
+                        @if ($key === 'bale')
+                            از ربات «بازو»ی بله (<span dir="ltr">@BotFather</span> بله) بگیرید؛ نام ربات بعد از بررسی خودکار پر می‌شود.
+                        @else
+                            از <span dir="ltr">@BotFather</span> تلگرام. از سرور ایران بدون پراکسی بررسی نمی‌شود.
+                        @endif
+                    </p>
+                </div>
+                <div>
+                    <label for="bot-{{ $key }}-username" class="block mb-1 font-medium">نام ربات (اختیاری)</label>
+                    <input id="bot-{{ $key }}-username" name="username" dir="ltr" value="{{ old('messenger') === $key ? old('username') : '' }}" placeholder="{{ $bot['usernames'][$key] ? '@'.$bot['usernames'][$key] : 'Mahru_Bot' }}" class="w-full rounded-lg px-3 py-2" style="border:1px solid var(--sa-border); background: var(--sa-bg); color: var(--sa-text); text-align: left;">
+                </div>
+                @if ($key === 'telegram')
+                    <div>
+                        <label for="bot-telegram-api" class="block mb-1 font-medium">آدرس پراکسی API تلگرام (Worker کلودفلر)</label>
+                        <input id="bot-telegram-api" name="api_base" type="url" dir="ltr" value="{{ old('api_base', $bot['api_bases']['telegram'] ?? '') }}" placeholder="https://api.telegram.org" class="w-full rounded-lg px-3 py-2" style="border:1px solid var(--sa-border); background: var(--sa-bg); color: var(--sa-text); text-align: left;">
+                    </div>
+                @endif
+                @error('bot_'.$key)
+                    <p class="text-sm" style="color: var(--sa-danger);">{{ $message }}</p>
+                @enderror
+                <div class="flex items-center gap-4">
+                    <button type="submit" class="sa-btn">ذخیره</button>
+                    @if (($bot['sources'][$key] ?? null) === 'panel')
+                        <button type="submit" name="remove" value="1" class="text-sm" style="color: var(--sa-danger);" onclick="return confirm('توکن پنل حذف شود؟ (مقدار .env به کار می‌رود)')">حذف توکن پنل</button>
+                    @endif
+                </div>
+            </form>
+        @endforeach
     </div>
 @endsection

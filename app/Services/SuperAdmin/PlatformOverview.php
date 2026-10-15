@@ -109,6 +109,9 @@ class PlatformOverview
             'enabled' => $client->enabledMessengers(),
             'links' => collect(BotLink::MESSENGERS)->mapWithKeys(fn ($m) => [$m => BotLink::query()->where('messenger', $m)->count()])->all(),
             'usernames' => collect(BotLink::MESSENGERS)->mapWithKeys(fn ($m) => [$m => $client->username($m)])->all(),
+            'sources' => collect(BotLink::MESSENGERS)->mapWithKeys(fn ($m) => [$m => \App\Services\Bot\BotSettings::tokenSource($m)])->all(),
+            'masked' => collect(BotLink::MESSENGERS)->mapWithKeys(fn ($m) => [$m => \App\Services\Bot\BotSettings::masked($m)])->all(),
+            'api_bases' => collect(BotLink::MESSENGERS)->mapWithKeys(fn ($m) => [$m => \App\Support\PlatformSettings::raw("bot_{$m}_api_base")])->all(),
         ];
     }
 }
