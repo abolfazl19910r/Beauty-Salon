@@ -164,4 +164,26 @@ class CentralLandingPageTest extends TestCase
             ->assertDontSee('سالن کاملاً محرمانه')
             ->assertDontSee('secret-salon-xyz');
     }
+
+    public function test_landing_shows_the_trial_and_which_layouts_and_palettes_each_plan_and_period_opens(): void
+    {
+        // بسته‌ی «و» (درخواست ابوالفضل): نه فقط تعداد قالب — کدام چیدمان‌ها و پالت‌ها، در هر پلن و هر بازه، به‌علاوه‌ی کارت آزمایشی
+        config(['billing.trial_days' => 14]);
+        app(\App\Services\Plans\DefaultPlans::class)->sync();
+
+        $page = $this->get(route('central.home'))->assertOk();
+        $page->assertSee('data-plan-card="trial"', false)
+            ->assertSee('id="templates-table"', false)
+            ->assertSee('data-theme-row="trial"', false)
+            ->assertSee('data-theme-row="pro"', false)
+            ->assertSee('چیدمان: ویترین، مجله')
+            ->assertSee('همه‌ی ۱۶ قالب')
+            ->assertSee('ریل آیکونی · گرافیت');
+
+        $pro = collect($page->viewData('planCards'))->firstWhere('key', 'pro');
+        $this->assertSame(['ویترین', 'مجله'], $pro['periods']['1m']['theme_detail']['layouts']);
+        $this->assertSame(['رز موکا', 'مریم‌گلی'], array_column($pro['periods']['1m']['theme_detail']['palettes'], 'name'));
+        $this->assertSame(['ویترین', 'مجله', 'آرام', 'بنتو'], $pro['periods']['12m']['theme_detail']['layouts']);
+        $this->assertSame(0, $page->viewData('trialCard')['theme_detail']['count']);
+    }
 }

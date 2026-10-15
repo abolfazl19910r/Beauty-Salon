@@ -79,6 +79,9 @@ class CentralLandingController extends Controller
         return view('central.landing', [
             'plans' => $plans,
             'planCards' => $planCards,
+            'trialCard' => $this->trialCard($trialPlan, $trialDays, $pricing),
+            'themeLayouts' => \App\Support\Themes\ThemeCatalog::layouts(),
+            'themePalettes' => \App\Support\Themes\ThemeCatalog::palettes(),
             'periodLabels' => self::PLAN_LABELS,
             'themeFaq' => $this->themeFaq($offered),
             'trialDays' => $trialDays,
@@ -143,6 +146,8 @@ class CentralLandingController extends Controller
                     'per_month' => (int) round($price / $months),
                     'saving_percent' => $full > 0 && $months > 1 ? max(0, (int) round((1 - $price / $full) * 100)) : 0,
                     'themes' => $plan->siteThemeAllowance($type),
+                    // بسته‌ی «و» (درخواست ابوالفضل): کدام چیدمان‌ها و پالت‌ها، نه فقط تعداد
+                    'theme_detail' => $this->themeDetail($plan, $type),
                     'signup_url' => route('salon-signup.create', ['plan' => $type]),
                     'buy_url' => route('salon-signup.create', ['plan' => $type, 'intent' => 'buy', 'plan_key' => $plan->key]),
                 ];
@@ -165,6 +170,10 @@ class CentralLandingController extends Controller
                 'specialists' => $pricing->includedSpecialists($plan),
                 'sms' => (int) $plan->sms_quota_per_month,
                 'admin_themes' => $plan->adminThemeAllowance(),
+                'admin_theme_names' => array_map(
+                    fn (string $key) => \App\Support\Themes\ThemeCatalog::adminName($key),
+                    array_slice(\App\Support\Themes\ThemeCatalog::allowedAdminKeys($plan->adminThemeAllowance()), 1)
+                ),
                 'periods' => $periods,
                 'trial' => $trialDays > 0,
             ];
@@ -172,6 +181,49 @@ class CentralLandingController extends Controller
         }
 
         return $cards;
+    }
+
+    /**
+     * چیدمان‌ها و پالت‌های باز یک پلن در یک بازه (به ترتیب ابرمدیر) — برای کارت‌ها و جدول قالب‌های لندینگ.
+     *
+     * @return array{count: int, layouts: list<string>, palettes: list<array{name: string, swatch: string}>, all: bool}
+     */
+    private function themeDetail(\App\Models\Plan $plan, ?string $period): array
+    {
+        [$layouts, $palettes] = $plan->siteThemeGrid($period);
+        $layoutNames = array_map(fn ($l) => (string) config("themes.layouts.$l.name"), array_slice(\App\Support\Themes\ThemeCatalog::layoutOrder(), 0, $layouts));
+        $paletteList = array_map(
+            fn ($p) => ['name' => (string) config("themes.palettes.$p.name"), 'swatch' => (string) config("themes.palettes.$p.swatch")],
+            array_slice(\App\Support\Themes\ThemeCatalog::paletteOrder(), 0, $palettes)
+        );
+
+        return [
+            'count' => $layouts * $palettes,
+            'layouts' => $layoutNames,
+            'palettes' => $paletteList,
+            'all' => $layouts * $palettes >= \App\Support\Themes\ThemeCatalog::siteTotal(),
+        ];
+    }
+
+    /**
+     * کارت «آزمایشی» لندینگ: روزهای رایگان، امکانات و قالب (همیشه فقط پیش‌فرض، مگر ابرمدیر عوضش کند).
+     *
+     * @return array<string, mixed>|null
+     */
+    private function trialCard(?\App\Models\Plan $trial, int $trialDays, \App\Support\Billing\SubscriptionPricing $pricing): ?array
+    {
+        if ($trialDays <= 0) {
+            return null;
+        }
+
+        return [
+            'name' => $trial?->name ?? 'آزمایشی',
+            'days' => $trialDays,
+            'specialists' => $pricing->includedSpecialists($trial),
+            'sms' => (int) ($trial?->sms_quota_per_month ?? config('billing.trial_sms_quota')),
+            'theme_detail' => $trial ? $this->themeDetail($trial, null) : ['count' => 0, 'layouts' => [], 'palettes' => [], 'all' => false],
+            'signup_url' => route('salon-signup.create'),
+        ];
     }
 
     /**

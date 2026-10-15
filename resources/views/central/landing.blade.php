@@ -543,6 +543,24 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 .prc.p4 .pl .pr{font-size:clamp(26px,2.4vw,32px);white-space:nowrap}
 .prc.p4 .pl ul{align-content:start}
 #plans[data-period="1m"] .pp:not([data-p="1m"]),#plans[data-period="3m"] .pp:not([data-p="3m"]),#plans[data-period="6m"] .pp:not([data-p="6m"]),#plans[data-period="12m"] .pp:not([data-p="12m"]){display:none}
+.trialc{flex-direction:row;flex-wrap:wrap;align-items:center;gap:14px 28px;margin-bottom:26px;padding:24px 28px}
+.trialc .tc-h{flex:0 0 auto}.trialc .tc-h .pr{font-size:30px}
+.trialc ul{flex:1 1 380px;margin:0;border-top:0;padding-top:0;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.trialc .btn{flex:0 0 auto}
+.pl li.thm span{display:block}
+.pl .td{display:block;color:var(--mu);font-size:12.5px;line-height:1.9;margin-top:2px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-inline-end:4px;vertical-align:middle;border:1px solid var(--ln2)}
+.tt{margin-top:40px}.tt h3{text-align:center;font-size:22px;margin-bottom:6px}
+.tt-sub{text-align:center;color:var(--mu);font-size:14.5px;margin-bottom:16px}
+.tt-legend{display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:center;color:var(--mu);font-size:13.5px;margin-bottom:10px}
+.tt-legend b{color:var(--tx)}
+.tt-wrap{overflow-x:auto;border:1px solid var(--ln);border-radius:20px;background:var(--bg2);margin-top:14px}
+.tt table{width:100%;border-collapse:collapse;min-width:760px;font-size:14px}
+.tt th,.tt td{padding:14px 16px;text-align:right;vertical-align:top;border-bottom:1px solid var(--ln)}
+.tt thead th{color:var(--mu);font-size:13px;font-weight:700}
+.tt tbody th{white-space:nowrap}
+.tt td small{display:block;color:var(--mu);font-size:12.5px;line-height:1.9}
+.tt tbody tr:last-child th,.tt tbody tr:last-child td{border-bottom:0}
 [data-period-switch] button[aria-pressed="true"]{background:var(--btn);color:var(--on-gold);border-color:transparent;font-weight:700}
 .pl .buy{display:block;text-align:center;margin-top:12px;font-size:13.5px;color:var(--gl);font-weight:700}
 @media(max-width:560px){.nav-login{display:none}}
@@ -791,6 +809,18 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 <section id="plans" style="padding-top:0" data-period="1m"><div class="wrap">
 <div class="sh rv"><span class="kicker">Pricing</span><h2>چهار پلن، <span class="gold">هر کدام برای یک اندازه سالن</span></h2><p>@if ($trialDays > 0){{ to_persian_num((string) $trialDays) }} روز رایگان، بدون نیاز به کارت بانکی. هر وقت راضی بودید، پلن را از داخل پنل سالن می‌خرید.@else پلن و مدت اشتراک را انتخاب کنید؛ اشتراک بلندتر ارزان‌تر است و قالب‌های بیشتری باز می‌کند.@endif</p></div>
 @if ($planCards !== [])
+@if ($trialCard)
+{{-- بسته‌ی «و»: پلن آزمایشی کنار چهار پلن پولی (بازه ندارد) --}}
+<div class="card pl rv trialc" data-plan-card="trial">
+<div class="tc-h"><h3>{{ $trialCard['name'] }}</h3><div class="pr gold num">رایگان <small>{{ to_persian_num((string) $trialCard['days']) }} روز</small></div></div>
+<ul>
+<li>بدون کارت بانکی؛ خرید پلن هر وقت خواستید از داخل پنل</li>
+<li>{{ to_persian_num((string) $trialCard['specialists']) }} متخصص و {{ to_persian_num(number_format($trialCard['sms'])) }} قطعه پیامک</li>
+<li>@if ($trialCard['theme_detail']['count'] > 0){{ to_persian_num((string) $trialCard['theme_detail']['count']) }} قالب ظاهری@else قالب «طلایی ماهرو» (تیره و روشن)@endif</li>
+</ul>
+<a class="btn btn-line" href="{{ $trialCard['signup_url'] }}">شروع {{ to_persian_num((string) $trialCard['days']) }} روز رایگان</a>
+</div>
+@endif
 {{-- ⭐ بسته‌ی «و»: یک کلید بازه برای هر چهار کارت (بدون جاوااسکریپت: یک‌ماهه) --}}
 <div class="tabs rv" role="group" aria-label="مدت اشتراک" data-period-switch>
 @foreach ($periodLabels as $type => $label)
@@ -815,9 +845,10 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 <li>{{ to_persian_num((string) $card['specialists']) }} متخصص در قیمت پلن</li>
 <li>{{ to_persian_num(number_format($card['sms'])) }} قطعه پیامک در هر ماه</li>
 @foreach ($card['periods'] as $type => $period)
-<li class="pp" data-p="{{ $type }}" data-themes="{{ $period['themes'] }}">@if ($period['themes'] >= \App\Support\Themes\ThemeCatalog::siteTotal())همه‌ی {{ to_persian_num((string) $period['themes']) }} قالب ظاهری@elseif ($period['themes'] > 0){{ to_persian_num((string) $period['themes']) }} قالب ظاهری + طلایی ماهرو@else قالب طلایی ماهرو (تیره و روشن)@endif</li>
+<li class="pp thm" data-p="{{ $type }}" data-themes="{{ $period['themes'] }}"><span>@if ($period['theme_detail']['all'])همه‌ی {{ to_persian_num((string) $period['themes']) }} قالب ظاهری + طلایی ماهرو@elseif ($period['themes'] > 0){{ to_persian_num((string) $period['themes']) }} قالب ظاهری + طلایی ماهرو@else فقط قالب طلایی ماهرو (تیره و روشن)@endif
+@if ($period['themes'] > 0)<small class="td">چیدمان: {{ implode('، ', $period['theme_detail']['layouts']) }}<br>پالت: @foreach ($period['theme_detail']['palettes'] as $pal)<i class="sw" style="background:{{ $pal['swatch'] }}"></i>{{ $pal['name'] }}@if (! $loop->last)، @endif @endforeach</small>@endif</span></li>
 @endforeach
-@if ($card['admin_themes'] > 0)<li>{{ to_persian_num((string) $card['admin_themes']) }} قالب دیگر برای پنل مدیر</li>@endif
+@if ($card['admin_themes'] > 0)<li class="thm"><span>{{ to_persian_num((string) $card['admin_themes']) }} قالب دیگر برای پنل مدیر<small class="td">{{ implode('، ', $card['admin_theme_names']) }}</small></span></li>@else<li>پنل مدیر با منوی کناری پیش‌فرض</li>@endif
 </ul>
 @foreach ($card['periods'] as $type => $period)
 <div class="pp" data-p="{{ $type }}">
@@ -831,6 +862,31 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 @endforeach
 </div>
 @endforeach
+</div>
+
+{{-- ⭐ بسته‌ی «و»: کدام پلن در کدام بازه کدام چیدمان‌ها و پالت‌ها را دارد --}}
+<div class="tt rv" id="templates-table">
+<h3>قالب‌های ظاهری در هر پلن و مدت اشتراک</h3>
+<p class="tt-sub">هر قالب = یک چیدمان × یک پالت، هر دو در نسخه‌ی تیره و روشن، برای سایت سالن، پنل مشتری، پنل متخصص و اپ. «طلایی ماهرو» در همه‌ی پلن‌ها هست.</p>
+<div class="tt-legend">
+@foreach ($themeLayouts as $layout)<span><b>{{ $layout['name'] }}</b> — {{ $layout['description'] }}</span>@endforeach
+</div>
+<div class="tt-legend">@foreach ($themePalettes as $pal)<span><i class="sw" style="background:{{ $pal['swatch'] }}"></i>{{ $pal['name'] }}</span>@endforeach</div>
+<div class="tt-wrap"><table>
+<thead><tr><th>پلن</th><th>یک‌ماهه و سه‌ماهه</th><th>شش‌ماهه</th><th>یک‌ساله</th><th>پنل مدیر</th></tr></thead>
+<tbody>
+@if ($trialCard)
+<tr data-theme-row="trial"><th>{{ $trialCard['name'] }}</th><td colspan="3">فقط طلایی ماهرو</td><td>منوی کناری پیش‌فرض</td></tr>
+@endif
+@foreach ($planCards as $card)
+<tr data-theme-row="{{ $card['key'] }}"><th>{{ $card['name'] }}</th>
+@foreach (['1m', '6m', '12m'] as $type)
+@php $d = $card['periods'][$type]['theme_detail'] ?? null; @endphp
+<td>@if (! $d)—@elseif ($d['count'] === 0)فقط طلایی ماهرو@else<b>{{ $d['all'] ? 'همه‌ی ' : '' }}{{ to_persian_num((string) $d['count']) }} قالب</b><small>{{ implode('، ', $d['layouts']) }}</small><small>@foreach ($d['palettes'] as $pal)<i class="sw" style="background:{{ $pal['swatch'] }}"></i>{{ $pal['name'] }}@if (! $loop->last)، @endif @endforeach</small>@endif</td>
+@endforeach
+<td>@if ($card['admin_themes'] > 0)منوی کناری + {{ implode('، ', $card['admin_theme_names']) }}@else منوی کناری پیش‌فرض@endif</td></tr>
+@endforeach
+</tbody></table></div>
 </div>
 @else
 <div class="prc p4">
