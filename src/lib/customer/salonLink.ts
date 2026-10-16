@@ -7,7 +7,8 @@ import { enDigits } from '../format';
  *   https://host/s/rasta[/...]             لینک قدیمی/همیشه‌زنده‌ی سالن (همان QR روی سرور لوکال)
  *   https://rasta.mahru.ir[/...]          ساب‌دامین سالن (وقتی CENTRAL_DOMAIN روی سرور پر است)
  *   mahru://salon/rasta                   لینک اپ (دکمه‌ی «باز کردن در اپ» صفحه‌ی وب سالن)
- * origin فقط برای لینک‌های http(s) برگردانده می‌شود تا نسخه‌ی آزمایشی بتواند سرور همان QR را پیشنهاد کند.
+ * origin فقط برای لینک‌های http(s) برگردانده می‌شود تا نسخه‌ی آزمایشی بتواند سرور همان QR را پیشنهاد کند — جز آدرسی که فقط روی
+ * کامپیوتر سازنده‌ی QR باز می‌شود (127.0.0.1، localhost، *.localhost، *.test): پیشنهاد آن، اپ را به خود گوشی وصل می‌کرد (۲۰۲۶-۱۰-۱۷).
  */
 export type ParsedSalon = { slug: string; origin: string | null };
 
@@ -16,6 +17,12 @@ const SLUG = /^[\p{L}\p{M}\p{N}_-]{1,100}$/u;
 
 /** برچسب‌های میزبان که slug سالن نیستند */
 const NOT_SALON = new Set(['www', 'app', 'api', 'admin', 'mahru']);
+
+/** میزبانی که از گوشی در دسترس نیست (پنل روی همان کامپیوتر باز شده بود) */
+export function isLocalOnlyHost(hostname: string): boolean {
+  const h = hostname.toLowerCase().replace(/^\[|\]$/g, '');
+  return h === 'localhost' || h === '::1' || h === '0.0.0.0' || /^127\./.test(h) || h.endsWith('.localhost') || h.endsWith('.test');
+}
 
 export function isSalonSlug(value: string): boolean {
   return SLUG.test(value);
@@ -48,17 +55,20 @@ export function parseSalonInput(raw: string): ParsedSalon | null {
   const path = m[3] ?? '';
   const origin = `${scheme}://${host}`;
 
+  const hostname = host.replace(/:\d+$/, '').toLowerCase();
+  const localOnly = isLocalOnlyHost(hostname);
+
   const legacy = /^\/s\/([^/]+)/.exec(path);
   if (legacy) {
     const slug = safeDecode(legacy[1]);
-    return slug && isSalonSlug(slug) ? { slug, origin } : null;
+    return slug && isSalonSlug(slug) ? { slug, origin: localOnly ? null : origin } : null;
   }
 
-  // ساب‌دامین: اولین برچسب میزبانی که دست‌کم سه بخش دارد و آی‌پی نیست
-  const hostname = host.replace(/:\d+$/, '').toLowerCase();
+  // ساب‌دامین: اولین برچسب میزبانی که دست‌کم سه بخش دارد و آی‌پی نیست (rasta.localhost دو بخش است ولی ساب‌دامین است)
   const labels = hostname.split('.');
-  if (labels.length >= 3 && !/^\d+$/.test(labels[labels.length - 1]) && !NOT_SALON.has(labels[0]) && isSalonSlug(labels[0])) {
-    return { slug: labels[0], origin: `${scheme}://${labels.slice(1).join('.')}${host.match(/:\d+$/)?.[0] ?? ''}` };
+  const minLabels = hostname.endsWith('.localhost') ? 2 : 3;
+  if (labels.length >= minLabels && !/^\d+$/.test(labels[labels.length - 1]) && !NOT_SALON.has(labels[0]) && isSalonSlug(labels[0])) {
+    return { slug: labels[0], origin: localOnly ? null : `${scheme}://${labels.slice(1).join('.')}${host.match(/:\d+$/)?.[0] ?? ''}` };
   }
 
   return null;
