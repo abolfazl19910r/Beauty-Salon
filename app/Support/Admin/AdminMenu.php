@@ -61,6 +61,8 @@ final class AdminMenu
                 $can('manage-roles') ? self::item('roles', 'نقش‌ها', 'admin.roles.index', 'admin.roles*', 'badge') : null,
             ]],
             ['امور مالی', [
+                // اشتراک و صورتحساب (۲۰۲۶-۱۰-۱۷): در منوی بسته‌ی «و» جا مانده بود؛ صفحه فقط با redirect انقضا یا آدرس مستقیم باز می‌شد
+                self::item('billing', 'اشتراک و صورتحساب', 'admin.billing.index', 'admin.billing.*', 'receipt'),
                 self::item('wallets', 'کیف پول‌ها', 'admin.wallet.index', 'admin.wallet.index', 'wallet'),
                 self::item('withdrawals', 'درخواست‌های برداشت', 'admin.wallet.withdrawals', 'admin.wallet.withdrawals*', 'cash'),
                 self::item('wallet-settings', 'تنظیمات مالی', 'admin.wallet.settings', 'admin.wallet.settings', 'coin'),
@@ -117,6 +119,7 @@ final class AdminMenu
         'shield' => '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>',
         'home' => '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>',
         'palette' => '<path d="M12 22a10 10 0 1 1 10-10c0 2.8-2.2 4-4.5 4H15a2 2 0 0 0-1.6 3.2A1.7 1.7 0 0 1 12 22z"></path><circle cx="7.5" cy="10.5" r="1"></circle><circle cx="12" cy="7" r="1"></circle><circle cx="16.5" cy="10.5" r="1"></circle>',
+        'receipt' => '<path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"></path><line x1="9" y1="7" x2="15" y2="7"></line><line x1="9" y1="11" x2="15" y2="11"></line><line x1="9" y1="15" x2="13" y2="15"></line>',
         'card' => '<rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line>',
         'lock' => '<rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path>',
         'badge' => '<path d="M9 11h6m-3-3v6M17 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h10z"></path>',

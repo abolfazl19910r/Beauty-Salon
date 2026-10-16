@@ -18,6 +18,8 @@
                         <div class="font-bold" style="color:var(--admin-text);">{{ $plan->name }}</div>
                         @if ($currentPlan && $currentPlan->id === $plan->id)
                             <span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--admin-accent-light); color:var(--admin-accent);">پلن فعلی</span>
+                        @elseif ($option['recommended'] ?? false)
+                            <span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--admin-accent-light); color:var(--admin-accent);" data-plan-recommended>پیشنهاد ما</span>
                         @endif
                     </div>
                     @if ($plan->description)
@@ -33,6 +35,7 @@
                         @endforeach
                         <li class="persian-number" style="color:var(--admin-text);">✓ سهمیه‌ی پیامک ماهانه {{ to_persian_num(number_format($plan->sms_quota_per_month)) }} قطعه</li>
                         <li class="persian-number" style="color:var(--admin-text);">✓ {{ to_persian_num((string) $option['included']) }} متخصص در قیمت؛ هر متخصص بیشتر ماهانه {{ to_persian_num(number_format($option['extra_price'])) }} تومان</li>
+                        <li class="persian-number" style="color:var(--admin-text);" data-plan-admin-themes>✓ قالب پنل مدیر: پیش‌فرض{{ ($option['admin_themes'] ?? 0) > 0 ? ' + '.to_persian_num((string) $option['admin_themes']) : '' }}</li>
                     </ul>
 
                     <div class="grid grid-cols-2 gap-2 mt-4">
@@ -41,7 +44,18 @@
                                 <input type="radio" name="choice" value="{{ $plan->id }}:{{ $type }}" class="ml-1" required
                                        {{ $plan->id === $defaultPlanId && $salon->subscription_type === $type ? 'checked' : '' }}>
                                 <div class="font-bold mt-1" style="color:var(--admin-text);">{{ $periodLabels[$type] }}</div>
+                                @php $detail = $option['periods'][$type] ?? null; @endphp
                                 <div class="mt-1 persian-number" style="color:var(--admin-text-dim);">{{ number_format($price) }} تومان</div>
+                                @if ($detail)
+                                    <div class="mt-1 text-xs persian-number" style="color:var(--admin-text-dim);" data-period-detail="{{ $type }}">
+                                        @if ($type !== '1m')ماهانه {{ to_persian_num(number_format($detail['per_month'])) }}@endif
+                                        @if ($detail['saving_percent'] > 0)<span style="color:rgb(var(--m-ok));"> · {{ to_persian_num((string) $detail['saving_percent']) }}٪ تخفیف</span>@endif
+                                        <div>{{ $detail['themes'] > 0 ? to_persian_num((string) $detail['themes']).' قالب سایت' : 'فقط قالب پیش‌فرض' }}</div>
+                                    </div>
+                                    @if ($detail['cheaper'])
+                                        <div class="mt-1 text-xs" style="color:rgb(var(--m-warn));" data-cheaper-plan>«{{ $detail['cheaper'] }}» با امکانات بیشتر ارزان‌تر است</div>
+                                    @endif
+                                @endif
                             </label>
                         @endforeach
                     </div>
@@ -61,7 +75,8 @@
         </div>
 
         <p class="text-xs mt-3 leading-6" style="color:var(--admin-text-dim);">
-            قیمت‌ها برای {{ to_persian_num((string) $specialists) }} متخصص (سقف متخصص سالن شما) است. برای تغییر تعداد متخصص با پشتیبانی تماس بگیرید.
+            قیمت‌ها برای {{ to_persian_num((string) $specialists) }} متخصص (سقف متخصص سالن شما) است؛ قیمت پایه‌ی صفحه‌ی معرفی ماهرو برای تعداد
+            متخصصِ شامل‌شده‌ی هر پلن است و هر متخصص بیشتر جدا حساب می‌شود. برای تغییر تعداد متخصص با پشتیبانی تماس بگیرید.
             خرید پلن دیگر در دوره‌ی آزمایشی یا بعد از پایان اشتراک همان لحظه اثر می‌کند؛ وسط اشتراک فعال، از پایان دوره‌ی فعلی (مبلغی برنمی‌گردد).
             برای پلن گران‌تر، «ارتقای فوری» همین حالا پلن را عوض می‌کند.
         </p>

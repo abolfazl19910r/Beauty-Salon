@@ -10,6 +10,10 @@
         $primaryUrl = $salon->publicUrl();
         $legacyUrl = $salon->legacyPublicUrl();
         $isLive = $salon->hasActiveSubscription();
+        // آدرسی که فقط روی همین کامپیوتر باز می‌شود (پنل با 127.0.0.1/localhost یا دامنه‌ی .test باز شده): QR آن روی گوشی کار نمی‌کند
+        $linkHost = strtolower((string) parse_url($primaryUrl, PHP_URL_HOST));
+        $localOnly = in_array($linkHost, ['127.0.0.1', 'localhost', '::1', '[::1]', '0.0.0.0'], true)
+            || str_starts_with($linkHost, '127.') || str_ends_with($linkHost, '.localhost') || str_ends_with($linkHost, '.test');
     @endphp
     <div class="rounded-xl overflow-hidden mb-6" style="background:var(--admin-surface); border:1px solid var(--admin-border);" id="salon-public-link-card">
         <div class="px-4 py-3 text-sm font-bold flex items-center justify-between gap-2" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
@@ -37,6 +41,13 @@
                 <a href="{{ $primaryUrl }}" target="_blank" rel="noopener"
                    class="px-4 py-2 rounded-lg text-sm font-bold text-center" style="border:1px solid var(--admin-border); color:var(--admin-text);">مشاهده</a>
             </div>
+            @if ($localOnly)
+                <p class="text-xs leading-6 rounded-lg p-3" data-salon-link-local-only style="background:rgb(var(--m-warn) / .12); color:rgb(var(--m-warn));">
+                    این لینک و QR فقط روی همین کامپیوتر باز می‌شوند (<span dir="ltr">{{ $linkHost }}</span>). برای آزمایش با گوشی، پنل را با آدرس
+                    شبکه‌ی کامپیوتر باز کنید (مثلاً <span dir="ltr">http://192.168.1.2:8000/admin</span>) تا QR با همان آدرس ساخته شود. روی سرور واقعی
+                    این پیام دیده نمی‌شود.
+                </p>
+            @endif
             {{-- QR و کد سالن برای اپ «ماهرو» (بسته‌ی ۳، ۲۰۲۶-۱۰-۱۱): مشتری با لینک، QR یا همین کد سالن را در اپ پیدا می‌کند --}}
             <div class="flex flex-col sm:flex-row gap-4 items-center pt-2" data-salon-qr-card>
                 <div class="w-40 h-40 rounded-lg p-1 shrink-0" style="background:#fff; border:1px solid var(--admin-border);"

@@ -38,10 +38,15 @@ class AdminBillingController extends Controller
         $billing = app(\App\Services\Plans\PlanBilling::class);
         $currentPlan = $salon->effectivePlan();
         $scheduledPlan = $billing->scheduledPlan($salon);
-        $planOptions = $billing->purchasablePlans($salon)->map(fn (\App\Models\Plan $plan) => [
+        $purchasable = $billing->purchasablePlans($salon);
+        $planOptions = $purchasable->map(fn (\App\Models\Plan $plan) => [
             'plan' => $plan,
             'features' => $plan->featureKeys(),
             'prices' => collect($plan->periods())->mapWithKeys(fn ($type) => [$type => $pricing->price($type, $specialists, $plan)])->all(),
+            // همان اطلاعات کارت‌های لندینگ (۲۰۲۶-۱۰-۱۷): ماهانه، تخفیف بازه، قالب‌ها و «پیشنهاد ما» — برای تعداد متخصص همین سالن
+            'periods' => $this->periodDetails($plan, $purchasable, $specialists, $pricing),
+            'admin_themes' => $plan->adminThemeAllowance(),
+            'recommended' => $plan->key === 'pro',
             'included' => $pricing->includedSpecialists($plan),
             'extra_price' => $pricing->extraSpecialistPricePerMonth($plan),
             'upgrade_price' => $billing->upgradeError($salon, $plan) === null ? $pricing->upgradePrice($salon, $plan) : null,
@@ -211,5 +216,33 @@ class AdminBillingController extends Controller
 
         return redirect()->route('admin.billing.index')
             ->with('success', sprintf('پرداخت موفق بود؛ %s قطعه پیامک به اعتبار سالن اضافه شد.', number_format($record->parts)));
+    }
+
+    /**
+     * جزئیات هر بازه‌ی یک پلن برای همین سالن: ماهانه، درصد تخفیف نسبت به خرید ماهانه، تعداد قالب سایت آن بازه، و پلن بالاتری که با
+     * همین تعداد متخصص در همان بازه ارزان‌تر است (متخصص اضافه در پلن پایه گاهی از پلن بالاتر گران‌تر تمام می‌شود).
+     *
+     * @param  \Illuminate\Support\Collection<int, \App\Models\Plan>  $plans
+     * @return array<string, array{per_month: int, saving_percent: int, themes: int, cheaper: ?string}>
+     */
+    private function periodDetails(\App\Models\Plan $plan, \Illuminate\Support\Collection $plans, int $specialists, \App\Support\Billing\SubscriptionPricing $pricing): array
+    {
+        $monthly = in_array('1m', $plan->periods(), true) ? $pricing->price('1m', $specialists, $plan) : null;
+        $out = [];
+        foreach ($plan->periods() as $type) {
+            $months = \App\Support\Billing\SubscriptionPricing::PLAN_MONTHS[$type];
+            $price = $pricing->price($type, $specialists, $plan);
+            $cheaper = $plans
+                ->filter(fn (\App\Models\Plan $other) => $other->sort > $plan->sort && in_array($type, $other->periods(), true))
+                ->first(fn (\App\Models\Plan $other) => $pricing->price($type, $specialists, $other) < $price);
+            $out[$type] = [
+                'per_month' => (int) round($price / $months),
+                'saving_percent' => $monthly && $months > 1 ? max(0, (int) round((1 - $price / ($monthly * $months)) * 100)) : 0,
+                'themes' => $plan->siteThemeAllowance($type),
+                'cheaper' => $cheaper?->name,
+            ];
+        }
+
+        return $out;
     }
 }
