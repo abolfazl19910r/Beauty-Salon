@@ -100,6 +100,35 @@ class PushDeviceApiTest extends TestCase
         $this->assertSame(0, PushDevice::count());
     }
 
+    public function test_logout_removes_a_device_that_already_has_deliveries(): void
+    {
+        $this->register()->assertOk();
+        $this->api()->postJson('/api/v1/push/test')->assertOk();
+        $this->artisan('push:test', ['phone' => '09121110000'])->assertSuccessful()->expectsOutputToContain('ثبت (ورود)');
+        $this->assertGreaterThan(0, PushDelivery::count());
+
+        $this->api()->postJson('/api/v1/logout')->assertOk();
+
+        $this->assertSame(0, PushDevice::count());
+        $this->artisan('push:test', ['phone' => '09121110000'])->assertFailed()->expectsOutputToContain('هیچ گوشی فعالی');
+    }
+
+    public function test_device_of_an_expired_or_missing_session_gets_no_push(): void
+    {
+        $this->register()->assertOk();
+        $this->assertSame(1, PushDevice::query()->active()->count());
+
+        PersonalAccessToken::query()->update(['expires_at' => now()->subMinute()]);
+        $this->assertSame(0, PushDevice::query()->active()->count());
+        $this->artisan('push:test', ['phone' => '09121110000'])->assertFailed();
+
+        // سرور بدون کلید خارجی (cascade): ردیف می‌ماند ولی فعال حساب نمی‌شود
+        PersonalAccessToken::query()->update(['expires_at' => null]);
+        \Illuminate\Support\Facades\Schema::withoutForeignKeyConstraints(fn () => PersonalAccessToken::query()->delete());
+        $this->assertSame(0, PushDevice::query()->active()->count());
+        $this->assertFalse(app(\App\Services\Push\AppMessenger::class)->hasDevices($this->customer, $this->customer->salon_id, null));
+    }
+
     public function test_delete_and_show(): void
     {
         $this->api()->getJson('/api/v1/push/device')->assertOk()->assertJsonPath('data.registered', false);

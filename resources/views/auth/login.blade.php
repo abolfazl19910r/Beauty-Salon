@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
             <x-brand-emblem class="h-16 w-auto max-w-[180px]" />
         </div>
         <h2 class="text-2xl font-bold" style="font-family:'Mahru','Vazirmatn',sans-serif;font-weight:800;color:rgb(var(--m-gold2))">ورود به {{ $currentSalonName }}</h2>
-        <p class="text-sm text-m-tx/60 mt-1">برای رزرو نوبت وارد شوید</p>
+        <p class="text-sm text-m-tx/60 mt-1">ورود مدیر و متخصص سالن (مشتریان از صفحه‌ی سالن خود وارد می‌شوند)</p>
     </div>
 
     <x-auth-session-status class="mb-5" :status="session('status')" />

@@ -129,7 +129,7 @@ class CustomerAuthenticatedController extends Controller
 
             $this->securityLogService->logLogin(true, $user->phone, $user);
 
-            return redirect()->intended(route('home', ['salon_slug' => $this->currentSalon->get()->slug]))
+            return redirect()->to($this->customerIntendedUrl($request))
                 ->with('success', 'خوش آمدید!');
         }
 
@@ -138,6 +138,41 @@ class CustomerAuthenticatedController extends Controller
         return back()->withErrors([
             'code' => 'کد وارد شده نامعتبر یا منقضی شده است.',
         ]);
+    }
+
+    /**
+     * مقصد بعد از ورود مشتری: صفحه‌ای از همین سالن که پیش از ورود خواسته بود (مثلاً رزرو)، وگرنه صفحه‌ی اصلی سالن.
+     * «url.intended» در یک مرورگر مشترک است؛ اگر پنل مدیر/متخصص در همان مرورگر باز بوده و نشستش تمام شده، آدرس پنل
+     * (مثل admin/notifications/count) آنجا می‌ماند و مشتری بعد از ورود به صفحه‌ی ۴۰۳ می‌رفت (گزارش ۲۰۲۶-۱۰-۱۷).
+     */
+    private function customerIntendedUrl(Request $request): string
+    {
+        $salon = $this->currentSalon->get();
+        $home = route('home', ['salon_slug' => $salon->slug]);
+        $intended = $request->session()->pull('url.intended');
+
+        if (! is_string($intended) || $intended === '') {
+            return $home;
+        }
+
+        $host = parse_url($intended, PHP_URL_HOST);
+        $path = '/'.ltrim((string) parse_url($intended, PHP_URL_PATH), '/');
+
+        if ($host !== null && strcasecmp($host, $request->getHost()) !== 0) {
+            return $home;
+        }
+
+        $first = strtolower(explode('/', ltrim($path, '/'))[0] ?? '');
+        if (in_array($first, ['admin', 'specialist', 'superadmin', 'api', 'login', 'logout'], true)) {
+            return $home;
+        }
+
+        // مسیر قدیمی /s/{slug}/...: فقط همین سالن
+        if ($first === 's' && ! str_starts_with($path.'/', '/s/'.$salon->slug.'/')) {
+            return $home;
+        }
+
+        return $intended;
     }
 
     public function resendCode(Request $request): RedirectResponse

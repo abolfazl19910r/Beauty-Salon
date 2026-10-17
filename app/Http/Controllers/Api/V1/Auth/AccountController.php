@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiResponse;
+use App\Models\PushDevice;
 use App\Services\Api\ApiAccountPresenter;
 use App\Support\CurrentSalon;
 use Illuminate\Http\JsonResponse;
@@ -31,7 +32,10 @@ class AccountController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        $token = $request->user()->currentAccessToken();
+        // گیرنده‌ی پوش همین نشست؛ صریح، بدون تکیه بر cascade کلید خارجی
+        PushDevice::query()->where('personal_access_token_id', $token->getKey())->delete();
+        $token->delete();
 
         return ApiResponse::success(null);
     }

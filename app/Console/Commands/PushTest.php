@@ -52,11 +52,14 @@ class PushTest extends Command
         foreach ($devices as $device) {
             $message = $messenger->sendTest($device, $this->option('text') ?: null, sync: true);
             $delivery = PushDelivery::query()->where('push_message_id', $message->id)->first();
-            $rows[] = [$device->id, $device->app, trim(($device->manufacturer ?? '').' '.($device->model ?? '')), $delivery?->status, $delivery?->error ?? '—', $message->id];
+            $rows[] = [
+                $device->id, $device->app, trim(($device->manufacturer ?? '').' '.($device->model ?? '')),
+                $device->created_at?->format('Y-m-d H:i'), $delivery?->status, $delivery?->error ?? '—', $message->id,
+            ];
         }
 
-        $this->table(['دستگاه', 'اپ', 'گوشی', 'نتیجه', 'خطا', 'شناسه‌ی پیام'], $rows);
+        $this->table(['دستگاه', 'اپ', 'گوشی', 'ثبت (ورود)', 'نتیجه', 'خطا', 'شناسه‌ی پیام'], $rows);
 
-        return collect($rows)->every(fn ($r) => $r[3] === PushDelivery::ACCEPTED) ? self::SUCCESS : self::FAILURE;
+        return collect($rows)->every(fn ($r) => $r[4] === PushDelivery::ACCEPTED) ? self::SUCCESS : self::FAILURE;
     }
 }

@@ -111,6 +111,8 @@ class AuthenticatedSessionController extends Controller
 
             Auth::login($user);
             $request->session()->regenerate();
+            // مقصد کهنه نماند تا ورود بعدی در همین مرورگر (مثلاً مشتری) به آن نرود
+            $request->session()->forget('url.intended');
 
             $this->securityLogService->logLogin(true, $user->phone, $user);
 

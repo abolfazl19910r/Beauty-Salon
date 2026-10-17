@@ -421,8 +421,12 @@
     };
 
     function fetchUnreadCount() {
-        fetch(window.AdminRoutes.notificationsCount)
-            .then(response => response.json())
+        fetch(window.AdminRoutes.notificationsCount, {
+            // بدون این دو هدر، اگر نشست تمام شده باشد لاراول آدرس همین درخواست را «مقصد بعد از ورود» ذخیره می‌کرد
+            // و ورود بعدی (حتی مشتری در صفحه‌ی سالن) به admin/notifications/count با خطای ۴۰۳ می‌رفت.
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        })
+            .then(response => response.ok ? response.json() : Promise.reject(new Error('HTTP ' + response.status)))
             .then(data => {
                 const countElement = document.getElementById('notification-count');
                 // همه‌ی شمارنده‌های منو (کشو، ریل، منوی بالایی) — بسته‌ی «و»
@@ -482,7 +486,7 @@
         listContainer.appendChild(loadingMessage);
         noMessage.classList.add('hidden');
 
-        fetch(window.AdminRoutes.notificationsLatest)
+        fetch(window.AdminRoutes.notificationsLatest, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
             .then(response => {
                 if (!response.ok) throw new Error('Network response was not ok');
                 return response.json();
