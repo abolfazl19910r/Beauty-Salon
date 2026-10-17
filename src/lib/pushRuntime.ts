@@ -50,34 +50,76 @@ export async function pushPermission(): Promise<PushPermission> {
   return status === 'granted' ? 'granted' : status === 'denied' ? 'denied' : 'undetermined';
 }
 
-/** اجازه (اندروید ۱۳+) + توکن FCM + ثبت روی سرور برای همین نشست. false = اجازه نداد یا توکن نشد. */
-export async function registerForPush(api: ApiClient, askPermission: boolean): Promise<boolean> {
-  await configurePush();
+/**
+ * ⚠️ getDevicePushTokenAsync روی اندروید خودش رویداد «توکن تازه» را هم می‌فرستد (PushTokenModule → onNewToken) و شنونده‌ی
+ * addPushTokenListener صدا می‌خورد. نسخه‌ی اول در همان شنونده دوباره registerForPush (و getDevicePushTokenAsync) را صدا می‌زد ←
+ * حلقه‌ی بی‌پایان PUT /push/device (چند درخواست در ثانیه از هر گوشی) که سرور php artisan serve را پر می‌کرد و بقیه‌ی درخواست‌های اپ
+ * «اتصال به سرور برقرار نشد» می‌گرفتند (گزارش ۲۰۲۶-۱۰-۱۷). حالا شنونده فقط توکنی را می‌فرستد که با آخرین توکن ثبت‌شده فرق دارد
+ * و تا ثبت در جریان است کاری نمی‌کند.
+ */
+let registeredToken: string | null = null;
+let inflight: Promise<boolean> | null = null;
 
-  let permission = await pushPermission();
-  if (permission !== 'granted' && askPermission) {
-    permission = (await Notifications.requestPermissionsAsync()).status === 'granted' ? 'granted' : 'denied';
-  }
-  if (permission !== 'granted') {
-    return false;
+/** فقط برای آزمون‌ها */
+export function resetPushRegistration(): void {
+  registeredToken = null;
+  inflight = null;
+}
+
+async function sendToken(api: ApiClient, token: string): Promise<boolean> {
+  await api.put('/push/device', {
+    provider: 'fcm',
+    token,
+    app_version: APP_VERSION,
+    manufacturer: Device.manufacturer ?? null,
+    model: Device.modelName ?? null,
+    os_version: Device.osVersion ?? null,
+  });
+  registeredToken = token;
+  await flushReceipts();
+
+  return true;
+}
+
+/**
+ * اجازه (اندروید ۱۳+) + توکن FCM + ثبت روی سرور برای همین نشست. false = اجازه نداد یا توکن نشد.
+ * فراخوانی هم‌زمان (layout و صفحه‌ی «اعلان‌ها») همان یک درخواست را شریک می‌شوند.
+ */
+export function registerForPush(api: ApiClient, askPermission: boolean): Promise<boolean> {
+  if (!inflight) {
+    inflight = (async () => {
+      await configurePush();
+
+      let permission = await pushPermission();
+      if (permission !== 'granted' && askPermission) {
+        permission = (await Notifications.requestPermissionsAsync()).status === 'granted' ? 'granted' : 'denied';
+      }
+      if (permission !== 'granted') {
+        return false;
+      }
+
+      const token = String((await Notifications.getDevicePushTokenAsync()).data);
+      return sendToken(api, token);
+    })()
+      .catch(() => false)
+      .finally(() => {
+        inflight = null;
+      });
   }
 
-  try {
-    const token = await Notifications.getDevicePushTokenAsync();
-    await api.put('/push/device', {
-      provider: 'fcm',
-      token: String(token.data),
-      app_version: APP_VERSION,
-      manufacturer: Device.manufacturer ?? null,
-      model: Device.modelName ?? null,
-      os_version: Device.osVersion ?? null,
+  return inflight;
+}
+
+/** شنونده‌ی توکن: فقط وقتی FCM واقعاً توکن را عوض کرده (نه رویدادی که خود getDevicePushTokenAsync می‌فرستد) */
+export function onPushToken(api: ApiClient, token: string): void {
+  if (inflight || !token || token === registeredToken) {
+    return;
+  }
+  inflight = sendToken(api, token)
+    .catch(() => false)
+    .finally(() => {
+      inflight = null;
     });
-    await flushReceipts();
-
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 function openFromResponse(response: Notifications.NotificationResponse) {
@@ -100,11 +142,11 @@ export function usePushSetup(api: ApiClient, signedIn: boolean): void {
       return;
     }
 
+    // نشست تازه (توکن Sanctum تازه) ← همیشه یک بار ثبت، حتی اگر توکن FCM همان قبلی باشد
+    registeredToken = null;
     void registerForPush(api, true);
 
-    const tokenSub = Notifications.addPushTokenListener(() => {
-      void registerForPush(api, false);
-    });
+    const tokenSub = Notifications.addPushTokenListener((event) => onPushToken(api, String(event.data)));
     const receivedSub = Notifications.addNotificationReceivedListener((notification) => {
       const data = parsePushData(notification.request.content.data);
       if (data.messageId) {

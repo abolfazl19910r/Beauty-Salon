@@ -19,7 +19,17 @@ export const setNotificationChannelAsync = jest.fn(async () => null);
 export const registerTaskAsync = jest.fn(async () => null);
 export const getPermissionsAsync = jest.fn(async () => ({ status: 'granted', granted: true }));
 export const requestPermissionsAsync = jest.fn(async () => ({ status: 'granted', granted: true }));
-export const getDevicePushTokenAsync = jest.fn(async () => ({ type: 'android', data: 'fcm-test-token-0001' }));
+// مثل ماژول بومی اندروید: گرفتن توکن رویداد «توکن تازه» را هم برای شنونده‌ها می‌فرستد
+export const getDevicePushTokenAsync = jest.fn(async () => {
+  const token = { type: 'android', data: 'fcm-test-token-0001' };
+  listeners.token.forEach((l) => l(token));
+  return token;
+});
+
+/** فقط برای آزمون‌ها: FCM توکن را عوض کرد */
+export function mockTokenRotated(data: string) {
+  listeners.token.forEach((l) => l({ type: 'android', data }));
+}
 export const addPushTokenListener = jest.fn((fn: Listener) => sub('token', fn));
 export const addNotificationReceivedListener = jest.fn((fn: Listener) => sub('received', fn));
 export const addNotificationResponseReceivedListener = jest.fn((fn: Listener) => sub('response', fn));
