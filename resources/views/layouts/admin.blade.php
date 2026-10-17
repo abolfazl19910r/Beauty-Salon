@@ -748,5 +748,6 @@
 </script>
 
 @stack('scripts')
+@include('partials.password-reveal')
 </body>
 </html>

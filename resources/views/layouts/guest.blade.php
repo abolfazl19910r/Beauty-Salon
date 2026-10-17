@@ -50,5 +50,6 @@
         <p>© {{ date('Y') }} سالن زیبایی {{ $currentSalonName }}. تمامی حقوق محفوظ است.</p>
     </div>
 </div>
+@include('partials.password-reveal')
 </body>
 </html>

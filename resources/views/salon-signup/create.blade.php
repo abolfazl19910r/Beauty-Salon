@@ -362,5 +362,6 @@
             });
         });
     </script>
+@include('partials.password-reveal')
 </body>
 </html>
