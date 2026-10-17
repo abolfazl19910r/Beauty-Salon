@@ -129,6 +129,21 @@ class PushDeviceApiTest extends TestCase
         $this->assertFalse(app(\App\Services\Push\AppMessenger::class)->hasDevices($this->customer, $this->customer->salon_id, null));
     }
 
+    public function test_registration_loop_of_an_old_build_does_not_starve_the_rest_of_the_api(): void
+    {
+        // اپ 0.2.0: PUT /push/device در حلقه (گزارش ۲۰۲۶-۱۰-۱۷)
+        for ($i = 0; $i < 12; $i++) {
+            $this->register()->assertOk();
+        }
+        for ($i = 0; $i < 120; $i++) {   // بیشتر از کل سهمیه‌ی api-v1 (۱۲۰ در دقیقه)
+            $this->register()->assertStatus(429);
+        }
+
+        // بقیه‌ی اپ از سهمیه‌ی api-v1 جداست
+        $this->api()->getJson('/api/v1/me')->assertOk();
+        $this->assertSame(1, PushDevice::count());
+    }
+
     public function test_delete_and_show(): void
     {
         $this->api()->getJson('/api/v1/push/device')->assertOk()->assertJsonPath('data.registered', false);

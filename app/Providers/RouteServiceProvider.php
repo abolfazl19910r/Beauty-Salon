@@ -94,6 +94,11 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(3)->by('user:'.($request->user()?->id ?? $request->ip()));
         });
 
+        // ثبت گوشی برای پوش (بسته‌ی ۴): ۱۲ در دقیقه برای هر نشست، جدا از api-v1 (گزارش ۲۰۲۶-۱۰-۱۷: حلقه‌ی ثبت در اپ 0.2.0)
+        RateLimiter::for('api-v1-push-device', function (Request $request) {
+            return Limit::perMinute(12)->by('push-device:'.($request->user()?->currentAccessToken()?->getKey() ?? $request->ip()));
+        });
+
         RateLimiter::for('auth', function (Request $request) {
             return Limit::perMinute(
                 (int) config('auth.max_login_attempts', 5),

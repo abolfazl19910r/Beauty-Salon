@@ -77,7 +77,8 @@ Route::middleware(['auth:sanctum', 'api.audience', 'throttle:api-v1'])->group(fu
 
     // پوش اپ‌ها (بسته‌ی ۴): گیرنده‌ی همین نشست، رسید و پوش آزمایشی
     Route::prefix('push')->name('push.')->controller(\App\Http\Controllers\Api\V1\Push\PushDeviceController::class)->group(function () {
-        Route::put('device', 'upsert')->name('device.upsert');
+        // سهمیه‌ی جدا: اپ 0.2.0 (پیش از app-0009) این را در حلقه صدا می‌زد و سهمیه‌ی ۱۲۰تایی api-v1 را برای بقیه‌ی اپ تمام می‌کرد
+        Route::put('device', 'upsert')->withoutMiddleware('throttle:api-v1')->middleware('throttle:api-v1-push-device')->name('device.upsert');
         Route::get('device', 'show')->name('device.show');
         Route::delete('device', 'destroy')->name('device.destroy');
         Route::post('receipts', 'receipts')->name('receipts');
