@@ -92,6 +92,15 @@ it('picks the salon by code, signs up with the SMS code and lands on home', asyn
   fireEvent.changeText(screen.getByLabelText('شماره موبایل'), '۹۱۲۱۱۱۱۱۱۱');
   fireEvent.changeText(screen.getByLabelText('رمز عبور'), 'secret123');
   fireEvent.changeText(screen.getByLabelText('تکرار رمز'), 'secret123');
+
+  // دکمه‌ی «چشم»: رمز را پیش از فرستادن نشان می‌دهد و دوباره پنهان می‌کند (هر فیلد جدا)
+  expect(screen.getByLabelText('رمز عبور').props.secureTextEntry).toBe(true);
+  fireEvent.press(screen.getAllByLabelText('نمایش رمز')[0]);
+  expect(screen.getByLabelText('رمز عبور').props.secureTextEntry).toBe(false);
+  expect(screen.getByLabelText('تکرار رمز').props.secureTextEntry).toBe(true);
+  fireEvent.press(screen.getByLabelText('پنهان کردن رمز'));
+  expect(screen.getByLabelText('رمز عبور').props.secureTextEntry).toBe(true);
+
   fireEvent.press(screen.getByText('فرستادن کد تأیید'));
 
   fireEvent.changeText(await screen.findByLabelText('کد تأیید'), '۱۲۳۴۵۶');

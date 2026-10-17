@@ -1,4 +1,5 @@
-import { type ReactNode } from 'react';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { type ReactNode, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -121,21 +122,45 @@ export function Button({ title, onPress, kind = 'primary', loading, disabled, sm
   );
 }
 
-export function Field({ label, error, hint, ...input }: TextInputProps & { label: string; error?: string; hint?: string }) {
+/**
+ * فیلد متنی. فیلد رمز (secureTextEntry) دکمه‌ی «چشم» در لبه‌ی چپ دارد تا کاربر پیش از ذخیره/ورود رمزی را که نوشته ببیند
+ * (درخواست ۲۰۲۶-۱۰-۱۷؛ همان رفتار وب).
+ */
+export function Field({ label, error, hint, secureTextEntry, ...input }: TextInputProps & { label: string; error?: string; hint?: string }) {
   const p = usePalette();
   const { radius } = useLayoutMetrics();
+  const [revealed, setRevealed] = useState(false);
+  const secret = Boolean(secureTextEntry);
+
   return (
     <View style={{ gap: space(1) }}>
       <T weight="medium" size={13}>{label}</T>
-      <TextInput
-        accessibilityLabel={label}
-        placeholderTextColor={p.textMuted}
-        {...input}
-        style={[
-          { fontFamily: fonts.regular, fontSize: 16, color: p.text, backgroundColor: p.surface, borderColor: error ? p.danger : p.border, borderWidth: 1, borderRadius: radius.md, paddingHorizontal: space(3), paddingVertical: space(3), textAlign: 'right' },
-          input.style,
-        ]}
-      />
+      <View style={{ position: 'relative', justifyContent: 'center' }}>
+        <TextInput
+          accessibilityLabel={label}
+          placeholderTextColor={p.textMuted}
+          {...input}
+          secureTextEntry={secret && !revealed}
+          style={[
+            { fontFamily: fonts.regular, fontSize: 16, color: p.text, backgroundColor: p.surface, borderColor: error ? p.danger : p.border, borderWidth: 1, borderRadius: radius.md, paddingHorizontal: space(3), paddingVertical: space(3), textAlign: 'right' },
+            secret ? { paddingLeft: space(3) + 32 } : null,
+            input.style,
+          ]}
+        />
+        {secret ? (
+          <Pressable
+            testID="password-reveal"
+            accessibilityRole="button"
+            accessibilityLabel={revealed ? 'پنهان کردن رمز' : 'نمایش رمز'}
+            accessibilityState={{ selected: revealed }}
+            hitSlop={8}
+            onPress={() => setRevealed((v) => !v)}
+            style={{ position: 'absolute', left: space(2), height: 36, width: 36, alignItems: 'center', justifyContent: 'center' }}
+          >
+            <Ionicons name={revealed ? 'eye-off-outline' : 'eye-outline'} size={20} color={p.textMuted} />
+          </Pressable>
+        ) : null}
+      </View>
       {error ? <T size={12} color={p.danger}>{error}</T> : hint ? <T size={12} muted>{hint}</T> : null}
     </View>
   );
