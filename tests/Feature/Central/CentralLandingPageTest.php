@@ -50,6 +50,19 @@ class CentralLandingPageTest extends TestCase
     }
 
     /** دوره‌های درمانی (بسته‌ی ب) فقط وقتی پلن فروش امکان را دارد؛ برداشتن تیک امکان در پنل سوپرادمین ادعا را برمی‌دارد */
+    public function test_section_labels_are_persian(): void
+    {
+        // بسته‌ی «ح»، ۱: سرتیترهای کوچک بخش‌ها انگلیسی بودند (Why Mahru، Features، Pricing…)
+        $html = $this->get(route('central.home'))->assertOk()->getContent();
+
+        preg_match_all('/class="kicker">([^<]*)</u', $html, $labels);
+        $this->assertNotEmpty($labels[1]);
+        foreach ($labels[1] as $label) {
+            $this->assertDoesNotMatchRegularExpression('/[A-Za-z]/', $label, "برچسب انگلیسی: {$label}");
+        }
+        $this->assertStringContainsString('چرا ماهرو', $html);
+    }
+
     public function test_treatment_courses_are_promised_only_when_the_sale_plan_has_them(): void
     {
         $plan = \App\Models\Plan::create(['key' => 'full', 'name' => 'کامل', 'price_1m' => 1500000, 'is_active' => true, 'is_public' => true, 'sms_quota_per_month' => 2000]);

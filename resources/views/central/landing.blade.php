@@ -243,7 +243,7 @@ html[data-theme="light"] .notch{background:#2A2119}
    ========================================================= */
 section{padding:110px 0}
 .sh{text-align:center;max-width:740px;margin:0 auto 60px}
-.kicker{display:inline-block;font:600 11.5px "Sora";letter-spacing:.24em;color:var(--gl);text-transform:uppercase;margin-bottom:14px}
+.kicker{display:inline-block;font:600 13px "Vazirmatn";letter-spacing:0;color:var(--gl);margin-bottom:14px}
 .sh h2{font-size:clamp(28px,4vw,46px);font-weight:900;margin-bottom:16px;letter-spacing:-.01em}
 .sh p{color:var(--mu);font-size:17.5px}
 .card{border:1px solid var(--ln);border-radius:var(--r-lg);background:var(--bg2);transition:transform .4s var(--ease),border-color .4s,box-shadow .4s,background-color .5s}
@@ -661,7 +661,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 
 <!-- ============ WHY ============ -->
 <section id="why"><div class="wrap">
-<div class="sh rv"><span class="kicker">Why Mahru</span><h2>تلفن و دفترچه را کنار بگذارید، <span class="gold">مشتری را نگه دارید</span></h2><p>بیشتر سالن‌ها نوبت را از دست نمی‌دهند چون مشتری ندارند؛ چون نوبت‌ها در تماس‌های بی‌پاسخ، پیام‌های گم‌شده و دفترچه‌های درهم می‌ماند.</p></div>
+<div class="sh rv"><span class="kicker">چرا ماهرو</span><h2>تلفن و دفترچه را کنار بگذارید، <span class="gold">مشتری را نگه دارید</span></h2><p>بیشتر سالن‌ها نوبت را از دست نمی‌دهند چون مشتری ندارند؛ چون نوبت‌ها در تماس‌های بی‌پاسخ، پیام‌های گم‌شده و دفترچه‌های درهم می‌ماند.</p></div>
 <div class="ba">
 <div class="card pane before rv"><span class="tag b">وضعیت فعلی</span><h3>بدون ماهرو</h3><p>هر روز ساعت‌ها از وقت تیم صرف هماهنگی می‌شود.</p><ul><li>تماس و پیام در ساعت شلوغی بی‌پاسخ می‌ماند</li><li>نوبت‌ها تداخل پیدا می‌کنند و مشتری ناراضی می‌شود</li><li>فراموشی نوبت، ساعت کاری و درآمد را هدر می‌دهد</li><li>سابقه‌ی مشتری و گزارش مالی جایی ثبت نمی‌شود</li></ul></div>
 <div class="card pane after rv d1"><span class="tag a">با ماهرو</span><h3 class="gold">همه‌چیز خودکار</h3><p>هر نوبت، از رزرو تا پیگیری، بدون دخالت دست انجام می‌شود.</p><ul><li>مشتری ۲۴ ساعته از لینک اختصاصی سالن نوبت می‌گیرد</li><li>تقویم مدت هر خدمت را حساب می‌کند و تداخل نمی‌دهد</li><li>پیامک تأیید و یادآوری، غیبت‌ها را کم می‌کند</li><li>مشتری‌ای که مدتی نیامده، خودکار پیامک دعوت و کد تخفیف می‌گیرد</li><li>پرونده‌ی مشتری، امتیاز وفاداری و گزارش درآمد همیشه در دسترس است</li></ul></div>
@@ -669,7 +669,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 
 <!-- ============ FEATURES ============ -->
 <section id="features" style="padding-top:0"><div class="wrap">
-<div class="sh rv"><span class="kicker">Features</span><h2>هرچه یک <span class="gold">سالن حرفه‌ای</span> لازم دارد</h2><p>هر امکان برای کار روزمره‌ی سالن طراحی شده، نه برای پُر کردن فهرست قابلیت‌ها.</p></div>
+<div class="sh rv"><span class="kicker">امکانات</span><h2>هرچه یک <span class="gold">سالن حرفه‌ای</span> لازم دارد</h2><p>هر امکان برای کار روزمره‌ی سالن طراحی شده، نه برای پُر کردن فهرست قابلیت‌ها.</p></div>
 <div class="bento">
 <div class="card tile w4 rv">
 <div class="row"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div><div><h3>رزرو آنلاین ۲۴ ساعته</h3><p>هر سالن یک لینک اختصاصی دارد. مشتری خدمت و آرایشگر دلخواه را انتخاب می‌کند، فقط ساعت‌های خالی را می‌بیند و در چند ثانیه نوبتش ثبت می‌شود.</p></div></div>
@@ -705,7 +705,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 
 <!-- ============ PRODUCT ============ -->
 <section id="product"><div class="wrap">
-<div class="sh rv"><span class="kicker">Dashboard</span><h2>کل سالن، <span class="gold">در یک صفحه</span></h2><p>تقویم پرسنل، پرونده‌ی مشتریان و گزارش درآمد؛ همه با چند کلیک. (داده‌ها نمونه هستند)</p></div>
+<div class="sh rv"><span class="kicker">پنل مدیریت</span><h2>کل سالن، <span class="gold">در یک صفحه</span></h2><p>تقویم پرسنل، پرونده‌ی مشتریان و گزارش درآمد؛ همه با چند کلیک. (داده‌ها نمونه هستند)</p></div>
 <div class="ptabs rv" role="tablist" aria-label="نماهای پنل"><button role="tab" type="button" aria-selected="true" aria-controls="v-cal" id="t-cal">تقویم امروز</button><button role="tab" type="button" aria-selected="false" aria-controls="v-cli" id="t-cli">مشتریان</button><button role="tab" type="button" aria-selected="false" aria-controls="v-rep" id="t-rep">گزارش مالی</button></div>
 <div class="dash rv">
 <aside class="side" aria-hidden="true">
@@ -762,7 +762,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 
 <!-- ============ HOW ============ -->
 <section id="how"><div class="wrap">
-<div class="sh rv"><span class="kicker">How it works</span><h2>سه قدم تا <span class="gold">اولین رزرو</span></h2><p>بدون برنامه‌نویسی، بدون نصب و با راهنمایی قدم‌به‌قدم.</p></div>
+<div class="sh rv"><span class="kicker">چطور کار می‌کند</span><h2>سه قدم تا <span class="gold">اولین رزرو</span></h2><p>بدون برنامه‌نویسی، بدون نصب و با راهنمایی قدم‌به‌قدم.</p></div>
 <div class="how">
 <div class="steps rv" id="steps">
 <button class="st on" type="button"><b>۱</b><div><h3>سالن را بسازید</h3><p>نام سالن، خدمات، قیمت، مدت‌زمان و پرسنل را وارد کنید. لینک اختصاصی سالن همان لحظه ساخته می‌شود.</p></div></button>
@@ -786,7 +786,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 
 <!-- ============ A DAY WITH MAHRU ============ -->
 <section id="day"><div class="wrap">
-<div class="sh rv"><span class="kicker">A day with Mahru</span><h2>یک روز کاری، <span class="gold">بدون یک تماس</span></h2><p>این‌ها کارهایی است که ماهرو در طول روز، بی‌صدا برای سالن شما انجام می‌دهد.</p></div>
+<div class="sh rv"><span class="kicker">یک روز با ماهرو</span><h2>یک روز کاری، <span class="gold">بدون یک تماس</span></h2><p>این‌ها کارهایی است که ماهرو در طول روز، بی‌صدا برای سالن شما انجام می‌دهد.</p></div>
 <div class="tl">
 <div class="tl-i rv"><time>01:40</time><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span><div class="card"><h3>رزرو نیمه‌شب از اینستاگرام</h3><p>مشتری از لینک بیو، نوبت رنگ و لایت را برای فردا می‌گیرد و بیعانه را آنلاین پرداخت می‌کند.</p></div></div>
 <div class="tl-i rv"><time>08:00</time><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/></svg></span><div class="card"><h3>یادآوری‌ها ارسال می‌شود</h3><p>همه‌ی مشتری‌های امروز پیش از نوبتشان پیامک یادآوری می‌گیرند.</p></div></div>
@@ -797,7 +797,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 
 <!-- ============ AUDIENCES ============ -->
 <section id="for" style="padding-top:0"><div class="wrap">
-<div class="sh rv"><span class="kicker">Made for you</span><h2>برای هر نوع <span class="gold">سالن</span></h2><p>ماهرو با ساختار خدمات و پرسنل شما سازگار می‌شود.</p></div>
+<div class="sh rv"><span class="kicker">مناسب شما</span><h2>برای هر نوع <span class="gold">سالن</span></h2><p>ماهرو با ساختار خدمات و پرسنل شما سازگار می‌شود.</p></div>
 <div class="tabs rv" id="tabs" role="tablist" aria-label="نوع سالن"><button role="tab" type="button" aria-selected="true">آرایشگاه و سالن مو</button><button role="tab" type="button" aria-selected="false">ناخن و زیبایی</button><button role="tab" type="button" aria-selected="false">پوست، مو و لیزر</button></div>
 <div class="rv">
 <div class="card aud on" role="tabpanel"><div><h3>آرایشگاه و سالن مو</h3><p>رنگ، لایت و کوتاهی زمان‌های متفاوتی می‌خواهند. ماهرو مدت هر خدمت را جدا حساب می‌کند تا تداخلی پیش نیاید.</p></div><ul><li>زمان‌بندی خدمات طولانی مثل رنگ و لایت</li><li>انتخاب آرایشگر مورد علاقه‌ی مشتری</li><li>پیگیری خودکار مشتریانی که مدتی نیامده‌اند</li></ul></div>
@@ -807,7 +807,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 
 <!-- ============ PRICING ============ -->
 <section id="plans" style="padding-top:0" data-period="1m"><div class="wrap">
-<div class="sh rv"><span class="kicker">Pricing</span><h2>چهار پلن، <span class="gold">هر کدام برای یک اندازه سالن</span></h2><p>@if ($trialDays > 0){{ to_persian_num((string) $trialDays) }} روز رایگان، بدون نیاز به کارت بانکی. هر وقت راضی بودید، پلن را از داخل پنل سالن می‌خرید.@else پلن و مدت اشتراک را انتخاب کنید؛ اشتراک بلندتر ارزان‌تر است و قالب‌های بیشتری باز می‌کند.@endif</p></div>
+<div class="sh rv"><span class="kicker">تعرفه‌ها</span><h2>چهار پلن، <span class="gold">هر کدام برای یک اندازه سالن</span></h2><p>@if ($trialDays > 0){{ to_persian_num((string) $trialDays) }} روز رایگان، بدون نیاز به کارت بانکی. هر وقت راضی بودید، پلن را از داخل پنل سالن می‌خرید.@else پلن و مدت اشتراک را انتخاب کنید؛ اشتراک بلندتر ارزان‌تر است و قالب‌های بیشتری باز می‌کند.@endif</p></div>
 @if ($planCards !== [])
 @if ($trialCard)
 {{-- بسته‌ی «و»: پلن آزمایشی کنار چهار پلن پولی (بازه ندارد) --}}
@@ -919,7 +919,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 
 <!-- ============ FAQ ============ -->
 <section id="faq" style="padding-top:0"><div class="wrap">
-<div class="sh rv"><span class="kicker">FAQ</span><h2>سؤالات <span class="gold">متداول</span></h2></div>
+<div class="sh rv"><span class="kicker">پرسش‌های پرتکرار</span><h2>سؤالات <span class="gold">متداول</span></h2></div>
 <div class="faq rv">
 <details open><summary>برای شروع به چه چیزی نیاز دارم؟</summary><p>فقط اطلاعات سالن و فهرست خدمات‌تان. سالن را خودتان در چند دقیقه می‌سازید (یا درخواست دمو بدهید تا با هم بسازیم) و بقیه‌ی تنظیمات داخل پنل انجام می‌شود.</p></details>
 <details><summary>مشتریان باید برنامه‌ای نصب کنند؟</summary><p>خیر. رزرو از طریق لینک اختصاصی سالن و روی هر مرورگری انجام می‌شود؛ روی موبایل، تبلت و کامپیوتر.</p></details>
