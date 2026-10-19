@@ -24,10 +24,11 @@ class AdminSearchTest extends TestCase
 
     public function test_index_groups_results_by_persian_labelled_category(): void
     {
-        Specialist::factory()->create(['name' => 'سارا رضایی']);
-        BeautyService::factory()->create(['name' => 'رنگ مو رضایی']);
+        // واژه‌ای که Faker فارسی هرگز نمی‌سازد (پیش‌تر «رضایی»: نام خانوادگی تصادفی یک کاربر گاهی همان بود و گروه «کاربران» هم پر می‌شد)
+        Specialist::factory()->create(['name' => 'سارا زرنگارتست']);
+        BeautyService::factory()->create(['name' => 'رنگ مو زرنگارتست']);
 
-        $response = $this->actingAs($this->admin)->get('/admin/search?q=رضایی');
+        $response = $this->actingAs($this->admin)->get('/admin/search?q=زرنگارتست');
 
         $response->assertOk();
         $results = $response->viewData('results');
