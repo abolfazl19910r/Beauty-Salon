@@ -45,7 +45,8 @@ class CategoryRepository extends BaseRepository implements CategoryRepositoryInt
 
     public function paginateWithFilters(array $filters, int $perPage = 10): LengthAwarePaginator
     {
-        $query = $this->model->with('parent');
+        // شمار خدمات هر ردیف با یک کوئری (پیش‌تر $category->services در فهرست ← N+1؛ هشدار laravel.log ۲۰۲۶-۱۰-۱۹)
+        $query = $this->model->with('parent')->withCount('services');
 
         if (! empty($filters['search'])) {
             $query->where('name', 'like', "%{$filters['search']}%");

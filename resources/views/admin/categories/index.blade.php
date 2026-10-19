@@ -48,7 +48,7 @@
                             <td class="px-4 py-3">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium persian-number"
                                   style="background:var(--admin-accent-light); color:var(--admin-accent);">
-                                {{ $category->services_count ?? $category->services->count() }} خدمت
+                                {{ $category->services_count }} خدمت
                             </span>
                             </td>
                             <td class="px-4 py-3 text-sm" style="color:var(--admin-text-dim);">

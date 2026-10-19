@@ -34,6 +34,23 @@ class AdminCategoryTest extends TestCase
         $this->assertCount(1, $response->viewData('categories'));
     }
 
+    public function test_index_counts_services_per_row_without_lazy_loading(): void
+    {
+        // N+1 گزارش‌شده در laravel.log (۲۰۲۶-۱۰-۱۹): Category::services برای هر ردیف فهرست جدا بار می‌شد؛
+        // preventLazyLoading در تست‌ها روشن است، پس بار شدن تنبل همین‌جا خطا می‌دهد
+        $withServices = Category::factory()->create(['name' => 'رنگ مو']);
+        BeautyService::factory()->count(2)->create(['category_id' => $withServices->id]);
+        Category::factory()->create(['name' => 'اصلاح صورت']);
+        Category::factory()->create(['name' => 'ناخن']);
+
+        $response = $this->actingAs($this->admin)->get('/admin/categories');
+
+        $response->assertOk();
+        $counts = $response->viewData('categories')->pluck('services_count', 'name');
+        $this->assertSame(2, (int) $counts['رنگ مو']);
+        $this->assertSame(0, (int) $counts['ناخن']);
+    }
+
     public function test_store_creates_a_category_with_auto_generated_slug(): void
     {
         $response = $this->actingAs($this->admin)->post('/admin/categories', [
