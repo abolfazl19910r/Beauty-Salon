@@ -47,3 +47,14 @@ it('gives the Xiaomi Autostart and Samsung deep-sleep guides from package 0', ()
   expect(deviceGuide('samsung').steps.join(' ')).toContain('Deep sleeping');
   expect(deviceGuide(null).maker).toBe('other');
 });
+
+it('labels background task outcomes in Persian', () => {
+  const { backgroundOutcomeLabel } = require('../push');
+  expect(backgroundOutcomeLabel('sent')).toBe('رسید فرستاده شد');
+  expect(backgroundOutcomeLabel('no-message')).toBe('شناسه‌ی پیام خوانده نشد');
+});
+
+it('ignores the display notification of the direct path', () => {
+  expect(parsePushData({ data: { message_id: ID }, notification: { body: 'متن', title: 'x' } }).messageId).toBe(ID);
+  expect(parsePushData({ notification: { body: 'متن' } }).messageId).toBeNull();
+});

@@ -57,4 +57,26 @@ describe('background push task', () => {
     await run({ data: { message_id: ID } });
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  it('reads the JobService payload wrapped under notification', async () => {
+    await run({ notification: { data: { dataString: JSON.stringify({ message_id: ID }), title: 'x' } } });
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).ids).toEqual([ID]);
+  });
+
+  it('records the last background run for the push setup screen', async () => {
+    const { lastBackgroundRun } = require('../pushReceipts');
+    await run({ data: { message_id: ID }, messageId: '0:abc' });
+    expect(await lastBackgroundRun()).toMatchObject({ messageId: ID, outcome: 'sent', keys: ['data', 'messageId'] });
+
+    fetchMock.mockRejectedValueOnce(new Error('offline'));
+    await run({ data: { message_id: ID2 } });
+    expect((await lastBackgroundRun()).outcome).toBe('queued');
+
+    await run({ data: { title: 'x' } });
+    expect(await lastBackgroundRun()).toMatchObject({ messageId: null, outcome: 'no-message' });
+
+    mockSecure.clear();
+    await run({ data: { message_id: ID } });
+    expect((await lastBackgroundRun()).outcome).toBe('signed-out');
+  });
 });

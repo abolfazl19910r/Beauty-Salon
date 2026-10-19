@@ -4,7 +4,8 @@ import { AppState, Linking } from 'react-native';
 
 import { errorMessage } from '@/lib/api';
 import { jalaliLabel } from '@/lib/jalali';
-import { deviceGuide } from '@/lib/push';
+import { backgroundOutcomeLabel, deviceGuide } from '@/lib/push';
+import { lastBackgroundRun, type BackgroundRun } from '@/lib/pushReceipts';
 import { pushPermission, registerForPush, type PushPermission } from '@/lib/pushRuntime';
 import { useApi } from '@/lib/session';
 import { Badge, Button, Card, KeyValue, Notice, Row, Screen, SectionTitle, T } from '@/ui/kit';
@@ -19,12 +20,14 @@ export function PushSetupScreen() {
   const api = useApi();
   const [permission, setPermission] = useState<PushPermission | null>(null);
   const [status, setStatus] = useState<DeviceStatus | null>(null);
+  const [backgroundRun, setBackgroundRun] = useState<BackgroundRun | null>(null);
   const [busy, setBusy] = useState<'register' | 'test' | null>(null);
   const [message, setMessage] = useState<{ text: string; tone: 'info' | 'success' | 'warning' } | null>(null);
   const guide = deviceGuide(Device.manufacturer);
 
   const refresh = useCallback(async () => {
     setPermission(await pushPermission());
+    setBackgroundRun(await lastBackgroundRun());
     try {
       setStatus((await api.get<DeviceStatus>('/push/device')).data);
     } catch {
@@ -80,6 +83,10 @@ export function PushSetupScreen() {
         <KeyValue label="اجازه‌ی اعلان" value={permission === 'granted' ? 'داده شده' : permission === 'denied' ? 'داده نشده' : '—'} />
         <KeyValue label="ثبت در سرور" value={status?.registered ? 'ثبت شده' : status?.disabled_reason ? 'غیرفعال (اپ را دوباره ثبت کنید)' : 'ثبت نشده'} />
         <KeyValue label="آخرین اعلان تحویل‌شده" value={status?.last_receipt_at ? jalaliLabel(new Date(status.last_receipt_at)) : '—'} />
+        <KeyValue
+          label="آخرین اجرای پس‌زمینه"
+          value={backgroundRun ? `${jalaliLabel(new Date(backgroundRun.at))} — ${backgroundOutcomeLabel(backgroundRun.outcome)}` : 'هنوز نه'}
+        />
         {status && !status.server_enabled ? <T muted size={13}>ارسال اعلان روی سرور فعلاً خاموش است؛ پیام‌ها پیامک می‌شوند.</T> : null}
       </Card>
 

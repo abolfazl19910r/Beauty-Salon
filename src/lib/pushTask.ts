@@ -1,7 +1,7 @@
 import * as TaskManager from 'expo-task-manager';
 
 import { BACKGROUND_TASK, parsePushData } from './push';
-import { sendReceipts } from './pushReceipts';
+import { recordBackgroundRun, sendReceipts } from './pushReceipts';
 
 /**
  * task پس‌زمینه‌ی پوش (بسته‌ی ۴) — باید پیش از هر صفحه و در سطح ماژول تعریف شود (index.ts)، چون وقتی اپ بسته است اندروید
@@ -12,7 +12,7 @@ TaskManager.defineTask(BACKGROUND_TASK, async ({ data, error }) => {
     return;
   }
   const push = parsePushData(data);
-  if (push.messageId) {
-    await sendReceipts([push.messageId]);
-  }
+  const outcome = push.messageId ? await sendReceipts([push.messageId]) : 'no-message';
+  const keys = data && typeof data === 'object' ? Object.keys(data).slice(0, 12) : [];
+  await recordBackgroundRun({ at: new Date().toISOString(), messageId: push.messageId, outcome, keys });
 });

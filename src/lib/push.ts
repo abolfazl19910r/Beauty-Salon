@@ -46,12 +46,18 @@ function record(value: unknown): Record<string, unknown> {
 
 /**
  * داده‌ی پیام از هر شکلی که expo بدهد: content.data اعلان (همان JSON کلید body)، یا payload task پس‌زمینه
- * ({data: {dataString, ...کلیدهای تخت}}). کلیدهای تخت پشتیبان dataString هستند.
+ * ({data: {dataString, ...کلیدهای تخت}}، یا در مسیر JobService {notification: {data: ...}}). کلیدهای تخت پشتیبان dataString هستند.
  */
 export function parsePushData(raw: unknown): PushData {
   const outer = record(raw);
   const inner = record(outer.data);
+  // مسیر JobService همان task (BackgroundRemoteNotificationTaskConsumer.didExecuteJob) پیام را زیر کلید notification می‌گذارد:
+  // {notification: {data: {dataString, ...}}} — در مسیر مستقیم notification بخش نمایشی FCM است و message_id ندارد.
+  const wrapped = record(record(outer.notification).data);
   const merged: Record<string, unknown> = {
+    ...wrapped,
+    ...record(wrapped.body),
+    ...record(wrapped.dataString),
     ...inner,
     ...record(inner.body),
     ...record(inner.dataString),
@@ -139,4 +145,22 @@ export function deviceGuide(manufacturer: string | null | undefined): DeviceGuid
       'اگر گوشی «شروع خودکار» دارد، برای ماهرو روشنش کنید.',
     ],
   };
+}
+
+/** برچسب فارسی نتیجه‌ی آخرین اجرای task پس‌زمینه برای صفحه‌ی «دریافت اعلان» */
+export function backgroundOutcomeLabel(outcome: string): string {
+  switch (outcome) {
+    case 'sent':
+      return 'رسید فرستاده شد';
+    case 'queued':
+      return 'اینترنت نبود؛ رسید در صف ماند';
+    case 'rejected':
+      return 'سرور رسید را نپذیرفت';
+    case 'signed-out':
+      return 'وارد حساب نبودید';
+    case 'no-message':
+      return 'شناسه‌ی پیام خوانده نشد';
+    default:
+      return outcome;
+  }
 }
