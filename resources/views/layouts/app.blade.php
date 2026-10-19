@@ -30,7 +30,34 @@
 
         <div class="hidden md:flex items-center gap-6 text-sm">
             @include('partials.mahru-theme-toggle')
-            <a href="{{ route('services.index') }}" class="nav-link">خدمات</a>
+            {{-- بسته‌ی «ح»، ۱۱: دسته‌بندی خدمات در هدر (هر چهار چیدمان همین هدر را دارند) --}}
+            @php $__navCategories = \App\Support\SalonNavCategories::get(); @endphp
+            @if ($__navCategories->isEmpty())
+                <a href="{{ route('services.index') }}" class="nav-link">خدمات</a>
+            @else
+                <div class="relative" data-nav-categories>
+                    <button type="button" class="nav-link inline-flex items-center gap-1" aria-haspopup="true" aria-expanded="false" data-nav-categories-btn>
+                        خدمات
+                        <svg class="w-3.5 h-3.5 transition-transform" data-nav-categories-chevron viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="hidden absolute top-full right-0 mt-3 w-[min(30rem,80vw)] rounded-2xl border border-m-gold/20 bg-m-card shadow-2xl p-3" data-nav-categories-panel>
+                        <a href="{{ route('services.index') }}" class="flex items-center justify-between rounded-xl px-3 py-2.5 font-semibold text-m-gold2 hover:bg-m-gold/10">
+                            همه‌ی خدمات
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+                        </a>
+                        <div class="my-2 border-t border-m-gold/15"></div>
+                        <div class="grid grid-cols-2 gap-1 max-h-[60vh] overflow-y-auto">
+                            @foreach ($__navCategories as $__navCategory)
+                                <a href="{{ route('services.index', ['category' => $__navCategory->id]) }}"
+                                   class="flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-m-tx/80 hover:bg-m-gold/10 hover:text-m-gold2 {{ (string) request('category') === (string) $__navCategory->id ? 'bg-m-gold/10 text-m-gold2' : '' }}">
+                                    <span class="truncate">{{ $__navCategory->name }}</span>
+                                    <span class="text-xs text-m-tx/45 persian-number shrink-0">{{ to_persian_num((string) $__navCategory->services_count) }}</span>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            @endif
             <a href="{{ route('specialists.search') }}" class="nav-link">متخصص‌ها</a>
             <a href="{{ route('blog.index') }}" class="nav-link">وبلاگ</a>
             {{-- دوره‌های درمانی (بسته‌ی ب): فقط با امکان پلن سالن --}}
@@ -128,7 +155,22 @@
 
     <div id="mobile-menu" class="hidden md:hidden bg-m-bg/95 border-t border-m-gold/15">
         <div class="container mx-auto px-4 py-4 flex flex-col gap-1 text-sm">
-            <a href="{{ route('services.index') }}" class="block py-2 nav-link">خدمات</a>
+            @if ($__navCategories->isEmpty())
+                <a href="{{ route('services.index') }}" class="block py-2 nav-link">خدمات</a>
+            @else
+                <details class="group" @if (request()->routeIs('services.*')) open @endif>
+                    <summary class="flex items-center justify-between py-2 nav-link cursor-pointer list-none">
+                        خدمات
+                        <svg class="w-4 h-4 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                    </summary>
+                    <div class="grid grid-cols-2 gap-1 pb-2 pr-3">
+                        <a href="{{ route('services.index') }}" class="col-span-2 py-1.5 text-m-gold2 font-semibold">همه‌ی خدمات</a>
+                        @foreach ($__navCategories as $__navCategory)
+                            <a href="{{ route('services.index', ['category' => $__navCategory->id]) }}" class="py-1.5 text-m-tx/75 truncate">{{ $__navCategory->name }}</a>
+                        @endforeach
+                    </div>
+                </details>
+            @endif
             <a href="{{ route('specialists.search') }}" class="block py-2 nav-link">متخصص‌ها</a>
             <a href="{{ route('blog.index') }}" class="block py-2 nav-link">وبلاگ</a>
             @if ($__coursesOn)
@@ -380,6 +422,23 @@
     document.getElementById('mobile-menu-button')?.addEventListener('click', function() {
         document.getElementById('mobile-menu').classList.toggle('hidden');
     });
+
+    // منوی دسته‌بندی خدمات هدر (بسته‌ی «ح»، ۱۱): کلیک یا نگه داشتن نشانگر؛ کلیک بیرون و Esc می‌بندد
+    (function () {
+        var box = document.querySelector('[data-nav-categories]');
+        if (!box) return;
+        var btn = box.querySelector('[data-nav-categories-btn]'), panel = box.querySelector('[data-nav-categories-panel]'), chevron = box.querySelector('[data-nav-categories-chevron]'), timer;
+        function set(open) {
+            panel.classList.toggle('hidden', !open);
+            btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            if (chevron) chevron.style.transform = open ? 'rotate(180deg)' : '';
+        }
+        btn.addEventListener('click', function () { set(panel.classList.contains('hidden')); });
+        box.addEventListener('mouseenter', function () { clearTimeout(timer); set(true); });
+        box.addEventListener('mouseleave', function () { timer = setTimeout(function () { set(false); }, 180); });
+        document.addEventListener('click', function (e) { if (!box.contains(e.target)) set(false); });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') set(false); });
+    })();
 
     const navbar = document.getElementById('main-navbar');
     const onScroll = () => navbar.classList.toggle('scrolled', window.scrollY > 30);

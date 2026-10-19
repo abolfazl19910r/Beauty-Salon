@@ -10,6 +10,8 @@
         .card-hover:hover .img-zoom { transform: scale(1.07); }
 
         .category-pill { transition: all 0.25s ease; }
+        .m-cat-row { scrollbar-width: thin; scroll-snap-type: x proximity; }
+        .m-cat-row > a { scroll-snap-align: start; }
         .category-pill.active {
             background: var(--m-btn);
             color: var(--m-on-gold);
@@ -41,7 +43,7 @@
 
     {{-- Page header --}}
     <div class="mb-10 fade-in">
-        <p class="text-xs font-semibold text-m-gold tracking-[0.3em] uppercase mb-2">خدمات سالن {{ $currentSalonName }}</p>
+        <p class="text-xs font-semibold text-m-gold tracking-[0.3em] uppercase mb-2">خدمات {{ $currentSalonTitle }}</p>
         <h1 class="text-3xl md:text-4xl font-bold text-m-gold2" style="font-family:'Mahru','Vazirmatn',sans-serif;font-weight:800;">
             خدمات ویژه ما
         </h1>
@@ -56,14 +58,16 @@
             </svg>
             <span class="text-sm font-medium text-m-tx/70">دسته‌بندی خدمات</span>
         </div>
-        <div class="flex flex-wrap gap-2">
+        {{-- بسته‌ی «ح»، ۱۱: یک ردیف کشیدنی به‌جای دیوار چندخطی دکمه‌ها؛ فهرست کامل در منوی «خدمات» هدر --}}
+        <div class="m-cat-row flex flex-nowrap gap-2 overflow-x-auto pb-2 -mx-1 px-1" data-category-row>
             <a href="{{ route('services.index') }}"
-               class="category-pill px-4 py-2 rounded-full text-sm {{ !request('category') ? 'active' : '' }}">
+               class="category-pill shrink-0 whitespace-nowrap px-4 py-2 rounded-full text-sm {{ !request('category') ? 'active' : '' }}">
                 همه خدمات
             </a>
-            @foreach($categories as $category)
+            @foreach(\App\Support\SalonNavCategories::get() as $category)
                 <a href="{{ route('services.index', ['category' => $category->id]) }}"
-                   class="category-pill px-4 py-2 rounded-full text-sm {{ request('category') == $category->id ? 'active' : '' }}">
+                   class="category-pill shrink-0 whitespace-nowrap px-4 py-2 rounded-full text-sm {{ request('category') == $category->id ? 'active' : '' }}"
+                   @if (request('category') == $category->id) aria-current="true" @endif>
                     {{ $category->name }}
                 </a>
             @endforeach
@@ -154,3 +158,10 @@
     @endif
 
 @endsection
+
+@push('scripts')
+<script>
+    // دسته‌ی انتخاب‌شده در ردیف کشیدنی دیده شود
+    document.querySelector('[data-category-row] .category-pill.active')?.scrollIntoView({ block: 'nearest', inline: 'center' });
+</script>
+@endpush
