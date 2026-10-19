@@ -57,6 +57,7 @@ class Salon extends Model
         'subscription_started_at' => 'datetime',
         'subscription_ends_at' => 'datetime',
         'trial_ends_at' => 'datetime',
+        'welcome_sms_pending_at' => 'datetime',
         'next_plan_starts_at' => 'datetime',
         'is_suspended' => 'boolean',
     ];

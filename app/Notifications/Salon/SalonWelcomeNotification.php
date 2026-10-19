@@ -14,6 +14,9 @@ use Illuminate\Notifications\Notification;
  * (SalonSignupController::verify)، یک‌بار. پیام خودِ پلتفرمه، پس مثل SmsQuotaExhaustedNotification
  * عمداً بدون salon_id فرستاده می‌شه و از سهمیه‌ی پیامک سالن کم نمی‌کنه. صف‌دار، تا ثبت‌نام منتظر
  * سرویس پیامک نمونه. سالن‌هایی که سوپرادمین می‌سازه این پیامک رو نمی‌گیرن.
+ *
+ * بسته‌ی «ح»، ۳ (۲۰۲۶-۱۰-۱۹): متن از وضعیت واقعی اشتراک در لحظه‌ی ساختن پیام — اشتراک پولی ← نام پلن و تاریخ پایان،
+ * آزمایشی ← روزهای آزمایشی. ثبت‌نام با «خرید» آن را تا نتیجه‌ی پرداخت نگه می‌دارد (App\Services\SalonSignup\SalonWelcome).
  */
 class SalonWelcomeNotification extends Notification implements ShouldQueue
 {
@@ -25,12 +28,21 @@ class SalonWelcomeNotification extends Notification implements ShouldQueue
 
     private readonly string $adminUrl;
 
-    /** آدرس‌ها همین‌جا (داخل درخواست ثبت‌نام) ساخته می‌شن، نه در worker صف که ممکنه host دیگه‌ای داشته باشه. */
-    public function __construct(Salon $salon, private readonly int $trialDays)
+    /** پلن پولی فعال: [نام پلن، تاریخ پایان شمسی] */
+    private readonly ?array $paidPlan;
+
+    /**
+     * آدرس‌ها همین‌جا (داخل درخواست ثبت‌نام) ساخته می‌شن، نه در worker صف که ممکنه host دیگه‌ای داشته باشه؛ مهلت پشتیبان
+     * (SendPendingSalonWelcomeJob) آدرس‌های ساخته‌شده در همان درخواست را می‌دهد.
+     */
+    public function __construct(Salon $salon, private readonly int $trialDays, ?string $publicUrl = null, ?string $adminUrl = null)
     {
         $this->salonName = $salon->name;
-        $this->publicUrl = $salon->publicUrl();
-        $this->adminUrl = route('admin.home');
+        $this->publicUrl = $publicUrl ?? $salon->publicUrl();
+        $this->adminUrl = $adminUrl ?? route('admin.home');
+        $this->paidPlan = $salon->hasPaidInvoice() && $salon->subscription_ends_at?->isFuture()
+            ? [$salon->plan?->name, jalali_date($salon->subscription_ends_at)]
+            : null;
     }
 
     public function via(object $notifiable): array
@@ -49,7 +61,10 @@ class SalonWelcomeNotification extends Notification implements ShouldQueue
             $this->adminUrl,
         ];
 
-        if ($this->trialDays > 0) {
+        if ($this->paidPlan !== null) {
+            [$plan, $until] = $this->paidPlan;
+            $lines[] = ($plan ? "پلن «{$plan}»" : 'اشتراک سالن')." تا {$until} فعال است.";
+        } elseif ($this->trialDays > 0) {
             $lines[] = "دوره‌ی آزمایشی رایگان {$this->trialDays} روزه فعال است.";
         }
 

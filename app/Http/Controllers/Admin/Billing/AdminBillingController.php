@@ -151,12 +151,14 @@ class AdminBillingController extends Controller
 
         if (! $result['success']) {
             $this->invoiceService->markFailed($invoice);
+            $this->sendPendingWelcome($invoice);
 
             return redirect()->route('admin.billing.index')
                 ->withErrors(['error' => $result['message'] ?? 'پرداخت تأیید نشد.']);
         }
 
         $this->invoiceService->markPaidFromGateway($invoice, $result['ref_id']);
+        $this->sendPendingWelcome($invoice);
 
         // ⭐ ۲۰۲۶-۰۹-۲۳: آدرس عمومی سالن هم همراه پیام موفقیت — همون لحظه‌ای که مالک سالن تازه
         // خریده و بیشتر از هر وقت دیگه‌ای دنبال «حالا لینک رو به مشتری‌هام چی بدم» می‌گرده.
@@ -169,6 +171,15 @@ class AdminBillingController extends Controller
 
         return redirect()->route('admin.billing.index')
             ->with('success', 'پرداخت موفق بود و اشتراک سالن فعال شد.'.($salonUrl ? " آدرس رزرو آنلاین سالن شما: {$salonUrl}" : ''));
+    }
+
+    /** پیامک خوش‌آمدِ ثبت‌نام با «خرید» که منتظر همین نتیجه بود (بسته‌ی «ح»، ۳)؛ برای سالن‌های دیگر کاری نمی‌کند */
+    private function sendPendingWelcome(\App\Models\Invoice $invoice): void
+    {
+        $salon = $invoice->salon()->withoutGlobalScopes()->first();
+        if ($salon?->welcome_sms_pending_at) {
+            app(\App\Services\SalonSignup\SalonWelcome::class)->sendPending($salon);
+        }
     }
 
     /** خرید بسته‌ی پیامک (۲۰۲۶-۰۹-۳۰): فقط اندازه‌های SMS_PACKS؛ قیمت از سرور، نه فرم */

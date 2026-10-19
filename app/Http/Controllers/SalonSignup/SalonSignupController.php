@@ -170,11 +170,16 @@ class SalonSignupController extends Controller
         Auth::login($owner);
         $request->session()->regenerate();
 
-        $owner->notify(new \App\Notifications\Salon\SalonWelcomeNotification($salon, $salon->isOnTrial() ? $this->salonSignupService->trialDays() : 0));
+        // بسته‌ی «ح»، ۳: ثبت‌نام با «خرید» پیامک خوش‌آمد را تا نتیجه‌ی پرداخت نگه می‌دارد (پیش‌تر «دوره‌ی آزمایشی فعال است» پیش از پرداخت می‌رفت)
+        $welcome = app(\App\Services\SalonSignup\SalonWelcome::class);
 
         if ($intent === 'buy') {
+            $welcome->deferUntilPayment($salon, $owner);
+
             return $this->startImmediatePurchase($salon, $owner, $planKey);
         }
+
+        $welcome->sendNow($salon, $owner);
 
         if ($salon->isOnTrial()) {
             return redirect()->route('admin.home')
@@ -196,6 +201,8 @@ class SalonSignupController extends Controller
 
         if (! $result['success']) {
             $this->invoiceService->markFailed($invoice);
+            // به درگاه نرسید: سالن آزمایشی می‌ماند و پیامک خوش‌آمد همین حالا با همان متن می‌رود
+            app(\App\Services\SalonSignup\SalonWelcome::class)->sendPending($salon, $owner);
 
             $fallback = $salon->isOnTrial()
                 ? ' تا آن زمان دوره‌ی آزمایشی رایگان سالن شما فعال است.'

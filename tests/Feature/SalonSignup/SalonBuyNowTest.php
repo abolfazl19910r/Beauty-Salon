@@ -147,6 +147,100 @@ class SalonBuyNowTest extends TestCase
         $this->get(route('admin.dashboard'))->assertOk();
     }
 
+    // ─── پیامک خوش‌آمد ثبت‌نام با «خرید» (بسته‌ی «ح»، ۳، ۲۰۲۶-۱۰-۱۹) ─────────────────────────────
+
+    private function welcomeTexts(): array
+    {
+        $texts = [];
+        \Illuminate\Support\Facades\Notification::assertSentTo($this->owner(), \App\Notifications\Salon\SalonWelcomeNotification::class, function ($n) use (&$texts) {
+            $texts[] = $n->message();
+
+            return true;
+        });
+
+        return $texts;
+    }
+
+    public function test_buy_now_welcome_sms_waits_for_the_payment_and_names_the_bought_plan(): void
+    {
+        \Illuminate\Support\Facades\Notification::fake();
+        \Illuminate\Support\Facades\Queue::fake([\App\Jobs\SendPendingSalonWelcomeJob::class, \App\Jobs\SendRegistrationCodeJob::class]);
+        app(\App\Services\Plans\DefaultPlans::class)->sync();
+        $this->fakeGatewayRequest();
+        $this->signUpAndVerify(['plan_key' => 'clinic']);
+        $this->confirmSalonSignup();
+
+        // پیش از پرداخت هیچ پیامک خوش‌آمدی (پیش‌تر «دوره‌ی آزمایشی فعال است» همین‌جا می‌رفت)
+        \Illuminate\Support\Facades\Notification::assertNothingSentTo($this->owner());
+        \Illuminate\Support\Facades\Queue::assertPushed(\App\Jobs\SendPendingSalonWelcomeJob::class);
+
+        $invoice = Invoice::withoutGlobalScopes()->firstOrFail();
+        $this->get(route('admin.billing.callback', ['invoice' => $invoice->id, 'Authority' => 'BUYNOWAUTH', 'Status' => 'OK']));
+
+        $salon = Salon::where('slug', 'niloofar')->firstOrFail();
+        $texts = $this->welcomeTexts();
+        $this->assertCount(1, $texts);
+        $this->assertStringContainsString('پلن «کلینیک» تا '.jalali_date($salon->subscription_ends_at).' فعال است.', $texts[0]);
+        $this->assertStringNotContainsString('آزمایشی', $texts[0]);
+        $this->assertNull($salon->welcome_sms_pending_at);
+
+        // مهلت پشتیبان بعداً اجرا می‌شود ولی دیگر چیزی نمی‌فرستد
+        (new \App\Jobs\SendPendingSalonWelcomeJob($salon->id, $this->owner()->id, $salon->publicUrl(), route('admin.home')))->handle(app(\App\Services\SalonSignup\SalonWelcome::class));
+        $this->assertCount(1, $this->welcomeTexts());
+    }
+
+    public function test_buy_now_failed_payment_sends_the_trial_welcome(): void
+    {
+        \Illuminate\Support\Facades\Notification::fake();
+        Http::fake([
+            '*request.json' => Http::response(['data' => ['code' => 100, 'authority' => 'BUYNOWAUTH']], 200),
+            '*verify.json' => Http::response(['errors' => ['code' => -51]], 200),
+        ]);
+        $this->signUpAndVerify();
+        $this->confirmSalonSignup();
+
+        $invoice = Invoice::withoutGlobalScopes()->firstOrFail();
+        $this->get(route('admin.billing.callback', ['invoice' => $invoice->id, 'Authority' => 'BUYNOWAUTH', 'Status' => 'NOK']));
+
+        $texts = $this->welcomeTexts();
+        $this->assertCount(1, $texts);
+        $this->assertStringContainsString('دوره‌ی آزمایشی رایگان 14 روزه فعال است.', $texts[0]);
+    }
+
+    public function test_buy_now_gateway_unreachable_sends_the_trial_welcome_right_away(): void
+    {
+        \Illuminate\Support\Facades\Notification::fake();
+        $this->fakeGatewayRequest(code: -9);
+        $this->signUpAndVerify();
+        $this->confirmSalonSignup();
+
+        $texts = $this->welcomeTexts();
+        $this->assertCount(1, $texts);
+        $this->assertStringContainsString('آزمایشی', $texts[0]);
+        $this->assertNull(Salon::where('slug', 'niloofar')->firstOrFail()->welcome_sms_pending_at);
+    }
+
+    public function test_buy_now_abandoned_at_the_bank_gets_the_welcome_from_the_fallback_job(): void
+    {
+        \Illuminate\Support\Facades\Notification::fake();
+        \Illuminate\Support\Facades\Queue::fake([\App\Jobs\SendPendingSalonWelcomeJob::class, \App\Jobs\SendRegistrationCodeJob::class]);
+        $this->fakeGatewayRequest();
+        $this->signUpAndVerify();
+        $this->confirmSalonSignup();
+        \Illuminate\Support\Facades\Notification::assertNothingSentTo($this->owner());
+
+        // job با ۳۰ دقیقه تأخیر در صف است؛ اینجا صریحاً بعد از «رها کردن» صفحه‌ی بانک اجرا می‌شود
+        \Illuminate\Support\Facades\Queue::assertPushed(\App\Jobs\SendPendingSalonWelcomeJob::class, fn ($job) => $job->delay !== null);
+        $salon = Salon::where('slug', 'niloofar')->firstOrFail();
+        $this->assertNotNull($salon->welcome_sms_pending_at);
+        (new \App\Jobs\SendPendingSalonWelcomeJob($salon->id, $this->owner()->id, 'http://salon.example/s/niloofar', 'http://salon.example/admin'))->handle(app(\App\Services\SalonSignup\SalonWelcome::class));
+
+        $texts = $this->welcomeTexts();
+        $this->assertCount(1, $texts);
+        $this->assertStringContainsString('آزمایشی', $texts[0]);
+        $this->assertStringContainsString('http://salon.example/s/niloofar', $texts[0]);
+    }
+
     public function test_buy_now_also_works_when_the_trial_is_disabled(): void
     {
         config(['billing.trial_days' => 0]);
