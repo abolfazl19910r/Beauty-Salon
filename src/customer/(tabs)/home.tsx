@@ -30,7 +30,11 @@ export default function Home() {
             <Notice tone="warning" text={`${faDigits(home.data.awaiting_payment_count)} نوبت در انتظار پرداخت دارید؛ بدون پیش‌پرداخت در مهلتش لغو می‌شود.`} />
           ) : null}
 
-          <Button title="رزرو نوبت تازه" onPress={() => router.push('/book')} />
+          {home.data.salon.booking_paused ? (
+            <Notice tone="warning" text={`${home.data.salon.booking_paused.message} نوبت‌های ثبت‌شده‌ی شما سر جایشان هستند.`} />
+          ) : (
+            <Button title="رزرو نوبت تازه" onPress={() => router.push('/book')} />
+          )}
 
           {home.data.features?.includes('treatment_courses') ? (
             <Card onPress={() => router.push('/courses')}>

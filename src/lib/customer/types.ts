@@ -15,6 +15,8 @@ export type SalonCard = {
   public_url: string;
   /** بسته‌ی «و» — قالب سالن (lib/salonTheme)؛ سرور قدیمی ندارد */
   theme?: unknown;
+  /** بسته‌ی «ح»، ۸ — رزرو موقتاً متوقف (null/نبود = باز)؛ message متن آماده‌ی سالن برای مشتری */
+  booking_paused?: { message: string; reason: string | null; until: string | null } | null;
 };
 
 export type SalonDetail = SalonCard & {

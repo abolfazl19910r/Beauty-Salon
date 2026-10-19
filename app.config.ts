@@ -49,7 +49,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     name: v.name,
     slug: v.slug,
     scheme: v.scheme,
-    version: '0.2.3',
+    version: '0.2.4',
     orientation: 'portrait',
     icon: `${v.assets}/icon.png`,
     userInterfaceStyle: 'automatic',
@@ -57,7 +57,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     android: {
       package: v.package,
       // ۲: بسته‌ی ۴ (پوش، ماژول بومی تازه) — نصب روی نسخه‌ی قبلی به‌صورت Update
-      versionCode: 5,
+      versionCode: 6,
       googleServicesFile: GOOGLE_SERVICES_JSON,
       adaptiveIcon: {
         backgroundColor: v.background,

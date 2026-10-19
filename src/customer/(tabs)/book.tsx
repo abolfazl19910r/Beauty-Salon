@@ -2,14 +2,16 @@ import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { RefreshControl, ScrollView } from 'react-native';
 
-import { useServices } from '@/lib/customer/queries';
+import { useHome, useServices } from '@/lib/customer/queries';
 import { faDigits, toman } from '@/lib/format';
-import { Button, Card, Chip, Empty, ErrorBox, Loading, Row, Screen, T } from '@/ui/kit';
+import { Button, Card, Chip, Empty, ErrorBox, Loading, Notice, Row, Screen, T } from '@/ui/kit';
 import { space, usePalette } from '@/ui/theme';
 
 /** رزرو، قدم ۱: خدمت (با دسته‌ها). بعد: متخصص ← روز ← ساعت (pick) ← پیش‌فاکتور (checkout) ← پرداخت. */
 export default function Book() {
   const services = useServices();
+  // بسته‌ی «ح»، ۸: رزرو موقتاً متوقف — سرور هم با ۴۲۳ salon_paused رد می‌کند؛ این فقط زودتر و روشن‌تر می‌گوید
+  const paused = useHome().data?.salon.booking_paused ?? null;
   const p = usePalette();
   const [category, setCategory] = useState<number | null>(null);
 
@@ -21,6 +23,7 @@ export default function Book() {
 
   return (
     <Screen refreshControl={<RefreshControl refreshing={services.isRefetching} onRefresh={() => services.refetch()} colors={[p.gold]} />}>
+      {paused ? <Notice tone="warning" text={paused.message} /> : null}
       <T weight="bold" size={17}>چه خدمتی می‌خواهید؟</T>
       {categories.length > 1 ? (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space(2) }}>
