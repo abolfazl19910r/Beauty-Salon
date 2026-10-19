@@ -37,6 +37,7 @@ class CleanupPendingBookings extends Command
             ->where('payment_status', 'unpaid')
             ->where('created_at', '<=', Carbon::now()->subMinutes($minutes))
             ->withoutPaymentInProgress() // ⭐ مثل CancelUnpaidBookings: وسط پرداخت لغو نکن
+            ->with('user:id,name')
             ->get());
 
         if ($expiredBookings->isEmpty()) {

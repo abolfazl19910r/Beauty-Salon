@@ -242,7 +242,8 @@ class User extends Authenticatable
             return true;
         }
 
-        foreach ($this->roles as $role) {
+        // نقش‌ها با مجوزهایشان یک‌جا (بدون N+1 روی هر نقش)
+        foreach ($this->loadMissing('roles.permissions')->roles as $role) {
             if ($role->hasPermission($permission)) {
                 return true;
             }
@@ -253,7 +254,7 @@ class User extends Authenticatable
 
     public function getAllPermissions()
     {
-        return $this->roles->flatMap->permissions->unique('id');
+        return $this->loadMissing('roles.permissions')->roles->flatMap->permissions->unique('id');
     }
 
     /**

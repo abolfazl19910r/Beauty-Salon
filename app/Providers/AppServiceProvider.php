@@ -13,11 +13,14 @@ use App\Services\SecurePaymentService;
 use App\Services\TwoFactorAuthService;
 use App\Support\CurrentSalon;
 use App\View\Composers\ViewComposer;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\LazyLoadingViolationException;
 use Illuminate\Notifications\ChannelManager;
 use Illuminate\Notifications\Channels\DatabaseChannel as BaseDatabaseChannel;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
@@ -59,6 +62,8 @@ class AppServiceProvider extends ServiceProvider
         View::composer('*', ViewComposer::class);
 
         Paginator::useTailwind();
+
+        $this->guardAgainstLazyLoading();
 
         Blade::if('role', function ($role) {
             return auth()->check() && auth()->user()->hasRole($role);
@@ -146,5 +151,26 @@ class AppServiceProvider extends ServiceProvider
                 URL::defaults(['salon_slug' => $defaultSalonSlug]);
             }
         }
+    }
+
+    /**
+     * N+1 (۲۰۲۶-۱۰-۱۹): بیرون از production، بار شدن تنبل یک رابطه روی مدلی که در یک مجموعه آمده (همان الگوی N+1) گرفته
+     * می‌شود. در تست‌ها خطا می‌دهد تا N+1 تازه وارد نشود؛ روی سیستم توسعه فقط در laravel.log هشدار می‌دهد (صفحه نمی‌شکند).
+     * production دست‌نخورده است (رفتار پیش‌فرض لاراول).
+     */
+    private function guardAgainstLazyLoading(): void
+    {
+        if ($this->app->isProduction()) {
+            return;
+        }
+
+        Model::preventLazyLoading();
+        Model::handleLazyLoadingViolationUsing(function (Model $model, string $relation) {
+            if ($this->app->runningUnitTests()) {
+                throw new LazyLoadingViolationException($model, $relation);
+            }
+
+            Log::warning('N+1: lazy loading '.$model::class.'::'.$relation, ['url' => request()?->fullUrl()]);
+        });
     }
 }

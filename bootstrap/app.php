@@ -181,6 +181,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // درخواست expectsJson پاسخ قالب قدیمی می‌دهند و اولین پاسخ غیر null برنده است. برای مسیرهای دیگر null.
         $exceptions->render(fn (\Throwable $e, Request $request) => \App\Exceptions\Api\ApiExceptionRenderer::render($e, $request));
 
+        // خطای قابل‌انتظار /api/v1 (رمز نادرست، ۴۰۴، ۴۲۲…) خطای برنامه نیست؛ laravel.log را پر نکند (گزارش ۲۰۲۶-۱۰-۱۸:
+        // «اطلاعات وارد شده صحیح نمی‌باشد» با stacktrace کامل). فقط ۵xx (مثل درگاه در دسترس نیست) گزارش می‌شود.
+        $exceptions->report(function (\App\Exceptions\Api\ApiException $e) {
+            return $e->status >= 500 ? null : false;
+        });
+
         // ⭐ Wired up (post-test-writing-phase): must be registered before the generic
         // HttpException renderable below. Laravel tries render callbacks in registration
         // order and stops at the first one that returns a non-null response; since

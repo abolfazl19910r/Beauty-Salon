@@ -416,6 +416,8 @@ class BookingObserver
 
     protected function sendCancellationSMS(Booking $booking): void
     {
+        // نوبتی که از یک مجموعه آمده (لغو گروهی، CancelUnpaidBookings) رابطه‌هایش بار نشده‌اند؛ یک‌جا، نه N+1
+        $booking->loadMissing(['user', 'specialist']);
         $cacheKey = "sms_cancellation_sent_{$booking->id}";
 
         if (Cache::has($cacheKey)) {
@@ -543,7 +545,7 @@ class BookingObserver
     protected function botMessage(Booking $booking, string $message, string $eventKey): void
     {
         try {
-            app(\App\Services\Bot\BotMessenger::class)->send($booking->user, $message, $eventKey, $booking->salon_id);
+            app(\App\Services\Bot\BotMessenger::class)->send($booking->loadMissing('user')->user, $message, $eventKey, $booking->salon_id);
         } catch (\Throwable $e) {
             Log::warning('Bot message for booking failed', ['booking_id' => $booking->id, 'error' => $e->getMessage()]);
         }

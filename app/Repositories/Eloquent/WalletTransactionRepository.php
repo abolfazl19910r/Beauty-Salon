@@ -72,7 +72,7 @@ class WalletTransactionRepository extends BaseRepository implements WalletTransa
     {
         $query = $this->model->where('type', 'income')
             ->whereJsonContains('metadata->status', 'pending')
-            ->with('booking:id,booking_time,status');
+            ->with(['booking:id,booking_time,status', 'wallet']);
 
         if ($walletId) {
             $query->where('wallet_id', $walletId);
