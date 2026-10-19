@@ -3,7 +3,7 @@
     روی محتوا نشان می‌دهد (محتوا جابه‌جا نمی‌شود). همان آیتم‌های AdminMenu.
 --}}
 <div class="adm-rail-slot hidden md:block">
-    <nav class="adm-rail" aria-label="منوی پنل مدیر">
+    <nav class="adm-rail" data-nav-scroll aria-label="منوی پنل مدیر">
         <a href="{{ route('admin.dashboard') }}" class="adm-rail__brand" aria-label="پنل مدیریت {{ $adminSalon?->name }}">
             @if ($adminSalon)
                 <x-brand-emblem class="w-9 h-9 rounded" pad="3px" />

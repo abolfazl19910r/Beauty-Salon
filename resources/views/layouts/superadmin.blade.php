@@ -80,6 +80,8 @@
         }
         .sa-btn:hover { background: var(--sa-accent-hover); }
         .sa-side { background: var(--sa-side); }
+        /* منو هم‌ارتفاع صفحه و با اسکرول خودش؛ پیش‌تر همراه صفحه بالا می‌رفت و آیتم‌های پایین (تنظیمات، گزارش کارها) دیده نمی‌شدند (بسته‌ی «ح»، ۷) */
+        @media (min-width: 768px) { .sa-side { position: sticky; top: 0; height: 100vh; overflow-y: auto; } }
         .sa-nav-link { color: var(--sa-side-text); padding: 0.7rem 1rem; display: block; border-radius: 10px; margin-bottom: 2px; transition: background .15s, color .15s; }
         .sa-nav-link:hover { color: #FFFFFF; background: rgba(255, 255, 255, .08); }
         .sa-nav-link.active { color: var(--sa-accent); background: var(--sa-soft); font-weight: 700; }
@@ -105,7 +107,7 @@
 </head>
 <body>
     <div class="flex min-h-screen">
-        <aside class="w-64 flex-shrink-0 hidden md:block sa-side">
+        <aside class="w-64 flex-shrink-0 hidden md:block sa-side" data-nav-scroll>
             <div class="p-5 border-b" style="border-color: rgba(255,255,255,.12);">
                 <img src="{{ asset('brand/mahru-logo-horizontal-on-dark.svg') }}" alt="{{ config('brand.name') }}" style="height: 40px; width: auto; display: block; margin-bottom: .5rem;">
                 <div class="text-lg font-bold" style="color: #FFFFFF;">پنل مدیریت کل</div>
@@ -147,7 +149,7 @@
                 @foreach ($saNav as $group => $items)
                     <div class="sa-nav-group">{{ $group }}</div>
                     @foreach ($items as [$route, $pattern, $label, $count])
-                        <a href="{{ route($route) }}" class="sa-nav-link {{ request()->routeIs($pattern) ? 'active' : '' }}">
+                        <a href="{{ route($route) }}" class="sa-nav-link {{ request()->routeIs($pattern) ? 'active' : '' }}" @if (request()->routeIs($pattern)) aria-current="page" @endif>
                             {{ $label }}
                             {{-- عدد منفی = هشدار قرمز --}}
                             @if ($count !== 0)
@@ -209,5 +211,6 @@
 
     @stack('scripts')
 @include('partials.password-reveal')
+@include('partials.nav-reveal-active')
 </body>
 </html>

@@ -89,7 +89,7 @@
             ['specialist.reports.index', 'specialist.reports*', 'گزارش', 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'],
         ];
     @endphp
-    <aside id="sidebar" class="w-64 min-h-screen overflow-y-auto hidden {{ $__specTop ? '' : 'md:block' }} transition-all duration-300 z-30 border-l" style="background-color: var(--specialist-surface); border-color: var(--specialist-border);">
+    <aside id="sidebar" data-nav-scroll class="w-64 min-h-screen overflow-y-auto hidden {{ $__specTop ? '' : 'md:block' }} transition-all duration-300 z-30 border-l" style="background-color: var(--specialist-surface); border-color: var(--specialist-border);">
         <div class="p-5 border-b flex items-center justify-between" style="border-color: var(--specialist-border);">
             <a href="{{ route('home') }}" class="flex items-center gap-2">
                 {{-- ⭐ لوگوی سالن متخصص (۲۰۲۶-۰۹-۲۴)، وگرنه آیکون پیش‌فرض. --}}
@@ -558,5 +558,6 @@
 
 @stack('scripts')
 @include('partials.password-reveal')
+@include('partials.nav-reveal-active')
 </body>
 </html>

@@ -2,7 +2,7 @@
     ⭐ بسته‌ی «و»: منوی کناری پنل مدیر از App\Support\Admin\AdminMenu. در قالب‌های «منوی کناری» و «فشرده» روی دسکتاپ دیده می‌شود؛
     در «ریل آیکونی» و «منوی بالایی» فقط کشوی موبایل است (دکمه‌ی ☰ هدر).
 --}}
-<aside id="admin-drawer" class="adm-drawer min-h-screen shadow-sm border-l overflow-y-auto hidden {{ $desktop ? 'md:block' : '' }}"
+<aside id="admin-drawer" data-nav-scroll class="adm-drawer min-h-screen shadow-sm border-l overflow-y-auto hidden {{ $desktop ? 'md:block' : '' }}"
        style="background: var(--admin-surface); border-color: var(--admin-border);">
     <div class="p-4 border-b" style="border-color: var(--admin-border);">
         <div class="flex items-center justify-between">

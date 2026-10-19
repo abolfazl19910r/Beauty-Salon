@@ -750,5 +750,6 @@
 
 @stack('scripts')
 @include('partials.password-reveal')
+@include('partials.nav-reveal-active')
 </body>
 </html>
