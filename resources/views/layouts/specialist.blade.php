@@ -324,7 +324,8 @@
         notificationsIndex: '{{ route("specialist.notifications.index") }}',
         notificationsLatest: '{{ route("specialist.notifications.latest") }}',
         notificationsCount: '{{ route("specialist.notifications.count") }}',
-        notificationsRead: '{{ route("specialist.notifications.read", "000") }}'.replace('000', ':id'),
+        // «:id» مستقیم در route؛ قبلاً «000» جایگزین می‌شد و اولین «000» پورت 8000 بود ← آدرس خراب و اعلان خوانده نمی‌شد (بسته‌ی «ح»، ۶)
+        notificationsRead: '{{ route("specialist.notifications.read", ":id") }}',
         csrfToken: document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
     };
 

@@ -167,6 +167,15 @@ class SpecialistNotificationControllerTest extends TestCase
         $response->assertSessionHas('error');
     }
 
+    public function test_bell_read_url_survives_a_server_on_port_8000(): void
+    {
+        // بسته‌ی «ح»، ۶ (همان باگ زنگوله‌ی ادمین)
+        $html = $this->actingAs($this->user())->get('http://192.168.1.2:8000/specialist/notifications')->assertOk()->getContent();
+
+        $this->assertStringContainsString("notificationsRead: 'http://192.168.1.2:8000/specialist/notifications/:id/read'", $html);
+        $this->assertStringNotContainsString(".replace('000'", $html);
+    }
+
     public function test_latest_returns_at_most_5_merged_and_sorted_by_recency(): void
     {
         for ($i = 0; $i < 4; $i++) {

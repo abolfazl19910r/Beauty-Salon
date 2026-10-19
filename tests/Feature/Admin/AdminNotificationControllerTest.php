@@ -44,6 +44,16 @@ class AdminNotificationControllerTest extends TestCase
         $this->assertNotNull($notification->fresh()->read_at);
     }
 
+    public function test_bell_read_url_survives_a_server_on_port_8000(): void
+    {
+        // بسته‌ی «ح»، ۶: آدرس «خوانده شد» با route(..., '000').replace('000', ':id') ساخته می‌شد؛ روی http://192.168.1.2:8000 اولین
+        // «000» پورت بود ← POST به آدرس خراب، اعلان کلیک‌شده خوانده نمی‌شد و شمارنده کم نمی‌شد
+        $html = $this->actingAs($this->admin)->get('http://192.168.1.2:8000/admin/notifications')->assertOk()->getContent();
+
+        $this->assertStringContainsString("notificationsRead: 'http://192.168.1.2:8000/admin/notifications/:id/read'", $html);
+        $this->assertStringNotContainsString(".replace('000'", $html);
+    }
+
     public function test_mark_as_read_marks_and_returns_success(): void
     {
         $notification = UserNotification::factory()->create([

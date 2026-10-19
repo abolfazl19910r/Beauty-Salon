@@ -416,7 +416,8 @@
         notificationsIndex: '{{ route("admin.notifications.index") }}',
         notificationsLatest: '{{ route("admin.notifications.latest") }}',
         notificationsCount: '{{ route("admin.notifications.count") }}',
-        notificationsRead: '{{ route("admin.notifications.read", "000") }}'.replace('000', ':id'),
+        // «:id» مستقیم در route؛ قبلاً «000» جایگزین می‌شد و اولین «000» پورت 8000 بود ← آدرس خراب و اعلان خوانده نمی‌شد (بسته‌ی «ح»، ۶)
+        notificationsRead: '{{ route("admin.notifications.read", ":id") }}',
         csrfToken: document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
     };
 
