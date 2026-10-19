@@ -141,7 +141,10 @@ class SubscriptionPaymentsTest extends TestCase
             ->assertOk()
             ->assertSee('REF777')
             ->assertSee('سالن الماس')
-            ->assertSee('شش‌ماهه');
+            ->assertSee('شش‌ماهه')
+            // ساعت واقعی، نه «H:i» خام (بسته‌ی «ح»، ۴)
+            ->assertSee(to_persian_num(jalali_date($invoice->paid_at, 'Y/m/d H:i')))
+            ->assertDontSee('H:i');
 
         $this->actingAs($this->superAdmin)->get(route('superadmin.payments.show', 999999))->assertNotFound();
     }
