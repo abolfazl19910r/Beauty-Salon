@@ -9,12 +9,12 @@
     </div>
 
     @if (session('success'))
-        <div class="sa-card mb-5" style="color: var(--sa-success);">{{ session('success') }}</div>
+        <div class="sa-card sa-card-pad mb-5" style="color: var(--sa-success);">{{ session('success') }}</div>
     @endif
 
     <div class="grid md:grid-cols-3 gap-5">
         <div class="md:col-span-2 space-y-5">
-            <div class="sa-card">
+            <div class="sa-card sa-card-pad">
                 <div class="flex flex-wrap gap-4 mb-4" style="color: var(--sa-text-dim);">
                     <span>ثبت‌شده توسط: <span style="color: var(--sa-text);">{{ $ticket->user->name ?? '—' }}</span></span>
                     @if ($ticket->user?->salons?->isNotEmpty())
@@ -29,7 +29,7 @@
 
             <div class="space-y-3">
                 @forelse ($ticket->messages as $message)
-                    <div class="sa-card" style="{{ $message->is_staff_reply ? 'border-color: var(--sa-accent);' : '' }}">
+                    <div class="sa-card sa-card-pad" style="{{ $message->is_staff_reply ? 'border-color: var(--sa-accent);' : '' }}">
                         <div class="flex items-center justify-between mb-2" style="color: var(--sa-text-dim);">
                             <span>{{ $message->is_staff_reply ? 'پشتیبانی پلتفرم' : ($message->user->name ?? '—') }}</span>
                             <span>{{ $message->formatted_created_at }}</span>
@@ -42,7 +42,7 @@
             </div>
 
             @unless ($ticket->isClosed())
-                <form method="POST" action="{{ route('superadmin.support-tickets.reply', $ticket) }}" class="sa-card space-y-3">
+                <form method="POST" action="{{ route('superadmin.support-tickets.reply', $ticket) }}" class="sa-card sa-card-pad space-y-3">
                     @csrf
                     <label class="block" style="color: var(--sa-text);">پاسخ پشتیبانی</label>
                     <textarea name="message" rows="4" required maxlength="5000"
@@ -57,12 +57,12 @@
         </div>
 
         <div class="space-y-5">
-            <div class="sa-card">
+            <div class="sa-card sa-card-pad">
                 <h3 class="font-bold mb-3" style="color: var(--sa-text-dim);">جزئیات</h3>
                 <dl class="space-y-2">
                     <div class="flex justify-between">
                         <dt style="color: var(--sa-text-dim);">دسته‌بندی</dt>
-                        <dd>{{ $ticket->category }}</dd>
+                        <dd>{{ $ticket->categoryLabel() }}</dd>
                     </div>
                     <div class="flex justify-between">
                         <dt style="color: var(--sa-text-dim);">وضعیت</dt>
@@ -75,7 +75,7 @@
                 </dl>
             </div>
 
-            <div class="sa-card">
+            <div class="sa-card sa-card-pad">
                 <h3 class="font-bold mb-3" style="color: var(--sa-text-dim);">تغییر اولویت / واگذاری</h3>
                 <form method="POST" action="{{ route('superadmin.support-tickets.update', $ticket) }}" class="space-y-3">
                     @csrf
@@ -97,7 +97,7 @@
                 </form>
             </div>
 
-            <div class="sa-card space-y-2">
+            <div class="sa-card sa-card-pad space-y-2">
                 <h3 class="font-bold mb-1" style="color: var(--sa-text-dim);">تغییر وضعیت</h3>
                 @unless ($ticket->isResolved())
                     <form method="POST" action="{{ route('superadmin.support-tickets.resolve', $ticket) }}">

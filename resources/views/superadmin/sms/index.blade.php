@@ -5,21 +5,21 @@
 @section('content')
     {{-- ⭐ ۲۰۲۶-۱۰-۱۵: مصرف پیامک همه‌ی سالن‌ها (قبلاً فقط داخل ویرایش هر سالن) و خرید بسته‌ها/درآمدش (قبلاً هیچ‌جا). --}}
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="sa-card p-5">
-            <div class="sa-label">درآمد بسته‌ی پیامک این ماه</div>
-            <div class="text-2xl font-bold" style="color: var(--sa-accent);">{{ number_format($totals['revenue_month']) }} <span class="text-xs font-normal" style="color: var(--sa-text-dim);">تومان</span></div>
+        <div class="sa-card sa-stat">
+            <div class="sa-stat__label">درآمد بسته‌ی پیامک این ماه</div>
+            <div class="sa-stat__value" style="color: var(--sa-accent);">{{ number_format($totals['revenue_month']) }} <span class="text-xs font-normal" style="color: var(--sa-text-dim);">تومان</span></div>
         </div>
-        <div class="sa-card p-5">
-            <div class="sa-label">درآمد بسته‌ی پیامک تا امروز</div>
-            <div class="text-2xl font-bold">{{ number_format($totals['revenue_all']) }} <span class="text-xs font-normal" style="color: var(--sa-text-dim);">تومان</span></div>
+        <div class="sa-card sa-stat">
+            <div class="sa-stat__label">درآمد بسته‌ی پیامک تا امروز</div>
+            <div class="sa-stat__value">{{ number_format($totals['revenue_all']) }} <span class="text-xs font-normal" style="color: var(--sa-text-dim);">تومان</span></div>
         </div>
-        <div class="sa-card p-5">
-            <div class="sa-label">قطعه‌ی فروخته‌شده</div>
-            <div class="text-2xl font-bold">{{ number_format($totals['parts_sold']) }}</div>
+        <div class="sa-card sa-stat">
+            <div class="sa-stat__label">قطعه‌ی فروخته‌شده</div>
+            <div class="sa-stat__value">{{ number_format($totals['parts_sold']) }}</div>
         </div>
-        <div class="sa-card p-5">
-            <div class="sa-label">قطعه‌ی اعطای دستی</div>
-            <div class="text-2xl font-bold">{{ number_format($totals['parts_granted']) }}</div>
+        <div class="sa-card sa-stat">
+            <div class="sa-stat__label">قطعه‌ی اعطای دستی</div>
+            <div class="sa-stat__value">{{ number_format($totals['parts_granted']) }}</div>
         </div>
     </div>
 

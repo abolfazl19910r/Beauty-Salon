@@ -16,7 +16,7 @@
 
         <div class="rounded-xl p-5 mb-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
             <div class="flex flex-wrap gap-4 text-sm mb-4">
-                <span style="color:var(--admin-text-dim);">دسته‌بندی: <span style="color:var(--admin-text);">{{ $ticket->category }}</span></span>
+                <span style="color:var(--admin-text-dim);">دسته‌بندی: <span style="color:var(--admin-text);">{{ $ticket->categoryLabel() }}</span></span>
                 <span style="color:var(--admin-text-dim);">اولویت: <span style="color:var(--admin-text);">{{ $ticket->priority_text }}</span></span>
                 <span style="color:var(--admin-text-dim);">وضعیت: <span style="color:var(--admin-text);">{{ $ticket->status_text }}</span></span>
                 <span class="persian-number" style="color:var(--admin-text-dim);">تاریخ ثبت: <span style="color:var(--admin-text);">{{ jalali_date($ticket->created_at) }}</span></span>

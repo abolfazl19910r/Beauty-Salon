@@ -8,25 +8,25 @@
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-        <div class="sa-card">
-            <p style="color: var(--sa-text-dim);">باز</p>
-            <p class="text-xl font-bold mt-1" style="color: var(--sa-warn);">{{ $stats['open'] }}</p>
+        <div class="sa-card sa-stat">
+            <p class="sa-stat__label">باز</p>
+            <p class="sa-stat__value" style="color: var(--sa-warn);">{{ $stats['open'] }}</p>
         </div>
-        <div class="sa-card">
-            <p style="color: var(--sa-text-dim);">در حال بررسی</p>
-            <p class="text-xl font-bold mt-1" style="color: var(--sa-accent);">{{ $stats['in_progress'] }}</p>
+        <div class="sa-card sa-stat">
+            <p class="sa-stat__label">در حال بررسی</p>
+            <p class="sa-stat__value" style="color: var(--sa-accent);">{{ $stats['in_progress'] }}</p>
         </div>
-        <div class="sa-card">
-            <p style="color: var(--sa-text-dim);">حل‌شده</p>
-            <p class="text-xl font-bold mt-1" style="color: var(--sa-success);">{{ $stats['resolved'] }}</p>
+        <div class="sa-card sa-stat">
+            <p class="sa-stat__label">حل‌شده</p>
+            <p class="sa-stat__value" style="color: var(--sa-success);">{{ $stats['resolved'] }}</p>
         </div>
-        <div class="sa-card">
-            <p style="color: var(--sa-text-dim);">بسته‌شده</p>
-            <p class="text-xl font-bold mt-1" style="color: var(--sa-text-dim);">{{ $stats['closed'] }}</p>
+        <div class="sa-card sa-stat">
+            <p class="sa-stat__label">بسته‌شده</p>
+            <p class="sa-stat__value" style="color: var(--sa-text-dim);">{{ $stats['closed'] }}</p>
         </div>
     </div>
 
-    <form method="GET" class="sa-card mb-5 flex flex-wrap items-end gap-3">
+    <form method="GET" class="sa-card sa-card-pad mb-5 flex flex-wrap items-end gap-3">
         <div>
             <label class="block mb-1" style="color: var(--sa-text-dim);">وضعیت</label>
             <select name="status" class="rounded-lg px-3 py-2" style="border:1px solid var(--sa-border); background: var(--sa-bg); color: var(--sa-text);">
@@ -78,7 +78,7 @@
                     <tr style="border-bottom: 1px solid var(--sa-border);">
                         <td class="py-3 px-4">{{ $ticket->title }}</td>
                         <td class="py-3 px-4">{{ $ticket->user->name ?? '—' }}</td>
-                        <td class="py-3 px-4">{{ $ticket->category }}</td>
+                        <td class="py-3 px-4">{{ $ticket->categoryLabel() }}</td>
                         <td class="py-3 px-4">{{ $ticket->priority_text }}</td>
                         <td class="py-3 px-4">
                             @if ($ticket->isOpen())

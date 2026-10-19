@@ -103,11 +103,37 @@
         .m-theme-btn svg { width: 18px; height: 18px; }
         html[data-theme=dark] .m-theme-btn .m-sun, html:not([data-theme=dark]) .m-theme-btn .m-moon { display: none; }
         ::selection { background: rgba(14, 90, 110, .2); }
+
+        /* بسته‌ی «ح»، ۲ (۲۰۲۶-۱۰-۱۹): ظاهر یک‌دست کادرها */
+        .sa-card-pad { padding: 1.5rem; }
+        .sa-card-title { font-weight: 700; font-size: 1rem; color: var(--sa-text); }
+        .sa-card-desc { font-size: .8rem; line-height: 1.7; color: var(--sa-text-dim); margin-top: .25rem; }
+        .sa-card-head { padding-bottom: 1rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--sa-border); }
+        .sa-help { font-size: .75rem; line-height: 1.7; color: var(--sa-text-dim); margin-top: .35rem; }
+        .sa-stat { padding: 1.1rem 1.25rem; display: flex; flex-direction: column; gap: .35rem; min-height: 6.5rem; }
+        .sa-stat__label { font-size: .8rem; color: var(--sa-text-dim); line-height: 1.6; }
+        .sa-stat__value { font-size: 1.6rem; font-weight: 800; line-height: 1.2; margin-top: auto; }
+        .sa-stat__unit { font-size: .72rem; color: var(--sa-text-dim); }
+        .sa-ltr { direction: ltr; unicode-bidi: isolate; display: inline-block; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .85em; }
+        .sa-table-wrap { overflow-x: auto; }
+        /* فرزند grid پیش‌فرض min-width: auto دارد؛ یک جدول عریض کل ستون را پهن و صفحه‌ی گوشی را افقی می‌کرد */
+        main .grid > * { min-width: 0; }
+        .sa-table-wrap table { min-width: 40rem; }
+        .sa-menu-btn { display: none; }
+        @media (max-width: 767px) {
+            .sa-menu-btn { display: inline-flex; }
+            .sa-side.is-open { display: block; position: fixed; top: 0; bottom: 0; right: 0; width: 16rem; z-index: 60; overflow-y: auto; box-shadow: -12px 0 32px rgba(0, 0, 0, .25); }
+            .sa-backdrop.is-open { display: block; }
+            main { padding: 1rem !important; }
+        }
+        input[type=file] { font-size: .8rem; color: var(--sa-text-dim); max-width: 100%; }
+        input[type=file]::file-selector-button { margin-inline-end: .75rem; padding: .45rem .9rem; border-radius: 10px; border: 1px solid var(--sa-border); background: var(--sa-soft); color: var(--sa-accent); font-family: inherit; font-weight: 600; cursor: pointer; }
+        .sa-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, .45); z-index: 55; }
     </style>
 </head>
 <body>
     <div class="flex min-h-screen">
-        <aside class="w-64 flex-shrink-0 hidden md:block sa-side" data-nav-scroll>
+        <aside id="sa-side" class="w-64 flex-shrink-0 hidden md:block sa-side" data-nav-scroll>
             <div class="p-5 border-b" style="border-color: rgba(255,255,255,.12);">
                 <img src="{{ asset('brand/mahru-logo-horizontal-on-dark.svg') }}" alt="{{ config('brand.name') }}" style="height: 40px; width: auto; display: block; margin-bottom: .5rem;">
                 <div class="text-lg font-bold" style="color: #FFFFFF;">پنل مدیریت کل</div>
@@ -163,16 +189,23 @@
             </nav>
         </aside>
 
-        <div class="flex-1 flex flex-col">
-            <header class="flex items-center justify-between px-6 py-4" style="background: var(--sa-surface); border-bottom: 1px solid var(--sa-border);">
-                <h1 class="text-lg font-bold">@yield('title')</h1>
-                <div class="flex items-center gap-4">
+        <div class="flex-1 flex flex-col min-w-0">
+            <header class="flex items-center justify-between gap-3 px-4 md:px-6 py-4" style="background: var(--sa-surface); border-bottom: 1px solid var(--sa-border);">
+                <div class="flex items-center gap-3 min-w-0">
+                    {{-- موبایل: پیش‌تر منو اصلاً نبود (aside فقط md:block) --}}
+                    <button type="button" class="sa-menu-btn w-[38px] h-[38px] items-center justify-center rounded-full shrink-0" data-sa-menu
+                            style="border: 1px solid var(--sa-border); color: var(--sa-accent); background: var(--sa-soft);" aria-label="منو" aria-controls="sa-side" aria-expanded="false">
+                        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                    <h1 class="text-lg font-bold truncate">@yield('title')</h1>
+                </div>
+                <div class="flex items-center gap-3 md:gap-4 shrink-0">
                     @include('partials.mahru-theme-toggle')
                     <a href="{{ route('superadmin.notifications.index') }}" class="relative inline-flex w-[38px] h-[38px] items-center justify-center rounded-full" style="border: 1px solid var(--sa-border); color: var(--sa-accent); background: var(--sa-soft);" aria-label="اعلان‌ها">
                         <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
                         @if ($saUnread > 0)<span class="absolute -top-1 -right-1 sa-badge sa-badge-bad" style="margin: 0; padding: 0 .35rem;">{{ to_persian_num((string) $saUnread) }}</span>@endif
                     </a>
-                    <span class="text-sm" style="color: var(--sa-text-dim);">{{ auth()->user()->name }}</span>
+                    <span class="text-sm hidden md:inline" style="color: var(--sa-text-dim);">{{ auth()->user()->name }}</span>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="text-sm" style="color: var(--sa-danger);">خروج</button>
@@ -209,6 +242,46 @@
         </div>
     </div>
 
+    <div class="sa-backdrop" data-sa-backdrop></div>
+    <script>
+        // منوی موبایل
+        (function () {
+            var btn = document.querySelector('[data-sa-menu]'), side = document.getElementById('sa-side'), back = document.querySelector('[data-sa-backdrop]');
+            if (!btn || !side) return;
+            function toggle(open) {
+                side.classList.toggle('is-open', open);
+                back.classList.toggle('is-open', open);
+                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            }
+            btn.addEventListener('click', function () { toggle(!side.classList.contains('is-open')); });
+            back.addEventListener('click', function () { toggle(false); });
+            document.addEventListener('keydown', function (e) { if (e.key === 'Escape') toggle(false); });
+        })();
+
+        // جدول‌هایی که در کادر خودشان اسکرول ندارند، روی گوشی بریده می‌شدند (کادر overflow-hidden): هر جدول یک ظرف اسکرول افقی می‌گیرد
+        document.querySelectorAll('main table').forEach(function (table) {
+            if (table.closest('.sa-table-wrap')) return;
+            var wrap = document.createElement('div');
+            wrap.className = 'sa-table-wrap';
+            table.parentNode.insertBefore(wrap, table);
+            wrap.appendChild(table);
+        });
+
+        // ارقام فارسی در متن صفحه (پیش‌تر برخی عددها لاتین و برخی فارسی بودند). ورودی‌ها، کد، و هر چیز dir="ltr" (آدرس، شناسه، کد پیگیری) دست نمی‌خورند.
+        (function () {
+            var FA = '۰۱۲۳۴۵۶۷۸۹';
+            var SKIP = 'input,textarea,select,option,script,style,code,pre,kbd,[dir="ltr"],[data-latin],.sa-ltr';
+            function walk(node) {
+                if (node.nodeType === 3) {
+                    if (/[0-9]/.test(node.nodeValue)) node.nodeValue = node.nodeValue.replace(/[0-9]/g, function (d) { return FA[d]; });
+                    return;
+                }
+                if (node.nodeType !== 1 || node.matches(SKIP)) return;
+                for (var i = 0; i < node.childNodes.length; i++) walk(node.childNodes[i]);
+            }
+            document.querySelectorAll('main, header h1, .sa-side').forEach(walk);
+        })();
+    </script>
     @stack('scripts')
 @include('partials.password-reveal')
 @include('partials.nav-reveal-active')

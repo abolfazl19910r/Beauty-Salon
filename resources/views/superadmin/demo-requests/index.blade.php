@@ -8,13 +8,13 @@
     </div>
 
     <div class="grid grid-cols-2 gap-4 mb-5" style="max-width: 32rem;">
-        <div class="sa-card">
-            <p style="color: var(--sa-text-dim);">پیگیری‌نشده</p>
-            <p class="text-xl font-bold mt-1" style="color: var(--sa-warn);">{{ to_persian_num((string) $stats['open']) }}</p>
+        <div class="sa-card sa-stat">
+            <p class="sa-stat__label">پیگیری‌نشده</p>
+            <p class="sa-stat__value" style="color: var(--sa-warn);">{{ to_persian_num((string) $stats['open']) }}</p>
         </div>
-        <div class="sa-card">
-            <p style="color: var(--sa-text-dim);">پیگیری‌شده</p>
-            <p class="text-xl font-bold mt-1" style="color: var(--sa-success);">{{ to_persian_num((string) $stats['handled']) }}</p>
+        <div class="sa-card sa-stat">
+            <p class="sa-stat__label">پیگیری‌شده</p>
+            <p class="sa-stat__value" style="color: var(--sa-success);">{{ to_persian_num((string) $stats['handled']) }}</p>
         </div>
     </div>
 

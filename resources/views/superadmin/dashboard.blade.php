@@ -32,45 +32,27 @@
         </div>
     @endif
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-        <div class="sa-card p-5">
-            <div class="sa-label">درآمد اشتراک این ماه</div>
-            <div class="text-2xl font-bold" style="color: var(--sa-accent);">{{ number_format($overview['subscription_revenue_month']) }}</div>
-            <div class="text-xs" style="color: var(--sa-text-dim);">تومان</div>
-        </div>
-        <div class="sa-card p-5">
-            <div class="sa-label">درآمد بسته‌ی پیامک این ماه</div>
-            <div class="text-2xl font-bold" style="color: var(--sa-accent);">{{ number_format($overview['sms_revenue_month']) }}</div>
-            <div class="text-xs" style="color: var(--sa-text-dim);">تومان</div>
-        </div>
-        <div class="sa-card p-5">
-            <div class="sa-label">سالن تازه این ماه / در دوره‌ی آزمایشی</div>
-            <div class="text-2xl font-bold">{{ $overview['new_salons_month'] }} <span style="color: var(--sa-text-dim);">/</span> {{ $overview['trial_salons'] }}</div>
-        </div>
-        <div class="sa-card p-5">
-            <div class="sa-label">پیامک این ماه (همه‌ی سالن‌ها)</div>
-            <div class="text-2xl font-bold">{{ number_format($overview['sms_parts_month']) }}</div>
-            <div class="text-xs" style="color: var(--sa-text-dim);">قطعه + {{ number_format($overview['otp_month']) }} کد تأیید</div>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div class="sa-card p-5">
-            <div class="sa-label">سالن‌های فعال</div>
-            <div class="text-2xl font-bold">{{ $stats['active_salons'] }}</div>
-        </div>
-        <div class="sa-card p-5">
-            <div class="sa-label">مجموع متخصصین</div>
-            <div class="text-2xl font-bold">{{ $stats['total_specialists'] }}</div>
-        </div>
-        <div class="sa-card p-5">
-            <div class="sa-label">نزدیک به انقضا (۷ روز)</div>
-            <div class="text-2xl font-bold" style="color: var(--sa-accent);">{{ $stats['expiring_soon'] }}</div>
-        </div>
-        <div class="sa-card p-5">
-            <div class="sa-label">منقضی‌شده</div>
-            <div class="text-2xl font-bold" style="color: var(--sa-danger);">{{ $stats['expired'] }}</div>
-        </div>
+    {{-- بسته‌ی «ح»، ۲: هشت کارت در یک شبکه‌ی یک‌دست (پیش‌تر ردیف دوم روی موبایل تک‌ستونه می‌شد و ارتفاع کارت‌ها برابر نبود) --}}
+    @php
+        $statCards = [
+            ['درآمد اشتراک این ماه', number_format($overview['subscription_revenue_month']), 'تومان', 'var(--sa-accent)'],
+            ['درآمد بسته‌ی پیامک این ماه', number_format($overview['sms_revenue_month']), 'تومان', 'var(--sa-accent)'],
+            ['سالن تازه‌ی این ماه', number_format($overview['new_salons_month']), 'در دوره‌ی آزمایشی: '.$overview['trial_salons'], null],
+            ['پیامک این ماه (همه‌ی سالن‌ها)', number_format($overview['sms_parts_month']), 'قطعه + '.number_format($overview['otp_month']).' کد تأیید', null],
+            ['سالن‌های فعال', number_format($stats['active_salons']), null, null],
+            ['مجموع متخصصین', number_format($stats['total_specialists']), null, null],
+            ['نزدیک به انقضا (۷ روز)', number_format($stats['expiring_soon']), null, 'var(--sa-accent)'],
+            ['منقضی‌شده', number_format($stats['expired']), null, 'var(--sa-danger)'],
+        ];
+    @endphp
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6" data-dashboard-stats>
+        @foreach ($statCards as [$label, $value, $unit, $color])
+            <div class="sa-card sa-stat">
+                <div class="sa-stat__label">{{ $label }}</div>
+                <div class="sa-stat__value" @if ($color) style="color: {{ $color }};" @endif>{{ $value }}</div>
+                @if ($unit)<div class="sa-stat__unit">{{ $unit }}</div>@endif
+            </div>
+        @endforeach
     </div>
 
     {{-- ⭐ وضعیت آخرین پشتیبان‌گیری (deploy/backup/mahru-backup.sh → storage/app/backup-status.json) --}}
@@ -87,7 +69,7 @@
                     @if ($backup['size']) · حجم {{ $backup['size'] }} @endif
                     @if ($backup['state'] === 'failed' && $backup['message']) · {{ $backup['message'] }} @endif
                 @else
-                    اسکریپت deploy/backup/mahru-backup.sh هنوز روی سرور اجرا نشده یا cron آن تنظیم نیست (راهنما: docs/deployment/BACKUP.md).
+                    اسکریپت <span class="sa-ltr">deploy/backup/mahru-backup.sh</span> هنوز روی سرور اجرا نشده یا cron آن تنظیم نیست (راهنما: <span class="sa-ltr">docs/deployment/BACKUP.md</span>).
                 @endif
             </div>
         </div>
@@ -98,6 +80,7 @@
             <h2 class="font-bold">سالن‌های اخیر</h2>
             <a href="{{ route('superadmin.salons.index') }}" class="text-sm" style="color: var(--sa-accent);">مشاهده همه ←</a>
         </div>
+        <div class="sa-table-wrap">
         <table class="w-full text-sm text-right">
             <thead>
                 <tr style="color: var(--sa-text-dim);" class="border-b" style="border-color: var(--sa-border);">
@@ -113,7 +96,7 @@
                 @foreach ($recentSalons as $salon)
                     <tr class="border-b" style="border-color: var(--sa-border);">
                         <td class="py-3">{{ $salon->name }}</td>
-                        <td class="py-3" style="color: var(--sa-text-dim);">/s/{{ $salon->slug }}</td>
+                        <td class="py-3" style="color: var(--sa-text-dim);"><span class="sa-ltr">/s/{{ $salon->slug }}</span></td>
                         <td class="py-3">{{ $salon->specialists_count }} / {{ $salon->max_specialists_count }}</td>
                         <td class="py-3">{{ $salon->subscription_started_at ? jalali_date($salon->subscription_started_at) : '—' }}</td>
                         <td class="py-3">{{ jalali_date($salon->subscription_ends_at) }}</td>
@@ -130,5 +113,6 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
     </div>
 @endsection

@@ -27,25 +27,25 @@
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="sa-card p-5">
-            <div class="sa-label">پیام‌ها</div>
-            <div class="text-2xl font-bold">{{ $fa($summary['total']) }}</div>
+        <div class="sa-card sa-stat">
+            <div class="sa-stat__label">پیام‌ها</div>
+            <div class="sa-stat__value">{{ $fa($summary['total']) }}</div>
         </div>
-        <div class="sa-card p-5" data-ack-rate>
-            <div class="sa-label">نرخ رسید</div>
-            <div class="text-2xl font-bold" style="color: var(--sa-accent);">{{ $summary['ack_rate'] === null ? '—' : to_persian_num((string) $summary['ack_rate']).'٪' }}</div>
+        <div class="sa-card sa-stat" data-ack-rate>
+            <div class="sa-stat__label">نرخ رسید</div>
+            <div class="sa-stat__value" style="color: var(--sa-accent);">{{ $summary['ack_rate'] === null ? '—' : to_persian_num((string) $summary['ack_rate']).'٪' }}</div>
         </div>
-        <div class="sa-card p-5">
-            <div class="sa-label">زمان رسید (میانه / ۹۰٪)</div>
-            <div class="text-lg font-bold">{{ $sec($summary['median_seconds']) }} <span class="text-sm font-normal" style="color: var(--sa-text-dim);">/ {{ $sec($summary['p90_seconds']) }}</span></div>
+        <div class="sa-card sa-stat">
+            <div class="sa-stat__label">زمان رسید (میانه / ۹۰٪)</div>
+            <div class="sa-stat__value">{{ $sec($summary['median_seconds']) }} <span class="text-sm font-normal" style="color: var(--sa-text-dim);">/ {{ $sec($summary['p90_seconds']) }}</span></div>
         </div>
-        <div class="sa-card p-5" data-sms-saved>
+        <div class="sa-card sa-stat" data-sms-saved>
             @if ($mode === 'shadow')
-                <div class="sa-label">اگر «فعال» بود، پیامک لازم نمی‌شد</div>
-                <div class="text-2xl font-bold">{{ $fa($summary['shadow_would_save']['count']) }} <span class="text-xs font-normal" style="color: var(--sa-text-dim);">پیام · {{ $fa($summary['shadow_would_save']['parts']) }} قطعه</span></div>
+                <div class="sa-stat__label">اگر «فعال» بود، پیامک لازم نمی‌شد</div>
+                <div class="sa-stat__value">{{ $fa($summary['shadow_would_save']['count']) }} <span class="text-xs font-normal" style="color: var(--sa-text-dim);">پیام · {{ $fa($summary['shadow_would_save']['parts']) }} قطعه</span></div>
             @else
-                <div class="sa-label">پیامک صرفه‌جویی‌شده</div>
-                <div class="text-2xl font-bold">{{ $fa($summary['saved_count']) }} <span class="text-xs font-normal" style="color: var(--sa-text-dim);">پیام · {{ $fa($summary['saved_parts']) }} قطعه</span></div>
+                <div class="sa-stat__label">پیامک صرفه‌جویی‌شده</div>
+                <div class="sa-stat__value">{{ $fa($summary['saved_count']) }} <span class="text-xs font-normal" style="color: var(--sa-text-dim);">پیام · {{ $fa($summary['saved_parts']) }} قطعه</span></div>
             @endif
         </div>
     </div>

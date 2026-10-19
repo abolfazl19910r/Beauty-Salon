@@ -35,6 +35,20 @@ class SupportTicket extends Model
         'closed_at' => 'datetime',
     ];
 
+    /** برچسب فارسی دسته‌ها (همان گزینه‌های فرم ثبت تیکت؛ پیش‌تر کلید خام مثل «technical» نشان داده می‌شد — بسته‌ی «ح»، ۲) */
+    public const CATEGORIES = [
+        'booking' => 'رزرو و نوبت‌دهی',
+        'payment' => 'پرداخت',
+        'service' => 'خدمات سالن',
+        'technical' => 'فنی',
+        'other' => 'سایر',
+    ];
+
+    public function categoryLabel(): string
+    {
+        return self::CATEGORIES[$this->category] ?? (string) $this->category;
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

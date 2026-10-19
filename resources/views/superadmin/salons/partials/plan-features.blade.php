@@ -3,8 +3,10 @@
     $current = $salon->effectivePlan();
     $scheduled = app(\App\Services\Plans\PlanBilling::class)->scheduledPlan($salon);
 @endphp
-<div class="mb-5 p-4 rounded-lg text-sm" style="border:1px solid var(--sa-border);" data-testid="salon-plan">
-    <div class="font-bold mb-2">پلن و امکانات</div>
+<div class="sa-card sa-card-pad text-sm" data-testid="salon-plan">
+    <div class="sa-card-head">
+        <div class="sa-card-title">پلن و امکانات</div>
+    </div>
     <div class="mb-3">
         پلن فعلی: <strong>{{ $current?->name ?? 'بدون پلن (همه‌ی امکانات، قیمت از فایل تنظیمات)' }}</strong>
         @if ($scheduled)

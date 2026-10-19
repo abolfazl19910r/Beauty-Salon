@@ -26,9 +26,9 @@
             ['درآمد امروز', $toman($overview['today']).' تومان'],
             ['پرداخت‌های در انتظار', to_persian_num((string) $overview['pending_now']).' فاکتور'],
         ] as [$title, $value])
-            <div class="sa-card p-4">
-                <div class="text-xs" style="color: var(--sa-text-dim);">{{ $title }}</div>
-                <div class="text-lg font-bold mt-1">{{ $value }}</div>
+            <div class="sa-card sa-stat">
+                <div class="sa-stat__label">{{ $title }}</div>
+                <div class="sa-stat__value">{{ $value }}</div>
             </div>
         @endforeach
     </div>

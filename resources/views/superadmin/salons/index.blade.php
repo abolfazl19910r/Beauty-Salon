@@ -112,7 +112,7 @@
                     <tr style="border-bottom: 1px solid var(--sa-border);">
                         <td class="py-3 px-4">
                             <div class="font-medium">{{ $salon->name }}</div>
-                            <div style="color: var(--sa-text-dim);">/s/{{ $salon->slug }}</div>
+                            <div style="color: var(--sa-text-dim);"><span class="sa-ltr">/s/{{ $salon->slug }}</span></div>
                         </td>
                         <td class="py-3 px-4">
                             {{ optional($salon->admins->firstWhere('pivot.role', 'owner'))->name ?? '—' }}

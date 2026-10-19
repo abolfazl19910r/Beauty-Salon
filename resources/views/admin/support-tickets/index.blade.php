@@ -38,7 +38,7 @@
                     @forelse($tickets as $ticket)
                         <tr style="border-top: 1px solid var(--admin-border);">
                             <td class="px-4 py-3" style="color:var(--admin-text);">{{ $ticket->title }}</td>
-                            <td class="px-4 py-3" style="color:var(--admin-text-dim);">{{ $ticket->category }}</td>
+                            <td class="px-4 py-3" style="color:var(--admin-text-dim);">{{ $ticket->categoryLabel() }}</td>
                             <td class="px-4 py-3">
                                 <span class="px-2 py-0.5 rounded-full text-xs" style="background-color: var(--admin-accent-light); color: var(--admin-accent);">
                                     {{ $ticket->priority_text }}

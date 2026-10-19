@@ -3,23 +3,25 @@
 @section('title', 'تنظیمات پلتفرم')
 
 @section('content')
-    <div class="sa-card" style="max-width: 44rem;">
-        <h2 class="font-bold text-lg mb-1">راه‌های تماس و اطلاع‌رسانی</h2>
-        <p class="mb-5 text-sm" style="color: var(--sa-text-dim);">
+    {{-- بسته‌ی «ح»، ۲: کادرها فاصله‌ی داخلی نداشتند (متن به لبه چسبیده بود) و همه در ستون باریک ۴۴rem بودند --}}
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+    <div class="sa-card sa-card-pad">
+        <h2 class="sa-card-title">راه‌های تماس و اطلاع‌رسانی</h2>
+        <p class="sa-card-desc mb-5">
             این‌ها در صفحه‌ی فروش (پایین صفحه و فرم دمو) نشان داده می‌شوند؛ فیلد خالی یعنی پیش‌فرض فایل ‎.env و اگر آن هم خالی باشد، آن لینک اصلاً نمایش داده نمی‌شود.
         </p>
 
-        <form method="POST" action="{{ route('superadmin.settings.update') }}" class="grid gap-4">
+        <form method="POST" action="{{ route('superadmin.settings.update') }}" class="grid md:grid-cols-2 gap-4">
             @csrf
             @method('PUT')
             @foreach ($fields as $key => $field)
                 <div>
-                    <label for="ps-{{ $key }}" class="block mb-1 font-medium">{{ $field['label'] }}</label>
+                    <label for="ps-{{ $key }}" class="sa-label">{{ $field['label'] }}</label>
                     <input id="ps-{{ $key }}" name="{{ $key }}" value="{{ old($key, $stored[$key] ?? '') }}" dir="ltr"
                            type="{{ $field['type'] === 'email' ? 'email' : ($field['type'] === 'url' ? 'url' : 'text') }}"
                            inputmode="{{ $field['type'] === 'phone' ? 'tel' : ($field['type'] === 'email' ? 'email' : 'url') }}"
                            placeholder="{{ config($field['config']) ?: ($field['type'] === 'url' ? 'https://' : '') }}"
-                           class="w-full rounded-lg px-3 py-2" style="border:1px solid var(--sa-border); background: var(--sa-bg); color: var(--sa-text); text-align: left;">
+                           class="sa-input" style="text-align: left;">
                     @error($key)
                         <p class="mt-1 text-sm" style="color: var(--sa-danger);">{{ $message }}</p>
                     @enderror
@@ -34,13 +36,14 @@
                     @endif
                 </div>
             @endforeach
-            <div><button type="submit" class="sa-btn">ذخیره</button></div>
+            <div class="md:col-span-2"><button type="submit" class="sa-btn">ذخیره</button></div>
         </form>
     </div>
 
-    <div class="sa-card p-6 mt-6" style="max-width: 44rem;" data-push-settings>
-        <h2 class="font-bold mb-1">اعلان اپ‌ها (پوش)</h2>
-        <p class="text-sm mb-4" style="color: var(--sa-text-dim);">
+    <div class="space-y-6">
+    <div class="sa-card sa-card-pad" data-push-settings>
+        <h2 class="sa-card-title">اعلان اپ‌ها (پوش)</h2>
+        <p class="sa-card-desc mb-4">
             «آزمایشی»: پیامک مثل قبل همیشه می‌رود و پوش هم؛ فقط نرخ رسید سنجیده می‌شود (۲ تا ۴ هفته). «فعال»: پیامک فقط وقتی اپ رسید نفرستد
             (لغو و تغییر نوبت و یادآوری ۱ دقیقه، بقیه ۱۰ دقیقه؛ امتیاز، کد تخفیف و درخواست نظر فقط پوش). نتیجه در
             <a href="{{ route('superadmin.push.index') }}" style="color: var(--sa-accent);">اعلان اپ (پوش)</a>.
@@ -49,8 +52,8 @@
             @csrf
             @method('PUT')
             <div class="grow">
-                <label for="push-mode" class="block mb-1 font-medium">حالت</label>
-                <select id="push-mode" name="mode" class="w-full rounded-lg px-3 py-2" style="border:1px solid var(--sa-border); background: var(--sa-bg); color: var(--sa-text);">
+                <label for="push-mode" class="sa-label">حالت</label>
+                <select id="push-mode" name="mode" class="sa-input">
                     @foreach ($push['modes'] as $value => $label)
                         <option value="{{ $value }}" @selected($push['mode'] === $value)>{{ $label }}</option>
                     @endforeach
@@ -71,15 +74,15 @@
         </div>
     </div>
 
-    <div class="sa-card p-6 mt-6" style="max-width: 44rem;" data-bot-status>
-        <h2 class="font-bold mb-1">ربات اعلان (بله / تلگرام)</h2>
-        <p class="text-sm mb-4" style="color: var(--sa-text-dim);">
+    <div class="sa-card sa-card-pad" data-bot-status>
+        <h2 class="sa-card-title">ربات اعلان (بله / تلگرام)</h2>
+        <p class="sa-card-desc mb-4">
             مدیر، متخصص و مشتری از کارت «دریافت اعلان‌ها در پیام‌رسان» در پروفایل خودشان به ربات وصل می‌شوند و اعلان‌های حسابشان علاوه بر پیامک در پیام‌رسان هم می‌آید.
             توکن اینجا بر <span dir="ltr">BALE_BOT_TOKEN</span>/<span dir="ltr">TELEGRAM_BOT_TOKEN</span> فایل .env مقدم است. بعد از گذاشتن توکن روی سرور یک بار
             <span dir="ltr">php artisan bot:webhook bale</span> (روی لوکال <span dir="ltr">php artisan bot:poll bale</span>).
             ربات پس از پایدار شدن اپ جمع می‌شود (تصمیم ۲۰۲۶-۱۰-۰۲).
         </p>
-        <table class="w-full text-sm text-right mb-2">
+        <div class="sa-table-wrap mt-4"><table class="w-full text-sm text-right mb-2">
             <thead><tr style="color: var(--sa-text-dim);"><th class="py-2 px-3">پیام‌رسان</th><th class="py-2 px-3">وضعیت</th><th class="py-2 px-3">نام ربات</th><th class="py-2 px-3">توکن</th><th class="py-2 px-3">کاربران وصل</th></tr></thead>
             <tbody>
             @foreach (['bale' => 'بله', 'telegram' => 'تلگرام'] as $key => $label)
@@ -106,7 +109,7 @@
                 </tr>
             @endforeach
             </tbody>
-        </table>
+        </table></div>
 
         @foreach (['bale' => 'بله', 'telegram' => 'تلگرام'] as $key => $label)
             <form method="POST" action="{{ route('superadmin.settings.bot') }}" class="grid gap-3 mt-5 pt-5" style="border-top: 1px solid var(--sa-border);" data-bot-form="{{ $key }}">
@@ -115,8 +118,8 @@
                 <input type="hidden" name="messenger" value="{{ $key }}">
                 <h3 class="font-bold text-sm">ربات {{ $label }}</h3>
                 <div>
-                    <label for="bot-{{ $key }}-token" class="block mb-1 font-medium">توکن</label>
-                    <input id="bot-{{ $key }}-token" name="token" type="password" autocomplete="off" dir="ltr" placeholder="{{ $bot['masked'][$key] ? 'خالی = همان توکن فعلی' : '123456789:AbCd…' }}" class="w-full rounded-lg px-3 py-2" style="border:1px solid var(--sa-border); background: var(--sa-bg); color: var(--sa-text); text-align: left;">
+                    <label for="bot-{{ $key }}-token" class="sa-label">توکن</label>
+                    <input id="bot-{{ $key }}-token" name="token" type="password" autocomplete="off" dir="ltr" placeholder="{{ $bot['masked'][$key] ? 'خالی = همان توکن فعلی' : '123456789:AbCd…' }}" class="sa-input" style="text-align: left;">
                     <p class="mt-1 text-xs" style="color: var(--sa-text-dim);">
                         @if ($key === 'bale')
                             از ربات «بازو»ی بله (<span dir="ltr">@BotFather</span> بله) بگیرید؛ نام ربات بعد از بررسی خودکار پر می‌شود.
@@ -126,13 +129,13 @@
                     </p>
                 </div>
                 <div>
-                    <label for="bot-{{ $key }}-username" class="block mb-1 font-medium">نام ربات (اختیاری)</label>
-                    <input id="bot-{{ $key }}-username" name="username" dir="ltr" value="{{ old('messenger') === $key ? old('username') : '' }}" placeholder="{{ $bot['usernames'][$key] ? '@'.$bot['usernames'][$key] : 'Mahru_Bot' }}" class="w-full rounded-lg px-3 py-2" style="border:1px solid var(--sa-border); background: var(--sa-bg); color: var(--sa-text); text-align: left;">
+                    <label for="bot-{{ $key }}-username" class="sa-label">نام ربات (اختیاری)</label>
+                    <input id="bot-{{ $key }}-username" name="username" dir="ltr" value="{{ old('messenger') === $key ? old('username') : '' }}" placeholder="{{ $bot['usernames'][$key] ? '@'.$bot['usernames'][$key] : 'Mahru_Bot' }}" class="sa-input" style="text-align: left;">
                 </div>
                 @if ($key === 'telegram')
                     <div>
-                        <label for="bot-telegram-api" class="block mb-1 font-medium">آدرس پراکسی API تلگرام (Worker کلودفلر)</label>
-                        <input id="bot-telegram-api" name="api_base" type="url" dir="ltr" value="{{ old('api_base', $bot['api_bases']['telegram'] ?? '') }}" placeholder="https://api.telegram.org" class="w-full rounded-lg px-3 py-2" style="border:1px solid var(--sa-border); background: var(--sa-bg); color: var(--sa-text); text-align: left;">
+                        <label for="bot-telegram-api" class="sa-label">آدرس پراکسی API تلگرام (Worker کلودفلر)</label>
+                        <input id="bot-telegram-api" name="api_base" type="url" dir="ltr" value="{{ old('api_base', $bot['api_bases']['telegram'] ?? '') }}" placeholder="https://api.telegram.org" class="sa-input" style="text-align: left;">
                     </div>
                 @endif
                 @error('bot_'.$key)
@@ -146,5 +149,7 @@
                 </div>
             </form>
         @endforeach
+    </div>
+    </div>
     </div>
 @endsection
