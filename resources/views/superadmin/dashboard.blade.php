@@ -96,7 +96,7 @@
                 @foreach ($recentSalons as $salon)
                     <tr class="border-b" style="border-color: var(--sa-border);">
                         <td class="py-3">{{ $salon->name }}</td>
-                        <td class="py-3" style="color: var(--sa-text-dim);"><span class="sa-ltr">/s/{{ $salon->slug }}</span></td>
+                        <td class="py-3" style="color: var(--sa-text-dim);"><a href="{{ $salon->publicUrl() }}" target="_blank" rel="noopener" class="sa-ltr" style="color: var(--sa-accent);">{{ \App\Support\SalonAddress::short($salon) }}</a></td>
                         <td class="py-3">{{ $salon->specialists_count }} / {{ $salon->max_specialists_count }}</td>
                         <td class="py-3">{{ $salon->subscription_started_at ? jalali_date($salon->subscription_started_at) : '—' }}</td>
                         <td class="py-3">{{ jalali_date($salon->subscription_ends_at) }}</td>

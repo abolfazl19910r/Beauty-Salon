@@ -30,7 +30,7 @@ class SuperAdminLayoutPolishTest extends TestCase
 
     public function test_layout_has_a_mobile_menu_table_scroll_and_persian_digits(): void
     {
-        Salon::factory()->create(['slug' => 'yas']);
+        $yas = Salon::factory()->create(['slug' => 'yas']);
 
         $html = $this->actingAs($this->superAdmin)->get(route('superadmin.dashboard'))->assertOk()->getContent();
 
@@ -38,7 +38,9 @@ class SuperAdminLayoutPolishTest extends TestCase
         $this->assertStringContainsString('<aside id="sa-side"', $html);
         $this->assertStringContainsString("querySelectorAll('main table')", $html);
         $this->assertStringContainsString("var FA = '۰۱۲۳۴۵۶۷۸۹';", $html);
-        $this->assertStringContainsString('<span class="sa-ltr">/s/yas</span>', $html);
+        // آدرس واقعی سالن (ساب‌دامین وقتی CENTRAL_DOMAIN پر است)، چپ‌به‌راست
+        $this->assertStringContainsString('class="sa-ltr" style="color: var(--sa-accent);">'.\App\Support\SalonAddress::short($yas).'</a>', $html);
+        $this->assertStringEndsWith('/s/yas', \App\Support\SalonAddress::short($yas));
         $this->assertStringContainsString('data-dashboard-stats', $html);
     }
 

@@ -27,11 +27,21 @@ class ShortLinkTest extends TestCase
 
     public function test_the_host_falls_back_to_the_central_domain_then_app_url(): void
     {
-        config(['services.sms_links.host' => null, 'app.central_domain' => 'rasta.ir']);
+        config(['services.sms_links.host' => null, 'app.central_domain' => 'rasta.ir', 'app.url' => 'https://rasta.ir']);
         $this->assertSame('rasta.ir', ShortLinkService::host());
 
         config(['app.central_domain' => null, 'app.url' => 'https://app.example.ir']);
         $this->assertSame('app.example.ir', ShortLinkService::host());
+    }
+
+    public function test_the_central_domain_keeps_the_app_url_port_on_a_local_server(): void
+    {
+        // بسته‌ی «ح»، ۵: CENTRAL_DOMAIN=192.168.1.2.nip.io روی php artisan serve :8000 — لینک بی‌پورت باز نمی‌شد
+        config(['services.sms_links.host' => null, 'app.central_domain' => '192.168.1.2.nip.io', 'app.url' => 'http://192.168.1.2:8000']);
+        $this->assertSame('192.168.1.2.nip.io:8000', ShortLinkService::host());
+
+        config(['app.central_domain' => 'mahru.ir', 'app.url' => 'https://mahru.ir']);
+        $this->assertSame('mahru.ir', ShortLinkService::host());
     }
 
     public function test_expired_and_unknown_links_are_not_found(): void

@@ -105,7 +105,7 @@
         <div class="sa-card sa-card-pad text-sm" data-owner-card>
             <div class="sa-card-head">
                 <div class="sa-card-title">آدرس و مالک</div>
-                <div class="sa-card-desc">آدرس سالن: <a href="{{ $salon->publicUrl() }}" target="_blank" rel="noopener" class="sa-ltr" style="color: var(--sa-accent);">/s/{{ $salon->slug }}</a> (غیرقابل‌تغییر)</div>
+                <div class="sa-card-desc">آدرس سالن: <a href="{{ $salon->publicUrl() }}" target="_blank" rel="noopener" class="sa-ltr" style="color: var(--sa-accent);">{{ \App\Support\SalonAddress::short($salon) }}</a> (غیرقابل‌تغییر)</div>
             </div>
             <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
                 <div>

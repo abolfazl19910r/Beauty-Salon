@@ -138,6 +138,9 @@ class SubdomainRoutingTest extends TestCase
 
         $this->assertStringStartsWith('http://sobhan-beauty.'.self::CENTRAL_DOMAIN, $salon->publicUrl());
         $this->assertStringEndsWith('/s/sobhan-beauty', $salon->legacyPublicUrl());
+        // پنل ابرمدیر همین آدرس را نشان می‌دهد، نه «/s/…» دستی (بسته‌ی «ح»، ۵)
+        $this->assertStringStartsWith('sobhan-beauty.'.self::CENTRAL_DOMAIN, \App\Support\SalonAddress::short($salon));
+        $this->assertStringNotContainsString('/s/', \App\Support\SalonAddress::short($salon));
     }
 
     public function test_routes_compile_for_route_cache_without_duplicate_names(): void

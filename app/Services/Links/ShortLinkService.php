@@ -31,9 +31,12 @@ class ShortLinkService
 
     public static function host(): string
     {
+        // پورت APP_URL همراه دامنه‌ی مرکزی هم می‌آید: روی سیستم محلی (CENTRAL_DOMAIN=192.168.1.2.nip.io، سرور روی :8000) لینک
+        // بی‌پورت باز نمی‌شد (بسته‌ی «ح»، ۵). سرور واقعی بی‌پورت است و تغییری نمی‌کند.
+        $port = parse_url((string) config('app.url'), PHP_URL_PORT);
         $host = config('services.sms_links.host')
-            ?: config('app.central_domain')
-            ?: (parse_url((string) config('app.url'), PHP_URL_HOST).(($port = parse_url((string) config('app.url'), PHP_URL_PORT)) ? ':'.$port : ''));
+            ?: (config('app.central_domain') ? config('app.central_domain').($port ? ':'.$port : '') : null)
+            ?: (parse_url((string) config('app.url'), PHP_URL_HOST).($port ? ':'.$port : ''));
 
         return rtrim(preg_replace('#^https?://#', '', (string) $host), '/');
     }
