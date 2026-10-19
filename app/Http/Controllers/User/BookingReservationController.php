@@ -31,6 +31,12 @@ class BookingReservationController extends Controller
                 ->with('message', 'برای رزرو نوبت ابتدا باید وارد شوید.');
         }
 
+        // بسته‌ی «ح»، ۸: رزرو موقتاً متوقف — به‌جای جادوگر رزرو، پیام سالن
+        $salon = app(\App\Support\CurrentSalon::class)->get();
+        if ($salon?->isBookingPaused()) {
+            return view('bookings.paused', ['salon' => $salon]);
+        }
+
         $services = $this->beautyServiceRepository->all();
         $specialists = $this->specialistRepository->all();
         // ⭐ ۲۰۲۶-۰۹-۲۴: سالن بدون درگاه زرین‌پال → بنر هشدار و غیرفعال شدن ثبت نوبت‌های نیازمند پیش‌پرداخت.
@@ -41,6 +47,10 @@ class BookingReservationController extends Controller
 
     public function confirm(ConfirmBookingRequest $request): View|RedirectResponse
     {
+        if (app(\App\Support\CurrentSalon::class)->get()?->isBookingPaused()) {
+            return redirect()->route('bookings.create');
+        }
+
         if ($blocked = $this->blockedForMissingMerchant((int) $request->service_id, false)) {
             return $blocked;
         }

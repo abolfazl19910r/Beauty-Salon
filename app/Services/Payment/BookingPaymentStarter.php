@@ -27,6 +27,7 @@ class BookingPaymentStarter
 
     public function start(User $user, Booking $booking, float $walletToman, ?int $preferredGatewayId, ?string $callbackUrl = null): array
     {
+        \App\Services\Salon\SalonPauseService::assertOpen((int) $booking->salon_id);
         $prepayment = (float) $booking->prepayment_amount;
 
         if ($prepayment <= 0) {

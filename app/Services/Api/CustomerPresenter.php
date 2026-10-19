@@ -45,6 +45,12 @@ class CustomerPresenter
             'public_url' => $salon->publicUrl(),
             // ⭐ بسته‌ی «و»: قالب سالن (کلید، چیدمان، پالت و رنگ‌های هگز تیره/روشن) — اپ‌ها هنگام باز شدن اعمال می‌کنند، بی build تازه
             'theme' => \App\Support\Themes\SalonAppearance::for($salon)->toApi(),
+            // بسته‌ی «ح»، ۸: رزرو موقتاً متوقف (null = باز). اپ بنر را با message نشان می‌دهد؛ خطای رزرو هم ۴۲۳ با نوع SalonPausedException است.
+            'booking_paused' => $salon->isBookingPaused() ? [
+                'message' => $salon->bookingPauseMessage(),
+                'reason' => $salon->pause_reason,
+                'until' => $salon->paused_until?->toIso8601String(),
+            ] : null,
         ];
     }
 

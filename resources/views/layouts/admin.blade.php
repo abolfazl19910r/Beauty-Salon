@@ -294,6 +294,7 @@
             </div>
         </header>
         @include('partials.platform-announcements', ['panel' => 'admins'])
+        @include('partials.booking-paused-banner', ['panel' => 'admins'])
 
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto p-4" style="background: var(--admin-bg);">

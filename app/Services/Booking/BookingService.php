@@ -203,6 +203,9 @@ class BookingService
             return $existing;
         }
 
+        // توقف موقت رزرو سالن (بسته‌ی «ح»، ۸)
+        \App\Services\Salon\SalonPauseService::assertOpen();
+
         // کد تخفیف نامعتبر یا شخصیِ مشتری دیگر رد می‌شود (۲۰۲۶-۱۰-۱۱) — قبلاً فقط پیش‌نمایش (check-discount) مالک کد را
         // چک می‌کرد و هر کس کد پاداش دیگری را می‌دانست، در فرم رزرو استفاده‌اش می‌کرد
         if ($discountCode !== null && trim($discountCode) !== '') {
@@ -300,6 +303,7 @@ class BookingService
     public function createManualBooking(array $data): Booking
     {
         $specialist = $this->specialistRepository->findOrFail($data['specialist_id']);
+        \App\Services\Salon\SalonPauseService::assertOpen((int) $specialist->salon_id);
         $this->beautyServiceRepository->findOrFail($data['service_id']);
 
         $bookingDate = date('Y-m-d', strtotime($data['booking_time']));

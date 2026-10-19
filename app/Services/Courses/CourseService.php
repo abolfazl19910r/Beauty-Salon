@@ -52,6 +52,7 @@ class CourseService
         if (! $package->is_active) {
             throw new CourseException('این دوره دیگر فروخته نمی‌شود.');
         }
+        \App\Services\Salon\SalonPauseService::assertOpen((int) $package->salon_id);
         if ((int) $customer->salon_id !== (int) $package->salon_id) {
             throw new CourseException('این دوره مال سالن دیگری است.');
         }
@@ -230,6 +231,7 @@ class CourseService
      */
     public function bookSession(CustomerCourse $course, int $specialistId, string $bookingTime, bool $byStaff = false, string $source = 'online'): Booking
     {
+        \App\Services\Salon\SalonPauseService::assertOpen((int) $course->salon_id);
         $time = Carbon::parse($bookingTime);
 
         $booking = DB::transaction(function () use ($course, $specialistId, $time, $byStaff, $source) {

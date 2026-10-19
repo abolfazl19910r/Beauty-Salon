@@ -47,6 +47,7 @@ class CoursePaymentService
 
     public function start(User $user, CustomerCourse $course, float $amount, float $walletToman, ?int $gatewayId, string $callbackUrl): array
     {
+        \App\Services\Salon\SalonPauseService::assertOpen((int) $course->salon_id);
         $amount = round(min($amount, $course->balanceDue()), 2);
         if ($error = $this->amountError($course, $amount)) {
             return ['state' => 'error', 'course' => $course, 'gateway' => null, 'message' => $error];

@@ -91,3 +91,7 @@ Route::get('/audit-log', [\App\Http\Controllers\SuperAdmin\AuditLogController::c
 Route::get('/search', [\App\Http\Controllers\SuperAdmin\PhoneSearchController::class, 'index'])->name('search.index');
 Route::get('/templates', [\App\Http\Controllers\SuperAdmin\TemplateAccessController::class, 'index'])->name('templates.index');
 Route::put('/templates', [\App\Http\Controllers\SuperAdmin\TemplateAccessController::class, 'update'])->name('templates.update');
+
+// بسته‌ی «ح»، ۸ (۲۰۲۶-۱۰-۲۰): توقف موقت رزرو سالن از طرف ماهرو (مدیر سالن نمی‌تواند بازش کند)
+Route::post('/salons/{salon}/pause', [\App\Http\Controllers\SuperAdmin\SuperAdminSalonPauseController::class, 'pause'])->name('salons.pause');
+Route::delete('/salons/{salon}/pause', [\App\Http\Controllers\SuperAdmin\SuperAdminSalonPauseController::class, 'resume'])->name('salons.resume');

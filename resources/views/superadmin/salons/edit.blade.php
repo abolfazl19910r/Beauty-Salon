@@ -152,6 +152,45 @@
             </details>
         </div>
 
+        {{-- بسته‌ی «ح»، ۸: توقف موقت رزرو (SuperAdminSalonPauseController) --}}
+        <div class="sa-card sa-card-pad text-sm space-y-3" data-salon-pause style="color: var(--sa-text);">
+            <div class="sa-card-head">
+                <div class="sa-card-title">توقف موقت رزرو</div>
+                <div class="sa-card-desc">فقط کار تازه بسته می‌شود (رزرو، جابه‌جایی، پرداخت، دوره)؛ نوبت‌های ثبت‌شده، یادآوری‌ها و زمان اشتراک ادامه دارند. توقف ماهرو را مدیر سالن نمی‌تواند باز کند.</div>
+            </div>
+            @if ($salon->isBookingPaused())
+                <p>
+                    <strong style="color: rgb(var(--m-warn));">متوقف</strong>
+                    از طرف {{ $salon->paused_by === \App\Models\Salon::PAUSED_BY_PLATFORM ? 'ماهرو' : 'مدیر سالن' }}
+                    — از {{ verta($salon->paused_at)->format('Y/m/d H:i') }}
+                    {{ $salon->paused_until ? '، باز شدن خودکار '.verta($salon->paused_until)->format('Y/m/d') : '، تا بازکردن دستی' }}
+                    @if (filled($salon->pause_reason)) <br>دلیل: «{{ $salon->pause_reason }}» @endif
+                </p>
+                <form method="POST" action="{{ route('superadmin.salons.resume', $salon) }}">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="sa-btn">بازکردن رزرو</button>
+                </form>
+            @else
+                <form method="POST" action="{{ route('superadmin.salons.pause', $salon) }}" class="grid gap-3 md:grid-cols-2">
+                    @csrf
+                    <div>
+                        <label class="sa-label" for="pause-days">مدت</label>
+                        <select id="pause-days" name="days" class="sa-input">
+                            @foreach (\App\Http\Controllers\Admin\SalonSettings\AdminSalonPauseController::DURATIONS as $days => $label)
+                                <option value="{{ $days }}">{{ $label === 'تا وقتی خودم باز کنم' ? 'تا بازکردن دستی' : $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="sa-label" for="pause-reason">دلیل برای مشتری (اختیاری)</label>
+                        <input id="pause-reason" name="reason" maxlength="200" class="sa-input">
+                    </div>
+                    <div class="md:col-span-2"><button type="submit" class="sa-btn">توقف رزرو</button></div>
+                </form>
+            @endif
+        </div>
+
         {{-- پیامک‌های این ماه: سقف سالن در برابر کدهای تأیید (خرج پلتفرم) — برای دیدن مصرف غیرعادی --}}
         <div class="sa-card sa-card-pad text-sm" style="color: var(--sa-text);">
             <div class="sa-card-head">

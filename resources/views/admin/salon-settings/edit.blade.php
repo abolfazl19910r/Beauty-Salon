@@ -34,6 +34,8 @@
             </div>
         @endif
 
+        @include('admin.salon-settings._pause')
+
         <form method="POST" action="{{ route('admin.salon-settings.update') }}" enctype="multipart/form-data"
               class="rounded-xl p-6 space-y-6" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
             @csrf

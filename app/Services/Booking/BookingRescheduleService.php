@@ -29,6 +29,8 @@ class BookingRescheduleService
      */
     public function reschedule(Booking $booking, string $bookingTime): Booking
     {
+        \App\Services\Salon\SalonPauseService::assertOpen((int) $booking->salon_id);
+
         $date = date('Y-m-d', strtotime($bookingTime));
         $time = date('H:i', strtotime($bookingTime));
 

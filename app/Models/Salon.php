@@ -58,6 +58,8 @@ class Salon extends Model
         'subscription_ends_at' => 'datetime',
         'trial_ends_at' => 'datetime',
         'welcome_sms_pending_at' => 'datetime',
+        'paused_at' => 'datetime',
+        'paused_until' => 'datetime',
         'next_plan_starts_at' => 'datetime',
         'is_suspended' => 'boolean',
     ];
@@ -183,6 +185,39 @@ class Salon extends Model
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
+    }
+
+    public const PAUSED_BY_OWNER = 'owner';
+
+    public const PAUSED_BY_PLATFORM = 'platform';
+
+    /**
+     * بسته‌ی «ح»، ۸: رزرو تازه موقتاً بسته است؟ با گذشتن paused_until خودبه‌خود باز حساب می‌شود (بی‌نیاز از کار زمان‌بندی‌شده).
+     * نوبت‌های ثبت‌شده، یادآوری‌ها و اشتراک تأثیری نمی‌گیرند. App\Services\Salon\SalonPauseService
+     */
+    public function isBookingPaused(): bool
+    {
+        return $this->paused_at !== null && ($this->paused_until === null || $this->paused_until->isFuture());
+    }
+
+    public function isPausedByPlatform(): bool
+    {
+        return $this->isBookingPaused() && $this->paused_by === self::PAUSED_BY_PLATFORM;
+    }
+
+    /** پیام یکسان برای مشتری (بنر سایت/اپ و خطای رزرو) */
+    public function bookingPauseMessage(): string
+    {
+        $text = 'رزرو نوبت تازه در این سالن موقتاً متوقف است';
+        if ($this->paused_until) {
+            $text .= ' تا '.to_persian_num(verta($this->paused_until)->format('j F'));
+        }
+        $text .= '.';
+        if (filled($this->pause_reason)) {
+            $text .= ' '.$this->pause_reason;
+        }
+
+        return $text;
     }
 
     /**
