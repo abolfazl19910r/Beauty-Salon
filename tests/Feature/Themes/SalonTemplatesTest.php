@@ -171,6 +171,11 @@ class SalonTemplatesTest extends TestCase
             $this->choose($key);
             $this->get(route('home'))->assertOk()->assertDontSee('سالن زیبایی سالن زیبایی');
         }
+
+        // «خدمات سالن …» و «وبلاگ سالن …» هم «سالن سالن زیبایی راستا» می‌شدند
+        $this->get(route('blog.index'))->assertOk()->assertDontSee('سالن سالن')->assertSee('وبلاگ سالن زیبایی راستا');
+        $customer = User::factory()->create(['salon_id' => $this->salon->id, 'user_type' => 'customer']);
+        $this->actingAs($customer)->get(route('services.index'))->assertOk()->assertDontSee('سالن سالن')->assertSee('خدمات سالن زیبایی راستا');
     }
 
     public function test_layout_homes_show_real_salon_data_not_invented_numbers(): void

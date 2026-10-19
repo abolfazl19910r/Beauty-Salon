@@ -40,11 +40,11 @@
 
     {{-- Page header --}}
     <div class="mb-10 fade-in">
-        <p class="text-xs font-semibold text-m-gold tracking-[0.3em] uppercase mb-2">وبلاگ سالن {{ $currentSalonName }}</p>
+        <p class="text-xs font-semibold text-m-gold tracking-[0.3em] uppercase mb-2">وبلاگ {{ $currentSalonTitle }}</p>
         <h1 class="text-3xl md:text-4xl font-bold text-m-gold2" style="font-family:'Mahru','Vazirmatn',sans-serif;font-weight:800;">
             مقالات و نکات زیبایی
         </h1>
-        <p class="text-m-tx/60 mt-2">آخرین مطالب، آموزش‌ها و اخبار سالن {{ $currentSalonName }}</p>
+        <p class="text-m-tx/60 mt-2">آخرین مطالب، آموزش‌ها و اخبار {{ $currentSalonTitle }}</p>
     </div>
 
     {{-- Category filter --}}
