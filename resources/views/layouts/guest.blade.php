@@ -47,7 +47,7 @@
     </div>
 
     <div class="mt-8 text-center text-m-tx/40 text-sm fade-in">
-        <p>© {{ date('Y') }} سالن زیبایی {{ $currentSalonName }}. تمامی حقوق محفوظ است.</p>
+        <p>© {{ date('Y') }} {{ $currentSalonTitle }}. تمامی حقوق محفوظ است.</p>
     </div>
 </div>
 @include('partials.password-reveal')

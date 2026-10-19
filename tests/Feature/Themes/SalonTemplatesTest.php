@@ -162,6 +162,17 @@ class SalonTemplatesTest extends TestCase
         }
     }
 
+    public function test_salon_name_that_already_says_salon_is_not_prefixed_twice(): void
+    {
+        // بسته‌ی «ح»، ۱۰: «درباره ما» و پانویس «سالن زیبایی سالن زیبایی راستا» نشان می‌دادند (نام سالن آزمون خودش «سالن زیبایی راستا» است)
+        $this->get(route('home'))->assertOk()->assertSee('سالن زیبایی راستا')->assertDontSee('سالن زیبایی سالن زیبایی');
+
+        foreach (ThemeCatalog::siteKeys() as $key) {
+            $this->choose($key);
+            $this->get(route('home'))->assertOk()->assertDontSee('سالن زیبایی سالن زیبایی');
+        }
+    }
+
     public function test_layout_homes_show_real_salon_data_not_invented_numbers(): void
     {
         $this->choose('vitrin:rose');

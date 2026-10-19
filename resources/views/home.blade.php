@@ -253,7 +253,7 @@
                     </ul>
                 </div>
                 <div class="fade-up fade-up-delay-2 order-1 lg:order-2">
-                    <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=1200&auto=format&fit=crop" alt="فضای سالن زیبایی {{ $currentSalonName }}" loading="lazy" class="rounded-3xl w-full h-[420px] object-cover shadow-2xl">
+                    <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=1200&auto=format&fit=crop" alt="فضای {{ $currentSalonTitle }}" loading="lazy" class="rounded-3xl w-full h-[420px] object-cover shadow-2xl">
                 </div>
             </div>
         </section>

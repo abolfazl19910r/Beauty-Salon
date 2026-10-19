@@ -35,6 +35,12 @@ class ViewComposer
             $view->with('currentSalonName', $currentSalonName);
         }
 
+        // «سالن زیبایی راستا» برای نام «راستا»، ولی نام «سالن زیبایی باران» بی‌تکرار (بسته‌ی «ح»، ۱۰)
+        $currentSalonTitle = \App\Support\SalonTitle::for((string) $currentSalonName);
+        if (! isset($view->currentSalonTitle)) {
+            $view->with('currentSalonTitle', $currentSalonTitle);
+        }
+
         // ⭐ پیگیری «محور ۳» (۲۰۲۶-۰۹-۲۰): همون کشفی که $currentSalonName رو ساخت، صراحتاً
         // مستند کرد که متن‌های بازاریابی اطراف نام (tagline/bio) هنوز واقعاً generic و مشترک
         // بین همه‌ی سالن‌ها می‌مونن — چون Salon اون‌موقع ستونی براشون نداشت (migration
@@ -53,7 +59,7 @@ class ViewComposer
             $view->with(
                 'currentSalonBio',
                 $this->currentSalon->get()?->bio
-                    ?: "سالن زیبایی {$currentSalonName} فضایی آرام و لوکس را برای مراقبت کامل از مو، پوست و زیبایی شما فراهم کرده است. تیم ما متشکل از متخصصین باتجربه و دارای گواهینامه‌های بین‌المللی است."
+                    ?: "{$currentSalonTitle} فضایی آرام و لوکس را برای مراقبت کامل از مو، پوست و زیبایی شما فراهم کرده است. تیم ما متشکل از متخصصین باتجربه و دارای گواهینامه‌های بین‌المللی است."
             );
         }
 

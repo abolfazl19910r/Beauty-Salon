@@ -371,7 +371,7 @@
         </div>
 
         <div class="border-t border-m-gold/10 mt-8 pt-6 text-center text-m-tx/40 text-sm">
-            <p>© {{ date('Y') }} سالن زیبایی {{ $currentSalonName }}. تمامی حقوق محفوظ است.</p>
+            <p>© {{ date('Y') }} {{ $currentSalonTitle }}. تمامی حقوق محفوظ است.</p>
         </div>
     </div>
 </footer>
