@@ -74,6 +74,31 @@ class PushMiscTest extends TestCase
         $this->artisan('push:test', ['phone' => '09121110000'])->assertFailed()->expectsOutputToContain('پیدا نشد');
     }
 
+    public function test_push_test_command_can_switch_style_once_and_wait_for_the_receipt(): void
+    {
+        // عیب‌یابی اعلان سینی A17 (۲۰۲۶-۱۰-۱۹): مقایسه‌ی دو سبک FCM بی‌تغییر .env، و دیدن اینکه رسید گوشی آمد یا نه
+        \Illuminate\Support\Sleep::fake();
+        $this->fakeFcm();
+        $this->deviceFor($this->customer, attributes: ['manufacturer' => 'samsung', 'model' => 'SM-A175F']);
+
+        $this->artisan('push:test', ['phone' => '09121110000', '--style' => 'notification', '--wait' => 3])
+            ->assertSuccessful()->expectsOutputToContain('سبک پیام FCM: notification')->expectsOutputToContain('رسیدی نیامد');
+
+        $this->assertArrayHasKey('notification', $this->fcmSends()[0]['message']);
+        $this->assertSame('data', config('push.fcm.style'), 'سبک فقط برای همان ارسال عوض می‌شود');
+        \Illuminate\Support\Sleep::assertSleptTimes(3);
+
+        // اپ رسید را در میانه‌ی انتظار می‌فرستد
+        \Illuminate\Support\Sleep::fake();
+        \Illuminate\Support\Sleep::whenFakingSleep(fn () => PushDelivery::query()->whereNull('acked_at')->update(['acked_at' => now()]));
+        $this->artisan('push:test', ['phone' => '09121110000', '--style' => 'data', '--wait' => 30])
+            ->assertSuccessful()->expectsOutputToContain('رسید آمد');
+        $this->assertArrayNotHasKey('notification', $this->fcmSends()[1]['message']);
+        \Illuminate\Support\Sleep::assertSleptTimes(1);
+
+        $this->artisan('push:test', ['phone' => '09121110000', '--style' => 'silent'])->assertFailed()->expectsOutputToContain('data یا notification');
+    }
+
     public function test_notification_style_lets_android_build_the_notification(): void
     {
         config(['push.fcm.style' => 'notification']);
