@@ -43,6 +43,10 @@ Route::middleware(['auth', 'verified', 'salon.specialist'])->name('specialist.')
         Route::put('/schedule', [SpecialistProfileController::class, 'updateSchedule'])->name('schedule.update');
 
         Route::get('/loyalty', [SpecialistProfileController::class, 'loyalty'])->name('loyalty');
+
+        // «QR من» (بسته‌ی ۵): QR صفحه‌ی عمومی خود متخصص، PNG اینستاگرام و PDF کارت ویزیت
+        Route::get('/qr', [\App\Http\Controllers\Specialist\Qr\SpecialistQrController::class, 'index'])->name('qr');
+        Route::get('/qr/pdf', [\App\Http\Controllers\Specialist\Qr\SpecialistQrController::class, 'pdf'])->middleware('throttle:30,1')->name('qr.pdf');
     });
 
     Route::get('/specialist/leaves', [SpecialistLeaveController::class, 'index'])
