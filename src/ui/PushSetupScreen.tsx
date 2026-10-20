@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { AppState, Linking } from 'react-native';
 
 import { errorMessage } from '@/lib/api';
+import { faDigits } from '@/lib/format';
 import { jalaliLabel } from '@/lib/jalali';
 import { backgroundOutcomeLabel, deviceGuide } from '@/lib/push';
 import { lastBackgroundRun, type BackgroundRun } from '@/lib/pushReceipts';
@@ -82,11 +83,10 @@ export function PushSetupScreen() {
         </Row>
         <KeyValue label="اجازه‌ی اعلان" value={permission === 'granted' ? 'داده شده' : permission === 'denied' ? 'داده نشده' : '—'} />
         <KeyValue label="ثبت در سرور" value={status?.registered ? 'ثبت شده' : status?.disabled_reason ? 'غیرفعال (اپ را دوباره ثبت کنید)' : 'ثبت نشده'} />
-        <KeyValue label="آخرین اعلان تحویل‌شده" value={status?.last_receipt_at ? jalaliLabel(new Date(status.last_receipt_at)) : '—'} />
-        <KeyValue
-          label="آخرین اجرای پس‌زمینه"
-          value={backgroundRun ? `${jalaliLabel(new Date(backgroundRun.at))} — ${backgroundOutcomeLabel(backgroundRun.outcome)}` : 'هنوز نه'}
-        />
+        <KeyValue label="آخرین اعلان تحویل‌شده" value={status?.last_receipt_at ? when(status.last_receipt_at) : '—'} />
+        {/* مقدار بلند است؛ زیر عنوان تا روی گوشی‌های با قلم بزرگ (One UI) بریده نشود */}
+        <T muted size={14}>آخرین اجرای پس‌زمینه</T>
+        <T size={14} weight="medium">{backgroundRun ? `${when(backgroundRun.at)} — ${backgroundOutcomeLabel(backgroundRun.outcome)}` : 'هنوز نه'}</T>
         {status && !status.server_enabled ? <T muted size={13}>ارسال اعلان روی سرور فعلاً خاموش است؛ پیام‌ها پیامک می‌شوند.</T> : null}
       </Card>
 
@@ -105,4 +105,11 @@ export function PushSetupScreen() {
       </Card>
     </Screen>
   );
+}
+
+/** تاریخ و ساعت (آزمون‌های پوش در یک روز پشت هم انجام می‌شوند؛ تاریخ تنها کافی نیست) */
+function when(iso: string): string {
+  const d = new Date(iso);
+  const hm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return `${jalaliLabel(d)}، ساعت ${faDigits(hm)}`;
 }
