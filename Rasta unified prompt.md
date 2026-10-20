@@ -3,7 +3,7 @@
 > این فایل، ادغام کامل دو پرامپت قبلی (`Rasta_main_prompt_final.MD` و `Refactor_prompt_v4.MD`) در یک سند واحد است. از این پس فقط همین یک فایل نیاز است؛ دو فایل قبلی منسوخ شدن.
 
 > ⭐ **آخرین وضعیت و برنامه‌ی نشست بعد (۲۰۲۶-۱۰-۲۰):** بخش «۲۰۲۶-۱۰-۲۰ (ادامه ۲) — بسته‌ی ۵ (لینک و QR، اپ بدون مارکت) و بسته‌ی ۶ (PWA آیفون)»
-> (پچ‌ها تا 0151، app-0015، اپ 0.3.0) — از «قدم بعد» همان‌جا شروع کن (بسته‌ی ز همچنان منتظر کاوه‌نگار).
+> (پچ‌ها تا 0153، app-0015، اپ 0.3.0) — از «قدم بعد» همان‌جا شروع کن (بسته‌ی ز همچنان منتظر کاوه‌نگار).
 > ⭐ اپ‌ها در هیچ مارکتی منتشر نمی‌شوند: APK در پنل ابرمدیر «نسخه‌های اپ» آپلود و از `https://mahru.ir/app` دانلود می‌شود (تصمیم ۲۰۲۶-۱۰-۲۰).
 > برنامه‌ی کلی بسته‌ها همچنان بخش «۲۰۲۶-۱۰-۱۴ (ادامه ۸)» است.
 
@@ -6213,6 +6213,14 @@ migrationهای تازه روی MariaDB و MySQL 8 بالا/پایین/بالا 
 +۱ در `SubdomainRoutingTest`؛ `OpenInAppBannerTest`، `SalonPublicLinkTest`، `SalonEmblemAndFaviconTest`، `BookingControllerTest` به‌روز.
 ظاهر (Chromium): صفحه‌ی QR مدیر، PNG استوری و پست (با و بی‌لوگو)، PDF پوستر و کارت‌ها (pdftoppm)، صفحه‌ی «اپ» سالن اندروید/آیفون، بنر آیفون.
 
+**`0152` (گزارش ابوالفضل بعد از اعمال، ۲۰۲۶-۱۰-۲۰):** `php artisan migrate` روی XAMPP در `create_trusted_devices_table` با
+`1067 Invalid default value for 'expires_at'` شکست. ریشه: MySQL/MariaDB با `explicit_defaults_for_timestamp=OFF` و `NO_ZERO_DATE` (پیش‌فرض XAMPP؛
+MariaDB/MySQL تازه‌ی sandbox برعکس، برای همین تست‌ها نگرفتند) به ستون timestamp غیرخالی بی‌پیش‌فرضی که بعد از ستون timestamp دیگری است
+پیش‌فرض صفر می‌دهد و رد می‌کند. ستون nullable شد (کد همیشه پرش می‌کند). ⚠️ **درس:** هر migration تازه را با همین حالت هم امتحان کن —
+`SET GLOBAL explicit_defaults_for_timestamp=0; SET GLOBAL sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';`
+روی MariaDB و MySQL 8 sandbox؛ با این حالت کل سوییت MariaDB **۲۱۷۶** سبز. روی XAMPP: چون جدول ساخته نشده بود، بعد از `0152` فقط دوباره
+`php artisan migrate`.
+
 **⭐ روی سرور (یک بار):**
 1. `.env`: `CUSTOMER_APP_SHA256_FINGERPRINTS=` اثرانگشت SHA-256 کلید امضای اپ مشتری (expo.dev ← پروژه‌ی `mahru` ← Credentials ← Android ← `ir.mahru` ←
    «SHA-256 Fingerprint»؛ یا `eas credentials -p android` با `APP_VARIANT=customer`؛ یا `keytool -printcert -jarfile mahru.apk`). عمومی است، نه راز.
@@ -6245,7 +6253,7 @@ migrationهای تازه روی MariaDB و MySQL 8 بالا/پایین/بالا 
   خاطر بسپار»، بستن و باز کردن روز بعد (وارد مانده)، خروج و ورود دوباره (بی‌کد پیامکی)، رزرو و **پرداخت با درگاه و برگشت** داخل اپ نصب‌شده، حالت هواپیما ←
   صفحه‌ی «اتصال برقرار نیست» (service worker فقط روی HTTPS؛ روی `http` محلی نصب و تمام‌صفحه دیده می‌شود، آفلاین نه). همین برای پنل متخصص (`/login`).
 
-**قدم بعد:** اعمال `0143`–`0151` + `app-0014`، `app-0015`، build تازه‌ی **هر دو اپ** (0.3.0) و چک‌لیست بالا؛ فرستادن اثرانگشت SHA-256 (برای `.env` سرور) ←
+**قدم بعد:** اعمال `0143`–`0153` + `app-0014`، `app-0015`، build تازه‌ی **هر دو اپ** (0.3.0) و چک‌لیست بالا؛ فرستادن اثرانگشت SHA-256 (برای `.env` سرور) ←
 انتخاب از کارهای باز: بردن پوش از «آزمایشی» به «واقعی»، ntfy، جمع کردن ربات (بسته‌ی ۸)، صفحه‌ی سوپرادمین دستگاه‌ها (بسته‌ی ۷)، کارهای سرور.
 
 ### ۲۰۲۶-۱۰-۲۰ (ادامه) — ⭐ بسته‌ی «ح»، ۱۲: «سالن‌های من» (`0141`) — بسته‌ی «ح» کامل شد
