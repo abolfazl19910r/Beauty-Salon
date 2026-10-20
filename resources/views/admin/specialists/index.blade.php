@@ -116,6 +116,13 @@
                                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
                                         </svg>
                                     </a>
+                                    <a href="{{ route('admin.salon-qr.index', ['specialist' => $specialist->id]) }}" title="QR متخصص" data-specialist-qr-link
+                                       class="w-7 h-7 rounded flex items-center justify-center transition-colors"
+                                       style="color:var(--admin-accent);"
+                                       onmouseover="this.style.background='var(--admin-accent-light)'"
+                                       onmouseout="this.style.background=''">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">{!! \App\Support\Admin\AdminMenu::ICONS['qr'] !!}</svg>
+                                    </a>
                                     @permission('edit-specialists')
                                     <a href="{{ route('admin.specialists.edit', $specialist) }}" title="ویرایش"
                                        class="w-7 h-7 rounded flex items-center justify-center transition-colors"

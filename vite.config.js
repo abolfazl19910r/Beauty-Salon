@@ -10,6 +10,8 @@ export default defineConfig({
                 'resources/js/app.jsx',
                 'resources/js/admin.jsx',
                 'resources/js/salon-qr.js',
+                // بسته‌ی ۵: تصویر QR برای اینستاگرام (صفحه‌ی «QR و پوستر سالن» مدیر و «QR من» متخصص)
+                'resources/js/salon-qr-poster.js',
                 // کتابخانه‌هایی که قبلاً از CDN می‌آمدند (۲۰۲۶-۱۰-۱۵)؛ هر کدام فقط در صفحه‌ی خودش
                 'resources/js/vendor/sweetalert.js',
                 'resources/js/vendor/apexcharts.js',

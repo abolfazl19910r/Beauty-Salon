@@ -26,6 +26,7 @@ final class AdminMenu
         $groups = [
             ['داشبورد', [
                 self::item('dashboard', 'داشبورد', 'admin.dashboard', 'admin.dashboard', 'grid'),
+                self::item('salon-qr', 'QR و پوستر سالن', 'admin.salon-qr.index', 'admin.salon-qr.*', 'qr'),
                 $can('view-reports') ? self::item('reports', 'گزارشات', 'admin.reports.index', 'admin.reports*', 'pie') : null,
             ]],
             ['مدیریت', [
@@ -100,6 +101,7 @@ final class AdminMenu
 
     /** محتوای داخلی SVG (viewBox 0 0 24 24، خطی) — همان آیکون‌های منوی قبلی */
     public const ICONS = [
+        'qr' => '<rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 17h3v3"></path>',
         'grid' => '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>',
         'pie' => '<path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path>',
         'help' => '<circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line>',

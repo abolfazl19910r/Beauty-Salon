@@ -48,7 +48,8 @@ class SalonPublicLinkTest extends TestCase
 
         $this->actingAs($this->salonAdmin())->get(route('admin.dashboard'))
             ->assertOk()
-            ->assertSee('data-salon-qr="'.url('/s/'.$salon->slug).'"', false)
+            ->assertSee('data-salon-qr="'.url('/s/'.$salon->slug).'?src=qr"', false)
+            ->assertSee('data-salon-qr-page-link', false)
             ->assertSee('کد سالن در اپ ماهرو')
             ->assertSee('salon-qr', false);
     }

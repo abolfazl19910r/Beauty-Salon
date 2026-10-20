@@ -18,7 +18,8 @@ Route::prefix('specialists')->name('specialists.')->group(function () {
     Route::get('/search', [SpecialistController::class, 'search'])->name('search');
     Route::get('/service/{service}', [SpecialistController::class, 'byService'])->name('by-service-web');
     Route::get('/top-rated', [SpecialistController::class, 'topRated'])->name('top-rated');
-    Route::get('/{specialist}', [SpecialistController::class, 'show'])->name('show');
+    // ?src=qr (QR چاپی متخصص، بسته‌ی ۵) یک بازدید QR ثبت می‌کند
+    Route::get('/{specialist}', [SpecialistController::class, 'show'])->middleware('qr.scan')->name('show');
 });
 
 // ⭐ Fix (2026-09-20 cleanup): specialists.availability/available-slots used to be duplicated

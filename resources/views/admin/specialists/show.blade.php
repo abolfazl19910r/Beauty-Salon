@@ -34,6 +34,12 @@
                     ویرایش
                 </a>
                 @endpermission
+                <a href="{{ route('admin.salon-qr.index', ['specialist' => $specialist->id]) }}" data-specialist-qr-link
+                   class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium"
+                   style="border:1px solid var(--admin-border); color:var(--admin-text);">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">{!! \App\Support\Admin\AdminMenu::ICONS['qr'] !!}</svg>
+                    QR متخصص
+                </a>
                 <a href="{{ route('admin.schedule.index', $specialist) }}"
                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium"
                    style="background:rgb(var(--m-ok) / .1); color:rgb(var(--m-ok));"

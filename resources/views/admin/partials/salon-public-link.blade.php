@@ -51,7 +51,7 @@
             {{-- QR و کد سالن برای اپ «ماهرو» (بسته‌ی ۳، ۲۰۲۶-۱۰-۱۱): مشتری با لینک، QR یا همین کد سالن را در اپ پیدا می‌کند --}}
             <div class="flex flex-col sm:flex-row gap-4 items-center pt-2" data-salon-qr-card>
                 <div class="w-40 h-40 rounded-lg p-1 shrink-0" style="background:#fff; border:1px solid var(--admin-border);"
-                     data-salon-qr="{{ $primaryUrl }}" data-salon-qr-name="{{ $salon->slug }}" data-salon-qr-title="{{ $salon->name }}"
+                     data-salon-qr="{{ $primaryUrl }}?src=qr" data-salon-qr-name="{{ $salon->slug }}"
                      role="img" aria-label="QR آدرس سالن"></div>
                 <div class="space-y-2 text-center sm:text-right">
                     <p style="color:var(--admin-text-dim);">
@@ -61,9 +61,9 @@
                     <p style="color:var(--admin-text);">
                         کد سالن در اپ ماهرو: <span dir="ltr" class="font-mono font-bold">{{ $salon->slug }}</span>
                     </p>
+                    {{-- بسته‌ی ۵: دانلود و چاپ به صفحه‌ی «QR و پوستر سالن» رفت (PNG اینستاگرام، PDF چاپی، QR متخصص‌ها) --}}
                     <div class="flex gap-2 justify-center sm:justify-start">
-                        <button type="button" data-salon-qr-download class="px-3 py-1.5 rounded-lg text-xs font-bold text-m-onsolid" style="background:var(--admin-accent);">دانلود QR</button>
-                        <button type="button" data-salon-qr-print class="px-3 py-1.5 rounded-lg text-xs font-bold" style="border:1px solid var(--admin-border); color:var(--admin-text);">چاپ</button>
+                        <a href="{{ route('admin.salon-qr.index') }}" data-salon-qr-page-link class="px-3 py-1.5 rounded-lg text-xs font-bold text-m-onsolid" style="background:var(--admin-accent);">QR، پوستر و نسخه‌ی چاپی</a>
                     </div>
                 </div>
             </div>

@@ -5,7 +5,8 @@ use App\Http\Controllers\User\HomeController;
 use App\Http\Controllers\User\ServiceController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [HomeController::class, 'index'])->name('home');
+// ?src=qr (QR چاپی سالن، بسته‌ی ۵) یک بازدید QR ثبت می‌کند
+Route::get('/', [HomeController::class, 'index'])->middleware('qr.scan')->name('home');
 
 Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
 Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');

@@ -77,6 +77,7 @@ return Application::configure(basePath: dirname(__DIR__))
             // امکان پلن (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴): feature:winback و …
             'feature' => \App\Http\Middleware\EnsureSalonFeature::class,
             'salon.resolve' => \App\Http\Middleware\ResolveSalonFromRoute::class,
+            'qr.scan' => \App\Http\Middleware\RecordQrScan::class,
             'salon.customer' => \App\Http\Middleware\EnsureCustomerBelongsToSalon::class,
             'salon.specialist' => \App\Http\Middleware\EnsureSpecialistSalonActive::class,
             // ⭐ فاز ۲ SaaS، محور «۲. چند ادمین برای یک سالن».

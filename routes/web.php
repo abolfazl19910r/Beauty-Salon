@@ -163,6 +163,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_a
     Route::get('/', [\App\Http\Controllers\Admin\Dashboard\AdminDashboardController::class, 'dashboard'])->name('home');
 
     require __DIR__.'/admin/dashboard.php';
+    require __DIR__.'/admin/salon-qr.php';
     require __DIR__.'/admin/profile.php';
 
     require __DIR__.'/admin/services.php';
