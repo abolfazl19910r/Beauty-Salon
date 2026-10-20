@@ -95,3 +95,9 @@ Route::put('/templates', [\App\Http\Controllers\SuperAdmin\TemplateAccessControl
 // بسته‌ی «ح»، ۸ (۲۰۲۶-۱۰-۲۰): توقف موقت رزرو سالن از طرف ماهرو (مدیر سالن نمی‌تواند بازش کند)
 Route::post('/salons/{salon}/pause', [\App\Http\Controllers\SuperAdmin\SuperAdminSalonPauseController::class, 'pause'])->name('salons.pause');
 Route::delete('/salons/{salon}/pause', [\App\Http\Controllers\SuperAdmin\SuperAdminSalonPauseController::class, 'resume'])->name('salons.resume');
+
+// بسته‌ی ۵ (۲۰۲۶-۱۰-۲۰): نسخه‌های APK اپ مشتری و همکار برای صفحه‌ی «دانلود اپ ماهرو» (بدون مارکت)
+Route::get('/app-releases', [\App\Http\Controllers\SuperAdmin\AppReleaseController::class, 'index'])->name('app-releases.index');
+Route::post('/app-releases', [\App\Http\Controllers\SuperAdmin\AppReleaseController::class, 'store'])->name('app-releases.store');
+Route::patch('/app-releases/{release}', [\App\Http\Controllers\SuperAdmin\AppReleaseController::class, 'update'])->whereNumber('release')->name('app-releases.update');
+Route::delete('/app-releases/{release}', [\App\Http\Controllers\SuperAdmin\AppReleaseController::class, 'destroy'])->whereNumber('release')->name('app-releases.destroy');

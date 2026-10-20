@@ -181,6 +181,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // درخواست expectsJson پاسخ قالب قدیمی می‌دهند و اولین پاسخ غیر null برنده است. برای مسیرهای دیگر null.
         $exceptions->render(fn (\Throwable $e, Request $request) => \App\Exceptions\Api\ApiExceptionRenderer::render($e, $request));
 
+        // بسته‌ی ۵: APK بزرگ‌تر از post_max_size خود PHP پیش از هر middleware رد می‌شود (۴۱۳ خام)؛ ابرمدیر به صفحه‌ی «نسخه‌های اپ» با پیام
+        // برمی‌گردد (نشست هنوز شروع نشده، پس پیام با پارامتر آدرس).
+        $exceptions->render(function (\Illuminate\Http\Exceptions\PostTooLargeException $e, Request $request) {
+            return $request->is('superadmin/app-releases') ? redirect('/superadmin/app-releases?too_large=1') : null;
+        });
+
         // خطای قابل‌انتظار /api/v1 (رمز نادرست، ۴۰۴، ۴۲۲…) خطای برنامه نیست؛ laravel.log را پر نکند (گزارش ۲۰۲۶-۱۰-۱۸:
         // «اطلاعات وارد شده صحیح نمی‌باشد» با stacktrace کامل). فقط ۵xx (مثل درگاه در دسترس نیست) گزارش می‌شود.
         $exceptions->report(function (\App\Exceptions\Api\ApiException $e) {

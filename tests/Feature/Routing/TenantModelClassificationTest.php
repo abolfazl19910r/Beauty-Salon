@@ -69,6 +69,7 @@ class TenantModelClassificationTest extends TestCase
         'PushDevice' => 'گیرنده‌ی پوش یک توکن اپ؛ همیشه با user_id/توکن جاری خوانده می‌شود (بسته‌ی ۴)',
         'PushMessage' => 'پیام اپ به یک کاربر؛ با user_id یا شناسه‌ی پیام از رسید همان کاربر (بسته‌ی ۴)',
         'PushDelivery' => 'از رابطه‌ی پیام و دستگاه',
+        'AppRelease' => 'نسخه‌ی APK اپ‌ها، سطح پلتفرم (ابرمدیر؛ بسته‌ی ۵)',
     ];
 
     private function models(): array

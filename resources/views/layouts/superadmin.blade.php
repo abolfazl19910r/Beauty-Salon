@@ -157,6 +157,7 @@
                             ['superadmin.payments.index', 'superadmin.payments.*', 'کیف پول و درآمد اشتراک', 0],
                             ['superadmin.sms.index', 'superadmin.sms.*', 'پیامک سالن‌ها', 0],
                             ['superadmin.push.index', 'superadmin.push.*', 'اعلان اپ (پوش)', 0],
+                            ['superadmin.app-releases.index', 'superadmin.app-releases.*', 'نسخه‌های اپ', 0],
                             ['superadmin.payment-attention.index', 'superadmin.payment-attention.*', 'پرداخت‌های نیازمند بررسی', -$saAttention],
                         ],
                         'ارتباط' => [

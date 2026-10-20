@@ -28,6 +28,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('status', StatusController::class)->middleware('throttle:api-v1')->name('status');
 
+// بسته‌ی ۵: اپ‌ها بدون مارکت — اپ با این مسیر از نسخه‌ی تازه (و اجباری) باخبر می‌شود. بدون ورود.
+Route::get('app/latest', \App\Http\Controllers\Api\V1\AppVersionController::class)->middleware('throttle:api-v1')->name('app.latest');
+
 // ورود دومرحله‌ای (رمز ← کد پیامکی ← توکن Sanctum)
 Route::middleware('throttle:api-v1-login')->group(function () {
     Route::prefix('staff/login')->name('staff.login')->controller(StaffLoginController::class)->group(function () {

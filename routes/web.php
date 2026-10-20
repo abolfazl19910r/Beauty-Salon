@@ -122,6 +122,18 @@ Route::controller(\App\Http\Controllers\Central\MySalonsController::class)->pref
     Route::post('/forget', 'forget')->name('forget');
 });
 
+// بسته‌ی ۵ (۲۰۲۶-۱۰-۲۰): Android App Links — اپ مشتری لینک https سالن را مستقیم باز می‌کند. بدون Route::domain تا روی دامنه‌ی اصلی
+// (که اندروید برای میزبان wildcard می‌خواند) و هر ساب‌دامینی جواب بدهد.
+Route::get('/.well-known/assetlinks.json', \App\Http\Controllers\Central\AssetLinksController::class)->name('assetlinks');
+
+// بسته‌ی ۵: «دانلود اپ ماهرو» — اپ‌ها در مارکت نیستند؛ ابرمدیر APK را آپلود می‌کند. روی ساب‌دامین سالن، /app صفحه‌ی خود سالن است
+// (گروه بالا زودتر ثبت شده)؛ لینک به این صفحه همیشه با App\Support\CentralUrl ساخته می‌شود.
+Route::get('/app', [\App\Http\Controllers\Central\AppDownloadController::class, 'show'])->name('app-download.show');
+Route::get('/app/download/{variant}', [\App\Http\Controllers\Central\AppDownloadController::class, 'download'])
+    ->whereIn('variant', ['customer', 'staff'])
+    ->middleware('throttle:30,1')
+    ->name('app-download.file');
+
 // لینک کوتاه پیامک‌ها (۲۰۲۶-۰۹-۳۰، ShortLinkService): بدون Route::domain، روی دامنه‌ی مرکزی و هر هاست دیگری کار می‌کند.
 Route::get('/b/{code}', \App\Http\Controllers\ShortLinkController::class)
     ->where('code', '[a-z0-9]{4,16}')
