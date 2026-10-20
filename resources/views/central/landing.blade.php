@@ -597,6 +597,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
 <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
 </button>
+<a class="btn btn-line btn-s nav-login" href="{{ route('my-salons.show') }}">سالن‌های من</a>
 <a class="btn btn-line btn-s nav-login" href="{{ route('login') }}">ورود</a>
 <a class="btn btn-gold btn-s" href="#start">درخواست دمو</a>
 <button class="icon-btn burger" id="burger" type="button" aria-label="باز کردن منو" aria-expanded="false" aria-controls="mnav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
@@ -608,6 +609,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 <a class="m" href="#why">چرا ماهرو</a><a class="m" href="#features">امکانات</a><a class="m" href="#product">پنل مدیریت</a><a class="m" href="#how">نحوه کار</a><a class="m" href="#plans">تعرفه‌ها</a><a class="m" href="#faq">سؤالات</a>
 <a class="btn btn-gold btn-block" href="#start">درخواست دمو رایگان</a>
 <a class="btn btn-line btn-block" href="{{ route('salon-signup.create') }}">ساخت سالن</a>
+<a class="btn btn-line btn-block" href="{{ route('my-salons.show') }}">سالن‌های من (مشتری)</a>
 <a class="btn btn-line btn-block" href="{{ route('login') }}">ورود به پنل</a>
 </div>
 <div class="scrim" id="scrim"></div>

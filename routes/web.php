@@ -111,6 +111,17 @@ Route::post('/demo-request', [\App\Http\Controllers\Central\DemoRequestControlle
     ->middleware('throttle:5,60')
     ->name('demo-requests.store');
 
+// «سالن‌های من» (بسته‌ی «ح»، ۱۲، ۲۰۲۶-۱۰-۲۰): مشتری با شماره و کد پیامکی فهرست سالن‌هایش را می‌بیند. بدون Route::domain مثل
+// صفحه‌ی اصلی؛ ارسال و تأیید کد پشت throttle:registration (۵ در دقیقه برای هر آی‌پی).
+Route::controller(\App\Http\Controllers\Central\MySalonsController::class)->prefix('my-salons')->name('my-salons.')->group(function () {
+    Route::get('/', 'show')->name('show');
+    Route::post('/', 'send')->middleware('throttle:registration')->name('send');
+    Route::get('/verify', 'verifyForm')->name('verify');
+    Route::post('/verify', 'verify')->middleware('throttle:registration')->name('verify.store');
+    Route::post('/resend', 'resend')->middleware('throttle:registration')->name('resend');
+    Route::post('/forget', 'forget')->name('forget');
+});
+
 // لینک کوتاه پیامک‌ها (۲۰۲۶-۰۹-۳۰، ShortLinkService): بدون Route::domain، روی دامنه‌ی مرکزی و هر هاست دیگری کار می‌کند.
 Route::get('/b/{code}', \App\Http\Controllers\ShortLinkController::class)
     ->where('code', '[a-z0-9]{4,16}')

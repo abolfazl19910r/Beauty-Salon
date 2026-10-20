@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Route;
                     </svg>
                 </div>
                 <x-text-input id="phone" class="pr-10" type="text" name="phone"
-                              :value="old('phone')" required autofocus autocomplete="phone"
+                              :value="old('phone', preg_match('/^09\d{9}$/', (string) request('phone')) ? request('phone') : null)" required autofocus autocomplete="phone"
                               dir="ltr" placeholder="09123456789" />
             </div>
             <x-input-error :messages="$errors->get('phone')" />

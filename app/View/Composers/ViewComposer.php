@@ -36,7 +36,8 @@ class ViewComposer
         }
 
         // «سالن زیبایی راستا» برای نام «راستا»، ولی نام «سالن زیبایی باران» بی‌تکرار (بسته‌ی «ح»، ۱۰)
-        $currentSalonTitle = \App\Support\SalonTitle::for((string) $currentSalonName);
+        // بی‌سالن (دامنه‌ی اصلی، «سالن‌های من»، ورود پنل) خود نام پلتفرم — نه «سالن زیبایی ماهرو» (۲۰۲۶-۱۰-۲۰)
+        $currentSalonTitle = $this->currentSalon->get() ? \App\Support\SalonTitle::for((string) $currentSalonName) : (string) $currentSalonName;
         if (! isset($view->currentSalonTitle)) {
             $view->with('currentSalonTitle', $currentSalonTitle);
         }
