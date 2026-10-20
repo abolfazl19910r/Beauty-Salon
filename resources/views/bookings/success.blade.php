@@ -94,6 +94,11 @@
                     بازگشت به صفحه اصلی
                 </a>
             </div>
+
+            {{-- بسته‌ی ۵: پیشنهاد اپ (اندروید ← APK ماهرو، آیفون ← افزودن به صفحه‌ی اصلی) --}}
+            <a href="{{ route('salon.app') }}" data-success-app-link class="block text-sm mt-5 hover:underline" style="color: rgb(var(--m-gold2));">
+                نوبت‌هایتان را در اپ {{ config('brand.name') }} پیگیری کنید ←
+            </a>
         </div>
     </div>
 @endsection

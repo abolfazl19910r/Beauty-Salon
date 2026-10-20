@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Route;
 // ?src=qr (QR چاپی سالن، بسته‌ی ۵) یک بازدید QR ثبت می‌کند
 Route::get('/', [HomeController::class, 'index'])->middleware('qr.scan')->name('home');
 
+// صفحه‌ی «اپ» سالن (بسته‌ی ۵ و ۶): دانلود اپ اندروید + کد سالن، راهنمای PWA آیفون
+Route::get('/app', \App\Http\Controllers\User\SalonAppController::class)->name('salon.app');
+
 Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
 Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
 

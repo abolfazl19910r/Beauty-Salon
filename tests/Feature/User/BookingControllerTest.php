@@ -133,6 +133,8 @@ class BookingControllerTest extends TestCase
             ->get(route('bookings.success'));
 
         $response->assertOk();
+        // بسته‌ی ۵: پیشنهاد اپ ماهرو به صفحه‌ی «اپ» همین سالن
+        $response->assertSee('data-success-app-link', false)->assertSee(url('/s/rasta/app'), false);
         $response->assertViewHas('booking', function ($viewBooking) use ($booking) {
             return $viewBooking && $viewBooking->id === $booking->id;
         });

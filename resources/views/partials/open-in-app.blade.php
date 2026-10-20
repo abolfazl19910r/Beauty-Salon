@@ -1,6 +1,6 @@
 {{--
-    دکمه‌ی «باز کردن در اپ ماهرو» روی صفحه‌ی وب سالن (بسته‌ی ۳ب، تصمیم ۲۰۲۶-۱۰-۱۴) — فقط اندروید (اپ آیفون نداریم؛
-    آیفون PWA). پیش‌فرض پنهان است و اسکریپت پایین فقط روی اندروید نشانش می‌دهد؛ بستنش تا پایان همین نشست مرورگر می‌ماند.
+    دکمه‌ی «باز کردن در اپ ماهرو» روی صفحه‌ی وب سالن (بسته‌ی ۳ب، تصمیم ۲۰۲۶-۱۰-۱۴) و «نصب اپ» (بسته‌ی ۵) — فقط اندروید
+    (اپ آیفون نداریم؛ آیفون PWA و بنر جدای خودش). پیش‌فرض پنهان است و اسکریپت پایین فقط روی اندروید نشانش می‌دهد؛ بستنش تا پایان همین نشست مرورگر می‌ماند.
     لینک‌ها: App\Support\CustomerAppLink. ورودی: $appSalon (سالن جاری).
 --}}
 @php($appLink = \App\Support\CustomerAppLink::forSalon($appSalon))
@@ -19,10 +19,9 @@
     <div style="display:flex;gap:.5rem;margin-top:.7rem;">
         <a href="{{ $appLink['intent_url'] }}" data-open-in-app-link
            style="flex:1;text-align:center;background:var(--m-btn);color:var(--m-on-gold);font-weight:700;border-radius:999px;padding:.6rem .75rem;text-decoration:none;">باز کردن در اپ</a>
-        @if ($appLink['download_url'])
-            <a href="{{ $appLink['download_url'] }}" data-open-in-app-download
-               style="flex:1;text-align:center;border:1px solid rgb(var(--m-gold) / .6);color:rgb(var(--m-gold2));font-weight:700;border-radius:999px;padding:.6rem .75rem;text-decoration:none;">دانلود اپ</a>
-        @endif
+        {{-- بسته‌ی ۵: «نصب اپ» به صفحه‌ی /app خود سالن (دانلود APK از ماهرو + کد سالن) --}}
+        <a href="{{ $appLink['install_url'] }}" data-open-in-app-install
+           style="flex:1;text-align:center;border:1px solid rgb(var(--m-gold) / .6);color:rgb(var(--m-gold2));font-weight:700;border-radius:999px;padding:.6rem .75rem;text-decoration:none;">نصب اپ</a>
     </div>
 </div>
 <script>

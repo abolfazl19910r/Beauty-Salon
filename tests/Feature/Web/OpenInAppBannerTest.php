@@ -9,7 +9,7 @@ use Tests\TestCase;
 
 /**
  * دکمه‌ی «باز کردن در اپ ماهرو» صفحه‌ی وب سالن (بسته‌ی ۳ب، تصمیم ۲۰۲۶-۱۰-۱۴): لینک intent اندروید به mahru://salon/{slug}
- * همان سالن، با برگشت به آدرس دانلود (اگر تنظیم شده) یا همین صفحه.
+ * همان سالن، با برگشت به صفحه‌ی «اپ» همان سالن (/app، بسته‌ی ۵) که دانلود APK و کد سالن را دارد.
  */
 class OpenInAppBannerTest extends TestCase
 {
@@ -17,14 +17,14 @@ class OpenInAppBannerTest extends TestCase
 
     public function test_the_salon_page_links_to_the_same_salon_in_the_app(): void
     {
-        $rasta = Salon::where('slug', 'rasta')->firstOrFail();
-        $fallback = rawurlencode($rasta->publicUrl());
+        $fallback = rawurlencode(url('/s/rasta/app'));
 
         $this->get('/s/rasta')
             ->assertOk()
             ->assertSee('data-open-in-app', false)
             ->assertSee("intent://salon/rasta#Intent;scheme=mahru;package=ir.mahru;S.browser_fallback_url={$fallback};end", false)
-            ->assertDontSee('data-open-in-app-download', false);
+            ->assertSee('data-open-in-app-install', false)
+            ->assertSee('href="'.url('/s/rasta/app').'"', false);
     }
 
     public function test_each_salon_page_points_to_its_own_salon(): void
@@ -38,15 +38,13 @@ class OpenInAppBannerTest extends TestCase
             ->assertSee('«گلبهار» در اپ ماهرو', false);
     }
 
-    public function test_with_a_download_url_the_banner_offers_it_and_android_falls_back_to_it(): void
+    public function test_download_url_override_is_used_on_the_install_page(): void
     {
         config(['api.customer_app_download_url' => 'https://mahru.ir/app/mahru.apk']);
 
-        $this->get('/s/rasta')
+        $this->get('/s/rasta/app', ['User-Agent' => 'Mozilla/5.0 (Linux; Android 14)'])
             ->assertOk()
-            ->assertSee('data-open-in-app-download', false)
-            ->assertSee('href="https://mahru.ir/app/mahru.apk"', false)
-            ->assertSee('S.browser_fallback_url='.rawurlencode('https://mahru.ir/app/mahru.apk').';end', false);
+            ->assertSee('href="https://mahru.ir/app/mahru.apk"', false);
     }
 
     public function test_link_parts_follow_the_config_and_encode_the_slug(): void
