@@ -102,10 +102,15 @@ eas build --platform android --profile customer-production
 ```
 adb shell pm get-app-links ir.mahru
 ```
-آزمایش محلی (http، بدون تأیید خودکار): build با `APP_LINKS_DOMAIN=192.168.1.2.nip.io` و روی گوشی
+آزمایش محلی (بدون nip.io و بدون DNS؛ nip.io از ایران در دسترس نیست): build عادی `customer-apk` (`APP_LINKS_DOMAIN` را تنظیم نکنید)، آدرس
+سرور اپ `http://192.168.1.2:8000`. اندروید لینک را بدون باز کردن دامنه به اپ می‌دهد و اپ فقط slug را برمی‌دارد. چون assetlinks واقعی هنوز
+خوانده نمی‌شود، اجازه را دستی بدهید: اندروید ۱۲+ از تنظیمات ← برنامه‌ها ← ماهرو ← «باز کردن به‌طور پیش‌فرض» ← «افزودن پیوند» ← `*.mahru.ir`،
+یا با adb (platform-tools روی ویندوز، USB debugging روشن):
 ```
-adb shell pm set-app-links-user-selection --user cur --package ir.mahru true '*.192.168.1.2.nip.io'
+adb shell pm set-app-links-user-selection --user cur --package ir.mahru true all
+adb shell "am start -a android.intent.action.VIEW -d 'https://rasta.mahru.ir/specialists/1?src=qr'"
 ```
+اندروید ۱۰/۱۱: هنگام باز کردن لینک «ماهرو» را انتخاب کنید.
 مرورگر داخلی اینستاگرام/تلگرام App Links را نادیده می‌گیرد (همان صفحه‌ی وب و بنر «باز کردن در اپ» می‌ماند)؛ اسکن با دوربین گوشی درست کار می‌کند.
 
 ## ساختار

@@ -25,8 +25,8 @@ type Variant = keyof typeof VARIANTS;
  * Android App Links اپ مشتری (بسته‌ی ۵): لینک https سالن («rasta.mahru.ir/» و «…/specialists/12») اگر اپ نصب است خود اپ را باز می‌کند.
  * سرور: /.well-known/assetlinks.json با اثرانگشت SHA-256 امضای همین اپ (CUSTOMER_APP_SHA256_FINGERPRINTS)؛ اندروید برای میزبان wildcard
  * فایل را از دامنه‌ی اصلی می‌خواند. فقط صفحه‌ی اصلی سالن و صفحه‌ی متخصص — نه پرداخت، ورود یا پنل‌ها (پرداخت وب در مرورگر بماند).
- * APP_LINKS_DOMAIN برای نسخه‌ی آزمایشی (مثلاً 192.168.1.2.nip.io)؛ http فقط در نسخه‌ی غیر production و تأیید خودکار ندارد
- * (روی گوشی: adb shell pm set-app-links-user-selection --user cur --package ir.mahru true '*.192.168.1.2.nip.io').
+ * APP_LINKS_DOMAIN فقط اگر دامنه‌ی دیگری لازم شد (خالی = mahru.ir). آزمایش محلی همان mahru.ir با اجازه‌ی دستی است (README، «App Links»)؛
+ * http فقط در نسخه‌ی غیر production و تأیید خودکار ندارد.
  */
 const APP_LINKS_DOMAIN = process.env.APP_LINKS_DOMAIN || 'mahru.ir';
 
