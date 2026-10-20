@@ -7,10 +7,11 @@ import { enDigits } from '../format';
  *   https://host/s/rasta[/...]             لینک قدیمی/همیشه‌زنده‌ی سالن (همان QR روی سرور لوکال)
  *   https://rasta.mahru.ir[/...]          ساب‌دامین سالن (وقتی CENTRAL_DOMAIN روی سرور پر است)
  *   mahru://salon/rasta                   لینک اپ (دکمه‌ی «باز کردن در اپ» صفحه‌ی وب سالن)
+ *   …/specialists/12 (هر دو شکل بالا)      QR متخصص (بسته‌ی ۵): سالن + specialistId برای رزرو مستقیم با همان متخصص
  * origin فقط برای لینک‌های http(s) برگردانده می‌شود تا نسخه‌ی آزمایشی بتواند سرور همان QR را پیشنهاد کند — جز آدرسی که فقط روی
  * کامپیوتر سازنده‌ی QR باز می‌شود (127.0.0.1، localhost، *.localhost، *.test): پیشنهاد آن، اپ را به خود گوشی وصل می‌کرد (۲۰۲۶-۱۰-۱۷).
  */
-export type ParsedSalon = { slug: string; origin: string | null };
+export type ParsedSalon = { slug: string; origin: string | null; specialistId?: number | null };
 
 /** حروف/رقم/خط تیره/زیرخط (یونیکد، مثل alpha_dash) — بدون فاصله و / */
 const SLUG = /^[\p{L}\p{M}\p{N}_-]{1,100}$/u;
@@ -58,20 +59,36 @@ export function parseSalonInput(raw: string): ParsedSalon | null {
   const hostname = host.replace(/:\d+$/, '').toLowerCase();
   const localOnly = isLocalOnlyHost(hostname);
 
-  const legacy = /^\/s\/([^/]+)/.exec(path);
+  const legacy = /^\/s\/([^/]+)(\/.*)?$/.exec(path);
   if (legacy) {
     const slug = safeDecode(legacy[1]);
-    return slug && isSalonSlug(slug) ? { slug, origin: localOnly ? null : origin } : null;
+    return slug && isSalonSlug(slug) ? { slug, origin: localOnly ? null : origin, ...specialistIn(legacy[2] ?? '') } : null;
   }
 
   // ساب‌دامین: اولین برچسب میزبانی که دست‌کم سه بخش دارد و آی‌پی نیست (rasta.localhost دو بخش است ولی ساب‌دامین است)
   const labels = hostname.split('.');
   const minLabels = hostname.endsWith('.localhost') ? 2 : 3;
   if (labels.length >= minLabels && !/^\d+$/.test(labels[labels.length - 1]) && !NOT_SALON.has(labels[0]) && isSalonSlug(labels[0])) {
-    return { slug: labels[0], origin: localOnly ? null : `${scheme}://${labels.slice(1).join('.')}${host.match(/:\d+$/)?.[0] ?? ''}` };
+    return {
+      slug: labels[0],
+      origin: localOnly ? null : `${scheme}://${labels.slice(1).join('.')}${host.match(/:\d+$/)?.[0] ?? ''}`,
+      ...specialistIn(path),
+    };
   }
 
   return null;
+}
+
+/** «/specialists/12…» در مسیر سالن → { specialistId: 12 }؛ وگرنه هیچ */
+function specialistIn(path: string): { specialistId?: number } {
+  const m = /^\/specialists\/(\d{1,10})(?:[/?#]|$)/.exec(path);
+  return m ? { specialistId: Number(m[1]) } : {};
+}
+
+/** مسیر داخل اپ برای یک لینک سالن (App Links و اسکنر) */
+export function salonRoute(parsed: ParsedSalon): string {
+  const base = `/salon/${encodeURIComponent(parsed.slug)}`;
+  return parsed.specialistId ? `${base}?specialist=${parsed.specialistId}` : base;
 }
 
 function safeDecode(value: string): string | null {

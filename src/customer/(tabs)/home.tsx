@@ -1,7 +1,10 @@
 import { router } from 'expo-router';
+import { useEffect } from 'react';
 import { RefreshControl, View } from 'react-native';
 
 import { useHome } from '@/lib/customer/queries';
+import { consumePendingSpecialist } from '@/lib/customer/store';
+import { UpdateNotice } from '@/ui/UpdateNotice';
 import { faDigits, toman } from '@/lib/format';
 import { useSession } from '@/lib/session';
 import { CustomerBookingCard, SalonLogo } from '@/ui/customer';
@@ -13,6 +16,19 @@ export default function Home() {
   const home = useHome();
   const p = usePalette();
   const firstName = (account?.user.name ?? '').split(' ')[0];
+  const salonSlug = account?.salon.slug;
+
+  // QR متخصص پیش از ورود اسکن شده بود (بسته‌ی ۵): یک بار صفحه‌ی همان متخصص
+  useEffect(() => {
+    if (!salonSlug) {
+      return;
+    }
+    void consumePendingSpecialist(salonSlug).then((id) => {
+      if (id) {
+        router.push(`/specialist/${id}`);
+      }
+    });
+  }, [salonSlug]);
 
   return (
     <Screen refreshControl={<RefreshControl refreshing={home.isRefetching} onRefresh={() => home.refetch()} colors={[p.gold]} />}>
@@ -23,6 +39,8 @@ export default function Home() {
           <T muted>{home.data?.salon.name ?? account?.salon.name}</T>
         </View>
       </Row>
+
+      <UpdateNotice />
 
       {home.isPending ? <Loading /> : home.error ? <ErrorBox error={home.error} onRetry={() => home.refetch()} /> : (
         <>

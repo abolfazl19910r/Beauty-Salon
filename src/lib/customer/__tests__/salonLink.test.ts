@@ -1,5 +1,5 @@
 /// <reference types="jest" />
-import { parseSalonInput } from '../salonLink';
+import { parseSalonInput, salonRoute } from '../salonLink';
 
 describe('parseSalonInput', () => {
   it.each([
@@ -19,6 +19,11 @@ describe('parseSalonInput', () => {
     ['http://localhost:8000/s/rasta', { slug: 'rasta', origin: null }],
     ['http://rasta.localhost:8000/', { slug: 'rasta', origin: null }],
     ['http://rasta.rasta-app.test/', { slug: 'rasta', origin: null }],
+    // QR متخصص (بسته‌ی ۵): ساب‌دامین و مسیر قدیمی، با ?src=qr
+    ['https://rasta.mahru.ir/specialists/12?src=qr', { slug: 'rasta', origin: 'https://mahru.ir', specialistId: 12 }],
+    ['http://192.168.1.5:8000/s/rasta/specialists/7', { slug: 'rasta', origin: 'http://192.168.1.5:8000', specialistId: 7 }],
+    ['http://rasta.192.168.1.2.nip.io:8000/?src=qr', { slug: 'rasta', origin: 'http://192.168.1.2.nip.io:8000' }],
+    ['https://rasta.mahru.ir/specialists/search', { slug: 'rasta', origin: 'https://mahru.ir' }],
   ])('%s', (input, expected) => {
     expect(parseSalonInput(input)).toEqual(expected);
   });
@@ -29,4 +34,11 @@ describe('parseSalonInput', () => {
       expect(parseSalonInput(input)).toBeNull();
     },
   );
+});
+
+describe('salonRoute', () => {
+  it('maps a parsed salon link to the in-app route', () => {
+    expect(salonRoute({ slug: 'rasta', origin: null })).toBe('/salon/rasta');
+    expect(salonRoute({ slug: 'مهتاب', origin: null, specialistId: 12 })).toBe(`/salon/${encodeURIComponent('مهتاب')}?specialist=12`);
+  });
 });

@@ -10,6 +10,7 @@ import { CustomerSalonProvider, useCustomerSalon } from '@/lib/customer/salon';
 import { usePushSetup } from '@/lib/pushRuntime';
 import { SessionProvider, useSession } from '@/lib/session';
 import { fontFiles, fonts, usePalette } from '@/ui/theme';
+import { UpdateGate } from '@/ui/UpdateNotice';
 
 /**
  * اپ «ماهرو» (مشتری، بسته‌ی ۳ب) — ریشه‌ی جدای expo-router (app.config.ts: APP_VARIANT=customer → src/customer).
@@ -111,6 +112,8 @@ function Navigator() {
         <Stack.Screen name="delete-account" options={{ title: 'حذف حساب' }} />
         <Stack.Screen name="salon-inactive" options={{ headerShown: false }} />
       </Stack>
+      {/* نسخه‌ی اجباری (بسته‌ی ۵): اپ بدون مارکت، تا به‌روز نشود ادامه نمی‌دهد */}
+      <UpdateGate />
     </ThemeProvider>
   );
 }

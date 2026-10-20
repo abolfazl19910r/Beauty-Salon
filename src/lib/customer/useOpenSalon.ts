@@ -7,6 +7,7 @@ import { ALLOW_SERVER_OVERRIDE } from '../config';
 import { useSession } from '../session';
 import type { ParsedSalon } from './salonLink';
 import { useCustomerSalon } from './salon';
+import { savePendingSpecialist } from './store';
 import type { SalonCard } from './types';
 
 export const SALON_NOT_FOUND = 'سالنی با این کد پیدا نشد یا فعلاً فعال نیست. لینک یا کد را از خود سالن بپرسید.';
@@ -42,6 +43,10 @@ export function useOpenSalon() {
       }
       const { data } = await api.request<SalonCard>('GET', `/customer/salons/${encodeURIComponent(parsed.slug)}`, { auth: false });
       await setSalon(data);
+      if (parsed.specialistId) {
+        // QR متخصص: بعد از ورود، خانه صفحه‌ی همان متخصص را باز می‌کند
+        await savePendingSpecialist(data.slug, parsed.specialistId);
+      }
       router.replace('/login');
       return data;
     } catch (e) {

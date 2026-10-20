@@ -6,6 +6,7 @@ import { useSession } from '@/lib/session';
 import { BookingCard } from '@/ui/booking';
 import { Card, Empty, ErrorBox, Loading, Row, Screen, T } from '@/ui/kit';
 import { usePalette } from '@/ui/theme';
+import { UpdateNotice } from '@/ui/UpdateNotice';
 
 export default function Today() {
   const { account } = useSession();
@@ -14,6 +15,7 @@ export default function Today() {
 
   return (
     <Screen refreshControl={<RefreshControl refreshing={today.isRefetching} onRefresh={() => today.refetch()} colors={[p.gold]} />}>
+      <UpdateNotice />
       <T weight="bold" size={18}>سلام {account?.specialist?.name ?? account?.user.name}</T>
       <T muted>{account?.salon.name}{today.data ? ` — ${today.data.date_label}` : ''}</T>
 

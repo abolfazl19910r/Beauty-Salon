@@ -10,16 +10,19 @@ import { Button, ErrorBox, Loading, Screen, T } from '@/ui/kit';
 import { space } from '@/ui/theme';
 
 /**
- * لینک mahru://salon/{slug} (دکمه‌ی «باز کردن در اپ ماهرو» صفحه‌ی وب سالن).
+ * لینک mahru://salon/{slug} (دکمه‌ی «باز کردن در اپ ماهرو» صفحه‌ی وب سالن) و لینک https سالن با App Links (بسته‌ی ۵،
+ * +native-intent.tsx)؛ ?specialist= از QR متخصص: صفحه‌ی همان متخصص (بعد از ورود، اگر هنوز وارد نشده).
  * اپ فقط یک سالن نگه می‌دارد: اگر مشتری وارد سالن دیگری است، اول باید خارج شود.
  */
 export default function SalonLink() {
-  const { slug } = useLocalSearchParams<{ slug: string }>();
+  const { slug, specialist } = useLocalSearchParams<{ slug: string; specialist?: string }>();
   const { status, account, signOut } = useSession();
   const { setSalon } = useCustomerSalon();
   const { open, busy, error } = useOpenSalon();
   const started = useRef(false);
-  const parsed = parseSalonInput(`mahru://salon/${slug ?? ''}`);
+  const base = parseSalonInput(`mahru://salon/${slug ?? ''}`);
+  const specialistId = /^\d{1,10}$/.test(specialist ?? '') ? Number(specialist) : null;
+  const parsed = base ? { ...base, specialistId } : null;
 
   useEffect(() => {
     if (status === 'signedOut' && parsed && !started.current) {
@@ -34,7 +37,7 @@ export default function SalonLink() {
 
   if (status === 'signedIn' && account) {
     if (account.salon.slug === parsed.slug) {
-      return <Redirect href="/home" />;
+      return <Redirect href={parsed.specialistId ? `/specialist/${parsed.specialistId}` : '/home'} />;
     }
     return (
       <Screen>

@@ -1,7 +1,7 @@
 /// <reference types="jest" />
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { clearPendingPayment, loadPendingPayment, PENDING_TTL_MS, savePendingPayment } from '../store';
+import { clearPendingPayment, consumePendingSpecialist, loadPendingPayment, PENDING_TTL_MS, savePendingPayment, savePendingSpecialist } from '../store';
 
 jest.mock('@react-native-async-storage/async-storage', () => require('@react-native-async-storage/async-storage/jest/async-storage-mock'));
 
@@ -22,4 +22,17 @@ it('clears only the same transaction', async () => {
   expect((await loadPendingPayment(5000))?.tx).toBe('NEW');
   await clearPendingPayment('NEW');
   expect(await loadPendingPayment(5000)).toBeNull();
+});
+
+it('opens a scanned specialist once, only for the same salon and within an hour (package 5)', async () => {
+  await savePendingSpecialist('rasta', 12, 1000);
+  expect(await consumePendingSpecialist('rasta', 2000)).toBe(12);
+  expect(await consumePendingSpecialist('rasta', 2000)).toBeNull();
+
+  await savePendingSpecialist('rasta', 12, 1000);
+  expect(await consumePendingSpecialist('golbahar', 2000)).toBeNull();
+  expect(await consumePendingSpecialist('rasta', 2000)).toBeNull();
+
+  await savePendingSpecialist('rasta', 12, 1000);
+  expect(await consumePendingSpecialist('rasta', 1000 + 60 * 60 * 1000 + 1)).toBeNull();
 });

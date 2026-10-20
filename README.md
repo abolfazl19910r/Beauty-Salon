@@ -86,6 +86,28 @@ eas build --platform android --profile customer-production
 - صفحه‌ی **«دریافت اعلان»** (همکار: بیشتر؛ مشتری: حساب): اجازه، ثبت، «اعلان آزمایشی» و راهنمای Autostart شیائومی / Deep sleeping سامسونگ.
 - اگر روی گوشی‌ای رسید از اپ بسته نیامد، روی سرور `PUSH_FCM_STYLE=notification` (اعلان را اندروید می‌سازد؛ رسید فقط با باز کردن اپ).
 
+## انتشار بدون مارکت و لینک‌های سالن (بسته‌ی ۵، نسخه‌ی 0.3.0 / versionCode 8)
+
+**انتشار نسخه‌ی تازه:** در `app.config.ts` مقدار `version` و `versionCode` را بالا ببرید ← build با پروفایل `customer-production`
+(یا `staff-production`) ← APK را در پنل ابرمدیر «نسخه‌های اپ» آپلود کنید. نسخه از خود APK خوانده می‌شود؛ versionCode تکراری پذیرفته
+نمی‌شود. صفحه‌ی عمومی دانلود `https://mahru.ir/app` است. اپ با `GET /api/v1/app/latest` نسخه‌ی تازه را می‌فهمد: روی صفحه‌ی خانه
+(مشتری) و «امروز» (همکار) کارت «نسخه‌ی تازه آمده»، و اگر ابرمدیر نسخه را «اجباری» زده باشد، صفحه‌ی تمام‌صفحه‌ی به‌روزرسانی.
+
+**کلید امضا:** همه‌ی نسخه‌ها باید با همان keystore پروژه‌ی expo.dev امضا شوند (EAS خودش نگه می‌دارد)؛ با کلید دیگر، نسخه‌ی تازه روی
+نسخه‌ی قبلی نصب نمی‌شود. نسخه‌ی پشتیبان: `eas credentials -p android` ← Download credentials.
+
+**App Links (فقط اپ مشتری):** لینک https صفحه‌ی اصلی سالن (`rasta.mahru.ir/`) و صفحه‌ی متخصص (`…/specialists/12`، QR متخصص) اگر اپ نصب
+است، خود اپ را باز می‌کند (`src/customer/+native-intent.tsx` ← `salon/[slug]`، با `?specialist=`). شرط سرور: اثرانگشت SHA-256 همین keystore
+در `.env` سرور (`CUSTOMER_APP_SHA256_FINGERPRINTS`)، از expo.dev ← Credentials ← Android ← `ir.mahru` ← SHA-256 Fingerprint. بررسی روی گوشی:
+```
+adb shell pm get-app-links ir.mahru
+```
+آزمایش محلی (http، بدون تأیید خودکار): build با `APP_LINKS_DOMAIN=192.168.1.2.nip.io` و روی گوشی
+```
+adb shell pm set-app-links-user-selection --user cur --package ir.mahru true '*.192.168.1.2.nip.io'
+```
+مرورگر داخلی اینستاگرام/تلگرام App Links را نادیده می‌گیرد (همان صفحه‌ی وب و بنر «باز کردن در اپ» می‌ماند)؛ اسکن با دوربین گوشی درست کار می‌کند.
+
 ## ساختار
 - `src/app/` — صفحه‌های **همکار** (expo-router): ورود، کد، فراموشی رمز، آدرس سرور؛ زبانه‌ها: امروز، نوبت‌ها، تقویم، کیف پول، بیشتر؛
   جزئیات نوبت، برنامه‌ی هفتگی، مرخصی، برداشت، شبا، تراکنش‌ها، اعلان‌ها، دستگاه‌ها، «سالن غیرفعال».

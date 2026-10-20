@@ -71,3 +71,26 @@ export async function clearPendingPayment(tx: string): Promise<void> {
     await AsyncStorage.removeItem(PENDING_KEY);
   }
 }
+
+/**
+ * QR متخصص (بسته‌ی ۵) وقتی مشتری هنوز وارد نشده: بعد از ورود همان سالن، خانه یک بار صفحه‌ی همان متخصص را باز می‌کند.
+ * فقط برای همان سالن و تا یک ساعت.
+ */
+const PENDING_SPECIALIST_KEY = 'mahru.customer.pendingSpecialist';
+const PENDING_SPECIALIST_TTL_MS = 60 * 60 * 1000;
+
+type PendingSpecialist = { slug: string; specialistId: number; at: number };
+
+export async function savePendingSpecialist(slug: string, specialistId: number, now = Date.now()): Promise<void> {
+  await AsyncStorage.setItem(PENDING_SPECIALIST_KEY, JSON.stringify({ slug, specialistId, at: now } satisfies PendingSpecialist));
+}
+
+/** یک بار مصرف: شناسه‌ی متخصص منتظر این سالن، یا null */
+export async function consumePendingSpecialist(slug: string, now = Date.now()): Promise<number | null> {
+  const pending = await readJson<PendingSpecialist>(PENDING_SPECIALIST_KEY);
+  if (!pending) {
+    return null;
+  }
+  await AsyncStorage.removeItem(PENDING_SPECIALIST_KEY);
+  return pending.slug === slug && now - pending.at <= PENDING_SPECIALIST_TTL_MS ? pending.specialistId : null;
+}

@@ -22,6 +22,24 @@ const VARIANTS = {
 type Variant = keyof typeof VARIANTS;
 
 /**
+ * Android App Links اپ مشتری (بسته‌ی ۵): لینک https سالن («rasta.mahru.ir/» و «…/specialists/12») اگر اپ نصب است خود اپ را باز می‌کند.
+ * سرور: /.well-known/assetlinks.json با اثرانگشت SHA-256 امضای همین اپ (CUSTOMER_APP_SHA256_FINGERPRINTS)؛ اندروید برای میزبان wildcard
+ * فایل را از دامنه‌ی اصلی می‌خواند. فقط صفحه‌ی اصلی سالن و صفحه‌ی متخصص — نه پرداخت، ورود یا پنل‌ها (پرداخت وب در مرورگر بماند).
+ * APP_LINKS_DOMAIN برای نسخه‌ی آزمایشی (مثلاً 192.168.1.2.nip.io)؛ http فقط در نسخه‌ی غیر production و تأیید خودکار ندارد
+ * (روی گوشی: adb shell pm set-app-links-user-selection --user cur --package ir.mahru true '*.192.168.1.2.nip.io').
+ */
+const APP_LINKS_DOMAIN = process.env.APP_LINKS_DOMAIN || 'mahru.ir';
+
+function customerIntentFilters(production: boolean) {
+  const schemes = production ? ['https'] : ['https', 'http'];
+  const data = schemes.flatMap((scheme) => [
+    { scheme, host: `*.${APP_LINKS_DOMAIN}`, path: '/' },
+    { scheme, host: `*.${APP_LINKS_DOMAIN}`, pathPrefix: '/specialists/' },
+  ]);
+  return [{ action: 'VIEW', autoVerify: true, data, category: ['BROWSABLE', 'DEFAULT'] }];
+}
+
+/**
  * google-services.json هر اپ (بسته‌ی ۴، پوش FCM): در EAS متغیر محیطی نوع «File» به نام GOOGLE_SERVICES_JSON که مسیر فایل را می‌دهد
  * (هر پروژه‌ی expo.dev فایل اپ خودش). روی سیستم خودتان: GOOGLE_SERVICES_JSON=./google-services.staff.json (در .gitignore).
  * بدون آن build ساخته می‌شود ولی اپ توکن پوش نمی‌گیرد (صفحه‌ی «دریافت اعلان»: ثبت نشده).
@@ -49,15 +67,17 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     name: v.name,
     slug: v.slug,
     scheme: v.scheme,
-    version: '0.2.5',
+    version: '0.3.0',
     orientation: 'portrait',
     icon: `${v.assets}/icon.png`,
     userInterfaceStyle: 'automatic',
     platforms: ['android'],
     android: {
       package: v.package,
-      // ۲: بسته‌ی ۴ (پوش، ماژول بومی تازه) — نصب روی نسخه‌ی قبلی به‌صورت Update
-      versionCode: 7,
+      // ۸: بسته‌ی ۵ (App Links، بررسی نسخه‌ی تازه) — نصب روی نسخه‌ی قبلی به‌صورت Update. هر APK تازه‌ای که آپلود می‌شود باید
+      // versionCode بزرگ‌تری داشته باشد (ابرمدیر ← نسخه‌های اپ، از خود APK می‌خواند)
+      versionCode: 8,
+      ...(variant === 'customer' ? { intentFilters: customerIntentFilters(production) } : {}),
       googleServicesFile: GOOGLE_SERVICES_JSON,
       adaptiveIcon: {
         backgroundColor: v.background,
