@@ -54,35 +54,14 @@
         {{-- آیفون: اپ نداریم (اپ‌استور برای توسعه‌دهنده‌ی ایرانی بسته است) ← «افزودن به صفحه‌ی اصلی» (PWA) --}}
         <section data-install-section="ios" @if ($platform !== 'ios') hidden @endif>
             <div class="flex items-center gap-3 mb-4">
-                <img src="{{ asset('apple-touch-icon.png') }}" alt="" width="52" height="52" class="rounded-xl shrink-0" data-ios-icon>
+                <img src="{{ route('salon.pwa.icon', ['salon_slug' => $salon->slug, 'variant' => '180']) }}" alt="" width="52" height="52" class="rounded-xl shrink-0" data-ios-icon>
                 <div>
                     <div class="font-bold text-m-tx">{{ $salonTitle }} روی صفحه‌ی اصلی آیفون</div>
                     <div class="text-xs text-m-tx/60">مثل یک اپ باز می‌شود، بدون نوار مرورگر</div>
                 </div>
             </div>
 
-            <ol class="space-y-3 text-sm text-m-tx/80 leading-7" data-ios-steps>
-                <li class="flex gap-3">
-                    <span class="w-7 h-7 rounded-full bg-m-gold/15 text-m-gold2 font-bold flex items-center justify-center shrink-0">۱</span>
-                    <span>این صفحه را در <b>Safari</b> باز کنید. اگر از داخل اینستاگرام یا تلگرام آمده‌اید، از منوی «⋯» گزینه‌ی «باز کردن در مرورگر» را بزنید.</span>
-                </li>
-                <li class="flex gap-3">
-                    <span class="w-7 h-7 rounded-full bg-m-gold/15 text-m-gold2 font-bold flex items-center justify-center shrink-0">۲</span>
-                    <span>
-                        دکمه‌ی <b>اشتراک‌گذاری</b>
-                        <svg class="inline w-5 h-5 align-text-bottom text-m-gold2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-label="اشتراک‌گذاری"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
-                        را بزنید (پایین صفحه در Safari؛ در Chrome آیفون کنار نوار آدرس).
-                    </span>
-                </li>
-                <li class="flex gap-3">
-                    <span class="w-7 h-7 rounded-full bg-m-gold/15 text-m-gold2 font-bold flex items-center justify-center shrink-0">۳</span>
-                    <span>کمی پایین بروید و <b>«افزودن به صفحه‌ی اصلی»</b> (<span dir="ltr">Add to Home Screen</span>) را بزنید.</span>
-                </li>
-                <li class="flex gap-3">
-                    <span class="w-7 h-7 rounded-full bg-m-gold/15 text-m-gold2 font-bold flex items-center justify-center shrink-0">۴</span>
-                    <span><b>«افزودن»</b> (<span dir="ltr">Add</span>) را بزنید. آیکون {{ $salonTitle }} روی صفحه‌ی گوشی می‌آید؛ یک بار وارد حساب شوید.</span>
-                </li>
-            </ol>
+            @include('partials.ios-add-to-home-steps', ['appTitle' => $salonTitle])
             <p class="text-xs text-m-tx/50 mt-4 leading-6">یادآوری و خبر نوبت‌ها روی آیفون با پیامک می‌آید.</p>
         </section>
 

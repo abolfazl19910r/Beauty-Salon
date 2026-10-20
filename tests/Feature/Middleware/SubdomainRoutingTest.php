@@ -168,4 +168,23 @@ class SubdomainRoutingTest extends TestCase
         $this->assertStringEndsWith('/s/sobhan-beauty', route('legacy.home', ['salon_slug' => 'sobhan-beauty']));
         $this->assertStringEndsWith('/s/sobhan-beauty/services', route('legacy.services.index', ['salon_slug' => 'sobhan-beauty']));
     }
+
+    /** بسته‌ی ۵ و ۶: /app روی ساب‌دامین صفحه‌ی همان سالن است و روی دامنه‌ی اصلی صفحه‌ی دانلود ماهرو؛ لینک‌ها میزبان درست را می‌سازند. */
+    public function test_app_pages_manifest_and_assetlinks_on_subdomains(): void
+    {
+        $salon = Salon::factory()->create(['slug' => 'sobhan-beauty']);
+        $sub = 'http://sobhan-beauty.'.self::CENTRAL_DOMAIN;
+
+        $this->get($sub.'/app', ['User-Agent' => 'Mozilla/5.0 (Linux; Android 14)'])->assertOk()
+            ->assertSee('data-salon-app-page', false)
+            ->assertSee(\App\Support\CentralUrl::to('/app').'?salon=sobhan-beauty', false);
+        $this->get('http://'.self::CENTRAL_DOMAIN.'/app')->assertOk()->assertSee('data-app-download', false);
+
+        $this->get($sub.'/manifest.webmanifest')->assertOk()->assertJson(['scope' => '/', 'start_url' => '/?source=pwa', 'id' => '/']);
+        $this->get($sub.'/.well-known/assetlinks.json')->assertOk()->assertExactJson([]);
+        $this->get('http://'.self::CENTRAL_DOMAIN.'/.well-known/assetlinks.json')->assertOk()->assertExactJson([]);
+
+        $target = app(\App\Services\Qr\SalonQrService::class)->target($salon);
+        $this->assertSame($sub.'?src=qr', $target['url']);
+    }
 }

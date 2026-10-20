@@ -558,6 +558,8 @@
     });
 </script>
 
+{{-- بسته‌ی ۶: PWA (service worker، بنر نصب آیفون) --}}
+@include('partials.pwa-client', ['pwaMode' => 'specialist', 'pwaGuideUrl' => route('specialist.install')])
 @stack('scripts')
 @include('partials.password-reveal')
 @include('partials.nav-reveal-active')

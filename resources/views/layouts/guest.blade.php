@@ -51,5 +51,7 @@
     </div>
 </div>
 @include('partials.password-reveal')
+{{-- بسته‌ی ۶: service worker (ورود/ثبت‌نام داخل سایت نصب‌شده)؛ بنر نصب آیفون در این صفحه‌ها نه --}}
+@include('partials.pwa-client', ['pwaMode' => 'guest', 'pwaBanner' => false])
 </body>
 </html>

@@ -44,6 +44,9 @@ Route::middleware(['auth', 'verified', 'salon.specialist'])->name('specialist.')
 
         Route::get('/loyalty', [SpecialistProfileController::class, 'loyalty'])->name('loyalty');
 
+        // راهنمای نصب پنل روی آیفون (بسته‌ی ۶، PWA)
+        Route::view('/install', 'specialist.install')->name('install');
+
         // «QR من» (بسته‌ی ۵): QR صفحه‌ی عمومی خود متخصص، PNG اینستاگرام و PDF کارت ویزیت
         Route::get('/qr', [\App\Http\Controllers\Specialist\Qr\SpecialistQrController::class, 'index'])->name('qr');
         Route::get('/qr/pdf', [\App\Http\Controllers\Specialist\Qr\SpecialistQrController::class, 'pdf'])->middleware('throttle:30,1')->name('qr.pdf');

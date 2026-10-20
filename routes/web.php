@@ -134,6 +134,11 @@ Route::get('/app/download/{variant}', [\App\Http\Controllers\Central\AppDownload
     ->middleware('throttle:30,1')
     ->name('app-download.file');
 
+// بسته‌ی ۶ (PWA): service worker و صفحه‌ی آفلاین روی ریشه‌ی هر میزبان (سالن، دامنه‌ی اصلی)، و manifest عمومی پنل متخصص
+Route::get('/sw.js', [\App\Http\Controllers\Pwa\PwaController::class, 'serviceWorker'])->name('pwa.sw');
+Route::get('/offline', [\App\Http\Controllers\Pwa\PwaController::class, 'offline'])->name('pwa.offline');
+Route::get('/specialist/manifest.webmanifest', [\App\Http\Controllers\Pwa\PwaController::class, 'specialistManifest'])->name('pwa.specialist-manifest');
+
 // لینک کوتاه پیامک‌ها (۲۰۲۶-۰۹-۳۰، ShortLinkService): بدون Route::domain، روی دامنه‌ی مرکزی و هر هاست دیگری کار می‌کند.
 Route::get('/b/{code}', \App\Http\Controllers\ShortLinkController::class)
     ->where('code', '[a-z0-9]{4,16}')

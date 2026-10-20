@@ -458,6 +458,8 @@
     }, 5000);
 </script>
 
+{{-- بسته‌ی ۶: PWA (service worker، بنر نصب آیفون) --}}
+@include('partials.pwa-client', ['pwaMode' => 'salon', 'pwaGuideUrl' => route('salon.app')])
 @stack('scripts')
 @include('partials.password-reveal')
 </body>

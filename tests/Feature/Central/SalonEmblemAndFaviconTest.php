@@ -56,7 +56,8 @@ class SalonEmblemAndFaviconTest extends TestCase
         foreach (["/s/{$slug}/login", "/s/{$slug}/register"] as $url) {
             $html = $this->get($url)->assertOk()->getContent();
             $this->assertMatchesRegularExpression('#<link rel="icon" href="[^"]*'.preg_quote($logo, '#').'" type="image/png"#', $html);
-            $this->assertStringContainsString('<link rel="apple-touch-icon" href="', $html);
+            // بسته‌ی ۶: آیکون صفحه‌ی اصلی آیفون = آیکون مربع ساخته‌شده از همین لوگو (PWA)
+            $this->assertStringContainsString('<link rel="apple-touch-icon" sizes="180x180" href="'.url("/s/{$slug}/pwa/icon-180.png").'"', $html);
             $this->assertStringNotContainsString('favicon.svg', $html);
             $this->assertStringNotContainsString('brand/mahru-mark.svg', $html);
         }
