@@ -19,7 +19,9 @@ return new class extends Migration
             $table->string('user_agent', 255)->nullable();
             $table->string('ip_address', 45)->nullable();
             $table->timestamp('last_used_at')->nullable();
-            $table->timestamp('expires_at');
+            // nullable: روی MySQL/MariaDB با explicit_defaults_for_timestamp=OFF (پیش‌فرض XAMPP) ستون timestamp غیرخالی بی‌پیش‌فرض
+            // «Invalid default value» می‌دهد. کد همیشه پرش می‌کند و ردیف بی‌تاریخ هرگز معتبر حساب نمی‌شود (where expires_at > now).
+            $table->timestamp('expires_at')->nullable();
             $table->timestamps();
 
             $table->index(['user_id', 'expires_at']);
