@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Services\Auth\TrustedDeviceService;
 use App\Services\PhoneVerificationService;
 use App\Services\SecurityLogService;
 use Illuminate\Http\RedirectResponse;
@@ -19,6 +20,7 @@ class AuthenticatedSessionController extends Controller
         protected readonly PhoneVerificationService $verificationService,
         protected readonly SecurityLogService $securityLogService,
         protected readonly UserRepositoryInterface $userRepository,
+        protected readonly TrustedDeviceService $trustedDevices,
     ) {}
 
     public function create(): View
@@ -43,6 +45,11 @@ class AuthenticatedSessionController extends Controller
             ])->withInput($request->only('phone'));
         }
 
+        // بسته‌ی ۶: دستگاه شناخته‌شده («مرا به خاطر بسپار» قبلی روی همین مرورگر) ← بدون کد پیامکی
+        if ($this->trustedDevices->isTrusted($user, $request)) {
+            return $this->completeLogin($request, $user, remember: true, trustDevice: false);
+        }
+
         try {
             $this->verificationService->sendLoginCode($user);
         } catch (\Exception $e) {
@@ -59,6 +66,7 @@ class AuthenticatedSessionController extends Controller
         session([
             'login_user_id' => $user->id,
             'login_attempt_time' => now(),
+            'login_remember' => $request->boolean('remember'),
         ]);
 
         return redirect()->route('login.verify.show')
@@ -107,25 +115,10 @@ class AuthenticatedSessionController extends Controller
         }
 
         if ($this->verificationService->verifyLoginCode($user, $request->code)) {
-            session()->forget(['login_user_id', 'login_attempt_time']);
+            $remember = (bool) session('login_remember');
+            session()->forget(['login_user_id', 'login_attempt_time', 'login_remember']);
 
-            Auth::login($user);
-            $request->session()->regenerate();
-            // مقصد کهنه نماند تا ورود بعدی در همین مرورگر (مثلاً مشتری) به آن نرود
-            $request->session()->forget('url.intended');
-
-            $this->securityLogService->logLogin(true, $user->phone, $user);
-
-            // ⭐ باگ ۶ (گزارش‌شده ۲۰۲۶-۰۹-۱۸، رفع‌شده ۲۰۲۶-۰۹-۱۸ب): redirect()->intended() اگر
-            // در session مقدار 'url.intended' از قبل ذخیره شده باشد (دقیقاً همان چیزی که
-            // middleware auth هر بار کاربر لاگین‌نشده یک صفحه‌ی محافظت‌شده مثل
-            // /admin/dashboard را باز می‌کند، ذخیره می‌کند)، به همان آدرس می‌رود و
-            // redirectPath() را کاملاً نادیده می‌گیرد — حتی وقتی redirectPath() برای
-            // سوپر ادمین صحیح /superadmin/dashboard را برمی‌گرداند. این پروژه از اول یک
-            // سیستم ریدایرکت مبتنی‌بر-نقش دارد که با معنای «intended» در تناقض بنیادی است،
-            // پس مستقیم به redirectPath() می‌رویم و intended() را کنار می‌گذاریم.
-            return redirect()->to($this->redirectPath())
-                ->with('success', 'خوش آمدید!');
+            return $this->completeLogin($request, $user, remember: $remember, trustDevice: $remember);
         }
 
         $this->securityLogService->logLogin(false, $user->phone, $user);
@@ -162,6 +155,34 @@ class AuthenticatedSessionController extends Controller
 
         return redirect()->route('login')
             ->with('success', 'با موفقیت خارج شدید.');
+    }
+
+    /**
+     * ورود نهایی. remember: نشست ماندگار (بسته‌ی ۶، ۹۰ روز)؛ trustDevice: این مرورگر برای ورود بعدی بدون کد پیامکی.
+     */
+    private function completeLogin(Request $request, \App\Models\User $user, bool $remember, bool $trustDevice): RedirectResponse
+    {
+        Auth::login($user, $remember);
+        $request->session()->regenerate();
+        // مقصد کهنه نماند تا ورود بعدی در همین مرورگر (مثلاً مشتری) به آن نرود
+        $request->session()->forget('url.intended');
+
+        if ($trustDevice) {
+            $this->trustedDevices->trust($user, $request);
+        }
+
+        $this->securityLogService->logLogin(true, $user->phone, $user);
+
+        // ⭐ باگ ۶ (گزارش‌شده ۲۰۲۶-۰۹-۱۸، رفع‌شده ۲۰۲۶-۰۹-۱۸ب): redirect()->intended() اگر
+        // در session مقدار 'url.intended' از قبل ذخیره شده باشد (دقیقاً همان چیزی که
+        // middleware auth هر بار کاربر لاگین‌نشده یک صفحه‌ی محافظت‌شده مثل
+        // /admin/dashboard را باز می‌کند، ذخیره می‌کند)، به همان آدرس می‌رود و
+        // redirectPath() را کاملاً نادیده می‌گیرد — حتی وقتی redirectPath() برای
+        // سوپر ادمین صحیح /superadmin/dashboard را برمی‌گرداند. این پروژه از اول یک
+        // سیستم ریدایرکت مبتنی‌بر-نقش دارد که با معنای «intended» در تناقض بنیادی است،
+        // پس مستقیم به redirectPath() می‌رویم و intended() را کنار می‌گذاریم.
+        return redirect()->to($this->redirectPath())
+            ->with('success', 'خوش آمدید!');
     }
 
     protected function redirectPath(): string

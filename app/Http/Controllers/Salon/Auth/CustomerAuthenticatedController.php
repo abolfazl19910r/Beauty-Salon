@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Salon\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Services\Auth\TrustedDeviceService;
 use App\Services\PhoneVerificationService;
 use App\Services\SecurityLogService;
 use App\Support\CurrentSalon;
@@ -31,6 +32,7 @@ class CustomerAuthenticatedController extends Controller
         protected readonly SecurityLogService $securityLogService,
         protected readonly CurrentSalon $currentSalon,
         protected readonly UserRepositoryInterface $userRepository,
+        protected readonly TrustedDeviceService $trustedDevices,
     ) {}
 
     public function create(): View
@@ -57,6 +59,11 @@ class CustomerAuthenticatedController extends Controller
             ])->withInput($request->only('phone'));
         }
 
+        // بسته‌ی ۶: دستگاه شناخته‌شده («مرا به خاطر بسپار» قبلی روی همین مرورگر/آیفون) ← بدون کد پیامکی
+        if ($this->trustedDevices->isTrusted($user, $request)) {
+            return $this->completeLogin($request, $user, remember: true, trustDevice: false);
+        }
+
         try {
             $this->verificationService->sendLoginCode($user);
         } catch (\Exception $e) {
@@ -74,6 +81,7 @@ class CustomerAuthenticatedController extends Controller
         session([
             'customer_login_user_id' => $user->id,
             'customer_login_attempt_time' => now(),
+            'customer_login_remember' => $request->boolean('remember'),
         ]);
 
         return redirect()->route('salon.login.verify.show')
@@ -122,15 +130,10 @@ class CustomerAuthenticatedController extends Controller
         }
 
         if ($this->verificationService->verifyLoginCode($user, $request->code)) {
-            session()->forget(['customer_login_user_id', 'customer_login_attempt_time']);
+            $remember = (bool) session('customer_login_remember');
+            session()->forget(['customer_login_user_id', 'customer_login_attempt_time', 'customer_login_remember']);
 
-            Auth::login($user);
-            $request->session()->regenerate();
-
-            $this->securityLogService->logLogin(true, $user->phone, $user);
-
-            return redirect()->to($this->customerIntendedUrl($request))
-                ->with('success', 'خوش آمدید!');
+            return $this->completeLogin($request, $user, remember: $remember, trustDevice: $remember);
         }
 
         $this->securityLogService->logLogin(false, $user->phone, $user);
@@ -138,6 +141,24 @@ class CustomerAuthenticatedController extends Controller
         return back()->withErrors([
             'code' => 'کد وارد شده نامعتبر یا منقضی شده است.',
         ]);
+    }
+
+    /**
+     * ورود نهایی مشتری. remember: نشست ماندگار (بسته‌ی ۶، ۹۰ روز)؛ trustDevice: این مرورگر برای ورود بعدی بدون کد پیامکی.
+     */
+    private function completeLogin(Request $request, \App\Models\User $user, bool $remember, bool $trustDevice): RedirectResponse
+    {
+        Auth::login($user, $remember);
+        $request->session()->regenerate();
+
+        if ($trustDevice) {
+            $this->trustedDevices->trust($user, $request);
+        }
+
+        $this->securityLogService->logLogin(true, $user->phone, $user);
+
+        return redirect()->to($this->customerIntendedUrl($request))
+            ->with('success', 'خوش آمدید!');
     }
 
     /**

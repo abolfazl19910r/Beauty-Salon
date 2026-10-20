@@ -70,6 +70,7 @@ class TenantModelClassificationTest extends TestCase
         'PushMessage' => 'پیام اپ به یک کاربر؛ با user_id یا شناسه‌ی پیام از رسید همان کاربر (بسته‌ی ۴)',
         'PushDelivery' => 'از رابطه‌ی پیام و دستگاه',
         'AppRelease' => 'نسخه‌ی APK اپ‌ها، سطح پلتفرم (ابرمدیر؛ بسته‌ی ۵)',
+        'TrustedDevice' => 'دستگاه شناخته‌شده‌ی ورود وب یک کاربر (بسته‌ی ۶)؛ همیشه با user_id و هش کوکی',
     ];
 
     private function models(): array

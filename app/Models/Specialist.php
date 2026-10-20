@@ -34,6 +34,7 @@ class Specialist extends Model
                 : User::where('phone', $specialist->phone)->where('user_type', 'staff')->first();
 
             $user?->tokens()->delete();
+            $user?->revokeRememberedDevices();
         });
     }
 

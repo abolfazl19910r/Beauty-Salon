@@ -2,6 +2,9 @@
 
 return [
 
+    // «مرا به خاطر بسپار» و دستگاه شناخته‌شده‌ی ورود وب (بسته‌ی ۶، App\Services\Auth\TrustedDeviceService)
+    'remember_days' => (int) (env('AUTH_REMEMBER_DAYS') ?: 90),
+
     'defaults' => [
         'guard' => env('AUTH_GUARD', 'web'),
         'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
@@ -11,6 +14,8 @@ return [
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
+            // «مرا به خاطر بسپار» (بسته‌ی ۶): عمر کوکی remember به دقیقه (پیش‌فرض لاراول چند سال است)
+            'remember' => ((int) (env('AUTH_REMEMBER_DAYS') ?: 90)) * 1440,
         ],
     ],
 

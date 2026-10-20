@@ -31,12 +31,23 @@ class User extends Authenticatable
         static::updated(function (User $user) {
             if ($user->wasChanged(['password', 'user_type', 'salon_id'])) {
                 $user->tokens()->delete();
+                // بسته‌ی ۶: «مرا به خاطر بسپار» و دستگاه‌های شناخته‌شده‌ی وب هم با تغییر رمز باطل می‌شوند
+                $user->revokeRememberedDevices();
             }
         });
 
         static::deleting(function (User $user) {
             $user->tokens()->delete();
         });
+    }
+
+    /**
+     * «مرا به خاطر بسپار» وب (بسته‌ی ۶): دستگاه‌های شناخته‌شده پاک و remember_token عوض می‌شود (کوکی remember همه‌ی مرورگرها بی‌اثر).
+     */
+    public function revokeRememberedDevices(): void
+    {
+        \App\Models\TrustedDevice::query()->where('user_id', $this->id)->delete();
+        $this->forceFill(['remember_token' => \Illuminate\Support\Str::random(60)])->saveQuietly();
     }
 
     protected $fillable = [
