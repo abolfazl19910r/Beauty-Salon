@@ -28,6 +28,8 @@ class SuperAdminAuditLog extends Model
         'salon.plan' => 'تغییر پلن سالن',
         'salon.feature_override' => 'استثنای امکانات',
         'salon.owner' => 'تغییر مالک سالن',
+        'salon.paused' => 'توقف موقت رزرو سالن',
+        'salon.resumed' => 'بازگشایی رزرو سالن',
         'impersonation.started' => 'ورود اضطراری به پنل سالن',
         'impersonation.ended' => 'پایان ورود اضطراری',
         'plan.saved' => 'ساخت / ویرایش پلن',
@@ -39,6 +41,13 @@ class SuperAdminAuditLog extends Model
         'announcement.deleted' => 'حذف اطلاعیه‌ی سراسری',
         'settings.updated' => 'تنظیمات پلتفرم',
         'template_access.updated' => 'دسترسی قالب‌ها',
+        'push.mode' => 'حالت پوش اپ‌ها',
+        'push.device_signed_out' => 'خروج اپ یک گوشی',
+        'app_release.upload' => 'آپلود نسخه‌ی اپ',
+        'app_release.update' => 'انتشار / پنهان کردن نسخه‌ی اپ',
+        'app_release.delete' => 'حذف نسخه‌ی اپ',
+        'bot.token_updated' => 'توکن ربات',
+        'bot.token_removed' => 'حذف توکن ربات',
     ];
 
     public function user(): BelongsTo
