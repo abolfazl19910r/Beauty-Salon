@@ -54,6 +54,9 @@ export default function Home() {
             <Button title="رزرو نوبت تازه" onPress={() => router.push('/book')} />
           )}
 
+          {/* QR متخصص یا سالن (کارت ویزیت، پوستر) — پیش از این اسکنر فقط پیش از ورود بود (گزارش ۲۰۲۶-۱۰-۲۱) */}
+          <Button kind="secondary" title="اسکن QR متخصص یا سالن" onPress={() => router.push('/scan')} />
+
           {home.data.features?.includes('treatment_courses') ? (
             <Card onPress={() => router.push('/courses')}>
               <T weight="medium">دوره‌های درمانی</T>

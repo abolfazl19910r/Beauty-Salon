@@ -1,15 +1,22 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { View } from 'react-native';
 
-import { parseSalonInput } from '@/lib/customer/salonLink';
+import { parseSalonInput, salonRoute } from '@/lib/customer/salonLink';
 import { useOpenSalon } from '@/lib/customer/useOpenSalon';
+import { useSession } from '@/lib/session';
 import { Button, ErrorBox, Loading, Notice, Screen, T } from '@/ui/kit';
 import { radius, space, usePalette } from '@/ui/theme';
 
-/** اسکن QR کارت «آدرس اختصاصی سالن» پنل مدیر (لینک /s/{slug} یا ساب‌دامین). */
+/**
+ * اسکن QR سالن یا متخصص (لینک /s/{slug} یا ساب‌دامین، با /specialists/{id}).
+ * پیش از ورود: پیدا کردن سالن و رفتن به ورود. بعد از ورود (۲۰۲۶-۱۰-۲۱، اسکنر از خانه): همان مسیر لینک‌های سالن — QR متخصص همین سالن ←
+ * صفحه‌ی متخصص، QR خود سالن ← خانه، سالن دیگر ← پرسش «خروج و رفتن به سالن تازه» (salon/[slug]).
+ */
 export default function Scan() {
   const p = usePalette();
+  const { status } = useSession();
   const [permission, requestPermission] = useCameraPermissions();
   const { open, busy, error } = useOpenSalon();
   const [wrongCode, setWrongCode] = useState(false);
@@ -40,6 +47,10 @@ export default function Scan() {
       return;
     }
     setWrongCode(false);
+    if (status === 'signedIn') {
+      router.replace(salonRoute(parsed));
+      return;
+    }
     const salon = await open(parsed);
     if (!salon) {
       // اجازه‌ی اسکن دوباره‌ی همان کد بعد از خطا (مثلاً شبکه)
@@ -54,7 +65,7 @@ export default function Scan() {
         <View pointerEvents="none" style={{ position: 'absolute', top: '25%', left: '15%', right: '15%', aspectRatio: 1, borderColor: p.gold, borderWidth: 3, borderRadius: radius.lg }} />
       </View>
       <View style={{ gap: space(2) }}>
-        {busy ? <Loading label="در حال پیدا کردن سالن…" /> : <T muted center>QR سالن را داخل کادر بگیرید.</T>}
+        {busy ? <Loading label="در حال پیدا کردن سالن…" /> : <T muted center>QR سالن یا متخصص را داخل کادر بگیرید.</T>}
         {wrongCode ? <Notice tone="warning" text="این QR مال یک سالن ماهرو نیست." /> : null}
         {error ? <ErrorBox error={error} /> : null}
       </View>

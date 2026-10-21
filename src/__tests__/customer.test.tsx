@@ -14,7 +14,15 @@ jest.mock('expo-font', () => ({ ...jest.requireActual('expo-font'), useFonts: ()
 jest.mock('expo-device', () => ({ modelName: 'Redmi Note 8' }));
 jest.mock('expo-crypto', () => ({ randomUUID: () => '11111111-2222-4333-8444-555555555555' }));
 jest.mock('expo-clipboard', () => ({ getStringAsync: jest.fn(async () => ''), setStringAsync: jest.fn(async () => true) }));
-jest.mock('expo-camera', () => ({ CameraView: () => null, useCameraPermissions: () => [{ granted: false, canAskAgain: true }, jest.fn()] }));
+// دوربین: پیش‌فرض بی‌اجازه؛ آزمون اسکن اجازه را روشن می‌کند و onBarcodeScanned را خودش صدا می‌زند
+const mockCamera: { granted: boolean; props: any } = { granted: false, props: null };
+jest.mock('expo-camera', () => ({
+  CameraView: (props: any) => {
+    mockCamera.props = props;
+    return null;
+  },
+  useCameraPermissions: () => [{ granted: mockCamera.granted, canAskAgain: true }, jest.fn()],
+}));
 
 const mockSecure = new Map<string, string>();
 jest.mock('expo-secure-store', () => ({
@@ -52,6 +60,8 @@ const notFound: [number, unknown] = [404, { success: false, error: { code: 'not_
 
 beforeEach(async () => {
   mockSecure.clear();
+  mockCamera.granted = false;
+  mockCamera.props = null;
   calls.length = 0;
   await storage().clear();
   jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
@@ -289,4 +299,26 @@ it('buys a treatment course, pays the minimum from the wallet and books the next
   fireEvent.press(await screen.findByText('۱۰:۰۰'));
   fireEvent.press(screen.getByText('رزرو این جلسه'));
   await waitFor(() => expect(calls.find((c) => c.url.includes('/courses/12/bookings'))?.body).toEqual({ specialist_id: 5, date: '2026-10-20', time: '10:00' }));
+});
+
+it('lets a signed-in customer scan a specialist QR of the same salon from home (2026-10-21)', async () => {
+  await signedIn();
+  mockCamera.granted = true;
+  routes = (url) => {
+    if (url.includes('/customer/specialists/5')) return [200, ok({ id: 5, name: 'سارا', photo_url: null, bio: null, rating: null, reviews_count: 0, services: [] })];
+    if (url.includes('/customer/home')) return [200, ok(HOME)];
+    return notFound;
+  };
+
+  const router = renderRouter('./src/customer', { initialUrl: '/home' });
+
+  fireEvent.press(await screen.findByText('اسکن QR متخصص یا سالن'));
+  await waitFor(() => expect(mockCamera.props?.onBarcodeScanned).toBeTruthy());
+  await act(async () => {
+    await mockCamera.props.onBarcodeScanned({ data: 'http://192.168.1.2:8000/s/rasta/specialists/5?src=qr' });
+  });
+
+  await waitFor(() => expect(router.getPathname()).toBe('/specialist/5'));
+  // اسکن پس از ورود، سالن را عوض نمی‌کند و درخواست «کارت سالن» نمی‌فرستد
+  expect(calls.some((c) => c.url.endsWith('/customer/salons/rasta'))).toBe(false);
 });

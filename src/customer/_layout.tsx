@@ -78,7 +78,7 @@ function Navigator() {
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="welcome" options={{ headerShown: false }} />
-        <Stack.Screen name="scan" options={{ title: 'اسکن QR سالن', presentation: 'modal' }} />
+        <Stack.Screen name="scan" options={{ title: 'اسکن QR', presentation: 'modal' }} />
         <Stack.Screen name="salon/[slug]" options={{ title: 'سالن' }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="verify" options={{ title: 'کد تأیید' }} />

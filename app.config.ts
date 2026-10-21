@@ -67,16 +67,16 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     name: v.name,
     slug: v.slug,
     scheme: v.scheme,
-    version: '0.3.0',
+    version: '0.3.1',
     orientation: 'portrait',
     icon: `${v.assets}/icon.png`,
     userInterfaceStyle: 'automatic',
     platforms: ['android'],
     android: {
       package: v.package,
-      // ۸: بسته‌ی ۵ (App Links، بررسی نسخه‌ی تازه) — نصب روی نسخه‌ی قبلی به‌صورت Update. هر APK تازه‌ای که آپلود می‌شود باید
+      // ۹ (0.3.1): اسکنر QR بعد از ورود؛ ۸ (0.3.0): بسته‌ی ۵ (App Links، بررسی نسخه‌ی تازه) — نصب روی نسخه‌ی قبلی به‌صورت Update. هر APK تازه‌ای که آپلود می‌شود باید
       // versionCode بزرگ‌تری داشته باشد (ابرمدیر ← نسخه‌های اپ، از خود APK می‌خواند)
-      versionCode: 8,
+      versionCode: 9,
       ...(variant === 'customer' ? { intentFilters: customerIntentFilters(production) } : {}),
       googleServicesFile: GOOGLE_SERVICES_JSON,
       adaptiveIcon: {
