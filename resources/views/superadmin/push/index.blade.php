@@ -12,6 +12,28 @@
 
     @include('superadmin.push.partials.tabs')
 
+    {{-- آمادگی برای «فعال» (تصمیم ۶-۱ ب، ۲۰۲۶-۱۰-۲۲) --}}
+    @if ($mode !== 'live')
+        <div class="sa-card p-5 mb-6" id="push-readiness" data-push-ready="{{ $readiness['ready'] ? '1' : '0' }}">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <h2 class="font-bold">آمادگی برای حالت «فعال» <span class="text-xs font-normal" style="color: var(--sa-text-dim);">({{ to_persian_num((string) $readiness['days']) }} روز اخیر، با پوش‌های آزمایشی)</span></h2>
+                <span class="sa-badge" style="margin: 0; {{ $readiness['ready'] ? 'color: var(--sa-success);' : 'color: var(--sa-warn);' }}">{{ $readiness['ready'] ? 'آماده' : 'هنوز نه' }}</span>
+            </div>
+            <ul class="text-sm grid gap-2">
+                @foreach ($readiness['checks'] as $check)
+                    <li class="flex gap-2" data-ready-check="{{ $check['ok'] ? 'ok' : ($check['blocking'] ? 'fail' : 'warn') }}">
+                        <span aria-hidden="true" style="color: {{ $check['ok'] ? 'var(--sa-success)' : ($check['blocking'] ? 'var(--sa-danger)' : 'var(--sa-warn)') }};">{{ $check['ok'] ? '✓' : ($check['blocking'] ? '✗' : '!') }}</span>
+                        <span><b>{{ $check['label'] }}</b>: <span style="color: var(--sa-text-dim);">{{ $check['detail'] }}</span></span>
+                    </li>
+                @endforeach
+            </ul>
+            <p class="text-xs mt-3" style="color: var(--sa-text-dim);">
+                آزمون روی هر گوشی: اپ را از «اخیرها» کامل ببندید و از «دستگاه‌ها» یا <span dir="ltr">php artisan push:test 09… --wait=60</span> پوش آزمایشی بفرستید.
+                روی سرور تولید هم پیش از «فعال» چند روز «آزمایشی» بماند: راه سرور ایران تا گوگل با آزمون روی کامپیوتر خودتان (با VPN) یکی نیست.
+            </p>
+        </div>
+    @endif
+
     <div class="sa-card p-5 mb-6 flex flex-wrap items-center justify-between gap-3" data-push-mode="{{ $mode }}">
         <div>
             <div class="sa-label">حالت فعلی</div>

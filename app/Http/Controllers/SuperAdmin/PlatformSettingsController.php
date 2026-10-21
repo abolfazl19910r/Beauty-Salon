@@ -28,6 +28,8 @@ class PlatformSettingsController extends Controller
                 'fcm_configured' => app(\App\Services\Push\FcmClient::class)->configured(),
                 'ntfy_configured' => app(\App\Services\Push\NtfyClient::class)->configured(),
                 'devices' => \App\Models\PushDevice::query()->active()->count(),
+                // پنجره‌ی تأیید رفتن به «فعال» با همان اعداد کارت آمادگی (تصمیم ۶-۱ ب)
+                'live_confirm' => \App\Services\Push\PushMode::current() === \App\Services\Push\PushMode::LIVE ? null : app(\App\Services\Push\PushStats::class)->readinessSummary(),
             ],
         ]);
     }

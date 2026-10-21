@@ -58,6 +58,93 @@ class PushStats
         ];
     }
 
+    /** آمادگی برای «فعال» (تصمیم ۶-۱ ب، ۲۰۲۶-۱۰-۲۲): حداقل ارسال و نرخ رسید هر اپ در این بازه */
+    public const READY_MIN_DELIVERIES = 5;
+
+    public const READY_MIN_ACK_RATE = 80.0;
+
+    /**
+     * کارت «آمادگی برای فعال» صفحه‌ی پوش و پنجره‌ی تأیید رفتن به «فعال». ارسال‌های پوش آزمایشی (push:test و پنل) هم حساب می‌شوند،
+     * چون پیش از راه‌اندازی سرور بیشتر سنجش با همین‌هاست. شرط‌های مسدودکننده: کلید FCM، سبک data (با notification رسید فقط با
+     * باز کردن اپ می‌آید و در «فعال» تقریباً همه‌چیز پیامک می‌شد)، و برای هر اپی که گوشی دارد حداقل ارسال و نرخ رسید.
+     *
+     * @return array{ready: bool, days: int, checks: list<array{ok: bool, blocking: bool, label: string, detail: string}>, apps: array<string, array>}
+     */
+    public function readiness(int $days = 7): array
+    {
+        $since = now()->subDays($days);
+        $fcmConfigured = app(FcmClient::class)->configured();
+        $style = (string) config('push.fcm.style');
+        $fa = fn ($n) => to_persian_num((string) $n);
+
+        $checks = [
+            ['ok' => $fcmConfigured, 'blocking' => true, 'label' => 'کلید حساب سرویس فایربیس روی سرور',
+                'detail' => $fcmConfigured ? 'تنظیم شده' : 'PUSH_FCM_CREDENTIALS خالی است'],
+            ['ok' => $style === 'data', 'blocking' => true, 'label' => 'سبک ارسال data (رسید از اپ بسته)',
+                'detail' => $style === 'data' ? 'data' : "{$style} — رسید فقط با باز کردن اپ می‌آید؛ در «فعال» تقریباً همه‌ی پیام‌ها پیامک می‌شوند"],
+        ];
+
+        $apps = [];
+        foreach ([PushDevice::APP_CUSTOMER, PushDevice::APP_STAFF] as $app) {
+            $devices = PushDevice::query()->active()->where('app', $app)->get();
+            $deliveries = PushDelivery::query()
+                ->join('push_devices', 'push_devices.id', '=', 'push_deliveries.push_device_id')
+                ->where('push_devices.app', $app)
+                ->where('push_deliveries.created_at', '>=', $since)
+                ->where('push_deliveries.status', PushDelivery::ACCEPTED)
+                ->selectRaw('count(*) as c, sum(case when push_deliveries.acked_at is not null then 1 else 0 end) as a')
+                ->first();
+            $sent = (int) ($deliveries->c ?? 0);
+            $acked = (int) ($deliveries->a ?? 0);
+            $rate = $sent > 0 ? round($acked * 100 / $sent, 1) : null;
+            $unhealthy = $devices->take(500)->filter(fn (PushDevice $d) => AppMessenger::isUnhealthy($d))->count();
+
+            $apps[$app] = [
+                'devices' => $devices->count(),
+                'never_acked' => $devices->whereNull('last_receipt_at')->count(),
+                'unhealthy' => $unhealthy,
+                'sent' => $sent,
+                'acked' => $acked,
+                'ack_rate' => $rate,
+            ];
+
+            $name = $app === PushDevice::APP_STAFF ? 'ماهرو همکار' : 'ماهرو (مشتری)';
+            if ($devices->isEmpty()) {
+                $checks[] = ['ok' => true, 'blocking' => false, 'label' => "اپ «{$name}»", 'detail' => 'هنوز گوشی ثبت‌شده‌ای ندارد؛ این کاربران مثل قبل پیامک می‌گیرند'];
+
+                continue;
+            }
+
+            $ok = $sent >= self::READY_MIN_DELIVERIES && $rate !== null && $rate >= self::READY_MIN_ACK_RATE;
+            $checks[] = ['ok' => $ok, 'blocking' => true, 'label' => "نرخ رسید «{$name}» در {$fa($days)} روز",
+                'detail' => $sent === 0 ? 'هنوز پوشی نرفته'
+                    : $fa($acked).' از '.$fa($sent).' ('.$fa($rate).'٪)'.($sent < self::READY_MIN_DELIVERIES ? ' — دست‌کم '.$fa(self::READY_MIN_DELIVERIES).' ارسال لازم است' : '')
+                        .($rate !== null && $rate < self::READY_MIN_ACK_RATE ? ' — کمتر از '.$fa((int) self::READY_MIN_ACK_RATE).'٪' : '')];
+
+            if ($unhealthy > 0) {
+                $checks[] = ['ok' => false, 'blocking' => false, 'label' => "گوشی‌های ناسالم «{$name}»",
+                    'detail' => $fa($unhealthy).' گوشی دو پوش آخرش بی‌رسید مانده؛ پیام فوری به آن‌ها مستقیم پیامک می‌شود (Autostart / Deep sleeping)'];
+            }
+        }
+
+        return [
+            'ready' => collect($checks)->every(fn ($c) => $c['ok'] || ! $c['blocking']),
+            'days' => $days,
+            'checks' => $checks,
+            'apps' => $apps,
+        ];
+    }
+
+    /** متن کوتاه پنجره‌ی تأیید «فعال» در تنظیمات پلتفرم */
+    public function readinessSummary(int $days = 7): string
+    {
+        $r = $this->readiness($days);
+        $lines = collect($r['checks'])->map(fn ($c) => ($c['ok'] ? '✓ ' : ($c['blocking'] ? '✗ ' : '! ')).$c['label'].': '.$c['detail']);
+
+        return ($r['ready'] ? 'آماده برای «فعال».' : 'هنوز آماده نیست.')."\n".$lines->implode("\n")
+            ."\n\nدر «فعال» پیامک فقط وقتی می‌رود که اپ در مهلت رسید نفرستد. ادامه می‌دهید؟";
+    }
+
     /**
      * دوره‌ی آزمایشی: اگر حالت «فعال» بود، چند پیامک لازم نمی‌شد — رسید در مهلت دسته‌ی خودش آمده یا دسته‌ی فقط‌پوش.
      *

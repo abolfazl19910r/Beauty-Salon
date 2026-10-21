@@ -48,7 +48,9 @@
             (لغو و تغییر نوبت و یادآوری ۱ دقیقه، بقیه ۱۰ دقیقه؛ امتیاز، کد تخفیف و درخواست نظر فقط پوش). نتیجه در
             <a href="{{ route('superadmin.push.index') }}" style="color: var(--sa-accent);">اعلان اپ (پوش)</a>.
         </p>
-        <form method="POST" action="{{ route('superadmin.settings.push') }}" class="flex flex-wrap items-end gap-3">
+        <form method="POST" action="{{ route('superadmin.settings.push') }}" class="flex flex-wrap items-end gap-3"
+              @if ($push['live_confirm']) data-live-confirm="{{ $push['live_confirm'] }}"
+              onsubmit="return this.mode.value !== 'live' || confirm(this.dataset.liveConfirm);" @endif>
             @csrf
             @method('PUT')
             <div class="grow">
@@ -65,6 +67,7 @@
             <span>FCM: @if ($push['fcm_configured'])<span style="color: var(--sa-success);">کلید حساب سرویس تنظیم شده</span>@else<span style="color: var(--sa-danger);">تنظیم نشده (<span dir="ltr">PUSH_FCM_CREDENTIALS</span>)</span>@endif</span>
             <span>ntfy: @if ($push['ntfy_configured'])<span style="color: var(--sa-success);">تنظیم شده</span>@else<span style="color: var(--sa-text-dim);">بدون سرور (برای قطعی اینترنت بین‌الملل)</span>@endif</span>
             <span>گوشی‌های ثبت‌شده: {{ to_persian_num(number_format($push['devices'])) }}</span>
+            <a href="{{ route('superadmin.push.index') }}#push-readiness" style="color: var(--sa-accent);">آمادگی برای «فعال»</a>
             @if ($push['fcm_configured'])
                 <form method="POST" action="{{ route('superadmin.settings.push.check') }}">
                     @csrf

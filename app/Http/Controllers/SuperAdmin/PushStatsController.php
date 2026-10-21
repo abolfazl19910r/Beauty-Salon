@@ -19,6 +19,7 @@ class PushStatsController extends Controller
         return view('superadmin.push.index', [
             'summary' => $stats->summary($days),
             'devices' => $stats->devices(),
+            'readiness' => $stats->readiness(),
             'mode' => PushMode::current(),
             'modeLabel' => PushMode::label(PushMode::current()),
             'fcmConfigured' => app(FcmClient::class)->configured(),
