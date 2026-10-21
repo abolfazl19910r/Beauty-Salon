@@ -131,7 +131,7 @@
         </nav>
     </aside>
 
-    <div id="sidebar-backdrop" class="md:hidden fixed inset-0 bg-black/60 z-20 hidden" onclick="toggleSidebar()"></div>
+    <div id="sidebar-backdrop" class="md:hidden fixed inset-0 bg-black/60 z-40 hidden" onclick="toggleSidebar()"></div>
 
     <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
 
@@ -456,18 +456,20 @@
             });
     }
 
-    function toggleSidebar() {
+    // منوی کشویی موبایل. قبلاً با toggle کلاس‌ها باز می‌شد و چون z-30 از اول روی aside بود، با باز کردن برداشته می‌شد و منو زیر
+    // محتوای صفحه می‌ماند (فقط سایه دیده می‌شد — گزارش آیفون ۲۰۲۶-۱۰-۲۱). حالا وضعیت صریح است و منو fixed روی همه‌چیز.
+    function toggleSidebar(force) {
         const sidebar = document.getElementById('sidebar');
         const backdrop = document.getElementById('sidebar-backdrop');
+        if (!sidebar || !backdrop) return;
+        const open = typeof force === 'boolean' ? force : sidebar.classList.contains('hidden');
 
-        sidebar.classList.toggle('hidden');
-        sidebar.classList.toggle('absolute');
-        sidebar.classList.toggle('inset-y-0');
-        sidebar.classList.toggle('right-0');
-        sidebar.classList.toggle('z-30');
-
-        backdrop.classList.toggle('hidden');
+        sidebar.classList.toggle('hidden', !open);
+        ['fixed', 'inset-y-0', 'right-0', 'z-50'].forEach(function (c) { sidebar.classList.toggle(c, open); });
+        sidebar.toggleAttribute('data-sidebar-open', open);
+        backdrop.classList.toggle('hidden', !open);
     }
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') toggleSidebar(false); });
 
     function closeNotification(id) {
         const notification = document.getElementById(id);

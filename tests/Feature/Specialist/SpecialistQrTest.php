@@ -26,7 +26,10 @@ class SpecialistQrTest extends TestCase
             ->assertSee('data-salon-qr="'.url('/s/'.$salon->slug.'/specialists/'.$specialist->id).'?src=qr"', false)
             ->assertSee('رزرو آنلاین نوبت با نگار')
             ->assertSee('data-qr-poster-format="story"', false)
-            ->assertSee(route('specialist.qr'), false);
+            ->assertSee(route('specialist.qr'), false)
+            // منوی کشویی موبایل (رفع ۲۰۲۶-۱۰-۲۱): وضعیت صریح، نه toggle کلاس z-30 که منو را زیر محتوا می‌برد
+            ->assertSee('function toggleSidebar(force)', false)
+            ->assertDontSee("classList.toggle('z-30')", false);
 
         foreach (['poster', 'cards'] as $layout) {
             $response = $this->get(route('specialist.qr.pdf', ['layout' => $layout]))->assertOk();
