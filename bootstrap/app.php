@@ -241,6 +241,29 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->with('error', $e->getUserMessage());
         });
 
+        // ۴۱۹ (توکن CSRF کهنه) در صفحه‌های وب — گزارش ابوالفضل ۲۰۲۶-۱۰-۲۱ از سایت نصب‌شده روی آیفون: صفحه ساعت‌ها باز می‌ماند، نشست
+        // (SESSION_LIFETIME) تمام می‌شود و «مرا به خاطر بسپار» کاربر را دوباره وارد می‌کند ولی توکن فرم مال نشست قبلی است. خروج با توکن کهنه
+        // همان خروج است (فقط خروج است، چیزی تغییر نمی‌کند)؛ فرم‌های دیگر با پیام به همان صفحه برمی‌گردند به‌جای صفحه‌ی خام «۴۱۹».
+        $exceptions->renderable(function (HttpException $e, Request $request) {
+            if ($e->getStatusCode() !== 419 || $request->expectsJson()) {
+                return null;
+            }
+
+            if ($request->routeIs('logout', 'salon.logout', 'legacy.salon.logout')) {
+                \Illuminate\Support\Facades\Auth::guard('web')->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                $slug = $request->route()?->parameter('salon_slug');
+
+                return redirect()->to($slug ? route('home', ['salon_slug' => $slug]) : route('login'))
+                    ->with('success', 'با موفقیت خارج شدید.');
+            }
+
+            return back()
+                ->withInput($request->except(['password', 'password_confirmation', 'code', '_token']))
+                ->with('error', 'این صفحه مدتی باز مانده بود و منقضی شد؛ لطفاً دوباره امتحان کنید.');
+        });
+
         $exceptions->renderable(function (HttpException $e, Request $request) {
             if ($request->expectsJson()) {
                 return response()->json([

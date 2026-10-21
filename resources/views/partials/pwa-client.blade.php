@@ -25,6 +25,18 @@
         var standalone = window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
         var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
 
+        // سایت نصب‌شده روی صفحه‌ی اصلی ساعت‌ها باز می‌ماند و صفحه (و توکن فرمش) کهنه می‌شود (۴۱۹، گزارش ۲۰۲۶-۱۰-۲۱): اگر بیش از عمر نشست
+        // پشت صحنه بوده، با برگشت تازه بار شود.
+        if (standalone) {
+            var hiddenAt = 0;
+            var staleMs = {{ max(5, (int) config('session.lifetime') - 2) }} * 60000;
+            document.addEventListener('visibilitychange', function () {
+                if (document.hidden) { hiddenAt = Date.now(); return; }
+                if (hiddenAt && Date.now() - hiddenAt > staleMs) location.reload();
+            });
+            window.addEventListener('pageshow', function (e) { if (e.persisted) location.reload(); });
+        }
+
         // اندروید: پیشنهاد نصب PWA کروم نه — اپ بومی ماهرو (بسته‌ی ۵)
         window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); });
 
