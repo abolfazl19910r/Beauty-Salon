@@ -5,6 +5,7 @@ namespace Tests\Feature\Payment;
 use App\Models\SalonPaymentGateway;
 use App\Payments\Drivers\AsanPardakhtDriver;
 use App\Payments\Drivers\VandarDriver;
+use App\Payments\Drivers\ZarinpalDriver;
 use App\Payments\Drivers\ZibalDriver;
 use App\Payments\GatewayStartRequest;
 use App\Payments\GatewayVerifyRequest;
@@ -21,6 +22,21 @@ class GatewayDriversTest extends TestCase
     private function start(int $rial = 250000): GatewayStartRequest
     {
         return new GatewayStartRequest($rial, 'https://salon.test/payments/return/abc', 'پیش پرداخت', '09121234567', null, '7', 42);
+    }
+
+    // ── زرین‌پال: علت خطای اتصال در لاگ (۲۰۲۶-۱۰-۲۱) ──
+
+    public function test_zarinpal_connection_failure_keeps_the_real_error_for_the_log(): void
+    {
+        Http::fake(fn () => throw new \Illuminate\Http\Client\ConnectionException('cURL error 6: Could not resolve host: sandbox.zarinpal.com'));
+
+        $result = (new ZarinpalDriver(['merchant_id' => 'x'], sandbox: true))->start($this->start());
+
+        $this->assertFalse($result->success);
+        $this->assertTrue($result->retryable);
+        $this->assertSame('خطا در اتصال به درگاه پرداخت. لطفاً دوباره تلاش کنید.', $result->message);
+        $this->assertStringContainsString('Could not resolve host', $result->raw['connection_error']);
+        $this->assertSame('https://sandbox.zarinpal.com/pg/v4/payment/request.json', $result->raw['endpoint']);
     }
 
     // ── زیبال ──

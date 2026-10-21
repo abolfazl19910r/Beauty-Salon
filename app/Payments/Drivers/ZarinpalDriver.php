@@ -7,7 +7,6 @@ use App\Payments\GatewayStartRequest;
 use App\Payments\GatewayStartResult;
 use App\Payments\GatewayVerifyRequest;
 use App\Payments\GatewayVerifyResult;
-use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Throwable;
 
@@ -56,10 +55,13 @@ class ZarinpalDriver implements PaymentGatewayDriver
                         'email' => $request->email ?? '',
                     ],
                 ]);
-        } catch (ConnectionException $e) {
-            return GatewayStartResult::failed('خطا در اتصال به درگاه پرداخت. لطفاً دوباره تلاش کنید.', retryable: true);
         } catch (Throwable $e) {
-            return GatewayStartResult::failed('خطا در اتصال به درگاه پرداخت. لطفاً دوباره تلاش کنید.', retryable: true);
+            // پیام کاربر عمومی می‌ماند؛ علت واقعی (DNS، timeout، SSL، VPN) در لاگ «Payment Request Failed» می‌آید — قبلاً full_response خالی بود
+            // و تشخیص ممکن نبود (گزارش ۲۰۲۶-۱۰-۲۱)
+            return GatewayStartResult::failed('خطا در اتصال به درگاه پرداخت. لطفاً دوباره تلاش کنید.', retryable: true, raw: [
+                'connection_error' => class_basename($e).': '.mb_substr($e->getMessage(), 0, 300),
+                'endpoint' => $this->apiUrl.'/request.json',
+            ]);
         }
 
         $result = (array) $response->json();
