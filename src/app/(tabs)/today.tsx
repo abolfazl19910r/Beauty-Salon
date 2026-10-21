@@ -1,10 +1,11 @@
+import { useState } from 'react';
 import { RefreshControl } from 'react-native';
 
 import { faDigits, toman } from '@/lib/format';
 import { useToday } from '@/lib/queries';
 import { useSession } from '@/lib/session';
 import { BookingCard } from '@/ui/booking';
-import { Card, Empty, ErrorBox, Loading, Row, Screen, T } from '@/ui/kit';
+import { Button, Card, Empty, ErrorBox, Loading, Row, Screen, T } from '@/ui/kit';
 import { usePalette } from '@/ui/theme';
 import { UpdateNotice } from '@/ui/UpdateNotice';
 
@@ -12,6 +13,8 @@ export default function Today() {
   const { account } = useSession();
   const today = useToday();
   const p = usePalette();
+  const [showCancelled, setShowCancelled] = useState(false);
+  const cancelled = today.data?.cancelled ?? [];
 
   return (
     <Screen refreshControl={<RefreshControl refreshing={today.isRefetching} onRefresh={() => today.refetch()} colors={[p.gold]} />}>
@@ -36,6 +39,12 @@ export default function Today() {
             <T weight="bold" size={18}>{toman(today.data.summary.revenue)}</T>
           </Card>
           {today.data.bookings.length === 0 ? <Empty text="برای امروز نوبتی ندارید." /> : today.data.bookings.map((b) => <BookingCard key={b.id} booking={b} />)}
+          {cancelled.length > 0 ? (
+            <>
+              <Button small kind="ghost" title={`${showCancelled ? 'پنهان کردن' : 'دیدن'} لغوشده‌های امروز (${faDigits(cancelled.length)})`} onPress={() => setShowCancelled((v) => !v)} />
+              {showCancelled ? cancelled.map((b) => <BookingCard key={b.id} booking={b} />) : null}
+            </>
+          ) : null}
         </>
       )}
     </Screen>

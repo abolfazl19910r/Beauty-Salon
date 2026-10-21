@@ -230,3 +230,29 @@ it('marks a past booking as no-show', async () => {
   await waitFor(() => expect(calls.some((c) => c.url.endsWith('/staff/bookings/41/no-show'))).toBe(true));
   expect(await screen.findByText('نیامد')).toBeTruthy();
 });
+
+it('today shows the amount to collect, unpaid prepayment and a collapsed list of cancellations', async () => {
+  mockSecure.set('mahru.token', '5|abc');
+  await require('@react-native-async-storage/async-storage').setItem('mahru.account', JSON.stringify(ACCOUNT));
+  const manual = { ...BOOKING, id: 42, status: 'confirmed', status_label: 'تأیید شده', payment_status: 'unpaid', remaining_amount: 450000, due_at_salon: 500000, actions: { confirm: false, cancel: true, complete: true } };
+  const noShow = { ...BOOKING, id: 43, status: 'no_show', status_label: 'نیامد', customer: { id: 10, name: 'نگار', phone: '0912' }, actions: { confirm: false, cancel: false, complete: false } };
+  const cancelled = { ...BOOKING, id: 44, status: 'cancelled', status_label: 'لغو شده', customer: { id: 11, name: 'لیلا', phone: '0913' }, cancellation_reason: 'سفر', cancelled_by: 'customer', actions: { confirm: false, cancel: false, complete: false } };
+  routes = (url) => {
+    if (url.includes('/staff/today')) return [200, ok({ date: '2026-10-11', date_jalali: '1405/07/19', date_label: 'x', summary: { count: 1, pending_count: 0, revenue: 0, cancelled_count: 1 }, bookings: [manual, noShow], cancelled: [cancelled] })];
+    if (url.includes('/staff/notifications')) return [200, ok([], { current_page: 1, last_page: 1, total: 0, per_page: 20, unread_count: 0 })];
+    if (url.endsWith('/push/device')) return [200, ok({ registered: true, provider: 'fcm', server_enabled: true, last_receipt_at: null, disabled_reason: null })];
+    return [404, { success: false, error: { code: 'not_found', message: 'x' } }];
+  };
+
+  renderRouter('./src/app', { initialUrl: '/' });
+
+  await screen.findByText('مریم');
+  expect(screen.getByText('دریافت در سالن: ۵۰۰٬۰۰۰ تومان')).toBeTruthy();
+  expect(screen.getByText('پیش‌پرداخت نشده')).toBeTruthy();
+  expect(screen.getByText('نیامد')).toBeTruthy();
+  expect(screen.queryByText('لیلا')).toBeNull();
+
+  fireEvent.press(screen.getByText(/دیدن لغوشده‌های امروز/));
+  expect(await screen.findByText('لیلا')).toBeTruthy();
+  expect(screen.getByText('دلیل: سفر')).toBeTruthy();
+});

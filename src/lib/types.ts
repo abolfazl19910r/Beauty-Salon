@@ -39,6 +39,8 @@ export type Booking = {
   prepayment_amount: number;
   discount_amount: number;
   remaining_amount: number;
+  /** آنچه در سالن گرفته می‌شود؛ نوبت پرداخت‌نشده = کل قیمت منهای تخفیف (سرور ۲۰۲۶-۱۰-۲۲؛ سرور قدیمی ندارد) */
+  due_at_salon?: number;
   source: string | null;
   notes: string | null;
   cancellation_reason: string | null;
@@ -75,8 +77,10 @@ export type Today = {
   date: string;
   date_jalali: string;
   date_label: string;
-  summary: { count: number; pending_count: number; revenue: number };
+  summary: { count: number; pending_count: number; revenue: number; cancelled_count?: number };
   bookings: Booking[];
+  /** لغوشده‌های امروز (سرور ۲۰۲۶-۱۰-۲۲) */
+  cancelled?: Booking[];
 };
 
 export type PageMeta = { current_page: number; per_page: number; total: number; last_page: number };
