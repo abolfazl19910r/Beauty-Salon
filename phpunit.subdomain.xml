@@ -46,5 +46,6 @@
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="CENTRAL_DOMAIN" value="rasta-test.local"/>
+        <env name="CUSTOMER_APP_SHA256_FINGERPRINTS" value="" force="true"/>
     </php>
 </phpunit>
