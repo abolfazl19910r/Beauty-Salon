@@ -68,9 +68,9 @@
                                 <span class="text-[var(--specialist-plum-muted)]">پیش‌پرداخت مشتری (از طریق سایت):</span>
                                 {{ number_format($booking->prepayment_amount) }} تومان
                             </p>
-                            <p class="text-[var(--specialist-plum-light)] font-bold persian-number">
-                                <span class="text-[var(--specialist-plum-muted)] font-normal">باقی‌مانده (موقع نوبت مستقیماً از مشتری دریافت کنید):</span>
-                                {{ number_format($booking->remaining_amount) }} تومان
+                            <p class="text-[var(--specialist-plum-light)] font-bold persian-number" data-due-at-salon>
+                                <span class="text-[var(--specialist-plum-muted)] font-normal">{{ $booking->payment_status === 'paid' ? 'باقی‌مانده (موقع نوبت مستقیماً از مشتری دریافت کنید):' : 'پیش‌پرداخت انجام نشده — کل مبلغ را موقع نوبت از مشتری دریافت کنید:' }}</span>
+                                {{ number_format($booking->due_at_salon) }} تومان
                             </p>
                         @endif
                     </div>

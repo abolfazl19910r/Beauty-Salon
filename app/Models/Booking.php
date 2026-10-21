@@ -160,6 +160,24 @@ class Booking extends Model
         return max(0.0, $remaining);
     }
 
+    /**
+     * مبلغی که متخصص/سالن هنگام نوبت باید از مشتری بگیرد (۲۰۲۶-۱۰-۲۲). با remaining_amount فرق دارد: پیش‌پرداختی که پرداخت
+     * نشده (نوبت تلفنی/حضوری مدیر، ستون prepayment_amount پیش‌فرض ۵۰٬۰۰۰ دارد) هم باید در سالن گرفته شود، پس برای نوبت
+     * پرداخت‌نشده = قیمت خدمت منهای تخفیف. remaining_amount (نمای مشتری: «پس از پیش‌پرداخت آنلاین») دست نخورد.
+     */
+    public function getDueAtSalonAttribute(): float
+    {
+        if ($this->customer_course_id !== null || ! $this->service) {
+            return 0.0;
+        }
+
+        if ($this->payment_status === 'paid') {
+            return $this->remaining_amount;
+        }
+
+        return max(0.0, (float) $this->service->price - (float) $this->discount_amount);
+    }
+
     public function loyaltyPoints(): Booking|HasOne
     {
         return $this->hasOne(LoyaltyPoint::class);

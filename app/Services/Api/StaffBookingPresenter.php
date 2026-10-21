@@ -44,6 +44,8 @@ class StaffBookingPresenter
             'prepayment_amount' => (float) $booking->prepayment_amount,
             'discount_amount' => (float) $booking->discount_amount,
             'remaining_amount' => $booking->remaining_amount,
+            // آنچه متخصص در سالن می‌گیرد: نوبت پرداخت‌نشده = کل قیمت منهای تخفیف (۲۰۲۶-۱۰-۲۲)
+            'due_at_salon' => $booking->due_at_salon,
             'source' => $booking->source,
             'notes' => $booking->notes,
             'cancellation_reason' => $booking->cancellation_reason,

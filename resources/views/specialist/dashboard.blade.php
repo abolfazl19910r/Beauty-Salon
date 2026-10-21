@@ -113,10 +113,23 @@
                     @if($todaySchedule->count() > 0)
                         <div class="space-y-4">
                             @foreach($todaySchedule as $booking)
-                                <div class="flex justify-between items-start border-b pb-3" style="border-color: var(--specialist-border);">
+                                <div class="flex justify-between items-start border-b pb-3 {{ $booking->status === 'no_show' ? 'opacity-60' : '' }}" style="border-color: var(--specialist-border);" data-today-booking="{{ $booking->id }}">
                                     <div>
                                         <p class="font-semibold text-[var(--specialist-text)]">{{ $booking->user->name }}</p>
                                         <p class="text-sm text-[var(--specialist-text-dim)]">{{ $booking->service?->name ?? '—' }} @if ($__courseLabel = $booking->courseSessionLabel())<span class="text-xs mr-1 px-2 py-0.5 rounded-full" style="background:rgb(var(--m-gold) / .15); color:rgb(var(--m-gold2));">{{ $__courseLabel }}</span>@endif</p>
+                                        {{-- پرداخت و مبلغ دریافتی در سالن (۲۰۲۶-۱۰-۲۲) --}}
+                                        @unless ($booking->customer_course_id)
+                                            <p class="text-xs mt-1 persian-number" data-payment="{{ $booking->payment_status === 'paid' ? 'paid' : 'unpaid' }}">
+                                                @if ($booking->payment_status === 'paid')
+                                                    <span style="color: rgb(var(--m-ok));">پیش‌پرداخت شده</span>
+                                                @else
+                                                    <span style="color: rgb(var(--m-warn));">پیش‌پرداخت نشده</span>
+                                                @endif
+                                                @if ($booking->due_at_salon > 0 && $booking->status !== 'no_show')
+                                                    <span class="text-[var(--specialist-text-dim)]"> · دریافت در سالن: {{ number_format($booking->due_at_salon) }} تومان</span>
+                                                @endif
+                                            </p>
+                                        @endunless
                                     </div>
                                     <div class="text-left">
                                         <p class="font-bold text-[var(--specialist-plum-mid)] persian-number" dir="ltr">{{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }}</p>
@@ -132,6 +145,25 @@
                             </svg>
                             <p class="mt-4">برای امروز نوبتی ندارید</p>
                         </div>
+                    @endif
+
+                    @if($todayCancelled->isNotEmpty())
+                        {{-- لغوشده‌های امروز، جمع‌شده (۲۰۲۶-۱۰-۲۲) --}}
+                        @php $cancelledBy = ['customer' => 'مشتری', 'specialist' => 'خودتان', 'admin' => 'مدیر سالن', 'system' => 'سیستم (پرداخت نشد)']; @endphp
+                        <details class="mt-5 pt-4 border-t" style="border-color: var(--specialist-border);" data-today-cancelled>
+                            <summary class="cursor-pointer text-sm text-[var(--specialist-plum-muted)] persian-number">لغوشده‌های امروز ({{ number_format($todayCancelled->count()) }})</summary>
+                            <div class="space-y-3 mt-3">
+                                @foreach($todayCancelled as $booking)
+                                    <a href="{{ route('specialist.bookings.show', $booking) }}" class="flex justify-between items-start text-sm" data-cancelled-booking="{{ $booking->id }}">
+                                        <div>
+                                            <p class="text-[var(--specialist-text)]">{{ $booking->user?->name ?? '—' }} <span class="text-[var(--specialist-text-dim)]">— {{ $booking->service?->name ?? '—' }}</span></p>
+                                            <p class="text-xs text-[var(--specialist-text-dim)]">لغو توسط {{ $cancelledBy[$booking->cancelled_by] ?? 'نامشخص' }}@if($booking->cancellation_reason) · {{ \Illuminate\Support\Str::limit($booking->cancellation_reason, 60) }}@endif</p>
+                                        </div>
+                                        <span class="font-bold text-[var(--specialist-plum-muted)] persian-number" dir="ltr">{{ $booking->booking_time->format('H:i') }}</span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </details>
                     @endif
                 </div>
             </div>

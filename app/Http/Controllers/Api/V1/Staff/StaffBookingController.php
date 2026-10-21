@@ -28,17 +28,21 @@ class StaffBookingController extends StaffController
     {
         $specialist = $this->specialist($request);
         $bookings = $this->dashboard->getTodaySchedule($specialist);
+        $cancelled = $this->dashboard->getTodayCancelled($specialist);
 
         return ApiResponse::success([
             'date' => Carbon::today()->toDateString(),
             'date_jalali' => Jalalian::fromCarbon(Carbon::today())->format('Y/m/d'),
             'date_label' => Jalalian::fromCarbon(Carbon::today())->format('l، j F Y'),
             'summary' => [
-                'count' => $bookings->count(),
+                // «نیامد» در فهرست هست ولی در شمار نوبت‌های امروز نه (مثل داشبورد وب)
+                'count' => $bookings->where('status', '!=', 'no_show')->count(),
                 'pending_count' => $bookings->where('status', 'pending')->count(),
+                'cancelled_count' => $cancelled->count(),
                 'revenue' => $this->dashboard->getTodayRevenue($specialist),
             ],
             'bookings' => $bookings->map(fn (Booking $b) => StaffBookingPresenter::present($b))->values(),
+            'cancelled' => $cancelled->map(fn (Booking $b) => StaffBookingPresenter::present($b))->values(),
         ]);
     }
 

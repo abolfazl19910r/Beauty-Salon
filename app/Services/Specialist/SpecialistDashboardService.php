@@ -19,12 +19,16 @@ class SpecialistDashboardService
      */
     public const AGENDA_STATUSES = ['pending', 'confirmed', 'completed'];
 
+    /** «برنامه‌ی امروز»: نوبت‌های فعال + «نیامد» (۲۰۲۶-۱۰-۲۲: پیش‌تر با زدن «نیامد» از فهرست امروز ناپدید می‌شد) */
+    public const TODAY_STATUSES = ['pending', 'confirmed', 'completed', 'no_show'];
+
     public function __construct(private readonly BookingRepositoryInterface $bookingRepository) {}
 
     public function getDashboardData(Specialist $specialist): array
     {
         return [
             'todaySchedule' => $this->getTodaySchedule($specialist),
+            'todayCancelled' => $this->getTodayCancelled($specialist),
             'todayPersian' => $this->toJalali(Carbon::now(), 'l، j F Y'),
             'todayBookingsCount' => $this->getTodayBookingsCount($specialist),
             'todayRevenue' => $this->getTodayRevenue($specialist),
@@ -45,7 +49,18 @@ class SpecialistDashboardService
     {
         return $this->bookingRepository->query()->where('specialist_id', $specialist->id)
             ->whereDate('booking_time', Carbon::today())
-            ->whereIn('status', self::AGENDA_STATUSES)
+            ->whereIn('status', self::TODAY_STATUSES)
+            ->with(['service', 'user'])
+            ->orderBy('booking_time', 'asc')
+            ->get();
+    }
+
+    /** لغوشده‌های امروز (بخش جمع‌شده‌ی داشبورد و «امروز» اپ همکار)، با لغوکننده و دلیل */
+    public function getTodayCancelled(Specialist $specialist)
+    {
+        return $this->bookingRepository->query()->where('specialist_id', $specialist->id)
+            ->whereDate('booking_time', Carbon::today())
+            ->where('status', 'cancelled')
             ->with(['service', 'user'])
             ->orderBy('booking_time', 'asc')
             ->get();
