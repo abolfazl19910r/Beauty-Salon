@@ -34,7 +34,7 @@ class PwaController extends Controller
         return $this->manifest([
             'id' => $scope,
             'name' => $title,
-            'short_name' => mb_substr($salon->name, 0, 12),
+            'short_name' => SalonTitle::short($salon->name),
             'description' => 'رزرو آنلاین نوبت در '.$title,
             'start_url' => $scope.'?source=pwa',
             'scope' => $scope,

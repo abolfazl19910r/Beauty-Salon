@@ -38,6 +38,11 @@ class PwaTest extends TestCase
         ]);
         $this->assertSame(['/s/rasta/pwa/icon-192.png', '/s/rasta/pwa/icon-512.png', '/s/rasta/pwa/icon-maskable-512.png'], array_column($response->json('icons'), 'src'));
         $this->assertMatchesRegularExpression('/^#[0-9A-F]{6}$/', $response->json('theme_color'));
+
+        // نام زیر آیکون آیفون بی پیشوند «سالن زیبایی» (۲۰۲۶-۱۰-۲۱)
+        $this->salon->update(['name' => 'سالن زیبایی راستا']);
+        $this->get('/s/rasta/manifest.webmanifest')->assertJson(['short_name' => 'راستا']);
+        $this->get('/s/rasta')->assertSee('<meta name="apple-mobile-web-app-title" content="راستا">', false);
     }
 
     public function test_icon_falls_back_to_mahru_and_is_built_from_the_salon_logo(): void

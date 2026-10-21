@@ -30,7 +30,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="{{ route('salon.pwa.icon', ['salon_slug' => $__pwaSalon->slug, 'variant' => '180']) }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="{{ mb_substr($__pwaSalon->name, 0, 12) }}">
+    <meta name="apple-mobile-web-app-title" content="{{ \App\Support\SalonTitle::short($__pwaSalon->name) }}">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="{{ \App\Http\Controllers\Pwa\PwaController::colors($__pwaSalon)['background'] }}">
 @elseif ($__pwaMode === 'specialist')
