@@ -23,6 +23,8 @@ class SupportTicketService
             'category' => $data['category'],
             'priority' => $data['priority'] ?? 'medium',
             'status' => 'open',
+            // مدیرِ چندسالنی (تصمیم ۵): تیکت مال سالنی است که از پنلش ثبت شد
+            'metadata' => array_filter(['salon_id' => app(\App\Support\CurrentSalon::class)->id()]) ?: null,
         ]);
 
         app(\App\Services\SuperAdmin\SuperAdminNotifier::class)->send('ticket', sprintf('تیکت تازه از «%s»: %s', $this->salonNameOf($ticket), $ticket->title),
@@ -82,6 +84,11 @@ class SupportTicketService
     /** تیکت ستون سالن ندارد؛ سالن از کاربر ثبت‌کننده (مدیر سالن یا مشتری) */
     private function salonOf(SupportTicket $ticket): ?\App\Models\Salon
     {
+        $salonId = is_array($ticket->metadata) ? ($ticket->metadata['salon_id'] ?? null) : null;
+        if ($salonId) {
+            return \App\Models\Salon::withoutGlobalScopes()->find($salonId);
+        }
+
         $user = \App\Models\User::find($ticket->user_id);
 
         return $user?->salons()->withoutGlobalScopes()->first()

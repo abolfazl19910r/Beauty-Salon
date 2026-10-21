@@ -28,6 +28,7 @@ class SuperAdminAuditLog extends Model
         'salon.plan' => 'تغییر پلن سالن',
         'salon.feature_override' => 'استثنای امکانات',
         'salon.owner' => 'تغییر مالک سالن',
+        'salon.member_added' => 'افزودن حساب موجود به سالن',
         'salon.paused' => 'توقف موقت رزرو سالن',
         'salon.resumed' => 'بازگشایی رزرو سالن',
         'impersonation.started' => 'ورود اضطراری به پنل سالن',

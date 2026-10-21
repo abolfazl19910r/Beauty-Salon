@@ -48,14 +48,15 @@ class StoreSalonSignupRequest extends FormRequest
             'intent' => ['nullable', 'in:trial,buy'],
             // تعداد متخصص سالن = سقف متخصص؛ بیشتر از تعداد شامل‌شده در پلن هزینه‌ی ماهانه دارد (SubscriptionPricing).
             'specialists_count' => ['required', 'integer', 'min:1', 'max:'.max(1, (int) config('billing.max_signup_specialists', 50))],
-            'owner_name' => ['required', 'string', 'max:255'],
+            // ⭐ تصمیم ۵ (۲۰۲۶-۱۰-۲۲): مدیر/منشیِ واردشده سالن تازه را برای حساب خودش می‌سازد؛ مشخصات مدیر لازم نیست
+            'owner_name' => [$this->existingOwner() ? 'nullable' : 'required', 'string', 'max:255'],
             'owner_phone' => [
-                'required', 'string', 'regex:/^09[0-9]{9}$/',
+                $this->existingOwner() ? 'nullable' : 'required', 'string', 'regex:/^09[0-9]{9}$/',
                 // ⭐ همون قانون StoreSalonRequest سوپرادمین: چون هنوز هیچ سالنی وجود نداره که
                 // phone رو بهش scope کنیم، سراسری بین user_type='staff' چک می‌شه.
                 Rule::unique('users', 'phone')->where(fn ($query) => $query->where('user_type', 'staff')),
             ],
-            'owner_password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'owner_password' => [$this->existingOwner() ? 'nullable' : 'required', 'confirmed', Rules\Password::defaults()],
         ];
     }
 
@@ -68,6 +69,12 @@ class StoreSalonSignupRequest extends FormRequest
         return [fn ($validator) => $this->validateSalonWorkingHours($validator)];
     }
 
+    /** حساب کادرِ واردشده‌ای که دست‌کم عضو یک سالن است (سالن دوم به همان حساب) */
+    public function existingOwner(): ?\App\Models\User
+    {
+        return \App\Http\Controllers\SalonSignup\SalonSignupController::existingOwner();
+    }
+
     public function messages(): array
     {
         return $this->salonContactMessages() + \App\Services\Salon\SalonLogoService::MESSAGES + \App\Support\ZarinpalMerchant::MESSAGES + [
@@ -77,7 +84,7 @@ class StoreSalonSignupRequest extends FormRequest
             'specialists_count.max' => 'برای بیشتر از :max متخصص با پشتیبانی تماس بگیرید.',
             'slug.alpha_dash' => 'آدرس فقط می‌تواند شامل حروف انگلیسی، عدد، خط تیره و زیرخط باشد.',
             'owner_phone.regex' => 'شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد.',
-            'owner_phone.unique' => 'ادمینی با این شماره موبایل از قبل ثبت‌نام کرده است.',
+            'owner_phone.unique' => 'این شماره حساب ماهرو دارد (مدیر یا منشی سالن دیگر). برای ساختن سالن دوم، اول با همین شماره وارد شوید و دوباره این صفحه را باز کنید.',
         ];
     }
 }

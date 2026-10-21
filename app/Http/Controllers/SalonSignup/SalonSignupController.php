@@ -49,10 +49,14 @@ class SalonSignupController extends Controller
         $selectedPlan = array_key_exists($plan, $prices) ? $plan : (array_key_exists('1m', $prices) ? '1m' : (string) array_key_first($prices));
         $pricing = app(\App\Support\Billing\SubscriptionPricing::class);
 
+        $existingOwner = self::existingOwner();
+
         return view('salon-signup.create', [
             'selectedPlan' => $selectedPlan,
             'selectedPlanPrice' => (int) $prices[$selectedPlan],
-            'trialDays' => $this->salonSignupService->trialDays(),
+            // تصمیم ۵-۲ الف: دوره‌ی رایگان فقط اولین سالن هر شماره
+            'trialDays' => $existingOwner ? 0 : $this->salonSignupService->trialDays(),
+            'existingOwner' => $existingOwner,
             'includedSpecialists' => $pricing->includedSpecialists($salePlan),
             'extraSpecialistPrice' => $pricing->extraSpecialistPricePerMonth($salePlan),
             'maxSignupSpecialists' => max(1, (int) config('billing.max_signup_specialists', 50)),
@@ -109,8 +113,34 @@ class SalonSignupController extends Controller
         return response()->json(['available' => $available, 'reason' => $available ? null : 'taken']);
     }
 
+    /**
+     * ⭐ تصمیم ۵ (۲۰۲۶-۱۰-۲۲): کاربرِ واردشده‌ای که مدیر یا منشی دست‌کم یک سالن است — سالن تازه به همان حساب اضافه می‌شود
+     * (بدون فرم مدیر و کد پیامکی؛ ورود همان تأیید است) و دوره‌ی رایگان ندارد (۵-۲ الف).
+     */
+    public static function existingOwner(): ?\App\Models\User
+    {
+        $user = Auth::user();
+
+        return $user && $user->user_type === 'staff' && ! $user->hasRole('super-admin') && $user->salons()->exists() ? $user : null;
+    }
+
     public function store(StoreSalonSignupRequest $request): RedirectResponse
     {
+        if ($owner = self::existingOwner()) {
+            $salon = $this->salonSignupService->registerForExistingOwner($request->validated() + [
+                'contact' => $request->salonContactAttributes(),
+            ], $owner, $request->file('logo'));
+
+            app(\App\Support\AdminSalonSelector::class)->choose($owner, $salon->id);
+
+            if ($request->input('intent') === 'buy') {
+                return $this->startImmediatePurchase($salon, $owner, is_string($request->input('plan_key')) ? mb_substr($request->input('plan_key'), 0, 40) : null);
+            }
+
+            return redirect()->route('admin.billing.index')
+                ->with('success', "سالن «{$salon->name}» ساخته شد و به حساب شما اضافه شد. برای فعال‌سازی، یکی از پلن‌ها را بخرید؛ از سربرگ پنل بین سالن‌هایتان جابه‌جا می‌شوید.");
+        }
+
         // سالن و مالک فقط بعد از تأیید کد ساخته می‌شوند (SalonSignupChallenge، تصمیم ۲۰۲۶-۱۰-۱۱)
         $challenge = $this->signupChallenge->start(
             $request->validated() + [

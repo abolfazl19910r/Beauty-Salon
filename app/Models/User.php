@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Providers\RouteServiceProvider;
 use App\Repositories\Contracts\RoleRepositoryInterface;
 use App\Support\CurrentSalon;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -116,7 +117,71 @@ class User extends Authenticatable
 
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class);
+        return $this->belongsToMany(Role::class)->withPivot('salon_id');
+    }
+
+    /** نقش این کاربر در هر سالن (salon_admins.role) — حافظه‌ی همین نمونه، برای is_admin مؤثر */
+    private array $salonRoleCache = [];
+
+    /**
+     * ⭐ مالک/منشی چندسالنی (تصمیم ۵، ۲۰۲۶-۱۰-۲۲): نقش‌هایی که در سالن جاری کار می‌کنند. بیرون از سالن (سوپرادمین، کنسول، صف
+     * بدون سالن) همه‌ی نقش‌ها. درون سالن: فقط نقش‌های سیستمی یا همان سالن (roles.salon_id) که یا سراسری داده شده‌اند
+     * (role_user.salon_id = null: سوپرادمین و ردیف‌های قدیمی کاربرانِ تک‌سالنی) یا در همین سالن. فیلتر روی مجموعه‌ی بارشده است
+     * (نه فقط scope کوئری Role) چون نقش‌ها ممکن است پیش از ست شدن CurrentSalon بار شده باشند.
+     */
+    public function effectiveRoles(bool $withPermissions = false): \Illuminate\Support\Collection
+    {
+        $roles = ($withPermissions ? $this->loadMissing('roles.permissions') : $this->loadMissing('roles'))->roles;
+        $salonId = app(CurrentSalon::class)->id();
+
+        if ($salonId === null) {
+            return $roles;
+        }
+
+        return $roles->filter(function (Role $role) use ($salonId) {
+            $pivotSalon = $role->pivot?->salon_id;
+
+            return ($role->salon_id === null || (int) $role->salon_id === $salonId)
+                && ($pivotSalon === null || (int) $pivotSalon === $salonId);
+        })->values();
+    }
+
+    /**
+     * is_admin مؤثر (تصمیم ۵): ستون users.is_admin سراسری است و دور زدن کامل مجوزها را می‌دهد. کسی که در یک سالن مالک (is_admin)
+     * و در سالن دیگر منشی (یا فقط متخصص) است، آنجا نباید این دور زدن را داشته باشد — پس وقتی سالن جاری ست است، فقط اگر در
+     * همان سالن مالک باشد. فقط کم می‌کند، هرگز زیاد نمی‌کند (ستون false همیشه false).
+     */
+    protected function isAdmin(): Attribute
+    {
+        return Attribute::get(function ($value) {
+            if (! $value) {
+                return false;
+            }
+
+            $salonId = app(CurrentSalon::class)->id();
+            if ($salonId === null || ! $this->exists || $this->hasRole('super-admin')) {
+                return true;
+            }
+
+            // درون یک سالن فقط مالکِ همان سالن؛ منشی یا غیرعضو (مثلاً متخصص که در سالن دیگری مالک است) نه
+            return $this->salonRoleIn($salonId) === 'owner';
+        });
+    }
+
+    /** owner | staff | null (عضو این سالن نیست) */
+    public function salonRoleIn(int $salonId): ?string
+    {
+        if (! array_key_exists($salonId, $this->salonRoleCache)) {
+            $this->salonRoleCache[$salonId] = \Illuminate\Support\Facades\DB::table('salon_admins')
+                ->where('user_id', $this->id)->where('salon_id', $salonId)->value('role');
+        }
+
+        return $this->salonRoleCache[$salonId];
+    }
+
+    public function forgetSalonRoles(): void
+    {
+        $this->salonRoleCache = [];
     }
 
     /**
@@ -135,10 +200,10 @@ class User extends Authenticatable
     public function hasRole($role): bool
     {
         if (is_string($role)) {
-            return $this->roles->contains('name', $role);
+            return $this->effectiveRoles()->contains('name', $role);
         }
 
-        return (bool) $role->intersect($this->roles)->count();
+        return (bool) $role->intersect($this->effectiveRoles())->count();
     }
 
     public function hasAnyRole($roles)
@@ -177,7 +242,11 @@ class User extends Authenticatable
             $role = app(RoleRepositoryInterface::class)->findByNameOrFail($role);
         }
 
-        $this->roles()->syncWithoutDetaching($role);
+        // در پنل سالن: نقش فقط در همین سالن (role_user.salon_id، تصمیم ۵)
+        $salonId = app(CurrentSalon::class)->id();
+        $roleId = $role instanceof Role ? $role->id : (int) $role;
+        \App\Support\RoleAssignments::give($this, [$roleId], $salonId);
+        $this->unsetRelation('roles');
 
         return $this;
     }
@@ -188,7 +257,12 @@ class User extends Authenticatable
             $role = app(RoleRepositoryInterface::class)->findByNameOrFail($role);
         }
 
-        $this->roles()->detach($role);
+        $salonId = app(CurrentSalon::class)->id();
+        $roleId = $role instanceof Role ? $role->id : (int) $role;
+        \Illuminate\Support\Facades\DB::table('role_user')->where('user_id', $this->id)->where('role_id', $roleId)
+            ->when($salonId !== null, fn ($q) => $q->where(fn ($w) => $w->whereNull('salon_id')->orWhere('salon_id', $salonId)))
+            ->delete();
+        $this->unsetRelation('roles');
 
         return $this;
     }
@@ -253,8 +327,8 @@ class User extends Authenticatable
             return true;
         }
 
-        // نقش‌ها با مجوزهایشان یک‌جا (بدون N+1 روی هر نقش)
-        foreach ($this->loadMissing('roles.permissions')->roles as $role) {
+        // نقش‌ها با مجوزهایشان یک‌جا (بدون N+1 روی هر نقش)؛ فقط نقش‌های مؤثر در سالن جاری (تصمیم ۵)
+        foreach ($this->effectiveRoles(true) as $role) {
             if ($role->hasPermission($permission)) {
                 return true;
             }
@@ -265,7 +339,7 @@ class User extends Authenticatable
 
     public function getAllPermissions()
     {
-        return $this->loadMissing('roles.permissions')->roles->flatMap->permissions->unique('id');
+        return $this->effectiveRoles(true)->flatMap->permissions->unique('id');
     }
 
     /**

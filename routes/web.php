@@ -163,6 +163,12 @@ require __DIR__.'/web/salon-signup.php';
 // salon's /s/{slug}/login.
 require __DIR__.'/web/specialistprofile.php';
 
+// ⭐ «سالن‌های من» پنل مدیر (تصمیم ۵، ۲۰۲۶-۱۰-۲۲): انتخاب سالن پیش از salon.active
+Route::prefix('admin/salons')->name('admin.salons.')->middleware(['auth', 'not_impersonating'])->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\Salon\AdminSalonSwitchController::class, 'choose'])->name('choose');
+    Route::post('/switch', [\App\Http\Controllers\Admin\Salon\AdminSalonSwitchController::class, 'switch'])->middleware('throttle:30,1')->name('switch');
+});
+
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_admin_panel', 'salon.active', 'not_impersonating'])->group(function () {
 
     Route::get('/', [\App\Http\Controllers\Admin\Dashboard\AdminDashboardController::class, 'dashboard'])->name('home');

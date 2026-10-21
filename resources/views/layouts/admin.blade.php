@@ -163,6 +163,7 @@
                 @endif
 
                 <div class="flex items-center space-x-3 space-x-reverse">
+                    @include('partials.admin-salon-switcher')
                     @include('partials.mahru-theme-toggle')
                     <!-- Search button -->
                     <button type="button"

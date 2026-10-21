@@ -44,7 +44,7 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="form-label">نام و نام خانوادگی <span style="color:rgb(var(--m-bad));">*</span></label>
-                                <input type="text" name="name" value="{{ old('name') }}" class="form-input" required placeholder="نام کامل کاربر">
+                                <input type="text" name="name" value="{{ old('name') }}" class="form-input" @required(! $hasCurrentSalon) placeholder="نام کامل کاربر">
                                 @error('name') <p class="form-error">{{ $message }}</p> @enderror
                             </div>
                             <div>
@@ -52,6 +52,9 @@
                                 <input type="text" name="phone" value="{{ old('phone') }}" class="form-input" dir="ltr" required placeholder="09123456789">
                                 @error('phone') <p class="form-error">{{ $message }}</p> @enderror
                                 <p class="text-xs mt-1" style="color:var(--admin-text-light);">فرمت: 09123456789</p>
+                                @if ($hasCurrentSalon)
+                                    <p class="text-xs mt-1" style="color:var(--admin-text-light);" data-existing-account-hint>اگر این شماره در سالن دیگری مدیر یا منشی است، همان حساب به این سالن اضافه می‌شود؛ نام و رمز لازم نیست.</p>
+                                @endif
                             </div>
                             <div>
                                 <label class="form-label">ایمیل (اختیاری)</label>
@@ -60,7 +63,7 @@
                             </div>
                             <div>
                                 <label class="form-label">رمز عبور <span style="color:rgb(var(--m-bad));">*</span></label>
-                                <input type="password" name="password" class="form-input" dir="ltr" required placeholder="حداقل ۸ کاراکتر">
+                                <input type="password" name="password" class="form-input" dir="ltr" @required(! $hasCurrentSalon) placeholder="حداقل ۸ کاراکتر">
                                 @error('password') <p class="form-error">{{ $message }}</p> @enderror
                             </div>
                         </div>

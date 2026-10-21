@@ -48,32 +48,7 @@ class SalonSignupService
     public function register(array $data): array
     {
         return DB::transaction(function () use ($data) {
-            $trialDays = $this->trialDays();
-            // پلن آزمایشی (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴): سهمیه و امکانات از خود پلن؛ بدون جدول پلن (پیش از plans:sync-defaults) همان
-            // override قدیمی سهمیه‌ی آزمایشی از config.
-            $trialPlan = $trialDays > 0 ? \App\Models\Plan::trial() : null;
-
-            $salon = $this->salonRepository->create([
-                'name' => $data['name'],
-                'slug' => $data['slug'],
-                'max_specialists_count' => (int) $data['specialists_count'],
-                'subscription_type' => $data['subscription_type'] ?? '1m',
-                'subscription_started_at' => now(),
-                // ⭐ عمدی، نه باگ — به docblock بالای این کلاس نگاه کن. با دوره‌ی آزمایشی روشن
-                // (۲۰۲۶-۰۹-۲۳)، به‌جای «از قبل منقضی»، سالن همین الان تا پایان آزمایشی کاملاً فعاله
-                // و همون EnsureAdminSalonActive موجود بعد از پایانش خودکار به billing می‌فرسته.
-                'subscription_ends_at' => $trialDays > 0 ? now()->addDays($trialDays) : now()->subSecond(),
-                'trial_ends_at' => $trialDays > 0 ? now()->addDays($trialDays) : null,
-                'plan_id' => $trialPlan?->id,
-                'sms_quota_per_month' => $trialDays > 0 && ! $trialPlan ? (int) config('billing.trial_sms_quota') : null,
-                'is_suspended' => false,
-                'created_by' => null,
-                // ⭐ ۲۰۲۶-۰۹-۲۳: آدرس/تلفن/سال شروع فعالیت/ساعات کاری — از
-                // StoreSalonSignupRequest::salonContactAttributes().
-                ...($data['contact'] ?? []),
-                'zarinpal_merchant_id' => \App\Support\ZarinpalMerchant::normalize($data['zarinpal_merchant_id'] ?? null),
-            ]);
-
+            $salon = $this->createSalon($data, $this->trialDays());
             $owner = $this->userRepository->create([
                 'name' => $data['owner_name'],
                 'phone' => $data['owner_phone'],
@@ -95,6 +70,58 @@ class SalonSignupService
 
             return ['salon' => $salon->fresh(), 'owner' => $owner];
         });
+    }
+
+    /** سالن تازه؛ $trialDays = ۰ یعنی بدون دوره‌ی رایگان (صفحه‌ی صورتحساب تا اولین پرداخت) */
+    private function createSalon(array $data, int $trialDays): Salon
+    {
+        // پلن آزمایشی (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴): سهمیه و امکانات از خود پلن؛ بدون جدول پلن (پیش از plans:sync-defaults) همان
+        // override قدیمی سهمیه‌ی آزمایشی از config.
+        $trialPlan = $trialDays > 0 ? \App\Models\Plan::trial() : null;
+
+        return $this->salonRepository->create([
+            'name' => $data['name'],
+            'slug' => $data['slug'],
+            'max_specialists_count' => (int) $data['specialists_count'],
+            'subscription_type' => $data['subscription_type'] ?? '1m',
+            'subscription_started_at' => now(),
+            // ⭐ عمدی، نه باگ — به docblock بالای این کلاس نگاه کن. با دوره‌ی آزمایشی روشن
+            // (۲۰۲۶-۰۹-۲۳)، به‌جای «از قبل منقضی»، سالن همین الان تا پایان آزمایشی کاملاً فعاله
+            // و همون EnsureAdminSalonActive موجود بعد از پایانش خودکار به billing می‌فرسته.
+            'subscription_ends_at' => $trialDays > 0 ? now()->addDays($trialDays) : now()->subSecond(),
+            'trial_ends_at' => $trialDays > 0 ? now()->addDays($trialDays) : null,
+            'plan_id' => $trialPlan?->id,
+            'sms_quota_per_month' => $trialDays > 0 && ! $trialPlan ? (int) config('billing.trial_sms_quota') : null,
+            'is_suspended' => false,
+            'created_by' => null,
+            // ⭐ ۲۰۲۶-۰۹-۲۳: آدرس/تلفن/سال شروع فعالیت/ساعات کاری — از
+            // StoreSalonSignupRequest::salonContactAttributes().
+            ...($data['contact'] ?? []),
+            'zarinpal_merchant_id' => \App\Support\ZarinpalMerchant::normalize($data['zarinpal_merchant_id'] ?? null),
+        ]);
+    }
+
+    /**
+     * ⭐ سالن دوم (و بعدی) یک حساب کادرِ موجود (تصمیم ۵، ۲۰۲۶-۱۰-۲۲): بدون ساختن حساب و بدون کد پیامکی (کاربر وارد شده است)،
+     * بدون دوره‌ی رایگان (۵-۲ الف: فقط اولین سالن هر شماره) — مستقیم صفحه‌ی صورتحساب یا درگاه.
+     */
+    public function registerForExistingOwner(array $data, User $owner, ?\Illuminate\Http\UploadedFile $logo = null): Salon
+    {
+        $salon = DB::transaction(function () use ($data, $owner) {
+            $salon = $this->createSalon($data, 0);
+            app(\App\Services\Salon\SalonMembershipService::class)->addExisting($owner, $salon, 'owner');
+
+            app(\App\Services\SuperAdmin\SuperAdminNotifier::class)->send('signup', sprintf('سالن تازه ثبت‌نام کرد: «%s» (/s/%s)، مالک %s (سالن دیگرش را هم دارد).', $salon->name, $salon->slug, $owner->phone),
+                route('superadmin.salons.edit', $salon->id, false), (int) $salon->id);
+
+            return $salon;
+        });
+
+        if ($logo) {
+            app(\App\Services\Salon\SalonLogoService::class)->replace($salon, $logo);
+        }
+
+        return $salon->fresh();
     }
 
     /** روزهای آزمایشی از پلن آزمایشی (سوپرادمین)؛ بدون آن از config. ۰ = بدون آزمایشی */

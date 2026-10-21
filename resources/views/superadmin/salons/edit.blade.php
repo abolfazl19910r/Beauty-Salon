@@ -112,6 +112,10 @@
                     <div class="font-bold">مالک سالن</div>
                     @if ($owner)
                         <div style="color: var(--sa-text-dim);">{{ $owner->name }} · <span dir="ltr">{{ $owner->phone }}</span></div>
+                        @php $ownerOtherSalons = \Illuminate\Support\Facades\DB::table('salon_admins')->where('user_id', $owner->id)->where('salon_id', '!=', $salon->id)->count(); @endphp
+                        @if ($ownerOtherSalons > 0)
+                            <div class="text-xs mt-1" style="color: var(--sa-warn);" data-owner-shared>این حساب در {{ to_persian_num((string) $ownerOtherSalons) }} سالن دیگر هم عضو است؛ تغییر نام، شماره یا رمز در همه‌ی آن‌ها اثر دارد.</div>
+                        @endif
                     @else
                         <div style="color: var(--sa-danger);">این سالن مالک ندارد.</div>
                     @endif
@@ -148,6 +152,26 @@
                         <input id="owner_password_confirmation" type="password" name="owner_password_confirmation" class="sa-input" autocomplete="new-password">
                     </div>
                     <div class="md:col-span-2"><button type="submit" class="sa-btn">ذخیره‌ی مالک</button></div>
+                </form>
+            </details>
+            {{-- تصمیم ۵ (۲۰۲۶-۱۰-۲۲): حسابی که در سالن دیگری مدیر/منشی است، با همان شماره و رمز به این سالن هم اضافه شود --}}
+            <details class="mt-3" @if($errors->has('member_phone')) open @endif data-add-member>
+                <summary class="cursor-pointer" style="color: var(--sa-accent);">افزودن حساب موجود (مدیر یا منشی سالن دیگر) به این سالن</summary>
+                <form method="POST" action="{{ route('superadmin.salons.members.store', $salon) }}" class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+                    @csrf
+                    <div class="md:col-span-2">
+                        <label class="sa-label" for="member_phone">شماره‌ی حساب</label>
+                        <input id="member_phone" name="member_phone" dir="ltr" class="sa-input" value="{{ old('member_phone') }}" placeholder="09…" required>
+                        @error('member_phone')<p class="text-xs mt-1" style="color: var(--sa-danger);">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <label class="sa-label" for="member_role">نقش در این سالن</label>
+                        <select id="member_role" name="member_role" class="sa-input">
+                            <option value="owner">مالک</option>
+                            <option value="staff">منشی</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-3"><button type="submit" class="sa-btn">افزودن</button></div>
                 </form>
             </details>
         </div>

@@ -51,17 +51,38 @@ class EnsureAdminSalonActive
             return $next($request);
         }
 
-        $salon = $user->salons()->first();
+        // ⭐ تصمیم ۵ (۲۰۲۶-۱۰-۲۲): سالن جاری از انتخاب نشست (AdminSalonSelector)، نه همیشه سالن اول
+        $selector = app(\App\Support\AdminSalonSelector::class);
+        $memberships = $selector->memberships($user);
 
-        if (! $salon || $salon->is_suspended) {
-            auth()->logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+        if ($memberships->isEmpty()) {
+            // عضو هیچ سالنی نیست: کسی که اصلاً دسترسی پنل ندارد (مثلاً متخصص) ۴۰۳، مدیرِ بی‌سالن مثل قبل خروج
+            abort_unless($user->hasPermission('access_admin_panel'), 403);
 
-            return redirect()->route('login')->withErrors([
-                'phone' => 'اشتراک سالن شما پایان یافته یا غیرفعال شده است. لطفاً با پشتیبانی تماس بگیرید.',
-            ]);
+            return $this->logoutWith($request, 'اشتراک سالن شما پایان یافته یا غیرفعال شده است. لطفاً با پشتیبانی تماس بگیرید.');
         }
+
+        $salon = $memberships->firstWhere('id', $selector->chosenId());
+
+        if ($salon === null && $memberships->count() > 1) {
+            $selector->forget();
+
+            return redirect()->route('admin.salons.choose');
+        }
+
+        $salon ??= $memberships->first();
+
+        if ($salon->is_suspended) {
+            if ($memberships->count() > 1) {
+                $selector->forget();
+
+                return redirect()->route('admin.salons.choose')->withErrors(['salon' => "سالن «{$salon->name}» غیرفعال شده است."]);
+            }
+
+            return $this->logoutWith($request, 'اشتراک سالن شما پایان یافته یا غیرفعال شده است. لطفاً با پشتیبانی تماس بگیرید.');
+        }
+
+        session([\App\Support\AdminSalonSelector::SESSION_KEY => $salon->id]);
 
         app(CurrentSalon::class)->set($salon);
 
@@ -72,5 +93,14 @@ class EnsureAdminSalonActive
         }
 
         return $next($request);
+    }
+
+    private function logoutWith(Request $request, string $message): Response
+    {
+        auth()->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login')->withErrors(['phone' => $message]);
     }
 }

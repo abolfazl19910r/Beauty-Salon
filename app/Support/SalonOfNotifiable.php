@@ -26,6 +26,12 @@ class SalonOfNotifiable
             return $notifiable->salon_id;
         }
 
+        // مدیرِ چندسالنی (تصمیم ۵): در پنل، سالن جاری اگر عضو آن است؛ وگرنه اولین عضویت (مثل قبل)
+        $current = app(\App\Support\CurrentSalon::class)->id();
+        if ($current !== null && $notifiable->exists && $notifiable->salonRoleIn($current) !== null) {
+            return $current;
+        }
+
         return $notifiable->salons()->value('salons.id')
             ?? Specialist::withoutGlobalScopes()
                 ->where(fn ($q) => $q->where('user_id', $notifiable->id)->orWhere('phone', $notifiable->phone))

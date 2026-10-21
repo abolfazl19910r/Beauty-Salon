@@ -33,6 +33,8 @@ class NotificationSalonIsolationTest extends TestCase
         $this->salonB = Salon::factory()->create(['slug' => 'notif-isolation-b']);
         $this->owner = User::factory()->create(['is_admin' => true]);
         $this->salonB->admins()->attach($this->owner->id, ['role' => 'owner']);
+        // مالک دو سالن (تصمیم ۵، ۲۰۲۶-۱۰-۲۲): پنل سالن A انتخاب شده است
+        $this->withSession([\App\Support\AdminSalonSelector::SESSION_KEY => $this->salonA->id]);
     }
 
     private function bookingIn(Salon $salon): Booking

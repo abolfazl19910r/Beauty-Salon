@@ -23,17 +23,29 @@ class StoreAdminUserRequest extends FormRequest
     public function rules(): array
     {
         $hasCurrentSalon = app(CurrentSalon::class)->id() !== null;
+        // ⭐ تصمیم ۵ (۲۰۲۶-۱۰-۲۲): در پنل سالن، شماره‌ی حساب کادرِ موجود (عضو سالن دیگر) همان حساب را به این سالن اضافه می‌کند؛
+        // نام و رمز لازم نیست (حساب مال خود اوست و با رمز خودش وارد می‌شود)
+        $existingStaff = $hasCurrentSalon && $this->existingStaff() !== null;
 
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'max:11', 'unique:users,phone'],
-            'password' => ['required', 'string', 'min:8'],
+            'name' => [$existingStaff ? 'nullable' : 'required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:11', $hasCurrentSalon
+                ? \Illuminate\Validation\Rule::unique('users', 'phone')->where(fn ($q) => $q->where('user_type', '!=', 'staff'))
+                : 'unique:users,phone'],
+            'password' => [$existingStaff ? 'nullable' : 'required', 'string', 'min:8'],
             'salon_role' => [$hasCurrentSalon ? 'required' : 'nullable', 'in:owner,staff'],
             'finance_access' => ['nullable', 'boolean'],
             'roles' => ['nullable', 'array'],
             'roles.*' => ['exists:roles,id'],
             'is_admin' => ['nullable', 'boolean'],
         ];
+    }
+
+    public function existingStaff(): ?\App\Models\User
+    {
+        $phone = (string) $this->input('phone');
+
+        return $phone === '' ? null : app(\App\Services\Salon\SalonMembershipService::class)->existingStaff($phone);
     }
 
     public function messages(): array

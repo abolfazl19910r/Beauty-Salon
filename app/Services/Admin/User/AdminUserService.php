@@ -11,6 +11,11 @@ use Illuminate\Support\Facades\Hash;
 
 class AdminUserService
 {
+    public const SHARED_ACCOUNT_MESSAGE = 'این حساب در سالن دیگری هم عضو است؛ نام، شماره، رمز و فعال بودنش را فقط خودش (از پروفایل) یا پشتیبانی ماهرو تغییر می‌دهد. از اینجا فقط نقش و دسترسی‌اش در همین سالن عوض می‌شود.';
+
+    /** خروجی delete(): کاربرِ مشترک فقط از همین سالن برداشته شد */
+    public const LEFT_SALON = -1;
+
     public function __construct(
         private readonly UserRepositoryInterface $userRepository,
         private readonly RoleRepositoryInterface $roleRepository,
@@ -36,7 +41,7 @@ class AdminUserService
             ]);
 
             if (! empty($data['roles'])) {
-                $user->roles()->sync($this->filterAssignableRoles($data['roles'] ?? []));
+                \App\Support\RoleAssignments::syncForSalon($user, $this->filterAssignableRoles($data['roles'] ?? []), $this->currentSalonId());
             }
 
             if (! empty($data['salon']) && ! empty($data['salon_role'])) {
@@ -60,16 +65,28 @@ class AdminUserService
                 $this->guardNotLastOwner($user, $salon, 'نقش او در سالن تغییر کند');
             }
 
-            $user->update([
-                'name' => $data['name'],
-                'phone' => $data['phone'],
-                'is_admin' => $data['is_admin'],
-                'phone_verified_at' => $data['is_active']
-                    ? ($user->phone_verified_at ?? now())
-                    : null,
-            ]);
+            // ⭐ حساب مشترک چند سالن (تصمیم ۵): مشخصات حساب از پنل یک سالن عوض نمی‌شود؛ is_admin ستون هم دست نمی‌خورد
+            // (مالک بودن در سالن‌های دیگرش به آن بسته است؛ در این سالن نقش pivot تصمیم می‌گیرد — User::isAdmin)
+            if ($salon && app(\App\Services\Salon\SalonMembershipService::class)->isShared($user, $salon)) {
+                $isActive = $user->phone_verified_at !== null;
+                if ($data['name'] !== $user->name || $data['phone'] !== $user->phone || (bool) $data['is_active'] !== $isActive) {
+                    throw \Illuminate\Validation\ValidationException::withMessages(['name' => self::SHARED_ACCOUNT_MESSAGE]);
+                }
+                if (! empty($data['salon_role']) && $data['salon_role'] === 'owner' && ! $user->getRawOriginal('is_admin')) {
+                    $user->forceFill(['is_admin' => true])->save();
+                }
+            } else {
+                $user->update([
+                    'name' => $data['name'],
+                    'phone' => $data['phone'],
+                    'is_admin' => $data['is_admin'],
+                    'phone_verified_at' => $data['is_active']
+                        ? ($user->phone_verified_at ?? now())
+                        : null,
+                ]);
+            }
 
-            $user->roles()->sync($this->filterAssignableRoles($data['roles'] ?? []));
+            \App\Support\RoleAssignments::syncForSalon($user, $this->filterAssignableRoles($data['roles'] ?? []), $this->currentSalonId());
 
             if ($salon && ! empty($data['salon_role'])) {
                 $salon->admins()->updateExistingPivot($user->id, ['role' => $data['salon_role']]);
@@ -81,13 +98,21 @@ class AdminUserService
 
     public function delete(User $user, ?Salon $salon = null): int
     {
+        if ($salon) {
+            $this->guardNotLastOwner($user, $salon, 'حذف شود');
+
+            // حساب مشترک: فقط از همین سالن برداشته می‌شود (تصمیم ۵)
+            $memberships = app(\App\Services\Salon\SalonMembershipService::class);
+            if ($memberships->isShared($user, $salon)) {
+                $memberships->leave($user, $salon);
+
+                return self::LEFT_SALON;
+            }
+        }
+
         $bookingsCount = $user->bookings()->count();
         if ($bookingsCount > 0) {
             return $bookingsCount;
-        }
-
-        if ($salon) {
-            $this->guardNotLastOwner($user, $salon, 'حذف شود');
         }
 
         $user->roles()->detach();
@@ -118,7 +143,12 @@ class AdminUserService
         // ⭐ Fix (session 7): was referencing an undefined $data variable instead of the
         // $roles parameter — every call silently stripped ALL of the target user's roles
         // regardless of what was submitted, since $data['roles'] ?? [] always resolved to [].
-        $user->roles()->sync($this->filterAssignableRoles($roles));
+        \App\Support\RoleAssignments::syncForSalon($user, $this->filterAssignableRoles($roles), $this->currentSalonId());
+    }
+
+    private function currentSalonId(): ?int
+    {
+        return app(\App\Support\CurrentSalon::class)->id();
     }
 
     /**

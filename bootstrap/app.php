@@ -38,11 +38,12 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         // سالن جاری باید پیش از route model binding ست شود تا scope سراسری BelongsToSalon خودِ binding را محدود کند
-        // (رکورد سالن دیگر → ۴۰۴، حتی اگر اکشنی چک مالکیت را فراموش کند). Permission پیش از سالن می‌ماند (مثل قبل)،
-        // تا کاربر بی‌دسترسی به‌جای خروج اجباری EnsureAdminSalonActive همان ۴۰۳ را بگیرد.
+        // (رکورد سالن دیگر → ۴۰۴، حتی اگر اکشنی چک مالکیت را فراموش کند). ⭐ از تصمیم ۵ (۲۰۲۶-۱۰-۲۲) سالن پیش از Permission:
+        // نقش‌ها و is_admin عضو چندسالنی فقط در سالن جاری حساب می‌شوند (User::effectiveRoles)، پس مجوز باید بعد از ست شدن سالن
+        // سنجیده شود. کاربر بی‌دسترسی و بی‌سالن (مثلاً متخصص) همچنان ۴۰۳ می‌گیرد (EnsureAdminSalonActive).
         foreach ([
-            \App\Http\Middleware\PermissionMiddleware::class,
             \App\Http\Middleware\EnsureAdminSalonActive::class,
+            \App\Http\Middleware\PermissionMiddleware::class,
             \App\Http\Middleware\EnsureSpecialistSalonActive::class,
             \App\Http\Middleware\ResolveSalonFromRoute::class,
             \App\Http\Middleware\Api\EnsureApiAudience::class,

@@ -99,7 +99,10 @@
         <h1>ساخت سالن خودتان روی {{ config('brand.name') }}</h1>
         <p class="sub">
             در چند دقیقه، پنل مدیریت اختصاصی سالن خودتان را راه‌اندازی کنید.
-            @if ($intent === 'buy')
+            @if ($existingOwner)
+                <br>سالن تازه برای حساب <span dir="ltr">{{ $existingOwner->phone }}</span> ({{ $existingOwner->name }}) ساخته می‌شود و از سربرگ پنل بین سالن‌هایتان جابه‌جا می‌کنید.
+                دوره‌ی رایگان فقط برای اولین سالن هر شماره است؛ اشتراک این سالن را {{ $intent === 'buy' ? 'همین حالا در درگاه' : 'از صفحه‌ی صورتحساب همان سالن' }} می‌خرید.
+            @elseif ($intent === 'buy')
                 <br>بعد از تایید شماره موبایل، مستقیم به درگاه پرداخت زرین‌پال هدایت می‌شوید و اشتراک از همان لحظه فعال می‌شود.
             @elseif ($trialDays > 0)
                 <br>بعد از تایید شماره موبایل، {{ to_persian_num((string) $trialDays) }} روز رایگان از همه‌ی امکانات استفاده می‌کنید؛
@@ -251,6 +254,9 @@
                     </div>
                 </fieldset>
 
+                @if ($existingOwner)
+                <p class="sub" data-existing-owner>مدیر سالن: {{ $existingOwner->name }} · <span dir="ltr">{{ $existingOwner->phone }}</span> (حساب فعلی شما)</p>
+                @else
                 <fieldset>
                     <legend>مشخصات مدیر سالن (شما)</legend>
                     <div class="row">
@@ -271,9 +277,11 @@
                         <label for="owner_password_confirmation">تکرار رمز عبور</label>
                         <input type="password" id="owner_password_confirmation" name="owner_password_confirmation" required minlength="8">
                     </div>
+                    <p style="font-size:.8rem;opacity:.7;margin-top:.5rem">مدیر یا منشی سالن دیگری روی ماهرو هستید؟ <a href="{{ route('login') }}" style="text-decoration:underline">اول وارد شوید</a> و دوباره همین صفحه را باز کنید تا سالن تازه به همان حساب اضافه شود.</p>
                 </fieldset>
+                @endif
 
-                <button type="submit">{{ old('intent', $intent) === 'buy' ? 'ادامه، تایید موبایل و پرداخت' : 'ادامه و ارسال کد تایید' }}</button>
+                <button type="submit">{{ $existingOwner ? (old('intent', $intent) === 'buy' ? 'ساختن سالن و پرداخت' : 'ساختن سالن') : (old('intent', $intent) === 'buy' ? 'ادامه، تایید موبایل و پرداخت' : 'ادامه و ارسال کد تایید') }}</button>
             </form>
         </div>
     </div>
@@ -339,10 +347,10 @@
                 taken: '✗ این آدرس قبلاً استفاده شده است',
             });
 
-            wireCheck('owner_phone', '{{ route('salon-signup.check-phone') }}', 'phone', {
+            if (document.getElementById('owner_phone')) wireCheck('owner_phone', '{{ route('salon-signup.check-phone') }}', 'phone', {
                 pending: 'در حال بررسی…',
                 ok: '✓ این شماره آزاد است',
-                taken: '✗ ادمینی با این شماره قبلاً ثبت‌نام کرده است',
+                taken: '✗ این شماره حساب ماهرو دارد؛ برای سالن دوم اول با همین شماره وارد شوید',
             });
         })();
     </script>

@@ -92,7 +92,8 @@ class UserFactory extends Factory
     public function configure(): static
     {
         return $this->afterCreating(function (User $user) {
-            if (! $user->is_admin) {
+            // ستون خام: is_admin مؤثر (User::isAdmin، تصمیم ۵) پیش از عضویت در سالن جاری false است
+            if (! $user->getRawOriginal('is_admin')) {
                 return;
             }
 

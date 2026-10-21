@@ -90,6 +90,15 @@ class AdminUserController extends Controller
             $salon = app(CurrentSalon::class)->get();
             $salonRole = $request->validated('salon_role');
 
+            // ⭐ تصمیم ۵: حساب کادرِ موجود (عضو سالن دیگر) به همین سالن اضافه می‌شود، نه حساب تازه
+            if ($salon && ($existing = $request->existingStaff())) {
+                app(\App\Services\Salon\SalonMembershipService::class)->addExisting(
+                    $existing, $salon, $salonRole, $this->salonRoleIds($salonRole, $request->boolean('finance_access')));
+
+                return redirect()->route('admin.users.index')
+                    ->with('success', "حساب موجود شماره‌ی {$existing->phone} به این سالن اضافه شد؛ با همان رمز خودش وارد می‌شود و بین سالن‌هایش جابه‌جا می‌کند.");
+            }
+
             $this->userService->create([
                 ...$request->validated(),
                 // ⭐ وقتی CurrentSalon ست است، is_admin و roles دیگر از چک‌باکس آزاد نمی‌آیند —
@@ -108,7 +117,7 @@ class AdminUserController extends Controller
             return redirect()->route('admin.users.index')
                 ->with('success', 'کاربر جدید با موفقیت ایجاد شد.');
 
-        } catch (\App\Exceptions\DomainException $e) {
+        } catch (\App\Exceptions\DomainException|\Illuminate\Validation\ValidationException $e) {
             throw $e;
         } catch (\Exception $e) {
             return redirect()->back()
@@ -122,7 +131,7 @@ class AdminUserController extends Controller
         $this->authorizeSalonMembership($user);
 
         $roles = $this->roleRepository->getAssignable((bool) auth()->user()->hasRole('super-admin'));
-        $userRoles = $user->roles()->pluck('roles.id')->toArray();
+        $userRoles = $user->effectiveRoles()->pluck('id')->all();
         $bookings = $user->bookings()->with(['service', 'specialist'])->latest()->take(5)->get();
         $salonRole = app(CurrentSalon::class)->get()?->admins()
             ->wherePivot('user_id', $user->id)->first()?->pivot->role;
@@ -135,13 +144,16 @@ class AdminUserController extends Controller
         $this->authorizeSalonMembership($user);
 
         $roles = $this->roleRepository->getAssignable((bool) auth()->user()->hasRole('super-admin'));
-        $userRoles = $user->roles()->pluck('roles.id')->toArray();
+        $userRoles = $user->effectiveRoles()->pluck('id')->all();
         $salon = app(CurrentSalon::class)->get();
         $hasCurrentSalon = $salon !== null;
         $salonRole = $salon?->admins()->wherePivot('user_id', $user->id)->first()?->pivot->role;
         $financeAccess = $userRoles && in_array($this->roleRepository->getIdByName('finance-access'), $userRoles);
 
-        return view('admin.users.edit', compact('user', 'roles', 'userRoles', 'salonRole', 'financeAccess', 'hasCurrentSalon'));
+        // حساب مشترک چند سالن (تصمیم ۵): مشخصات حساب از اینجا عوض نمی‌شود
+        $sharedAccount = app(\App\Services\Salon\SalonMembershipService::class)->isShared($user, $salon);
+
+        return view('admin.users.edit', compact('user', 'roles', 'userRoles', 'salonRole', 'financeAccess', 'hasCurrentSalon', 'sharedAccount'));
     }
 
     public function update(UpdateAdminUserRequest $request, User $user): RedirectResponse
@@ -165,7 +177,7 @@ class AdminUserController extends Controller
             return redirect()->route('admin.users.show', $user)
                 ->with('success', 'اطلاعات کاربر با موفقیت بروزرسانی شد.');
 
-        } catch (\App\Exceptions\DomainException $e) {
+        } catch (\App\Exceptions\DomainException|\Illuminate\Validation\ValidationException $e) {
             throw $e;
         } catch (\Exception $e) {
             return redirect()->back()
@@ -181,6 +193,11 @@ class AdminUserController extends Controller
         try {
             $salon = app(CurrentSalon::class)->get();
             $remainingBookings = $this->userService->delete($user, $salon);
+
+            if ($remainingBookings === \App\Services\Admin\User\AdminUserService::LEFT_SALON) {
+                return redirect()->route('admin.users.index')
+                    ->with('success', 'از پنل این سالن برداشته شد؛ حسابش در سالن‌های دیگرش می‌ماند.');
+            }
 
             if ($remainingBookings > 0) {
                 return redirect()->back()
@@ -205,6 +222,9 @@ class AdminUserController extends Controller
         try {
             $salon = app(CurrentSalon::class)->get();
             $activate = (bool) $request->input('is_active', 0);
+            if (app(\App\Services\Salon\SalonMembershipService::class)->isShared($user, $salon)) {
+                return redirect()->back()->with('error', \App\Services\Admin\User\AdminUserService::SHARED_ACCOUNT_MESSAGE);
+            }
             $this->userService->updateStatus($user, $activate, $salon);
 
             $status = $activate ? 'فعال' : 'غیرفعال';
@@ -223,6 +243,10 @@ class AdminUserController extends Controller
     public function resetPassword(ResetAdminUserPasswordRequest $request, User $user): RedirectResponse
     {
         $this->authorizeSalonMembership($user);
+
+        if (app(\App\Services\Salon\SalonMembershipService::class)->isShared($user, app(CurrentSalon::class)->get())) {
+            return redirect()->back()->with('error', \App\Services\Admin\User\AdminUserService::SHARED_ACCOUNT_MESSAGE);
+        }
 
         try {
             $this->userService->resetPassword($user, $request->password);

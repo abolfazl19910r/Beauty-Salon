@@ -37,6 +37,8 @@ class ImpersonationController extends Controller
         $request->session()->put([
             SuperAdminImpersonation::SESSION_KEY => $superAdmin->id,
             SuperAdminImpersonation::SALON_KEY => $salon->id,
+            // مالکِ چندسالنی: پنل همین سالن باز شود، نه انتخاب سالن (تصمیم ۵)
+            \App\Support\AdminSalonSelector::SESSION_KEY => $salon->id,
         ]);
 
         return redirect()->route('admin.dashboard')->with('success', "حالت پشتیبانی: شما در پنل «{$salon->name}» هستید.");

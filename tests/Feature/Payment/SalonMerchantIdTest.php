@@ -61,6 +61,8 @@ class SalonMerchantIdTest extends TestCase
         $this->confirmSalonSignup();
         $this->assertSame(self::MERCHANT, Salon::where('slug', 'golsar')->firstOrFail()->zarinpal_merchant_id);
 
+        // بازدیدکننده‌ی تازه (مالکِ واردشده سالن دوم را بی‌فرم مدیر می‌سازد — تصمیم ۵، ۲۰۲۶-۱۰-۲۲)
+        auth()->logout();
         $this->post(route('salon-signup.store'), $base + ['slug' => 'golsar-2', 'owner_phone' => '09121110002'])
             ->assertRedirect(route('salon-signup.verify'));
         $this->confirmSalonSignup();

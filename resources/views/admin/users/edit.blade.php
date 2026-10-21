@@ -50,17 +50,22 @@
                 {{-- Basic information --}}
                 <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">اطلاعات اصلی</h2>
+                    @if ($sharedAccount ?? false)
+                        <div class="rounded-xl p-3 mb-4 text-sm" style="background: rgb(var(--m-info) / .1); color: rgb(var(--m-info));" data-shared-account>
+                            {{ \App\Services\Admin\User\AdminUserService::SHARED_ACCOUNT_MESSAGE }}
+                        </div>
+                    @endif
                     <form action="{{ route('admin.users.update', $user) }}" method="POST">
                         @csrf @method('PUT')
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="form-label">نام و نام خانوادگی <span style="color:rgb(var(--m-bad));">*</span></label>
-                                <input type="text" name="name" value="{{ old('name', $user->name) }}" class="form-input" required>
+                                <input type="text" name="name" value="{{ old('name', $user->name) }}" class="form-input" required @readonly($sharedAccount ?? false)>
                                 @error('name') <p class="form-error">{{ $message }}</p> @enderror
                             </div>
                             <div>
                                 <label class="form-label">شماره موبایل <span style="color:rgb(var(--m-bad));">*</span></label>
-                                <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" class="form-input" dir="ltr" required>
+                                <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" class="form-input" dir="ltr" required @readonly($sharedAccount ?? false)>
                                 @error('phone') <p class="form-error">{{ $message }}</p> @enderror
                             </div>
                             <div>

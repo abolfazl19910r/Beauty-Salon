@@ -88,6 +88,7 @@ Route::delete('/failed-jobs/{uuid}', [PlatformOperationsController::class, 'forg
 // ⭐ ابزارهای ابرمدیر (۲۰۲۶-۱۰-۱۵)
 Route::post('/salons/{salon}/impersonate', [\App\Http\Controllers\SuperAdmin\ImpersonationController::class, 'start'])->middleware('throttle:20,1')->name('salons.impersonate');
 Route::put('/salons/{salon}/owner', [\App\Http\Controllers\SuperAdmin\SalonOwnerController::class, 'update'])->name('salons.owner');
+Route::post('/salons/{salon}/members', [\App\Http\Controllers\SuperAdmin\SalonMemberController::class, 'store'])->middleware('throttle:30,1')->name('salons.members.store');
 Route::get('/notifications', [\App\Http\Controllers\SuperAdmin\NotificationInboxController::class, 'index'])->name('notifications.index');
 Route::post('/notifications/read-all', [\App\Http\Controllers\SuperAdmin\NotificationInboxController::class, 'readAll'])->name('notifications.read-all');
 Route::get('/notifications/{id}', [\App\Http\Controllers\SuperAdmin\NotificationInboxController::class, 'open'])->name('notifications.open');
