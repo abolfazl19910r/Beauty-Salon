@@ -147,7 +147,7 @@ class CustomerPresenter
     {
         return match ($status) {
             'paid' => 'paid',
-            'pending', 'reconciling' => 'pending',
+            'pending', 'reconciling', 'verifying', 'verify_check' => 'pending',
             'reversing', 'reversed', 'refunded' => 'refunded',
             default => 'failed',
         };

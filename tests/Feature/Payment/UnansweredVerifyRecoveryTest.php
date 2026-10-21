@@ -71,6 +71,21 @@ class UnansweredVerifyRecoveryTest extends TestCase
         return $tx->fresh();
     }
 
+    /**
+     * از ۲۰۲۶-۱۰-۲۲ (HeldBookingPayment) نوبتِ تأییدنشده اول نگه داشته می‌شود؛ این تست‌ها مسیر بعد از پایان مهلت نگهداری را
+     * می‌سنجند: یک بررسی دیگر هم بی‌پاسخ ← نوبت لغو و تراکنش «بی‌پاسخ» (یک verify از دنباله مصرف می‌شود).
+     */
+    private function expireHold(PaymentTransaction $tx, Booking $booking): PaymentTransaction
+    {
+        $this->assertSame('verifying', $tx->status);
+        $this->assertSame('pending_payment', $booking->fresh()->status, 'callback نوبت رو نگه داشت');
+
+        $this->travel(\App\Services\Payment\HeldBookingPayment::HOLD_MINUTES + 1)->minutes();
+        $this->artisan('payments:reconcile')->expectsOutputToContain('expired: 1');
+
+        return $tx->fresh();
+    }
+
     private function booking(User $user): Booking
     {
         return Booking::factory()->create([
@@ -84,16 +99,16 @@ class UnansweredVerifyRecoveryTest extends TestCase
     {
         $user = User::factory()->create(['phone' => '09121234567']);
         $booking = $this->booking($user);
-        $this->zibal(['timeout', ['result' => 100, 'status' => 1, 'amount' => 605000, 'refNumber' => 99887766, 'cardNumber' => '603799******1234']]);
+        $this->zibal(['timeout', 'timeout', ['result' => 100, 'status' => 1, 'amount' => 605000, 'refNumber' => 99887766, 'cardNumber' => '603799******1234']]);
 
-        $tx = $this->payBookingAndComeBack($user, $booking);
+        $tx = $this->expireHold($this->payBookingAndComeBack($user, $booking), $booking);
         $this->assertSame('failed', $tx->status);
         $this->assertTrue($tx->verify_response['unanswered']);
-        $this->assertSame('cancelled', $booking->fresh()->status, 'callback نوبت رو لغو کرد');
+        $this->assertSame('cancelled', $booking->fresh()->status, 'پایان مهلت نگهداری نوبت رو لغو کرد');
 
         $this->travel(5)->minutes();
         $this->artisan('payments:reconcile');
-        $this->assertSame(1, $this->verifyCalls(), 'تا ۱۰ دقیقه فرصت refresh خود مشتریه');
+        $this->assertSame(2, $this->verifyCalls(), 'تا ۱۰ دقیقه فرصت refresh خود مشتریه');
 
         $this->travel(10)->minutes();
         $this->artisan('payments:reconcile')->expectsOutputToContain('به کیف پول: 1')->assertSuccessful();
@@ -111,15 +126,16 @@ class UnansweredVerifyRecoveryTest extends TestCase
         $location = $this->get("/payments/return/{$tx->public_id}?".http_build_query(['trackId' => 555001, 'success' => 1, 'status' => 2]))->headers->get('Location');
         $this->actingAs($user)->get($location)->assertSessionHas('error', fn ($m) => str_contains($m, 'برگشت داده شده'));
         $this->assertSame(60500.0, (float) $user->getOrCreateWallet()->fresh()->balance);
-        $this->assertSame(2, $this->verifyCalls());
+        $this->assertSame(3, $this->verifyCalls());
         Notification::assertSentToTimes($user, PaymentRefundedNotification::class, 1);
     }
 
     public function test_a_payment_the_gateway_never_verified_is_closed_without_refunding(): void
     {
         $user = User::factory()->create();
-        $this->zibal(['timeout', ['result' => 202, 'message' => 'تراکنش پرداخت نشده']]);
-        $tx = $this->payBookingAndComeBack($user, $this->booking($user));
+        $this->zibal(['timeout', 'timeout', ['result' => 202, 'message' => 'تراکنش پرداخت نشده']]);
+        $booking = $this->booking($user);
+        $tx = $this->expireHold($this->payBookingAndComeBack($user, $booking), $booking);
 
         $this->travel(15)->minutes();
         $this->artisan('payments:reconcile')->expectsOutputToContain('پرداخت‌نشده: 1');
@@ -132,14 +148,15 @@ class UnansweredVerifyRecoveryTest extends TestCase
         Notification::assertNothingSent();
 
         $this->artisan('payments:reconcile');
-        $this->assertSame(2, $this->verifyCalls(), 'بسته‌شده دوباره پرسیده نمی‌شه');
+        $this->assertSame(3, $this->verifyCalls(), 'بسته‌شده دوباره پرسیده نمی‌شه');
     }
 
     public function test_a_still_unanswered_payment_is_asked_again_until_the_24_hour_window_ends(): void
     {
         $user = User::factory()->create();
-        $this->zibal(['timeout', 'timeout', 'timeout', 'timeout']);
-        $tx = $this->payBookingAndComeBack($user, $this->booking($user));
+        $this->zibal(['timeout', 'timeout', 'timeout', 'timeout', 'timeout']);
+        $booking = $this->booking($user);
+        $tx = $this->expireHold($this->payBookingAndComeBack($user, $booking), $booking);
 
         $this->travel(15)->minutes();
         $this->artisan('payments:reconcile')->expectsOutputToContain('هنوز بی‌پاسخ: 1');
@@ -153,7 +170,7 @@ class UnansweredVerifyRecoveryTest extends TestCase
 
         $this->travel(25)->hours();
         $this->artisan('payments:reconcile');
-        $this->assertSame(3, $this->verifyCalls(), 'بعد از ۲۴ ساعت برای بررسی دستی رها می‌شه');
+        $this->assertSame(4, $this->verifyCalls(), 'بعد از ۲۴ ساعت برای بررسی دستی رها می‌شه');
     }
 
     public function test_a_lost_wallet_top_up_answer_charges_the_wallet_when_the_gateway_had_verified(): void

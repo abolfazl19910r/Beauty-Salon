@@ -260,6 +260,12 @@ class PaymentService
                 return ['status' => 'success', 'success' => true, 'booking_id' => $booking->id, 'reference' => $transaction->token, 'ref_id' => $transaction->ref_id, 'card_pan' => $transaction->card_pan, 'fee' => null, 'gateway' => $transaction->driver, 'gateway_fee' => intdiv((int) $transaction->fee_rial, 10), 'transaction_id' => $transaction->id];
             }
 
+            if (\App\Services\Payment\HeldBookingPayment::isHeld($transaction)) {
+                // ⭐ نوبت با پرداخت تأییدنشده نگه داشته شده (۲۰۲۶-۱۰-۲۲) — بررسی در پس‌زمینه است؛ refresh دوباره تأیید نمی‌کند
+                return ['status' => 'failed', 'success' => false, 'booking_id' => $booking->id, 'verifying' => true, 'transaction_id' => $transaction->id,
+                    'message' => \App\Services\Payment\HeldBookingPayment::MESSAGE];
+            }
+
             if ($transaction?->status === 'reconciling') {
                 // ⭐ payments:reconcile همین الان داره وضعیت این پرداخت رو از درگاه می‌پرسه — تایید دوم هم‌زمان نه
                 return ['status' => 'failed', 'success' => false, 'booking_id' => $booking->id, 'refunded' => true,
@@ -307,6 +313,14 @@ class PaymentService
                     'gateway_fee' => $transaction ? intdiv((int) $transaction->fee_rial, 10) : 0,
                     'transaction_id' => $transaction?->id,
                 ];
+            }
+
+            // ⭐ تأیید به درگاه نرسید یا پاسخش نیامد (قطعی لحظه‌ای اینترنت): نوبت لغو نمی‌شود، بعداً دوباره پرسیده می‌شود (۲۰۲۶-۱۰-۲۲)
+            if (\App\Services\Payment\HeldBookingPayment::qualifies($transaction, $result->raw)) {
+                app(\App\Services\Payment\HeldBookingPayment::class)->hold($transaction->fresh());
+
+                return ['status' => 'failed', 'success' => false, 'booking_id' => $booking->id, 'verifying' => true, 'transaction_id' => $transaction->id,
+                    'message' => \App\Services\Payment\HeldBookingPayment::MESSAGE];
             }
 
             Log::warning('⚠️ Payment Verification Failed', [

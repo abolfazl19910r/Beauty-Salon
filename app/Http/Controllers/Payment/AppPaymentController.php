@@ -60,10 +60,12 @@ class AppPaymentController extends Controller
         $title = match ($outcome['state']) {
             'paid' => 'پرداخت انجام شد',
             'refunded' => 'نوبت ثبت نشد؛ مبلغ برگشت داده شد',
+            'verifying' => 'پرداخت در حال بررسی است',
             default => 'پرداخت ناموفق بود',
         };
 
-        return $this->page($transaction->public_id, $outcome['state'], 'booking', $title, $outcome['message']);
+        // اپ «verifying» را نمی‌شناسد: همان «در انتظار» (CustomerPresenter::paymentState) و پیام صفحه
+        return $this->page($transaction->public_id, $outcome['state'] === 'verifying' ? 'pending' : $outcome['state'], 'booking', $title, $outcome['message']);
     }
 
     public function wallet(Request $request, PaymentService $paymentService, WalletChargeService $charges): Response

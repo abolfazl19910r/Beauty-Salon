@@ -105,8 +105,10 @@ class Booking extends Model
     public function scopeWithoutPaymentInProgress($query)
     {
         return $query->whereDoesntHave('paymentTransactions', fn ($q) => $q
-            ->where('status', 'pending')
-            ->where('created_at', '>', now()->subMinutes(PaymentTransaction::PENDING_LIFETIME_MINUTES)));
+            ->where(fn ($w) => $w
+                ->where(fn ($p) => $p->where('status', 'pending')->where('created_at', '>', now()->subMinutes(PaymentTransaction::PENDING_LIFETIME_MINUTES)))
+                // پرداختی که درگاه هنوز تأییدش نکرده (HeldBookingPayment): نوبت نگه داشته می‌شود تا payments:reconcile نتیجه را بگیرد
+                ->orWhereIn('status', \App\Services\Payment\HeldBookingPayment::STATUSES)));
     }
 
     /** دوره‌ی درمانی‌ای که این نوبت جلسه‌ای از آن است (بسته‌ی ب) */
@@ -197,13 +199,25 @@ class Booking extends Model
     {
         return $this->payment_status !== 'paid'
             && in_array($this->status, self::PAYABLE_STATUSES, true)
-            && \Carbon\Carbon::parse($this->booking_time)->isFuture();
+            && \Carbon\Carbon::parse($this->booking_time)->isFuture()
+            && ! $this->hasHeldPayment();
+    }
+
+    /**
+     * پرداختی که درگاهش هنوز تأیید نکرده و نوبت برایش نگه داشته شده (۲۰۲۶-۱۰-۲۲، HeldBookingPayment) — تا روشن شدن نتیجه
+     * پرداخت دوباره پذیرفته نمی‌شود (وگرنه دو بار پول گرفته می‌شد). فقط نوبت «در انتظار پرداخت» چنین تراکنشی دارد.
+     */
+    public function hasHeldPayment(): bool
+    {
+        return $this->status === 'pending_payment' && $this->exists
+            && $this->paymentTransactions()->whereIn('status', \App\Services\Payment\HeldBookingPayment::STATUSES)->exists();
     }
 
     public function notPayableReason(): string
     {
         return match (true) {
             $this->payment_status === 'paid' => 'این نوبت قبلاً پرداخت شده است.',
+            $this->hasHeldPayment() => \App\Services\Payment\HeldBookingPayment::MESSAGE,
             $this->status === 'cancelled' => 'این نوبت لغو شده است و پرداخت آن ممکن نیست. لطفاً نوبت جدیدی رزرو کنید.',
             ! \Carbon\Carbon::parse($this->booking_time)->isFuture() => 'زمان این نوبت گذشته است و پرداخت آن ممکن نیست.',
             default => 'پرداخت این نوبت در وضعیت فعلی ممکن نیست.',

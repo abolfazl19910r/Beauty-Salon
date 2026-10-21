@@ -138,6 +138,12 @@ class PaymentController extends Controller
                     ->with('success', $outcome['message']);
             }
 
+            // تأیید درگاه نرسید و نوبت نگه داشته شد (۲۰۲۶-۱۰-۲۲): صفحه‌ی خود نوبت با پیام «در حال بررسی»
+            if ($outcome['state'] === 'verifying') {
+                return redirect()->route('bookings.show', ['booking' => $outcome['booking']])
+                    ->with('info', $outcome['message']);
+            }
+
             return redirect()->route('bookings.failed')
                 ->with('booking_id', $outcome['booking']?->id)
                 ->with('error', $outcome['message']);

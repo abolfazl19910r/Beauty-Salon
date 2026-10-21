@@ -14,7 +14,8 @@ use Illuminate\Support\Facades\Log;
  * نتیجه‌ی بازگشت از درگاه برای پیش‌پرداخت نوبت — مشترک callback وب (PaymentController) و برگشت اپ موبایل
  * (AppPaymentCallbackController). بدون session: سهم کیف پول از ردیف تراکنش خوانده می‌شود (BookingWalletShare).
  *
- * خروجی: ['state' => paid|refunded|failed, 'booking' => ?Booking, 'message' => string]
+ * خروجی: ['state' => paid|refunded|failed|verifying, 'booking' => ?Booking, 'message' => string]
+ * verifying: تأیید درگاه نرسید و نوبت نگه داشته شد (HeldBookingPayment)؛ نتیجه با پیامک.
  */
 class BookingPaymentFinalizer
 {
@@ -40,6 +41,16 @@ class BookingPaymentFinalizer
             return $this->succeeded($booking->refresh(), $result, $transaction);
         }
 
+        if (! empty($result['verifying'])) {
+            // نوبت نگه داشته شد؛ اگر بررسی همین حالا (صف sync) تمامش کرد، نتیجه‌ی واقعی
+            $booking->refresh();
+            if ($booking->payment_status === 'paid') {
+                return ['state' => 'paid', 'booking' => $booking, 'message' => 'پرداخت با موفقیت انجام شد و نوبت شما ثبت شد.'];
+            }
+
+            return ['state' => $booking->status === 'cancelled' ? 'failed' : 'verifying', 'booking' => $booking, 'message' => $result['message']];
+        }
+
         if (! empty($result['refunded'])) {
             return ['state' => 'refunded', 'booking' => $booking, 'message' => $result['message']];
         }
@@ -51,6 +62,12 @@ class BookingPaymentFinalizer
         $this->walletShare->releaseForBooking($booking, 'پرداخت ناموفق بود');
 
         return ['state' => 'failed', 'booking' => $booking, 'message' => $result['message'] ?? 'پرداخت ناموفق بود'];
+    }
+
+    /** تأیید دیرهنگام پرداخت نگه‌داشته (HeldBookingPayment): همان ثبت بازگشت موفق از درگاه */
+    public function completeVerified(Booking $booking, array $result, ?PaymentTransaction $transaction): array
+    {
+        return $this->succeeded($booking, $result, $transaction);
     }
 
     private function succeeded(Booking $booking, array $result, ?PaymentTransaction $transaction): array

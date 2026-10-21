@@ -138,10 +138,42 @@ class ReconcilePaymentTransactions extends Command
 
         $this->info(($dryRun ? '[dry-run] ' : '')."برگشت وجه درگاه‌های بانکی: {$reversed} از {$candidates->count()}");
 
+        $this->recheckHeld($dryRun);
         $this->recoverIndirect($dryRun);
         $this->flagAbandoned($dryRun);
 
         return self::SUCCESS;
+    }
+
+    /**
+     * ۳ب) نوبت‌هایی که تأیید پرداختشان با قطعی لحظه‌ای نرسید و نگه داشته شده‌اند (HeldBookingPayment، ۲۰۲۶-۱۰-۲۲):
+     * دوباره پرسیدن درگاه — تأیید ← نوبت ثبت؛ رد ← لغو؛ باز بی‌پاسخ تا پایان مهلت ← بعد لغو و مسیر «بی‌پاسخ» زیر.
+     */
+    private function recheckHeld(bool $dryRun): void
+    {
+        $candidates = PaymentTransaction::query()
+            ->where(fn ($q) => $q->where('status', \App\Services\Payment\HeldBookingPayment::HELD)
+                ->orWhere(fn ($s) => $s->where('status', \App\Services\Payment\HeldBookingPayment::CHECKING)
+                    ->where('updated_at', '<=', now()->subMinutes(\App\Services\Payment\HeldBookingPayment::STUCK_CHECK_MINUTES))))
+            ->get();
+
+        if ($candidates->isEmpty()) {
+            return;
+        }
+
+        $held = app(\App\Services\Payment\HeldBookingPayment::class);
+        $outcomes = [];
+        foreach ($candidates as $tx) {
+            if ($dryRun) {
+                $this->line("[dry-run] پرسش دوباره‌ی پرداخت نگه‌داشته‌ی #{$tx->id} ({$tx->driver})");
+
+                continue;
+            }
+            $outcome = $held->check($tx);
+            $outcomes[$outcome] = ($outcomes[$outcome] ?? 0) + 1;
+        }
+
+        $this->info(($dryRun ? '[dry-run] ' : '').'پرداخت‌های نگه‌داشته: '.$candidates->count().($outcomes ? ' — '.collect($outcomes)->map(fn ($c, $k) => "{$k}: {$c}")->implode('، ') : ''));
     }
 
     /**
