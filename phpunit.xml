@@ -37,6 +37,9 @@
              قرمز می‌کنه — نه یک باگ واقعی، فقط یک وابستگی پنهان سوییت به .env محلی که این خط
              قطعش می‌کنه.-->
         <env name="CENTRAL_DOMAIN" value=""/>
+        <!-- ⭐ مثل CENTRAL_DOMAIN: .env.example (و .env محلی ساخته‌شده از آن) اثرانگشت واقعی اپ مشتری را دارد؛ تست‌های
+             assetlinks باید از مقدار خالی شروع کنند (AppDistributionTest روی .env محلی شکست می‌خورد). -->
+        <env name="CUSTOMER_APP_SHA256_FINGERPRINTS" value="" force="true"/>
         <!-- ⭐ هیچ تستی نباید پیامک واقعی بفرستد (۲۰۲۶-۰۹-۲۵) -->
         <env name="KAVENEGAR_SEND_IN_LOCAL" value="false" force="true"/>
         <env name="DB_CONNECTION" value="sqlite"/>
