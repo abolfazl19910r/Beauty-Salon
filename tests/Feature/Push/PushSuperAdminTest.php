@@ -94,6 +94,7 @@ class PushSuperAdminTest extends TestCase
 
     public function test_bale_token_is_checked_encrypted_and_used_by_the_bot(): void
     {
+        config(['services.bot.enabled' => true]);
         Http::fake(['tapi.bale.ai/bot123456:AbcdefGhijkLmnop/getMe' => Http::response(['ok' => true, 'result' => ['username' => 'Mahru_Bot']])]);
 
         $this->actingAs($this->super)->put(route('superadmin.settings.bot'), ['messenger' => 'bale', 'token' => '123456:AbcdefGhijkLmnop'])
@@ -117,6 +118,7 @@ class PushSuperAdminTest extends TestCase
 
     public function test_rejected_token_is_not_saved_and_unreachable_one_is_saved_with_a_warning(): void
     {
+        config(['services.bot.enabled' => true]);
         Http::fake([
             'tapi.bale.ai/*' => Http::response(['ok' => false, 'description' => 'Unauthorized'], 401),
             'api.telegram.org/*' => fn () => throw new \Illuminate\Http\Client\ConnectionException('timed out'),
@@ -136,6 +138,7 @@ class PushSuperAdminTest extends TestCase
 
     public function test_telegram_proxy_and_removal_fall_back_to_env(): void
     {
+        config(['services.bot.enabled' => true]);
         config(['services.telegram.bot_token' => '999:FromEnvFileToken', 'services.telegram.username' => 'env_bot']);
         Http::fake(['tg.example.com/*' => Http::response(['ok' => true, 'result' => ['username' => 'panel_bot']])]);
 

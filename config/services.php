@@ -110,6 +110,9 @@ return [
     ],
 
     'bot' => [
+        // ⭐ بسته‌ی ۸ (۲۰۲۶-۱۰-۲۲): ربات کنار گذاشته شد ولی کدش ماند. خاموش (پیش‌فرض) = هیچ‌جا دیده نمی‌شود و پیامی نمی‌رود؛
+        // true = همه‌چیز مثل قبل (کارت اتصال، ستون «ربات» تنظیمات اعلان، بخش ربات تنظیمات پلتفرم، webhook و bot:poll).
+        'enabled' => filter_var(env('BOT_ENABLED') ?: false, FILTER_VALIDATE_BOOLEAN),
         // بخش مخفی آدرس webhook (هر دو پیام‌رسان)؛ خالی = webhook غیرفعال
         'webhook_secret' => env('BOT_WEBHOOK_SECRET'),
     ],

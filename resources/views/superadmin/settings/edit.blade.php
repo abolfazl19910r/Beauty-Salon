@@ -74,6 +74,8 @@
         </div>
     </div>
 
+    {{-- ربات کنار گذاشته شده (بسته‌ی ۸): فقط با BOT_ENABLED=true دیده می‌شود --}}
+    @if (\App\Services\Bot\BotSettings::featureEnabled())
     <div class="sa-card sa-card-pad" data-bot-status>
         <h2 class="sa-card-title">ربات اعلان (بله / تلگرام)</h2>
         <p class="sa-card-desc mb-4">
@@ -150,6 +152,7 @@
             </form>
         @endforeach
     </div>
+    @endif
     </div>
     </div>
 @endsection

@@ -69,6 +69,8 @@ class PlatformSettingsController extends Controller
      */
     public function updateBot(Request $request, \App\Services\Bot\BotClient $client): RedirectResponse
     {
+        abort_unless(\App\Services\Bot\BotSettings::featureEnabled(), 404);
+
         $data = $request->validate([
             'messenger' => ['required', 'in:'.implode(',', \App\Services\Bot\BotSettings::MESSENGERS)],
             'token' => ['nullable', 'string', 'max:200', 'regex:/^[0-9]{3,15}:[A-Za-z0-9_-]{10,120}$/'],

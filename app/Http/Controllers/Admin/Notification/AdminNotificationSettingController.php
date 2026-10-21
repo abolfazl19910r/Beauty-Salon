@@ -36,8 +36,7 @@ class AdminNotificationSettingController extends Controller
         return view('admin.notification-settings.index', [
             'groups' => NotificationEvents::groups(),
             'settings' => $settings,
-            'botImplemented' => NotificationSettingService::BOT_CHANNEL_IMPLEMENTED,
-            'botNotImplementedMessage' => NotificationSettingService::BOT_NOT_IMPLEMENTED_MESSAGE,
+            'botAvailable' => NotificationSettingService::botChannelAvailable(),
         ]);
     }
 
@@ -46,11 +45,8 @@ class AdminNotificationSettingController extends Controller
         $validKeys = NotificationEvents::allKeys();
         $salonId = app(CurrentSalon::class)->id();
 
-        // کانال ربات هنوز پیاده‌سازی نشده؛ درخواستی که روشنش کند (فرم دستکاری‌شده یا ارسال مستقیم) کلاً ذخیره نمی‌شود.
-        if (! NotificationSettingService::BOT_CHANNEL_IMPLEMENTED
-            && collect((array) $request->input('telegram', []))->contains(fn ($value) => filter_var($value, FILTER_VALIDATE_BOOLEAN))) {
-            return back()->withErrors(['telegram' => NotificationSettingService::BOT_NOT_IMPLEMENTED_MESSAGE]);
-        }
+        // ربات خاموش (بسته‌ی ۸): ستون «ربات» در فرم نیست و تیک‌های ذخیره‌شده‌اش دست نمی‌خورند (با روشن شدن دوباره برمی‌گردند)
+        $botAvailable = NotificationSettingService::botChannelAvailable();
 
         foreach ($validKeys as $key) {
             $safeKey = str_replace('.', '__', $key);
@@ -58,7 +54,7 @@ class AdminNotificationSettingController extends Controller
             $this->notificationSettingRepository->updateOrCreateForEvent($key, [
                 'sms_enabled' => $request->boolean("sms.{$safeKey}"),
                 'database_enabled' => $request->boolean("database.{$safeKey}"),
-                'telegram_enabled' => NotificationSettingService::BOT_CHANNEL_IMPLEMENTED && $request->boolean("telegram.{$safeKey}"),
+                ...($botAvailable ? ['telegram_enabled' => $request->boolean("telegram.{$safeKey}")] : []),
                 // ستون «اپ» فقط برای رویدادهای مشتری/متخصص؛ بقیه دست‌نخورده (پیش‌فرض روشن)
                 ...(\App\Services\Push\PushPolicy::hasAppColumn($key) ? ['push_enabled' => $request->boolean("push.{$safeKey}")] : []),
             ], $salonId);

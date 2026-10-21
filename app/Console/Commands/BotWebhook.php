@@ -16,6 +16,12 @@ class BotWebhook extends Command
     {
         $messenger = (string) $this->argument('messenger');
 
+        if (! \App\Services\Bot\BotSettings::featureEnabled()) {
+            $this->error('ربات خاموش است (BOT_ENABLED=false در .env؛ بسته‌ی ۸).');
+
+            return self::FAILURE;
+        }
+
         if (! $client->enabled($messenger)) {
             $this->error("توکن ربات {$messenger} در .env تنظیم نشده است.");
 

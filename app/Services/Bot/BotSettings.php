@@ -14,6 +14,15 @@ final class BotSettings
 {
     public const MESSENGERS = ['bale', 'telegram'];
 
+    /**
+     * کلید کل ربات (BOT_ENABLED، بسته‌ی ۸). خاموش = ربات از همه‌ی صفحه‌ها پنهان است، اتصال/webhook ۴۰۴ می‌دهند و پیامی نمی‌رود؛
+     * جدول‌ها، اتصال‌های قبلی، توکن‌ها و تیک‌های ستون «ربات» دست نمی‌خورند تا با روشن کردن دوباره همه برگردد.
+     */
+    public static function featureEnabled(): bool
+    {
+        return (bool) config('services.bot.enabled');
+    }
+
     public static function token(string $messenger): ?string
     {
         return self::panelToken($messenger) ?? (config("services.{$messenger}.bot_token") ?: null);

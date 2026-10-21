@@ -32,7 +32,8 @@ class SendBotMessageJob implements ShouldQueue
     public function handle(BotClient $client): void
     {
         $link = BotLink::find($this->botLinkId);
-        if (! $link) {
+        // ربات بعد از صف شدن این پیام خاموش شد (بسته‌ی ۸): نفرست، ولی اتصال را هم پاک نکن
+        if (! $link || ! $client->enabled($link->messenger)) {
             return;
         }
 

@@ -19,7 +19,8 @@ class BotClient
 
     public function enabled(string $messenger): bool
     {
-        return in_array($messenger, \App\Models\BotLink::MESSENGERS, true) && (bool) BotSettings::token($messenger);
+        return BotSettings::featureEnabled()
+            && in_array($messenger, \App\Models\BotLink::MESSENGERS, true) && (bool) BotSettings::token($messenger);
     }
 
     /** @return list<string> */

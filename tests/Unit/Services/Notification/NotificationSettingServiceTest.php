@@ -17,6 +17,7 @@ class NotificationSettingServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        config(['services.bot.enabled' => true]); // ستون «ربات» (BotHiddenTest حالت خاموش را می‌سنجد)
         $this->service = app(NotificationSettingService::class);
     }
 

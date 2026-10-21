@@ -24,10 +24,12 @@ class NotificationSettingService
     /**
      * کانال ربات (کلید 'telegram'): ربات پلتفرم بله و تلگرام (۲۰۲۶-۱۰-۰۱). پیام فقط به گفت‌وگوهای وصل‌شده‌ی خود
      * گیرنده می‌رود (BotLink)؛ از ۲۰۲۶-۰۹-۲۷ تا این تاریخ خاموش بود چون همه‌چیز به یک chat_id سراسری می‌رفت.
+     * از بسته‌ی ۸ (۲۰۲۶-۱۰-۲۲) پشت کلید BOT_ENABLED است (پیش‌فرض خاموش) — botChannelAvailable().
      */
-    public const BOT_CHANNEL_IMPLEMENTED = true;
-
-    public const BOT_NOT_IMPLEMENTED_MESSAGE = 'این قابلیت هنوز پیاده‌سازی نشده است.';
+    public static function botChannelAvailable(): bool
+    {
+        return \App\Services\Bot\BotSettings::featureEnabled();
+    }
 
     /**
      * پیش‌فرض‌های آگاهانه‌ای که با رفتار «درست»ی که در این پروژه کشف/مستند شده هم‌راستا هستن —
@@ -54,7 +56,7 @@ class NotificationSettingService
         return match ($channel) {
             'sms' => (bool) $row->sms_enabled,
             'database' => (bool) $row->database_enabled,
-            'telegram' => self::BOT_CHANNEL_IMPLEMENTED && (bool) $row->telegram_enabled,
+            'telegram' => self::botChannelAvailable() && (bool) $row->telegram_enabled,
             // ستون «اپ» (بسته‌ی ۴): ردیف قدیمی پیش از migration مقدار null دارد = روشن
             'push' => $row->push_enabled === null || (bool) $row->push_enabled,
             default => false,
@@ -64,7 +66,7 @@ class NotificationSettingService
     /**
      * از میان کانال‌های «پیش‌فرضی که این نوتیفیکیشن ذاتاً پشتیبانی می‌کند» ($base، مثلاً
      * ['database','sms'])، فقط آن‌هایی که در تنظیمات فعلی فعال هستند را برمی‌گرداند. 'telegram' فقط وقتی
-     * اضافه می‌شود که کانال ربات پیاده‌سازی شده باشد (BOT_CHANNEL_IMPLEMENTED) — فعلاً هرگز.
+     * اضافه می‌شود که ربات روشن باشد (BOT_ENABLED) و ستون «ربات» آن رویداد تیک داشته باشد.
      */
     public function channels(string $eventKey, array $base, ?int $salonId = null): array
     {

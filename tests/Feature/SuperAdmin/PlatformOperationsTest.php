@@ -110,6 +110,7 @@ class PlatformOperationsTest extends TestCase
 
     public function test_dashboard_shows_month_revenue_and_settings_show_bot_status(): void
     {
+        config(['services.bot.enabled' => true]);
         $salon = app(CurrentSalon::class)->get();
         SmsCreditPurchase::create(['salon_id' => $salon->id, 'parts' => 1000, 'amount' => 320000, 'source' => 'online', 'status' => 'paid', 'paid_at' => now()]);
         $this->platformAttention();

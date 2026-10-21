@@ -32,6 +32,8 @@ class PlatformBotTest extends TestCase
     {
         parent::setUp();
         config([
+            // ربات از بسته‌ی ۸ پیش‌فرض خاموش است؛ این تست‌ها رفتار روشنش را می‌سنجند (BotHiddenTest حالت خاموش)
+            'services.bot.enabled' => true,
             'services.bale.bot_token' => 'bale-token', 'services.bale.username' => 'MahruBot',
             'services.telegram.bot_token' => null,
             'services.bot.webhook_secret' => self::SECRET,

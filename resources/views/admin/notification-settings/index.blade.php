@@ -13,7 +13,7 @@
                     تنظیمات اطلاع‌رسانی
                 </h1>
                 <p class="text-sm mt-0.5" style="color:var(--admin-text-dim);">
-                    برای هر رویداد مشخص کنید که آیا پیامک ارسال شود، نوتیفیکیشن داخل‌برنامه‌ای ثبت شود، و/یا از طریق ربات (تلگرام/بله) اطلاع‌رسانی شود.
+                    برای هر رویداد مشخص کنید که آیا پیامک ارسال شود و نوتیفیکیشن داخل‌برنامه‌ای ثبت شود{{ $botAvailable ? '، و/یا از طریق ربات (تلگرام/بله) اطلاع‌رسانی شود' : '' }}.
                     خاموش‌کردن یک ستون فقط همان کانال را برای همان رویداد غیرفعال می‌کند؛ رویدادهای دیگر تحت تأثیر قرار نمی‌گیرند.
                 </p>
                 <p class="text-sm mt-1" style="color:var(--admin-text-dim);" data-push-help>
@@ -23,18 +23,6 @@
             </div>
             <a href="{{ route('admin.sms-templates.index') }}" class="px-4 py-2 rounded-lg text-sm font-medium" style="border:1px solid var(--admin-accent); color:var(--admin-accent);">ویرایش متن پیامک‌ها{{ app(\App\Support\CurrentSalon::class)->get()?->hasFeature(\App\Support\Features\Feature::SmsTemplates) === false ? ' 🔒' : '' }}</a>
         </div>
-
-        @unless($botImplemented)
-            <div class="rounded-xl p-4 mb-5 text-sm" style="background:rgba(217,119,6,0.1); border:1px solid rgba(217,119,6,0.3); color:rgb(var(--m-warn));">
-                ستون «ربات» (تلگرام/بله): {{ $botNotImplementedMessage }}
-            </div>
-        @endunless
-
-        @error('telegram')
-            <div class="rounded-xl p-4 mb-5 text-sm" style="background:rgba(220,38,38,0.1); border:1px solid rgba(220,38,38,0.3); color:rgb(var(--m-bad));">
-                {{ $message }}
-            </div>
-        @enderror
 
         @php $notificationSalon = app(\App\Support\CurrentSalon::class)->get(); @endphp
         <form method="POST" action="{{ route('admin.notification-settings.update') }}">
@@ -53,7 +41,9 @@
                                 <th class="px-4 py-2.5 text-center font-medium w-28" style="color:var(--admin-text-dim);">پیامک</th>
                                 <th class="px-4 py-2.5 text-center font-medium w-32" style="color:var(--admin-text-dim);">نوتیفیکیشن</th>
                                 <th class="px-4 py-2.5 text-center font-medium w-24" style="color:var(--admin-text-dim);" title="پوش در اپ‌های ماهرو و ماهرو همکار؛ پیامک فقط وقتی اپ رسید نفرستد">اپ</th>
-                                <th class="px-4 py-2.5 text-center font-medium w-24" style="color:var(--admin-text-dim);">ربات</th>
+                                @if($botAvailable)
+                                    <th class="px-4 py-2.5 text-center font-medium w-24" style="color:var(--admin-text-dim);" data-bot-column>ربات</th>
+                                @endif
                             </tr>
                             </thead>
                             <tbody>
@@ -91,15 +81,12 @@
                                             <span class="text-xs" style="color:var(--admin-text-light);">—</span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-3 text-center">
-                                        @if($botImplemented)
+                                    @if($botAvailable)
+                                        <td class="px-4 py-3 text-center">
                                             <input type="checkbox" name="telegram[{{ $safeKey }}]" value="1"
                                                    @checked($row?->telegram_enabled) class="w-4 h-4 rounded cursor-pointer" style="accent-color:var(--admin-accent);">
-                                        @else
-                                            <input type="checkbox" name="telegram[{{ $safeKey }}]" value="1" disabled
-                                                   title="{{ $botNotImplementedMessage }}" class="w-4 h-4 rounded cursor-not-allowed opacity-50">
-                                        @endif
-                                    </td>
+                                        </td>
+                                    @endif
                                 </tr>
                             @endforeach
                             </tbody>
