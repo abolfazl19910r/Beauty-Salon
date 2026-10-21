@@ -228,29 +228,32 @@ class AppMessenger
     /** همه‌ی دستگاه‌ها ناسالم‌اند: هر کدام N ارسال آخرش (پذیرفته‌شده و قدیمی‌تر از مهلت فوری) بی‌رسید مانده است */
     private function allUnhealthy(Collection $devices): bool
     {
+        return $devices->every(fn (PushDevice $device) => self::isUnhealthy($device));
+    }
+
+    /**
+     * دستگاه ناسالم: N ارسال آخرش (پذیرفته‌شده و قدیمی‌تر از مهلت فوری) بی‌رسید مانده و بعد از آن‌ها هم رسیدی نیامده.
+     * مشترک تصمیم «پیام فوری ← پیامک مستقیم» و صفحه‌ی «دستگاه‌ها»ی ابرمدیر (بسته‌ی ۷).
+     */
+    public static function isUnhealthy(PushDevice $device): bool
+    {
         $n = max(1, (int) config('push.unhealthy_after_unacked'));
         $before = now()->subSeconds((int) PushUrgency::Urgent->fallbackSeconds());
 
-        foreach ($devices as $device) {
-            $last = PushDelivery::query()
-                ->where('push_device_id', $device->id)
-                ->where('status', PushDelivery::ACCEPTED)
-                ->where('accepted_at', '<=', $before)
-                ->orderByDesc('id')
-                ->limit($n)
-                ->get(['acked_at', 'accepted_at']);
+        $last = PushDelivery::query()
+            ->where('push_device_id', $device->id)
+            ->where('status', PushDelivery::ACCEPTED)
+            ->where('accepted_at', '<=', $before)
+            ->orderByDesc('id')
+            ->limit($n)
+            ->get(['acked_at', 'accepted_at']);
 
-            if ($last->count() < $n || $last->contains(fn ($d) => $d->acked_at !== null)) {
-                return false;
-            }
-
-            // رسیدی تازه‌تر از آن ارسال‌ها (مثلاً پوش آزمایشی) دستگاه را سالم می‌کند
-            if ($device->last_receipt_at && $device->last_receipt_at->gt($last->max('accepted_at'))) {
-                return false;
-            }
+        if ($last->count() < $n || $last->contains(fn ($d) => $d->acked_at !== null)) {
+            return false;
         }
 
-        return true;
+        // رسیدی تازه‌تر از آن ارسال‌ها (مثلاً پوش آزمایشی) دستگاه را سالم می‌کند
+        return ! ($device->last_receipt_at && $device->last_receipt_at->gt($last->max('accepted_at')));
     }
 
     private function storeInInbox(Outgoing $o, PushMessage $message, int $userId): void

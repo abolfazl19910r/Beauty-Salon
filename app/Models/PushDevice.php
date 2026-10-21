@@ -57,6 +57,16 @@ class PushDevice extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function salon(): BelongsTo
+    {
+        return $this->belongsTo(Salon::class)->withoutGlobalScopes();
+    }
+
+    public function accessToken(): BelongsTo
+    {
+        return $this->belongsTo(\Laravel\Sanctum\PersonalAccessToken::class, 'personal_access_token_id');
+    }
+
     public function deliveries(): HasMany
     {
         return $this->hasMany(PushDelivery::class);

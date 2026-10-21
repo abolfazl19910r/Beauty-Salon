@@ -59,6 +59,11 @@ Route::put('/settings/push', [PlatformSettingsController::class, 'updatePush'])-
 Route::post('/settings/push/check', [PlatformSettingsController::class, 'checkPush'])->middleware('throttle:10,1')->name('settings.push.check');
 Route::put('/settings/bot', [PlatformSettingsController::class, 'updateBot'])->middleware('throttle:20,1')->name('settings.bot');
 Route::get('/push', [\App\Http\Controllers\SuperAdmin\PushStatsController::class, 'index'])->name('push.index');
+// «دستگاه‌ها»ی پوش (بسته‌ی ۷، ۲۰۲۶-۱۰-۲۲)
+Route::get('/push/devices', [\App\Http\Controllers\SuperAdmin\PushDeviceController::class, 'index'])->name('push.devices.index');
+Route::get('/push/devices/{device}', [\App\Http\Controllers\SuperAdmin\PushDeviceController::class, 'show'])->whereNumber('device')->name('push.devices.show');
+Route::post('/push/devices/{device}/test', [\App\Http\Controllers\SuperAdmin\PushDeviceController::class, 'test'])->whereNumber('device')->middleware('throttle:20,1')->name('push.devices.test');
+Route::delete('/push/devices/{device}', [\App\Http\Controllers\SuperAdmin\PushDeviceController::class, 'signOut'])->whereNumber('device')->name('push.devices.sign-out');
 
 // پلن‌ها و امکانات (بسته‌ی الف، ۲۰۲۶-۱۰-۱۴) + پلن و استثنای امکانات هر سالن
 Route::get('/plans', [SuperAdminPlanController::class, 'index'])->name('plans.index');

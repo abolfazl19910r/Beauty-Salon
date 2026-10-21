@@ -10,6 +10,8 @@
         $urgencies = ['urgent' => 'فوری ۱ دقیقه', 'normal' => 'عادی ۱۰ دقیقه', 'info' => 'فقط پوش'];
     @endphp
 
+    @include('superadmin.push.partials.tabs')
+
     <div class="sa-card p-5 mb-6 flex flex-wrap items-center justify-between gap-3" data-push-mode="{{ $mode }}">
         <div>
             <div class="sa-label">حالت فعلی</div>
@@ -72,7 +74,7 @@
             <div class="text-sm grid gap-1">
                 <div>اپ «ماهرو» (مشتری): {{ $fa($devices['active']['customer'] ?? 0) }}</div>
                 <div>اپ «ماهرو همکار»: {{ $fa($devices['active']['staff'] ?? 0) }}</div>
-                <div>هنوز هیچ رسیدی نفرستاده: {{ $fa($devices['never_acked']) }}</div>
+                <div>هنوز هیچ رسیدی نفرستاده: <a href="{{ route('superadmin.push.devices.index', ['status' => 'never_acked']) }}" style="color: var(--sa-accent);">{{ $fa($devices['never_acked']) }}</a></div>
                 @foreach ($devices['disabled'] as $reason => $count)
                     <div style="color: var(--sa-text-dim);">غیرفعال ({{ $reason === 'invalid_token' ? 'اپ حذف یا داده پاک شد' : $reason }}): {{ $fa($count) }}</div>
                 @endforeach
