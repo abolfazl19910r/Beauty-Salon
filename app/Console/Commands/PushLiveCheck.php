@@ -56,7 +56,8 @@ class PushLiveCheck extends Command
         }
 
         $blocked = false;
-        foreach (PushEnvironment::checks(fallbackPath: $urgency !== PushUrgency::Info) as $check) {
+        // در «آزمایشی» پیام info هم پیامک می‌شود (رفتار پیش از پوش؛ AppMessenger::deliver) — پس هشدار «آزمایشی» برای همه‌ی دسته‌ها
+        foreach (PushEnvironment::checks(fallbackPath: true) as $check) {
             match ($check['level']) {
                 'info' => $this->line($check['text']),
                 'warn' => $this->warn($check['text']),
@@ -89,7 +90,11 @@ class PushLiveCheck extends Command
         }
 
         $window = $urgency->fallbackSeconds();
-        $this->line('دسته: '.$urgency->value.($window ? ' — مهلت رسید '.to_persian_num((string) $window).' ثانیه' : ' — فقط پوش، هرگز پیامک'));
+        $this->line('دسته: '.$urgency->value.match (true) {
+            PushMode::current() === PushMode::SHADOW => ' — در «آزمایشی» پیامک همان لحظه هم می‌رود',
+            $window !== null => ' — مهلت رسید '.to_persian_num((string) $window).' ثانیه',
+            default => ' — در «فعال» فقط پوش، هرگز پیامک',
+        });
 
         $start = now()->subSecond();
         $messageIds = [];

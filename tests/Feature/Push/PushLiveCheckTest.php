@@ -181,6 +181,11 @@ class PushLiveCheckTest extends TestCase
         $this->artisan('push:live-check', ['phone' => '09121110000', '--app' => 'customer', '--wait' => 0])
             ->assertFailed()->expectsOutputToContain('حالت «آزمایشی» است')->expectsOutputToContain('مسیر «فعال» آزموده نشد');
 
+        // info هم در «آزمایشی» پیامک می‌شود؛ متن نباید «هرگز پیامک» بگوید (یافته‌ی آزمون ابوالفضل ۲۰۲۶-۱۰-۲۲)
+        $this->artisan('push:live-check', ['phone' => '09121110000', '--urgency' => 'info', '--wait' => 0])
+            ->assertFailed()->expectsOutputToContain('حالت «آزمایشی» است')->expectsOutputToContain('در «آزمایشی» پیامک همان لحظه هم می‌رود');
+        $this->assertCount(2, $this->smsSent);
+
         $this->artisan('push:live-check', ['phone' => '09121110000', '--app' => 'staff'])->assertFailed()->expectsOutputToContain('در اپ staff');
         $this->artisan('push:live-check', ['phone' => '09121110000', '--urgency' => 'later'])->assertFailed()->expectsOutputToContain('urgent، normal یا info');
     }
