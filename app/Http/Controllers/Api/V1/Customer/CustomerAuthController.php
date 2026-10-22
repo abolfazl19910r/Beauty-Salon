@@ -47,6 +47,11 @@ class CustomerAuthController extends Controller
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
+        // ⭐ متخصص همین سالن حساب متخصص می‌گیرد، نه مشتری؛ اپ مشتری جای پنل متخصص نیست ← اپ همکار (۲۰۲۶-۱۰-۲۲)
+        if (app(\App\Services\Specialist\SpecialistAccountLinker::class)->hasPending($input['phone'], $this->currentSalon->id())) {
+            throw new \App\Exceptions\Api\ApiException('specialist_phone', 'این شماره متخصص همین سالن است. حساب متخصص را از اپ «ماهرو همکار» ← «فعال‌سازی حساب متخصص» بسازید.', 422);
+        }
+
         return ApiResponse::success($this->registration->start($this->currentSalon->id(), $input['name'], $input['phone'], $input['password']));
     }
 

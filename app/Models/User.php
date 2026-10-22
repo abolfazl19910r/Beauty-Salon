@@ -371,6 +371,18 @@ class User extends Authenticatable
         return RouteServiceProvider::USER_HOME;
     }
 
+    private ?bool $specialistAccountCache = null;
+
+    /**
+     * کادری که رکورد متخصص دارد (با شماره، در هر سالن). نقش «specialists» در عمل داده نمی‌شود (homePath)، پس منوی سایت سالن
+     * با این تشخیص می‌دهد (۲۰۲۶-۱۰-۲۲: متخصص بعد از رزرو برای خودش در سایت سالن لینکی به پنلش نمی‌دید).
+     */
+    public function isSpecialistAccount(): bool
+    {
+        return $this->specialistAccountCache ??= $this->user_type === 'staff'
+            && app(CurrentSalon::class)->allSalons(fn () => $this->specialist()->exists());
+    }
+
     public function specialist(): HasOne
     {
         return $this->hasOne(Specialist::class, 'phone', 'phone');

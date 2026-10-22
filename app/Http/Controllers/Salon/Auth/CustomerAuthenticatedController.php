@@ -157,6 +157,13 @@ class CustomerAuthenticatedController extends Controller
 
         $this->securityLogService->logLogin(true, $user->phone, $user);
 
+        // ⭐ مشتریِ همین سالن که مدیر بعداً با همین شماره متخصصش کرده ← همان حساب کادر و پنل متخصص (۲۰۲۶-۱۰-۲۲)
+        if (app(\App\Services\Specialist\SpecialistAccountLinker::class)->promoteCustomer($user)) {
+            $request->session()->forget('url.intended');
+
+            return redirect()->to($user->homePath())->with('success', 'حساب شما به حساب متخصص این سالن وصل شد. خوش آمدید!');
+        }
+
         return redirect()->to($this->customerIntendedUrl($request))
             ->with('success', 'خوش آمدید!');
     }

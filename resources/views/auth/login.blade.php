@@ -69,12 +69,17 @@ use Illuminate\Support\Facades\Route;
             ورود به حساب
         </button>
 
-        <p class="text-center text-sm text-m-tx/60">
-            حساب کاربری ندارید؟
-            <a href="{{ route('register') }}" class="text-m-gold2 hover:text-m-gold transition-colors font-medium mr-1">
-                ثبت نام کنید
-            </a>
-        </p>
+        {{-- /register مرکزی از ۲۰۲۶-۱۰-۱۱ به صفحه‌ی فروش می‌رود؛ متخصص تازه از این‌جا حسابش را فعال می‌کند (۲۰۲۶-۱۰-۲۲) --}}
+        <div class="text-center text-sm text-m-tx/60 space-y-2" data-staff-no-account>
+            <p>
+                متخصص سالن هستید و هنوز حساب ندارید؟
+                <a href="{{ route('specialist.activate') }}" class="text-m-gold2 hover:text-m-gold transition-colors font-medium mr-1">فعال‌سازی حساب متخصص</a>
+            </p>
+            <p>
+                صاحب سالن هستید؟
+                <a href="{{ route('salon-signup.create') }}" class="text-m-gold2 hover:text-m-gold transition-colors font-medium mr-1">ثبت سالن</a>
+            </p>
+        </div>
     </form>
 
     {{-- بسته‌ی ۶: سایت نصب‌شده روی صفحه‌ی اصلی (آیفون) ← «مرا به خاطر بسپار» پیش‌فرض روشن (هر بار ورود با کد پیامکی آزاردهنده است) --}}

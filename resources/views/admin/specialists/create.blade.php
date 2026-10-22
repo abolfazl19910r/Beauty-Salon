@@ -50,6 +50,16 @@
                             <input type="text" name="phone" value="{{ old('phone') }}" class="form-input" dir="ltr" placeholder="09123456789" required>
                             @error('phone') <p class="form-error">{{ $message }}</p> @enderror
                         </div>
+                        {{-- ⭐ رمز اولیه‌ی اختیاری (۲۰۲۶-۱۰-۲۲) --}}
+                        <div data-initial-password>
+                            <label class="form-label">رمز ورود اولیه <span style="color:var(--admin-text-light);">(اختیاری — فقط اگر این شماره هنوز حساب ندارد)</span></label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <input type="password" name="initial_password" class="form-input" dir="ltr" autocomplete="new-password" placeholder="حداقل ۸ حرف">
+                                <input type="password" name="initial_password_confirmation" class="form-input" dir="ltr" autocomplete="new-password" placeholder="تکرار رمز">
+                            </div>
+                            <p class="text-xs mt-1" style="color:var(--admin-text-light);">خالی بگذارید تا متخصص خودش از صفحه‌ی ورود کادر یا اپ «ماهرو همکار» ← «فعال‌سازی حساب متخصص» با کد پیامکی رمز بگذارد.</p>
+                            @error('initial_password') <p class="form-error">{{ $message }}</p> @enderror
+                        </div>
                         <div>
                             <label class="form-label">ایمیل</label>
                             <input type="email" name="email" value="{{ old('email') }}" class="form-input" dir="ltr" placeholder="example@email.com">

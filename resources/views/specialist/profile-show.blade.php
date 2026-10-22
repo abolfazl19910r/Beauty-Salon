@@ -149,9 +149,9 @@
                                     <line x1="3" y1="10" x2="21" y2="10"></line>
                                 </svg>
                                 <p class="mb-4">شما هنوز نوبتی رزرو نکرده‌اید</p>
-                                <a href="{{ route('services.index') }}"
+                                <a href="{{ route('bookings.create') }}"
                                    class="text-[var(--specialist-plum-mid)] hover:text-[var(--specialist-plum-light)] transition-colors inline-flex items-center">
-                                    <span>مشاهده لیست خدمات</span>
+                                    <span>رزرو نوبت برای خودم</span>
                                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                         <line x1="5" y1="12" x2="19" y2="12"></line>
                                         <polyline points="12 5 19 12 12 19"></polyline>

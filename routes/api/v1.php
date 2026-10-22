@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\Auth\AccountController;
 use App\Http\Controllers\Api\V1\Auth\CustomerLoginController;
+use App\Http\Controllers\Api\V1\Auth\StaffActivationController;
 use App\Http\Controllers\Api\V1\Auth\StaffLoginController;
 use App\Http\Controllers\Api\V1\Auth\StaffPasswordResetController;
 use App\Http\Controllers\Api\V1\Auth\TokenController;
@@ -35,6 +36,13 @@ Route::get('app/latest', \App\Http\Controllers\Api\V1\AppVersionController::clas
 Route::middleware('throttle:api-v1-login')->group(function () {
     Route::prefix('staff/login')->name('staff.login')->controller(StaffLoginController::class)->group(function () {
         Route::post('/', 'login');
+        Route::post('verify', 'verify')->name('.verify');
+        Route::post('resend', 'resend')->name('.resend');
+    });
+
+    // فعال‌سازی حساب متخصصی که مدیر با شماره‌ی تازه اضافه کرده (۲۰۲۶-۱۰-۲۲)
+    Route::prefix('staff/activate')->name('staff.activate')->controller(StaffActivationController::class)->group(function () {
+        Route::post('/', 'start');
         Route::post('verify', 'verify')->name('.verify');
         Route::post('resend', 'resend')->name('.resend');
     });

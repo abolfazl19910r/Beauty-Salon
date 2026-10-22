@@ -114,10 +114,13 @@ class PhoneVerificationService
             return false;
         }
 
-        $user->update([
+        // کد ورود به همین شماره رفته، پس شماره تأیید است (۲۰۲۶-۱۰-۲۲: حساب متخصصی که مدیر با رمز اولیه ساخته بعد از ورود به صفحه‌ی
+        // «تأیید شماره» و پیامک دوم نمی‌رود)
+        $user->forceFill([
             'login_verification_code' => null,
             'login_verification_code_expire_at' => null,
-        ]);
+            'phone_verified_at' => $user->phone_verified_at ?? now(),
+        ])->save();
 
         return true;
     }

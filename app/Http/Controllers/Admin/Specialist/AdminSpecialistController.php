@@ -65,8 +65,11 @@ class AdminSpecialistController extends Controller
             app(\App\Services\Salon\SpecialistPhotoService::class)->applyFromRequest($result['specialist'], $request);
 
             $message = 'متخصص جدید با موفقیت ایجاد شد.';
-            if (! $result['matched_user']) {
-                $message .= ' توجه: هنوز هیچ کاربری با این شماره موبایل ثبت‌نام نکرده — پس از ثبت‌نام متخصص با این شماره، پنل او فعال خواهد شد.';
+            if ($result['created_account'] ?? false) {
+                $message .= ' حساب او با رمزی که گذاشتید ساخته شد؛ با همین شماره و رمز از صفحه‌ی ورود کادر (یا اپ «ماهرو همکار») وارد شود.';
+            } elseif (! $result['matched_user']) {
+                // ⭐ ۲۰۲۶-۱۰-۲۲: صفحه‌ی ثبت‌نام کادر از ۲۰۲۶-۱۰-۱۱ وجود نداشت و متخصص تازه راهی برای ورود نداشت
+                $message .= ' این شماره هنوز حساب ندارد: متخصص در صفحه‌ی ورود کادر یا اپ «ماهرو همکار» «فعال‌سازی حساب متخصص» را بزند و با کد پیامکی رمز بگذارد.';
             }
 
             return redirect()

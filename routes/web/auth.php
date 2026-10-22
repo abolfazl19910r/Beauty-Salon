@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\PhoneVerificationController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\SpecialistActivationController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -29,6 +30,12 @@ Route::middleware('guest')->group(function () {
     Route::post('login/verify', [AuthenticatedSessionController::class, 'verify'])->name('login.verify')->middleware('throttle:auth');
     Route::post('login/resend', [AuthenticatedSessionController::class, 'resendCode'])->name('login.resend')->middleware('throttle:auth');
     Route::get('forgot-password', [PasswordResetController::class, 'create'])->name('password.request');
+    // ⭐ فعال‌سازی حساب متخصصی که مدیر با شماره‌ی تازه اضافه کرده (۲۰۲۶-۱۰-۲۲) — مثل ثبت‌نام: پیامک واقعی، پس throttle:registration
+    Route::get('specialist/activate', [SpecialistActivationController::class, 'create'])->name('specialist.activate');
+    Route::post('specialist/activate', [SpecialistActivationController::class, 'store'])->middleware('throttle:registration');
+    Route::get('specialist/activate/verify', [SpecialistActivationController::class, 'showVerify'])->name('specialist.activate.verify.show');
+    Route::post('specialist/activate/verify', [SpecialistActivationController::class, 'verify'])->name('specialist.activate.verify')->middleware('throttle:registration');
+    Route::post('specialist/activate/resend', [SpecialistActivationController::class, 'resend'])->name('specialist.activate.resend')->middleware('throttle:registration');
     // ⭐ Wired up (post-test-writing-phase, throttle:password-reset): the most sensitive of the
     // three new limiters — sendCode() sends a real SMS per hit (spam/cost vector) and reset()
     // checks a 6-digit code with a plain equality check and no per-code attempt limit

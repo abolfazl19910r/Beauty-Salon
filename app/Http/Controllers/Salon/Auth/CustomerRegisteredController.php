@@ -93,8 +93,16 @@ class CustomerRegisteredController extends Controller
         }
 
         session()->forget(self::SESSION_KEY);
+
+        // ⭐ متخصصی که مدیر همین سالن با این شماره ثبت کرده، به‌جای مشتری حساب متخصص می‌گیرد و به پنل خودش می‌رود (۲۰۲۶-۱۰-۲۲)
+        $isSpecialist = app(\App\Services\Specialist\SpecialistAccountLinker::class)->promoteCustomer($user);
+
         Auth::login($user);
         $request->session()->regenerate();
+
+        if ($isSpecialist) {
+            return redirect()->to($user->homePath())->with('success', 'حساب متخصص شما فعال شد. خوش آمدید!');
+        }
 
         return redirect()->route('home', ['salon_slug' => $this->currentSalon->get()->slug])
             ->with('success', 'ثبت نام شما با موفقیت انجام شد. خوش آمدید!');

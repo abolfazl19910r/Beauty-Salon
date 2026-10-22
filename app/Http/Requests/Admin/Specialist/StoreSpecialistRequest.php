@@ -40,6 +40,9 @@ class StoreSpecialistRequest extends FormRequest
             'services' => ['required', 'array'],
             'services.*' => ['exists:beauty_services,id'],
             'commission_rate' => ['nullable', 'numeric', 'min:0', new MaxPercentage],
+            // ⭐ رمز اولیه‌ی اختیاری (۲۰۲۶-۱۰-۲۲): فقط وقتی این شماره هنوز حساب ندارد حساب کادر همین حالا ساخته می‌شود؛
+            // خالی = متخصص خودش از «فعال‌سازی حساب متخصص» (وب و اپ همکار) با کد پیامکی حساب می‌سازد
+            'initial_password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ];
     }
 
@@ -59,5 +62,10 @@ class StoreSpecialistRequest extends FormRequest
     public function messages(): array
     {
         return \App\Services\Salon\SpecialistPhotoService::MESSAGES;
+    }
+
+    public function attributes(): array
+    {
+        return ['initial_password' => 'رمز اولیه'];
     }
 }

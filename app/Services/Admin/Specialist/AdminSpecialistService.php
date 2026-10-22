@@ -47,7 +47,24 @@ class AdminSpecialistService
             $validated['phone'] = $this->normalizePhone($validated['phone']);
             $validated['commission_rate'] = $this->parseCommissionRate($rawCommissionRate);
 
+            $initialPassword = $validated['initial_password'] ?? null;
+            unset($validated['initial_password']);
+
             $matchedUser = $this->matchAndPromoteUser($validated['phone']);
+
+            // ⭐ رمز اولیه‌ی مدیر (۲۰۲۶-۱۰-۲۲): شماره‌ی بی‌حساب ← حساب کادر همین حالا (ورود اول با همین رمز و کد پیامکی)
+            if (! $matchedUser && $initialPassword) {
+                $matchedUser = new \App\Models\User;
+                $matchedUser->forceFill([
+                    'name' => $validated['name'],
+                    'phone' => $validated['phone'],
+                    'password' => \Illuminate\Support\Facades\Hash::make($initialPassword),
+                    'salon_id' => $this->currentSalon->id(),
+                    'user_type' => 'staff',
+                ])->save();
+                $createdAccount = true;
+            }
+
             $validated['user_id'] = $matchedUser?->id;
 
             $specialist = $this->specialistRepository->create($validated);
@@ -56,6 +73,7 @@ class AdminSpecialistService
             return [
                 'specialist' => $specialist,
                 'matched_user' => $matchedUser,
+                'created_account' => $createdAccount ?? false,
             ];
         }, attempts: 3);
     }
@@ -69,7 +87,24 @@ class AdminSpecialistService
             $validated['phone'] = $this->normalizePhone($validated['phone']);
             $validated['commission_rate'] = $this->parseCommissionRate($rawCommissionRate);
 
+            $initialPassword = $validated['initial_password'] ?? null;
+            unset($validated['initial_password']);
+
             $matchedUser = $this->matchAndPromoteUser($validated['phone']);
+
+            // ⭐ رمز اولیه‌ی مدیر (۲۰۲۶-۱۰-۲۲): شماره‌ی بی‌حساب ← حساب کادر همین حالا (ورود اول با همین رمز و کد پیامکی)
+            if (! $matchedUser && $initialPassword) {
+                $matchedUser = new \App\Models\User;
+                $matchedUser->forceFill([
+                    'name' => $validated['name'],
+                    'phone' => $validated['phone'],
+                    'password' => \Illuminate\Support\Facades\Hash::make($initialPassword),
+                    'salon_id' => $this->currentSalon->id(),
+                    'user_type' => 'staff',
+                ])->save();
+                $createdAccount = true;
+            }
+
             $validated['user_id'] = $matchedUser?->id;
 
             $specialist = $this->specialistRepository->update($specialist, $validated);

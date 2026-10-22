@@ -111,6 +111,13 @@
             @endforeach
 
             <div class="border-t my-4 pt-4" style="border-color: var(--specialist-border);">
+                {{-- ⭐ رزرو برای خودِ متخصص (۲۰۲۶-۱۰-۲۲) — همان رزرو سایت سالن؛ منوی سایت برای متخصص «پنل کاری» دارد تا برگردد --}}
+                <a href="{{ route('bookings.create') }}" data-book-for-myself class="flex items-center px-4 py-3 text-sm font-medium text-[var(--specialist-inactive)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)] rounded-lg transition-colors">
+                    <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    رزرو نوبت برای خودم
+                </a>
                 <a href="{{ route('home') }}" class="flex items-center px-4 py-3 text-sm font-medium text-[var(--specialist-inactive)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)] rounded-lg transition-colors">
                     <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -244,6 +251,7 @@
                 @foreach ($__specNav as [$__route, $__pattern, $__label])
                     <a href="{{ route($__route) }}" @if (request()->routeIs($__pattern)) aria-current="page" @endif>{{ $__label }}</a>
                 @endforeach
+                <a href="{{ route('bookings.create') }}" class="spec-top__site" data-book-for-myself>رزرو برای خودم</a>
                 <a href="{{ route('home') }}" class="spec-top__site">بازگشت به سایت</a>
             </nav>
         @endif

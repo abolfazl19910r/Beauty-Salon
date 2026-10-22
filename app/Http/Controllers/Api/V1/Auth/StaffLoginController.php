@@ -42,6 +42,9 @@ class StaffLoginController extends Controller
             throw new ApiException('invalid_credentials', 'اطلاعات وارد شده صحیح نمی‌باشد.', 422);
         }
 
+        // متخصصی که مدیر بعد از ساخت این حساب با همین شماره اضافه کرده، پیش از سنجش «فقط متخصص» وصل می‌شود (۲۰۲۶-۱۰-۲۲)
+        app(\App\Services\Specialist\SpecialistAccountLinker::class)->linkPending($user);
+
         // پیش از فرستادن پیامک: مدیرِ بدون رکورد متخصص یا سالن غیرفعال پیامک هدر نمی‌دهد
         $context = $this->gate->resolve($user, ApiAudienceGate::STAFF);
 

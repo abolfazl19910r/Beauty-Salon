@@ -162,6 +162,9 @@ class AuthenticatedSessionController extends Controller
      */
     private function completeLogin(Request $request, \App\Models\User $user, bool $remember, bool $trustDevice): RedirectResponse
     {
+        // متخصصی که مدیر بعد از ساخت این حساب با همین شماره اضافه کرده (۲۰۲۶-۱۰-۲۲)
+        app(\App\Services\Specialist\SpecialistAccountLinker::class)->linkPending($user);
+
         Auth::login($user, $remember);
         $request->session()->regenerate();
         // مقصد کهنه نماند تا ورود بعدی در همین مرورگر (مثلاً مشتری) به آن نرود

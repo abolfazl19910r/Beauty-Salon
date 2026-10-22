@@ -70,12 +70,12 @@
                 <a href="{{ route('courses.index') }}" class="nav-link">دوره‌ها</a>
             @endif
             {{-- بسته‌ی «و»: چیدمان‌های رزرومحور (ویترین، بنتو) دکمه‌ی رزرو را همیشه در هدر دارند --}}
-            @if (in_array(app(\App\Support\Themes\CurrentAppearance::class)->get()->layout, ['vitrin', 'bento'], true) && ! auth()->user()?->hasRole('specialists'))
+            @if (in_array(app(\App\Support\Themes\CurrentAppearance::class)->get()->layout, ['vitrin', 'bento'], true))
                 <a href="{{ route('bookings.create') }}" class="btn-gold rounded-full px-5 py-2 text-sm font-semibold" data-header-book>رزرو نوبت</a>
             @endif
 
             @auth
-                @if(auth()->user()->hasRole('specialists'))
+                @if(auth()->user()->isSpecialistAccount())
                     <a href="{{ route('specialist.profile.show') }}" class="nav-link flex items-center gap-1">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -177,7 +177,7 @@
                 <a href="{{ route('courses.index') }}" class="block py-2 nav-link">دوره‌ها</a>
             @endif
             @auth
-                @if(auth()->user()->hasRole('specialists'))
+                @if(auth()->user()->isSpecialistAccount())
                     <a href="{{ route('specialist.profile.show') }}" class="block py-2 nav-link">پروفایل من</a>
                     <a href="{{ route('specialist.my-dashboard') }}" class="block py-2 nav-link">پنل کاری</a>
                 @else
