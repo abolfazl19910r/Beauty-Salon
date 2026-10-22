@@ -99,8 +99,21 @@ class PushStats
             $rate = $sent > 0 ? round($acked * 100 / $sent, 1) : null;
             $unhealthy = $devices->take(500)->filter(fn (PushDevice $d) => AppMessenger::isUnhealthy($d))->count();
 
+            // ارسال‌های بی‌رسید این بازه به گوشی‌هایی که دیگر فعال نیستند (اپ حذف، داده پاک یا خروج): نرخ را پایین می‌کشند ولی با
+            // ارسال تازه رسید نمی‌گیرند — فقط برای توضیح در push:test (کارت همان قاعده‌ی تصمیم ۶-۱ ب را دارد)
+            $staleUnacked = $sent > $acked ? PushDelivery::query()
+                ->join('push_devices', 'push_devices.id', '=', 'push_deliveries.push_device_id')
+                ->where('push_devices.app', $app)
+                ->where('push_deliveries.created_at', '>=', $since)
+                ->where('push_deliveries.status', PushDelivery::ACCEPTED)
+                ->whereNull('push_deliveries.acked_at')
+                ->whereNotIn('push_devices.id', $devices->pluck('id'))
+                ->count() : 0;
+
             $apps[$app] = [
                 'devices' => $devices->count(),
+                'stale_unacked' => $staleUnacked,
+                'needed' => self::sendsNeeded($sent, $acked),
                 'never_acked' => $devices->whereNull('last_receipt_at')->count(),
                 'unhealthy' => $unhealthy,
                 'sent' => $sent,
@@ -133,6 +146,18 @@ class PushStats
             'checks' => $checks,
             'apps' => $apps,
         ];
+    }
+
+    /**
+     * چند ارسال تازه‌ی با رسید لازم است تا اپ از شرط کارت بگذرد: هم دست‌کم READY_MIN_DELIVERIES ارسال، هم نرخ ≥ READY_MIN_ACK_RATE.
+     * (a + x) / (s + x) ≥ r  ⇒  x ≥ (r·s − a) / (1 − r). ارسال‌های قدیمی بازه‌ی ۷ روزه کم‌کم بیرون می‌روند و عدد واقعی کمتر می‌شود.
+     */
+    public static function sendsNeeded(int $sent, int $acked): int
+    {
+        $r = self::READY_MIN_ACK_RATE / 100;
+        $forRate = $sent === 0 ? 0 : (int) max(0, ceil(round(($r * $sent - $acked) / (1 - $r), 6)));
+
+        return max($forRate, self::READY_MIN_DELIVERIES - $sent);
     }
 
     /** متن کوتاه پنجره‌ی تأیید «فعال» در تنظیمات پلتفرم */

@@ -20,6 +20,9 @@ final class PushPolicy
 
     public const TEST = 'push.test';
 
+    /** push:live-check — آزمون مسیر پیامک پشتیبان حالت «فعال»؛ دسته را خود دستور می‌دهد */
+    public const LIVE_CHECK = 'push.live_check';
+
     /** @var array<string, array{0: PushUrgency, 1: string}> */
     private const MAP = [
         E::BOOKING_CREATED_SPECIALIST => [PushUrgency::Normal, 'نوبت تازه'],
@@ -43,6 +46,7 @@ final class PushPolicy
         self::BOOKING_CANCELLED_UNPAID_CUSTOMER => [PushUrgency::Normal, 'لغو نوبت پرداخت‌نشده'],
         self::DISCOUNT_CODE_CUSTOMER => [PushUrgency::Info, 'کد تخفیف'],
         self::TEST => [PushUrgency::Info, 'پوش آزمایشی ماهرو'],
+        self::LIVE_CHECK => [PushUrgency::Urgent, 'آزمون حالت فعال ماهرو'],
     ];
 
     public static function urgency(string $eventKey): PushUrgency
