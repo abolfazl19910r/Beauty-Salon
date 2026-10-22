@@ -71,7 +71,5 @@
         @endif
     </div>
 
-    @if ($customer)
-        <p class="text-[11px] text-m-tx/40 mt-6 break-all" dir="ltr" title="SHA-256">SHA-256 (ماهرو): {{ $customer->sha256 }}</p>
-    @endif
+    {{-- اثرانگشت SHA-256 فایل APK از ۲۰۲۶-۱۰-۲۲ فقط در پنل ابرمدیر «نسخه‌های اپ» (تصمیم ابوالفضل: در صفحه‌ی عمومی نباشد) --}}
 </x-guest-layout>

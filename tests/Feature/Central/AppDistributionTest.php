@@ -136,7 +136,8 @@ class AppDistributionTest extends TestCase
 
         $this->get(route('app-download.show', ['salon' => 'rasta']))->assertOk()
             ->assertSee('data-app-download-customer', false)->assertSee('0.3.1')->assertDontSee('0.3.0')
-            ->assertSee('data-app-download-staff', false)->assertSee('data-app-download-salon-code', false);
+            ->assertSee('data-app-download-staff', false)->assertSee('data-app-download-salon-code', false)
+            ->assertDontSee('SHA-256')->assertDontSee(\App\Models\AppRelease::where('version_code', 9)->value('sha256')); // فقط در پنل ابرمدیر (۲۰۲۶-۱۰-۲۲)
 
         $response = $this->get(route('app-download.file', ['variant' => 'customer']))->assertOk();
         $this->assertSame('application/vnd.android.package-archive', $response->headers->get('Content-Type'));
