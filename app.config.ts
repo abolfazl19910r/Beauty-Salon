@@ -22,13 +22,14 @@ const VARIANTS = {
 type Variant = keyof typeof VARIANTS;
 
 /**
- * Android App Links اپ مشتری (بسته‌ی ۵): لینک https سالن («rasta.mahru.ir/» و «…/specialists/12») اگر اپ نصب است خود اپ را باز می‌کند.
+ * Android App Links اپ مشتری (بسته‌ی ۵): لینک https سالن («rasta.arisheh.ir/» و «…/specialists/12») اگر اپ نصب است خود اپ را باز می‌کند.
  * سرور: /.well-known/assetlinks.json با اثرانگشت SHA-256 امضای همین اپ (CUSTOMER_APP_SHA256_FINGERPRINTS)؛ اندروید برای میزبان wildcard
  * فایل را از دامنه‌ی اصلی می‌خواند. فقط صفحه‌ی اصلی سالن و صفحه‌ی متخصص — نه پرداخت، ورود یا پنل‌ها (پرداخت وب در مرورگر بماند).
- * APP_LINKS_DOMAIN فقط اگر دامنه‌ی دیگری لازم شد (خالی = mahru.ir). آزمایش محلی همان mahru.ir با اجازه‌ی دستی است (README، «App Links»)؛
+ * APP_LINKS_DOMAIN فقط اگر دامنه‌ی دیگری لازم شد (خالی = arisheh.ir). آزمایش محلی همان arisheh.ir با اجازه‌ی دستی است (README، «App Links»)؛
  * http فقط در نسخه‌ی غیر production و تأیید خودکار ندارد.
  */
-const APP_LINKS_DOMAIN = process.env.APP_LINKS_DOMAIN || 'mahru.ir';
+// دامنه‌ی اصلی پلتفرم از ۲۰۲۶-۱۰-۲۲: arisheh.ir (قبلاً mahru.ir)
+const APP_LINKS_DOMAIN = process.env.APP_LINKS_DOMAIN || 'arisheh.ir';
 
 function customerIntentFilters(production: boolean) {
   const schemes = production ? ['https'] : ['https', 'http'];
@@ -74,16 +75,16 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     name: v.name,
     slug: v.slug,
     scheme: v.scheme,
-    version: '0.3.4',
+    version: '0.3.5',
     orientation: 'portrait',
     icon: `${v.assets}/icon.png`,
     userInterfaceStyle: 'automatic',
     platforms: ['android'],
     android: {
       package: v.package,
-      // ۱۲ (0.3.4): «فعال‌سازی حساب متخصص» در صفحه‌ی ورود؛ ۱۱ (0.3.3): نوبت لغوشده/نیامده بی «دریافت در سالن»، پیش‌پرداخت فقط وقتی پرداخت شده؛ ۱۰ (0.3.2): «امروز» همکار با دریافت در سالن، نیامد و لغوشده‌ها؛ ۹ (0.3.1): اسکنر QR بعد از ورود؛ ۸ (0.3.0): بسته‌ی ۵ (App Links، بررسی نسخه‌ی تازه) — نصب روی نسخه‌ی قبلی به‌صورت Update. هر APK تازه‌ای که آپلود می‌شود باید
+      // ۱۳ (0.3.5): دامنه‌ی arisheh.ir (سرور پیش‌فرض و App Links)؛ ۱۲ (0.3.4): «فعال‌سازی حساب متخصص» در صفحه‌ی ورود؛ ۱۱ (0.3.3): نوبت لغوشده/نیامده بی «دریافت در سالن»، پیش‌پرداخت فقط وقتی پرداخت شده؛ ۱۰ (0.3.2): «امروز» همکار با دریافت در سالن، نیامد و لغوشده‌ها؛ ۹ (0.3.1): اسکنر QR بعد از ورود؛ ۸ (0.3.0): بسته‌ی ۵ (App Links، بررسی نسخه‌ی تازه) — نصب روی نسخه‌ی قبلی به‌صورت Update. هر APK تازه‌ای که آپلود می‌شود باید
       // versionCode بزرگ‌تری داشته باشد (ابرمدیر ← نسخه‌های اپ، از خود APK می‌خواند)
-      versionCode: 12,
+      versionCode: 13,
       ...(variant === 'customer' ? { intentFilters: customerIntentFilters(production) } : {}),
       googleServicesFile: GOOGLE_SERVICES_JSON,
       adaptiveIcon: {
@@ -121,7 +122,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     extra: {
       variant,
       allowServerOverride: !production,
-      defaultApiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'https://mahru.ir',
+      defaultApiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'https://arisheh.ir',
       eas: (process.env.EAS_PROJECT_ID ?? EAS_PROJECT_IDS[variant]) ? { projectId: process.env.EAS_PROJECT_ID ?? EAS_PROJECT_IDS[variant] } : undefined,
     },
   };

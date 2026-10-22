@@ -5,7 +5,7 @@ import { enDigits } from '../format';
  * شکل‌های پذیرفته:
  *   rasta                                 کد سالن (= slug، قاعده‌ی alpha_dash لاراول)
  *   https://host/s/rasta[/...]             لینک قدیمی/همیشه‌زنده‌ی سالن (همان QR روی سرور لوکال)
- *   https://rasta.mahru.ir[/...]          ساب‌دامین سالن (وقتی CENTRAL_DOMAIN روی سرور پر است)
+ *   https://rasta.arisheh.ir[/...]          ساب‌دامین سالن (وقتی CENTRAL_DOMAIN روی سرور پر است)
  *   mahru://salon/rasta                   لینک اپ (دکمه‌ی «باز کردن در اپ» صفحه‌ی وب سالن)
  *   …/specialists/12 (هر دو شکل بالا)      QR متخصص (بسته‌ی ۵): سالن + specialistId برای رزرو مستقیم با همان متخصص
  * origin فقط برای لینک‌های http(s) برگردانده می‌شود تا نسخه‌ی آزمایشی بتواند سرور همان QR را پیشنهاد کند — جز آدرسی که فقط روی
@@ -41,7 +41,7 @@ export function parseSalonInput(raw: string): ParsedSalon | null {
     return slug && isSalonSlug(slug) ? { slug, origin: null } : null;
   }
 
-  // «rasta.mahru.ir/...» بدون http هم لینک است
+  // «rasta.arisheh.ir/...» بدون http هم لینک است
   const looksLikeUrl = /^https?:\/\//i.test(input) || /^[^\s/]+\.[^\s/]+(\/|$)/.test(input);
   if (!looksLikeUrl) {
     return isSalonSlug(input) ? { slug: input, origin: null } : null;

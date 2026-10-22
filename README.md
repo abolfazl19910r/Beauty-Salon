@@ -91,7 +91,7 @@ eas build --platform android --profile customer-production
 به پرسش «Install and run on an emulator?» جواب No بدهید (بدون Android Studio خطای adb می‌دهد؛ build سالم است).
 پروژه‌ی تازه (مثلاً حساب دیگر) = `eas init` با `APP_VARIANT` همان اپ، و گذاشتن شناسه‌ی چاپ‌شده در `EAS_PROJECT_IDS` (config پویاست و
 `eas init` خودش نمی‌تواند بنویسد؛ اگر شناسه‌ی قبلی در فایل باشد `eas init` پروژه‌ی تازه نمی‌سازد — اول خالی‌اش کنید).
-آدرس پیش‌فرض سرور: متغیر `EXPO_PUBLIC_API_URL` در expo.dev (Environment variables) — وگرنه `https://mahru.ir`.
+آدرس پیش‌فرض سرور: متغیر `EXPO_PUBLIC_API_URL` در expo.dev (Environment variables) — وگرنه `https://arisheh.ir`.
 
 ## پوش (بسته‌ی ۴، نسخه‌ی 0.2.0 / versionCode 2)
 - **پیش‌نیاز هر build:** متغیر محیطی `GOOGLE_SERVICES_JSON` از نوع **File** (Secret، محیط‌های preview و production) در **هر دو**
@@ -113,13 +113,13 @@ eas build --platform android --profile customer-production
 
 **انتشار نسخه‌ی تازه:** در `app.config.ts` مقدار `version` و `versionCode` را بالا ببرید ← build با پروفایل `customer-production`
 (یا `staff-production`) ← APK را در پنل ابرمدیر «نسخه‌های اپ» آپلود کنید. نسخه از خود APK خوانده می‌شود؛ versionCode تکراری پذیرفته
-نمی‌شود. صفحه‌ی عمومی دانلود `https://mahru.ir/app` است. اپ با `GET /api/v1/app/latest` نسخه‌ی تازه را می‌فهمد: روی صفحه‌ی خانه
+نمی‌شود. صفحه‌ی عمومی دانلود `https://arisheh.ir/app` است. اپ با `GET /api/v1/app/latest` نسخه‌ی تازه را می‌فهمد: روی صفحه‌ی خانه
 (مشتری) و «امروز» (همکار) کارت «نسخه‌ی تازه آمده»، و اگر ابرمدیر نسخه را «اجباری» زده باشد، صفحه‌ی تمام‌صفحه‌ی به‌روزرسانی.
 
 **کلید امضا:** همه‌ی نسخه‌ها باید با همان keystore پروژه‌ی expo.dev امضا شوند (EAS خودش نگه می‌دارد)؛ با کلید دیگر، نسخه‌ی تازه روی
 نسخه‌ی قبلی نصب نمی‌شود. نسخه‌ی پشتیبان: `eas credentials -p android` ← Download credentials.
 
-**App Links (فقط اپ مشتری):** لینک https صفحه‌ی اصلی سالن (`rasta.mahru.ir/`) و صفحه‌ی متخصص (`…/specialists/12`، QR متخصص) اگر اپ نصب
+**App Links (فقط اپ مشتری):** لینک https صفحه‌ی اصلی سالن (`rasta.arisheh.ir/`) و صفحه‌ی متخصص (`…/specialists/12`، QR متخصص) اگر اپ نصب
 است، خود اپ را باز می‌کند (`src/customer/+native-intent.tsx` ← `salon/[slug]`، با `?specialist=`). شرط سرور: اثرانگشت SHA-256 همین keystore
 در `.env` سرور (`CUSTOMER_APP_SHA256_FINGERPRINTS`)، از expo.dev ← Credentials ← Android ← `ir.mahru` ← SHA-256 Fingerprint. بررسی روی گوشی:
 ```
@@ -127,11 +127,11 @@ adb shell pm get-app-links ir.mahru
 ```
 آزمایش محلی (بدون nip.io و بدون DNS؛ nip.io از ایران در دسترس نیست): build عادی `customer-apk` (`APP_LINKS_DOMAIN` را تنظیم نکنید)، آدرس
 سرور اپ `http://192.168.1.2:8000`. اندروید لینک را بدون باز کردن دامنه به اپ می‌دهد و اپ فقط slug را برمی‌دارد. چون assetlinks واقعی هنوز
-خوانده نمی‌شود، اجازه را دستی بدهید: اندروید ۱۲+ از تنظیمات ← برنامه‌ها ← ماهرو ← «باز کردن به‌طور پیش‌فرض» ← «افزودن پیوند» ← `*.mahru.ir`،
+خوانده نمی‌شود، اجازه را دستی بدهید: اندروید ۱۲+ از تنظیمات ← برنامه‌ها ← ماهرو ← «باز کردن به‌طور پیش‌فرض» ← «افزودن پیوند» ← `*.arisheh.ir`،
 یا با adb (platform-tools روی ویندوز، USB debugging روشن):
 ```
 adb shell pm set-app-links-user-selection --user cur --package ir.mahru true all
-adb shell "am start -a android.intent.action.VIEW -d 'https://rasta.mahru.ir/specialists/1?src=qr'"
+adb shell "am start -a android.intent.action.VIEW -d 'https://rasta.arisheh.ir/specialists/1?src=qr'"
 ```
 اندروید ۱۰/۱۱: هنگام باز کردن لینک «ماهرو» را انتخاب کنید.
 مرورگر داخلی اینستاگرام/تلگرام App Links را نادیده می‌گیرد (همان صفحه‌ی وب و بنر «باز کردن در اپ» می‌ماند)؛ اسکن با دوربین گوشی درست کار می‌کند.
