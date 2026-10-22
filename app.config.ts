@@ -55,8 +55,9 @@ const GOOGLE_SERVICES_JSON = process.env.GOOGLE_SERVICES_JSON || undefined;
  */
 const EAS_ACCOUNTS = {
   abolfazl19910r: { staff: 'e4dde0c7-c83e-45d6-a466-a5f2237d9e10', customer: 'c9ebfbca-701b-44a8-8c10-68f979a83e94' },
-  // بعد از `eas init` شناسه‌ی چاپ‌شده‌ی هر اپ اینجا (خالی = پروژه هنوز ساخته نشده؛ eas init فقط وقتی خالی است پروژه می‌سازد)
-  'abolfazl1991s-team': { staff: '', customer: '' },
+  // بعد از `eas init` شناسه‌ی چاپ‌شده‌ی هر اپ در ردیف همان حساب (خالی = پروژه هنوز ساخته نشده؛ eas init فقط وقتی خالی است پروژه می‌سازد)
+  // @abolfazl1991s-team/mahru-staff و @abolfazl1991s-team/mahru (۲۰۲۶-۱۰-۲۲)
+  'abolfazl1991s-team': { staff: 'b66e6dcc-d989-4dc3-80c4-88588ffedb62', customer: '5f5742a6-d637-4e1c-8ef3-3fd829232a6a' },
 } satisfies Record<string, Record<Variant, string>>;
 
 const EAS_OWNER: keyof typeof EAS_ACCOUNTS = 'abolfazl1991s-team';
