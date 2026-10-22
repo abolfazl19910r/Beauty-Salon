@@ -64,14 +64,19 @@
                                 <span class="text-[var(--specialist-plum-muted)]">قیمت کل خدمت:</span>
                                 {{ number_format($booking->service->price) }} تومان
                             </p>
-                            <p class="text-[var(--specialist-text-dim)] persian-number">
+                            {{-- پیش‌پرداخت فقط وقتی واقعاً پرداخت شده؛ نوبت دستیِ مدیر ستون prepayment_amount پیش‌فرض دارد که هرگز خواسته نشده --}}
+                            @if($booking->payment_status === 'paid')
+                            <p class="text-[var(--specialist-text-dim)] persian-number" data-prepaid>
                                 <span class="text-[var(--specialist-plum-muted)]">پیش‌پرداخت مشتری (از طریق سایت):</span>
                                 {{ number_format($booking->prepayment_amount) }} تومان
                             </p>
+                            @endif
+                            @if(! in_array($booking->status, ['cancelled', 'no_show'], true))
                             <p class="text-[var(--specialist-plum-light)] font-bold persian-number" data-due-at-salon>
                                 <span class="text-[var(--specialist-plum-muted)] font-normal">{{ $booking->payment_status === 'paid' ? 'باقی‌مانده (موقع نوبت مستقیماً از مشتری دریافت کنید):' : 'پیش‌پرداخت انجام نشده — کل مبلغ را موقع نوبت از مشتری دریافت کنید:' }}</span>
                                 {{ number_format($booking->due_at_salon) }} تومان
                             </p>
+                            @endif
                         @endif
                     </div>
                 </div>

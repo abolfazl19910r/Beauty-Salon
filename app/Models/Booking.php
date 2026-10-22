@@ -169,7 +169,8 @@ class Booking extends Model
      */
     public function getDueAtSalonAttribute(): float
     {
-        if ($this->customer_course_id !== null || ! $this->service) {
+        // لغوشده و نیامده چیزی برای گرفتن در سالن ندارند (آزمون دستی ۲۰۲۶-۱۰-۲۲: نوبت لغوشده «دریافت در سالن ۳۰۰٬۰۰۰» نشان می‌داد)
+        if (in_array($this->status, ['cancelled', 'no_show'], true) || $this->customer_course_id !== null || ! $this->service) {
             return 0.0;
         }
 

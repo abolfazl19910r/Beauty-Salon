@@ -114,6 +114,20 @@ class MultiSalonMembershipTest extends TestCase
         $this->withSession([AdminSalonSelector::SESSION_KEY => $other->id])->get('/admin')->assertRedirect(route('admin.salons.choose'));
     }
 
+    public function test_the_current_salon_of_a_multi_salon_owner_loads_its_plan_without_lazy_loading_errors(): void
+    {
+        $plan = \App\Models\Plan::create(['key' => 'p'.uniqid(), 'name' => 'پایه', 'price_1m' => 990000, 'sms_quota_per_month' => 1000]);
+        $this->salonA->forceFill(['plan_id' => $plan->id])->save();
+        $this->salonB->forceFill(['plan_id' => $plan->id])->save();
+        app(\App\Services\Salon\SalonMembershipService::class)->addExisting($this->ownerA, $this->salonB, 'owner');
+        app(CurrentSalon::class)->clear();
+
+        $this->actingAs($this->ownerA)->withSession([AdminSalonSelector::SESSION_KEY => $this->salonB->id])
+            ->get(route('admin.billing.index'))->assertOk();
+        $this->assertFalse(app(CurrentSalon::class)->get()->preventsLazyLoading);
+        $this->assertSame($plan->id, app(CurrentSalon::class)->get()->plan->id);
+    }
+
     public function test_a_suspended_salon_is_skipped_but_the_others_stay_open(): void
     {
         app(\App\Services\Salon\SalonMembershipService::class)->addExisting($this->ownerA, $this->salonB, 'owner');
@@ -194,6 +208,17 @@ class MultiSalonMembershipTest extends TestCase
         $this->assertTrue($salon->subscription_ends_at->isPast());
         $this->assertSame($salon->id, session(AdminSalonSelector::SESSION_KEY));
         $this->assertSame(1, User::where('phone', '09120000001')->count());
+    }
+
+    public function test_owners_see_how_to_add_another_salon_and_staff_do_not(): void
+    {
+        $this->actingAs($this->ownerA)->get(route('admin.billing.index'))->assertOk()
+            ->assertSee('data-add-salon-card', false)->assertSee('data-add-salon', false)->assertSee(route('salon-signup.create'), false);
+        $this->get(route('admin.dashboard'))->assertOk()->assertSee('data-add-salon', false);
+
+        app(\App\Services\Salon\SalonMembershipService::class)->addExisting($this->ownerA, $this->salonB, 'staff',
+            Role::withoutGlobalScopes()->where('name', 'staff')->pluck('id')->all());
+        $this->inSalonB()->actingAs($this->ownerA)->get(route('admin.dashboard'))->assertOk()->assertDontSee('data-add-salon', false);
     }
 
     public function test_signup_with_an_existing_staff_phone_says_sign_in_first(): void

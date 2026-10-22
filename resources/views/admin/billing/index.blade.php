@@ -186,6 +186,19 @@
             @include('admin.billing.partials.plans', ['planOptions' => $planOptions, 'defaultPlanId' => $defaultPlanId, 'salon' => $salon, 'specialists' => $specialists, 'remainingDays' => $remainingDays, 'currentPlan' => $currentPlan])
         @endif
 
+        {{-- سالن دوم با همین حساب (تصمیم ۵ و ۵-۲: بی دوره‌ی رایگان؛ آزمون ۲۰۲۶-۱۰-۲۲) — فقط مالک --}}
+        @if (auth()->user()->salonRoleIn($salon->id) === 'owner' && ! \App\Services\SuperAdmin\SuperAdminImpersonation::active())
+            <div class="rounded-xl p-4 flex flex-wrap items-center justify-between gap-3" data-add-salon-card
+                 style="background:var(--admin-surface); border:1px solid var(--admin-border);">
+                <div class="text-sm" style="color:var(--admin-text);">
+                    <p class="font-bold">سالن دیگری هم دارید؟</p>
+                    <p class="mt-1" style="color:var(--admin-text-dim);">با همین حساب سالن دوم را بسازید. هر سالن اشتراک جدای خودش را دارد و دوره‌ی رایگان فقط برای سالن اول است؛ بعد از ساخت، از بالای پنل بین سالن‌ها جابه‌جا شوید.</p>
+                </div>
+                <a href="{{ route('salon-signup.create') }}" class="px-4 py-2 rounded-lg text-m-onsolid text-sm font-bold shrink-0"
+                   style="background:var(--admin-accent);">افزودن سالن دیگر</a>
+            </div>
+        @endif
+
         {{-- تاریخچه‌ی فاکتورها --}}
         <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
             <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">

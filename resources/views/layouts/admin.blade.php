@@ -262,6 +262,21 @@
                                     ویرایش پروفایل
                                 </a>
 
+                                {{-- سالن دوم (تصمیم ۵، آزمون ۲۰۲۶-۱۰-۲۲: مالک راهی برای فهمیدنش نداشت) — فقط مالک سالن جاری، نه هنگام ورود ابرمدیر به‌جای سالن --}}
+                                @if (app(\App\Support\CurrentSalon::class)->id() !== null && auth()->user()->salonRoleIn(app(\App\Support\CurrentSalon::class)->id()) === 'owner' && ! \App\Services\SuperAdmin\SuperAdminImpersonation::active())
+                                    <a href="{{ route('salon-signup.create') }}" data-add-salon
+                                       class="flex items-center px-4 py-2.5 text-sm transition-colors"
+                                       style="color: var(--admin-accent);"
+                                       onmouseover="this.style.backgroundColor='var(--admin-accent-light)';"
+                                       onmouseout="this.style.backgroundColor='';"
+                                       role="menuitem" tabindex="-1">
+                                        <svg class="w-4 h-4 ml-2 opacity-70" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+                                        </svg>
+                                        افزودن سالن دیگر
+                                    </a>
+                                @endif
+
                                 <form method="POST" action="{{ route('logout') }}" role="none" class="border-t" style="border-color: var(--admin-border);">
                                     @csrf
                                     <button type="submit"

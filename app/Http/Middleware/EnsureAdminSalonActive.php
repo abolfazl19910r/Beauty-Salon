@@ -84,6 +84,12 @@ class EnsureAdminSalonActive
 
         session([\App\Support\AdminSalonSelector::SESSION_KEY => $salon->id]);
 
+        // سالنِ برداشته از فهرست چندتایی پرچم «بارگذاری تنبل ممنوع» دارد (N+1 Salon::plan در /admin و /admin/billing، آزمون ۲۰۲۶-۱۰-۲۲)؛
+        // سالن جاری یک مدل تنهاست، پس مثل قبل از چندسالنی تنها خوانده می‌شود
+        if ($memberships->count() > 1) {
+            $salon = \App\Models\Salon::withoutGlobalScopes()->findOrFail($salon->id);
+        }
+
         app(CurrentSalon::class)->set($salon);
 
         if ($salon->subscription_ends_at->isPast() && ! $request->routeIs('admin.billing.*')) {

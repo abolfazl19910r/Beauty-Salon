@@ -85,7 +85,26 @@ class SpecialistTodayDetailsTest extends TestCase
 
         $this->actingAs(User::find($this->specialist->user_id))->get(route('specialist.bookings.show', $manual))->assertOk()
             ->assertSee('پیش‌پرداخت انجام نشده')
-            ->assertSeeInOrder(['data-due-at-salon', number_format(400000)], false);
+            ->assertSeeInOrder(['data-due-at-salon', number_format(400000)], false)
+            ->assertDontSee('data-prepaid', false);
+    }
+
+    public function test_cancelled_and_no_show_have_nothing_to_collect(): void
+    {
+        $cancelled = $this->booking('cancelled', 'unpaid', 9, ['cancellation_reason' => 'x']);
+        $noShow = $this->booking('no_show', 'unpaid', 10);
+        $paid = $this->booking('confirmed', 'paid', 11);
+
+        $this->assertSame(0.0, $cancelled->due_at_salon);
+        $this->assertSame(0.0, $noShow->due_at_salon);
+
+        $user = User::find($this->specialist->user_id);
+        $this->actingAs($user)->get(route('specialist.bookings.show', $cancelled))->assertOk()->assertDontSee('data-due-at-salon', false);
+        $this->get(route('specialist.bookings.show', $paid))->assertOk()->assertSee('data-prepaid', false)->assertSee('data-due-at-salon', false);
+        $this->app['auth']->forgetGuards();
+
+        $token = $user->createToken('A17', ['staff'], now()->addDays(90))->plainTextToken;
+        $this->withToken($token)->getJson('/api/v1/staff/bookings/'.$cancelled->id)->assertOk()->assertJsonPath('data.due_at_salon', 0);
     }
 
     public function test_staff_api_today_has_due_no_show_and_cancelled(): void
