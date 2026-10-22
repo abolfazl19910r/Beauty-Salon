@@ -9,4 +9,9 @@ expo-env.d.ts
 # کلیدها روی expo.dev (متغیرهای EAS) می‌مانند — ریپو عمومی است
 google-services*.json
 *.keystore
+*.jks
+# بارگذاری keystore به پروژه‌ی تازه‌ی expo.dev (README) — هرگز در ریپو
+credentials.json
+credentials/
+keys/
 .env*.local

@@ -46,13 +46,36 @@ npm ci
 - **لینک اپ:** `mahru://salon/rasta` اپ را روی همان سالن باز می‌کند (دکمه‌ی «باز کردن در اپ ماهرو» صفحه‌ی وب سالن روی اندروید).
 - ورود مشتری با حساب **مشتری همان سالن** است (موبایل + رمز ← کد)؛ ثبت‌نام هم از داخل اپ (حساب فقط بعد از کد ساخته می‌شود).
 
-## ساخت APK با EAS (حساب expo.dev: abolfazl19910r)
-از ۲۰۲۶-۱۰-۱۶ هر دو اپ با حساب **`abolfazl19910r`** ساخته می‌شوند (`EAS_OWNER` و `EAS_PROJECT_IDS` در `app.config.ts`):
-`@abolfazl19910r/mahru-staff` و `@abolfazl19910r/mahru`. پروژه‌های قبلی `@abolfazl1991/*` دست‌نخورده‌اند ولی دیگر استفاده نمی‌شوند.
-کلید امضای APK مال پروژه‌ی expo.dev است؛ اولین APK از حساب تازه روی نسخه‌ی قبلی Update نمی‌شود (یک بار حذف و نصب).
+## ساخت APK با EAS (حساب expo.dev: abolfazl1991s-team)
+حساب فعال `EAS_OWNER` در `app.config.ts` است و شناسه‌ی پروژه‌های هر حساب کنار همان حساب در `EAS_ACCOUNTS`:
+- `abolfazl19910r` (۲۰۲۶-۱۰-۱۶ تا ۲۰۲۶-۱۰-۲۲): `@abolfazl19910r/mahru-staff` و `@abolfazl19910r/mahru`.
+- `abolfazl1991s-team` (از ۲۰۲۶-۱۰-۲۲): سازمانِ ورود `abolfazl1991` — با `eas login` همان `abolfazl1991` وارد شوید.
+
+سهمیه‌ی build رایگان اندروید مال هر حساب است؛ صفحه‌ی `https://expo.dev/accounts/<حساب>/settings/billing` مانده‌اش را نشان می‌دهد.
+
+### عوض کردن حساب expo.dev (بدون عوض شدن کلید امضا)
+کلید امضای APK مال پروژه‌ی expo.dev است. اگر پروژه‌ی تازه کلید تازه بسازد، APK روی نسخه‌ی نصب‌شده Update نمی‌شود و برای اپ مشتری
+اثرانگشت App Links (`CUSTOMER_APP_SHA256_FINGERPRINTS` سرور) هم عوض می‌شود. پس همان keystore قبلی بارگذاری می‌شود:
+1. **پشتیبان keystore از حساب قبلی** (سهمیه‌ی build لازم ندارد): expo.dev ← پروژه ← Credentials ← Android ← بسته (`ir.mahru.staff` یا `ir.mahru`) ←
+   Keystore ← Download. یک `.jks` و یک `.md` با رمزها می‌دهد. بیرون از ریپو نگه دارید.
+2. `EAS_OWNER` حساب تازه؛ شناسه‌های آن حساب خالی.
+3. برای هر اپ (`set APP_VARIANT=staff` یا `customer`): `eas init` ← شناسه‌ی چاپ‌شده در `EAS_ACCOUNTS` همان حساب.
+4. متغیر File ‏`GOOGLE_SERVICES_JSON` (بخش «پوش» پایین) در پروژه‌ی تازه.
+5. keystore: فایل `.jks` را در پوشه‌ی `keys\` ریشه‌ی ریپو بگذارید و `credentials.json` (هر دو در `.gitignore`):
+   ```json
+   { "android": { "keystore": {
+       "keystorePath": "keys/staff.jks",
+       "keystorePassword": "<Android upload keystore password>",
+       "keyAlias": "<Android key alias>",
+       "keyPassword": "<Android key password>" } } }
+   ```
+   `eas credentials -p android` ← پروفایل (`staff-apk`) ← `credentials.json: Upload/Download…` ← `Upload credentials from credentials.json to EAS`.
+   بعد در همان منو «Keystore» باید همان SHA-256 قبلی را نشان دهد (اپ مشتری: `C2:6F:D4:…:51:2C`). سپس `credentials.json` و `keys\` را پاک کنید.
+6. `eas build` مثل همیشه.
+
 ```cmd
 npm i -g eas-cli
-eas login            :: با abolfazl19910r
+eas login            :: با abolfazl1991 (حساب فعال: abolfazl1991s-team)
 eas whoami
 ```
 در **cmd** (در PowerShell به‌جای `set` بنویسید `$env:APP_VARIANT="customer"`):
