@@ -10,7 +10,9 @@ import { useCountdown } from '@/lib/useCountdown';
 import { Button, ErrorBox, Field, Notice, Screen, T } from '@/ui/kit';
 
 export default function Verify() {
-  const params = useLocalSearchParams<{ challenge: string; phone_hint: string; resend_after: string }>();
+  // flow=activate: فعال‌سازی حساب متخصص (۲۰۲۶-۱۰-۲۲) — همان صفحه‌ی کد با مسیرهای staff/activate
+  const params = useLocalSearchParams<{ challenge: string; phone_hint: string; resend_after: string; flow?: string }>();
+  const base = params.flow === 'activate' ? '/staff/activate' : '/staff/login';
   const { api, signIn } = useSession();
   const [challenge, setChallenge] = useState(params.challenge);
   const [code, setCode] = useState('');
@@ -26,7 +28,7 @@ export default function Verify() {
     setError(null);
     try {
       const { data } = await api.post<TokenResponse>(
-        '/staff/login/verify',
+        `${base}/verify`,
         { challenge, code: enDigits(code), device_name: Device.modelName ?? 'Android' },
         false,
       );
@@ -43,7 +45,7 @@ export default function Verify() {
   const resend = async () => {
     setError(null);
     try {
-      const { data } = await api.post<Challenge>('/staff/login/resend', { challenge }, false);
+      const { data } = await api.post<Challenge>(`${base}/resend`, { challenge }, false);
       setChallenge(data.challenge);
       countdown.restart(data.resend_after);
       setInfo('کد تازه فرستاده شد.');
@@ -59,7 +61,7 @@ export default function Verify() {
       {info ? <Notice tone="success" text={info} /> : null}
       {error ? <ErrorBox error={error} /> : null}
       {restartLogin(error) ? (
-        <Button kind="secondary" title="ورود از اول" onPress={() => router.back()} />
+        <Button kind="secondary" title={params.flow === 'activate' ? 'از اول' : 'ورود از اول'} onPress={() => router.back()} />
       ) : (
         <>
           <Button title="ورود" onPress={submit} loading={busy} disabled={code.length !== 6} />

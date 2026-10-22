@@ -68,6 +68,8 @@ export default function Login() {
       {error ? <ErrorBox error={error} /> : null}
       <Button title="ادامه" onPress={submit} loading={busy} disabled={!phone || !password} />
       <Button kind="ghost" title="رمز را فراموش کرده‌ام" onPress={() => router.push('/forgot')} />
+      {/* متخصصی که مدیر با شماره‌ی تازه اضافه کرده هنوز حساب ندارد (۲۰۲۶-۱۰-۲۲) */}
+      <Button kind="secondary" title="حساب ندارم — فعال‌سازی حساب متخصص" onPress={() => router.push('/activate')} />
       {ALLOW_SERVER_OVERRIDE ? <Notice text={`سرور: ${serverUrl}`} /> : null}
     </Screen>
   );

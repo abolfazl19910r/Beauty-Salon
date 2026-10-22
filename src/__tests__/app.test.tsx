@@ -272,3 +272,31 @@ it('a cancelled manual booking shows nothing to collect and no unrequested prepa
   expect(screen.queryByText('پیش‌پرداخت')).toBeNull();
   expect(screen.queryByText(/دریافت در سالن/)).toBeNull();
 });
+
+it('a new specialist activates the account with a code and lands on today', async () => {
+  routes = (url) => {
+    if (url.endsWith('/staff/activate')) return [200, ok({ challenge: 'CH9', expires_in: 600, code_expires_in: 120, resend_after: 60, phone_hint: '0905***9161' })];
+    if (url.endsWith('/staff/activate/verify')) return [201, ok({ token: '7|xyz', token_type: 'Bearer', token_id: 7, expires_at: '2027-01-08T00:00:00Z', account: ACCOUNT })];
+    if (url.includes('/staff/today')) return [200, ok({ date: '2026-10-11', date_jalali: '1405/07/19', date_label: 'x', summary: { count: 0, pending_count: 0, revenue: 0 }, bookings: [] })];
+    if (url.includes('/staff/notifications')) return [200, ok([], { current_page: 1, last_page: 1, total: 0, per_page: 20, unread_count: 0 })];
+    if (url.endsWith('/push/device')) return [200, ok({ registered: true, provider: 'fcm', server_enabled: true, last_receipt_at: null, disabled_reason: null })];
+    return [404, { success: false, error: { code: 'not_found', message: 'x' } }];
+  };
+
+  renderRouter('./src/app', { initialUrl: '/' });
+
+  fireEvent.press(await screen.findByText('حساب ندارم — فعال‌سازی حساب متخصص'));
+  fireEvent.changeText(await screen.findByLabelText('شماره موبایل'), '۰۹۰۵۷۰۱۹۱۶۱');
+  fireEvent.changeText(screen.getByLabelText('رمز عبور (حداقل ۸ حرف)'), 'secret123');
+  fireEvent.changeText(screen.getByLabelText('تکرار رمز عبور'), 'secret123');
+  fireEvent.press(screen.getByText('ارسال کد تأیید'));
+
+  await screen.findByText(/کد ۶ رقمی/);
+  expect(calls.find((c) => c.url.endsWith('/staff/activate'))?.body).toEqual({ phone: '09057019161', password: 'secret123', password_confirmation: 'secret123' });
+
+  fireEvent.changeText(screen.getByLabelText('کد تأیید'), '۱۲۳۴۵۶');
+  fireEvent.press(screen.getByText('ورود'));
+
+  await waitFor(() => expect(calls.find((c) => c.url.endsWith('/staff/activate/verify'))?.body).toMatchObject({ challenge: 'CH9', code: '123456' }));
+  await waitFor(() => expect(mockSecure.get('mahru.token')).toBe('7|xyz'));
+});
