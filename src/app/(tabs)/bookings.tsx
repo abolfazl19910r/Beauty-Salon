@@ -17,9 +17,10 @@ const FILTERS: { key: BookingStatus | null; label: string }[] = [
   { key: 'cancelled', label: 'لغو شده' },
 ];
 
+// ۹۰ روز (آزمون ۲۰۲۶-۱۰-۲۲: نوبت یک ماه بعد در «۳۰ روز آینده» نمی‌آمد)؛ سقف سرور ۹۲ روز
 const RANGES = [
-  { key: 'upcoming', label: '۳۰ روز آینده', from: 0, to: 30 },
-  { key: 'past', label: '۳۰ روز گذشته', from: -30, to: 0 },
+  { key: 'upcoming', label: '۹۰ روز آینده', from: 0, to: 90 },
+  { key: 'past', label: '۹۰ روز گذشته', from: -90, to: 0 },
 ];
 
 export default function Bookings() {

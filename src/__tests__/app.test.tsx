@@ -256,3 +256,19 @@ it('today shows the amount to collect, unpaid prepayment and a collapsed list of
   expect(await screen.findByText('لیلا')).toBeTruthy();
   expect(screen.getByText('دلیل: سفر')).toBeTruthy();
 });
+
+it('a cancelled manual booking shows nothing to collect and no unrequested prepayment', async () => {
+  mockSecure.set('mahru.token', '5|abc');
+  await require('@react-native-async-storage/async-storage').setItem('mahru.account', JSON.stringify(ACCOUNT));
+  routes = (url) => {
+    if (url.includes('/staff/bookings/41')) return [200, ok({ ...BOOKING, status: 'cancelled', status_label: 'لغو شده', payment_status: 'unpaid', prepayment_amount: 50000, due_at_salon: 0, cancellation_reason: 'سفر', actions: { confirm: false, cancel: false, complete: false } })];
+    if (url.includes('/staff/notifications')) return [200, ok([], { current_page: 1, last_page: 1, total: 0, per_page: 20, unread_count: 0 })];
+    return [404, { success: false, error: { code: 'not_found', message: 'x' } }];
+  };
+
+  renderRouter('./src/app', { initialUrl: '/booking/41' });
+
+  expect(await screen.findByText('دلیل لغو: سفر')).toBeTruthy();
+  expect(screen.queryByText('پیش‌پرداخت')).toBeNull();
+  expect(screen.queryByText(/دریافت در سالن/)).toBeNull();
+});

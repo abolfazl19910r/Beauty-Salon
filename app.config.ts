@@ -74,16 +74,16 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     name: v.name,
     slug: v.slug,
     scheme: v.scheme,
-    version: '0.3.2',
+    version: '0.3.3',
     orientation: 'portrait',
     icon: `${v.assets}/icon.png`,
     userInterfaceStyle: 'automatic',
     platforms: ['android'],
     android: {
       package: v.package,
-      // ۱۰ (0.3.2): «امروز» همکار با دریافت در سالن، نیامد و لغوشده‌ها؛ ۹ (0.3.1): اسکنر QR بعد از ورود؛ ۸ (0.3.0): بسته‌ی ۵ (App Links، بررسی نسخه‌ی تازه) — نصب روی نسخه‌ی قبلی به‌صورت Update. هر APK تازه‌ای که آپلود می‌شود باید
+      // ۱۱ (0.3.3): نوبت لغوشده/نیامده بی «دریافت در سالن»، پیش‌پرداخت فقط وقتی پرداخت شده؛ ۱۰ (0.3.2): «امروز» همکار با دریافت در سالن، نیامد و لغوشده‌ها؛ ۹ (0.3.1): اسکنر QR بعد از ورود؛ ۸ (0.3.0): بسته‌ی ۵ (App Links، بررسی نسخه‌ی تازه) — نصب روی نسخه‌ی قبلی به‌صورت Update. هر APK تازه‌ای که آپلود می‌شود باید
       // versionCode بزرگ‌تری داشته باشد (ابرمدیر ← نسخه‌های اپ، از خود APK می‌خواند)
-      versionCode: 10,
+      versionCode: 11,
       ...(variant === 'customer' ? { intentFilters: customerIntentFilters(production) } : {}),
       googleServicesFile: GOOGLE_SERVICES_JSON,
       adaptiveIcon: {

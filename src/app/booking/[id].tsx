@@ -50,9 +50,12 @@ export default function BookingDetail() {
       {b.course ? <CourseFilePanel booking={b} /> : (
       <Card>
         <KeyValue label="قیمت خدمت" value={toman(b.service?.price)} />
-        <KeyValue label="پیش‌پرداخت" value={`${toman(b.prepayment_amount)}${b.payment_status === 'paid' ? ' (پرداخت شده)' : ''}`} />
+        {/* پیش‌پرداخت فقط وقتی پرداخت شده (نوبت دستی مدیر ستون پیش‌فرض دارد)؛ لغوشده و نیامده چیزی برای گرفتن ندارند (آزمون ۲۰۲۶-۱۰-۲۲) */}
+        {b.payment_status === 'paid' ? <KeyValue label="پیش‌پرداخت" value={`${toman(b.prepayment_amount)} (پرداخت شده)`} /> : null}
         {b.discount_amount > 0 ? <KeyValue label="تخفیف" value={toman(b.discount_amount)} /> : null}
-        <KeyValue label={b.payment_status === 'paid' ? 'باقی‌مانده (حضوری)' : 'دریافت در سالن (پیش‌پرداخت نشده)'} value={toman(dueAtSalon(b))} />
+        {b.status === 'cancelled' || b.status === 'no_show' ? null : (
+          <KeyValue label={b.payment_status === 'paid' ? 'باقی‌مانده (حضوری)' : 'دریافت در سالن (پیش‌پرداخت نشده)'} value={toman(dueAtSalon(b))} />
+        )}
       </Card>
       )}
 
