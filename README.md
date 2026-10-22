@@ -283,13 +283,13 @@ make superadmin    # ساخت مدیر پلتفرم
 APP_NAME="ماهرو"
 BRAND_NAME="ماهرو"
 BRAND_NAME_EN=Mahru
-BRAND_DOMAIN=mahru.ir
+BRAND_DOMAIN=arisheh.ir
 APP_ENV=local
 APP_DEBUG=true
 APP_URL=http://localhost
 APP_TIMEZONE=Asia/Tehran
 APP_LOCALE=fa
-CENTRAL_DOMAIN=              # مثلاً mahru.ir برای فعال‌شدن زیردامنه‌ی سالن‌ها؛ خالی = فقط /s/{slug}
+CENTRAL_DOMAIN=              # مثلاً arisheh.ir برای فعال‌شدن زیردامنه‌ی سالن‌ها؛ خالی = فقط /s/{slug}
 ```
 
 ### دیتابیس

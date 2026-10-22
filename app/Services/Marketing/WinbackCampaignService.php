@@ -59,8 +59,8 @@ class WinbackCampaignService
         'سالن' => ['نام کوتاه پیامکی سالن', 'سالن رزگلد'],
         'مشتری' => ['نام مشتری', 'مریم'],
         'تخفیف' => ['«کد X: مقدار تخفیف تا تاریخ.» اگر کد تخفیف روشن است', 'کد BKQ7M2X: 15٪ تخفیف تا 1405/09/30. '],
-        'لینک_رزرو' => ['لینک کوتاه رزرو سالن', 'mahru.ir/b/r7p2'],
-        'لینک_انصراف' => ['لینک کوتاه انصراف از این پیامک‌ها', 'mahru.ir/b/u9z1'],
+        'لینک_رزرو' => ['لینک کوتاه رزرو سالن', 'arisheh.ir/b/r7p2'],
+        'لینک_انصراف' => ['لینک کوتاه انصراف از این پیامک‌ها', 'arisheh.ir/b/u9z1'],
     ];
 
     public function __construct(
@@ -408,8 +408,8 @@ class WinbackCampaignService
             'سالن' => (string) $salon->smsName(),
             'مشتری' => (string) ($user ? mb_substr(trim((string) $user->name), 0, 25) : 'مریم'),
             'تخفیف' => $hasDiscount && $code ? sprintf('کد %s: %s تخفیف تا %s. ', $code, $discount->discountLabel(), verta($expires)->format('Y/m/d')) : '',
-            'لینک_رزرو' => $preview ? 'mahru.ir/b/r7p2xk' : fn () => $this->links->shorten($salon->publicUrl(), $expires->copy()->addDay()),
-            'لینک_انصراف' => $preview || ! $user ? 'mahru.ir/b/u9z1ab' : fn () => $this->links->shorten(WinbackService::unsubscribeUrl($salon, $user), now()->addDays(180)),
+            'لینک_رزرو' => $preview ? 'arisheh.ir/b/r7p2xk' : fn () => $this->links->shorten($salon->publicUrl(), $expires->copy()->addDay()),
+            'لینک_انصراف' => $preview || ! $user ? 'arisheh.ir/b/u9z1ab' : fn () => $this->links->shorten(WinbackService::unsubscribeUrl($salon, $user), now()->addDays(180)),
         ]);
     }
 

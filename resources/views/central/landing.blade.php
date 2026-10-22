@@ -773,7 +773,7 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 </div>
 <div class="scr rv d1" id="scr">
 <div class="pn on"><h5>اطلاعات سالن</h5><div class="fld">نام سالن<em>سالن رزگلد</em></div><div class="fld">کوتاهی و براشینگ<em>۴۵ دقیقه</em></div><div class="fld">رنگ و لایت<em>۲ ساعت</em></div><div class="fld">پرسنل<em>۳ نفر</em></div><div class="fld">بیعانه‌ی خدمات طولانی<em>فعال</em></div></div>
-<div class="pn"><h5>لینک اختصاصی شما آماده است</h5><div class="lnk">mahru.ir/rosegold</div><div class="share">
+<div class="pn"><h5>لینک اختصاصی شما آماده است</h5><div class="lnk">arisheh.ir/rosegold</div><div class="share">
 <svg class="qr" viewBox="0 0 21 21" shape-rendering="crispEdges" aria-hidden="true"><path fill="#1A1410" d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2zM14 0h7v7h-7zM15 1v5h5V1zM16 2h3v3h-3zM0 14h7v7H0zM1 15v5h5v-5zM2 16h3v3H2zM8 0h1v2H8zM10 1h2v1h-2zM9 3h2v2H9zM12 4h1v3h-1zM8 6h1v2H8zM10 8h3v1h-3zM0 8h2v1H0zM3 9h3v1H3zM14 8h2v2h-2zM17 9h3v1h-3zM8 10h2v2H8zM11 11h3v1h-3zM15 11h1v3h-1zM18 12h3v1h-3zM0 11h1v2H0zM2 12h3v1H2zM9 13h2v2H9zM12 14h2v1h-2zM17 14h2v2h-2zM8 16h1v3H8zM10 17h3v1h-3zM14 16h2v1h-2zM16 18h3v1h-3zM13 19h2v2h-2zM10 20h2v1h-2zM19 20h2v1h-2z"/></svg>
 <div class="chs"><span>بیوی اینستاگرام</span><span>گوگل‌مپ</span><span>پیام‌رسان‌ها</span></div></div></div>
 <div class="pn"><h5>امروز در سالن</h5><div class="nt"><span class="av">✓</span><div>نوبت جدید ثبت شد<small>نازنین کریمی · رنگ و لایت</small></div><time>09:12</time></div><div class="nt"><span class="av">★</span><div>یادآوری ارسال شد<small>مریم رضایی · ۲ ساعت قبل</small></div><time>08:00</time></div><div class="nt"><span class="av">₮</span><div>بیعانه دریافت شد<small>پریسا محمدی · مانیکور ژلی</small></div><time>07:41</time></div></div>

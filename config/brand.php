@@ -11,7 +11,7 @@ return [
     'name' => env('BRAND_NAME', 'ماهرو'),
     'name_en' => env('BRAND_NAME_EN', 'Mahru'),
     'tagline' => 'نوبت‌دهی آنلاین سالن‌های زیبایی',
-    'domain' => env('BRAND_DOMAIN', 'mahru.ir'),
+    'domain' => env('BRAND_DOMAIN', 'arisheh.ir'),
     'theme_color' => '#1A1410',
     // راه‌های تماس صفحه‌ی فروش (لندینگ ۲۰۲۶-۱۰-۱۴): فقط پیش‌فرض — سوپرادمین از «تنظیمات پلتفرم» عوض می‌کند (App\Support\PlatformSettings)؛
     // خالی = آن لینک اصلاً نشان داده نمی‌شود (نه شماره‌ی نمونه)

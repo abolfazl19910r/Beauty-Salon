@@ -4,11 +4,11 @@
 کد Laravel تغییری لازم ندارد؛ فقط `TELEGRAM_API_BASE` عوض می‌شود.
 
 ```
-سرور ماهرو (ایران) ──> https://tg.mahru.ir/<PROXY_SECRET>/bot<TOKEN>/sendMessage ──> api.telegram.org
+سرور ماهرو (ایران) ──> https://tg.arisheh.ir/<PROXY_SECRET>/bot<TOKEN>/sendMessage ──> api.telegram.org
 ```
 
 ## پیش‌نیاز
-- حساب Cloudflare و دامنه‌ای که DNS آن روی Cloudflare است (در `wrangler.toml` زیردامنه‌ی `tg.mahru.ir` فرض شده — عوضش کنید).
+- حساب Cloudflare و دامنه‌ای که DNS آن روی Cloudflare است (در `wrangler.toml` زیردامنه‌ی `tg.arisheh.ir` فرض شده — عوضش کنید).
 - Node.js 18+ روی سیستم خودتان (نه روی سرور).
 
 ## راه‌اندازی
@@ -25,12 +25,12 @@ npx wrangler deploy
 ```
 TELEGRAM_BOT_TOKEN=<همان توکن>
 TELEGRAM_BOT_USERNAME=<نام کاربری ربات بدون @>
-TELEGRAM_API_BASE=https://tg.mahru.ir/<PROXY_SECRET>
+TELEGRAM_API_BASE=https://tg.arisheh.ir/<PROXY_SECRET>
 ```
 
 تست از خود سرور ایران:
 ```bash
-curl https://tg.mahru.ir/<PROXY_SECRET>/bot<TOKEN>/getMe      # باید "ok":true برگردد
+curl https://tg.arisheh.ir/<PROXY_SECRET>/bot<TOKEN>/getMe      # باید "ok":true برگردد
 php artisan config:cache
 php artisan bot:webhook telegram
 ```

@@ -159,7 +159,7 @@ class WinbackCampaignTest extends TestCase
 
         $this->assertSame(5, $preview['count']);
         $this->assertSame(1, $preview['reserve']);
-        $this->assertStringContainsString('mahru.ir/b/u9z1ab', $preview['sample']);
+        $this->assertStringContainsString('arisheh.ir/b/u9z1ab', $preview['sample']);
         $this->assertSame(intdiv(4, $preview['parts']), $preview['allowed']);
         $this->assertGreaterThan(0, $preview['buy_parts']);
     }
@@ -307,7 +307,7 @@ class WinbackCampaignTest extends TestCase
             'message' => 'برگردید {لینک_رزرو} لغو: {لینک_انصراف}'];
 
         $this->actingAs($admin)->get(route('admin.winback.campaigns.create'))->assertOk();
-        $this->post(route('admin.winback.campaigns.store'), $form + ['action' => 'preview'])->assertOk()->assertSee('پیش‌نمایش')->assertSee('mahru.ir/b/u9z1ab');
+        $this->post(route('admin.winback.campaigns.store'), $form + ['action' => 'preview'])->assertOk()->assertSee('پیش‌نمایش')->assertSee('arisheh.ir/b/u9z1ab');
         $this->assertSame(0, WinbackCampaign::count());
 
         $this->post(route('admin.winback.campaigns.store'), $form + ['action' => 'start'])->assertSessionHasErrors('confirm_marketing');

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 /**
  * GET /.well-known/assetlinks.json (بسته‌ی ۵، Android App Links) — روی هر میزبانی (دامنه‌ی اصلی و ساب‌دامین سالن‌ها).
  *
- * اپ مشتری با intent-filter ‏autoVerify برای «*.mahru.ir» و «mahru.ir» می‌گوید لینک سالن را باز می‌کند؛ اندروید برای میزبان wildcard
+ * اپ مشتری با intent-filter ‏autoVerify برای «*.arisheh.ir» و «arisheh.ir» می‌گوید لینک سالن را باز می‌کند؛ اندروید برای میزبان wildcard
  * همین فایل را از دامنه‌ی اصلی می‌خواند و اگر اثرانگشت امضای اپ نصب‌شده در آن باشد، لینک https سالن مستقیم اپ را باز می‌کند.
  * شرط اندروید: HTTPS، کد ۲۰۰ بدون redirect، Content-Type ‏application/json. اثرانگشت‌ها از config('api.customer_app_sha256_fingerprints').
  */

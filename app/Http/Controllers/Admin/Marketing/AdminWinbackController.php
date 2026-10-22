@@ -28,8 +28,8 @@ class AdminWinbackController extends Controller
         $sample = SmsTemplates::fill(SmsTemplateStore::body($salon->id, 'winback'), [
             'سالن' => (string) $salon->smsName(),
             'تخفیف' => $setting->hasDiscount() ? sprintf('کد BKQ7M2X: %s تخفیف تا %s. ', $setting->discountLabel(), verta(now()->addDays($setting->discount_valid_days))->format('Y/m/d')) : '',
-            'لینک_رزرو' => 'mahru.ir/b/r7p2xk',
-            'لینک_انصراف' => 'mahru.ir/b/u9z1ab',
+            'لینک_رزرو' => 'arisheh.ir/b/r7p2xk',
+            'لینک_انصراف' => 'arisheh.ir/b/u9z1ab',
         ]);
 
         return view('admin.winback.index', [

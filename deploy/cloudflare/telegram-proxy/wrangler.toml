@@ -7,7 +7,7 @@ compatibility_date = "2026-09-01"
 workers_dev = false
 
 routes = [
-  { pattern = "tg.mahru.ir", custom_domain = true }
+  { pattern = "tg.arisheh.ir", custom_domain = true }
 ]
 
 # Secretها اینجا نوشته نمی‌شوند:
