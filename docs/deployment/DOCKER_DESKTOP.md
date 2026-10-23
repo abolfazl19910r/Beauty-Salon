@@ -129,7 +129,12 @@ C:\Windows\System32\drivers\etc\hosts
 - دامنه‌ی اصلی: `http://arisheh.test:8080`
 - سالن راستا: `http://rasta.arisheh.test:8080`
 
-اگر بعد از ذخیره باز نشد، در `cmd`: `ipconfig /flushdns`.
+اگر بعد از ذخیره باز نشد:
+
+- برنامه‌ی VPN/پروکسی (مثل FlClash با System Proxy یا TUN) درخواست `arisheh.test` را به پروکسی می‌فرستد و فایل hosts دیده
+  نمی‌شود. موقع آزمون خاموشش کنید، یا `*.test`، `localhost` و `127.0.0.1` را در Bypass آن بگذارید. (آزموده‌ی ابوالفضل ۲۰۲۶-۱۰-۲۴: با
+  FlClash روشن باز نشد، با خاموش کردنش باز شد.)
+- `ipconfig /flushdns` در `cmd` **با Run as administrator** (بدون آن: «The requested operation requires elevation»).
 
 > چرا `.test`؟ این پسوند برای آزمون رزرو شده و هیچ‌وقت روی اینترنت واقعی وجود ندارد؛ با دامنه‌ی واقعی `arisheh.ir` قاطی نمی‌شود.
 > مسیر `/s/{slug}` هم‌زمان کار می‌کند.
