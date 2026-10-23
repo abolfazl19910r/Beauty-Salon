@@ -85,10 +85,14 @@ class SalonSignupController extends Controller
      */
     public function checkSlug(Request $request): JsonResponse
     {
-        $slug = (string) $request->query('slug', '');
+        $slug = (string) \App\Support\SalonSubdomain::normalize((string) $request->query('slug', ''));
 
-        if ($slug === '' || ! preg_match('/^[a-zA-Z0-9_-]+$/', $slug)) {
+        if ($slug === '' || strlen($slug) > \App\Support\SalonSubdomain::MAX || ! preg_match(\App\Support\SalonSubdomain::PATTERN, $slug)) {
             return response()->json(['available' => false, 'reason' => 'invalid']);
+        }
+
+        if (\App\Support\SalonSubdomain::isReserved($slug)) {
+            return response()->json(['available' => false, 'reason' => 'reserved']);
         }
 
         $available = ! $this->salonRepository->slugExists($slug);

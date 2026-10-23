@@ -20,6 +20,9 @@ class StoreSalonRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->prepareSalonContactInput();
+        if ($this->has('slug')) {
+            $this->merge(['slug' => \App\Support\SalonSubdomain::normalize($this->input('slug'))]);
+        }
     }
 
     public function after(): array
@@ -41,10 +44,7 @@ class StoreSalonRequest extends FormRequest
             // هم پر/عوض بشه، دقیقاً مثل zarinpal_merchant_id.
             'tagline' => ['nullable', 'string', 'max:255'],
             'bio' => ['nullable', 'string', 'max:2000'],
-            'slug' => [
-                'required', 'string', 'max:100', 'alpha_dash',
-                Rule::unique('salons', 'slug'),
-            ],
+            'slug' => \App\Support\SalonSubdomain::rules(),
             'subscription_type' => ['required', 'in:1m,3m,6m,12m'],
             'plan_id' => ['nullable', 'integer', 'exists:plans,id'],
             'max_specialists_count' => ['required', 'integer', 'min:0'],
@@ -64,9 +64,7 @@ class StoreSalonRequest extends FormRequest
 
     public function messages(): array
     {
-        return $this->salonContactMessages() + \App\Services\Salon\SalonLogoService::MESSAGES + \App\Services\Salon\SalonLogoService::DARK_MESSAGES + [
-            'slug.unique' => 'این آدرس قبلاً برای سالن دیگری استفاده شده است.',
-            'slug.alpha_dash' => 'آدرس فقط می‌تواند شامل حروف انگلیسی، عدد، خط تیره و زیرخط باشد.',
+        return $this->salonContactMessages() + \App\Services\Salon\SalonLogoService::MESSAGES + \App\Services\Salon\SalonLogoService::DARK_MESSAGES + \App\Support\SalonSubdomain::messages() + [
             'admin_phone.regex' => 'شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد.',
             'admin_phone.unique' => 'ادمینی با این شماره موبایل از قبل وجود دارد.',
         ];

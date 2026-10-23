@@ -30,3 +30,4 @@ google-services.json
 
 # پشتیبان‌های make backup / mahru-backup.sh (داده‌ی شخصی؛ هرگز در گیت)
 /backups
+.env.single

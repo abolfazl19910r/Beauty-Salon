@@ -109,6 +109,8 @@ services:
 
 
   # ─── Redis (Cache + Queue + Session) ─────────────────────
+  # ⚠️ noeviction (۲۰۲۶-۱۰-۲۳): قبلاً allkeys-lru بود؛ چون صف و session هم روی همین Redisند، با پر شدن حافظه jobهای صف
+  # (کد ورود، پرداخت، پوش) و sessionها بی‌صدا پاک می‌شدند. حالا نوشتن در حافظه‌ی پر خطا می‌دهد (در لاگ دیده می‌شود).
   redis:
     image: redis:7.2-alpine
     container_name: beauty_salon_redis
@@ -117,7 +119,7 @@ services:
       redis-server
       --requirepass "${REDIS_PASSWORD:-}"
       --maxmemory 256mb
-      --maxmemory-policy allkeys-lru
+      --maxmemory-policy noeviction
       --save 900 1
       --save 300 10
       --save 60 10000

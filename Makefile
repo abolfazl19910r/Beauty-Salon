@@ -135,14 +135,15 @@ clean-all: ## حذف همه چیز شامل volumes (خطرناک!)
 	docker compose down -v --remove-orphans
 
 # ─── Backup ───────────────────────────────────────────────
+# ⚠️ backup-db قبلاً «DB_USERNAME:-beauty_user» را با سینتکس shell داخل make می‌نوشت؛ make آن را متغیر خالی می‌خواند و
+# «mysqldump -u -p» بکاپ خالی می‌ساخت بی‌هیچ خطایی. حالا متغیرهای MYSQL_* خود کانتینر mysql (از docker-compose) خوانده
+# می‌شوند، -T برای اجرا بدون TTY (cron)، و فایل خالی خطا می‌دهد.
 backup-db: ## پشتیبان‌گیری از دیتابیس
 	@mkdir -p backups
-	docker compose exec mysql mysqldump \
-		-u${DB_USERNAME:-beauty_user} \
-		-p${DB_PASSWORD:-secret} \
-		${DB_DATABASE:-beauty_salon} \
-		> backups/beauty_salon_$$(date +%Y%m%d_%H%M%S).sql
-	@echo "$(GREEN)✅ Backup saved to backups/$(RESET)"
+	@f=backups/beauty_salon_$$(date +%Y%m%d_%H%M%S).sql; \
+	docker compose exec -T mysql sh -c 'exec mysqldump --single-transaction --routines --no-tablespaces -u"$$MYSQL_USER" -p"$$MYSQL_PASSWORD" "$$MYSQL_DATABASE"' > $$f \
+		&& test -s $$f && chmod 600 $$f && echo "$(GREEN)✅ Backup saved to $$f$(RESET)" \
+		|| { echo "❌ Backup failed or empty: $$f"; rm -f $$f; exit 1; }
 
 backup-files: ## پشتیبان فایل‌های آپلودی (عکس‌های دوره‌ی درمانی، لوگو، گالری، ...)
 	@mkdir -p backups

@@ -1,0 +1,33 @@
+# ============================================================
+# Mahru — همه‌چیز در یک کانتینر (Docker Desktop لوکال یا یک سرور کوچک)
+#
+#   copy .env.single.example .env.single      (ویندوز)   |   cp .env.single.example .env.single
+#   docker compose -f docker-compose.single.yml up -d --build
+#   http://localhost:8080
+#
+# داخل کانتینر با supervisord: MariaDB، PHP-FPM، Nginx، worker صف‌ها، worker کد تأیید و scheduler.
+# همه‌ی داده‌ها (دیتابیس، آپلودها، لاگ‌ها، APP_KEY ساخته‌شده) روی volume «mahru_data» می‌مانند؛ با down و up دوباره از بین
+# نمی‌روند. فقط «down -v» پاکشان می‌کند. راهنمای کامل: docs/deployment/DOCKER_DESKTOP.md
+# ============================================================
+name: mahru
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: single
+    image: mahru:single
+    container_name: mahru
+    restart: unless-stopped
+    env_file:
+      - .env.single
+    ports:
+      - "${MAHRU_PORT:-8080}:80"
+    volumes:
+      - mahru_data:/data
+    # nginx/php-fpm/MariaDB/۳ فرایند PHP: حدود ۶۰۰ تا ۹۰۰ مگابایت در حالت عادی
+    stop_grace_period: 60s
+
+volumes:
+  mahru_data:

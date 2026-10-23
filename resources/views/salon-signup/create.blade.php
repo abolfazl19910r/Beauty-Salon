@@ -154,7 +154,7 @@
                     <div class="row">
                         <label for="slug">آدرس اختصاصی سالن (بعداً غیرقابل‌تغییر)</label>
                         <input type="text" id="slug" name="slug" value="{{ old('slug', request()->query('slug')) }}" required
-                               maxlength="100" pattern="[a-zA-Z0-9_-]+" placeholder="مثلاً: almas-beauty" dir="ltr"
+                               maxlength="63" pattern="[A-Za-z0-9-]+" placeholder="مثلاً: almas-beauty" dir="ltr"
                                autocomplete="off">
                         <div id="slug-status" class="check-status"></div>
                     </div>
@@ -325,8 +325,11 @@
                                 status.textContent = messages.ok;
                                 status.className = 'check-status ok';
                             } else if (data.reason === 'invalid') {
-                                status.textContent = '';
-                                status.className = 'check-status';
+                                status.textContent = messages.invalid || '';
+                                status.className = messages.invalid ? 'check-status bad' : 'check-status';
+                            } else if (data.reason === 'reserved') {
+                                status.textContent = messages.reserved || messages.taken;
+                                status.className = 'check-status bad';
                             } else {
                                 status.textContent = messages.taken;
                                 status.className = 'check-status bad';
@@ -345,6 +348,8 @@
                 pending: 'در حال بررسی…',
                 ok: '✓ این آدرس آزاد است',
                 taken: '✗ این آدرس قبلاً استفاده شده است',
+                reserved: '✗ این آدرس رزرو شده است',
+                invalid: '✗ فقط حروف انگلیسی، عدد و خط تیره',
             });
 
             if (document.getElementById('owner_phone')) wireCheck('owner_phone', '{{ route('salon-signup.check-phone') }}', 'phone', {

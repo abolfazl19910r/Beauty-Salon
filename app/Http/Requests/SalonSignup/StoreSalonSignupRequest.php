@@ -27,6 +27,9 @@ class StoreSalonSignupRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->prepareSalonContactInput();
+        if ($this->has('slug')) {
+            $this->merge(['slug' => \App\Support\SalonSubdomain::normalize($this->input('slug'))]);
+        }
     }
 
     public function rules(): array
@@ -37,10 +40,7 @@ class StoreSalonSignupRequest extends FormRequest
             // ⭐ کد پذیرنده‌ی زرین‌پال سالن (۲۰۲۶-۰۹-۲۴) — اختیاری در ثبت‌نام، ولی بدونش هیچ پرداخت آنلاینی ممکن نیست.
             'zarinpal_merchant_id' => \App\Support\ZarinpalMerchant::RULES,
             'name' => ['required', 'string', 'max:255'],
-            'slug' => [
-                'required', 'string', 'max:100', 'alpha_dash',
-                Rule::unique('salons', 'slug'),
-            ],
+            'slug' => \App\Support\SalonSubdomain::rules(),
             // ⭐ دیگه در فرم نمایش داده نمی‌شه (۲۰۲۶-۰۹-۲۳) — فقط hidden، از ?plan= صفحه‌ی فروش؛
             // خالی/نامعتبر نباید ثبت‌نام رو رد کنه، پس nullable و در سرویس پیش‌فرض ۱m.
             'subscription_type' => ['nullable', 'in:1m,3m,6m,12m'],
@@ -77,12 +77,10 @@ class StoreSalonSignupRequest extends FormRequest
 
     public function messages(): array
     {
-        return $this->salonContactMessages() + \App\Services\Salon\SalonLogoService::MESSAGES + \App\Support\ZarinpalMerchant::MESSAGES + [
-            'slug.unique' => 'این آدرس قبلاً برای سالن دیگری استفاده شده است.',
+        return $this->salonContactMessages() + \App\Services\Salon\SalonLogoService::MESSAGES + \App\Support\ZarinpalMerchant::MESSAGES + \App\Support\SalonSubdomain::messages() + [
             'specialists_count.required' => 'تعداد متخصص‌های سالن را وارد کنید.',
             'specialists_count.min' => 'سالن حداقل یک متخصص دارد.',
             'specialists_count.max' => 'برای بیشتر از :max متخصص با پشتیبانی تماس بگیرید.',
-            'slug.alpha_dash' => 'آدرس فقط می‌تواند شامل حروف انگلیسی، عدد، خط تیره و زیرخط باشد.',
             'owner_phone.regex' => 'شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد.',
             'owner_phone.unique' => 'این شماره حساب ماهرو دارد (مدیر یا منشی سالن دیگر). برای ساختن سالن دوم، اول با همین شماره وارد شوید و دوباره این صفحه را باز کنید.',
         ];

@@ -86,4 +86,73 @@ class DockerSetupTest extends TestCase
         $this->assertStringContainsString('ARTISAN := docker compose exec -u www app php artisan', $makefile);
         $this->assertStringContainsString('docker compose up -d --wait', $makefile);
     }
+
+    public function test_the_image_does_not_install_packages_alpine_no_longer_ships(): void
+    {
+        // wkhtmltopdf از Alpine 3.15 حذف شد و «apk add» build را می‌شکست؛ PDF با mPDF است (۲۰۲۶-۱۰-۲۳)
+        $this->assertDoesNotMatchRegularExpression('/^\s+wkhtmltopdf\s*\\\\$/m', self::file('Dockerfile'));
+        $this->assertStringContainsString('FROM php:8.3-fpm-alpine AS production', self::file('Dockerfile'));
+    }
+
+    public function test_redis_never_evicts_queue_jobs_or_sessions(): void
+    {
+        $command = Yaml::parse(self::file('docker-compose.yml'))['services']['redis']['command'];
+        $this->assertStringContainsString('--maxmemory-policy noeviction', $command);
+        $this->assertStringNotContainsString('allkeys-lru', $command);
+    }
+
+    public function test_backup_db_reads_credentials_inside_the_mysql_container(): void
+    {
+        $makefile = self::file('Makefile');
+        preg_match('/^backup-db:.*?(?=^\S)/ms', $makefile, $m);
+        $this->assertStringNotContainsString('${DB_', $m[0], 'سینتکس shell در make متغیر خالی می‌شود');
+        $this->assertStringContainsString('exec -T mysql', $m[0]);
+        $this->assertStringContainsString('$$MYSQL_USER', $m[0]);
+        $this->assertStringContainsString('test -s', $m[0]);
+    }
+
+    public function test_single_container_runs_every_service_under_supervisor(): void
+    {
+        $conf = self::file('docker/single/supervisord.conf');
+        foreach (['mariadb', 'php-fpm', 'nginx', 'queue', 'queue-otp', 'scheduler'] as $program) {
+            $this->assertStringContainsString("[program:{$program}]", $conf);
+        }
+        // همان ترتیب صف‌های App\Support\Queues::workerOrder
+        $this->assertStringContainsString('--queue=otp,push,sms,payments,default,reports', $conf);
+        $this->assertStringContainsString('skip-networking       = 0', self::file('docker/single/my.cnf'));
+        $this->assertStringContainsString('bind-address          = 127.0.0.1', self::file('docker/single/my.cnf'));
+
+        $compose = Yaml::parse(self::file('docker-compose.single.yml'));
+        $this->assertSame('single', $compose['services']['app']['build']['target']);
+        $this->assertSame(['mahru_data:/data'], $compose['services']['app']['volumes']);
+        $this->assertSame(['${MAHRU_PORT:-8080}:80'], $compose['services']['app']['ports']);
+        $this->assertSame(['.env.single'], $compose['services']['app']['env_file']);
+        $this->assertStringContainsString('.env.single', self::file('.gitignore'));
+
+        $entrypoint = self::file('docker/single/entrypoint.sh');
+        $this->assertStringContainsString('migrate --force', $entrypoint);
+        $this->assertStringContainsString('/data/app.key', str_replace('$DATA', '/data', $entrypoint));
+    }
+
+    public function test_demo_seeding_works_without_dev_dependencies(): void
+    {
+        // MAHRU_SEED=true در image (composer --no-dev): UserSeeder و factoryها Faker می‌خواهند (۲۰۲۶-۱۰-۲۳)
+        $composer = json_decode(self::file('composer.json'), true);
+        $this->assertArrayHasKey('fakerphp/faker', $composer['require']);
+        $this->assertArrayNotHasKey('fakerphp/faker', $composer['require-dev']);
+    }
+
+    public function test_the_image_does_not_duplicate_vendor_in_a_chown_layer(): void
+    {
+        $dockerfile = self::file('Dockerfile');
+        $this->assertStringContainsString('COPY --from=composer-builder --chown=www:www /app/vendor ./vendor', $dockerfile);
+        $this->assertStringNotContainsString('chown -R www:www /var/www/html', $dockerfile);
+        $this->assertStringContainsString('apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS', $dockerfile);
+    }
+
+    public function test_scripts_survive_windows_line_endings(): void
+    {
+        $this->assertStringContainsString("sed -i 's/\\r$//' /usr/local/bin/entrypoint.sh", self::file('Dockerfile'));
+        $this->assertStringContainsString('eol=lf', self::file('.gitattributes'));
+    }
 }

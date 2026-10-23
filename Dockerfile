@@ -1,10 +1,15 @@
 # ============================================================
 # Beauty Salon - Dockerfile
-# PHP 8.2 + Nginx + Node.js (multi-stage build)
+# PHP 8.3 + Nginx + Node.js (multi-stage build)
+#
+# دو target:
+#   production (پیش‌فرض docker-compose.yml): فقط برنامه؛ MySQL/Redis/workerها سرویس‌های جدای compose
+#   single (docker-compose.single.yml): همه‌چیز در یک کانتینر با supervisord — nginx، php-fpm، MariaDB، دو worker صف و
+#           scheduler؛ داده‌ها روی volume /data (بسته‌ی Docker، ۲۰۲۶-۱۰-۲۳)
 # ============================================================
 
 # ─── Stage 1: Node.js — build frontend assets ───────────────
-FROM node:20-alpine AS frontend-builder
+FROM node:22-alpine AS frontend-builder
 
 WORKDIR /app
 
@@ -41,10 +46,10 @@ RUN composer install \
 
 
 # ─── Stage 3: Final image ───────────────────────────────────
-FROM php:8.2-fpm-alpine AS production
+FROM php:8.3-fpm-alpine AS production
 
 LABEL maintainer="Beauty Salon <info@beautysalon.ir>"
-LABEL description="Beauty Salon Management System - Laravel 11"
+LABEL description="Mahru - salon booking SaaS (Laravel 11)"
 
 # ─── System dependencies ────────────────────────────────────
 RUN apk add --no-cache \
@@ -63,19 +68,22 @@ RUN apk add --no-cache \
     oniguruma-dev \
     icu-dev \
     libxml2-dev \
-    # PDF (wkhtmltopdf برای snappy)
-    wkhtmltopdf \
     # Git و curl
     git \
     curl \
     # Timezone
     tzdata \
-    # Font support برای PDF فارسی
+    # Font support برای PDF فارسی (PDF گزارش‌ها با mPDF ساخته می‌شود؛ wkhtmltopdf از Alpine 3.15 به بعد بسته ندارد و
+    # «apk add wkhtmltopdf» build را می‌شکست — پکیج snappy هم هیچ‌جای کد استفاده نمی‌شود)
     fontconfig \
     ttf-dejavu
 
 # ─── PHP Extensions ─────────────────────────────────────────
-RUN docker-php-ext-configure gd \
+# ⚠️ ابزار کامپایل ($PHPIZE_DEPS) صریحاً با نام مجازی «.phpize-deps» (۲۰۲۶-۱۰-۲۳): docker-php-ext-install در پایان ابزار
+# کامپایلی را که خودش نصب کرده پاک می‌کند، پس «pecl install redis» بعد از آن بی autoconf/phpize می‌شکست. با همین نام،
+# اسکریپت‌های image دیگر خودشان نصب/پاک نمی‌کنند و ما در آخر یک بار پاک می‌کنیم.
+RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
+    && docker-php-ext-configure gd \
         --with-freetype \
         --with-jpeg \
         --with-webp \
@@ -91,7 +99,9 @@ RUN docker-php-ext-configure gd \
         xml \
         opcache \
     && pecl install redis \
-    && docker-php-ext-enable redis
+    && docker-php-ext-enable redis \
+    && apk del .phpize-deps \
+    && rm -rf /tmp/pear
 
 # ─── Timezone ───────────────────────────────────────────────
 RUN ln -snf /usr/share/zoneinfo/Asia/Tehran /etc/localtime \
@@ -124,7 +134,8 @@ RUN addgroup -g 1000 -S www \
 WORKDIR /var/www/html
 
 # کپی vendor از composer-builder
-COPY --from=composer-builder /app/vendor ./vendor
+# --chown همین‌جا: «chown -R» جدا بعداً کل vendor را در یک لایه‌ی تازه دوباره کپی می‌کرد (image دو برابر)
+COPY --from=composer-builder --chown=www:www /app/vendor ./vendor
 
 # افزونه‌هایی که composer-builder نادیده گرفت، اینجا (با PHP واقعی image) واقعاً باید باشن
 COPY --from=composer-builder /usr/bin/composer /usr/local/bin/composer
@@ -132,7 +143,7 @@ COPY composer.json composer.lock ./
 RUN composer check-platform-reqs --no-dev --no-interaction
 
 # کپی asset های build شده از frontend-builder
-COPY --from=frontend-builder /app/public/build ./public/build
+COPY --from=frontend-builder --chown=www:www /app/public/build ./public/build
 
 # کپی سورس پروژه
 COPY --chown=www:www . .
@@ -142,15 +153,56 @@ RUN mkdir -p /var/www/html/storage/fonts \
     && cp storage/fonts/* /var/www/html/storage/fonts/ 2>/dev/null || true
 
 # ─── Permissions ─────────────────────────────────────────────
-RUN chown -R www:www /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache \
-    && chmod -R 755 /var/www/html/public
+# فقط پوشه‌های قابل‌نوشتن (بقیه با COPY --chown مال www شده‌اند؛ chown -R کل پروژه vendor را در لایه‌ای تازه تکرار می‌کرد)
+RUN chown -R www:www storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
 
 # ─── Entrypoint ──────────────────────────────────────────────
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+# ⚠️ اگر git ویندوز فایل‌ها را با CRLF بیرون آورده باشد، «#!/bin/sh\r» در لینوکس پیدا نمی‌شود و کانتینر با «not found» می‌افتد
+RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh /etc/supervisor/conf.d/supervisord.conf /etc/nginx/nginx.conf \
+        /etc/nginx/conf.d/default.conf /usr/local/etc/php-fpm.d/zzz-beauty-salon.conf /usr/local/etc/php/conf.d/beauty-salon.ini \
+    && chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 80
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+
+# ─── Target «single»: همه‌چیز در یک کانتینر ──────────────────
+# docker compose -f docker-compose.single.yml up -d --build
+# MariaDB (بسته‌ی رسمی Alpine) فقط روی 127.0.0.1؛ صف، cache و session روی همان دیتابیس (بدون Redis). همه‌ی داده‌ها روی /data:
+# دیتابیس، storage/app (آپلودها، کلید فایربیس)، لاگ‌ها و کلید APP_KEY ساخته‌شده.
+FROM production AS single
+
+RUN apk add --no-cache mariadb mariadb-client
+
+COPY docker/single/supervisord.conf /etc/supervisor/conf.d/supervisord-single.conf
+COPY docker/single/my.cnf /etc/my.cnf.d/zz-mahru.cnf
+COPY docker/single/entrypoint.sh /usr/local/bin/entrypoint-single.sh
+COPY docker/single/wait-db.sh /usr/local/bin/wait-db
+RUN sed -i 's/\r$//' /etc/supervisor/conf.d/supervisord-single.conf /etc/my.cnf.d/zz-mahru.cnf \
+        /usr/local/bin/entrypoint-single.sh /usr/local/bin/wait-db \
+    && chmod +x /usr/local/bin/entrypoint-single.sh /usr/local/bin/wait-db \
+    && ln -sf /etc/supervisor/conf.d/supervisord-single.conf /etc/supervisord.conf   # «supervisorctl status» بدون -c
+
+# پیش‌فرض‌های حالت تک‌کانتینری؛ .env.single (env_file) می‌تواند هر کدام را عوض کند
+ENV MAHRU_SINGLE=1 \
+    DB_CONNECTION=mysql \
+    DB_HOST=127.0.0.1 \
+    DB_PORT=3306 \
+    DB_DATABASE=mahru \
+    DB_USERNAME=mahru \
+    QUEUE_CONNECTION=database \
+    CACHE_STORE=database \
+    SESSION_DRIVER=database \
+    QUEUE_WORK_VIA_SCHEDULER=false \
+    FILESYSTEM_DISK=public \
+    BROADCAST_CONNECTION=log
+
+VOLUME ["/data"]
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
+    CMD curl -fsS http://localhost/up >/dev/null || exit 1
+
+ENTRYPOINT ["/usr/local/bin/entrypoint-single.sh"]
