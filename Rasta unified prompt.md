@@ -3,7 +3,7 @@
 > این فایل، ادغام کامل دو پرامپت قبلی (`Rasta_main_prompt_final.MD` و `Refactor_prompt_v4.MD`) در یک سند واحد است. از این پس فقط همین یک فایل نیاز است؛ دو فایل قبلی منسوخ شدن.
 
 > ⭐ **آخرین وضعیت و برنامه‌ی نشست بعد (۲۰۲۶-۱۰-۲۳):** بخش «۲۰۲۶-۱۰-۲۳ — Docker: اولین build واقعی…»؛ قبل‌تر «۲۰۲۶-۱۰-۲۲ (ادامه ۶) — ابزار سبز کردن کارت آمادگی و آزمون «فعال»»، «(ادامه ۵) — دامنه‌ی اصلی arisheh.ir» و «(ادامه ۴) — تصمیم‌های کارهای باز»
-> (پچ‌ها تا 0188، app-0022، اپ‌ها 0.3.5 روی هر دو گوشی؛ بسته‌ی ۷ و ۸، چندسالنی و حساب متخصص تازه بسته شد؛ پوش data روی RN8 کار کرد) —
+> (پچ‌ها تا 0190، app-0022، اپ‌ها 0.3.5 روی هر دو گوشی؛ بسته‌ی ۷ و ۸، چندسالنی و حساب متخصص تازه بسته شد؛ پوش data روی RN8 کار کرد) —
 > فهرست کوتاه کارهای باز: «⭐ خلاصه‌ی کارهای باز (۲۰۲۶-۱۰-۲۲)» در «قدم‌های باز» آخر سند.
 > ⭐ **دامنه‌ی اصلی پلتفرم: `arisheh.ir`** (تصمیم ۲۰۲۶-۱۰-۲۲؛ قبلاً `mahru.ir` — هر جای سند که `mahru.ir` آمده، حالا `arisheh.ir` است). نام برند همچنان «ماهرو».
 > ⭐ expo.dev: buildها از ۲۰۲۶-۱۰-۲۲ با سازمان `abolfazl1991s-team` (ورود `abolfazl1991`)؛ keystore قبلی هر دو اپ آن‌جا بارگذاری شده.
@@ -6145,6 +6145,24 @@ php artisan push:test 09xxxxxxxxx --style=notification --wait=30
 **قدم بعد:** `0124`–`0129` روی develop؛ نتیجه‌ی دو دستور `push:test` روی A17 (بخش «ادامه ۲»)؛ جواب پرسش‌های ۳، ۵، ۸، ۱۲ و ترتیب (همان بخش)
 ← بعد ۳ و دور ۲ (پیش‌نمایش قبل/بعد ۲ و ۱۱) و دور ۳.
 
+### ۲۰۲۶-۱۰-۲۳ (ادامه) — اولین build روی Docker Desktop ابوالفضل: کامپوزر داخل داکر (`0189`–`0190`)
+
+**گزارش ابوالفضل:** `docker compose -f docker-compose.single.yml up -d --build` بعد از ~۵۰ دقیقه شکست خورد. دانلود imageهای پایه کند بود
+(php ۹۵۰ ثانیه، node ۱۴۶۸ ثانیه)، npm و Vite موفق شدند، ولی کامپوزر از `codeload.github.com` چند KB/s گرفت (mpdf ۴۶MB)، به
+`git clone` رفت و از سقف ۳۰۰ ثانیه‌ی `process-timeout` گذشت. context ‏build هم ۲۶۱MB بود.
+
+**`0189` fix(docker):**
+- **vendor آماده (`build-vendor/`):** روی ویندوز با کامپوزر خود سیستم (cache و VPN خودش):
+  `set COMPOSER_VENDOR_DIR=build-vendor` ← `composer install --no-dev --no-scripts --no-interaction --ignore-platform-reqs` ← `set COMPOSER_VENDOR_DIR=`.
+  stage کامپوزر اگر `build-vendor/autoload.php` باشد فقط `dump-autoload` می‌زند (الگوی `COPY … build-vendo[r]` نبودِ پوشه را تحمل می‌کند). `vendor`
+  و lock پروژه دست نمی‌خورند؛ `/build-vendor` در `.gitignore`. ⚠️ بعد از هر پچی که `composer.lock` را عوض کند، دوباره بسازد.
+- بدون آن: `RUN --mount=type=cache` (دانلودهای تمام‌شده بین buildها می‌ماند) و `COMPOSER_PROCESS_TIMEOUT=0`.
+- 🔴 **`.dockerignore`: کل `storage/app/*`، `backups/`، `*.apk`** — قبلاً فقط `storage/app/public/*`؛ یعنی `storage/app/private` (کلید حساب سرویس
+  فایربیس و APKهای «نسخه‌های اپ») داخل image می‌رفت. entrypoint شش‌سرویسی حالا `storage/app/{public,private}` را خودش می‌سازد.
+- `DockerSetupTest` +۲ (۱۷). راهنما: بخش ۱ «اینترنت کند داخل داکر» و ردیف‌های عیب‌یابی.
+- آزموده در sandbox: build با `build-vendor` («Using prebuilt build-vendor/»، بدون هیچ دانلود کامپوزر)، کانتینر healthy، ۶ برنامه RUNNING،
+  صفحه‌ها و ساب‌دامین ۲۰۰، `storage/app/{public,private}` ساخته شد.
+
 ### ۲۰۲۶-۱۰-۲۳ — Docker: اولین build واقعی، رفع خطاها و حالت تک‌کانتینری برای Docker Desktop (`0187`–`0188`)
 
 **زمینه:** ابوالفضل اسناد استقرار آروان را فرستاد (`deployment-setup.md`، `cdn-arvan-config.md`، `Final_Review_v2`…) و پرسید Docker در چه
@@ -10311,7 +10329,7 @@ Bearer؛ فقط از IPهای اعلام‌شده. ⚠️ `result` برای `IBA
 4. برند: ثبت علامت تجاری (دامنه‌ی اصلی `arisheh.ir`)
 5. امنیت: باطل کردن کلید کاوه‌نگار — فقط اگر جایی دیده شده (بخش «ادامه ۴»)
 
-5ب. Docker: آزمون حالت تک‌کانتینری روی Docker Desktop ویندوز ابوالفضل (`docs/deployment/DOCKER_DESKTOP.md`، بخش «۲۰۲۶-۱۰-۲۳»)
+5ب. Docker: آزمون حالت تک‌کانتینری روی Docker Desktop ویندوز ابوالفضل — build اول در کامپوزر شکست؛ با `build-vendor` دوباره (`docs/deployment/DOCKER_DESKTOP.md` بخش ۱، «۲۰۲۶-۱۰-۲۳ (ادامه)»)
 5ج. ارتقای Laravel 11 (پایان پشتیبانی امنیتی) ← 12/13، و `mysql:8.0` ← 8.4 در compose شش‌سرویسی (بسته‌ی جدا)
 
 **بعد از خرید سرور و درگاه‌ها (تصمیم ابوالفضل ۲۰۲۶-۱۰-۲۲: تا آن موقع دست نمی‌خورند):**
