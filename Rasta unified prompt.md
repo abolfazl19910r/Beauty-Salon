@@ -2,8 +2,8 @@
 
 > این فایل، ادغام کامل دو پرامپت قبلی (`Rasta_main_prompt_final.MD` و `Refactor_prompt_v4.MD`) در یک سند واحد است. از این پس فقط همین یک فایل نیاز است؛ دو فایل قبلی منسوخ شدن.
 
-> ⭐ **آخرین وضعیت و برنامه‌ی نشست بعد (۲۰۲۶-۱۰-۲۲):** بخش «۲۰۲۶-۱۰-۲۲ (ادامه ۶) — ابزار سبز کردن کارت آمادگی و آزمون «فعال»»، «(ادامه ۵) — دامنه‌ی اصلی arisheh.ir» و «(ادامه ۴) — تصمیم‌های کارهای باز»
-> (پچ‌ها تا 0186، app-0022، اپ‌ها 0.3.5 روی هر دو گوشی؛ بسته‌ی ۷ و ۸، چندسالنی و حساب متخصص تازه بسته شد؛ پوش data روی RN8 کار کرد) —
+> ⭐ **آخرین وضعیت و برنامه‌ی نشست بعد (۲۰۲۶-۱۰-۲۳):** بخش «۲۰۲۶-۱۰-۲۳ — Docker: اولین build واقعی…»؛ قبل‌تر «۲۰۲۶-۱۰-۲۲ (ادامه ۶) — ابزار سبز کردن کارت آمادگی و آزمون «فعال»»، «(ادامه ۵) — دامنه‌ی اصلی arisheh.ir» و «(ادامه ۴) — تصمیم‌های کارهای باز»
+> (پچ‌ها تا 0188، app-0022، اپ‌ها 0.3.5 روی هر دو گوشی؛ بسته‌ی ۷ و ۸، چندسالنی و حساب متخصص تازه بسته شد؛ پوش data روی RN8 کار کرد) —
 > فهرست کوتاه کارهای باز: «⭐ خلاصه‌ی کارهای باز (۲۰۲۶-۱۰-۲۲)» در «قدم‌های باز» آخر سند.
 > ⭐ **دامنه‌ی اصلی پلتفرم: `arisheh.ir`** (تصمیم ۲۰۲۶-۱۰-۲۲؛ قبلاً `mahru.ir` — هر جای سند که `mahru.ir` آمده، حالا `arisheh.ir` است). نام برند همچنان «ماهرو».
 > ⭐ expo.dev: buildها از ۲۰۲۶-۱۰-۲۲ با سازمان `abolfazl1991s-team` (ورود `abolfazl1991`)؛ keystore قبلی هر دو اپ آن‌جا بارگذاری شده.
@@ -6145,6 +6145,49 @@ php artisan push:test 09xxxxxxxxx --style=notification --wait=30
 **قدم بعد:** `0124`–`0129` روی develop؛ نتیجه‌ی دو دستور `push:test` روی A17 (بخش «ادامه ۲»)؛ جواب پرسش‌های ۳، ۵، ۸، ۱۲ و ترتیب (همان بخش)
 ← بعد ۳ و دور ۲ (پیش‌نمایش قبل/بعد ۲ و ۱۱) و دور ۳.
 
+### ۲۰۲۶-۱۰-۲۳ — Docker: اولین build واقعی، رفع خطاها و حالت تک‌کانتینری برای Docker Desktop (`0187`–`0188`)
+
+**زمینه:** ابوالفضل اسناد استقرار آروان را فرستاد (`deployment-setup.md`، `cdn-arvan-config.md`، `Final_Review_v2`…) و پرسید Docker در چه
+وضعی است، آیا روی پلن رایگان کانتینر ابری آروان بالا می‌آید، و آیا همه‌چیز در یک کانتینر با supervisor ممکن است.
+**پاسخ:** فایل‌های Docker هیچ‌وقت واقعاً build نشده بودند (۲۰۲۶-۰۹-۲۶ رجیستری‌ها بسته بود). کانتینر ابری رایگان برای این پروژه عملی نیست
+(MySQL ماندگار، wildcard، رم ~۱٫۲ گیگ)؛ شرایط دقیق پلن رایگان از منبع رسمی تأیید نشد (سایت آروان برای ابزار Claude بسته بود).
+**تصمیم‌های ابوالفضل (همه پیشنهادی):** MariaDB داخل کانتینر؛ بدون Redis در حالت تک‌کانتینری (صف/cache/session روی دیتابیس)؛ PHP 8.3 و
+Node 22؛ پورت 8080؛ **ساب‌دامین هم روی لوکال** (فایل hosts ویندوز، هر سالن یک خط). ابوالفضل همه‌ی دامنه‌ها را برای sandbox باز کرد.
+
+**اولین build واقعی (sandbox، آینه‌ی `mirror.gcr.io`؛ Docker Hub مستقیم ۴۲۹ داد)** — خطاهای واقعی که فقط با build دیده شدند:
+- 🔴 `apk add wkhtmltopdf`: بسته از Alpine 3.15 حذف شده ← build در مرحله‌ی سوم می‌شکست. حذف شد (PDF با mPDF است؛ snappy استفاده نمی‌شود).
+- 🔴 `pecl install redis` بعد از `docker-php-ext-install`: آن اسکریپت در پایان ابزار کامپایل (`$PHPIZE_DEPS`) را پاک می‌کند ← pecl بی phpize/autoconf.
+  حالا `.phpize-deps` صریح نصب و در آخر پاک می‌شود.
+- 🔴 seeder در image (`--no-dev`): `Class "Faker\Factory" not found` ← `fakerphp/faker` به `require` رفت (همان v1.24.1، فقط جابه‌جایی در lock).
+- 🟠 `RUN chown -R www:www /var/www/html` کل vendor را در لایه‌ی تازه تکرار می‌کرد (+۹۰۰MB) ← `COPY --chown` و chown فقط storage/bootstrap/cache.
+- 🟠 حالت تک‌کانتینری: `docker compose exec … artisan` در `APP_ENV=local` رمز دیتابیس و کلید را نمی‌دید (env فقط در درخت entrypoint) ← entrypoint
+  مقادیر ساخته‌شده را در `.env` داخل کانتینر هم می‌نویسد؛ و در `.env.single` نباید `APP_KEY=`/`DB_PASSWORD=` خالی باشد (متغیر خالی مقدم است).
+- اصلاح‌های گزارش v2 که در develop هنوز باز بود: `make backup-db` (سینتکس shell در make ← بکاپ خالی؛ حالا `MYSQL_*` داخل کانتینر، `-T`، فایل
+  خالی خطا)؛ Redis `allkeys-lru` ← `noeviction`؛ `pm.max_children` ۲۰ ← ۱۰؛ پایان خط CRLF اسکریپت‌ها در image با `sed` پاک می‌شود.
+- **قواعد slug سالن** (`App\Support\SalonSubdomain`): فقط `[a-z0-9-]`، اول/آخر حرف یا عدد، حداکثر ۶۳، فهرست رزرو (`www`، `admin`، `api`، …)؛
+  ورودی کوچک می‌شود؛ چک زنده‌ی فرم «رزرو شده» و «نامعتبر» را نشان می‌دهد. ⚠️ `App\Support\SalonSlug` (slug دسته/خدمت) و `SalonAddress` جدا هستند.
+
+**حالت تک‌کانتینری (target `single`، `docker-compose.single.yml`، `.env.single.example`، `docker/single/`):** supervisord ← mariadb، php-fpm، nginx،
+`queue` (otp,push,sms,payments,default,reports)، `queue-otp`، `scheduler`؛ workerها با `wait-db` منتظر MariaDB. volume ‏`/data`: دیتابیس،
+`storage/app` (آپلودها و کلید فایربیس)، لاگ‌ها، `app.key`، `db.password`. بار اول `mariadb-install-db`؛ هر بار یک MariaDB موقت برای کاربر/دیتابیس،
+migrate، seed (فقط `MAHRU_SEED=true` و یک بار) و کش‌ها، بعد supervisord. پیش‌فرض لوکال: `APP_ENV=local` (پیامک در لاگ)، `CENTRAL_DOMAIN=arisheh.test`.
+
+**آزموده در sandbox (image واقعی):** build هر دو target؛ تک‌کانتینری: هر ۶ برنامه RUNNING، `/up` و صفحه‌ی فروش و `/s/rasta` و `rasta.arisheh.test`
+۲۰۰، assetهای Vite و فونت ۲۰۰، ورود مدیر با کد از لاگ (worker صف otp پیامک را فرستاد) و کوکی روی `.arisheh.test`، پاک کردن و ساختن دوباره‌ی
+کانتینر با همان volume (داده و session ماند، «Nothing to migrate»)، `docker stop` تمیز (MariaDB «Shutdown complete»)، حالت production
+(config/route cache با CENTRAL_DOMAIN)، `docker compose -f docker-compose.single.yml up` تا healthy؛ مسیر کلید فایربیس در volume. شش‌سرویسی: همه healthy،
+`/up` ۲۰۰، `make backup-db` بکاپ ۹۳ جدولی، Redis `noeviction`. مصرف رم تک‌کانتینری بیکار ~۵۵۰MB.
+⚠️ در sandbox کامپوزر از GitHub سقف درخواست بی‌نام گرفت؛ vendor برای build sandbox روی میزبان ساخته شد (Dockerfile تحویلی دست‌نخورده).
+
+**پچ:** `0187` fix(docker) + feat(docker) (همه‌ی بالا، `DockerSetupTest` ۱۵، `SalonSlugRulesTest` ۴، راهنمای `docs/deployment/DOCKER_DESKTOP.md`)؛ `0188` docs: همین بخش.
+
+**تست:** کل سوییت **۲۲۵۲** — SQLite (۱۱ skip)، MariaDB 10.11 و MySQL 8.0 (هر کدام ۱ skip)، صفر شکست.
+
+**روال ابوالفضل (Docker Desktop ویندوز)** — جزئیات در `docs/deployment/DOCKER_DESKTOP.md`:
+`copy .env.single.example .env.single` ← `docker compose -f docker-compose.single.yml up -d --build` ← `http://localhost:8080`؛ ساب‌دامین: در
+`C:\Windows\System32\drivers\etc\hosts` (Notepad با Run as administrator) خط‌های `127.0.0.1 arisheh.test` و `127.0.0.1 rasta.arisheh.test` (هر سالن یک خط) ←
+`http://rasta.arisheh.test:8080`.
+
 ### ۲۰۲۶-۱۰-۲۲ (ادامه ۶) — ابزار سبز کردن کارت «آمادگی برای فعال» و آزمون حالت «فعال» (`0182`–`0183`)
 
 **وضعیت کارت پیش از این نشست (اسکرین‌شات ابوالفضل، لوکال، ۷ روز):** FCM ✓، سبک data ✓؛ مشتری **۱۱ از ۱۸ (۶۱٪)**، همکار **۱۸ از ۲۸ (۶۴٪)** — هر دو
@@ -10267,6 +10310,9 @@ Bearer؛ فقط از IPهای اعلام‌شده. ⚠️ `result` برای `IBA
 3. تصمیم: هزینه‌ی پیامک کد ورود کادر — پیشنهاد: پلتفرم (همان رفتار فعلی؛ بخش «۲۰۲۶-۱۰-۲۲ (ادامه ۴)») — منتظر تأیید ابوالفضل
 4. برند: ثبت علامت تجاری (دامنه‌ی اصلی `arisheh.ir`)
 5. امنیت: باطل کردن کلید کاوه‌نگار — فقط اگر جایی دیده شده (بخش «ادامه ۴»)
+
+5ب. Docker: آزمون حالت تک‌کانتینری روی Docker Desktop ویندوز ابوالفضل (`docs/deployment/DOCKER_DESKTOP.md`، بخش «۲۰۲۶-۱۰-۲۳»)
+5ج. ارتقای Laravel 11 (پایان پشتیبانی امنیتی) ← 12/13، و `mysql:8.0` ← 8.4 در compose شش‌سرویسی (بسته‌ی جدا)
 
 **بعد از خرید سرور و درگاه‌ها (تصمیم ابوالفضل ۲۰۲۶-۱۰-۲۲: تا آن موقع دست نمی‌خورند):**
 6. راه‌اندازی سرور واقعی (`migrate:fresh --seed`، `.env`، scheduler/queue، supervisor یا Docker، کرون پشتیبان، `TRUSTED_PROXIES`، php.ini آپلود APK، `assetlinks.json`)
