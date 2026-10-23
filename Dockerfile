@@ -31,18 +31,31 @@ FROM composer:2.7 AS composer-builder
 
 WORKDIR /app
 
-COPY composer.json composer.lock ./
+# composer.json/lock و (اگر هست) build-vendor/ همه در /app/src: الگوی «build-vendo[r]» وقتی پوشه نیست خطا نمی‌دهد چون
+# composer.json هم‌زمان کپی می‌شود. محتوای پوشه (نه خودش) کپی می‌شود: vendor آماده = /app/src/autoload.php.
+COPY composer.json composer.lock build-vendo[r] /app/src/
 
-# فقط dependencies بدون autoload dev.
-# ⚠️ image composer افزونه‌هایی مثل gd/intl/bcmath رو نداره (mpdf و phpspreadsheet ext-gd می‌خوان) و بدون این
-# گزینه همین مرحله شکست می‌خورد. افزونه‌ها در image نهایی نصب می‌شن و همون‌جا با check-platform-reqs چک می‌شن.
-RUN composer install \
-    --no-dev \
-    --no-interaction \
-    --no-scripts \
-    --prefer-dist \
-    --optimize-autoloader \
-    --ignore-platform-req='ext-*'
+# دو راه (۲۰۲۶-۱۰-۲۳، اولین build روی Docker Desktop ابوالفضل: دانلود از codeload.github.com داخل VM داکر چند KB/s بود،
+# fallback به «git clone» از سقف ۳۰۰ ثانیه‌ی کامپوزر گذشت و build شکست):
+#   ۱. vendor آماده روی همان سیستم (کامپوزر میزبان با cache/VPN خودش) در build-vendor/ — راهنما: docs/deployment/DOCKER_DESKTOP.md
+#   ۲. وگرنه composer install؛ cache کامپوزر بین buildها می‌ماند (بسته‌های تمام‌شده دوباره دانلود نمی‌شوند) و سقف زمانی git برداشته شد.
+# ⚠️ image composer افزونه‌هایی مثل gd/intl/bcmath رو نداره (mpdf و phpspreadsheet ext-gd می‌خوان) و بدون
+# --ignore-platform-req این مرحله شکست می‌خورد. افزونه‌ها در image نهایی نصب و همون‌جا با check-platform-reqs چک می‌شن.
+ENV COMPOSER_PROCESS_TIMEOUT=0
+RUN --mount=type=cache,target=/tmp/cache \
+    mv /app/src/composer.json /app/src/composer.lock /app/ \
+    && if [ -f /app/src/autoload.php ]; then \
+        echo "Using prebuilt build-vendor/" && mv /app/src /app/vendor \
+        && composer dump-autoload --no-dev --optimize --no-scripts --no-interaction; \
+    else \
+        rm -rf /app/src && composer install \
+            --no-dev \
+            --no-interaction \
+            --no-scripts \
+            --prefer-dist \
+            --optimize-autoloader \
+            --ignore-platform-req='ext-*'; \
+    fi
 
 
 # ─── Stage 3: Final image ───────────────────────────────────

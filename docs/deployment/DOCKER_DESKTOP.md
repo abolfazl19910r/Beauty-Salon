@@ -33,6 +33,25 @@ Docker Desktop ← Settings ← **Docker Engine**، در JSON این کلید ر
 build به npm، Packagist/GitHub (کامپوزر) و مخزن Alpine هم وصل می‌شود؛ بار اول ۵ تا ۱۵ دقیقه طول می‌کشد. buildهای بعدی از cache
 استفاده می‌کنند و سریع‌ترند.
 
+### اینترنت کند داخل داکر: پکیج‌های کامپوزر را روی خود ویندوز آماده کنید (پیشنهادی)
+
+اولین build روی سیستم ابوالفضل (۲۰۲۶-۱۰-۲۳) در مرحله‌ی کامپوزر شکست خورد: دانلود از GitHub داخل VM داکر چند کیلوبایت بر ثانیه بود
+(کامپوزر ویندوز cache و VPN خودش را دارد، داخل داکر ندارد). راه: یک بار پکیج‌ها را **بدون پکیج‌های dev** در پوشه‌ی جدای
+`build-vendor` (نه `vendor` خود XAMPP) نصب کنید؛ build آن را برمی‌دارد و دیگر چیزی از GitHub دانلود نمی‌کند.
+
+در `cmd`، ریشه‌ی پروژه — سه خط جدا:
+
+```
+set COMPOSER_VENDOR_DIR=build-vendor
+composer install --no-dev --no-scripts --no-interaction --ignore-platform-reqs
+set COMPOSER_VENDOR_DIR=
+```
+
+- `vendor` و `composer.lock` پروژه دست نمی‌خورند؛ XAMPP مثل قبل کار می‌کند. `build-vendor` در git نمی‌رود.
+- **بعد از هر پچی که `composer.lock` را عوض کند** این سه خط را دوباره بزنید (وگرنه image پکیج‌های قدیمی را می‌گیرد).
+- بدون `build-vendor`، build خودش `composer install` می‌زند؛ cache کامپوزر بین buildها می‌ماند، پس اگر وسط کار قطع شد، دوباره
+  اجرا کنید تا از همان‌جا ادامه دهد.
+
 ---
 
 ## ۲. تنظیمات
@@ -194,5 +213,6 @@ docker compose -f docker-compose.single.yml exec -u www app php artisan push:tes
 | ساب‌دامین صفحه‌ی فروش را نشان می‌دهد | خط آن سالن در hosts نیست، یا `CENTRAL_DOMAIN` با دامنه‌ی hosts یکی نیست |
 | ۴۱۹ Page Expired روی ساب‌دامین | `SESSION_DOMAIN=.arisheh.test` (با نقطه‌ی اول) و آدرس را از `arisheh.test` باز کنید، نه `localhost` |
 | build در مرحله‌ی کامپوزر یا npm گیر می‌کند | اینترنت/آینه (بخش ۱)؛ دوباره اجرا کنید — مراحل تمام‌شده از cache می‌آیند |
-| کامپوزر: `Failed to download … from dist` و بعد clone کند | سقف درخواست بی‌نام GitHub (۶۰ در ساعت برای هر IP). یک ساعت بعد دوباره، یا VPN برای همین build |
+| کامپوزر: `Failed to download … from dist` و بعد clone کند، یا `exceeded the timeout` | اینترنت کند داخل داکر یا سقف درخواست بی‌نام GitHub — `build-vendor` (بخش ۱) |
+| دانلود imageهای پایه (php، node، composer) ده‌ها دقیقه | آینه‌ی رجیستری (بخش ۱)؛ فقط بار اول است |
 | `docker compose exec … artisan` خطای `Access denied for user 'mahru'` | در `.env.single` خطی مثل `DB_PASSWORD=` یا `APP_KEY=` خالی هست؛ پاکش کنید و `up -d` |

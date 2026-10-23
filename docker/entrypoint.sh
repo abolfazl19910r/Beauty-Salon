@@ -34,8 +34,11 @@ echo "🌸 Mahru - starting (role: ${ROLE}, env: ${APP_ENV:-production})"
 
 # مالکیت پوشه‌های قابل‌نوشتن (volumeها ممکنه با root ساخته شده باشن). storage/app عمداً نه: می‌تونه خیلی بزرگ باشه.
 if [ "$(id -u)" = "0" ]; then
-    mkdir -p storage/logs storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache
+    mkdir -p storage/logs storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache \
+        storage/app/public storage/app/private
     chown -R www:www storage/logs storage/framework bootstrap/cache 2>/dev/null || true
+    # storage/app دیگر از image نمی‌آید (.dockerignore)؛ فقط خود دو پوشه، نه کل محتوا
+    chown www:www storage/app storage/app/public storage/app/private 2>/dev/null || true
 fi
 
 # ─── Wait for MySQL ───────────────────────────────────────────

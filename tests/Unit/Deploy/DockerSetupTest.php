@@ -150,6 +150,27 @@ class DockerSetupTest extends TestCase
         $this->assertStringContainsString('apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS', $dockerfile);
     }
 
+    public function test_slow_networks_can_build_with_a_prebuilt_vendor(): void
+    {
+        // اولین build روی Docker Desktop ابوالفضل (۲۰۲۶-۱۰-۲۳): دانلود GitHub داخل داکر چند KB/s، git clone از سقف ۳۰۰ ثانیه گذشت
+        $dockerfile = self::file('Dockerfile');
+        $this->assertStringContainsString('COPY composer.json composer.lock build-vendo[r] /app/src/', $dockerfile);
+        $this->assertStringContainsString('if [ -f /app/src/autoload.php ]', $dockerfile);
+        $this->assertStringContainsString('--mount=type=cache,target=/tmp/cache', $dockerfile);
+        $this->assertStringContainsString('COMPOSER_PROCESS_TIMEOUT=0', $dockerfile);
+        $this->assertStringContainsString('/build-vendor', self::file('.gitignore'));
+        $this->assertNotContains('build-vendor', array_map('trim', explode("\n", self::file('.dockerignore'))));
+    }
+
+    public function test_secrets_and_uploads_stay_out_of_the_image(): void
+    {
+        // storage/app/private کلید فایربیس و APKهای آپلودی را داشت و با «COPY . .» داخل image می‌رفت
+        $ignored = array_map('trim', explode("\n", self::file('.dockerignore')));
+        $this->assertContains('storage/app/*', $ignored);
+        $this->assertContains('*.apk', $ignored);
+        $this->assertStringContainsString('storage/app/public storage/app/private', self::file('docker/entrypoint.sh'));
+    }
+
     public function test_scripts_survive_windows_line_endings(): void
     {
         $this->assertStringContainsString("sed -i 's/\\r$//' /usr/local/bin/entrypoint.sh", self::file('Dockerfile'));

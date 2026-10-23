@@ -31,3 +31,5 @@ google-services.json
 # پشتیبان‌های make backup / mahru-backup.sh (داده‌ی شخصی؛ هرگز در گیت)
 /backups
 .env.single
+# vendor بدون پکیج‌های dev برای build داکر روی اینترنت کند (docs/deployment/DOCKER_DESKTOP.md)
+/build-vendor

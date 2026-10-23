@@ -30,7 +30,11 @@ npm-debug.log*
 .env
 .env.*
 !.env.example
-storage/app/public/*
+# ⚠️ کل storage/app (۲۰۲۶-۱۰-۲۳): private شامل کلید حساب سرویس فایربیس و APKهای آپلودی بود و داخل image می‌رفت؛
+# در image فقط ساختار خالی لازم است (entrypoint می‌سازد) و داده روی volume است
+storage/app/*
+backups/
+*.apk
 storage/framework/cache/*
 storage/framework/sessions/*
 storage/framework/views/*
