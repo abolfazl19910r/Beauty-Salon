@@ -25,9 +25,13 @@ services:
     ports:
       # فقط HTTP؛ HTTPS در لبه‌ی CDN آروان. پورت ۸۰ را در فایروال سرور فقط برای لبه‌های آروان باز کنید (راهنما).
       - "80:80"
+      # HTTPS روی خود مبدا (بسته‌ی مجوز 5د): فقط وقتی ./tls گواهی دارد nginx روی ۴۴۳ گوش می‌دهد (ARVAN_SERVER.md)
+      - "443:443"
     volumes:
       - mahru_data:/data
       - ./backups:/data/backups
+      # fullchain.pem و privkey.pem از acme.sh روی میزبان؛ خالی = فقط HTTP (HTTPS در لبه‌ی CDN)
+      - ./tls:/data/tls:ro
     stop_grace_period: 60s
     logging:
       driver: json-file

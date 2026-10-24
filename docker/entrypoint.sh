@@ -133,6 +133,9 @@ fi
 # ─── PHP-FPM socket directory + supervisord log directory ─────
 mkdir -p /var/run/php-fpm /var/log/supervisor
 
+# ─── nginx: real_ip از TRUSTED_PROXIES، HTTPS اگر /data/tls گواهی دارد (بسته‌ی مجوز 5د) ───
+/usr/local/bin/mahru-nginx-setup || exit 1
+
 # ─── Start Supervisor ─────────────────────────────────────────
 echo "🚀 Starting services (PHP-FPM + Nginx)..."
 exec supervisord -c /etc/supervisor/conf.d/supervisord.conf

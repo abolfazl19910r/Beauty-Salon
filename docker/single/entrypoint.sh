@@ -139,6 +139,9 @@ if [ "$#" -gt 0 ]; then
     exit $status
 fi
 
+# nginx: real_ip از TRUSTED_PROXIES، HTTPS اگر /data/tls گواهی دارد (artisan هنوز به MariaDB موقت دسترسی دارد)
+/usr/local/bin/mahru-nginx-setup || exit 1
+
 echo "⏹️  Stopping setup MariaDB..."
 mariadb-admin --socket="$SOCK" -uroot shutdown
 i=0

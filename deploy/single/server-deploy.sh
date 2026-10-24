@@ -20,7 +20,8 @@ die() { echo "❌ $*" >&2; exit 1; }
 [[ -f "$DIR/docker-compose.server.yml" ]] || die "docker-compose.server.yml اینجا نیست — از /srv/mahru اجرا کنید"
 [[ -f "$DIR/.env.server" ]] || die ".env.server نیست — از .env.server.example بسازید (راهنما)"
 chmod 600 "$DIR/.env.server"
-mkdir -p "$DIR/backups" "$DIR/images"
+mkdir -p "$DIR/backups" "$DIR/images" "$DIR/tls"
+chmod 700 "$DIR/tls"
 
 env_server() { grep -E "^$1=" "$DIR/.env.server" | tail -n 1 | cut -d= -f2- | tr -d '"' || true; }
 

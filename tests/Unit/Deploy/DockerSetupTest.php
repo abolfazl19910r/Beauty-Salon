@@ -59,17 +59,68 @@ class DockerSetupTest extends TestCase
         $this->assertStringContainsString('map $upstream_http_x_frame_options $sec_frame', $nginx);
         $this->assertStringContainsString('include /etc/nginx/security-headers.conf;', $nginx);
 
-        $vhost = self::file('docker/nginx/default.conf');
+        $vhost = self::file('docker/nginx/site.inc');
         foreach (['/build', '/storage'] as $location) {
-            preg_match('#location '.preg_quote($location, '#').' \{(.*?)\n    \}#s', $vhost, $m);
+            preg_match('#location '.preg_quote($location, '#').' \{(.*?)\n\}#s', $vhost, $m);
             $this->assertStringContainsString('include /etc/nginx/security-headers.conf;', $m[1], $location);
         }
         $this->assertStringContainsString('COPY docker/nginx/security-headers.conf /etc/nginx/security-headers.conf', self::file('Dockerfile'));
     }
 
+    public function test_nginx_limits_requests_and_hides_versions(): void
+    {
+        // بسته‌ی مجوز 5د: مستقل از CDN، در خود کانتینر
+        $nginx = self::file('docker/nginx/nginx.conf');
+        foreach (['server_tokens off;', 'client_max_body_size 25M;', 'client_header_timeout 15s;', 'client_body_timeout 30s;',
+            'send_timeout 60s;', 'large_client_header_buffers 4 16k;', 'limit_conn mahru_conn_per_ip 64;', 'reset_timedout_connection on;'] as $line) {
+            $this->assertStringContainsString($line, $nginx);
+        }
+        $this->assertSame(1, substr_count($nginx, 'keepalive_timeout'), 'تکرار هر دستور nginx را بالا نمی‌آورد');
+        $this->assertMatchesRegularExpression('/^expose_php = Off$/m', self::file('docker/php/php.ini'));
+        $this->assertStringContainsString('fastcgi_hide_header X-Powered-By;', self::file('docker/nginx/site.inc'));
+    }
+
+    public function test_nginx_takes_the_real_ip_from_trusted_proxies_and_php_keeps_the_peer(): void
+    {
+        $site = self::file('docker/nginx/site.inc');
+        // هر دو مسیر PHP (/up و .php) آدرس اصلی اتصال را به PHP می‌دهند تا TrustProxies خود Laravel تصمیم بگیرد
+        $this->assertSame(2, substr_count($site, 'include /etc/nginx/mahru/fastcgi-remote-addr.inc;'));
+        $this->assertStringContainsString('fastcgi_param REMOTE_ADDR $realip_remote_addr;', self::file('docker/nginx/fastcgi-remote-addr.inc'));
+
+        $setup = self::file('docker/nginx-setup.sh');
+        $this->assertStringContainsString('php artisan security:nginx-real-ip', $setup);
+        $this->assertStringContainsString('00-real-ip.conf', $setup);
+        $this->assertStringContainsString('COPY docker/nginx-setup.sh /usr/local/bin/mahru-nginx-setup', self::file('Dockerfile'));
+        $this->assertStringContainsString('/usr/local/bin/mahru-nginx-setup', self::file('docker/entrypoint.sh'));
+
+        // تک‌کانتینری: پیش از خاموش شدن MariaDB موقت (artisan هنگام boot به دیتابیس سر می‌زند)
+        $single = self::file('docker/single/entrypoint.sh');
+        $this->assertLessThan(strpos($single, 'Stopping setup MariaDB'), strpos($single, '/usr/local/bin/mahru-nginx-setup'));
+    }
+
+    public function test_https_on_the_origin_is_optional_and_shares_the_same_locations(): void
+    {
+        $this->assertStringContainsString('include /etc/nginx/mahru/site.inc;', self::file('docker/nginx/default.conf'));
+        $this->assertStringContainsString('include /etc/nginx/mahru/https-redirect.inc;', self::file('docker/nginx/default.conf'));
+        $tls = self::file('docker/nginx/tls.conf');
+        $this->assertStringContainsString('listen 443 ssl', $tls);
+        $this->assertStringContainsString('ssl_certificate     /data/tls/fullchain.pem;', $tls);
+        $this->assertStringContainsString('include /etc/nginx/mahru/site.inc;', $tls);
+        $this->assertStringContainsString('ssl_protocols TLSv1.2 TLSv1.3;', $tls);
+
+        // /up (healthcheck داخلی روی http) و چالش ACME و درخواستی که لبه‌ی مورد اعتماد با HTTPS گرفته، ریدایرکت نمی‌شوند
+        $nginx = self::file('docker/nginx/nginx.conf');
+        $this->assertStringContainsString('map "$mahru_trusted_proxy:$http_x_forwarded_proto:$uri" $mahru_needs_https', $nginx);
+        $this->assertStringContainsString('"~:/up$"', $nginx);
+
+        $compose = Yaml::parse(self::file('docker-compose.server.yml'));
+        $this->assertContains('443:443', $compose['services']['app']['ports']);
+        $this->assertContains('./tls:/data/tls:ro', $compose['services']['app']['volumes']);
+    }
+
     public function test_the_health_check_reaches_laravel_not_a_static_nginx_reply(): void
     {
-        preg_match('/location = \/up \{(.*?)\n    \}/s', self::file('docker/nginx/default.conf'), $m);
+        preg_match('/location = \/up \{(.*?)\n\}/s', self::file('docker/nginx/site.inc'), $m);
         $this->assertStringContainsString('fastcgi_pass', $m[1]);
         $this->assertStringNotContainsString('return 200', $m[1]);
     }
@@ -202,8 +253,8 @@ class DockerSetupTest extends TestCase
         $this->assertSame('never', $app['pull_policy']);
         $this->assertStringStartsWith('mahru:single-${MAHRU_VERSION:?', $app['image']);
         $this->assertSame(['.env.server'], $app['env_file']);
-        $this->assertSame(['80:80'], $app['ports']);
-        $this->assertSame(['mahru_data:/data', './backups:/data/backups'], $app['volumes']);
+        $this->assertSame(['80:80', '443:443'], $app['ports']);
+        $this->assertSame(['mahru_data:/data', './backups:/data/backups', './tls:/data/tls:ro'], $app['volumes']);
         $this->assertSame('20m', $app['logging']['options']['max-size']);
         $this->assertStringContainsString('.env.server', self::file('.gitignore'));
 

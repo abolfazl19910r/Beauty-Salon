@@ -135,6 +135,11 @@ COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY docker/nginx/security-headers.conf /etc/nginx/security-headers.conf
 RUN rm -f /etc/nginx/http.d/default.conf
 COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+# مسیرهای مشترک HTTP/HTTPS، سرور HTTPS اختیاری و آماده‌سازی هنگام شروع (real_ip از TRUSTED_PROXIES) — بسته‌ی مجوز 5د
+COPY docker/nginx/site.inc docker/nginx/tls.conf docker/nginx/fastcgi-remote-addr.inc /etc/nginx/mahru/
+COPY docker/nginx-setup.sh /usr/local/bin/mahru-nginx-setup
+RUN printf '# بدون گواهی: فقط HTTP\n' > /etc/nginx/mahru/https-redirect.inc \
+    && printf 'geo $realip_remote_addr $mahru_trusted_proxy {\n    default 0;\n}\n' > /etc/nginx/conf.d/00-real-ip.conf
 
 # ─── Supervisor config ──────────────────────────────────────
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
@@ -175,8 +180,10 @@ RUN chown -R www:www storage bootstrap/cache \
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 # ⚠️ اگر git ویندوز فایل‌ها را با CRLF بیرون آورده باشد، «#!/bin/sh\r» در لینوکس پیدا نمی‌شود و کانتینر با «not found» می‌افتد
 RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh /etc/supervisor/conf.d/supervisord.conf /etc/nginx/nginx.conf \
-        /etc/nginx/conf.d/default.conf /etc/nginx/security-headers.conf /usr/local/etc/php-fpm.d/zzz-beauty-salon.conf /usr/local/etc/php/conf.d/beauty-salon.ini \
-    && chmod +x /usr/local/bin/entrypoint.sh
+        /etc/nginx/conf.d/default.conf /etc/nginx/security-headers.conf /etc/nginx/mahru/site.inc /etc/nginx/mahru/tls.conf \
+        /etc/nginx/mahru/fastcgi-remote-addr.inc /usr/local/bin/mahru-nginx-setup \
+        /usr/local/etc/php-fpm.d/zzz-beauty-salon.conf /usr/local/etc/php/conf.d/beauty-salon.ini \
+    && chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/mahru-nginx-setup
 
 EXPOSE 80
 
