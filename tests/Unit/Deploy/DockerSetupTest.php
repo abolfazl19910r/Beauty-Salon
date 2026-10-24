@@ -126,6 +126,23 @@ class DockerSetupTest extends TestCase
         $this->assertStringContainsString('location ~ \.(log|json|lock|md)$', $site, 'بقیه‌ی json/md/log همچنان بسته');
     }
 
+    public function test_the_access_log_is_kept_on_the_volume_with_the_real_ip_one_file_per_day(): void
+    {
+        // بسته‌ی مجوز 5د: پیش‌تر فقط لاگ Docker (سقف ۱۰۰ مگ) با IP لبه
+        $nginx = self::file('docker/nginx/nginx.conf');
+        $this->assertStringContainsString('log_format mahru escape=json', $nginx);
+        $this->assertStringContainsString('"ip":"$remote_addr","peer":"$realip_remote_addr"', $nginx);
+        $this->assertStringContainsString('map $time_iso8601 $mahru_log_date', $nginx);
+        $this->assertStringContainsString('open_log_file_cache', $nginx);
+
+        $setup = self::file('docker/nginx-setup.sh');
+        $this->assertStringContainsString('ACCESS_LOG_DIR=${ACCESS_LOG_DIR:-$APP_DIR/storage/logs/nginx}', $setup);
+        $this->assertStringContainsString('access_log %s/access-$mahru_log_date.log mahru;', $setup);
+        $this->assertStringContainsString('chown nginx:www "$ACCESS_LOG_DIR"', $setup);
+        // storage/logs روی volume است (تک‌کانتینری: symlink به /data/logs)
+        $this->assertStringContainsString('ln -s "$DATA/logs" storage/logs', self::file('docker/single/entrypoint.sh'));
+    }
+
     public function test_the_health_check_reaches_laravel_not_a_static_nginx_reply(): void
     {
         preg_match('/location = \/up \{(.*?)\n\}/s', self::file('docker/nginx/site.inc'), $m);

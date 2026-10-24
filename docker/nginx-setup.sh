@@ -4,7 +4,8 @@
 #
 # ۱. conf.d/00-real-ip.conf از TRUSTED_PROXIES (php artisan security:nginx-real-ip): IP واقعی در لاگ دسترسی فقط از لبه‌های
 #    مورد اعتماد؛ خالی = بدون CDN، IP مستقیم.
-# ۲. HTTPS روی خود مبدا: اگر /data/tls/fullchain.pem و privkey.pem هست، conf.d/tls.conf (پورت ۴۴۳) روشن و پورت ۸۰ به HTTPS
+# ۲. لاگ دسترسی ماندگار در storage/logs/nginx (volume) با IP واقعی، یک فایل در روز (retention:prune فشرده و پاک می‌کند).
+# ۳. HTTPS روی خود مبدا: اگر /data/tls/fullchain.pem و privkey.pem هست، conf.d/tls.conf (پورت ۴۴۳) روشن و پورت ۸۰ به HTTPS
 #    فرستاده می‌شود (جز /up، چالش ACME و درخواست لبه‌ی مورد اعتماد که خودش HTTPS گرفته).
 # اگر artisan خطا داد: فایل امن «بی‌اعتماد به پروکسی» (nginx باید حتماً بالا بیاید).
 # ============================================================
@@ -21,6 +22,17 @@ if ! (cd "$APP_DIR" && $RUN_AS php artisan security:nginx-real-ip) > "$CONF/00-r
     printf 'geo $realip_remote_addr $mahru_trusted_proxy {\n    default 0;\n}\n' > "$CONF/00-real-ip.conf.new"
 fi
 mv "$CONF/00-real-ip.conf.new" "$CONF/00-real-ip.conf"
+
+ACCESS_LOG_DIR=${ACCESS_LOG_DIR:-$APP_DIR/storage/logs/nginx}
+if mkdir -p "$ACCESS_LOG_DIR" 2>/dev/null; then
+    # nginx می‌نویسد؛ www (scheduler) فشرده و پاک می‌کند
+    chown nginx:www "$ACCESS_LOG_DIR" 2>/dev/null || true
+    chmod 2775 "$ACCESS_LOG_DIR"
+    printf 'access_log %s/access-$mahru_log_date.log mahru;\n' "$ACCESS_LOG_DIR" > "$CONF/01-access-log.conf"
+else
+    echo "⚠️  $ACCESS_LOG_DIR ساخته نشد — لاگ دسترسی فقط در لاگ Docker"
+    rm -f "$CONF/01-access-log.conf"
+fi
 
 if [ -s "$TLS_DIR/fullchain.pem" ] && [ -s "$TLS_DIR/privkey.pem" ]; then
     cp "$MAHRU/tls.conf" "$CONF/tls.conf"
