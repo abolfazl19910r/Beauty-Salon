@@ -9,3 +9,6 @@
 /.github export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore
+
+# اسکریپت‌های ویندوز (cmd) با CRLF بیرون بیایند
+*.cmd text eol=crlf

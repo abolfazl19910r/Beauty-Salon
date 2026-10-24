@@ -1,0 +1,39 @@
+# ============================================================
+# Mahru — سرور واقعی آروان: همان image تک‌کانتینری که روی ویندوز ساخته و منتقل شده (۲۰۲۶-۱۰-۲۴)
+#
+# روی سرور هیچ build و git لازم نیست. پوشه‌ی /srv/mahru:
+#   docker-compose.server.yml   همین فایل
+#   .env.server                 از .env.server.example (chmod 600)
+#   .env                        فقط MAHRU_VERSION=… (deploy/single/server-deploy.sh می‌نویسد)
+#   backups/                    پشتیبان‌های شبانه — با WinSCP دانلود کنید
+#   images/                     فایل‌های mahru-single-*.tar
+#
+# ساخت و انتقال: deploy/single/build-image.cmd (ویندوز) ← WinSCP ← deploy/single/server-deploy.sh (سرور)
+# راهنما: docs/deployment/ARVAN_SERVER.md
+# ============================================================
+name: mahru
+
+services:
+  app:
+    image: mahru:single-${MAHRU_VERSION:?MAHRU_VERSION را در .env بگذارید (server-deploy.sh)}
+    # image فقط از فایل منتقل‌شده؛ هرگز از رجیستری کشیده یا روی سرور ساخته نشود
+    pull_policy: never
+    container_name: mahru
+    restart: unless-stopped
+    env_file:
+      - .env.server
+    ports:
+      # فقط HTTP؛ HTTPS در لبه‌ی CDN آروان. پورت ۸۰ را در فایروال سرور فقط برای لبه‌های آروان باز کنید (راهنما).
+      - "80:80"
+    volumes:
+      - mahru_data:/data
+      - ./backups:/data/backups
+    stop_grace_period: 60s
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+volumes:
+  mahru_data:

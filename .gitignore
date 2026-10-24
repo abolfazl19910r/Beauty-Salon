@@ -33,3 +33,7 @@ google-services.json
 .env.single
 # vendor بدون پکیج‌های dev برای build داکر روی اینترنت کند (docs/deployment/DOCKER_DESKTOP.md)
 /build-vendor
+
+# ساخت image روی ویندوز برای انتقال به سرور (deploy/single/build-image.cmd) و تنظیمات سرور
+/build-images
+.env.server

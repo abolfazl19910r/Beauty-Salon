@@ -5,7 +5,7 @@
 # ۱. پوشه‌های volume /data (دیتابیس، storage/app، لاگ‌ها) و symlinkهای storage
 # ۲. APP_KEY و رمز دیتابیس: اگر در .env.single خالی‌اند، یک بار ساخته و در /data نگه داشته می‌شوند (با پاک شدن کانتینر عوض نشوند)
 # ۳. MariaDB: بار اول mariadb-install-db؛ هر بار یک اجرای موقت برای ساخت دیتابیس/کاربر، migrate و کش‌ها، بعد خاموش
-# ۴. supervisord همه را بالا می‌آورد: mariadb، php-fpm، nginx، دو worker صف، scheduler
+# ۴. supervisord همه را بالا می‌آورد: mariadb، php-fpm، nginx، دو worker صف، scheduler، پشتیبان شبانه
 #
 # با آرگومان (مثلاً «docker compose exec app …» نه، بلکه «docker run … image php artisan …») همان دستور اجرا می‌شود.
 # ============================================================
@@ -23,7 +23,7 @@ artisan() { su-exec www php artisan "$@"; }
 echo "🌸 Mahru (single container) - starting, env: ${APP_ENV:-production}"
 
 # ─── ۱. volume /data ─────────────────────────────────────────
-mkdir -p "$DATA/mysql" "$DATA/storage/app" "$DATA/logs" /run/mysqld /var/run/php-fpm /var/log/supervisor
+mkdir -p "$DATA/mysql" "$DATA/storage/app" "$DATA/logs" "$DATA/backups" /run/mysqld /var/run/php-fpm /var/log/supervisor
 chown -R mysql:mysql "$DATA/mysql" /run/mysqld
 touch "$DATA/logs/mariadb-slow.log" && chown mysql:mysql "$DATA/logs/mariadb-slow.log"
 
@@ -41,6 +41,9 @@ mkdir -p "$DATA/storage/app/public" "$DATA/storage/app/private" storage/framewor
 chown -R www:www "$DATA/storage" storage/framework bootstrap/cache
 chown www:www "$DATA/logs"
 chmod 775 "$DATA/logs"
+# پشتیبان‌ها (روی سرور پوشه‌ی میزبان، برای دانلود): فقط www — دیتابیس، عکس مشتری‌ها و APP_KEY
+chown www:www "$DATA/backups"
+chmod 700 "$DATA/backups"
 
 # ─── ۲. کلیدها ───────────────────────────────────────────────
 if [ -z "$APP_KEY" ]; then
@@ -49,6 +52,8 @@ if [ -z "$APP_KEY" ]; then
         chmod 600 "$DATA/app.key"
         echo "🔑 APP_KEY ساخته شد و در /data/app.key ماند (از آن بکاپ بگیرید)"
     fi
+    # www (php و پشتیبان شبانه) همین کلید را در .env هم دارد؛ خواندنش برای www مجوز تازه‌ای نیست
+    chown www:www "$DATA/app.key"
     APP_KEY=$(cat "$DATA/app.key")
     export APP_KEY
 fi

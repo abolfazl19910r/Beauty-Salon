@@ -176,4 +176,74 @@ class DockerSetupTest extends TestCase
         $this->assertStringContainsString("sed -i 's/\\r$//' /usr/local/bin/entrypoint.sh", self::file('Dockerfile'));
         $this->assertStringContainsString('eol=lf', self::file('.gitattributes'));
     }
+
+    public function test_the_server_runs_the_transferred_image_and_never_builds_or_pulls(): void
+    {
+        // سرور آروان (۲۰۲۶-۱۰-۲۴): image روی ویندوز ساخته و با docker save/load منتقل می‌شود؛ روی سرور build و رجیستری نیست
+        $app = Yaml::parse(self::file('docker-compose.server.yml'))['services']['app'];
+        $this->assertArrayNotHasKey('build', $app);
+        $this->assertSame('never', $app['pull_policy']);
+        $this->assertStringStartsWith('mahru:single-${MAHRU_VERSION:?', $app['image']);
+        $this->assertSame(['.env.server'], $app['env_file']);
+        $this->assertSame(['80:80'], $app['ports']);
+        $this->assertSame(['mahru_data:/data', './backups:/data/backups'], $app['volumes']);
+        $this->assertSame('20m', $app['logging']['options']['max-size']);
+        $this->assertStringContainsString('.env.server', self::file('.gitignore'));
+
+        $ignored = array_map('trim', explode("\n", self::file('.dockerignore')));
+        $this->assertContains('build-images/', $ignored);
+        $this->assertContains('*.tar', $ignored);
+
+        $build = self::file('deploy/single/build-image.cmd');
+        $this->assertStringContainsString('docker save mahru:single-%V%', $build);
+        $this->assertStringContainsString('*.cmd text eol=crlf', self::file('.gitattributes'));
+
+        $deploy = self::file('deploy/single/server-deploy.sh');
+        $this->assertStringContainsString('docker load -i', $deploy);
+        $this->assertStringContainsString('docker exec -u www mahru mahru-backup now', $deploy);
+        $this->assertMatchesRegularExpression('/mahru-backup now \|\| die/', $deploy);
+    }
+
+    public function test_server_env_is_production_without_real_sms_or_demo_data(): void
+    {
+        $env = self::file('.env.server.example');
+        foreach ([
+            'APP_ENV=production', 'APP_DEBUG=false', 'APP_URL=https://arisheh.ir', 'CENTRAL_DOMAIN=arisheh.ir',
+            'SESSION_DOMAIN=.arisheh.ir', 'SESSION_SECURE_COOKIE=true', 'MAHRU_SEED=false', 'SMS_LOG_ONLY=true',
+            'ZARINPAL_SANDBOX=true', 'BACKUP_AT=03:40', 'BACKUP_KEEP=3', 'TELESCOPE_ENABLED=false',
+        ] as $line) {
+            $this->assertMatchesRegularExpression('/^'.preg_quote($line, '/').'$/m', $env, $line);
+        }
+        // کلید و رمز را کانتینر می‌سازد؛ خط خالی بر مقدار ساخته‌شده مقدم می‌شد
+        $this->assertDoesNotMatchRegularExpression('/^(APP_KEY|DB_PASSWORD)=/m', $env);
+        // پیش‌فرض کد (cloudflare) برای آروان غلط است و «*» هرگز
+        $this->assertMatchesRegularExpression('/^TRUSTED_PROXIES=$/m', $env);
+        $this->assertStringContainsString('/en/ips.txt', self::file('deploy/single/arvan-ips.sh'));
+    }
+
+    public function test_the_single_container_backs_up_database_files_and_app_key_every_night(): void
+    {
+        $conf = self::file('docker/single/supervisord.conf');
+        $this->assertMatchesRegularExpression('/\[program:backup\]\n(;[^\n]*\n)*command=\/usr\/local\/bin\/mahru-backup loop\nuser=www\n/', $conf);
+
+        $dockerfile = self::file('Dockerfile');
+        $this->assertStringContainsString('apk add --no-cache mariadb mariadb-client bash', $dockerfile);
+        $this->assertStringContainsString('COPY docker/single/backup.sh /usr/local/bin/mahru-backup', $dockerfile);
+
+        $backup = self::file('docker/single/backup.sh');
+        $this->assertStringContainsString('BACKUP_APP_KEY_FILE=/data/app.key', $backup);
+        $this->assertStringContainsString('KEEP_LAST="${BACKUP_KEEP:-3}"', $backup);
+        $this->assertStringContainsString('/var/www/html /data/backups', $backup);
+
+        // اسکریپت مشترک DirectAdmin: محیط کانتینر بر .env مقدم، و app.key و نگه‌داری N پشتیبان آخر
+        $script = self::file('deploy/backup/mahru-backup.sh');
+        $this->assertStringContainsString('local value="${!1:-}"', $script);
+        $this->assertStringContainsString('DB_PASSWORD="$(setting DB_PASSWORD)"', $script);
+        $this->assertStringContainsString('cp "$BACKUP_APP_KEY_FILE" "$DEST/app.key"', $script);
+        $this->assertStringContainsString('tail -n +"$((KEEP_LAST + 1))"', $script);
+
+        $entrypoint = self::file('docker/single/entrypoint.sh');
+        $this->assertStringContainsString('chmod 700 "$DATA/backups"', $entrypoint);
+        $this->assertStringContainsString('chown www:www "$DATA/app.key"', $entrypoint);
+    }
 }

@@ -188,15 +188,18 @@ ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 # دیتابیس، storage/app (آپلودها، کلید فایربیس)، لاگ‌ها و کلید APP_KEY ساخته‌شده.
 FROM production AS single
 
-RUN apk add --no-cache mariadb mariadb-client
+# bash: deploy/backup/mahru-backup.sh (پشتیبان شبانه‌ی داخل کانتینر، ۲۰۲۶-۱۰-۲۴)
+RUN apk add --no-cache mariadb mariadb-client bash
 
 COPY docker/single/supervisord.conf /etc/supervisor/conf.d/supervisord-single.conf
 COPY docker/single/my.cnf /etc/my.cnf.d/zz-mahru.cnf
 COPY docker/single/entrypoint.sh /usr/local/bin/entrypoint-single.sh
 COPY docker/single/wait-db.sh /usr/local/bin/wait-db
+COPY docker/single/backup.sh /usr/local/bin/mahru-backup
 RUN sed -i 's/\r$//' /etc/supervisor/conf.d/supervisord-single.conf /etc/my.cnf.d/zz-mahru.cnf \
-        /usr/local/bin/entrypoint-single.sh /usr/local/bin/wait-db \
-    && chmod +x /usr/local/bin/entrypoint-single.sh /usr/local/bin/wait-db \
+        /usr/local/bin/entrypoint-single.sh /usr/local/bin/wait-db /usr/local/bin/mahru-backup \
+        /var/www/html/deploy/backup/mahru-backup.sh \
+    && chmod +x /usr/local/bin/entrypoint-single.sh /usr/local/bin/wait-db /usr/local/bin/mahru-backup \
     && ln -sf /etc/supervisor/conf.d/supervisord-single.conf /etc/supervisord.conf   # «supervisorctl status» بدون -c
 
 # پیش‌فرض‌های حالت تک‌کانتینری؛ .env.single (env_file) می‌تواند هر کدام را عوض کند

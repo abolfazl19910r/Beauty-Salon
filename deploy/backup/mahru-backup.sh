@@ -12,7 +12,10 @@
 #
 # اجرا:   bash deploy/backup/mahru-backup.sh [مسیر برنامه] [مسیر پشتیبان]
 #   پیش‌فرض‌ها: مسیر برنامه = دو پوشه بالاتر از همین فایل؛ مسیر پشتیبان = $HOME/mahru-backups
-#   KEEP_DAYS=14 (متغیر محیطی)
+#   KEEP_DAYS=14 (متغیر محیطی)؛ یا KEEP_LAST=3 = فقط N پشتیبان آخر بماند (بر KEEP_DAYS مقدم)
+#   BACKUP_APP_KEY_FILE=/data/app.key (اختیاری) = این فایل هم به نام app.key کنار پشتیبان کپی می‌شود
+#   متغیرهای DB_* اگر در محیط پردازه باشند (کانتینر) بر .env مقدم‌اند؛ مقدار خالی محیط نادیده گرفته می‌شود
+# داخل کانتینر تک‌کانتینری: docker/single/backup.sh همین را هر شب صدا می‌زند (docs/deployment/ARVAN_SERVER.md)
 # cron (DirectAdmin → Cron Jobs، هر شب ۰۳:۴۰):
 #   40 3 * * * bash /home/[username]/public_html/deploy/backup/mahru-backup.sh /home/[username]/public_html /home/[username]/mahru-backups >> /home/[username]/mahru-backups/backup.log 2>&1
 # بازگردانی: docs/deployment/BACKUP.md
@@ -23,6 +26,7 @@ umask 077
 APP_DIR="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 BACKUP_ROOT="${2:-$HOME/mahru-backups}"
 KEEP_DAYS="${KEEP_DAYS:-14}"
+KEEP_LAST="${KEEP_LAST:-}"
 STAMP="$(date +%Y%m%d_%H%M%S)"
 DEST="$BACKUP_ROOT/$STAMP"
 
@@ -41,12 +45,19 @@ env_value() {
     printf '%s' "$line"
 }
 
-DB_CONNECTION="$(env_value DB_CONNECTION)"
-DB_HOST="$(env_value DB_HOST)"; DB_HOST="${DB_HOST:-127.0.0.1}"
-DB_PORT="$(env_value DB_PORT)"; DB_PORT="${DB_PORT:-3306}"
-DB_DATABASE="$(env_value DB_DATABASE)"
-DB_USERNAME="$(env_value DB_USERNAME)"
-DB_PASSWORD="$(env_value DB_PASSWORD)"
+# محیط پردازه (کانتینر: env_file و رمز ساخته‌شده‌ی entrypoint) مقدم؛ وگرنه .env
+setting() {
+    local value="${!1:-}"
+    [[ -n "$value" ]] || value="$(env_value "$1")"
+    printf '%s' "$value"
+}
+
+DB_CONNECTION="$(setting DB_CONNECTION)"
+DB_HOST="$(setting DB_HOST)"; DB_HOST="${DB_HOST:-127.0.0.1}"
+DB_PORT="$(setting DB_PORT)"; DB_PORT="${DB_PORT:-3306}"
+DB_DATABASE="$(setting DB_DATABASE)"
+DB_USERNAME="$(setting DB_USERNAME)"
+DB_PASSWORD="$(setting DB_PASSWORD)"
 
 # ─── وضعیت برای پنل ابرمدیر (۲۰۲۶-۱۰-۱۵) ─────────────────────
 # storage/app/backup-status.json را داشبورد ابرمدیر می‌خواند («آخرین پشتیبان‌گیری»). موفق یا ناموفق، هر اجرا آن را می‌نویسد.
@@ -79,7 +90,7 @@ if [[ "$DB_CONNECTION" == "mysql" || "$DB_CONNECTION" == "mariadb" ]]; then
     printf '[client]\nuser=%s\npassword=%s\nhost=%s\nport=%s\n' "$DB_USERNAME" "$DB_PASSWORD" "$DB_HOST" "$DB_PORT" > "$CNF"
     "$DUMP" --defaults-extra-file="$CNF" --single-transaction --quick --routines --no-tablespaces "$DB_DATABASE" | gzip -9 > "$DEST/database.sql.gz"
 elif [[ "$DB_CONNECTION" == "sqlite" ]]; then
-    cp "$(env_value DB_DATABASE)" "$DEST/database.sqlite"
+    cp "$DB_DATABASE" "$DEST/database.sqlite"
 else
     echo "[$STAMP] unsupported DB_CONNECTION=$DB_CONNECTION" >&2
     exit 1
@@ -94,8 +105,17 @@ if [[ ${#DIRS[@]} -gt 0 ]]; then
     tar -czf "$DEST/storage-app.tar.gz" -C "$APP_DIR" "${DIRS[@]}"
 fi
 
+# کلید APP_KEY (تک‌کانتینری: /data/app.key) — بدون آن داده‌ی رمزشده‌ی دیتابیس بازگردانی نمی‌شود
+if [[ -n "${BACKUP_APP_KEY_FILE:-}" && -r "$BACKUP_APP_KEY_FILE" ]]; then
+    cp "$BACKUP_APP_KEY_FILE" "$DEST/app.key"
+fi
+
 # ─── ۳) نگه‌داری ──────────────────────────────────────────
-find "$BACKUP_ROOT" -mindepth 1 -maxdepth 1 -type d -name '20*' -mtime +"$KEEP_DAYS" -exec rm -rf {} +
+if [[ -n "$KEEP_LAST" ]]; then
+    ls -1d "$BACKUP_ROOT"/20*/ 2>/dev/null | sort -r | tail -n +"$((KEEP_LAST + 1))" | while read -r old; do rm -rf "$old"; done
+else
+    find "$BACKUP_ROOT" -mindepth 1 -maxdepth 1 -type d -name '20*' -mtime +"$KEEP_DAYS" -exec rm -rf {} +
+fi
 
 write_status "ok" "files: ${DIRS[*]:-none}"
 echo "[$STAMP] backup OK → $DEST ($(du -sh "$DEST" | cut -f1)); files: ${DIRS[*]:-none}"

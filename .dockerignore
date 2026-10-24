@@ -35,6 +35,9 @@ npm-debug.log*
 storage/app/*
 backups/
 *.apk
+# فایل‌های image ساخته‌شده (deploy/single/build-image.cmd) — نباید وارد context build بعدی شوند
+build-images/
+*.tar
 storage/framework/cache/*
 storage/framework/sessions/*
 storage/framework/views/*
