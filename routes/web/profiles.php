@@ -9,15 +9,15 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard
 Route::prefix('profile')->name('profile.')->group(function () {
     Route::get('/', [ProfileController::class, 'show'])->name('show');
     Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
-    Route::patch('/update', [ProfileController::class, 'update'])->name('update');
+    Route::patch('/update', [ProfileController::class, 'update'])->middleware('throttle:sensitive')->name('update');
 
     // پیامک‌های پیگیری و پیشنهاد سالن (۲۰۲۶-۱۰-۱۴)
-    Route::patch('/marketing-sms', [ProfileController::class, 'updateMarketingSms'])->name('marketing-sms');
+    Route::patch('/marketing-sms', [ProfileController::class, 'updateMarketingSms'])->middleware('throttle:sensitive')->name('marketing-sms');
 
-    Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password');
+    Route::put('/password', [ProfileController::class, 'updatePassword'])->middleware('throttle:sensitive')->name('password');
 
-    Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
+    Route::delete('/', [ProfileController::class, 'destroy'])->middleware('throttle:sensitive')->name('destroy');
     // ربات پلتفرم: اتصال/قطع اتصال بله یا تلگرام (۲۰۲۶-۱۰-۰۱)
-    Route::post('/bot/{messenger}', [\App\Http\Controllers\Bot\BotConnectController::class, 'store'])->whereIn('messenger', \App\Models\BotLink::MESSENGERS)->name('bot.connect');
-    Route::delete('/bot/{messenger}', [\App\Http\Controllers\Bot\BotConnectController::class, 'destroy'])->whereIn('messenger', \App\Models\BotLink::MESSENGERS)->name('bot.disconnect');
+    Route::post('/bot/{messenger}', [\App\Http\Controllers\Bot\BotConnectController::class, 'store'])->whereIn('messenger', \App\Models\BotLink::MESSENGERS)->middleware('throttle:sensitive')->name('bot.connect');
+    Route::delete('/bot/{messenger}', [\App\Http\Controllers\Bot\BotConnectController::class, 'destroy'])->whereIn('messenger', \App\Models\BotLink::MESSENGERS)->middleware('throttle:sensitive')->name('bot.disconnect');
 });

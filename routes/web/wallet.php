@@ -18,6 +18,7 @@ Route::prefix('wallet')->name('wallet.')->group(function () {
         ->name('charge');
 
     Route::post('/charge/process', [UserWalletController::class, 'processCharge'])
+        ->middleware('throttle:customer-actions')
         ->name('charge.process');
 
     Route::get('/charge/callback', [UserWalletController::class, 'chargeCallback'])

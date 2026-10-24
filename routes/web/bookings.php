@@ -15,8 +15,8 @@ Route::prefix('bookings')->name('bookings.')->group(function () {
     Route::get('/', [BookingController::class, 'index'])->name('index');
 
     Route::get('/create', [BookingReservationController::class, 'create'])->name('create');
-    Route::post('/confirm', [BookingReservationController::class, 'confirm'])->name('confirm');
-    Route::post('/', [BookingReservationController::class, 'store'])->name('store');
+    Route::post('/confirm', [BookingReservationController::class, 'confirm'])->middleware('throttle:customer-actions')->name('confirm');
+    Route::post('/', [BookingReservationController::class, 'store'])->middleware('throttle:customer-actions')->name('store');
 
     // ⭐ Fix (real, confirmed cross-tenant data leak, session 2026-09-20): moved here from the
     // unscoped routes/api/public/services.php (ServiceController::list(), same JSON payload —
@@ -32,15 +32,15 @@ Route::prefix('bookings')->name('bookings.')->group(function () {
     Route::get('/specialists/{specialist}/slots/{date}', [BookingAvailabilityController::class, 'getAvailableTimeSlots'])->name('available-slots');
     Route::get('/services/{service}/specialists', [BookingAvailabilityController::class, 'getSpecialistsByService'])->name('service-specialists');
 
-    Route::post('/check-discount', [BookingDiscountController::class, 'check'])->name('check-discount');
+    Route::post('/check-discount', [BookingDiscountController::class, 'check'])->middleware('throttle:discount-check')->name('check-discount');
 
     Route::middleware('check.booking.ownership')->group(function () {
         Route::get('/{booking}', [BookingController::class, 'show'])->name('show');
-        Route::put('/{booking}/cancel', [BookingReservationController::class, 'cancel'])->name('cancel');
-        Route::post('/{booking}/rate', [BookingController::class, 'rate'])->name('rate');
-        Route::post('/{booking}/apply-discount', [BookingDiscountController::class, 'apply'])->name('apply-discount');
+        Route::put('/{booking}/cancel', [BookingReservationController::class, 'cancel'])->middleware('throttle:customer-actions')->name('cancel');
+        Route::post('/{booking}/rate', [BookingController::class, 'rate'])->middleware('throttle:customer-actions')->name('rate');
+        Route::post('/{booking}/apply-discount', [BookingDiscountController::class, 'apply'])->middleware('throttle:discount-check')->name('apply-discount');
 
         Route::get('/{booking}/reschedule', [BookingRescheduleController::class, 'show'])->name('reschedule');
-        Route::put('/{booking}/reschedule', [BookingRescheduleController::class, 'update'])->name('update-reschedule');
+        Route::put('/{booking}/reschedule', [BookingRescheduleController::class, 'update'])->middleware('throttle:customer-actions')->name('update-reschedule');
     });
 });

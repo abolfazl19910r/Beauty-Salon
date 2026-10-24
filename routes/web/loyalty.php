@@ -13,5 +13,5 @@ Route::prefix('loyalty')->name('loyalty.')->group(function () {
 
     Route::get('/discount-codes', [LoyaltyController::class, 'discountCodes'])->name('discount-codes');
     Route::get('/my-codes', [LoyaltyController::class, 'myCodes'])->name('my-codes');
-    Route::post('/rewards/{reward}/redeem', [LoyaltyController::class, 'redeemReward'])->name('redeem');
+    Route::post('/rewards/{reward}/redeem', [LoyaltyController::class, 'redeemReward'])->middleware('throttle:customer-actions')->name('redeem');
 });

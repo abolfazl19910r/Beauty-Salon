@@ -138,8 +138,38 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by($request->ip());
         });
 
+        // کارهای حساس حساب (تغییر رمز و موبایل، حذف حساب، نشست‌ها، اتصال ربات)؛ مهمان با آی‌پی (پیش‌تر ->id روی null می‌شکست)
         RateLimiter::for('sensitive', function (Request $request) {
-            return Limit::perMinute(10)->by($request->user()->id);
+            return Limit::perMinute(10)->by(self::actor($request));
         });
+
+        // ⭐ بسته‌ی مجوز 5د (۲۰۲۶-۱۰-۲۵): مسیرهای حساس وب مشتری که هیچ سقفی نداشتند؛ پلن رایگان CDN محدودیت نرخ ندارد و امنیت
+        // نباید به CDN وابسته باشد. همه با کلید کاربر (نه فقط آی‌پی) تا مشتری‌های پشت یک CGNAT هم را قفل نکنند.
+        // ارسال کد پیامکی (دومرحله‌ای، پرداخت امن): هر بار یک پیامک واقعی
+        RateLimiter::for('otp-send', function (Request $request) {
+            return Limit::perMinute(3)->by(self::actor($request));
+        });
+        // حدس کد ۶ رقمی (تأیید دومرحله‌ای، فعال/غیرفعال‌سازی، پرداخت امن)
+        RateLimiter::for('otp-verify', function (Request $request) {
+            return Limit::perMinute(5)->by(self::actor($request));
+        });
+        // بررسی و اعمال کد تخفیف: شمارش کدها
+        RateLimiter::for('discount-check', function (Request $request) {
+            return Limit::perMinute(10)->by(self::actor($request));
+        });
+        // ثبت، لغو، جابه‌جایی و پرداخت نوبت، شارژ کیف پول، جایزه‌ی وفاداری — سخاوتمند، فقط جلوی اسکریپت
+        RateLimiter::for('customer-actions', function (Request $request) {
+            return Limit::perMinute(30)->by(self::actor($request));
+        });
+        // ثبت نظر با لینک پیامکی (بی ورود)
+        RateLimiter::for('reviews', function (Request $request) {
+            return Limit::perMinute(10)->by('ip:'.$request->ip());
+        });
+    }
+
+    /** کلید limiterهای مشتری: کاربر واردشده، وگرنه آی‌پی */
+    private static function actor(Request $request): string
+    {
+        return $request->user()?->getAuthIdentifier() ? 'user:'.$request->user()->getAuthIdentifier() : 'ip:'.$request->ip();
     }
 }

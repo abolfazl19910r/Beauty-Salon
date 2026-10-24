@@ -8,5 +8,5 @@ use Illuminate\Support\Facades\Route;
 // profile page, unlike these three, which require an authenticated customer
 // (ReviewController::create()/store() check the booking belongs to auth()->id()).
 Route::get('/review/create', [ReviewController::class, 'create'])->name('reviews.create');
-Route::post('/review/store', [ReviewController::class, 'store'])->name('reviews.store');
+Route::post('/review/store', [ReviewController::class, 'store'])->middleware('throttle:reviews')->name('reviews.store');
 Route::get('/review/thank-you', [ReviewController::class, 'thankYou'])->name('reviews.thank-you');
