@@ -148,6 +148,11 @@ return Application::configure(basePath: dirname(__DIR__))
             ->hourlyAt(7)
             ->withoutOverlapping()
             ->onOneServer();
+        // نگهداری داده (بسته‌ی مجوز 5د، config/retention.php): security_logs و لاگ دسترسی nginx بعد از مهلت قانونی پاک، لاگ روزهای قبل فشرده
+        $schedule->command('retention:prune')
+            ->dailyAt('03:50')
+            ->withoutOverlapping()
+            ->onOneServer();
         $schedule->command('sanctum:prune-expired', ['--hours' => 24])
             ->dailyAt('04:10')
             ->onOneServer();

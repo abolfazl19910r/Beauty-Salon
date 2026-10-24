@@ -95,7 +95,8 @@ return [
             'driver' => 'daily',
             'path' => storage_path('logs/security.log'),
             'level' => env('SECURITY_LOG_LEVEL') ?: 'warning',
-            'days' => 90,
+            // ⭐ بسته‌ی مجوز 5د: پیش‌تر ۹۰ روز؛ IP و هویت دست‌کم شش ماه (config/retention.php، ماده‌ی ۶۶۸ آیین دادرسی کیفری)
+            'days' => max(184, is_numeric(env('SECURITY_LOG_DAYS')) ? (int) env('SECURITY_LOG_DAYS') : (is_numeric(env('RETENTION_DAYS')) ? (int) env('RETENTION_DAYS') : 190)),
         ],
         // گزارش‌های CSP مرحله‌ی Report-Only (بسته‌ی مجوز 5د) — CspReportController
         'csp' => [
