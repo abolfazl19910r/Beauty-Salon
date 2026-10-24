@@ -88,6 +88,10 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'is_admin' => false,
                 'phone_verified_at' => now(),
+                // مشتری همیشه مال یک سالن است (ورود مشتری فقط روی صفحه‌ی همان سالن). بی salon_id، این حساب نمونه روی
+                // rasta.…/login «اطلاعات وارد شده صحیح نمی‌باشد» می‌گرفت (آزمون Docker Desktop ابوالفضل، ۲۰۲۶-۱۰-۲۴).
+                'user_type' => 'customer',
+                'salon_id' => app(\App\Support\CurrentSalon::class)->id(),
             ]
         );
         if ($userRole) {
