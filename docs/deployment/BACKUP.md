@@ -26,7 +26,13 @@ cron (DirectAdmin → Cron Jobs)، هر شب ۰۳:۴۰:
   اگر ناموفق یا قدیمی‌تر از `BACKUP_STALE_HOURS` (پیش‌فرض ۳۶ ساعت) باشد هشدار می‌دهد. پشتیبان‌گیری Docker (`make backup`) این فایل را نمی‌نویسد.
 - یک نسخه را بیرون از همان سرور هم نگه دار (مثلاً هفته‌ای یک بار دانلود یا rsync به سرور دیگر) — پشتیبان روی همان دیسک با خرابی دیسک از بین می‌رود.
 
-## Docker
+## Docker تک‌کانتینری (سرور آروان)
+
+کانتینر خودش هر شب (`BACKUP_AT`، پیش‌فرض سرور ۰۳:۴۰) همین اسکریپت را اجرا می‌کند و در `/data/backups` (روی سرور `/srv/mahru/backups`)
+`database.sql.gz`، `storage-app.tar.gz` و `app.key` می‌گذارد؛ فقط `BACKUP_KEEP` نسخه‌ی آخر می‌ماند و `backup-status.json` هم نوشته می‌شود.
+دستی: `docker exec -u www mahru mahru-backup now`. دانلود و بازگردانی: `docs/deployment/ARVAN_SERVER.md` بخش ۱۱.
+
+## Docker شش‌سرویسی
 
 ```
 make backup        # هر دو

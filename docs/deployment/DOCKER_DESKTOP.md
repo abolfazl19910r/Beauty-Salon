@@ -5,8 +5,9 @@ MariaDB، PHP-FPM، Nginx، worker همه‌ی صف‌ها، worker اختصاص
 
 همه‌ی داده‌ها روی volume ‏`mahru_data` می‌مانند: دیتابیس، آپلودها، لاگ‌ها و کلید `APP_KEY`. با `down` و دوباره `up` از بین نمی‌روند.
 
-> سرور واقعی با چند سالن: همان `docker-compose.yml` شش‌سرویسی (MySQL و Redis جدا) یا همین حالت تک‌کانتینری روی یک سرور کوچک.
-> هر دو از یک `Dockerfile` ساخته می‌شوند (target ‏`production` و `single`).
+> سرور واقعی آروان: همین image تک‌کانتینری، روی ویندوز ساخته و به سرور منتقل می‌شود — `docs/deployment/ARVAN_SERVER.md`.
+> حالت شش‌سرویسی (`docker-compose.yml`، MySQL و Redis جدا) برای وقتی که بار بیشتر شد. هر دو از یک `Dockerfile` ساخته می‌شوند
+> (target ‏`production` و `single`).
 
 ---
 
@@ -202,9 +203,11 @@ docker compose -f docker-compose.single.yml exec -u www app php artisan push:tes
 | artisan | `docker compose -f docker-compose.single.yml exec -u www app php artisan …` |
 | شل دیتابیس | `docker compose -f docker-compose.single.yml exec app mariadb mahru` |
 | بکاپ دیتابیس | `docker compose -f docker-compose.single.yml exec -T app mariadb-dump --single-transaction mahru > backup.sql` |
+| پشتیبان کامل (دیتابیس، آپلودها، `app.key`) داخل volume در `/data/backups` | `docker compose -f docker-compose.single.yml exec -u www app mahru-backup now` |
 | پاک کردن همه‌چیز و شروع از صفر | `docker compose -f docker-compose.single.yml down -v` ⚠️ دیتابیس و آپلودها پاک می‌شوند |
 
-`supervisorctl status` باید هر شش برنامه را `RUNNING` نشان دهد: mariadb، php-fpm، nginx، queue، queue-otp، scheduler.
+`supervisorctl status` باید هر هفت برنامه را `RUNNING` نشان دهد: mariadb، php-fpm، nginx، queue، queue-otp، scheduler، backup
+(backup با `BACKUP_AT` خالی فقط منتظر می‌ماند؛ پشتیبان شبانه مال سرور است).
 
 ---
 
