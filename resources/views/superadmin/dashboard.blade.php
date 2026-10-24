@@ -67,6 +67,8 @@
                 @if ($backup['at'])
                     {{ \Morilog\Jalali\Jalalian::fromCarbon($backup['at'])->format('Y/m/d H:i') }} ({{ $backup['at']->diffForHumans() }})
                     @if ($backup['size']) · حجم {{ $backup['size'] }} @endif
+                    @if ($backup['encrypted'] === true) · <span data-backup-encrypted>رمزنگاری‌شده</span>
+                    @elseif ($backup['encrypted'] === false) · <span data-backup-plain style="color: var(--sa-danger);">بدون رمزنگاری</span> @endif
                     @if ($backup['state'] === 'failed' && $backup['message']) · {{ $backup['message'] }} @endif
                 @else
                     اسکریپت <span class="sa-ltr">deploy/backup/mahru-backup.sh</span> هنوز روی سرور اجرا نشده یا cron آن تنظیم نیست (راهنما: <span class="sa-ltr">docs/deployment/BACKUP.md</span>).

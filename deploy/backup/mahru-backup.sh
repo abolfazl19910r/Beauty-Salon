@@ -15,6 +15,10 @@
 #   KEEP_DAYS=14 (متغیر محیطی)؛ یا KEEP_LAST=3 = فقط N پشتیبان آخر بماند (بر KEEP_DAYS مقدم)
 #   BACKUP_APP_KEY_FILE=/data/app.key (اختیاری) = این فایل هم به نام app.key کنار پشتیبان کپی می‌شود
 #   متغیرهای DB_* اگر در محیط پردازه باشند (کانتینر) بر .env مقدم‌اند؛ مقدار خالی محیط نادیده گرفته می‌شود
+#   ⭐ رمزنگاری (بسته‌ی مجوز 5د): BACKUP_AGE_RECIPIENT=age1… (کلید عمومی age؛ چند کلید با کاما) ← هر فایل در همان جریان
+#     رمزنگاری می‌شود (database.sql.gz.age، storage-app.tar.gz.age، app.key.age) و نسخه‌ی باز هرگز روی دیسک نوشته نمی‌شود.
+#     کلید خصوصی جدا از سرور و جدا از APP_KEY پیش مالک می‌ماند؛ سرقت سرور یا پشتیبان، پشتیبان را باز نمی‌کند.
+#     BACKUP_REQUIRE_ENCRYPTION=true (سرور) = بدون کلید عمومی پشتیبان نمی‌گیرد (ناموفق). بازگردانی: docs/deployment/BACKUP.md
 # داخل کانتینر تک‌کانتینری: docker/single/backup.sh همین را هر شب صدا می‌زند (docs/deployment/ARVAN_SERVER.md)
 # cron (DirectAdmin → Cron Jobs، هر شب ۰۳:۴۰):
 #   40 3 * * * bash /home/[username]/public_html/deploy/backup/mahru-backup.sh /home/[username]/public_html /home/[username]/mahru-backups >> /home/[username]/mahru-backups/backup.log 2>&1
@@ -63,12 +67,13 @@ DB_PASSWORD="$(setting DB_PASSWORD)"
 # storage/app/backup-status.json را داشبورد ابرمدیر می‌خواند («آخرین پشتیبان‌گیری»). موفق یا ناموفق، هر اجرا آن را می‌نویسد.
 STATUS_FILE="$APP_DIR/storage/app/backup-status.json"
 CNF=""
+SUFFIX=""
 write_status() {
     local status="$1" message="$2" size=""
     [[ "$status" == "ok" ]] && size="$(du -sh "$DEST" 2>/dev/null | cut -f1)"
     message="${message//\\/\\\\}"; message="${message//\"/\\\"}"
-    printf '{"status":"%s","at":"%s","dest":"%s","size":"%s","message":"%s"}\n' \
-        "$status" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$DEST" "$size" "$message" > "$STATUS_FILE.tmp" 2>/dev/null \
+    printf '{"status":"%s","at":"%s","dest":"%s","size":"%s","message":"%s","encrypted":%s}\n' \
+        "$status" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$DEST" "$size" "$message" "$([[ -n "$SUFFIX" ]] && echo true || echo false)" > "$STATUS_FILE.tmp" 2>/dev/null \
         && mv -f "$STATUS_FILE.tmp" "$STATUS_FILE" 2>/dev/null || true
 }
 on_exit() {
@@ -80,6 +85,35 @@ on_exit() {
 }
 trap on_exit EXIT
 
+# ─── رمزنگاری با age (بسته‌ی مجوز 5د) ─────────────────────────
+AGE_RECIPIENTS="$(setting BACKUP_AGE_RECIPIENT)"
+REQUIRE_ENCRYPTION="$(setting BACKUP_REQUIRE_ENCRYPTION)"
+AGE_ARGS=()
+SUFFIX=""
+if [[ -n "$AGE_RECIPIENTS" ]]; then
+    IFS=',' read -r -a _recipients <<< "$AGE_RECIPIENTS"
+    for r in "${_recipients[@]}"; do
+        r="${r// /}"
+        [[ -z "$r" ]] && continue
+        if [[ ! "$r" =~ ^age1[02-9ac-hj-np-z]{58}$ ]]; then
+            echo "[$STAMP] BACKUP_AGE_RECIPIENT is not an age public key (age1…): $r" >&2
+            exit 3
+        fi
+        AGE_ARGS+=(-r "$r")
+    done
+fi
+if [[ ${#AGE_ARGS[@]} -gt 0 ]]; then
+    command -v age >/dev/null || { echo "[$STAMP] age is not installed" >&2; exit 3; }
+    SUFFIX=".age"
+elif [[ "$REQUIRE_ENCRYPTION" == "true" ]]; then
+    echo "[$STAMP] BACKUP_REQUIRE_ENCRYPTION=true but BACKUP_AGE_RECIPIENT is empty — refusing to write an unencrypted backup" >&2
+    exit 3
+fi
+# فیلتر جریان: رمزنگاری اگر کلید هست، وگرنه همان داده
+seal() {
+    if [[ -n "$SUFFIX" ]]; then age "${AGE_ARGS[@]}"; else cat; fi
+}
+
 mkdir -p "$DEST"
 
 # ─── ۱) دیتابیس ───────────────────────────────────────────
@@ -88,9 +122,9 @@ if [[ "$DB_CONNECTION" == "mysql" || "$DB_CONNECTION" == "mariadb" ]]; then
     # رمز از فایل موقت (نه خط فرمان، تا در ps دیده نشود)
     CNF="$(mktemp)"
     printf '[client]\nuser=%s\npassword=%s\nhost=%s\nport=%s\n' "$DB_USERNAME" "$DB_PASSWORD" "$DB_HOST" "$DB_PORT" > "$CNF"
-    "$DUMP" --defaults-extra-file="$CNF" --single-transaction --quick --routines --no-tablespaces "$DB_DATABASE" | gzip -9 > "$DEST/database.sql.gz"
+    "$DUMP" --defaults-extra-file="$CNF" --single-transaction --quick --routines --no-tablespaces "$DB_DATABASE" | gzip -9 | seal > "$DEST/database.sql.gz$SUFFIX"
 elif [[ "$DB_CONNECTION" == "sqlite" ]]; then
-    cp "$DB_DATABASE" "$DEST/database.sqlite"
+    seal < "$DB_DATABASE" > "$DEST/database.sqlite$SUFFIX"
 else
     echo "[$STAMP] unsupported DB_CONNECTION=$DB_CONNECTION" >&2
     exit 1
@@ -102,12 +136,12 @@ for dir in course-photos public private; do
     [[ -d "$APP_DIR/storage/app/$dir" ]] && DIRS+=("storage/app/$dir")
 done
 if [[ ${#DIRS[@]} -gt 0 ]]; then
-    tar -czf "$DEST/storage-app.tar.gz" -C "$APP_DIR" "${DIRS[@]}"
+    tar -czf - -C "$APP_DIR" "${DIRS[@]}" | seal > "$DEST/storage-app.tar.gz$SUFFIX"
 fi
 
 # کلید APP_KEY (تک‌کانتینری: /data/app.key) — بدون آن داده‌ی رمزشده‌ی دیتابیس بازگردانی نمی‌شود
 if [[ -n "${BACKUP_APP_KEY_FILE:-}" && -r "$BACKUP_APP_KEY_FILE" ]]; then
-    cp "$BACKUP_APP_KEY_FILE" "$DEST/app.key"
+    seal < "$BACKUP_APP_KEY_FILE" > "$DEST/app.key$SUFFIX"
 fi
 
 # ─── ۳) نگه‌داری ──────────────────────────────────────────
@@ -118,4 +152,4 @@ else
 fi
 
 write_status "ok" "files: ${DIRS[*]:-none}"
-echo "[$STAMP] backup OK → $DEST ($(du -sh "$DEST" | cut -f1)); files: ${DIRS[*]:-none}"
+echo "[$STAMP] backup OK → $DEST ($(du -sh "$DEST" | cut -f1)); files: ${DIRS[*]:-none}; $([[ -n "$SUFFIX" ]] && echo 'encrypted (age)' || echo 'NOT encrypted')"

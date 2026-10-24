@@ -219,6 +219,12 @@ class SuperAdminToolsTest extends TestCase
 
         file_put_contents(storage_path('app/backup-status.json'), json_encode(['status' => 'failed', 'at' => now()->toIso8601String(), 'message' => 'exit code 2']));
         $this->actingAs($this->super)->get(route('superadmin.dashboard'))->assertSee('data-backup-state="failed"', false)->assertSee('exit code 2');
+
+        // بسته‌ی مجوز 5د: رمزنگاری پشتیبان دیده می‌شود
+        file_put_contents(storage_path('app/backup-status.json'), json_encode(['status' => 'ok', 'at' => now()->toIso8601String(), 'encrypted' => true]));
+        $this->actingAs($this->super)->get(route('superadmin.dashboard'))->assertSee('data-backup-encrypted', false);
+        file_put_contents(storage_path('app/backup-status.json'), json_encode(['status' => 'ok', 'at' => now()->toIso8601String(), 'encrypted' => false]));
+        $this->actingAs($this->super)->get(route('superadmin.dashboard'))->assertSee('data-backup-plain', false)->assertSee('بدون رمزنگاری');
     }
 
     // ─── ۷) جستجوی شماره ─────────────────────────────────────

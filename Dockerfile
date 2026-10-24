@@ -86,6 +86,8 @@ RUN apk add --no-cache \
     curl \
     # Timezone
     tzdata \
+    # رمزنگاری پشتیبان‌ها با کلید عمومی (BACKUP_AGE_RECIPIENT، بسته‌ی مجوز 5د)
+    age \
     # Font support برای PDF فارسی (PDF گزارش‌ها با mPDF ساخته می‌شود؛ wkhtmltopdf از Alpine 3.15 به بعد بسته ندارد و
     # «apk add wkhtmltopdf» build را می‌شکست — پکیج snappy هم هیچ‌جای کد استفاده نمی‌شود)
     fontconfig \

@@ -29,6 +29,10 @@ if [[ -z "$(env_server TRUSTED_PROXIES)" ]]; then
     echo "ℹ️  TRUSTED_PROXIES در .env.server خالی است = حالت «بدون CDN» (IP مستقیم واقعی است). پشت CDN آروان IP لبه‌ها دیده می‌شود"
     echo "    (throttle ورود بین همه مشترک می‌شود) — اول: bash deploy/single/arvan-ips.sh"
 fi
+if [[ -z "$(env_server BACKUP_AGE_RECIPIENT)" ]]; then
+    echo "⚠️  BACKUP_AGE_RECIPIENT در .env.server خالی است — پشتیبان رمزنگاری‌شده ساخته نمی‌شود (BACKUP_REQUIRE_ENCRYPTION)."
+    echo "    کلید age بسازید: docs/deployment/BACKUP.md بخش «رمزنگاری»"
+fi
 if [[ "$(env_server SMS_LOG_ONLY)" != "true" ]]; then
     echo "⚠️  SMS_LOG_ONLY=true نیست — پیامک‌ها واقعاً به کاوه‌نگار فرستاده می‌شوند."
 fi

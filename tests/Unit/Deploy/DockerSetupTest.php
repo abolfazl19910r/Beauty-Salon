@@ -304,6 +304,7 @@ class DockerSetupTest extends TestCase
             'APP_ENV=production', 'APP_DEBUG=false', 'APP_URL=https://arisheh.ir', 'CENTRAL_DOMAIN=arisheh.ir',
             'SESSION_DOMAIN=.arisheh.ir', 'SESSION_SECURE_COOKIE=true', 'MAHRU_SEED=false', 'SMS_LOG_ONLY=true',
             'ZARINPAL_SANDBOX=true', 'BACKUP_AT=03:40', 'BACKUP_KEEP=3', 'TELESCOPE_ENABLED=false',
+            'BACKUP_REQUIRE_ENCRYPTION=true', 'BACKUP_AGE_RECIPIENT=',
         ] as $line) {
             $this->assertMatchesRegularExpression('/^'.preg_quote($line, '/').'$/m', $env, $line);
         }
@@ -332,7 +333,9 @@ class DockerSetupTest extends TestCase
         $script = self::file('deploy/backup/mahru-backup.sh');
         $this->assertStringContainsString('local value="${!1:-}"', $script);
         $this->assertStringContainsString('DB_PASSWORD="$(setting DB_PASSWORD)"', $script);
-        $this->assertStringContainsString('cp "$BACKUP_APP_KEY_FILE" "$DEST/app.key"', $script);
+        $this->assertStringContainsString('seal < "$BACKUP_APP_KEY_FILE" > "$DEST/app.key$SUFFIX"', $script);
+        // بسته‌ی مجوز 5د: رمزنگاری با age در همان جریان (BackupEncryptionTest خود اسکریپت را اجرا می‌کند)
+        $this->assertStringContainsString("\n    age \\\n", $dockerfile, 'age در image نصب است');
         $this->assertStringContainsString('tail -n +"$((KEEP_LAST + 1))"', $script);
 
         $entrypoint = self::file('docker/single/entrypoint.sh');

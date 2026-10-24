@@ -255,9 +255,13 @@ docker logs --since 10m mahru 2>&1 | grep "SMS"
 
 | فایل | چه چیزی |
 |---|---|
-| `database.sql.gz` | کل دیتابیس |
-| `storage-app.tar.gz` | آپلودها: لوگو، عکس متخصص، گالری، **عکس‌های قبل/بعد دوره‌ها (داده‌ی حساس چهره)**، خروجی گزارش‌ها |
-| `app.key` | کلید `APP_KEY` — بدون آن داده‌ی رمزشده‌ی دیتابیس قابل بازگردانی نیست |
+| `database.sql.gz.age` | کل دیتابیس |
+| `storage-app.tar.gz.age` | آپلودها: لوگو، عکس متخصص، گالری، **عکس‌های قبل/بعد دوره‌ها (داده‌ی حساس چهره)**، خروجی گزارش‌ها |
+| `app.key.age` | کلید `APP_KEY` — بدون آن داده‌ی رمزشده‌ی دیتابیس قابل بازگردانی نیست |
+
+⭐ همه با **age و کلید عمومی** `BACKUP_AGE_RECIPIENT` رمزنگاری شده‌اند (بسته‌ی مجوز 5د)؛ کلید خصوصی فقط روی ویندوز شماست، جدا از سرور و جدا
+از `APP_KEY`. ساخت کلید و باز کردن فایل‌ها: `docs/deployment/BACKUP.md` بخش «رمزنگاری». بدون `BACKUP_AGE_RECIPIENT` سرور پشتیبان
+نمی‌گیرد (`BACKUP_REQUIRE_ENCRYPTION=true`) و `server-deploy.sh` پیش از نسخه‌ی تازه می‌ایستد.
 
 فقط **۳ پشتیبان آخر** روی سرور می‌ماند (`BACKUP_KEEP`). **دست‌کم هفته‌ای یک بار** پوشه‌ی تازه را با WinSCP دانلود کنید؛ پشتیبان روی همان دیسک با
 خرابی سرور از بین می‌رود. روی ویندوز هم جای امن نگهش دارید (عکس مشتری‌ها و کلید).
@@ -268,17 +272,23 @@ docker logs --since 10m mahru 2>&1 | grep "SMS"
 
 ### بازگردانی
 
+کلید خصوصی را **موقت** با WinSCP در `/root/mahru-backup-key.txt` بگذارید (`chmod 600`)، و بعد از بازگردانی پاکش کنید:
+
 ```bash
+apt install -y age          # یک بار
 cd /srv/mahru
 D=backups/<تاریخ>
-gunzip -c $D/database.sql.gz | docker exec -i mahru mariadb mahru
-docker exec -i mahru tar -xzf - -C /data < $D/storage-app.tar.gz
+K=/root/mahru-backup-key.txt
+age -d -i $K $D/database.sql.gz.age | gunzip | docker exec -i mahru mariadb mahru
+age -d -i $K $D/storage-app.tar.gz.age | docker exec -i mahru tar -xzf - -C /data
 docker exec mahru chown -R www:www /data/storage/app
 docker compose -f docker-compose.server.yml restart
+shred -u $K
 ```
 
-**سرور تازه با پشتیبان قدیمی:** پیش از اولین `server-deploy.sh` در `.env.server` بنویسید `APP_KEY=<محتوای app.key>` (کامل، نه خالی)،
-بعد بالا بیاورید و دو دستور بالا را بزنید.
+**سرور تازه با پشتیبان قدیمی:** پیش از اولین `server-deploy.sh` در `.env.server` بنویسید `APP_KEY=<محتوای app.key>` (کامل، نه خالی؛
+`age -d -i $K $D/app.key.age`)، بعد بالا بیاورید و دستورهای بالا را بزنید. پشتیبان‌های قدیمی بی `.age` (پیش از این بسته) همان
+`gunzip -c … | …` قبلی‌اند.
 
 ---
 

@@ -10,14 +10,14 @@ use Illuminate\Support\Carbon;
  */
 class BackupStatus
 {
-    /** @return array{state: string, at: ?Carbon, size: ?string, dest: ?string, message: ?string} state: ok | stale | failed | never */
+    /** @return array{state: string, at: ?Carbon, size: ?string, dest: ?string, message: ?string, encrypted: ?bool} state: ok | stale | failed | never */
     public static function read(): array
     {
         $path = storage_path('app/backup-status.json');
         $data = is_file($path) ? json_decode((string) @file_get_contents($path), true) : null;
 
         if (! is_array($data) || empty($data['at'])) {
-            return ['state' => 'never', 'at' => null, 'size' => null, 'dest' => null, 'message' => null];
+            return ['state' => 'never', 'at' => null, 'size' => null, 'dest' => null, 'message' => null, 'encrypted' => null];
         }
 
         try {
@@ -38,6 +38,8 @@ class BackupStatus
             'size' => ($data['size'] ?? '') ?: null,
             'dest' => ($data['dest'] ?? '') ?: null,
             'message' => ($data['message'] ?? '') ?: null,
+            // بسته‌ی مجوز 5د: پشتیبان با age رمزنگاری شد یا نه (فایل وضعیت قدیمی این کلید را ندارد)
+            'encrypted' => isset($data['encrypted']) ? (bool) $data['encrypted'] : null,
         ];
     }
 }
