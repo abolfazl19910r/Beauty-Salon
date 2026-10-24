@@ -27,4 +27,30 @@ return [
         'include_subdomains' => ! in_array(env('HSTS_INCLUDE_SUBDOMAINS'), [false, 'false', '0', 0], true),
     ],
 
+    /*
+    | CSP مرحله‌ای (App\Support\Security\ContentSecurityPolicy): report = فقط گزارش (پیش‌فرض)، enforce = اجرا، off = خاموش.
+    | گزارش‌ها: POST /csp-report ← storage/logs/csp-*.log (۱۴ روز).
+    */
+    'csp' => [
+        'mode' => in_array(env('SECURITY_CSP'), ['off', 'report', 'enforce'], true) ? env('SECURITY_CSP') : 'report',
+
+        // لوگوی اینماد: کد پنل اینماد اسکریپت یا تصویر از همین میزبان است و لینکش به trustseal.enamad.ir می‌رود
+        'enamad_hosts' => ['https://trustseal.enamad.ir', 'https://*.enamad.ir'],
+
+        // تصویرهای بیرونی که صفحه‌ها هنوز دارند (قالب پیش‌فرض صفحه‌ی سالن)
+        'image_hosts' => ['https://images.unsplash.com'],
+
+        // فرم POST خودکار درگاه‌ها (resources/views/payments/gateway-redirect.blade.php) و بازگشت‌های بانک
+        'payment_hosts' => [
+            'https://*.shaparak.ir',
+            'https://*.zarinpal.com', 'https://zarinpal.com',
+            'https://*.zibal.ir', 'https://zibal.ir',
+            'https://*.vandar.io',
+            'https://*.asanpardakht.ir',
+            'https://*.sep.ir',
+            'https://*.behpardakht.com',
+            'https://*.pec.ir',
+        ],
+    ],
+
 ];

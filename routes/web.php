@@ -139,6 +139,12 @@ Route::get('/sw.js', [\App\Http\Controllers\Pwa\PwaController::class, 'serviceWo
 Route::get('/offline', [\App\Http\Controllers\Pwa\PwaController::class, 'offline'])->name('pwa.offline');
 Route::get('/specialist/manifest.webmanifest', [\App\Http\Controllers\Pwa\PwaController::class, 'specialistManifest'])->name('pwa.specialist-manifest');
 
+// گزارش نقض CSP (بسته‌ی مجوز 5د، مرحله‌ی Report-Only): بدون Route::domain، بدون CSRF (مرورگر خودش بی کوکی و توکن می‌فرستد)
+Route::post('/csp-report', \App\Http\Controllers\Security\CspReportController::class)
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class, \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+    ->middleware('throttle:30,1')
+    ->name('csp-report');
+
 // لینک کوتاه پیامک‌ها (۲۰۲۶-۰۹-۳۰، ShortLinkService): بدون Route::domain، روی دامنه‌ی مرکزی و هر هاست دیگری کار می‌کند.
 Route::get('/b/{code}', \App\Http\Controllers\ShortLinkController::class)
     ->where('code', '[a-z0-9]{4,16}')

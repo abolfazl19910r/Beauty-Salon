@@ -97,6 +97,14 @@ return [
             'level' => env('SECURITY_LOG_LEVEL') ?: 'warning',
             'days' => 90,
         ],
+        // گزارش‌های CSP مرحله‌ی Report-Only (بسته‌ی مجوز 5د) — CspReportController
+        'csp' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/csp.log'),
+            'level' => 'info',
+            'days' => 14,
+        ],
+
         'payments' => [
             'driver' => 'daily',
             'path' => storage_path('logs/payments.log'),

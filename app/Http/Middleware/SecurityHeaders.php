@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\Security\ContentSecurityPolicy;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,6 +18,8 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class SecurityHeaders
 {
+    public function __construct(private readonly ContentSecurityPolicy $csp) {}
+
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
@@ -33,6 +36,12 @@ class SecurityHeaders
                 'Strict-Transport-Security',
                 'max-age='.$maxAge.(config('security.hsts.include_subdomains') ? '; includeSubDomains' : '')
             );
+        }
+
+        // CSP فقط برای صفحه‌های HTML (JSON و فایل‌ها لازمش ندارند)
+        if ($this->csp->enabled() && str_contains((string) $response->headers->get('Content-Type'), 'text/html')
+            && ! $response->headers->has($this->csp->header())) {
+            $response->headers->set($this->csp->header(), $this->csp->build($request));
         }
 
         return $response;
