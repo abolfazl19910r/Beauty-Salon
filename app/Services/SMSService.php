@@ -21,7 +21,23 @@ class SMSService
 
     public function __construct()
     {
-        $this->api = new KavenegarApi(config('services.kavenegar.api_key'));
+        // KavenegarApi با کلید null خودش die() می‌کند (کل درخواست یا worker صف می‌میرد)؛ کلید نبودن در .env نباید برنامه را بکشد.
+        $this->api = new KavenegarApi((string) config('services.kavenegar.api_key'));
+    }
+
+    /**
+     * ارسال واقعی به کاوه‌نگار انجام نشود؟ (فقط لاگ)
+     * - SMS_LOG_ONLY=true (۲۰۲۶-۱۰-۲۴): در هر محیطی، حتی production — سرور واقعی پیش از آماده شدن کاوه‌نگار؛ کد ورود فقط در لاگ.
+     *   بر KAVENEGAR_SEND_IN_LOCAL مقدم است.
+     * - local/testing بدون KAVENEGAR_SEND_IN_LOCAL (رفتار قبلی).
+     */
+    protected function isLogOnly(): bool
+    {
+        if (config('services.kavenegar.log_only', false)) {
+            return true;
+        }
+
+        return app()->environment(['local', 'testing']) && ! config('services.kavenegar.send_in_local', false);
     }
 
     /**
@@ -50,7 +66,7 @@ class SMSService
         Log::info('SMS: در حال ارسال', ['mobile' => $mobile, 'message' => $message]);
 
         try {
-            if (app()->environment(['local', 'testing']) && ! config('services.kavenegar.send_in_local', false)) {
+            if ($this->isLogOnly()) {
                 return true;
             }
 
@@ -121,7 +137,7 @@ class SMSService
         ]);
 
         try {
-            if (app()->environment(['local', 'testing']) && ! config('services.kavenegar.send_in_local', false)) {
+            if ($this->isLogOnly()) {
                 return true;
             }
 

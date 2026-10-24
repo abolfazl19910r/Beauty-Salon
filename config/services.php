@@ -45,6 +45,8 @@ return [
         // config/logging.php.
         'sender' => env('KAVENEGAR_SENDER') ?: '2000660110',
         'send_in_local' => env('KAVENEGAR_SEND_IN_LOCAL', false),
+        // ⭐ ۲۰۲۶-۱۰-۲۴: true = هیچ پیامکی به کاوه‌نگار نمی‌رود، در هیچ محیطی (سرور واقعی پیش از آماده شدن خط/قالب‌ها)؛ متن و کد در لاگ
+        'log_only' => filter_var(env('SMS_LOG_ONLY', false), FILTER_VALIDATE_BOOL),
 
         'templates' => [
             'login_verify' => env('KAVENEGAR_TEMPLATE_LOGIN') ?: 'login-verify',
