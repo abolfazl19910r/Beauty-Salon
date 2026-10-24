@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Repositories\Contracts\SecurityLogRepositoryInterface;
+use App\Support\CurrentSalon;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -112,14 +114,36 @@ class SecurityLogService
         );
     }
 
-    private function persist(string $event, string $level, array $context = [], ?int $userId = null): void
+    /**
+     * ⭐ کار کلیدی کاربر با IP و user agent (بسته‌ی مجوز 5د؛ ماده‌ی ۶۶۸ آیین دادرسی کیفری): نوبت، نظر، تیکت، ثبت‌نام سالن، رمز،
+     * موبایل، حذف حساب، پرداخت — App\Observers\KeyActionAuditObserver. فقط در درخواست واقعی HTTP (MarkClientRequest)؛
+     * کارهای صف و scheduler (لغو خودکار و…) IP کاربری ندارند و ثبت نمی‌شوند.
+     */
+    public function logAction(string $event, ?Model $subject = null, array $context = [], ?int $userId = null): void
+    {
+        if (! self::hasClientRequest()) {
+            return;
+        }
+
+        $this->persist(event: $event, level: 'info', context: $context, userId: $userId, subject: $subject);
+    }
+
+    public static function hasClientRequest(): bool
+    {
+        return app()->bound('request') && request()->attributes->get(\App\Http\Middleware\MarkClientRequest::ATTRIBUTE) === true;
+    }
+
+    private function persist(string $event, string $level, array $context = [], ?int $userId = null, ?Model $subject = null): void
     {
         $this->securityLogRepository->create([
             'user_id' => $userId ?? Auth::id(),
+            'salon_id' => app(CurrentSalon::class)->id() ?? ($subject?->getAttribute('salon_id')),
+            'subject_type' => $subject ? class_basename($subject) : null,
+            'subject_id' => $subject?->getKey(),
             'event' => $event,
             'level' => $level,
             'ip_address' => request()->ip(),
-            'user_agent' => (string) request()->userAgent(),
+            'user_agent' => mb_substr((string) request()->userAgent(), 0, 1000),
             'context' => $context,
         ]);
     }

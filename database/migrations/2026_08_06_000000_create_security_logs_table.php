@@ -17,6 +17,10 @@ return new class extends Migration
         Schema::create('security_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            // ⭐ بسته‌ی مجوز 5د: سالن جاری و رکورد موضوع کار کلیدی (نوبت، نظر، تیکت، پرداخت…) — ماده‌ی ۶۶۸ آیین دادرسی کیفری
+            $table->foreignId('salon_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('subject_type', 64)->nullable();
+            $table->unsignedBigInteger('subject_id')->nullable();
             $table->string('event');
             $table->string('level')->default('info'); // info | warning
             $table->string('ip_address', 45)->nullable();
@@ -27,6 +31,9 @@ return new class extends Migration
             $table->index(['user_id', 'created_at']);
             $table->index('event');
             $table->index('level');
+            $table->index(['subject_type', 'subject_id']);
+            $table->index(['salon_id', 'created_at']);
+            $table->index('created_at');
         });
     }
 

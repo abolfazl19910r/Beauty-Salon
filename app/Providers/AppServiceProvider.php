@@ -75,6 +75,11 @@ class AppServiceProvider extends ServiceProvider
 
         Booking::observe(BookingObserver::class);
         DiscountCode::observe(DiscountCodeObserver::class);
+        // IP و user agent کارهای کلیدی (بسته‌ی مجوز 5د)
+        foreach ([Booking::class, \App\Models\Review::class, \App\Models\SupportTicket::class, \App\Models\SupportTicketMessage::class,
+            \App\Models\Salon::class, \App\Models\User::class, \App\Models\PaymentTransaction::class] as $audited) {
+            $audited::observe(\App\Observers\KeyActionAuditObserver::class);
+        }
 
         // حالت سخت‌گیر BelongsToSalon (۲۰۲۶-۱۰-۰۱): job/اعلان بدون سالن جاری سالنِ خودش را می‌گیرد
         \Illuminate\Support\Facades\Bus::pipeThrough([\App\Support\SetSalonForQueuedJob::class]);

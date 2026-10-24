@@ -14,6 +14,9 @@ class SecurityLog extends Model
 
     protected $fillable = [
         'user_id',
+        'salon_id',
+        'subject_type',
+        'subject_id',
         'event',
         'level',
         'ip_address',
@@ -46,6 +49,19 @@ class SecurityLog extends Model
             'all_sessions_terminated' => 'پایان تمام نشست‌های دیگر',
             'payment_attempt' => 'تلاش برای پرداخت امن',
             'profile_change' => 'تغییر اطلاعات پروفایل',
+            'booking_created' => 'ثبت نوبت',
+            'booking_cancelled' => 'لغو نوبت',
+            'booking_rescheduled' => 'جابه‌جایی نوبت',
+            'review_created' => 'ثبت نظر',
+            'ticket_created' => 'ثبت تیکت',
+            'ticket_message_created' => 'پیام تیکت',
+            'salon_created' => 'ثبت‌نام سالن',
+            'password_changed' => 'تغییر رمز',
+            'phone_changed' => 'تغییر شماره‌ی موبایل',
+            'account_deleted' => 'حذف حساب',
+            'payment_started' => 'شروع پرداخت',
+            'payment_paid' => 'پرداخت موفق',
+            'payment_failed' => 'پرداخت ناموفق',
             default => $this->event,
         };
     }

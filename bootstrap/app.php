@@ -25,6 +25,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // هدرهای امنیتی روی هر پاسخ (وب، API، خطا) در خود برنامه، مستقل از CDN و nginx — config/security.php (بسته‌ی مجوز 5د)
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+        // درخواست واقعی HTTP (نه console/صف) — ثبت IP کارهای کلیدی، SecurityLogService::logAction
+        $middleware->prepend(\App\Http\Middleware\MarkClientRequest::class);
 
         $middleware->web(append: [
             \Illuminate\Session\Middleware\StartSession::class,
