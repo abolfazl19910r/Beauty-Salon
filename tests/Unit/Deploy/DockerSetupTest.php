@@ -50,6 +50,23 @@ class DockerSetupTest extends TestCase
         $this->assertStringContainsString('listen.group = www', self::file('docker/php/php-fpm.conf'));
     }
 
+    public function test_static_files_get_security_headers_without_duplicating_the_apps_own(): void
+    {
+        // بسته‌ی مجوز 5د: locationهایی که add_header خودشان را دارند هدرهای سطح http را به ارث نمی‌برند (پیش‌تر /build و
+        // /storage بی nosniff بودند)؛ و هدر ثابت سطح http کنار هدر خود برنامه روی پاسخ PHP تکراری می‌شد.
+        $nginx = self::file('docker/nginx/nginx.conf');
+        $this->assertDoesNotMatchRegularExpression('/^\s*add_header X-Frame-Options SAMEORIGIN/m', $nginx);
+        $this->assertStringContainsString('map $upstream_http_x_frame_options $sec_frame', $nginx);
+        $this->assertStringContainsString('include /etc/nginx/security-headers.conf;', $nginx);
+
+        $vhost = self::file('docker/nginx/default.conf');
+        foreach (['/build', '/storage'] as $location) {
+            preg_match('#location '.preg_quote($location, '#').' \{(.*?)\n    \}#s', $vhost, $m);
+            $this->assertStringContainsString('include /etc/nginx/security-headers.conf;', $m[1], $location);
+        }
+        $this->assertStringContainsString('COPY docker/nginx/security-headers.conf /etc/nginx/security-headers.conf', self::file('Dockerfile'));
+    }
+
     public function test_the_health_check_reaches_laravel_not_a_static_nginx_reply(): void
     {
         preg_match('/location = \/up \{(.*?)\n    \}/s', self::file('docker/nginx/default.conf'), $m);

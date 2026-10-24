@@ -132,6 +132,7 @@ COPY docker/php/php-fpm.conf /usr/local/etc/php-fpm.d/zzz-beauty-salon.conf
 # ⚠️ default.conf باید در conf.d باشه: nginx.conf خودمون «include /etc/nginx/conf.d/*.conf» داره (نه http.d
 # پیش‌فرض alpine). قبلاً در http.d کپی می‌شد → nginx هیچ server blockی نداشت و روی هیچ پورتی گوش نمی‌داد.
 COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY docker/nginx/security-headers.conf /etc/nginx/security-headers.conf
 RUN rm -f /etc/nginx/http.d/default.conf
 COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 
@@ -174,7 +175,7 @@ RUN chown -R www:www storage bootstrap/cache \
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 # ⚠️ اگر git ویندوز فایل‌ها را با CRLF بیرون آورده باشد، «#!/bin/sh\r» در لینوکس پیدا نمی‌شود و کانتینر با «not found» می‌افتد
 RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh /etc/supervisor/conf.d/supervisord.conf /etc/nginx/nginx.conf \
-        /etc/nginx/conf.d/default.conf /usr/local/etc/php-fpm.d/zzz-beauty-salon.conf /usr/local/etc/php/conf.d/beauty-salon.ini \
+        /etc/nginx/conf.d/default.conf /etc/nginx/security-headers.conf /usr/local/etc/php-fpm.d/zzz-beauty-salon.conf /usr/local/etc/php/conf.d/beauty-salon.ini \
     && chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 80

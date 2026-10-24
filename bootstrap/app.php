@@ -23,6 +23,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // حالت سخت‌گیر BelongsToSalon (۲۰۲۶-۱۰-۰۱): هر درخواست بدون سالن شروع می‌شود
         $middleware->prepend(\App\Http\Middleware\ResetCurrentSalon::class);
 
+        // هدرهای امنیتی روی هر پاسخ (وب، API، خطا) در خود برنامه، مستقل از CDN و nginx — config/security.php (بسته‌ی مجوز 5د)
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+
         $middleware->web(append: [
             \Illuminate\Session\Middleware\StartSession::class,
         ]);
