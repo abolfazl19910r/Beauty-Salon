@@ -92,6 +92,12 @@ location ~ /\.(env|git|htaccess) {
     return 404;
 }
 
+# 🐞 (بسته‌ی مجوز 5د) قاعده‌ی regex پایین هر «.json» را می‌بست — از جمله route لاراول /.well-known/assetlinks.json که اندروید برای
+# App Links اپ مشتری می‌خواند؛ روی Docker همیشه ۴۰۴ بود. تطبیق دقیق (=) بر regex مقدم است.
+location = /.well-known/assetlinks.json {
+    try_files $uri /index.php?$query_string;
+}
+
 location ~ \.(log|json|lock|md)$ {
     deny all;
     return 404;

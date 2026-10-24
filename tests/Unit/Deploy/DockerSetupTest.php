@@ -118,6 +118,14 @@ class DockerSetupTest extends TestCase
         $this->assertContains('./tls:/data/tls:ro', $compose['services']['app']['volumes']);
     }
 
+    public function test_android_app_links_file_reaches_laravel_despite_the_json_block(): void
+    {
+        // 🐞 «location ~ \.(log|json|lock|md)$» پیش‌تر /.well-known/assetlinks.json را هم ۴۰۴ می‌کرد (آزموده با nginx واقعی)
+        $site = self::file('docker/nginx/site.inc');
+        $this->assertMatchesRegularExpression('#location = /\.well-known/assetlinks\.json \{\s*try_files \$uri /index\.php\?\$query_string;#', $site);
+        $this->assertStringContainsString('location ~ \.(log|json|lock|md)$', $site, 'بقیه‌ی json/md/log همچنان بسته');
+    }
+
     public function test_the_health_check_reaches_laravel_not_a_static_nginx_reply(): void
     {
         preg_match('/location = \/up \{(.*?)\n\}/s', self::file('docker/nginx/site.inc'), $m);
