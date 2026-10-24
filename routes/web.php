@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 //     Route::prefix('s/{salon_slug}') (که پایین‌تر، بدون قید if، همیشه ثبت می‌شه)، یک
 //     Route::domain('{salon_slug}.'.central_domain) هم اضافه می‌شه. یعنی از این به بعد
 //     سالن هم از ساب‌دامین قابل‌دسترسیه، هم از مسیر قدیمی /s/{slug} — طبق تصمیم مستندشده در
-//     docs/WILDCARD_SUBDOMAIN_DEPLOYMENT.md («لینک قدیمی نباید بشکنه») و تأیید صریح ابوالفضل
+//     docs/deployment/SUBDOMAINS.md («لینک قدیمی نباید بشکنه») و تأیید صریح ابوالفضل
 //     (۲۰۲۶-۰۹-۱۹): هر دو هم‌زمان زنده می‌مونن، نه یکی جای اون یکی.
 $centralDomain = config('app.central_domain');
 
@@ -86,7 +86,7 @@ if ($centralDomain) {
     // داخلی جدیدی که از همون صفحه ساخته می‌شه به‌طور طبیعی به شکل مدرن (ساب‌دامین) اشاره می‌کنه.
     //
     // ✅ ریسک قطعی‌شدن سشن — با تست دستی واقعی تأیید و حل شد (۲۰۲۶-۰۹-۲۰، تصمیم قبلی معکوس
-    // شد؛ جزئیات کامل در Rasta_unified_prompt.md و WILDCARD_SUBDOMAIN_DEPLOYMENT.md قدم ۴/۵).
+    // شد؛ جزئیات کامل در Rasta unified prompt.md و docs/deployment/SUBDOMAINS.md بخش ۳ و ۴).
     // قبلاً اینجا نوشته بود «SESSION_DOMAIN ایزوله، ریسک پذیرفته‌شده» — اون تصمیم اشتباه بود:
     // با تست دستی واقعی مشخص شد کاربری که از لینک قدیمی /s/{slug} وارد بشه، حتی فرم لاگینش
     // (که action‌اش از همین‌جا به ساب‌دامین اشاره می‌کنه) با ۴۱۹ Page Expired می‌شکنه، نه فقط

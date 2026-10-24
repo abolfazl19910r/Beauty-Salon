@@ -1,7 +1,12 @@
-# پرامپت: تست دستی درگاه‌های زیبال، وندار و آسان‌پرداخت (ماهرو / Rasta)
+# تست دستی درگاه‌های زیبال، وندار و آسان‌پرداخت (ماهرو)
 
-> **روش استفاده:** این فایل را در یک چت تازه در پروژه‌ی «نوبت دهی انلاین سالن زیبایی» بفرست، همراه با zip پروژه.
+> **روش استفاده:** این فایل را در یک چت تازه در پروژه‌ی «نوبت دهی انلاین سالن زیبایی» بفرست (مسیرش در مخزن:
+> `docs/testing/MANUAL_GATEWAY_TESTING.md`؛ پیش‌تر `MANUAL_GATEWAY_TESTING_PROMPT.md` در ریشه بود).
 > بعد از هر سناریو، نتیجه را با «قالب گزارش» پایین همین فایل برای Claude بنویس.
+>
+> ⚠️ **پیش از شروع (۲۰۲۶-۱۰-۲۵):** پاسخ درگاه‌ها به این پرسش لازم است: «مرچنت هر سالن روی دامنه‌ی پلتفرم (`arisheh.ir`) بدون سایت و
+> اینماد جدا پذیرفته می‌شود؟» (`Rasta unified prompt.md` بخش «۲۰۲۶-۱۰-۲۵ (ادامه ۵)»). اگر نه، مدل پرداخت عوض می‌شود و این تست‌ها باید
+> بعد از آن انجام شوند.
 
 ---
 
@@ -29,24 +34,25 @@
 
 ## بخش ۲ — آماده‌سازی (یک بار، کار ابوالفضل)
 
-- [ ] تست روی **سرور واقعی با دامنه‌ی HTTPS** انجام شود، نه XAMPP. درگاه‌ها دامنه و IP ثبت‌شده می‌خواهند.
-- [ ] پچ‌های آخر (ملت، Docker، پارسیان/وندار/trustProxies) روی سرور اعمال شده باشند.
-- [ ] `php artisan migrate --force` و `php artisan config:cache` اجرا شده باشد.
-- [ ] **کرون و صف واقعاً کار کنند** (راهنمای `docs/deployment/SCHEDULER_AND_QUEUE.md`). بدون صف، پیامک‌ها ارسال نمی‌شوند
-      و بدون کرون، reconcile و تمدید توکن وندار اجرا نمی‌شوند.
-- [ ] اگر سایت پشت Cloudflare است، پیش‌فرض کافی است. اگر nginx خود سرور جلوی برنامه است، آدرس آن را به
-      `TRUSTED_PROXIES` اضافه کن.
+- [ ] تست روی **سرور واقعی آروان با دامنه‌ی HTTPS** انجام شود (`docs/deployment/ARVAN_SERVER.md`)، نه XAMPP یا Docker Desktop
+      لوکال. درگاه‌ها دامنه و IP ثبت‌شده می‌خواهند.
+- [ ] آخرین پچ‌ها در image روی سرور باشد (`deploy/single/server-deploy.sh`)؛ migrate و کش‌ها را خود کانتینر هنگام بالا آمدن انجام می‌دهد.
+- [ ] صف و زمان‌بندی داخل کانتینر بالا باشند: `docker exec mahru supervisorctl status` ← `queue`، `queue-otp` و `scheduler` در حالت
+      `RUNNING` (راهنما: `docs/deployment/SCHEDULER_AND_QUEUE.md`). بدون آن‌ها reconcile، تمدید توکن وندار و پیامک‌ها اجرا نمی‌شوند.
+- [ ] `TRUSTED_PROXIES` در `.env.server` از فهرست لبه‌های آروان پر باشد (`bash deploy/single/arvan-ips.sh`)؛ وگرنه آدرس بازگشت درگاه
+      با `http://` ساخته می‌شود.
+- [ ] `SMS_LOG_ONLY` اگر هنوز `true` است، پیامک‌های نتیجه‌ی پرداخت فقط در لاگ دیده می‌شوند (`docker logs mahru 2>&1 | grep SMS`).
 - [ ] در پنل هر درگاه: **IP سرور** و **دامنه‌ی سالن** ثبت شده باشد.
 - [ ] یک سالن آزمایشی با یک خدمت ارزان (پیش‌پرداخت حدود ۱۰ هزار تومان) و یک متخصص.
 - [ ] برای تست تسویه: «حداقل مبلغ برداشت» در تنظیمات کیف پول مدیریت را موقتاً ۴٬۰۰۰ تومان یا کمتر کن (بعد از تست
       برگردان). وگرنه برداشت‌های کوچک این جلسه قبل از رسیدن به درگاه رد می‌شوند.
-- [ ] دو ترمینال روی سرور باز باشد:
+- [ ] دو ترمینال روی سرور باز باشد (از `/srv/mahru`):
   ```bash
-  tail -f storage/logs/laravel.log
+  docker logs -f --tail 50 mahru
   ```
   ```bash
   # آخرین تراکنش پرداخت
-  php artisan tinker --execute="dump(App\Models\PaymentTransaction::latest('id')->first()?->only(['id','driver','purpose','status','amount_rial','token','ref_id','gateway_receipt','card_pan','verify_response','updated_at']));"
+  docker exec -u www mahru php artisan tinker --execute="dump(App\Models\PaymentTransaction::latest('id')->first()?->only(['id','driver','purpose','status','amount_rial','token','ref_id','gateway_receipt','card_pan','verify_response','updated_at']));"
   ```
 
 ---
@@ -76,7 +82,7 @@
   - ⚠️ واحد مبلغ تسویه‌ی زیبال در مستندش صریح نیست؛ کد **ریال** می‌فرستد (۱۰۰٬۰۰۰).
   - در پنل زیبال ببین واریز **۱۰٬۰۰۰ تومان** ثبت شد یا ۱٬۰۰۰ یا ۱۰۰٬۰۰۰ تومان. این عدد را حتماً گزارش کن.
   - ```bash
-    php artisan tinker --execute="dump(App\Models\WithdrawalRequest::latest('id')->first()?->only(['id','status','amount','reference_code','payment_details']));"
+    docker exec -u www mahru php artisan tinker --execute="dump(App\Models\WithdrawalRequest::latest('id')->first()?->only(['id','status','amount','reference_code','payment_details']));"
     ```
 
 ### ج) وندار
@@ -90,7 +96,7 @@
   - تسویه‌ی وندار ۳۰ دقیقه قابل لغو است. اگر مبلغ غلط بود، فوراً از داشبورد وندار لغوش کن و گزارش بده.
 - [ ] **تمدید توکن:**
   ```bash
-  php artisan payouts:refresh-vandar-tokens
+  docker exec -u www mahru php artisan payouts:refresh-vandar-tokens
   ```
   انتظار: «۱ تمدید شد». بعد یک تسویه‌ی دیگر هم باید موفق باشد (یعنی توکن‌های تازه درست ذخیره شده‌اند).
   ⚠️ اگر «ناموفق» بود، توکن‌های قبلی ممکن است مصرف شده باشند؛ توکن تازه از داشبورد وندار بگیر و متن لاگ را گزارش کن.
@@ -115,7 +121,7 @@
 نتیجه: ✅ مطابق انتظار / ❌ متفاوت
 آنچه دیدم: (پیام صفحه، وضعیت نوبت، مبلغ صفحه‌ی بانک)
 خروجی tinker: (کامل؛ توکن‌ها را می‌توانی با *** بپوشانی)
-خط‌های مرتبط لاگ: (از laravel.log، حدود ۲۰ خط اطراف خطا)
+خط‌های مرتبط لاگ: (از docker logs mahru، حدود ۲۰ خط اطراف خطا)
 تصویر: (اختیاری — صفحه‌ی بانک یا پنل درگاه)
 ```
 

@@ -52,7 +52,7 @@ services:
     container_name: beauty_salon_app
     # بدون command → entrypoint نقش web: migrate + cache + php-fpm + nginx
     # ⭐ همین container وب‌سرور سایته (nginx داخلش، کنار php-fpm روی سوکت unix). HTTPS بیرون از این stack
-    # (Cloudflare Proxied یا nginx/certbot روی خود سرور — WILDCARD_SUBDOMAIN_DEPLOYMENT.md).
+    # (CDN جلوی سرور یا nginx/certbot روی خود سرور — docs/deployment/SUBDOMAINS.md).
     ports:
       - "${APP_PORT:-80}:80"
     healthcheck:

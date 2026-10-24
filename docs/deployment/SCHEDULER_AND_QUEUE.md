@@ -1,7 +1,8 @@
 # راهنمای راه‌اندازی زمان‌بندی (Cron) و صف (Queue) — ماهرو
 
-> **خلاصه:** سرور فقط **یک خط کرون** لازم دارد. روی DirectAdmin همان خط، صف را هم اجرا می‌کند
-> (`QUEUE_WORK_VIA_SCHEDULER=true`). روی Docker همه‌چیز داخل `docker-compose.yml` است.
+> **خلاصه:** روش انتخاب‌شده (۲۰۲۶-۱۰-۲۴) **کانتینر تک‌کانتینری روی سرور آروان** است: scheduler و workerها داخل کانتینر با
+> supervisord اجرا می‌شوند و هیچ کرونی روی میزبان لازم نیست (`docs/deployment/ARVAN_SERVER.md`). بقیه‌ی روش‌ها برای مرجع می‌مانند:
+> بدون Docker سرور فقط **یک خط کرون** لازم دارد و روی DirectAdmin همان خط صف را هم اجرا می‌کند (`QUEUE_WORK_VIA_SCHEDULER=true`).
 
 ## ۱. چه چیزهایی باید خودکار اجرا شوند و چرا
 
@@ -51,12 +52,13 @@
 
 | سرور | کرون | صف | بخش |
 |---|---|---|---|
-| **DirectAdmin (هاست اشتراکی)** — روش فعلی | ۱ خط در پنل | همان کرون (`QUEUE_WORK_VIA_SCHEDULER=true`) | ۳ |
+| **تک‌کانتینری (Docker Desktop لوکال یا سرور آروان)** — روش فعلی | خودکار (برنامه‌ی `scheduler` در supervisord) | خودکار (`queue` و `queue-otp`) | `DOCKER_DESKTOP.md`، `ARVAN_SERVER.md` |
+| DirectAdmin (هاست اشتراکی) | ۱ خط در پنل | همان کرون (`QUEUE_WORK_VIA_SCHEDULER=true`) | ۳ |
 | VPS با دسترسی root، بدون Docker | ۱ خط crontab | supervisor | ۴ |
-| Docker | خودکار (سرویس `scheduler`) | خودکار (سرویس `queue`) | ۵ |
+| Docker شش‌سرویسی (`docker-compose.yml`) | خودکار (سرویس `scheduler`) | خودکار (سرویس `queue`) | ۵ |
 | لوکال (XAMPP) | `schedule:work` در یک ترمینال | `queue:work` در ترمینال دیگر | ۶ |
 
-## ۳. DirectAdmin (روش فعلی)
+## ۳. DirectAdmin
 
 ### قدم ۱ — تنظیم `.env` روی سرور
 
@@ -150,7 +152,7 @@ docker compose ps    # app باید healthy باشد؛ queue، queue-otp و sche
 3. **php-fpm:** image رسمی `www.conf` و `zz-docker.conf` دارد که pool ما را override می‌کردند (`listen = 9000`، `user = www-data`) → سوکتی که nginx می‌خواهد ساخته نمی‌شد. فایل ما حالا `zzz-beauty-salon.conf` است (آخر خوانده می‌شود).
 4. **nginx داخل app:** vhost در `http.d/` کپی می‌شد ولی `nginx.conf` ما `conf.d/` را include می‌کند → هیچ server blockی، هیچ پورتی. کاربر `nginx` هم به گروه `www` اضافه شد تا به سوکت (0660) دسترسی داشته باشد.
 5. **سلامت:** `/up` قبلاً یک «200 OK» ثابت nginx بود؛ حالا به route سلامت Laravel می‌رسد (بدون php-fpm → 502 → unhealthy).
-6. **سرویس جداگانه‌ی `nginx` حذف شد:** volume خالی `beauty_public` را سرو می‌کرد و به سوکت php-fpm دسترسی نداشت. حالا خود `app` پورت `${APP_PORT:-80}` را منتشر می‌کند. HTTPS بیرون از stack: Cloudflare Proxied یا nginx/certbot روی سرور (`WILDCARD_SUBDOMAIN_DEPLOYMENT.md`).
+6. **سرویس جداگانه‌ی `nginx` حذف شد:** volume خالی `beauty_public` را سرو می‌کرد و به سوکت php-fpm دسترسی نداشت. حالا خود `app` پورت `${APP_PORT:-80}` را منتشر می‌کند. HTTPS بیرون از stack: Cloudflare Proxied یا nginx/certbot روی سرور (`docs/deployment/SUBDOMAINS.md`؛ سرور آروان: `docs/deployment/ARVAN_SERVER.md`).
 7. **امنیت:** پورت‌های MySQL، Redis (بدون رمز پیش‌فرض) و phpMyAdmin فقط روی `127.0.0.1` سرور (Docker قوانین ufw را دور می‌زند؛ قبلاً به کل اینترنت باز بودند).
 8. **`.dockerignore`:** `vendor/`، `public/build/`، `public/storage` و `bootstrap/cache/*.php` محلی دیگر روی خروجی build نمی‌نشینند (کش محلی providerهای dev را ثبت کرده و با `--no-dev` برنامه را می‌خواباند).
 9. **Makefile:** دستورهای artisan با کاربر `www` (با root، `laravel.log` مال root می‌شد و php-fpm دیگر نمی‌توانست بنویسد)؛ `make setup` تا healthy شدن صبر می‌کند؛ `make superadmin` برای ساخت اولین سوپر ادمین.

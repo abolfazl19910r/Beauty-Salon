@@ -23,7 +23,7 @@ return [
     | production)، routes/web.php **علاوه بر** همون Route::prefix('s/{salon_slug}') قبلی
     | (که همیشه ثبت می‌مونه)، یک Route::domain('{salon_slug}.'.این‌مقدار) هم اضافه می‌کنه —
     | یعنی سالن هم از ساب‌دامین (rasta-demo.127.0.0.1.nip.io) هم از مسیر قدیمی /s/{slug}
-    | هم‌زمان قابل‌دسترسیه (طبق تصمیم مستندشده در docs/WILDCARD_SUBDOMAIN_DEPLOYMENT.md —
+    | هم‌زمان قابل‌دسترسیه (طبق تصمیم مستندشده در docs/deployment/SUBDOMAINS.md —
     | «لینک قدیمی نباید بشکنه» — و تأیید صریح ابوالفضل، ۲۰۲۶-۰۹-۱۹). همون middleware فعلی
     | (ResolveSalonFromRoute) بدون تغییر برای هر دو حالت کار می‌کنه، چون Route::domain()
     | پارامتر salon_slug رو دقیقاً مثل یک بخش URI پر می‌کنه.

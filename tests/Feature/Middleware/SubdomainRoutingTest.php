@@ -103,7 +103,7 @@ class SubdomainRoutingTest extends TestCase
 
     public function test_path_based_slash_s_slug_url_still_works_as_a_fallback_when_central_domain_is_set(): void
     {
-        // ⭐ تصمیم تأییدشده با ابوالفضل (۲۰۲۶-۰۹-۱۹، طبق docs/WILDCARD_SUBDOMAIN_DEPLOYMENT.md
+        // ⭐ تصمیم تأییدشده با ابوالفضل (۲۰۲۶-۰۹-۱۹، طبق docs/deployment/SUBDOMAINS.md
         // — «لینک قدیمی نباید بشکنه»): وقتی central_domain ست است، مسیر قدیمی /s/{slug} هنوز
         // هم‌زمان با ساب‌دامین زنده و قابل‌دسترسیه (نه ۴۰۴).
         $salon = Salon::factory()->create(['slug' => 'sobhan-beauty']);
