@@ -25,8 +25,8 @@ mkdir -p "$DIR/backups" "$DIR/images"
 env_server() { grep -E "^$1=" "$DIR/.env.server" | tail -n 1 | cut -d= -f2- | tr -d '"' || true; }
 
 if [[ -z "$(env_server TRUSTED_PROXIES)" ]]; then
-    echo "⚠️  TRUSTED_PROXIES در .env.server خالی است — IP واقعی کاربران و https دیده نمی‌شود (throttle ورود بین همه مشترک می‌شود)."
-    echo "    اول: bash deploy/single/arvan-ips.sh"
+    echo "ℹ️  TRUSTED_PROXIES در .env.server خالی است = حالت «بدون CDN» (IP مستقیم واقعی است). پشت CDN آروان IP لبه‌ها دیده می‌شود"
+    echo "    (throttle ورود بین همه مشترک می‌شود) — اول: bash deploy/single/arvan-ips.sh"
 fi
 if [[ "$(env_server SMS_LOG_ONLY)" != "true" ]]; then
     echo "⚠️  SMS_LOG_ONLY=true نیست — پیامک‌ها واقعاً به کاوه‌نگار فرستاده می‌شوند."

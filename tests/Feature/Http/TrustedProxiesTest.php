@@ -21,6 +21,8 @@ class TrustedProxiesTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // پیش‌فرض «none» است (پایین)؛ بیشتر تست‌های این فایل رفتار پشت Cloudflare را می‌سنجند
+        config(['trustedproxy.proxies' => 'cloudflare']);
         Route::get('/_proxy-probe', fn (Request $r) => ['ip' => $r->ip(), 'secure' => $r->secure(), 'url' => url('/x')]);
     }
 
@@ -90,9 +92,23 @@ class TrustedProxiesTest extends TestCase
         $this->assertSame('5.1.1.1', $this->probe('8.8.8.8', ['X-Forwarded-For' => '5.1.1.1'])['ip']);
     }
 
-    public function test_the_default_is_cloudflare_only(): void
+    /**
+     * 🐞 بسته‌ی مجوز 5د: پیش‌فرض «cloudflare» بود — روی سرور آروان، یا وقتی CDN برداشته شود، هر کس از یک آدرس Cloudflare
+     * (مثلاً یک Worker رایگان) می‌توانست X-Forwarded-For جعلی بفرستد: IP جعلی در لاگ امنیتی و دور زدن سقف ورود. پیش‌فرض
+     * حالا «هیچ پروکسی» است؛ پشت CDN فهرستش صریح در TRUSTED_PROXIES می‌آید (روی آروان: deploy/single/arvan-ips.sh).
+     */
+    public function test_by_default_no_proxy_is_trusted_so_a_direct_ip_is_the_real_ip(): void
     {
-        $this->assertSame('cloudflare', config('trustedproxy.proxies'));
+        $this->assertSame('none', (require base_path('config/trustedproxy.php'))['proxies']);
+
+        $this->app['config']->set('trustedproxy.proxies', (require base_path('config/trustedproxy.php'))['proxies']);
+        $seen = $this->probe(self::CLOUDFLARE_EDGE, ['X-Forwarded-For' => '1.2.3.4', 'X-Forwarded-Proto' => 'https']);
+        $this->assertSame(self::CLOUDFLARE_EDGE, $seen['ip']);
+        $this->assertFalse($seen['secure']);
+    }
+
+    public function test_the_cloudflare_list_is_still_available_by_name(): void
+    {
         $this->assertCount(22, config('trustedproxy.cloudflare'), 'cloudflare.com/ips: ۱۵ IPv4 + ۷ IPv6');
     }
 }

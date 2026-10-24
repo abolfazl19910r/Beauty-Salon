@@ -319,7 +319,7 @@ BACKUP_AT=03:40                    # فقط تک‌کانتینری: پشتیب�
 BACKUP_KEEP=3
 BACKUP_STALE_HOURS=36
 ```
-> پیش‌فرض کد برای `TRUSTED_PROXIES` خالی، `cloudflare` است؛ پشت CDN آروان باید رنج آروان را گذاشت.
+> `TRUSTED_PROXIES` خالی یعنی به هیچ پروکسی اعتماد نمی‌شود (حالت بدون CDN، IP مستقیم واقعی است)؛ پشت CDN آروان رنج آروان را بگذارید (`arvan-ips.sh`).
 
 ### صف، cache و session
 ```env

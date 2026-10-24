@@ -233,7 +233,7 @@ class DockerSetupTest extends TestCase
         }
         // کلید و رمز را کانتینر می‌سازد؛ خط خالی بر مقدار ساخته‌شده مقدم می‌شد
         $this->assertDoesNotMatchRegularExpression('/^(APP_KEY|DB_PASSWORD)=/m', $env);
-        // پیش‌فرض کد (cloudflare) برای آروان غلط است و «*» هرگز
+        // خالی = بدون CDN (پیش‌فرض کد none)؛ پشت آروان arvan-ips.sh پرش می‌کند؛ «*» هرگز
         $this->assertMatchesRegularExpression('/^TRUSTED_PROXIES=$/m', $env);
         $this->assertStringContainsString('/en/ips.txt', self::file('deploy/single/arvan-ips.sh'));
     }

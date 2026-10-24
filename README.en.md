@@ -319,7 +319,7 @@ BACKUP_AT=03:40                    # single container only: nightly backup; empt
 BACKUP_KEEP=3
 BACKUP_STALE_HOURS=36
 ```
-> When `TRUSTED_PROXIES` is empty the code defaults to `cloudflare`; behind the Arvan CDN, set Arvan's ranges.
+> An empty `TRUSTED_PROXIES` trusts no proxy (no-CDN mode: the direct IP is the real one); behind the Arvan CDN, set Arvan's ranges (`arvan-ips.sh`).
 
 ### Queue, cache and session
 ```env

@@ -12,7 +12,7 @@ class TrustProxies extends Middleware
 {
     protected function proxies()
     {
-        $entries = array_filter(array_map('trim', explode(',', (string) config('trustedproxy.proxies', 'cloudflare'))));
+        $entries = array_filter(array_map('trim', explode(',', (string) config('trustedproxy.proxies', 'none'))));
 
         if (in_array('none', $entries, true)) {
             return null;
