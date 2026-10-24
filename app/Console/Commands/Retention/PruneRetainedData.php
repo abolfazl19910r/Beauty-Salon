@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\Retention;
 
+use App\Models\DeletedAccountArchive;
 use App\Models\SecurityLog;
 use App\Support\Retention;
 use Illuminate\Console\Command;
@@ -11,6 +12,7 @@ use Illuminate\Support\Carbon;
  * پاک‌سازی خودکار داده‌ی نگهداری‌شده بعد از مهلت قانونی (بسته‌ی مجوز 5د) — config/retention.php، هر شب از scheduler.
  *
  * - security_logs: ردیف‌های قدیمی‌تر از مهلت (IP و user agent ورودها و کارهای کلیدی).
+ * - deleted_account_archives: هویت و IP حساب حذف‌شده بعد از purge_after (شش ماه پس از حذف).
  * - لاگ دسترسی nginx: فایل روزهای قبل از دیروز فشرده می‌شود (nginx ممکن است چند ثانیه بعد از نیمه‌شب هنوز در فایل دیروز
  *   بنویسد)؛ فایل‌های قدیمی‌تر از مهلت (فشرده یا نه) پاک می‌شوند. تاریخ از نام فایل خوانده می‌شود، نه زمان تغییر.
  */
@@ -31,6 +33,11 @@ class PruneRetainedData extends Command
             $query->chunkById(1000, fn ($rows) => SecurityLog::query()->whereIn('id', $rows->modelKeys())->delete());
         }
         $this->line("security_logs: {$count} ردیف قدیمی‌تر از {$cutoff->toDateString()}".($dry ? ' (dry-run)' : ' پاک شد'));
+
+        $expired = DeletedAccountArchive::query()->where('purge_after', '<', now());
+        $archives = (clone $expired)->count();
+        $dry || $expired->delete();
+        $this->line("deleted_account_archives: {$archives} بایگانی بعد از مهلت".($dry ? ' (dry-run)' : ' پاک شد'));
 
         [$compressed, $deleted] = $this->pruneAccessLogs($dry);
         $this->line("access logs: {$compressed} فشرده، {$deleted} پاک".($dry ? ' (dry-run)' : ''));

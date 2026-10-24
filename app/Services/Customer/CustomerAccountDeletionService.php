@@ -3,8 +3,11 @@
 namespace App\Services\Customer;
 
 use App\Models\Booking;
+use App\Models\DeletedAccountArchive;
 use App\Models\PaymentTransaction;
 use App\Models\User;
+use App\Services\SecurityLogService;
+use App\Support\Retention;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -18,6 +21,11 @@ use Illuminate\Support\Str;
  *  - بدون هیچ سابقه‌ی نوبت/پرداخت → حذف کامل ردیف؛
  *  - با سابقه → ناشناس‌سازی: نام/شماره/رمز/کدها پاک، توکن‌ها و اتصال ربات و اعلان‌ها حذف؛ نوبت‌ها برای
  *    حساب‌وکتاب سالن می‌مانند. همان شماره بعداً می‌تواند دوباره ثبت‌نام کند.
+ *
+ * ⭐ بسته‌ی مجوز 5د (۲۰۲۶-۱۰-۲۵): 🐞 هویت و IP همان لحظه از بین می‌رفت — تعارض با ماده‌ی ۶۶۸ آیین دادرسی کیفری (اطلاعات کاربر و IP
+ * دست‌کم شش ماه پس از خاتمه‌ی اشتراک). حالا پیش از حذف/ناشناس‌سازی، نام، شماره و تاریخچه‌ی IP (security_logs و نشست‌ها، در
+ * مهلت نگهداری) در deleted_account_archives رمزنگاری‌شده می‌ماند (فقط ابرمدیر) و retention:prune بعد از مهلت پاکش می‌کند.
+ * ماده‌ی ۵۹ هـ قانون تجارت الکترونیکی حق محو را «با رعایت ضوابط مربوطه» می‌دهد: حساب و هر نمایش آن همان لحظه پاک می‌شود.
  */
 class CustomerAccountDeletionService
 {
@@ -52,6 +60,9 @@ class CustomerAccountDeletionService
             $hasHistory = Booking::query()->withoutGlobalScopes()->where('user_id', $user->id)->exists()
                 || PaymentTransaction::where('user_id', $user->id)->exists();
 
+            $archive = $this->archive($user, $hasHistory ? 'anonymized' : 'deleted');
+            app(SecurityLogService::class)->logAction('account_deleted', $archive, ['archive_id' => $archive->id], $user->id);
+
             if (! $hasHistory) {
                 $user->delete();
 
@@ -80,5 +91,52 @@ class CustomerAccountDeletionService
 
             return 'anonymized';
         });
+    }
+
+    /** هویت و تاریخچه‌ی IP پیش از حذف — جدا و رمزنگاری‌شده، تا پایان مهلت قانونی */
+    private function archive(User $user, string $outcome): DeletedAccountArchive
+    {
+        $since = Retention::cutoff('security_logs_days');
+        $seen = [];
+        $add = function (?string $ip, $at, ?string $agent) use (&$seen) {
+            if (! $ip) {
+                return;
+            }
+            $at = \Illuminate\Support\Carbon::parse($at)->toIso8601String();
+            $row = $seen[$ip] ?? ['ip' => $ip, 'first_seen' => $at, 'last_seen' => $at, 'count' => 0, 'user_agent' => null];
+            $row['first_seen'] = min($row['first_seen'], $at);
+            if ($at >= $row['last_seen'] || $row['user_agent'] === null) {
+                $row['last_seen'] = max($row['last_seen'], $at);
+                $row['user_agent'] = $agent ? mb_substr($agent, 0, 300) : $row['user_agent'];
+            }
+            $row['count']++;
+            $seen[$ip] = $row;
+        };
+
+        DB::table('security_logs')->where('user_id', $user->id)->where('created_at', '>=', $since)
+            ->orderBy('id')->select(['ip_address', 'created_at', 'user_agent'])
+            ->each(fn ($log) => $add($log->ip_address, $log->created_at, $log->user_agent));
+        DB::table('sessions')->where('user_id', $user->id)->select(['ip_address', 'last_activity', 'user_agent'])
+            ->get()->each(fn ($s) => $add($s->ip_address, \Illuminate\Support\Carbon::createFromTimestamp((int) $s->last_activity), $s->user_agent));
+
+        $deletionIp = SecurityLogService::hasClientRequest() ? request()->ip() : null;
+        $deletionAgent = SecurityLogService::hasClientRequest() ? mb_substr((string) request()->userAgent(), 0, 1000) : null;
+        $add($deletionIp, now(), $deletionAgent);
+
+        return DeletedAccountArchive::create([
+            'user_id' => $user->id,
+            'salon_id' => $user->salon_id,
+            'user_type' => $user->user_type,
+            'name' => (string) $user->name,
+            'phone' => (string) $user->phone,
+            'account_created_at' => $user->created_at,
+            'ip_history' => array_values($seen),
+            'deletion_ip' => $deletionIp,
+            'deletion_user_agent' => $deletionAgent,
+            'deleted_by' => auth()->id(),
+            'outcome' => $outcome,
+            'deleted_at' => now(),
+            'purge_after' => now()->addDays(Retention::days('deleted_accounts_days')),
+        ]);
     }
 }

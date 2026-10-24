@@ -23,6 +23,9 @@ return [
     // جدول security_logs (ورود، کارهای کلیدی با IP و user agent)
     'security_logs_days' => is_numeric(env('RETENTION_SECURITY_LOGS_DAYS')) ? (int) env('RETENTION_SECURITY_LOGS_DAYS') : null,
 
+    // هویت و IP حساب حذف‌شده (deleted_account_archives): شش ماه پس از حذف، بعد پاک
+    'deleted_accounts_days' => is_numeric(env('RETENTION_DELETED_ACCOUNTS_DAYS')) ? (int) env('RETENTION_DELETED_ACCOUNTS_DAYS') : null,
+
     // لاگ دسترسی nginx (storage/logs/nginx/access-YYYY-MM-DD.log): فایل‌های روزهای قبل فشرده (.gz)، بعد از مهلت پاک
     'access_log_days' => is_numeric(env('RETENTION_ACCESS_LOG_DAYS')) ? (int) env('RETENTION_ACCESS_LOG_DAYS') : null,
     'access_log_path' => env('RETENTION_ACCESS_LOG_PATH') ?: storage_path('logs/nginx'),

@@ -49,6 +49,7 @@ class SuperAdminAuditLog extends Model
         'app_release.delete' => 'حذف نسخه‌ی اپ',
         'bot.token_updated' => 'توکن ربات',
         'bot.token_removed' => 'حذف توکن ربات',
+        'retained-data.search' => 'جست‌وجوی داده‌ی نگهداری‌شده',
     ];
 
     public function user(): BelongsTo

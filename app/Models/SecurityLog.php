@@ -36,6 +36,11 @@ class SecurityLog extends Model
         });
     }
 
+    public function salon(): BelongsTo
+    {
+        return $this->belongsTo(Salon::class);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -94,6 +94,8 @@ Route::post('/notifications/read-all', [\App\Http\Controllers\SuperAdmin\Notific
 Route::get('/notifications/{id}', [\App\Http\Controllers\SuperAdmin\NotificationInboxController::class, 'open'])->name('notifications.open');
 Route::resource('announcements', \App\Http\Controllers\SuperAdmin\PlatformAnnouncementController::class)->except(['show']);
 Route::get('/audit-log', [\App\Http\Controllers\SuperAdmin\AuditLogController::class, 'index'])->name('audit-log.index');
+// داده‌های نگهداری‌شده (بسته‌ی مجوز 5د): IP کارهای کلیدی و بایگانی حساب‌های حذف‌شده — فقط پاسخ به مرجع قضایی
+Route::get('/retained-data', [\App\Http\Controllers\SuperAdmin\RetainedDataController::class, 'index'])->middleware('throttle:30,1')->name('retained-data.index');
 Route::get('/search', [\App\Http\Controllers\SuperAdmin\PhoneSearchController::class, 'index'])->name('search.index');
 Route::get('/templates', [\App\Http\Controllers\SuperAdmin\TemplateAccessController::class, 'index'])->name('templates.index');
 Route::put('/templates', [\App\Http\Controllers\SuperAdmin\TemplateAccessController::class, 'update'])->name('templates.update');

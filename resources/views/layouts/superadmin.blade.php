@@ -169,6 +169,7 @@
                         'سیستم' => [
                             ['superadmin.failed-jobs.index', 'superadmin.failed-jobs.*', 'کارهای ناموفق صف', -$saFailedJobs],
                             ['superadmin.audit-log.index', 'superadmin.audit-log.*', 'گزارش کارهای ابرمدیر', 0],
+                            ['superadmin.retained-data.index', 'superadmin.retained-data.*', 'داده‌های نگهداری‌شده', 0],
                             ['superadmin.settings.edit', 'superadmin.settings.*', 'تنظیمات پلتفرم', 0],
                         ],
                     ];
