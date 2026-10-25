@@ -10,7 +10,7 @@
 [![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=flat-square&logo=php)](https://php.net)
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com)
 [![Vite](https://img.shields.io/badge/Vite-8.x-646CFF?style=flat-square&logo=vite)](https://vitejs.dev)
-[![Tests](https://img.shields.io/badge/tests-2264%20passing-brightgreen?style=flat-square)](#-running-the-tests)
+[![Tests](https://img.shields.io/badge/tests-2357%20passing-brightgreen?style=flat-square)](#-running-the-tests)
 
 ---
 
@@ -81,7 +81,10 @@ All salons share **one database**; isolation is done in the application:
 - 2FA with configurable code length
 - RBAC with per-salon roles and shared permissions (e.g. a receptionist without finance access)
 - Login throttling, security event log, super-admin action log
-- Configurable trusted proxies (`TRUSTED_PROXIES`) so the real client IP is seen behind a CDN
+- Configurable trusted proxies (`TRUSTED_PROXIES`) so the real client IP is seen behind a CDN; by default no proxy is trusted
+- Security independent of the CDN: security headers and HSTS from the app itself, CSP (report-only first), rate limits on sensitive routes, HTTPS on the origin server, a no-CDN mode
+- IP and user agent of sign-ins and key actions kept for six months (art. 668), a persistent nginx access log, automatic pruning, an encrypted archive of deleted accounts
+- Legal pages (privacy, terms, contact), terms acceptance recorded with version and IP, the eNamad badge, complaints with a 72-hour deadline, salon identity and licence verification
 
 ### 📅 Booking
 - Pick a service, specialist and time; slots follow working hours, leave and holidays; overlapping bookings are prevented
@@ -315,11 +318,19 @@ TWO_FACTOR_CODE_LENGTH=6
 MAX_LOGIN_ATTEMPTS=5
 LOGIN_THROTTLE_MINUTES=1
 TRUSTED_PROXIES=                   # CDN edge IP ranges (Arvan server: deploy/single/arvan-ips.sh). Never "*"
+HSTS_MAX_AGE=                      # HTTPS only; empty = one year, 0 = off
+SECURITY_CSP=report               # report (log only, storage/logs/csp-*.log), enforce or off
+RETENTION_DAYS=190                 # how long IPs and logs are kept (art. 668); below 184 is not accepted
+LEGAL_PAGES_REVIEWED=false         # true once a lawyer has reviewed the texts (removes the "draft" label)
+SALON_VERIFIER=manual              # salon verification: manual (super-admin); an official service later
 BACKUP_AT=03:40                    # single container only: nightly backup; empty = off
+BACKUP_AGE_RECIPIENT=              # age public key (age1…); backups are encrypted, the private key stays off the server
 BACKUP_KEEP=3
 BACKUP_STALE_HOURS=36
 ```
 > An empty `TRUSTED_PROXIES` trusts no proxy (no-CDN mode: the direct IP is the real one); behind the Arvan CDN, set Arvan's ranges (`arvan-ips.sh`).
+> nginx reads the same list for `set_real_ip_from` (`php artisan security:nginx-real-ip`). Security does not depend on the CDN, and `arvan-ips.sh --no-cdn` runs the server without it.
+> The platform's legal identity (legal name, national ID, landline, address, postal code, eNamad badge code) is set in the super-admin panel → Settings → "Legal information".
 
 ### Queue, cache and session
 ```env
@@ -376,7 +387,7 @@ Beauty-Salon/
 │   ├── Services/               # business logic
 │   ├── Support/                # CurrentSalon, Billing, Sms, Features, Queues, …
 │   └── Traits/                 # BelongsToSalon, …
-├── database/                   # 63 migrations, factories, seeders
+├── database/                   # 66 migrations, factories, seeders
 ├── deploy/
 │   ├── single/                 # image build (Windows), server deploy, Arvan IPs
 │   ├── backup/                 # backup script
@@ -402,7 +413,8 @@ Beauty-Salon/
 - Salons: create, edit, suspend, renew, specialist cap, SMS quota, per-salon features
 - Plans and features, invoices, subscription payments, manual SMS credit grants
 - Platform settings (push, platform gateway, texts), app releases, platform announcements
-- Tickets, demo requests, action log, backup status
+- Tickets and complaints (72-hour deadline), demo requests, action log, backup status
+- Salon verification (approve or reject documents), the platform legal information, searching data retained from deleted accounts for judicial requests
 - System roles and the permission list
 
 ### 🔑 Salon admin (owner / staff)
@@ -443,6 +455,9 @@ Beauty-Salon/
 | `/my-dashboard`, `/specialist/*` | specialist panel |
 | `/superadmin/*` | platform admin panel |
 | `/payments/return/{publicId}` | gateway return |
+| `/terms` · `/privacy` · `/contact` | terms · privacy policy · contact (central domain) |
+| `/s/{salon_slug}/complaints` | customer complaints and follow-up |
+| `/admin/verification` | salon identity and licence verification |
 | `/up` | health check |
 
 ### App API (`/api/v1`, Sanctum token)
@@ -493,6 +508,8 @@ In single-container mode both run inside the container; nothing to do. Without D
 | settle pending earnings (`wallet:settle-pending`) | 01:00 |
 | point expiry, Vandar token refresh, clean-ups (`model:prune`, tokens, report exports) | nightly |
 | automatic win-back (`customers:winback`), course reminders (`courses:remind`) | morning |
+| reminders for unanswered complaints (`complaints:remind`) | hourly |
+| prune retained data after the legal period (`retention:prune`) | 03:50 |
 
 **Queues** (in this order): `otp`, `push`, `sms`, `payments`, `default`, `reports` — plus a dedicated `otp` worker. `queue:work` without `--queue` reads only `default`.
 
@@ -510,8 +527,8 @@ For MariaDB/MySQL, copy `phpunit.xml` with `DB_CONNECTION=mysql` and an empty da
 
 | Database | Last full run | Failures | Skipped |
 |---|---|---|---|
-| SQLite | 2264 (2026-10-24) | 0 | 11 |
-| MariaDB 10.11 and MySQL 8.0 | 2252 (2026-10-23) | 0 | 1 |
+| SQLite | 2357 (2026-10-25) | 0 | 11 |
+| MariaDB 10.11 and MySQL 8.0 | 2357 (2026-10-25) | 0 | 1 |
 
 > `Vite manifest not found` in tests: run `npm run build` once.
 > Subdomain tests: `vendor/bin/phpunit -c phpunit.subdomain.xml`.
@@ -537,6 +554,9 @@ php artisan reports:cleanup-exports [--days=7]
 php artisan review-tokens:cleanup
 php artisan salons:analyze-logos
 php artisan tenancy:repair-legacy-rows [--dry-run]
+php artisan security:nginx-real-ip            # set_real_ip_from lines from TRUSTED_PROXIES
+php artisan retention:prune [--dry-run]       # prune IPs and logs older than the retention period
+php artisan complaints:remind                 # complaints close to the 72-hour deadline
 php artisan perf:seed-load --salons=100       # test database only
 ```
 
@@ -544,12 +564,12 @@ php artisan perf:seed-load --salons=100       # test database only
 
 ## 🗄️ Database tables
 
-63 migrations and 91 tables. Each creating migration holds all final columns of its table (fix-up migrations have been merged in).
+66 migrations and 94 tables. Each creating migration holds all final columns of its table (fix-up migrations have been merged in).
 
 | Area | Tables |
 |---|---|
-| Salons, plans, subscriptions | `salons`, `salon_admins`, `plans`, `plan_features`, `salon_feature_overrides`, `invoices`, `salon_sms_usages`, `salon_sms_templates`, `sms_credit_purchases` |
-| Users and access | `users`, `roles`, `permissions`, `role_user*`, `permission_role`, `personal_access_tokens`, `password_reset_tokens`, `sessions`, `trusted_devices` |
+| Salons, plans, subscriptions | `salons`, `salon_admins`, `plans`, `plan_features`, `salon_feature_overrides`, `invoices`, `salon_sms_usages`, `salon_sms_templates`, `sms_credit_purchases`, `salon_verifications` |
+| Users and access | `users`, `roles`, `permissions`, `role_user*`, `permission_role`, `personal_access_tokens`, `password_reset_tokens`, `sessions`, `trusted_devices`, `legal_acceptances`, `deleted_account_archives` |
 | Services and specialists | `categories`, `beauty_services`, `specialists`, `specialist_services`, `specialist_schedules`, `holidays`, `leaves` |
 | Bookings and courses | `bookings`, `course_packages`, `customer_courses`, `customer_course_payments`, `course_session_notes`, `course_session_photos`, `course_reminders`, `course_settings` |
 | Payments | `payments`, `payment_transactions`, `salon_payment_gateways`, `idempotency_keys` |
@@ -618,6 +638,14 @@ Cron and workers: [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCH
 ## 🆕 Changelog
 
 Full history, decisions and open items in [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md) (Persian).
+
+**2026-10-25 — platform licensing package (5d)**
+- Security independent of the Arvan CDN: security headers and HSTS from the app itself, a report-only CSP, rate limits on SMS codes, discount codes, reviews and customer actions; the `TRUSTED_PROXIES` default is no longer Cloudflare; nginx with the real IP, a persistent access log, HTTPS on the origin (acme.sh), a `--no-cdn` mode, SSH hardening, fail2ban and external uptime monitoring in `ARVAN_SERVER.md`.
+- Six-month data retention (art. 668): IP and user agent of key actions, an encrypted archive of deleted accounts (account deletion used to leave no trace), nightly `retention:prune`, backups encrypted with an age public key.
+- Privacy, terms and contact pages with the legal identity from the platform settings (labelled "draft" until a lawyer reviews them); terms acceptance recorded at salon and customer signup; the eNamad badge placed verbatim; `www` redirects with 301 to the bare domain; complaints with a 72-hour deadline; provider identity and cancellation terms before payment; fabricated content removed from the default salon home page; course photo consent text and withdrawal.
+- Salon identity and licence verification (manual stage, approved by the super-admin); unverified salons are not public. The interface for an official verification service is in place.
+- Customer app 0.3.6: terms acceptance at signup, purchase terms before booking, photo consent withdrawal; staff app: consent text to read to the customer.
+- 3 new migrations and changes to several creating migrations: rebuild the database with `php artisan migrate:fresh --seed`. New variables: `SECURITY_CSP`, `HSTS_MAX_AGE`, `RETENTION_DAYS`, `LEGAL_PAGES_REVIEWED`, `SALON_VERIFIER`, `BACKUP_AGE_RECIPIENT`.
 
 **2026-10-25**
 - Review of the platform licensing requirements (eNamad, the E-Commerce Law, data retention under the Computer Crimes Law, the internet-platforms directive); gaps and the next code package recorded as open item 5d. No code changes.

@@ -10,7 +10,7 @@
 [![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=flat-square&logo=php)](https://php.net)
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com)
 [![Vite](https://img.shields.io/badge/Vite-8.x-646CFF?style=flat-square&logo=vite)](https://vitejs.dev)
-[![Tests](https://img.shields.io/badge/tests-2264%20passing-brightgreen?style=flat-square)](#-اجرای-تستها)
+[![Tests](https://img.shields.io/badge/tests-2357%20passing-brightgreen?style=flat-square)](#-اجرای-تستها)
 
 ---
 
@@ -81,7 +81,10 @@
 - احراز هویت دومرحله‌ای (2FA) با طول کد قابل تنظیم
 - RBAC با نقش‌های مختص هر سالن و مجوزهای مشترک (مثلاً منشی بدون دسترسی مالی)
 - محدودسازی تلاش ورود، لاگ رویدادهای امنیتی، لاگ کارهای ابرمدیر
-- پروکسی‌های مورد اعتماد قابل تنظیم (`TRUSTED_PROXIES`) تا IP واقعی کاربر پشت CDN دیده شود
+- پروکسی‌های مورد اعتماد قابل تنظیم (`TRUSTED_PROXIES`) تا IP واقعی کاربر پشت CDN دیده شود؛ پیش‌فرض: به هیچ پروکسی اعتماد نمی‌شود
+- امنیت مستقل از CDN: هدرهای امنیتی و HSTS از خود برنامه، CSP (اول فقط گزارش)، محدودیت نرخ روی مسیرهای حساس، HTTPS روی سرور اصلی، حالت بدون CDN
+- نگهداری IP و user agent ورودها و کارهای کلیدی شش ماه (ماده‌ی ۶۶۸)، لاگ دسترسی nginx ماندگار، پاک‌سازی خودکار، بایگانی رمزنگاری‌شده‌ی حساب حذف‌شده
+- صفحه‌های حقوقی (حریم خصوصی، قوانین، تماس)، ثبت پذیرش قوانین با نسخه و IP، نشان اینماد، شکایت با مهلت ۷۲ ساعت، احراز هویت و مجوز سالن
 
 ### 📅 رزرو نوبت
 - رزرو با انتخاب خدمت، متخصص و زمان؛ اسلات‌ها بر اساس برنامه‌ی کاری، مرخصی و تعطیلی؛ جلوگیری از نوبت هم‌پوشان
@@ -315,11 +318,19 @@ TWO_FACTOR_CODE_LENGTH=6
 MAX_LOGIN_ATTEMPTS=5
 LOGIN_THROTTLE_MINUTES=1
 TRUSTED_PROXIES=                   # رنج IP لبه‌های CDN (سرور آروان: deploy/single/arvan-ips.sh). هرگز «*»
+HSTS_MAX_AGE=                      # فقط روی HTTPS؛ خالی = یک سال، 0 = خاموش
+SECURITY_CSP=report               # report (فقط گزارش در storage/logs/csp-*.log)، enforce یا off
+RETENTION_DAYS=190                 # نگهداری IP و لاگ‌ها (ماده‌ی ۶۶۸)؛ کمتر از ۱۸۴ پذیرفته نمی‌شود
+LEGAL_PAGES_REVIEWED=false         # true بعد از بازبینی حقوق‌دان (برچسب «پیش‌نویس» برداشته می‌شود)
+SALON_VERIFIER=manual              # احراز سالن: manual (ابرمدیر)؛ بعداً سامانه‌ی رسمی
 BACKUP_AT=03:40                    # فقط تک‌کانتینری: پشتیبان شبانه؛ خالی = خاموش
+BACKUP_AGE_RECIPIENT=              # کلید عمومی age (age1…)؛ پشتیبان‌ها رمزنگاری می‌شوند، کلید خصوصی بیرون از سرور
 BACKUP_KEEP=3
 BACKUP_STALE_HOURS=36
 ```
 > `TRUSTED_PROXIES` خالی یعنی به هیچ پروکسی اعتماد نمی‌شود (حالت بدون CDN، IP مستقیم واقعی است)؛ پشت CDN آروان رنج آروان را بگذارید (`arvan-ips.sh`).
+> nginx همان فهرست را برای `set_real_ip_from` می‌خواند (`php artisan security:nginx-real-ip`). امنیت به CDN وابسته نیست و `arvan-ips.sh --no-cdn` سرور را بی CDN بالا می‌آورد.
+> هویت حقوقی پلتفرم (نام حقوقی، شناسه‌ی ملی، تلفن ثابت، نشانی، کد پستی، کد نشان اینماد) از پنل ابرمدیر ← تنظیمات ← «اطلاعات حقوقی» تنظیم می‌شود.
 
 ### صف، cache و session
 ```env
@@ -376,7 +387,7 @@ Beauty-Salon/
 │   ├── Services/               # منطق کسب‌وکار
 │   ├── Support/                # CurrentSalon، Billing، Sms، Features، Queues، …
 │   └── Traits/                 # BelongsToSalon، …
-├── database/                   # ۶۳ migration، factoryها، seederها
+├── database/                   # ۶۶ migration، factoryها، seederها
 ├── deploy/
 │   ├── single/                 # ساخت image (ویندوز)، deploy سرور، IPهای آروان
 │   ├── backup/                 # اسکریپت پشتیبان
@@ -402,7 +413,8 @@ Beauty-Salon/
 - سالن‌ها: ساخت، ویرایش، تعلیق، تمدید، سقف متخصص، سهمیه‌ی پیامک، امکانات اختصاصی
 - پلن‌ها و امکانات، فاکتورها، پرداخت‌های اشتراک، اعطای دستی اعتبار پیامک
 - تنظیمات پلتفرم (پوش، درگاه پلتفرم، متن‌ها)، نسخه‌های اپ، اعلانیه‌ی پلتفرم
-- تیکت‌ها، درخواست‌های دمو، لاگ کارها، وضعیت پشتیبان‌گیری
+- تیکت‌ها و شکایت‌ها (مهلت ۷۲ ساعت)، درخواست‌های دمو، لاگ کارها، وضعیت پشتیبان‌گیری
+- احراز سالن‌ها (تأیید یا رد مدارک)، اطلاعات حقوقی پلتفرم، جست‌وجوی داده‌ی نگه‌داشته‌ی حساب‌های حذف‌شده برای مرجع قضایی
 - نقش‌های سیستمی و فهرست مجوزها
 
 ### 🔑 مدیر سالن (مالک / کارمند)
@@ -443,6 +455,9 @@ Beauty-Salon/
 | `/my-dashboard`، `/specialist/*` | پنل متخصص |
 | `/superadmin/*` | پنل مدیر پلتفرم |
 | `/payments/return/{publicId}` | برگشت از درگاه |
+| `/terms` · `/privacy` · `/contact` | قوانین و شرایط · حریم خصوصی · تماس با ما (دامنه‌ی مرکزی) |
+| `/s/{salon_slug}/complaints` | شکایت و پیگیری مشتری |
+| `/admin/verification` | احراز هویت و مجوز سالن |
 | `/up` | سلامت برنامه |
 
 ### API اپ‌ها (`/api/v1`، توکن Sanctum)
@@ -493,6 +508,8 @@ Beauty-Salon/
 | تسویه‌ی درآمدهای معلق (`wallet:settle-pending`) | ۰۱:۰۰ |
 | انقضای امتیاز، تمدید توکن وندار، پاک‌سازی‌ها (`model:prune`، توکن‌ها، خروجی گزارش) | شبانه |
 | بازگشت مشتری خودکار (`customers:winback`)، یادآوری دوره (`courses:remind`) | صبح |
+| یادآوری شکایت‌های بی‌پاسخ (`complaints:remind`) | ساعتی |
+| پاک‌سازی داده‌ی نگهداری‌شده پس از مدت قانونی (`retention:prune`) | ۰۳:۵۰ |
 
 **صف‌ها** (به این ترتیب): `otp`، `push`، `sms`، `payments`، `default`، `reports` — به‌اضافه‌ی یک worker اختصاصی `otp`. `queue:work` بدون `--queue` فقط `default` را می‌خواند.
 
@@ -510,8 +527,8 @@ php artisan test                       # SQLite در حافظه (پیش‌فرض
 
 | دیتابیس | آخرین اجرای کامل | شکست | skip |
 |---|---|---|---|
-| SQLite | ۲۲۶۴ (۲۰۲۶-۱۰-۲۴) | ۰ | ۱۱ |
-| MariaDB 10.11 و MySQL 8.0 | ۲۲۵۲ (۲۰۲۶-۱۰-۲۳) | ۰ | ۱ |
+| SQLite | ۲۳۵۷ (۲۰۲۶-۱۰-۲۵) | ۰ | ۱۱ |
+| MariaDB 10.11 و MySQL 8.0 | ۲۳۵۷ (۲۰۲۶-۱۰-۲۵) | ۰ | ۱ |
 
 > `Vite manifest not found` در تست‌ها: یک بار `npm run build`.
 > تست‌های زیردامنه: `vendor/bin/phpunit -c phpunit.subdomain.xml`.
@@ -537,6 +554,9 @@ php artisan reports:cleanup-exports [--days=7]
 php artisan review-tokens:cleanup
 php artisan salons:analyze-logos
 php artisan tenancy:repair-legacy-rows [--dry-run]
+php artisan security:nginx-real-ip            # set_real_ip_from از TRUSTED_PROXIES
+php artisan retention:prune [--dry-run]       # پاک‌سازی IP و لاگ‌های قدیمی‌تر از مدت نگهداری
+php artisan complaints:remind                 # شکایت‌های نزدیک به مهلت ۷۲ ساعت
 php artisan perf:seed-load --salons=100       # فقط دیتابیس آزمایشی
 ```
 
@@ -544,12 +564,12 @@ php artisan perf:seed-load --salons=100       # فقط دیتابیس آزمای
 
 ## 🗄️ جداول دیتابیس
 
-۶۳ migration و ۹۱ جدول. هر migration سازنده همه‌ی ستون‌های نهایی جدولش را دارد (migrationهای اصلاحی ادغام شده‌اند).
+۶۶ migration و ۹۴ جدول. هر migration سازنده همه‌ی ستون‌های نهایی جدولش را دارد (migrationهای اصلاحی ادغام شده‌اند).
 
 | حوزه | جداول |
 |---|---|
-| سالن، پلن و اشتراک | `salons`، `salon_admins`، `plans`، `plan_features`، `salon_feature_overrides`، `invoices`، `salon_sms_usages`، `salon_sms_templates`، `sms_credit_purchases` |
-| کاربران و دسترسی | `users`، `roles`، `permissions`، `role_user*`، `permission_role`، `personal_access_tokens`، `password_reset_tokens`، `sessions`، `trusted_devices` |
+| سالن، پلن و اشتراک | `salons`، `salon_admins`، `plans`، `plan_features`، `salon_feature_overrides`، `invoices`، `salon_sms_usages`، `salon_sms_templates`، `sms_credit_purchases`، `salon_verifications` |
+| کاربران و دسترسی | `users`، `roles`، `permissions`، `role_user*`، `permission_role`، `personal_access_tokens`، `password_reset_tokens`، `sessions`، `trusted_devices`، `legal_acceptances`، `deleted_account_archives` |
 | خدمات و متخصص‌ها | `categories`، `beauty_services`، `specialists`، `specialist_services`، `specialist_schedules`، `holidays`، `leaves` |
 | نوبت و دوره | `bookings`، `course_packages`، `customer_courses`، `customer_course_payments`، `course_session_notes`، `course_session_photos`، `course_reminders`، `course_settings` |
 | پرداخت | `payments`، `payment_transactions`، `salon_payment_gateways`، `idempotency_keys` |
@@ -618,6 +638,14 @@ php artisan up
 ## 🆕 آخرین تغییرات
 
 تاریخچه‌ی کامل، تصمیم‌ها و قدم‌های باز در [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md).
+
+**۲۰۲۶-۱۰-۲۵ — بسته‌ی مجوز پلتفرم (5د)**
+- امنیت مستقل از CDN آروان: هدرهای امنیتی و HSTS از خود برنامه، CSP در حالت فقط گزارش، محدودیت نرخ روی کد پیامکی، کد تخفیف، نظر و کارهای مشتری؛ پیش‌فرض `TRUSTED_PROXIES` دیگر Cloudflare نیست؛ nginx با IP واقعی، لاگ دسترسی ماندگار، HTTPS روی سرور اصلی (acme.sh)، حالت `--no-cdn`، سخت‌کردن SSH، fail2ban و پایش بیرونی در `ARVAN_SERVER.md`.
+- نگهداری داده‌ی شش‌ماهه (ماده‌ی ۶۶۸): IP و user agent کارهای کلیدی، بایگانی رمزنگاری‌شده‌ی حساب حذف‌شده (پیش‌تر حذف حساب ردی نمی‌گذاشت)، `retention:prune` شبانه، پشتیبان رمزنگاری‌شده با کلید عمومی age.
+- صفحه‌های حریم خصوصی، قوانین و تماس با هویت حقوقی از تنظیمات پلتفرم (با برچسب «پیش‌نویس» تا بازبینی حقوق‌دان)؛ ثبت پذیرش قوانین در ثبت‌نام سالن و مشتری؛ نشان اینماد بی‌تغییر؛ `www` با 301 به دامنه‌ی اصلی؛ شکایت با مهلت ۷۲ ساعت؛ هویت ارائه‌دهنده و شرایط لغو پیش از پرداخت؛ حذف محتوای ساختگی صفحه‌ی اصلی سالن؛ متن رضایت عکس دوره و امکان پس گرفتن آن.
+- احراز هویت و مجوز سالن (مرحله‌ی دستی با تأیید ابرمدیر)؛ سالن تأییدنشده عمومی دیده نمی‌شود. رابط مرحله‌ی سامانه‌ی رسمی آماده است.
+- اپ مشتری 0.3.6: پذیرش قوانین در ثبت‌نام، شرایط خرید پیش از ثبت نوبت، پس گرفتن رضایت عکس؛ اپ همکار: متن رضایت برای خواندن به مشتری.
+- ۳ migration تازه و تغییر چند migration سازنده: دیتابیس با `php artisan migrate:fresh --seed` از نو ساخته شود. متغیرهای تازه: `SECURITY_CSP`، `HSTS_MAX_AGE`، `RETENTION_DAYS`، `LEGAL_PAGES_REVIEWED`، `SALON_VERIFIER`، `BACKUP_AGE_RECIPIENT`.
 
 **۲۰۲۶-۱۰-۲۵**
 - بررسی شرایط مجوز پلتفرم (اینماد، قانون تجارت الکترونیکی، نگهداری داده طبق قانون جرایم رایانه‌ای، دستورالعمل سکوهای اینترنتی)؛ کمبودها و بسته‌ی کد بعدی در کارهای باز 5د. بدون تغییر کد.
