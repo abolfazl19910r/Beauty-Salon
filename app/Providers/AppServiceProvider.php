@@ -34,6 +34,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // احراز سالن (بسته‌ی مجوز 5د، مرحله‌ی ب): درایور از config/verification.php؛ نام ناشناخته = دستی (هرگز «تأیید خودکار» نه)
+        $this->app->bind(\App\Contracts\Verification\SalonIdentityVerifier::class, function ($app) {
+            $class = config('verification.drivers.'.config('verification.driver'));
+
+            return $app->make(is_string($class) && class_exists($class) ? $class : \App\Services\Verification\ManualSalonIdentityVerifier::class);
+        });
+
         $this->app->singleton(TwoFactorAuthService::class);
         $this->app->singleton(SecurePaymentService::class);
         // ⭐ Phase 1 SaaS multi-tenant (feat/saas-multi-tenant-salons, commit 2): one instance per

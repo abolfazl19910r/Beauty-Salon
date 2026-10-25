@@ -53,31 +53,46 @@ class SalonVerificationService
         }
 
         app(SecurityLogService::class)->logAction('salon_verification_submitted', $verification);
-        app(SuperAdminNotifier::class)->send('verification', sprintf('مدارک احراز سالن «%s» برای بررسی رسید.', $salon->name),
-            route('superadmin.verifications.show', $verification->id, false), $salon->id);
 
-        return $verification;
+        // مرحله‌ی ب: سرویس احراز (الان دستی = همیشه «در انتظار»؛ بعداً امتا)
+        $verifier = app(\App\Contracts\Verification\SalonIdentityVerifier::class);
+        $outcome = $verifier->check($verification);
+        $verification->update([
+            'provider' => $verifier->name(),
+            'provider_reference' => $outcome->reference,
+            'provider_payload' => $outcome->payload ?: null,
+        ]);
+
+        match ($outcome->status) {
+            \App\Services\Verification\VerificationOutcome::APPROVED => $this->approve($verification, null),
+            \App\Services\Verification\VerificationOutcome::REJECTED => $this->reject($verification, null, (string) $outcome->reason),
+            default => app(SuperAdminNotifier::class)->send('verification', sprintf('مدارک احراز سالن «%s» برای بررسی رسید.', $salon->name),
+                route('superadmin.verifications.show', $verification->id, false), $salon->id),
+        };
+
+        return $verification->fresh();
     }
 
-    public function approve(SalonVerification $verification, User $reviewer): void
+    /** $reviewer = null: تصمیم سرویس احراز خودکار (مرحله‌ی ب) */
+    public function approve(SalonVerification $verification, ?User $reviewer): void
     {
         DB::transaction(function () use ($verification, $reviewer) {
-            $verification->update(['status' => 'approved', 'reviewed_by' => $reviewer->id, 'reviewed_at' => now(), 'rejection_reason' => null]);
+            $verification->update(['status' => 'approved', 'reviewed_by' => $reviewer?->id, 'reviewed_at' => now(), 'rejection_reason' => null]);
             $verification->salon->forceFill(['verification_status' => 'approved', 'verified_at' => now()])->save();
         });
 
-        app(SuperAdminAudit::class)->record('salon.verification', 'تأیید احراز سالن', $verification->salon_id);
+        app(SuperAdminAudit::class)->record('salon.verification', $reviewer ? 'تأیید احراز سالن' : 'تأیید خودکار احراز سالن ('.$verification->provider.')', $verification->salon_id);
         $this->tellOwner($verification->salon, sprintf('احراز سالن «%s» تأیید شد؛ صفحه‌ی سالن و رزرو آنلاین باز است. %s', $verification->salon->name, config('brand.name')));
     }
 
-    public function reject(SalonVerification $verification, User $reviewer, string $reason): void
+    public function reject(SalonVerification $verification, ?User $reviewer, string $reason): void
     {
         DB::transaction(function () use ($verification, $reviewer, $reason) {
-            $verification->update(['status' => 'rejected', 'reviewed_by' => $reviewer->id, 'reviewed_at' => now(), 'rejection_reason' => $reason]);
+            $verification->update(['status' => 'rejected', 'reviewed_by' => $reviewer?->id, 'reviewed_at' => now(), 'rejection_reason' => $reason]);
             $verification->salon->forceFill(['verification_status' => 'rejected', 'verified_at' => null])->save();
         });
 
-        app(SuperAdminAudit::class)->record('salon.verification', 'رد احراز سالن: '.$reason, $verification->salon_id);
+        app(SuperAdminAudit::class)->record('salon.verification', ($reviewer ? 'رد احراز سالن: ' : 'رد خودکار احراز سالن ('.$verification->provider.'): ').$reason, $verification->salon_id);
         $this->tellOwner($verification->salon, sprintf('احراز سالن «%s» تأیید نشد: %s. از پنل ← احراز سالن دوباره بفرستید. %s',
             $verification->salon->name, Str::limit($reason, 80), config('brand.name')));
     }
