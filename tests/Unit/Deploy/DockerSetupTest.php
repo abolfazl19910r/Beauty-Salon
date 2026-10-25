@@ -143,6 +143,21 @@ class DockerSetupTest extends TestCase
         $this->assertStringContainsString('ln -s "$DATA/logs" storage/logs', self::file('docker/single/entrypoint.sh'));
     }
 
+    public function test_the_firewall_script_covers_https_and_has_a_no_cdn_mode(): void
+    {
+        // بسته‌ی مجوز 5د — آزموده در network namespace جدا: دو بار اجرا قاعده‌ی تکراری نمی‌سازد، --no-cdn همه را برمی‌دارد
+        $script = self::file('deploy/single/arvan-ips.sh');
+        $this->assertStringContainsString('for port in 80 443; do', $script);
+        $this->assertStringContainsString('if [[ "$MODE" == "--no-cdn" ]]; then', $script);
+        $this->assertStringContainsString('set_trusted ""', $script);
+
+        $guide = self::file('docs/deployment/ARVAN_SERVER.md');
+        foreach (['PasswordAuthentication no', 'PermitRootLogin prohibit-password', 'sshd -T', '50-cloud-init.conf', '00-mahru-hardening.conf',
+            'fail2ban-client status sshd', '## ۹ب. حالت «بدون CDN»', '## ۱۰ب. مانیتور بیرونی uptime', 'dns_arvan', 'کنسول'] as $needle) {
+            $this->assertStringContainsString($needle, $guide);
+        }
+    }
+
     public function test_the_health_check_reaches_laravel_not_a_static_nginx_reply(): void
     {
         preg_match('/location = \/up \{(.*?)\n\}/s', self::file('docker/nginx/site.inc'), $m);

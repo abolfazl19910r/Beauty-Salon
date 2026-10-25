@@ -5,14 +5,19 @@
 
 ```
 کاربر ── HTTPS ──► لبه‌ی CDN آروان (گواهی رایگان، هدایت http→https)
-                        │ HTTP
+                        │ HTTPS (گواهی خود سرور، بخش ۸)
                         ▼
-              سرور ابری آروان، پورت ۸۰ (فقط از لبه‌های آروان)
+              سرور ابری آروان، پورت ۴۴۳/۸۰ (فقط از لبه‌های آروان، بخش ۹)
                         ▼
               کانتینر mahru  (MariaDB، PHP-FPM، Nginx، صف‌ها، scheduler، پشتیبان شبانه)
                         ▼
               volume ‏mahru_data (دیتابیس، آپلودها، لاگ، APP_KEY)  +  /srv/mahru/backups (پشتیبان‌ها)
 ```
+
+**⭐ قاعده (بسته‌ی مجوز 5د، ۲۰۲۶-۱۰-۲۵): امنیت به CDN وابسته نیست.** CDN یک لایه‌ی اضافه است. اگر برداشته یا عوض شود، همه‌ی حفاظت‌ها در
+خود سرور و کانتینر برقرار می‌ماند: HTTPS با گواهی خود سرور (بخش ۸)، هدرهای امنیتی، CSP و محدودیت نرخ در برنامه، محدودیت اندازه و زمان
+درخواست در nginx کانتینر، IP واقعی در لاگ (بخش ۵ و ۹)، SSH فقط با کلید و fail2ban (بخش ۲ب)، پشتیبان رمزنگاری‌شده (بخش ۱۱) و
+مانیتور بیرونی (بخش ۱۰ب). رفتن به حالت «بدون CDN»: بخش ۹ب.
 
 **وضعیت این مرحله (تصمیم ۲۰۲۶-۱۰-۲۴):** پیامک واقعی نمی‌رود (`SMS_LOG_ONLY=true` — کد ورود فقط در لاگ سرور)، زرین‌پال sandbox، دیتابیس
 خالی (بدون داده‌ی نمونه)، پشتیبان شبانه روی خود سرور و دانلود دستی با WinSCP.
@@ -74,6 +79,90 @@ mkdir -p /srv/mahru/images /srv/mahru/backups /srv/mahru/deploy/single
 ```
 
 اگر `get.docker.com` باز نشد، آینه‌ی رجیستری آروان یا قالب Docker پنل را به کار ببرید؛ روی این سرور هیچ image از اینترنت کشیده نمی‌شود.
+
+---
+
+## ۲ب. سخت‌سازی سرور (یک بار، بسته‌ی مجوز 5د)
+
+### SSH فقط با کلید
+
+⚠️ **نشست فعلی را تا آخر این بخش نبندید.** اگر چیزی اشتباه شد، از همین نشست برمی‌گردانید.
+
+**مسیر نجات:** پنل آروان ← سرور ← **کنسول** (کنسول وب سرور، بی SSH). ورود در کنسول با **رمز root** است، نه کلید؛ پس اول یک رمز قوی برای
+root بگذارید و در مدیر رمزتان نگه دارید (فقط برای کنسول؛ SSH با رمز بسته می‌شود). اگر رمز را هم نداشتید: پنل ← بازنشانی رمز سرور.
+
+```bash
+passwd root            # رمز قوی، فقط برای کنسول پنل
+```
+
+۱. **در یک پنجره‌ی تازه** (نه همین) ورود با کلید را بیازمایید: `ssh -i path\to\key root@SERVER_IP "echo ok"` ← باید `ok` بدهد، بی پرسیدن رمز.
+
+۲. تنظیم، در فایلی که **پیش از** فایل‌های دیگر خوانده می‌شود:
+
+```bash
+cat > /etc/ssh/sshd_config.d/00-mahru-hardening.conf <<'CONF'
+# بسته‌ی مجوز 5د — SSH فقط با کلید
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitRootLogin prohibit-password
+PubkeyAuthentication yes
+MaxAuthTries 3
+CONF
+ls /etc/ssh/sshd_config.d/
+```
+
+چرا `00-`: در OpenSSH **اولین** مقداری که برای هر گزینه خوانده شود برنده است، و `sshd_config` اوبونتو در خط اولش
+`Include /etc/ssh/sshd_config.d/*.conf` دارد (به ترتیب الفبا). روی سرورهای ابری معمولاً `50-cloud-init.conf` با
+`PasswordAuthentication yes` هست؛ اگر تنظیم ما بعد از آن یا در خود `sshd_config` بیاید، **بی‌اثر** است.
+
+۳. **تأیید وضعیت مؤثر** (نه خواندن فایل‌ها):
+
+```bash
+sshd -t && sshd -T | grep -Ei '^(passwordauthentication|kbdinteractiveauthentication|permitrootlogin|pubkeyauthentication) '
+```
+
+باید دقیقاً این‌ها را بدهد (ترتیب مهم نیست):
+
+```
+pubkeyauthentication yes
+passwordauthentication no
+kbdinteractiveauthentication no
+permitrootlogin without-password
+```
+
+(`without-password` نام قدیمی همان `prohibit-password` است.) اگر `passwordauthentication yes` بود، فایلی در `sshd_config.d` زودتر از `00-`
+خوانده می‌شود یا `Include` بالای `sshd_config` نیست؛ درستش کنید و دوباره `sshd -T`.
+
+۴. اعمال: `systemctl reload ssh` (اوبونتو ۲۴: نام سرویس `ssh`).
+
+۵. **در یک پنجره‌ی تازه** دوباره با کلید وارد شوید، و ببینید رمز رد می‌شود:
+`ssh -o PubkeyAuthentication=no -o PreferredAuthentications=password root@SERVER_IP` ← باید `Permission denied (publickey)` بدهد.
+فقط حالا نشست اول را ببندید.
+
+### fail2ban برای SSH
+
+```bash
+apt install -y fail2ban
+cat > /etc/fail2ban/jail.d/mahru-sshd.local <<'CONF'
+[sshd]
+enabled = true
+backend = systemd
+maxretry = 5
+findtime = 10m
+bantime = 1h
+bantime.increment = true
+bantime.maxtime = 1w
+# IP ثابت خودتان را می‌توانید اضافه کنید
+ignoreip = 127.0.0.1/8 ::1
+CONF
+systemctl enable --now fail2ban
+fail2ban-client status sshd
+```
+
+`fail2ban-client status sshd` باید `Currently banned` و `Total failed` را نشان دهد. اگر خودتان قفل شدید: از کنسول پنل
+`fail2ban-client set sshd unbanip YOUR_IP`. fail2ban فقط SSH را می‌پاید؛ وب را محدودیت نرخ خود برنامه و nginx کانتینر می‌پایند.
+
+**به‌روزرسانی امنیتی خودکار:** اوبونتو `unattended-upgrades` را از قبل دارد؛ `systemctl status unattended-upgrades` باید `active` باشد.
 
 ---
 
@@ -181,12 +270,43 @@ rm /srv/mahru/mahru-fcm-sa.json
 
 ## ۸. HTTPS
 
+دو لایه (بسته‌ی مجوز 5د، تصمیم ۲۰۲۶-۱۰-۲۵: **خود سرور هم HTTPS دارد**): لبه‌ی آروان گواهی رایگان خودش را دارد، و کانتینر با گواهی خود
+سرور روی ۴۴۳ گوش می‌دهد. با CDN، لبه با HTTPS به سرور وصل می‌شود؛ بدون CDN، کاربر مستقیم. برداشتن CDN فقط یک تغییر DNS است.
+
+### ۸الف. گواهی خود سرور (acme.sh روی میزبان)
+
+گواهی `arisheh.ir` و `*.arisheh.ir` با **DNS-01** (wildcard فقط با DNS-01 صادر می‌شود). acme.sh برای DNS آروان افزونه‌ی `dns_arvan` دارد:
+
+```bash
+curl -fsSL https://get.acme.sh | sh -s email=you@example.com      # یا از GitHub: acmesh-official/acme.sh
+# پنل آروان ← کلیدهای API ← کلید فقط با دسترسی DNS
+export Arvan_Token="apikey xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+~/.acme.sh/acme.sh --issue --dns dns_arvan -d arisheh.ir -d '*.arisheh.ir' --server letsencrypt
+~/.acme.sh/acme.sh --install-cert -d arisheh.ir \
+    --fullchain-file /srv/mahru/tls/fullchain.pem --key-file /srv/mahru/tls/privkey.pem \
+    --reloadcmd "chmod 600 /srv/mahru/tls/privkey.pem; docker exec mahru nginx -s reload"
+docker compose -f docker-compose.server.yml up -d      # بار اول: nginx با دیدن گواهی ۴۴۳ را روشن می‌کند
+curl -skI https://127.0.0.1/up -H 'Host: arisheh.ir' | head -1   # HTTP/2 200
+```
+
+acme.sh خودش کرون تمدید می‌گذارد (`crontab -l`). وابستگی به آروان فقط در **صدور** است؛ اگر DNS جای دیگری رفت، همان دستور با افزونه‌ی
+DNS تازه (`--dns dns_…`). بدون API DNS می‌شود فقط `arisheh.ir` و `www` را با HTTP-01 گرفت (`--webroot /srv/mahru/acme`)، ولی
+ساب‌دامین سالن‌ها پوشش ندارند (بخش ۹ب).
+
+وقتی `./tls` گواهی دارد: پورت ۸۰ به HTTPS هدایت می‌شود (جز `/up` و چالش ACME)، و درخواستی که لبه‌ی آروانِ مورد اعتماد خودش با HTTPS گرفته
+هدایت نمی‌شود (حلقه ساخته نمی‌شود). برنامه روی HTTPS هدر **HSTS** (یک سال، با ساب‌دامین‌ها) می‌فرستد.
+
+### ۸ب. لبه‌ی آروان
+
 پنل آروان ← دامنه ← **تنظیمات SSL/TLS** (نام‌ها ممکن است کمی فرق کنند):
 
 1. **گواهی رایگان آروان** را فعال کنید (Let's Encrypt؛ سه‌ماهه و خودکار تمدید می‌شود). ببینید `*.arisheh.ir` هم پوشش داده می‌شود.
 2. **HTTPS پیش‌فرض** (هدایت همه‌ی HTTP به HTTPS) را روشن کنید.
-3. **پروتکل اتصال به سرور اصلی (مبدا):** **HTTP**. «HTTPS» یا «خودکار» نزنید: کانتینر فقط پورت ۸۰ دارد.
-4. **HSTS:** فعلاً خاموش. روشن کردنش تا پایان max-age برگشت‌پذیر نیست؛ بعد از چند هفته‌ی بی‌مشکل.
+3. **پروتکل اتصال به سرور اصلی (مبدا):** **HTTPS** (بعد از ۸الف). تا گواهی سرور نیامده: **HTTP**.
+   اگر مبدا HTTPS دارد و لبه روی «HTTP» مانده، باز هم کار می‌کند (درخواست لبه‌ی مورد اعتماد با `X-Forwarded-Proto: https` هدایت نمی‌شود)،
+   ولی مسیر لبه تا سرور رمزنگاری‌نشده می‌ماند.
+4. **HSTS لبه:** خاموش بگذارید؛ خود برنامه HSTS را روی HTTPS می‌فرستد. اگر گواهی `*.arisheh.ir` ندارید، در `.env.server`
+   `HSTS_INCLUDE_SUBDOMAINS=false` بگذارید (وگرنه مرورگر ساب‌دامین بی گواهی را هم فقط HTTPS می‌خواهد).
 
 **اگر گواهی `*.arisheh.ir` صادر نشد:** ساب‌دامین‌ها خطای گواهی می‌دهند. در `.env.server` ‏`CENTRAL_DOMAIN=` و `SESSION_DOMAIN=` را خالی کنید و
 `docker compose -f docker-compose.server.yml up -d`؛ آدرس سالن‌ها `/s/{slug}` می‌شود و برنامه همین را در لینک‌ها و پیامک‌ها می‌سازد.
@@ -196,16 +316,16 @@ rm /srv/mahru/mahru-fcm-sa.json
 
 ---
 
-## ۹. بستن IP مستقیم سرور
+## ۹. بستن IP مستقیم سرور (با CDN)
 
-Docker پورت ۸۰ را مستقیم باز می‌کند و ufw روی آن اثری ندارد. هر کس IP سرور را بداند، CDN را دور می‌زند.
+Docker پورت‌های ۸۰ و ۴۴۳ را مستقیم باز می‌کند و ufw روی آن‌ها اثری ندارد. هر کس IP سرور را بداند، CDN را دور می‌زند.
 
 - **ترجیح:** فایروال CDN پنل آروان (بخش ۱).
 - **اگر پنل نداشت:** روی سرور (IP خودتان را برای آزمون مستقیم بدهید، اختیاری):
   ```bash
   sudo bash deploy/single/arvan-ips.sh --firewall YOUR_HOME_IP
   ```
-  این قاعده با ری‌استارت سرور پاک می‌شود؛ یک بار:
+  ۸۰ و ۴۴۳ فقط برای لبه‌های آروان (IPv4؛ کانتینر روی IPv6 منتشر نمی‌شود). این قاعده با ری‌استارت سرور پاک می‌شود؛ یک بار:
   ```bash
   (crontab -l 2>/dev/null; echo '@reboot sleep 60 && cd /srv/mahru && bash deploy/single/arvan-ips.sh --firewall YOUR_HOME_IP') | crontab -
   ```
@@ -214,6 +334,28 @@ Docker پورت ۸۰ را مستقیم باز می‌کند و ufw روی آن �
 
 بعد از هر تغییر فهرست آروان: `bash deploy/single/arvan-ips.sh` (و `--firewall` اگر استفاده می‌کنید)، بعد
 `docker compose -f docker-compose.server.yml up -d`.
+
+**SSH:** پورت ۲۲ مال میزبان است (نه Docker)، پس ufw یا فایروال پنل رویش اثر دارد. اگر IP ثابت دارید، فقط همان:
+`ufw allow from YOUR_IP to any port 22 proto tcp && ufw enable` (اول مطمئن شوید IP درست است؛ وگرنه فقط کنسول پنل می‌ماند). اگر IP ثابت
+ندارید، SSH باز بماند: کلید و fail2ban (بخش ۲ب) کافی‌اند.
+
+## ۹ب. حالت «بدون CDN» (برداشتن یا عوض کردن CDN)
+
+همه‌ی حفاظت‌ها در خود سرور است؛ فقط این چند قدم:
+
+1. **گواهی خود سرور** باید باشد (بخش ۸الف) و تمدیدش به DNS تازه وصل باشد (اگر DNS هم عوض شد، افزونه‌ی `--dns` تازه).
+2. ```bash
+   cd /srv/mahru
+   sudo bash deploy/single/arvan-ips.sh --no-cdn
+   docker compose -f docker-compose.server.yml up -d
+   ```
+   `TRUSTED_PROXIES` خالی می‌شود (به هیچ پروکسی اعتماد نمی‌شود؛ IP مستقیم کاربر همان IP واقعی است)، قاعده‌ی `DOCKER-USER` برداشته و ۸۰/۴۴۳
+   برای همه باز می‌شود. خط `@reboot … --firewall` را از `crontab -e` پاک کنید.
+3. **DNS:** رکوردهای `@`، `www` و `*` مستقیم به `SERVER_IP`، بدون پروکسی (یا در DNS تازه).
+4. آزمون: `https://arisheh.ir/up` با قفل سبز؛ پنل ابرمدیر ← «داده‌های نگهداری‌شده» با شماره‌ی خودتان: IP **خودتان**.
+
+**CDN دیگر به‌جای آروان:** همان `TRUSTED_PROXIES` با رنج‌های لبه‌ی آن CDN (با کاما)، بعد `up -d`. nginx کانتینر هنگام شروع همین فهرست را
+برای IP واقعی لاگ دسترسی می‌خواند (`php artisan security:nginx-real-ip`).
 
 ---
 
@@ -244,8 +386,26 @@ docker logs --since 10m mahru 2>&1 | grep "SMS"
 پیش شماست). وقتی خط و قالب‌های کاوه‌نگار آماده شد: در `.env.server` ‏`KAVENEGAR_API_KEY=…` و `SMS_LOG_ONLY=false`، بعد
 `docker compose -f docker-compose.server.yml up -d`.
 
+| هدرهای امنیتی | `curl -sI https://arisheh.ir/ \| grep -iE 'strict-transport\|x-frame\|referrer-policy\|permissions-policy\|content-security'` — همه هستند (CSP فعلاً Report-Only) |
+| لاگ دسترسی ماندگار | `docker exec mahru ls /data/logs/nginx` — فایل امروز؛ `tail -1` آن IP **خودتان** را دارد |
+| SSH با رمز | `ssh -o PubkeyAuthentication=no root@SERVER_IP` ← `Permission denied (publickey)` (بخش ۲ب) |
+
 **اگر ساب‌دامین صفحه‌ی فروش را نشان داد** یا لینک‌ها `http://` بودند: آروان Host یا `X-Forwarded-Proto` را آن‌طور که برنامه انتظار دارد
 نمی‌فرستد — تنظیم «هدر Host» مبدا را در پنل ببینید و نتیجه را گزارش کنید (نیاز به تغییر کد را همان‌جا می‌سنجیم).
+
+## ۱۰ب. مانیتور بیرونی uptime (بسته‌ی مجوز 5د)
+
+خود سرور نمی‌تواند خبر دهد که خاموش است؛ پس یک سرویس **بیرون از همین سرور** هر چند دقیقه `https://arisheh.ir/up` را بزند و اگر جواب ۲۰۰
+نیامد هشدار بدهد (ایمیل، پیامک یا تلگرام/بله).
+
+- **ساده‌ترین:** یک سرویس مانیتور رایگان (مثلاً UptimeRobot یا Better Stack): نوع HTTP(S)، آدرس `https://arisheh.ir/up`، فاصله‌ی ۵ دقیقه،
+  هشدار به ایمیل و موبایل خودتان. فقط کد پاسخ را بسنجد (صفحه‌ی `/up` فونت و Tailwind را از CDN بیرونی می‌گیرد و از ایران ممکن است
+  ناقص دیده شود؛ برای کد پاسخ مهم نیست).
+- **اگر سرویس خارجی به سرور ایران نرسید** (قطعی بین‌الملل): یک سرور کوچک دیگر (جدا از این) با کرون:
+  `*/5 * * * * curl -fsS -m 20 https://arisheh.ir/up >/dev/null || <دستور هشدار>`.
+- دو آدرس بهتر از یکی: `https://arisheh.ir/up` (از راه CDN) و در صورت امکان `https://SERVER_IP/up` با Host درست (خود مبدا)، تا معلوم
+  شود خرابی از CDN است یا سرور.
+- آزمون هشدار: یک بار `docker compose -f docker-compose.server.yml stop` (در ساعت خلوت) ← هشدار باید ظرف چند دقیقه برسد ← `up -d`.
 
 ---
 
@@ -349,6 +509,10 @@ bash deploy/single/server-deploy.sh --use <نسخه‌ی قبلی>
 ---
 
 ## ۱۵. آنچه تأییدنشده است (روی سرور واقعی بسنجید)
+
+- (بسته‌ی مجوز 5د) صدور گواهی `*.arisheh.ir` با `dns_arvan` روی پلن پایه و اتصال «HTTPS به مبدا» لبه‌ی آروان به گواهی خود سرور؛
+  HTTPS و هدایت ۸۰ در sandbox با گواهی خودامضا و nginx و php-fpm واقعی آزموده شد، خود image آلپاین نه.
+- (بسته‌ی مجوز 5د) نام دقیق کنسول وب و بازنشانی رمز در پنل سرور ابری آروان.
 
 - آدرس فهرست IP آروان (`/en/ips.txt`) — ابزارهای متن‌باز همین را استفاده می‌کنند؛ از بیرون ایران برای Claude بسته بود.
 - پروکسی روی رکورد `*` و صدور گواهی `*.arisheh.ir` در پلن پایه.
