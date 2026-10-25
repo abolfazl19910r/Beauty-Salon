@@ -22,7 +22,7 @@ class SupportTicketController extends Controller
     public function index(Request $request): View
     {
         $tickets = $this->supportTicketRepository->paginateWithFilters(
-            $request->only(['status', 'priority', 'category', 'assigned'])
+            $request->only(['status', 'priority', 'category', 'assigned', 'kind'])
         );
 
         $stats = [

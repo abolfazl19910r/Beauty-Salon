@@ -154,6 +154,11 @@ return Application::configure(basePath: dirname(__DIR__))
             ->withoutOverlapping()
             ->onOneServer();
         // نگهداری داده (بسته‌ی مجوز 5د، config/retention.php): security_logs و لاگ دسترسی nginx بعد از مهلت قانونی پاک، لاگ روزهای قبل فشرده
+        // شکایت‌های بی‌پاسخ نزدیک یا گذشته از مهلت ۷۲ ساعت (بسته‌ی مجوز 5د) — یادآوری به ابرمدیرها
+        $schedule->command('complaints:remind')
+            ->hourlyAt(25)
+            ->withoutOverlapping()
+            ->onOneServer();
         $schedule->command('retention:prune')
             ->dailyAt('03:50')
             ->withoutOverlapping()

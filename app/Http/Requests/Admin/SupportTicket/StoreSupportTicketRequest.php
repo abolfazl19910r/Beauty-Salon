@@ -17,6 +17,8 @@ class StoreSupportTicketRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'max:5000'],
             'category' => ['required', 'string', 'in:booking,payment,service,technical,other'],
+            // بسته‌ی مجوز 5د: شکایت سالن از پلتفرم با مهلت پاسخ ۷۲ ساعت
+            'kind' => ['nullable', 'in:support,complaint'],
             'priority' => ['sometimes', 'in:low,medium,high,urgent'],
         ];
     }

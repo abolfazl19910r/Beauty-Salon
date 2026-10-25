@@ -59,6 +59,7 @@ $tenantRoutes = function () {
         require __DIR__.'/web/security.php';
         require __DIR__.'/web/wallet.php';
         require __DIR__.'/web/courses.php';
+        require __DIR__.'/web/complaints.php';
     });
 };
 

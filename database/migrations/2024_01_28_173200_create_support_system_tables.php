@@ -16,6 +16,12 @@ return new class extends Migration
             $table->enum('priority', ['low', 'medium', 'high', 'urgent'])->default('medium');
             $table->enum('status', ['open', 'in_progress', 'resolved', 'closed'])->default('open');
             $table->string('category');
+            // ⭐ بسته‌ی مجوز 5د: شکایت (مشتری از سالن یا پلتفرم، یا سالن از پلتفرم) با مهلت پاسخ ۷۲ ساعته‌ی اینماد
+            $table->string('kind', 16)->default('support'); // support | complaint
+            $table->foreignId('salon_id')->nullable()->constrained()->nullOnDelete();
+            $table->timestamp('response_due_at')->nullable();
+            $table->timestamp('first_responded_at')->nullable();
+            $table->timestamp('reminded_at')->nullable();
             $table->foreignId('assigned_to')->nullable()->constrained('users');
             $table->json('metadata')->nullable();
             $table->timestamp('resolved_at')->nullable();
@@ -25,6 +31,7 @@ return new class extends Migration
 
             $table->index(['status', 'priority']);
             $table->index(['category', 'created_at']);
+            $table->index(['kind', 'first_responded_at', 'response_due_at']);
         });
 
         Schema::create('support_ticket_messages', function (Blueprint $table) {

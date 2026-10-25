@@ -31,6 +31,12 @@
                           class="w-full px-3 py-2 rounded-lg" style="border:1px solid var(--admin-border); color:var(--admin-text);">{{ old('description') }}</textarea>
             </div>
 
+            {{-- بسته‌ی مجوز 5د: شکایت از پلتفرم با مهلت پاسخ ۷۲ ساعت --}}
+            <fieldset class="flex flex-wrap gap-4 text-sm" style="color:var(--admin-text);" data-ticket-kind>
+                <label class="flex items-center gap-2"><input type="radio" name="kind" value="support" @checked(old('kind', 'support') === 'support')> درخواست پشتیبانی</label>
+                <label class="flex items-center gap-2"><input type="radio" name="kind" value="complaint" @checked(old('kind') === 'complaint')> شکایت از پلتفرم (پاسخ حداکثر ظرف {{ to_persian_num((string) config('legal.complaint_response_hours', 72)) }} ساعت)</label>
+            </fieldset>
+
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm mb-1" style="color:var(--admin-text);">دسته‌بندی</label>

@@ -32,6 +32,12 @@ class SupportTicketRepository extends BaseRepository implements SupportTicketRep
             ->when($filters['status'] ?? null, fn ($q, $status) => $q->where('status', $status))
             ->when($filters['priority'] ?? null, fn ($q, $priority) => $q->where('priority', $priority))
             ->when($filters['category'] ?? null, fn ($q, $category) => $q->where('category', $category))
+            // بسته‌ی مجوز 5د: شکایت‌ها و شکایت‌های بی‌پاسخ (کهنه‌ترین مهلت اول)
+            ->when($filters['kind'] ?? null, fn ($q, $kind) => match ($kind) {
+                'awaiting' => $q->awaitingResponse()->reorder()->orderBy('response_due_at'),
+                'complaint', 'support' => $q->where('kind', $kind),
+                default => $q,
+            })
             ->when($filters['assigned'] ?? null, function ($q, $assigned) {
                 if ($assigned === 'unassigned') {
                     $q->whereNull('assigned_to');

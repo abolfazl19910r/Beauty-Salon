@@ -64,6 +64,15 @@
                         <dt style="color: var(--sa-text-dim);">دسته‌بندی</dt>
                         <dd>{{ $ticket->categoryLabel() }}</dd>
                     </div>
+                    @if ($ticket->isComplaint())
+                        <div class="flex justify-between" data-complaint-due>
+                            <dt style="color: var(--sa-text-dim);">مهلت پاسخ (شکایت)</dt>
+                            <dd @if ($ticket->isOverdue()) style="color: var(--sa-danger);" @endif>
+                                {{ $ticket->response_due_at ? \Morilog\Jalali\Jalalian::fromCarbon($ticket->response_due_at)->format('Y/m/d H:i') : '—' }}
+                                @if ($ticket->first_responded_at) · پاسخ داده شد @elseif ($ticket->isOverdue()) · گذشته @endif
+                            </dd>
+                        </div>
+                    @endif
                     <div class="flex justify-between">
                         <dt style="color: var(--sa-text-dim);">وضعیت</dt>
                         <dd>{{ $ticket->status_text }}</dd>

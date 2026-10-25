@@ -13,6 +13,8 @@ class PlatformAlertNotification extends Notification
     public const KINDS = [
         'ticket' => 'تیکت تازه',
         'ticket_reply' => 'پاسخ سالن به تیکت',
+        'complaint' => 'شکایت تازه (مهلت ۷۲ ساعت)',
+        'complaint_due' => 'مهلت پاسخ به شکایت',
         'demo' => 'درخواست دمو',
         'signup' => 'ثبت‌نام سالن',
         'subscription_paid' => 'پرداخت اشتراک',

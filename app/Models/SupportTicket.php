@@ -27,12 +27,30 @@ class SupportTicket extends Model
         'metadata',
         'resolved_at',
         'closed_at',
+        'kind',
+        'salon_id',
+        'response_due_at',
+        'first_responded_at',
+        'reminded_at',
     ];
 
     protected $casts = [
         'metadata' => 'json',
         'resolved_at' => 'datetime',
         'closed_at' => 'datetime',
+        'response_due_at' => 'datetime',
+        'first_responded_at' => 'datetime',
+        'reminded_at' => 'datetime',
+    ];
+
+    public const KIND_SUPPORT = 'support';
+
+    public const KIND_COMPLAINT = 'complaint';
+
+    /** موضوع شکایت مشتری (بسته‌ی مجوز 5د) — در ستون category */
+    public const COMPLAINT_TARGETS = [
+        'complaint_salon' => 'شکایت از سالن',
+        'complaint_platform' => 'شکایت از پلتفرم ماهرو',
     ];
 
     /** برچسب فارسی دسته‌ها (همان گزینه‌های فرم ثبت تیکت؛ پیش‌تر کلید خام مثل «technical» نشان داده می‌شد — بسته‌ی «ح»، ۲) */
@@ -46,7 +64,24 @@ class SupportTicket extends Model
 
     public function categoryLabel(): string
     {
-        return self::CATEGORIES[$this->category] ?? (string) $this->category;
+        return self::CATEGORIES[$this->category] ?? self::COMPLAINT_TARGETS[$this->category] ?? (string) $this->category;
+    }
+
+    public function isComplaint(): bool
+    {
+        return $this->kind === self::KIND_COMPLAINT;
+    }
+
+    /** شکایتی که هنوز پاسخ کادر پلتفرم نگرفته و بسته نشده */
+    public function scopeAwaitingResponse($query)
+    {
+        return $query->where('kind', self::KIND_COMPLAINT)->whereNull('first_responded_at')->whereNotIn('status', ['resolved', 'closed']);
+    }
+
+    public function isOverdue(): bool
+    {
+        return $this->isComplaint() && $this->first_responded_at === null && ! in_array($this->status, ['resolved', 'closed'], true)
+            && $this->response_due_at !== null && $this->response_due_at->isPast();
     }
 
     public function user(): BelongsTo

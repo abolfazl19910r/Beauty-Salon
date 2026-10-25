@@ -145,6 +145,10 @@
                     $saFailedJobs = $saOverview->failedJobsCount();
                     $saUnread = \App\Http\Controllers\SuperAdmin\NotificationInboxController::query(auth()->id())->whereNull('read_at')->count();
                     $openDemoRequests = \App\Models\DemoRequest::query()->open()->count();
+                    // بسته‌ی مجوز 5د: شکایت‌های بی‌پاسخ (قرمز اگر مهلت ۷۲ ساعته‌ی یکی گذشته)
+                    $saAwaiting = \App\Models\SupportTicket::query()->awaitingResponse();
+                    $saOverdue = (clone $saAwaiting)->where('response_due_at', '<', now())->count();
+                    $saComplaints = $saOverdue > 0 ? -$saOverdue : $saAwaiting->count();
                     $saNav = [
                         'سالن‌ها' => [
                             ['superadmin.dashboard', 'superadmin.dashboard', 'داشبورد', 0],
@@ -162,7 +166,7 @@
                         ],
                         'ارتباط' => [
                             ['superadmin.notifications.index', 'superadmin.notifications.*', 'اعلان‌ها', $saUnread],
-                            ['superadmin.support-tickets.index', 'superadmin.support-tickets.*', 'تیکت‌های پشتیبانی', 0],
+                            ['superadmin.support-tickets.index', 'superadmin.support-tickets.*', 'تیکت‌ها و شکایت‌ها', $saComplaints],
                             ['superadmin.demo-requests.index', 'superadmin.demo-requests.*', 'درخواست‌های دمو', $openDemoRequests],
                             ['superadmin.announcements.index', 'superadmin.announcements.*', 'اطلاعیه‌های سراسری', 0],
                         ],
@@ -182,7 +186,7 @@
                             {{-- عدد منفی = هشدار قرمز --}}
                             @if ($count !== 0)
                                 <span class="sa-badge {{ $count < 0 ? 'sa-badge-bad' : '' }}"
-                                      @if ($route === 'superadmin.demo-requests.index') data-demo-requests-badge @elseif ($route === 'superadmin.payment-attention.index') data-attention-badge @elseif ($route === 'superadmin.failed-jobs.index') data-failed-jobs-badge @elseif ($route === 'superadmin.notifications.index') data-inbox-badge @endif
+                                      @if ($route === 'superadmin.demo-requests.index') data-demo-requests-badge @elseif ($route === 'superadmin.payment-attention.index') data-attention-badge @elseif ($route === 'superadmin.failed-jobs.index') data-failed-jobs-badge @elseif ($route === 'superadmin.notifications.index') data-inbox-badge @elseif ($route === 'superadmin.support-tickets.index') data-complaints-badge @endif
                                 >{{ to_persian_num((string) abs($count)) }}</span>
                             @endif
                         </a>

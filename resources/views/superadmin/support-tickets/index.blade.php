@@ -28,6 +28,15 @@
 
     <form method="GET" class="sa-card sa-card-pad mb-5 flex flex-wrap items-end gap-3">
         <div>
+            <label class="block mb-1" style="color: var(--sa-text-dim);">نوع</label>
+            <select name="kind" class="rounded-lg px-3 py-2" style="border:1px solid var(--sa-border); background: var(--sa-bg); color: var(--sa-text);">
+                <option value="">همه</option>
+                <option value="complaint" @selected(request('kind') === 'complaint')>شکایت‌ها</option>
+                <option value="awaiting" @selected(request('kind') === 'awaiting')>شکایت‌های بی‌پاسخ</option>
+                <option value="support" @selected(request('kind') === 'support')>پشتیبانی</option>
+            </select>
+        </div>
+        <div>
             <label class="block mb-1" style="color: var(--sa-text-dim);">وضعیت</label>
             <select name="status" class="rounded-lg px-3 py-2" style="border:1px solid var(--sa-border); background: var(--sa-bg); color: var(--sa-text);">
                 <option value="">همه</option>
@@ -76,7 +85,19 @@
             <tbody>
                 @forelse ($tickets as $ticket)
                     <tr style="border-bottom: 1px solid var(--sa-border);">
-                        <td class="py-3 px-4">{{ $ticket->title }}</td>
+                        <td class="py-3 px-4">
+                            {{ $ticket->title }}
+                            @if ($ticket->isComplaint())
+                                {{-- بسته‌ی مجوز 5د: مهلت ۷۲ ساعته‌ی پاسخ به شکایت (اینماد) --}}
+                                <span class="sa-badge {{ $ticket->isOverdue() ? 'sa-badge-bad' : '' }}" data-complaint-badge>
+                                    شکایت ·
+                                    @if ($ticket->first_responded_at) پاسخ داده شد
+                                    @elseif ($ticket->isOverdue()) مهلت گذشته
+                                    @elseif ($ticket->response_due_at) {{ to_persian_num((string) max(0, (int) now()->diffInHours($ticket->response_due_at, false))) }} ساعت مانده
+                                    @endif
+                                </span>
+                            @endif
+                        </td>
                         <td class="py-3 px-4">{{ $ticket->user->name ?? '—' }}</td>
                         <td class="py-3 px-4">{{ $ticket->categoryLabel() }}</td>
                         <td class="py-3 px-4">{{ $ticket->priority_text }}</td>
