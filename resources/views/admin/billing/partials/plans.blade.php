@@ -80,6 +80,12 @@
             خرید پلن دیگر در دوره‌ی آزمایشی یا بعد از پایان اشتراک همان لحظه اثر می‌کند؛ وسط اشتراک فعال، از پایان دوره‌ی فعلی (مبلغی برنمی‌گردد).
             برای پلن گران‌تر، «ارتقای فوری» همین حالا پلن را عوض می‌کند.
         </p>
+        {{-- بسته‌ی مجوز 5د (ماده‌ی ۳۳): شرایط پیش از خرید؛ فاکتور هر پرداخت در «تاریخچه‌ی فاکتورها» همین صفحه می‌ماند --}}
+        <p class="mt-2 text-xs" style="color:var(--admin-text-dim);" data-billing-terms>
+            خرید طبق
+            <a href="{{ \App\Support\CentralUrl::route('legal.terms') }}#salons" target="_blank" class="underline">قوانین و شرایط سالن‌ها</a>؛
+            فاکتور در «تاریخچه‌ی فاکتورها» پایین همین صفحه می‌ماند.
+        </p>
         <button type="submit" class="mt-4 px-5 py-2.5 rounded-lg text-sm font-bold text-m-onsolid" style="background:var(--admin-accent);">
             پرداخت و تمدید
         </button>

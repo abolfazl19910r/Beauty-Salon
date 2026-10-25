@@ -144,6 +144,11 @@
                 </div>
             </div>
 
+            {{-- بسته‌ی مجوز 5د: رسید ماندگار (ماده‌ی ۳۵) — همان شرایطی که پیش از پرداخت دیده شد --}}
+            <div class="mt-6">
+                @include('bookings.partials.purchase-terms', ['termsSalon' => app(\App\Support\CurrentSalon::class)->get()])
+            </div>
+
             {{--
                 جایگزین کامل BookingActions.jsx — طبق تصمیم پروژه (React → Blade).
                 باگ‌های نسخه‌ی React که اینجا رفع شدن:

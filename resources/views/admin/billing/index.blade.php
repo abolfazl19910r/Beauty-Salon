@@ -176,6 +176,10 @@
                     {{ to_persian_num((string) $includedSpecialists) }} متخصص در قیمت پلن و هر متخصص بیشتر ماهانه {{ to_persian_num(number_format($extraSpecialistPrice)) }} تومان.
                     برای تغییر تعداد متخصص با پشتیبانی تماس بگیرید.
                 </p>
+                <p class="mt-2 text-xs" style="color:var(--admin-text-dim);" data-billing-terms>
+                    خرید طبق <a href="{{ \App\Support\CentralUrl::route('legal.terms') }}#salons" target="_blank" class="underline">قوانین و شرایط سالن‌ها</a>؛
+                    فاکتور در «تاریخچه‌ی فاکتورها» پایین همین صفحه می‌ماند.
+                </p>
                 <button type="submit" class="mt-4 px-5 py-2.5 rounded-lg text-sm font-bold text-m-onsolid" style="background:var(--admin-accent);">
                     پرداخت و تمدید
                 </button>

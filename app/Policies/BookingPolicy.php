@@ -84,7 +84,7 @@ class BookingPolicy
         }
 
         return $booking->status !== 'cancelled'
-            && $booking->booking_time > now()->addHours(24);
+            && $booking->booking_time > now()->addHours(\App\Services\Api\CustomerPresenter::CANCEL_DEADLINE_HOURS);
     }
 
     public function delete(User $user, Booking $booking): bool

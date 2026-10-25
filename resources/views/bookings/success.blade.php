@@ -80,6 +80,13 @@
             </div>
             @endif
 
+            @if($booking)
+                {{-- بسته‌ی مجوز 5د: تأییدیه‌ی شرایط پس از عقد (ماده‌ی ۳۴)؛ همین در «جزئیات نوبت» ماندگار است (ماده‌ی ۳۵) --}}
+                <div class="mb-6 text-right">
+                    @include('bookings.partials.purchase-terms', ['termsSalon' => app(\App\Support\CurrentSalon::class)->get()])
+                </div>
+            @endif
+
             <div class="flex gap-3 justify-center flex-wrap">
                 @if($booking)
                 <a href="{{ route('bookings.show', $booking) }}"

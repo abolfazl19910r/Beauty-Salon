@@ -208,6 +208,8 @@ class CustomerBookingController extends CustomerController
             'online_payment' => $this->salon()->acceptsOnlinePayments(),
             'gateways' => $this->paymentService->gatewayOptions($prepayment),
             'wallet_balance' => (float) ($this->customer($request)->wallet?->balance ?? 0),
+            // بسته‌ی مجوز 5د (ماده‌ی ۳۳): ارائه‌دهنده، شرایط لغو و راه شکایت پیش از پرداخت — اپ از app-0023 نشان می‌دهد
+            'terms' => \App\Support\Booking\PurchaseTerms::forApi($this->salon()),
         ];
     }
 

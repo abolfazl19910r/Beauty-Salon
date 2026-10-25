@@ -94,6 +94,9 @@
                 <div id="discount-message" class="mt-2 text-xs hidden"></div>
             </div>
 
+            {{-- بسته‌ی مجوز 5د: هویت سالن، شرایط لغو و راه شکایت پیش از پرداخت (ماده‌ی ۳۳) --}}
+            @include('bookings.partials.purchase-terms', ['termsSalon' => app(\App\Support\CurrentSalon::class)->get()])
+
             {{-- Final form --}}
             <form action="{{ route('bookings.store') }}" method="POST">
                 @csrf
