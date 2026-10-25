@@ -99,4 +99,18 @@ class LegalPagesTest extends TestCase
         $this->get(route('legal.privacy'))->assertSee(to_persian_num((string) \App\Support\Retention::days('security_logs_days')))
             ->assertSee('شش ماه پس از حذف');
     }
+
+    public function test_the_enamad_badge_code_is_placed_verbatim_on_the_home_page_only(): void
+    {
+        $badge = "<a referrerpolicy='origin' target='_blank' href='https://trustseal.enamad.ir/?id=123456&Code=AbCdEf'><img referrerpolicy='origin' src='https://trustseal.enamad.ir/logo.aspx?id=123456&Code=AbCdEf' alt='' style='cursor:pointer' code='AbCdEf'></a>";
+
+        $this->get(route('central.home'))->assertDontSee('data-enamad-badge', false);
+
+        $this->actingAs($this->superAdmin())->put(route('superadmin.settings.legal'), ['enamad_badge_html' => $badge])->assertSessionHasNoErrors();
+        auth()->logout();
+
+        // عیناً: همان کاراکترها، بی escape (تصویر بی لینک یا کد تغییرکرده تخلف است)
+        $this->get(route('central.home'))->assertSee('data-enamad-badge', false)->assertSee($badge, false);
+        $this->get('/s/rasta')->assertDontSee('trustseal.enamad.ir', false);
+    }
 }

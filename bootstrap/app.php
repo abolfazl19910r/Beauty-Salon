@@ -27,6 +27,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
         // درخواست واقعی HTTP (نه console/صف) — ثبت IP کارهای کلیدی، SecurityLogService::logAction
         $middleware->prepend(\App\Http\Middleware\MarkClientRequest::class);
+        // یک نسخه‌ی اصلی دامنه: www ← بی www (اینماد؛ بسته‌ی مجوز 5د)
+        // append: بعد از TrustProxies تا پشت CDN آدرس مقصد https بماند
+        $middleware->append(\App\Http\Middleware\RedirectToCanonicalHost::class);
 
         $middleware->web(append: [
             \Illuminate\Session\Middleware\StartSession::class,

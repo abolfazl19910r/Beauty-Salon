@@ -118,6 +118,8 @@ class CentralLandingController extends Controller
             // راه‌های تماس از «تنظیمات پلتفرم» سوپرادمین (پیش‌فرض .env)؛ خالی = پنهان
             'contact' => collect(['support_phone', 'public_email', 'instagram_url', 'linkedin_url', 'telegram_url', 'bale_url'])
                 ->mapWithKeys(fn (string $key) => [$key => \App\Support\PlatformSettings::get($key)])->all(),
+            // لوگوی اینماد روی صفحه‌ی اصلی (بسته‌ی مجوز 5د): کد ذخیره‌شده‌ی پنل اینماد، عیناً
+            'enamadBadge' => \App\Support\PlatformSettings::get('enamad_badge_html'),
         ]);
     }
 

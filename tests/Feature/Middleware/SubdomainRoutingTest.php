@@ -78,6 +78,28 @@ class SubdomainRoutingTest extends TestCase
         $response->assertNotFound();
     }
 
+    /**
+     * 🐞 بسته‌ی مجوز 5د: «www» به‌عنوان slug سالن خوانده می‌شد و www.دامنه ۴۰۴ می‌داد (رکورد DNS ‏www در راهنمای آروان هست).
+     * اینماد یک نسخه‌ی اصلی دامنه می‌خواهد (کد لوگو فقط برای همان دامنه کار می‌کند): www با 301 به دامنه‌ی بی www می‌رود.
+     */
+    public function test_www_redirects_permanently_to_the_bare_central_domain_with_path_and_query(): void
+    {
+        $this->get('http://www.'.self::CENTRAL_DOMAIN.'/terms?x=1')
+            ->assertStatus(301)
+            ->assertRedirect('http://'.self::CENTRAL_DOMAIN.'/terms?x=1');
+
+        $this->post('http://www.'.self::CENTRAL_DOMAIN.'/demo-request')->assertStatus(308);
+    }
+
+    public function test_the_www_redirect_keeps_https_seen_through_a_trusted_proxy(): void
+    {
+        config(['trustedproxy.proxies' => '10.0.0.1']);
+
+        $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.1'])->withHeaders(['X-Forwarded-Proto' => 'https'])
+            ->get('http://www.'.self::CENTRAL_DOMAIN.'/')
+            ->assertRedirect('https://'.self::CENTRAL_DOMAIN.'/');
+    }
+
     public function test_bare_central_domain_shows_the_landing_page(): void
     {
         // ⭐ ۲۰۲۶-۰۹-۲۳: placeholder با صفحه‌ی فروش کامل (CentralLandingController) جایگزین شد.
