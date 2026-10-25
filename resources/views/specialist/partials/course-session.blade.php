@@ -52,7 +52,9 @@
             @if (! $course->hasPhotoConsent())
                 <form method="POST" action="{{ route('specialist.bookings.course-consent', $booking) }}">
                     @csrf
-                    <button type="submit" class="px-4 py-2 rounded-lg text-sm text-[var(--specialist-text)]" style="border: 1px solid var(--specialist-border);" onclick="return confirm('مشتری رضایت داده که از جلسه‌های این دوره عکس قبل/بعد گرفته شود؟');">ثبت رضایت مشتری برای عکس</button>
+                    {{-- بسته‌ی مجوز 5د: متنی که باید برای مشتری خوانده شود (ماده‌ی ۵۸) --}}
+                    <p class="text-xs leading-6 mb-2 p-3 rounded-lg text-[var(--specialist-text-dim)]" style="border: 1px solid var(--specialist-border);" data-photo-consent-text>{{ \App\Support\Courses\PhotoConsent::TEXT }}</p>
+                    <button type="submit" class="px-4 py-2 rounded-lg text-sm text-[var(--specialist-text)]" style="border: 1px solid var(--specialist-border);" onclick="return confirm(@js(\App\Support\Courses\PhotoConsent::STAFF_CONFIRM));">ثبت رضایت مشتری برای عکس</button>
                 </form>
             @else
                 <div class="flex flex-wrap gap-2 items-end">

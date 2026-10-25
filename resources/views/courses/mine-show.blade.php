@@ -44,6 +44,21 @@
             </div>
         </div>
 
+        {{-- بسته‌ی مجوز 5د: رضایت عکس قبل/بعد — متن، تاریخ و حق پس گرفتن (مواد ۵۸ و ۵۹) --}}
+        <div class="rounded-xl p-6 mt-5" style="{{ $card }}" data-photo-consent>
+            <h2 class="font-bold mb-2" style="{{ $gold }}">رضایت عکس قبل و بعد</h2>
+            <p class="text-sm leading-7" style="{{ $dim }}">{{ \App\Support\Courses\PhotoConsent::TEXT }}</p>
+            @if ($course->hasPhotoConsent())
+                <p class="text-sm mt-3 persian-number">رضایت شما در {{ verta($course->photo_consent_at)->format('Y/m/d') }} ثبت شد.</p>
+                <form method="POST" action="{{ route('my-courses.consent.withdraw', $course) }}" class="mt-2" onsubmit="return confirm('رضایت پس گرفته شود؟ از این به بعد عکسی گرفته نمی‌شود.');">
+                    @csrf
+                    <button type="submit" class="text-sm underline" style="color: #FCA5A5;">پس گرفتن رضایت</button>
+                </form>
+            @else
+                <p class="text-sm mt-3" style="{{ $dim }}">رضایتی ثبت نشده است؛ عکسی گرفته نمی‌شود. اگر موافقید، به کادر سالن بگویید.</p>
+            @endif
+        </div>
+
         <div class="rounded-xl p-6 mt-5" style="{{ $card }}">
             <h2 class="font-bold mb-4" style="{{ $gold }}">جلسه‌ها</h2>
             @forelse ($bookings as $booking)

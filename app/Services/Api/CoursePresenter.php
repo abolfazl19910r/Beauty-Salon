@@ -69,6 +69,8 @@ class CoursePresenter
             'expires_at_jalali' => $course->expires_at ? Jalalian::fromCarbon($course->expires_at)->format('Y/m/d') : null,
             'next_due_at' => self::time($course->next_due_at),
             'photo_consent' => $course->hasPhotoConsent(),
+            // بسته‌ی مجوز 5د: متن رضایت (ماده‌ی ۵۸)
+            'photo_consent_text' => \App\Support\Courses\PhotoConsent::TEXT,
             'refunded_amount' => $course->refunded_amount,
             'actions' => [
                 'pay' => $course->balanceDue() > 0 && in_array($course->status, ['pending_payment', 'active'], true),
@@ -140,6 +142,7 @@ class CoursePresenter
             'sessions_total' => $course->sessions_total,
             'label' => $booking->course_session_number ? $course->sessionLabel((int) $booking->course_session_number) : null,
             'photo_consent' => $course->hasPhotoConsent(),
+            'photo_consent_text' => \App\Support\Courses\PhotoConsent::TEXT,
         ];
     }
 

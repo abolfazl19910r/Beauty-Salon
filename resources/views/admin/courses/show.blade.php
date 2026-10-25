@@ -75,9 +75,11 @@
                 @if ($course->hasPhotoConsent())
                     <span class="text-xs" style="{{ $dim }}">رضایت عکس: {{ verta($course->photo_consent_at)->format('Y/m/d') }}</span>
                 @else
-                    <form method="POST" action="{{ route('admin.courses.consent', $course) }}">
+                    <form method="POST" action="{{ route('admin.courses.consent', $course) }}" class="w-full">
                         @csrf
-                        <button type="submit" class="text-xs px-3 py-1 rounded-lg" style="{{ $ghost }}" data-confirm-action="مشتری رضایت داده که از جلسه‌ها عکس قبل/بعد گرفته شود؟">ثبت رضایت مشتری برای عکس</button>
+                        {{-- بسته‌ی مجوز 5د: متنی که باید برای مشتری خوانده شود (ماده‌ی ۵۸) --}}
+                        <p class="text-xs leading-6 mb-2 p-3 rounded-lg" style="{{ $ghost }}" data-photo-consent-text>{{ \App\Support\Courses\PhotoConsent::TEXT }}</p>
+                        <button type="submit" class="text-xs px-3 py-1 rounded-lg" style="{{ $ghost }}" data-confirm-action="{{ \App\Support\Courses\PhotoConsent::STAFF_CONFIRM }}">ثبت رضایت مشتری برای عکس</button>
                     </form>
                 @endif
             </div>
@@ -160,7 +162,7 @@
             <div class="rounded-xl p-5" style="{{ $box }}">
                 <h2 class="font-bold mb-2" style="color:var(--admin-text);">تاریخچه</h2>
                 @foreach ($activity as $entry)
-                    <div class="text-xs py-1 persian-number" style="{{ $dim }}">{{ verta($entry->created_at)->format('Y/m/d H:i') }} — {{ ['course_cancelled' => 'لغو دوره', 'course_extended' => 'تمدید مهلت', 'course_photo_consent' => 'ثبت رضایت عکس', 'course_sold_in_person' => 'فروش حضوری', 'course_payment_in_person' => 'پرداخت حضوری'][$entry->description] ?? $entry->description }}@if ($entry->causer) · {{ $entry->causer->name ?? '' }}@endif</div>
+                    <div class="text-xs py-1 persian-number" style="{{ $dim }}">{{ verta($entry->created_at)->format('Y/m/d H:i') }} — {{ ['course_cancelled' => 'لغو دوره', 'course_extended' => 'تمدید مهلت', 'course_photo_consent' => 'ثبت رضایت عکس', 'course_photo_consent_withdrawn' => 'پس گرفتن رضایت عکس (مشتری)', 'course_sold_in_person' => 'فروش حضوری', 'course_payment_in_person' => 'پرداخت حضوری'][$entry->description] ?? $entry->description }}@if ($entry->causer) · {{ $entry->causer->name ?? '' }}@endif</div>
                 @endforeach
             </div>
         @endif

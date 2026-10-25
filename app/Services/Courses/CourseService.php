@@ -498,7 +498,19 @@ class CourseService
         }
 
         $course->update(['photo_consent_at' => now(), 'photo_consent_by' => $by->id]);
-        activity()->performedOn($course)->causedBy($by)->log('course_photo_consent');
+        activity()->performedOn($course)->causedBy($by)
+            ->withProperties(['version' => \App\Support\Courses\PhotoConsent::VERSION])->log('course_photo_consent');
+    }
+
+    /** مشتری رضایت عکس را پس می‌گیرد (بسته‌ی مجوز 5د، ماده‌ی ۵۹ د و هـ): از این به بعد عکسی آپلود نمی‌شود؛ عکس‌های قبلی را خودش پاک می‌کند */
+    public function withdrawConsent(CustomerCourse $course, User $by): void
+    {
+        if (! $course->photo_consent_at) {
+            return;
+        }
+
+        $course->update(['photo_consent_at' => null, 'photo_consent_by' => null]);
+        activity()->performedOn($course)->causedBy($by)->log('course_photo_consent_withdrawn');
     }
 
     /** دوره‌های فعال با مهلت گذشته ← expired؛ نوبت‌های رزروشده‌ی پیش از انقضا انجام‌شدنی می‌مانند */

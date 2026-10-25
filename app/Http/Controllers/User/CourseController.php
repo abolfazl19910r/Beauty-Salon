@@ -208,6 +208,15 @@ class CourseController extends Controller
         return back()->with('success', 'عکس حذف شد.');
     }
 
+    /** بسته‌ی مجوز 5د: مشتری رضایت عکس را پس می‌گیرد (ماده‌ی ۵۹) */
+    public function withdrawConsent(Request $request, CustomerCourse $course, \App\Services\Courses\CourseService $courses): RedirectResponse
+    {
+        $this->authorizeOwn($request, $course);
+        $courses->withdrawConsent($course, $request->user());
+
+        return back()->with('success', 'رضایت عکس پس گرفته شد؛ از این به بعد عکسی گرفته نمی‌شود. عکس‌های قبلی را می‌توانید خودتان پاک کنید.');
+    }
+
     private function authorizeOwn(Request $request, CustomerCourse $course): void
     {
         abort_unless((int) $course->user_id === (int) $request->user()->id, 404);

@@ -190,6 +190,15 @@ class CustomerCourseController extends CustomerController
     }
 
     /** DELETE course-photos/{photoId} — تصمیم ۶: مشتری عکس خودش را حذف می‌کند */
+    /** بسته‌ی مجوز 5د: مشتری رضایت عکس را پس می‌گیرد؛ از این به بعد عکسی آپلود نمی‌شود */
+    public function withdrawConsent(Request $request, int $courseId, \App\Services\Courses\CourseService $courses): JsonResponse
+    {
+        $course = $this->own($request, $courseId);
+        $courses->withdrawConsent($course, $this->customer($request));
+
+        return ApiResponse::success(['photo_consent' => false]);
+    }
+
     public function destroyPhoto(Request $request, int $photoId): JsonResponse
     {
         $this->ownPhoto($request, $photoId)->delete();

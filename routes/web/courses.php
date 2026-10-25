@@ -19,4 +19,6 @@ Route::prefix('my-courses')->name('my-courses.')->group(function () {
     Route::post('/{course}/book', [CourseController::class, 'book'])->whereNumber('course')->middleware('throttle:20,1')->name('book.store');
     Route::get('/{course}/photos/{photo}', [CourseController::class, 'photo'])->whereNumber(['course', 'photo'])->name('photos.show');
     Route::delete('/{course}/photos/{photo}', [CourseController::class, 'destroyPhoto'])->whereNumber(['course', 'photo'])->name('photos.destroy');
+    // بسته‌ی مجوز 5د: پس گرفتن رضایت عکس قبل/بعد
+    Route::post('/{course}/consent/withdraw', [CourseController::class, 'withdrawConsent'])->whereNumber('course')->middleware('throttle:sensitive')->name('consent.withdraw');
 });
