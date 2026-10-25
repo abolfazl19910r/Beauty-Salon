@@ -18,6 +18,7 @@ class PlatformSettingsController extends Controller
     {
         return view('superadmin.settings.edit', [
             'fields' => PlatformSettings::FIELDS,
+            'legalFields' => PlatformSettings::LEGAL_FIELDS,
             'stored' => PlatformSettings::stored(),
             // ⭐ ۲۰۲۶-۱۰-۱۵: وضعیت ربات بله/تلگرام (قبلاً فقط در .env معلوم بود)
             'bot' => app(\App\Services\SuperAdmin\PlatformOverview::class)->botStatus(),
@@ -151,6 +152,55 @@ class PlatformSettingsController extends Controller
         }
 
         return back()->with('success', 'تنظیمات پلتفرم ذخیره شد.');
+    }
+
+    /**
+     * اطلاعات حقوقی و اینماد (بسته‌ی مجوز 5د): «تماس با ما» و هویت صاحب پلتفرم در صفحه‌های حقوقی، و کد لوگوی اینماد. کد اینماد
+     * عیناً ذخیره و عیناً نمایش داده می‌شود (هر تغییری در آن «جعل» حساب می‌شود)؛ فقط باید به trustseal.enamad.ir اشاره کند.
+     */
+    public function updateLegal(Request $request): RedirectResponse
+    {
+        foreach (['landline_phone', 'postal_code', 'national_id'] as $key) {
+            $request->merge([$key => self::latinDigits((string) $request->input($key))]);
+        }
+
+        $data = $request->validate([
+            'legal_name' => ['nullable', 'string', 'max:190'],
+            'national_id' => ['nullable', 'regex:/^[0-9]{10,11}$/'],
+            'landline_phone' => ['nullable', 'string', 'regex:/^\+?[0-9][0-9 -]{6,18}$/'],
+            'contact_email' => ['nullable', 'email', 'max:190'],
+            'postal_address' => ['nullable', 'string', 'max:500'],
+            'postal_code' => ['nullable', 'regex:/^[0-9]{10}$/'],
+            'enamad_badge_html' => ['nullable', 'string', 'max:5000', function (string $attribute, mixed $value, \Closure $fail) {
+                if (! str_contains((string) $value, 'trustseal.enamad.ir')) {
+                    $fail('کد لوگو باید همان کد پنل اینماد باشد (لینک و تصویر از trustseal.enamad.ir).');
+                } elseif (preg_match('/<\s*(iframe|form|object|embed|meta|base|link)\b/i', (string) $value)) {
+                    $fail('کد لوگوی اینماد فقط لینک و تصویر (یا اسکریپت خود اینماد) است.');
+                }
+            }],
+        ], [
+            'landline_phone.regex' => 'شماره‌ی تلفن معتبر نیست (فقط رقم، فاصله، خط تیره و + اول شماره).',
+            'postal_code.regex' => 'کد پستی ۱۰ رقم است.',
+            'national_id.regex' => 'شناسه‌ی ملی شرکت ۱۱ رقم است (کد ملی شخص ۱۰ رقم).',
+            'contact_email.email' => 'ایمیل معتبر نیست.',
+        ]);
+
+        $before = PlatformSettings::stored();
+        PlatformSettings::save($data);
+        $after = PlatformSettings::stored();
+        // متن کامل کد اینماد در گزارش نمی‌آید (فقط «عوض شد»)
+        $changes = \App\Services\SuperAdmin\SuperAdminAudit::diff(
+            \Illuminate\Support\Arr::except(array_intersect_key($before, $data), ['enamad_badge_html']),
+            \Illuminate\Support\Arr::except($after, ['enamad_badge_html']),
+        );
+        if (($before['enamad_badge_html'] ?? null) !== ($after['enamad_badge_html'] ?? null)) {
+            $changes['enamad_badge_html'] = ['…', 'عوض شد'];
+        }
+        if ($changes) {
+            app(\App\Services\SuperAdmin\SuperAdminAudit::class)->record('settings.updated', 'اطلاعات حقوقی و اینماد', null, $changes);
+        }
+
+        return back()->with('success', 'اطلاعات حقوقی و اینماد ذخیره شد.');
     }
 
     private static function latinDigits(string $value): string

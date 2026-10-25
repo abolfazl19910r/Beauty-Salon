@@ -26,8 +26,28 @@ final class PlatformSettings
         'demo_notify_email' => ['label' => 'ایمیل گیرنده‌ی درخواست‌های دمو', 'config' => 'brand.demo_notify_email', 'type' => 'email'],
     ];
 
+    /**
+     * ⭐ اطلاعات حقوقی و اینماد (بسته‌ی مجوز 5د): «تماس با ما» (تلفن ثابت، ایمیل و نشانی پستی؛ الزام اینماد)، هویت صاحب پلتفرم در
+     * قوانین (ماده‌ی ۳۳ قانون تجارت الکترونیکی) و کد HTML لوگوی اینماد که عیناً روی صفحه‌ی اصلی می‌آید. پیش‌فرض .env ندارند.
+     */
+    public const LEGAL_FIELDS = [
+        'legal_name' => ['label' => 'نام صاحب امتیاز (شخص یا شرکت، همان نام شناسنامه‌ی اینماد)', 'type' => 'text', 'max' => 190],
+        'national_id' => ['label' => 'شناسه‌ی ملی شرکت (اختیاری؛ فقط اگر شخص حقوقی است)', 'type' => 'text', 'max' => 20],
+        'landline_phone' => ['label' => 'تلفن ثابت (الزام اینماد)', 'type' => 'phone', 'max' => 20],
+        'contact_email' => ['label' => 'ایمیل تماس (الزام اینماد؛ خالی = ایمیل عمومی بالا)', 'type' => 'email', 'max' => 190],
+        'postal_address' => ['label' => 'نشانی پستی (الزام اینماد)', 'type' => 'textarea', 'max' => 500],
+        'postal_code' => ['label' => 'کد پستی', 'type' => 'postal', 'max' => 10],
+        'enamad_badge_html' => ['label' => 'کد HTML لوگوی اینماد (عیناً از پنل اینماد، بخش «دسترسی‌ها و امکانات»)', 'type' => 'html', 'max' => 5000],
+    ];
+
     public static function get(string $key): ?string
     {
+        if (array_key_exists($key, self::LEGAL_FIELDS)) {
+            $value = self::raw($key);
+
+            return $key === 'contact_email' ? ($value ?? self::get('public_email')) : $value;
+        }
+
         if (! array_key_exists($key, self::FIELDS)) {
             throw new \InvalidArgumentException("Unknown platform setting [{$key}]");
         }
@@ -76,7 +96,7 @@ final class PlatformSettings
     public static function save(array $values): void
     {
         foreach ($values as $key => $value) {
-            if (! array_key_exists($key, self::FIELDS)) {
+            if (! array_key_exists($key, self::FIELDS) && ! array_key_exists($key, self::LEGAL_FIELDS)) {
                 continue;
             }
             $value = $value === null ? null : trim($value);

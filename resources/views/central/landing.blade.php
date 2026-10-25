@@ -515,7 +515,7 @@ section{padding:110px 0}
    FOOTER
    ========================================================= */
 footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-size:14px}
-.fg{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:34px;margin-bottom:38px}
+.fg{display:grid;grid-template-columns:1.6fr repeat(auto-fit,minmax(120px,1fr));gap:34px;margin-bottom:38px}
 @media(max-width:780px){.fg{grid-template-columns:1fr 1fr}.fg>div:first-child{grid-column:1/-1}}
 .fg h4{color:var(--tx);margin-bottom:14px;font-size:15px}
 .fg a{display:block;margin-bottom:9px;transition:color .25s;width:max-content}
@@ -966,7 +966,8 @@ footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-s
 <footer><div class="wrap"><div class="fg">
 <div><a class="brand" href="#top" style="margin-bottom:14px"><svg aria-hidden="true"><use href="#mark"/></svg><span>ماهرو<small>MAHRU</small></span></a><p style="max-width:300px">نرم‌افزار نوبت‌دهی و مدیریت سالن‌های زیبایی؛ ساده برای مشتری، قدرتمند برای مدیر.</p></div>
 <div><h4>محصول</h4><a href="#features">امکانات</a><a href="#product">پنل مدیریت</a><a href="#plans">تعرفه‌ها</a><a href="#for">مناسب چه کسانی</a></div>
-<div><h4>پشتیبانی</h4><a href="#faq">سؤالات متداول</a><a href="#start">درخواست دمو</a><a href="{{ route('login') }}">ورود به پنل</a>@if ($contact['support_phone'])<a href="tel:{{ $contact['support_phone'] }}">تماس با ما</a>@endif</div>
+<div><h4>پشتیبانی</h4><a href="#faq">سؤالات متداول</a><a href="#start">درخواست دمو</a><a href="{{ route('login') }}">ورود به پنل</a><a href="{{ route('legal.contact') }}" data-footer-contact>تماس با ما</a>@if ($contact['support_phone'])<a href="tel:{{ $contact['support_phone'] }}">تلفن پشتیبانی</a>@endif</div>
+{{-- بسته‌ی مجوز 5د: صفحه‌های حقوقی --}}<div data-footer-legal><h4>قوانین</h4><a href="{{ route('legal.terms') }}">قوانین و شرایط</a><a href="{{ route('legal.privacy') }}">حریم خصوصی</a></div>
 @if (array_filter(\Illuminate\Support\Arr::except($contact, ['support_phone'])))<div><h4>شبکه‌ها</h4>@if ($contact['instagram_url'])<a href="{{ $contact['instagram_url'] }}" rel="noopener" target="_blank">اینستاگرام</a>@endif @if ($contact['linkedin_url'])<a href="{{ $contact['linkedin_url'] }}" rel="noopener" target="_blank">لینکدین</a>@endif @if ($contact['telegram_url'])<a href="{{ $contact['telegram_url'] }}" rel="noopener" target="_blank">تلگرام</a>@endif @if ($contact['bale_url'])<a href="{{ $contact['bale_url'] }}" rel="noopener" target="_blank">بله</a>@endif @if ($contact['public_email'])<a href="mailto:{{ $contact['public_email'] }}">ایمیل</a>@endif</div>@endif
 </div><div class="copy"><span>© <span id="yr">{{ to_persian_num((string) \Morilog\Jalali\Jalalian::now()->getYear()) }}</span> ماهرو · همه‌ی حقوق محفوظ است</span><span>ساخته‌شده برای سالن‌های ایران</span></div></div></footer>
 

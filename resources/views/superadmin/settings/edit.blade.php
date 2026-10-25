@@ -40,6 +40,41 @@
         </form>
     </div>
 
+    {{-- بسته‌ی مجوز 5د: «تماس با ما»، هویت صاحب پلتفرم در صفحه‌های حقوقی و لوگوی اینماد --}}
+    <div class="sa-card sa-card-pad" id="legal-settings">
+        <h2 class="sa-card-title">اطلاعات حقوقی و اینماد</h2>
+        <p class="sa-card-desc mb-5">
+            در صفحه‌ی «تماس با ما» و صفحه‌های «قوانین» و «حریم خصوصی» نشان داده می‌شوند. اینماد درج تلفن ثابت، ایمیل و نشانی پستی را در «تماس با ما»
+            الزامی می‌داند. کد لوگو را <b>بی هیچ تغییری</b> از پنل اینماد کپی کنید؛ عیناً روی صفحه‌ی اصلی می‌آید (تصویر بی لینک یا کپی‌شده تخلف است).
+        </p>
+        <form method="POST" action="{{ route('superadmin.settings.legal') }}" class="grid md:grid-cols-2 gap-4">
+            @csrf
+            @method('PUT')
+            @foreach ($legalFields as $key => $field)
+                <div class="{{ in_array($field['type'], ['textarea', 'html'], true) ? 'md:col-span-2' : '' }}">
+                    <label for="ps-{{ $key }}" class="sa-label">{{ $field['label'] }}</label>
+                    @if (in_array($field['type'], ['textarea', 'html'], true))
+                        <textarea id="ps-{{ $key }}" name="{{ $key }}" rows="{{ $field['type'] === 'html' ? 4 : 2 }}" class="sa-input"
+                                  @if ($field['type'] === 'html') dir="ltr" style="text-align: left; font-family: monospace; font-size: 12px;" spellcheck="false" @endif>{{ old($key, $stored[$key] ?? '') }}</textarea>
+                    @else
+                        <input id="ps-{{ $key }}" name="{{ $key }}" value="{{ old($key, $stored[$key] ?? '') }}"
+                               @if ($field['type'] !== 'text') dir="ltr" style="text-align: left;" @endif
+                               type="{{ $field['type'] === 'email' ? 'email' : 'text' }}"
+                               inputmode="{{ in_array($field['type'], ['phone', 'postal'], true) ? 'numeric' : ($field['type'] === 'email' ? 'email' : 'text') }}"
+                               class="sa-input">
+                    @endif
+                    @error($key)
+                        <p class="mt-1 text-sm" style="color: var(--sa-danger);">{{ $message }}</p>
+                    @enderror
+                </div>
+            @endforeach
+            <div class="md:col-span-2 flex flex-wrap gap-4 items-center">
+                <button type="submit" class="sa-btn">ذخیره</button>
+                <a href="{{ \App\Support\CentralUrl::route('legal.contact') }}" target="_blank" class="text-sm" style="color: var(--sa-accent);">دیدن «تماس با ما»</a>
+            </div>
+        </form>
+    </div>
+
     <div class="space-y-6">
     <div class="sa-card sa-card-pad" data-push-settings>
         <h2 class="sa-card-title">اعلان اپ‌ها (پوش)</h2>

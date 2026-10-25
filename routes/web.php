@@ -139,6 +139,13 @@ Route::get('/sw.js', [\App\Http\Controllers\Pwa\PwaController::class, 'serviceWo
 Route::get('/offline', [\App\Http\Controllers\Pwa\PwaController::class, 'offline'])->name('pwa.offline');
 Route::get('/specialist/manifest.webmanifest', [\App\Http\Controllers\Pwa\PwaController::class, 'specialistManifest'])->name('pwa.specialist-manifest');
 
+// صفحه‌های حقوقی پلتفرم (بسته‌ی مجوز 5د): بدون Route::domain مثل صفحه‌ی اصلی؛ لینک‌ها همیشه با CentralUrl روی دامنه‌ی اصلی ساخته می‌شوند
+Route::controller(\App\Http\Controllers\Legal\LegalPageController::class)->name('legal.')->group(function () {
+    Route::get('/privacy', 'privacy')->name('privacy');
+    Route::get('/terms', 'terms')->name('terms');
+    Route::get('/contact', 'contact')->name('contact');
+});
+
 // گزارش نقض CSP (بسته‌ی مجوز 5د، مرحله‌ی Report-Only): بدون Route::domain، بدون CSRF (مرورگر خودش بی کوکی و توکن می‌فرستد)
 Route::post('/csp-report', \App\Http\Controllers\Security\CspReportController::class)
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class, \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])

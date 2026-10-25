@@ -55,6 +55,7 @@ Route::patch('/demo-requests/{demoRequest}', [DemoRequestController::class, 'upd
 // تنظیمات پلتفرم: راه‌های تماس صفحه‌ی فروش و ایمیل درخواست‌های دمو (۲۰۲۶-۱۰-۱۴)
 Route::get('/settings', [PlatformSettingsController::class, 'edit'])->name('settings.edit');
 Route::put('/settings', [PlatformSettingsController::class, 'update'])->name('settings.update');
+Route::put('/settings/legal', [PlatformSettingsController::class, 'updateLegal'])->name('settings.legal');
 Route::put('/settings/push', [PlatformSettingsController::class, 'updatePush'])->name('settings.push');
 Route::post('/settings/push/check', [PlatformSettingsController::class, 'checkPush'])->middleware('throttle:10,1')->name('settings.push.check');
 Route::put('/settings/bot', [PlatformSettingsController::class, 'updateBot'])->middleware('throttle:20,1')->name('settings.bot');

@@ -418,6 +418,7 @@
 
         <div class="border-t border-m-gold/10 mt-8 pt-6 text-center text-m-tx/40 text-sm">
             <p>© {{ date('Y') }} {{ $currentSalonTitle }}. تمامی حقوق محفوظ است.</p>
+            @include('partials.platform-legal-links')
         </div>
     </div>
 </footer>
