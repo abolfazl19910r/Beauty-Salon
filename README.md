@@ -10,7 +10,7 @@
 [![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=flat-square&logo=php)](https://php.net)
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com)
 [![Vite](https://img.shields.io/badge/Vite-8.x-646CFF?style=flat-square&logo=vite)](https://vitejs.dev)
-[![Tests](https://img.shields.io/badge/tests-2357%20passing-brightgreen?style=flat-square)](#-اجرای-تستها)
+[![Tests](https://img.shields.io/badge/tests-2360%20passing-brightgreen?style=flat-square)](#-اجرای-تستها)
 
 ---
 
@@ -527,8 +527,8 @@ php artisan test                       # SQLite در حافظه (پیش‌فرض
 
 | دیتابیس | آخرین اجرای کامل | شکست | skip |
 |---|---|---|---|
-| SQLite | ۲۳۵۷ (۲۰۲۶-۱۰-۲۵) | ۰ | ۱۱ |
-| MariaDB 10.11 و MySQL 8.0 | ۲۳۵۷ (۲۰۲۶-۱۰-۲۵) | ۰ | ۱ |
+| SQLite | ۲۳۶۰ (۲۰۲۶-۱۰-۲۵) | ۰ | ۱۱ |
+| MariaDB 10.11 و MySQL 8.0 | ۲۳۶۰ (۲۰۲۶-۱۰-۲۵) | ۰ | ۱ |
 
 > `Vite manifest not found` در تست‌ها: یک بار `npm run build`.
 > تست‌های زیردامنه: `vendor/bin/phpunit -c phpunit.subdomain.xml`.
@@ -638,6 +638,9 @@ php artisan up
 ## 🆕 آخرین تغییرات
 
 تاریخچه‌ی کامل، تصمیم‌ها و قدم‌های باز در [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md).
+
+**۲۰۲۶-۱۰-۲۵ — ساعت کاری در گوشی**
+- `/salon-signup` در عرض گوشی دیگر سرریز افقی ندارد (پیش‌تر ۵۸ پیکسل): ردیف ساعت کاری در گوشی دوخطی است. در تنظیمات سالن (پنل مدیر) و فرم سالن ابرمدیر هم ساعت‌ها در گوشی و تبلت کامل دیده می‌شوند (پیش‌تر فقط «09»).
 
 **۲۰۲۶-۱۰-۲۵ — بسته‌ی مجوز پلتفرم (5د)**
 - امنیت مستقل از CDN آروان: هدرهای امنیتی و HSTS از خود برنامه، CSP در حالت فقط گزارش، محدودیت نرخ روی کد پیامکی، کد تخفیف، نظر و کارهای مشتری؛ پیش‌فرض `TRUSTED_PROXIES` دیگر Cloudflare نیست؛ nginx با IP واقعی، لاگ دسترسی ماندگار، HTTPS روی سرور اصلی (acme.sh)، حالت `--no-cdn`، سخت‌کردن SSH، fail2ban و پایش بیرونی در `ARVAN_SERVER.md`.

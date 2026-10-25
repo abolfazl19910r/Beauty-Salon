@@ -10,7 +10,7 @@
 [![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=flat-square&logo=php)](https://php.net)
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com)
 [![Vite](https://img.shields.io/badge/Vite-8.x-646CFF?style=flat-square&logo=vite)](https://vitejs.dev)
-[![Tests](https://img.shields.io/badge/tests-2357%20passing-brightgreen?style=flat-square)](#-running-the-tests)
+[![Tests](https://img.shields.io/badge/tests-2360%20passing-brightgreen?style=flat-square)](#-running-the-tests)
 
 ---
 
@@ -527,8 +527,8 @@ For MariaDB/MySQL, copy `phpunit.xml` with `DB_CONNECTION=mysql` and an empty da
 
 | Database | Last full run | Failures | Skipped |
 |---|---|---|---|
-| SQLite | 2357 (2026-10-25) | 0 | 11 |
-| MariaDB 10.11 and MySQL 8.0 | 2357 (2026-10-25) | 0 | 1 |
+| SQLite | 2360 (2026-10-25) | 0 | 11 |
+| MariaDB 10.11 and MySQL 8.0 | 2360 (2026-10-25) | 0 | 1 |
 
 > `Vite manifest not found` in tests: run `npm run build` once.
 > Subdomain tests: `vendor/bin/phpunit -c phpunit.subdomain.xml`.
@@ -638,6 +638,9 @@ Cron and workers: [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCH
 ## 🆕 Changelog
 
 Full history, decisions and open items in [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md) (Persian).
+
+**2026-10-25 — working hours on phones**
+- `/salon-signup` no longer scrolls sideways on phones (it overflowed by 58 px): the working-hours row wraps onto two lines. In the salon settings (admin panel) and the super-admin salon form, the times are now fully visible on phones and tablets (previously only "09").
 
 **2026-10-25 — platform licensing package (5d)**
 - Security independent of the Arvan CDN: security headers and HSTS from the app itself, a report-only CSP, rate limits on SMS codes, discount codes, reviews and customer actions; the `TRUSTED_PROXIES` default is no longer Cloudflare; nginx with the real IP, a persistent access log, HTTPS on the origin (acme.sh), a `--no-cdn` mode, SSH hardening, fail2ban and external uptime monitoring in `ARVAN_SERVER.md`.
