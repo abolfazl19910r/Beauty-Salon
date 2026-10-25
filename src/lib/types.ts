@@ -59,6 +59,8 @@ export type CourseFile = {
   sessions_total: number;
   sessions_used: number;
   photo_consent: boolean;
+  /** متن رضایت عکس که برای مشتری خوانده می‌شود (بسته‌ی مجوز 5د)؛ سرورهای قدیمی‌تر ندارند */
+  photo_consent_text?: string;
   sessions: {
     booking_id: number;
     session_number: number | null;

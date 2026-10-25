@@ -168,6 +168,36 @@ it('a treatment-course session shows its label and saves the session note', asyn
   await waitFor(() => expect(calls.find((c) => c.url.includes('/session-note'))?.body).toEqual({ note: 'شدت ۱۸', visible_to_customer: true }));
 });
 
+it('staff read the consent text to the customer before recording photo consent (5د)', async () => {
+  mockSecure.set('mahru.token', '5|abc');
+  await require('@react-native-async-storage/async-storage').setItem('mahru.account', JSON.stringify(ACCOUNT));
+  const course = { id: 12, name: 'لیزر ۶ جلسه', session_number: 2, sessions_total: 6, label: 'جلسه‌ی ۲ از ۶', photo_consent: false };
+  let consent = false;
+  routes = (url, init) => {
+    if (url.includes('/staff/bookings/41/course-consent') && init.method === 'POST') {
+      consent = true;
+      return [200, ok({ photo_consent: true })];
+    }
+    if (url.includes('/staff/bookings/41/course')) {
+      return [200, ok({ id: 12, name: 'لیزر ۶ جلسه', status: 'active', status_label: 'فعال', sessions_total: 6, sessions_used: 1, photo_consent: consent, photo_consent_text: 'با گرفتن عکس قبل و بعد موافقم.', sessions: [
+        { booking_id: 41, session_number: 2, label: 'جلسه‌ی ۲ از ۶', status: 'confirmed', burned: false, booking_time_jalali: '1405/07/19 10:00', specialist: { id: 3, name: 'سارا احمدی' }, note: null, note_visible_to_customer: null, photos: [] },
+      ] })];
+    }
+    if (url.includes('/staff/bookings/41')) return [200, ok({ ...BOOKING, status: 'confirmed', course, actions: { confirm: false, cancel: true, complete: true } })];
+    if (url.includes('/staff/notifications')) return [200, ok([], { current_page: 1, last_page: 1, total: 0, per_page: 20, unread_count: 0 })];
+    return [404, { success: false, error: { code: 'not_found', message: 'x' } }];
+  };
+  const alert = jest.spyOn(Alert, 'alert').mockImplementation((_t, _m, buttons) => buttons?.find((b) => b.text === 'ثبت')?.onPress?.());
+
+  renderRouter('./src/app', { initialUrl: '/booking/41' });
+
+  expect(await screen.findByText('با گرفتن عکس قبل و بعد موافقم.')).toBeTruthy();
+  fireEvent.press(screen.getByText('مشتری رضایت داد'));
+  expect(alert).toHaveBeenCalledWith('ثبت رضایت عکس؟', 'متن رضایت را برای مشتری خواندید و او صریحاً موافقت کرد؟', expect.any(Array));
+  await waitFor(() => expect(calls.some((c) => c.url.includes('/course-consent'))).toBe(true));
+  expect(await screen.findByText(/عکس‌های این جلسه/)).toBeTruthy();
+});
+
 it('takes an after photo for a course session with the camera and uploads it', async () => {
   mockSecure.set('mahru.token', '5|abc');
   await require('@react-native-async-storage/async-storage').setItem('mahru.account', JSON.stringify(ACCOUNT));

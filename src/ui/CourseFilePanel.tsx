@@ -14,6 +14,8 @@ import { radius, space, usePalette } from './theme';
  * پرونده‌ی جلسه‌ی دوره‌ی درمانی روی صفحه‌ی نوبت (بسته‌ی ب): یادداشت همین جلسه (با «نمایش به مشتری»)، رضایت عکس، و یادداشت‌ها و
  * عکس‌های جلسه‌های قبلی همان دوره. عکس قبل/بعد با دوربین یا از گالری (فقط بعد از رضایت، حداکثر ۴ برای هر جلسه)؛ دیدن عکس‌ها با توکن.
  */
+export const CONSENT_CONFIRM = 'متن رضایت را برای مشتری خواندید و او صریحاً موافقت کرد؟';
+
 export function CourseFilePanel({ booking }: { booking: Booking }) {
   const p = usePalette();
   const api = useApi();
@@ -90,8 +92,9 @@ export function CourseFilePanel({ booking }: { booking: Booking }) {
       {file.data && !file.data.photo_consent ? (
         <Card>
           <Notice tone="warning" text="برای عکس قبل/بعد، رضایت مشتری لازم است (یک بار برای کل دوره)." />
+          {file.data.photo_consent_text ? <T size={14} testID="photo-consent-text">{file.data.photo_consent_text}</T> : null}
           <Button kind="secondary" title="مشتری رضایت داد" loading={consent.isPending}
-            onPress={() => Alert.alert('ثبت رضایت عکس؟', 'فقط وقتی مشتری حضوری موافقت کرده است.', [
+            onPress={() => Alert.alert('ثبت رضایت عکس؟', CONSENT_CONFIRM, [
               { text: 'انصراف', style: 'cancel' },
               { text: 'ثبت', onPress: () => consent.mutate(undefined, { onError: (e) => Alert.alert('ثبت نشد', errorMessage(e)) }) },
             ])} />

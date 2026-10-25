@@ -75,16 +75,16 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     name: v.name,
     slug: v.slug,
     scheme: v.scheme,
-    version: '0.3.5',
+    version: '0.3.6',
     orientation: 'portrait',
     icon: `${v.assets}/icon.png`,
     userInterfaceStyle: 'automatic',
     platforms: ['android'],
     android: {
       package: v.package,
-      // ۱۳ (0.3.5): دامنه‌ی arisheh.ir (سرور پیش‌فرض و App Links)؛ ۱۲ (0.3.4): «فعال‌سازی حساب متخصص» در صفحه‌ی ورود؛ ۱۱ (0.3.3): نوبت لغوشده/نیامده بی «دریافت در سالن»، پیش‌پرداخت فقط وقتی پرداخت شده؛ ۱۰ (0.3.2): «امروز» همکار با دریافت در سالن، نیامد و لغوشده‌ها؛ ۹ (0.3.1): اسکنر QR بعد از ورود؛ ۸ (0.3.0): بسته‌ی ۵ (App Links، بررسی نسخه‌ی تازه) — نصب روی نسخه‌ی قبلی به‌صورت Update. هر APK تازه‌ای که آپلود می‌شود باید
+      // ۱۴ (0.3.6): بسته‌ی مجوز 5د — پذیرش قوانین در ثبت‌نام، شرایط خرید پیش از ثبت نوبت، متن رضایت عکس و پس گرفتن آن؛ ۱۳ (0.3.5): دامنه‌ی arisheh.ir (سرور پیش‌فرض و App Links)؛ ۱۲ (0.3.4): «فعال‌سازی حساب متخصص» در صفحه‌ی ورود؛ ۱۱ (0.3.3): نوبت لغوشده/نیامده بی «دریافت در سالن»، پیش‌پرداخت فقط وقتی پرداخت شده؛ ۱۰ (0.3.2): «امروز» همکار با دریافت در سالن، نیامد و لغوشده‌ها؛ ۹ (0.3.1): اسکنر QR بعد از ورود؛ ۸ (0.3.0): بسته‌ی ۵ (App Links، بررسی نسخه‌ی تازه) — نصب روی نسخه‌ی قبلی به‌صورت Update. هر APK تازه‌ای که آپلود می‌شود باید
       // versionCode بزرگ‌تری داشته باشد (ابرمدیر ← نسخه‌های اپ، از خود APK می‌خواند)
-      versionCode: 13,
+      versionCode: 14,
       ...(variant === 'customer' ? { intentFilters: customerIntentFilters(production) } : {}),
       googleServicesFile: GOOGLE_SERVICES_JSON,
       adaptiveIcon: {

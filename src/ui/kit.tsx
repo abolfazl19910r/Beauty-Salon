@@ -29,6 +29,8 @@ export function T({
   center,
   style,
   numberOfLines,
+  onPress,
+  testID,
 }: {
   children: ReactNode;
   weight?: Weight;
@@ -38,11 +40,17 @@ export function T({
   center?: boolean;
   style?: StyleProp<TextStyle>;
   numberOfLines?: number;
+  /** متن لینک‌مانند (مثلاً لینک صفحه‌های حقوقی) */
+  onPress?: () => void;
+  testID?: string;
 }) {
   const p = usePalette();
   return (
     <Text
       numberOfLines={numberOfLines}
+      onPress={onPress}
+      testID={testID}
+      accessibilityRole={onPress ? 'link' : undefined}
       style={[
         { fontFamily: fonts[weight], fontSize: size, lineHeight: Math.round(size * 1.7), color: color ?? (muted ? p.textMuted : p.text), textAlign: center ? 'center' : 'left', writingDirection: 'rtl' },
         style,

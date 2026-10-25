@@ -5,7 +5,7 @@
  * اعتماد نمی‌شود؛ ۴۰۱ ← ورود همان سالن (سالن می‌ماند)؛ سالن معلق.
  */
 import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
-import { Linking } from 'react-native';
+import { Alert, Linking } from 'react-native';
 
 jest.setTimeout(60_000);
 
@@ -50,6 +50,12 @@ const BOOKING = {
   actions: { pay: true, cancel: true, reschedule: false, rate: false },
 };
 const HOME = { salon: SALON, upcoming_bookings: [BOOKING], awaiting_payment_count: 1, loyalty_points: 40, wallet_balance: 0, unread_notifications: 0 };
+const TERMS = {
+  provider: { name: 'سالن راستا', address: 'تهران، خیابان آزادی، پلاک ۵', phone: '02144556677', platform: 'ماهرو' },
+  cancellation: ['لغو رایگان تا ۲۴ ساعت پیش از زمان نوبت.', 'نوبت پرداخت‌نشده بعد از ۳۰ دقیقه لغو می‌شود.'],
+  complaints: 'شکایت: پروفایل ← شکایت و پیگیری (پاسخ حداکثر ظرف ۷۲ ساعت)',
+  terms_url: 'https://arisheh.ir/terms',
+};
 const GATEWAY = { id: 2, name: 'زرین‌پال', driver: 'zarinpal', fee: 1500, total: 151500, fee_percent: 1, fee_fixed: 0 };
 
 type Route = (url: string, init: RequestInit) => [number, unknown];
@@ -111,10 +117,18 @@ it('picks the salon by code, signs up with the SMS code and lands on home', asyn
   fireEvent.press(screen.getByLabelText('پنهان کردن رمز'));
   expect(screen.getByLabelText('رمز عبور').props.secureTextEntry).toBe(true);
 
+  // بسته‌ی مجوز 5د: بی پذیرش قوانین و حریم خصوصی کدی فرستاده نمی‌شود؛ لینک‌ها صفحه‌های دامنه‌ی مرکزی را باز می‌کنند
+  fireEvent.press(screen.getByText('فرستادن کد تأیید'));
+  expect(calls.some((c) => c.url.endsWith('/register'))).toBe(false);
+  fireEvent.press(screen.getByText('قوانین و شرایط'));
+  expect(Linking.openURL).toHaveBeenLastCalledWith(expect.stringMatching(/^https?:\/\/[^/]+\/terms$/));
+  fireEvent.press(screen.getByText('حریم خصوصی'));
+  expect(Linking.openURL).toHaveBeenLastCalledWith(expect.stringMatching(/\/privacy$/));
+  fireEvent(screen.getByLabelText('پذیرش قوانین و حریم خصوصی'), 'valueChange', true);
   fireEvent.press(screen.getByText('فرستادن کد تأیید'));
 
   fireEvent.changeText(await screen.findByLabelText('کد تأیید'), '۱۲۳۴۵۶');
-  expect(calls.find((c) => c.url.endsWith('/register'))?.body).toEqual({ name: 'مریم رضایی', phone: '09121111111', password: 'secret123', password_confirmation: 'secret123' });
+  expect(calls.find((c) => c.url.endsWith('/register'))?.body).toEqual({ name: 'مریم رضایی', phone: '09121111111', password: 'secret123', password_confirmation: 'secret123', accept_terms: true });
   fireEvent.press(screen.getByText('ساخت حساب'));
 
   await screen.findByText('سلام مریم');
@@ -132,7 +146,7 @@ it('books a service, opens the bank in the browser and trusts only the server fo
     if (url.includes('/customer/services')) return [200, ok({ categories: [], services: [{ id: 3, name: 'کوتاهی مو', description: null, price: 500000, duration_minutes: 60, prepayment_amount: 150000, image_url: null, category: null }] })];
     if (url.includes('/specialists/5/dates')) return [200, ok([{ date: '2026-10-20', date_jalali: '1405/07/28', label: 'دوشنبه 28 مهر' }])];
     if (url.includes('/specialists/5/slots')) return [200, ok([{ time: '10:00', booking_time: '2026-10-20T10:00:00+03:30' }])];
-    if (url.endsWith('/customer/bookings/quote')) return [200, ok({ service: { id: 3, name: 'کوتاهی مو' }, price: 500000, prepayment_amount: 150000, discount_code: null, discount_amount: 0, remaining_amount: 350000, online_payment: true, gateways: [GATEWAY], wallet_balance: 0 })];
+    if (url.endsWith('/customer/bookings/quote')) return [200, ok({ service: { id: 3, name: 'کوتاهی مو' }, price: 500000, prepayment_amount: 150000, discount_code: null, discount_amount: 0, remaining_amount: 350000, online_payment: true, gateways: [GATEWAY], wallet_balance: 0, terms: TERMS })];
     if (url.endsWith('/customer/bookings') && init.method === 'POST') return [201, ok(BOOKING, { payment: { required: true, amount: 150000, gateways: [GATEWAY], wallet_balance: 0 } })];
     if (url.endsWith('/customer/bookings/41/pay')) return [200, ok({ state: 'redirect', checkout_url: 'http://x/s/rasta/app/checkout/tx-1?signature=s', transaction: '0b8f6b3e-1111-4222-8333-944444444444', gateway: 'zarinpal', fee: 1500, expires_in: 900 })];
     if (url.includes('/customer/bookings/41')) return [200, ok(BOOKING)];
@@ -155,6 +169,13 @@ it('books a service, opens the bank in the browser and trusts only the server fo
 
   // پیش‌فاکتور: پیش‌پرداخت و پرداخت در سالن
   await screen.findByText('۳۵۰٬۰۰۰ تومان');
+  // اطلاعات پیش از خرید (مواد ۳۳ تا ۳۵): ارائه‌دهنده، شرایط لغو و راه شکایت پیش از ثبت
+  expect(screen.getByText('ارائه‌دهنده‌ی خدمت')).toBeTruthy();
+  expect(screen.getByText('تهران، خیابان آزادی، پلاک ۵')).toBeTruthy();
+  expect(screen.getByText(/لغو رایگان تا ۲۴ ساعت/)).toBeTruthy();
+  expect(screen.getByText(/پاسخ حداکثر ظرف ۷۲ ساعت/)).toBeTruthy();
+  fireEvent.press(screen.getByText('قوانین و شرایط کامل'));
+  expect(Linking.openURL).toHaveBeenLastCalledWith('https://arisheh.ir/terms');
   fireEvent.press(screen.getByText('ثبت نوبت'));
 
   await screen.findByText('زرین‌پال');
@@ -321,4 +342,27 @@ it('lets a signed-in customer scan a specialist QR of the same salon from home (
   await waitFor(() => expect(router.getPathname()).toBe('/specialist/5'));
   // اسکن پس از ورود، سالن را عوض نمی‌کند و درخواست «کارت سالن» نمی‌فرستد
   expect(calls.some((c) => c.url.endsWith('/customer/salons/rasta'))).toBe(false);
+});
+
+it('the customer can withdraw the course photo consent (5د)', async () => {
+  await signedIn();
+  let consent = true;
+  routes = (url, init) => {
+    if (url.includes('/customer/courses/12/photo-consent/withdraw') && init.method === 'POST') {
+      consent = false;
+      return [200, ok({ photo_consent: false })];
+    }
+    if (url.includes('/customer/courses/12')) {
+      return [200, ok({ ...COURSE, status: 'active', status_label: 'فعال', photo_consent: consent, photo_consent_text: 'با گرفتن عکس قبل و بعد موافقم.', actions: { pay: false, book: false }, book_blocker: null, sessions: [], payments: [] })];
+    }
+    return notFound;
+  };
+  jest.spyOn(Alert, 'alert').mockImplementation((_t, _m, buttons) => buttons?.find((b) => b.text === 'پس می‌گیرم')?.onPress?.());
+
+  renderRouter('./src/customer', { initialUrl: '/course/12' });
+
+  expect(await screen.findByText('با گرفتن عکس قبل و بعد موافقم.')).toBeTruthy();
+  fireEvent.press(screen.getByText('پس گرفتن رضایت'));
+  await waitFor(() => expect(calls.some((c) => c.method === 'POST' && c.url.endsWith('/customer/courses/12/photo-consent/withdraw'))).toBe(true));
+  await waitFor(() => expect(screen.queryByText('پس گرفتن رضایت')).toBeNull());
 });

@@ -356,6 +356,10 @@ export function useCourseActions() {
         })).data,
       onSuccess: refresh,
     }),
+    withdrawConsent: useMutation({
+      mutationFn: async (courseId: number) => api.post(`/customer/courses/${courseId}/photo-consent/withdraw`),
+      onSuccess: (_r, courseId) => void qc.invalidateQueries({ queryKey: ckeys.course(courseId) }),
+    }),
     deletePhoto: useMutation({
       mutationFn: async (args: { courseId: number; photoId: number }) => api.del(`/customer/course-photos/${args.photoId}`),
       onSuccess: (_r, args) => void qc.invalidateQueries({ queryKey: ckeys.course(args.courseId) }),

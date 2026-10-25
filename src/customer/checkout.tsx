@@ -10,6 +10,7 @@ import type { CustomerBooking, PaymentInfo, Quote } from '@/lib/customer/types';
 import { toman } from '@/lib/format';
 import { useApi } from '@/lib/session';
 import { Button, Card, ErrorBox, Field, KeyValue, Loading, Notice, Screen, T } from '@/ui/kit';
+import { PurchaseTermsCard } from '@/ui/PurchaseTermsCard';
 
 /** رزرو، قدم ۳: پیش‌فاکتور (کد تخفیف از باقی‌مانده کم می‌شود، نه از پیش‌پرداخت) و ثبت نوبت. */
 export default function Checkout() {
@@ -108,6 +109,8 @@ export default function Checkout() {
               ? <Notice text={`بعد از ثبت، ${toman(quote.prepayment_amount)} پیش‌پرداخت را آنلاین می‌پردازید؛ نوبت بدون پرداخت در مهلتش لغو می‌شود.`} />
               : <Notice tone="warning" text="این سالن فعلاً پرداخت آنلاین ندارد؛ رزرو نوبت‌هایی که پیش‌پرداخت دارند از اپ ممکن نیست. با سالن تماس بگیرید." />
           ) : null}
+
+          {quote.terms ? <PurchaseTermsCard terms={quote.terms} /> : null}
 
           {error ? <ErrorBox error={error} /> : null}
           {slotTaken ? <Button kind="secondary" title="انتخاب ساعت دیگر" onPress={() => router.back()} /> : null}

@@ -117,6 +117,15 @@ export type Quote = {
   online_payment: boolean;
   gateways: Gateway[];
   wallet_balance: number;
+  /** اطلاعات پیش از خرید (بسته‌ی مجوز 5د)؛ سرورهای قدیمی‌تر ندارند */
+  terms?: PurchaseTerms;
+};
+
+export type PurchaseTerms = {
+  provider: { name: string; address: string | null; phone: string | null; platform: string };
+  cancellation: string[];
+  complaints: string;
+  terms_url: string;
 };
 
 export type PaymentInfo = { required: boolean; amount: number; gateways: Gateway[]; wallet_balance: number };
@@ -276,6 +285,7 @@ export type Course = {
   expires_at_jalali: string | null;
   next_due_at: string | null;
   photo_consent: boolean;
+  photo_consent_text?: string;
   refunded_amount: number;
   actions: { pay: boolean; book: boolean };
   book_blocker: string | null;

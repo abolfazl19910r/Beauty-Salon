@@ -21,7 +21,7 @@ export default function CourseDetailScreen() {
   const p = usePalette();
   const api = useApi();
   const course = useCourse(courseId);
-  const { deletePhoto } = useCourseActions();
+  const { deletePhoto, withdrawConsent } = useCourseActions();
 
   if (course.isPending) {
     return <Screen><Loading /></Screen>;
@@ -65,6 +65,18 @@ export default function CourseDetailScreen() {
       {c.book_blocker && c.status !== 'completed' ? <Notice tone="warning" text={c.book_blocker} /> : null}
       {c.actions.book ? <Button title="رزرو جلسه‌ی بعد" onPress={() => router.push(`/course-book/${c.id}`)} /> : null}
       {c.actions.pay ? <Button kind={c.actions.book ? 'secondary' : 'primary'} title={c.status === 'pending_payment' ? 'پرداخت دوره' : `پرداخت باقی‌مانده (${toman(c.balance_due)})`} onPress={() => router.push(`/course-pay/${c.id}`)} /> : null}
+
+      {c.photo_consent ? (
+        <Card>
+          <T weight="medium">رضایت عکس قبل و بعد</T>
+          {c.photo_consent_text ? <T size={13} muted>{c.photo_consent_text}</T> : null}
+          <Button small kind="ghost" title="پس گرفتن رضایت" loading={withdrawConsent.isPending}
+            onPress={() => Alert.alert('پس گرفتن رضایت عکس؟', 'از این به بعد سالن عکس تازه‌ای در این دوره نمی‌گیرد. عکس‌های قبلی را می‌توانید جدا پاک کنید.', [
+              { text: 'نه', style: 'cancel' },
+              { text: 'پس می‌گیرم', style: 'destructive', onPress: () => withdrawConsent.mutate(c.id, { onError: (e) => Alert.alert('انجام نشد', errorMessage(e)) }) },
+            ])} />
+        </Card>
+      ) : null}
 
       <SectionTitle>جلسه‌ها</SectionTitle>
       {c.sessions.length === 0 ? <Empty text="هنوز جلسه‌ای رزرو نشده است." /> : c.sessions.map((s) => (
