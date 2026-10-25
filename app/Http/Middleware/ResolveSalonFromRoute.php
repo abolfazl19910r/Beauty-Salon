@@ -50,6 +50,16 @@ class ResolveSalonFromRoute
             abort(404);
         }
 
+        // ⭐ احراز سالن (بسته‌ی مجوز 5د؛ دستورالعمل سکوهای اینترنتی بند ۲ و ۴): تا تأیید ابرمدیر، صفحه‌ی عمومی، رزرو و API مشتری
+        // بسته‌اند (۴۰۴ مثل سالن معلق — وجود slug تأیید نمی‌شود). کادر خود سالن و ابرمدیر فقط برای دیدن (GET) پیش‌نمایش می‌گیرند تا
+        // سالن را آماده کنند؛ هیچ ثبت نوبت یا پرداختی پیش از تأیید ممکن نیست.
+        if (! $salon->isVerified()) {
+            if (! $request->isMethod('GET') || ! $this->canPreview($request, $salon)) {
+                abort(404);
+            }
+            \Illuminate\Support\Facades\View::share('salonUnverifiedPreview', true);
+        }
+
         app(CurrentSalon::class)->set($salon);
         URL::defaults(['salon_slug' => $salon->slug]);
 
@@ -76,5 +86,12 @@ class ResolveSalonFromRoute
         $request->route()->forgetParameter('salon_slug');
 
         return $next($request);
+    }
+
+    private function canPreview(Request $request, \App\Models\Salon $salon): bool
+    {
+        $user = $request->user();
+
+        return $user !== null && ($user->hasRole('super-admin') || $user->salons()->withoutGlobalScopes()->whereKey($salon->id)->exists());
     }
 }

@@ -65,6 +65,7 @@ class SecurityLog extends Model
             'phone_changed' => 'تغییر شماره‌ی موبایل',
             'account_deleted' => 'حذف حساب',
             'payment_started' => 'شروع پرداخت',
+            'salon_verification_submitted' => 'ارسال مدارک احراز سالن',
             'payment_paid' => 'پرداخت موفق',
             'payment_failed' => 'پرداخت ناموفق',
             default => $this->event,

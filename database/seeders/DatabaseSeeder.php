@@ -38,6 +38,9 @@ class DatabaseSeeder extends Seeder
                 'subscription_started_at' => now(),
                 'subscription_ends_at' => now()->addMonths(12),
                 'is_suspended' => false,
+                // سالن نمایشی تأییدشده (تصمیم ۲۰۲۶-۱۰-۲۵: دمو کار کند؛ بسته‌ی مجوز 5د)
+                'verification_status' => 'approved',
+                'verified_at' => now(),
             ]
         );
         app(CurrentSalon::class)->set($salon);

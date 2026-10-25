@@ -149,10 +149,12 @@
                     $saAwaiting = \App\Models\SupportTicket::query()->awaitingResponse();
                     $saOverdue = (clone $saAwaiting)->where('response_due_at', '<', now())->count();
                     $saComplaints = $saOverdue > 0 ? -$saOverdue : $saAwaiting->count();
+                    $saVerifications = \App\Models\SalonVerification::query()->where('status', 'pending')->count();
                     $saNav = [
                         'سالن‌ها' => [
                             ['superadmin.dashboard', 'superadmin.dashboard', 'داشبورد', 0],
                             ['superadmin.salons.index', 'superadmin.salons.*', 'مدیریت سالن‌ها', 0],
+                            ['superadmin.verifications.index', 'superadmin.verifications.*', 'احراز سالن‌ها', $saVerifications],
                             ['superadmin.search.index', 'superadmin.search.*', 'جستجوی شماره', 0],
                             ['superadmin.plans.index', 'superadmin.plans.*', 'پلن‌ها و امکانات', 0],
                             ['superadmin.templates.index', 'superadmin.templates.*', 'قالب‌ها', 0],

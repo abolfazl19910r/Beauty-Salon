@@ -67,6 +67,10 @@ return new class extends Migration
             // پایان دوره‌ی آزمایشی رایگان سالنی که از ثبت‌نام عمومی ساخته شده (config('billing.trial_days')).
             $table->timestamp('trial_ends_at')->nullable();
             $table->boolean('is_suspended')->default(false);
+            // ⭐ احراز سالن (بسته‌ی مجوز 5د؛ دستورالعمل سکوهای اینترنتی بند ۲ و ۴): unverified | pending | approved | rejected.
+            // تا approved، صفحه‌ی عمومی و رزرو بسته (ResolveSalonFromRoute)؛ پنل مدیر باز. جزئیات هر ارسال: salon_verifications
+            $table->string('verification_status', 16)->default('unverified')->index();
+            $table->timestamp('verified_at')->nullable();
             $table->timestamps();
         });
     }

@@ -48,6 +48,8 @@ class Salon extends Model
         'trial_ends_at',
         'is_suspended',
         'created_by',
+        'verification_status',
+        'verified_at',
     ];
 
     protected $casts = [
@@ -62,7 +64,31 @@ class Salon extends Model
         'paused_until' => 'datetime',
         'next_plan_starts_at' => 'datetime',
         'is_suspended' => 'boolean',
+        'verified_at' => 'datetime',
     ];
+
+    /** وضعیت احراز سالن (بسته‌ی مجوز 5د) */
+    public const VERIFICATION_LABELS = [
+        'unverified' => 'احراز نشده',
+        'pending' => 'در انتظار تأیید',
+        'approved' => 'تأییدشده',
+        'rejected' => 'رد شده',
+    ];
+
+    public function isVerified(): bool
+    {
+        return $this->verification_status === 'approved';
+    }
+
+    public function verificationLabel(): string
+    {
+        return self::VERIFICATION_LABELS[$this->verification_status] ?? (string) $this->verification_status;
+    }
+
+    public function verifications(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(SalonVerification::class)->latest('id');
+    }
 
     // ─── پلن و امکانات (بسته‌ی الف، ۲۰۲۶-۱۰-۱۴) ─────────────────────────────
 

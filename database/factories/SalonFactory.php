@@ -23,6 +23,9 @@ class SalonFactory extends Factory
             'subscription_started_at' => now(),
             'subscription_ends_at' => now()->addMonths(12),
             'is_suspended' => false,
+            // احراز (بسته‌ی مجوز 5د): سالن factory مثل یک سالن واقعیِ تأییدشده؛ برای «در انتظار» صریحاً ->unverified()
+            'verification_status' => 'approved',
+            'verified_at' => now(),
             'created_by' => null,
             // ⭐ ۲۰۲۶-۰۹-۲۴: بدون کد پذیرنده هیچ پرداخت آنلاینی ممکن نیست؛ سالن‌های factory پیش‌فرض
             // یکی دارن تا تست‌های پرداخت موجود همون رفتار قبلی رو ببینن. برای تست «بدون درگاه»
@@ -48,5 +51,11 @@ class SalonFactory extends Factory
             'subscription_started_at' => now()->subMonths(13),
             'subscription_ends_at' => now()->subDay(),
         ]);
+    }
+
+    /** سالن تازه‌ی احرازنشده (بسته‌ی مجوز 5د) */
+    public function unverified(): static
+    {
+        return $this->state(fn () => ['verification_status' => 'unverified', 'verified_at' => null]);
     }
 }

@@ -58,6 +58,7 @@ class TenantModelClassificationTest extends TestCase
         'SecurityLog' => 'از کاربر؛ بخش امنیت با querySalonMembers فیلتر می‌کند',
         'DemoRequest' => 'درخواست دموی صفحه‌ی فروش؛ پیش از وجود هر سالنی، فقط سوپرادمین',
         'PlatformSetting' => 'تنظیم سطح پلتفرم (سوپرادمین)',
+        'SalonVerification' => 'مدارک احراز سالن، صف بررسی ابرمدیر (سطح پلتفرم)؛ مالک فقط از رابطه‌ی سالن جاری خودش (بسته‌ی مجوز 5د)',
         'LegalAcceptance' => 'سابقه‌ی پذیرش قوانین با نسخه و IP، سطح پلتفرم (بسته‌ی مجوز 5د)؛ salon_id فقط «کدام سالن»',
         'DeletedAccountArchive' => 'بایگانی هویت و IP حساب حذف‌شده، سطح پلتفرم، فقط ابرمدیر (بسته‌ی مجوز 5د)',
         'SuperAdminAuditLog' => 'گزارش کارهای ابرمدیر، سطح پلتفرم (salon_id فقط «درباره‌ی کدام سالن»)',

@@ -15,6 +15,7 @@ class PlatformAlertNotification extends Notification
         'ticket_reply' => 'پاسخ سالن به تیکت',
         'complaint' => 'شکایت تازه (مهلت ۷۲ ساعت)',
         'complaint_due' => 'مهلت پاسخ به شکایت',
+        'verification' => 'مدارک احراز سالن',
         'demo' => 'درخواست دمو',
         'signup' => 'ثبت‌نام سالن',
         'subscription_paid' => 'پرداخت اشتراک',

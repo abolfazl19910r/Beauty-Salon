@@ -53,6 +53,8 @@ final class AdminMenu
             // «اطلاعات سالن» و «ظاهر سالن» فقط برای مالک (همان قاعده‌ی EnsureSalonOwner)
             ['سالن', $salon !== null && $isOwner ? [
                 self::item('salon-settings', 'اطلاعات سالن', 'admin.salon-settings.edit', 'admin.salon-settings.*', 'home'),
+                // بسته‌ی مجوز 5د
+                self::item('verification', 'احراز سالن', 'admin.verification.show', 'admin.verification.*', 'shield'),
                 self::item('appearance', 'ظاهر سالن', 'admin.appearance.edit', 'admin.appearance.*', 'palette'),
                 self::item('payment-gateways', 'درگاه‌های پرداخت', 'admin.payment-gateways.index', 'admin.payment-gateways.*', 'card'),
             ] : []],

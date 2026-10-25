@@ -201,6 +201,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_a
         require __DIR__.'/admin/salon-settings.php';
         require __DIR__.'/admin/appearance.php';
         require __DIR__.'/admin/payment-gateways.php';
+        require __DIR__.'/admin/verification.php';
     });
 
     require __DIR__.'/admin/search.php';

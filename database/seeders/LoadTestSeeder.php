@@ -99,7 +99,7 @@ class LoadTestSeeder extends Seeder
             'established_year' => 2015, 'working_hours' => json_encode(SalonWorkingHours::defaults()), 'max_specialists_count' => max(7, $this->specialistsPerSalon),
             'module_permissions' => null, 'sms_quota_per_month' => 1000, 'subscription_type' => '12m',
             'subscription_started_at' => $now->copy()->subMonths($this->months + 1), 'subscription_ends_at' => $now->copy()->addMonths(6),
-            'trial_ends_at' => null, 'is_suspended' => 0, 'created_at' => $now->copy()->subMonths($this->months + 1), 'updated_at' => $now,
+            'trial_ends_at' => null, 'is_suspended' => 0, 'verification_status' => 'approved', 'verified_at' => $now, 'created_at' => $now->copy()->subMonths($this->months + 1), 'updated_at' => $now,
         ]);
         // salons باید پیش از FKهای بقیه‌ی جدول‌ها نوشته شود
         $this->flush('users');
