@@ -165,13 +165,13 @@
                                     return ['closed' => $v === null, 'open' => $v['open'] ?? '09:00', 'close' => $v['close'] ?? '21:00'];
                                 })();
                         @endphp
-                        <div class="grid grid-cols-4 gap-2 items-center text-sm">
+                        <div class="grid grid-cols-2 sm:grid-cols-[4.5rem_auto_minmax(0,1fr)_minmax(0,1fr)] gap-2 items-center text-sm">{{-- گوشی: روز و «تعطیل» در خط اول، دو ساعت در خط دوم؛ زیر ۳۶۰px هر ساعت یک خط (پیش‌تر هر ساعت ~۶۰px و فقط «09» دیده می‌شد) --}}
                             <span>{{ \App\Support\SalonWorkingHours::DAY_NAMES[$day] }}</span>
-                            <label class="flex items-center gap-1">
+                            <label class="flex items-center gap-1 justify-self-end sm:justify-self-auto">
                                 <input type="checkbox" name="working_hours[{{ $day }}][closed]" value="1" @checked(! empty($value['closed']))> تعطیل
                             </label>
-                            <input type="time" name="working_hours[{{ $day }}][open]" value="{{ $value['open'] ?? '09:00' }}" dir="ltr" class="{{ $input }}" style="{{ $inputStyle }}" aria-label="شروع {{ \App\Support\SalonWorkingHours::DAY_NAMES[$day] }}">
-                            <input type="time" name="working_hours[{{ $day }}][close]" value="{{ $value['close'] ?? '21:00' }}" dir="ltr" class="{{ $input }}" style="{{ $inputStyle }}" aria-label="پایان {{ \App\Support\SalonWorkingHours::DAY_NAMES[$day] }}">
+                            <input type="time" name="working_hours[{{ $day }}][open]" value="{{ $value['open'] ?? '09:00' }}" dir="ltr" class="{{ $input }} min-w-0 max-[359px]:col-span-2" style="{{ $inputStyle }}" aria-label="شروع {{ \App\Support\SalonWorkingHours::DAY_NAMES[$day] }}">
+                            <input type="time" name="working_hours[{{ $day }}][close]" value="{{ $value['close'] ?? '21:00' }}" dir="ltr" class="{{ $input }} min-w-0 max-[359px]:col-span-2" style="{{ $inputStyle }}" aria-label="پایان {{ \App\Support\SalonWorkingHours::DAY_NAMES[$day] }}">
                         </div>
                     @endforeach
                     <p class="text-xs" style="color: var(--admin-text-light);">فقط برای نمایش به مشتری‌هاست؛ ساعت‌های قابل رزرو را برنامه‌ی کاری هر متخصص تعیین می‌کند.</p>

@@ -36,7 +36,8 @@
             border-radius: 1rem;
             padding: 1.75rem;
         }
-        fieldset { border: none; padding: 0; margin: 0 0 1.5rem; }
+        /* min-width: 0 — fieldset به‌طور پیش‌فرض min-content است و با محتوای پهن از کارت بیرون می‌زد (سرریز ۵۸px در گوشی) */
+        fieldset { border: none; padding: 0; margin: 0 0 1.5rem; min-width: 0; }
         legend { color: var(--rasta-gold); font-weight: bold; margin-bottom: .75rem; padding: 0; }
         label { display: block; font-size: .875rem; margin-bottom: .35rem; opacity: .9; }
         .row { margin-bottom: 1rem; }
@@ -58,9 +59,15 @@
         .hours-row { display: grid; grid-template-columns: 5.5rem auto 1fr 1fr; gap: .5rem; align-items: center; }
         .hours-row .day { font-size: .9rem; }
         .hours-row .closed { display: flex; align-items: center; gap: .3rem; font-size: .8rem; margin: 0; opacity: .85; white-space: nowrap; }
-        .hours-row input[type=time] { padding: .4rem .5rem; direction: ltr; }
+        .hours-row input[type=time] { padding: .4rem .5rem; direction: ltr; min-width: 0; }
         .hours-row.is-closed input[type=time] { opacity: .35; }
-        @media (max-width: 520px) { .hours-row { grid-template-columns: 4.5rem auto 1fr 1fr; gap: .35rem; } }
+        /* گوشی: روز و «تعطیل» در خط اول، دو ساعت کنار هم در خط دوم (چهار ستون در یک خط ~۴۰۰px جا می‌خواست) */
+        @media (max-width: 520px) {
+            .hours-row { grid-template-columns: 1fr 1fr; gap: .35rem .5rem; padding-bottom: .45rem; border-bottom: 1px solid rgb(var(--m-gold) / .12); }
+            .hours-row .closed { justify-self: end; }
+        }
+        /* گوشی خیلی باریک (۳۲۰): ساعت ۱۱۱px جا ندارد و AM/PM بریده می‌شد ← هر ساعت یک خط کامل */
+        @media (max-width: 359px) { .hours-row input[type=time] { grid-column: 1 / -1; } }
         .buy-summary { display: flex; justify-content: space-between; align-items: center; gap: 1rem; border: 1px solid var(--rasta-gold); border-radius: .7rem; padding: .8rem 1rem; margin-bottom: 1.5rem; background: rgb(var(--m-gold) / .08); }
         .buy-title { font-weight: 800; color: var(--rasta-gold-light); }
         .buy-price { font-size: .85rem; opacity: .8; margin-top: .15rem; }
