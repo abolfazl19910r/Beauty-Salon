@@ -50,7 +50,28 @@ class HomeController extends Controller
         // ⭐ بسته‌ی «و»: هر چیدمان قالب سایت صفحه‌ی خانه‌ی خودش را دارد (salon-home/*)؛ پیش‌فرض همان home
         $appearance = app(\App\Support\Themes\CurrentAppearance::class)->get();
         if ($appearance->isDefaultSite()) {
-            return view('home', compact('services', 'specialists'));
+            // ⭐ بسته‌ی مجوز 5د: فقط داده‌ی واقعی همین سالن (پیش‌تر نظر، آمار و عکس ساختگی وقتی داده نبود — تبلیغ فریبنده)
+            $honest = Cache::remember("home_default_honest:{$salonId}", 1800, fn () => [
+                'stats' => [
+                    'customers' => \App\Models\Booking::query()->where('status', 'completed')->distinct()->count('user_id'),
+                    'specialists' => $this->specialistRepository->query()->count(),
+                    'reviews' => \App\Models\Review::query()->where('is_approved', true)->count(),
+                    'rating' => round((float) \App\Models\Review::query()->where('is_approved', true)->avg('overall_rating'), 1),
+                ],
+                'testimonials' => \App\Models\Review::query()->where('is_approved', true)
+                    ->whereNotNull('comment')->where('comment', '!=', '')
+                    ->with('user:id,name')->latest('id')->take(6)->get()
+                    ->map(fn (\App\Models\Review $r) => (object) [
+                        // حریم خصوصی: نام کوچک و حرف اول نام خانوادگی
+                        'name' => self::shortName((string) $r->user?->name),
+                        'rating' => (int) $r->overall_rating,
+                        'text' => (string) $r->comment,
+                    ])->all(),
+                'galleryImages' => \App\Models\GalleryImage::query()->where('is_active', true)->orderBy('order')->take(10)->get()
+                    ->map(fn (\App\Models\GalleryImage $g) => (object) ['image' => $g->image_url, 'instagram_link' => null])->all(),
+            ]);
+
+            return view('home', compact('services', 'specialists') + $honest);
         }
 
         // آمار واقعی نظرهای تأییدشده (نه عدد ساختگی): اگر نظری نیست، چیدمان‌ها کاشی امتیاز را نشان نمی‌دهند
@@ -61,5 +82,15 @@ class HomeController extends Controller
         });
 
         return view($appearance->homeView(), compact('services', 'specialists', 'reviewStats'));
+    }
+
+    private static function shortName(string $name): string
+    {
+        $parts = preg_split('/\s+/u', trim($name)) ?: [];
+        if ($parts === [] || $parts[0] === '') {
+            return 'مشتری';
+        }
+
+        return count($parts) > 1 ? $parts[0].' '.mb_substr(end($parts), 0, 1).'.' : $parts[0];
     }
 }

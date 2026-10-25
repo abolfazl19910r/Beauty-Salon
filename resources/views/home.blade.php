@@ -123,7 +123,8 @@
                     تجربه‌ای لوکس از زیبایی و آرامش در سالن <span class="text-m-gold2">{{ $currentSalonName }}</span>
                 </h1>
                 <p class="hero-anim delay-2 text-base md:text-lg text-m-tx/80 max-w-xl mx-auto mb-10 leading-8">
-                    از طراحی مو و میکاپ عروس تا مراقبت پوست و ناخن؛ تیمی از متخصصان حرفه‌ای در کنار شما برای روزی به‌یادماندنی.
+                    {{-- بسته‌ی مجوز 5د: شعار خود سالن؛ پیش‌تر وعده‌ی ثابت «میکاپ عروس… ناخن» برای هر سالنی --}}
+                    {{ app(\App\Support\CurrentSalon::class)->get()?->tagline ?: 'نوبت خود را آنلاین رزرو کنید؛ خدمات، متخصص‌ها و ساعت‌های خالی را همین‌جا ببینید.' }}
                 </p>
                 <div class="hero-anim delay-3 flex flex-col sm:flex-row items-center justify-center gap-4">
                     <a href="{{ route('bookings.create') }}" class="btn-gold rounded-full px-8 py-3.5 font-semibold w-full sm:w-auto">
@@ -145,29 +146,27 @@
         {{-- =========================================================
              3) Statistics section / Trust counter
         ========================================================= --}}
+        {{-- ⭐ بسته‌ی مجوز 5د: فقط عدد واقعی همین سالن؛ کاشی بی داده نمایش داده نمی‌شود (پیش‌تر ۴۵۰۰/۱۸/۴٫۹ ثابت) --}}
+        @php
+            $statTiles = array_values(array_filter([
+                ($stats['customers'] ?? 0) > 0 ? ['value' => $stats['customers'], 'label' => 'مشتری', 'decimal' => 0] : null,
+                ($stats['specialists'] ?? 0) > 0 ? ['value' => $stats['specialists'], 'label' => 'متخصص', 'decimal' => 0] : null,
+                $currentSalonExperienceYears !== null ? ['value' => $currentSalonExperienceYears, 'label' => 'سال تجربه', 'decimal' => 0] : null,
+                ($stats['reviews'] ?? 0) > 0 ? ['value' => $stats['rating'], 'label' => 'امتیاز ('.to_persian_num((string) $stats['reviews']).' نظر)', 'decimal' => 1] : null,
+            ]));
+        @endphp
+        @if (count($statTiles) > 0)
         <section id="stats" class="bg-m-card py-14 fade-up">
-            <div class="max-w-6xl mx-auto px-4 grid grid-cols-2 {{ $currentSalonExperienceYears !== null ? 'md:grid-cols-4' : 'md:grid-cols-3' }} gap-8 text-center">
-                <div>
-                    <p class="counter font-serif-fa text-3xl md:text-5xl font-bold text-m-gold2" data-target="{{ $stats['customers'] ?? 4500 }}">0</p>
-                    <p class="mt-2 text-sm md:text-base text-m-tx/70">مشتری راضی</p>
-                </div>
-                <div>
-                    <p class="counter font-serif-fa text-3xl md:text-5xl font-bold text-m-gold2" data-target="{{ $stats['specialists'] ?? 18 }}">0</p>
-                    <p class="mt-2 text-sm md:text-base text-m-tx/70">متخصص حرفه‌ای</p>
-                </div>
-                {{-- ⭐ ۲۰۲۶-۰۹-۲۳: سابقه‌ی واقعی همین سالن (salons.established_year)، نه عدد ثابت ۹. --}}
-                @if ($currentSalonExperienceYears !== null)
+            <div class="max-w-6xl mx-auto px-4 grid grid-cols-2 {{ count($statTiles) >= 4 ? 'md:grid-cols-4' : (count($statTiles) === 3 ? 'md:grid-cols-3' : '') }} gap-8 text-center">
+                @foreach ($statTiles as $tile)
                     <div>
-                        <p class="counter font-serif-fa text-3xl md:text-5xl font-bold text-m-gold2" data-target="{{ $currentSalonExperienceYears }}">0</p>
-                        <p class="mt-2 text-sm md:text-base text-m-tx/70">سال تجربه</p>
+                        <p class="counter font-serif-fa text-3xl md:text-5xl font-bold text-m-gold2" data-target="{{ $tile['value'] }}" @if ($tile['decimal']) data-decimal="1" @endif>0</p>
+                        <p class="mt-2 text-sm md:text-base text-m-tx/70">{{ $tile['label'] }}</p>
                     </div>
-                @endif
-                <div>
-                    <p class="counter font-serif-fa text-3xl md:text-5xl font-bold text-m-gold2" data-target="{{ $stats['rating'] ?? 4.9 }}" data-decimal="{{ isset($stats['rating']) ? 1 : 1 }}">0</p>
-                    <p class="mt-2 text-sm md:text-base text-m-tx/70">امتیاز کاربران</p>
-                </div>
+                @endforeach
             </div>
         </section>
+        @endif
 
         {{-- =========================================================
              4) Special service department
@@ -205,23 +204,8 @@
                         </div>
                     </div>
                 @empty
-                    {{-- TODO: کنترلر باید متغیر $services را به ویو ارسال کند --}}
-                    @foreach(['میکاپ عروس', 'رنگ و لایت مو', 'مراقبت پوست صورت'] as $index => $title)
-                        <div class="fade-up fade-up-delay-{{ $index + 1 }} card-hover bg-m-card rounded-2xl overflow-hidden border border-m-gold/10">
-                            <div class="overflow-hidden h-56">
-                                <img src="https://images.unsplash.com/photo-1487412912498-0447579c8d52?q=80&w=800&auto=format&fit=crop" alt="{{ $title }}" loading="lazy" class="w-full h-full object-cover">
-                            </div>
-                            <div class="p-6">
-                                <div class="w-12 h-12 rounded-full bg-m-gold/15 flex items-center justify-center mb-4 text-m-gold2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
-                                    </svg>
-                                </div>
-                                <h3 class="font-serif-fa text-xl font-bold mb-2">{{ $title }}</h3>
-                                <p class="text-sm text-m-tx/70 leading-7">توضیح کوتاهی درباره این خدمت در اینجا نمایش داده می‌شود.</p>
-                            </div>
-                        </div>
-                    @endforeach
+                    {{-- بسته‌ی مجوز 5د: پیش‌تر سه خدمت ساختگی با عکس Unsplash --}}
+                    <p class="col-span-full text-center text-m-tx/60" data-no-services>خدمات این سالن به‌زودی اضافه می‌شود.</p>
                 @endforelse
             </div>
         </section>
@@ -237,23 +221,11 @@
                     <p class="text-m-tx/75 leading-8 mb-6">
                         {{ $currentSalonBio }}
                     </p>
-                    <ul class="space-y-3">
-                        <li class="flex items-center gap-3 text-sm text-m-tx/80">
-                            <span class="w-2 h-2 rounded-full bg-m-gold2 shrink-0"></span>
-                            استفاده از برندهای معتبر و محصولات ارگانیک
-                        </li>
-                        <li class="flex items-center gap-3 text-sm text-m-tx/80">
-                            <span class="w-2 h-2 rounded-full bg-m-gold2 shrink-0"></span>
-                            تیم متخصص با گواهینامه‌های معتبر بین‌المللی
-                        </li>
-                        <li class="flex items-center gap-3 text-sm text-m-tx/80">
-                            <span class="w-2 h-2 rounded-full bg-m-gold2 shrink-0"></span>
-                            فضای اختصاصی و بهداشتی برای آرامش کامل
-                        </li>
-                    </ul>
+                    {{-- بسته‌ی مجوز 5د: ادعاهای ثابت («گواهینامه‌های بین‌المللی»، «محصولات ارگانیک») برای همه‌ی سالن‌ها حذف شد؛ فقط معرفی خود سالن --}}
                 </div>
-                <div class="fade-up fade-up-delay-2 order-1 lg:order-2">
-                    <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=1200&auto=format&fit=crop" alt="فضای {{ $currentSalonTitle }}" loading="lazy" class="rounded-3xl w-full h-[420px] object-cover shadow-2xl">
+                {{-- بسته‌ی مجوز 5د: پیش‌تر عکس Unsplash با عنوان «فضای این سالن» --}}
+                <div class="fade-up fade-up-delay-2 order-1 lg:order-2 flex items-center justify-center">
+                    <x-brand-emblem class="h-40 w-auto max-w-[260px] opacity-90" loading="lazy" />
                 </div>
             </div>
         </section>
@@ -290,21 +262,8 @@
                         {{-- ⭐ ۲۰۲۶-۰۹-۲۴: شماره موبایل شخصی متخصص (همون شماره‌ی ورودش) دیگه در صفحه‌ی عمومی نمایش داده نمی‌شه. --}}
                     </div>
                 @empty
-                    {{-- TODO: کنترلر باید متغیر $specialists را به ویو ارسال کند --}}
-                    @foreach(['زهرا احمدی', 'سارا محمدی', 'نرگس کریمی', 'مریم رضایی'] as $index => $name)
-                        <div class="fade-up fade-up-delay-{{ ($index % 3) + 1 }} group relative rounded-2xl overflow-hidden card-hover">
-                            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=600&auto=format&fit=crop" alt="{{ $name }}" loading="lazy" class="w-full h-72 object-cover">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent flex flex-col justify-end p-4">
-                                <h3 class="font-serif-fa font-bold text-lg">{{ $name }}</h3>
-                                <p class="text-xs text-m-gold2 mb-2">متخصص زیبایی</p>
-                                <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    <a href="#" class="w-8 h-8 flex items-center justify-center rounded-full bg-m-tx/10 hover:bg-m-gold transition-colors" aria-label="اینستاگرام">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.25.07 1.62.07 4.81s-.01 3.56-.07 4.81c-.15 3.23-1.66 4.77-4.92 4.92-1.25.06-1.62.07-4.85.07s-3.6 0-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92-.06-1.25-.07-1.62-.07-4.81s.01-3.56.07-4.81c.15-3.23 1.67-4.77 4.92-4.92C8.4 2.2 8.8 2.2 12 2.2zm0 1.8c-3.14 0-3.5.01-4.74.07-2.27.1-3.39 1.24-3.49 3.49C3.7 8.8 3.7 9.16 3.7 12s0 3.2.06 4.44c.1 2.25 1.22 3.4 3.49 3.49 1.24.06 1.6.07 4.74.07s3.5-.01 4.74-.07c2.27-.1 3.39-1.24 3.49-3.49.06-1.24.07-1.6.07-4.44s0-3.2-.06-4.44c-.1-2.25-1.23-3.39-3.49-3.49C15.5 4.01 15.14 4 12 4zm0 3.4a4.6 4.6 0 110 9.2 4.6 4.6 0 010-9.2zm0 1.8a2.8 2.8 0 100 5.6 2.8 2.8 0 000-5.6zm5.85-3.05a1.1 1.1 0 110 2.2 1.1 1.1 0 010-2.2z"/></svg>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
+                    {{-- بسته‌ی مجوز 5د: پیش‌تر چهار متخصص ساختگی («زهرا احمدی»…) با عکس Unsplash --}}
+                    <p class="col-span-full text-center text-m-tx/60" data-no-specialists>معرفی متخصص‌های این سالن به‌زودی اضافه می‌شود.</p>
                 @endforelse
             </div>
         </section>
@@ -312,6 +271,8 @@
         {{-- =========================================================
              7) Customer comments section (Testimonials)
         ========================================================= --}}
+        {{-- ⭐ بسته‌ی مجوز 5د: فقط نظرهای تأییدشده‌ی واقعی (نام کوتاه‌شده)؛ بی نظر، بخش نمایش داده نمی‌شود --}}
+        @if (count($testimonials ?? []) > 0)
         <section id="testimonials" class="py-20 px-4 bg-m-card">
             <div class="max-w-3xl mx-auto text-center mb-12 fade-up">
                 <h2 class="font-serif-fa text-3xl md:text-5xl font-bold text-m-gold2 mb-4">نظرات مشتریان</h2>
@@ -320,21 +281,11 @@
 
             <div class="max-w-2xl mx-auto fade-up">
                 <div id="testimonial-track" class="relative overflow-hidden min-h-[260px]">
-                    @php
-                        $testimonialList = ($testimonials ?? collect());
-                        if (count($testimonialList) === 0) {
 
-                            $testimonialList = [
-                                (object) ['name' => 'الهام صادقی', 'rating' => 5, 'text' => 'تجربه فوق‌العاده‌ای داشتم! کیفیت خدمات و برخورد تیم واقعاً عالی بود.', 'image' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop'],
-                                (object) ['name' => 'مهسا رستمی', 'rating' => 5, 'text' => 'فضای سالن خیلی آرامش‌بخش بود و نتیجه کار فوق‌العاده شد. حتماً بازخواهم گشت.', 'image' => 'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=200&auto=format&fit=crop'],
-                                (object) ['name' => 'نازنین قاسمی', 'rating' => 4, 'text' => 'برخورد محترمانه پرسنل و دقت در کار باعث شد تجربه خوبی داشته باشم.', 'image' => 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=200&auto=format&fit=crop'],
-                            ];
-                        }
-                    @endphp
 
-                    @foreach($testimonialList as $index => $t)
+                    @foreach($testimonials as $index => $t)
                         <div class="testimonial-slide {{ $index === 0 ? '' : 'hidden' }} bg-m-bg rounded-3xl p-8 text-center border border-m-gold/10" data-slide="{{ $index }}">
-                            <img src="{{ $t->image }}" alt="{{ $t->name }}" loading="lazy" class="w-16 h-16 rounded-full object-cover mx-auto mb-4 border-2 border-m-gold">
+                            <div class="w-16 h-16 rounded-full mx-auto mb-4 border-2 border-m-gold flex items-center justify-center font-bold text-m-gold2 text-xl" aria-hidden="true">{{ mb_substr($t->name, 0, 1) }}</div>
                             <div class="flex justify-center gap-1 mb-4 text-m-gold2">
                                 @for($s = 1; $s <= 5; $s++)
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 {{ $s <= ($t->rating ?? 5) ? '' : 'opacity-25' }}" fill="currentColor" viewBox="0 0 20 20"><path d="M10 1.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8L1.6 7.7l5.8-.8z"/></svg>
@@ -358,10 +309,13 @@
                 </div>
             </div>
         </section>
+        @endif
 
         {{-- =========================================================
              8) Gallery
         ========================================================= --}}
+        {{-- ⭐ بسته‌ی مجوز 5د: فقط عکس‌های گالری خود سالن (پیش‌تر عکس‌های Unsplash با عنوان «نمونه‌ی کارهای این سالن») --}}
+        @if (count($galleryImages ?? []) > 0)
         <section id="gallery" class="py-20 px-4 max-w-7xl mx-auto">
             <div class="text-center mb-12 fade-up">
                 <h2 class="font-serif-fa text-3xl md:text-5xl font-bold text-m-gold2 mb-4">گالری تصاویر</h2>
@@ -369,18 +323,9 @@
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                @php
-                    $galleryList = $galleryImages ?? [];
-                    if (count($galleryList) === 0) {
 
-                        $galleryList = array_map(fn($i) => (object)[
-                            'image' => "https://images.unsplash.com/photo-15$i?q=80&w=400&auto=format&fit=crop",
-                            'instagram_link' => null,
-                        ], ['00010214352-7e3aef020320','08158099174-1fc6877a6963','24438837205-7ceb5200bc20','17719613454-1cb2f99b2d8b','11843213631-9b045fea1c00','10704709899-72d22f10625e','27568693235-67975ce41ec7','11738161800-37491eb76eba','24752352-4f0b86f0fdb1','28058500017-c9b1d8ac8d59']);
-                    }
-                @endphp
 
-                @foreach($galleryList as $index => $img)
+                @foreach($galleryImages as $index => $img)
                     <a href="{{ $img->instagram_link ?? '#' }}" target="{{ isset($img->instagram_link) ? '_blank' : '_self' }}" class="gallery-item relative aspect-square rounded-xl overflow-hidden block fade-up fade-up-delay-{{ ($index % 3) + 1 }}">
                         <img src="{{ $img->image }}" alt="نمونه کار {{ $currentSalonTitle }}" loading="lazy" class="w-full h-full object-cover">
                         @if(isset($img->instagram_link))
@@ -392,6 +337,7 @@
                 @endforeach
             </div>
         </section>
+        @endif
 
         {{-- =========================================================
              9) Final CTA section
@@ -461,41 +407,44 @@
             counters.forEach(el => counterObserver.observe(el));
 
             /* ---------- Testimonials slider ---------- */
-            const slides = document.querySelectorAll('.testimonial-slide');
-            const bulletsWrap = document.getElementById('testimonial-bullets');
-            let current = 0;
+            // بخش نظرها فقط وقتی نظر واقعی هست رندر می‌شود (بسته‌ی مجوز 5د)
+            if (document.getElementById('testimonial-bullets')) {
+                const slides = document.querySelectorAll('.testimonial-slide');
+                const bulletsWrap = document.getElementById('testimonial-bullets');
+                let current = 0;
 
-            slides.forEach((_, i) => {
-                const bullet = document.createElement('button');
-                bullet.className = 'w-2.5 h-2.5 rounded-full transition-colors ' + (i === 0 ? 'bg-m-gold2' : 'bg-m-gold/30');
-                bullet.setAttribute('aria-label', 'نظر شماره ' + (i + 1));
-                bullet.addEventListener('click', () => showSlide(i));
-                bulletsWrap.appendChild(bullet);
-            });
+                slides.forEach((_, i) => {
+                    const bullet = document.createElement('button');
+                    bullet.className = 'w-2.5 h-2.5 rounded-full transition-colors ' + (i === 0 ? 'bg-m-gold2' : 'bg-m-gold/30');
+                    bullet.setAttribute('aria-label', 'نظر شماره ' + (i + 1));
+                    bullet.addEventListener('click', () => showSlide(i));
+                    bulletsWrap.appendChild(bullet);
+                });
 
-            const bullets = bulletsWrap.querySelectorAll('button');
+                const bullets = bulletsWrap.querySelectorAll('button');
 
-            function showSlide(index) {
-                if (index < 0) index = slides.length - 1;
-                if (index >= slides.length) index = 0;
+                function showSlide(index) {
+                    if (index < 0) index = slides.length - 1;
+                    if (index >= slides.length) index = 0;
 
-                slides[current].classList.add('hidden');
-                bullets[current].classList.remove('bg-m-gold2');
-                bullets[current].classList.add('bg-m-gold/30');
+                    slides[current].classList.add('hidden');
+                    bullets[current].classList.remove('bg-m-gold2');
+                    bullets[current].classList.add('bg-m-gold/30');
 
-                current = index;
+                    current = index;
 
-                slides[current].classList.remove('hidden');
-                bullets[current].classList.add('bg-m-gold2');
-                bullets[current].classList.remove('bg-m-gold/30');
-            }
+                    slides[current].classList.remove('hidden');
+                    bullets[current].classList.add('bg-m-gold2');
+                    bullets[current].classList.remove('bg-m-gold/30');
+                }
 
-            document.getElementById('testimonial-next')?.addEventListener('click', () => showSlide(current + 1));
-            document.getElementById('testimonial-prev')?.addEventListener('click', () => showSlide(current - 1));
+                document.getElementById('testimonial-next')?.addEventListener('click', () => showSlide(current + 1));
+                document.getElementById('testimonial-prev')?.addEventListener('click', () => showSlide(current - 1));
 
-            // Auto-play comments every 6 seconds
-            if (slides.length > 1) {
-                setInterval(() => showSlide(current + 1), 6000);
+                // Auto-play comments every 6 seconds
+                if (slides.length > 1) {
+                    setInterval(() => showSlide(current + 1), 6000);
+                }
             }
         });
     </script>
