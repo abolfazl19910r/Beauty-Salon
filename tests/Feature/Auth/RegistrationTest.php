@@ -23,6 +23,7 @@ class RegistrationTest extends TestCase
         'phone' => '09121234567',
         'password' => 'password123',
         'password_confirmation' => 'password123',
+        'accept_terms' => '1',
     ];
 
     protected function setUp(): void

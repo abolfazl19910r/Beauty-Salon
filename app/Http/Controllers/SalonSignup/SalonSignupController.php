@@ -31,6 +31,7 @@ class SalonSignupController extends Controller
     public function __construct(
         protected readonly SalonSignupService $salonSignupService,
         protected readonly \App\Services\SalonSignup\SalonSignupChallenge $signupChallenge,
+        protected readonly \App\Services\Legal\LegalAcceptanceRecorder $acceptance,
         protected readonly UserRepositoryInterface $userRepository,
         protected readonly SalonRepositoryInterface $salonRepository,
         protected readonly InvoiceService $invoiceService,
@@ -136,6 +137,7 @@ class SalonSignupController extends Controller
             ], $owner, $request->file('logo'));
 
             app(\App\Support\AdminSalonSelector::class)->choose($owner, $salon->id);
+            $this->acceptance->record($owner, $salon, \App\Services\Legal\LegalAcceptanceRecorder::SALON_DOCUMENTS, $this->acceptance->capture($request, 'web'));
 
             if ($request->input('intent') === 'buy') {
                 return $this->startImmediatePurchase($salon, $owner, is_string($request->input('plan_key')) ? mb_substr($request->input('plan_key'), 0, 40) : null);
@@ -156,6 +158,8 @@ class SalonSignupController extends Controller
         );
 
         session([self::SESSION_KEY => $challenge]);
+        // لحظه‌ی پذیرش قوانین (همین فرم)؛ بعد از تأیید کد با مالک و سالن ثبت می‌شود
+        $this->acceptance->remember('salon-signup', $challenge, $this->acceptance->capture($request, 'web'));
 
         return redirect()->route('salon-signup.verify')
             ->with('success', 'کد تایید به شماره موبایل شما ارسال شد.');
@@ -201,6 +205,8 @@ class SalonSignupController extends Controller
         }
 
         session()->forget(self::SESSION_KEY);
+        $this->acceptance->record($owner, $salon, \App\Services\Legal\LegalAcceptanceRecorder::SALON_DOCUMENTS,
+            $this->acceptance->pull('salon-signup', $challenge) ?? $this->acceptance->capture($request, 'web'));
         Auth::login($owner);
         $request->session()->regenerate();
 

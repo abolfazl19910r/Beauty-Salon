@@ -57,6 +57,8 @@ class StoreSalonSignupRequest extends FormRequest
                 Rule::unique('users', 'phone')->where(fn ($query) => $query->where('user_type', 'staff')),
             ],
             'owner_password' => [$this->existingOwner() ? 'nullable' : 'required', 'confirmed', Rules\Password::defaults()],
+            // پذیرش «قوانین و شرایط سالن‌ها» و «حریم خصوصی» با نسخه و زمان ثبت می‌شود (بسته‌ی مجوز 5د)
+            'accept_terms' => ['accepted'],
         ];
     }
 
@@ -78,6 +80,7 @@ class StoreSalonSignupRequest extends FormRequest
     public function messages(): array
     {
         return $this->salonContactMessages() + \App\Services\Salon\SalonLogoService::MESSAGES + \App\Support\ZarinpalMerchant::MESSAGES + \App\Support\SalonSubdomain::messages() + [
+            'accept_terms.accepted' => 'برای ثبت‌نام، قوانین و شرایط و حریم خصوصی را بپذیرید.',
             'specialists_count.required' => 'تعداد متخصص‌های سالن را وارد کنید.',
             'specialists_count.min' => 'سالن حداقل یک متخصص دارد.',
             'specialists_count.max' => 'برای بیشتر از :max متخصص با پشتیبانی تماس بگیرید.',

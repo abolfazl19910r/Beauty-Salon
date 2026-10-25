@@ -36,8 +36,11 @@ class CustomerRegisteredController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'regex:/^09[0-9]{9}$/'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            // بسته‌ی مجوز 5د: پذیرش قوانین و حریم خصوصی، با نسخه و زمان
+            'accept_terms' => ['accepted'],
         ], [
             'phone.regex' => 'شماره موبایل باید با 09 شروع شود و 11 رقم باشد',
+            'accept_terms.accepted' => 'برای ثبت‌نام، قوانین و شرایط و حریم خصوصی را بپذیرید.',
         ]);
 
         try {
@@ -47,6 +50,8 @@ class CustomerRegisteredController extends Controller
         }
 
         session([self::SESSION_KEY => $result['challenge']]);
+        $acceptance = app(\App\Services\Legal\LegalAcceptanceRecorder::class);
+        $acceptance->remember('customer-register', $result['challenge'], $acceptance->capture($request, 'web'));
 
         return redirect()->route('salon.register.verify.show')
             ->with('success', 'کد تایید به شماره موبایل شما ارسال شد.');
@@ -93,6 +98,9 @@ class CustomerRegisteredController extends Controller
         }
 
         session()->forget(self::SESSION_KEY);
+        $acceptance = app(\App\Services\Legal\LegalAcceptanceRecorder::class);
+        $acceptance->record($user, $this->currentSalon->get(), \App\Services\Legal\LegalAcceptanceRecorder::CUSTOMER_DOCUMENTS,
+            $acceptance->pull('customer-register', $challenge) ?? $acceptance->capture($request, 'web'));
 
         // ⭐ متخصصی که مدیر همین سالن با این شماره ثبت کرده، به‌جای مشتری حساب متخصص می‌گیرد و به پنل خودش می‌رود (۲۰۲۶-۱۰-۲۲)
         $isSpecialist = app(\App\Services\Specialist\SpecialistAccountLinker::class)->promoteCustomer($user);

@@ -281,6 +281,16 @@
                 </fieldset>
                 @endif
 
+                {{-- بسته‌ی مجوز 5د: پذیرش با نسخه، زمان و IP ثبت می‌شود (LegalAcceptanceRecorder) --}}
+                <div class="row" data-accept-terms>
+                    <label style="display:flex;gap:.5rem;align-items:flex-start;font-weight:400;line-height:1.9">
+                        <input type="checkbox" name="accept_terms" value="1" required @checked(old('accept_terms')) style="width:auto;margin-top:.45rem">
+                        <span><a href="{{ \App\Support\CentralUrl::route('legal.terms') }}#salons" target="_blank" style="text-decoration:underline">قوانین و شرایط سالن‌ها</a>
+                            و <a href="{{ \App\Support\CentralUrl::route('legal.privacy') }}" target="_blank" style="text-decoration:underline">حریم خصوصی</a> را خواندم و می‌پذیرم.</span>
+                    </label>
+                    @error('accept_terms')<div class="err">{{ $message }}</div>@enderror
+                </div>
+
                 <button type="submit">{{ $existingOwner ? (old('intent', $intent) === 'buy' ? 'ساختن سالن و پرداخت' : 'ساختن سالن') : (old('intent', $intent) === 'buy' ? 'ادامه، تایید موبایل و پرداخت' : 'ادامه و ارسال کد تایید') }}</button>
             </form>
         </div>

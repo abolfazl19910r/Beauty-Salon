@@ -127,7 +127,7 @@ class SpecialistAccountActivationTest extends TestCase
 
     public function test_signing_up_on_the_salon_page_with_the_specialist_phone_gives_a_specialist_account(): void
     {
-        $this->post('/s/rasta/register', ['name' => 'سارا', 'phone' => self::PHONE, 'password' => 'secret-123', 'password_confirmation' => 'secret-123']);
+        $this->post('/s/rasta/register', ['name' => 'سارا', 'phone' => self::PHONE, 'password' => 'secret-123', 'password_confirmation' => 'secret-123', 'accept_terms' => '1']);
         $this->post(route('salon.register.verify'), ['code' => $this->sentCode()])->assertRedirect('/my-dashboard');
 
         $user = User::where('phone', self::PHONE)->sole();

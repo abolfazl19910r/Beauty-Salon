@@ -45,14 +45,20 @@ class CustomerAuthController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'regex:/^09[0-9]{9}$/'],
             'password' => ['required', 'confirmed', Password::defaults()],
-        ]);
+            // بسته‌ی مجوز 5د: اپ از app-0023 تیک پذیرش را می‌فرستد؛ نسخه‌های قدیمی‌تر بی این فیلد پذیرفته و «ضمنی» ثبت می‌شوند
+            'accept_terms' => ['sometimes', 'accepted'],
+        ], ['accept_terms.accepted' => 'برای ثبت‌نام، قوانین و شرایط و حریم خصوصی را بپذیرید.']);
 
         // ⭐ متخصص همین سالن حساب متخصص می‌گیرد، نه مشتری؛ اپ مشتری جای پنل متخصص نیست ← اپ همکار (۲۰۲۶-۱۰-۲۲)
         if (app(\App\Services\Specialist\SpecialistAccountLinker::class)->hasPending($input['phone'], $this->currentSalon->id())) {
             throw new \App\Exceptions\Api\ApiException('specialist_phone', 'این شماره متخصص همین سالن است. حساب متخصص را از اپ «ماهرو همکار» ← «فعال‌سازی حساب متخصص» بسازید.', 422);
         }
 
-        return ApiResponse::success($this->registration->start($this->currentSalon->id(), $input['name'], $input['phone'], $input['password']));
+        $result = $this->registration->start($this->currentSalon->id(), $input['name'], $input['phone'], $input['password']);
+        $acceptance = app(\App\Services\Legal\LegalAcceptanceRecorder::class);
+        $acceptance->remember('customer-register', $result['challenge'], $acceptance->capture($request, $request->has('accept_terms') ? 'app' : 'app-implicit'));
+
+        return ApiResponse::success($result);
     }
 
     /** کد درست → حساب ساخته می‌شود و همان لحظه توکن می‌گیرد (مثل وب که بعد از ثبت‌نام وارد می‌کند). */
@@ -65,6 +71,9 @@ class CustomerAuthController extends Controller
         ]);
 
         $user = $this->registration->verify($input['challenge'], $input['code'], $this->currentSalon->id());
+        $acceptance = app(\App\Services\Legal\LegalAcceptanceRecorder::class);
+        $acceptance->record($user, $this->currentSalon->get(), \App\Services\Legal\LegalAcceptanceRecorder::CUSTOMER_DOCUMENTS,
+            $acceptance->pull('customer-register', $input['challenge']) ?? $acceptance->capture($request, 'app-implicit'));
         $context = $this->gate->resolve($user, ApiAudienceGate::CUSTOMER);
 
         return ApiResponse::success(array_merge(

@@ -72,6 +72,16 @@
             <x-input-error :messages="$errors->get('password_confirmation')" />
         </div>
 
+        {{-- بسته‌ی مجوز 5د: پذیرش با نسخه، زمان و IP ثبت می‌شود (LegalAcceptanceRecorder) --}}
+        <div data-accept-terms>
+            <label class="flex items-start gap-2 text-sm text-m-tx/80 leading-7">
+                <input type="checkbox" name="accept_terms" value="1" required @checked(old('accept_terms')) class="mt-1.5 rounded">
+                <span><a href="{{ \App\Support\CentralUrl::route('legal.terms') }}" target="_blank" class="underline hover:text-m-gold2">قوانین و شرایط</a>
+                    و <a href="{{ \App\Support\CentralUrl::route('legal.privacy') }}" target="_blank" class="underline hover:text-m-gold2">حریم خصوصی</a> را خواندم و می‌پذیرم.</span>
+            </label>
+            <x-input-error :messages="$errors->get('accept_terms')" />
+        </div>
+
         <button type="submit"
                 class="w-full py-3 rounded-lg font-semibold text-sm transition-all duration-300
                    bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-m-ongold

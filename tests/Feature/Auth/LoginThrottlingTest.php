@@ -148,6 +148,7 @@ class LoginThrottlingTest extends TestCase
             'phone' => '09121230000',
             'password' => 'password123',
             'password_confirmation' => 'password123',
+            'accept_terms' => '1',
         ]);
 
         $response->assertRedirect(route('salon.register.verify.show'));
