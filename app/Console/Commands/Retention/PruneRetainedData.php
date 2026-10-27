@@ -34,7 +34,11 @@ class PruneRetainedData extends Command
         }
         $this->line("security_logs: {$count} ردیف قدیمی‌تر از {$cutoff->toDateString()}".($dry ? ' (dry-run)' : ' پاک شد'));
 
-        $expired = DeletedAccountArchive::query()->where('purge_after', '<', now());
+        // purge_after را برنامه همیشه می‌نویسد؛ ستون فقط برای MariaDB قدیمی (XAMPP، خطای 1067) nullable است. ردیف بی purge_after
+        // نه زودتر از مدت قانونی پاک می‌شود و نه برای همیشه می‌ماند: مدت نگهداری از created_at خودش.
+        $fallback = Retention::cutoff('deleted_accounts_days');
+        $expired = DeletedAccountArchive::query()->where(fn ($q) => $q->where('purge_after', '<', now())
+            ->orWhere(fn ($q) => $q->whereNull('purge_after')->where('created_at', '<', $fallback)));
         $archives = (clone $expired)->count();
         $dry || $expired->delete();
         $this->line("deleted_account_archives: {$archives} بایگانی بعد از مهلت".($dry ? ' (dry-run)' : ' پاک شد'));

@@ -94,6 +94,24 @@ class DeletedAccountRetentionTest extends TestCase
         $this->assertModelExists($kept);
     }
 
+    /**
+     * purge_after برای MariaDB قدیمی (XAMPP، خطای 1067) nullable شد. ردیف بی آن نه زودتر از مدت قانونی پاک می‌شود و نه برای همیشه
+     * می‌ماند (حریم خصوصی وعده‌ی پاک شدن خودکار داده): مدت نگهداری از created_at خودش.
+     */
+    public function test_an_archive_without_purge_after_is_kept_for_the_legal_period_then_purged(): void
+    {
+        $recent = DeletedAccountArchive::create(['user_id' => 3, 'name' => 'z', 'phone' => '09120000003', 'deleted_at' => now()->subDays(100)]);
+        $recent->forceFill(['created_at' => now()->subDays(100)])->save();
+        $stale = DeletedAccountArchive::create(['user_id' => 4, 'name' => 'w', 'phone' => '09120000004', 'deleted_at' => now()->subDays(200)]);
+        $stale->forceFill(['created_at' => now()->subDays(200)])->save();
+        $this->assertNull($stale->fresh()->purge_after);
+
+        $this->artisan('retention:prune')->assertSuccessful();
+
+        $this->assertModelExists($recent);
+        $this->assertModelMissing($stale);
+    }
+
     public function test_only_super_admin_sees_the_archive(): void
     {
         DeletedAccountArchive::create(['user_id' => 9, 'name' => 'مریم احمدی', 'phone' => '09120000777', 'deleted_at' => now(), 'purge_after' => now()->addDays(190)]);
