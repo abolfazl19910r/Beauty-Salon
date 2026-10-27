@@ -10,7 +10,7 @@
 [![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=flat-square&logo=php)](https://php.net)
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com)
 [![Vite](https://img.shields.io/badge/Vite-8.x-646CFF?style=flat-square&logo=vite)](https://vitejs.dev)
-[![Tests](https://img.shields.io/badge/tests-2360%20passing-brightgreen?style=flat-square)](#-running-the-tests)
+[![Tests](https://img.shields.io/badge/tests-2363%20passing-brightgreen?style=flat-square)](#-running-the-tests)
 
 ---
 
@@ -524,11 +524,12 @@ php artisan test                       # in-memory SQLite (phpunit.xml default)
 ```
 
 For MariaDB/MySQL, copy `phpunit.xml` with `DB_CONNECTION=mysql` and an empty database's details (e.g. `phpunit.mysql.xml`, not in git) and run `vendor/bin/phpunit -c phpunit.mysql.xml`.
+XAMPP (MariaDB before 10.10) runs with `explicit_defaults_for_timestamp=OFF`; to test that behaviour, turn it off under `[mysqld]` on the test server.
 
 | Database | Last full run | Failures | Skipped |
 |---|---|---|---|
-| SQLite | 2360 (2026-10-25) | 0 | 11 |
-| MariaDB 10.11 and MySQL 8.0 | 2360 (2026-10-25) | 0 | 1 |
+| SQLite | 2363 (2026-10-27) | 0 | 11 |
+| MariaDB 10.11 (`explicit_defaults_for_timestamp` on and off) and MySQL 8.0 | 2363 (2026-10-27) | 0 | 1 |
 
 > `Vite manifest not found` in tests: run `npm run build` once.
 > Subdomain tests: `vendor/bin/phpunit -c phpunit.subdomain.xml`.
@@ -638,6 +639,9 @@ Cron and workers: [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCH
 ## 🆕 Changelog
 
 Full history, decisions and open items in [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md) (Persian).
+
+**2026-10-27 — error 1067 in `migrate:fresh` on XAMPP**
+- On MariaDB older than 10.10 (like XAMPP, `explicit_defaults_for_timestamp=OFF`) creating `deleted_account_archives` failed with "1067 Invalid default value for 'purge_after'", and three other columns silently got `ON UPDATE CURRENT_TIMESTAMP`. All five timestamp columns now have an explicit default or are nullable, and a test checks every migration for this pattern. Local database: `php artisan migrate:fresh --seed`.
 
 **2026-10-25 — working hours on phones**
 - `/salon-signup` no longer scrolls sideways on phones (it overflowed by 58 px): the working-hours row wraps onto two lines. In the salon settings (admin panel) and the super-admin salon form, the times are now fully visible on phones and tablets (previously only "09").

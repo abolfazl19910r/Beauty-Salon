@@ -10,7 +10,7 @@
 [![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=flat-square&logo=php)](https://php.net)
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com)
 [![Vite](https://img.shields.io/badge/Vite-8.x-646CFF?style=flat-square&logo=vite)](https://vitejs.dev)
-[![Tests](https://img.shields.io/badge/tests-2360%20passing-brightgreen?style=flat-square)](#-اجرای-تستها)
+[![Tests](https://img.shields.io/badge/tests-2363%20passing-brightgreen?style=flat-square)](#-اجرای-تستها)
 
 ---
 
@@ -524,11 +524,12 @@ php artisan test                       # SQLite در حافظه (پیش‌فرض
 ```
 
 برای MariaDB/MySQL یک کپی از `phpunit.xml` با `DB_CONNECTION=mysql` و اطلاعات یک دیتابیس خالی بسازید (مثلاً `phpunit.mysql.xml`، در گیت نیست) و `vendor/bin/phpunit -c phpunit.mysql.xml`.
+XAMPP (MariaDB پیش از 10.10) `explicit_defaults_for_timestamp=OFF` دارد؛ برای سنجیدن همان رفتار روی سرور تست، آن را در `[mysqld]` خاموش کنید.
 
 | دیتابیس | آخرین اجرای کامل | شکست | skip |
 |---|---|---|---|
-| SQLite | ۲۳۶۰ (۲۰۲۶-۱۰-۲۵) | ۰ | ۱۱ |
-| MariaDB 10.11 و MySQL 8.0 | ۲۳۶۰ (۲۰۲۶-۱۰-۲۵) | ۰ | ۱ |
+| SQLite | ۲۳۶۳ (۲۰۲۶-۱۰-۲۷) | ۰ | ۱۱ |
+| MariaDB 10.11 (`explicit_defaults_for_timestamp` روشن و خاموش) و MySQL 8.0 | ۲۳۶۳ (۲۰۲۶-۱۰-۲۷) | ۰ | ۱ |
 
 > `Vite manifest not found` در تست‌ها: یک بار `npm run build`.
 > تست‌های زیردامنه: `vendor/bin/phpunit -c phpunit.subdomain.xml`.
@@ -638,6 +639,9 @@ php artisan up
 ## 🆕 آخرین تغییرات
 
 تاریخچه‌ی کامل، تصمیم‌ها و قدم‌های باز در [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md).
+
+**۲۰۲۶-۱۰-۲۷ — خطای 1067 در `migrate:fresh` روی XAMPP**
+- روی MariaDB قدیمی‌تر از 10.10 (مثل XAMPP، `explicit_defaults_for_timestamp=OFF`) ساخت `deleted_account_archives` با «1067 Invalid default value for 'purge_after'» می‌شکست و سه ستون دیگر بی‌صدا `ON UPDATE CURRENT_TIMESTAMP` می‌گرفتند. هر پنج ستون timestamp حالا پیش‌فرض صریح دارند یا nullable‌اند، و یک تست همه‌ی migrationها را برای این الگو می‌پاید. دیتابیس لوکال: `php artisan migrate:fresh --seed`.
 
 **۲۰۲۶-۱۰-۲۵ — ساعت کاری در گوشی**
 - `/salon-signup` در عرض گوشی دیگر سرریز افقی ندارد (پیش‌تر ۵۸ پیکسل): ردیف ساعت کاری در گوشی دوخطی است. در تنظیمات سالن (پنل مدیر) و فرم سالن ابرمدیر هم ساعت‌ها در گوشی و تبلت کامل دیده می‌شوند (پیش‌تر فقط «09»).
