@@ -23,7 +23,10 @@ return new class extends Migration
             $table->string('app_version', 32)->nullable();
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
-            $table->timestamp('accepted_at');
+            // ⭐ useCurrent: DEFAULT صریح CURRENT_TIMESTAMP. بی‌این، در MySQL/MariaDB با
+            // explicit_defaults_for_timestamp=OFF اولین TIMESTAMP جدول ضمناً ON UPDATE
+            // CURRENT_TIMESTAMP هم می‌گرفت و زمان پذیرش (ماده‌ی ۸ قانون تجارت الکترونیکی) با هر آپدیت ردیف بی‌صدا عوض می‌شد.
+            $table->timestamp('accepted_at')->useCurrent();
             $table->timestamp('created_at')->nullable();
 
             $table->index(['user_id', 'document', 'version']);

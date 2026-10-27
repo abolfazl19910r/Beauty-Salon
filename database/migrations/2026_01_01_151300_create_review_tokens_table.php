@@ -14,7 +14,9 @@ return new class extends Migration
             $table->foreignId('booking_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->boolean('is_used')->default(false);
-            $table->timestamp('expires_at');
+            // ⭐ useCurrent: بی‌ DEFAULT صریح، MySQL ضمنی ON UPDATE CURRENT_TIMESTAMP می‌گرفت و
+            // انقضای توکن با هر آپدیت ردیف (مثلاً ثبت used_at) ریست می‌شد.
+            $table->timestamp('expires_at')->useCurrent();
             $table->timestamp('used_at')->nullable();
             $table->timestamps();
 

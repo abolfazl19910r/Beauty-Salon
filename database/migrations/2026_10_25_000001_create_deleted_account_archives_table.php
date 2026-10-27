@@ -28,7 +28,12 @@ return new class extends Migration
             $table->unsignedBigInteger('deleted_by')->nullable();
             $table->string('outcome', 16)->nullable(); // deleted | anonymized
             $table->timestamp('deleted_at')->nullable();
-            $table->timestamp('purge_after')->index();
+            // ⭐ nullable (مطابق قرارداد subscription_ends_at در salons): در MySQL/MariaDB با
+            // explicit_defaults_for_timestamp=OFF، ستون TIMESTAMP NOT NULL بی‌ DEFAULT که اولین
+            // TIMESTAMP جدول نباشد پیش‌فرض ضمنی '0000-00-00' می‌گیرد و با NO_ZERO_DATE خطای
+            // 1067 می‌دهد. app همیشه مقدار می‌گذارد (deleted_at + مدت نگهداری، ماده‌ی ۶۶۸) و
+            // ردیف بی purge_after را retention:prune بعد از مدت نگهداری از created_at پاک می‌کند (نه زودتر از قانون، نه هرگز).
+            $table->timestamp('purge_after')->nullable()->index();
             $table->timestamps();
         });
     }

@@ -14,7 +14,9 @@ return new class extends Migration
             $table->string('report_type');
             $table->json('parameters');
             $table->string('frequency');
-            $table->timestamp('next_run');
+            // ⭐ useCurrent: بی‌ DEFAULT صریح، MySQL برای اولین TIMESTAMP جدول ضمناً ON UPDATE
+            // CURRENT_TIMESTAMP می‌گذاشت و next_run با هر آپدیت ردیف (مثلاً تغییر is_active) بی‌صدا به «همین حالا» جهش می‌کرد.
+            $table->timestamp('next_run')->useCurrent();
             $table->json('recipients')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();

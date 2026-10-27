@@ -29,7 +29,9 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('salon_id')->nullable()->constrained()->nullOnDelete();
             $table->string('code_hash', 64)->unique();
-            $table->timestamp('expires_at');
+            // ⭐ useCurrent: بی‌ DEFAULT صریح، MySQL ضمنی ON UPDATE CURRENT_TIMESTAMP می‌گرفت و
+            // انقضای کد اتصال با هر آپدیت ردیف (مثلاً ثبت used_at) ریست می‌شد.
+            $table->timestamp('expires_at')->useCurrent();
             $table->timestamp('used_at')->nullable();
             $table->timestamps();
 
