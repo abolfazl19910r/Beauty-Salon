@@ -76,6 +76,7 @@
                     </div>
                 </form>
             @endif
+            @include('courses._consent-history', ['course' => $course, 'dimStyle' => $dim, 'showStaff' => false])
         </div>
 
         <div class="rounded-xl p-6 mt-5" style="{{ $card }}">

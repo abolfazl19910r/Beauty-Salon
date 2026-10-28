@@ -90,6 +90,7 @@
                     @endif
                 </div>
             @endif
+            @include('courses._consent-history', ['course' => $course, 'dimStyle' => 'color: var(--specialist-text-dim);', 'showStaff' => true])
         </div>
     @endif
 </div>
