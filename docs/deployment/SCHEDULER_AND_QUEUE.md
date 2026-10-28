@@ -215,7 +215,7 @@ php artisan queue:restart     # روی VPS/Docker؛ روی DirectAdmin لازم 
 ## ۱۰. پرامپت آماده (برای یک چت جدید یا پشتیبان فنی)
 
 ```
-پروژه‌ی من «ماهرو» یک اپ Laravel 11 است (مخزن abolfazl19910r/Beauty-Salon، برنچ develop).
+پروژه‌ی من «ماهرو» یک اپ Laravel 13 است (مخزن abolfazl19910r/Beauty-Salon، برنچ develop).
 می‌خواهم زمان‌بندی (Cron) و صف (Queue) را روی سرور راه‌اندازی کنم، طبق فایل
 docs/deployment/SCHEDULER_AND_QUEUE.md همین مخزن.
 

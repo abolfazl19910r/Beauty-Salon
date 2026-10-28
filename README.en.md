@@ -3,11 +3,11 @@
 [فارسی](README.md) | **English**
 
 > A multi-tenant SaaS: every salon gets its own admin panel, specialist panel, customer site, payment gateways and fully separated data.
-> Built with Laravel 11, Blade, Tailwind CSS and plain JavaScript; two Android apps (Expo) for customers and specialists.
+> Built with Laravel 13, Blade, Tailwind CSS and plain JavaScript; two Android apps (Expo) for customers and specialists.
 > Main domain: `arisheh.ir`. The product UI is Persian (RTL); this file is the English summary of [`README.md`](README.md), which stays the primary version.
 
-[![Laravel](https://img.shields.io/badge/Laravel-11.x-FF2D20?style=flat-square&logo=laravel)](https://laravel.com)
-[![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=flat-square&logo=php)](https://php.net)
+[![Laravel](https://img.shields.io/badge/Laravel-13.x-FF2D20?style=flat-square&logo=laravel)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.3+-777BB4?style=flat-square&logo=php)](https://php.net)
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com)
 [![Vite](https://img.shields.io/badge/Vite-8.x-646CFF?style=flat-square&logo=vite)](https://vitejs.dev)
 [![Tests](https://img.shields.io/badge/tests-2363%20passing-brightgreen?style=flat-square)](#-running-the-tests)
@@ -149,7 +149,7 @@ All salons share **one database**; isolation is done in the application:
 
 | Layer | Technology |
 |------|-----------|
-| Backend | Laravel 11 (PHP 8.2+; the Docker image uses PHP 8.3) |
+| Backend | Laravel 13 (PHP 8.3-8.5; the Docker image uses PHP 8.5) |
 | Frontend | Blade + Tailwind CSS 3 + plain JavaScript, Vite 8; no external CDN |
 | Font | Vazirmatn |
 | Authentication | custom SMS login, Sanctum for the app API |
@@ -172,9 +172,9 @@ All salons share **one database**; isolation is done in the application:
 
 | Tool | Version |
 |-------|------|
-| PHP | 8.2 or newer (extensions: mbstring, xml, pdo_mysql, sqlite3, curl, zip, gd, intl, bcmath) |
+| PHP | 8.3 to 8.5; tested on 8.5 (extensions: mbstring, xml, pdo_mysql, sqlite3, curl, zip, gd, intl, bcmath) |
 | Composer | 2.x |
-| MySQL / MariaDB | MySQL 8.0+ or MariaDB 10.11+ |
+| MySQL / MariaDB | MySQL 8.0+ (six-service Docker: 8.4) or MariaDB 10.4+ (XAMPP; single container: 11.8) |
 | Node.js | 22 (18 minimum) |
 | Git | — |
 | Docker Desktop (optional) | for the single-container mode and building the server image |
@@ -341,7 +341,7 @@ SESSION_DRIVER=file
 TELESCOPE_ENABLED=false            # true only locally
 BOT_ENABLED=false                  # the Bale/Telegram bot has been shelved
 ```
-> Laravel 11 does not read `CACHE_DRIVER`; only `CACHE_STORE`.
+> Since Laravel 11, `CACHE_DRIVER` is not read; only `CACHE_STORE`.
 
 ---
 
@@ -639,6 +639,14 @@ Cron and workers: [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCH
 ## 🆕 Changelog
 
 Full history, decisions and open items in [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md) (Persian).
+
+**2026-10-28 — upgrade to Laravel 13 and PHP 8.5**
+- Laravel 11 (security fixes ended 2026-03-12) -> 12 -> **13** (security fixes until 2028-03-17); `composer.json`: `php: ^8.3`. Libraries: Sanctum 4.3, Telescope 5.26, Excel **4** with PhpSpreadsheet **5** (the only line that installs on PHP 8.5; Excel output unchanged), Activitylog 4.12, mPDF 8.3, DomPDF 3.1, Verta 9, Tinker 3, PHPUnit 12, collision 8.9; Guzzle stays on 7 and Pint on 1.27. `composer.lock` installs on PHP 8.3 to 8.5.
+- Docker image on PHP **8.5** (production and single/ArvanCloud); six-service compose on **mysql:8.4** (`docker/mysql/my.cnf` fixed for 8.4; an 8.0 volume is upgraded one-way on first start — back it up first).
+- New behaviour (decided): app push message ids are UUIDv7 and are ordered by id; SVG uploads are rejected by image fields.
+- Fixes the upgrade needed: CSRF exemption of the gateway return URL and CSP reports on Laravel 13 (banks would have got 419); the sales page's JSON-LD broke on the new Blade `@context` directive (500); the project's own PHP 8.5 deprecations.
+- `phpunit.xml`: `memory_limit=1G`, fixed `APP_URL` and `PUSH_FCM_CREDENTIALS` (the suite no longer depends on each machine's `.env` / `php.ini`).
+- **After applying:** `composer install` (on PHP 8.5), `php artisan optimize:clear` (stale compiled views hide Blade errors), `npm run build`; for Docker a fresh `build-vendor` and a rebuild. No new migration; `migrate:fresh --seed` is fine since the data is fake.
 
 **2026-10-28 — terms re-acceptance and photo consent from the customer**
 - `config/legal.php` now has a change summary and a "major" flag for every version of the terms, privacy policy and salon terms. Only a major change requires re-acceptance: after login the customer sees a "terms updated" page and cannot book a new appointment or course until accepting (logout, account deletion, current bookings and complaints stay open); the salon owner's panel is locked until the salon terms are accepted, and secretaries only see an "awaiting the owner" banner. Apps older than 0.3.7 are not locked; their acceptance is recorded as implicit. Acceptances are stored in `legal_acceptances` as before.

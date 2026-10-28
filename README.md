@@ -3,11 +3,11 @@
 **فارسی** | [English](README.en.md)
 
 > یک SaaS چندسالنه (multi-tenant): هر سالن پنل مدیریت، پنل متخصص، سایت مشتری، درگاه پرداخت و داده‌ی کاملاً جدای خودش را دارد.
-> ساخته‌شده با Laravel 11، Blade، Tailwind CSS و جاوااسکریپت ساده؛ دو اپ اندروید (Expo) برای مشتری و متخصص.
+> ساخته‌شده با Laravel 13، Blade، Tailwind CSS و جاوااسکریپت ساده؛ دو اپ اندروید (Expo) برای مشتری و متخصص.
 > دامنه‌ی اصلی: `arisheh.ir`
 
-[![Laravel](https://img.shields.io/badge/Laravel-11.x-FF2D20?style=flat-square&logo=laravel)](https://laravel.com)
-[![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=flat-square&logo=php)](https://php.net)
+[![Laravel](https://img.shields.io/badge/Laravel-13.x-FF2D20?style=flat-square&logo=laravel)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.3+-777BB4?style=flat-square&logo=php)](https://php.net)
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com)
 [![Vite](https://img.shields.io/badge/Vite-8.x-646CFF?style=flat-square&logo=vite)](https://vitejs.dev)
 [![Tests](https://img.shields.io/badge/tests-2363%20passing-brightgreen?style=flat-square)](#-اجرای-تستها)
@@ -149,7 +149,7 @@
 
 | لایه | تکنولوژی |
 |------|-----------|
-| Backend | Laravel 11 (PHP 8.2+؛ image داکر PHP 8.3) |
+| Backend | Laravel 13 (PHP 8.3 تا 8.5؛ image داکر PHP 8.5) |
 | Frontend | Blade + Tailwind CSS 3 + جاوااسکریپت ساده، Vite 8؛ بدون CDN خارجی |
 | فونت | Vazirmatn |
 | احراز هویت | ورود پیامکی سفارشی، Sanctum برای API اپ‌ها |
@@ -172,9 +172,9 @@
 
 | ابزار | نسخه |
 |-------|------|
-| PHP | 8.2 یا بالاتر (افزونه‌ها: mbstring، xml، pdo_mysql، sqlite3، curl، zip، gd، intl، bcmath) |
+| PHP | 8.3 تا 8.5؛ آزموده با 8.5 (افزونه‌ها: mbstring، xml، pdo_mysql، sqlite3، curl، zip، gd، intl، bcmath) |
 | Composer | 2.x |
-| MySQL / MariaDB | MySQL 8.0+ یا MariaDB 10.11+ |
+| MySQL / MariaDB | MySQL 8.0+ (داکر شش‌سرویسی: 8.4) یا MariaDB 10.4+ (XAMPP؛ تک‌کانتینری: 11.8) |
 | Node.js | 22 (حداقل 18) |
 | Git | — |
 | Docker Desktop (اختیاری) | برای اجرای تک‌کانتینری و ساخت image سرور |
@@ -341,7 +341,7 @@ SESSION_DRIVER=file
 TELESCOPE_ENABLED=false            # فقط در لوکال true
 BOT_ENABLED=false                  # ربات بله/تلگرام کنار گذاشته شده است
 ```
-> `CACHE_DRIVER` در Laravel 11 خوانده نمی‌شود؛ فقط `CACHE_STORE`.
+> `CACHE_DRIVER` از Laravel 11 به بعد خوانده نمی‌شود؛ فقط `CACHE_STORE`.
 
 ---
 
@@ -639,6 +639,14 @@ php artisan up
 ## 🆕 آخرین تغییرات
 
 تاریخچه‌ی کامل، تصمیم‌ها و قدم‌های باز در [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md).
+
+**۲۰۲۶-۱۰-۲۸ — ارتقا به Laravel 13 و PHP 8.5**
+- Laravel 11 (پایان وصله‌ی امنیتی ۱۲ مارس ۲۰۲۶) ← 12 ← **13** (امنیتی تا ۱۷ مارس ۲۰۲۸)؛ `composer.json`: ‏`php: ^8.3`. کتابخانه‌ها: Sanctum 4.3، Telescope 5.26، Excel **4** با PhpSpreadsheet **5** (تنها راه نصب روی PHP 8.5؛ خروجی Excel بی‌تغییر)، Activitylog 4.12، mPDF 8.3، DomPDF 3.1، Verta 9، Tinker 3، PHPUnit 12، collision 8.9؛ Guzzle روی 7 و Pint روی 1.27 ماند. `composer.lock` روی PHP 8.3 تا 8.5 نصب می‌شود.
+- image داکر PHP **8.5** (تولید و تک‌کانتینری/آروان)؛ compose شش‌سرویسی **mysql:8.4** (`docker/mysql/my.cnf` برای 8.4 اصلاح شد؛ volume ‏8.0 در اولین اجرا یک‌طرفه ارتقا می‌یابد — اول پشتیبان).
+- رفتارهای تازه (تصمیم‌شده): شناسه‌ی پیام‌های اپ UUID نسخه‌ی ۷ و مرتب‌سازی با شناسه؛ آپلود SVG در فیلدهای تصویر رد می‌شود.
+- رفع‌های لازم ارتقا: معافیت CSRF برگشت درگاه‌ها و گزارش CSP در Laravel 13 (بدون آن بانک‌ها ۴۱۹ می‌گرفتند)؛ JSON-LD صفحه‌ی فروش با دستور تازه‌ی `@context` در Blade می‌شکست (۵۰۰)؛ هشدارهای PHP 8.5 کد خود پروژه.
+- `phpunit.xml`: ‏`memory_limit=1G`، و `APP_URL` و `PUSH_FCM_CREDENTIALS` ثابت (سوییت دیگر به `.env` و `php.ini` هر سیستم وابسته نیست).
+- **بعد از گرفتن پچ‌ها:** `composer install` (روی PHP 8.5)، ‏`php artisan optimize:clear` (نماهای کامپایل‌شده‌ی قدیمی خطای Blade را پنهان می‌کنند)، ‏`npm run build`، و برای Docker ‏`build-vendor` تازه و build دوباره. migration تازه‌ای ندارد؛ چون داده فیک است `migrate:fresh --seed` هم بی‌اشکال است.
 
 **۲۰۲۶-۱۰-۲۸ — پذیرش دوباره‌ی قوانین و رضایت عکس از زبان مشتری**
 - `config/legal.php` حالا برای هر نسخه‌ی قوانین، حریم خصوصی و قوانین سالن‌ها خلاصه‌ی تغییر و پرچم «مهم» دارد. فقط تغییر مهم پذیرش دوباره می‌خواهد: مشتری بعد از ورود صفحه‌ی «قوانین به‌روز شد» را می‌بیند و تا نپذیرد نوبت یا دوره‌ی تازه نمی‌گیرد (خروج، حذف حساب، نوبت‌های فعلی و شکایت باز است)؛ پنل مالک سالن تا پذیرش قوانین سالن‌ها قفل است و منشی فقط نوار «منتظر پذیرش مالک» می‌بیند. اپ‌های پیش از 0.3.7 قفل نمی‌شوند و پذیرششان ضمنی ثبت می‌شود. پذیرش‌ها مثل قبل در `legal_acceptances`.
