@@ -78,7 +78,7 @@ Route::get('customer/salons/{salon_slug}', [CustomerAuthController::class, 'card
     ->middleware(['salon.resolve', 'throttle:api-v1'])->name('customer.salon.card');
 
 // مشترک هر دو اپ؛ مسیرهای مخصوص یک اپ (بسته‌ی ۲ و ۳) با 'api.audience:staff' / 'api.audience:customer'
-Route::middleware(['auth:sanctum', 'api.audience', 'throttle:api-v1'])->group(function () {
+Route::middleware(['auth:sanctum', 'api.audience', 'api.legal', 'throttle:api-v1'])->group(function () {
     Route::get('me', [AccountController::class, 'me'])->name('me');
     Route::post('logout', [AccountController::class, 'logout'])->name('logout');
 
@@ -147,7 +147,11 @@ Route::prefix('staff')->name('staff.')->middleware(['auth:sanctum', 'api.audienc
 });
 
 // اپ «ماهرو» — مشتری (بسته‌ی ۳)؛ مشتری و سالن از توکن (حساب مشتری در هر سالن جداست)
-Route::prefix('customer')->name('customer.')->middleware(['auth:sanctum', 'api.audience:customer', 'throttle:api-v1'])->group(function () {
+Route::prefix('customer')->name('customer.')->middleware(['auth:sanctum', 'api.audience:customer', 'api.legal', 'throttle:api-v1'])->group(function () {
+    // «قوانین به‌روز شد» (پذیرش دوباره، ۲۰۲۶-۱۰-۲۸)
+    Route::get('legal', [\App\Http\Controllers\Api\V1\Customer\CustomerLegalController::class, 'show'])->name('legal.show');
+    Route::post('legal/accept', [\App\Http\Controllers\Api\V1\Customer\CustomerLegalController::class, 'accept'])->middleware('throttle:api-v1-sensitive')->name('legal.accept');
+
     Route::controller(CustomerCatalogController::class)->group(function () {
         Route::get('salon', 'salonInfo')->name('salon');
         Route::get('home', 'home')->name('home');

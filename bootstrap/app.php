@@ -95,6 +95,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'legal.terms' => \App\Http\Middleware\EnsureLegalTermsAccepted::class,
             // ⭐ /api/v1 اپ‌های موبایل (بسته‌ی ۱ اپلیکیشن): اپ توکن + سالن جاری + عمر لغزان توکن
             'api.audience' => \App\Http\Middleware\Api\EnsureApiAudience::class,
+            // پذیرش دوباره‌ی قوانین در اپ مشتری (۲۰۲۶-۱۰-۲۸): اپ قدیمی ضمنی، اپ تازه 409 روی نوبت/دوره‌ی تازه
+            'api.legal' => \App\Http\Middleware\Api\EnsureApiLegalTerms::class,
         ]);
 
         // Note: the 'admin-api' middleware group (auth + admin, previously guarding

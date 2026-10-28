@@ -36,6 +36,11 @@ class ApiAccountPresenter
             ],
         ];
 
+        // پذیرش دوباره (۲۰۲۶-۱۰-۲۸): سندهایی که مشتری باید دوباره بپذیرد؛ خالی = چیزی در انتظار نیست
+        if ($audience === ApiAudienceGate::CUSTOMER) {
+            $account['legal_pending'] = \App\Http\Controllers\Api\V1\Customer\CustomerLegalController::present(app(\App\Services\Legal\LegalStatus::class), $user);
+        }
+
         if ($audience === ApiAudienceGate::STAFF && $specialist) {
             $account['specialist'] = [
                 'id' => $specialist->id,
