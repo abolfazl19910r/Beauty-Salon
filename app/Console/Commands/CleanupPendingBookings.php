@@ -35,6 +35,7 @@ class CleanupPendingBookings extends Command
         $expiredBookings = $currentSalon->allSalons(fn () => $bookingRepository->query()
             ->where('status', 'pending_payment')
             ->where('payment_status', 'unpaid')
+            ->where('prepayment_required', true)
             ->where('created_at', '<=', Carbon::now()->subMinutes($minutes))
             ->withoutPaymentInProgress() // ⭐ مثل CancelUnpaidBookings: وسط پرداخت لغو نکن
             ->with('user:id,name')

@@ -35,6 +35,8 @@ class BookingFactory extends Factory
             'booking_time' => $bookingTime,
             'status' => $status,
             'prepayment_amount' => 50000,
+            // نوبت آنلاین با پیش‌پرداخت (رفتار پیش از بسته‌ی 5ه)؛ نوبت بدون پیش‌پرداخت: withoutPrepayment()
+            'prepayment_required' => true,
             'payment_status' => 'unpaid',
             'rating' => fake()->optional(0.3)->numberBetween(1, 5),
             'review' => fake()->optional(0.3)->sentence(),
@@ -45,6 +47,12 @@ class BookingFactory extends Factory
             'cancellation_reason' => null,
             'cancelled_at' => null,
         ];
+    }
+
+    /** نوبت «بدون پیش‌پرداخت» (بسته‌ی 5ه): کل مبلغ در سالن */
+    public function withoutPrepayment(): static
+    {
+        return $this->state(fn () => ['prepayment_required' => false, 'prepayment_amount' => 0]);
     }
 
     /**

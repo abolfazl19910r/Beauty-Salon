@@ -30,10 +30,14 @@ class WalletSettingDefaultsTest extends TestCase
         $this->assertSame(10.0, (float) $settings->admin_commission_percentage);
     }
 
-    public function test_the_first_booking_quote_of_a_new_salon_asks_for_a_prepayment(): void
+    public function test_a_new_salon_books_without_prepayment_until_the_owner_turns_it_on(): void
     {
-        app(CurrentSalon::class)->set(Salon::factory()->create());
+        // بسته‌ی 5ه: پیش‌فرض «بدون پیش‌پرداخت»؛ با روشن شدن، همان پیش‌فرض‌های ۳۰٪ و ۵۰٬۰۰۰
+        $salon = Salon::factory()->create();
+        app(CurrentSalon::class)->set($salon);
+        $this->assertSame(0.0, (float) app(BookingService::class)->calculatePrepayment(200000.0)['original_amount']);
 
+        $this->usePrepaymentMode($salon);
         $this->assertSame(60000.0, (float) app(BookingService::class)->calculatePrepayment(200000.0)['original_amount']);
     }
 }

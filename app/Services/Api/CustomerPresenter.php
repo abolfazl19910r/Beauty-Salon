@@ -70,6 +70,8 @@ class CustomerPresenter
             // امکانات روشن پلن سالن (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴) تا اپ دکمه‌ها را پنهان/قفل کند
             'features' => $salon->enabledFeatureKeys(),
             'rules' => [
+                // بسته‌ی 5ه: none = پرداخت کامل در سالن، prepay = پیش‌پرداخت آنلاین (حالت مؤثر، با درگاه)
+                'booking_mode' => app(\App\Services\Booking\BookingPaymentPolicy::class)->effectiveMode(),
                 'prepayment_percentage' => (float) $settings->prepayment_percentage,
                 'minimum_prepayment' => (float) $settings->minimum_prepayment_amount,
                 'payment_window_minutes' => self::PAYMENT_WINDOW_MINUTES,
@@ -80,7 +82,8 @@ class CustomerPresenter
         ];
     }
 
-    public static function service(BeautyService $service): array
+    /** @param  float|null  $prepayment  پیش‌پرداخت همین مشتری اگر محاسبه شده؛ null = حالت سالن (بدون پیش‌پرداخت = ۰) */
+    public static function service(BeautyService $service, ?float $prepayment = null): array
     {
         return [
             'id' => $service->id,
@@ -88,7 +91,7 @@ class CustomerPresenter
             'description' => $service->description,
             'price' => (float) $service->price,
             'duration_minutes' => (int) $service->duration,
-            'prepayment_amount' => WalletSetting::get()->calculatePrepaymentAmount((float) $service->price),
+            'prepayment_amount' => $prepayment ?? app(\App\Services\Booking\BookingPaymentPolicy::class)->termsFor(null, (float) $service->price)->prepaymentAmount,
             'image_url' => $service->image_url,
             'category' => $service->relationLoaded('category') && $service->category
                 ? ['id' => $service->category->id, 'name' => $service->category->name]
@@ -119,12 +122,14 @@ class CustomerPresenter
                 'name' => $booking->specialist->name,
                 'photo_url' => $booking->specialist->photoUrl(),
             ] : null,
+            // بسته‌ی 5ه: برچسب نوبت — false = بدون پیش‌پرداخت، کل مبلغ (منهای تخفیف) در سالن
+            'prepayment_required' => (bool) $booking->prepayment_required,
             'prepayment_amount' => (float) $booking->prepayment_amount,
             'discount_code' => $booking->discount_code,
             'discount_amount' => (float) $booking->discount_amount,
             'remaining_amount' => $booking->remaining_amount,
             'paid_at' => $booking->paid_at ? Carbon::parse($booking->paid_at)->toIso8601String() : null,
-            'pay_before' => $booking->status === 'pending_payment' && $booking->payment_status !== 'paid'
+            'pay_before' => $booking->status === 'pending_payment' && $booking->payment_status !== 'paid' && $booking->prepayment_required
                 ? $booking->created_at?->copy()->addMinutes(self::PAYMENT_WINDOW_MINUTES)->toIso8601String()
                 : null,
             'cancellation_reason' => $booking->cancellation_reason,

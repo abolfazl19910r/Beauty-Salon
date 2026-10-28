@@ -61,6 +61,7 @@ class ServiceControllerTest extends TestCase
 
     public function test_api_list_computes_prepayment_amount_from_current_admin_settings(): void
     {
+        $this->usePrepaymentMode(); // بسته‌ی 5ه: رفتار «با پیش‌پرداخت»
         BeautyService::factory()->create(['price' => 500000]);
         WalletSetting::query()->delete();
         WalletSetting::create(['prepayment_percentage' => 40, 'minimum_prepayment_amount' => 50000]);

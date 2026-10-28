@@ -90,6 +90,7 @@ class DoubleSubmitTest extends TestCase
 
     public function test_a_resubmitted_booking_goes_to_the_same_payment_page_instead_of_slot_taken(): void
     {
+        $this->usePrepaymentMode(); // بسته‌ی 5ه: رفتار «با پیش‌پرداخت»
         [$user, $payload] = $this->bookable();
         $payload['idempotency_key'] = (string) Str::uuid();
 

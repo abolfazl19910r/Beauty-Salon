@@ -91,13 +91,14 @@ class BookingDiscountController extends Controller
 
             $this->authorize('view', $booking);
 
-            return (float) $booking->prepayment_amount;
+            // بسته‌ی 5ه: نوبت بدون پیش‌پرداخت ← تخفیف از کل مبلغ خدمت
+            return $booking->prepayment_required ? (float) $booking->prepayment_amount : (float) ($booking->service?->price ?? 0);
         }
 
         if ($request->filled('service_id')) {
             $service = $this->beautyServiceRepository->findOrFail($request->integer('service_id'));
 
-            return $this->bookingService->calculatePrepayment((float) $service->price)['original_amount'];
+            return (float) $this->bookingService->calculatePrepayment((float) $service->price)['discount_base'];
         }
 
         return 50000.0;

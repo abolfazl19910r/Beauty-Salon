@@ -27,6 +27,7 @@ class PurchaseTermsTest extends TestCase
     {
         parent::setUp();
         $this->user = User::factory()->create();
+        $this->usePrepaymentMode(); // بسته‌ی 5ه: این تست‌ها رفتار «با پیش‌پرداخت» را می‌سنجند
         app(CurrentSalon::class)->get()->update(['address' => 'تهران، خیابان آزادی، پلاک ۵', 'phone' => '02144556677']);
     }
 

@@ -102,12 +102,14 @@
                             <span style="color: var(--rasta-cream); opacity: 0.6;">مبلغ کل:</span>
                             <span class="font-medium persian-number" style="color: var(--rasta-cream);">{{ number_format($booking->service->price) }} تومان</span>
                         </div>
+                        @if($booking->prepayment_required)
                         <div class="flex justify-between">
                             <span style="color: var(--rasta-cream); opacity: 0.6;">پیش پرداخت:</span>
                             <span class="font-medium persian-number" style="color: var(--rasta-cream);">{{ number_format($booking->prepayment_amount) }} تومان</span>
                         </div>
+                        @endif
                         <div class="flex justify-between">
-                            <span style="color: var(--rasta-cream); opacity: 0.6;">باقی‌مانده (موقع نوبت به متخصص می‌دهید):</span>
+                            <span style="color: var(--rasta-cream); opacity: 0.6;">{{ $booking->prepayment_required ? 'باقی‌مانده (موقع نوبت به متخصص می‌دهید):' : 'پرداخت در سالن (بدون پیش‌پرداخت):' }}</span>
                             <span class="font-medium persian-number" style="color: var(--rasta-cream); opacity: 0.85;">{{ number_format($booking->remaining_amount) }} تومان</span>
                         </div>
                         @if($booking->discount_code)
@@ -146,7 +148,7 @@
 
             {{-- بسته‌ی مجوز 5د: رسید ماندگار (ماده‌ی ۳۵) — همان شرایطی که پیش از پرداخت دیده شد --}}
             <div class="mt-6">
-                @include('bookings.partials.purchase-terms', ['termsSalon' => app(\App\Support\CurrentSalon::class)->get()])
+                @include('bookings.partials.purchase-terms', ['termsSalon' => app(\App\Support\CurrentSalon::class)->get(), 'termsPrepay' => (bool) $booking->prepayment_required])
             </div>
 
             {{--

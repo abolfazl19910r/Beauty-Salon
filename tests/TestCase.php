@@ -81,4 +81,17 @@ abstract class TestCase extends BaseTestCase
             URL::defaults(['salon_slug' => $defaultSalon->slug]);
         }
     }
+
+    /**
+     * سالن (پیش‌فرض: سالن جاری) را «با پیش‌پرداخت آنلاین» می‌کند (بسته‌ی 5ه). پیش‌فرض واقعی «بدون پیش‌پرداخت» است؛ تست‌های پرداخت
+     * و پیش‌پرداخت با این، رفتار پیش از بسته را می‌گیرند. سالن factory درگاه فعال و امکان پرداخت آنلاین دارد.
+     */
+    protected function usePrepaymentMode(?Salon $salon = null): void
+    {
+        $current = $this->app->make(CurrentSalon::class);
+        $salon ??= $current->get();
+
+        $current->withSalon((int) $salon->id, fn () => \App\Models\BookingPolicy::current()
+            ->update(['payment_mode' => \App\Models\BookingPolicy::MODE_PREPAY]));
+    }
 }

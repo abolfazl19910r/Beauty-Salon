@@ -94,13 +94,8 @@ class CustomerBookingController extends CustomerController
             throw new ApiException('service_not_offered', 'این متخصص این خدمت را انجام نمی‌دهد.', 422);
         }
 
+        // بسته‌ی 5ه: بی درگاه، نوبت «بدون پیش‌پرداخت» ثبت می‌شود (BookingPaymentPolicy) — پول مشتری هرگز به حساب پلتفرم نمی‌رود
         $discount = $this->checkedDiscount($request, $input['discount_code'] ?? null, (float) $service->price);
-        $prepayment = $this->bookingService->calculatePrepayment((float) $service->price)['original_amount'];
-
-        // مثل وب: بدون مرچنت/درگاه، نوبتی که پیش‌پرداخت لازم دارد ثبت نمی‌شود (پول مشتری هرگز به حساب پلتفرم نمی‌رود)
-        if ($prepayment > 0 && ! $this->salon()->acceptsOnlinePayments()) {
-            throw new ApiException('online_payment_unavailable', \App\Support\ZarinpalMerchant::CUSTOMER_MESSAGE, 422);
-        }
 
         $booking = $this->bookingService->createBooking(
             userId: $this->customer($request)->id,
@@ -190,17 +185,19 @@ class CustomerBookingController extends CustomerController
 
         $this->bookingService->validateDiscountCode($code, $this->customer($request)->id, $price);
 
-        return $this->bookingService->calculatePrepayment($price, $code);
+        return $this->bookingService->calculatePrepayment($price, $code, $this->customer($request));
     }
 
     private function quoteFor(Request $request, BeautyService $service, ?array $discount): array
     {
-        $calc = $discount ?? $this->bookingService->calculatePrepayment((float) $service->price);
+        $calc = $discount ?? $this->bookingService->calculatePrepayment((float) $service->price, null, $this->customer($request));
         $prepayment = (float) $calc['original_amount'];
 
         return [
-            'service' => CustomerPresenter::service($service),
+            'service' => CustomerPresenter::service($service, $prepayment),
             'price' => (float) $service->price,
+            // بسته‌ی 5ه: false = بدون پیش‌پرداخت، کل مبلغ در سالن (prepayment_amount = ۰)
+            'prepayment_required' => (bool) $calc['prepayment_required'],
             'prepayment_amount' => $prepayment,
             'discount_code' => $calc['discount_code'],
             'discount_amount' => (float) $calc['discount_amount'],
@@ -209,7 +206,7 @@ class CustomerBookingController extends CustomerController
             'gateways' => $this->paymentService->gatewayOptions($prepayment),
             'wallet_balance' => (float) ($this->customer($request)->wallet?->balance ?? 0),
             // بسته‌ی مجوز 5د (ماده‌ی ۳۳): ارائه‌دهنده، شرایط لغو و راه شکایت پیش از پرداخت — اپ از app-0023 نشان می‌دهد
-            'terms' => \App\Support\Booking\PurchaseTerms::forApi($this->salon()),
+            'terms' => \App\Support\Booking\PurchaseTerms::forApi($this->salon(), (bool) $calc['prepayment_required']),
         ];
     }
 

@@ -56,6 +56,7 @@ class CustomerBookingApiTest extends CustomerApiTestCase
 
     public function test_booking_creates_a_pending_payment_booking_and_returns_payment_info(): void
     {
+        $this->usePrepaymentMode();
         [$service, $specialist] = $this->bookable();
         $key = (string) Str::uuid();
         $payload = ['service_id' => $service->id, 'specialist_id' => $specialist->id, 'booking_time' => $this->slotTomorrow(), 'idempotency_key' => $key];
@@ -90,14 +91,40 @@ class CustomerBookingApiTest extends CustomerApiTestCase
             ->assertStatus(422)->assertJsonPath('error.code', 'service_not_offered');
     }
 
-    public function test_a_salon_without_a_gateway_does_not_take_prepaid_bookings(): void
+    public function test_a_salon_without_a_gateway_books_without_prepayment_even_in_prepayment_mode(): void
     {
+        // بسته‌ی 5ه: پیش‌تر ۴۲۲ online_payment_unavailable؛ حالا بی درگاه نوبت «بدون پیش‌پرداخت» ثبت می‌شود و رزرو بسته نمی‌شود
+        $this->usePrepaymentMode();
         [$service, $specialist] = $this->bookable();
         $this->salon->paymentGateways()->delete();
         $this->salon->update(['zarinpal_merchant_id' => null]);
 
         $this->api()->postJson('/api/v1/customer/bookings', ['service_id' => $service->id, 'specialist_id' => $specialist->id, 'booking_time' => $this->slotTomorrow()])
-            ->assertStatus(422)->assertJsonPath('error.code', 'online_payment_unavailable');
+            ->assertCreated()
+            ->assertJsonPath('data.prepayment_required', false)
+            ->assertJsonPath('data.status', 'pending')
+            ->assertJsonPath('meta.payment.required', false);
+    }
+
+    public function test_without_prepayment_the_app_gets_a_booking_with_nothing_to_pay(): void
+    {
+        [$service, $specialist] = $this->bookable();
+
+        $this->api()->postJson('/api/v1/customer/bookings/quote', ['service_id' => $service->id])->assertOk()
+            ->assertJsonPath('data.prepayment_required', false)
+            ->assertJsonPath('data.prepayment_amount', 0)
+            ->assertJsonPath('data.remaining_amount', 200000)
+            ->assertJsonPath('data.terms.booking_mode', 'none');
+
+        $this->api()->postJson('/api/v1/customer/bookings', ['service_id' => $service->id, 'specialist_id' => $specialist->id, 'booking_time' => $this->slotTomorrow()])
+            ->assertCreated()
+            ->assertJsonPath('data.status', 'pending')
+            ->assertJsonPath('data.prepayment_required', false)
+            ->assertJsonPath('data.actions.pay', false)
+            ->assertJsonPath('data.pay_before', null)
+            ->assertJsonPath('meta.payment.required', false);
+
+        $this->api()->getJson('/api/v1/customer/salon')->assertOk()->assertJsonPath('data.rules.booking_mode', 'none');
     }
 
     public function test_index_splits_upcoming_and_past_and_shows_only_own_bookings(): void

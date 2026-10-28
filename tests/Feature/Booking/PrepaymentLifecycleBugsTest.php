@@ -57,6 +57,7 @@ class PrepaymentLifecycleBugsTest extends TestCase
     public function test_bug1_zero_prepayment_booking_is_never_auto_cancelled_as_unpaid(): void
     {
         WalletSetting::get()->update(['prepayment_percentage' => 0, 'minimum_prepayment_amount' => 0]);
+        $this->usePrepaymentMode(); // حتی در حالت «با پیش‌پرداخت»، مبلغ صفر یعنی بدون پیش‌پرداخت
 
         $booking = $this->book($this->specialist(false), now()->addDays(3)->setTime(10, 0)->format('Y-m-d H:i:s'));
 
@@ -72,6 +73,7 @@ class PrepaymentLifecycleBugsTest extends TestCase
     public function test_bug2_auto_confirm_specialist_does_not_hold_an_unpaid_slot_forever(): void
     {
         WalletSetting::get()->update(['prepayment_percentage' => 30, 'minimum_prepayment_amount' => 50000]);
+        $this->usePrepaymentMode();
 
         $booking = $this->book($this->specialist(true), now()->addDays(1)->setTime(10, 0)->format('Y-m-d H:i:s'));
 

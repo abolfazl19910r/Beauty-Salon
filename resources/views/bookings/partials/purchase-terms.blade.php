@@ -3,6 +3,8 @@
     پیش‌پرداخت و راه شکایت. ورودی: $termsSalon (Salon). App\Support\Booking\PurchaseTerms
 --}}
 @php($provider = \App\Support\Booking\PurchaseTerms::provider($termsSalon))
+{{-- $termsPrepay: برچسب نوبت یا حالت فرم رزرو (بسته‌ی 5ه)؛ نبود = حالت فعلی سالن --}}
+@php($termsPrepay = $termsPrepay ?? \App\Support\Booking\PurchaseTerms::prepaymentMode())
 <div class="rounded-2xl border border-m-gold/15 bg-m-card p-5 text-sm leading-7 space-y-3" data-purchase-terms>
     <div>
         <h3 class="font-bold text-m-gold2 mb-1">ارائه‌دهنده‌ی خدمت</h3>
@@ -13,9 +15,9 @@
         <p class="text-xs text-m-tx/55">نوبت‌دهی و پرداخت روی سکوی {{ $provider['platform'] }}؛ خدمت را خود سالن ارائه می‌کند.</p>
     </div>
     <div>
-        <h3 class="font-bold text-m-gold2 mb-1">شرایط لغو و برگشت پیش‌پرداخت</h3>
+        <h3 class="font-bold text-m-gold2 mb-1">{{ $termsPrepay ? 'شرایط لغو و برگشت پیش‌پرداخت' : 'شرایط لغو و پرداخت' }}</h3>
         <ul class="list-disc pr-5 space-y-1 text-m-tx/80" data-cancellation-terms>
-            @foreach (\App\Support\Booking\PurchaseTerms::cancellation() as $line)
+            @foreach (\App\Support\Booking\PurchaseTerms::cancellation(null, $termsPrepay) as $line)
                 <li>{{ $line }}</li>
             @endforeach
         </ul>

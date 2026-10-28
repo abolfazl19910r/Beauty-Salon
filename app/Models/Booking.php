@@ -26,6 +26,7 @@ class Booking extends Model
         'refund_details' => 'array',
         'reminder_sent' => 'boolean',
         'reviewed_at' => 'datetime',
+        'prepayment_required' => 'boolean',
     ];
 
     protected $fillable = [
@@ -39,6 +40,7 @@ class Booking extends Model
         'discount_code',
         'discount_amount',
         'prepayment_amount',
+        'prepayment_required',
         'payment_status',
         'payment_reference',
         'payment_details',
@@ -157,7 +159,9 @@ class Booking extends Model
             return 0.0;
         }
 
-        $remaining = (float) $this->service->price - (float) $this->prepayment_amount - (float) $this->discount_amount;
+        // نوبت بدون پیش‌پرداخت (بسته‌ی 5ه) که پولی آنلاین نگرفته: کل مبلغ منهای تخفیف در سالن
+        $prepaid = ($this->prepayment_required || $this->payment_status === 'paid') ? (float) $this->prepayment_amount : 0.0;
+        $remaining = (float) $this->service->price - $prepaid - (float) $this->discount_amount;
 
         return max(0.0, $remaining);
     }
@@ -198,7 +202,9 @@ class Booking extends Model
      */
     public function isPayable(): bool
     {
+        // فقط نوبت با برچسب «با پیش‌پرداخت» (بسته‌ی 5ه): نوبت بدون پیش‌پرداخت، دستی کادر و جلسه‌ی دوره دکمه‌ی پرداخت ندارند
         return $this->payment_status !== 'paid'
+            && $this->prepayment_required
             && (float) $this->prepayment_amount > 0
             && in_array($this->status, self::PAYABLE_STATUSES, true)
             && \Carbon\Carbon::parse($this->booking_time)->isFuture()
@@ -219,7 +225,7 @@ class Booking extends Model
     {
         return match (true) {
             $this->payment_status === 'paid' => 'این نوبت قبلاً پرداخت شده است.',
-            (float) $this->prepayment_amount <= 0 => 'این نوبت پیش‌پرداخت ندارد؛ کل مبلغ را در سالن پرداخت می‌کنید.',
+            ! $this->prepayment_required || (float) $this->prepayment_amount <= 0 => 'این نوبت پیش‌پرداخت ندارد؛ کل مبلغ را در سالن پرداخت می‌کنید.',
             $this->hasHeldPayment() => \App\Services\Payment\HeldBookingPayment::MESSAGE,
             $this->status === 'cancelled' => 'این نوبت لغو شده است و پرداخت آن ممکن نیست. لطفاً نوبت جدیدی رزرو کنید.',
             ! \Carbon\Carbon::parse($this->booking_time)->isFuture() => 'زمان این نوبت گذشته است و پرداخت آن ممکن نیست.',

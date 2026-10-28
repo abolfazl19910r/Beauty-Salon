@@ -205,12 +205,12 @@
                             <span class="text-m-tx/60">قیمت کل خدمت</span>
                             <span id="summary-total-price" class="font-medium text-m-tx persian-number">—</span>
                         </div>
-                        <div class="flex justify-between pt-1">
+                        <div class="flex justify-between pt-1" id="summary-prepayment-row">
                             <span class="font-bold text-m-tx">مبلغ پیش‌پرداخت</span>
                             <span id="summary-prepayment" class="font-bold text-m-gold2 persian-number">—</span>
                         </div>
                         <div class="flex justify-between pt-1">
-                            <span class="text-m-tx/60">باقی‌مانده (موقع نوبت به متخصص می‌دهید)</span>
+                            <span class="text-m-tx/60" id="summary-remaining-label">باقی‌مانده (موقع نوبت به متخصص می‌دهید)</span>
                             <span id="summary-remaining" class="font-medium text-m-tx/80 persian-number">—</span>
                         </div>
                     </div>
@@ -381,6 +381,11 @@
                     prepayment.toLocaleString('fa-IR') + ' تومان';
                 document.getElementById('summary-remaining').textContent =
                     remaining.toLocaleString('fa-IR') + ' تومان';
+                // بسته‌ی 5ه: نوبت بدون پیش‌پرداخت — کل مبلغ در سالن
+                document.getElementById('summary-prepayment-row').hidden = prepayment <= 0;
+                document.getElementById('summary-remaining-label').textContent = prepayment > 0
+                    ? 'باقی‌مانده (موقع نوبت به متخصص می‌دهید)'
+                    : 'پرداخت در سالن (بدون پیش‌پرداخت)';
 
                 if (service.duration) {
                     document.getElementById('summary-duration').textContent = service.duration + ' دقیقه';

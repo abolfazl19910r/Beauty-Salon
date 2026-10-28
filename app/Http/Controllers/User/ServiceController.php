@@ -4,7 +4,6 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\BeautyService;
-use App\Models\WalletSetting;
 use App\Repositories\Contracts\BeautyServiceRepositoryInterface;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Support\CurrentSalon;
@@ -47,9 +46,11 @@ class ServiceController extends Controller
 
         $services = Cache::remember("beauty_services:{$salonId}", now()->addMinutes(30), fn () => $this->beautyServiceRepository->all());
 
-        $settings = WalletSetting::get();
-        $services = $services->map(function (BeautyService $service) use ($settings) {
-            $service->prepayment_amount = $settings->calculatePrepaymentAmount((float) $service->price);
+        // بسته‌ی 5ه: پیش‌پرداخت واقعی همین مشتری (بدون پیش‌پرداخت = ۰)
+        $policy = app(\App\Services\Booking\BookingPaymentPolicy::class);
+        $customer = auth()->user();
+        $services = $services->map(function (BeautyService $service) use ($policy, $customer) {
+            $service->prepayment_amount = $policy->termsFor($customer, (float) $service->price)->prepaymentAmount;
 
             return $service;
         });

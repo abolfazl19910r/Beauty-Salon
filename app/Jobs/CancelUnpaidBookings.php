@@ -34,6 +34,7 @@ class CancelUnpaidBookings implements ShouldQueue
         $expiredBookings = $currentSalon->allSalons(fn () => $bookingRepository->query()
             ->where('status', 'pending_payment')
             ->where('payment_status', 'unpaid')
+            ->where('prepayment_required', true) // بسته‌ی 5ه: فقط نوبتی که واقعاً پیش‌پرداخت لازم دارد
             ->where('created_at', '<=', Carbon::now()->subMinutes(\App\Support\Booking\PurchaseTerms::UNPAID_HOLD_MINUTES))
             ->withoutPaymentInProgress() // ⭐ مشتری هنوز در صفحه‌ی بانکه — لغو نکن
             ->get());

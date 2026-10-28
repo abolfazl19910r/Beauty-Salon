@@ -24,6 +24,7 @@ class BookingServiceTest extends TestCase
     {
         parent::setUp();
         $this->service = app(BookingService::class);
+        $this->usePrepaymentMode(); // بسته‌ی 5ه: این تست‌ها رفتار «با پیش‌پرداخت» را می‌سنجند
     }
 
     /**

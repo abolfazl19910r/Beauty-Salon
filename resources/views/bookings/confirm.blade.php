@@ -7,7 +7,7 @@
         <div class="mb-8">
             <p class="text-xs font-semibold text-m-gold tracking-[0.3em] uppercase mb-1">مرحله نهایی</p>
             <h1 class="text-2xl md:text-3xl font-bold text-m-gold2"
-                style="font-family:'Mahru','Vazirmatn',sans-serif;font-weight:800;">تأیید و پرداخت نوبت</h1>
+                style="font-family:'Mahru','Vazirmatn',sans-serif;font-weight:800;">{{ $prepaymentRequired ? 'تأیید و پرداخت نوبت' : 'تأیید نوبت' }}</h1>
         </div>
 
         <div class="bg-m-card rounded-2xl border border-m-gold/10 p-6 md:p-8 space-y-6">
@@ -36,7 +36,7 @@
                         </span>
                         </div>
                     @endforeach
-                    <div class="flex items-center justify-between px-5 py-4 text-sm">
+                    <div class="flex items-center justify-between px-5 py-4 text-sm" @unless ($prepaymentRequired) hidden @endunless>
                         <span class="font-bold text-m-tx">مبلغ پیش‌پرداخت</span>
                         <span class="font-bold text-m-gold2 text-lg persian-number" id="final-price">
                         {{ number_format($prepaymentAmount) }} تومان
@@ -44,7 +44,7 @@
                     </div>
                     <div class="flex items-center justify-between px-5 py-3.5 text-sm">
                         <span class="text-m-tx/55">
-                            باقی‌مانده (موقع نوبت به متخصص پرداخت می‌کنید)
+                            {{ $prepaymentRequired ? 'باقی‌مانده (موقع نوبت به متخصص پرداخت می‌کنید)' : 'قابل پرداخت در سالن (بدون پیش‌پرداخت)' }}
                         </span>
                         <span class="font-medium text-m-tx/80 persian-number" id="remaining-amount">
                             {{ number_format(max(0, $service->price - $prepaymentAmount)) }} تومان
@@ -60,7 +60,11 @@
                 <svg class="w-4 h-4 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.72-1.36 3.486 0l6.518 11.6c.75 1.334-.213 2.99-1.743 2.99H3.482c-1.53 0-2.493-1.656-1.743-2.99l6.518-11.6zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                 </svg>
-                فقط مبلغ «پیش‌پرداخت» از طریق درگاه پرداخت می‌شود؛ مابقی مبلغ خدمت را موقع حضور در سالن، طبق توافق با متخصص، به‌صورت مستقیم پرداخت خواهید کرد.
+                @if ($prepaymentRequired)
+                    فقط مبلغ «پیش‌پرداخت» از طریق درگاه پرداخت می‌شود؛ مابقی مبلغ خدمت را موقع حضور در سالن، طبق توافق با متخصص، به‌صورت مستقیم پرداخت خواهید کرد.
+                @else
+                    این سالن پیش‌پرداخت آنلاین نمی‌گیرد؛ کل مبلغ خدمت را موقع حضور در سالن پرداخت می‌کنید.
+                @endif
             </div>
 
             {{-- Explanation --}}
@@ -68,7 +72,7 @@
                 <svg class="w-4 h-4 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                 </svg>
-                با تأیید نهایی و پرداخت، نوبت شما ثبت خواهد شد. لطفاً اطلاعات بالا را با دقت بررسی کنید.
+                {{ $prepaymentRequired ? 'با تأیید نهایی و پرداخت، نوبت شما ثبت خواهد شد.' : 'با تأیید نهایی، نوبت شما ثبت می‌شود.' }} لطفاً اطلاعات بالا را با دقت بررسی کنید.
             </div>
 
             {{-- Discount code --}}
@@ -95,7 +99,7 @@
             </div>
 
             {{-- بسته‌ی مجوز 5د: هویت سالن، شرایط لغو و راه شکایت پیش از پرداخت (ماده‌ی ۳۳) --}}
-            @include('bookings.partials.purchase-terms', ['termsSalon' => app(\App\Support\CurrentSalon::class)->get()])
+            @include('bookings.partials.purchase-terms', ['termsSalon' => app(\App\Support\CurrentSalon::class)->get(), 'termsPrepay' => $prepaymentRequired])
 
             {{-- Final form --}}
             <form action="{{ route('bookings.store') }}" method="POST">
@@ -117,7 +121,7 @@
                             class="flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300
                                bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-m-ongold
                                hover:shadow-lg hover:shadow-[#C9A24B]/30 hover:-translate-y-0.5">
-                        تأیید و رفتن به درگاه پرداخت
+                        {{ $prepaymentRequired ? 'تأیید و رفتن به درگاه پرداخت' : 'ثبت نوبت' }}
                     </button>
                 </div>
             </form>

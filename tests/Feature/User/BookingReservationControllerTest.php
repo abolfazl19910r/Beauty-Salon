@@ -134,6 +134,7 @@ class BookingReservationControllerTest extends TestCase
 
     public function test_store_creates_a_booking_and_redirects_to_payment(): void
     {
+        $this->usePrepaymentMode(); // بسته‌ی 5ه: رفتار «با پیش‌پرداخت»
         $response = $this->actingAs($this->user)->post(route('bookings.store'), [
             'service_id' => $this->service->id,
             'specialist_id' => $this->specialist->id,

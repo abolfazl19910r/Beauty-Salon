@@ -27,15 +27,26 @@ final class PurchaseTerms
         ];
     }
 
-    /** @return list<string> */
-    public static function cancellation(?WalletSetting $settings = null): array
+    /**
+     * @param  bool|null  $prepay  برچسب نوبت (رسید) یا حالت رزرو (پیش از خرید)؛ null = حالت مؤثر فعلی سالن (بسته‌ی 5ه)
+     * @return list<string>
+     */
+    public static function cancellation(?WalletSetting $settings = null, ?bool $prepay = null): array
     {
         $settings ??= WalletSetting::get();
+        $prepay ??= self::prepaymentMode();
         $deadline = CustomerPresenter::CANCEL_DEADLINE_HOURS;
         $feeHours = (int) $settings->cancellation_before_hours;
         $fee = (float) $settings->customer_cancellation_fee_percentage;
 
         $lines = ['لغو یا جابه‌جایی توسط شما از «نوبت‌های من» تا '.to_persian_num((string) $deadline).' ساعت پیش از زمان نوبت ممکن است؛ بعد از آن با سالن تماس بگیرید.'];
+
+        if (! $prepay) {
+            $lines[] = 'این نوبت پیش‌پرداخت آنلاین ندارد: کل مبلغ خدمت (پس از کسر تخفیف) را در سالن پرداخت می‌کنید و لغو در این مهلت هزینه‌ای ندارد.';
+            $lines[] = 'نوبت پس از تأیید سالن قطعی می‌شود؛ تأیید یا لغو آن را با پیامک یا اعلان اپ خبر می‌دهیم.';
+
+            return $lines;
+        }
 
         if ($fee > 0 && $feeHours > $deadline) {
             $lines[] = 'لغو کمتر از '.to_persian_num((string) $feeHours).' ساعت پیش از نوبت: '.to_persian_num(rtrim(rtrim(number_format($fee, 2, '.', ''), '0'), '.'))
@@ -50,12 +61,22 @@ final class PurchaseTerms
         return $lines;
     }
 
-    /** برای API اپ */
-    public static function forApi(Salon $salon): array
+    /** نحوه‌ی رزرو مؤثر سالن جاری: true = با پیش‌پرداخت آنلاین (بسته‌ی 5ه) */
+    public static function prepaymentMode(): bool
     {
+        return app(\App\Services\Booking\BookingPaymentPolicy::class)->prepaymentMode();
+    }
+
+    /** برای API اپ */
+    public static function forApi(Salon $salon, ?bool $prepay = null): array
+    {
+        $prepay ??= self::prepaymentMode();
+
         return [
             'provider' => self::provider($salon),
-            'cancellation' => self::cancellation(),
+            // بسته‌ی 5ه: none = پرداخت کامل در سالن، prepay = پیش‌پرداخت آنلاین
+            'booking_mode' => $prepay ? 'prepay' : 'none',
+            'cancellation' => self::cancellation(null, $prepay),
             'complaints' => 'شکایت: پروفایل ← شکایت و پیگیری (پاسخ حداکثر ظرف '.to_persian_num((string) config('legal.complaint_response_hours', 72)).' ساعت)',
             'terms_url' => \App\Support\CentralUrl::route('legal.terms'),
         ];

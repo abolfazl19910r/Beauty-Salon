@@ -7,14 +7,14 @@
     {{-- پرداخت آنلاین در پلن سالن نیست (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴) — نه «درگاه تنظیم نشده» --}}
     <div class="rounded-xl p-4 mb-6 text-sm leading-7" style="background:rgb(var(--m-warn) / .14); border:1px solid rgb(var(--m-warn) / .35); color:rgb(var(--m-warn));" role="alert">
         <b>پرداخت آنلاین مشتری در پلن سالن شما نیست.</b>
-        مشتری‌ها نمی‌توانند پیش‌پرداخت نوبت یا شارژ کیف پول انجام دهند و خدماتی را که پیش‌پرداخت دارند آنلاین رزرو کنند.
+        مشتری‌ها نمی‌توانند پیش‌پرداخت نوبت یا شارژ کیف پول انجام دهند؛ رزرو آنلاین «بدون پیش‌پرداخت» (پرداخت کامل در سالن) ادامه دارد.
         <a href="{{ route('admin.billing.index') }}" class="font-bold underline mr-1">ارتقای پلن</a>
     </div>
 @elseif ($salon && ! $salon->acceptsOnlinePayments())
     <div class="rounded-xl p-4 mb-6 text-sm leading-7" style="background:rgb(var(--m-bad) / .1); border:1px solid rgb(var(--m-bad) / .35); color:rgb(var(--m-bad));" role="alert">
         <b>درگاه پرداخت سالن شما هنوز تنظیم نشده است.</b>
         تا حداقل یک درگاه پرداخت فعال (زرین‌پال، زیبال، آسان پرداخت یا وندار) برای سالن اضافه نشود، هیچ پرداخت آنلاینی برای مشتری‌ها ممکن نیست: نه پیش‌پرداخت نوبت،
-        نه پرداخت باقی‌مانده و نه شارژ کیف پول، و مشتری‌ها نمی‌توانند خدماتی را که پیش‌پرداخت دارند آنلاین رزرو کنند.
+        نه پرداخت باقی‌مانده و نه شارژ کیف پول. رزرو آنلاین «بدون پیش‌پرداخت» (پرداخت کامل در سالن) ادامه دارد.
         @if (\Illuminate\Support\Facades\Route::has('admin.payment-gateways.index'))
             <a href="{{ route('admin.payment-gateways.index') }}" class="font-bold underline mr-1">افزودن درگاه پرداخت</a>
             <span class="text-xs">(فقط مالک سالن)</span>

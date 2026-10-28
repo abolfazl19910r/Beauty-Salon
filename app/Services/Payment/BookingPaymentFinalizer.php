@@ -56,7 +56,8 @@ class BookingPaymentFinalizer
         }
 
         // پرداخت ناموفق یا انصراف: نوبت لغو می‌شود و BookingObserver سهم کیف پول این نوبت را برمی‌گرداند
-        if ($booking->payment_status !== 'paid' && $booking->status !== 'cancelled') {
+        // نوبتی که در این فاصله «بدون پیش‌پرداخت» شد (بسته‌ی 5ه، تغییر حالت سالن) با پرداخت ناموفق لغو نمی‌شود؛ منتظر تأیید می‌ماند
+        if ($booking->payment_status !== 'paid' && $booking->status !== 'cancelled' && $booking->prepayment_required) {
             $this->bookingRepository->update($booking, ['status' => 'cancelled', 'cancellation_reason' => 'پرداخت ناموفق']);
         }
         $this->walletShare->releaseForBooking($booking, 'پرداخت ناموفق بود');
@@ -107,6 +108,8 @@ class BookingPaymentFinalizer
                     'payment_reference' => $result['ref_id'] ?? $result['reference'],
                     'status' => $newStatus,
                     'payment_details' => $paymentDetails,
+                    // پولی که واقعاً رسید (حتی برای نوبتی که وسط پرداخت «بدون پیش‌پرداخت» شد) برچسب «با پیش‌پرداخت» می‌دهد
+                    'prepayment_required' => true,
                 ]);
             });
         } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {

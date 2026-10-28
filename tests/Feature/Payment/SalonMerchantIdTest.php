@@ -130,8 +130,10 @@ class SalonMerchantIdTest extends TestCase
         $this->actingAs($admin)->get(route('admin.dashboard'))->assertSee('درگاه پرداخت سالن شما هنوز تنظیم نشده است');
     }
 
-    public function test_booking_that_needs_prepayment_is_blocked_without_a_merchant(): void
+    public function test_without_a_merchant_booking_goes_on_without_prepayment(): void
     {
+        // بسته‌ی 5ه: پیش‌تر رزرو نیازمند پیش‌پرداخت بی درگاه بسته بود؛ حالا نوبت «بدون پیش‌پرداخت» ثبت می‌شود (پول مشتری هرگز به حساب پلتفرم نمی‌رود)
+        $this->usePrepaymentMode();
         $this->withoutMerchant();
         \App\Models\WalletSetting::get()->update(['prepayment_percentage' => 20, 'minimum_prepayment_amount' => 0]);
         $user = User::factory()->create();
@@ -144,13 +146,19 @@ class SalonMerchantIdTest extends TestCase
         ]);
 
         $this->actingAs($user)->get(route('bookings.create'))
-            ->assertOk()->assertSee('پرداخت آنلاین این سالن هنوز فعال نشده است');
+            ->assertOk()->assertDontSee('پرداخت آنلاین این سالن هنوز فعال نشده است');
 
-        $this->actingAs($user)->from(route('bookings.create'))->post(route('bookings.confirm'), [
+        $this->actingAs($user)->post(route('bookings.confirm'), [
             'service_id' => $service->id, 'specialist_id' => $specialist->id, 'booking_time' => $target->format('Y-m-d H:i:s'),
-        ])->assertRedirect(route('bookings.create'))->assertSessionHas('error');
+        ])->assertOk()->assertSee('ثبت نوبت')->assertDontSee('رفتن به درگاه پرداخت');
 
-        $this->assertDatabaseCount('bookings', 0);
+        $this->actingAs($user)->post(route('bookings.store'), [
+            'service_id' => $service->id, 'specialist_id' => $specialist->id, 'booking_time' => $target->format('Y-m-d H:i:s'),
+        ])->assertRedirect();
+
+        $booking = \App\Models\Booking::sole();
+        $this->assertFalse($booking->prepayment_required);
+        $this->assertSame(0.0, (float) $booking->prepayment_amount);
     }
 
     public function test_wallet_charge_never_goes_to_the_platform_merchant(): void

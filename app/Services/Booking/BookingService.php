@@ -6,6 +6,7 @@ use App\Events\Booking\BookingCancelled;
 use App\Exceptions\BookingNotAvailableException;
 use App\Exceptions\DiscountCodeInvalidException;
 use App\Models\Booking;
+use App\Models\User;
 use App\Models\WalletSetting;
 use App\Notifications\Booking\CustomerBookingNotification;
 use App\Repositories\Contracts\BeautyServiceRepositoryInterface;
@@ -29,6 +30,7 @@ class BookingService
         protected readonly SpecialistRepositoryInterface $specialistRepository,
         protected readonly BeautyServiceRepositoryInterface $beautyServiceRepository,
         protected readonly BookingRepositoryInterface $bookingRepository,
+        protected readonly BookingPaymentPolicy $paymentPolicy,
     ) {}
 
     public function isTimeAvailable(int $specialistId, string $bookingTime): bool
@@ -145,7 +147,9 @@ class BookingService
                 return ['success' => false, 'message' => 'این کد تخفیف متعلق به شما نیست.'];
             }
 
-            $result = $this->discountCalculator->calculate($lockedDiscountCode, (float) $booking->prepayment_amount);
+            // نوبت بدون پیش‌پرداخت (بسته‌ی 5ه): تخفیف از کل مبلغ خدمت
+            $base = $booking->prepayment_required ? (float) $booking->prepayment_amount : (float) ($booking->service?->price ?? 0);
+            $result = $this->discountCalculator->calculate($lockedDiscountCode, $base);
 
             $booking = $this->bookingRepository->update($booking, [
                 'discount_code' => $code,
@@ -159,14 +163,24 @@ class BookingService
                 'discount_amount' => $result['discount_amount'],
                 'prepayment_amount' => (float) $booking->prepayment_amount,
                 'remaining_amount' => $booking->fresh(['service'])->remaining_amount,
-                'message' => 'کد تخفیف اعمال شد؛ این مبلغ از باقی‌مانده‌ای که موقع نوبت پرداخت می‌کنید کسر شد.',
+                'message' => $booking->prepayment_required
+                    ? 'کد تخفیف اعمال شد؛ این مبلغ از باقی‌مانده‌ای که موقع نوبت پرداخت می‌کنید کسر شد.'
+                    : 'کد تخفیف اعمال شد؛ این مبلغ از مبلغی که در سالن پرداخت می‌کنید کسر شد.',
             ];
         });
     }
 
-    public function calculatePrepayment(float $servicePrice, ?string $code = null): array
+    /**
+     * پیش‌پرداخت و تخفیف نوبت تازه‌ی این مشتری (بسته‌ی 5ه): «با پیش‌پرداخت» ← مبلغ از تنظیم سالن و تخفیف روی پیش‌پرداخت محاسبه و از
+     * باقی‌مانده‌ی سالن کم می‌شود (مثل قبل)؛ «بدون پیش‌پرداخت» ← پیش‌پرداخت صفر و تخفیف از کل مبلغ خدمت.
+     *
+     * @param  int|User|null  $customer  مشتری (برای قاعده‌های مشتری بدقول)؛ null = کاربر واردشده
+     */
+    public function calculatePrepayment(float $servicePrice, ?string $code = null, int|User|null $customer = null): array
     {
-        $prepaymentAmount = WalletSetting::get()->calculatePrepaymentAmount($servicePrice);
+        $terms = $this->termsFor($servicePrice, $customer);
+        $prepaymentAmount = $terms->prepaymentAmount;
+        $discountBase = $terms->prepaymentRequired ? $prepaymentAmount : $servicePrice;
         $discountAmount = 0;
         $discountCode = null;
 
@@ -175,7 +189,7 @@ class BookingService
 
             if ($discountCode && $discountCode->isValid()) {
                 $discountAmount = $this->discountCalculator
-                    ->calculate($discountCode, $prepaymentAmount)['discount_amount'];
+                    ->calculate($discountCode, $discountBase)['discount_amount'];
             }
         }
 
@@ -184,7 +198,21 @@ class BookingService
             'discount_amount' => $discountAmount,
             'final_amount' => max(0, $prepaymentAmount - $discountAmount),
             'discount_code' => $discountCode?->code,
+            'discount_base' => $discountBase,
+            'prepayment_required' => $terms->prepaymentRequired,
+            'terms' => $terms,
         ];
+    }
+
+    public function termsFor(float $servicePrice, int|User|null $customer = null): BookingTerms
+    {
+        $user = match (true) {
+            $customer instanceof User => $customer,
+            is_int($customer) => User::find($customer),
+            default => auth()->user(),
+        };
+
+        return $this->paymentPolicy->termsFor($user instanceof User ? $user : null, $servicePrice);
     }
 
     public function createBooking(
@@ -225,7 +253,7 @@ class BookingService
         }
 
         $service = $this->beautyServiceRepository->findOrFail($serviceId);
-        $prepaymentData = $this->calculatePrepayment((float) $service->price, $discountCode);
+        $prepaymentData = $this->calculatePrepayment((float) $service->price, $discountCode, $userId);
 
         try {
             $booking = $this->createBookingInTransaction(
@@ -247,22 +275,6 @@ class BookingService
 
             throw $e;
         }
-    }
-
-    /**
-     * وضعیت نوبت آنلاین تازه (بسته‌ی 5ه، دو باگ پیش‌پرداخت):
-     * - پیش‌پرداخت دارد ← همیشه pending_payment، حتی با تأیید خودکار متخصص؛ تأیید خودکار بعد از پرداخت (BookingPaymentFinalizer) اعمال
-     *   می‌شود. قبلاً confirmed+unpaid می‌شد: لغو خودکار نمی‌دیدش و ساعت متخصص بی‌پرداخت نگه داشته می‌شد.
-     * - پیش‌پرداخت صفر ← چیزی برای پرداخت نیست: confirmed یا pending (منتظر تأیید سالن). قبلاً pending_payment می‌شد و بعد از ۳۰ دقیقه
-     *   با پیامک «پرداخت نکردید» لغو.
-     */
-    public static function initialStatus(float $prepaymentAmount, bool $autoConfirm): string
-    {
-        if ($prepaymentAmount > 0) {
-            return 'pending_payment';
-        }
-
-        return $autoConfirm ? 'confirmed' : 'pending';
     }
 
     private function replayedBooking(int $userId, ?string $key, string $fingerprint): ?Booking
@@ -288,8 +300,10 @@ class BookingService
                 'specialist_id' => $specialistId,
                 'user_id' => $userId,
                 'booking_time' => $bookingTime,
-                'status' => self::initialStatus((float) $prepaymentData['original_amount'], (bool) $specialist->auto_confirm_bookings),
+                'status' => $prepaymentData['terms']->initialStatus((bool) $specialist->auto_confirm_bookings),
                 'prepayment_amount' => $prepaymentData['original_amount'],
+                // برچسب نوبت (بسته‌ی 5ه): قاعده‌های بعدی به این نگاه می‌کنند، نه به حالت فعلی سالن
+                'prepayment_required' => $prepaymentData['prepayment_required'],
                 'payment_status' => 'unpaid',
                 'discount_code' => $discountCode,
                 'discount_amount' => $prepaymentData['discount_amount'],

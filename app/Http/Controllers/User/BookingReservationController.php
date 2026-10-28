@@ -39,10 +39,11 @@ class BookingReservationController extends Controller
 
         $services = $this->beautyServiceRepository->all();
         $specialists = $this->specialistRepository->all();
-        // ⭐ ۲۰۲۶-۰۹-۲۴: سالن بدون درگاه زرین‌پال → بنر هشدار و غیرفعال شدن ثبت نوبت‌های نیازمند پیش‌پرداخت.
-        $onlinePaymentAvailable = (bool) app(\App\Support\CurrentSalon::class)->get()?->acceptsOnlinePayments();
+        // بسته‌ی 5ه: بی درگاه، نوبت «بدون پیش‌پرداخت» ثبت می‌شود (BookingPaymentPolicy) — دیگر چیزی برای بستن یا هشدار نیست
+        $onlinePaymentAvailable = true;
+        $prepaymentMode = $this->bookingService->termsFor(1.0)->prepaymentRequired;
 
-        return view('bookings.create', compact('services', 'specialists', 'onlinePaymentAvailable'));
+        return view('bookings.create', compact('services', 'specialists', 'onlinePaymentAvailable', 'prepaymentMode'));
     }
 
     public function confirm(ConfirmBookingRequest $request): View|RedirectResponse
@@ -65,6 +66,7 @@ class BookingReservationController extends Controller
             }
 
             $prepaymentAmount = $this->bookingService->calculatePrepayment((float) $service->price)['original_amount'];
+            $prepaymentRequired = $prepaymentAmount > 0;
 
             session([
                 'pending_booking' => [
@@ -74,7 +76,7 @@ class BookingReservationController extends Controller
                 ],
             ]);
 
-            return view('bookings.confirm', compact('service', 'specialist', 'bookingTime', 'prepaymentAmount'));
+            return view('bookings.confirm', compact('service', 'specialist', 'bookingTime', 'prepaymentAmount', 'prepaymentRequired'));
 
         } catch (Exception $e) {
             Log::error('خطا در تأیید نوبت', ['error' => $e->getMessage()]);
