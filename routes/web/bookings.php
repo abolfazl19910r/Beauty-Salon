@@ -14,9 +14,10 @@ Route::prefix('bookings')->name('bookings.')->group(function () {
     Route::get('/failed', [BookingController::class, 'failed'])->name('failed');
     Route::get('/', [BookingController::class, 'index'])->name('index');
 
-    Route::get('/create', [BookingReservationController::class, 'create'])->name('create');
-    Route::post('/confirm', [BookingReservationController::class, 'confirm'])->middleware('throttle:customer-actions')->name('confirm');
-    Route::post('/', [BookingReservationController::class, 'store'])->middleware('throttle:customer-actions')->name('store');
+    // نوبت تازه فقط بعد از پذیرش نسخه‌ی مهم تازه‌ی قوانین (legal.terms، ۲۰۲۶-۱۰-۲۸)
+    Route::get('/create', [BookingReservationController::class, 'create'])->middleware('legal.terms')->name('create');
+    Route::post('/confirm', [BookingReservationController::class, 'confirm'])->middleware(['legal.terms', 'throttle:customer-actions'])->name('confirm');
+    Route::post('/', [BookingReservationController::class, 'store'])->middleware(['legal.terms', 'throttle:customer-actions'])->name('store');
 
     // ⭐ Fix (real, confirmed cross-tenant data leak, session 2026-09-20): moved here from the
     // unscoped routes/api/public/services.php (ServiceController::list(), same JSON payload —

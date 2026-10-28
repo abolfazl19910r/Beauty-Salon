@@ -60,6 +60,8 @@ $tenantRoutes = function () {
         require __DIR__.'/web/wallet.php';
         require __DIR__.'/web/courses.php';
         require __DIR__.'/web/complaints.php';
+        // «قوانین به‌روز شد» (پذیرش دوباره، ۲۰۲۶-۱۰-۲۸)
+        require __DIR__.'/web/terms-update.php';
     });
 };
 

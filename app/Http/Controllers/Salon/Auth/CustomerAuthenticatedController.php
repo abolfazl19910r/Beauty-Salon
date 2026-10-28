@@ -164,7 +164,16 @@ class CustomerAuthenticatedController extends Controller
             return redirect()->to($user->homePath())->with('success', 'حساب شما به حساب متخصص این سالن وصل شد. خوش آمدید!');
         }
 
-        return redirect()->to($this->customerIntendedUrl($request))
+        $intended = $this->customerIntendedUrl($request);
+
+        // پذیرش دوباره (۲۰۲۶-۱۰-۲۸): تغییر مهم قوانین که هنوز پذیرفته نشده ← اول صفحه‌ی «قوانین به‌روز شد»، بعد همان مقصد
+        if (app(\App\Services\Legal\LegalStatus::class)->pending($user, \App\Services\Legal\LegalAcceptanceRecorder::CUSTOMER_DOCUMENTS) !== []) {
+            $request->session()->put('legal.intended', $intended);
+
+            return redirect()->route('terms-update.show')->with('success', 'خوش آمدید!');
+        }
+
+        return redirect()->to($intended)
             ->with('success', 'خوش آمدید!');
     }
 

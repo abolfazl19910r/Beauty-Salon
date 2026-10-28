@@ -111,7 +111,7 @@
                 </div>
             </div>
 
-            <div class="bg-m-card rounded-2xl border border-m-bad/15 overflow-hidden">
+            <div id="delete-account" class="bg-m-card rounded-2xl border border-m-bad/15 overflow-hidden">
                 <div class="px-6 py-4 border-b border-m-bad/10 flex items-center gap-2">
                     <svg class="w-4 h-4 text-m-bad" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <polyline points="3 6 5 6 21 6"/>

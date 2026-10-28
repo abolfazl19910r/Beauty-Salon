@@ -67,6 +67,16 @@ class LegalAcceptanceRecorder
         }
     }
 
+    /**
+     * پذیرش دوباره‌ی سندهای در انتظار (صفحه‌ی «قوانین به‌روز شد»، ۲۰۲۶-۱۰-۲۸): همان لحظه و همان درخواست ثبت می‌شود.
+     *
+     * @param  list<string>  $documents
+     */
+    public function acceptNow(User $user, ?Salon $salon, array $documents, Request $request, string $source): void
+    {
+        $this->record($user, $salon, $documents, $this->capture($request, $source));
+    }
+
     private function key(string $flow, string $challenge): string
     {
         return 'legal_acceptance:'.$flow.':'.hash('sha256', $challenge);

@@ -91,6 +91,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'salon.specialist' => \App\Http\Middleware\EnsureSpecialistSalonActive::class,
             // ⭐ فاز ۲ SaaS، محور «۲. چند ادمین برای یک سالن».
             'salon.owner' => \App\Http\Middleware\EnsureSalonOwner::class,
+            // پذیرش دوباره‌ی قوانین (۲۰۲۶-۱۰-۲۸): مسیرهای نوبت/دوره‌ی تازه‌ی مشتری وب
+            'legal.terms' => \App\Http\Middleware\EnsureLegalTermsAccepted::class,
             // ⭐ /api/v1 اپ‌های موبایل (بسته‌ی ۱ اپلیکیشن): اپ توکن + سالن جاری + عمر لغزان توکن
             'api.audience' => \App\Http\Middleware\Api\EnsureApiAudience::class,
         ]);

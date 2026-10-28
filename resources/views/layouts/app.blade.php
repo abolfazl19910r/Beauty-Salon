@@ -218,6 +218,7 @@
      data-announcements-url="{{ route('announcements.active') }}"></div>
 
 @include('partials.booking-paused-banner', ['panel' => 'site'])
+@include('partials.terms-update-banner')
 
 
 @push('scripts')
