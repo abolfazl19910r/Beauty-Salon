@@ -86,7 +86,7 @@ class AdminCustomerCourseController extends Controller
             'blocker' => $course->bookingBlocker(),
             'refundable' => $this->courses->refundableAmount($course),
             'specialists' => app(\App\Services\Courses\CourseAvailability::class)->specialists($course),
-            'activity' => \Spatie\Activitylog\Models\Activity::query()->where('subject_type', $course->getMorphClass())->where('subject_id', $course->id)->latest('id')->limit(20)->get(),
+            'activity' => \Spatie\Activitylog\Models\Activity::query()->with('causer')->where('subject_type', $course->getMorphClass())->where('subject_id', $course->id)->latest('id')->limit(20)->get(),
         ]);
     }
 
