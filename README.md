@@ -75,7 +75,7 @@ npm ci
        "keyPassword": "<Android key password>" } } }
    ```
    `eas credentials -p android` ← پروفایل (`staff-apk`) ← `credentials.json: Upload/Download…` ← `Upload credentials from credentials.json to EAS`.
-   بعد در همان منو «Keystore» باید همان SHA-256 قبلی را نشان دهد (اپ مشتری: `C2:6F:D4:…:51:2C`). سپس `credentials.json` و `keys\` را پاک کنید.
+   بعد در همان منو «Keystore» باید همان SHA-256 قبلی را نشان دهد (اپ مشتری: `C2:6F:D4:…:51:2C`، اپ همکار: `79:6B:08:…:71:84`). سپس `credentials.json` و `keys\` را پاک کنید.
 6. `eas build` مثل همیشه.
 
 ```cmd

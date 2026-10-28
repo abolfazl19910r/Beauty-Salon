@@ -60,8 +60,8 @@ const EAS_ACCOUNTS = {
   // بعد از `eas init` شناسه‌ی چاپ‌شده‌ی هر اپ در ردیف همان حساب (خالی = پروژه هنوز ساخته نشده؛ eas init فقط وقتی خالی است پروژه می‌سازد)
   // @abolfazl1991s-team/mahru-staff و @abolfazl1991s-team/mahru (۲۰۲۶-۱۰-۲۲)
   'abolfazl1991s-team': { staff: 'b66e6dcc-d989-4dc3-80c4-88588ffedb62', customer: '5f5742a6-d637-4e1c-8ef3-3fd829232a6a' },
-  // @abolfazl19910rs-team/mahru-staff و @abolfazl19910rs-team/mahru (۲۰۲۶-۱۰-۲۹) — خالی تا `eas init` هر اپ؛ شناسه‌ی چاپ‌شده را این‌جا بگذارید
-  'abolfazl19910rs-team': { staff: '', customer: '' },
+  // @abolfazl19910rs-team/mahru-staff و @abolfazl19910rs-team/mahru (eas init ۲۰۲۶-۱۰-۲۹)
+  'abolfazl19910rs-team': { staff: '28c74db2-99f7-4ebc-b867-650c3f1a6ac8', customer: 'dad716ed-9e03-4662-91f6-9b110426426a' },
 } satisfies Record<string, Record<Variant, string>>;
 
 const EAS_OWNER: keyof typeof EAS_ACCOUNTS = 'abolfazl19910rs-team';
