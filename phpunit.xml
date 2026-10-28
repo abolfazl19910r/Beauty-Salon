@@ -23,6 +23,11 @@
         </include>
     </source>
     <php>
+        <!-- حافظه‌ی سوییت مستقل از php.ini هر سیستم (اوج کل سوییت حدود ۶۰۰ مگابایت؛ ۵۱۲M وسط کار کم می‌آورد) -->
+        <ini name="memory_limit" value="1G"/>
+        <!-- مثل CENTRAL_DOMAIN: تست‌ها نباید به .env محلی وابسته باشند (APP_URL شبکه‌ی خانگی یا فایل FCM واقعی دو تست را قرمز می‌کرد) -->
+        <env name="APP_URL" value="http://127.0.0.1:8000" force="true"/>
+        <env name="PUSH_FCM_CREDENTIALS" value="" force="true"/>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
