@@ -146,6 +146,38 @@ class CoursePresenter
         ];
     }
 
+    /**
+     * رضایت عکس دوره برای هر دو اپ (۲۰۲۶-۱۰-۲۸): وضعیت، درخواست باز، قاعده‌های درخواست دوباره و سابقه (با برچسب «ثبت حضوری»).
+     */
+    public static function photoConsent(CustomerCourse $course): array
+    {
+        $state = app(\App\Services\Courses\PhotoConsentService::class)->state($course);
+        $open = $state['open_request'];
+
+        return [
+            'status' => $state['granted'] ? 'granted' : ($open ? 'pending' : ($state['last_decline'] ? 'declined' : 'none')),
+            'text' => \App\Support\Courses\PhotoConsent::TEXT,
+            'text_version' => \App\Support\Courses\PhotoConsent::VERSION,
+            'open_request' => $open ? [
+                'requested_at' => self::time($open->requested_at),
+                'expires_at' => self::time($open->expires_at),
+                'send_count' => $open->send_count,
+            ] : null,
+            'can_request' => $state['can_request'],
+            'request_blocked_reason' => $state['request_blocked_reason'],
+            'next_request_at' => self::time($state['next_request_at']),
+            'can_resend' => $state['can_resend'],
+            'next_resend_at' => self::time($state['next_resend_at']),
+            'history' => $course->photoConsents()->limit(20)->get()->map(fn (\App\Models\CoursePhotoConsent $c) => [
+                'status' => $c->status,
+                'source' => $c->source,
+                'label' => $c->label(),
+                'at' => self::time($c->decided_at ?? $c->requested_at),
+                'at_jalali' => ($at = $c->decided_at ?? $c->requested_at) ? Jalalian::fromCarbon($at)->format('Y/m/d H:i') : null,
+            ])->values(),
+        ];
+    }
+
     private static function time(mixed $value): ?string
     {
         return $value ? Carbon::parse($value)->toIso8601String() : null;

@@ -18,6 +18,9 @@ final class PushPolicy
 
     public const DISCOUNT_CODE_CUSTOMER = 'discount.code.customer';
 
+    /** درخواست رضایت عکس دوره از مشتری (۲۰۲۶-۱۰-۲۸)؛ همیشه روشن، مثل یادآوری نوبت */
+    public const COURSE_PHOTO_CONSENT_CUSTOMER = 'course.photo_consent.customer';
+
     public const TEST = 'push.test';
 
     /** push:live-check — آزمون مسیر پیامک پشتیبان حالت «فعال»؛ دسته را خود دستور می‌دهد */
@@ -45,6 +48,7 @@ final class PushPolicy
         self::BOOKING_REMINDER_SPECIALIST => [PushUrgency::Urgent, 'یادآوری نوبت'],
         self::BOOKING_CANCELLED_UNPAID_CUSTOMER => [PushUrgency::Normal, 'لغو نوبت پرداخت‌نشده'],
         self::DISCOUNT_CODE_CUSTOMER => [PushUrgency::Info, 'کد تخفیف'],
+        self::COURSE_PHOTO_CONSENT_CUSTOMER => [PushUrgency::Normal, 'رضایت عکس دوره'],
         self::TEST => [PushUrgency::Info, 'پوش آزمایشی ماهرو'],
         self::LIVE_CHECK => [PushUrgency::Urgent, 'آزمون حالت فعال ماهرو'],
     ];

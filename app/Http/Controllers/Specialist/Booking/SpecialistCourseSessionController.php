@@ -58,6 +58,31 @@ class SpecialistCourseSessionController extends Controller
         return back()->with('success', 'رضایت مشتری برای عکس ثبت شد.');
     }
 
+    /** «درخواست رضایت» از خود مشتری (۲۰۲۶-۱۰-۲۸) */
+    public function requestConsent(Request $request, Booking $booking, \App\Services\Courses\PhotoConsentService $consents): RedirectResponse
+    {
+        $this->own($booking);
+        try {
+            $consents->requestAndSend($this->records->course($booking), $request->user());
+        } catch (\App\Services\Courses\CourseException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', 'درخواست رضایت برای مشتری فرستاده شد؛ پاسخ او در سابقه‌ی همین دوره دیده می‌شود.');
+    }
+
+    public function resendConsent(Request $request, Booking $booking, \App\Services\Courses\PhotoConsentService $consents): RedirectResponse
+    {
+        $this->own($booking);
+        try {
+            $consents->resendAndSend($this->records->course($booking), $request->user());
+        } catch (\App\Services\Courses\CourseException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', 'درخواست دوباره فرستاده شد (لینک قبلی دیگر کار نمی‌کند).');
+    }
+
     /** عکس هر جلسه‌ی دوره‌ای که این متخصص در آن نوبتی دارد */
     public function photo(CourseSessionPhoto $photo)
     {

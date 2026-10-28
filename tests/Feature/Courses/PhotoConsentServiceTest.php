@@ -60,7 +60,7 @@ class PhotoConsentServiceTest extends TestCase
         $this->assertSame('Mahru/0.3.7', $row->user_agent);
         $this->assertSame(PhotoConsent::VERSION, $row->text_version);
         $this->assertNotNull($row->decided_at);
-        $this->assertNull($row->token_hash, 'لینک بعد از پاسخ باطل است');
+        $this->assertFalse($row->isOpen(), 'لینک بعد از پاسخ دیگر تصمیم نمی‌گیرد');
         $this->assertTrue($course->fresh()->hasPhotoConsent());
         $this->assertSame($this->courseCustomer->id, $course->fresh()->photo_consent_by);
     }
@@ -143,7 +143,7 @@ class PhotoConsentServiceTest extends TestCase
         [, $token] = $this->consents->request($course, $this->staff);
         app(CourseService::class)->recordConsent($course, $this->staff);
 
-        $this->assertNull($this->consents->findByToken($token));
+        $this->assertSame(CoursePhotoConsent::CANCELLED, $this->consents->findByToken($token)->status);
         $this->assertSame(1, CoursePhotoConsent::where('status', CoursePhotoConsent::CANCELLED)->count());
         $this->assertFalse($this->consents->state($course)['can_request'], 'رضایت ثبت شده');
     }
@@ -174,7 +174,12 @@ class PhotoConsentServiceTest extends TestCase
         $this->assertTrue($course->fresh()->hasPhotoConsent());
 
         $this->assertNull($this->consents->findByToken('short'));
-        $this->assertNull($this->consents->findByToken($token), 'بعد از پاسخ دیگر پیدا نمی‌شود');
+        try {
+            $this->consents->decideByToken($this->consents->findByToken($token), false, $this->fromIp('5.6.7.25'));
+            $this->fail('پاسخ دوم پذیرفته شد');
+        } catch (CourseException $e) {
+            $this->assertStringContainsString('قبلاً پاسخ', $e->getMessage());
+        }
 
         $other = $this->paidCourse();
         [$expired, $oldToken] = $this->consents->request($other, $this->staff);

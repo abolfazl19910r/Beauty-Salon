@@ -31,6 +31,7 @@ class StaffCourseController extends StaffController
 
         return ApiResponse::success(CoursePresenter::course($course) + [
             'sessions' => $bookings->map(fn (Booking $b) => CoursePresenter::session($b, $records, 'api.v1.staff.course-photos.show', $course))->values(),
+            'photo_consent_state' => CoursePresenter::photoConsent($course),
         ]);
     }
 
@@ -70,7 +71,28 @@ class StaffCourseController extends StaffController
         $course = $this->records->course($booking);
         $courses->recordConsent($course, $request->user(), $request);
 
-        return ApiResponse::success(['photo_consent' => true]);
+        return ApiResponse::success(['photo_consent' => true, 'photo_consent_state' => CoursePresenter::photoConsent($course->fresh())]);
+    }
+
+    /**
+     * POST bookings/{id}/course-consent/request — «درخواست رضایت» (۲۰۲۶-۱۰-۲۸): مشتری خودش در اپ، سایت سالن یا لینک پیامک تصمیم
+     * می‌گیرد. قاعده‌ها و خطاها (422 course) در PhotoConsentService.
+     */
+    public function requestConsent(Request $request, int $bookingId, \App\Services\Courses\PhotoConsentService $consents): JsonResponse
+    {
+        $course = $this->records->course($this->courseBooking($request, $bookingId));
+        $consents->requestAndSend($course, $request->user());
+
+        return ApiResponse::success(['photo_consent_state' => CoursePresenter::photoConsent($course->fresh())]);
+    }
+
+    /** POST bookings/{id}/course-consent/resend — «ارسال دوباره» همان درخواست، روزی یک بار */
+    public function resendConsent(Request $request, int $bookingId, \App\Services\Courses\PhotoConsentService $consents): JsonResponse
+    {
+        $course = $this->records->course($this->courseBooking($request, $bookingId));
+        $consents->resendAndSend($course, $request->user());
+
+        return ApiResponse::success(['photo_consent_state' => CoursePresenter::photoConsent($course->fresh())]);
     }
 
     /** GET course-photos/{photoId} — عکس هر جلسه‌ی دوره‌ای که این متخصص در آن نوبتی دارد */

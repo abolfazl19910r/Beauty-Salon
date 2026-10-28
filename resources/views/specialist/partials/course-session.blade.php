@@ -50,11 +50,30 @@
         <div class="mt-5">
             <div class="text-sm text-[var(--specialist-plum-muted)] mb-2">عکس قبل/بعد</div>
             @if (! $course->hasPhotoConsent())
+                @php($consentState = app(\App\Services\Courses\PhotoConsentService::class)->state($course))
+                {{-- بسته‌ی مجوز 5د: متن رضایت (ماده‌ی ۵۸) --}}
+                <p class="text-xs leading-6 mb-2 p-3 rounded-lg text-[var(--specialist-text-dim)]" style="border: 1px solid var(--specialist-border);" data-photo-consent-text>{{ \App\Support\Courses\PhotoConsent::TEXT }}</p>
+                {{-- ۲۰۲۶-۱۰-۲۸: راه اول، خود مشتری در اپ، سایت سالن یا لینک پیامک تأیید می‌کند --}}
+                <div class="flex flex-wrap items-center gap-2 mb-3" data-photo-consent-request>
+                    @if ($consentState['open_request'])
+                        <span class="text-xs text-[var(--specialist-text-dim)]">در انتظار پاسخ مشتری (فرستاده‌شده {{ verta($consentState['open_request']->last_sent_at)->format('Y/m/d H:i') }})</span>
+                        @if ($consentState['can_resend'])
+                            <form method="POST" action="{{ route('specialist.bookings.course-consent.resend', $booking) }}">@csrf
+                                <button type="submit" class="px-3 py-1.5 rounded-lg text-xs text-[var(--specialist-text)]" style="border: 1px solid var(--specialist-border);">ارسال دوباره</button>
+                            </form>
+                        @endif
+                    @elseif ($consentState['can_request'])
+                        <form method="POST" action="{{ route('specialist.bookings.course-consent.request', $booking) }}">@csrf
+                            <button type="submit" class="specialist-cta px-4 py-2 rounded-lg text-sm font-bold">درخواست رضایت از مشتری</button>
+                        </form>
+                    @else
+                        <span class="text-xs text-[var(--specialist-text-dim)]">{{ $consentState['request_blocked_reason'] }}</span>
+                    @endif
+                </div>
+                {{-- راه دوم: ثبت حضوری (در سابقه «ثبت حضوری») --}}
                 <form method="POST" action="{{ route('specialist.bookings.course-consent', $booking) }}">
                     @csrf
-                    {{-- بسته‌ی مجوز 5د: متنی که باید برای مشتری خوانده شود (ماده‌ی ۵۸) --}}
-                    <p class="text-xs leading-6 mb-2 p-3 rounded-lg text-[var(--specialist-text-dim)]" style="border: 1px solid var(--specialist-border);" data-photo-consent-text>{{ \App\Support\Courses\PhotoConsent::TEXT }}</p>
-                    <button type="submit" class="px-4 py-2 rounded-lg text-sm text-[var(--specialist-text)]" style="border: 1px solid var(--specialist-border);" onclick="return confirm(@js(\App\Support\Courses\PhotoConsent::STAFF_CONFIRM));">ثبت رضایت مشتری برای عکس</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg text-sm text-[var(--specialist-text)]" style="border: 1px solid var(--specialist-border);" onclick="return confirm(@js(\App\Support\Courses\PhotoConsent::STAFF_CONFIRM));">ثبت حضوری رضایت مشتری</button>
                 </form>
             @else
                 <div class="flex flex-wrap gap-2 items-end">

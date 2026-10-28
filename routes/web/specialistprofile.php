@@ -75,6 +75,9 @@ Route::middleware(['auth', 'verified', 'salon.specialist'])->name('specialist.')
         Route::put('/{booking}/course-note', [\App\Http\Controllers\Specialist\Booking\SpecialistCourseSessionController::class, 'saveNote'])->name('course-note');
         Route::post('/{booking}/course-photos', [\App\Http\Controllers\Specialist\Booking\SpecialistCourseSessionController::class, 'uploadPhoto'])->name('course-photos.store');
         Route::post('/{booking}/course-consent', [\App\Http\Controllers\Specialist\Booking\SpecialistCourseSessionController::class, 'consent'])->name('course-consent');
+        // درخواست رضایت از خود مشتری و ارسال دوباره (۲۰۲۶-۱۰-۲۸)
+        Route::post('/{booking}/course-consent/request', [\App\Http\Controllers\Specialist\Booking\SpecialistCourseSessionController::class, 'requestConsent'])->middleware('throttle:10,1')->name('course-consent.request');
+        Route::post('/{booking}/course-consent/resend', [\App\Http\Controllers\Specialist\Booking\SpecialistCourseSessionController::class, 'resendConsent'])->middleware('throttle:10,1')->name('course-consent.resend');
     });
 
     // no-store: با «برگشت» مرورگر نسخه‌ی کش‌شده‌ی فهرست (اعلان خوانده‌شده هنوز پررنگ) نشان داده نشود

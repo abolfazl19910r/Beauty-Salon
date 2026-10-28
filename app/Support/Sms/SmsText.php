@@ -200,6 +200,17 @@ final class SmsText
         ]);
     }
 
+    /**
+     * درخواست رضایت عکس دوره (۲۰۲۶-۱۰-۲۸): متن ثابت (نه قالب قابل ویرایش سالن)، چون متن کامل رضایت پشت لینک است و این پیامک فقط
+     * دعوت به خواندن آن است.
+     */
+    public static function photoConsentRequest(\App\Models\CustomerCourse $course, string $link): string
+    {
+        $salon = (string) Salon::withoutGlobalScopes()->find($course->salon_id)?->smsName();
+
+        return sprintf('%s: رضایت شما برای عکس قبل/بعد دوره‌ی «%s» را می‌خواهیم. متن کامل و پاسخ: %s', $salon, self::clip($course->name, 25), $link);
+    }
+
     public static function quotaExhausted(Salon $salon): string
     {
         return sprintf('پیامک این ماه %s تمام شد؛ برای ادامه از صورتحساب بسته بخرید.', $salon->smsName());

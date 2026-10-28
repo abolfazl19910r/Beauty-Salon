@@ -115,7 +115,10 @@ Route::prefix('staff')->name('staff.')->middleware(['auth:sanctum', 'api.audienc
         Route::get('bookings/{bookingId}/course', 'show')->whereNumber('bookingId')->name('bookings.course');
         Route::post('bookings/{bookingId}/session-note', 'saveNote')->whereNumber('bookingId')->name('bookings.session-note');
         Route::post('bookings/{bookingId}/photos', 'uploadPhoto')->whereNumber('bookingId')->middleware('throttle:30,1')->name('bookings.photos.store');
+        // ثبت حضوری رضایت عکس (راه دوم)؛ درخواست از خود مشتری و ارسال دوباره (۲۰۲۶-۱۰-۲۸)
         Route::post('bookings/{bookingId}/course-consent', 'consent')->whereNumber('bookingId')->name('bookings.course-consent');
+        Route::post('bookings/{bookingId}/course-consent/request', 'requestConsent')->whereNumber('bookingId')->middleware('throttle:10,1')->name('bookings.course-consent.request');
+        Route::post('bookings/{bookingId}/course-consent/resend', 'resendConsent')->whereNumber('bookingId')->middleware('throttle:10,1')->name('bookings.course-consent.resend');
         Route::get('course-photos/{photoId}', 'photo')->whereNumber('photoId')->name('course-photos.show');
     });
 

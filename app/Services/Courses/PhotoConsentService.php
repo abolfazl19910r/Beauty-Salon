@@ -34,6 +34,13 @@ class PhotoConsentService
 
     public const SOURCES = ['app', 'web', 'sms_link'];
 
+    public const NOT_SENT = 'پیام به مشتری نرسید (شماره ندارد یا سهمیه‌ی پیامک سالن تمام شده). رضایت را حضوری ثبت کنید یا از مشتری بخواهید در اپ یا سایت سالن تأیید کند.';
+
+    public function __construct(
+        private readonly \App\Services\Push\AppMessenger $messenger,
+        private readonly \App\Services\Links\ShortLinkService $links,
+    ) {}
+
     // ─── درخواست کادر ─────────────────────────────────────────────
 
     /**
@@ -94,6 +101,37 @@ class PhotoConsentService
         });
     }
 
+    /**
+     * درخواست و فرستادنش به مشتری از مسیر استاندارد پیام‌ها (AppMessenger، تصمیم ۲ گزینه‌ی «ج»): اپ دارد ← پوش، و پیامک لینک‌دار
+     * اگر رسید در مهلت «عادی» نیامد (حالت «آزمایشی»: هر دو)؛ اپ ندارد ← همان لحظه پیامک. پیامک از سهمیه‌ی پیامک سالن است. اگر
+     * هیچ‌کدام نرفت (بی شماره، سهمیه تمام) درخواست ثبت نمی‌شود و کادر پیام روشن می‌گیرد.
+     *
+     * @throws CourseException
+     */
+    public function requestAndSend(CustomerCourse $course, User $staff): CoursePhotoConsent
+    {
+        [$row, $token] = $this->request($course, $staff);
+
+        if (! $this->send($row, $token)) {
+            $row->delete();
+            throw new CourseException(self::NOT_SENT);
+        }
+
+        return $row;
+    }
+
+    /** @throws CourseException */
+    public function resendAndSend(CustomerCourse $course, User $staff): CoursePhotoConsent
+    {
+        [$row, $token] = $this->resend($course, $staff);
+
+        if (! $this->send($row, $token)) {
+            throw new CourseException(self::NOT_SENT);
+        }
+
+        return $row;
+    }
+
     /** @throws CourseException */
     public function assertCanRequest(CustomerCourse $course): void
     {
@@ -125,7 +163,10 @@ class PhotoConsentService
         return $this->decide($course, $customer, CoursePhotoConsent::DECLINED, $source, $request);
     }
 
-    /** درخواست باز از روی توکن لینک پیامک (فقط سالن جاری؛ scope سالن). منقضی/پاسخ‌داده هم برمی‌گردد تا صفحه نتیجه را بگوید. */
+    /**
+     * ردیف لینک پیامک از روی توکن (فقط سالن جاری؛ scope سالن). پاسخ‌داده، بسته یا منقضی هم برمی‌گردد تا صفحه نتیجه را بگوید؛ تصمیم
+     * فقط روی درخواست باز (decideByToken). «ارسال دوباره» توکن تازه می‌سازد و لینک قبلی دیگر پیدا نمی‌شود.
+     */
     public function findByToken(string $token): ?CoursePhotoConsent
     {
         if (! preg_match('/^[A-Za-z0-9]{32,64}$/', $token)) {
@@ -241,7 +282,7 @@ class PhotoConsentService
                 throw new CourseException($rowId ? 'به این درخواست قبلاً پاسخ داده شده است.' : 'درخواست رضایتی در انتظار پاسخ شما نیست.');
             }
             if ($status === CoursePhotoConsent::GRANTED && $locked->photo_consent_at) {
-                $open?->update(['status' => CoursePhotoConsent::CANCELLED, 'token_hash' => null]);
+                $open?->update(['status' => CoursePhotoConsent::CANCELLED]);
 
                 return $locked->photoConsents()->where('status', CoursePhotoConsent::GRANTED)->first()
                     ?? CoursePhotoConsent::create($this->decisionRow($locked, $status, $source, $request));
@@ -249,7 +290,7 @@ class PhotoConsentService
 
             $values = $this->decisionRow($locked, $status, $source, $request);
             if ($open) {
-                $open->update(array_diff_key($values, array_flip(['customer_course_id', 'user_id'])) + ['token_hash' => null]);
+                $open->update(array_diff_key($values, array_flip(['customer_course_id', 'user_id'])));
                 $row = $open;
             } else {
                 $row = CoursePhotoConsent::create($values);
@@ -282,10 +323,37 @@ class PhotoConsentService
         ];
     }
 
+    private function send(CoursePhotoConsent $row, string $token): bool
+    {
+        $course = $row->customerCourse()->with('user')->firstOrFail();
+        $salon = \App\Models\Salon::withoutGlobalScopes()->findOrFail($course->salon_id);
+        $customer = $course->user;
+        if (! $customer) {
+            return false;
+        }
+
+        $link = $this->links->shorten(
+            route('photo-consent.show', ['salon_slug' => $salon->slug, 'token' => $token]),
+            $row->expires_at,
+        );
+
+        return $this->messenger->deliver(new \App\Services\Push\Outgoing(
+            recipient: $customer,
+            phone: $customer->phone,
+            text: \App\Support\Sms\SmsText::photoConsentRequest($course, $link),
+            salonId: $salon->id,
+            smsFeature: \App\Support\Features\Feature::SmsCustomer,
+            pushKey: \App\Services\Push\PushPolicy::COURSE_PHOTO_CONSENT_CUSTOMER,
+            urgency: \App\Services\Push\PushUrgency::Normal,
+            data: ['course_id' => $course->id, 'type' => 'photo_consent'],
+            inbox: true,
+        ));
+    }
+
     private function closeOpen(CustomerCourse $course): void
     {
         CoursePhotoConsent::query()->where('customer_course_id', $course->id)->where('status', CoursePhotoConsent::PENDING)
-            ->update(['status' => CoursePhotoConsent::CANCELLED, 'token_hash' => null]);
+            ->update(['status' => CoursePhotoConsent::CANCELLED]);
     }
 
     private function newToken(): string

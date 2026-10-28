@@ -45,6 +45,8 @@ $tenantRoutes = function () {
     require __DIR__.'/web/app-payments.php';
     // انصراف از پیامک‌های پیگیری با لینک امضاشده (۲۰۲۶-۱۰-۱۴) — بدون ورود
     require __DIR__.'/web/sms-unsubscribe.php';
+    // رضایت عکس دوره با لینک پیامک (۲۰۲۶-۱۰-۲۸) — بدون ورود
+    require __DIR__.'/web/photo-consent.php';
 
     // ⭐ Commit 4b-2: moved once the customer-identity redesign made "logged in" mean "logged
     // in as a customer of THIS salon" — 'salon.customer' (EnsureCustomerBelongsToSalon) closes
