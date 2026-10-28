@@ -10,3 +10,9 @@ expo-env.d.ts
 google-services*.json
 *.keystore
 .env*.local
+# keystore و رمزهایش (بارگذاری کلید به expo.dev، README) — هرگز در آرشیو build
+keys/
+*.jks
+credentials.json
+credentials.*.json
+credentials/

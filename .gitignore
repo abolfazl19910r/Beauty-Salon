@@ -15,3 +15,5 @@ credentials.json
 credentials/
 keys/
 .env*.local
+credentials.*.json
+*.jks
