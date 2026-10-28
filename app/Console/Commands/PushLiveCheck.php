@@ -110,7 +110,7 @@ class PushLiveCheck extends Command
             ));
 
             $id = PushMessage::query()->where('user_id', $user->id)->where('event_key', PushPolicy::LIVE_CHECK)
-                ->where('created_at', '>=', $start)->orderByDesc('created_at')->value('id');
+                ->where('created_at', '>=', $start)->orderByDesc('id')->value('id');
             if ($id) {
                 $messageIds[] = $id;
             }

@@ -183,7 +183,7 @@ class PushStats
         PushMessage::query()->where('created_at', '>=', $since)->where('mode', PushMode::SHADOW)
             ->where('event_key', '!=', PushPolicy::TEST)->whereNotNull('sms_text')
             ->select(['id', 'urgency', 'created_at', 'acked_at', 'sms_parts'])
-            ->orderByDesc('created_at')->limit(self::SAMPLE)
+            ->orderByDesc('id')->limit(self::SAMPLE)
             ->get()
             ->each(function (PushMessage $m) use (&$count, &$parts) {
                 $window = PushUrgency::tryFrom($m->urgency)?->fallbackSeconds();
@@ -233,7 +233,7 @@ class PushStats
     /** @return list<int> تأخیر رسید (ثانیه) از ساخت پیام */
     private function delays($query): array
     {
-        return $query->orderByDesc('created_at')->limit(self::SAMPLE)->get(['created_at', 'acked_at'])
+        return $query->orderByDesc('id')->limit(self::SAMPLE)->get(['created_at', 'acked_at'])
             ->map(fn ($m) => (int) $m->acked_at->diffInSeconds($m->created_at, true))
             ->sort()->values()->all();
     }
