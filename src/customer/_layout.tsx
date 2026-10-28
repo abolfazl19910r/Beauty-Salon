@@ -23,11 +23,14 @@ if (!I18nManager.isRTL) {
 
 void SplashScreen.preventAutoHideAsync();
 
+/** صفحه‌هایی که با قوانین پذیرفته‌نشده هم باز می‌مانند (خروج و حذف حساب، تصمیم ۲۰۲۶-۱۰-۲۸) */
+const TERMS_OPEN_SCREENS = ['terms-update', 'delete-account', 'salon-inactive'];
+
 /** صفحه‌هایی که بدون ورود باز می‌شوند */
 const PUBLIC_SCREENS = ['welcome', 'scan', 'salon', 'login', 'verify', 'register', 'forgot', 'reset', 'server'];
 
 function Navigator() {
-  const { status, salonInactive, api } = useSession();
+  const { status, salonInactive, api, termsPending, termsDeferred } = useSession();
   const { ready, salon } = useCustomerSalon();
   const segments = useSegments();
   const p = usePalette();
@@ -56,8 +59,11 @@ function Navigator() {
       router.replace(salon ? '/login' : '/welcome');
     } else if (status === 'signedIn' && salonInactive && current !== 'salon-inactive') {
       router.replace('/salon-inactive');
+    } else if (status === 'signedIn' && termsPending && !termsDeferred && !TERMS_OPEN_SCREENS.includes(current)) {
+      // پذیرش دوباره (۲۰۲۶-۱۰-۲۸): بعد از ورود یا ۴۰۹ رزرو، اول «قوانین به‌روز شد»
+      router.replace('/terms-update');
     }
-  }, [loading, status, salonInactive, current, salon]);
+  }, [loading, status, salonInactive, current, salon, termsPending, termsDeferred]);
 
   if (loading) {
     return null;
@@ -110,6 +116,7 @@ function Navigator() {
         <Stack.Screen name="devices" options={{ title: 'دستگاه‌های من' }} />
         <Stack.Screen name="push" options={{ title: 'دریافت اعلان' }} />
         <Stack.Screen name="delete-account" options={{ title: 'حذف حساب' }} />
+        <Stack.Screen name="terms-update" options={{ title: 'قوانین به‌روز شد', headerBackVisible: false }} />
         <Stack.Screen name="salon-inactive" options={{ headerShown: false }} />
       </Stack>
       {/* نسخه‌ی اجباری (بسته‌ی ۵): اپ بدون مارکت، تا به‌روز نشود ادامه نمی‌دهد */}

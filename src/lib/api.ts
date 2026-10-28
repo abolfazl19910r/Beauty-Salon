@@ -57,6 +57,8 @@ export type ClientConfig = {
   appVersion: string;
   /** پاسخ ۴۰۱ روی درخواست واردشده: نشست را پاک کن و به ورود برگرد */
   onUnauthorized?: () => void;
+  /** هر خطای منطقی سرور (کد ماشینی) — برای واکنش سراسری مثل terms_update_required (۲۰۲۶-۱۰-۲۸) که از مسیرهای بیرون از react-query هم می‌آید */
+  onErrorCode?: (code: string) => void;
   fetchImpl?: typeof fetch;
 };
 
@@ -133,6 +135,7 @@ export function createClient(config: ClientConfig) {
     if (response.status === 401 && token && config.onUnauthorized) {
       config.onUnauthorized();
     }
+    config.onErrorCode?.(error.code);
 
     throw error;
   }

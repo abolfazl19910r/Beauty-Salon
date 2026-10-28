@@ -20,6 +20,11 @@ type SessionValue = {
   signOut: (options?: { revoke?: boolean }) => Promise<void>;
   setServerUrl: (url: string | null) => Promise<void>;
   recheckSalon: () => void;
+  /** پذیرش دوباره‌ی قوانین (۲۰۲۶-۱۰-۲۸): تغییر مهمی که هنوز پذیرفته نشده؛ deferred = «فعلاً نه» تا رزرو بعدی یا اجرای بعدی اپ */
+  termsPending: boolean;
+  termsDeferred: boolean;
+  setTermsPending: (pending: boolean) => void;
+  deferTerms: () => void;
 };
 
 const SessionContext = createContext<SessionValue | null>(null);
@@ -41,6 +46,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [account, setAccount] = useState<Account | null>(null);
   const [serverUrl, setServerUrlState] = useState(DEFAULT_API_URL);
   const [salonInactive, setSalonInactive] = useState(false);
+  const [termsPending, setTermsPendingState] = useState(false);
+  const [termsDeferred, setTermsDeferred] = useState(false);
   const tokenRef = useRef<string | null>(null);
   const serverRef = useRef(DEFAULT_API_URL);
   const signOutRef = useRef<() => void>(() => {});
@@ -77,6 +84,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         token: () => tokenRef.current,
         appVersion: APP_VERSION,
         onUnauthorized: () => signOutRef.current(),
+        onErrorCode: (code) => {
+          if (code === 'terms_update_required') {
+            // نوبت یا دوره‌ی تازه تا پذیرش نسخه‌ی تازه بسته است → صفحه‌ی «قوانین به‌روز شد» (هر مسیر درخواستی)
+            setTermsPendingState(true);
+            setTermsDeferred(false);
+          }
+        },
       }),
     [],
   );
@@ -92,10 +106,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       queryClient.clear();
       setAccount(null);
       setSalonInactive(false);
+      setTermsPendingState(false);
+      setTermsDeferred(false);
       setStatus('signedOut');
     },
     [api, queryClient],
   );
+
+  const setTermsPending = useCallback((pending: boolean) => {
+    setTermsPendingState(pending);
+    setTermsDeferred(false);
+  }, []);
+  const deferTerms = useCallback(() => setTermsDeferred(true), []);
 
   signOutRef.current = () => {
     void signOut();
@@ -138,6 +160,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         if (salon && 'theme' in salon) {
           setSalonTheme(salon.theme);
         }
+        const pending = (res.data as Account | undefined)?.legal_pending;
+        if (Array.isArray(pending)) {
+          setTermsPendingState(pending.length > 0);
+        }
       })
       .catch(() => undefined);
   }, [status, api]);
@@ -153,6 +179,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       await saveSession(response.token, response.account);
       setAccount(response.account);
       setSalonInactive(false);
+      setTermsPendingState((response.account.legal_pending?.length ?? 0) > 0);
+      setTermsDeferred(false);
       setStatus('signedIn');
     },
     signOut,
@@ -165,6 +193,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       setSalonInactive(false);
       void queryClient.invalidateQueries();
     },
+    termsPending,
+    termsDeferred,
+    setTermsPending,
+    deferTerms,
   };
 
   return (

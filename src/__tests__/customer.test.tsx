@@ -366,3 +366,66 @@ it('the customer can withdraw the course photo consent (5د)', async () => {
   await waitFor(() => expect(calls.some((c) => c.method === 'POST' && c.url.endsWith('/customer/courses/12/photo-consent/withdraw'))).toBe(true));
   await waitFor(() => expect(screen.queryByText('پس گرفتن رضایت')).toBeNull());
 });
+
+const PENDING = [{
+  document: 'privacy', title: 'حریم خصوصی', version: '1405-09-01', accepted_version: '1405-08-03',
+  changes: [{ version: '1405-09-01', major: true, summary: 'نگهداری IP شش ماه' }], url: 'https://arisheh.ir/privacy',
+}];
+
+it('after a major change the terms page comes first; accepting records it and goes home (2026-10-28)', async () => {
+  await signedIn();
+  let pending = PENDING;
+  routes = (url, init) => {
+    if (url.endsWith('/me')) return [200, ok({ ...ACCOUNT, legal_pending: pending })];
+    if (url.endsWith('/customer/legal/accept') && init.method === 'POST') {
+      pending = [];
+      return [200, ok({ pending: [] })];
+    }
+    if (url.endsWith('/customer/legal')) return [200, ok({ pending })];
+    if (url.includes('/customer/home')) return [200, ok(HOME)];
+    return notFound;
+  };
+
+  renderRouter('./src/customer', { initialUrl: '/home' });
+
+  expect(await screen.findByText(/نگهداری IP شش ماه/)).toBeTruthy();
+  expect(screen.getByText('مهم')).toBeTruthy();
+  fireEvent.press(screen.getByText('متن کامل حریم خصوصی'));
+  expect(Linking.openURL).toHaveBeenLastCalledWith('https://arisheh.ir/privacy');
+
+  fireEvent.press(screen.getByText('پذیرش و ادامه'));
+  expect(calls.some((c) => c.url.endsWith('/customer/legal/accept'))).toBe(false);
+  fireEvent(screen.getByLabelText('پذیرش نسخه‌ی تازه'), 'valueChange', true);
+  fireEvent.press(screen.getByText('پذیرش و ادامه'));
+
+  await screen.findByText('سلام مریم');
+  expect(calls.find((c) => c.url.endsWith('/customer/legal/accept'))?.body).toEqual({ accept_terms: true });
+});
+
+it('a 409 terms_update_required on booking opens the terms page; "not now" keeps the current bookings (2026-10-28)', async () => {
+  await signedIn();
+  routes = (url) => {
+    if (url.endsWith('/me')) return [200, ok(ACCOUNT)];
+    if (url.includes('/customer/services/3/specialists')) return [200, ok([{ id: 5, name: 'سارا', photo_url: null }])];
+    if (url.includes('/customer/services')) return [200, ok({ categories: [], services: [{ id: 3, name: 'کوتاهی مو', description: null, price: 500000, duration_minutes: 60, prepayment_amount: 150000, image_url: null, category: null }] })];
+    if (url.includes('/specialists/5/dates')) return [200, ok([{ date: '2026-10-20', date_jalali: '1405/07/28', label: 'دوشنبه 28 مهر' }])];
+    if (url.includes('/specialists/5/slots')) return [200, ok([{ time: '10:00', booking_time: '2026-10-20T10:00:00+03:30' }])];
+    if (url.endsWith('/customer/bookings/quote')) return [409, { success: false, error: { code: 'terms_update_required', message: 'قوانین ماهرو به‌روز شده است.' } }];
+    if (url.endsWith('/customer/legal')) return [200, ok({ pending: PENDING })];
+    if (url.includes('/customer/bookings')) return [200, ok([BOOKING], { current_page: 1, last_page: 1, per_page: 20, total: 1 })];
+    if (url.includes('/customer/home')) return [200, ok(HOME)];
+    return notFound;
+  };
+
+  renderRouter('./src/customer', { initialUrl: '/book' });
+
+  fireEvent.press(await screen.findByText('کوتاهی مو'));
+  fireEvent.press(await screen.findByText('دوشنبه ۲۸ مهر'));
+  fireEvent.press(await screen.findByText('۱۰:۰۰'));
+  fireEvent.press(screen.getByText('ادامه'));
+
+  expect(await screen.findByText(/نگهداری IP شش ماه/)).toBeTruthy();
+  fireEvent.press(screen.getByText('فعلاً نه — نوبت‌های فعلی'));
+  await waitFor(() => expect(screen.queryByText(/نگهداری IP شش ماه/)).toBeNull());
+  expect(calls.some((c) => c.url.endsWith('/customer/legal/accept'))).toBe(false);
+});

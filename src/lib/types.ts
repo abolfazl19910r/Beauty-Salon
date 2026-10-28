@@ -6,6 +6,18 @@ export type Account = {
   user: { id: number; name: string; phone: string; type: 'staff' | 'customer' };
   salon: { id: number; slug: string; name: string; logo_url: string | null; logo_tone?: LogoTone; logo_dark_url?: string | null; logo_dark_tone?: LogoTone; public_url: string; theme?: unknown };
   specialist?: { id: number; name: string };
+  /** فقط اپ مشتری: سندهایی که بعد از تغییر «مهم» باید دوباره پذیرفته شوند (سرور ۲۰۲۶-۱۰-۲۸؛ سرور قدیمی ندارد) */
+  legal_pending?: LegalPendingDocument[];
+};
+
+/** «قوانین به‌روز شد» (پذیرش دوباره، ۲۰۲۶-۱۰-۲۸) */
+export type LegalPendingDocument = {
+  document: 'terms' | 'privacy' | string;
+  title: string;
+  version: string;
+  accepted_version: string | null;
+  changes: { version: string; major: boolean; summary: string }[];
+  url: string | null;
 };
 
 export type Challenge = {
