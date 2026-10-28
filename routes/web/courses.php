@@ -20,5 +20,7 @@ Route::prefix('my-courses')->name('my-courses.')->group(function () {
     Route::get('/{course}/photos/{photo}', [CourseController::class, 'photo'])->whereNumber(['course', 'photo'])->name('photos.show');
     Route::delete('/{course}/photos/{photo}', [CourseController::class, 'destroyPhoto'])->whereNumber(['course', 'photo'])->name('photos.destroy');
     // بسته‌ی مجوز 5د: پس گرفتن رضایت عکس قبل/بعد
+    // ۲۰۲۶-۱۰-۲۸: موافقت یا مخالفت خود مشتری با رضایت عکس
+    Route::post('/{course}/photo-consent', [CourseController::class, 'decideConsent'])->whereNumber('course')->middleware('throttle:sensitive')->name('photo-consent.decide');
     Route::post('/{course}/consent/withdraw', [CourseController::class, 'withdrawConsent'])->whereNumber('course')->middleware('throttle:sensitive')->name('consent.withdraw');
 });

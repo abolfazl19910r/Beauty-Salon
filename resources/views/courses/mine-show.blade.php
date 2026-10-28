@@ -55,7 +55,26 @@
                     <button type="submit" class="text-sm underline" style="color: #FCA5A5;">پس گرفتن رضایت</button>
                 </form>
             @else
-                <p class="text-sm mt-3" style="{{ $dim }}">رضایتی ثبت نشده است؛ عکسی گرفته نمی‌شود. اگر موافقید، به کادر سالن بگویید.</p>
+                {{-- ۲۰۲۶-۱۰-۲۸: خود مشتری موافقت یا مخالفت می‌کند (درخواست کادر یا هر وقت خودش بخواهد) --}}
+                @php($pendingConsent = $course->photoConsents()->open()->first())
+                @if ($pendingConsent)
+                    <p class="text-sm mt-3" style="{{ $gold }}" data-photo-consent-pending>سالن رضایت شما را خواسته است؛ متن بالا را بخوانید و پاسخ دهید.</p>
+                @else
+                    <p class="text-sm mt-3" style="{{ $dim }}">رضایتی ثبت نشده است؛ عکسی گرفته نمی‌شود. اگر موافقید، همین‌جا تأیید کنید.</p>
+                @endif
+                <form method="POST" action="{{ route('my-courses.photo-consent.decide', $course) }}" class="mt-3" data-photo-consent-form>
+                    @csrf
+                    <label class="flex items-start gap-2 text-sm leading-7">
+                        <input type="checkbox" name="read_text" value="1" class="mt-1.5 rounded">
+                        <span>متن بالا را خواندم.</span>
+                    </label>
+                    <div class="flex flex-wrap gap-2 mt-3">
+                        <button type="submit" name="decision" value="agree" class="px-5 py-2 rounded-lg font-bold" style="{{ $btn }}">موافقم</button>
+                        @if ($pendingConsent)
+                            <button type="submit" name="decision" value="decline" class="px-5 py-2 rounded-lg" style="{{ $ghost }}">موافق نیستم</button>
+                        @endif
+                    </div>
+                </form>
             @endif
         </div>
 

@@ -74,7 +74,7 @@ class CustomerCourseController extends CustomerController
 
         return ApiResponse::success(CoursePresenter::detail(
             $course, $bookings, $records->recordsFor($course, customerView: true), 'api.v1.customer.courses.photos.show',
-        ));
+        ) + ['photo_consent_state' => CoursePresenter::photoConsent($course)]);
     }
 
     /** GET courses/{courseId}/specialists */
@@ -197,6 +197,29 @@ class CustomerCourseController extends CustomerController
         $courses->withdrawConsent($course, $this->customer($request), 'app', $request);
 
         return ApiResponse::success(['photo_consent' => false]);
+    }
+
+    /**
+     * POST courses/{courseId}/photo-consent {decision: agree|decline} (۲۰۲۶-۱۰-۲۸): موافقت خود مشتری (هر وقت) یا مخالفت با درخواست
+     * باز کادر؛ منبع app با IP و user agent. اپ پیش از دکمه متن کامل را نشان می‌دهد.
+     */
+    public function decideConsent(Request $request, int $courseId, \App\Services\Courses\PhotoConsentService $consents): JsonResponse
+    {
+        $course = $this->own($request, $courseId);
+        $input = $request->validate(['decision' => ['required', 'in:agree,decline']]);
+
+        if ($input['decision'] === 'agree') {
+            $consents->grant($course, $this->customer($request), 'app', $request);
+        } else {
+            $consents->decline($course, $this->customer($request), 'app', $request);
+        }
+
+        $course->refresh();
+
+        return ApiResponse::success([
+            'photo_consent' => $course->hasPhotoConsent(),
+            'photo_consent_state' => CoursePresenter::photoConsent($course),
+        ]);
     }
 
     public function destroyPhoto(Request $request, int $photoId): JsonResponse

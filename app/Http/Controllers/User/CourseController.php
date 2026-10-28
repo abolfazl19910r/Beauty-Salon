@@ -217,6 +217,29 @@ class CourseController extends Controller
         return back()->with('success', 'رضایت عکس پس گرفته شد؛ از این به بعد عکسی گرفته نمی‌شود. عکس‌های قبلی را می‌توانید خودتان پاک کنید.');
     }
 
+    /** ۲۰۲۶-۱۰-۲۸: مشتری خودش با رضایت عکس موافقت (هر وقت) یا با درخواست باز مخالفت می‌کند (منبع web) */
+    public function decideConsent(Request $request, CustomerCourse $course, \App\Services\Courses\PhotoConsentService $consents): RedirectResponse
+    {
+        $this->authorizeOwn($request, $course);
+        $input = $request->validate(['decision' => ['required', 'in:agree,decline']]);
+        $agree = $input['decision'] === 'agree';
+        if ($agree) {
+            $request->validate(['read_text' => ['accepted']], ['read_text.accepted' => 'برای موافقت، تیک «متن را خواندم» را بزنید.']);
+        }
+
+        try {
+            if ($agree) {
+                $consents->grant($course, $request->user(), 'web', $request);
+            } else {
+                $consents->decline($course, $request->user(), 'web', $request);
+            }
+        } catch (\App\Services\Courses\CourseException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', $agree ? 'موافقت شما ثبت شد؛ هر زمان می‌توانید آن را پس بگیرید.' : 'مخالفت شما ثبت شد؛ از این دوره عکسی گرفته نمی‌شود.');
+    }
+
     private function authorizeOwn(Request $request, CustomerCourse $course): void
     {
         abort_unless((int) $course->user_id === (int) $request->user()->id, 404);

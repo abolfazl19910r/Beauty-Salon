@@ -189,6 +189,8 @@ Route::prefix('customer')->name('customer.')->middleware(['auth:sanctum', 'api.a
         Route::get('courses/{courseId}/slots', 'slots')->whereNumber('courseId')->name('courses.slots');
         Route::post('courses/{courseId}/bookings', 'book')->whereNumber('courseId')->name('courses.book');
         // بسته‌ی مجوز 5د: پس گرفتن رضایت عکس قبل/بعد (ماده‌ی ۵۹)
+        // ۲۰۲۶-۱۰-۲۸: موافقت/مخالفت خود مشتری با درخواست رضایت عکس
+        Route::post('courses/{courseId}/photo-consent', 'decideConsent')->whereNumber('courseId')->middleware('throttle:api-v1-sensitive')->name('courses.photo-consent');
         Route::post('courses/{courseId}/photo-consent/withdraw', 'withdrawConsent')->whereNumber('courseId')->middleware('throttle:api-v1-sensitive')->name('courses.photo-consent.withdraw');
         Route::get('courses/{courseId}/pay', 'payOptions')->whereNumber('courseId')->name('courses.pay.options');
         Route::post('courses/{courseId}/pay', 'pay')->whereNumber('courseId')->name('courses.pay');
