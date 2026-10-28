@@ -31,6 +31,7 @@ class BookingService
         protected readonly BeautyServiceRepositoryInterface $beautyServiceRepository,
         protected readonly BookingRepositoryInterface $bookingRepository,
         protected readonly BookingPaymentPolicy $paymentPolicy,
+        protected readonly CustomerBookingLimits $limits,
     ) {}
 
     public function isTimeAvailable(int $specialistId, string $bookingTime): bool
@@ -293,7 +294,10 @@ class BookingService
         ) {
             // کلید اول تراکنش: ارسال هم‌زمان دوم روی ایندکس یکتای همین کلید منتظر می‌ماند
             $claim = Idempotency::claim(Idempotency::BOOKING, $userId, $idempotencyKey, $fingerprint);
+            // سقف نوبت آنلاین مشتری (بسته‌ی 5ه): قفل ردیف مشتری، بعد قفل متخصص، و شمارش فقط بعد از هر دو قفل
+            $this->limits->lockCustomer($userId);
             $this->assertBookingFits($specialistId, $bookingTime, $serviceId);
+            $this->limits->assertCanBook($userId, $bookingTime);
 
             $booking = $this->bookingRepository->create([
                 'service_id' => $serviceId,

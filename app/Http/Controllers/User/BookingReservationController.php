@@ -65,6 +65,13 @@ class BookingReservationController extends Controller
                 return back()->with('error', 'متأسفانه این زمان دیگر در دسترس نیست. لطفاً زمان دیگری انتخاب کنید.');
             }
 
+            // سقف نوبت مشتری (بسته‌ی 5ه) پیش از صفحه‌ی تأیید هم گفته می‌شود؛ ثبت نهایی دوباره با قفل می‌سنجد
+            try {
+                app(\App\Services\Booking\CustomerBookingLimits::class)->assertCanBook((int) auth()->id(), (string) $bookingTime);
+            } catch (\App\Exceptions\BookingLimitException $e) {
+                return back()->with('error', $e->getUserMessage());
+            }
+
             $prepaymentAmount = $this->bookingService->calculatePrepayment((float) $service->price)['original_amount'];
             $prepaymentRequired = $prepaymentAmount > 0;
 
@@ -124,6 +131,12 @@ class BookingReservationController extends Controller
 
             throw $e;
         } catch (\App\Exceptions\DiscountCodeInvalidException $e) {
+            if ($request->expectsJson()) {
+                throw $e;
+            }
+
+            return back()->with('error', $e->getUserMessage())->withInput();
+        } catch (\App\Exceptions\BookingLimitException $e) {
             if ($request->expectsJson()) {
                 throw $e;
             }

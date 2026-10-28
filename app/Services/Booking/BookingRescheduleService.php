@@ -55,8 +55,13 @@ class BookingRescheduleService
         }
 
         DB::transaction(function () use ($booking, $bookingTime) {
+            // جابه‌جایی به روزی که مشتری نوبت دیگری دارد هم بسته است (بسته‌ی 5ه، سقف روزانه): قفل مشتری ← قفل متخصص ← شمارش
+            $limits = app(CustomerBookingLimits::class);
+            $limits->lockCustomer((int) $booking->user_id);
+
             // کل مدت خدمت با نوبت‌های دیگر، استراحت و ساعت کاری؛ با قفل ردیف متخصص (۲۰۲۶-۱۰-۰۱)
             $this->bookingService->assertBookingFits((int) $booking->specialist_id, $bookingTime, (int) $booking->service_id, $booking->id, $booking->duration_minutes ? (int) $booking->duration_minutes : null);
+            $limits->assertCanBook((int) $booking->user_id, $bookingTime, $booking->id, countActive: false);
 
             $oldTime = $booking->booking_time;
             $newStatus = $booking->specialist->auto_confirm_bookings ? 'confirmed' : 'pending';

@@ -77,7 +77,8 @@ class AdminBookingController extends Controller
                 }
 
                 return redirect()->route('admin.bookings.show', $booking)
-                    ->with('success', sprintf('نوبت به‌عنوان %s دوره‌ی «%s» ثبت شد (بدون پرداخت).', $course->sessionLabel((int) $booking->course_session_number), $course->name));
+                    ->with('success', sprintf('نوبت به‌عنوان %s دوره‌ی «%s» ثبت شد (بدون پرداخت).', $course->sessionLabel((int) $booking->course_session_number), $course->name))
+                    ->with('warning', $this->sameDayWarning($booking));
             }
         }
 
@@ -89,7 +90,23 @@ class AdminBookingController extends Controller
         }
 
         return redirect()->route('admin.bookings.show', $booking)
-            ->with('success', 'نوبت با موفقیت ایجاد شد.');
+            ->with('success', 'نوبت با موفقیت ایجاد شد.')
+            ->with('warning', $this->sameDayWarning($booking));
+    }
+
+    /** بسته‌ی 5ه، تصمیم ۱۴: رزرو دستی کادر از سقف روزانه معاف است، فقط هشدار */
+    private function sameDayWarning(Booking $booking): ?string
+    {
+        if (! in_array($booking->status, \App\Services\Booking\CustomerBookingLimits::ACTIVE_STATUSES, true)) {
+            return null;
+        }
+
+        $others = app(\App\Services\Booking\CustomerBookingLimits::class)
+            ->sameDayCount((int) $booking->user_id, (string) $booking->booking_time, $booking->id);
+
+        return $others > 0
+            ? sprintf('هشدار: این مشتری در همین روز %s نوبت فعال دیگر هم دارد.', to_persian_num((string) $others))
+            : null;
     }
 
     public function edit(Booking $booking): View

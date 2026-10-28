@@ -339,6 +339,14 @@
                 </script>
             @endif
 
+            {{-- بسته‌ی 5ه: هشدار بی‌مانع (مثلاً «این مشتری امروز نوبت دارد») — خودکار بسته نمی‌شود --}}
+            @if(session('warning'))
+                <div id="flash-warning" class="mb-4 border-r-4 p-4 fade-in rounded-lg shadow-sm" role="alert"
+                     style="border-color: rgb(var(--m-warn)); background: rgb(var(--m-warn) / .12); color: rgb(var(--m-warn));">
+                    {{ session('warning') }}
+                </div>
+            @endif
+
             @if(session('error'))
                 <div id="flash-error" class="mb-4 border-r-4 border-m-bad p-4 fade-in rounded-lg shadow-sm flex items-center justify-between"
                      style="background: rgb(var(--m-bad) / .1); color: rgb(var(--m-bad));" role="alert">

@@ -236,6 +236,9 @@ class CourseService
 
         $booking = DB::transaction(function () use ($course, $specialistId, $time, $byStaff, $source) {
             $locked = CustomerCourse::withoutGlobalScopes()->lockForUpdate()->findOrFail($course->id);
+            // سقف نوبت مشتری (بسته‌ی 5ه): قفل ردیف مشتری پیش از هر خواندن عادی؛ رزرو کادر معاف
+            $limits = $byStaff ? null : app(\App\Services\Booking\CustomerBookingLimits::class);
+            $limits?->lockCustomer((int) $locked->user_id);
             $reserved = $locked->reservedCount();
 
             if ($blocker = $locked->bookingBlocker($reserved)) {
@@ -262,6 +265,8 @@ class CourseService
 
             // جلسه‌ی چندخدمتی: یک نوبت با مدت جمع خدمت‌ها
             $this->bookingService->assertBookingFits($specialistId, $time->format('Y-m-d H:i:s'), (int) $locked->service_id, null, $locked->session_duration ?: null);
+            // جلسه‌ی دوره هم در سقف نوبت آنلاین مشتری شمرده می‌شود
+            $limits?->assertCanBook((int) $locked->user_id, $time->format('Y-m-d H:i:s'));
             $specialist = \App\Models\Specialist::withoutGlobalScopes()->find($specialistId);
 
             try {

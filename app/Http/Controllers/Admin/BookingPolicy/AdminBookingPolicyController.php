@@ -113,4 +113,23 @@ class AdminBookingPolicyController extends Controller
             ? 'امتیاز نوبت‌های بدون پیش‌پرداخت روشن شد؛ از این پس هر نوبت انجام‌شده امتیاز می‌گیرد.'
             : 'امتیاز نوبت‌های بدون پیش‌پرداخت خاموش است.');
     }
+
+    /** سقف نوبت آنلاین هر مشتری (تصمیم‌های ۱۲ و ۱۵): خالی یا صفر = بی‌سقف */
+    public function updateLimits(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'daily_limit' => ['nullable', 'integer', 'min:0', 'max:50'],
+            'active_limit' => ['nullable', 'integer', 'min:0', 'max:200'],
+        ], [], [
+            'daily_limit' => 'سقف نوبت در روز',
+            'active_limit' => 'سقف نوبت‌های آینده‌ی فعال',
+        ]);
+
+        BookingPolicy::current()->update([
+            'daily_limit' => $data['daily_limit'] ?? null,
+            'active_limit' => $data['active_limit'] ?? null,
+        ]);
+
+        return redirect()->route('admin.booking-policy.edit')->with('success', 'سقف نوبت مشتری ذخیره شد.');
+    }
 }

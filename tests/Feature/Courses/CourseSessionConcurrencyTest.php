@@ -76,7 +76,8 @@ class CourseSessionConcurrencyTest extends TestCase
             }
         });
 
-        $mine = $courses->bookSession($course->fresh(), $this->courseSpecialist->id, $this->sessionAt(1, '11:00'));
+        // روز دیگر (بسته‌ی 5ه: سقف روزانه‌ی مشتری) — این تست درباره‌ی آخرین جلسه‌ی دوره است، نه سقف روز
+        $mine = $courses->bookSession($course->fresh(), $this->courseSpecialist->id, $this->sessionAt(3, '11:00'));
         $other = $this->finishConcurrent();
 
         $this->assertSame(2, (int) $mine->course_session_number);

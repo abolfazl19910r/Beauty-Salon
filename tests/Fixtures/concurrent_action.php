@@ -104,6 +104,8 @@ try {
     echo 'quota';
 } catch (App\Exceptions\BookingNotAvailableException) {
     echo 'slot-taken';
+} catch (App\Exceptions\BookingLimitException) {
+    echo 'limit';
 } catch (InvalidArgumentException $e) {
     echo 'invalid';
 } catch (Throwable $e) {

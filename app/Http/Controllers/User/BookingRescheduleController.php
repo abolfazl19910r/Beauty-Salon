@@ -47,6 +47,13 @@ class BookingRescheduleController extends Controller
             }
 
             return back()->with('error', $e->getMessage());
+        } catch (\App\Exceptions\BookingLimitException $e) {
+            // روزی که مشتری نوبت دیگری دارد (بسته‌ی 5ه، سقف روزانه)
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getUserMessage()], 422);
+            }
+
+            return back()->with('error', $e->getUserMessage());
         } catch (\App\Exceptions\BookingNotAvailableException) {
             if ($request->expectsJson()) {
                 return response()->json(['success' => false, 'message' => 'زمان انتخاب شده در دسترس نیست.'], 409);
