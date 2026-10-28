@@ -59,6 +59,12 @@ final class SmsText
         return self::render($b, 'booking_prepayment_waived');
     }
 
+    /** بسته‌ی 5ه: لینک «حضورم را تأیید می‌کنم» */
+    public static function attendanceRequest(Booking $b, string $link): string
+    {
+        return self::render($b, 'attendance_request', ['لینک' => $link]);
+    }
+
     public static function reminderForCustomer(Booking $b): string
     {
         return self::render($b, 'reminder_customer');

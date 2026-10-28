@@ -58,6 +58,7 @@ class SmsTextTest extends TestCase
             'لغو بدون بازگشت' => [SmsText::bookingCancelledForCustomer($b, 'بیماری متخصص'), 1],
             'لغو عدم پرداخت' => [SmsText::bookingCancelledUnpaid($b), 1],
             'بدون پیش‌پرداخت شد (بسته‌ی 5ه)' => [SmsText::bookingPrepaymentWaived($b), 2],
+            'تأیید حضور با لینک (بسته‌ی 5ه)' => [SmsText::attendanceRequest($b, 'rasta.ir/b/t7q2xk'), 2],
             'لغو به متخصص' => [SmsText::cancelledForSpecialist($b, 'customer'), 1],
             'تغییر زمان مشتری' => [SmsText::rescheduledForCustomer($b), 1],
             'تغییر زمان متخصص' => [SmsText::rescheduledForSpecialist($b, now()->addDay()->setTime(12, 0)), 1],

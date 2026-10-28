@@ -32,5 +32,6 @@
         @includeIf('admin.booking-policy.partials.loyalty')
         @includeIf('admin.booking-policy.partials.limits')
         @includeIf('admin.booking-policy.partials.no-show')
+        @includeIf('admin.booking-policy.partials.attendance')
     </div>
 @endsection

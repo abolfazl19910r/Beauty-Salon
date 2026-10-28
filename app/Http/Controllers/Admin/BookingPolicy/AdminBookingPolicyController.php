@@ -156,4 +156,16 @@ class AdminBookingPolicyController extends Controller
 
         return redirect()->route('admin.booking-policy.edit')->with('success', 'تنظیمات مشتری بدقول ذخیره شد.');
     }
+
+    /** تأیید حضور با لینک (تصمیم ۱۶-۳): خاموش، فقط مشتری‌های بدقول، یا همه */
+    public function updateAttendance(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'attendance_check' => ['required', 'in:'.implode(',', [BookingPolicy::ATTENDANCE_OFF, BookingPolicy::ATTENDANCE_FLAGGED, BookingPolicy::ATTENDANCE_ALL])],
+        ]);
+
+        BookingPolicy::current()->update(['attendance_check' => $data['attendance_check']]);
+
+        return redirect()->route('admin.booking-policy.edit')->with('success', 'تأیید حضور با لینک ذخیره شد.');
+    }
 }

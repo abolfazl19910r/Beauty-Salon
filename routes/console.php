@@ -22,6 +22,13 @@ Schedule::command('bookings:enforce-payment-mode')
     ->withoutOverlapping()
     ->onOneServer();
 
+// بسته‌ی 5ه: تأیید حضور با لینک (کلید مدیر، پیش‌فرض خاموش)
+Schedule::command('bookings:attendance-checks')
+    ->everyTenMinutes()
+    ->name('booking-attendance-checks')
+    ->withoutOverlapping()
+    ->onOneServer();
+
 // Note: The actual wallet:settle-pending shedule is registered in bootstrap/app.php.
 // Previously this command was registered both here and in bootstrap/app.php (double execution every night at 01:00).
 
