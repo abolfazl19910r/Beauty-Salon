@@ -48,7 +48,7 @@ if(t!=='light'&&t!=='dark'){var def=d.getAttribute('data-default-theme');t=(def=
 @font-face{font-family:"Sora";src:url("{{ asset('fonts/mahru/Sora-700.woff2') }}") format("woff2");font-weight:700;font-style:normal;font-display:swap}
 </style>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ماهرو","alternateName":"Mahru","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":"fa","offers":{"@type":"AggregateOffer","lowPrice":"{{ $plans[0]['price'] ?? 0 }}","priceCurrency":"IRT"},"description":"نرم‌افزار نوبت‌دهی و مدیریت سالن‌های زیبایی"}
+{"@@context":"https://schema.org","@type":"SoftwareApplication","name":"ماهرو","alternateName":"Mahru","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":"fa","offers":{"@type":"AggregateOffer","lowPrice":"{{ $plans[0]['price'] ?? 0 }}","priceCurrency":"IRT"},"description":"نرم‌افزار نوبت‌دهی و مدیریت سالن‌های زیبایی"}
 </script>
 <style>
 /* =========================================================
