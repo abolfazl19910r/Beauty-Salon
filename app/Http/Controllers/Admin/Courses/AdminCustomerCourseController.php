@@ -217,7 +217,7 @@ class AdminCustomerCourseController extends Controller
 
     public function consent(Request $request, CustomerCourse $course): RedirectResponse
     {
-        $this->courses->recordConsent($course, $request->user());
+        $this->courses->recordConsent($course, $request->user(), $request);
 
         return back()->with('success', 'رضایت مشتری برای عکس قبل/بعد ثبت شد.');
     }

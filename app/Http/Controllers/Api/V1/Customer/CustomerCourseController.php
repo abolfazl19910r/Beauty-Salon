@@ -194,7 +194,7 @@ class CustomerCourseController extends CustomerController
     public function withdrawConsent(Request $request, int $courseId, \App\Services\Courses\CourseService $courses): JsonResponse
     {
         $course = $this->own($request, $courseId);
-        $courses->withdrawConsent($course, $this->customer($request));
+        $courses->withdrawConsent($course, $this->customer($request), 'app', $request);
 
         return ApiResponse::success(['photo_consent' => false]);
     }

@@ -68,7 +68,7 @@ class StaffCourseController extends StaffController
     {
         $booking = $this->courseBooking($request, $bookingId);
         $course = $this->records->course($booking);
-        $courses->recordConsent($course, $request->user());
+        $courses->recordConsent($course, $request->user(), $request);
 
         return ApiResponse::success(['photo_consent' => true]);
     }

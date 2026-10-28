@@ -212,7 +212,7 @@ class CourseController extends Controller
     public function withdrawConsent(Request $request, CustomerCourse $course, \App\Services\Courses\CourseService $courses): RedirectResponse
     {
         $this->authorizeOwn($request, $course);
-        $courses->withdrawConsent($course, $request->user());
+        $courses->withdrawConsent($course, $request->user(), 'web', $request);
 
         return back()->with('success', 'رضایت عکس پس گرفته شد؛ از این به بعد عکسی گرفته نمی‌شود. عکس‌های قبلی را می‌توانید خودتان پاک کنید.');
     }

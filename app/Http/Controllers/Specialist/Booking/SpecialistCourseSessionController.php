@@ -53,7 +53,7 @@ class SpecialistCourseSessionController extends Controller
     public function consent(Request $request, Booking $booking, CourseService $courses): RedirectResponse
     {
         $this->own($booking);
-        $courses->recordConsent($this->records->course($booking), $request->user());
+        $courses->recordConsent($this->records->course($booking), $request->user(), $request);
 
         return back()->with('success', 'رضایت مشتری برای عکس ثبت شد.');
     }
