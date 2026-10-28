@@ -20,7 +20,7 @@ class SpecialistBookingsExport implements FromCollection, ShouldAutoSize, WithHe
         private readonly float $commissionRate = 10
     ) {}
 
-    public function collection()
+    public function collection(): Collection
     {
         return $this->bookings;
     }
@@ -44,10 +44,12 @@ class SpecialistBookingsExport implements FromCollection, ShouldAutoSize, WithHe
         ];
     }
 
-    public function styles(Worksheet $sheet)
+    public function styles(Worksheet $sheet): ?array
     {
         $sheet->getStyle('A1:F1')->getFont()->setBold(true);
         $sheet->setRightToLeft(true);
+
+        return null;
     }
 
     private function translateStatus($status)

@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Concerns\Export;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
 /**
@@ -16,7 +17,7 @@ use Maatwebsite\Excel\Concerns\WithMultipleSheets;
  * پرطرفدار" tables — passed through here so ReportsExport can fold the same two tables (plus a
  * revenue chart) into the existing "روند درآمد" sheet instead of adding new sheets for them.
  */
-class AdminReportExport implements WithMultipleSheets
+class AdminReportExport implements Export, WithMultipleSheets
 {
     public function __construct(
         protected Collection $rows,
