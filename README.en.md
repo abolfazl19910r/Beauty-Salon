@@ -92,6 +92,8 @@ All salons share **one database**; isolation is done in the application:
 - SMS and push reminders
 - Rescheduling and cancelling with a cancellation-penalty rule (customer and specialist separately)
 - Automatic cancellation of unpaid bookings; salons can pause booking temporarily, with a banner and automatic reopening
+- Per-salon "booking mode": **no prepayment** (default, the whole price at the salon) or online prepayment (only with an active gateway; falls back automatically without one)
+- Per-customer daily and total future online booking limits; unreliable (no-show) customers (forced prepayment, or manual confirmation and a lower limit) and an attendance-confirmation link
 
 ### 🧴 Multi-session treatment courses
 - Multi-session, multi-service packages, payment and session tracking, reminders and expiry
@@ -100,7 +102,7 @@ All salons share **one database**; isolation is done in the application:
 ### 💳 Payments and wallets
 - **Several gateways per salon:** Zarinpal, Zibal, Vandar, AsanPardakht, Saman, Mellat, Parsian — the customer picks one, and on outage the next one is tried; gateway fees are added to the customer's amount
 - Customer money is collected only through **the salon's own merchant**; the platform merchant is used only for salon subscriptions and SMS packs
-- Percentage deposit, full payment, or combined (wallet + gateway)
+- Percentage deposit (optional, chosen by the salon), full payment, or combined (wallet + gateway)
 - Customer wallet, specialist wallet with salon commission, salon wallet
 - Specialist withdrawals and **automatic payouts** via Zarinpal, Zibal or Vandar — only to a verified IBAN (Sheba); manual payout is also possible
 - Automatic reconciliation of stuck transactions; a "needs review" page with notification and SMS to the salon owner
@@ -502,7 +504,7 @@ In single-container mode both run inside the container; nothing to do. Without D
 | Job | When |
 |---|---|
 | cancel unpaid bookings, reconcile stuck transactions (`payments:reconcile`) | every 5 minutes |
-| booking reminders (`bookings:send-reminders`) | every 10 minutes |
+| booking reminders (`bookings:send-reminders`), attendance confirmation links (`bookings:attendance-checks`), automatic return to no prepayment (`bookings:enforce-payment-mode`) | every 10 minutes |
 | win-back campaigns (`winback:campaigns`) | every minute |
 | course expiry (`courses:expire`), scheduled plan changes (`plans:apply-scheduled`) | hourly |
 | settle pending earnings (`wallet:settle-pending`) | 01:00 |
@@ -572,7 +574,7 @@ php artisan perf:seed-load --salons=100       # test database only
 | Salons, plans, subscriptions | `salons`, `salon_admins`, `plans`, `plan_features`, `salon_feature_overrides`, `invoices`, `salon_sms_usages`, `salon_sms_templates`, `sms_credit_purchases`, `salon_verifications` |
 | Users and access | `users`, `roles`, `permissions`, `role_user*`, `permission_role`, `personal_access_tokens`, `password_reset_tokens`, `sessions`, `trusted_devices`, `legal_acceptances`, `deleted_account_archives` |
 | Services and specialists | `categories`, `beauty_services`, `specialists`, `specialist_services`, `specialist_schedules`, `holidays`, `leaves` |
-| Bookings and courses | `bookings`, `course_packages`, `customer_courses`, `customer_course_payments`, `course_session_notes`, `course_session_photos`, `course_reminders`, `course_photo_consents`, `course_settings` |
+| Bookings and courses | `bookings`, `booking_policies`, `course_packages`, `customer_courses`, `customer_course_payments`, `course_session_notes`, `course_session_photos`, `course_reminders`, `course_photo_consents`, `course_settings` |
 | Payments | `payments`, `payment_transactions`, `salon_payment_gateways`, `idempotency_keys` |
 | Wallets and payouts | `user_wallets`, `user_wallet_transactions`, `specialist_wallets`, `wallet_transactions`, `withdrawal_requests`, `admin_wallet`, `admin_wallet_transactions`, `wallet_settings` |
 | Discounts, loyalty, win-back | `discount_codes`, `discount_usages`, `loyalty_points`, `loyalties`, `loyalty_settings`, `rewards`, `winback_*` |
@@ -639,6 +641,13 @@ Cron and workers: [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCH
 ## 🆕 Changelog
 
 Full history, decisions and open items in [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md) (Persian).
+
+**2026-10-28 — booking mode, per-customer limits and unreliable customers (package 5e)**
+- New owner page "booking mode" (`/admin/booking-policy`): **no prepayment** (default for every salon, the whole price at the salon, no gateway needed) or online prepayment (only with the plan's online-payment feature and an active gateway), with an explanation of each. If the gateway or the plan feature is lost the salon falls back to no prepayment automatically and the owner gets a notification and an SMS. Every booking keeps its own "with/without prepayment" label (`bookings.prepayment_required`) that auto-cancel, the pay button, SMS and loyalty points follow. Switching to no prepayment moves awaiting-payment bookings to awaiting confirmation and tells the customer and the specialist.
+- Without prepayment: SMS and notifications at booking time; a discount comes off the full price; loyalty points only if the owner turns them on and enters both numbers (no defaults).
+- Per-customer online limits: per day (default 1, the booking's own day) and total active future bookings (default 3); web, app, rescheduling and course sessions; manual staff bookings are exempt with a warning. Unreliable customers (default 2 no-shows in 90 days): with a gateway they must prepay, without one forced manual confirmation and a lower limit; an "unreliable" label in the panels and the staff app; the restriction is lifted from the customer page. Optional attendance-confirmation link (SMS link 24 hours before, cancelled if not confirmed 3 hours before).
+- Two bugs fixed: a zero prepayment cancelled the booking after 30 minutes with a "you did not pay" SMS; an auto-confirming specialist kept an unpaid booking "confirmed" forever.
+- Customer and staff apps 0.3.8 (optional; older apps keep working). Three new migrations (`booking_policies`, new columns on `bookings` and `users`): `php artisan migrate` or `migrate:fresh --seed`. Two new scheduled commands, no new variables.
 
 **2026-10-28 — upgrade to Laravel 13 and PHP 8.5**
 - Laravel 11 (security fixes ended 2026-03-12) -> 12 -> **13** (security fixes until 2028-03-17); `composer.json`: `php: ^8.3`. Libraries: Sanctum 4.3, Telescope 5.26, Excel **4** with PhpSpreadsheet **5** (the only line that installs on PHP 8.5; Excel output unchanged), Activitylog 4.12, mPDF 8.3, DomPDF 3.1, Verta 9, Tinker 3, PHPUnit 12, collision 8.9; Guzzle stays on 7 and Pint on 1.27. `composer.lock` installs on PHP 8.3 to 8.5.
