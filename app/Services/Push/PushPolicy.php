@@ -16,6 +16,9 @@ final class PushPolicy
 
     public const BOOKING_CANCELLED_UNPAID_CUSTOMER = 'booking.cancelled_unpaid.customer';
 
+    /** بسته‌ی 5ه: سالن «بدون پیش‌پرداخت» شد و نوبت در انتظار پرداخت حالا منتظر تأیید است */
+    public const BOOKING_PREPAYMENT_WAIVED_CUSTOMER = 'booking.prepayment_waived.customer';
+
     public const DISCOUNT_CODE_CUSTOMER = 'discount.code.customer';
 
     /** درخواست رضایت عکس دوره از مشتری (۲۰۲۶-۱۰-۲۸)؛ همیشه روشن، مثل یادآوری نوبت */
@@ -47,6 +50,7 @@ final class PushPolicy
         self::BOOKING_REMINDER_CUSTOMER => [PushUrgency::Urgent, 'یادآوری نوبت'],
         self::BOOKING_REMINDER_SPECIALIST => [PushUrgency::Urgent, 'یادآوری نوبت'],
         self::BOOKING_CANCELLED_UNPAID_CUSTOMER => [PushUrgency::Normal, 'لغو نوبت پرداخت‌نشده'],
+        self::BOOKING_PREPAYMENT_WAIVED_CUSTOMER => [PushUrgency::Normal, 'نوبت شما بدون پیش‌پرداخت شد'],
         self::DISCOUNT_CODE_CUSTOMER => [PushUrgency::Info, 'کد تخفیف'],
         self::COURSE_PHOTO_CONSENT_CUSTOMER => [PushUrgency::Normal, 'رضایت عکس دوره'],
         self::TEST => [PushUrgency::Info, 'پوش آزمایشی ماهرو'],

@@ -111,6 +111,15 @@
                 </svg>
                 کاربران
             </x-admin-nav-link>
+            {{-- بسته‌ی 5ه: با/بدون پیش‌پرداخت، سقف نوبت مشتری، مشتری بدقول (فقط مالک) --}}
+            <x-admin-nav-link href="{{ route('admin.booking-policy.edit') }}" :active="request()->routeIs('admin.booking-policy.*')"
+                              class="flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors">
+                <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                    <path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"></path>
+                </svg>
+                نحوه‌ی رزرو
+            </x-admin-nav-link>
             @endif
 
             @permission('manage-wallet')

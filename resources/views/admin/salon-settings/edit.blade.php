@@ -115,7 +115,7 @@
                 @else
                     <div class="rounded-lg p-3 text-sm" style="background:rgb(var(--m-bad) / .14); color:rgb(var(--m-bad));">
                         <b>پرداخت آنلاین سالن غیرفعال است.</b> تا حداقل یک درگاه فعال اضافه نشود، مشتری‌ها نمی‌توانند پیش‌پرداخت نوبت
-                        یا شارژ کیف پول انجام دهند و رزرو خدماتی که پیش‌پرداخت دارند ممکن نیست.
+                        یا شارژ کیف پول انجام دهند و رزرو فقط «بدون پیش‌پرداخت» ممکن است (<a href="{{ route('admin.booking-policy.edit') }}" class="underline">نحوه‌ی رزرو</a>).
                     </div>
                 @endif
                 <a href="{{ route('admin.payment-gateways.index') }}" class="inline-block px-4 py-2 rounded-lg text-sm font-bold text-m-onsolid" style="background: var(--admin-accent);">

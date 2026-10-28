@@ -38,6 +38,7 @@
                 <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                     <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
                         پیش‌پرداخت نوبت
+                        <span class="font-normal text-xs" style="color:var(--admin-text-dim);">— فقط وقتی «نحوه‌ی رزرو» سالن «با پیش‌پرداخت آنلاین» است استفاده می‌شود</span>
                     </div>
                     <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div>

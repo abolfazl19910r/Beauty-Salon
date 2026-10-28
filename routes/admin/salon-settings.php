@@ -10,3 +10,7 @@ Route::put('/salon-settings', [AdminSalonSettingsController::class, 'update'])->
 // بسته‌ی «ح»، ۸ (۲۰۲۶-۱۰-۲۰): توقف موقت رزرو سالن
 Route::post('/salon-settings/pause', [\App\Http\Controllers\Admin\SalonSettings\AdminSalonPauseController::class, 'pause'])->name('salon-settings.pause');
 Route::delete('/salon-settings/pause', [\App\Http\Controllers\Admin\SalonSettings\AdminSalonPauseController::class, 'resume'])->name('salon-settings.resume');
+
+// بسته‌ی 5ه (۲۰۲۶-۱۰-۲۸): «نحوه‌ی رزرو» — با/بدون پیش‌پرداخت، سقف نوبت مشتری، مشتری بدقول
+Route::get('/booking-policy', [\App\Http\Controllers\Admin\BookingPolicy\AdminBookingPolicyController::class, 'edit'])->name('booking-policy.edit');
+Route::put('/booking-policy/mode', [\App\Http\Controllers\Admin\BookingPolicy\AdminBookingPolicyController::class, 'updateMode'])->name('booking-policy.mode');

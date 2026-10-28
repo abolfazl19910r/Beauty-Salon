@@ -53,6 +53,12 @@ final class SmsText
         return self::render($b, 'booking_cancelled_unpaid');
     }
 
+    /** بسته‌ی 5ه: نوبت در انتظار پرداخت بعد از رفتن سالن به «بدون پیش‌پرداخت» — هیچ درخواست پرداختی ندارد */
+    public static function bookingPrepaymentWaived(Booking $b): string
+    {
+        return self::render($b, 'booking_prepayment_waived');
+    }
+
     public static function reminderForCustomer(Booking $b): string
     {
         return self::render($b, 'reminder_customer');
