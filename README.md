@@ -46,10 +46,15 @@ npm ci
 - **لینک اپ:** `mahru://salon/rasta` اپ را روی همان سالن باز می‌کند (دکمه‌ی «باز کردن در اپ ماهرو» صفحه‌ی وب سالن روی اندروید).
 - ورود مشتری با حساب **مشتری همان سالن** است (موبایل + رمز ← کد)؛ ثبت‌نام هم از داخل اپ (حساب فقط بعد از کد ساخته می‌شود).
 
-## ساخت APK با EAS (حساب expo.dev: abolfazl1991s-team)
+## ساخت APK با EAS (حساب expo.dev: abolfazl19910rs-team)
 حساب فعال `EAS_OWNER` در `app.config.ts` است و شناسه‌ی پروژه‌های هر حساب کنار همان حساب در `EAS_ACCOUNTS`:
 - `abolfazl19910r` (۲۰۲۶-۱۰-۱۶ تا ۲۰۲۶-۱۰-۲۲): `@abolfazl19910r/mahru-staff` و `@abolfazl19910r/mahru`.
-- `abolfazl1991s-team` (از ۲۰۲۶-۱۰-۲۲): سازمانِ ورود `abolfazl1991` — با `eas login` همان `abolfazl1991` وارد شوید.
+- `abolfazl1991s-team` (۲۰۲۶-۱۰-۲۲ تا ۲۰۲۶-۱۰-۲۹): سازمانِ ورود `abolfazl1991`.
+- `abolfazl19910rs-team` (از ۲۰۲۶-۱۰-۲۹): سازمانِ ورود `abolfazl19910r` — با `eas login` همان `abolfazl19910r` وارد شوید.
+
+⚠️ **«Failed to upload the project tarball … write ECONNRESET»** (۲۰۲۶-۱۰-۲۸) مشکل حساب نیست: آپلود به `storage.googleapis.com` وسط راه
+قطع می‌شود و با هر حسابی همین است. با VPN در حالت سراسری (TUN/System) یا پروکسی برای cmd (`set HTTPS_PROXY=http://127.0.0.1:<پورت>`)
+دوباره `eas build` بزنید؛ گاهی چند بار تکرار هم کافی است (آرشیو فقط ۲٫۲ مگ است).
 
 سهمیه‌ی build رایگان اندروید مال هر حساب است؛ صفحه‌ی `https://expo.dev/accounts/<حساب>/settings/billing` مانده‌اش را نشان می‌دهد.
 
@@ -75,7 +80,7 @@ npm ci
 
 ```cmd
 npm i -g eas-cli
-eas login            :: با abolfazl1991 (حساب فعال: abolfazl1991s-team)
+eas login            :: با abolfazl19910r (حساب فعال: abolfazl19910rs-team)
 eas whoami
 ```
 در **cmd** (در PowerShell به‌جای `set` بنویسید `$env:APP_VARIANT="customer"`):

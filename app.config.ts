@@ -49,7 +49,8 @@ const GOOGLE_SERVICES_JSON = process.env.GOOGLE_SERVICES_JSON || undefined;
 
 /**
  * حساب expo.dev که buildها با آن گرفته می‌شود. سهمیه‌ی build رایگان اندروید مال هر حساب است و ماهانه پر می‌شود:
- * ‏abolfazl1991 (تا ۲۰۲۶-۱۰-۱۶) ← abolfazl19910r (تا ۲۰۲۶-۱۰-۲۲) ← abolfazl1991s-team (سازمانِ همان ورود abolfazl1991).
+ * ‏abolfazl1991 (تا ۲۰۲۶-۱۰-۱۶) ← abolfazl19910r (تا ۲۰۲۶-۱۰-۲۲) ← abolfazl1991s-team (سازمانِ همان ورود abolfazl1991، تا ۲۰۲۶-۱۰-۲۹)
+ * ← abolfazl19910rs-team (سازمانِ ورود abolfazl19910r).
  * برای عوض کردن حساب فقط EAS_OWNER را عوض کنید؛ شناسه‌ی پروژه‌ها (eas init) کنار هر حساب می‌ماند تا برگشت هم یک کلمه باشد.
  * ⚠️ کلید امضای APK مال پروژه‌ی expo.dev است: در پروژه‌ی تازه همان keystore قبلی را بارگذاری کنید (README، «عوض کردن حساب expo.dev»)،
  * وگرنه APK روی نسخه‌ی نصب‌شده Update نمی‌شود و برای اپ مشتری اثرانگشت App Links (CUSTOMER_APP_SHA256_FINGERPRINTS) عوض می‌شود.
@@ -59,9 +60,11 @@ const EAS_ACCOUNTS = {
   // بعد از `eas init` شناسه‌ی چاپ‌شده‌ی هر اپ در ردیف همان حساب (خالی = پروژه هنوز ساخته نشده؛ eas init فقط وقتی خالی است پروژه می‌سازد)
   // @abolfazl1991s-team/mahru-staff و @abolfazl1991s-team/mahru (۲۰۲۶-۱۰-۲۲)
   'abolfazl1991s-team': { staff: 'b66e6dcc-d989-4dc3-80c4-88588ffedb62', customer: '5f5742a6-d637-4e1c-8ef3-3fd829232a6a' },
+  // @abolfazl19910rs-team/mahru-staff و @abolfazl19910rs-team/mahru (۲۰۲۶-۱۰-۲۹) — خالی تا `eas init` هر اپ؛ شناسه‌ی چاپ‌شده را این‌جا بگذارید
+  'abolfazl19910rs-team': { staff: '', customer: '' },
 } satisfies Record<string, Record<Variant, string>>;
 
-const EAS_OWNER: keyof typeof EAS_ACCOUNTS = 'abolfazl1991s-team';
+const EAS_OWNER: keyof typeof EAS_ACCOUNTS = 'abolfazl19910rs-team';
 const EAS_PROJECT_IDS: Record<Variant, string> = EAS_ACCOUNTS[EAS_OWNER];
 
 export default ({ config }: ConfigContext): ExpoConfig => {
