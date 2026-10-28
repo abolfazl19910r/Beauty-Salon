@@ -215,4 +215,10 @@ class CustomerCourse extends Model
     {
         return (float) $this->payments()->withoutGlobalScopes()->whereIn('method', CustomerCoursePayment::ONLINE_METHODS)->sum('amount');
     }
+
+    /** سابقه‌ی درخواست‌ها و تصمیم‌های رضایت عکس (۲۰۲۶-۱۰-۲۸)، تازه‌ترین اول */
+    public function photoConsents(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(CoursePhotoConsent::class)->latest('id');
+    }
 }
