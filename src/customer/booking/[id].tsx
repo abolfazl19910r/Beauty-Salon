@@ -4,6 +4,7 @@ import { Alert, RefreshControl } from 'react-native';
 
 import { errorMessage } from '@/lib/api';
 import { useBooking, useBookingActions, useSalonDetail } from '@/lib/customer/queries';
+import { needsPrepayment } from '@/lib/customer/types';
 import { faDigits, toman } from '@/lib/format';
 import { CustomerStatusBadge, PayCountdown, Stars } from '@/ui/customer';
 import { Button, Card, ErrorBox, Field, KeyValue, Loading, Notice, Row, Screen, SectionTitle, T } from '@/ui/kit';
@@ -63,9 +64,11 @@ export default function BookingDetail() {
       ) : (
       <Card>
         {b.service ? <KeyValue label="قیمت خدمت" value={toman(b.service.price)} /> : null}
-        <KeyValue label={b.payment_status === 'paid' ? 'پیش‌پرداخت (پرداخت شد)' : 'پیش‌پرداخت'} value={toman(b.prepayment_amount)} />
+        {needsPrepayment(b) || b.payment_status === 'paid'
+          ? <KeyValue label={b.payment_status === 'paid' ? 'پیش‌پرداخت (پرداخت شد)' : 'پیش‌پرداخت'} value={toman(b.prepayment_amount)} />
+          : null}
         {b.discount_amount > 0 ? <KeyValue label={`تخفیف${b.discount_code ? ` (${b.discount_code})` : ''}`} value={`− ${toman(b.discount_amount)}`} /> : null}
-        <KeyValue label="پرداخت در سالن" value={toman(b.remaining_amount)} />
+        <KeyValue label={needsPrepayment(b) || b.payment_status === 'paid' ? 'پرداخت در سالن' : 'پرداخت در سالن (بدون پیش‌پرداخت)'} value={toman(b.remaining_amount)} />
       </Card>
       )}
 

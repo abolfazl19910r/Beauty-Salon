@@ -30,6 +30,8 @@ export type SalonDetail = SalonCard & {
   /** امکانات پلن سالن (مثلاً treatment_courses) */
   features?: string[];
   rules: {
+    /** نحوه‌ی رزرو سالن (بسته‌ی 5ه): none = پرداخت کامل در سالن، prepay = پیش‌پرداخت آنلاین؛ سرورهای قدیمی‌تر ندارند */
+    booking_mode?: 'none' | 'prepay';
     prepayment_percentage: number;
     minimum_prepayment: number;
     payment_window_minutes: number;
@@ -83,6 +85,8 @@ export type CustomerBooking = {
   duration_minutes: number | null;
   service: { id: number; name: string; price: number } | null;
   specialist: { id: number; name: string; photo_url: string | null } | null;
+  /** برچسب نوبت (بسته‌ی 5ه): false = بدون پیش‌پرداخت، کل مبلغ در سالن؛ سرورهای قدیمی‌تر ندارند */
+  prepayment_required?: boolean;
   prepayment_amount: number;
   discount_code: string | null;
   discount_amount: number;
@@ -111,6 +115,12 @@ export type Gateway = {
 export type Quote = {
   service: Service;
   price: number;
+  /** بسته‌ی 5ه: false = بدون پیش‌پرداخت؛ سرورهای قدیمی‌تر ندارند (آن‌وقت از prepayment_amount > 0) */
+  prepayment_required?: boolean;
+  /** no_show = پیش‌پرداخت یا تأیید سالن به‌خاطر «نیامد»های قبلی همین مشتری */
+  prepayment_reason?: 'no_show' | null;
+  /** پیامی برای مشتری (مثلاً دلیل پیش‌پرداخت) */
+  notice?: string | null;
   prepayment_amount: number;
   discount_code: string | null;
   discount_amount: number;
@@ -122,8 +132,15 @@ export type Quote = {
   terms?: PurchaseTerms;
 };
 
+/** نوبت پیش‌پرداخت دارد؟ (بسته‌ی 5ه) — سرور قدیمی برچسب ندارد، پس از مبلغ */
+export function needsPrepayment(x: { prepayment_required?: boolean; prepayment_amount: number }): boolean {
+  return x.prepayment_required ?? x.prepayment_amount > 0;
+}
+
 export type PurchaseTerms = {
   provider: { name: string; address: string | null; phone: string | null; platform: string };
+  /** بسته‌ی 5ه */
+  booking_mode?: 'none' | 'prepay';
   cancellation: string[];
   complaints: string;
   terms_url: string;

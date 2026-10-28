@@ -288,6 +288,34 @@ it('today shows the amount to collect, unpaid prepayment and a collapsed list of
   expect(screen.getByText('دلیل: سفر')).toBeTruthy();
 });
 
+it('an unreliable customer and a booking without prepayment are labelled for staff (5e)', async () => {
+  mockSecure.set('mahru.token', '5|abc');
+  await require('@react-native-async-storage/async-storage').setItem('mahru.account', JSON.stringify(ACCOUNT));
+  const flagged = {
+    ...BOOKING, status: 'pending', status_label: 'در انتظار تأیید', payment_status: 'unpaid', prepayment_required: false, prepayment_amount: 0,
+    remaining_amount: 500000, due_at_salon: 500000, customer: { id: 9, name: 'مریم', phone: '09121111111', no_show_label: 'بدقول: ۲ بار نیامد در ۹۰ روز' },
+    actions: { confirm: true, cancel: true, complete: false },
+  };
+  routes = (url) => {
+    if (url.includes('/staff/today')) return [200, ok({ date: '2026-10-11', date_jalali: '1405/07/19', date_label: 'x', summary: { count: 1, pending_count: 1, revenue: 0, cancelled_count: 0 }, bookings: [flagged], cancelled: [] })];
+    if (url.includes('/staff/bookings/41')) return [200, ok(flagged)];
+    if (url.includes('/staff/notifications')) return [200, ok([], { current_page: 1, last_page: 1, total: 0, per_page: 20, unread_count: 0 })];
+    if (url.endsWith('/push/device')) return [200, ok({ registered: true, provider: 'fcm', server_enabled: true, last_receipt_at: null, disabled_reason: null })];
+    return [404, { success: false, error: { code: 'not_found', message: 'x' } }];
+  };
+
+  renderRouter('./src/app', { initialUrl: '/' });
+
+  await screen.findByText('مریم');
+  expect(screen.getByText('بدقول: ۲ بار نیامد در ۹۰ روز')).toBeTruthy();
+  expect(screen.getByText('بدون پیش‌پرداخت')).toBeTruthy();
+  expect(screen.queryByText('پیش‌پرداخت نشده')).toBeNull();
+
+  fireEvent.press(screen.getByText('مریم'));
+  await screen.findByText('دریافت در سالن (بدون پیش‌پرداخت)');
+  expect(screen.getByText('بدقول: ۲ بار نیامد در ۹۰ روز')).toBeTruthy();
+});
+
 it('a cancelled manual booking shows nothing to collect and no unrequested prepayment', async () => {
   mockSecure.set('mahru.token', '5|abc');
   await require('@react-native-async-storage/async-storage').setItem('mahru.account', JSON.stringify(ACCOUNT));

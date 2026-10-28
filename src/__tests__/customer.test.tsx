@@ -196,6 +196,53 @@ it('books a service, opens the bank in the browser and trusts only the server fo
   await waitFor(async () => expect(await storage().getItem('mahru.customer.pendingPayment')).toBeNull());
 });
 
+it('books without prepayment: no bank, the whole price at the salon, and a daily-limit refusal is shown (5e)', async () => {
+  await signedIn();
+  const free = {
+    ...BOOKING, status: 'pending', status_label: 'در انتظار تأیید', prepayment_required: false, prepayment_amount: 0, remaining_amount: 500000,
+    actions: { pay: false, cancel: true, reschedule: true, rate: false },
+  };
+  let refuse = false;
+  routes = (url, init) => {
+    if (url.includes('/customer/services/3/specialists')) return [200, ok([{ id: 5, name: 'سارا', photo_url: null }])];
+    if (url.includes('/customer/services')) return [200, ok({ categories: [], services: [{ id: 3, name: 'کوتاهی مو', description: null, price: 500000, duration_minutes: 60, prepayment_amount: 0, image_url: null, category: null }] })];
+    if (url.includes('/specialists/5/dates')) return [200, ok([{ date: '2026-10-20', date_jalali: '1405/07/28', label: 'دوشنبه 28 مهر' }])];
+    if (url.includes('/specialists/5/slots')) return [200, ok([{ time: '10:00', booking_time: '2026-10-20T10:00:00+03:30' }])];
+    if (url.endsWith('/customer/bookings/quote')) return [200, ok({ service: { id: 3, name: 'کوتاهی مو' }, price: 500000, prepayment_required: false, prepayment_reason: null, notice: null, prepayment_amount: 0, discount_code: null, discount_amount: 0, remaining_amount: 500000, online_payment: true, gateways: [GATEWAY], wallet_balance: 0, terms: { ...TERMS, booking_mode: 'none' } })];
+    if (url.endsWith('/customer/bookings') && init.method === 'POST') {
+      return refuse
+        ? [422, { success: false, error: { code: 'booking_limit', message: 'برای هر روز حداکثر یک نوبت آنلاین ممکن است؛ برای خدمت دوم با سالن تماس بگیرید.' } }]
+        : [201, ok(free, { payment: { required: false, amount: 0, gateways: [], wallet_balance: 0 } })];
+    }
+    if (url.includes('/customer/bookings/41')) return [200, ok(free)];
+    if (url.includes('/customer/home')) return [200, ok({ ...HOME, upcoming_bookings: [free], awaiting_payment_count: 0 })];
+    if (url.includes('/customer/salon')) return [200, ok({ ...SALON, rules: { booking_mode: 'none', cancel_deadline_hours: 24 } })];
+    return notFound;
+  };
+  jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+
+  renderRouter('./src/customer', { initialUrl: '/book' });
+  fireEvent.press(await screen.findByText('کوتاهی مو'));
+  fireEvent.press(await screen.findByText('دوشنبه ۲۸ مهر'));
+  fireEvent.press(await screen.findByText('۱۰:۰۰'));
+  fireEvent.press(screen.getByText('ادامه'));
+
+  await screen.findByText('پرداخت در سالن (بدون پیش‌پرداخت)');
+  expect(screen.queryByText('پیش‌پرداخت آنلاین')).toBeNull();
+  expect(screen.getByText('این نوبت پیش‌پرداخت آنلاین ندارد؛ کل مبلغ را در سالن پرداخت می‌کنید.')).toBeTruthy();
+
+  refuse = true;
+  fireEvent.press(screen.getByText('ثبت نوبت'));
+  await screen.findByText('برای هر روز حداکثر یک نوبت آنلاین ممکن است؛ برای خدمت دوم با سالن تماس بگیرید.');
+
+  refuse = false;
+  fireEvent.press(screen.getByText('ثبت نوبت'));
+  await waitFor(() => expect(Alert.alert).toHaveBeenCalledWith('نوبت ثبت شد', 'بعد از تأیید سالن خبرتان می‌کنیم.'));
+  expect(calls.some((c) => c.url.includes('/pay'))).toBe(false);
+  await screen.findByText('پرداخت در سالن (بدون پیش‌پرداخت)');
+  expect(screen.queryByText(/پرداخت پیش‌پرداخت/)).toBeNull();
+});
+
 it('ignores the state in the return link and shows what the server says', async () => {
   await signedIn();
   routes = (url) => {

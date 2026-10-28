@@ -47,7 +47,10 @@ export type Booking = {
   booking_time_jalali: string;
   duration_minutes: number | null;
   service: { id: number; name: string; price: number } | null;
-  customer: { id: number; name: string; phone: string } | null;
+  /** no_show_label: «بدقول: ۲ بار نیامد در ۹۰ روز» یا null (بسته‌ی 5ه؛ سرور قدیمی ندارد) */
+  customer: { id: number; name: string; phone: string; no_show_label?: string | null } | null;
+  /** بسته‌ی 5ه: false = نوبت بدون پیش‌پرداخت (کل مبلغ در سالن)؛ سرور قدیمی ندارد */
+  prepayment_required?: boolean;
   prepayment_amount: number;
   discount_amount: number;
   remaining_amount: number;

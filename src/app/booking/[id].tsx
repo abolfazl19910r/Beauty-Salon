@@ -6,7 +6,7 @@ import { faDigits, toman } from '@/lib/format';
 import { useBooking, useBookingAction } from '@/lib/queries';
 import { dueAtSalon, StatusBadge } from '@/ui/booking';
 import { CourseFilePanel } from '@/ui/CourseFilePanel';
-import { Button, Card, ErrorBox, Field, KeyValue, Loading, Notice, Row, Screen, T } from '@/ui/kit';
+import { Badge, Button, Card, ErrorBox, Field, KeyValue, Loading, Notice, Row, Screen, T } from '@/ui/kit';
 
 export default function BookingDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -39,6 +39,7 @@ export default function BookingDetail() {
         <KeyValue label="خدمت" value={b.service?.name ?? '—'} />
         {b.duration_minutes ? <KeyValue label="مدت" value={`${faDigits(b.duration_minutes)} دقیقه`} /> : null}
         <KeyValue label="مشتری" value={b.customer?.name ?? '—'} />
+        {b.customer?.no_show_label ? <Badge text={faDigits(b.customer.no_show_label)} tone="danger" /> : null}
         {b.customer?.phone ? (
           <Row style={{ justifyContent: 'space-between' }}>
             <T muted size={14}>موبایل</T>
@@ -54,7 +55,7 @@ export default function BookingDetail() {
         {b.payment_status === 'paid' ? <KeyValue label="پیش‌پرداخت" value={`${toman(b.prepayment_amount)} (پرداخت شده)`} /> : null}
         {b.discount_amount > 0 ? <KeyValue label="تخفیف" value={toman(b.discount_amount)} /> : null}
         {b.status === 'cancelled' || b.status === 'no_show' ? null : (
-          <KeyValue label={b.payment_status === 'paid' ? 'باقی‌مانده (حضوری)' : 'دریافت در سالن (پیش‌پرداخت نشده)'} value={toman(dueAtSalon(b))} />
+          <KeyValue label={b.payment_status === 'paid' ? 'باقی‌مانده (حضوری)' : b.prepayment_required === false ? 'دریافت در سالن (بدون پیش‌پرداخت)' : 'دریافت در سالن (پیش‌پرداخت نشده)'} value={toman(dueAtSalon(b))} />
         )}
       </Card>
       )}

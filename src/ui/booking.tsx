@@ -22,6 +22,12 @@ export function dueAtSalon(booking: Pick<Booking, 'due_at_salon' | 'remaining_am
   return booking.due_at_salon ?? booking.remaining_amount;
 }
 
+/** وضعیت پول نوبت برای کادر؛ نوبت «بدون پیش‌پرداخت» (بسته‌ی 5ه) کل مبلغ را در سالن می‌دهد */
+export function paymentBadge(booking: Pick<Booking, 'payment_status' | 'prepayment_required'>): string {
+  if (booking.payment_status === 'paid') return 'پیش‌پرداخت شده';
+  return booking.prepayment_required === false ? 'بدون پیش‌پرداخت' : 'پیش‌پرداخت نشده';
+}
+
 /** کارت نوبت در «امروز»، فهرست و تقویم؛ لمس → جزئیات */
 export function BookingCard({ booking, showDate }: { booking: Booking; showDate?: boolean }) {
   const due = dueAtSalon(booking);
@@ -37,13 +43,14 @@ export function BookingCard({ booking, showDate }: { booking: Booking; showDate?
         <StatusBadge booking={booking} />
       </Row>
       <T weight="medium">{booking.customer?.name ?? '—'}</T>
+      {booking.customer?.no_show_label ? <Badge text={faDigits(booking.customer.no_show_label)} tone="danger" /> : null}
       {booking.course?.label ? <Badge text={faDigits(booking.course.label)} tone="info" /> : null}
       <Row style={{ justifyContent: 'space-between' }}>
         <T muted size={14}>{booking.service?.name ?? '—'}</T>
         {showMoney && due > 0 ? <T muted size={13}>دریافت در سالن: {toman(due)}</T> : null}
       </Row>
       {showMoney ? (
-        <Badge text={booking.payment_status === 'paid' ? 'پیش‌پرداخت شده' : 'پیش‌پرداخت نشده'} tone={booking.payment_status === 'paid' ? 'success' : 'warning'} />
+        <Badge text={paymentBadge(booking)} tone={booking.payment_status === 'paid' ? 'success' : booking.prepayment_required === false ? 'muted' : 'warning'} />
       ) : null}
       {booking.status === 'cancelled' && booking.cancellation_reason ? <T muted size={13}>دلیل: {booking.cancellation_reason}</T> : null}
     </Card>

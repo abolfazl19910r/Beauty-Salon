@@ -6,13 +6,16 @@ import { Alert } from 'react-native';
 import { ApiError } from '@/lib/api';
 import { bookingTimeLabel } from '@/lib/customer/money';
 import { useRefreshMoney, useServiceSpecialists } from '@/lib/customer/queries';
-import type { CustomerBooking, PaymentInfo, Quote } from '@/lib/customer/types';
+import { needsPrepayment, type CustomerBooking, type PaymentInfo, type Quote } from '@/lib/customer/types';
 import { toman } from '@/lib/format';
 import { useApi } from '@/lib/session';
 import { Button, Card, ErrorBox, Field, KeyValue, Loading, Notice, Screen, T } from '@/ui/kit';
 import { PurchaseTermsCard } from '@/ui/PurchaseTermsCard';
 
-/** رزرو، قدم ۳: پیش‌فاکتور (کد تخفیف از باقی‌مانده کم می‌شود، نه از پیش‌پرداخت) و ثبت نوبت. */
+/**
+ * رزرو، قدم ۳: پیش‌فاکتور و ثبت نوبت. با پیش‌پرداخت، کد تخفیف از باقی‌مانده کم می‌شود؛ بدون پیش‌پرداخت (بسته‌ی 5ه) از کل مبلغ و
+ * ردیف پیش‌پرداخت نشان داده نمی‌شود.
+ */
 export default function Checkout() {
   const params = useLocalSearchParams<{ service_id: string; specialist_id: string; booking_time: string }>();
   const api = useApi();
@@ -76,6 +79,8 @@ export default function Checkout() {
     }
   };
 
+  const prepay = quote ? needsPrepayment(quote) : false;
+
   // ساعت در همین فاصله گرفته شد (۴۰۹) — برگشت به انتخاب ساعت که تازه شده است
   const slotTaken = error instanceof ApiError && error.code === 'booking_not_available';
 
@@ -94,27 +99,28 @@ export default function Checkout() {
         <>
           <Card>
             <KeyValue label="قیمت خدمت" value={toman(quote.price)} />
-            <KeyValue label="پیش‌پرداخت آنلاین" value={toman(quote.prepayment_amount)} />
+            {prepay ? <KeyValue label="پیش‌پرداخت آنلاین" value={toman(quote.prepayment_amount)} /> : null}
             {quote.discount_amount > 0 ? <KeyValue label={`تخفیف (${quote.discount_code})`} value={`− ${toman(quote.discount_amount)}`} /> : null}
-            <KeyValue label="پرداخت در سالن" value={toman(quote.remaining_amount)} />
+            <KeyValue label={prepay ? 'پرداخت در سالن' : 'پرداخت در سالن (بدون پیش‌پرداخت)'} value={toman(quote.remaining_amount)} />
           </Card>
+          {quote.notice ? <Notice tone="warning" text={quote.notice} /> : null}
 
           <Field label="کد تخفیف (اختیاری)" value={code} onChangeText={setCode} autoCapitalize="characters" autoCorrect={false} style={{ textAlign: 'left' }} />
           <Button small kind="secondary" title={quote.discount_code ? 'عوض کردن کد' : 'اعمال کد'} onPress={() => loadQuote(code.trim())} loading={checking} disabled={!code.trim()} />
           {quote.discount_code ? <Button small kind="ghost" title="حذف کد تخفیف" onPress={() => { setCode(''); void loadQuote(null); }} /> : null}
           {quoteError && quote ? <ErrorBox error={quoteError} /> : null}
 
-          {quote.prepayment_amount > 0 ? (
+          {prepay ? (
             quote.online_payment
               ? <Notice text={`بعد از ثبت، ${toman(quote.prepayment_amount)} پیش‌پرداخت را آنلاین می‌پردازید؛ نوبت بدون پرداخت در مهلتش لغو می‌شود.`} />
               : <Notice tone="warning" text="این سالن فعلاً پرداخت آنلاین ندارد؛ رزرو نوبت‌هایی که پیش‌پرداخت دارند از اپ ممکن نیست. با سالن تماس بگیرید." />
-          ) : null}
+          ) : <Notice text="این نوبت پیش‌پرداخت آنلاین ندارد؛ کل مبلغ را در سالن پرداخت می‌کنید." />}
 
           {quote.terms ? <PurchaseTermsCard terms={quote.terms} /> : null}
 
           {error ? <ErrorBox error={error} /> : null}
           {slotTaken ? <Button kind="secondary" title="انتخاب ساعت دیگر" onPress={() => router.back()} /> : null}
-          <Button title="ثبت نوبت" onPress={submit} loading={busy} disabled={checking || (quote.prepayment_amount > 0 && !quote.online_payment)} />
+          <Button title="ثبت نوبت" onPress={submit} loading={busy} disabled={checking || (prepay && !quote.online_payment)} />
         </>
       ) : null}
     </Screen>
