@@ -15,6 +15,13 @@ Schedule::job(new CancelUnpaidBookings)
     ->withoutOverlapping()
     ->onOneServer();
 
+// بسته‌ی 5ه: «با پیش‌پرداخت» بی درگاه فعال یا بی امکان پرداخت آنلاین پلن ← «بدون پیش‌پرداخت» + هشدار به مالک
+Schedule::command('bookings:enforce-payment-mode')
+    ->everyTenMinutes()
+    ->name('enforce-booking-payment-mode')
+    ->withoutOverlapping()
+    ->onOneServer();
+
 // Note: The actual wallet:settle-pending shedule is registered in bootstrap/app.php.
 // Previously this command was registered both here and in bootstrap/app.php (double execution every night at 01:00).
 
