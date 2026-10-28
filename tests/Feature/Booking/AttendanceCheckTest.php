@@ -91,6 +91,8 @@ class AttendanceCheckTest extends TestCase
         $this->assertNull($later->fresh()->attendance_requested_at, 'هنوز ۲۴ ساعت نمانده');
         $this->assertNull($prepaid->fresh()->attendance_requested_at, 'نوبت با پیش‌پرداخت تعهد دارد');
         $this->assertNotNull($link = $this->linkSentTo($soon));
+        // متن تأییدشده‌ی ابوالفضل (۲۰۲۶-۱۰-۲۹)
+        $this->assertNotEmpty(array_filter(array_column($this->sms, 1), fn ($t) => str_contains($t, 'را تایید کنید؛ بدون تایید، ۳ ساعت پیش از نوبت لغو می‌شود: ')));
 
         // لینک کوتاه ← صفحه‌ی تأیید (GET فقط نشان می‌دهد؛ تأیید با دکمه)
         $target = $this->get($link)->assertRedirect()->headers->get('Location');
