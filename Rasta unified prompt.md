@@ -2,9 +2,9 @@
 
 > این فایل، ادغام کامل دو پرامپت قبلی (`Rasta_main_prompt_final.MD` و `Refactor_prompt_v4.MD`) در یک سند واحد است. از این پس فقط همین یک فایل نیاز است؛ دو فایل قبلی منسوخ شدن.
 
-> ⭐ **آخرین وضعیت و برنامه‌ی نشست بعد (۲۰۲۶-۱۰-۲۸):** بخش «۲۰۲۶-۱۰-۲۸ — پذیرش دوباره‌ی قوانین و رضایت عکس از زبان مشتری»، «۲۰۲۶-۱۰-۲۷ — خطای 1067 در `migrate:fresh` روی XAMPP»، «۲۰۲۶-۱۰-۲۵ (ادامه ۹) — سرریز `/salon-signup` در گوشی»، «(ادامه ۸) — بسته‌ی مجوز 5د پیاده شد»، «(ادامه ۷) — بررسی پنج فایل قدیمی استقرار؛ کارهای باز تکمیل شد»، «(ادامه ۶) — جابه‌جایی مستندات ریشه و README دوزبانه»، «۲۰۲۶-۱۰-۲۵ (ادامه ۵) — منابع رسمی مجوز»، «۲۰۲۶-۱۰-۲۴ (ادامه ۴) — بررسی شرایط مجوز پلتفرم»، «(ادامه ۳) — سرور واقعی آروان با همان image تک‌کانتینری»؛ قبل‌تر
+> ⭐ **آخرین وضعیت و برنامه‌ی نشست بعد (۲۰۲۶-۱۰-۲۸):** بخش «۲۰۲۶-۱۰-۲۸ (ادامه) — ارتقای Laravel 11 ← 12 ← 13 و PHP 8.5» (برنچ `upgrade/laravel-12-13`)، «۲۰۲۶-۱۰-۲۸ — پذیرش دوباره‌ی قوانین و رضایت عکس از زبان مشتری»، «۲۰۲۶-۱۰-۲۷ — خطای 1067 در `migrate:fresh` روی XAMPP»، «۲۰۲۶-۱۰-۲۵ (ادامه ۹) — سرریز `/salon-signup` در گوشی»، «(ادامه ۸) — بسته‌ی مجوز 5د پیاده شد»، «(ادامه ۷) — بررسی پنج فایل قدیمی استقرار؛ کارهای باز تکمیل شد»، «(ادامه ۶) — جابه‌جایی مستندات ریشه و README دوزبانه»، «۲۰۲۶-۱۰-۲۵ (ادامه ۵) — منابع رسمی مجوز»، «۲۰۲۶-۱۰-۲۴ (ادامه ۴) — بررسی شرایط مجوز پلتفرم»، «(ادامه ۳) — سرور واقعی آروان با همان image تک‌کانتینری»؛ قبل‌تر
 > «۲۰۲۶-۱۰-۲۳ — Docker: اولین build واقعی…» و «۲۰۲۶-۱۰-۲۲ (ادامه ۶) — ابزار سبز کردن کارت آمادگی و آزمون «فعال»»
-> (پچ‌ها تا 0243، app-0027، اپ‌ها 0.3.7 — روی گوشی‌ها هنوز 0.3.5؛ راهنمای سرور: `docs/deployment/ARVAN_SERVER.md`) —
+> (پچ‌ها تا 0255 — `0244`–`0255` روی برنچ `upgrade/laravel-12-13`؛ app-0027، اپ‌ها 0.3.7 — روی گوشی‌ها هنوز 0.3.5؛ راهنمای سرور: `docs/deployment/ARVAN_SERVER.md`) —
 > فهرست کوتاه کارهای باز: «⭐ خلاصه‌ی کارهای باز (۲۰۲۶-۱۰-۲۲)» در «قدم‌های باز» آخر سند.
 > ⭐ **دامنه‌ی اصلی پلتفرم: `arisheh.ir`** (تصمیم ۲۰۲۶-۱۰-۲۲؛ قبلاً `mahru.ir` — هر جای سند که `mahru.ir` آمده، حالا `arisheh.ir` است). نام برند همچنان «ماهرو».
 > ⭐ expo.dev: buildها از ۲۰۲۶-۱۰-۲۲ با سازمان `abolfazl1991s-team` (ورود `abolfazl1991`)؛ keystore قبلی هر دو اپ آن‌جا بارگذاری شده.
@@ -6146,6 +6146,107 @@ php artisan push:test 09xxxxxxxxx --style=notification --wait=30
 **قدم بعد:** `0124`–`0129` روی develop؛ نتیجه‌ی دو دستور `push:test` روی A17 (بخش «ادامه ۲»)؛ جواب پرسش‌های ۳، ۵، ۸، ۱۲ و ترتیب (همان بخش)
 ← بعد ۳ و دور ۲ (پیش‌نمایش قبل/بعد ۲ و ۱۱) و دور ۳.
 
+### ۲۰۲۶-۱۰-۲۸ (ادامه) — ارتقای Laravel 11 ← 12 ← 13 و PHP 8.5 (بسته‌ی 5ج، `0244`–`0255`، برنچ `upgrade/laravel-12-13`)
+
+ابوالفضل بند 5ج «قدم‌های باز» را خواست: روی برنچ جدا، اول Laravel 12 با کتابخانه‌ها و `php: ^8.3`، بعد از سبز شدن کامل 13؛ هم‌زمان
+image داکر PHP 8.5 (تولید و تک‌کانتینری آروان)، `mysql:8.0` ← 8.4 و Node 22؛ «رفتار برنامه نباید عوض شود، فقط سازگاری». محیط لوکال او:
+PHP 8.5.5 ZTS در `C:\php85` کنار XAMPP 8.2.12 (فقط MariaDB 10.4، `explicit_defaults_for_timestamp=OFF`)، Composer 2.10.3.
+
+**تاریخ‌ها (بررسی ۲۰۲۶-۱۰-۲۸، جدول رسمی):** Laravel 11 امنیتی تا ۱۲ مارس ۲۰۲۶ (تمام)؛ 12: باگ تا ۱۳ اوت ۲۰۲۶ (تمام)، امنیتی تا ۲۴ فوریه
+۲۰۲۷، PHP 8.2–8.5؛ **13: باگ تا Q3 ۲۰۲۷، امنیتی تا ۱۷ مارس ۲۰۲۸، PHP 8.3–8.5**. PHP 8.3 فقط امنیتی تا ۳۱ دسامبر ۲۰۲۷؛ PHP 8.5 فعال تا
+۳۱ دسامبر ۲۰۲۷ و امنیتی تا ۳۱ دسامبر ۲۰۲۹. دیتابیس: Laravel 12/13 رسماً MariaDB 10.3+ و MySQL 5.7+ (پس MariaDB 10.4 XAMPP مانع نیست؛
+خود 10.4 از ژوئن ۲۰۲۴ پشتیبانی ندارد).
+
+**تصمیم‌های ابوالفضل (۲۰۲۶-۱۰-۲۸):**
+1. شناسه‌ی `push_messages` ‏UUID نسخه‌ی ۷ (پیش‌فرض Laravel 12) و «جدیدترین پیام‌ها» با `orderByDesc('id')` (داده فیک است، ردیف v4 قدیمی نمی‌ماند).
+2. قانون `image` رفتار تازه‌ی Laravel 12 را بگیرد: SVG رد می‌شود (نه `image:allow_svg`).
+3. Excel 4 با PhpSpreadsheet 5 (تنها راه پشتیبانی‌شده روی PHP 8.5).
+
+**کامیت‌ها:**
+- `0244` `test(phpunit)`: در `phpunit.xml` و `phpunit.subdomain.xml` ‏`<ini memory_limit=1G>`، ‏`APP_URL=http://127.0.0.1:8000` و
+  `PUSH_FCM_CREDENTIALS=""` با `force` (دو تست قرمز لوکال: `BillingPageAndMenuTest` با `APP_URL=http://192.168.1.2:8000` و
+  `PushSuperAdminTest` با فایل FCM واقعی؛ با `.env` مثل سیستم ابوالفضل پیش از پچ ۲ شکست، بعد سبز).
+- `0245` `fix(php85)`: `config/database.php` ‏`PHP_VERSION_ID >= 80500 ? Pdo\Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA` (مثل skeleton
+  12)؛ حذف `imagedestroy` (سه فایل) و `setAccessible` (چهار تست) که از 8.0/8.1 کاری نمی‌کردند.
+- `0246` `test(csrf)`: `CsrfExemptRoutesTest` با `env=local` (مثل `StaleCsrfTokenTest`): POST بین‌سایتی بی‌کوکی بانک به
+  `/payments/return/{id}` ← 303، گزارش CSP ← 204، کنترل ← 419. روی 11 سبز؛ با حذف معافیت قرمز (بررسی شد).
+- `0247` `chore(deps)`: Laravel 12.70، `php ^8.3`، Sanctum ^4.3، Tinker ^2.10، Telescope ^5.26، collision ^8.9، PHPUnit ^11.5، Activitylog
+  ^4.12 (5.x حداقل PHP 8.4 می‌خواهد)، mPDF ^8.3.1، DomPDF ^3.1.2؛ Excel/PhpSpreadsheet فقط در این کامیت روی 3.1.64/1.29.10 قفل. lock روی
+  PHP 8.3 حل شد؛ `check-platform-reqs` روی 8.3 و 8.5 ✅. چهار بسته‌ی مانع نصب روی 8.5 حالا: htmlpurifier 4.19.1، nette/schema 1.4.0،
+  nette/utils 4.1.6، sabberworm 9.5.0.
+- `0248` `chore(deps)`: Excel 4.0.6 + PhpSpreadsheet 5.10 (`composer audit` پیش از آن ۱۴ advisory روی این دو، بعد تمیز).
+  `AdminReportExport implements Export` (نشانگر تازه‌ی 4.x)، امضای `SpecialistBookingsExport` (`collection(): Collection`،
+  `styles(): ?array`). **خروجی:** تست موقت با داده‌ی seed‌شده هر دو خروجی را قبل و بعد ساخت: همه‌ی مقدار/نوع سلول، فونت، رنگ، حاشیه،
+  چینش، قالب عدد، merge، freeze، RTL، عرض ستون، ارتفاع ردیف و نمودار یکسان؛ XML خام فقط در ترتیب attributeها و عنصرهای خالی فرق دارد.
+- `0249` `feat(push)`: تصمیم ۱ و ۲؛ `PushStats` (دو جا) و `PushLiveCheck` با `orderByDesc('id')`؛ `Laravel12BehaviourTest`.
+- `0250` `fix(views)`: Laravel 12 دستور Blade ‏`@context` آورد و JSON-LD صفحه‌ی فروش (`{"@context":...}`) را به یک `if` باز تبدیل
+  کرد ← **۵۰۰ روی دامنه‌ی اصلی** (در image واقعی پیدا شد). رفع: `@@context`. `BladeViewsCompileTest`: متن هر ۳۷۳ نما را مستقیم کامپایل و با
+  `token_get_all(TOKEN_PARSE)` تجزیه می‌کند (مستقل از cache)، و JSON-LD صفحه‌ی `/` را می‌سنجد.
+- `0251` `build(docker)`: `php:8.5-fpm-alpine` (Alpine 3.24.3 مثل image فعلی ← MariaDB تک‌کانتینری همان 11.8.9، بی `mariadb-upgrade`)؛
+  `opcache` از `docker-php-ext-install` حذف (در 8.5 همیشه داخل PHP است و نصبش با `cp: can't stat 'modules/*'` می‌شکند)؛ `mysql:8.4`؛
+  `my.cnf`: حذف `skip-character-set-client-handshake` (**در 8.4 حذف شده؛ سرور با «unknown option» بالا نمی‌آمد**) و
+  `innodb_log_file_size=64M` ← `innodb_redo_log_capacity=128M`؛ مسیر نمونه‌ی `php85` در `deploy/cron/mahru.cron`؛ `DockerSetupTest`.
+- `0252` `chore(deps)`: Laravel 13.39، Tinker ^3.0، PHPUnit ^12.0، Verta ^9.0 (8.x فقط تا illuminate 12؛ هسته‌ی 9.3 فقط `Macroable` افزوده،
+  `verta()` حالا typed است و همه‌ی فراخوانی‌ها Carbon معمولی/رشته/null می‌دهند)، **Guzzle صریحاً ^7.10** (Composer نسخه‌ی 8 را برداشته
+  بود؛ تقریباً همه‌ی تست‌های HTTP با `Http::fake` هستند پس انتقال واقعی درگاه/FCM پوشش ندارد — Guzzle 8 بسته‌ی جدا).
+  **رفع CSRF:** در 13 میان‌افزار گروه web ‏`PreventRequestForgery` است و نام‌های قدیمی فقط زیرکلاس آن؛ `withoutMiddleware` با نام قدیمی
+  برش نمی‌داشت ← برگشت همه‌ی بانک‌ها ۴۱۹. دو روت حالا خود `PreventRequestForgery` را معاف می‌کنند (تست `0246` روی 13 قرمز بود، بعد سبز).
+- `0253` `chore(deps)`: Pint ~1.27.1 (`composer update` آن را به 1.32 برده بود که از 1.28 قانون‌های تازه دارد و صدها فایل دست‌نخورده را رد
+  می‌کند؛ 1.22–1.25 روی 8.5 هشدار deprecation از داخل PHAR خودشان می‌دهند؛ 1.27.1 کل ۱۳۵۵ فایل را بی هشدار PASS می‌کند).
+- `0254` `docs`: README دوزبانه و `SCHEDULER_AND_QUEUE.md`. `0255` همین بخش.
+
+**بررسی‌شده و بی‌تغییر:** Carbon از قبل 3؛ دیسک `local` تعریف‌شده؛ نام‌های تکراری روت نداریم (پیشوند `legacy.`)؛ تقدم روت‌های دامنه‌دار در 13
+با ترتیب فعلی یکی است؛ `upsert`، `DELETE…JOIN` با LIMIT، `mergeIfMissing`، `getTables`، listener صف، Str factory، pivot چندریختی سفارشی و
+ساخت مدل در `boot()` نداریم؛ closureهای `extend` به `$this` دست نمی‌زنند. `cache.serializable_classes` و `session.serialization` از skeleton
+تازه گرفته **نشد** (رفتار فعلی: object در cache مجاز، session با php — بی‌اعتبار شدن sessionها نه). `@js` در 13 نویسه‌ی فارسی را بی‌escape
+می‌نویسد (در مرورگر همان). `App\Http\Middleware\VerifyCsrfToken` در هیچ‌جا ثبت نیست (دست نخورد). Sanctum همچنان `ValidateCsrfToken` (مثل
+config خودش).
+
+**درس‌ها:**
+- **نماهای کامپایل‌شده‌ی قدیمی خطای Blade ارتقا را پنهان می‌کنند** (`storage/framework/views` فقط با تغییر خود نما دوباره ساخته می‌شود)؛
+  سوییت Laravel 12 با cache مانده از 11 سبز بود. بعد از هر ارتقای فریم‌ورک: `php artisan optimize:clear` پیش از تست و اجرا.
+- CSRF در تست‌ها خاموش است؛ هر تغییری در معافیت‌ها فقط با تست `env=local` دیده می‌شود.
+- اجرای هم‌زمان سوییت روی چند دیتابیس در یک پوشه فایل‌های `storage` (مثل `report-exports/8.xlsx`) را از زیر هم برمی‌دارد: یک اجرای MariaDB
+  10.4 دو شکست داد، تنها اجرا سبز.
+
+**وریفای (کد نهایی، cache نماها خالی):** SQLite روی PHP 8.5 **۲۴۱۶ (۱۱ skip، ۰ deprecation)**، روی PHP 8.3 **۲۴۱۶ (۱۱ skip)**؛ زیردامنه **۱۵**؛
+MariaDB 10.4.34 با `explicit_defaults_for_timestamp=OFF` **۲۴۱۶ (۱ skip)**؛ MySQL 8.4.13 **۲۴۱۶ (۱ skip)**؛ MariaDB 11.8.9 (ON) **۲۴۱۶ (۱ skip)**؛
+`php artisan test` (collision) روی 8.5 بی deprecation؛ `migrate:fresh --seed` روی هر سه دیتابیس کامل؛ Pint 1.27.1 PASS. Baseline روی Laravel 11:
+SQLite PHP 8.3 **۲۴۰۸ (۱۵ skip)**، PHP 8.5 همان با ۴ deprecation (`PDO::MYSQL_ATTR_SSL_CA`). Docker: هر دو target ساخته شدند؛ تک‌کانتینری
+healthy (PHP 8.5.12، Laravel 13.39، MariaDB 11.8.9، همه‌ی برنامه‌های supervisor)، صفحه‌های اصلی/سالن/ساب‌دامین/`/up` ‏200، ورود با CSRF،
+POST بی‌توکن بانک ← 404 (تراکنش ناموجود؛ یعنی از CSRF رد شد)، CSP ← 204، لاگ بی خطا؛ شش‌سرویسی با `mysql:8.4.13` (بی warning) و Redis
+healthy، workerها بی restart. (در این محیط build فقط با گواهی پروکسی در یک کپی آزمایشی Dockerfile و `build-vendor` ممکن بود.)
+
+**روی لوکال (XAMPP + PHP 8.5):** پچ‌ها روی برنچ `upgrade/laravel-12-13` ← `composer install` با PHP 8.5 ← `php artisan optimize:clear` ←
+`npm ci && npm run build` ← `php artisan migrate:fresh --seed` (migration تازه ندارد؛ فقط برای شروع تمیز) ← `php artisan test`.
+**Docker:** `build-vendor` را دوباره بسازید (lock عوض شده؛ بخش ۱ `DOCKER_DESKTOP.md`) و `--build`. **compose شش‌سرویسی با volume ‏MySQL 8.0
+موجود:** پیش از بالا آوردن 8.4 پشتیبان بگیرید (ارتقای درجا یک‌طرفه است).
+
+**آزمون دستی — Docker Desktop (تک‌کانتینری، `docker compose -f docker-compose.single.yml up -d --build`):**
+1. `docker compose -f docker-compose.single.yml exec app php -v` ← 8.5.x؛ `… exec -u www app php artisan --version` ← 13.x؛ `supervisorctl status`
+   همه RUNNING؛ `… exec app mariadbd --version` همان 11.8 قبلی (volume قبلی بی خطا بالا آمد).
+2. `http://arisheh.test:8080/` صفحه‌ی فروش کامل (نه ۵۰۰) و در «مشاهده‌ی منبع» بلوک `"@context":"https://schema.org"`؛ `/privacy`، `/terms`،
+   `/my-salons`، `/app`.
+3. `http://rasta.arisheh.test:8080/` و `/s/rasta`: خانه، خدمات، ورود مشتری با کد پیامکی (کد در لاگ)، رزرو یک نوبت تا صفحه‌ی پرداخت.
+4. **برگشت درگاه:** با Zarinpal sandbox یک پرداخت تا آخر (بازگشت بانک POST/GET است؛ باید به صفحه‌ی نتیجه برسد، نه ۴۱۹).
+5. پنل مدیر: گزارش‌ها ← خروجی Excel (سه برگه، نمودار درآمد، راست‌به‌چپ) و PDF؛ پنل متخصص ← گزارش Excel.
+6. گالری: آپلود JPG/PNG ✅، آپلود SVG ← پیام خطای «فایل باید تصویر باشد».
+7. ابرمدیر ← پوش: «پوش آزمایشی» به A17؛ رسید برسد؛ آمار پوش باز شود.
+8. صف و زمان‌بندی: یک پیامک (لاگ) از صف sms برود؛ `schedule:list`؛ لاگ‌های `/data/logs` بی `ERROR` و `Deprecated`.
+9. (اختیاری، شش‌سرویسی) `docker compose up -d --build` با `mysql:8.4`: کانتینر mysql healthy، `make migrate`، `make seed`، صفحه‌ی `/`.
+
+**آزمون دستی — لوکال (XAMPP MariaDB 10.4 + PHP 8.5، `php artisan serve`):**
+1. `php -v` ← 8.5.5؛ `composer install` بی خطا؛ `php artisan --version` ← 13.x؛ `php artisan optimize:clear`.
+2. `php artisan migrate:fresh --seed` روی MariaDB خود XAMPP کامل؛ `php artisan test` ← ۲۴۱۶ تست، بی شکست و بی deprecation (با همان
+   `.env` شبکه‌ی خانه و فایل FCM واقعی؛ `memory_limit` دیگر مهم نیست).
+3. `http://127.0.0.1:8000/` صفحه‌ی فروش، `/s/rasta`، ورود کادر و مشتری، `/admin`، `/superadmin/dashboard`، `/specialist`.
+4. همان بندهای ۴ تا ۷ بالا (درگاه sandbox، Excel/PDF، SVG، پوش آزمایشی).
+5. Telescope (`TELESCOPE_ENABLED=true`): صفحه‌ی `/telescope` باز شود.
+6. `php artisan queue:work …` و `php artisan schedule:work` چند دقیقه بی خطا؛ `storage/logs` بی `Deprecated`.
+
+**کارهای باز تازه (پیشنهاد، بسته‌ی جدا):** Guzzle 8؛ Pint تازه و قالب‌بندی دوباره‌ی کل پروژه؛ `cache.serializable_classes` صریح (امن‌سازی
+مستقل از ارتقا)؛ حذف پکیج بی‌استفاده‌ی `barryvdh/laravel-snappy` و کلاس مرده‌ی `App\Http\Middleware\VerifyCsrfToken`.
+
 ### ۲۰۲۶-۱۰-۲۸ — پذیرش دوباره‌ی قوانین و رضایت عکس از زبان مشتری (`0232`–`0243`، app-0024–0027)
 
 ابوالفضل دو کار از «کارهای باز 5د» را خواست: (۱) پذیرش دوباره‌ی قوانین وقتی نسخه عوض شود؛ (۲) تأیید رضایت عکس دوره توسط خود مشتری.
@@ -10686,10 +10787,9 @@ Bearer؛ فقط از IPهای اعلام‌شده. ⚠️ `result` برای `IBA
 5. امنیت: باطل کردن کلید کاوه‌نگار — فقط اگر جایی دیده شده (بخش «ادامه ۴»)
 
 5ب. Docker: ✅ آزمون لوکال کامل (۲۰۲۶-۱۰-۲۴): حالت تک‌کانتینری، ساب‌دامین، ورود مشتری، گوشی، پوش. یافته: روی وای‌فای خانه بدون VPN پوش FCM نرسید، روی دیتای همراه رسید (وابسته به ISP) ← در «آزمایشی» سرور سنجیده شود (بخش «۲۰۲۶-۱۰-۲۴ (ادامه ۲)»). کد سرور آروان ✅ (۲۰۲۶-۱۰-۲۴ (ادامه ۳)، `0196`–`0199`، `docs/deployment/ARVAN_SERVER.md`). مانده: خرید سرور، NS ‏arisheh.ir به آروان، اجرای راهنما و آزمون‌های بخش ۱۰ آن
-5ج. ارتقای Laravel 11 (وصله‌ی امنیتی تا ۱۲ مارس ۲۰۲۶ — تمام شده) ← 12 (امنیتی تا ۲۴ فوریه ۲۰۲۷) و بعد 13؛ هم‌زمان: کتابخانه‌های وابسته
-    (Sanctum، Excel، mPDF/DomPDF، Activitylog، Telescope) و `composer.json` ‏`php: ^8.3` (PHP 8.2 تا ۳۱ دسامبر ۲۰۲۶؛ image داکر از قبل 8.3)؛
-    `mysql:8.0` ← 8.4 و Node 20 ← 22 در compose شش‌سرویسی و CI. بسته‌ی جدا، **بعد از بسته‌ی مجوز (5د) و پیش از ثبت‌نام سالن‌های واقعی**؛
-    روی برنچ جدا، کل سوییت روی هر سه دیتابیس، بعد آزمون دستی روی Docker Desktop. (تاریخ‌ها پیش از شروع با جدول رسمی Laravel و PHP دوباره چک شود.)
+5ج. ارتقای Laravel: ✅ کد و وریفای (۲۰۲۶-۱۰-۲۸ (ادامه)، `0244`–`0255`، برنچ `upgrade/laravel-12-13`): Laravel 13.39، PHP ^8.3،
+    image داکر PHP 8.5، `mysql:8.4`، Excel 4. مانده: آزمون‌های دستی Docker Desktop و لوکال (فهرست همان بخش) و merge برنچ به develop.
+    (CI در مخزن نیست و Node از قبل 22 بود.)
 5د. شرایط مجوز پلتفرم: بررسی ۶ بند ✅ (ادامه ۴)، منابع رسمی ✅ (ادامه ۵) و **بسته‌ی کد ✅ (ادامه ۸، `0204`–`0226`، app-0023)**:
     امنیت مستقل از آروان، نگهداری IP شش‌ماهه، صفحه‌های حقوقی و پذیرش، اینماد و canonical، شکایت ۷۲ ساعته، شرایط خرید، رضایت عکس،
     احراز دستی سالن. مانده: جواب مرکز تجارت الکترونیکی و درگاه‌ها (و معماری پرداخت)، احراز با سامانه‌ی رسمی (EMTA)، بازبینی حقوق‌دان
