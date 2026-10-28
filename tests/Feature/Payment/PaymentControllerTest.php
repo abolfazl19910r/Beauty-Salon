@@ -31,16 +31,17 @@ class PaymentControllerTest extends TestCase
 
     // ── process() — full-discount path (regression guard for the documented white-screen bug) ──
 
-    public function test_process_with_a_full_discount_marks_the_booking_paid_and_redirects_to_success(): void
+    public function test_process_with_nothing_to_prepay_goes_back_to_the_booking_without_a_payment(): void
     {
+        // بسته‌ی 5ه: نوبتی که پیش‌پرداختش صفر است چیزی برای پرداخت ندارد (کد تخفیف هرگز پیش‌پرداخت را کم نمی‌کند)؛ کل مبلغ در سالن
         $user = User::factory()->create();
         $booking = $this->makeBooking($user, ['prepayment_amount' => 0, 'discount_code' => 'FULL100']);
 
         $response = $this->actingAs($user)->post(route('payment.process', $booking));
 
-        $response->assertRedirect(route('bookings.success', ['id' => $booking->id]));
-        $this->assertSame('paid', $booking->fresh()->payment_status);
-        $this->assertSame('full_discount', $booking->fresh()->payment_details['method']);
+        $response->assertRedirect(route('bookings.show', $booking));
+        $response->assertSessionHas('error', 'این نوبت پیش‌پرداخت ندارد؛ کل مبلغ را در سالن پرداخت می‌کنید.');
+        $this->assertSame('unpaid', $booking->fresh()->payment_status);
     }
 
     public function test_process_returns_the_response_object_not_null_on_the_full_discount_path(): void

@@ -528,6 +528,8 @@ class BookingObserver
             settingsEvent: NotificationEvents::BOOKING_PAID_PENDING_APPROVAL_CUSTOMER,
             data: ['booking_id' => $booking->id],
             inbox: true,
+            // نوبت بدون پیش‌پرداخت (بسته‌ی 5ه): پرداختی انجام نشده، عنوان «پرداخت نوبت انجام شد» نادرست است
+            title: $booking->payment_status === 'paid' ? null : 'نوبت شما ثبت شد',
         ));
     }
 

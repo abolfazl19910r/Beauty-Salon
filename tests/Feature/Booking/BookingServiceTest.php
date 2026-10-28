@@ -74,7 +74,7 @@ class BookingServiceTest extends TestCase
         $this->assertSame('unpaid', $booking->payment_status);
     }
 
-    public function test_create_booking_auto_confirms_when_specialist_has_auto_confirm_enabled(): void
+    public function test_create_booking_with_prepayment_waits_for_payment_even_when_specialist_auto_confirms(): void
     {
         $specialist = Specialist::factory()->autoConfirm()->create();
         for ($day = 0; $day <= 6; $day++) {
@@ -88,7 +88,26 @@ class BookingServiceTest extends TestCase
 
         $booking = $this->service->createBooking($user->id, $service->id, $specialist->id, $this->nextAvailableDateTime());
 
+        // بسته‌ی 5ه، باگ ۲: تأیید خودکار بعد از پرداخت (قبلاً confirmed+unpaid و ساعت متخصص بی‌پرداخت نگه داشته می‌شد)
+        $this->assertSame('pending_payment', $booking->status);
+    }
+
+    public function test_create_booking_without_prepayment_auto_confirms_when_specialist_has_auto_confirm_enabled(): void
+    {
+        WalletSetting::get()->update(['prepayment_percentage' => 0, 'minimum_prepayment_amount' => 0]);
+        $specialist = Specialist::factory()->autoConfirm()->create();
+        for ($day = 0; $day <= 6; $day++) {
+            SpecialistSchedule::factory()->create([
+                'specialist_id' => $specialist->id, 'day_of_week' => $day,
+                'start_time' => '08:00', 'end_time' => '20:00', 'is_active' => true,
+            ]);
+        }
+        $service = BeautyService::factory()->create(['price' => 100000]);
+
+        $booking = $this->service->createBooking(User::factory()->create()->id, $service->id, $specialist->id, $this->nextAvailableDateTime());
+
         $this->assertSame('confirmed', $booking->status);
+        $this->assertFalse($booking->isPayable());
     }
 
     public function test_create_booking_without_auto_confirm_is_pending_payment(): void

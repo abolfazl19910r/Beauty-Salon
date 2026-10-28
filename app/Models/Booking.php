@@ -199,6 +199,7 @@ class Booking extends Model
     public function isPayable(): bool
     {
         return $this->payment_status !== 'paid'
+            && (float) $this->prepayment_amount > 0
             && in_array($this->status, self::PAYABLE_STATUSES, true)
             && \Carbon\Carbon::parse($this->booking_time)->isFuture()
             && ! $this->hasHeldPayment();
@@ -218,6 +219,7 @@ class Booking extends Model
     {
         return match (true) {
             $this->payment_status === 'paid' => 'این نوبت قبلاً پرداخت شده است.',
+            (float) $this->prepayment_amount <= 0 => 'این نوبت پیش‌پرداخت ندارد؛ کل مبلغ را در سالن پرداخت می‌کنید.',
             $this->hasHeldPayment() => \App\Services\Payment\HeldBookingPayment::MESSAGE,
             $this->status === 'cancelled' => 'این نوبت لغو شده است و پرداخت آن ممکن نیست. لطفاً نوبت جدیدی رزرو کنید.',
             ! \Carbon\Carbon::parse($this->booking_time)->isFuture() => 'زمان این نوبت گذشته است و پرداخت آن ممکن نیست.',

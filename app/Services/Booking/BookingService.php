@@ -228,9 +228,17 @@ class BookingService
         $prepaymentData = $this->calculatePrepayment((float) $service->price, $discountCode);
 
         try {
-            return $this->createBookingInTransaction(
+            $booking = $this->createBookingInTransaction(
                 $userId, $serviceId, $specialistId, $bookingTime, $discountCode, $prepaymentData, $specialist, $idempotencyKey, $fingerprint
             );
+
+            // نوبتی که پرداختی لازم ندارد همین حالا کامل است: پیامک و اعلان مشتری و متخصص همان لحظه‌ی ثبت (بسته‌ی 5ه، باگ ۱).
+            // نوبت «در انتظار پرداخت» این‌ها را بعد از پرداخت از BookingObserver می‌گیرد.
+            if ($booking->wasRecentlyCreated && $booking->status !== 'pending_payment') {
+                app(\App\Observers\Booking\BookingObserver::class)->notifyPaidBooking($booking);
+            }
+
+            return $booking;
         } catch (UniqueConstraintViolationException $e) {
             // ارسال هم‌زمان همان فرم: درج کلید دوم پشت اولی ماند و بعد از commit آن تکراری شد — نوبت اولی را برگردان
             if ($existing = $this->replayedBooking($userId, $idempotencyKey, $fingerprint)) {
@@ -239,6 +247,22 @@ class BookingService
 
             throw $e;
         }
+    }
+
+    /**
+     * وضعیت نوبت آنلاین تازه (بسته‌ی 5ه، دو باگ پیش‌پرداخت):
+     * - پیش‌پرداخت دارد ← همیشه pending_payment، حتی با تأیید خودکار متخصص؛ تأیید خودکار بعد از پرداخت (BookingPaymentFinalizer) اعمال
+     *   می‌شود. قبلاً confirmed+unpaid می‌شد: لغو خودکار نمی‌دیدش و ساعت متخصص بی‌پرداخت نگه داشته می‌شد.
+     * - پیش‌پرداخت صفر ← چیزی برای پرداخت نیست: confirmed یا pending (منتظر تأیید سالن). قبلاً pending_payment می‌شد و بعد از ۳۰ دقیقه
+     *   با پیامک «پرداخت نکردید» لغو.
+     */
+    public static function initialStatus(float $prepaymentAmount, bool $autoConfirm): string
+    {
+        if ($prepaymentAmount > 0) {
+            return 'pending_payment';
+        }
+
+        return $autoConfirm ? 'confirmed' : 'pending';
     }
 
     private function replayedBooking(int $userId, ?string $key, string $fingerprint): ?Booking
@@ -264,7 +288,7 @@ class BookingService
                 'specialist_id' => $specialistId,
                 'user_id' => $userId,
                 'booking_time' => $bookingTime,
-                'status' => $specialist->auto_confirm_bookings ? 'confirmed' : 'pending_payment',
+                'status' => self::initialStatus((float) $prepaymentData['original_amount'], (bool) $specialist->auto_confirm_bookings),
                 'prepayment_amount' => $prepaymentData['original_amount'],
                 'payment_status' => 'unpaid',
                 'discount_code' => $discountCode,

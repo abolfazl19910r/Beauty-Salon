@@ -108,6 +108,14 @@ class BookingReservationController extends Controller
                 ]);
             }
 
+            // چیزی برای پرداخت نیست (پیش‌پرداخت صفر): مستقیم صفحه‌ی نوبت، نه صفحه‌ی پرداخت
+            if (! $booking->isPayable()) {
+                return redirect()->route('bookings.show', ['booking' => $booking->id])
+                    ->with('success', $booking->status === 'confirmed'
+                        ? 'نوبت شما ثبت و تأیید شد؛ کل مبلغ را در سالن پرداخت می‌کنید.'
+                        : 'نوبت شما ثبت شد و در انتظار تأیید سالن است؛ کل مبلغ را در سالن پرداخت می‌کنید.');
+            }
+
             return redirect()->route('payment.show', ['booking' => $booking->id]);
 
         } catch (BookingNotAvailableException $e) {
