@@ -93,6 +93,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'salon.owner' => \App\Http\Middleware\EnsureSalonOwner::class,
             // پذیرش دوباره‌ی قوانین (۲۰۲۶-۱۰-۲۸): مسیرهای نوبت/دوره‌ی تازه‌ی مشتری وب
             'legal.terms' => \App\Http\Middleware\EnsureLegalTermsAccepted::class,
+            // پذیرش دوباره‌ی قوانین سالن‌ها توسط مالک در پنل مدیر (۲۰۲۶-۱۰-۲۸)
+            'salon.terms' => \App\Http\Middleware\EnsureSalonTermsAccepted::class,
             // ⭐ /api/v1 اپ‌های موبایل (بسته‌ی ۱ اپلیکیشن): اپ توکن + سالن جاری + عمر لغزان توکن
             'api.audience' => \App\Http\Middleware\Api\EnsureApiAudience::class,
             // پذیرش دوباره‌ی قوانین در اپ مشتری (۲۰۲۶-۱۰-۲۸): اپ قدیمی ضمنی، اپ تازه 409 روی نوبت/دوره‌ی تازه

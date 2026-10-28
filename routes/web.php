@@ -185,7 +185,8 @@ Route::prefix('admin/salons')->name('admin.salons.')->middleware(['auth', 'not_i
     Route::post('/switch', [\App\Http\Controllers\Admin\Salon\AdminSalonSwitchController::class, 'switch'])->middleware('throttle:30,1')->name('switch');
 });
 
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_admin_panel', 'salon.active', 'not_impersonating'])->group(function () {
+// salon.terms: پذیرش دوباره‌ی قوانین سالن‌ها توسط مالک (۲۰۲۶-۱۰-۲۸)
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_admin_panel', 'salon.active', 'salon.terms', 'not_impersonating'])->group(function () {
 
     Route::get('/', [\App\Http\Controllers\Admin\Dashboard\AdminDashboardController::class, 'dashboard'])->name('home');
 
@@ -204,6 +205,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission:access_a
         require __DIR__.'/admin/appearance.php';
         require __DIR__.'/admin/payment-gateways.php';
         require __DIR__.'/admin/verification.php';
+        require __DIR__.'/admin/terms-update.php';
     });
 
     require __DIR__.'/admin/search.php';
