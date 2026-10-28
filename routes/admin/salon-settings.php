@@ -14,3 +14,4 @@ Route::delete('/salon-settings/pause', [\App\Http\Controllers\Admin\SalonSetting
 // بسته‌ی 5ه (۲۰۲۶-۱۰-۲۸): «نحوه‌ی رزرو» — با/بدون پیش‌پرداخت، سقف نوبت مشتری، مشتری بدقول
 Route::get('/booking-policy', [\App\Http\Controllers\Admin\BookingPolicy\AdminBookingPolicyController::class, 'edit'])->name('booking-policy.edit');
 Route::put('/booking-policy/mode', [\App\Http\Controllers\Admin\BookingPolicy\AdminBookingPolicyController::class, 'updateMode'])->name('booking-policy.mode');
+Route::put('/booking-policy/loyalty', [\App\Http\Controllers\Admin\BookingPolicy\AdminBookingPolicyController::class, 'updateLoyalty'])->name('booking-policy.loyalty');

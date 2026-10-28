@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\BookingPolicy;
 use App\Exceptions\BookingModeException;
 use App\Http\Controllers\Controller;
 use App\Models\BookingPolicy;
+use App\Models\LoyaltySetting;
 use App\Models\WalletSetting;
 use App\Services\Booking\BookingModeSwitcher;
 use App\Services\Booking\BookingPaymentPolicy;
@@ -35,6 +36,12 @@ class AdminBookingPolicyController extends Controller
             'hasOnlinePaymentFeature' => (bool) $salon?->hasFeature(Feature::OnlinePayment),
             'canPrepay' => $this->paymentPolicy->canPrepay($salon),
             'effectiveMode' => $this->paymentPolicy->effectiveMode(),
+            'hasLoyaltyFeature' => (bool) $salon?->hasFeature(Feature::Loyalty),
+            'loyalty' => [
+                'enabled' => LoyaltySetting::getValue(LoyaltySetting::NO_PREPAY_ENABLED) === '1',
+                'fixed' => LoyaltySetting::getValue(LoyaltySetting::NO_PREPAY_FIXED),
+                'per_amount' => LoyaltySetting::getValue(LoyaltySetting::NO_PREPAY_PER_AMOUNT),
+            ],
         ]);
     }
 
@@ -74,5 +81,36 @@ class AdminBookingPolicyController extends Controller
         };
 
         return redirect()->route('admin.booking-policy.edit')->with('success', $message);
+    }
+
+    /**
+     * امتیاز باشگاه برای نوبت‌های «بدون پیش‌پرداخت» (تصمیم ۹): با کلید روشن هر دو عدد اجباری‌اند — هیچ مقدار پیش‌فرض یا ثابتی در کد نیست.
+     */
+    public function updateLoyalty(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'no_prepay_points_enabled' => ['nullable', 'boolean'],
+            'no_prepay_fixed_points' => ['required_if_accepted:no_prepay_points_enabled', 'nullable', 'integer', 'min:0', 'max:100000'],
+            'no_prepay_amount_per_point' => ['required_if_accepted:no_prepay_points_enabled', 'nullable', 'integer', 'min:1', 'max:1000000000'],
+        ], [
+            'no_prepay_fixed_points.required_if_accepted' => 'با روشن کردن امتیاز، «امتیاز ثابت هر نوبت» را وارد کنید.',
+            'no_prepay_amount_per_point.required_if_accepted' => 'با روشن کردن امتیاز، «هر چند تومان از قیمت خدمت = ۱ امتیاز» را وارد کنید.',
+        ], [
+            'no_prepay_fixed_points' => 'امتیاز ثابت هر نوبت',
+            'no_prepay_amount_per_point' => 'هر چند تومان = ۱ امتیاز',
+        ]);
+
+        $enabled = $request->boolean('no_prepay_points_enabled');
+        LoyaltySetting::setValue(LoyaltySetting::NO_PREPAY_ENABLED, $enabled ? '1' : '0', 'امتیاز نوبت‌های بدون پیش‌پرداخت');
+        if (($data['no_prepay_fixed_points'] ?? null) !== null) {
+            LoyaltySetting::setValue(LoyaltySetting::NO_PREPAY_FIXED, (int) $data['no_prepay_fixed_points'], 'امتیاز ثابت هر نوبت بدون پیش‌پرداخت انجام‌شده');
+        }
+        if (($data['no_prepay_amount_per_point'] ?? null) !== null) {
+            LoyaltySetting::setValue(LoyaltySetting::NO_PREPAY_PER_AMOUNT, (int) $data['no_prepay_amount_per_point'], 'هر چند تومان از قیمت خدمت = ۱ امتیاز (بدون پیش‌پرداخت)');
+        }
+
+        return redirect()->route('admin.booking-policy.edit')->with('success', $enabled
+            ? 'امتیاز نوبت‌های بدون پیش‌پرداخت روشن شد؛ از این پس هر نوبت انجام‌شده امتیاز می‌گیرد.'
+            : 'امتیاز نوبت‌های بدون پیش‌پرداخت خاموش است.');
     }
 }

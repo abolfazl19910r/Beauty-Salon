@@ -58,6 +58,13 @@ class BookingObserver
                 $this->handlePaymentStatusChange($booking);
             }
 
+            // نوبت «بدون پیش‌پرداخت» انجام شد: امتیاز باشگاه اگر مدیر روشن کرده (بسته‌ی 5ه، تصمیم ۹) — نوبت با پیش‌پرداخت امتیازش را
+            // لحظه‌ی پرداخت گرفته، پس هر نوبت فقط از یکی از دو راه
+            if ($booking->wasChanged('status') && $booking->status === 'completed' && ! $booking->prepayment_required
+                && ! $booking->customer_course_id && $booking->payment_status !== 'paid') {
+                $this->addNoPrepaymentLoyaltyPoints($booking);
+            }
+
             // جلسه‌ی دوره‌ی درمانی انجام شد: یک جلسه مصرف و درآمد متخصص (بسته‌ی ب)
             if ($booking->wasChanged('status') && $booking->status === 'completed' && $booking->customer_course_id) {
                 app(\App\Services\Courses\CourseService::class)->onBookingCompleted($booking);
@@ -577,6 +584,28 @@ class BookingObserver
                 'booking_id' => $booking->id,
                 'error' => $e->getMessage(),
             ]);
+        }
+    }
+
+    /**
+     * امتیاز نوبت «بدون پیش‌پرداخت» انجام‌شده (بسته‌ی 5ه، تصمیم ۹): «امتیاز ثابت هر نوبت» + یک امتیاز برای هر «چند تومان از قیمت خدمت»؛
+     * هر دو عدد را مدیر وارد کرده — بی آن‌ها (یا با کلید خاموش) هیچ امتیازی. فقط «انجام‌شده»، نه «نیامد» یا لغو؛ یک بار برای هر نوبت.
+     */
+    protected function addNoPrepaymentLoyaltyPoints(Booking $booking): void
+    {
+        try {
+            $rule = LoyaltySetting::noPrepaymentPoints();
+            $user = $booking->user;
+            if ($rule === null || ! $user || \App\Models\LoyaltyPoint::where('booking_id', $booking->id)->where('type', 'earned')->exists()) {
+                return;
+            }
+
+            $points = $rule['fixed'] + (int) floor((float) ($booking->service?->price ?? 0) / $rule['per_amount']);
+            if ($points > 0) {
+                $user->addLoyaltyPoints($points, "نوبت انجام‌شده #{$booking->id}", $booking->id);
+            }
+        } catch (\Exception $e) {
+            Log::error('❌ No-prepayment loyalty points failed', ['booking_id' => $booking->id, 'error' => $e->getMessage()]);
         }
     }
 
