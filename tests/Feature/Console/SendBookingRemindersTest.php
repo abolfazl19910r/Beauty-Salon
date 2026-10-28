@@ -107,7 +107,6 @@ class SendBookingRemindersTest extends TestCase
     {
         $reflection = new \ReflectionClass($job);
         $property = $reflection->getProperty('bookingId');
-        $property->setAccessible(true);
 
         return $property->getValue($job);
     }

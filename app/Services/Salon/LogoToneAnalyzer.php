@@ -61,11 +61,7 @@ class LogoToneAnalyzer
             return null;
         }
 
-        try {
-            return $this->classify($this->sample($source));
-        } finally {
-            imagedestroy($source);
-        }
+        return $this->classify($this->sample($source));
     }
 
     /** کوچک‌کردن تا ۹۶ پیکسل (سنجش سریع، حتی برای لوگوی ۲ مگابایتی) با حفظ شفافیت */
@@ -125,8 +121,6 @@ class LogoToneAnalyzer
                 }
             }
         }
-
-        imagedestroy($img);
 
         if ($ink <= 0 || $opaque / max(1, $pixels) >= self::OPAQUE_SHARE) {
             return self::MID;

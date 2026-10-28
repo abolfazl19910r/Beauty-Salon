@@ -73,8 +73,6 @@ class SalonPwaIcon
         ob_start();
         imagepng($canvas, null, 6);
         $png = (string) ob_get_clean();
-        imagedestroy($src);
-        imagedestroy($canvas);
 
         return $png;
     }

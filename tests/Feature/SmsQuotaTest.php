@@ -33,7 +33,6 @@ class SmsQuotaTest extends TestCase
 
         $reflection = new ReflectionClass($service);
         $property = $reflection->getProperty('api');
-        $property->setAccessible(true);
         $property->setValue($service, $apiSpy);
 
         return [$service, $apiSpy];

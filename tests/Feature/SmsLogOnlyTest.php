@@ -20,7 +20,6 @@ class SmsLogOnlyTest extends TestCase
         $apiSpy = \Mockery::mock(KavenegarApi::class);
 
         $property = (new ReflectionClass($service))->getProperty('api');
-        $property->setAccessible(true);
         $property->setValue($service, $apiSpy);
 
         return [$service, $apiSpy];

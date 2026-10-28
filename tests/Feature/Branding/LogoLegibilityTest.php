@@ -43,7 +43,6 @@ class LogoLegibilityTest extends TestCase
         imagefilledellipse($img, intdiv($size, 2), intdiv($size, 2), (int) ($size * 0.8), (int) ($size * 0.8), imagecolorallocate($img, ...$ink));
         ob_start();
         imagepng($img);
-        imagedestroy($img);
 
         return (string) ob_get_clean();
     }
