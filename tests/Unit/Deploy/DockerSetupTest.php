@@ -199,7 +199,20 @@ class DockerSetupTest extends TestCase
     {
         // wkhtmltopdf از Alpine 3.15 حذف شد و «apk add» build را می‌شکست؛ PDF با mPDF است (۲۰۲۶-۱۰-۲۳)
         $this->assertDoesNotMatchRegularExpression('/^\s+wkhtmltopdf\s*\\\\$/m', self::file('Dockerfile'));
-        $this->assertStringContainsString('FROM php:8.3-fpm-alpine AS production', self::file('Dockerfile'));
+        $this->assertStringContainsString('FROM php:8.5-fpm-alpine AS production', self::file('Dockerfile'));
+    }
+
+    public function test_php_85_image_and_mysql_84_compose_stay_startable(): void
+    {
+        // PHP 8.5: OPcache همیشه داخل PHP است و «docker-php-ext-install opcache» با cp: can't stat 'modules/*' می‌شکند (بسته‌ی 5ج)
+        preg_match('/docker-php-ext-install -j[^&]+/', self::file('Dockerfile'), $install);
+        $this->assertStringContainsString('pdo_mysql', $install[0]);
+        $this->assertDoesNotMatchRegularExpression('/^\s+opcache\b/m', $install[0]);
+
+        // MySQL 8.4: گزینه‌ی حذف‌شده‌ی skip-character-set-client-handshake سرور را با «unknown option» از کار می‌اندازد
+        $this->assertSame('mysql:8.4', Yaml::parse(self::file('docker-compose.yml'))['services']['mysql']['image']);
+        $this->assertDoesNotMatchRegularExpression('/^\s*skip-character-set-client-handshake/m', self::file('docker/mysql/my.cnf'));
+        $this->assertDoesNotMatchRegularExpression('/^\s*innodb_log_file_size/m', self::file('docker/mysql/my.cnf'));
     }
 
     public function test_redis_never_evicts_queue_jobs_or_sessions(): void

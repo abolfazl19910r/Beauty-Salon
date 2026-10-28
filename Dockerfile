@@ -1,6 +1,6 @@
 # ============================================================
 # Beauty Salon - Dockerfile
-# PHP 8.3 + Nginx + Node.js (multi-stage build)
+# PHP 8.5 + Nginx + Node.js (multi-stage build)
 #
 # دو target:
 #   production (پیش‌فرض docker-compose.yml): فقط برنامه؛ MySQL/Redis/workerها سرویس‌های جدای compose
@@ -59,10 +59,10 @@ RUN --mount=type=cache,target=/tmp/cache \
 
 
 # ─── Stage 3: Final image ───────────────────────────────────
-FROM php:8.3-fpm-alpine AS production
+FROM php:8.5-fpm-alpine AS production
 
 LABEL maintainer="Beauty Salon <info@beautysalon.ir>"
-LABEL description="Mahru - salon booking SaaS (Laravel 11)"
+LABEL description="Mahru - salon booking SaaS (Laravel 12)"
 
 # ─── System dependencies ────────────────────────────────────
 RUN apk add --no-cache \
@@ -94,6 +94,8 @@ RUN apk add --no-cache \
     ttf-dejavu
 
 # ─── PHP Extensions ─────────────────────────────────────────
+# OPcache از PHP 8.5 همیشه داخل خود PHP کامپایل می‌شود (در image رسمی از قبل فعال است)؛ «docker-php-ext-install opcache»
+# روی 8.5 با «cp: can't stat 'modules/*'» می‌شکند، پس دیگر در فهرست نیست. تنظیماتش همچنان از docker/php/php.ini است.
 # ⚠️ ابزار کامپایل ($PHPIZE_DEPS) صریحاً با نام مجازی «.phpize-deps» (۲۰۲۶-۱۰-۲۳): docker-php-ext-install در پایان ابزار
 # کامپایلی را که خودش نصب کرده پاک می‌کند، پس «pecl install redis» بعد از آن بی autoconf/phpize می‌شکست. با همین نام،
 # اسکریپت‌های image دیگر خودشان نصب/پاک نمی‌کنند و ما در آخر یک بار پاک می‌کنیم.
@@ -112,7 +114,6 @@ RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
         zip \
         intl \
         xml \
-        opcache \
     && pecl install redis \
     && docker-php-ext-enable redis \
     && apk del .phpize-deps \
