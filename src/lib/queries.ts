@@ -201,6 +201,9 @@ export function useCourseFileMutations(bookingId: number) {
       onSuccess: refresh,
     }),
     consent: useMutation({ mutationFn: async () => api.post(`/staff/bookings/${bookingId}/course-consent`), onSuccess: refresh }),
+    // درخواست رضایت از خود مشتری و ارسال دوباره (سرور ۲۰۲۶-۱۰-۲۸)
+    requestConsent: useMutation({ mutationFn: async () => api.post(`/staff/bookings/${bookingId}/course-consent/request`), onSuccess: refresh }),
+    resendConsent: useMutation({ mutationFn: async () => api.post(`/staff/bookings/${bookingId}/course-consent/resend`), onSuccess: refresh }),
     uploadPhoto: useMutation({
       mutationFn: async (args: { uri: string; kind: 'before' | 'after'; mimeType?: string | null }) => {
         const form = new FormData();

@@ -3,6 +3,7 @@
  * آزمون دود: صفحه‌های واقعی src/app با expo-router روی سرور ساختگی (fetch). روی گوشی امتحان نمی‌شود، ولی جریان
  * ورود، نمایش «امروز» و خروج اجباری با ۴۰۱ را از ابتدا تا انتها می‌گذراند.
  */
+import type { PhotoConsentState } from '@/lib/types';
 import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
 import { Alert } from 'react-native';
 
@@ -329,4 +330,39 @@ it('a new specialist activates the account with a code and lands on today', asyn
 
   await waitFor(() => expect(calls.find((c) => c.url.endsWith('/staff/activate/verify'))?.body).toMatchObject({ challenge: 'CH9', code: '123456' }));
   await waitFor(() => expect(mockSecure.get('mahru.token')).toBe('7|xyz'));
+});
+
+it('staff ask the customer for photo consent, see it pending and the in-person record stays (2026-10-28)', async () => {
+  mockSecure.set('mahru.token', '5|abc');
+  await require('@react-native-async-storage/async-storage').setItem('mahru.account', JSON.stringify(ACCOUNT));
+  const course = { id: 12, name: 'لیزر ۶ جلسه', session_number: 2, sessions_total: 6, label: 'جلسه‌ی ۲ از ۶', photo_consent: false };
+  const base: PhotoConsentState = { status: 'none', text: 'با گرفتن عکس قبل و بعد موافقم.', text_version: '1405-08-03', open_request: null, can_request: true, request_blocked_reason: null, next_request_at: null, can_resend: false, next_resend_at: null, history: [] };
+  let state: PhotoConsentState = base;
+  routes = (url, init) => {
+    if (url.endsWith('/staff/bookings/41/course-consent/request') && init.method === 'POST') {
+      state = { ...base, status: 'pending', can_request: false, request_blocked_reason: 'درخواست قبلی هنوز در انتظار پاسخ مشتری است.', open_request: { requested_at: null, expires_at: null, send_count: 1 }, history: [{ status: 'pending', source: null, label: 'در انتظار پاسخ مشتری', at: null, at_jalali: '1405/08/06 10:00' }] };
+      return [200, ok({ photo_consent_state: state })];
+    }
+    if (url.includes('/staff/bookings/41/course')) {
+      return [200, ok({ id: 12, name: 'لیزر ۶ جلسه', status: 'active', status_label: 'فعال', sessions_total: 6, sessions_used: 1, photo_consent: false, photo_consent_text: base.text, photo_consent_state: state, sessions: [
+        { booking_id: 41, session_number: 2, label: 'جلسه‌ی ۲ از ۶', status: 'confirmed', burned: false, booking_time_jalali: '1405/07/19 10:00', specialist: { id: 3, name: 'سارا احمدی' }, note: null, note_visible_to_customer: null, photos: [] },
+      ] })];
+    }
+    if (url.includes('/staff/bookings/41')) return [200, ok({ ...BOOKING, status: 'confirmed', course, actions: { confirm: false, cancel: true, complete: true } })];
+    if (url.includes('/staff/notifications')) return [200, ok([], { current_page: 1, last_page: 1, total: 0, per_page: 20, unread_count: 0 })];
+    return [404, { success: false, error: { code: 'not_found', message: 'x' } }];
+  };
+  const alert = jest.spyOn(Alert, 'alert').mockImplementation((_t, _m, buttons) => buttons?.find((b) => b.text === 'فرستادن')?.onPress?.());
+
+  renderRouter('./src/app', { initialUrl: '/booking/41' });
+
+  expect(await screen.findByText('ثبت حضوری رضایت')).toBeTruthy();
+  fireEvent.press(screen.getByText('درخواست رضایت از مشتری'));
+  expect(alert).toHaveBeenCalledWith('درخواست رضایت از مشتری؟', expect.stringContaining('سهمیه‌ی سالن'), expect.any(Array));
+  await waitFor(() => expect(calls.some((c) => c.url.endsWith('/course-consent/request'))).toBe(true));
+  expect(await screen.findByText(/در انتظار پاسخ مشتری \(/)).toBeTruthy();
+  expect(screen.getByText('ارسال دوباره فردا ممکن است.')).toBeTruthy();
+  expect(screen.getByText('سابقه‌ی رضایت عکس')).toBeTruthy();
+  expect(screen.queryByText('درخواست رضایت از مشتری')).toBeNull();
+  expect(screen.getByText('ثبت حضوری رضایت')).toBeTruthy();
 });

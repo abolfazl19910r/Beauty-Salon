@@ -62,6 +62,23 @@ export type Booking = {
   actions: { confirm: boolean; cancel: boolean; complete: boolean; no_show?: boolean };
 };
 
+/**
+ * رضایت عکس دوره (سرور ۲۰۲۶-۱۰-۲۸): خود مشتری در اپ، سایت یا لینک پیامک تصمیم می‌گیرد؛ ثبت حضوری کادر راه دوم است.
+ * قاعده‌ها: یک درخواست باز (۷ روز)، ارسال دوباره روزی یک بار، بعد از مخالفت ۲۴ ساعت صبر.
+ */
+export type PhotoConsentState = {
+  status: 'none' | 'pending' | 'declined' | 'granted';
+  text: string;
+  text_version: string;
+  open_request: { requested_at: string | null; expires_at: string | null; send_count: number } | null;
+  can_request: boolean;
+  request_blocked_reason: string | null;
+  next_request_at: string | null;
+  can_resend: boolean;
+  next_resend_at: string | null;
+  history: { status: string; source: string | null; label: string; at: string | null; at_jalali: string | null }[];
+};
+
 /** پرونده‌ی دوره روی یک نوبت: همه‌ی جلسه‌ها با یادداشت و عکس (GET staff/bookings/{id}/course) */
 export type CourseFile = {
   id: number;
@@ -73,6 +90,8 @@ export type CourseFile = {
   photo_consent: boolean;
   /** متن رضایت عکس که برای مشتری خوانده می‌شود (بسته‌ی مجوز 5د)؛ سرورهای قدیمی‌تر ندارند */
   photo_consent_text?: string;
+  /** سرور ۲۰۲۶-۱۰-۲۸ به بعد */
+  photo_consent_state?: PhotoConsentState;
   sessions: {
     booking_id: number;
     session_number: number | null;

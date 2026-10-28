@@ -6,7 +6,7 @@ import { errorMessage } from '@/lib/api';
 import { faDigits } from '@/lib/format';
 import { useCourseFile, useCourseFileMutations } from '@/lib/queries';
 import { useApi } from '@/lib/session';
-import type { Booking } from '@/lib/types';
+import type { Booking, PhotoConsentState } from '@/lib/types';
 import { Button, Card, ErrorBox, Field, Loading, Notice, Row, SectionTitle, T } from './kit';
 import { radius, space, usePalette } from './theme';
 
@@ -20,7 +20,7 @@ export function CourseFilePanel({ booking }: { booking: Booking }) {
   const p = usePalette();
   const api = useApi();
   const file = useCourseFile(booking.id, !!booking.course);
-  const { saveNote, consent, uploadPhoto } = useCourseFileMutations(booking.id);
+  const { saveNote, consent, requestConsent, resendConsent, uploadPhoto } = useCourseFileMutations(booking.id);
   const mine = file.data?.sessions.find((s) => s.booking_id === booking.id);
   const [note, setNote] = useState('');
   const [visible, setVisible] = useState(false);
@@ -61,6 +61,7 @@ export function CourseFilePanel({ booking }: { booking: Booking }) {
       { text: 'دوربین', onPress: () => void pick(kind, 'camera') },
     ]);
 
+  const state = file.data?.photo_consent_state;
   const others = (file.data?.sessions ?? []).filter((s) => s.booking_id !== booking.id && (s.note || s.photos.length > 0));
 
   return (
@@ -93,11 +94,27 @@ export function CourseFilePanel({ booking }: { booking: Booking }) {
         <Card>
           <Notice tone="warning" text="برای عکس قبل/بعد، رضایت مشتری لازم است (یک بار برای کل دوره)." />
           {file.data.photo_consent_text ? <T size={14} testID="photo-consent-text">{file.data.photo_consent_text}</T> : null}
-          <Button kind="secondary" title="مشتری رضایت داد" loading={consent.isPending}
+          {state ? <ConsentRequest state={state} requesting={requestConsent.isPending || resendConsent.isPending}
+            onRequest={() => Alert.alert('درخواست رضایت از مشتری؟', REQUEST_CONFIRM, [
+              { text: 'انصراف', style: 'cancel' },
+              { text: 'فرستادن', onPress: () => requestConsent.mutate(undefined, { onError: (e) => Alert.alert('فرستاده نشد', errorMessage(e)) }) },
+            ])}
+            onResend={() => resendConsent.mutate(undefined, { onError: (e) => Alert.alert('فرستاده نشد', errorMessage(e)) })} /> : null}
+          {/* راه دوم: ثبت حضوری (در سابقه «ثبت حضوری») */}
+          <Button kind="secondary" title={state ? 'ثبت حضوری رضایت' : 'مشتری رضایت داد'} loading={consent.isPending}
             onPress={() => Alert.alert('ثبت رضایت عکس؟', CONSENT_CONFIRM, [
               { text: 'انصراف', style: 'cancel' },
               { text: 'ثبت', onPress: () => consent.mutate(undefined, { onError: (e) => Alert.alert('ثبت نشد', errorMessage(e)) }) },
             ])} />
+        </Card>
+      ) : null}
+
+      {state && state.history.length > 0 ? (
+        <Card>
+          <T weight="medium">سابقه‌ی رضایت عکس</T>
+          {state.history.map((h, i) => (
+            <T key={i} muted size={13}>{faDigits(h.at_jalali ?? '')} — {h.label}</T>
+          ))}
         </Card>
       ) : null}
 
@@ -129,6 +146,24 @@ export function CourseFilePanel({ booking }: { booking: Booking }) {
       ) : null}
     </>
   );
+}
+
+export const REQUEST_CONFIRM = 'متن کامل رضایت با پوش اپ و پیامک لینک‌دار برای مشتری فرستاده می‌شود تا خودش موافقت یا مخالفت کند (پیامک از سهمیه‌ی سالن).';
+
+/** درخواست رضایت از خود مشتری (۲۰۲۶-۱۰-۲۸): در انتظار، ارسال دوباره روزی یک بار، یا دلیل بسته بودن درخواست تازه */
+function ConsentRequest({ state, requesting, onRequest, onResend }: { state: PhotoConsentState; requesting: boolean; onRequest: () => void; onResend: () => void }) {
+  if (state.open_request) {
+    return (
+      <>
+        <Notice tone="info" text={`در انتظار پاسخ مشتری (${faDigits(state.open_request.send_count)} بار فرستاده شد).`} />
+        {state.can_resend ? <Button small kind="ghost" title="ارسال دوباره" loading={requesting} onPress={onResend} /> : <T muted size={13}>ارسال دوباره فردا ممکن است.</T>}
+      </>
+    );
+  }
+  if (state.can_request) {
+    return <Button title="درخواست رضایت از مشتری" loading={requesting} onPress={onRequest} />;
+  }
+  return state.request_blocked_reason ? <T muted size={13}>{faDigits(state.request_blocked_reason)}</T> : null;
 }
 
 function PhotoStrip({ photos, source }: { photos: { id: number; kind: 'before' | 'after' }[]; source: (id: number) => { uri: string; headers?: Record<string, string> } }) {
