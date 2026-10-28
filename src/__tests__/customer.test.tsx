@@ -429,3 +429,36 @@ it('a 409 terms_update_required on booking opens the terms page; "not now" keeps
   await waitFor(() => expect(screen.queryByText(/نگهداری IP شش ماه/)).toBeNull());
   expect(calls.some((c) => c.url.endsWith('/customer/legal/accept'))).toBe(false);
 });
+
+it('the customer answers the salon photo consent request on the course page (2026-10-28)', async () => {
+  await signedIn();
+  let status = 'pending';
+  const state = () => ({
+    status, text: 'متن کامل رضایت عکس.', text_version: '1405-08-03', open_request: status === 'pending' ? { requested_at: null, expires_at: null, send_count: 1 } : null,
+    can_request: false, request_blocked_reason: null, next_request_at: null, can_resend: false, next_resend_at: null,
+    history: status === 'granted' ? [{ status: 'granted', source: 'app', label: 'موافقت — اپ مشتری', at: null, at_jalali: '1405/08/06 10:00' }] : [],
+  });
+  routes = (url, init) => {
+    if (url.endsWith('/customer/courses/12/photo-consent') && init.method === 'POST') {
+      status = 'granted';
+      return [200, ok({ photo_consent: true, photo_consent_state: state() })];
+    }
+    if (url.includes('/customer/courses/12')) {
+      return [200, ok({ ...COURSE, status: 'active', status_label: 'فعال', photo_consent: status === 'granted', photo_consent_text: 'متن کامل رضایت عکس.', photo_consent_state: state(), actions: { pay: false, book: false }, book_blocker: null, sessions: [], payments: [] })];
+    }
+    return notFound;
+  };
+
+  renderRouter('./src/customer', { initialUrl: '/course/12' });
+
+  expect(await screen.findByText('سالن رضایت شما را برای عکس قبل و بعد این دوره خواسته است.')).toBeTruthy();
+  expect(screen.getByText('موافق نیستم')).toBeTruthy();
+  fireEvent.press(screen.getByText('موافقم'));
+  expect(calls.some((c) => c.url.endsWith('/photo-consent'))).toBe(false);
+  fireEvent(screen.getByLabelText('متن را خواندم'), 'valueChange', true);
+  fireEvent.press(screen.getByText('موافقم'));
+
+  await waitFor(() => expect(calls.find((c) => c.method === 'POST' && c.url.endsWith('/customer/courses/12/photo-consent'))?.body).toEqual({ decision: 'agree' }));
+  expect(await screen.findByText('پس گرفتن رضایت')).toBeTruthy();
+  expect(screen.getByText(/موافقت — اپ مشتری/)).toBeTruthy();
+});

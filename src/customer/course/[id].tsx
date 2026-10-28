@@ -1,5 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { Alert, Image, Pressable, RefreshControl, View } from 'react-native';
+import { useState } from 'react';
+import { Alert, Image, Pressable, RefreshControl, Switch, View } from 'react-native';
 
 import { errorMessage } from '@/lib/api';
 import { useCourse, useCourseActions } from '@/lib/customer/queries';
@@ -21,7 +22,8 @@ export default function CourseDetailScreen() {
   const p = usePalette();
   const api = useApi();
   const course = useCourse(courseId);
-  const { deletePhoto, withdrawConsent } = useCourseActions();
+  const { deletePhoto, withdrawConsent, decideConsent } = useCourseActions();
+  const [readText, setReadText] = useState(false);
 
   if (course.isPending) {
     return <Screen><Loading /></Screen>;
@@ -75,6 +77,32 @@ export default function CourseDetailScreen() {
               { text: 'نه', style: 'cancel' },
               { text: 'پس می‌گیرم', style: 'destructive', onPress: () => withdrawConsent.mutate(c.id, { onError: (e) => Alert.alert('انجام نشد', errorMessage(e)) }) },
             ])} />
+        </Card>
+      ) : c.photo_consent_state && c.status !== 'cancelled' ? (
+        <Card>
+          {/* ۲۰۲۶-۱۰-۲۸: خود مشتری موافقت یا مخالفت می‌کند (درخواست کادر، یا هر وقت خودش بخواهد) */}
+          <T weight="medium">رضایت عکس قبل و بعد</T>
+          {c.photo_consent_state.status === 'pending' ? <Notice tone="warning" text="سالن رضایت شما را برای عکس قبل و بعد این دوره خواسته است." /> : null}
+          <T size={14} testID="photo-consent-full-text">{c.photo_consent_state.text}</T>
+          <Row style={{ alignItems: 'center' }}>
+            <Switch value={readText} onValueChange={setReadText} trackColor={{ true: p.gold }} accessibilityLabel="متن را خواندم" />
+            <T size={14}>متن بالا را خواندم.</T>
+          </Row>
+          <Row>
+            <Button small title="موافقم" disabled={!readText} loading={decideConsent.isPending}
+              onPress={() => decideConsent.mutate({ courseId: c.id, decision: 'agree' }, { onError: (e) => Alert.alert('ثبت نشد', errorMessage(e)) })} />
+            {c.photo_consent_state.status === 'pending' ? (
+              <Button small kind="ghost" title="موافق نیستم" loading={decideConsent.isPending}
+                onPress={() => decideConsent.mutate({ courseId: c.id, decision: 'decline' }, { onError: (e) => Alert.alert('ثبت نشد', errorMessage(e)) })} />
+            ) : null}
+          </Row>
+        </Card>
+      ) : null}
+
+      {c.photo_consent_state && c.photo_consent_state.history.length > 0 ? (
+        <Card>
+          <T weight="medium">سابقه‌ی رضایت عکس</T>
+          {c.photo_consent_state.history.map((h, i) => <T key={i} muted size={13}>{faDigits(h.at_jalali ?? '')} — {h.label}</T>)}
         </Card>
       ) : null}
 

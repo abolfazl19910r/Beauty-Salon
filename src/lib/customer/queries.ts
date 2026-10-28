@@ -356,6 +356,12 @@ export function useCourseActions() {
         })).data,
       onSuccess: refresh,
     }),
+    // موافقت (هر وقت) یا مخالفت با درخواست کادر (سرور ۲۰۲۶-۱۰-۲۸)
+    decideConsent: useMutation({
+      mutationFn: async (args: { courseId: number; decision: 'agree' | 'decline' }) =>
+        api.post(`/customer/courses/${args.courseId}/photo-consent`, { decision: args.decision }),
+      onSuccess: (_r, args) => void qc.invalidateQueries({ queryKey: ckeys.course(args.courseId) }),
+    }),
     withdrawConsent: useMutation({
       mutationFn: async (courseId: number) => api.post(`/customer/courses/${courseId}/photo-consent/withdraw`),
       onSuccess: (_r, courseId) => void qc.invalidateQueries({ queryKey: ckeys.course(courseId) }),

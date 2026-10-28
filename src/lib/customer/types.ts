@@ -1,6 +1,7 @@
 /** شکل پاسخ‌های /api/v1/customer/* (بسته‌ی ۳الف لاراول، CustomerPresenter و کنترلرهای Customer*) */
 
 import type { LogoTone } from '../logo';
+import type { PhotoConsentState } from '../types';
 
 export type SalonCard = {
   id: number;
@@ -310,6 +311,8 @@ export type CourseSession = {
 export type CourseDetail = Course & {
   sessions: CourseSession[];
   payments: { amount: number; method: string; created_at: string | null }[];
+  /** رضایت عکس از زبان خود مشتری (سرور ۲۰۲۶-۱۰-۲۸؛ سرور قدیمی ندارد) */
+  photo_consent_state?: PhotoConsentState;
 };
 
 export type CoursePayOptions = { balance_due: number; min_amount: number; wallet_balance: number; online_payment: boolean; gateways: Gateway[] };
