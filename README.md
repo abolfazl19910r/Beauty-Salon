@@ -95,7 +95,7 @@
 
 ### 🧴 دوره‌های درمانی چندجلسه‌ای
 - بسته‌های چندجلسه‌ای و چندخدمتی، پرداخت و پیگیری جلسه‌ها، یادآوری و انقضا
-- یادداشت و عکس قبل/بعد هر جلسه **فقط با رضایت ثبت‌شده‌ی مشتری**، روی دیسک خصوصی
+- یادداشت و عکس قبل/بعد هر جلسه **فقط با رضایت ثبت‌شده‌ی مشتری**، روی دیسک خصوصی؛ رضایت را خود مشتری در اپ، سایت سالن یا لینک پیامک می‌دهد (یا کادر حضوری ثبت می‌کند) و سابقه‌اش با زمان، IP، نسخه‌ی متن و منبع می‌ماند
 
 ### 💳 پرداخت و کیف پول
 - **چند درگاه برای هر سالن:** زرین‌پال، زیبال، وندار، آسان‌پرداخت، سامان، ملت، پارسیان — مشتری درگاه را انتخاب می‌کند و در صورت قطعی، درگاه بعدی امتحان می‌شود؛ کارمزد درگاه به مبلغ مشتری اضافه می‌شود
@@ -572,7 +572,7 @@ php artisan perf:seed-load --salons=100       # فقط دیتابیس آزمای
 | سالن، پلن و اشتراک | `salons`، `salon_admins`، `plans`، `plan_features`، `salon_feature_overrides`، `invoices`، `salon_sms_usages`، `salon_sms_templates`، `sms_credit_purchases`، `salon_verifications` |
 | کاربران و دسترسی | `users`، `roles`، `permissions`، `role_user*`، `permission_role`، `personal_access_tokens`، `password_reset_tokens`، `sessions`، `trusted_devices`، `legal_acceptances`، `deleted_account_archives` |
 | خدمات و متخصص‌ها | `categories`، `beauty_services`، `specialists`، `specialist_services`، `specialist_schedules`، `holidays`، `leaves` |
-| نوبت و دوره | `bookings`، `course_packages`، `customer_courses`، `customer_course_payments`، `course_session_notes`، `course_session_photos`، `course_reminders`، `course_settings` |
+| نوبت و دوره | `bookings`، `course_packages`، `customer_courses`، `customer_course_payments`، `course_session_notes`، `course_session_photos`، `course_reminders`، `course_photo_consents`، `course_settings` |
 | پرداخت | `payments`، `payment_transactions`، `salon_payment_gateways`، `idempotency_keys` |
 | کیف پول و تسویه | `user_wallets`، `user_wallet_transactions`، `specialist_wallets`، `wallet_transactions`، `withdrawal_requests`، `admin_wallet`، `admin_wallet_transactions`، `wallet_settings` |
 | تخفیف، وفاداری و بازگشت | `discount_codes`، `discount_usages`، `loyalty_points`، `loyalties`، `loyalty_settings`، `rewards`، `winback_*` |
@@ -639,6 +639,12 @@ php artisan up
 ## 🆕 آخرین تغییرات
 
 تاریخچه‌ی کامل، تصمیم‌ها و قدم‌های باز در [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md).
+
+**۲۰۲۶-۱۰-۲۸ — پذیرش دوباره‌ی قوانین و رضایت عکس از زبان مشتری**
+- `config/legal.php` حالا برای هر نسخه‌ی قوانین، حریم خصوصی و قوانین سالن‌ها خلاصه‌ی تغییر و پرچم «مهم» دارد. فقط تغییر مهم پذیرش دوباره می‌خواهد: مشتری بعد از ورود صفحه‌ی «قوانین به‌روز شد» را می‌بیند و تا نپذیرد نوبت یا دوره‌ی تازه نمی‌گیرد (خروج، حذف حساب، نوبت‌های فعلی و شکایت باز است)؛ پنل مالک سالن تا پذیرش قوانین سالن‌ها قفل است و منشی فقط نوار «منتظر پذیرش مالک» می‌بیند. اپ‌های پیش از 0.3.7 قفل نمی‌شوند و پذیرششان ضمنی ثبت می‌شود. پذیرش‌ها مثل قبل در `legal_acceptances`.
+- رضایت عکس دوره: کارمند در اپ همکار یا پنل متخصص «درخواست رضایت» می‌فرستد (پوش و پیامک لینک‌دار از سهمیه‌ی پیامک سالن)؛ مشتری متن کامل را در اپ، «دوره‌های من» یا صفحه‌ی لینک پیامک می‌بیند و خودش موافقت یا مخالفت می‌کند. ثبت حضوری کادر راه دوم است. هر درخواست و تصمیم با زمان، IP، نسخه‌ی متن و منبع در جدول تازه‌ی `course_photo_consents` می‌ماند و در پنل‌ها با برچسب («ثبت حضوری»، «لینک پیامک»…) دیده می‌شود. یک درخواست باز برای هر دوره، ارسال دوباره روزی یک بار، بعد از مخالفت ۲۴ ساعت صبر.
+- رفع: صفحه‌ی دوره در پنل مدیر کاربر هر ردیف تاریخچه را جدا می‌خواند (N+1).
+- اپ مشتری و همکار 0.3.7. یک migration تازه: `php artisan migrate` (یا `migrate:fresh --seed`). متغیر تازه‌ای ندارد.
 
 **۲۰۲۶-۱۰-۲۷ — خطای 1067 در `migrate:fresh` روی XAMPP**
 - روی MariaDB قدیمی‌تر از 10.10 (مثل XAMPP، `explicit_defaults_for_timestamp=OFF`) ساخت `deleted_account_archives` با «1067 Invalid default value for 'purge_after'» می‌شکست و سه ستون دیگر بی‌صدا `ON UPDATE CURRENT_TIMESTAMP` می‌گرفتند. هر پنج ستون timestamp حالا پیش‌فرض صریح دارند یا nullable‌اند، و یک تست همه‌ی migrationها را برای این الگو می‌پاید. دیتابیس لوکال: `php artisan migrate:fresh --seed`.

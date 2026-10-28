@@ -95,7 +95,7 @@ All salons share **one database**; isolation is done in the application:
 
 ### 🧴 Multi-session treatment courses
 - Multi-session, multi-service packages, payment and session tracking, reminders and expiry
-- Per-session notes and before/after photos **only with the customer's recorded consent**, stored on a private disk
+- Per-session notes and before/after photos **only with the customer's recorded consent**, stored on a private disk; the customer gives consent in the app, on the salon site or through an SMS link (or staff record it in person), and its history is kept with time, IP, text version and source
 
 ### 💳 Payments and wallets
 - **Several gateways per salon:** Zarinpal, Zibal, Vandar, AsanPardakht, Saman, Mellat, Parsian — the customer picks one, and on outage the next one is tried; gateway fees are added to the customer's amount
@@ -572,7 +572,7 @@ php artisan perf:seed-load --salons=100       # test database only
 | Salons, plans, subscriptions | `salons`, `salon_admins`, `plans`, `plan_features`, `salon_feature_overrides`, `invoices`, `salon_sms_usages`, `salon_sms_templates`, `sms_credit_purchases`, `salon_verifications` |
 | Users and access | `users`, `roles`, `permissions`, `role_user*`, `permission_role`, `personal_access_tokens`, `password_reset_tokens`, `sessions`, `trusted_devices`, `legal_acceptances`, `deleted_account_archives` |
 | Services and specialists | `categories`, `beauty_services`, `specialists`, `specialist_services`, `specialist_schedules`, `holidays`, `leaves` |
-| Bookings and courses | `bookings`, `course_packages`, `customer_courses`, `customer_course_payments`, `course_session_notes`, `course_session_photos`, `course_reminders`, `course_settings` |
+| Bookings and courses | `bookings`, `course_packages`, `customer_courses`, `customer_course_payments`, `course_session_notes`, `course_session_photos`, `course_reminders`, `course_photo_consents`, `course_settings` |
 | Payments | `payments`, `payment_transactions`, `salon_payment_gateways`, `idempotency_keys` |
 | Wallets and payouts | `user_wallets`, `user_wallet_transactions`, `specialist_wallets`, `wallet_transactions`, `withdrawal_requests`, `admin_wallet`, `admin_wallet_transactions`, `wallet_settings` |
 | Discounts, loyalty, win-back | `discount_codes`, `discount_usages`, `loyalty_points`, `loyalties`, `loyalty_settings`, `rewards`, `winback_*` |
@@ -639,6 +639,12 @@ Cron and workers: [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCH
 ## 🆕 Changelog
 
 Full history, decisions and open items in [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md) (Persian).
+
+**2026-10-28 — terms re-acceptance and photo consent from the customer**
+- `config/legal.php` now has a change summary and a "major" flag for every version of the terms, privacy policy and salon terms. Only a major change requires re-acceptance: after login the customer sees a "terms updated" page and cannot book a new appointment or course until accepting (logout, account deletion, current bookings and complaints stay open); the salon owner's panel is locked until the salon terms are accepted, and secretaries only see an "awaiting the owner" banner. Apps older than 0.3.7 are not locked; their acceptance is recorded as implicit. Acceptances are stored in `legal_acceptances` as before.
+- Course photo consent: staff send a "consent request" from the staff app or the specialist panel (push plus an SMS link taken from the salon's SMS quota); the customer reads the full text in the app, in "my courses" or on the SMS-link page and agrees or declines themselves. The in-person record by staff is the second way. Every request and decision is kept with time, IP, text version and source in the new `course_photo_consents` table and shown in the panels with labels ("in-person record", "SMS link", ...). One open request per course, "send again" once a day, a 24-hour wait after a decline.
+- Fix: the admin course page loaded the user of every activity row separately (N+1).
+- Customer and staff apps 0.3.7. One new migration: `php artisan migrate` (or `migrate:fresh --seed`). No new variables.
 
 **2026-10-27 — error 1067 in `migrate:fresh` on XAMPP**
 - On MariaDB older than 10.10 (like XAMPP, `explicit_defaults_for_timestamp=OFF`) creating `deleted_account_archives` failed with "1067 Invalid default value for 'purge_after'", and three other columns silently got `ON UPDATE CURRENT_TIMESTAMP`. All five timestamp columns now have an explicit default or are nullable, and a test checks every migration for this pattern. Local database: `php artisan migrate:fresh --seed`.
