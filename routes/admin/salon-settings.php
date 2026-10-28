@@ -16,3 +16,4 @@ Route::get('/booking-policy', [\App\Http\Controllers\Admin\BookingPolicy\AdminBo
 Route::put('/booking-policy/mode', [\App\Http\Controllers\Admin\BookingPolicy\AdminBookingPolicyController::class, 'updateMode'])->name('booking-policy.mode');
 Route::put('/booking-policy/loyalty', [\App\Http\Controllers\Admin\BookingPolicy\AdminBookingPolicyController::class, 'updateLoyalty'])->name('booking-policy.loyalty');
 Route::put('/booking-policy/limits', [\App\Http\Controllers\Admin\BookingPolicy\AdminBookingPolicyController::class, 'updateLimits'])->name('booking-policy.limits');
+Route::put('/booking-policy/no-show', [\App\Http\Controllers\Admin\BookingPolicy\AdminBookingPolicyController::class, 'updateNoShow'])->name('booking-policy.no-show');

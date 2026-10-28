@@ -64,7 +64,10 @@ class BookingRescheduleService
             $limits->assertCanBook((int) $booking->user_id, $bookingTime, $booking->id, countActive: false);
 
             $oldTime = $booking->booking_time;
-            $newStatus = $booking->specialist->auto_confirm_bookings ? 'confirmed' : 'pending';
+            // مشتری بدقول در سالن بی درگاه (بسته‌ی 5ه): تأیید دستی اجباری در جابه‌جایی هم
+            $forcePending = ! $booking->prepayment_required && $booking->user
+                && app(BookingPaymentPolicy::class)->termsFor($booking->user, (float) ($booking->service?->price ?? 0))->forcePending;
+            $newStatus = $booking->specialist->auto_confirm_bookings && ! $forcePending ? 'confirmed' : 'pending';
 
             $this->bookingRepository->update($booking, [
                 'booking_time' => $bookingTime,

@@ -86,6 +86,7 @@
                         <div>
                             <p class="font-bold" style="color:var(--admin-text);">{{ $booking->user->name }}</p>
                             <p class="text-sm" dir="ltr" style="color:var(--admin-text-dim);">{{ $booking->user->phone }}</p>
+                            <x-no-show-badge :label="app(\App\Services\Booking\NoShowRecord::class)->label($booking->user)" class="mt-1" />
                         </div>
                         <a href="{{ route('admin.users.show', $booking->user) }}"
                            class="mr-auto text-xs px-2.5 py-1 rounded-lg transition-colors"

@@ -132,4 +132,28 @@ class AdminBookingPolicyController extends Controller
 
         return redirect()->route('admin.booking-policy.edit')->with('success', 'سقف نوبت مشتری ذخیره شد.');
     }
+
+    /** مشتری بدقول (تصمیم ۱۶): آستانه و بازه، و دو محافظ سالن بی درگاه */
+    public function updateNoShow(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'no_show_threshold' => ['nullable', 'integer', 'min:0', 'max:50'],
+            'no_show_window_days' => ['required', 'integer', 'min:1', 'max:730'],
+            'flagged_force_pending' => ['nullable', 'boolean'],
+            'flagged_active_limit' => ['nullable', 'integer', 'min:0', 'max:50'],
+        ], [], [
+            'no_show_threshold' => 'تعداد «نیامد»',
+            'no_show_window_days' => 'بازه‌ی روز',
+            'flagged_active_limit' => 'سقف نوبت فعال مشتری بدقول',
+        ]);
+
+        BookingPolicy::current()->update([
+            'no_show_threshold' => $data['no_show_threshold'] ?? null,
+            'no_show_window_days' => (int) $data['no_show_window_days'],
+            'flagged_force_pending' => $request->boolean('flagged_force_pending'),
+            'flagged_active_limit' => $data['flagged_active_limit'] ?? null,
+        ]);
+
+        return redirect()->route('admin.booking-policy.edit')->with('success', 'تنظیمات مشتری بدقول ذخیره شد.');
+    }
 }

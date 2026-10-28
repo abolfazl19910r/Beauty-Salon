@@ -19,7 +19,10 @@ class StaffBookingPresenter
         'pending_payment' => 'در انتظار پرداخت',
     ];
 
-    public static function present(Booking $booking): array
+    /**
+     * @param  array<int, string>|null  $noShowLabels  برچسب‌های بدقولی یک فهرست (NoShowRecord::labelsFor)؛ null = برای همین نوبت حساب شود
+     */
+    public static function present(Booking $booking, ?array $noShowLabels = null): array
     {
         $time = $booking->booking_time;
 
@@ -40,7 +43,13 @@ class StaffBookingPresenter
                 'id' => $booking->user->id,
                 'name' => $booking->user->name,
                 'phone' => $booking->user->phone,
+                // بسته‌ی 5ه: «بدقول: N بار نیامد در M روز» یا null
+                'no_show_label' => $noShowLabels !== null
+                    ? ($noShowLabels[$booking->user_id] ?? null)
+                    : app(\App\Services\Booking\NoShowRecord::class)->label($booking->user),
             ] : null,
+            // بسته‌ی 5ه: false = بدون پیش‌پرداخت (کل مبلغ در سالن)
+            'prepayment_required' => (bool) $booking->prepayment_required,
             'prepayment_amount' => (float) $booking->prepayment_amount,
             'discount_amount' => (float) $booking->discount_amount,
             'remaining_amount' => $booking->remaining_amount,

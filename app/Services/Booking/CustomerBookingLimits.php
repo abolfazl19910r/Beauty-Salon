@@ -54,8 +54,15 @@ class CustomerBookingLimits
     public function activeLimitFor(int $userId, ?BookingPolicy $policy = null): ?int
     {
         $policy ??= BookingPolicy::current();
+        $limit = BookingPolicy::limit($policy->active_limit);
 
-        return BookingPolicy::limit($policy->active_limit);
+        // مشتری بدقولی که پیش‌پرداخت از او ممکن نیست (سالن بی درگاه): سقف کمتر (پیش‌فرض ۱، قابل تنظیم مدیر) — بسته‌ی 5ه، تصمیم ۱۶
+        $flaggedLimit = BookingPolicy::limit($policy->flagged_active_limit);
+        if ($flaggedLimit !== null && app(BookingPaymentPolicy::class)->flaggedWithoutPrepayment($userId)) {
+            $limit = $limit === null ? $flaggedLimit : min($limit, $flaggedLimit);
+        }
+
+        return $limit;
     }
 
     /** نوبت‌های فعال همین مشتری در روز همین نوبت (برای هشدار رزرو دستی کادر هم) */

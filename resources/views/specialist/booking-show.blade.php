@@ -47,6 +47,7 @@
                         <h3 class="text-sm font-bold text-[var(--specialist-plum-light)] font-serif-fa border-b pb-2" style="border-color: var(--specialist-border);">اطلاعات مشتری</h3>
                         <p class="text-[var(--specialist-text-dim)]"><span class="text-[var(--specialist-plum-muted)]">نام مشتری:</span> {{ $booking->user->name }}</p>
                         <p class="text-[var(--specialist-text-dim)]"><span class="text-[var(--specialist-plum-muted)]">شماره تماس:</span> <span dir="ltr">{{ $booking->user->phone }}</span></p>
+                        <x-no-show-badge :label="app(\App\Services\Booking\NoShowRecord::class)->label($booking->user)" />
                     </div>
 
                     <div class="space-y-3">

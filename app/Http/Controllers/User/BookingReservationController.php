@@ -72,8 +72,11 @@ class BookingReservationController extends Controller
                 return back()->with('error', $e->getUserMessage());
             }
 
-            $prepaymentAmount = $this->bookingService->calculatePrepayment((float) $service->price)['original_amount'];
+            $calc = $this->bookingService->calculatePrepayment((float) $service->price);
+            $prepaymentAmount = $calc['original_amount'];
             $prepaymentRequired = $prepaymentAmount > 0;
+            // مشتری بدقول (بسته‌ی 5ه): چرا پیش‌پرداخت یا تأیید سالن
+            $bookingNotice = $calc['prepayment_reason'] === 'no_show' ? \App\Services\Booking\NoShowRecord::customerNotice($prepaymentRequired) : null;
 
             session([
                 'pending_booking' => [
@@ -83,7 +86,7 @@ class BookingReservationController extends Controller
                 ],
             ]);
 
-            return view('bookings.confirm', compact('service', 'specialist', 'bookingTime', 'prepaymentAmount', 'prepaymentRequired'));
+            return view('bookings.confirm', compact('service', 'specialist', 'bookingTime', 'prepaymentAmount', 'prepaymentRequired', 'bookingNotice'));
 
         } catch (Exception $e) {
             Log::error('خطا در تأیید نوبت', ['error' => $e->getMessage()]);

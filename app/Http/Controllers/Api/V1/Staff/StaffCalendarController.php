@@ -53,6 +53,8 @@ class StaffCalendarController extends StaffController
             ->whereNotIn('status', ['cancelled', 'pending_payment'])
             ->with(['service', 'user'])->orderBy('booking_time')->get()
             ->groupBy(fn (Booking $b) => $b->booking_time->toDateString());
+        // بسته‌ی 5ه: برچسب بدقولی مشتری‌ها با دو کوئری برای کل بازه
+        $noShowLabels = app(\App\Services\Booking\NoShowRecord::class)->labelsFor($bookings->flatten()->pluck('user_id'));
 
         $days = [];
         for ($day = $from->copy(); $day->lte($to); $day->addDay()) {
@@ -69,7 +71,7 @@ class StaffCalendarController extends StaffController
                 'holiday' => ($h = $holidays->get($date)) ? ['description' => $h->description] : null,
                 'leave' => $leave ? ['id' => $leave->id, 'status' => $leave->status] : null,
                 'bookings' => ($bookings->get($date) ?? collect())
-                    ->map(fn (Booking $b) => StaffBookingPresenter::present($b))->values(),
+                    ->map(fn (Booking $b) => StaffBookingPresenter::present($b, $noShowLabels))->values(),
             ];
         }
 

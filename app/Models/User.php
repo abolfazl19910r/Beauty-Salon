@@ -87,6 +87,7 @@ class User extends Authenticatable
     protected $casts = [
         'password' => 'hashed',
         'phone_verified_at' => 'datetime',
+        'no_show_cleared_at' => 'datetime',
         'is_admin' => 'boolean',
         'verification_code_expire_at' => 'datetime',
         'login_verification_code_expire_at' => 'datetime',

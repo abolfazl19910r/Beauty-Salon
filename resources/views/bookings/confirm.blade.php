@@ -67,6 +67,10 @@
                 @endif
             </div>
 
+            @if (! empty($bookingNotice))
+                <div class="rounded-xl px-4 py-3 text-sm border border-amber-700/25 bg-amber-900/15 text-m-warn" data-booking-notice>{{ $bookingNotice }}</div>
+            @endif
+
             {{-- Explanation --}}
             <div class="flex items-start gap-3 bg-m-info/20 border border-m-info/30 rounded-xl px-4 py-3 text-sm text-m-info">
                 <svg class="w-4 h-4 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">

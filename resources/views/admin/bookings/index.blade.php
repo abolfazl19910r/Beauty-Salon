@@ -156,6 +156,7 @@
                     </tr>
                     </thead>
                     <tbody>
+                    @php $noShowLabels = app(\App\Services\Booking\NoShowRecord::class)->labelsFor($bookings->pluck('user_id')); @endphp
                     @forelse($bookings as $booking)
                         <tr style="border-bottom:1px solid var(--admin-border);"
                             onmouseover="this.style.background='var(--admin-accent-light)'"
@@ -173,6 +174,7 @@
                                         <div>
                                             <p class="font-medium" style="color:var(--admin-text);">{{ $booking->user->name }}</p>
                                             <p class="text-xs" dir="ltr" style="color:var(--admin-text-dim);">{{ $booking->user->phone }}</p>
+                                            <x-no-show-badge :label="$noShowLabels[$booking->user_id] ?? null" class="mt-1" />
                                         </div>
                                     </div>
                                 @else

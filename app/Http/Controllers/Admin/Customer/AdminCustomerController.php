@@ -57,6 +57,35 @@ class AdminCustomerController extends Controller
             'canSellCourses' => (bool) $salon?->hasFeature(Feature::TreatmentCourses),
             'walletBalance' => (float) ($user->wallet()->first()?->balance ?? 0),
             'points' => $loyalty->getCurrentPoints($user->id),
+            'noShow' => $this->noShowSummary($user),
         ]);
+    }
+
+    /** بسته‌ی 5ه، تصمیم ۱۶: مدیر محدودیت مشتری بدقول را دستی برمی‌دارد — سابقه می‌ماند، «نیامد»های پیش از این لحظه شمرده نمی‌شوند */
+    public function clearNoShow(int $customer): \Illuminate\Http\RedirectResponse
+    {
+        $salon = app(CurrentSalon::class)->get();
+        $user = User::query()->where('salon_id', $salon?->id)->where('user_type', 'customer')->findOrFail($customer);
+        $user->forceFill(['no_show_cleared_at' => now()])->save();
+        activity()->performedOn($user)->causedBy(auth()->user())->log('customer_no_show_cleared');
+
+        return redirect()->route('admin.customers.show', $user->id)->with('success', 'محدودیت مشتری برداشته شد؛ از این پس مثل بقیه‌ی مشتری‌ها رزرو می‌کند.');
+    }
+
+    private function noShowSummary(User $user): array
+    {
+        $record = app(\App\Services\Booking\NoShowRecord::class);
+        $policy = \App\Models\BookingPolicy::current();
+        $label = $record->label($user, $policy);
+        $payment = app(\App\Services\Booking\BookingPaymentPolicy::class);
+
+        return [
+            'count' => $record->count($user, $policy),
+            'days' => (int) $policy->no_show_window_days,
+            'label' => $label,
+            'effect' => $label === null ? null : ($payment->flaggedWithoutPrepayment($user)
+                ? ($policy->flagged_force_pending ? 'نوبت آنلاینش همیشه منتظر تأیید شما می‌ماند و سقف نوبت فعالش کمتر است.' : 'سقف نوبت فعالش کمتر است.')
+                : 'فقط با پیش‌پرداخت آنلاین می‌تواند رزرو کند.'),
+        ];
     }
 }

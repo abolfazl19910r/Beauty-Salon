@@ -201,6 +201,8 @@ class BookingService
             'discount_code' => $discountCode?->code,
             'discount_base' => $discountBase,
             'prepayment_required' => $terms->prepaymentRequired,
+            // no_show: پیش‌پرداخت یا تأیید دستی به‌خاطر بدقولی همین مشتری (بسته‌ی 5ه)
+            'prepayment_reason' => $terms->reason,
             'terms' => $terms,
         ];
     }

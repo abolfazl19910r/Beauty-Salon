@@ -29,6 +29,7 @@ class StaffBookingController extends StaffController
         $specialist = $this->specialist($request);
         $bookings = $this->dashboard->getTodaySchedule($specialist);
         $cancelled = $this->dashboard->getTodayCancelled($specialist);
+        $labels = $this->noShowLabels(collect($bookings));
 
         return ApiResponse::success([
             'date' => Carbon::today()->toDateString(),
@@ -41,8 +42,8 @@ class StaffBookingController extends StaffController
                 'cancelled_count' => $cancelled->count(),
                 'revenue' => $this->dashboard->getTodayRevenue($specialist),
             ],
-            'bookings' => $bookings->map(fn (Booking $b) => StaffBookingPresenter::present($b))->values(),
-            'cancelled' => $cancelled->map(fn (Booking $b) => StaffBookingPresenter::present($b))->values(),
+            'bookings' => $bookings->map(fn (Booking $b) => StaffBookingPresenter::present($b, $labels))->values(),
+            'cancelled' => $cancelled->map(fn (Booking $b) => StaffBookingPresenter::present($b, []))->values(),
         ]);
     }
 
@@ -74,9 +75,10 @@ class StaffBookingController extends StaffController
             : $query->where('status', '!=', 'pending_payment');
 
         $page = $query->paginate((int) ($input['per_page'] ?? 20));
+        $labels = $this->noShowLabels(collect($page->items()));
 
         return ApiResponse::success(
-            collect($page->items())->map(fn (Booking $b) => StaffBookingPresenter::present($b))->values(),
+            collect($page->items())->map(fn (Booking $b) => StaffBookingPresenter::present($b, $labels))->values(),
             $this->pageMeta($page) + ['from' => $from->toDateString(), 'to' => $to->toDateString()],
         );
     }
@@ -144,5 +146,11 @@ class StaffBookingController extends StaffController
             StaffBookingPresenter::present($booking->fresh(['service', 'user'])),
             ['changed' => $changed],
         );
+    }
+
+    /** برچسب بدقولی مشتری‌های یک فهرست با دو کوئری (بسته‌ی 5ه) */
+    private function noShowLabels(\Illuminate\Support\Collection $bookings): array
+    {
+        return app(\App\Services\Booking\NoShowRecord::class)->labelsFor($bookings->pluck('user_id'));
     }
 }

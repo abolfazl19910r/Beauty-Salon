@@ -198,6 +198,9 @@ class CustomerBookingController extends CustomerController
             'price' => (float) $service->price,
             // بسته‌ی 5ه: false = بدون پیش‌پرداخت، کل مبلغ در سالن (prepayment_amount = ۰)
             'prepayment_required' => (bool) $calc['prepayment_required'],
+            // no_show: پیش‌پرداخت یا تأیید سالن به‌خاطر «نیامد»های قبلی همین مشتری لازم شده (بسته‌ی 5ه)
+            'prepayment_reason' => $calc['prepayment_reason'],
+            'notice' => $calc['prepayment_reason'] === 'no_show' ? \App\Services\Booking\NoShowRecord::customerNotice((bool) $calc['prepayment_required']) : null,
             'prepayment_amount' => $prepayment,
             'discount_code' => $calc['discount_code'],
             'discount_amount' => (float) $calc['discount_amount'],

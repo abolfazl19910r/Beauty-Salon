@@ -7,4 +7,6 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('customers')->name('customers.')->group(function () {
     Route::get('/', [AdminCustomerController::class, 'index'])->name('index');
     Route::get('/{customer}', [AdminCustomerController::class, 'show'])->whereNumber('customer')->name('show');
+    // بسته‌ی 5ه: برداشتن محدودیت مشتری بدقول
+    Route::post('/{customer}/no-show/clear', [AdminCustomerController::class, 'clearNoShow'])->whereNumber('customer')->name('no-show.clear');
 });

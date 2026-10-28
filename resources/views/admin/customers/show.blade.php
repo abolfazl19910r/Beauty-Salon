@@ -20,6 +20,28 @@
             <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">امتیاز باشگاه</div><div class="text-2xl font-bold mt-1 persian-number">{{ to_persian_num(number_format($points)) }}</div></div>
         </div>
 
+        {{-- مشتری بدقول (بسته‌ی 5ه، تصمیم ۱۶): برچسب و برداشتن دستی محدودیت --}}
+        @if ($noShow['count'] > 0 || $noShow['label'] || $customer->no_show_cleared_at)
+            <div class="rounded-xl p-4 mb-5 flex flex-wrap items-center gap-3 justify-between" style="{{ $box }}" id="no-show-card">
+                <div class="text-sm leading-7">
+                    <x-no-show-badge :label="$noShow['label']" />
+                    <span style="{{ $dim }}">«نیامد» در {{ to_persian_num((string) $noShow['days']) }} روز گذشته: {{ to_persian_num((string) $noShow['count']) }} بار</span>
+                    @if ($customer->no_show_cleared_at)
+                        <span class="block text-xs" style="{{ $dim }}">محدودیت در {{ verta($customer->no_show_cleared_at)->format('Y/m/d H:i') }} برداشته شد؛ «نیامد»های پیش از آن شمرده نمی‌شوند.</span>
+                    @endif
+                    @if ($noShow['label'])
+                        <span class="block text-xs" style="{{ $dim }}">{{ $noShow['effect'] }}</span>
+                    @endif
+                </div>
+                @if ($noShow['label'])
+                    <form method="POST" action="{{ route('admin.customers.no-show.clear', $customer->id) }}">
+                        @csrf
+                        <button type="submit" class="px-4 py-2 rounded-lg text-sm font-bold text-m-onsolid" style="background: var(--admin-accent);">برداشتن محدودیت</button>
+                    </form>
+                @endif
+            </div>
+        @endif
+
         {{-- دوره‌های درمانی (بسته‌ی ب) --}}
         @if ($courses->isNotEmpty() || $canSellCourses)
             <div class="rounded-xl overflow-hidden mb-5" style="{{ $box }}">
