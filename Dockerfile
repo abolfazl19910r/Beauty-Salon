@@ -62,7 +62,7 @@ RUN --mount=type=cache,target=/tmp/cache \
 FROM php:8.5-fpm-alpine AS production
 
 LABEL maintainer="Beauty Salon <info@beautysalon.ir>"
-LABEL description="Mahru - salon booking SaaS (Laravel 12)"
+LABEL description="Mahru - salon booking SaaS (Laravel 13)"
 
 # ─── System dependencies ────────────────────────────────────
 RUN apk add --no-cache \

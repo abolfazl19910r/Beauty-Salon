@@ -152,8 +152,10 @@ Route::controller(\App\Http\Controllers\Legal\LegalPageController::class)->name(
 });
 
 // گزارش نقض CSP (بسته‌ی مجوز 5د، مرحله‌ی Report-Only): بدون Route::domain، بدون CSRF (مرورگر خودش بی کوکی و توکن می‌فرستد)
+// ⚠️ Laravel 13: میان‌افزار CSRF گروه web حالا PreventRequestForgery است و ValidateCsrfToken/VerifyCsrfToken فقط زیرکلاس آن؛
+// معاف کردن با نام‌های قدیمی دیگر کار نمی‌کند (۴۱۹ روی برگشت بانک). باید خود PreventRequestForgery معاف شود — CsrfExemptRoutesTest.
 Route::post('/csp-report', \App\Http\Controllers\Security\CspReportController::class)
-    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class, \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class])
     ->middleware('throttle:30,1')
     ->name('csp-report');
 
@@ -168,7 +170,7 @@ Route::get('/b/{code}', \App\Http\Controllers\ShortLinkController::class)
 // cross-site برمی‌گردن و کوکی session همراهش نیست — به GatewayReturnController نگاه کن.
 Route::match(['get', 'post'], '/payments/return/{publicId}', \App\Http\Controllers\Payment\GatewayReturnController::class)
     ->whereUuid('publicId')
-    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class, \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class])
     ->middleware('throttle:60,1')
     ->name('payments.return');
 
