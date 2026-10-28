@@ -136,6 +136,14 @@ adb shell "am start -a android.intent.action.VIEW -d 'https://rasta.arisheh.ir/s
 اندروید ۱۰/۱۱: هنگام باز کردن لینک «ماهرو» را انتخاب کنید.
 مرورگر داخلی اینستاگرام/تلگرام App Links را نادیده می‌گیرد (همان صفحه‌ی وب و بنر «باز کردن در اپ» می‌ماند)؛ اسکن با دوربین گوشی درست کار می‌کند.
 
+## قوانین به‌روز شد و رضایت عکس از زبان مشتری (نسخه‌ی 0.3.7 / versionCode 15، سرور ۲۰۲۶-۱۰-۲۸)
+- **اپ مشتری:** بعد از تغییر «مهم» قوانین یا حریم خصوصی (سرور `legal_pending` در ورود و `GET /me`، یا ۴۰۹ `terms_update_required` روی
+  رزرو) صفحه‌ی «قوانین به‌روز شد»: خلاصه‌ی تغییرها، متن کامل و پذیرش (`POST customer/legal/accept`). بی پذیرش: «فعلاً نه» (نوبت‌های
+  فعلی)، حذف حساب یا خروج؛ نوبت و دوره‌ی تازه تا پذیرش بسته است. اپ‌های پیش از 0.3.7 قفل نمی‌شوند (سرور پذیرش را «ضمنی» ثبت می‌کند).
+- **اپ همکار:** «درخواست رضایت از مشتری» در پرونده‌ی دوره (پوش و پیامک لینک‌دار؛ پیامک از سهمیه‌ی سالن)، «ارسال دوباره» روزی یک بار،
+  بعد از مخالفت ۲۴ ساعت صبر؛ «ثبت حضوری رضایت» راه دوم می‌ماند؛ سابقه با برچسب «ثبت حضوری».
+- **اپ مشتری، صفحه‌ی دوره:** متن کامل، «متن را خواندم»، «موافقم» / «موافق نیستم» (`POST customer/courses/{id}/photo-consent`) و سابقه.
+
 ## ساختار
 - `src/app/` — صفحه‌های **همکار** (expo-router): ورود، کد، فراموشی رمز، آدرس سرور؛ زبانه‌ها: امروز، نوبت‌ها، تقویم، کیف پول، بیشتر؛
   جزئیات نوبت، برنامه‌ی هفتگی، مرخصی، برداشت، شبا، تراکنش‌ها، اعلان‌ها، دستگاه‌ها، «سالن غیرفعال».
@@ -148,7 +156,7 @@ adb shell "am start -a android.intent.action.VIEW -d 'https://rasta.arisheh.ir/s
 - `src/lib/push.ts` (منطق خالص)، `pushRuntime.ts` (اجازه، ثبت، لمس)، `pushReceipts.ts` (رسید بدون React)، `pushTask.ts` (task پس‌زمینه)؛
   `__mocks__/expo-notifications.ts` نسخه‌ی Jest.
 - `src/lib/api.ts` — کلاینت `/api/v1` (قالب `{success, data, meta}` / `{success:false, error:{code, message, fields}}`).
-- `src/lib/session.tsx` — توکن (SecureStore)، ۴۰۱ ← خروج، `salon_inactive` ← صفحه‌ی خودش، `wrong_app` ← خروج.
+- `src/lib/session.tsx` — توکن (SecureStore)، ۴۰۱ ← خروج، `salon_inactive` ← صفحه‌ی خودش، `wrong_app` ← خروج، `terms_update_required` / `legal_pending` ← «قوانین به‌روز شد».
 - `src/lib/jalali.ts`، `src/lib/format.ts` — شمسی (شنبه تا جمعه)، تومان و ارقام فارسی.
 - `src/ui/` — رنگ برند (روشن/تیره از گوشی)، فونت وزیرمتن (OFL، `assets/fonts/OFL.txt`).
 - راست‌به‌چپ از اولین اجرا با plugin `expo-localization` (`forcesRTL`).
