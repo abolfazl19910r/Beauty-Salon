@@ -65,6 +65,22 @@ location /telescope {
 #     proxy_pass http://phpmyadmin:80/;
 # }
 
+# ─── آپلود APK در پنل ابرمدیر (۲۰۲۶-۱۰-۲۹) ────────────────
+# تنها مسیری که بدنه‌ی بزرگ‌تر از ۲۵M می‌گیرد (post_max_size در docker/php/php.ini). مستقیم به PHP: با try_files، location نهایی
+# «\.php$» با سقف ۲۵M بدنه را رد می‌کرد. دسترسی را خود Laravel می‌سنجد (auth + super_admin).
+location = /superadmin/app-releases {
+    client_max_body_size 160M;
+    fastcgi_pass unix:/var/run/php-fpm/php-fpm.sock;
+    fastcgi_param SCRIPT_FILENAME $realpath_root/index.php;
+    include fastcgi_params;
+    include /etc/nginx/mahru/fastcgi-remote-addr.inc;
+
+    fastcgi_read_timeout 120;
+    fastcgi_buffer_size 16k;
+    fastcgi_buffers 4 16k;
+    fastcgi_hide_header X-Powered-By;
+}
+
 # ─── Main Laravel route ──────────────────────────────────
 location / {
     try_files $uri $uri/ /index.php?$query_string;

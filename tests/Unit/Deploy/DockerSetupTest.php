@@ -83,8 +83,9 @@ class DockerSetupTest extends TestCase
     public function test_nginx_takes_the_real_ip_from_trusted_proxies_and_php_keeps_the_peer(): void
     {
         $site = self::file('docker/nginx/site.inc');
-        // هر دو مسیر PHP (/up و .php) آدرس اصلی اتصال را به PHP می‌دهند تا TrustProxies خود Laravel تصمیم بگیرد
-        $this->assertSame(2, substr_count($site, 'include /etc/nginx/mahru/fastcgi-remote-addr.inc;'));
+        // هر مسیر PHP (/up، آپلود APK و .php) آدرس اصلی اتصال را به PHP می‌دهد تا TrustProxies خود Laravel تصمیم بگیرد
+        $this->assertSame(3, substr_count($site, 'fastcgi_pass '));
+        $this->assertSame(substr_count($site, 'fastcgi_pass '), substr_count($site, 'include /etc/nginx/mahru/fastcgi-remote-addr.inc;'));
         $this->assertStringContainsString('fastcgi_param REMOTE_ADDR $realip_remote_addr;', self::file('docker/nginx/fastcgi-remote-addr.inc'));
 
         $setup = self::file('docker/nginx-setup.sh');
@@ -163,6 +164,28 @@ class DockerSetupTest extends TestCase
         preg_match('/location = \/up \{(.*?)\n\}/s', self::file('docker/nginx/site.inc'), $m);
         $this->assertStringContainsString('fastcgi_pass', $m[1]);
         $this->assertStringNotContainsString('return 200', $m[1]);
+    }
+
+    /**
+     * گزارش ۲۰۲۶-۱۰-۲۹: آپلود APK ‏(~۱۲۰ مگابایت) در پنل ابرمدیر داکر با «سقف آپلود PHP این سرور ۲۰ مگابایت است» رد می‌شد؛ php.ini ویندوز
+     * ربطی به ظرف ندارد. سقف بزرگ فقط برای همان مسیر: nginx بقیه‌ی مسیرها را روی ۲۵M نگه می‌دارد و PHP سقف APK (config api.app_release_max_mb)
+     * را می‌پذیرد.
+     */
+    public function test_only_the_app_release_upload_accepts_an_apk_sized_body(): void
+    {
+        $php = self::file('docker/php/php.ini');
+        preg_match('/^upload_max_filesize = (\d+)M$/m', $php, $upload);
+        preg_match('/^post_max_size = (\d+)M$/m', $php, $post);
+        $this->assertGreaterThanOrEqual(150, (int) $upload[1], 'config api.app_release_max_mb پیش‌فرض ۱۵۰');
+        $this->assertGreaterThan((int) $upload[1], (int) $post[1], 'فرم چند فیلد دیگر هم دارد');
+
+        $this->assertStringContainsString('client_max_body_size 25M;', self::file('docker/nginx/nginx.conf'), 'بقیه‌ی مسیرها همان ۲۵M');
+        $this->assertSame(1, preg_match('/location = \/superadmin\/app-releases \{(.*?)\n\}/s', self::file('docker/nginx/site.inc'), $m));
+        $this->assertStringContainsString('client_max_body_size '.$post[1].'M;', $m[1]);
+        // خود همین location به PHP می‌دهد؛ با try_files، location نهایی «\.php$» با ۲۵M بدنه را رد می‌کرد
+        $this->assertStringContainsString('fastcgi_pass unix:/var/run/php-fpm/php-fpm.sock;', $m[1]);
+        $this->assertStringContainsString('include /etc/nginx/mahru/fastcgi-remote-addr.inc;', $m[1]);
+        $this->assertStringContainsString('fastcgi_hide_header X-Powered-By;', $m[1]);
     }
 
     public function test_compose_serves_the_site_from_the_app_container_and_keeps_databases_private(): void
