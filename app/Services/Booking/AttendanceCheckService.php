@@ -29,6 +29,9 @@ class AttendanceCheckService
 
     public const DEADLINE_HOURS = 3;
 
+    /** دلیل لغو خودکار (پیامک متخصص هم از همین می‌خواند — SmsText::cancelledForSpecialist) */
+    public const CANCELLATION_REASON = 'حضور تأیید نشد';
+
     public function __construct(
         private readonly AppMessenger $messenger,
         private readonly ShortLinkService $links,
@@ -109,7 +112,7 @@ class AttendanceCheckService
                     'status' => 'cancelled',
                     'cancelled_by' => 'system',
                     'cancelled_at' => now(),
-                    'cancellation_reason' => 'حضور تأیید نشد',
+                    'cancellation_reason' => self::CANCELLATION_REASON,
                 ]);
 
                 return true;

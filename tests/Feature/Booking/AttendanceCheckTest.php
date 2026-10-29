@@ -127,6 +127,10 @@ class AttendanceCheckTest extends TestCase
         $phones = array_column($this->sms, 0);
         $this->assertContains($booking->user->phone, $phones, 'خبر لغو به مشتری');
         $this->assertContains($booking->specialist->phone, $phones, 'خبر لغو به متخصص');
+        // گزارش ۲۰۲۶-۱۰-۲۹: پیامک متخصص «لغو نوبت (عدم پرداخت)» می‌گفت — هر لغو سیستمی را عدم پرداخت فرض می‌کرد
+        $toSpecialist = collect($this->sms)->firstWhere(0, $booking->specialist->phone)[1];
+        $this->assertStringNotContainsString('عدم پرداخت', $toSpecialist);
+        $this->assertStringContainsString('حضور تأیید نشد', $toSpecialist);
     }
 
     public function test_a_booking_whose_message_could_not_be_sent_is_never_cancelled(): void

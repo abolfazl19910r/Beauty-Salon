@@ -109,7 +109,10 @@ final class SmsText
             'user', 'customer' => ' توسط مشتری',
             'admin' => ' توسط مدیر',
             'specialist' => ' توسط شما',
-            'system' => ' (عدم پرداخت)',
+            // لغو سیستمی: پرداخت‌نشده (پیش‌فرض) یا تأیید حضور (بسته‌ی 5ه؛ پیش‌تر این هم «عدم پرداخت» گفته می‌شد — ۲۰۲۶-۱۰-۲۹)
+            'system' => $b->cancellation_reason === \App\Services\Booking\AttendanceCheckService::CANCELLATION_REASON
+                ? ' ('.\App\Services\Booking\AttendanceCheckService::CANCELLATION_REASON.')'
+                : ' (عدم پرداخت)',
             default => '',
         };
 
