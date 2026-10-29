@@ -55,6 +55,23 @@ class CustomerLoginIntendedTest extends TestCase
         $response->assertRedirect($target);
     }
 
+    /**
+     * گزارش ۲۰۲۶-۱۰-۲۹: مشتری واردشده که دوباره به صفحه‌ی ورود سالن رسید (دکمه‌ی برگشت یا نشست جابه‌جاشده) با هر شماره و رمز به
+     * «/dashboard» مرکزی (۴۰۴) می‌رفت؛ صفحه‌ی خانه‌ی مشتری خانه‌ی سالن خودش است.
+     */
+    public function test_a_logged_in_customer_on_the_login_page_goes_to_their_salon_not_a_404(): void
+    {
+        $salon = app(CurrentSalon::class)->get();
+        $customer = User::factory()->create(['salon_id' => $salon->id, 'user_type' => 'customer', 'phone' => '09121110001']);
+        $home = route('home', ['salon_slug' => $salon->slug]);
+
+        $this->actingAs($customer)->get(route('salon.login', ['salon_slug' => $salon->slug]))->assertRedirect($home);
+        $this->actingAs($customer)->post(route('salon.login', ['salon_slug' => $salon->slug]), ['phone' => '09121110001', 'password' => 'x'])
+            ->assertRedirect($home);
+        $this->actingAs($customer)->get(route('login'))->assertRedirect($home);
+        $this->assertSame($home, $customer->homePath());
+    }
+
     public function test_staff_login_clears_a_stale_intended_address(): void
     {
         $admin = User::factory()->create([

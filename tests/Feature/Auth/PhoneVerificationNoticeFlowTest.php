@@ -104,9 +104,11 @@ class PhoneVerificationNoticeFlowTest extends TestCase
     {
         $user = User::factory()->create();
 
+        // مشتری ← خانه‌ی سالن خودش (پیش‌تر «/dashboard» مرکزی که ۴۰۴ بود؛ ۲۰۲۶-۱۰-۲۹)
         $this->actingAs($user)
             ->get(route('verification.notice'))
-            ->assertRedirect(url('/dashboard'));
+            ->assertRedirect($user->homePath());
+        $this->assertNotSame(url('/dashboard'), $user->homePath());
     }
 
     public function test_guest_cannot_access_the_notice_page(): void

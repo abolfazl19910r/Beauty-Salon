@@ -136,7 +136,8 @@ class PhoneVerificationController extends Controller
             return '/admin/dashboard';
         }
 
-        return '/dashboard';
+        // مشتری: خانه‌ی سالن خودش (User::homePath، ۲۰۲۶-۱۰-۲۹) — «/dashboard» مرکزی ۴۰۴ بود
+        return $user->homePath();
     }
 
     private function redirectAfterVerification(): RedirectResponse

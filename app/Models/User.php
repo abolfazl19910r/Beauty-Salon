@@ -369,6 +369,13 @@ class User extends Authenticatable
             return RouteServiceProvider::SPECIALIST_HOME;
         }
 
+        // مشتری: خانه‌ی سالن خودش (۲۰۲۶-۱۰-۲۹). «/dashboard» مرکزی وجود ندارد و مشتری واردشده‌ای که به صفحه‌ی ورود سالن می‌رسید
+        // (RedirectIfAuthenticated) ۴۰۴ می‌دید.
+        if ($this->user_type === 'customer' && $this->salon_id
+            && ($salon = Salon::withoutGlobalScopes()->find($this->salon_id))) {
+            return $salon->publicUrl();
+        }
+
         return RouteServiceProvider::USER_HOME;
     }
 
