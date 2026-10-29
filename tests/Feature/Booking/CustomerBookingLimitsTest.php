@@ -237,6 +237,23 @@ class CustomerBookingLimitsTest extends TestCase
             ->assertJsonPath('error.message', 'برای هر روز حداکثر یک نوبت آنلاین ممکن است؛ برای خدمت دوم با سالن تماس بگیرید.');
     }
 
+    /** لاگ داکر ۲۰۲۶-۱۰-۲۹: هر رسیدن به سقف از اپ یک ERROR با stacktrace کامل در laravel.log بود؛ خطای کاربر است، نه برنامه */
+    public function test_reaching_a_limit_is_not_reported_as_an_application_error(): void
+    {
+        \Illuminate\Support\Facades\Exceptions::fake();
+        $specialist = $this->specialist();
+        $this->book($specialist, $this->at(2, '10:00'));
+
+        $token = $this->customer->forceFill(['phone_verified_at' => now()])->createToken('RN8', ['customer'], now()->addDays(90))->plainTextToken;
+        $this->app['auth']->forgetGuards();
+        $this->withToken($token)->postJson('/api/v1/customer/bookings', [
+            'service_id' => $this->service->id, 'specialist_id' => $specialist->id,
+            'booking_time' => now()->addDays(2)->setTime(15, 0)->toIso8601String(),
+        ])->assertStatus(422);
+
+        \Illuminate\Support\Facades\Exceptions::assertNotReported(BookingLimitException::class);
+    }
+
     public function test_the_owner_sets_the_limits_on_the_booking_mode_page(): void
     {
         $owner = User::factory()->create(['is_admin' => true]);

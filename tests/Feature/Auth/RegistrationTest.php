@@ -119,7 +119,7 @@ class RegistrationTest extends TestCase
 
     public function test_five_wrong_codes_burn_the_registration(): void
     {
-        $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class); // سقف خود challenge، نه throttle آی‌پی
+        $this->withoutMiddleware(\App\Http\Middleware\ThrottleRequests::class); // سقف خود challenge، نه throttle آی‌پی
         $this->post('/s/rasta/register', $this->form);
         $code = $this->sentCode();
 

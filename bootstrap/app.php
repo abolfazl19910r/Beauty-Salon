@@ -67,7 +67,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'auth' => \App\Http\Middleware\Authenticate::class,
             'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-            'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+            // تکرار شمارش در بن‌بست کش database (۲۰۲۶-۱۰-۲۹) — App\Http\Middleware\ThrottleRequests
+            'throttle' => \App\Http\Middleware\ThrottleRequests::class,
             // ⭐ Fix (test-writing session 10): was Illuminate's own EnsureEmailIsVerified,
             // which was a permanent silent no-op for this project (App\Models\User has no
             // 'email' column and never implemented MustVerifyEmail, so
@@ -215,6 +216,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // خطای قابل‌انتظار /api/v1 (رمز نادرست، ۴۰۴، ۴۲۲…) خطای برنامه نیست؛ laravel.log را پر نکند (گزارش ۲۰۲۶-۱۰-۱۸:
         // «اطلاعات وارد شده صحیح نمی‌باشد» با stacktrace کامل). فقط ۵xx (مثل درگاه در دسترس نیست) گزارش می‌شود.
+        // خطای قابل‌انتظار دامنه (سقف نوبت، ساعت گرفته‌شده، …) خطای برنامه نیست؛ پیش‌تر هر بار با stacktrace کامل در laravel.log می‌نشست
+        // (لاگ داکر ۲۰۲۶-۱۰-۲۹). رندرکننده‌ی DomainException پایین همچنان با context آن هشدار کوتاه می‌نویسد. ۵xx (مثل درگاه) گزارش می‌شود.
+        $exceptions->dontReportWhen(fn (Throwable $e) => $e instanceof DomainException && $e->getHttpStatus() < 500);
+
         $exceptions->report(function (\App\Exceptions\Api\ApiException $e) {
             return $e->status >= 500 ? null : false;
         });
