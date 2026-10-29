@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\DB;
 /**
  * سقف نوبت آنلاین هر مشتری (بسته‌ی 5ه، تصمیم‌های ۱۲ تا ۱۵):
  * - روزانه: «روز» = روز خود نوبت به وقت سالن (Asia/Tehran)، نه روز ثبت؛ پیش‌فرض ۱، قابل تنظیم مدیر.
- * - کل نوبت‌های آینده‌ی فعال: پیش‌فرض ۳، قابل تنظیم مدیر.
+ * - کل نوبت‌های آینده‌ی فعال: پیش‌فرض ۳، قابل تنظیم مدیر. نوبت با پیش‌پرداخت (prepayment_required) از این سقف معاف است و در آن
+ *   شمرده نمی‌شود — تعهد مالی جای سقف را می‌گیرد (تصمیم ابوالفضل ۲۰۲۶-۱۰-۲۹). سقف روزانه برای همه هست.
  * شمرده می‌شوند فقط نوبت‌های فعال (pending_payment، pending، confirmed) همین سالن — جلسه‌ی دوره‌ی درمانی هم. سقف خالی/صفر = بی‌سقف.
  * فقط رزرو آنلاین مشتری (وب و اپ)؛ رزرو دستی کادر معاف است و فقط هشدار می‌گیرد (sameDayCount).
  *
@@ -25,7 +26,7 @@ class CustomerBookingLimits
     public const ACTIVE_STATUSES = ['pending_payment', 'pending', 'confirmed'];
 
     /**
-     * @param  bool  $countActive  false برای جابه‌جایی (تعداد نوبت‌های فعال عوض نمی‌شود، فقط روزش)
+     * @param  bool  $countActive  false برای جابه‌جایی (تعداد نوبت‌های فعال عوض نمی‌شود، فقط روزش) و برای نوبت با پیش‌پرداخت
      *
      * @throws BookingLimitException
      */
@@ -78,11 +79,13 @@ class CustomerBookingLimits
             ->count();
     }
 
+    /** نوبت‌های آینده‌ی فعال بدون پیش‌پرداخت (پیش‌پرداختی‌ها در سقف کل شمرده نمی‌شوند) */
     public function activeFutureCount(int $userId, ?int $excludeBookingId = null): int
     {
         return Booking::query()
             ->where('user_id', $userId)
             ->whereIn('status', self::ACTIVE_STATUSES)
+            ->where('prepayment_required', false)
             ->where('booking_time', '>=', now()->format('Y-m-d H:i:s'))
             ->when($excludeBookingId, fn ($q) => $q->whereKeyNot($excludeBookingId))
             ->count();

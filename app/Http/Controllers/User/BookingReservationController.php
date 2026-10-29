@@ -65,16 +65,18 @@ class BookingReservationController extends Controller
                 return back()->with('error', 'متأسفانه این زمان دیگر در دسترس نیست. لطفاً زمان دیگری انتخاب کنید.');
             }
 
-            // سقف نوبت مشتری (بسته‌ی 5ه) پیش از صفحه‌ی تأیید هم گفته می‌شود؛ ثبت نهایی دوباره با قفل می‌سنجد
-            try {
-                app(\App\Services\Booking\CustomerBookingLimits::class)->assertCanBook((int) auth()->id(), (string) $bookingTime);
-            } catch (\App\Exceptions\BookingLimitException $e) {
-                return back()->with('error', $e->getUserMessage());
-            }
-
             $calc = $this->bookingService->calculatePrepayment((float) $service->price);
             $prepaymentAmount = $calc['original_amount'];
             $prepaymentRequired = $prepaymentAmount > 0;
+
+            // سقف نوبت مشتری (بسته‌ی 5ه) پیش از صفحه‌ی تأیید هم گفته می‌شود؛ ثبت نهایی دوباره با قفل می‌سنجد.
+            // نوبت با پیش‌پرداخت فقط سقف روزانه دارد (۲۰۲۶-۱۰-۲۹).
+            try {
+                app(\App\Services\Booking\CustomerBookingLimits::class)
+                    ->assertCanBook((int) auth()->id(), (string) $bookingTime, countActive: ! $prepaymentRequired);
+            } catch (\App\Exceptions\BookingLimitException $e) {
+                return back()->with('error', $e->getUserMessage());
+            }
             // مشتری بدقول (بسته‌ی 5ه): چرا پیش‌پرداخت یا تأیید سالن
             $bookingNotice = $calc['prepayment_reason'] === 'no_show' ? \App\Services\Booking\NoShowRecord::customerNotice($prepaymentRequired) : null;
 

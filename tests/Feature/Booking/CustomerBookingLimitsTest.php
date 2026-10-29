@@ -135,6 +135,36 @@ class CustomerBookingLimitsTest extends TestCase
         $this->book($specialist, $this->at(5, '10:00'));
     }
 
+    /**
+     * تصمیم ابوالفضل ۲۰۲۶-۱۰-۲۹: نوبت با پیش‌پرداخت (تعهد مالی) از سقف کل نوبت‌های آینده معاف است و در آن شمرده نمی‌شود؛ سقف روزانه
+     * همچنان برقرار است.
+     */
+    public function test_prepaid_bookings_are_exempt_from_the_active_limit_but_not_the_daily_one(): void
+    {
+        BookingPolicy::current()->update(['payment_mode' => BookingPolicy::MODE_PREPAY]);
+        $specialist = $this->specialist();
+        foreach ([2, 3, 4, 5] as $day) {
+            $booking = $this->book($specialist, $this->at($day, '10:00'));
+            $this->assertTrue((bool) $booking->prepayment_required);
+        }
+
+        try {
+            $this->book($specialist, $this->at(5, '15:00'));
+            $this->fail('second prepaid booking on the same day was accepted');
+        } catch (BookingLimitException $e) {
+            $this->assertStringContainsString('برای هر روز', $e->getUserMessage());
+        }
+
+        // برگشت به «بدون پیش‌پرداخت»: نوبت‌های پیش‌پرداختی قبلی جای سقف را نمی‌گیرند
+        BookingPolicy::current()->update(['payment_mode' => BookingPolicy::MODE_NONE]);
+        Booking::where('user_id', $this->customer->id)->update(['status' => 'confirmed', 'payment_status' => 'paid']);
+        foreach ([6, 7, 8] as $day) {
+            $this->assertFalse((bool) $this->book($specialist, $this->at($day, '10:00'))->prepayment_required);
+        }
+        $this->expectException(BookingLimitException::class);
+        $this->book($specialist, $this->at(9, '10:00'));
+    }
+
     public function test_moving_a_booking_to_a_day_with_another_booking_is_refused_but_within_the_same_day_is_fine(): void
     {
         $specialist = $this->specialist();
@@ -170,6 +200,19 @@ class CustomerBookingLimitsTest extends TestCase
             'user_id' => $this->courseCustomer->id, 'service_id' => $this->service->id, 'specialist_id' => $specialist->id,
             'booking_time' => $this->sessionAt(5, '18:00'), 'status' => 'confirmed', 'payment_status' => 'unpaid', 'source' => 'phone',
         ])->assertSessionHas('warning', fn ($m) => str_contains($m, 'این مشتری در همین روز ۲ نوبت فعال دیگر'));
+    }
+
+    /** آزمون دستی ۵ (۲۰۲۶-۱۰-۲۹، «نوار زرد دیده نشد»): هشدار روی صفحه‌ی نوبت تازه هم دیده می‌شود، نه فقط در نشست */
+    public function test_the_staff_warning_is_shown_on_the_new_booking_page(): void
+    {
+        $specialist = $this->specialist();
+        $this->book($specialist, $this->at(3, '10:00'));
+        $owner = User::factory()->create(['is_admin' => true]);
+
+        $this->actingAs($owner)->followingRedirects()->post(route('admin.bookings.store'), [
+            'user_id' => $this->customer->id, 'service_id' => $this->service->id, 'specialist_id' => $this->specialist()->id,
+            'booking_time' => $this->at(3, '15:00'), 'status' => 'pending', 'payment_status' => 'unpaid', 'source' => 'phone',
+        ])->assertOk()->assertSee('هشدار: این مشتری در همین روز ۱ نوبت فعال دیگر هم دارد.');
     }
 
     public function test_the_api_and_the_web_say_why(): void

@@ -299,7 +299,8 @@ class BookingService
             // سقف نوبت آنلاین مشتری (بسته‌ی 5ه): قفل ردیف مشتری، بعد قفل متخصص، و شمارش فقط بعد از هر دو قفل
             $this->limits->lockCustomer($userId);
             $this->assertBookingFits($specialistId, $bookingTime, $serviceId);
-            $this->limits->assertCanBook($userId, $bookingTime);
+            // نوبت با پیش‌پرداخت از سقف کل معاف است، فقط سقف روزانه (۲۰۲۶-۱۰-۲۹)
+            $this->limits->assertCanBook($userId, $bookingTime, countActive: ! $prepaymentData['prepayment_required']);
 
             $booking = $this->bookingRepository->create([
                 'service_id' => $serviceId,
