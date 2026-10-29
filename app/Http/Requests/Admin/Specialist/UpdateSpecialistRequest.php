@@ -35,6 +35,8 @@ class UpdateSpecialistRequest extends FormRequest
             'services' => ['required', 'array'],
             'services.*' => ['exists:beauty_services,id'],
             'commission_rate' => ['nullable', 'numeric', 'min:0', new MaxPercentage],
+            // رمز ورود: حساب ندارد ← ساخت حساب؛ دارد ← رمز تازه (فقط حساب همین سالن) — ۲۰۲۶-۱۰-۲۹
+            'initial_password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ];
     }
 
@@ -54,5 +56,10 @@ class UpdateSpecialistRequest extends FormRequest
     public function messages(): array
     {
         return \App\Services\Salon\SpecialistPhotoService::MESSAGES;
+    }
+
+    public function attributes(): array
+    {
+        return ['initial_password' => 'رمز ورود'];
     }
 }

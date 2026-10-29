@@ -47,6 +47,17 @@
                             <label class="form-label">شماره تماس <span style="color:rgb(var(--m-bad));">*</span></label>
                             <input type="text" name="phone" value="{{ old('phone', $specialist->phone) }}" class="form-input" dir="ltr" required>
                             @error('phone') <p class="form-error">{{ $message }}</p> @enderror
+                            <p class="text-xs mt-1" style="color:var(--admin-text-light);">با تغییر شماره، حساب ورود متخصص هم با شماره‌ی تازه وارد می‌شود و ورودهای قبلی‌اش بسته می‌شوند.</p>
+                        </div>
+                        {{-- ⭐ رمز ورود متخصص (۲۰۲۶-۱۰-۲۹): بی حساب ← ساخت حساب؛ با حساب ← رمز تازه --}}
+                        <div data-initial-password>
+                            <label class="form-label">رمز ورود تازه <span style="color:var(--admin-text-light);">(اختیاری — خالی یعنی بدون تغییر)</span></label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <input type="password" name="initial_password" class="form-input" dir="ltr" autocomplete="new-password" placeholder="حداقل ۸ حرف">
+                                <input type="password" name="initial_password_confirmation" class="form-input" dir="ltr" autocomplete="new-password" placeholder="تکرار رمز">
+                            </div>
+                            <p class="text-xs mt-1" style="color:var(--admin-text-light);">به متخصص پیامک خبر می‌رود و باید با رمز تازه دوباره وارد شود.</p>
+                            @error('initial_password') <p class="form-error">{{ $message }}</p> @enderror
                         </div>
                         <div>
                             <label class="form-label">ایمیل</label>
