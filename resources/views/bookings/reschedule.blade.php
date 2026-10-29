@@ -161,7 +161,9 @@
             const jWeekdays = ['ی', 'د', 'س', 'چ', 'پ', 'ج', 'ش']; // According to JavaScript getDay() (0=Sunday)
 
             const SPECIALIST_ID = {{ $booking->specialist_id }};
-            const BOOKING_ID    = {{ $booking->id }};
+            // آدرس‌ها از route() (پیشوند /s/{slug} یا ساب‌دامین سالن) — ۲۰۲۶-۱۰-۲۹: آدرس دست‌نویس «/bookings/…» ۴۰۴ می‌داد
+            const UPDATE_URL    = @json(route('bookings.update-reschedule', $booking));
+            const SHOW_URL      = @json(route('bookings.show', $booking));
             const CSRF          = document.querySelector('meta[name="csrf-token"]').content;
 
             // ⭐ Fix (real, confirmed cross-tenant data leak, 2026-09-20): this page used to call
@@ -340,7 +342,7 @@
                 setSubmit(false);
 
                 try {
-                    const res = await fetch(`/bookings/${BOOKING_ID}/reschedule`, {
+                    const res = await fetch(UPDATE_URL, {
                         method : 'PUT',
                         headers: {
                             'Content-Type' : 'application/json',
@@ -354,7 +356,7 @@
 
                     if (res.ok) {
                         const data = await res.json().catch(() => ({}));
-                        window.location.href = data.redirect || `/bookings/${BOOKING_ID}`;
+                        window.location.href = data.redirect || SHOW_URL;
                     } else {
                         const err = await res.json().catch(() => ({}));
                         alert(err.message || 'خطا در تغییر زمان نوبت');

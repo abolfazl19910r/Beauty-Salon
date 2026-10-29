@@ -68,6 +68,21 @@ class BookingRescheduleControllerTest extends TestCase
         $response->assertViewHas('booking');
     }
 
+    /**
+     * گزارش ۲۰۲۶-۱۰-۲۹: «The route bookings/91/reschedule could not be found» — اسکریپت صفحه به «/bookings/{id}/reschedule» بی پیشوند
+     * سالن (/s/{slug}) می‌فرستاد. آدرس‌ها باید از route() بیایند.
+     */
+    public function test_the_page_sends_the_change_to_the_salon_route(): void
+    {
+        $booking = $this->makeBooking();
+
+        $html = $this->actingAs($this->user)->get(route('bookings.reschedule', ['booking' => $booking->id]))->assertOk()->getContent();
+
+        $this->assertStringContainsString(json_encode(route('bookings.update-reschedule', ['booking' => $booking->id])), $html);
+        $this->assertStringContainsString(json_encode(route('bookings.show', ['booking' => $booking->id])), $html);
+        $this->assertStringNotContainsString('`/bookings/${BOOKING_ID}', $html);
+    }
+
     public function test_show_is_forbidden_for_another_users_booking(): void
     {
         $other = User::factory()->create();
