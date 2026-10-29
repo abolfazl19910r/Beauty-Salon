@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\WalletSetting;
 use App\Notifications\Booking\BookingNotification;
 use App\Services\SMSService;
+use App\Support\Admin\AdminMenu;
 use App\Support\CurrentSalon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -62,6 +63,23 @@ class BookingModeSwitchTest extends TestCase
             ->assertSee('با پیش‌پرداخت آنلاین')
             ->assertSee('احتمال رزرو فیک و نیامدن بیشتر است')
             ->assertSee('کیف پول متخصص از این نوبت‌ها شارژ نمی‌شود');
+    }
+
+    /**
+     * منوی واقعی پنل (layouts.admin ← AdminMenu) — لینک اول فقط در layouts/admin-navigation (قدیمی) بود و مالک صفحه را پیدا نمی‌کرد
+     * (گزارش ابوالفضل ۲۰۲۶-۱۰-۲۹).
+     */
+    public function test_the_owner_finds_it_in_the_panel_menu_and_staff_do_not(): void
+    {
+        $html = $this->actingAs($this->owner)->get(route('admin.dashboard'))->assertOk()->getContent();
+        $this->assertStringContainsString('data-menu-key="booking-policy"', $html);
+        $this->assertStringContainsString(route('admin.booking-policy.edit'), $html);
+
+        $staff = User::factory()->create(['is_admin' => true]);
+        app(CurrentSalon::class)->get()->admins()->syncWithoutDetaching([$staff->id => ['role' => 'staff']]);
+        app(CurrentSalon::class)->get()->admins()->updateExistingPivot($staff->id, ['role' => 'staff']);
+        $keys = collect(AdminMenu::groups($staff->fresh(), app(CurrentSalon::class)->get()))->flatMap(fn ($g) => array_column($g['items'], 'key'))->all();
+        $this->assertNotContains('booking-policy', $keys);
     }
 
     public function test_a_salon_staff_member_who_is_not_the_owner_cannot_change_it(): void

@@ -50,13 +50,15 @@ final class AdminMenu
                 $can('view-security-logs') ? self::item('security', 'امنیت', 'admin.security.logs', 'admin.security*', 'shield') : null,
                 $can('view-security-logs') ? self::item('notification-settings', 'تنظیمات اطلاع‌رسانی', 'admin.notification-settings.index', 'admin.notification-settings*', 'bell') : null,
             ]],
-            // «اطلاعات سالن» و «ظاهر سالن» فقط برای مالک (همان قاعده‌ی EnsureSalonOwner)
+            // «اطلاعات سالن»، «ظاهر سالن» و «نحوه‌ی رزرو» فقط برای مالک (همان قاعده‌ی EnsureSalonOwner)
             ['سالن', $salon !== null && $isOwner ? [
                 self::item('salon-settings', 'اطلاعات سالن', 'admin.salon-settings.edit', 'admin.salon-settings.*', 'home'),
                 // بسته‌ی مجوز 5د
                 self::item('verification', 'احراز سالن', 'admin.verification.show', 'admin.verification.*', 'shield'),
                 self::item('appearance', 'ظاهر سالن', 'admin.appearance.edit', 'admin.appearance.*', 'palette'),
                 self::item('payment-gateways', 'درگاه‌های پرداخت', 'admin.payment-gateways.index', 'admin.payment-gateways.*', 'card'),
+                // بسته‌ی 5ه: با/بدون پیش‌پرداخت، سقف نوبت مشتری، مشتری بدقول، تأیید حضور (فقط مالک)
+                self::item('booking-policy', 'نحوه‌ی رزرو', 'admin.booking-policy.edit', 'admin.booking-policy.*', 'calendar'),
             ] : []],
             ['مدیریت کاربران', [
                 $can('view-users') ? self::item('users', 'کاربران', 'admin.users.index', 'admin.users*', 'users') : null,
