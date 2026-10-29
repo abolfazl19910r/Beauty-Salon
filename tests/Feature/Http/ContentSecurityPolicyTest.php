@@ -142,4 +142,47 @@ class ContentSecurityPolicyTest extends TestCase
         $this->assertSame('style-src', $logged[1]['effective-directive']);
         $this->assertSame('inline', $logged[1]['blocked-uri']);
     }
+
+    /**
+     * گزارش ابوالفضل ۲۰۲۶-۱۰-۲۹: مشتری بعد از ثبت‌نام بیرون انداخته می‌شد و در هر صفحه «تعداد تلاش‌های شما بیش از حد مجاز است» می‌دید.
+     * گزارش‌های CSP هم‌زمان با بار صفحه می‌رسند؛ با نشست، هر پاسخشان کوکی نشست قدیمی (پیش از regenerate ورود) را دوباره روی
+     * مرورگر می‌نشاند و ۴۲۹ آن‌ها پیام خطا را در نشست کاربر flash می‌کرد. گزارش CSP نباید به نشست و کوکی دست بزند.
+     */
+    public function test_reports_never_touch_the_session_or_cookies_even_when_throttled(): void
+    {
+        $customer = \App\Models\User::factory()->create(['user_type' => 'customer']);
+        $this->actingAs($customer);
+
+        for ($i = 0; $i < 35; $i++) {
+            $response = $this->call('POST', '/csp-report', [], [], [], ['CONTENT_TYPE' => 'application/csp-report'], json_encode([
+                'csp-report' => ['document-uri' => 'http://127.0.0.1:8000/s/rasta', 'blocked-uri' => 'inline', 'violated-directive' => 'style-src'],
+            ]));
+            $this->assertSame([], $response->headers->getCookies(), "گزارش {$i}: بی Set-Cookie");
+            $this->assertContains($response->getStatusCode(), [204, 429]);
+        }
+
+        $this->assertSame(429, $response->getStatusCode(), 'سقف همچنان هست');
+        $this->assertNull(session('error'), 'پیام سقف در نشست کاربر نمی‌نشیند');
+    }
+
+    public function test_a_vite_dev_server_on_an_ipv6_loopback_is_allowed(): void
+    {
+        // Node 17+ روی ویندوز «localhost» را ::1 می‌کند و laravel-vite-plugin «http://[::1]:5173» در فایل hot می‌نویسد؛ CSP نشانی
+        // IPv6 را نمی‌پذیرد، پس همه‌ی فایل‌های Vite گزارش می‌شدند (csp-2026-10-29.log ابوالفضل).
+        $hot = Vite::hotFile();
+        file_put_contents($hot, 'http://[::1]:5173');
+
+        try {
+            $csp = $this->policy();
+        } finally {
+            @unlink($hot);
+        }
+
+        // CSP برای نشانی IPv6 دستوری ندارد؛ فقط در حالت hot (توسعه) کل طرح http:/ws: باز می‌شود
+        $this->assertNotContains('http://[::1]:5173', $csp['script-src'], 'CSP نشانی IPv6 را نمی‌فهمد');
+        foreach (['script-src', 'style-src', 'font-src', 'connect-src'] as $directive) {
+            $this->assertContains('http:', $csp[$directive], $directive);
+        }
+        $this->assertContains('ws:', $csp['connect-src']);
+    }
 }

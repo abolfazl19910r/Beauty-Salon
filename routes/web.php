@@ -156,8 +156,17 @@ Route::controller(\App\Http\Controllers\Legal\LegalPageController::class)->name(
 // گزارش نقض CSP (بسته‌ی مجوز 5د، مرحله‌ی Report-Only): بدون Route::domain، بدون CSRF (مرورگر خودش بی کوکی و توکن می‌فرستد)
 // ⚠️ Laravel 13: میان‌افزار CSRF گروه web حالا PreventRequestForgery است و ValidateCsrfToken/VerifyCsrfToken فقط زیرکلاس آن؛
 // معاف کردن با نام‌های قدیمی دیگر کار نمی‌کند (۴۱۹ روی برگشت بانک). باید خود PreventRequestForgery معاف شود — CsrfExemptRoutesTest.
+// بی نشست و کوکی (۲۰۲۶-۱۰-۲۹): گزارش‌ها هم‌زمان با بار صفحه می‌رسند؛ با نشست، پاسخشان کوکی نشست قدیمی (پیش از regenerate ورود)
+// را دوباره روی مرورگر می‌نشاند و مشتری تازه‌واردشده بیرون می‌افتاد، و ۴۲۹ آن‌ها پیام «تعداد تلاش‌ها…» را در نشست کاربر flash می‌کرد.
 Route::post('/csp-report', \App\Http\Controllers\Security\CspReportController::class)
-    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class])
+    ->withoutMiddleware([
+        \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class,
+        \App\Http\Middleware\MatchSessionCookieDomainToHost::class,
+        \Illuminate\Cookie\Middleware\EncryptCookies::class,
+        \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+        \Illuminate\Session\Middleware\StartSession::class,
+        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+    ])
     ->middleware('throttle:30,1')
     ->name('csp-report');
 

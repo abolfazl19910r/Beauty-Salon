@@ -97,6 +97,12 @@ class ContentSecurityPolicy
         $hot = rtrim((string) @file_get_contents(Vite::hotFile()));
         $origin = preg_replace('#^(https?://[^/]+).*$#', '$1', $hot) ?: $hot;
 
+        // نشانی IPv6 (Node 17+ روی ویندوز: «http://[::1]:5173») در دستور CSP قابل نوشتن نیست؛ فقط در توسعه (hot) کل طرح باز می‌شود.
+        // vite.config.js سرور را روی 127.0.0.1 می‌گذارد تا این حالت پیش نیاید.
+        if (str_contains($origin, '[')) {
+            return ['http' => [str_starts_with($origin, 'https') ? 'https:' : 'http:'], 'ws' => [str_starts_with($origin, 'https') ? 'wss:' : 'ws:']];
+        }
+
         return ['http' => [$origin], 'ws' => [preg_replace('#^http#', 'ws', $origin)]];
     }
 }

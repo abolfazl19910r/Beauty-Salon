@@ -235,6 +235,11 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 429, $e->getHeaders());
             }
 
+            // مسیر بی نشست (گزارش CSP): نه flash، نه back()
+            if (! $request->hasSession()) {
+                return response('', 429, $e->getHeaders());
+            }
+
             return back()
                 ->withInput($request->except(['password', 'password_confirmation', 'code']))
                 ->with('error', $message);

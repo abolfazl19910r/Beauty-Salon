@@ -53,6 +53,8 @@ export default defineConfig({
         }
     },
     server: {
+        // Node 17+ روی ویندوز «localhost» را ::1 می‌کند و نشانی IPv6 در CSP نوشتنی نیست (۲۰۲۶-۱۰-۲۹)؛ برای شبکه‌ی محلی: npm run dev -- --host
+        host: '127.0.0.1',
         hmr: {
             overlay: true
         },
