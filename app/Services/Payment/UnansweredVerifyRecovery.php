@@ -74,6 +74,10 @@ class UnansweredVerifyRecovery
             }
 
             $this->release($tx, ['unanswered' => false, 'recovery' => 'not_paid', 'recovery_message' => $result->message] + $response);
+            // ⭐ بسته‌ی 5ز: زرین‌پال ‎-50/‎-52 — شاید پول کسر شده ← مدیر بررسی می‌کند
+            if (($result->raw['needs_attention'] ?? false) === true) {
+                $this->flag($tx);
+            }
 
             return 'not_paid';
         }
@@ -106,6 +110,12 @@ class UnansweredVerifyRecovery
         ], 'manual');
 
         return true;
+    }
+
+    private function flag(PaymentTransaction $tx): void
+    {
+        PaymentTransaction::whereKey($tx->id)->toBase()->update(['needs_attention' => true]);
+        app(\App\Services\Admin\AttentionNotifier::class)->paymentFlagged($tx->id);
     }
 
     private function release(PaymentTransaction $tx, array $response): void

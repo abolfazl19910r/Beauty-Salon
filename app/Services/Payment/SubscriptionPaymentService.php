@@ -113,8 +113,17 @@ class SubscriptionPaymentService
                 'card_pan' => $result->cardPan,
                 'verify_response' => $result->raw ? json_encode($result->raw, JSON_UNESCAPED_UNICODE) : null,
                 'verified_at' => $result->success ? now() : null,
+                // ⭐ بسته‌ی 5ز: زرین‌پال ‎-50/‎-52 ← «پرداخت‌های نیازمند بررسی» ابرمدیر
+                'needs_attention' => ! $result->success && ($result->raw['needs_attention'] ?? false) === true,
                 'updated_at' => now(),
             ]);
+
+        if (! $result->success && ($result->raw['needs_attention'] ?? false) === true) {
+            $flagged = \App\Models\PaymentTransaction::where('purpose', 'subscription')->where('token', $authority)->value('id');
+            if ($flagged) {
+                app(\App\Services\Admin\AttentionNotifier::class)->paymentFlagged((int) $flagged);
+            }
+        }
 
         if ($result->success) {
             return ['success' => true, 'ref_id' => (string) $result->refId];
@@ -133,6 +142,6 @@ class SubscriptionPaymentService
             'error_code' => $errorCode,
         ]);
 
-        return ['success' => false, 'message' => 'پرداخت تأیید نشد: '.ZarinpalDriver::errorMessage($errorCode)." (کد {$errorCode})."];
+        return ['success' => false, 'message' => 'پرداخت تأیید نشد: '.($result->message ?? ZarinpalDriver::errorMessage($errorCode))." (کد {$errorCode})."];
     }
 }

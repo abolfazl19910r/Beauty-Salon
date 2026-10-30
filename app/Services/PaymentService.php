@@ -188,7 +188,10 @@ class PaymentService
         $transaction?->update([
             'status' => $result->success ? 'paid' : (($result->raw['reversed'] ?? false) === true ? 'reversed' : ($result->cancelledByUser ? 'cancelled' : 'failed')),
             // ⭐ پرداخت موفق ولی کار درگاه ناتمام (آسان پرداخت: Settlement نشد) — مدیر در «پرداخت‌های نیازمند بررسی» می‌بینه
-            'needs_attention' => $result->success && ($result->raw['settlement_failed'] ?? false) === true,
+            'needs_attention' => $result->success
+                ? ($result->raw['settlement_failed'] ?? false) === true
+                // ⭐ بسته‌ی 5ز: زرین‌پال ‎-50/‎-52 — شاید پول کسر شده؛ مدیر در همان صفحه بررسی و در صورت لزوم به کیف پول واریز می‌کند
+                : ($result->raw['needs_attention'] ?? false) === true,
             'ref_id' => $result->refId,
             'card_pan' => $result->cardPan,
             'verify_response' => $result->raw ?: null,

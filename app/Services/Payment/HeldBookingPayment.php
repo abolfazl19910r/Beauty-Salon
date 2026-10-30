@@ -150,8 +150,13 @@ class HeldBookingPayment
         if (! $stillUnknown) {
             $tx->forceFill([
                 'status' => 'failed',
+                // ⭐ بسته‌ی 5ز: زرین‌پال ‎-50/‎-52 — شاید پول کسر شده ← «پرداخت‌های نیازمند بررسی»
+                'needs_attention' => ($result->raw['needs_attention'] ?? false) === true,
                 'verify_response' => ['held' => true, 'hold_result' => 'not_paid', 'unanswered' => false, 'hold_message' => $result->message] + $result->raw + $response,
             ])->save();
+            if ($tx->needs_attention) {
+                app(\App\Services\Admin\AttentionNotifier::class)->paymentFlagged($tx->id);
+            }
             $this->cancel($booking, 'پرداخت از درگاه تأیید نشد');
 
             return 'not_paid';

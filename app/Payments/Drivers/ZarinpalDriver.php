@@ -17,6 +17,14 @@ use Throwable;
  */
 class ZarinpalDriver implements PaymentGatewayDriver
 {
+    /**
+     * ⭐ بسته‌ی 5ز (۲۰۲۶-۱۰-۳۰): پاسخ verify با این کدها یعنی شاید پول از مشتری کسر شده باشد (‎-50 مبلغ ناهمخوان، ‎-52 خطای
+     * غیرمنتظره‌ی زرین‌پال) ← raw['needs_attention'] و صفحه‌ی «پرداخت‌های نیازمند بررسی»، نه «ناموفق» بی‌صدا.
+     */
+    public const NEEDS_ATTENTION_CODES = [-50, -52];
+
+    public const ATTENTION_NOTE = '. ممکن است مبلغ از حساب شما کسر شده باشد؛ این پرداخت برای بررسی دستی ثبت شد و اگر مبلغی کسر شده باشد، از بین نمی‌رود.';
+
     private string $apiUrl;
 
     private string $gatewayUrl;
@@ -117,6 +125,10 @@ class ZarinpalDriver implements PaymentGatewayDriver
                 fee: isset($result['data']['fee']) ? (int) $result['data']['fee'] : null,
                 raw: $result,
             );
+        }
+
+        if (in_array($code, self::NEEDS_ATTENTION_CODES, true)) {
+            return new GatewayVerifyResult(false, $authority, message: self::errorMessage($code).self::ATTENTION_NOTE, raw: $result + ['needs_attention' => true]);
         }
 
         return new GatewayVerifyResult(false, $authority, message: self::errorMessage($code), raw: $result);

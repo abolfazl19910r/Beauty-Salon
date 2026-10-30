@@ -88,8 +88,17 @@ class SmsPackPaymentService
                 'card_pan' => $result->cardPan,
                 'verify_response' => $result->raw ? json_encode($result->raw, JSON_UNESCAPED_UNICODE) : null,
                 'verified_at' => $result->success ? now() : null,
+                // ⭐ بسته‌ی 5ز: زرین‌پال ‎-50/‎-52 ← «پرداخت‌های نیازمند بررسی» ابرمدیر
+                'needs_attention' => ! $result->success && ($result->raw['needs_attention'] ?? false) === true,
                 'updated_at' => now(),
             ]);
+
+        if (! $result->success && ($result->raw['needs_attention'] ?? false) === true) {
+            $flagged = \App\Models\PaymentTransaction::where('purpose', 'sms_pack')->where('token', $authority)->value('id');
+            if ($flagged) {
+                app(\App\Services\Admin\AttentionNotifier::class)->paymentFlagged((int) $flagged);
+            }
+        }
 
         if ($result->success) {
             return ['success' => true, 'ref_id' => (string) $result->refId];
