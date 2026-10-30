@@ -2,7 +2,7 @@
 @php
     $mode = old('payment_mode', $policy->payment_mode);
 @endphp
-<form action="{{ route('admin.booking-policy.mode') }}" method="POST" class="{{ $card }}" style="{{ $cardStyle }}" id="booking-mode">
+<form action="{{ route('admin.booking-policy.mode') }}" method="POST" class="{{ $card }}" style="{{ $cardStyle }}" id="booking-mode" novalidate>
     @csrf @method('PUT')
     <h2 class="font-bold" style="color: var(--admin-accent);">پرداخت نوبت</h2>
 

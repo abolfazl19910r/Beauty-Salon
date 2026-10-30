@@ -27,7 +27,21 @@
             </h1>
         </div>
 
-        <form action="{{ route('admin.wallet.settings.update') }}" method="POST">
+        {{-- ⭐ آزمون دستی 5ز: خطاهای سرور (فارسی) قبلاً هیچ‌جا دیده نمی‌شد و مرورگر با step پیام انگلیسی خودش را نشان می‌داد --}}
+        @if ($errors->any())
+            <div id="settings-errors" role="alert" class="mb-4 rounded-lg p-3 text-sm leading-7" style="background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad)); border-right:4px solid rgb(var(--m-bad));">
+                <b>تنظیمات ذخیره نشد:</b>
+                <ul class="list-disc pr-5">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    if (typeof Swal === 'undefined') return;
+                    Swal.fire({ icon: 'error', title: 'تنظیمات ذخیره نشد', html: document.querySelector('#settings-errors ul').outerHTML, confirmButtonText: 'باشه' });
+                });
+            </script>
+        @endif
+
+        <form action="{{ route('admin.wallet.settings.update') }}" method="POST" novalidate>
             @csrf @method('PUT')
             <div class="space-y-5">
 
@@ -54,8 +68,9 @@
                         <div>
                             <label class="form-label">حداقل مبلغ پیش‌پرداخت (تومان)</label>
                             <input type="number" step="1000" name="minimum_prepayment_amount"
-                                   value="{{ $settings->minimum_prepayment_amount }}"
+                                   value="{{ old('minimum_prepayment_amount', $settings->minimum_prepayment_amount) }}"
                                    class="form-input persian-number">
+                            @error('minimum_prepayment_amount')<p class="text-xs mt-1" style="color:rgb(var(--m-bad));">{{ $message }}</p>@enderror
                             <p class="form-hint">برای خدمات ارزان، پیش‌پرداخت هیچ‌وقت از این مقدار کمتر نمی‌شود (ولی هیچ‌وقت هم از قیمت کل خدمت بیشتر نمی‌شود).
                                 با پیش‌پرداخت روشن، دست‌کم ۱٬۰۰۰ تومان (کمترین مبلغ درگاه زرین‌پال) و حداکثر ۱۰۰ میلیون تومان.</p>
                         </div>
