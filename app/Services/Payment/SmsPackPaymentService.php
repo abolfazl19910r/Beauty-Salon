@@ -58,7 +58,7 @@ class SmsPackPaymentService
 
         Log::error('SmsPackPaymentService: شروع پرداخت بسته‌ی پیامک ناموفق', ['purchase_id' => $purchase->id, 'response' => $result->raw]);
 
-        return ['success' => false, 'message' => 'خطا در اتصال به درگاه پرداخت. لطفاً دوباره تلاش کنید.'];
+        return ['success' => false, 'message' => $result->message ?? 'خطا در اتصال به درگاه پرداخت. لطفاً دوباره تلاش کنید.'];
     }
 
     /** @return array{success: bool, ref_id?: string, message?: string} */
@@ -97,6 +97,6 @@ class SmsPackPaymentService
 
         Log::warning('SmsPackPaymentService: تأیید پرداخت بسته‌ی پیامک ناموفق', ['purchase_id' => $purchase->id, 'response' => $result->raw]);
 
-        return ['success' => false, 'message' => 'پرداخت تأیید نشد.'];
+        return ['success' => false, 'message' => 'پرداخت تأیید نشد'.($result->message ? ': '.$result->message : '').'.'];
     }
 }

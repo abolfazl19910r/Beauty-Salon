@@ -70,7 +70,7 @@ class SubscriptionPaymentService
             return ['success' => false, 'message' => 'خطا در اتصال به درگاه پرداخت. لطفاً دوباره تلاش کنید.'];
         }
 
-        $errorCode = $result->raw['data']['code'] ?? $result->raw['errors']['code'] ?? -999;
+        $errorCode = ZarinpalDriver::errorCode((array) $result->raw);
         Log::error('SubscriptionPaymentService: درخواست پرداخت اشتراک ناموفق', [
             'invoice_id' => $invoice->id,
             'error_code' => $errorCode,
@@ -79,7 +79,7 @@ class SubscriptionPaymentService
 
         return [
             'success' => false,
-            'message' => $result->raw['errors']['message'] ?? "خطای زرین‌پال (کد {$errorCode})",
+            'message' => ($result->message ?? ZarinpalDriver::errorMessage($errorCode))." (کد {$errorCode})",
         ];
     }
 
@@ -126,13 +126,13 @@ class SubscriptionPaymentService
             return ['success' => false, 'message' => 'خطا در تأیید پرداخت.'];
         }
 
-        $errorCode = $result->raw['data']['code'] ?? $result->raw['errors']['code'] ?? -999;
+        $errorCode = ZarinpalDriver::errorCode((array) $result->raw);
         Log::warning('SubscriptionPaymentService: تأیید پرداخت اشتراک ناموفق', [
             'invoice_id' => $invoice->id,
             'authority' => $authority,
             'error_code' => $errorCode,
         ]);
 
-        return ['success' => false, 'message' => "پرداخت تأیید نشد (کد {$errorCode})."];
+        return ['success' => false, 'message' => 'پرداخت تأیید نشد: '.ZarinpalDriver::errorMessage($errorCode)." (کد {$errorCode})."];
     }
 }
