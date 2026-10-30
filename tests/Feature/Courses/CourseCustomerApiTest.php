@@ -24,6 +24,7 @@ class CourseCustomerApiTest extends TestCase
 {
     use CreatesCourses;
     use RefreshDatabase;
+    use \Tests\Concerns\EnablesAllGateways;
 
     private string $token;
 

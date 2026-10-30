@@ -25,6 +25,7 @@ use Tests\TestCase;
 class LostSlotRefundTest extends TestCase
 {
     use RefreshDatabase;
+    use \Tests\Concerns\EnablesAllGateways;
 
     private Salon $salon;
 

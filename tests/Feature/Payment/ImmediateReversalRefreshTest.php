@@ -26,6 +26,7 @@ use Tests\TestCase;
 class ImmediateReversalRefreshTest extends TestCase
 {
     use RefreshDatabase;
+    use \Tests\Concerns\EnablesAllGateways;
 
     private Salon $salon;
 

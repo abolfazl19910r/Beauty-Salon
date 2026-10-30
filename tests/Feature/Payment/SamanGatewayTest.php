@@ -28,6 +28,7 @@ use Tests\TestCase;
 class SamanGatewayTest extends TestCase
 {
     use RefreshDatabase;
+    use \Tests\Concerns\EnablesAllGateways;
 
     private const TERMINAL = '13012345';
 

@@ -28,6 +28,7 @@ use Tests\TestCase;
 class VandarPayoutTest extends TestCase
 {
     use RefreshDatabase;
+    use \Tests\Concerns\EnablesAllGateways;
 
     private const STORE_URL = 'https://api.vandar.io/v3/business/mahru_salon/settlement/store';
 

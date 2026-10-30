@@ -32,6 +32,7 @@ use Tests\TestCase;
 class ParsianGatewayTest extends TestCase
 {
     use RefreshDatabase;
+    use \Tests\Concerns\EnablesAllGateways;
 
     private const CREDENTIALS = ['pin' => 'PIN<&>123', 'terminal_id' => '44012345'];
 

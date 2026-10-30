@@ -37,7 +37,8 @@ class GatewayManager
             return collect();
         }
 
-        return $salon->paymentGateways()->where('is_active', true)->orderBy('priority')->orderBy('id')->get();
+        // فقط درگاه‌های روشن در پلتفرم (بسته‌ی 5ز)؛ ردیف درگاه پنهان (مثلاً زیبال قدیمی) هیچ پرداختی شروع نمی‌کند.
+        return $salon->paymentGateways()->enabledDriver()->where('is_active', true)->orderBy('priority')->orderBy('id')->get();
     }
 
     public function driver(SalonPaymentGateway $gateway): PaymentGatewayDriver

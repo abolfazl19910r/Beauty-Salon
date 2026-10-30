@@ -21,6 +21,7 @@ use Tests\TestCase;
 class GatewayFeeLedgerTest extends TestCase
 {
     use RefreshDatabase;
+    use \Tests\Concerns\EnablesAllGateways;
 
     private Salon $salon;
 

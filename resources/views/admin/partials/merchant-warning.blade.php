@@ -13,7 +13,7 @@
 @elseif ($salon && ! $salon->acceptsOnlinePayments())
     <div class="rounded-xl p-4 mb-6 text-sm leading-7" style="background:rgb(var(--m-bad) / .1); border:1px solid rgb(var(--m-bad) / .35); color:rgb(var(--m-bad));" role="alert">
         <b>درگاه پرداخت سالن شما هنوز تنظیم نشده است.</b>
-        تا حداقل یک درگاه پرداخت فعال (زرین‌پال، زیبال، آسان پرداخت یا وندار) برای سالن اضافه نشود، هیچ پرداخت آنلاینی برای مشتری‌ها ممکن نیست: نه پیش‌پرداخت نوبت،
+        تا حداقل یک درگاه پرداخت فعال ({{ \App\Payments\GatewayCatalog::enabledLabels() }}) برای سالن اضافه نشود، هیچ پرداخت آنلاینی برای مشتری‌ها ممکن نیست: نه پیش‌پرداخت نوبت،
         نه پرداخت باقی‌مانده و نه شارژ کیف پول. رزرو آنلاین «بدون پیش‌پرداخت» (پرداخت کامل در سالن) ادامه دارد.
         @if (\Illuminate\Support\Facades\Route::has('admin.payment-gateways.index'))
             <a href="{{ route('admin.payment-gateways.index') }}" class="font-bold underline mr-1">افزودن درگاه پرداخت</a>

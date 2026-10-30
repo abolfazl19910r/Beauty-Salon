@@ -32,6 +32,7 @@ use Tests\TestCase;
 class MellatGatewayTest extends TestCase
 {
     use RefreshDatabase;
+    use \Tests\Concerns\EnablesAllGateways;
 
     private const CREDENTIALS = ['terminal_id' => '5012345', 'username' => 'salon_user', 'password' => 'p@ss<&>'];
 

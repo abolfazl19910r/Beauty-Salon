@@ -44,6 +44,12 @@ class SalonPaymentGateway extends Model
         return $this->belongsTo(Salon::class);
     }
 
+    /** فقط درگاه‌های روشن در پلتفرم (بسته‌ی 5ز) — ردیف درگاه پنهان می‌ماند ولی برای پرداخت، تسویه و پنل مالک دیده نمی‌شود. */
+    public function scopeEnabledDriver(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query->whereIn('driver', \App\Payments\GatewayCatalog::enabledKeys());
+    }
+
     /**
      * ⭐ کارمزد درگاه که به مبلغ مشتری اضافه می‌شه (تصمیم ابوالفضل، ۲۰۲۶-۰۹-۲۵): درصد از مبلغ پایه +
      * مبلغ ثابت، رو به بالا گرد به تومان کامل (هیچ‌وقت کسر ریال به درگاه نمی‌ره). هر درگاه کارمزد خودش

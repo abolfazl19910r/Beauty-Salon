@@ -22,6 +22,7 @@ use Tests\TestCase;
 class PaymentRefundedNotificationTest extends TestCase
 {
     use RefreshDatabase;
+    use \Tests\Concerns\EnablesAllGateways;
 
     public function test_the_message_names_the_salon_the_booking_and_where_each_amount_went_in_persian_digits(): void
     {

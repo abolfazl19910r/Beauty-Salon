@@ -103,7 +103,7 @@
             {{-- ⭐ مرحله‌ی ۱ چند درگاه (۲۰۲۶-۰۹-۲۵): فیلد تکی کد پذیرنده‌ی زرین‌پال با صفحه‌ی «درگاه‌های پرداخت» جایگزین شد. --}}
             <section class="space-y-3" id="merchant">
                 <h2 class="font-bold" style="color: var(--admin-accent);">درگاه‌های پرداخت</h2>
-                @php $activeGateways = $salon->paymentGateways()->where('is_active', true)->orderBy('priority')->get(); @endphp
+                @php $activeGateways = $salon->paymentGateways()->enabledDriver()->where('is_active', true)->orderBy('priority')->get(); @endphp
                 @unless ($salon->hasFeature(\App\Support\Features\Feature::OnlinePayment))
                     @include('admin.partials.feature-locked', ['feature' => \App\Support\Features\Feature::OnlinePayment])
                 @endunless
@@ -119,7 +119,7 @@
                     </div>
                 @endif
                 <a href="{{ route('admin.payment-gateways.index') }}" class="inline-block px-4 py-2 rounded-lg text-sm font-bold text-m-onsolid" style="background: var(--admin-accent);">
-                    مدیریت درگاه‌های پرداخت (زرین‌پال، زیبال، آسان پرداخت، وندار)
+                    مدیریت درگاه‌های پرداخت ({{ \App\Payments\GatewayCatalog::enabledLabels() }})
                 </a>
 
                 {{-- ⭐ مرحله‌ی ۳ (۲۰۲۶-۰۹-۲۵): توکن Payout زرین‌پال به ویرایش درگاه زرین‌پال در همان صفحه منتقل شد. --}}
@@ -128,7 +128,7 @@
                     @if ($salon->canAutoPayout())
                         <b style="color:rgb(var(--m-ok));">فعال</b> — از حساب درگاه سالن.
                     @else
-                        غیرفعال — برای فعال‌سازی، در «درگاه‌های پرداخت» اطلاعات تسویه‌ی درگاه زرین‌پال یا زیبال را وارد کنید.
+                        غیرفعال — برای فعال‌سازی، در «درگاه‌های پرداخت» اطلاعات تسویه‌ی درگاه {{ \App\Payments\GatewayCatalog::payoutLabels() }} را وارد کنید.
                     @endif
                 </p>
             </section>

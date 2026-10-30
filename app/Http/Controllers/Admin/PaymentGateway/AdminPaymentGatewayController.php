@@ -28,7 +28,8 @@ class AdminPaymentGatewayController extends Controller
 
     private function find(string $gatewayId): SalonPaymentGateway
     {
-        return app(CurrentSalon::class)->get()->paymentGateways()->findOrFail((int) $gatewayId);
+        // درگاه پنهان در پلتفرم (بسته‌ی 5ز) مثل درگاه سالن دیگر ۴۰۴ است: نه ویرایش، نه تست، نه حذف
+        return app(CurrentSalon::class)->get()->paymentGateways()->enabledDriver()->findOrFail((int) $gatewayId);
     }
 
     public function index(): View
@@ -37,8 +38,8 @@ class AdminPaymentGatewayController extends Controller
 
         return view('admin.payment-gateways.index', [
             'salon' => $salon,
-            'gateways' => $salon->paymentGateways()->orderBy('priority')->orderBy('id')->get(),
-            'catalog' => GatewayCatalog::DRIVERS,
+            'gateways' => $salon->paymentGateways()->enabledDriver()->orderBy('priority')->orderBy('id')->get(),
+            'catalog' => GatewayCatalog::enabled(),
         ]);
     }
 

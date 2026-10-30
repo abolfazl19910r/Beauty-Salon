@@ -26,6 +26,7 @@ use Tests\TestCase;
 class HeldBookingPaymentTest extends TestCase
 {
     use RefreshDatabase;
+    use \Tests\Concerns\EnablesAllGateways;
 
     private const TIMEOUT = 'cURL error 28: Operation timed out after 30001 milliseconds with 0 bytes received';
 

@@ -428,7 +428,7 @@ class Salon extends Model
         // ⭐ لایه‌ی چند درگاه (۲۰۲۶-۰۹-۲۵): «حداقل یک درگاه فعال» به‌جای فقط ستون زرین‌پال.
         // + امکان «پرداخت آنلاین مشتری» پلن (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴) — همان قاعده‌ی GatewayManager::gatewaysFor
         return $this->hasFeature(\App\Support\Features\Feature::OnlinePayment)
-            && $this->paymentGateways()->where('is_active', true)->exists();
+            && $this->paymentGateways()->enabledDriver()->where('is_active', true)->exists();
     }
 
     public function paymentGateways(): \Illuminate\Database\Eloquent\Relations\HasMany

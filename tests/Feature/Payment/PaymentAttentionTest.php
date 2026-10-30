@@ -27,6 +27,7 @@ use Tests\TestCase;
 class PaymentAttentionTest extends TestCase
 {
     use RefreshDatabase;
+    use \Tests\Concerns\EnablesAllGateways;
 
     private Salon $salon;
 

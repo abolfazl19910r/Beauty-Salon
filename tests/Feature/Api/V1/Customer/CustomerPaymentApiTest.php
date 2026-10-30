@@ -15,6 +15,8 @@ use Illuminate\Support\Sleep;
  */
 class CustomerPaymentApiTest extends CustomerApiTestCase
 {
+    use \Tests\Concerns\EnablesAllGateways;
+
     protected function setUp(): void
     {
         parent::setUp();

@@ -104,6 +104,42 @@ final class GatewayCatalog
         return array_keys(self::DRIVERS);
     }
 
+    /**
+     * درگاه‌های روشن در پلتفرم (config/payments.php، بسته‌ی 5ز): فقط این‌ها در پنل مالک دیده می‌شوند و پرداخت/تسویه با آن‌ها
+     * شروع می‌شود. ترتیب همان ترتیب DRIVERS است.
+     *
+     * @return list<string>
+     */
+    public static function enabledKeys(): array
+    {
+        $enabled = (array) config('payments.enabled_drivers', ['zarinpal']);
+
+        return array_values(array_filter(self::keys(), fn (string $key) => in_array($key, $enabled, true)));
+    }
+
+    public static function isEnabled(string $driver): bool
+    {
+        return in_array($driver, self::enabledKeys(), true);
+    }
+
+    /** @return array<string, array> زیرمجموعه‌ی DRIVERS برای درگاه‌های روشن */
+    public static function enabled(): array
+    {
+        return array_intersect_key(self::DRIVERS, array_flip(self::enabledKeys()));
+    }
+
+    /** نام درگاه‌های روشنی که تسویه‌ی خودکار متخصص دارند؛ رشته‌ی خالی = هیچ‌کدام. */
+    public static function payoutLabels(): string
+    {
+        return implode(' یا ', array_map(fn (string $key) => self::label($key), array_filter(self::enabledKeys(), fn (string $key) => self::supportsPayout($key))));
+    }
+
+    /** نام درگاه‌های روشن برای متن‌های پنل («زرین‌پال»، یا «زرین‌پال، زیبال»). */
+    public static function enabledLabels(): string
+    {
+        return implode('، ', array_map(fn (string $key) => self::label($key), self::enabledKeys()));
+    }
+
     public static function label(string $driver): string
     {
         return self::DRIVERS[$driver]['label'] ?? $driver;

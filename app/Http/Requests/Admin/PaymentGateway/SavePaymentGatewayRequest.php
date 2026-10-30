@@ -63,7 +63,7 @@ class SavePaymentGatewayRequest extends FormRequest
 
         if (! $this->editing()) {
             $salonId = app(CurrentSalon::class)->get()?->id;
-            $rules['driver'] = ['required', Rule::in(GatewayCatalog::keys()),
+            $rules['driver'] = ['required', Rule::in(GatewayCatalog::enabledKeys()),
                 Rule::unique('salon_payment_gateways', 'driver')->where('salon_id', $salonId)];
         }
 

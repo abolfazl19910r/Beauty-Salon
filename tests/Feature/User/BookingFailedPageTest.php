@@ -23,6 +23,7 @@ use Tests\TestCase;
 class BookingFailedPageTest extends TestCase
 {
     use RefreshDatabase;
+    use \Tests\Concerns\EnablesAllGateways;
 
     private function zibalBooking(User $user): Booking
     {

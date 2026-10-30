@@ -25,7 +25,7 @@ class PayoutManager
             return null;
         }
 
-        return $salon->paymentGateways()->orderBy('priority')->orderBy('id')->get()
+        return $salon->paymentGateways()->enabledDriver()->orderBy('priority')->orderBy('id')->get()
             ->first(fn (SalonPaymentGateway $g) => GatewayCatalog::supportsPayout($g->driver) && $this->isConfigured($g));
     }
 

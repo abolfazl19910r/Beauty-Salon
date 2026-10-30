@@ -24,6 +24,7 @@ use Tests\TestCase;
 class SamanReconcileTest extends TestCase
 {
     use RefreshDatabase;
+    use \Tests\Concerns\EnablesAllGateways;
 
     private const TERMINAL = '13012345';
 

@@ -17,6 +17,7 @@ use Tests\TestCase;
 class BookingModeFallbackTest extends TestCase
 {
     use RefreshDatabase;
+    use \Tests\Concerns\EnablesAllGateways;
 
     private User $owner;
 

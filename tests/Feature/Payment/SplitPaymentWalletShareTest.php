@@ -25,6 +25,7 @@ use Tests\TestCase;
 class SplitPaymentWalletShareTest extends TestCase
 {
     use RefreshDatabase;
+    use \Tests\Concerns\EnablesAllGateways;
 
     private Specialist $specialist;
 

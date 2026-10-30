@@ -49,7 +49,7 @@
 
                 <form method="POST" action="{{ route('admin.payment-attention.resolve', $tx->id) }}" class="flex flex-col lg:flex-row gap-2">
                     @csrf
-                    <input type="text" name="note" required minlength="3" maxlength="500" placeholder="نتیجه‌ی بررسی پنل درگاه (مثلاً: در پنل زیبال پرداخت‌شده بود)"
+                    <input type="text" name="note" required minlength="3" maxlength="500" placeholder="نتیجه‌ی بررسی پنل درگاه (مثلاً: در پنل زرین‌پال پرداخت‌شده بود)"
                            class="flex-1 rounded-lg px-3 py-2 text-sm" style="border:1px solid var(--admin-border); background:var(--admin-bg); color:var(--admin-text);">
                     @if($canCredit)
                         <button type="submit" name="action" value="wallet_credit" class="px-4 py-2 rounded-lg text-sm font-bold text-m-onsolid" style="background:rgb(var(--m-ok));"

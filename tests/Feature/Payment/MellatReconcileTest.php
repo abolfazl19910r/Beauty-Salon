@@ -28,6 +28,7 @@ use Tests\TestCase;
 class MellatReconcileTest extends TestCase
 {
     use RefreshDatabase;
+    use \Tests\Concerns\EnablesAllGateways;
 
     private const CREDENTIALS = ['terminal_id' => '5012345', 'username' => 'u', 'password' => 'p'];
 
