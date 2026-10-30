@@ -100,11 +100,11 @@ All salons share **one database**; isolation is done in the application:
 - Per-session notes and before/after photos **only with the customer's recorded consent**, stored on a private disk; the customer gives consent in the app, on the salon site or through an SMS link (or staff record it in person), and its history is kept with time, IP, text version and source
 
 ### 💳 Payments and wallets
-- **Several gateways per salon:** Zarinpal, Zibal, Vandar, AsanPardakht, Saman, Mellat, Parsian — the customer picks one, and on outage the next one is tried; gateway fees are added to the customer's amount
+- **Several gateways per salon:** Zarinpal, Zibal, Vandar, AsanPardakht, Saman, Mellat, Parsian — the customer picks one, and on outage the next one is tried; gateway fees are added to the customer's amount. **Only Zarinpal is switched on for now** (`PAYMENT_ENABLED_DRIVERS`, package 5Z); the others keep their code and tests but are hidden
 - Customer money is collected only through **the salon's own merchant**; the platform merchant is used only for salon subscriptions and SMS packs
 - Percentage deposit (optional, chosen by the salon), full payment, or combined (wallet + gateway)
 - Customer wallet, specialist wallet with salon commission, salon wallet
-- Specialist withdrawals and **automatic payouts** via Zarinpal, Zibal or Vandar — only to a verified IBAN (Sheba); manual payout is also possible
+- Specialist withdrawals and **automatic payouts** via Zibal or Vandar — only to a verified IBAN (Sheba); Zarinpal has no payout API, so its payouts are manual
 - Automatic reconciliation of stuck transactions; a "needs review" page with notification and SMS to the salon owner
 
 ### 🏆 Loyalty and win-back
@@ -157,7 +157,7 @@ All salons share **one database**; isolation is done in the application:
 | Authentication | custom SMS login, Sanctum for the app API |
 | Authorization | custom RBAC (per-salon roles + shared permissions) |
 | Multi-tenancy | single database, `CurrentSalon` + global scope + ownership checks |
-| Payments | driver layer (`app/Payments`): 7 gateways and 3 payout drivers |
+| Payments | driver layer (`app/Payments`): 7 gateways and 2 payout drivers |
 | SMS | Kavenegar |
 | Push | Firebase Cloud Messaging (+ ntfy) |
 | PDF / Excel | mPDF, DomPDF / Maatwebsite Excel + PhpSpreadsheet |
@@ -478,7 +478,7 @@ Full list: `php artisan route:list`.
 
 | Gateway | Payment | Automatic payout |
 |---|:---:|:---:|
-| Zarinpal | ✅ | ✅ |
+| Zarinpal | ✅ | — (manual; no payout API in the official docs) |
 | Zibal | ✅ | ✅ |
 | Vandar | ✅ | ✅ |
 | AsanPardakht | ✅ | — |
@@ -486,6 +486,8 @@ Full list: `php artisan route:list`.
 | Mellat | ✅ | — |
 | Parsian | ✅ | — |
 
+- **Only Zarinpal is switched on for now** (`PAYMENT_ENABLED_DRIVERS=zarinpal`); other gateway rows of salons are kept but never used.
+- Zarinpal follows the official v4 docs: `currency: IRR`, 1,000 toman to 100 million toman per payment, the return URL is always on the salon's own domain (`{slug}.CENTRAL_DOMAIN`) — register that domain in the Zarinpal panel (error -14); -50/-52 go to "needs review"; an abandoned payment is verified before it expires; "Connect Zarinpal account" (OAuth) sits behind `ZARINPAL_CONNECT_CLIENT_ID`. Manual test: [`docs/testing/ZARINPAL_SANDBOX_TESTING.md`](docs/testing/ZARINPAL_SANDBOX_TESTING.md).
 - Zarinpal has been tried in sandbox; the others are covered by automated tests (`Http::fake`), and their real manual test is pending in [`docs/testing/MANUAL_GATEWAY_TESTING.md`](docs/testing/MANUAL_GATEWAY_TESTING.md).
 - Bank gateways (Saman, Mellat, Parsian) usually require the server IP to be registered in the bank panel.
 - ⚠️ Whether gateways accept "each salon's merchant on the platform's domain" is not confirmed yet (`Rasta unified prompt.md`, open item 5d).
