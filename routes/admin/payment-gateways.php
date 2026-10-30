@@ -6,6 +6,14 @@ use Illuminate\Support\Facades\Route;
 // ⭐ درگاه‌های پرداخت سالن (مرحله‌ی ۱ چند درگاه، ۲۰۲۶-۰۹-۲۵) — داخل گروه salon.owner در routes/web.php.
 Route::prefix('payment-gateways')->name('payment-gateways.')->group(function () {
     Route::get('/', [AdminPaymentGatewayController::class, 'index'])->name('index');
+    // ⭐ «اتصال حساب زرین‌پال» (بسته‌ی 5ز، OAuth + PKCE) — پشت services.zarinpal.connect.client_id؛ redirect_uri ثبت‌شده نزد زرین‌پال = callback
+    Route::controller(\App\Http\Controllers\Admin\PaymentGateway\AdminZarinpalConnectController::class)->prefix('zarinpal')->name('zarinpal.')->group(function () {
+        Route::get('/connect', 'connect')->middleware('throttle:10,1')->name('connect');
+        Route::get('/callback', 'callback')->middleware('throttle:10,1')->name('callback');
+        Route::post('/sync', 'sync')->middleware('throttle:10,1')->name('sync');
+        Route::post('/terminal', 'requestTerminal')->middleware('throttle:5,1')->name('terminal');
+        Route::delete('/connection', 'disconnect')->name('disconnect');
+    });
     Route::post('/', [AdminPaymentGatewayController::class, 'store'])->name('store');
     Route::put('/{gatewayId}', [AdminPaymentGatewayController::class, 'update'])->whereNumber('gatewayId')->name('update');
     Route::delete('/{gatewayId}', [AdminPaymentGatewayController::class, 'destroy'])->whereNumber('gatewayId')->name('destroy');

@@ -46,6 +46,10 @@
             </div>
         @endif
 
+        @if ($zarinpalConnect)
+            @include('admin.payment-gateways._zarinpal-connect', ['connect' => $zarinpalConnect, 'returnDomain' => $returnDomain, 'salon' => $salon])
+        @endif
+
         @unless ($gateways->where('is_active', true)->count())
             <div class="rounded-lg p-3 text-sm leading-7" style="background:rgb(var(--m-bad) / .14); color:rgb(var(--m-bad));">
                 <b>پرداخت آنلاین سالن غیرفعال است.</b> تا حداقل یک درگاه فعال اضافه نشود، مشتری‌ها نمی‌توانند پیش‌پرداخت نوبت

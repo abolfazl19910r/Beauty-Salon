@@ -464,6 +464,12 @@ class Salon extends Model
         return ($this->zarinpalGateway()?->credentials['merchant_id'] ?? null) ?: null;
     }
 
+    /** «اتصال حساب زرین‌پال» (بسته‌ی 5ز) */
+    public function zarinpalConnection(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(ZarinpalConnection::class);
+    }
+
     public function zarinpalGateway(): ?SalonPaymentGateway
     {
         return $this->exists ? $this->paymentGateways()->where('driver', 'zarinpal')->first() : null;

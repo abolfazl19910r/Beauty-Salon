@@ -66,6 +66,18 @@ return [
         'start_pay_url' => env('ZARINPAL_START_PAY_URL', 'https://payment.zarinpal.com/pg/StartPay'),
 
         // ⭐ بسته‌ی 5ز (۲۰۲۶-۱۰-۳۰): بخش payout (ZARINPAL_PAYOUT_*) حذف شد — تسویه‌ی خودکار زرین‌پال خاموش است.
+
+        // ⭐ بسته‌ی 5ز: «اتصال حساب زرین‌پال» (OAuth 2.0 + PKCE، /apiDocs/connect.html). client_id و redirect_uri ثبت‌شده را پشتیبانی زرین‌پال
+        // می‌دهد؛ تا client_id خالی است دکمه‌ی اتصال پنهان و مسیرهایش ۴۰۴ است (ورود دستی مرچنت سر جایش). redirect_uri خالی = مسیر
+        // admin.payment-gateways.zarinpal.callback روی APP_URL. mcc_id = دسته‌بندی کسب‌وکار برای TerminalAdd (فهرستش در مستندات نیست).
+        'connect' => [
+            'client_id' => env('ZARINPAL_CONNECT_CLIENT_ID'),
+            'redirect_uri' => env('ZARINPAL_CONNECT_REDIRECT_URI'),
+            'mcc_id' => env('ZARINPAL_CONNECT_MCC_ID'),
+            'scopes' => 'terminal.read terminal bank_account.read',
+            'oauth_url' => env('ZARINPAL_CONNECT_OAUTH_URL') ?: 'https://next.zarinpal.com/api/oauth',
+            'graphql_url' => env('ZARINPAL_CONNECT_GRAPHQL_URL') ?: 'https://next.zarinpal.com/api/v4/graphql',
+        ],
     ],
 
     // ⭐ Wired up (test-writing session 11): TWO_FACTOR_TIMEOUT/TWO_FACTOR_CODE_LENGTH used to be

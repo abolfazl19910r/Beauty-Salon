@@ -41,6 +41,12 @@ class AdminPaymentGatewayController extends Controller
             'gateways' => $salon->paymentGateways()->enabledDriver()->orderBy('priority')->orderBy('id')->get(),
             'catalog' => GatewayCatalog::enabled(),
             'returnDomain' => \App\Payments\PaymentReturnUrl::domain($salon),
+            'zarinpalConnect' => \App\Services\Payment\Zarinpal\ZarinpalConnectService::enabled() ? [
+                'connection' => $connection = $salon->zarinpalConnection()->first(),
+                // فرم درخواست درگاه فقط وقتی اتصال زنده است و درگاه هم‌دامنه‌ی فعالی پیدا نشد
+                'bankAccounts' => $connection?->tokenUsable() && ! $connection->terminal_id && ! $connection->requested_terminal
+                    ? app(\App\Services\Payment\Zarinpal\ZarinpalConnectService::class)->bankAccounts($salon) : [],
+            ] : null,
         ]);
     }
 
