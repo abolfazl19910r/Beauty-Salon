@@ -50,12 +50,19 @@ class ZarinpalDriver implements PaymentGatewayDriver
 
     public function start(GatewayStartRequest $request): GatewayStartResult
     {
+        // ⭐ بسته‌ی 5ز: حد مبلغ زرین‌پال پیش از درخواست — پیام روشن به‌جای ‎-9/‎-41؛ خطای منطقی است، درگاه بعدی امتحان نمی‌شود
+        if ($violation = \App\Payments\GatewayAmountLimits::violation($request->amountRial)) {
+            return GatewayStartResult::failed($violation, retryable: false, raw: ['amount_limit' => $request->amountRial]);
+        }
+
         try {
             $response = Http::timeout(30)
                 ->withHeaders(['Content-Type' => 'application/json', 'Accept' => 'application/json'])
                 ->post($this->apiUrl.'/request.json', [
                     'merchant_id' => (string) ($this->credentials['merchant_id'] ?? ''),
                     'amount' => $request->amountRial,
+                    // ⭐ بسته‌ی 5ز: واحد صریح (پیش‌فرض در صفحه‌ی REST ذکر نشده؛ verify مبلغ را «به ریال» می‌گیرد)
+                    'currency' => 'IRR',
                     'callback_url' => $request->callbackUrl,
                     'description' => $request->description,
                     'metadata' => [

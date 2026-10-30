@@ -50,7 +50,11 @@ class AdminBookingPolicyController extends Controller
         $data = $request->validate([
             'payment_mode' => ['required', 'in:'.BookingPolicy::MODE_NONE.','.BookingPolicy::MODE_PREPAY],
             'prepayment_percentage' => ['required_if:payment_mode,prepay', 'nullable', 'numeric', 'min:0', 'max:100'],
-            'minimum_prepayment_amount' => ['required_if:payment_mode,prepay', 'nullable', 'numeric', 'min:0', 'max:100000000'],
+            'minimum_prepayment_amount' => ['required_if:payment_mode,prepay', 'nullable', 'numeric', 'min:0',
+                // ⭐ بسته‌ی 5ز: در حالت پیش‌پرداخت، حداقل باید داخل حد مبلغ زرین‌پال باشد
+                fn ($attribute, $value, $fail) => $request->input('payment_mode') === BookingPolicy::MODE_PREPAY
+                    ? \App\Payments\GatewayAmountLimits::prepaymentMinimumRule(fn () => $request->input('prepayment_percentage'))($attribute, $value, $fail)
+                    : null],
         ], [], [
             'prepayment_percentage' => 'درصد پیش‌پرداخت',
             'minimum_prepayment_amount' => 'حداقل پیش‌پرداخت',

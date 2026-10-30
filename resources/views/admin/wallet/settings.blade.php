@@ -56,7 +56,8 @@
                             <input type="number" step="1000" name="minimum_prepayment_amount"
                                    value="{{ $settings->minimum_prepayment_amount }}"
                                    class="form-input persian-number">
-                            <p class="form-hint">برای خدمات ارزان، پیش‌پرداخت هیچ‌وقت از این مقدار کمتر نمی‌شود (ولی هیچ‌وقت هم از قیمت کل خدمت بیشتر نمی‌شود).</p>
+                            <p class="form-hint">برای خدمات ارزان، پیش‌پرداخت هیچ‌وقت از این مقدار کمتر نمی‌شود (ولی هیچ‌وقت هم از قیمت کل خدمت بیشتر نمی‌شود).
+                                با پیش‌پرداخت روشن، دست‌کم ۱٬۰۰۰ تومان (کمترین مبلغ درگاه زرین‌پال) و حداکثر ۱۰۰ میلیون تومان.</p>
                         </div>
                     </div>
                 </div>

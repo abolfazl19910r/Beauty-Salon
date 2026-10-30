@@ -56,11 +56,11 @@
         </div>
         <div>
             <label class="block text-sm mb-1" for="minimum_prepayment_amount" style="color: var(--admin-text-dim);">حداقل پیش‌پرداخت (تومان)</label>
-            <input type="number" step="1000" min="0" id="minimum_prepayment_amount" name="minimum_prepayment_amount"
+            <input type="number" step="1000" min="0" max="100000000" id="minimum_prepayment_amount" name="minimum_prepayment_amount"
                    value="{{ old('minimum_prepayment_amount', (float) $wallet->minimum_prepayment_amount) }}" class="{{ $input }}" style="{{ $inputStyle }}">
         </div>
         <p class="sm:col-span-2 text-xs" style="color: var(--admin-text-light);">
-            پیش‌پرداخت هیچ‌وقت از قیمت خدمت بیشتر نمی‌شود. کد تخفیف در این حالت از باقی‌مانده‌ای که در سالن پرداخت می‌شود کم می‌شود.
+            پیش‌پرداخت هیچ‌وقت از قیمت خدمت بیشتر نمی‌شود. حداقل پیش‌پرداخت دست‌کم ۱٬۰۰۰ تومان است (کمترین مبلغ درگاه زرین‌پال). کد تخفیف در این حالت از باقی‌مانده‌ای که در سالن پرداخت می‌شود کم می‌شود.
             دوره‌های درمانی پیش‌پرداخت جدای خودشان را دارند و از این تنظیم پیروی نمی‌کنند.
         </p>
     </div>
