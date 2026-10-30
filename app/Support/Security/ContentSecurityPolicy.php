@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Vite;
 
 /**
- * سیاست CSP برنامه (بسته‌ی مجوز 5د، مرحله‌ی ۱: فقط گزارش — Content-Security-Policy-Report-Only).
+ * سیاست CSP برنامه (بسته‌ی مجوز 5د؛ مرحله‌ی ۱ فقط گزارش، از ۲۰۲۶-۱۰-۳۱ پیش‌فرض اجرا — Content-Security-Policy).
  *
  * مرحله‌ای: اول با SECURITY_CSP=report گزارش‌ها جمع می‌شود (storage/logs/csp-*.log)، بعد از اطمینان enforce. اسکریپت‌ها و
  * استایل‌های درون‌خطی صفحه‌ها هنوز زیادند، پس 'unsafe-inline' می‌ماند؛ آنچه همین الان محدود می‌شود مبدأهاست: اسکریپت فقط از

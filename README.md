@@ -319,7 +319,7 @@ MAX_LOGIN_ATTEMPTS=5
 LOGIN_THROTTLE_MINUTES=1
 TRUSTED_PROXIES=                   # رنج IP لبه‌های CDN (سرور آروان: deploy/single/arvan-ips.sh). هرگز «*»
 HSTS_MAX_AGE=                      # فقط روی HTTPS؛ خالی = یک سال، 0 = خاموش
-SECURITY_CSP=report               # report (فقط گزارش در storage/logs/csp-*.log)، enforce یا off
+SECURITY_CSP=enforce              # enforce (پیش‌فرض؛ تخلف‌ها در storage/logs/csp-*.log)، report (فقط گزارش) یا off
 RETENTION_DAYS=190                 # نگهداری IP و لاگ‌ها (ماده‌ی ۶۶۸)؛ کمتر از ۱۸۴ پذیرفته نمی‌شود
 LEGAL_PAGES_REVIEWED=false         # true بعد از بازبینی حقوق‌دان (برچسب «پیش‌نویس» برداشته می‌شود)
 SALON_VERIFIER=manual              # احراز سالن: manual (ابرمدیر)؛ بعداً سامانه‌ی رسمی

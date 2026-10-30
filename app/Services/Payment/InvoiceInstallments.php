@@ -19,14 +19,14 @@ use Illuminate\Support\Facades\Log;
  *   اولین قسط مهلت OPEN_DAYS روزه می‌گذارد.
  * - fail(): قسط اول ناموفق ← فاکتور failed و اعتبار رزروشده برمی‌گردد؛ قسط بعدی ناموفق ← فاکتور باز می‌ماند.
  * - expire(): بعد از مهلت، فاکتور نیمه‌پرداخت failed و (قسط‌های پرداخت‌شده + اعتبار رزروشده) اعتبار پلتفرم سالن می‌شود؛ فاکتوری که
- *   هیچ قسطش نرسید و اعتبار رزرو کرده بود بعد از یک روز رها می‌شود.
+ *   هیچ قسطش نرسید (با یا بی اعتبار رزروشده) بعد از یک روز «ناموفق» می‌شود.
  * - قسطی که بعد از بسته شدن فاکتور برسد (reconcile) ← اعتبار پلتفرم.
  */
 class InvoiceInstallments
 {
     public const OPEN_DAYS = 7;
 
-    /** فاکتور بی قسط پرداخت‌شده که اعتبار رزرو کرده بود، بعد از این مدت رها می‌شود */
+    /** فاکتور بی قسط پرداخت‌شده (بی پاسخ درگاه) بعد از این مدت «ناموفق» و اعتبار رزروشده‌اش آزاد می‌شود */
     public const ABANDONED_RESERVATION_HOURS = 24;
 
     public function __construct(
@@ -128,7 +128,9 @@ class InvoiceInstallments
 
         $candidates = Invoice::withoutGlobalScopes()->where('status', 'pending')
             ->where(fn ($q) => $q->where(fn ($p) => $p->where('installments_paid', '>', 0)->where('partial_expires_at', '<=', now()))
-                ->orWhere(fn ($r) => $r->where('installments_paid', 0)->where('credit_applied', '>', 0)
+                // بی هیچ قسط پرداخت‌شده (با یا بی اعتبار رزروشده): بعد از یک روز «ناموفق» — تصمیم ابوالفضل ۲۰۲۶-۱۰-۳۱؛ قسطی که بعد از
+                // آن برسد (reconcile تا ۲۴ ساعت) late_payment اعتبار پلتفرم می‌شود
+                ->orWhere(fn ($r) => $r->where('installments_paid', 0)->where('payment_method', 'online')
                     ->where('created_at', '<=', now()->subHours(self::ABANDONED_RESERVATION_HOURS))))
             ->pluck('id');
 

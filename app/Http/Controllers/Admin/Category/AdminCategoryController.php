@@ -52,8 +52,8 @@ class AdminCategoryController extends Controller
             'is_active' => 'boolean',
             'icon' => 'nullable|string|max:50',
             'order' => 'nullable|integer',
-            'image' => 'nullable|image|max:2048',
-        ]);
+            'image' => ['nullable', 'image', \App\Support\ImageUpload::EXTENSIONS, 'max:2048'],
+        ], ['image.extensions' => \App\Support\ImageUpload::EXTENSION_MESSAGE]);
 
         $validated['slug'] = SalonSlug::make(new Category, $validated['name']);
 
@@ -105,9 +105,9 @@ class AdminCategoryController extends Controller
             'is_active' => 'boolean',
             'icon' => 'nullable|string|max:50',
             'order' => 'nullable|integer',
-            'image' => 'nullable|image|max:2048',
+            'image' => ['nullable', 'image', \App\Support\ImageUpload::EXTENSIONS, 'max:2048'],
             'remove_image' => 'nullable|boolean',
-        ]);
+        ], ['image.extensions' => \App\Support\ImageUpload::EXTENSION_MESSAGE]);
 
         if ($category->name !== $validated['name']) {
             $validated['slug'] = SalonSlug::make($category, $validated['name']);

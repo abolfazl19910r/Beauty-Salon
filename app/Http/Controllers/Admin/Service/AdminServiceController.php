@@ -49,8 +49,8 @@ class AdminServiceController extends Controller
             'price' => 'required|numeric|min:0',
             'duration' => 'required|integer|min:0',
             'category_id' => 'nullable|exists:categories,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-        ]);
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg', \App\Support\ImageUpload::EXTENSIONS, 'max:2048'],
+        ], ['image.extensions' => \App\Support\ImageUpload::EXTENSION_MESSAGE]);
 
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store(\App\Support\SalonStorage::forCurrentSalon('services'), 'public');
@@ -73,8 +73,8 @@ class AdminServiceController extends Controller
             'price' => 'required|numeric|min:0',
             'duration' => 'required|integer|min:0',
             'category_id' => 'nullable|exists:categories,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-        ]);
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg', \App\Support\ImageUpload::EXTENSIONS, 'max:2048'],
+        ], ['image.extensions' => \App\Support\ImageUpload::EXTENSION_MESSAGE]);
 
         if ($request->hasFile('image')) {
             if ($service->image) {

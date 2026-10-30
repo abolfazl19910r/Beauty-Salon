@@ -19,7 +19,7 @@ class UpdateAdminBlogPostRequest extends FormRequest
             'content' => ['required', 'string'],
             'excerpt' => ['nullable', 'string', 'max:500'],
             'category_id' => ['required', 'exists:blog_categories,id'],
-            'image' => ['nullable', 'image', 'max:2048'],
+            'image' => ['nullable', 'image', \App\Support\ImageUpload::EXTENSIONS, 'max:2048'],
             'is_published' => ['nullable'],
             'published_at_jalali' => [
                 'nullable',
@@ -44,6 +44,7 @@ class UpdateAdminBlogPostRequest extends FormRequest
             'category_id.required' => 'دسته‌بندی الزامی است.',
             'category_id.exists' => 'دسته‌بندی انتخابی معتبر نیست.',
             'image.image' => 'فایل باید تصویر باشد.',
+            'image.extensions' => \App\Support\ImageUpload::EXTENSION_MESSAGE,
             'image.max' => 'حجم تصویر نباید بیشتر از ۲ مگابایت باشد.',
         ];
     }

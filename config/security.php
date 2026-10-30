@@ -28,11 +28,12 @@ return [
     ],
 
     /*
-    | CSP مرحله‌ای (App\Support\Security\ContentSecurityPolicy): report = فقط گزارش (پیش‌فرض)، enforce = اجرا، off = خاموش.
+    | CSP مرحله‌ای (App\Support\Security\ContentSecurityPolicy): report = فقط گزارش، enforce = اجرا (پیش‌فرض)، off = خاموش.
     | گزارش‌ها: POST /csp-report ← storage/logs/csp-*.log (۱۴ روز).
     */
     'csp' => [
-        'mode' => in_array(env('SECURITY_CSP'), ['off', 'report', 'enforce'], true) ? env('SECURITY_CSP') : 'report',
+        // ⭐ ۲۰۲۶-۱۰-۳۱ (تصمیم ابوالفضل): پیش‌فرض enforce — در Report-Only آزمون‌های دستی لوکال هیچ گزارشی ثبت نشد
+        'mode' => in_array(env('SECURITY_CSP'), ['off', 'report', 'enforce'], true) ? env('SECURITY_CSP') : 'enforce',
 
         // لوگوی اینماد: کد پنل اینماد اسکریپت یا تصویر از همین میزبان است و لینکش به trustseal.enamad.ir می‌رود
         'enamad_hosts' => ['https://trustseal.enamad.ir', 'https://*.enamad.ir'],

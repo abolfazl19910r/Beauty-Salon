@@ -319,7 +319,7 @@ MAX_LOGIN_ATTEMPTS=5
 LOGIN_THROTTLE_MINUTES=1
 TRUSTED_PROXIES=                   # CDN edge IP ranges (Arvan server: deploy/single/arvan-ips.sh). Never "*"
 HSTS_MAX_AGE=                      # HTTPS only; empty = one year, 0 = off
-SECURITY_CSP=report               # report (log only, storage/logs/csp-*.log), enforce or off
+SECURITY_CSP=enforce              # enforce (default; violations in storage/logs/csp-*.log), report (log only) or off
 RETENTION_DAYS=190                 # how long IPs and logs are kept (art. 668); below 184 is not accepted
 LEGAL_PAGES_REVIEWED=false         # true once a lawyer has reviewed the texts (removes the "draft" label)
 SALON_VERIFIER=manual              # salon verification: manual (super-admin); an official service later

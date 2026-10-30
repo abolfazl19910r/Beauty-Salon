@@ -388,7 +388,7 @@ docker logs --since 10m mahru 2>&1 | grep "SMS"
 پیش شماست). وقتی خط و قالب‌های کاوه‌نگار آماده شد: در `.env.server` ‏`KAVENEGAR_API_KEY=…` و `SMS_LOG_ONLY=false`، بعد
 `docker compose -f docker-compose.server.yml up -d`.
 
-| هدرهای امنیتی | `curl -sI https://arisheh.ir/ \| grep -iE 'strict-transport\|x-frame\|referrer-policy\|permissions-policy\|content-security'` — همه هستند (CSP فعلاً Report-Only) |
+| هدرهای امنیتی | `curl -sI https://arisheh.ir/ \| grep -iE 'strict-transport\|x-frame\|referrer-policy\|permissions-policy\|content-security'` — همه هستند (CSP اجرایی از ۲۰۲۶-۱۰-۳۱؛ اگر صفحه‌ای شکست: `storage/logs/csp-*.log` و موقتاً `SECURITY_CSP=report`) |
 | لاگ دسترسی ماندگار | `docker exec mahru ls /data/logs/nginx` — فایل امروز؛ `tail -1` آن IP **خودتان** را دارد |
 | SSH با رمز | `ssh -o PubkeyAuthentication=no root@SERVER_IP` ← `Permission denied (publickey)` (بخش ۲ب) |
 

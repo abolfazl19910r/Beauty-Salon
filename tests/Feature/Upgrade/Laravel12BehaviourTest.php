@@ -56,4 +56,18 @@ class Laravel12BehaviourTest extends TestCase
             ->assertSessionHasNoErrors();
         $this->assertDatabaseCount('gallery_images', 1);
     }
+
+    /** ⭐ ۲۰۲۶-۱۰-۳۱ (بند «5ج»، تصمیم ابوالفضل): PNG با پسوند svg هم رد شود — پسوند فایل هم مثل محتوا فقط تصویر رایج */
+    public function test_a_png_named_svg_is_rejected_with_a_persian_message(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create(['is_admin' => true]);
+        $fake = UploadedFile::fake()->createWithContent('photo.svg', UploadedFile::fake()->image('x.png')->getContent());
+
+        foreach (['/admin/gallery' => ['title' => 'x'], '/admin/blog' => ['title' => 'x'], '/admin/categories' => ['name' => 'x'], '/admin/services' => ['name' => 'x']] as $url => $fields) {
+            $this->actingAs($admin)->from($url)->post($url, $fields + ['image' => $fake])
+                ->assertSessionHasErrors(['image' => 'پسوند تصویر باید jpg، jpeg، png یا webp باشد.']);
+        }
+        $this->assertDatabaseCount('gallery_images', 0);
+    }
 }

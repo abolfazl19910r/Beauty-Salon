@@ -246,4 +246,21 @@ class InstallmentInvoiceTest extends TestCase
         $this->assertSame(2, $invoice->fresh()->installments_paid);
         $this->actingAs($this->owner)->get(route('admin.billing.index'))->assertSee('قسط ۲ از ۳ قبلاً پرداخت و ثبت شده است.');
     }
+
+    /** ⭐ تصمیم ابوالفضل ۲۰۲۶-۱۰-۳۱: فاکتوری که به درگاه رفت و هیچ پاسخی نیامد، بعد از یک روز خودش «ناموفق» شود */
+    public function test_an_unanswered_pending_invoice_fails_after_a_day(): void
+    {
+        $this->salon->update(['max_specialists_count' => 10]);
+        $this->fakeGateway();
+        $invoice = $this->buy('1m');
+
+        $this->travelTo(now()->addHours(InvoiceInstallments::ABANDONED_RESERVATION_HOURS)->subMinute());
+        $this->artisan('billing:expire-installments')->assertSuccessful();
+        $this->assertTrue($invoice->fresh()->isPending(), 'هنوز زود است');
+
+        $this->travelTo(now()->addMinutes(2));
+        $this->artisan('billing:expire-installments')->assertSuccessful();
+        $this->assertSame('failed', $invoice->fresh()->status);
+        $this->assertSame(0, PlatformCreditEntry::count(), 'اعتبار رزروشده‌ای نبود');
+    }
 }

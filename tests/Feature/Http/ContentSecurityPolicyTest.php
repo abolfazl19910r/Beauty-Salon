@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Vite;
 use Tests\TestCase;
 
 /**
- * CSP مرحله‌ی ۱ (Report-Only) — بسته‌ی مجوز 5د. چیزهایی که نباید بشکنند: اینماد، فرم خودکار درگاه‌ها، Vite، PWA و
+ * CSP — بسته‌ی مجوز 5د (مرحله‌ی ۱ Report-Only؛ مرحله‌ی ۲ از ۲۰۲۶-۱۰-۳۱ پیش‌فرض enforce). چیزهایی که نباید بشکنند: اینماد، فرم خودکار درگاه‌ها، Vite، PWA و
  * ساب‌دامین سالن‌ها. App\Support\Security\ContentSecurityPolicy
  */
 class ContentSecurityPolicyTest extends TestCase
@@ -17,8 +17,8 @@ class ContentSecurityPolicyTest extends TestCase
 
     private function policy(string $uri = '/'): array
     {
-        $header = (string) $this->get($uri)->assertOk()->headers->get('Content-Security-Policy-Report-Only');
-        $this->assertNotSame('', $header, 'صفحه‌ی HTML سیاست Report-Only دارد');
+        $header = (string) $this->get($uri)->assertOk()->headers->get('Content-Security-Policy');
+        $this->assertNotSame('', $header, 'صفحه‌ی HTML سیاست اجرایی دارد');
 
         $directives = [];
         foreach (explode(';', $header) as $part) {
@@ -29,12 +29,20 @@ class ContentSecurityPolicyTest extends TestCase
         return $directives;
     }
 
-    public function test_pages_are_report_only_by_default_and_not_enforced(): void
+    /** ⭐ مرحله‌ی ۲ (تصمیم ابوالفضل ۲۰۲۶-۱۰-۳۱): پیش‌فرض enforce؛ در گزارش‌های Report-Only آزمون‌های دستی لوکال هیچ تخلفی نبود */
+    public function test_pages_are_enforced_by_default_and_still_report(): void
     {
         $response = $this->get('/');
 
-        $response->assertHeaderMissing('Content-Security-Policy');
-        $this->assertStringContainsString('report-uri '.url('/csp-report'), (string) $response->headers->get('Content-Security-Policy-Report-Only'));
+        $response->assertHeaderMissing('Content-Security-Policy-Report-Only');
+        $this->assertStringContainsString('report-uri '.url('/csp-report'), (string) $response->headers->get('Content-Security-Policy'));
+    }
+
+    public function test_report_mode_is_still_available(): void
+    {
+        config(['security.csp.mode' => 'report']);
+
+        $this->get('/')->assertHeader('Content-Security-Policy-Report-Only')->assertHeaderMissing('Content-Security-Policy');
     }
 
     public function test_the_enamad_badge_script_image_and_link_are_allowed(): void
@@ -114,7 +122,7 @@ class ContentSecurityPolicyTest extends TestCase
 
     public function test_json_responses_carry_no_policy(): void
     {
-        $this->getJson('/api/v1/status')->assertHeaderMissing('Content-Security-Policy-Report-Only');
+        $this->getJson('/api/v1/status')->assertHeaderMissing('Content-Security-Policy-Report-Only')->assertHeaderMissing('Content-Security-Policy');
     }
 
     public function test_reports_in_both_browser_formats_are_logged_briefly(): void
