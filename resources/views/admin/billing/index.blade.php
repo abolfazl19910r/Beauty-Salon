@@ -24,6 +24,33 @@
             </div>
         @endif
 
+        {{-- فاکتور نیمه‌پرداخت (بالای سقف ۱۰۰ میلیون تومانی هر پرداخت زرین‌پال، ۲۰۲۶-۱۰-۳۱) --}}
+        @foreach ($openInstallments as $partial)
+            <div class="mb-4 p-4 rounded-xl text-sm flex flex-wrap items-center justify-between gap-3" style="background:rgb(var(--m-warn) / .12); border:1px solid rgb(var(--m-warn) / .4); color:var(--admin-text);" data-open-installments>
+                <div class="space-y-1">
+                    <div class="font-bold">فاکتور {{ to_persian_num((string) $partial->id) }} — {{ \App\Services\Payment\InvoiceInstallments::label($partial) }} مانده</div>
+                    <div class="persian-number">
+                        پرداخت‌شده: {{ number_format($partial->paid_amount) }} از {{ number_format($partial->payableAmount()) }} تومان
+                        — مهلت: {{ jalali_date($partial->partial_expires_at, 'Y/m/d H:i') }}
+                    </div>
+                    <div style="color:var(--admin-text-dim);">اشتراک با آخرین قسط فعال می‌شود. اگر تا مهلت کامل نشود، مبلغ پرداخت‌شده «اعتبار پلتفرم» سالن می‌شود و از خرید بعدی کم می‌شود.</div>
+                </div>
+                <form method="POST" action="{{ route('admin.billing.installment', $partial->id) }}">
+                    @csrf
+                    <button type="submit" class="px-4 py-2 rounded-lg text-sm font-bold" style="background:var(--admin-accent); color:#fff;">
+                        پرداخت {{ \App\Services\Payment\InvoiceInstallments::label($partial) }}
+                        (<span class="persian-number">{{ number_format(app(\App\Services\Payment\InvoiceInstallments::class)->nextAmount($partial)) }}</span> تومان)
+                    </button>
+                </form>
+            </div>
+        @endforeach
+
+        @if ($platformCredit > 0)
+            <div class="mb-4 p-3 rounded-lg text-sm" style="background:var(--admin-accent-light); color:var(--admin-text);" data-platform-credit>
+                اعتبار پلتفرم سالن: <span class="persian-number font-bold">{{ number_format($platformCredit) }}</span> تومان — از خرید یا ارتقای بعدی اشتراک کم می‌شود.
+            </div>
+        @endif
+
         @include('admin.partials.merchant-warning', ['salon' => $salon])
         @include('admin.partials.salon-public-link', ['salon' => $salon])
 
@@ -229,7 +256,15 @@
                                     <span style="color:var(--admin-text-dim);">— {{ $invoice->planName() }}{{ $invoice->isUpgrade() ? ' (ارتقا)' : '' }}</span>
                                 @endif
                             </td>
-                            <td class="py-3 px-4 persian-number">{{ number_format($invoice->amount) }} تومان</td>
+                            <td class="py-3 px-4 persian-number">
+                                {{ number_format($invoice->amount) }} تومان
+                                @if ($invoice->credit_applied > 0)
+                                    <div class="text-xs" style="color:var(--admin-text-dim);">از اعتبار پلتفرم: {{ number_format($invoice->credit_applied) }}</div>
+                                @endif
+                                @if ($invoice->installments > 1)
+                                    <div class="text-xs" style="color:var(--admin-text-dim);">{{ to_persian_num((string) $invoice->installments_paid) }} از {{ to_persian_num((string) $invoice->installments) }} قسط — پرداخت‌شده {{ number_format($invoice->paid_amount) }}</div>
+                                @endif
+                            </td>
                             <td class="py-3 px-4">{{ $invoice->payment_method === 'online' ? 'آنلاین' : 'دستی (سوپر ادمین)' }}</td>
                             <td class="py-3 px-4">
                                 @if ($invoice->status === 'paid')

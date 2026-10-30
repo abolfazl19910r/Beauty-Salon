@@ -70,7 +70,12 @@ class AdminBillingController extends Controller
         $smsPartPrice = $smsCredit->partPrice();
         $smsPurchases = $smsCredit->history($salon, 10);
 
-        return view('admin.billing.index', compact('salon', 'invoices', 'prices', 'specialists', 'includedSpecialists', 'extraSpecialistPrice', 'smsUsage', 'smsPacks', 'smsPartPrice', 'smsPurchases',
+        // قسط و اعتبار پلتفرم (۲۰۲۶-۱۰-۳۱)
+        $platformCredit = app(\App\Services\Payment\PlatformCredit::class)->balance($salon);
+        $openInstallments = \App\Models\Invoice::where('salon_id', $salon->id)->where('status', 'pending')
+            ->where('installments_paid', '>', 0)->latest('id')->get();
+
+        return view('admin.billing.index', compact('platformCredit', 'openInstallments', 'salon', 'invoices', 'prices', 'specialists', 'includedSpecialists', 'extraSpecialistPrice', 'smsUsage', 'smsPacks', 'smsPartPrice', 'smsPurchases',
             'currentPlan', 'scheduledPlan', 'planOptions', 'defaultPlanId', 'enabledFeatures', 'remainingDays'));
     }
 
@@ -123,15 +128,38 @@ class AdminBillingController extends Controller
 
     private function redirectToGateway(\App\Models\Invoice $invoice): RedirectResponse
     {
+        $installments = app(\App\Services\Payment\InvoiceInstallments::class);
+
+        // اعتبار پلتفرم کل فاکتور را پوشاند (۲۰۲۶-۱۰-۳۱): بی درگاه
+        if ($invoice->isPending() && $installments->nextAmount($invoice) === 0) {
+            $installments->settleWithCredit($invoice);
+
+            return redirect()->route('admin.billing.index')->with('success', $invoice->isUpgrade()
+                ? 'ارتقا با اعتبار پلتفرم سالن پرداخت شد.'
+                : 'اشتراک با اعتبار پلتفرم سالن پرداخت و فعال شد.');
+        }
+
         $result = $this->subscriptionPaymentService->createPayment($invoice);
 
         if (! $result['success']) {
-            $this->invoiceService->markFailed($invoice);
+            $installments->fail($invoice);
 
             return back()->withErrors(['error' => $result['message'] ?? 'خطا در اتصال به درگاه پرداخت.']);
         }
 
         return redirect()->away($result['payment_url']);
+    }
+
+    /** قسط بعدی فاکتور نیمه‌پرداخت همین سالن (۲۰۲۶-۱۰-۳۱) */
+    public function payInstallment(int $invoice): RedirectResponse
+    {
+        $record = \App\Models\Invoice::where('salon_id', app(CurrentSalon::class)->get()->id)->findOrFail($invoice);
+
+        if (! $record->isPartiallyPaid()) {
+            return redirect()->route('admin.billing.index')->with('info', 'این فاکتور قسط باز ندارد.');
+        }
+
+        return $this->redirectToGateway($record);
     }
 
     public function callback(Request $request): RedirectResponse
@@ -148,16 +176,30 @@ class AdminBillingController extends Controller
         }
 
         $result = $this->subscriptionPaymentService->verifyPayment($invoice, $status, $authority);
+        $installments = app(\App\Services\Payment\InvoiceInstallments::class);
 
         if (! $result['success']) {
-            $this->invoiceService->markFailed($invoice);
+            // قسط اول ناموفق ← فاکتور ناموفق؛ قسط بعدی ناموفق ← فاکتور باز می‌ماند (۲۰۲۶-۱۰-۳۱)
+            if (! $installments->fail($invoice)) {
+                return redirect()->route('admin.billing.index')->withErrors(['error' => ($result['message'] ?? 'پرداخت تأیید نشد.')
+                    .' قسط‌های پرداخت‌شده سر جایشان‌اند؛ قسط بعد را از همین صفحه دوباره بپردازید.']);
+            }
             $this->sendPendingWelcome($invoice);
 
             return redirect()->route('admin.billing.index')
                 ->withErrors(['error' => $result['message'] ?? 'پرداخت تأیید نشد.']);
         }
 
-        $this->invoiceService->markPaidFromGateway($invoice, $result['ref_id']);
+        $label = \App\Services\Payment\InvoiceInstallments::label($invoice);
+        $outcome = $installments->recordPaid($invoice, (int) $result['toman'], $result['ref_id'], $result['transaction'] ?? null);
+
+        if ($outcome === 'partial') {
+            $invoice->refresh();
+
+            return redirect()->route('admin.billing.index')->with('success', sprintf('%s پرداخت شد. %s را تا %s بپردازید؛ اشتراک با آخرین قسط فعال می‌شود.',
+                $label, \App\Services\Payment\InvoiceInstallments::label($invoice), jalali_date($invoice->partial_expires_at, 'Y/m/d')));
+        }
+        $invoice->refresh();
         $this->sendPendingWelcome($invoice);
 
         // ⭐ ۲۰۲۶-۰۹-۲۳: آدرس عمومی سالن هم همراه پیام موفقیت — همون لحظه‌ای که مالک سالن تازه

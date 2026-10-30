@@ -240,7 +240,7 @@ class SalonSignupController extends Controller
         $result = $this->subscriptionPaymentService->createPayment($invoice);
 
         if (! $result['success']) {
-            $this->invoiceService->markFailed($invoice);
+            app(\App\Services\Payment\InvoiceInstallments::class)->fail($invoice);
             // به درگاه نرسید: سالن آزمایشی می‌ماند و پیامک خوش‌آمد همین حالا با همان متن می‌رود
             app(\App\Services\SalonSignup\SalonWelcome::class)->sendPending($salon, $owner);
 

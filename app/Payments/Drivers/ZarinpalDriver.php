@@ -65,10 +65,12 @@ class ZarinpalDriver implements PaymentGatewayDriver
                     'currency' => 'IRR',
                     'callback_url' => $request->callbackUrl,
                     'description' => $request->description,
-                    'metadata' => [
+                    // order_id (شماره‌ی سفارش، مستند در request) — قسط‌های یک فاکتور در پنل زرین‌پال با INV-{id} به هم وصل‌اند
+                    'metadata' => array_filter([
                         'mobile' => $request->mobile ?? '',
                         'email' => $request->email ?? '',
-                    ],
+                        'order_id' => $request->orderId,
+                    ], fn ($v) => $v !== null),
                 ]);
         } catch (Throwable $e) {
             // پیام کاربر عمومی می‌ماند؛ علت واقعی (DNS، timeout، SSL، VPN) در لاگ «Payment Request Failed» می‌آید — قبلاً full_response خالی بود

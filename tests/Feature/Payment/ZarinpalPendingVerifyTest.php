@@ -164,17 +164,32 @@ class ZarinpalPendingVerifyTest extends TestCase
         Http::assertNothingSent();
     }
 
-    public function test_a_verified_platform_payment_is_flagged_for_the_super_admin(): void
+    /** ⭐ ۲۰۲۶-۱۰-۳۱ (راه «ب»): پرداخت اشتراک payable روشن دارد (فاکتور) ← بی بررسی دستی به فاکتور اضافه می‌شود */
+    public function test_a_verified_subscription_payment_is_applied_to_its_invoice(): void
     {
         $this->verifyAnswers(['data' => ['code' => 101, 'ref_id' => 777003], 'errors' => []]);
-        $invoice = Invoice::factory()->create(['salon_id' => $this->salon->id, 'amount' => 60500]);
+        $invoice = Invoice::factory()->create(['salon_id' => $this->salon->id, 'amount' => 60500, 'status' => 'pending']);
         $tx = $this->pending('subscription', extra: ['gateway_id' => null, 'payable_type' => $invoice->getMorphClass(), 'payable_id' => $invoice->id]);
+
+        $this->artisan('payments:reconcile');
+
+        $tx->refresh();
+        $this->assertFalse($tx->needs_attention);
+        $this->assertSame('paid', $tx->status);
+        $this->assertSame('777003', $tx->ref_id);
+        $this->assertTrue($invoice->fresh()->isPaid());
+    }
+
+    public function test_a_verified_sms_pack_payment_is_still_flagged_for_the_super_admin(): void
+    {
+        $this->verifyAnswers(['data' => ['code' => 101, 'ref_id' => 777004], 'errors' => []]);
+        $tx = $this->pending('sms_pack', extra: ['gateway_id' => null]);
 
         $this->artisan('payments:reconcile');
 
         $tx->refresh();
         $this->assertTrue($tx->needs_attention);
         $this->assertSame('failed', $tx->status);
-        $this->assertSame('777003', $tx->ref_id);
+        $this->assertSame('777004', $tx->ref_id);
     }
 }

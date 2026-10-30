@@ -31,6 +31,7 @@ class TenantModelClassificationTest extends TestCase
         'PaymentTransaction' => 'callback/reconcile بدون CurrentSalon؛ salon_id صریح',
         'SalonPaymentGateway' => 'همیشه از $salon->paymentGateways()',
         'ZarinpalConnection' => 'همیشه از $salon->zarinpalConnection() (بسته‌ی 5ز)',
+        'PlatformCreditEntry' => 'دفتر اعتبار پلتفرم؛ همیشه با salon_id صریح (PlatformCredit)',
         'SalonSmsUsage' => 'ابزار سهمیه‌ی خود سالن‌ها',
         'SmsCreditPurchase' => 'صورتحساب و سوپرادمین صریحاً با salon_id فیلتر می‌کنند؛ callback خرید با salon_id سالن جاری',
         'ShortLink' => 'لینک کوتاه پیامک؛ کد تصادفی به آدرسی که خود برنامه ساخته، بدون داده‌ی سالن',

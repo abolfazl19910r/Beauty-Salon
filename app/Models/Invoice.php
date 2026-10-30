@@ -26,6 +26,11 @@ class Invoice extends Model
         'kind',
         'plan_snapshot',
         'amount',
+        'credit_applied',
+        'paid_amount',
+        'installments',
+        'installments_paid',
+        'partial_expires_at',
         'status',
         'payment_method',
         'authority',
@@ -38,6 +43,11 @@ class Invoice extends Model
 
     protected $casts = [
         'amount' => 'integer',
+        'credit_applied' => 'integer',
+        'paid_amount' => 'integer',
+        'installments' => 'integer',
+        'installments_paid' => 'integer',
+        'partial_expires_at' => 'datetime',
         'plan_snapshot' => 'array',
         'period_start' => 'datetime',
         'period_end' => 'datetime',
@@ -73,6 +83,18 @@ class Invoice extends Model
     public function isPending(): bool
     {
         return $this->status === 'pending';
+    }
+
+    /** مبلغی که باید از درگاه پرداخت شود (کل منهای اعتبار پلتفرم) */
+    public function payableAmount(): int
+    {
+        return max(0, (int) $this->amount - (int) $this->credit_applied);
+    }
+
+    /** نیمه‌پرداخت: دست‌کم یک قسط پرداخت شده و فاکتور هنوز باز است */
+    public function isPartiallyPaid(): bool
+    {
+        return $this->isPending() && (int) $this->installments_paid > 0;
     }
 
     public function isPaid(): bool

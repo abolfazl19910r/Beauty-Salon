@@ -29,7 +29,8 @@ class InvoiceService
     {
         $plan ??= app(PlanBilling::class)->defaultPurchasePlan($salon);
 
-        return $this->invoiceRepository->create([
+        // اعتبار پلتفرم + تقسیم به قسط زیر سقف زرین‌پال (۲۰۲۶-۱۰-۳۱)
+        return app(InvoiceInstallments::class)->prepare($this->invoiceRepository->create([
             'salon_id' => $salon->id,
             'subscription_type' => $subscriptionType,
             'plan_id' => $plan?->id,
@@ -39,13 +40,13 @@ class InvoiceService
             'status' => 'pending',
             'payment_method' => 'online',
             'created_by' => $createdBy?->id,
-        ]);
+        ]));
     }
 
     /** فاکتور مابه‌التفاوت ارتقای وسط دوره؛ مبلغ از SubscriptionPricing::upgradePrice در همین لحظه */
     public function createPendingUpgrade(Salon $salon, Plan $to, ?User $createdBy): Invoice
     {
-        return $this->invoiceRepository->create([
+        return app(InvoiceInstallments::class)->prepare($this->invoiceRepository->create([
             'salon_id' => $salon->id,
             'subscription_type' => $salon->subscription_type,
             'plan_id' => $to->id,
@@ -55,7 +56,7 @@ class InvoiceService
             'status' => 'pending',
             'payment_method' => 'online',
             'created_by' => $createdBy?->id,
-        ]);
+        ]));
     }
 
     public function markPaidFromGateway(Invoice $invoice, string $refId): Invoice
@@ -71,6 +72,7 @@ class InvoiceService
                     'status' => 'paid',
                     'ref_id' => $refId,
                     'paid_at' => now(),
+                    'partial_expires_at' => null,
                     'period_start' => now(),
                     'period_end' => $salon->subscription_ends_at,
                 ]);
@@ -88,6 +90,7 @@ class InvoiceService
                 'status' => 'paid',
                 'ref_id' => $refId,
                 'paid_at' => now(),
+                'partial_expires_at' => null,
                 'period_start' => $periodStart,
                 'period_end' => $salon->fresh()->subscription_ends_at,
             ]);

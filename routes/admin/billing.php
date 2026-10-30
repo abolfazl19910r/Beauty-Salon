@@ -17,6 +17,8 @@ Route::prefix('billing')->name('billing.')->group(function () {
     Route::post('/purchase', [AdminBillingController::class, 'purchase'])->name('purchase');
     Route::post('/upgrade', [AdminBillingController::class, 'upgrade'])->name('upgrade');
     Route::get('/callback', [AdminBillingController::class, 'callback'])->name('callback');
+    // قسط بعدی فاکتور بالای سقف ۱۰۰ میلیون تومانی زرین‌پال (۲۰۲۶-۱۰-۳۱)
+    Route::post('/invoices/{invoice}/installment', [AdminBillingController::class, 'payInstallment'])->whereNumber('invoice')->name('installment');
     // بسته‌ی پیامک (۲۰۲۶-۰۹-۳۰)
     Route::post('/sms-pack', [AdminBillingController::class, 'purchaseSmsPack'])->name('sms-pack.purchase');
     Route::get('/sms-pack/{purchase}/callback', [AdminBillingController::class, 'smsPackCallback'])->name('sms-pack.callback');

@@ -132,6 +132,14 @@ class UnansweredVerifyRecovery
         }
 
         if ($result?->success) {
+            // قسط/پرداخت اشتراک: payable معلوم است (فاکتور، order_id = INV-{id}) ← بی بررسی دستی به فاکتور اضافه یا اعتبار پلتفرم (۲۰۲۶-۱۰-۳۱)
+            if ($tx->purpose === 'subscription' && ($invoice = \App\Models\Invoice::withoutGlobalScopes()->find($tx->payable_id))) {
+                $this->closePending($tx, 'paid', ['recovery' => 'verified_after_abandon'] + $result->raw + $response, false, $result->refId, $result->cardPan);
+                app(InvoiceInstallments::class)->recordPaid($invoice, intdiv((int) $tx->amount_rial, 10), (string) $result->refId, $tx);
+
+                return 'credited';
+            }
+
             if ($platform || ! in_array($tx->purpose, self::PURPOSES, true) || ! $tx->user_id) {
                 $this->closePending($tx, 'failed', ['recovery' => 'verified_after_abandon'] + $result->raw + $response, true, $result->refId, $result->cardPan);
 

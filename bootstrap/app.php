@@ -190,6 +190,11 @@ return Application::configure(basePath: dirname(__DIR__))
             ->everyFiveMinutes()
             ->withoutOverlapping()
             ->onOneServer();
+        // فاکتور نیمه‌پرداخت ۷ روزه ← اعتبار پلتفرم (۲۰۲۶-۱۰-۳۱)
+        $schedule->command('billing:expire-installments')
+            ->hourly()
+            ->withoutOverlapping()
+            ->onOneServer();
         // Hosts without supervisor (DirectAdmin): QUEUE_WORK_VIA_SCHEDULER=true lets the single
         // schedule:run cron line also drain the queue every minute with a short-lived worker
         // (queued SMS, CancelUnpaidBookings, refund notifications). In background so the other
