@@ -175,6 +175,15 @@ class AdminBillingController extends Controller
                 ->with('info', 'این فاکتور قبلاً پردازش شده است.');
         }
 
+        // همین قسط قبلاً ثبت شده (مثلاً «پرداخت» و «انصراف» هم‌زمان در درگاه، یا بازکردن دوباره‌ی آدرس بازگشت) — ۲۰۲۶-۱۰-۳۱
+        $paidInstallment = $authority ? \App\Models\PaymentTransaction::where('purpose', 'subscription')
+            ->where('payable_type', $invoice->getMorphClass())->where('payable_id', $invoice->id)
+            ->where('token', $authority)->where('status', 'paid')->value('installment') : null;
+        if ($paidInstallment !== null) {
+            return redirect()->route('admin.billing.index')->with('info', trim(
+                \App\Services\Payment\InvoiceInstallments::label($invoice, (int) $paidInstallment).' قبلاً پرداخت و ثبت شده است.'));
+        }
+
         $result = $this->subscriptionPaymentService->verifyPayment($invoice, $status, $authority);
         $installments = app(\App\Services\Payment\InvoiceInstallments::class);
 

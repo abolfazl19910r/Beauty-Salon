@@ -265,17 +265,20 @@
                                     <div class="text-xs" style="color:var(--admin-text-dim);">{{ to_persian_num((string) $invoice->installments_paid) }} از {{ to_persian_num((string) $invoice->installments) }} قسط — پرداخت‌شده {{ number_format($invoice->paid_amount) }}</div>
                                 @endif
                             </td>
-                            <td class="py-3 px-4">{{ $invoice->payment_method === 'online' ? 'آنلاین' : 'دستی (سوپر ادمین)' }}</td>
+                            <td class="py-3 px-4">{{ $invoice->ref_id === 'CREDIT' ? 'اعتبار پلتفرم' : ($invoice->payment_method === 'online' ? 'آنلاین' : 'دستی (سوپر ادمین)') }}</td>
                             <td class="py-3 px-4">
                                 @if ($invoice->status === 'paid')
                                     <span style="color:var(--admin-accent);">پرداخت‌شده</span>
                                 @elseif ($invoice->status === 'pending')
                                     <span style="color:rgb(var(--m-warn));">در انتظار</span>
+                                @elseif ((int) $invoice->paid_amount > 0)
+                                    {{-- قسطی ناتمام بعد از مهلت (۲۰۲۶-۱۰-۳۱) --}}
+                                    <span style="color:rgb(var(--m-warn));">بسته شد — مبلغ پرداخت‌شده اعتبار پلتفرم شد</span>
                                 @else
                                     <span style="color:rgb(var(--m-bad));">ناموفق</span>
                                 @endif
                             </td>
-                            <td class="py-3 px-4">{{ $invoice->ref_id ?? '—' }}</td>
+                            <td class="py-3 px-4">{{ $invoice->ref_id === 'CREDIT' ? '—' : ($invoice->ref_id ?? '—') }}</td>
                         </tr>
                     @empty
                         <tr>

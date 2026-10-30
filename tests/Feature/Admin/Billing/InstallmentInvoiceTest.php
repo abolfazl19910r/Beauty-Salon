@@ -174,6 +174,12 @@ class InstallmentInvoiceTest extends TestCase
         $this->assertSame($price, $next->credit_applied);
         $this->assertSame($requestsBefore, $this->requests()->count(), 'بی درگاه');
         $this->assertSame($paid - $price, app(\App\Services\Payment\PlatformCredit::class)->balance($this->salon));
+
+        // آزمون دستی ۲۰۲۶-۱۰-۳۱: تاریخچه «ناموفق» و روش «آنلاین» با کد پیگیری «CREDIT» نشان می‌داد
+        $this->actingAs($this->owner)->get(route('admin.billing.index'))
+            ->assertSee('بسته شد — مبلغ پرداخت‌شده اعتبار پلتفرم شد')
+            ->assertSeeInOrder(['از اعتبار پلتفرم', 'اعتبار پلتفرم', 'پرداخت‌شده'])
+            ->assertDontSee('CREDIT');
     }
 
     public function test_credit_smaller_than_the_invoice_lowers_the_gateway_amount_and_a_failed_purchase_gives_it_back(): void
@@ -222,5 +228,22 @@ class InstallmentInvoiceTest extends TestCase
 
         $this->assertSame((int) ceil($this->price() / 3), app(\App\Services\Payment\PlatformCredit::class)->balance($this->salon));
         $this->assertSame(1, PlatformCreditEntry::where('reason', 'late_payment')->count());
+    }
+
+    /** ⭐ آزمون دستی ۲۰۲۶-۱۰-۳۱ (بند ۱۸): «پرداخت» و «انصراف» هم‌زمان؛ OK قسط را ثبت کرد و NOK همان Authority بعدش «لغو شد» نشان می‌داد */
+    public function test_a_late_cancel_of_an_already_paid_installment_says_it_was_paid(): void
+    {
+        $this->fakeGateway();
+        $invoice = $this->buy();
+        $this->returnFromGateway($invoice);
+        $this->actingAs($this->owner)->post(route('admin.billing.installment', $invoice));
+        $this->returnFromGateway($invoice);
+        $this->assertSame(2, $invoice->fresh()->installments_paid);
+
+        $this->returnFromGateway($invoice, 'NOK')->assertRedirect(route('admin.billing.index'))
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('info', fn ($m) => str_contains($m, 'قسط ۲ از ۳') && str_contains($m, 'قبلاً پرداخت'));
+        $this->assertSame(2, $invoice->fresh()->installments_paid);
+        $this->actingAs($this->owner)->get(route('admin.billing.index'))->assertSee('قسط ۲ از ۳ قبلاً پرداخت و ثبت شده است.');
     }
 }

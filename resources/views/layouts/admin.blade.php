@@ -339,6 +339,14 @@
                 </script>
             @endif
 
+            {{-- اطلاع (۲۰۲۶-۱۰-۳۱): with('info') در پنل مدیر جایی نشان داده نمی‌شد (مثلاً «این قسط قبلاً پرداخت و ثبت شده است») --}}
+            @if(session('info'))
+                <div id="flash-info" class="mb-4 border-r-4 p-4 fade-in rounded-lg shadow-sm" role="status"
+                     style="border-color: var(--admin-accent); background: var(--admin-accent-light); color: var(--admin-text);">
+                    {{ session('info') }}
+                </div>
+            @endif
+
             {{-- بسته‌ی 5ه: هشدار بی‌مانع (مثلاً «این مشتری امروز نوبت دارد») — خودکار بسته نمی‌شود --}}
             @if(session('warning'))
                 <div id="flash-warning" class="mb-4 border-r-4 p-4 fade-in rounded-lg shadow-sm" role="alert"
