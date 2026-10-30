@@ -19,12 +19,10 @@ class SubscriptionPaymentService
      */
     public function __construct(protected readonly InvoiceRepositoryInterface $invoiceRepository) {}
 
-    protected function driver(): ZarinpalDriver
+    /** درگاه پلتفرم؛ null = مرچنت پلتفرم تنظیم نشده (درگاه واقعی) — App\Support\PlatformZarinpal */
+    protected function driver(): ?ZarinpalDriver
     {
-        return new ZarinpalDriver(
-            ['merchant_id' => (string) config('services.zarinpal.merchant_id')],
-            (bool) config('services.zarinpal.sandbox', true),
-        );
+        return \App\Support\PlatformZarinpal::driver();
     }
 
     public function createPayment(Invoice $invoice): array
@@ -41,7 +39,8 @@ class SubscriptionPaymentService
             'callback_url' => route('admin.billing.callback', ['invoice' => $invoice->id]),
         ]);
 
-        $result = $this->driver()->start(new GatewayStartRequest(
+        $driver = $this->driver();
+        $result = $driver === null ? \App\Payments\GatewayStartResult::failed(\App\Support\PlatformZarinpal::MISSING_MESSAGE, retryable: false, raw: ['platform_merchant_missing' => true]) : $driver->start(new GatewayStartRequest(
             $transaction->amount_rial,
             \App\Payments\PaymentReturnUrl::for($transaction->public_id, null), // درگاه پلتفرم ← دامنه‌ی مرکزی (بسته‌ی 5ز)
             sprintf('خرید/تمدید اشتراک سالن «%s» (%s)', $invoice->salon->name, $invoice->subscription_type),
@@ -79,7 +78,8 @@ class SubscriptionPaymentService
 
         return [
             'success' => false,
-            'message' => ($result->message ?? ZarinpalDriver::errorMessage($errorCode))." (کد {$errorCode})",
+            // کد فقط وقتی زرین‌پال واقعاً کدی داده (سقف مبلغ و مرچنت نامشخص پیش از درخواست رد می‌شوند و کدی ندارند)
+            'message' => ($result->message ?? ZarinpalDriver::errorMessage($errorCode)).($errorCode !== -999 ? " (کد {$errorCode})" : ''),
         ];
     }
 
@@ -99,10 +99,13 @@ class SubscriptionPaymentService
             return ['success' => false, 'message' => 'اطلاعات تراکنش نامعتبر است.'];
         }
 
-        $result = $this->driver()->verify(new GatewayVerifyRequest(
-            (int) ((float) $invoice->amount * 10),
-            ['Authority' => $authority, 'Status' => $status],
-        ));
+        $driver = $this->driver();
+        $result = $driver === null
+            ? new \App\Payments\GatewayVerifyResult(false, $authority, message: \App\Support\PlatformZarinpal::MISSING_MESSAGE, raw: ['platform_merchant_missing' => true])
+            : $driver->verify(new GatewayVerifyRequest(
+                (int) ((float) $invoice->amount * 10),
+                ['Authority' => $authority, 'Status' => $status],
+            ));
 
         \App\Models\PaymentTransaction::where('purpose', 'subscription')
             ->where('payable_type', $invoice->getMorphClass())->where('payable_id', $invoice->id)

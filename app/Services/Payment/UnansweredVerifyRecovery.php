@@ -119,7 +119,7 @@ class UnansweredVerifyRecovery
         $platform = in_array($tx->purpose, \App\Services\SuperAdmin\PlatformOverview::PLATFORM_PURPOSES, true);
 
         $driver = $platform
-            ? new \App\Payments\Drivers\ZarinpalDriver(['merchant_id' => (string) config('services.zarinpal.merchant_id')], (bool) config('services.zarinpal.sandbox', true))
+            ? \App\Support\PlatformZarinpal::driver()
             : ($tx->gateway ? $this->gateways->driver($tx->gateway) : null);
 
         $result = null;

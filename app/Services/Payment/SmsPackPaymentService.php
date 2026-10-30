@@ -15,12 +15,10 @@ use Illuminate\Support\Facades\Log;
  */
 class SmsPackPaymentService
 {
-    protected function driver(): ZarinpalDriver
+    /** درگاه پلتفرم؛ null = مرچنت پلتفرم تنظیم نشده (درگاه واقعی) — App\Support\PlatformZarinpal */
+    protected function driver(): ?ZarinpalDriver
     {
-        return new ZarinpalDriver(
-            ['merchant_id' => (string) config('services.zarinpal.merchant_id')],
-            (bool) config('services.zarinpal.sandbox', true),
-        );
+        return \App\Support\PlatformZarinpal::driver();
     }
 
     /** @return array{success: bool, payment_url?: string, message?: string} */
@@ -37,7 +35,8 @@ class SmsPackPaymentService
             'callback_url' => route('admin.billing.sms-pack.callback', ['purchase' => $purchase->id]),
         ]);
 
-        $result = $this->driver()->start(new GatewayStartRequest(
+        $driver = $this->driver();
+        $result = $driver === null ? \App\Payments\GatewayStartResult::failed(\App\Support\PlatformZarinpal::MISSING_MESSAGE, retryable: false, raw: ['platform_merchant_missing' => true]) : $driver->start(new GatewayStartRequest(
             $transaction->amount_rial,
             \App\Payments\PaymentReturnUrl::for($transaction->public_id, null), // درگاه پلتفرم ← دامنه‌ی مرکزی (بسته‌ی 5ز)
             sprintf('بسته‌ی پیامک %s قطعه — سالن «%s»', number_format($purchase->parts), $purchase->salon()->withoutGlobalScopes()->value('name')),
@@ -74,10 +73,13 @@ class SmsPackPaymentService
             return ['success' => false, 'message' => 'اطلاعات تراکنش نامعتبر است.'];
         }
 
-        $result = $this->driver()->verify(new GatewayVerifyRequest(
-            $purchase->amount * 10,
-            ['Authority' => $authority, 'Status' => (string) $status],
-        ));
+        $driver = $this->driver();
+        $result = $driver === null
+            ? new \App\Payments\GatewayVerifyResult(false, $authority, message: \App\Support\PlatformZarinpal::MISSING_MESSAGE, raw: ['platform_merchant_missing' => true])
+            : $driver->verify(new GatewayVerifyRequest(
+                $purchase->amount * 10,
+                ['Authority' => $authority, 'Status' => (string) $status],
+            ));
 
         PaymentTransaction::where('purpose', 'sms_pack')
             ->where('payable_type', $purchase->getMorphClass())->where('payable_id', $purchase->id)
