@@ -35,7 +35,6 @@ class Salon extends Model
         'working_hours',
         'slug',
         'zarinpal_merchant_id',
-        'zarinpal_payout_api_key',
         'max_specialists_count',
         'module_permissions',
         'sms_quota_per_month',
@@ -437,10 +436,10 @@ class Salon extends Model
     }
 
     /**
-     * ⭐ مرحله‌ی ۳ چند درگاه (۲۰۲۶-۰۹-۲۵): ستون‌های salons.zarinpal_merchant_id و
-     * salons.zarinpal_payout_api_key حذف شدن؛ منبع حقیقت ردیف zarinpal جدول salon_payment_gateways است
-     * (credentials: merchant_id و payout_api_key، رمزشده). این دو «ویژگی مجازی» فقط برای سازگاری با
-     * فرم ثبت‌نام، فرم سوپرادمین، factory و کدهای قبلی نگه داشته شدن:
+     * ⭐ مرحله‌ی ۳ چند درگاه (۲۰۲۶-۰۹-۲۵): ستون salons.zarinpal_merchant_id حذف شد؛ منبع حقیقت ردیف zarinpal جدول
+     * salon_payment_gateways است (credentials: merchant_id، رمزشده). این «ویژگی مجازی» فقط برای سازگاری با
+     * فرم ثبت‌نام، فرم سوپرادمین، factory و کدهای قبلی نگه داشته شده (ویژگی توکن Payout با خاموش شدن تسویه‌ی
+     * خودکار زرین‌پال در بسته‌ی 5ز حذف شد):
      * - خوندن ← از ردیف zarinpal (یا مقداری که همین الان ست شده و هنوز save نشده)
      * - نوشتن ← بعد از save روی ردیف zarinpal اعمال می‌شه، و فقط وقتی مقدار واقعاً عوض شده باشه
      *   (ویرایش بقیه‌ی اطلاعات سالن توسط سوپرادمین نباید درگاهی رو که مالک غیرفعال کرده دوباره فعال کنه).
@@ -456,11 +455,6 @@ class Salon extends Model
         $this->pendingZarinpal['merchant_id'] = trim((string) ($value ?? ''));
     }
 
-    public function setZarinpalPayoutApiKeyAttribute($value): void
-    {
-        $this->pendingZarinpal['payout_api_key'] = trim((string) ($value ?? ''));
-    }
-
     public function getZarinpalMerchantIdAttribute(): ?string
     {
         if (isset($this->pendingZarinpal['merchant_id'])) {
@@ -468,15 +462,6 @@ class Salon extends Model
         }
 
         return ($this->zarinpalGateway()?->credentials['merchant_id'] ?? null) ?: null;
-    }
-
-    public function getZarinpalPayoutApiKeyAttribute(): ?string
-    {
-        if (isset($this->pendingZarinpal['payout_api_key'])) {
-            return $this->pendingZarinpal['payout_api_key'] ?: null;
-        }
-
-        return ($this->zarinpalGateway()?->credentials['payout_api_key'] ?? null) ?: null;
     }
 
     public function zarinpalGateway(): ?SalonPaymentGateway
@@ -518,12 +503,8 @@ class Salon extends Model
                 }
             }
 
-            if (array_key_exists('payout_api_key', $pending) && ($credentials['payout_api_key'] ?? '') !== $pending['payout_api_key']) {
-                $credentials['payout_api_key'] = $pending['payout_api_key'];
-            }
-
             if (! filled($credentials['merchant_id'] ?? null) || $credentials === (array) ($row?->credentials ?? [])) {
-                return; // توکن Payout بدون کد پذیرنده معنی نداره؛ یا چیزی عوض نشده
+                return; // چیزی عوض نشده
             }
 
             $row ??= $salon->paymentGateways()->make([

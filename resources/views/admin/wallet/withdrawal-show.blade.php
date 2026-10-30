@@ -199,13 +199,19 @@
                             </form>
                         </div>
                     </div>
+                    @if (\App\Payments\GatewayCatalog::payoutLabels() === '')
+                    {{-- ⭐ بسته‌ی 5ز: هیچ درگاه روشنی تسویه‌ی خودکار ندارد (زرین‌پال API واریز ندارد) ← فقط تسویه‌ی دستی بالا --}}
+                    <div class="rounded-xl p-5 mt-4 text-xs leading-6" style="background:var(--admin-surface); border:1px solid var(--admin-border); color:var(--admin-text-dim);">
+                        {{ \App\Payments\GatewayCatalog::NO_PAYOUT_NOTE }}
+                    </div>
+                    @else
                     <div class="rounded-xl p-5 mt-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                         <h2 class="text-sm font-bold mb-3 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">یا تسویه‌ی آنلاین خودکار</h2>
                         <p class="text-xs mb-3" style="color:var(--admin-text-dim);">
-                            به‌جای وارد کردن دستی کد پیگیری، می‌توانید تسویه را مستقیم از موجودی زرین‌پال همین سالن انجام دهید.
+                            به‌جای وارد کردن دستی کد پیگیری، می‌توانید تسویه را مستقیم از موجودی درگاه همین سالن انجام دهید.
                             این عملیات در پس‌زمینه پردازش می‌شود و نتیجه (موفق/ناموفق) پس از چند ثانیه در همین صفحه قابل مشاهده است.
                         </p>
-                        {{-- ⭐ ۲۰۲۶-۰۹-۲۴: تسویه‌ی خودکار فقط از حساب زرین‌پال خود سالن. --}}
+                        {{-- ⭐ ۲۰۲۶-۰۹-۲۴: تسویه‌ی خودکار فقط از حساب درگاه خود سالن. --}}
                         @php $payoutSalon = app(\App\Support\CurrentSalon::class)->get(); @endphp
                         @php $payoutBlocker = $withdrawalRequest->autoPayoutBlocker(); @endphp
                         @if ($payoutSalon && $payoutSalon->canAutoPayout() && $payoutBlocker)
@@ -224,7 +230,7 @@
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
                                 </svg>
-                                تسویه‌ی آنلاین خودکار (زرین‌پال)
+                                تسویه‌ی آنلاین خودکار ({{ app(\App\Payments\PayoutManager::class)->gatewayFor($payoutSalon)?->displayName() }})
                             </button>
                         </form>
                         @else
@@ -234,6 +240,7 @@
                             </div>
                         @endif
                     </div>
+                    @endif
                 @elseif($withdrawalRequest->status === 'processing')
                     <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                         <h2 class="text-sm font-bold mb-3 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">در حال پردازش تسویه‌ی آنلاین</h2>

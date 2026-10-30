@@ -18,6 +18,7 @@ use Tests\TestCase;
 class AutoPayoutRequiresVerifiedIbanTest extends TestCase
 {
     use RefreshDatabase;
+    use \Tests\Concerns\EnablesAllGateways;
 
     private const IBAN = 'IR820540102680020817909002';
 
@@ -26,7 +27,8 @@ class AutoPayoutRequiresVerifiedIbanTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        app(CurrentSalon::class)->get()->update(['zarinpal_payout_api_key' => str_repeat('t', 40)]);
+        // درگاه تسویه‌دار سالن: از بسته‌ی 5ز زرین‌پال تسویه ندارد ← زیبال (EnablesAllGateways)
+        app(CurrentSalon::class)->get()->paymentGateways()->create(['driver' => 'zibal', 'priority' => 9, 'is_active' => true, 'credentials' => ['merchant' => 'zibal', 'payout_access_token' => str_repeat('t', 40), 'payout_wallet_id' => '1']]);
     }
 
     private function withdrawal(bool $verified, string $walletIban = self::IBAN, string $status = 'pending'): WithdrawalRequest

@@ -65,17 +65,7 @@ return [
         'payment_api_url' => env('ZARINPAL_PAYMENT_API_URL', 'https://payment.zarinpal.com/pg/v4/payment'),
         'start_pay_url' => env('ZARINPAL_START_PAY_URL', 'https://payment.zarinpal.com/pg/StartPay'),
 
-        // ⭐ Payout (specialized automatic withdrawal settlement) — intentionally separate from merchant_id/api_key above:
-        // ZarrinPal provides a dedicated API Key for the Payout feature (which is only issued by separately activating
-        // this feature in the acceptor panel), not the same API Key for regular payments.
-        // This sandbox is also kept separate from the regular payments sandbox so that tests of
-        // Payout can be performed separately on the sandbox even when the regular payment gateway is in production.
-        'payout' => [
-            'api_key' => env('ZARINPAL_PAYOUT_API_KEY'),
-            'sandbox' => env('ZARINPAL_PAYOUT_SANDBOX', env('ZARINPAL_SANDBOX', true)),
-            'base_url' => env('ZARINPAL_PAYOUT_BASE_URL', 'https://api.zarinpal.com/pg/v4'),
-            'sandbox_base_url' => env('ZARINPAL_PAYOUT_SANDBOX_BASE_URL', 'https://sandbox.zarinpal.com/pg/v4'),
-        ],
+        // ⭐ بسته‌ی 5ز (۲۰۲۶-۱۰-۳۰): بخش payout (ZARINPAL_PAYOUT_*) حذف شد — تسویه‌ی خودکار زرین‌پال خاموش است.
     ],
 
     // ⭐ Wired up (test-writing session 11): TWO_FACTOR_TIMEOUT/TWO_FACTOR_CODE_LENGTH used to be

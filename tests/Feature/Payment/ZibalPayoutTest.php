@@ -69,9 +69,9 @@ class ZibalPayoutTest extends TestCase
         $this->assertStringContainsString('توکن دسترسی زیبال', $driver->payout($request)->message);
     }
 
-    public function test_salon_withdrawal_is_paid_from_zibal_when_zarinpal_has_no_payout_token(): void
+    public function test_salon_withdrawal_is_paid_from_zibal_since_zarinpal_has_no_payout(): void
     {
-        $this->assertNull($this->salon->zarinpal_payout_api_key);
+        $this->assertFalse(\App\Payments\GatewayCatalog::supportsPayout('zarinpal'));
         $this->zibal(['payout_access_token' => 'salon-zibal-token', 'payout_wallet_id' => '2020']);
         $this->assertTrue($this->salon->fresh()->canAutoPayout());
         Http::fake(['api.zibal.ir/v1/wallet/checkout' => Http::response(['result' => 1, 'data' => ['id' => 'ZB-1']])]);

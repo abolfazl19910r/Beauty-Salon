@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
  * ترتیب جایگزینی خودکاره و درگاه اول پیش‌فرض صفحه‌ی پرداخت مشتری.
  *
  * مرحله‌ی ۳ (۲۰۲۶-۰۹-۲۵): ستون‌های salons.zarinpal_* حذف شدن و Salon مستقیم از ردیف zarinpal می‌خونه
- * (ویژگی‌های مجازی zarinpal_merchant_id / zarinpal_payout_api_key)، پس هیچ هم‌گام‌سازی‌ای لازم نیست.
+ * (ویژگی مجازی zarinpal_merchant_id)، پس هیچ هم‌گام‌سازی‌ای لازم نیست.
  * فیلدهای اختیاری (مثل توکن Payout زرین‌پال) با clear[نام] حذف می‌شن.
  */
 class SalonGatewayService

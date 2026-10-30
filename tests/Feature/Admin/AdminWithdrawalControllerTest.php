@@ -133,8 +133,9 @@ class AdminWithdrawalControllerTest extends TestCase
     public function test_auto_payout_dispatches_the_payout_job_and_sets_processing(): void
     {
         Queue::fake();
-        // ⭐ ۲۰۲۶-۰۹-۲۴: تسویه‌ی خودکار فقط وقتی سالن کد پذیرنده + توکن Payout خودش رو داره.
-        app(\App\Support\CurrentSalon::class)->get()->update(['zarinpal_payout_api_key' => str_repeat('t', 40)]);
+        // ⭐ ۲۰۲۶-۰۹-۲۴: تسویه‌ی خودکار فقط از درگاه تسویه‌دار خود سالن (از بسته‌ی 5ز زرین‌پال تسویه ندارد ← زیبال)
+        config(['payments.enabled_drivers' => \App\Payments\GatewayCatalog::keys()]);
+        app(\App\Support\CurrentSalon::class)->get()->paymentGateways()->create(['driver' => 'zibal', 'priority' => 9, 'is_active' => true, 'credentials' => ['merchant' => 'zibal', 'payout_access_token' => str_repeat('t', 40), 'payout_wallet_id' => '1']]);
         $withdrawal = WithdrawalRequest::factory()->create(['status' => 'pending']);
         // تصمیم ۲۰۲۶-۰۹-۳۰: تسویه‌ی خودکار فقط به شبای تأییدشده‌ای که همان شبای درخواست است.
         $withdrawal->wallet->update(['iban' => $withdrawal->iban, 'iban_verified' => true]);

@@ -287,8 +287,6 @@ MAX_SIGNUP_SPECIALISTS=50
 ZARINPAL_MERCHANT_ID=
 ZARINPAL_API_KEY=
 ZARINPAL_SANDBOX=true              # در go-live: false
-ZARINPAL_PAYOUT_API_KEY=
-ZARINPAL_PAYOUT_SANDBOX=true
 ```
 > درگاه‌های **هر سالن** در `.env` نیستند؛ مدیر سالن از پنل خودش وارد می‌کند و رمزنگاری‌شده ذخیره می‌شود.
 

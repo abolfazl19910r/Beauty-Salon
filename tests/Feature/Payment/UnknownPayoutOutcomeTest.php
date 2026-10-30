@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Payment;
 
-use App\Payments\Drivers\ZarinpalPayoutDriver;
 use App\Payments\Drivers\ZibalPayoutDriver;
 use App\Payments\HttpFailure;
 use App\Payments\PayoutRequest;
@@ -40,11 +39,11 @@ class UnknownPayoutOutcomeTest extends TestCase
         return new PayoutRequest(2500000, 'IR062960000000100324200001', 'تسویه حساب متخصص', '9');
     }
 
-    public function test_zarinpal_and_zibal_payouts_never_treat_a_lost_answer_as_failed(): void
+    public function test_zibal_payout_never_treats_a_lost_answer_as_failed(): void
     {
         Log::spy();
+        // زرین‌پال از بسته‌ی 5ز تسویه‌ی خودکار ندارد (ZarinpalPayoutDriver حذف شد)
         $drivers = [
-            'zarinpal' => fn () => new ZarinpalPayoutDriver(['merchant_id' => 'm', 'payout_api_key' => 'k'], false),
             'zibal' => fn () => new ZibalPayoutDriver(['payout_access_token' => 't', 'payout_wallet_id' => '1']),
         ];
 
@@ -74,11 +73,5 @@ class UnknownPayoutOutcomeTest extends TestCase
         Http::fake(['api.zibal.ir/*' => Http::response(['result' => 6, 'message' => 'موجودی کیف پول کافی نیست'])]);
         $zibal = (new ZibalPayoutDriver(['payout_access_token' => 't', 'payout_wallet_id' => '1']))->payout($this->payoutRequest());
         $this->assertFalse($zibal->unknown);
-
-        Http::swap(new \Illuminate\Http\Client\Factory);
-        Http::fake(['*' => Http::response(['errors' => ['code' => -11, 'message' => 'IBAN نامعتبر']], 422)]);
-        $zarinpal = (new ZarinpalPayoutDriver(['merchant_id' => 'm', 'payout_api_key' => 'k'], false))->payout($this->payoutRequest());
-        $this->assertFalse($zarinpal->unknown);
-        $this->assertSame('IBAN نامعتبر', $zarinpal->message);
     }
 }

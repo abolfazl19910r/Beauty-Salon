@@ -185,7 +185,9 @@ class WalletAdminService
         if (! $salon || ! $salon->canAutoPayout()) {
             return [
                 'success' => false,
-                'message' => 'تسویه‌ی خودکار برای این سالن فعال نیست. اطلاعات تسویه‌ی زرین‌پال، زیبال یا وندار سالن را در «درگاه‌های پرداخت» وارد کنید، یا درخواست را دستی تسویه کنید.',
+                'message' => \App\Payments\GatewayCatalog::payoutLabels() === ''
+                    ? 'تسویه‌ی خودکار در دسترس نیست. '.\App\Payments\GatewayCatalog::NO_PAYOUT_NOTE
+                    : 'تسویه‌ی خودکار برای این سالن فعال نیست. اطلاعات تسویه‌ی '.\App\Payments\GatewayCatalog::payoutLabels().' سالن را در «درگاه‌های پرداخت» وارد کنید، یا درخواست را دستی تسویه کنید.',
             ];
         }
 

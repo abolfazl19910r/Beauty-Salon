@@ -122,11 +122,13 @@
                     مدیریت درگاه‌های پرداخت ({{ \App\Payments\GatewayCatalog::enabledLabels() }})
                 </a>
 
-                {{-- ⭐ مرحله‌ی ۳ (۲۰۲۶-۰۹-۲۵): توکن Payout زرین‌پال به ویرایش درگاه زرین‌پال در همان صفحه منتقل شد. --}}
+                {{-- ⭐ بسته‌ی 5ز (۲۰۲۶-۱۰-۳۰): توکن Payout زرین‌پال حذف شد؛ تسویه‌ی خودکار فقط با درگاه‌هایی که API واریز دارند. --}}
                 <p class="text-xs" style="color: var(--admin-text-light);">
                     تسویه‌ی خودکار کیف پول متخصص‌ها:
                     @if ($salon->canAutoPayout())
                         <b style="color:rgb(var(--m-ok));">فعال</b> — از حساب درگاه سالن.
+                    @elseif (\App\Payments\GatewayCatalog::payoutLabels() === '')
+                        غیرفعال — {{ \App\Payments\GatewayCatalog::NO_PAYOUT_NOTE }}
                     @else
                         غیرفعال — برای فعال‌سازی، در «درگاه‌های پرداخت» اطلاعات تسویه‌ی درگاه {{ \App\Payments\GatewayCatalog::payoutLabels() }} را وارد کنید.
                     @endif
