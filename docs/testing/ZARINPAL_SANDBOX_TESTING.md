@@ -28,7 +28,7 @@
 |---|---|---|
 | ۱ | پنل مالک ← «درگاه‌های پرداخت» | در «افزودن درگاه» فقط «زرین‌پال»؛ کادر «در پنل زرین‌پال این دامنه را ثبت کنید: …» با دامنه‌ی سالن (لوکال: `192.168.1.2`؛ داکر: `rasta.arisheh.test`). در ویرایش زرین‌پال فیلد «توکن Payout» نیست و پایین صفحه توضیح «زرین‌پال تسویه‌ی خودکار به شبا ندارد…» هست. |
 | ۲ | «تنظیمات سالن» ← بخش درگاه‌ها | دکمه «مدیریت درگاه‌های پرداخت (زرین‌پال)»؛ «تسویه‌ی خودکار … غیرفعال — زرین‌پال تسویه‌ی خودکار به شبا ندارد…» |
-| ۳ | «تست اتصال» درگاه زرین‌پال | «اتصال … برقرار است» (sandbox) |
+| ۳ | «تست اتصال» درگاه زرین‌پال | «اتصال … برقرار است» — در sandbox هم کار می‌کند (هر UUID پذیرفته است؛ درگاه واقعی لازم نیست) |
 | ۴ | پیش‌پرداخت نوبت ← sandbox ← «پرداخت موفق» | در نوار نشانی یک لحظه `…/payments/return/…` روی دامنه‌ی سالن، بعد صفحه‌ی موفقیت روی همان میزبانی که شروع کردید؛ نوبت «پرداخت‌شده». |
 | ۵ | پرداخت ← در sandbox «انصراف/ناموفق» | «پرداخت توسط کاربر لغو شد»؛ سهم کیف پول (اگر بود) برگشت؛ نوبت پرداخت‌نشده. |
 | ۶ | رفرش صفحه‌ی موفقیت بند ۴ (F5) | همان صفحه‌ی موفقیت؛ نوبت/کیف پول دوبار ثبت نمی‌شود؛ در `payment_transactions` همان یک ردیف `paid`. |
@@ -43,14 +43,41 @@
 | ۱۴ | برداشت متخصص در پنل مدیر | دکمه‌ی «تسویه‌ی آنلاین خودکار» نیست؛ کادر «زرین‌پال تسویه‌ی خودکار به شبا ندارد…»؛ ثبت دستی کد پیگیری کار می‌کند. |
 | ۱۵ | (اختیاری) `ZARINPAL_CONNECT_CLIENT_ID=test` در `.env` + `php artisan config:clear` | در «درگاه‌های پرداخت» کادر «اتصال حساب زرین‌پال»؛ دکمه به `https://next.zarinpal.com/api/oauth/authorizeInit?…` می‌رود (زرین‌پال با client_id آزمایشی خطا می‌دهد — همین کافی است). بعد مقدار را پاک کنید و `config:clear`. |
 
-### tinker بند ۸ (cmd ویندوز)
-```bat
-php artisan tinker --execute="$t = \App\Models\PaymentTransaction::latest('id')->first(); \App\Models\PaymentTransaction::whereKey($t->id)->toBase()->update(['created_at' => now()->subMinutes(61), 'updated_at' => now()->subMinutes(61)]); echo $t->id.' '.$t->status;"
-php artisan payments:reconcile
-php artisan tinker --execute="$t = \App\Models\PaymentTransaction::latest('id')->first(); echo $t->status.' '.$t->ref_id;"
-```
-(داکر: پیش از هر کدام `docker compose -f docker-compose.single.yml exec app`. با `saveQuietly` نکنید: `updated_at` را «الان» می‌کند و
-reconcile تا ۱۰ دقیقه سراغش نمی‌رود.)
+## گام‌به‌گام بندهای ۴، ۷ و ۸ (بعد از آزمون دستی ۲۰۲۶-۱۰-۳۰)
+
+### دیدن آدرس بازگشت (بند ۴)
+بازگشت ‎`/payments/return/…`‎ فقط یک لحظه در نوار نشانی است (۳۰۳ فوری)؛ با DevTools ببینید:
+1. پیش از «پرداخت»، `F12` ← زبانه‌ی **Network** ← تیک **Preserve log** (تا با عوض شدن صفحه پاک نشود).
+2. پرداخت ← در sandbox «پرداخت موفق».
+3. در کادر Filter بنویسید `return`. ردیف `<uuid>?Authority=…&Status=OK` با Status ‏`303` پیدا می‌شود؛ رویش کلیک ← Headers ←
+   **Request URL**: میزبان باید دامنه‌ی سالن باشد (لوکال `192.168.1.2:8000`؛ داکر `rasta.arisheh.test:8080`). همان‌جا **Location** پاسخ
+   نشانی صفحه‌ای است که بعدش باز شد. همین Request URL را برای بند ۷ کپی کنید (راست‌کلیک ← Copy ← Copy URL).
+
+### verify تکراری (بند ۷)
+1. بند ۴ را با Preserve log انجام دهید و Request URL ردیف `return` را کپی کنید.
+2. یک تب تازه در **همان مرورگر** (همان ورود) باز کنید و آن نشانی را بچسبانید و Enter.
+3. انتظار: دوباره صفحه‌ی «پرداخت موفق» همان نوبت، بی پیامک/امتیاز دوباره؛ در دیتابیس فقط یک تراکنش `paid` برای آن نوبت:
+   `php artisan tinker --execute="echo \App\Models\PaymentTransaction::where('purpose','booking')->latest('id')->take(3)->get(['id','status','payable_id'])->toJson();"`
+
+### پرداخت بدون بازگشت (بند ۸) — Chrome / Edge
+هدف: پول در sandbox «پرداخت شده» ولی مشتری هرگز به سایت برنگشته؛ تراکنش `pending` می‌ماند و `payments:reconcile` باید آن را بپرسد.
+1. نوبت تازه بسازید تا صفحه‌ی «پرداخت» نوبت باز شود (هنوز دکمه را نزنید).
+2. `F12` ← بالای DevTools منوی ⋮ ← **More tools** ← **Network request blocking** ← تیک **Enable network request blocking** ← دکمه‌ی `+`
+   ← الگو `*payments/return*` ← Add.
+3. دکمه‌ی پرداخت ← در sandbox «پرداخت موفق». مرورگر بازگشت را می‌بندد و صفحه‌ی «This request was blocked by DevTools» می‌آید — درست است.
+4. همین حالا مسدودسازی را خاموش کنید (تیک Enable را بردارید) که بقیه‌ی آزمون‌ها خراب نشود.
+5. مطمئن شوید آخرین تراکنش همان `pending` است (اگر `paid` بود یعنی بازگشت مسدود نشد؛ از گام ۱ دوباره):
+   `php artisan tinker --execute="$t = \App\Models\PaymentTransaction::latest('id')->first(); echo $t->id.' '.$t->status;"`
+6. زمانش را ۶۱ دقیقه عقب ببرید (**فقط اگر گام ۵ «pending» گفت**):
+   `php artisan tinker --execute="$t = \App\Models\PaymentTransaction::latest('id')->first(); \App\Models\PaymentTransaction::whereKey($t->id)->toBase()->update(['created_at' => now()->subMinutes(61), 'updated_at' => now()->subMinutes(61)]); echo $t->id.' '.$t->status;"`
+7. `php artisan payments:reconcile` ← خطی مثل «تأیید پیش از انقضای زرین‌پال: 1 — credited: 1» (این خط فقط وقتی تراکنش رهاشده‌ی زرین‌پال هست چاپ می‌شود).
+8. گام ۵ دوباره ← `refunded`؛ کیف پول مشتری به اندازه‌ی کل مبلغ پرداختی بیشتر شده و پیامک «بازگشت وجه» در لاگ است.
+9. **بند ۸ب:** گام‌های ۱ تا ۳ را تکرار کنید ولی در sandbox «انصراف» نزنید و هیچ دکمه‌ای نزنید؛ تب را ببندید؛ گام‌های ۵ تا ۷ ← `not_paid: 1` و
+   وضعیت `expired` (اگر `unanswered: 1` شد، خروجی را بفرستید).
+
+داکر: پیش از هر دستور `php artisan …` بنویسید `docker compose -f docker-compose.single.yml exec app` — یعنی همان دستور داخل ظرف
+`app` (کد و دیتابیس داکر) اجرا می‌شود، نه روی XAMPP؛ دیتابیس داکر از XAMPP جداست. با `saveQuietly` زمان را عقب نبرید: `updated_at` را
+«الان» می‌کند و reconcile تا ۱۰ دقیقه سراغ آن تراکنش نمی‌رود.
 
 ## آنچه در sandbox آزمودنی نیست
 - خطای ‎-14 (دامنه‌ی ثبت‌شده) و ‎-18 فقط در درگاه واقعی؛ sandbox دامنه را نمی‌سنجد.
