@@ -87,6 +87,110 @@ class UnansweredVerifyRecovery
         return 'credited';
     }
 
+    /** درگاه‌هایی که تراکنش pending رهاشده‌شان پیش از expired یک verify می‌گیرد (بسته‌ی 5ز). */
+    public const PENDING_DRIVERS = ['zarinpal'];
+
+    /** پاسخ قطعی «پرداخت نشده» زرین‌پال: ‎-51 ناموفق، ‎-54 اتوریتی نامعتبر، ‎-55 تراکنش یافت نشد */
+    public const ZARINPAL_NOT_PAID_CODES = [-51, -54, -55];
+
+    /**
+     * ⭐ بسته‌ی 5ز (۲۰۲۶-۱۰-۳۰): تراکنش pending زرین‌پال که مشتری از درگاه برنگشته (بعد از PENDING_LIFETIME_MINUTES). اگر
+     * «اعتبارسنجی خودکار» پنل زرین‌پال روشن باشد پول کسر شده؛ پس پیش از expired یک verify با amount_rial دیتابیس:
+     * - موفق/101 ← همان credit() بالا (نوبت/دوره: کل مبلغ به کیف پول؛ شارژ: همان شارژ) + پیامک؛ اشتراک/بسته‌ی پیامک (درگاه
+     *   پلتفرم) ← needs_attention برای ابرمدیر؛
+     * - ‎-51/‎-54/‎-55 ← expired؛ ‎-50/‎-52 ← failed + needs_attention؛
+     * - بی‌پاسخ یا کد دیگر ← دوباره pending برای اجرای بعد؛ بعد از RECOVER_BEFORE (۲۴ ساعت) از ساخت ← expired + needs_attention.
+     *
+     * @return 'credited'|'not_paid'|'unanswered'|'attention'|'skipped'
+     */
+    public function recoverPending(PaymentTransaction $tx): string
+    {
+        if (! in_array($tx->driver, self::PENDING_DRIVERS, true)) {
+            return 'skipped';
+        }
+
+        // toBase(): updated_at دست نمی‌خورد؛ claim اتمی تا callback دیرهنگام مشتری هم‌زمان تأیید نکند («در حال بررسی خودکار»)
+        if (PaymentTransaction::whereKey($tx->id)->where('status', 'pending')->toBase()->update(['status' => 'reconciling']) !== 1) {
+            return 'skipped';
+        }
+
+        $response = (array) $tx->verify_response;
+        $response['pending_checks'] = (int) ($response['pending_checks'] ?? 0) + 1;
+        $platform = in_array($tx->purpose, \App\Services\SuperAdmin\PlatformOverview::PLATFORM_PURPOSES, true);
+
+        $driver = $platform
+            ? new \App\Payments\Drivers\ZarinpalDriver(['merchant_id' => (string) config('services.zarinpal.merchant_id')], (bool) config('services.zarinpal.sandbox', true))
+            : ($tx->gateway ? $this->gateways->driver($tx->gateway) : null);
+
+        $result = null;
+        if ($driver) {
+            try {
+                $result = $driver->verify(new GatewayVerifyRequest((int) $tx->amount_rial, [], $tx->token, $tx->id));
+            } catch (\Throwable $e) {
+                Log::warning('Abandoned payment verify threw', ['transaction_id' => $tx->id, 'error' => $e->getMessage()]);
+            }
+        }
+
+        if ($result?->success) {
+            if ($platform || ! in_array($tx->purpose, self::PURPOSES, true) || ! $tx->user_id) {
+                $this->closePending($tx, 'failed', ['recovery' => 'verified_after_abandon'] + $result->raw + $response, true, $result->refId, $result->cardPan);
+
+                return 'attention';
+            }
+
+            $this->credit($tx, $result->refId, $result->cardPan, ['abandoned' => true] + $result->raw + $response, 'automatic');
+
+            return 'credited';
+        }
+
+        $code = $result ? \App\Payments\Drivers\ZarinpalDriver::errorCode($result->raw) : null;
+        $answered = $result && ($result->raw['unanswered'] ?? false) !== true && ($result->raw['verify_not_sent'] ?? false) !== true;
+
+        if ($answered && ($result->raw['needs_attention'] ?? false) === true) {
+            $this->closePending($tx, 'failed', ['recovery' => 'needs_attention', 'recovery_message' => $result->message] + $result->raw + $response, true);
+
+            return 'attention';
+        }
+
+        if ($answered && in_array($code, self::ZARINPAL_NOT_PAID_CODES, true)) {
+            $this->closePending($tx, 'expired', ['recovery' => 'not_paid', 'recovery_message' => $result->message] + $result->raw + $response, false);
+
+            return 'not_paid';
+        }
+
+        if ($tx->created_at && $tx->created_at->lte(now()->subMinutes(\App\Console\Commands\ReconcilePaymentTransactions::RECOVER_BEFORE_MINUTES))) {
+            $this->closePending($tx, 'expired', ['recovery' => 'gave_up', 'recovery_message' => $result?->message] + ($result?->raw ?? []) + $response, true);
+
+            return 'attention';
+        }
+
+        // اجرای بعد (هر RECOVER_AFTER_MINUTES)؛ updated_at = زمان همین تلاش
+        PaymentTransaction::whereKey($tx->id)->toBase()->update([
+            'status' => 'pending',
+            'verify_response' => json_encode($response + ['last_pending_check' => $code ?? 'unanswered'], JSON_UNESCAPED_UNICODE),
+            'updated_at' => now(),
+        ]);
+
+        return 'unanswered';
+    }
+
+    private function closePending(PaymentTransaction $tx, string $status, array $response, bool $attention, ?string $refId = null, ?string $cardPan = null): void
+    {
+        PaymentTransaction::whereKey($tx->id)->toBase()->update(array_filter([
+            'status' => $status,
+            'needs_attention' => $attention,
+            'ref_id' => $refId,
+            'card_pan' => $cardPan,
+            'verify_response' => json_encode($response, JSON_UNESCAPED_UNICODE),
+            'updated_at' => now(),
+        ], fn ($v) => $v !== null));
+
+        if ($attention) {
+            app(\App\Services\Admin\AttentionNotifier::class)->paymentFlagged($tx->id);
+            Log::warning('Abandoned payment needs a human', ['transaction_id' => $tx->id, 'driver' => $tx->driver, 'purpose' => $tx->purpose, 'status' => $status]);
+        }
+    }
+
     /**
      * ⭐ «پرداخت‌های نیازمند بررسی» (۲۰۲۶-۰۹-۲۶): مدیر در پنل درگاه دید مبلغ از مشتری گرفته شده ولی نوبت/شارژی ثبت نشده
      * → همون کاری که بازیابی خودکار با تایید دیرهنگام می‌کنه: کل مبلغ نوبت به کیف پول مشتری (یا خود شارژ کیف پول) + پیامک.

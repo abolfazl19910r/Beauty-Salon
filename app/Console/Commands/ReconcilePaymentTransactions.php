@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 /**
  * ⭐ تطبیق تراکنش‌های درگاه (مرحله‌ی ۲ چند درگاه — بانک سامان). هر ۵ دقیقه (bootstrap/app.php).
  *
- * ۱) مشتری از درگاه برنگشت: تراکنش pending بیشتر از یک ساعت → expired. هیچ درگاهی بدون اطلاعاتِ بازگشت
+ * ۱) مشتری از درگاه برنگشت: تراکنش pending بیشتر از یک ساعت → expired (زرین‌پال از بسته‌ی 5ز اول verify می‌شود — ۱ب). هیچ درگاهی بدون اطلاعاتِ بازگشت
  *    قابل تایید نیست (سپ برای verify رسید RefNum رو می‌خواد که فقط با بازگشت مشتری می‌رسه)؛ سپ پرداختِ تاییدنشده
  *    رو بعد از ۳۰ دقیقه خودش برگشت می‌زنه. expired فقط برای صادق بودن دفتر تراکنش‌هاست و مانع تایید دیرهنگام نیست.
  *
@@ -75,12 +75,16 @@ class ReconcilePaymentTransactions extends Command
     {
         $dryRun = (bool) $this->option('dry-run');
 
+        // ⭐ بسته‌ی 5ز: زرین‌پال پیش از expired یک verify می‌گیرد (recheckAbandoned پایین)؛ بقیه‌ی درگاه‌ها مثل قبل
         $stale = PaymentTransaction::query()
             ->where('status', 'pending')
+            ->whereNotIn('driver', \App\Services\Payment\UnansweredVerifyRecovery::PENDING_DRIVERS)
             ->where('created_at', '<=', now()->subMinutes(self::EXPIRE_PENDING_AFTER_MINUTES));
 
         $expired = $dryRun ? $stale->count() : $stale->update(['status' => 'expired', 'updated_at' => now()]);
         $this->info(($dryRun ? '[dry-run] ' : '')."تراکنش‌های رهاشده‌ی منقضی‌شده: {$expired}");
+
+        $this->recheckAbandoned($dryRun);
 
         $candidates = PaymentTransaction::query()
             ->where('status', 'failed')
@@ -143,6 +147,40 @@ class ReconcilePaymentTransactions extends Command
         $this->flagAbandoned($dryRun);
 
         return self::SUCCESS;
+    }
+
+    /**
+     * ۱ب) بسته‌ی 5ز (۲۰۲۶-۱۰-۳۰): تراکنش pending زرین‌پال بعد از یک ساعت بی‌پرسش expired نمی‌شود — شاید «اعتبارسنجی خودکار» پنل
+     * زرین‌پال روشن باشد و پول کسر شده باشد. UnansweredVerifyRecovery::recoverPending یک verify می‌کند؛ بی‌پاسخ ← هر
+     * RECOVER_AFTER_MINUTES دوباره (updated_at = آخرین تلاش)، تا ۲۴ ساعت.
+     */
+    private function recheckAbandoned(bool $dryRun): void
+    {
+        $candidates = PaymentTransaction::query()
+            ->where('status', 'pending')
+            ->whereIn('driver', \App\Services\Payment\UnansweredVerifyRecovery::PENDING_DRIVERS)
+            ->where('created_at', '<=', now()->subMinutes(self::EXPIRE_PENDING_AFTER_MINUTES))
+            ->where(fn ($q) => $q->whereColumn('updated_at', '<=', 'created_at')
+                ->orWhere('updated_at', '<=', now()->subMinutes(self::RECOVER_AFTER_MINUTES)))
+            ->get();
+
+        if ($candidates->isEmpty()) {
+            return;
+        }
+
+        $recovery = app(\App\Services\Payment\UnansweredVerifyRecovery::class);
+        $outcomes = [];
+        foreach ($candidates as $tx) {
+            if ($dryRun) {
+                $this->line("[dry-run] تأیید پیش از انقضای تراکنش رهاشده‌ی #{$tx->id} ({$tx->driver})");
+
+                continue;
+            }
+            $outcome = $recovery->recoverPending($tx);
+            $outcomes[$outcome] = ($outcomes[$outcome] ?? 0) + 1;
+        }
+
+        $this->info(($dryRun ? '[dry-run] ' : '').'تأیید پیش از انقضای زرین‌پال: '.$candidates->count().($outcomes ? ' — '.collect($outcomes)->map(fn ($c, $k) => "{$k}: {$c}")->implode('، ') : ''));
     }
 
     /**
