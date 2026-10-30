@@ -198,6 +198,13 @@ class UserWalletController extends Controller
             $chargePending = session('wallet_charge_pending');
 
             if (! $chargePending) {
+                // باز کردن دوباره‌ی آدرس بازگشت شارژی که قبلاً ثبت شده (آزمون دستی 5ز): پیام درست، بی تأیید دوباره
+                $tx = is_string($request->query('tx')) ? \App\Models\PaymentTransaction::where('public_id', $request->query('tx'))
+                    ->where('purpose', 'wallet_charge')->where('user_id', $request->user()?->id)->first() : null;
+                if ($tx?->isPaid()) {
+                    return redirect()->route('wallet.index')->with('info', 'این شارژ قبلاً به کیف پول شما اضافه شده است.');
+                }
+
                 return redirect()->route('wallet.index')
                     ->with('error', 'اطلاعات شارژ یافت نشد.');
             }

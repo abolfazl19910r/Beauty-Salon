@@ -179,4 +179,25 @@ class UserWalletControllerTest extends TestCase
 
         $this->actingAs($user)->get(route('wallet.charge.success'))->assertRedirect(route('wallet.index'));
     }
+
+    /**
+     * آزمون دستی 5ز (۲۰۲۶-۱۰-۳۱، بند ۷): باز کردن دوباره‌ی آدرس بازگشت یک شارژ موفق «اطلاعات شارژ یافت نشد» می‌گفت — شارژ دوباره
+     * انجام نمی‌شد (درست) ولی پیام گمراه‌کننده بود. حالا برای تراکنش پرداخت‌شده‌ی خود همین کاربر: «این شارژ قبلاً … اضافه شده است».
+     */
+    public function test_reopening_the_callback_of_a_paid_charge_says_it_was_already_added(): void
+    {
+        $user = User::factory()->create();
+        $tx = \App\Models\PaymentTransaction::create([
+            'salon_id' => app(\App\Support\CurrentSalon::class)->get()->id, 'driver' => 'zarinpal', 'purpose' => 'wallet_charge',
+            'user_id' => $user->id, 'amount_rial' => 100000, 'token' => 'S1', 'callback_url' => 'x', 'status' => 'paid',
+        ]);
+        Http::fake();
+
+        $this->actingAs($user)->get(route('wallet.charge.callback', ['Authority' => 'S1', 'Status' => 'OK', 'tx' => $tx->public_id]))
+            ->assertRedirect(route('wallet.index'))
+            ->assertSessionHas('info', 'این شارژ قبلاً به کیف پول شما اضافه شده است.');
+
+        Http::assertNothingSent();
+        $this->assertEquals(0, $user->getOrCreateWallet()->fresh()->balance);
+    }
 }
