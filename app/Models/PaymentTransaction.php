@@ -61,6 +61,12 @@ class PaymentTransaction extends Model
         $direct = in_array($this->driver, ['saman', 'mellat', 'parsian'], true);
 
         return match (true) {
+            // ⭐ بسته‌ی 5ز: سه پرچم تازه — مشتری برنگشت ولی زرین‌پال تأیید کرد؛ ‎-50/‎-52؛ ۲۴ ساعت بی‌پاسخ
+            ($response['recovery'] ?? null) === 'verified_after_abandon' => 'خریدار از درگاه برنگشت، ولی زرین‌پال پرداخت را تأیید کرد'
+                .($this->ref_id ? ' (کد پیگیری '.$this->ref_id.')' : '').'؛ مبلغ گرفته شده ولی خرید خودکار ثبت نشد. همان را دستی ثبت کنید.',
+            ($response['needs_attention'] ?? false) === true => 'زرین‌پال تأیید را با خطای '
+                .\App\Payments\Drivers\ZarinpalDriver::errorCode($response).' («'.\App\Payments\Drivers\ZarinpalDriver::errorMessage(\App\Payments\Drivers\ZarinpalDriver::errorCode($response))
+                .'») رد کرد؛ ممکن است مبلغ از خریدار گرفته شده باشد. در پنل زرین‌پال ببینید.',
             ($response['settlement_failed'] ?? false) === true => 'پرداخت تایید شد ولی تسویه (Settlement) در آسان پرداخت انجام نشد. از پنل آسان پرداخت تسویه‌اش کنید؛ نوبت/شارژ مشتری ثبت شده است.',
             in_array($this->status, ['reconciling', 'reversing'], true) => 'بررسی خودکار این پرداخت نیمه‌کاره ماند. وضعیت را در پنل درگاه ببینید.',
             $direct => 'پاسخ تایید بانک نرسید و برگشت خودکار به کارت در مهلت بانک انجام نشد. در پنل بانک ببینید مبلغ برداشت و واریز شده یا نه.',
