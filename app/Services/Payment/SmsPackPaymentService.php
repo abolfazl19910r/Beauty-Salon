@@ -39,7 +39,7 @@ class SmsPackPaymentService
 
         $result = $this->driver()->start(new GatewayStartRequest(
             $transaction->amount_rial,
-            route('payments.return', ['publicId' => $transaction->public_id]),
+            \App\Payments\PaymentReturnUrl::for($transaction->public_id, null), // درگاه پلتفرم ← دامنه‌ی مرکزی (بسته‌ی 5ز)
             sprintf('بسته‌ی پیامک %s قطعه — سالن «%s»', number_format($purchase->parts), $purchase->salon()->withoutGlobalScopes()->value('name')),
             $purchase->createdBy?->phone ?? '',
         ));

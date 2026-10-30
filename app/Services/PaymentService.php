@@ -98,7 +98,8 @@ class PaymentService
         app(\App\Services\Payment\BookingWalletShare::class)->attach($transaction, $walletToman);
 
         $request = $request->with(
-            callbackUrl: route('payments.return', ['publicId' => $transaction->public_id]),
+            // ⭐ بسته‌ی 5ز: همیشه روی دامنه‌ی خود سالن (دامنه‌ی ثبت‌شده‌ی ترمینال زرین‌پال؛ ‎-14)، نه هاست همین درخواست
+            callbackUrl: \App\Payments\PaymentReturnUrl::for($transaction->public_id, $salon),
             transactionId: $transaction->id,
         );
 

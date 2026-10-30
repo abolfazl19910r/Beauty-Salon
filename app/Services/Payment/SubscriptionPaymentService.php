@@ -43,7 +43,7 @@ class SubscriptionPaymentService
 
         $result = $this->driver()->start(new GatewayStartRequest(
             $transaction->amount_rial,
-            route('payments.return', ['publicId' => $transaction->public_id]),
+            \App\Payments\PaymentReturnUrl::for($transaction->public_id, null), // درگاه پلتفرم ← دامنه‌ی مرکزی (بسته‌ی 5ز)
             sprintf('خرید/تمدید اشتراک سالن «%s» (%s)', $invoice->salon->name, $invoice->subscription_type),
             $invoice->createdBy?->phone ?? '',
         ));

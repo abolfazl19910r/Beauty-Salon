@@ -40,6 +40,7 @@ class AdminPaymentGatewayController extends Controller
             'salon' => $salon,
             'gateways' => $salon->paymentGateways()->enabledDriver()->orderBy('priority')->orderBy('id')->get(),
             'catalog' => GatewayCatalog::enabled(),
+            'returnDomain' => \App\Payments\PaymentReturnUrl::domain($salon),
         ]);
     }
 
@@ -81,7 +82,8 @@ class AdminPaymentGatewayController extends Controller
     public function test(string $gatewayId): RedirectResponse
     {
         $gateway = $this->find($gatewayId);
-        $result = $this->manager->test($gateway, url('/'));
+        // همان دامنه‌ای که پرداخت واقعی به آن برمی‌گردد (بسته‌ی 5ز) — ‎-14 همین‌جا دیده می‌شود
+        $result = $this->manager->test($gateway, \App\Payments\PaymentReturnUrl::root($gateway->salon).'/');
 
         return redirect()->route('admin.payment-gateways.index')->with(
             $result->success ? 'success' : 'error',
