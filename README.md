@@ -387,7 +387,7 @@ Beauty-Salon/
 │   ├── Services/               # منطق کسب‌وکار
 │   ├── Support/                # CurrentSalon، Billing، Sms، Features، Queues، …
 │   └── Traits/                 # BelongsToSalon، …
-├── database/                   # ۶۶ migration، factoryها، seederها
+├── database/                   # ۶۰ migration، factoryها، seederها
 ├── deploy/
 │   ├── single/                 # ساخت image (ویندوز)، deploy سرور، IPهای آروان
 │   ├── backup/                 # اسکریپت پشتیبان
@@ -567,7 +567,7 @@ php artisan perf:seed-load --salons=100       # فقط دیتابیس آزمای
 
 ## 🗄️ جداول دیتابیس
 
-۶۶ migration و ۹۴ جدول. هر migration سازنده همه‌ی ستون‌های نهایی جدولش را دارد (migrationهای اصلاحی ادغام شده‌اند).
+۶۰ migration و ۹۹ جدول (۳ تای آن Telescope). هر migration سازنده همه‌ی ستون‌ها، ایندکس‌ها و کلیدهای خارجی نهایی جدولش را دارد (migrationهای اصلاحی ادغام شده‌اند؛ آخرین بار ۲۰۲۶-۱۰-۳۱). استثناهای عمدی: `salons.created_by` و `salons.paused_by_user_id` در `create_users_table` (وابستگی دوری salons ↔ users)، ستون‌های تولیدی `users` و `bookings` در همان فایل سازنده، و `add_salon_staff_finance_permissions` (فقط داده‌ی نقش‌های سیستمی).
 
 | حوزه | جداول |
 |---|---|
@@ -641,6 +641,11 @@ php artisan up
 ## 🆕 آخرین تغییرات
 
 تاریخچه‌ی کامل، تصمیم‌ها و قدم‌های باز در [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md).
+
+**۲۰۲۶-۱۰-۳۱ — ادغام سوم migrationها (۷۲ ← ۶۰، بسته‌ی 5و)**
+- ۱۲ migration اصلاحی حذف و تغییرهایشان به migration سازنده‌ی همان جدول منتقل شد؛ `plans`/`plan_features` حالا پیش از `salons` و سه جدول پایه‌ی دوره (`course_packages`، `course_settings`، `customer_courses`) پیش از `bookings` ساخته می‌شوند تا هر کلید خارجی در create خودش باشد. دو فایل تغییر نام: `…_create_plans_tables` ← `2026_10_14_000005_create_salon_feature_overrides_table` و `…_add_invoice_installments_and_platform_credit` ← `2026_10_31_000001_create_platform_credit_entries_table`.
+- اسکیمای نهایی روی MariaDB 10.4 و MySQL 8.4 دقیقاً همان قبلی است (ستون، نوع، ترتیب، پیش‌فرض، ایندکس، نام کلیدهای خارجی). روی SQLite محدودیت‌های CHECK ستون‌های enum ‏`bookings` و `invoices` که بازسازی‌های جدول بی‌صدا حذف کرده بودند برگشتند.
+- **بعد از گرفتن پچ‌ها:** دیتابیس باید از نو ساخته شود (`migrate` معمولی کافی نیست؛ دو فایل تغییرنام‌یافته «تازه» دیده می‌شوند و با `Table … already exists` می‌شکنند). XAMPP: ‏`php artisan migrate:fresh --seed` و بعد `php artisan superadmin:create`. داکر تک‌کانتینری: entrypoint با `set -e` همان `migrate --force` را اجرا می‌کند و با شکستش کانتینر بالا نمی‌آید، پس **پیش از** build تازه، روی کانتینر قدیمی `docker compose -f docker-compose.single.yml exec -u www app php artisan db:wipe --force`، بعد `up -d --build` (همه‌ی جدول‌ها ساخته می‌شوند)، بعد `exec -u www app php artisan db:seed --force` و `exec -u www app php artisan superadmin:create` (فایل‌های آپلودی و APP_KEY می‌مانند). اگر image تازه زودتر ساخته شد و کانتینر بالا نیامد: `down -v` (volume کامل پاک می‌شود) و `up -d --build`. متغیر تازه‌ای ندارد.
 
 **۲۰۲۶-۱۰-۲۸ — نحوه‌ی رزرو، سقف نوبت مشتری و مشتری بدقول (بسته‌ی 5ه)**
 - صفحه‌ی تازه‌ی مالک سالن «نحوه‌ی رزرو» (`/admin/booking-policy`): **بدون پیش‌پرداخت** (پیش‌فرض همه‌ی سالن‌ها، کل مبلغ در سالن، بی‌نیاز از درگاه) یا با پیش‌پرداخت آنلاین (فقط با امکان «پرداخت آنلاین» پلن و درگاه فعال)، با توضیح هر حالت. اگر درگاه یا امکان پلن از دست برود سالن خودکار «بدون پیش‌پرداخت» می‌شود و مالک اعلان و پیامک می‌گیرد. هر نوبت برچسب «با/بدون پیش‌پرداخت» خودش را دارد (`bookings.prepayment_required`) و لغو خودکار، دکمه‌ی پرداخت، پیامک و امتیاز به آن نگاه می‌کنند. رفتن به «بدون پیش‌پرداخت» نوبت‌های در انتظار پرداخت را «در انتظار تأیید» می‌کند و به مشتری و متخصص خبر می‌دهد.

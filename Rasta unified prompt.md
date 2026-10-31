@@ -2,7 +2,7 @@
 
 > این فایل، ادغام کامل دو پرامپت قبلی (`Rasta_main_prompt_final.MD` و `Refactor_prompt_v4.MD`) در یک سند واحد است. از این پس فقط همین یک فایل نیاز است؛ دو فایل قبلی منسوخ شدن.
 
-> ⭐ **آخرین وضعیت و برنامه‌ی نشست بعد (۲۰۲۶-۱۰-۳۱):** **بسته‌ی 5ز (زرین‌پال) پیاده و آزمون دستی‌اش کامل شد** (بخش «۲۰۲۶-۱۰-۳۰ — بسته‌ی 5ز (زرین‌پال) پیاده شد»، `0285`–`0298`) و **فاکتور بالای ۱۰۰ میلیون تومان قسطی شد + «اعتبار پلتفرم»** (`0299`، همان بخش، «راه ب»)؛ ✅ آزمون دستی ۱۶–۱۹ (۲۰۲۶-۱۰-۳۱، رفع `0300`)؛ ✅ `0301` (بخش 5ز، بند پایانی)؛ **بعد «5و» — یکی کردن migrationها (اول فقط گزارش، پس از تأیید ابوالفضل)**. قبل‌تر: **بسته‌ی 5ه پیاده شد** (بخش «۲۰۲۶-۱۰-۲۸ (ادامه ۳) — بسته‌ی 5ه پیاده شد»، `0257`–`0266`، app-0028–0029، اپ 0.3.8) و «۲۰۲۶-۱۰-۲۹ — متن دو پیامک 5ه تأیید شد، حساب EAS تازه» (`0267`–`0268`، app-0030–0032) و «۲۰۲۶-۱۰-۲۹ (ادامه) — آزمون دستی 5ه: منوی «نحوه‌ی رزرو»، بیرون افتادن مشتری، جابه‌جایی وب، سقف پیش‌پرداختی‌ها» (`0269`–`0281`)؛ آزمون دستی 5ه کامل ✅ (۲۰۲۶-۱۰-۳۰)؛ **نشست بعد: اول بسته‌ی «5ز» — زرین‌پال** (بند «5ز» در «قدم‌های باز»؛ تصمیم‌ها گرفته شده، مستقیم پیاده‌سازی)، **بعد «5و» — یکی کردن migrationها** (اول فقط گزارش)، بعد طبق «قدم‌های باز»؛ بخش «(ادامه ۲) — تصمیم‌های بسته‌ی 5ه»، «۲۰۲۶-۱۰-۲۸ (ادامه) — ارتقای Laravel 11 ← 12 ← 13 و PHP 8.5» (برنچ `upgrade/laravel-12-13`)، «۲۰۲۶-۱۰-۲۸ — پذیرش دوباره‌ی قوانین و رضایت عکس از زبان مشتری»، «۲۰۲۶-۱۰-۲۷ — خطای 1067 در `migrate:fresh` روی XAMPP»، «۲۰۲۶-۱۰-۲۵ (ادامه ۹) — سرریز `/salon-signup` در گوشی»، «(ادامه ۸) — بسته‌ی مجوز 5د پیاده شد»، «(ادامه ۷) — بررسی پنج فایل قدیمی استقرار؛ کارهای باز تکمیل شد»، «(ادامه ۶) — جابه‌جایی مستندات ریشه و README دوزبانه»، «۲۰۲۶-۱۰-۲۵ (ادامه ۵) — منابع رسمی مجوز»، «۲۰۲۶-۱۰-۲۴ (ادامه ۴) — بررسی شرایط مجوز پلتفرم»، «(ادامه ۳) — سرور واقعی آروان با همان image تک‌کانتینری»؛ قبل‌تر
+> ⭐ **آخرین وضعیت و برنامه‌ی نشست بعد (۲۰۲۶-۱۰-۳۱):** **بسته‌ی 5ز (زرین‌پال) پیاده و آزمون دستی‌اش کامل شد** (بخش «۲۰۲۶-۱۰-۳۰ — بسته‌ی 5ز (زرین‌پال) پیاده شد»، `0285`–`0298`) و **فاکتور بالای ۱۰۰ میلیون تومان قسطی شد + «اعتبار پلتفرم»** (`0299`، همان بخش، «راه ب»)؛ ✅ آزمون دستی ۱۶–۱۹ (۲۰۲۶-۱۰-۳۱، رفع `0300`)؛ ✅ `0301` (بخش 5ز، بند پایانی)؛ ✅ **«5و» — ادغام سوم migrationها (۷۲ ← ۶۰)** (بخش «۲۰۲۶-۱۰-۳۱ (ادامه) — بسته‌ی 5و»، `0302`–`0303`؛ **لازم: `migrate:fresh --seed` روی XAMPP و روال `db:wipe` داکر**)؛ **بعد طبق «قدم‌های باز»**. قبل‌تر: **بسته‌ی 5ه پیاده شد** (بخش «۲۰۲۶-۱۰-۲۸ (ادامه ۳) — بسته‌ی 5ه پیاده شد»، `0257`–`0266`، app-0028–0029، اپ 0.3.8) و «۲۰۲۶-۱۰-۲۹ — متن دو پیامک 5ه تأیید شد، حساب EAS تازه» (`0267`–`0268`، app-0030–0032) و «۲۰۲۶-۱۰-۲۹ (ادامه) — آزمون دستی 5ه: منوی «نحوه‌ی رزرو»، بیرون افتادن مشتری، جابه‌جایی وب، سقف پیش‌پرداختی‌ها» (`0269`–`0281`)؛ آزمون دستی 5ه کامل ✅ (۲۰۲۶-۱۰-۳۰)؛ **نشست بعد: اول بسته‌ی «5ز» — زرین‌پال** (بند «5ز» در «قدم‌های باز»؛ تصمیم‌ها گرفته شده، مستقیم پیاده‌سازی)، **بعد «5و» — یکی کردن migrationها** (اول فقط گزارش)، بعد طبق «قدم‌های باز»؛ بخش «(ادامه ۲) — تصمیم‌های بسته‌ی 5ه»، «۲۰۲۶-۱۰-۲۸ (ادامه) — ارتقای Laravel 11 ← 12 ← 13 و PHP 8.5» (برنچ `upgrade/laravel-12-13`)، «۲۰۲۶-۱۰-۲۸ — پذیرش دوباره‌ی قوانین و رضایت عکس از زبان مشتری»، «۲۰۲۶-۱۰-۲۷ — خطای 1067 در `migrate:fresh` روی XAMPP»، «۲۰۲۶-۱۰-۲۵ (ادامه ۹) — سرریز `/salon-signup` در گوشی»، «(ادامه ۸) — بسته‌ی مجوز 5د پیاده شد»، «(ادامه ۷) — بررسی پنج فایل قدیمی استقرار؛ کارهای باز تکمیل شد»، «(ادامه ۶) — جابه‌جایی مستندات ریشه و README دوزبانه»، «۲۰۲۶-۱۰-۲۵ (ادامه ۵) — منابع رسمی مجوز»، «۲۰۲۶-۱۰-۲۴ (ادامه ۴) — بررسی شرایط مجوز پلتفرم»، «(ادامه ۳) — سرور واقعی آروان با همان image تک‌کانتینری»؛ قبل‌تر
 > «۲۰۲۶-۱۰-۲۳ — Docker: اولین build واقعی…» و «۲۰۲۶-۱۰-۲۲ (ادامه ۶) — ابزار سبز کردن کارت آمادگی و آزمون «فعال»»
 > (پچ‌ها تا 0301 — `0244`–`0256` در `develop` ادغام شده، `0257`–`0284` روی `develop`، `0285`–`0301` (5ز، رفع‌های آزمون دستی‌اش، پرداخت قسطی و `0301`: فاکتور بی‌پاسخ، پسوند تصویر، CSP اجرایی) تحویل ۲۰۲۶-۱۰-۳۰؛ app-0032، اپ‌ها 0.3.8 — build ‏EAS هر دو با حساب `abolfazl19910rs-team` موفق (۲۰۲۶-۱۰-۲۹)؛ راهنمای سرور: `docs/deployment/ARVAN_SERVER.md`) —
 > فهرست کوتاه کارهای باز: «⭐ خلاصه‌ی کارهای باز (۲۰۲۶-۱۰-۲۲)» در «قدم‌های باز» آخر سند.
@@ -6146,6 +6146,55 @@ php artisan push:test 09xxxxxxxxx --style=notification --wait=30
 **قدم بعد:** `0124`–`0129` روی develop؛ نتیجه‌ی دو دستور `push:test` روی A17 (بخش «ادامه ۲»)؛ جواب پرسش‌های ۳، ۵، ۸، ۱۲ و ترتیب (همان بخش)
 ← بعد ۳ و دور ۲ (پیش‌نمایش قبل/بعد ۲ و ۱۱) و دور ۳.
 
+### ۲۰۲۶-۱۰-۳۱ (ادامه) — بسته‌ی 5و: ادغام سوم migrationها (۷۲ ← ۶۰) (`0302`–`0303`)
+**گزارش اول (فقط بررسی) و تصمیم‌های ابوالفضل:** ۱۸ فایل جدول دیگری را تغییر می‌دادند (۱۲ فقط اصلاحی + ۶ سازنده‌ای که جدول قبلی را هم
+عوض می‌کرد). ابوالفضل هر چهار پیشنهاد را پذیرفت: (۱) **الف** — جدول‌ها جابه‌جا شوند تا هیچ کلید خارجی بیرون از create نماند (`plans`/`plan_features` پیش از
+`salons`، سه جدول پایه‌ی دوره پیش از `bookings`)؛ (۲) ترتیب ستون‌ها روی MariaDB/MySQL دقیقاً همان، روی SQLite آزاد؛ (۳) **الف** — دو فایل
+تغییر نام + `migrate:fresh --seed` روی XAMPP و volume داکر؛ (۴) `add_salon_staff_finance_permissions` دست‌نخورده. «داده‌ها هنوز فیک‌اند و از seeder و
+factory استفاده می‌کنم.»
+
+1. **`0302` `refactor(migrations)` (۷۲ ← ۶۰)** — نقشه‌ی ارجاع‌های قدیمی این سند:
+
+| فایل قدیمی (حذف‌شده یا تغییر نام) | حالا داخل |
+|---|---|
+| `2026_10_11_000001_scope_unique_keys_to_salon` (یکتایی `(salon_id, slug/code/key)`) | create همان شش جدول: `categories`، `beauty_services`، `blog_categories`، `blog_posts`، `discount_codes`، `loyalty_settings` (همان نام‌های `{table}_salon_{col}_unique`) |
+| `2026_10_11_000002_add_wallet_share_to_payment_transactions` | `2026_09_25_000002_create_payment_transactions_table` (after `fee_rial`) |
+| `2026_10_13_000001_add_expired_type_to_loyalty_points` | `2024_01_27_151700_create_loyalty_system_tables` |
+| `2026_10_14_000008_add_no_show_and_multi_service_courses` | `create_bookings_table` (`no_show` در enum، `duration_minutes`، `no_show_at/by`)؛ `extra_service_ids`/`session_duration` در `course_packages`/`customer_courses` |
+| `2026_10_15_000001_add_logo_tone_and_dark_logo_to_salons`، `2026_10_15_000004` (بخش `site_theme`/`admin_theme`)، `2026_10_19_000001_add_welcome_sms_pending_at_to_salons`، `2026_10_20_000001_add_booking_pause_to_salons` | `0000_01_01_000000_create_salons_table`؛ FK ‏`paused_by_user_id` کنار `created_by` در `0001_01_01_000000_create_users_table` |
+| `2026_10_15_000003_add_theme_allowances_to_plans`، `2026_10_15_000004_theme_grid_and_four_public_plans` | `plans` (فقط ستون‌های نهایی `theme_admin_count` + شش `theme_layouts/palettes*`) — حالا در `create_salons_table`، پیش از `salons` |
+| `2026_10_14_000005_create_plans_tables` | `plans` و `plan_features` ← `create_salons_table`؛ ستون‌های پلن `salons`/`invoices` ← create خودشان؛ فایل → **`2026_10_14_000005_create_salon_feature_overrides_table`** |
+| `2026_10_14_000006` (بخش‌های `course_packages`، `course_settings`، `customer_courses`، ستون‌های `bookings`، `discount_codes.valid_for_courses`، `discount_usages`) | سه جدول پایه ← `2024_01_25_190700_create_bookings_table` (پیش از `bookings`)؛ ستون‌های تخفیف ← `2024_01_25_190900_create_discount_system_tables`؛ فایل همان نام، فقط `customer_course_payments`، `course_session_notes/photos`، `course_reminders` |
+| `2026_10_14_000004` (بخش `users.marketing_sms_opted_out_at`)، `2026_10_28_000003_add_no_show_cleared_at_to_users` | `create_users_table` (پس از `updated_at`؛ ستون‌های تولیدی با `after()` سر جای قبلی) |
+| `2026_10_15_000005` (بخش `notification_settings.push_enabled`) | `2026_08_24_000000_create_notification_settings_table` |
+| `2026_10_22_000001_add_salon_id_to_role_user` | `2024_01_01_000003_create_roles_and_permissions_tables` (نام FKها عمداً همان `role_user_scoped_*`) |
+| `2026_10_28_000002` (بخش `bookings.prepayment_required` + `bookings_user_time_index`)، `2026_10_28_000003` (`bookings_user_no_show_index`)، `2026_10_28_000004_add_attendance_confirmation_to_bookings` | `create_bookings_table` |
+| `2026_10_31_000001_add_invoice_installments_and_platform_credit` | ستون‌های قسط ← `create_invoices_table`؛ `installment` ← `create_payment_transactions_table`؛ فایل → **`2026_10_31_000001_create_platform_credit_entries_table`** |
+
+   کارهای داده‌ای فایل‌های حذف‌شده (UPDATE پلن‌ها، کپی `role_user`، پر کردن `prepayment_required`) روی دیتابیس تازه بی‌اثر بودند؛ مقدارهای نهایی پلن‌ها
+   در `App\Services\Plans\DefaultPlans` است (seeder و `plans:sync-defaults`). `active_slot_key` روی MySQL/MariaDB حالا `… STORED AFTER updated_at`
+   (همان جای قبلی، چون ستون‌های بعدی bookings در خود create آمدند). شاخه‌ی pgsql: همه‌ی ستون‌های تازه داخل بلوک create (پیش از `return`).
+   **عمداً ادغام‌نشده (مثل ادغام دوم):** `salons.created_by` و `salons.paused_by_user_id` در `create_users_table`؛ ستون‌های تولیدی users/bookings در همان
+   فایل؛ `2026_09_19_000201_add_salon_staff_finance_permissions`.
+2. **`0303` `docs`** — README (۶۰ migration، ۹۹ جدول، بند «آخرین تغییرات» با روال داکر) و همین سند.
+
+**وریفای:** `Schema::getColumns/getIndexes/getForeignKeys` + CHECKها + نام FKها برای هر ۹۹ جدول، بعد از `migrate:fresh --seed`، قبل و بعد:
+**MariaDB 10.4.34 (explicit_defaults_for_timestamp=OFF) و MySQL 8.4.13 صفر تفاوت، ترتیب ستون‌ها هم یکسان**؛ `mysqldump --no-data` (هر دو) همان
+خط‌ها، فقط ترتیب چاپ شش خط KEY. **SQLite:** ستون/نوع/nullable/پیش‌فرض/ایندکس/FK یکسان؛ ترتیب ستون ۹ جدول عوض شد؛ و **CHECKهای enum ‏`bookings`
+(۵ ستون) و `invoices` (۳ ستون) برگشتند** — `->change()`/ALTER قبلی روی SQLite جدول را بازسازی می‌کرد و CHECKها بی‌صدا حذف می‌شدند (حالا مثل
+ENUM ‏MySQL محدود می‌کنند). `migrate:reset` روی هر سه فقط جدول `migrations` را نگه داشت و `migrate --seed` دوباره همان اسکیما را ساخت. دیتابیس
+migrateشده با کد قبلی: `migrate` با «table salon_feature_overrides already exists» می‌شکند (پیش‌بینی گزارش)؛ `db:wipe` ← `migrate` ← `db:seed` درست
+(۶۰ ردیف migrations، ۵ پلن). سوییت (پیش ← پس): قبل SQLite **۲۵۵۱** (۱۶ skip)، MariaDB **۲۵۵۱** (۱۵ skip)، MySQL **۲۵۵۱** (۵ skip)؛ بعد **همان ۲۵۵۱ با همان skipها و همان تعداد assertion، بدون شکست**؛ سوییت ساب‌دامین ۱۵/۱۵. Pint PASS. مقایسه‌ی اسکیما و سوییت هر سه دیتابیس روی کلون تازه از GitHub (`develop` ‏`a874e0c`) بعد از `git am --keep-cr` هر دو پچ تکرار شد.
+
+**🐞 جانبی (رفع نشد، تصمیم ابوالفضل):** `AdminBillingControllerTest::test_purchase_uses_the_platform_global_merchant_id_never_the_salons_own` با
+`.env` ساخته‌شده از `.env.example` (`ZARINPAL_MERCHANT_ID=your-merchant-id`) می‌شکند: `ZarinpalMerchant` جای‌نگهدار را null می‌کند و درخواستی نمی‌رود.
+رفع یک‌خطی: `ZARINPAL_MERCHANT_ID` ثابت در `phpunit.xml` (مثل `APP_URL`).
+
+**روی لوکال و داکر (لازم):** XAMPP ‏`php artisan migrate:fresh --seed` + `superadmin:create`. داکر تک‌کانتینری (entrypoint با `set -e` همان
+`migrate --force` را می‌زند و با شکست بالا نمی‌آید): **پیش از** build تازه `docker compose -f docker-compose.single.yml exec -u www app php artisan db:wipe --force`،
+بعد `up -d --build`، بعد `exec -u www app php artisan db:seed --force` و `superadmin:create`؛ اگر دیر شد: `down -v` و `up -d --build`. سرور واقعی هنوز
+نیست (بند ۶: `migrate:fresh --seed` بعد از خرید).
+
 ### ۲۰۲۶-۱۰-۳۰ — بسته‌ی 5ز (زرین‌پال) پیاده شد (`0285`–`0293`)
 
 ابوالفضل بند 5ز «قدم‌های باز» را خواست (تصمیم‌ها گرفته شده بود؛ مستقیم پیاده‌سازی، هر رفع اول تست قرمز). مرجع: `claude/zarinpal-complete.md`
@@ -11198,7 +11247,7 @@ Bearer؛ فقط از IPهای اعلام‌شده. ⚠️ `result` برای `IBA
     **بعداً (نه این بسته):** ریورس ۳۰ دقیقه‌ای بی‌کارمزد (`ReversibleGateway`؛ شرط: IP سرور در تنظیمات درگاه، وگرنه ‎-62) — بعد از خرید سرور؛
     `unVerified` (حداکثر ۱۰۰ تراکنش) برای تطبیق.
     **وریفای:** کل سوییت روی SQLite، MariaDB 10.4 (OFF) و MySQL 8.4؛ آزمون دستی sandbox (پرداخت، لغو، رفرش، verify تکراری، پرداخت بدون بازگشت).
-5و. **بعد از 5ز (درخواست ابوالفضل ۲۰۲۶-۱۰-۳۰): بررسی و یکی کردن migrationها.** هنوز شروع نشده. ⚠️ 5ز دو migration تازه ساخت: `2026_10_30_000001_create_zarinpal_connections_table.php` و `2026_10_31_000001_add_invoice_installments_and_platform_credit.php` (حالا ۷۲ فایل) — در فهرست است. متن درخواست:
+5و. ✅ **انجام شد (۲۰۲۶-۱۰-۳۱، `0302`–`0303`؛ بخش «۲۰۲۶-۱۰-۳۱ (ادامه) — بسته‌ی 5و»): ۷۲ ← ۶۰ فایل، اسکیمای MariaDB/MySQL بی‌تفاوت.** مانده (ابوالفضل): `migrate:fresh --seed` روی XAMPP و روال `db:wipe` داکر تک‌کانتینری. متن درخواست (برای مرجع):
     ═══ سؤال‌ها درباره‌ی migrationها ═══
     ۱ - چند migration داریم؟ (فهرست کامل با نام فایل)
     ۲ - چند migration هست که با یک migration دیگر چیزی به جدولشان اضافه یا از آن حذف می‌شود؟ برای هر کدام بگو: کدام migration جدول را ساخته
