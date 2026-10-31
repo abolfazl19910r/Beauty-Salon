@@ -12,7 +12,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('salon_id')->constrained('salons')->cascadeOnDelete();
             $table->string('name');
-            $table->string('slug')->unique();
+            $table->string('slug');
+            // ⭐ یکتا در هر سالن، نه در کل جدول (۲۰۲۶-۱۰-۱۱): سالن دوم باید بتواند دسته‌بندی هم‌نام سالن دیگر بسازد.
+            $table->unique(['salon_id', 'slug'], 'categories_salon_slug_unique');
             $table->text('description')->nullable();
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->boolean('is_active')->default(true);

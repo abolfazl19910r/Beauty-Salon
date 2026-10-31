@@ -22,10 +22,16 @@ return new class extends Migration
             $table->foreignId('gateway_id')->nullable()->constrained('salon_payment_gateways')->nullOnDelete();
             $table->string('driver', 32);
             $table->string('purpose', 32);
+            // شماره‌ی قسط فاکتور (پرداخت قسطی، ۲۰۲۶-۱۰-۳۱)؛ null = غیرقسطی
+            $table->unsignedTinyInteger('installment')->nullable();
             $table->nullableMorphs('payable');
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->unsignedBigInteger('amount_rial');
             $table->unsignedBigInteger('fee_rial')->default(0);
+            // سهم کیف پولِ پرداخت ترکیبی (کیف پول + درگاه، ۲۰۲۶-۱۰-۱۱) — اپ موبایل session ندارد؛ wallet_state: held (کم شده، منتظر
+            // نتیجه) · settled (بخشی از پرداخت موفق) · released (به کیف پول برگشت)
+            $table->decimal('wallet_toman', 15, 2)->default(0);
+            $table->string('wallet_state', 10)->nullable();
             $table->string('token')->nullable()->index();
             $table->string('ref_id')->nullable();
             // رسید یکتای درگاه (مثلاً RRN)؛ یکتا در هر درگاه تا یک رسید دو بار ثبت نشود.

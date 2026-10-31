@@ -24,6 +24,8 @@ return new class extends Migration
             $table->boolean('sms_enabled')->default(true);
             $table->boolean('database_enabled')->default(true);
             $table->boolean('telegram_enabled')->default(false);
+            // ستون «اپ» تنظیمات اعلان هر سالن (پوش اپ‌ها، بسته‌ی ۴، ۲۰۲۶-۱۰-۱۵)
+            $table->boolean('push_enabled')->default(true);
             $table->timestamps();
 
             $table->unique(['salon_id', 'event_key']);

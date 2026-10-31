@@ -60,6 +60,10 @@ return new class extends Migration
             $table->timestamp('login_verification_code_expire_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
+            // انصراف مشتری از پیامک‌های تبلیغاتی (پیگیری خودکار مشتریان غایب، ۲۰۲۶-۱۰-۱۴)
+            $table->timestamp('marketing_sms_opted_out_at')->nullable();
+            // بسته‌ی 5ه، تصمیم ۱۶: «برداشتن محدودیت» مشتری بدقول توسط مدیر؛ «نیامد»های پیش از این لحظه در شمارش بدقولی حساب نمی‌شوند
+            $table->timestamp('no_show_cleared_at')->nullable();
 
             $table->index('two_factor_enabled');
         });
@@ -79,10 +83,13 @@ return new class extends Migration
                 : "CONCAT(salon_id, '_', phone)";
 
             Schema::table('users', function (Blueprint $table) use ($concat) {
+                // after(): همان جای پیش از ادغام سوم migrationها (روی MySQL/MariaDB؛ SQLite ستون را ته جدول می‌گذارد)
                 $table->string('staff_phone_key', 20)
-                    ->storedAs("CASE WHEN user_type = 'staff' THEN phone ELSE NULL END");
+                    ->storedAs("CASE WHEN user_type = 'staff' THEN phone ELSE NULL END")
+                    ->after('updated_at');
                 $table->string('customer_salon_phone_key', 191)
-                    ->storedAs("CASE WHEN user_type = 'customer' THEN {$concat} ELSE NULL END");
+                    ->storedAs("CASE WHEN user_type = 'customer' THEN {$concat} ELSE NULL END")
+                    ->after('staff_phone_key');
             });
 
             Schema::table('users', function (Blueprint $table) {
@@ -91,10 +98,12 @@ return new class extends Migration
             });
         }
 
-        // ⭐ salons.created_by به users اشاره می‌کند و users.salon_id به salons — وابستگی دوری. salons قبل از users
-        // ساخته می‌شود (0000_01_01_000000) و created_by همین‌جا، بلافاصله بعد از ساخت users، اضافه می‌شود.
+        // ⭐ salons.created_by و salons.paused_by_user_id به users اشاره می‌کنند و users.salon_id به salons — وابستگی دوری. salons قبل از
+        // users ساخته می‌شود (0000_01_01_000000) و این دو ستون همین‌جا، بلافاصله بعد از ساخت users، اضافه می‌شوند.
         Schema::table('salons', function (Blueprint $table) {
             $table->foreignId('created_by')->nullable()->after('id')->constrained('users')->nullOnDelete();
+            // توقف موقت رزرو (بسته‌ی «ح»، ۸): ابرمدیر یا مدیری که رزرو را بست
+            $table->foreignId('paused_by_user_id')->nullable()->after('paused_by')->constrained('users')->nullOnDelete();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
@@ -127,6 +136,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('salons', function (Blueprint $table) {
+            $table->dropConstrainedForeignId('paused_by_user_id');
             $table->dropConstrainedForeignId('created_by');
         });
 

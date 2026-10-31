@@ -26,7 +26,17 @@ return new class extends Migration
             $table->id();
             $table->foreignId('salon_id')->constrained()->cascadeOnDelete();
             $table->enum('subscription_type', ['1m', '3m', '6m', '12m']);
+            // پلن‌ها (بسته‌ی الف، ۲۰۲۶-۱۰-۱۴): renewal = خرید/تمدید یک بازه · upgrade = مابه‌التفاوت ارتقای وسط دوره (پایان دوره ثابت)
+            $table->foreignId('plan_id')->nullable()->constrained('plans')->nullOnDelete();
+            $table->string('kind', 20)->default('renewal');
+            $table->json('plan_snapshot')->nullable();
             $table->unsignedBigInteger('amount'); // تومان — هم‌الگو با prepayment_amount نوبت‌ها
+            // ⭐ پرداخت قسطی و «اعتبار پلتفرم» (۲۰۲۶-۱۰-۳۱، راه «ب» سقف ۱۰۰ میلیون تومانی زرین‌پال): credit_applied = تومان از اعتبار
+            // پلتفرم (هنگام ساخت رزرو می‌شود)، paid_amount = جمع قسط‌های پرداخت‌شده، partial_expires_at = ۷ روز بعد از اولین قسط
+            $table->unsignedBigInteger('credit_applied')->default(0);
+            $table->unsignedBigInteger('paid_amount')->default(0);
+            $table->unsignedTinyInteger('installments')->default(1);
+            $table->unsignedTinyInteger('installments_paid')->default(0);
             $table->enum('status', ['pending', 'paid', 'failed'])->default('pending');
             $table->enum('payment_method', ['online', 'manual'])->default('online');
             $table->string('authority')->nullable(); // authority زرین‌پال (فقط مسیر آنلاین)
@@ -34,6 +44,7 @@ return new class extends Migration
             $table->timestamp('period_start')->nullable();
             $table->timestamp('period_end')->nullable();
             $table->timestamp('paid_at')->nullable();
+            $table->timestamp('partial_expires_at')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });

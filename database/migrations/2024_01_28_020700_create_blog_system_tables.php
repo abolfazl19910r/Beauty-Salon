@@ -12,7 +12,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('salon_id')->constrained('salons')->cascadeOnDelete();
             $table->string('name');
-            $table->string('slug')->unique();
+            $table->string('slug');
+            // ⭐ یکتا در هر سالن، نه در کل جدول (۲۰۲۶-۱۰-۱۱): سالن دوم باید بتواند دسته‌ی وبلاگ هم‌نام سالن دیگر بسازد.
+            $table->unique(['salon_id', 'slug'], 'blog_categories_salon_slug_unique');
             $table->string('description')->nullable();
             $table->integer('order')->default(0);
             $table->timestamps();
@@ -25,7 +27,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('salon_id')->constrained('salons')->cascadeOnDelete();
             $table->string('title');
-            $table->string('slug')->unique();
+            $table->string('slug');
+            // ⭐ یکتا در هر سالن، نه در کل جدول (۲۰۲۶-۱۰-۱۱): سالن دوم باید بتواند پست وبلاگ هم‌نام سالن دیگر بسازد.
+            $table->unique(['salon_id', 'slug'], 'blog_posts_salon_slug_unique');
             $table->text('content');
             $table->text('excerpt')->nullable();
             $table->string('image')->nullable();

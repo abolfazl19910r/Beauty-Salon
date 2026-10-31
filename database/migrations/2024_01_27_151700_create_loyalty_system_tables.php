@@ -13,7 +13,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('booking_id')->nullable()->constrained()->onDelete('set null');
             $table->integer('points');
-            $table->enum('type', ['earned', 'spent'])->default('earned');
+            // expired: ردیف انقضای امتیاز (LoyaltyLedger، تصمیم ۲۰۲۶-۱۰-۱۱ گزینه‌ی «الف»)
+            $table->enum('type', ['earned', 'spent', 'expired'])->default('earned');
             $table->string('description');
             $table->timestamp('expires_at')->nullable();
             $table->timestamps();
@@ -43,7 +44,9 @@ return new class extends Migration
         Schema::create('loyalty_settings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('salon_id')->constrained('salons')->cascadeOnDelete();
-            $table->string('key')->unique();
+            $table->string('key');
+            // ⭐ یکتا در هر سالن، نه در کل جدول (۲۰۲۶-۱۰-۱۱): سالن دوم باید بتواند تنظیم باشگاه هم‌نام سالن دیگر بسازد.
+            $table->unique(['salon_id', 'key'], 'loyalty_settings_salon_key_unique');
             $table->text('value');
             $table->string('description')->nullable();
             $table->timestamps();

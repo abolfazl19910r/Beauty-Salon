@@ -11,7 +11,9 @@ return new class extends Migration
         Schema::create('discount_codes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('salon_id')->constrained('salons')->cascadeOnDelete();
-            $table->string('code')->unique();
+            $table->string('code');
+            // ⭐ یکتا در هر سالن، نه در کل جدول (۲۰۲۶-۱۰-۱۱): سالن دوم باید بتواند کد تخفیف (مثلاً NOROOZ) هم‌نام سالن دیگر بسازد.
+            $table->unique(['salon_id', 'code'], 'discount_codes_salon_code_unique');
             $table->enum('type', ['fixed', 'percentage']);
             $table->decimal('amount', 10, 2);
             $table->decimal('max_amount', 10, 2)
@@ -23,6 +25,8 @@ return new class extends Migration
             $table->timestamp('expires_at')->nullable();
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
             $table->timestamps();
+            // دوره‌های درمانی (تصمیم ۹، ۲۰۲۶-۱۰-۱۴): روی خرید دوره هم معتبر؟ پیش‌فرض نه
+            $table->boolean('valid_for_courses')->default(false);
 
             $table->index('code');
             $table->index('is_active');
@@ -33,11 +37,14 @@ return new class extends Migration
             $table->id();
             $table->foreignId('discount_code_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('booking_id')->constrained()->onDelete('cascade');
+            // یکی از booking_id یا customer_course_id (استفاده از کد روی خرید دوره‌ی درمانی، ۲۰۲۶-۱۰-۱۴)
+            $table->foreignId('booking_id')->nullable()->constrained()->onDelete('cascade');
             $table->decimal('amount_saved', 10, 2);
             $table->timestamps();
+            $table->foreignId('customer_course_id')->nullable()->constrained('customer_courses')->cascadeOnDelete();
 
             $table->unique(['discount_code_id', 'booking_id']);
+            $table->unique(['discount_code_id', 'customer_course_id']);
             $table->index('user_id');
         });
     }

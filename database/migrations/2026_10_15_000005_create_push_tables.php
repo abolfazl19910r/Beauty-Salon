@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Schema;
  * - push_messages: یک پیام منطقی به یک نفر، با متن پیامک پشتیبانش (همان لحظه ساخته می‌شود تا متن اختصاصی سالن بماند)،
  *   مهلت «بدون رسید → پیامک» و نتیجه.
  * - push_deliveries: ارسال همان پیام به هر دستگاه و رسید هر دستگاه (سلامت دستگاه = دو ارسال آخر بی‌رسید).
- * - notification_settings.push_enabled: ستون «اپ» تنظیمات اعلان هر سالن.
+ * - notification_settings.push_enabled (ستون «اپ» تنظیمات اعلان هر سالن) در create خود آن جدول است.
  */
 return new class extends Migration
 {
@@ -80,17 +80,10 @@ return new class extends Migration
             $table->unique(['push_message_id', 'push_device_id']);
             $table->index(['push_device_id', 'id']);
         });
-
-        Schema::table('notification_settings', function (Blueprint $table) {
-            $table->boolean('push_enabled')->default(true)->after('telegram_enabled');
-        });
     }
 
     public function down(): void
     {
-        Schema::table('notification_settings', function (Blueprint $table) {
-            $table->dropColumn('push_enabled');
-        });
         Schema::dropIfExists('push_deliveries');
         Schema::dropIfExists('push_messages');
         Schema::dropIfExists('push_devices');

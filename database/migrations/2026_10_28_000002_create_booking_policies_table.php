@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -14,8 +13,7 @@ use Illuminate\Support\Facades\Schema;
  * - سقف‌ها و مشتری بدقول: daily_limit (پیش‌فرض ۱)، active_limit (۳)، no_show_threshold (۲) در no_show_window_days (۹۰)،
  *   flagged_force_pending و flagged_active_limit (۱) برای سالن بی درگاه، attendance_check (off · flagged · all). سقف خالی/صفر = بی‌سقف.
  *
- * bookings.prepayment_required: برچسب نوبت موقع ثبت؛ لغو خودکار، دکمه‌ی پرداخت، پیامک، امتیاز و جابه‌جایی به این نگاه می‌کنند، نه به حالت
- * فعلی سالن. نوبت‌های موجود: آنلاینِ غیر دوره‌ای که پیش‌پرداخت داشتند = با پیش‌پرداخت؛ دستی کادر و جلسه‌ی دوره = بدون.
+ * bookings.prepayment_required (برچسب نوبت موقع ثبت) و ایندکس bookings_user_time_index در create_bookings_table هستند.
  */
 return new class extends Migration
 {
@@ -35,32 +33,10 @@ return new class extends Migration
             $table->string('attendance_check', 16)->default('off');
             $table->timestamps();
         });
-
-        Schema::table('bookings', function (Blueprint $table) {
-            $table->boolean('prepayment_required')->default(false)->after('prepayment_amount');
-            $table->index(['user_id', 'booking_time'], 'bookings_user_time_index');
-        });
-
-        DB::table('bookings')
-            ->where('source', 'online')
-            ->whereNull('customer_course_id')
-            ->where(fn ($q) => $q->where('status', 'pending_payment')->orWhere('payment_status', 'paid'))
-            ->update(['prepayment_required' => true]);
     }
 
     public function down(): void
     {
-        // MySQL/MariaDB ایندکس خودکار کلید خارجی user_id را با آمدن ایندکس ترکیبی برداشته و حالا همین را لازم دارد (خطای 1553)؛ پیش از
-        // حذف، ایندکس ساده‌ی user_id
-        Schema::table('bookings', function (Blueprint $table) {
-            $table->index('user_id', 'bookings_user_id_index');
-        });
-
-        Schema::table('bookings', function (Blueprint $table) {
-            $table->dropIndex('bookings_user_time_index');
-            $table->dropColumn('prepayment_required');
-        });
-
         Schema::dropIfExists('booking_policies');
     }
 };

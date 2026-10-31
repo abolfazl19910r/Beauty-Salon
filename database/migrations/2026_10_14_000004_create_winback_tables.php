@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * پیگیری خودکار مشتریانی که مدتی نیامده‌اند (تصمیم ۲۰۲۶-۱۰-۱۴): تنظیمات هر سالن، ثبت هر پیامک فرستاده‌شده (یک بار در هر
- * «دوره‌ی غیبت» = یک بار برای هر آخرین مراجعه) و انصراف مشتری از پیامک‌های تبلیغاتی.
+ * «دوره‌ی غیبت» = یک بار برای هر آخرین مراجعه). انصراف مشتری از پیامک‌های تبلیغاتی: users.marketing_sms_opted_out_at (در create_users_table).
  */
 return new class extends Migration
 {
@@ -36,17 +36,10 @@ return new class extends Migration
             $table->unique(['user_id', 'last_visit_at']);
             $table->index(['salon_id', 'sent_at']);
         });
-
-        Schema::table('users', function (Blueprint $table) {
-            $table->timestamp('marketing_sms_opted_out_at')->nullable();
-        });
     }
 
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('marketing_sms_opted_out_at');
-        });
         Schema::dropIfExists('winback_messages');
         Schema::dropIfExists('winback_settings');
     }

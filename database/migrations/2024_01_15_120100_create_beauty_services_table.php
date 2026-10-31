@@ -13,7 +13,9 @@ return new class extends Migration
             $table->foreignId('salon_id')->constrained('salons')->cascadeOnDelete();
             $table->string('name');
             $table->string('sms_name', 20)->nullable(); // نام کوتاه پیامکی؛ خالی = نام اصلی
-            $table->string('slug')->unique();
+            $table->string('slug');
+            // ⭐ یکتا در هر سالن، نه در کل جدول (۲۰۲۶-۱۰-۱۱): سالن دوم باید بتواند خدمت هم‌نام سالن دیگر بسازد.
+            $table->unique(['salon_id', 'slug'], 'beauty_services_salon_slug_unique');
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2);
             $table->integer('duration')->comment('مدت زمان به دقیقه');
