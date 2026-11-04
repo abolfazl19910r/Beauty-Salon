@@ -211,7 +211,7 @@
         </div>
     </div>
 
-    <script>
+    <script @nonce>
         const currentBalance = {{ $wallet->balance }};
         const MIN_AMOUNT = 10000;
         const MAX_AMOUNT = 50000000;

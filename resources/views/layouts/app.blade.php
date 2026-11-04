@@ -222,7 +222,7 @@
 
 
 @push('scripts')
-<script>
+<script @nonce>
 /**
  * ⭐ Blade + vanilla JS replacement for the removed AnnouncementBanner.jsx — same behavior:
  * fetches active announcements, renders by priority tier (>=100 red / >=71 orange / >=31 yellow /
@@ -431,7 +431,7 @@
     </div>
 </footer>
 
-<script>
+<script @nonce>
     document.getElementById('mobile-menu-button')?.addEventListener('click', function() {
         document.getElementById('mobile-menu').classList.toggle('hidden');
     });

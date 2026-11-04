@@ -367,7 +367,7 @@
 
 @push('scripts')
     @vite('resources/js/vendor/chartjs.js')
-    <script>
+    <script @nonce>
         /* ── Data from PHP ── */
         const revenueData    = @json($revenueChart ?? []);
         const monthlyData    = @json($monthlyBreakdown ?? collect());

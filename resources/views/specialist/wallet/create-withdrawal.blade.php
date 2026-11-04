@@ -183,7 +183,7 @@
     </div>
 
     @push('scripts')
-        <script>
+        <script @nonce>
             document.addEventListener('DOMContentLoaded', function() {
                 const amountInput = document.getElementById('amount');
                 const btnPlus = document.getElementById('btn-plus');

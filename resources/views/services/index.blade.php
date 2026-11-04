@@ -160,7 +160,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script @nonce>
     // دسته‌ی انتخاب‌شده در ردیف کشیدنی دیده شود
     document.querySelector('[data-category-row] .category-pill.active')?.scrollIntoView({ block: 'nearest', inline: 'center' });
 </script>

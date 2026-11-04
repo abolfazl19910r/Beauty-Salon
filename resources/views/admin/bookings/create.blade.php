@@ -259,7 +259,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script @nonce>
         (function() {
             function div(a,b){return Math.trunc(a/b);}
             function gregorianToJalali(gy,gm,gd){const g_d_m=[0,31,59,90,120,151,181,212,243,273,304,334];let jy;if(gy>1600){jy=979;gy-=1600;}else{jy=0;gy-=621;}const gy2=(gm>2)?(gy+1):gy;let days=(365*gy)+div(gy2+3,4)-div(gy2+99,100)+div(gy2+399,400)-80+gd+g_d_m[gm-1];jy+=33*div(days,12053);days%=12053;jy+=4*div(days,1461);days%=1461;if(days>365){jy+=div(days-1,365);days=(days-1)%365;}const jm=(days<186)?1+div(days,31):7+div(days-186,30);const jd=1+((days<186)?(days%31):((days-186)%30));return[jy,jm,jd];}
@@ -348,7 +348,7 @@
     </script>
 
     {{-- ⭐ Fix (fix/admin-booking-slot-conflict, commit 3): customer search / quick-create widget --}}
-    <script>
+    <script @nonce>
         (function() {
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             const searchInput   = document.getElementById('customer_search_input');

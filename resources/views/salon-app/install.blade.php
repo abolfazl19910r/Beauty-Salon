@@ -79,7 +79,7 @@
         <a href="{{ route('home', ['salon_slug' => $salon->slug]) }}" class="block text-center text-sm text-m-tx/60 hover:text-m-gold mt-6">بازگشت به سایت سالن</a>
     </div>
 
-    <script>
+    <script @nonce>
         (function () {
             var page = document.querySelector('[data-salon-app-page]');
             var ua = navigator.userAgent;

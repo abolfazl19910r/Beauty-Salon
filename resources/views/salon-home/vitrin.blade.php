@@ -154,7 +154,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script @nonce>
         document.querySelectorAll('[data-v-cat]').forEach(function (tab) {
             tab.addEventListener('click', function () {
                 var cat = tab.dataset.vCat;

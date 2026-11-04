@@ -112,7 +112,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script @nonce>
         function updateHeaderNotificationCount() {
             if (typeof window.refreshNotificationCount === 'function') window.refreshNotificationCount();
             try { localStorage.setItem('notification_updated', Date.now().toString()); } catch(e) {}

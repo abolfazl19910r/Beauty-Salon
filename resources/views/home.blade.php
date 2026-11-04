@@ -362,7 +362,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script @nonce>
         document.addEventListener('DOMContentLoaded', function () {
 
             /* ---------- Navbar scroll effect ---------- */

@@ -5,7 +5,7 @@
     موجود (قفل) سمت راست‌اند. با ارسال فرم دوباره «رمز» می‌شود تا مرورگر/مدیر رمز درست ذخیره کند. خاموش کردن برای یک فیلد:
     data-no-reveal.
 --}}
-<script data-password-reveal>
+<script data-password-reveal @nonce>
 (function () {
     if (window.__mahruPasswordReveal) return;
     window.__mahruPasswordReveal = true;

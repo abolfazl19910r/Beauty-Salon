@@ -57,7 +57,7 @@
         </div>
     </div>
 
-    <script>
+    <script @nonce>
         const intendedUrl = @json(session('secure_payment_intended_url', route('bookings.index')));
         const verifyUrl = '{{ route('security.2fa.verify') }}';
         const resendUrl = '{{ route('security.2fa.resend') }}';

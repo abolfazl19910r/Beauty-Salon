@@ -62,7 +62,7 @@
         </div>
     </div>
 
-    <script>
+    <script @nonce>
         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
         async function terminateSession(id, btn) {

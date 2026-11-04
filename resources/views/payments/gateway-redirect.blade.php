@@ -24,6 +24,6 @@
             <button type="submit">ورود به درگاه پرداخت</button>
         </form>
     </div>
-    <script>document.getElementById('gateway-form').submit();</script>
+    <script @nonce>document.getElementById('gateway-form').submit();</script>
 </body>
 </html>

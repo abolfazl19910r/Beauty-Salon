@@ -4,7 +4,7 @@
     <svg class="m-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7Z"/></svg>
 </button>
 @once
-<script>
+<script @nonce>
 document.addEventListener('click', function (e) {
     var btn = e.target.closest && e.target.closest('[data-m-theme-toggle]');
     if (!btn) return;

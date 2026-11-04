@@ -154,7 +154,7 @@
         </section>
     </div>
 
-    <script>
+    <script @nonce>
         (function () {
             const select = document.getElementById('driver');
             if (!select) return;

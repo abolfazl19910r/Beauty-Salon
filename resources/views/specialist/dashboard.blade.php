@@ -240,7 +240,7 @@
 
 @push('scripts')
     @vite('resources/js/vendor/apexcharts.js')
-    <script>
+    <script @nonce>
         document.addEventListener('DOMContentLoaded', function() {
             // بسته‌ی ه: رنگ نمودار از توکن تم؛ با عوض شدن تم صفحه دوباره بار می‌شود تا نمودار هم تم را بگیرد
             document.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-m-theme-toggle]') && document.querySelector('.apexcharts-canvas')) setTimeout(() => location.reload(), 0); });

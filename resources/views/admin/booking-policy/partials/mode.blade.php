@@ -73,7 +73,7 @@
     <button type="submit" class="px-4 py-2 rounded-lg text-sm font-bold text-m-onsolid" style="background: var(--admin-accent);">ذخیره‌ی پرداخت نوبت</button>
 </form>
 
-<script>
+<script @nonce>
     document.querySelectorAll('#booking-mode input[name="payment_mode"]').forEach(function (radio) {
         radio.addEventListener('change', function () {
             document.getElementById('prepayment-amounts').hidden = this.value !== 'prepay' || !this.checked;

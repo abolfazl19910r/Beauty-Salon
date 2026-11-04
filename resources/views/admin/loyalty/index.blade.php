@@ -191,7 +191,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script @nonce>
         (function () {
             var sel = document.getElementById('discount_type');
             var hint = document.getElementById('discount-hint');

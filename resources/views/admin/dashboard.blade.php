@@ -371,7 +371,7 @@
 
 @push('scripts')
     @vite('resources/js/vendor/apexcharts.js')
-    <script>
+    <script @nonce>
         // امنیت (H2): متن آزاد کاربر (نام مشتری، نام خدمت، متن اعلان) پیش از innerHTML escape می‌شود
         function escHtml(v) { return String(v ?? '').replace(/[&<>"']/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c])); }
         document.addEventListener('DOMContentLoaded', function () {

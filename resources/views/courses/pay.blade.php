@@ -56,7 +56,7 @@
             </form>
         </div>
     </div>
-    <script>
+    <script @nonce>
         // ارقام فارسی و جداکننده پیش از ارسال به عدد خام
         document.querySelector('form[action$="/pay"]').addEventListener('submit', function () {
             const input = document.getElementById('amount');

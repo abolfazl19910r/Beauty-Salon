@@ -76,7 +76,7 @@
         @endforeach
     </div>
 
-    <script>
+    <script @nonce>
         (function () {
             // شمارش قطعه مثل App\Support\SmsParts برای متن فارسی: طول UTF-16؛ تا ۷۰ یک قطعه، بیشتر هر ۶۷
             function parts(text) { var n = text.length; return n <= 70 ? 1 : Math.ceil(n / 67); }

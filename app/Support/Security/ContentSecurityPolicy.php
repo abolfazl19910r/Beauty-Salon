@@ -12,6 +12,12 @@ use Illuminate\Support\Facades\Vite;
  * استایل‌های درون‌خطی صفحه‌ها هنوز زیادند، پس 'unsafe-inline' می‌ماند؛ آنچه همین الان محدود می‌شود مبدأهاست: اسکریپت فقط از
  * خود سایت، اینماد و (در توسعه) سرور Vite؛ ارسال فرم فقط به خود سایت و درگاه‌های پرداخت؛ frame فقط خود سایت؛ object هیچ.
  *
+ * ⭐ بررسی امنیتی ۲۰۲۶-۱۱-۰۴ (H3، مرحله‌ی ۱): «'unsafe-inline'» در script-src یعنی اسکریپت درون‌خطی تزریقی (مثل H1/H2) اجرا می‌شود.
+ * هر درخواست یک nonce دارد (Vite::useCspNonce؛ تگ‌های Vite و همه‌ی <script>های درون‌خطی با @nonce). تا وقتی صفحه‌ها هنوز
+ * onclick/onmouseover=… دارند، سیاست اجرایی 'unsafe-inline' را نگه می‌دارد (nonce در همان سیاست 'unsafe-inline' را بی‌اثر می‌کرد) و
+ * یک سیاست دوم Report-Only با script-src سخت‌گیر (فقط nonce، بی 'unsafe-inline') تخلف‌های باقی‌مانده را به /csp-report می‌فرستد.
+ * security.csp.strict_scripts (SECURITY_CSP_STRICT_SCRIPTS): off | report (پیش‌فرض) | enforce — enforce بعد از انتقال همه‌ی handlerها.
+ *
  * نباید بشکند (تست: ContentSecurityPolicyTest): لوگوی اینماد (اسکریپت، تصویر و لینک trustseal.enamad.ir)، فرم POST خودکار
  * درگاه‌ها (payments/gateway-redirect)، Vite (build و hot)، PWA (sw.js، manifest)، دامنه‌ی مرکزی و ساب‌دامین سالن‌ها.
  */
@@ -20,6 +26,45 @@ class ContentSecurityPolicy
     public function header(): string
     {
         return config('security.csp.mode') === 'enforce' ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only';
+    }
+
+    /** off | report | enforce — script-src بی 'unsafe-inline' (H3) */
+    public function strictScriptsMode(): string
+    {
+        $mode = config('security.csp.strict_scripts');
+
+        return in_array($mode, ['off', 'report', 'enforce'], true) ? $mode : 'report';
+    }
+
+    /** nonce همین درخواست (یک بار ساخته و به تگ‌های Vite هم داده می‌شود) */
+    public function nonce(): string
+    {
+        return Vite::cspNonce() ?? Vite::useCspNonce();
+    }
+
+    /**
+     * هدرهای CSP این پاسخ: نام ← مقدار. حالت‌ها (mode × strict_scripts):
+     * - strict=enforce: سیاست اصلی (اجرایی یا گزارشی، طبق mode) با script-src سخت‌گیر؛
+     * - strict=report و mode=enforce: سیاست اجرایی فعلی + Report-Only سخت‌گیر؛
+     * - strict=report و mode=report: تنها هدر Report-Only، سخت‌گیر؛
+     * - strict=off: مثل پیش از H3.
+     *
+     * @return array<string, string>
+     */
+    public function headers(Request $request): array
+    {
+        $strict = $this->strictScriptsMode();
+
+        if ($strict === 'enforce' || ($strict === 'report' && $this->header() === 'Content-Security-Policy-Report-Only')) {
+            return [$this->header() => $this->build($request, strictScripts: true)];
+        }
+
+        $headers = [$this->header() => $this->build($request)];
+        if ($strict === 'report') {
+            $headers['Content-Security-Policy-Report-Only'] = $this->build($request, strictScripts: true);
+        }
+
+        return $headers;
     }
 
     public function enabled(): bool
@@ -49,15 +94,16 @@ class ContentSecurityPolicy
         return true;
     }
 
-    public function build(Request $request): string
+    public function build(Request $request, bool $strictScripts = false): string
     {
         $site = $this->siteOrigins($request);
         $enamad = (array) config('security.csp.enamad_hosts', []);
         $hot = $this->viteHotOrigins();
+        $inline = $strictScripts ? "'nonce-".$this->nonce()."'" : "'unsafe-inline'";
 
         $directives = [
             'default-src' => ["'self'", ...$site],
-            'script-src' => ["'self'", "'unsafe-inline'", ...$site, ...$enamad, ...$hot['http']],
+            'script-src' => ["'self'", $inline, ...$site, ...$enamad, ...$hot['http']],
             'style-src' => ["'self'", "'unsafe-inline'", ...$site, ...$hot['http']],
             'img-src' => ["'self'", 'data:', 'blob:', ...$site, ...$enamad, ...(array) config('security.csp.image_hosts', [])],
             'font-src' => ["'self'", 'data:', ...$site, ...$hot['http']],

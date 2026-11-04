@@ -147,7 +147,7 @@
         </div>
     </div>
 
-    <script>
+    <script @nonce>
         (function () {
             var type = document.querySelector('[data-discount-type]');
             var fields = document.querySelector('[data-discount-fields]');

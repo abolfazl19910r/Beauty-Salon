@@ -132,7 +132,7 @@
         </form>
     @endif
 
-    <script>
+    <script @nonce>
         // هشدار پیش از برداشتن امکانی که سالن‌ها الان دارند
         (function () {
             const form = document.querySelector('[data-plan-form]');

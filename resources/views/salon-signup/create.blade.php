@@ -309,7 +309,7 @@
         JS بدون هیچ کتابخونه‌ای — این صفحه هیچ @vite/jQuery‌ای نداره (به docblock بالای فایل نگاه
         کن)، پس نباید هیچ‌کدوم رو فرض کرد.
     --}}
-    <script>
+    <script @nonce>
         (function () {
             function debounce(fn, wait) {
                 var t;
@@ -376,7 +376,7 @@
             });
         })();
     </script>
-    <script>
+    <script @nonce>
         document.getElementById('logo').addEventListener('change', function () {
             var preview = document.getElementById('logo-preview');
             var file = this.files && this.files[0];

@@ -243,7 +243,7 @@
         </div>
     </div>
 
-    <script>
+    <script @nonce>
         const bookingId = {{ $booking->id }};
         // ⭐ bookingAmount is the amount actually charged online (gateway/wallet) — a discount code
         // never changes it (see Booking::getRemainingAmountAttribute() / BookingService::

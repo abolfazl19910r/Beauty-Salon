@@ -83,7 +83,7 @@
         </div>
     </div>
 
-    <script>
+    <script @nonce>
         const resendUrl = '{{ route('security.2fa.resend') }}';
         const disableUrl = '{{ route('security.2fa.disable') }}';
         const csrfToken = '{{ csrf_token() }}';

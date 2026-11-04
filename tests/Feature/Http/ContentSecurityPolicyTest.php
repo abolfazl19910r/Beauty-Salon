@@ -32,6 +32,7 @@ class ContentSecurityPolicyTest extends TestCase
     /** ⭐ مرحله‌ی ۲ (تصمیم ابوالفضل ۲۰۲۶-۱۰-۳۱): پیش‌فرض enforce؛ در گزارش‌های Report-Only آزمون‌های دستی لوکال هیچ تخلفی نبود */
     public function test_pages_are_enforced_by_default_and_still_report(): void
     {
+        config(['security.csp.strict_scripts' => 'off']);
         $response = $this->get('/');
 
         $response->assertHeaderMissing('Content-Security-Policy-Report-Only');
@@ -113,7 +114,7 @@ class ContentSecurityPolicyTest extends TestCase
 
     public function test_enforce_and_off_modes(): void
     {
-        config(['security.csp.mode' => 'enforce']);
+        config(['security.csp.mode' => 'enforce', 'security.csp.strict_scripts' => 'off']);
         $this->get('/')->assertHeader('Content-Security-Policy')->assertHeaderMissing('Content-Security-Policy-Report-Only');
 
         config(['security.csp.mode' => 'off']);
@@ -216,5 +217,96 @@ class ContentSecurityPolicyTest extends TestCase
             $this->assertContains('http:', $csp[$directive], $directive);
         }
         $this->assertContains('ws:', $csp['connect-src']);
+    }
+
+    /** @return array<string, list<string>> */
+    private static function parse(string $header): array
+    {
+        $directives = [];
+        foreach (explode(';', $header) as $part) {
+            $tokens = preg_split('/\s+/', trim($part));
+            $directives[array_shift($tokens)] = $tokens;
+        }
+
+        return $directives;
+    }
+
+    /**
+     * ⭐ بررسی امنیتی ۲۰۲۶-۱۱-۰۴ (H3، مرحله‌ی ۱): پیش‌فرض strict_scripts=report — سیاست اجرایی همان قبلی ('unsafe-inline' تا انتقال
+     * onclick=…)، و یک Report-Only با script-src فقط nonce. همه‌ی <script>های درون‌خطی صفحه nonce همین درخواست را دارند.
+     */
+    public function test_a_strict_nonce_policy_reports_alongside_the_enforced_one(): void
+    {
+        $response = $this->get('/')->assertOk();
+
+        $enforced = self::parse((string) $response->headers->get('Content-Security-Policy'));
+        $strict = self::parse((string) $response->headers->get('Content-Security-Policy-Report-Only'));
+
+        $this->assertContains("'unsafe-inline'", $enforced['script-src']);
+        $this->assertNotContains("'unsafe-inline'", $strict['script-src']);
+        $nonces = array_values(array_filter($strict['script-src'], fn ($t) => str_starts_with($t, "'nonce-")));
+        $this->assertCount(1, $nonces);
+        $this->assertSame(['/csp-report'], [parse_url($strict['report-uri'][0], PHP_URL_PATH)]);
+        // nonce و 'unsafe-inline' هرگز با هم نیستند (nonce آن را بی‌اثر می‌کرد)
+        $this->assertSame([], array_filter($enforced['script-src'], fn ($t) => str_starts_with($t, "'nonce-")));
+
+        $nonce = substr($nonces[0], 7, -1);
+        $html = $response->getContent();
+        preg_match_all('/<script(?![^>]*\bsrc=)([^>]*)>/i', $html, $inline);
+        $this->assertNotEmpty($inline[1], 'صفحه‌ی فروش اسکریپت درون‌خطی دارد');
+        foreach ($inline[1] as $attrs) {
+            $this->assertStringContainsString('nonce="'.$nonce.'"', $attrs, 'اسکریپت درون‌خطی بی nonce');
+        }
+    }
+
+    public function test_each_request_gets_a_fresh_nonce(): void
+    {
+        $a = (string) $this->get('/')->headers->get('Content-Security-Policy-Report-Only');
+        $this->app->forgetInstance(\Illuminate\Foundation\Vite::class);
+        \Illuminate\Support\Facades\Vite::clearResolvedInstance(\Illuminate\Foundation\Vite::class);
+        $b = (string) $this->get('/')->headers->get('Content-Security-Policy-Report-Only');
+
+        preg_match("/'nonce-([^']+)'/", $a, $na);
+        preg_match("/'nonce-([^']+)'/", $b, $nb);
+        $this->assertNotSame($na[1], $nb[1]);
+        $this->assertGreaterThanOrEqual(32, strlen($na[1]));
+    }
+
+    public function test_strict_enforce_drops_unsafe_inline_from_the_enforced_policy(): void
+    {
+        config(['security.csp.strict_scripts' => 'enforce']);
+        $response = $this->get('/')->assertOk();
+
+        $response->assertHeaderMissing('Content-Security-Policy-Report-Only');
+        $csp = self::parse((string) $response->headers->get('Content-Security-Policy'));
+        $this->assertNotContains("'unsafe-inline'", $csp['script-src']);
+        $this->assertContains("'unsafe-inline'", $csp['style-src'], 'style همچنان درون‌خطی مجاز');
+    }
+
+    public function test_report_mode_with_strict_report_sends_a_single_strict_report_only_header(): void
+    {
+        config(['security.csp.mode' => 'report', 'security.csp.strict_scripts' => 'report']);
+        $response = $this->get('/')->assertOk();
+
+        $response->assertHeaderMissing('Content-Security-Policy');
+        $this->assertStringContainsString("'nonce-", (string) $response->headers->get('Content-Security-Policy-Report-Only'));
+    }
+
+    public function test_every_inline_script_in_the_views_carries_the_nonce_directive(): void
+    {
+        $missing = [];
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(resource_path('views'))) as $file) {
+            if (! str_ends_with($file->getFilename(), '.blade.php')) {
+                continue;
+            }
+            preg_match_all('/<script(?![^>]*\bsrc=)([^>]*)>/i', file_get_contents($file->getPathname()), $m);
+            foreach ($m[1] as $attrs) {
+                if (! str_contains($attrs, '@nonce')) {
+                    $missing[] = str_replace(resource_path('views').'/', '', $file->getPathname());
+                }
+            }
+        }
+
+        $this->assertSame([], $missing);
     }
 }

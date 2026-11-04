@@ -9,7 +9,7 @@
 
     @vite(['resources/css/app.css'])
     @stack('styles')
-    <script>
+    <script @nonce>
     (function(){var d=document.documentElement,t=null;try{t=new URLSearchParams(location.search).get('theme');if(t!=='light'&&t!=='dark')t=localStorage.getItem('mahru-theme')}catch(e){}
     if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'}d.dataset.theme=t})();
     </script>
@@ -251,7 +251,7 @@
     </div>
 
     <div class="sa-backdrop" data-sa-backdrop></div>
-    <script>
+    <script @nonce>
         // منوی موبایل
         (function () {
             var btn = document.querySelector('[data-sa-menu]'), side = document.getElementById('sa-side'), back = document.querySelector('[data-sa-backdrop]');

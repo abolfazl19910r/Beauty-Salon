@@ -161,7 +161,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script @nonce>
         function toggleDay(dayNum, isActive) {
             const card = document.getElementById('day-card-' + dayNum);
             const body = document.getElementById('day-body-' + dayNum);

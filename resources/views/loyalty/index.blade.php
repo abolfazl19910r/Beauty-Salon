@@ -195,7 +195,7 @@
         </div>
     </div>
 
-    <script>
+    <script @nonce>
         function copyCode(code) {
             navigator.clipboard.writeText(code).then(() => {
                 const t = document.createElement('div');

@@ -111,7 +111,7 @@
     </div>
 
     @push('scripts')
-        <script>
+        <script @nonce>
             // ✅ Mark as read (and wait for it) before navigating to the target link
             document.querySelectorAll('.notification-link').forEach(function (link) {
                 link.addEventListener('click', function (e) {

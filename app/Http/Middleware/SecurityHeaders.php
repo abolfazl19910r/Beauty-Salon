@@ -22,6 +22,11 @@ class SecurityHeaders
 
     public function handle(Request $request, Closure $next): Response
     {
+        // H3: nonce پیش از ساخت view (تگ‌های Vite و @nonce همین را می‌گیرند)
+        if ($this->csp->appliesTo($request)) {
+            $this->csp->nonce();
+        }
+
         $response = $next($request);
 
         foreach ((array) config('security.headers', []) as $name => $value) {
@@ -41,7 +46,9 @@ class SecurityHeaders
         // CSP فقط برای صفحه‌های HTML (JSON و فایل‌ها لازمش ندارند)
         if ($this->csp->appliesTo($request) && str_contains((string) $response->headers->get('Content-Type'), 'text/html')
             && ! $response->headers->has($this->csp->header())) {
-            $response->headers->set($this->csp->header(), $this->csp->build($request));
+            foreach ($this->csp->headers($request) as $name => $value) {
+                $response->headers->set($name, $value);
+            }
         }
 
         return $response;

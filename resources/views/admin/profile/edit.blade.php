@@ -116,7 +116,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script @nonce>
         document.getElementById('password_confirmation')?.addEventListener('input', function () {
             var p = document.getElementById('password');
             this.setCustomValidity(p && p.value !== this.value ? 'رمزهای عبور مطابقت ندارند' : '');

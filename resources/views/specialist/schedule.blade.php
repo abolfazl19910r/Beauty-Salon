@@ -223,7 +223,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script @nonce>
         document.addEventListener('DOMContentLoaded', function() {
             // --- toggle switches: driven entirely by JS, no CSS framework dependency ---
             function paintToggle(input) {

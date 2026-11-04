@@ -24,7 +24,7 @@
            style="flex:1;text-align:center;border:1px solid rgb(var(--m-gold) / .6);color:rgb(var(--m-gold2));font-weight:700;border-radius:999px;padding:.6rem .75rem;text-decoration:none;">نصب اپ</a>
     </div>
 </div>
-<script>
+<script @nonce>
     (function () {
         var box = document.querySelector('[data-open-in-app]');
         if (!box || !/Android/i.test(navigator.userAgent)) {

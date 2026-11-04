@@ -20,7 +20,7 @@
         </div>
     </div>
 @endif
-<script>
+<script @nonce>
     (function () {
         var standalone = window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
         var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);

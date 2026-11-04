@@ -150,7 +150,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script @nonce>
         (function() {
             const typeSelect = document.getElementById('type');
             const amountUnit = document.getElementById('amount-unit');

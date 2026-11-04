@@ -150,7 +150,7 @@
     </div>
 
     @push('scripts')
-        <script>
+        <script @nonce>
             document.addEventListener('DOMContentLoaded', function() {
                 const ibanInput = document.getElementById('iban');
 

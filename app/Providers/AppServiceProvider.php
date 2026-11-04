@@ -70,6 +70,10 @@ class AppServiceProvider extends ServiceProvider
 
         Paginator::useTailwind();
 
+        // بررسی امنیتی H3: <script nonce> همه‌ی اسکریپت‌های درون‌خطی (nonce همین درخواست، App\Support\Security\ContentSecurityPolicy).
+        // بیرون از درخواست وب (ایمیل، PDF، صف) nonce نیست و چیزی چاپ نمی‌شود.
+        Blade::directive('nonce', fn () => "<?php if (\\Illuminate\\Support\\Facades\\Vite::cspNonce()) { echo 'nonce=\"'.e(\\Illuminate\\Support\\Facades\\Vite::cspNonce()).'\"'; } ?>");
+
         $this->guardAgainstLazyLoading();
 
         Blade::if('role', function ($role) {

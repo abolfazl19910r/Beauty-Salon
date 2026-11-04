@@ -83,7 +83,7 @@
     @once
         @vite('resources/js/salon-qr.js')
         @push('scripts')
-            <script>
+            <script @nonce>
                 document.addEventListener('click', function (e) {
                     var btn = e.target.closest('[data-copy-salon-link]');
                     if (!btn) return;

@@ -33,7 +33,7 @@
                 <b>تنظیمات ذخیره نشد:</b>
                 <ul class="list-disc pr-5">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
             </div>
-            <script>
+            <script @nonce>
                 document.addEventListener('DOMContentLoaded', function () {
                     if (typeof Swal === 'undefined') return;
                     Swal.fire({ icon: 'error', title: 'تنظیمات ذخیره نشد', html: document.querySelector('#settings-errors ul').outerHTML, confirmButtonText: 'باشه' });
@@ -238,7 +238,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script @nonce>
         document.getElementById('instant_toggle').addEventListener('change', function() {
             const div = document.getElementById('instant_settings');
             div.style.opacity = this.checked ? '1' : '0.4';

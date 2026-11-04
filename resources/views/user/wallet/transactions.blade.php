@@ -254,7 +254,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script @nonce>
         (function() {
             // --- تبدیل میلادی به شمسی و برعکس (بدون وابستگی به کتابخانه خارجی) ---
             function div(a, b) { return Math.trunc(a / b); }

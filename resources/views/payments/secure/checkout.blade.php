@@ -74,7 +74,7 @@
         </div>
     </div>
 
-    <script>
+    <script @nonce>
         function startSecurePayment() {
             const btn = document.getElementById('start-payment-btn');
             const text = document.getElementById('start-payment-text');

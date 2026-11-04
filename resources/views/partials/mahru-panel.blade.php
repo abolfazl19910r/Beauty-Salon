@@ -59,7 +59,7 @@ a[style*="var(--admin-accent)"][style*="background"],button[style*="var(--admin-
 .swal2-confirm{background:var(--m-btn)!important;color:var(--m-on-gold)!important;border-radius:999px!important}
 .swal2-cancel{background:rgb(var(--m-tx) / .08)!important;color:rgb(var(--m-tx))!important;border-radius:999px!important}
 </style>
-<script>
+<script @nonce>
 // رنگ توکن برای نمودارها (ApexCharts رنگ CSS متغیر نمی‌فهمد): mToken('gold') → "rgb(216,185,106)"
 window.mToken = function (name, alpha) {
     var v = getComputedStyle(document.documentElement).getPropertyValue('--m-' + name).trim().split(/\s+/).join(',');

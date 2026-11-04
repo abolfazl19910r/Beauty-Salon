@@ -60,7 +60,7 @@
         </div>
     </div>
 
-    <script>
+    <script @nonce>
         const verifyUrl = '{{ route('verification.verify') }}';
         const resendUrl = '{{ route('verification.resend') }}';
         const fallbackUrl = '{{ url('/dashboard') }}';

@@ -46,7 +46,7 @@
         </div>
     </div>
 
-    <script>
+    <script @nonce>
         const enableUrl = '{{ route('security.2fa.enable') }}';
         const resendUrl = '{{ route('security.2fa.resend') }}';
         const csrfToken = '{{ csrf_token() }}';

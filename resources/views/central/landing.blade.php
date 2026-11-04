@@ -29,7 +29,7 @@
 <link rel="manifest" href="{{ asset('site.webmanifest') }}">
 <meta name="application-name" content="{{ config('brand.name') }}">
 <meta name="apple-mobile-web-app-title" content="{{ config('brand.name') }}">
-<script>
+<script @nonce>
 /* تم پیش از رندر — ترتیب: ?theme= ← انتخاب کاربر ← data-default-theme ← تنظیم سیستم */
 (function(){var d=document.documentElement,t=null;try{t=new URLSearchParams(location.search).get('theme');if(t!=='light'&&t!=='dark')t=localStorage.getItem('mahru-theme')}catch(e){}
 if(t!=='light'&&t!=='dark'){var def=d.getAttribute('data-default-theme');t=(def==='light'||def==='dark')?def:(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark')}d.dataset.theme=t})();
@@ -47,7 +47,7 @@ if(t!=='light'&&t!=='dark'){var def=d.getAttribute('data-default-theme');t=(def=
 @font-face{font-family:"Sora";src:url("{{ asset('fonts/mahru/Sora-600.woff2') }}") format("woff2");font-weight:600;font-style:normal;font-display:swap}
 @font-face{font-family:"Sora";src:url("{{ asset('fonts/mahru/Sora-700.woff2') }}") format("woff2");font-weight:700;font-style:normal;font-display:swap}
 </style>
-<script type="application/ld+json">
+<script type="application/ld+json" @nonce>
 {"@@context":"https://schema.org","@type":"SoftwareApplication","name":"ماهرو","alternateName":"Mahru","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":"fa","offers":{"@type":"AggregateOffer","lowPrice":"{{ $plans[0]['price'] ?? 0 }}","priceCurrency":"IRT"},"description":"نرم‌افزار نوبت‌دهی و مدیریت سالن‌های زیبایی"}
 </script>
 <style>
@@ -975,7 +975,7 @@ footer .enamad{margin-top:12px}
 <button class="icon-btn" id="ttop" type="button" aria-label="بازگشت به بالا"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg></button>
 <div class="mcta" id="mcta"><a class="btn btn-gold btn-block" href="#start">درخواست دمو رایگان · راه‌اندازی در یک روز</a></div>
 
-<script>
+<script @nonce>
 (()=>{
 const $=(s,r=document)=>[...r.querySelectorAll(s)],$1=(s,r=document)=>r.querySelector(s);
 const rm=matchMedia('(prefers-reduced-motion:reduce)').matches;

@@ -199,7 +199,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script @nonce>
         function toggleCategory(btn) {
             const body = btn.nextElementSibling;
             const icon = btn.querySelector('svg');

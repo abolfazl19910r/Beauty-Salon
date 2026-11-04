@@ -35,7 +35,7 @@
             </p>
         @endif
     </div>
-    <script>
+    <script @nonce>
         window.RastaGatewayFee = {
             selected() { return document.querySelector('#gateway-picker input[name="gateway_id"]:checked'); },
             feeFor(input, base) {

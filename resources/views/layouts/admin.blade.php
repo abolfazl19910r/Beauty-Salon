@@ -331,7 +331,7 @@
                         </svg>
                     </button>
                 </div>
-                <script>
+                <script @nonce>
                     setTimeout(function() {
                         const el = document.getElementById('flash-success');
                         if (el) { el.style.transition = 'opacity 0.5s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 500); }
@@ -370,7 +370,7 @@
                         </svg>
                     </button>
                 </div>
-                <script>
+                <script @nonce>
                     setTimeout(function() {
                         const el = document.getElementById('flash-error');
                         if (el) { el.style.transition = 'opacity 0.5s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 500); }
@@ -446,7 +446,7 @@
     }
 </style>
 
-<script>
+<script @nonce>
     // امنیت (H2): متن آزاد کاربر (نام مشتری، نام خدمت، متن اعلان) پیش از innerHTML escape می‌شود
     function escHtml(v) { return String(v ?? '').replace(/[&<>"']/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c])); }
     window.AdminRoutes = {

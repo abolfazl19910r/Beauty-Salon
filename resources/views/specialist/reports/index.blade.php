@@ -210,7 +210,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script @nonce>
         (function() {
             function div(a, b) { return Math.trunc(a / b); }
 

@@ -134,7 +134,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script @nonce>
         document.addEventListener('DOMContentLoaded', function() {
             const applyBtn = document.getElementById('apply-discount');
             const codeInput = document.getElementById('discount-code');

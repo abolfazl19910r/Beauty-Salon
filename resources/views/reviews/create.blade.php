@@ -110,7 +110,7 @@
     </div>
 
     @push('scripts')
-        <script>
+        <script @nonce>
             document.addEventListener('DOMContentLoaded', function() {
                 const ratingTexts = { 1:'بسیار ضعیف', 2:'ضعیف', 3:'متوسط', 4:'خوب', 5:'عالی' };
                 document.querySelectorAll('.star-rating').forEach(container => {

@@ -24,12 +24,12 @@
         $__themeLayout = $__appearance->isDefaultSite() ? null : $__appearance->layout;
     }
 @endphp
-<script>
+<script @nonce>
 (function(){var d=document.documentElement,t=null;try{t=new URLSearchParams(location.search).get('theme');if(t!=='light'&&t!=='dark')t=localStorage.getItem('mahru-theme')}catch(e){}
 if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark'}d.dataset.theme=t})();
 </script>
 @if ($__themeLayout)
-<script>document.documentElement.dataset.layout=@json($__themeLayout);</script>
+<script @nonce>document.documentElement.dataset.layout=@json($__themeLayout);</script>
 @endif
 <link rel="preload" href="{{ asset('fonts/mahru/Vazirmatn-Regular.woff2') }}" as="font" type="font/woff2" crossorigin>
 <style>

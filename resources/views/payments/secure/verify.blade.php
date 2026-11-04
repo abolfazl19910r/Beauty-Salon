@@ -56,7 +56,7 @@
         </div>
     </div>
 
-    <script>
+    <script @nonce>
         let remaining = {{ $payment->getRemainingTime() ?? 0 }};
         const timerEl = document.getElementById('countdown-timer');
         const submitBtn = document.getElementById('verify-submit-btn');

@@ -25,6 +25,6 @@
         <a class="btn" href="{{ $deepLink }}">بازگشت به اپ ماهرو</a>
         <p class="hint">اگر اپ خودکار باز نشد، دکمه‌ی بالا را بزنید. می‌توانید این صفحه را ببندید.</p>
     </div>
-    <script>setTimeout(function () { window.location.href = @json($deepLink); }, 600);</script>
+    <script @nonce>setTimeout(function () { window.location.href = @json($deepLink); }, 600);</script>
 </body>
 </html>

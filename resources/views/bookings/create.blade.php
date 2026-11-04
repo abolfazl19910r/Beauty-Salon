@@ -245,7 +245,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script @nonce>
         (function() {
             // --------------------------------------------------------------
             // ⭐ Fix (real, confirmed cross-tenant data leak, 2026-09-20): this page used to call

@@ -78,7 +78,7 @@ use Illuminate\Support\Facades\Route;
     </form>
 
     {{-- بسته‌ی ۶: سایت نصب‌شده روی صفحه‌ی اصلی (آیفون) ← «مرا به خاطر بسپار» پیش‌فرض روشن (هر بار ورود با کد پیامکی آزاردهنده است) --}}
-    <script>
+    <script @nonce>
         (function () {
             var standalone = window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
             var box = document.getElementById('remember_me');

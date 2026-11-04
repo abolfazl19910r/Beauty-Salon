@@ -71,7 +71,7 @@
         کد تایید را با هیچ‌کس به اشتراک نگذارید.
     </div>
 
-    <script>
+    <script @nonce>
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('code').addEventListener('input', function(e) {
                 e.target.value = e.target.value.replace(/\D/g, '');

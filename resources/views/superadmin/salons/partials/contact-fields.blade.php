@@ -91,7 +91,7 @@
             </div>
         @endforeach
     </fieldset>
-    <script>
+    <script @nonce>
         document.getElementById('working-hours-enabled').addEventListener('change', function () {
             document.getElementById('working-hours-fieldset').disabled = !this.checked;
         });

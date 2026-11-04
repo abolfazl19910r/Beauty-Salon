@@ -19,7 +19,8 @@ class PasswordRevealTest extends TestCase
         $slug = app(\App\Support\CurrentSalon::class)->get()->slug;
         foreach (['/login', '/salon-signup', route('salon.login', ['salon_slug' => $slug]), route('salon.register', ['salon_slug' => $slug])] as $url) {
             $html = $this->get($url)->assertOk()->getContent();
-            $this->assertSame(1, substr_count($html, '<script data-password-reveal>'), $url);
+            // H3: اسکریپت درون‌خطی nonce درخواست را دارد
+            $this->assertSame(1, preg_match_all('/<script data-password-reveal nonce="[^"]+">/', $html), $url);
             $this->assertStringContainsString('type="password"', $html, $url);
         }
     }

@@ -128,7 +128,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script @nonce>
         (function() {
             // --------------------------------------------------------------
             // Self-contained Gregorian↔solar conversion — no external libraries/CDN

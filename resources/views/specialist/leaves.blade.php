@@ -133,7 +133,7 @@
         </div>
     </div>
 
-    <script>
+    <script @nonce>
         function showDeleteLeaveModal(url) {
             document.getElementById('deleteLeaveForm').action = url;
             document.getElementById('deleteLeaveModal').classList.remove('hidden');

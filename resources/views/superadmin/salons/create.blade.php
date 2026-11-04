@@ -130,7 +130,7 @@
          checkPhone) — منطق یکتایی یکیه (جدول salons / user_type='staff')، پس یک endpoint
          مشترک به‌جای دو نسخه‌ی جدا. --}}
     @push('scripts')
-        <script>
+        <script @nonce>
             (function () {
                 function debounce(fn, wait) {
                     var t;

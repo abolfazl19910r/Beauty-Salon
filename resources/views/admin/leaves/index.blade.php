@@ -150,7 +150,7 @@
             </div>
         </div>
 
-        <script>
+        <script @nonce>
             function openRejectModal(actionUrl) {
                 document.getElementById('reject-form').action = actionUrl;
                 document.getElementById('reject-modal').classList.remove('hidden');

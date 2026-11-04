@@ -21,7 +21,7 @@
         @if ($pa->level !== 'critical')
             <button type="button" aria-label="بستن اطلاعیه" class="shrink-0 px-2" style="color: rgb(var(--m-mu));"
                     onclick="try{localStorage.setItem(this.parentNode.dataset.platformAnnouncement,'1')}catch(e){}this.parentNode.remove()">×</button>
-            <script>try{if(localStorage.getItem(@json($paKey)))document.querySelector('[data-platform-announcement="{{ $paKey }}"]').remove()}catch(e){}</script>
+            <script @nonce>try{if(localStorage.getItem(@json($paKey)))document.querySelector('[data-platform-announcement="{{ $paKey }}"]').remove()}catch(e){}</script>
         @endif
     </div>
 @endforeach

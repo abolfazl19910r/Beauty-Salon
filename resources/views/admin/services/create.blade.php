@@ -147,7 +147,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script @nonce>
         document.getElementById('image')?.addEventListener('change', function() {
             const file = this.files[0];
             if (!file) return;
