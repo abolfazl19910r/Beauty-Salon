@@ -29,7 +29,6 @@ abstract class TestCase extends BaseTestCase
             $mock->shouldReceive('send')->andReturn(true)->byDefault();
             $mock->shouldReceive('sendTemplate')->andReturn(true)->byDefault();
             $mock->shouldReceive('sendAuthTemplate')->andReturn(true)->byDefault();
-            $mock->shouldReceive('sendVerificationCode')->andReturn(true)->byDefault();
             $mock->shouldReceive('sendBookingConfirmation')->andReturn(true)->byDefault();
             $mock->shouldReceive('sendBookingReminder')->andReturn(true)->byDefault();
         }));
