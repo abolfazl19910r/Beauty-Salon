@@ -80,6 +80,30 @@ class DockerSetupTest extends TestCase
         $this->assertStringContainsString('fastcgi_hide_header X-Powered-By;', self::file('docker/nginx/site.inc'));
     }
 
+    public function test_php_requests_are_rate_limited_per_ip_and_time_out_sooner(): void
+    {
+        // بررسی امنیتی ۲۰۲۶-۱۱-۰۴ (H5): پیش‌تر فقط limit_conn بود؛ چند ده درخواست هم‌زمان ۱۰ پردازه‌ی PHP را پر می‌کرد
+        $nginx = self::file('docker/nginx/nginx.conf');
+        $this->assertStringContainsString('limit_req_zone $binary_remote_addr zone=mahru_php:10m rate=10r/s;', $nginx);
+        $this->assertStringContainsString('limit_req_zone $mahru_auth_limit_key zone=mahru_auth:10m rate=20r/m;', $nginx);
+        $this->assertStringContainsString('limit_req_status 429;', $nginx);
+        // کلید ورود/ثبت‌نام از آدرس اصلی (نه $uri که پس از try_files ‏/index.php است) و فقط برای POST
+        $this->assertStringContainsString('map "$request_method:$request_uri" $mahru_auth_limit_key', $nginx);
+
+        preg_match('/location ~ \\\.php\$ \{(.*?)\n\}/s', self::file('docker/nginx/site.inc'), $php);
+        $this->assertNotEmpty($php, 'location PHP پیدا نشد');
+        $this->assertStringContainsString('limit_req zone=mahru_php burst=40 nodelay;', $php[1]);
+        $this->assertStringContainsString('limit_req zone=mahru_auth burst=10 nodelay;', $php[1]);
+        $this->assertStringContainsString('fastcgi_read_timeout 60;', $php[1]);
+
+        preg_match('/location = \/up \{(.*?)\n\}/s', self::file('docker/nginx/site.inc'), $up);
+        $this->assertStringNotContainsString('limit_req', $up[1], 'healthcheck نباید ۴۲۹ بگیرد');
+
+        $fpm = self::file('docker/php/php-fpm.conf');
+        $this->assertMatchesRegularExpression('/^pm\.max_children = 20$/m', $fpm);
+        $this->assertMatchesRegularExpression('/^listen\.backlog = \d+$/m', $fpm);
+    }
+
     public function test_nginx_takes_the_real_ip_from_trusted_proxies_and_php_keeps_the_peer(): void
     {
         $site = self::file('docker/nginx/site.inc');

@@ -88,13 +88,18 @@ location / {
 
 # ─── PHP-FPM ─────────────────────────────────────────────
 location ~ \.php$ {
+    # بررسی امنیتی H5: سقف نرخ هر IP (zoneها در nginx.conf). /up و آپلود APK جدا هستند و محدود نمی‌شوند.
+    limit_req zone=mahru_php burst=40 nodelay;
+    limit_req zone=mahru_auth burst=10 nodelay;
+
     fastcgi_pass unix:/var/run/php-fpm/php-fpm.sock;
     fastcgi_index index.php;
     fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
     include fastcgi_params;
     include /etc/nginx/mahru/fastcgi-remote-addr.inc;
 
-    fastcgi_read_timeout 120;
+    # H5: ۱۲۰ ← ۶۰ ثانیه — درخواست کند (یا عمداً کند) پردازه را کمتر نگه می‌دارد؛ PDF گزارش در صف است و آپلود APK location خودش را دارد.
+    fastcgi_read_timeout 60;
     fastcgi_buffer_size 16k;
     fastcgi_buffers 4 16k;
 
