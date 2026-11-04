@@ -47,6 +47,9 @@
         <env name="CUSTOMER_APP_SHA256_FINGERPRINTS" value="" force="true"/>
         <!-- ⭐ هیچ تستی نباید پیامک واقعی بفرستد (۲۰۲۶-۰۹-۲۵) -->
         <env name="KAVENEGAR_SEND_IN_LOCAL" value="false" force="true"/>
+        <!-- ⭐ بسته‌ی 5ح (۲۰۲۶-۱۱-۰۴): مرچنت پلتفرم ثابت و معتبر — .env ساخته‌شده از .env.example ‏(your-merchant-id) تست خرید اشتراک را قرمز می‌کرد -->
+        <env name="ZARINPAL_MERCHANT_ID" value="11111111-2222-3333-4444-555555555555" force="true"/>
+        <env name="ZARINPAL_SANDBOX" value="true" force="true"/>
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
         <env name="MAIL_MAILER" value="array"/>

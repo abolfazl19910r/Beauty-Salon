@@ -90,8 +90,11 @@ class AdminBillingControllerTest extends TestCase
 
         $this->actingAs($admin)->post(route('admin.billing.purchase'), ['subscription_type' => '1m']);
 
+        // ⭐ 5ح: مقایسه با مرچنت مؤثر پلتفرم (PlatformZarinpal)، نه مقدار خام config که ممکن است جای‌نگهدار باشد
+        $this->assertNotNull(\App\Support\PlatformZarinpal::merchantId());
+
         Http::assertSent(function ($request) {
-            return $request['merchant_id'] === config('services.zarinpal.merchant_id')
+            return $request['merchant_id'] === \App\Support\PlatformZarinpal::merchantId()
                 && $request['merchant_id'] !== 'salon-own-merchant-id';
         });
     }
