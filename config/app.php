@@ -75,6 +75,5 @@ return [
         'Excel' => Maatwebsite\Excel\Facades\Excel::class,
         'PDF' => Barryvdh\DomPDF\Facade\Pdf::class,
         'Verta' => \Hekmatinasser\Verta\Verta::class,
-        'Kavenegar' => Kavenegar\Laravel\Facade::class,
     ],
 ];
