@@ -113,4 +113,44 @@ class LegalPagesTest extends TestCase
         $this->get(route('central.home'))->assertSee('data-enamad-badge', false)->assertSee($badge, false);
         $this->get('/s/rasta')->assertDontSee('trustseal.enamad.ir', false);
     }
+
+    /** بررسی امنیتی ۲۰۲۶-۱۱-۰۵: کد اینماد بی escape چاپ می‌شود، پس فقط شکل رسمی آن پذیرفته می‌شود */
+    public function test_only_the_official_enamad_link_and_image_are_accepted(): void
+    {
+        $id = 'id=123456&Code=AbCdEf';
+        $ok = [
+            "<a referrerpolicy='origin' target='_blank' href='https://trustseal.enamad.ir/?{$id}'><img referrerpolicy='origin' src='https://trustseal.enamad.ir/logo.aspx?{$id}' alt='' style='cursor:pointer' code='AbCdEf'></a>",
+            "  <img src=\"https://trustseal.enamad.ir/logo.aspx?{$id}\" alt=\"\">\n",
+        ];
+        $bad = [
+            "<a href='https://trustseal.enamad.ir/?{$id}'><img src='https://trustseal.enamad.ir/logo.aspx?{$id}' onerror='alert(1)'></a>",
+            "<a href='https://trustseal.enamad.ir/?{$id}' onclick='alert(1)'><img src='https://trustseal.enamad.ir/logo.aspx?{$id}'></a>",
+            "<img src='https://trustseal.enamad.ir/logo.aspx?{$id}'><script>alert(1)</script>",
+            "<script src='https://trustseal.enamad.ir/x.js'></script>",
+            "<a href='javascript:alert(1)//trustseal.enamad.ir'><img src='https://trustseal.enamad.ir/logo.aspx?{$id}'></a>",
+            "<a href='https://evil.test/?trustseal.enamad.ir'><img src='https://trustseal.enamad.ir/logo.aspx?{$id}'></a>",
+            "<img src='http://trustseal.enamad.ir/logo.aspx?{$id}'>",
+            "<img src='https://trustseal.enamad.ir.evil.test/logo.aspx'>",
+            "<img src='https://trustseal.enamad.ir/logo.aspx?{$id}' style='background:url(https://evil.test)'>",
+            "<svg><image href='https://trustseal.enamad.ir/a'/></svg>",
+            "<a href='https://trustseal.enamad.ir/?{$id}'>اینماد</a>",
+            "<img src='https://trustseal.enamad.ir/a'><img src='https://trustseal.enamad.ir/b'>",
+        ];
+
+        foreach ($ok as $html) {
+            $this->assertNull(\App\Support\Legal\EnamadBadge::problem($html), $html);
+        }
+        foreach ($bad as $html) {
+            $this->assertNotNull(\App\Support\Legal\EnamadBadge::problem($html), $html);
+            $this->actingAs($this->superAdmin())->put(route('superadmin.settings.legal'), ['enamad_badge_html' => $html])
+                ->assertSessionHasErrors('enamad_badge_html');
+        }
+    }
+
+    public function test_a_tampered_badge_in_the_database_is_not_printed(): void
+    {
+        \App\Support\PlatformSettings::put('enamad_badge_html', "<img src='https://trustseal.enamad.ir/logo.aspx?id=1' onerror='alert(1)'>");
+
+        $this->get(route('central.home'))->assertOk()->assertDontSee('data-enamad-badge', false)->assertDontSee('onerror', false);
+    }
 }

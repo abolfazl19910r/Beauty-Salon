@@ -171,11 +171,10 @@ class PlatformSettingsController extends Controller
             'contact_email' => ['nullable', 'email', 'max:190'],
             'postal_address' => ['nullable', 'string', 'max:500'],
             'postal_code' => ['nullable', 'regex:/^[0-9]{10}$/'],
+            // بررسی امنیتی ۲۰۲۶-۱۱-۰۵: فهرست سفید سخت‌گیر (فقط <a>/<img> رسمی اینماد، بی on* و بی اسکریپت) — App\Support\Legal\EnamadBadge
             'enamad_badge_html' => ['nullable', 'string', 'max:5000', function (string $attribute, mixed $value, \Closure $fail) {
-                if (! str_contains((string) $value, 'trustseal.enamad.ir')) {
-                    $fail('کد لوگو باید همان کد پنل اینماد باشد (لینک و تصویر از trustseal.enamad.ir).');
-                } elseif (preg_match('/<\s*(iframe|form|object|embed|meta|base|link)\b/i', (string) $value)) {
-                    $fail('کد لوگوی اینماد فقط لینک و تصویر (یا اسکریپت خود اینماد) است.');
+                if ($problem = \App\Support\Legal\EnamadBadge::problem((string) $value)) {
+                    $fail($problem);
                 }
             }],
         ], [

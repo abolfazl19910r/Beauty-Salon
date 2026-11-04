@@ -37,7 +37,7 @@ final class PlatformSettings
         'contact_email' => ['label' => 'ایمیل تماس (الزام اینماد؛ خالی = ایمیل عمومی بالا)', 'type' => 'email', 'max' => 190],
         'postal_address' => ['label' => 'نشانی پستی (الزام اینماد)', 'type' => 'textarea', 'max' => 500],
         'postal_code' => ['label' => 'کد پستی', 'type' => 'postal', 'max' => 10],
-        'enamad_badge_html' => ['label' => 'کد HTML لوگوی اینماد (عیناً از پنل اینماد، بخش «دسترسی‌ها و امکانات»)', 'type' => 'html', 'max' => 5000],
+        'enamad_badge_html' => ['label' => 'کد HTML لوگوی اینماد (عیناً از پنل اینماد، بخش «دسترسی‌ها و امکانات»؛ فقط لینک و تصویر اینماد پذیرفته می‌شود)', 'type' => 'html', 'max' => 5000],
     ];
 
     public static function get(string $key): ?string
