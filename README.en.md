@@ -654,6 +654,13 @@ Cron and workers: [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCH
 
 Full history, decisions and open items in [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md) (Persian).
 
+**2026-11-05 — remaining security-audit items (M5, L3–L5, Enamad)**
+- **Host-only session cookie:** no longer shared between the central domain and salon subdomains (`SESSION_DOMAIN` is ignored; `__Host-` prefix on HTTPS). With subdomains on, `arisheh.ir/s/{slug}/…` redirects (302) to `{slug}.arisheh.ir/…`. Everyone is logged out once.
+- **No account enumeration before the SMS code:** password reset (web and app) answers the same for unknown phones and sends nothing; "already registered" for customer and salon signup is said only after the code; `check-phone` answers truthfully only to the super admin.
+- **Password lockout:** 10 wrong passwords for one phone close password login for 15 minutes (staff web and app share a counter, customers per salon); a password reset via SMS code clears it (`AUTH_PASSWORD_LOCKOUT_ATTEMPTS`, `AUTH_PASSWORD_LOCKOUT_MINUTES`).
+- **SMS short links** are 8 characters (texts get two characters longer).
+- **Enamad:** only the official badge code (link and image from `trustseal.enamad.ir`, no script, no `on…`) is accepted and printed.
+
 **2026-11-04 — security audit implemented (H1–H5, M1–M4, M6, M7, L1, L2; H3 stage 1)**
 - **XSS:** salon blog posts are plain text; customer names and notification texts are escaped in the notification list, the admin/specialist bell and the dashboard.
 - **Verification-code SMS caps:** per phone 3 per 10 minutes and 10 per day, per IP 30 per hour, whole platform 2,000 per day (super-admin alert at 80% and when full, then stop until tomorrow). Blocked sends are silent. `OTP_PER_PHONE_10MIN`, `OTP_PER_PHONE_DAY`, `OTP_PER_IP_HOUR`, `OTP_PLATFORM_DAILY` (empty = default, 0 = no cap).
