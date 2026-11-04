@@ -295,12 +295,25 @@ KAVENEGAR_API_KEY=
 KAVENEGAR_SENDER=
 KAVENEGAR_SEND_IN_LOCAL=false      # در local پیامک فقط در لاگ
 SMS_LOG_ONLY=false                 # true = در هیچ محیطی (حتی production) پیامک واقعی نمی‌رود؛ متن و کد فقط در لاگ
-KAVENEGAR_TEMPLATE_LOGIN=
-KAVENEGAR_TEMPLATE_REGISTER=
-KAVENEGAR_TEMPLATE_RESET=
-KAVENEGAR_TEMPLATE_2FA=
+KAVENEGAR_SSL_VERIFY=              # خالی = بررسی گواهی TLS روشن (پیشنهادی)؛ false فقط برای عیب‌یابی
+KAVENEGAR_TEMPLATE_LOGIN=          # خالی = login-verify
+KAVENEGAR_TEMPLATE_REGISTER=       # خالی = register-verify
+KAVENEGAR_TEMPLATE_RESET=          # خالی = reset-password
+KAVENEGAR_TEMPLATE_2FA=            # خالی = two-factor-auth
 SMS_LINK_HOST=                     # میزبان لینک کوتاه پیامک؛ خالی = CENTRAL_DOMAIN
 ```
+> **الگوهای کد تأیید در پنل کاوه‌نگار** (متد `verify/lookup`؛ **سرویس «پیشرفته» کاوه‌نگار لازم است**، وگرنه خطای ۴۲۶ و هیچ کدی نمی‌رسد). هر چهار الگو فقط `%token` (کد عددی) می‌گیرند؛ مهلت‌ها باید با متن بخوانند:
+>
+> | الگو | کجا | مهلت (پیش‌فرض) |
+> |---|---|---|
+> | `login-verify` | کد ورود وب و اپ | ۲ دقیقه (`VERIFICATION_CODE_EXPIRE_MINUTES`) |
+> | `register-verify` | ثبت‌نام و تأیید شماره‌ی موبایل | ۲ دقیقه (`VERIFICATION_CODE_EXPIRE_MINUTES`) |
+> | `reset-password` | بازیابی رمز | ۲ دقیقه (`RESET_CODE_EXPIRE_MINUTES`) |
+> | `two-factor-auth` | ورود دومرحله‌ای (2FA) | ۲ دقیقه (`TWO_FACTOR_TIMEOUT`) |
+>
+> نمونه‌ی متن: «ماهرو ⏎ کد ورود شما: %token ⏎ این کد تا ۲ دقیقه اعتبار دارد.» پیامک‌های دیگر (نوبت، یادآوری، …) با متد `send` از خط `KAVENEGAR_SENDER` می‌روند.
+> خطاهای سطح حساب (اعتبار تمام ۴۱۸، کلید ۴۰۳، الگوی تأییدنشده ۴۲۴، سرویس پیشرفته ۴۲۶، IP ‏۴۱۶، …) در «اعلان‌ها»ی ابرمدیر می‌آیند (هر کد حداکثر یک بار در ساعت).
+> روی ویندوز اگر با `KAVENEGAR_SEND_IN_LOCAL=true` خطای «SSL certificate problem» آمد، `curl.cainfo` را در `php.ini` به فایل CA (مثلاً `cacert.pem`) بدهید، نه `KAVENEGAR_SSL_VERIFY=false`.
 
 ### پوش و اپ‌ها
 ```env
@@ -641,6 +654,12 @@ php artisan up
 ## 🆕 آخرین تغییرات
 
 تاریخچه‌ی کامل، تصمیم‌ها و قدم‌های باز در [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md).
+
+**۲۰۲۶-۱۱-۰۴ — کاوه‌نگار: TLS، الگوی 2FA، هشدار خطای حساب**
+- SDK ‏`kavenegar/php` گواهی TLS ‏`api.kavenegar.com` را به‌صورت پیش‌فرض بررسی نمی‌کرد (کلید API و کدهای ورود بی اطمینان از طرف مقابل)؛ حالا روشن است (`KAVENEGAR_SSL_VERIFY`، خالی = روشن).
+- کد ورود دومرحله‌ای با الگوی `two-factor-auth` می‌رود (قبلاً با `login-verify`).
+- خطاهای سطح حساب کاوه‌نگار (اعتبار تمام، کلید یا خط نامعتبر، الگوی تأییدنشده، سرویس پیشرفته، IP، لینک) در «اعلان‌ها»ی ابرمدیر، هر کد حداکثر یک بار در ساعت.
+- پکیج بی‌استفاده‌ی `kavenegar/laravel` حذف شد ← `composer install` (و build تازه‌ی داکر). بی migration.
 
 **۲۰۲۶-۱۱-۰۴ — Telescope لوکال و سرعت درخواست‌ها**
 - داشبورد Telescope از CSP اجرایی (`0301`) سفید می‌ماند (Vue آن `eval` می‌خواهد و فونتش از `fonts.bunny.net` است) ← فقط با `APP_ENV=local` و فقط زیر مسیر `/telescope` CSP فرستاده نمی‌شود؛ بقیه‌ی صفحه‌ها و سرور همان CSP.

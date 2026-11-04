@@ -295,12 +295,24 @@ KAVENEGAR_API_KEY=
 KAVENEGAR_SENDER=
 KAVENEGAR_SEND_IN_LOCAL=false      # in local, SMS goes to the log only
 SMS_LOG_ONLY=false                 # true = no real SMS in any environment (even production); text and code only in the log
-KAVENEGAR_TEMPLATE_LOGIN=
-KAVENEGAR_TEMPLATE_REGISTER=
-KAVENEGAR_TEMPLATE_RESET=
-KAVENEGAR_TEMPLATE_2FA=
+KAVENEGAR_SSL_VERIFY=              # empty = verify the TLS certificate (recommended); false only for troubleshooting
+KAVENEGAR_TEMPLATE_LOGIN=          # empty = login-verify
+KAVENEGAR_TEMPLATE_REGISTER=       # empty = register-verify
+KAVENEGAR_TEMPLATE_RESET=          # empty = reset-password
+KAVENEGAR_TEMPLATE_2FA=            # empty = two-factor-auth
 SMS_LINK_HOST=                     # host for SMS short links; empty = CENTRAL_DOMAIN
 ```
+> **Verification templates in the Kavenegar panel** (method `verify/lookup`; **requires Kavenegar's "advanced" service**, otherwise error 426 and no code arrives). All four take only `%token` (a numeric code); the expiry in the text must match:
+>
+> | Template | Used for | Expiry (default) |
+> |---|---|---|
+> | `login-verify` | web and app login code | 2 minutes (`VERIFICATION_CODE_EXPIRE_MINUTES`) |
+> | `register-verify` | registration and phone verification | 2 minutes (`VERIFICATION_CODE_EXPIRE_MINUTES`) |
+> | `reset-password` | password reset | 2 minutes (`RESET_CODE_EXPIRE_MINUTES`) |
+> | `two-factor-auth` | two-factor sign-in (2FA) | 2 minutes (`TWO_FACTOR_TIMEOUT`) |
+>
+> Other SMS (bookings, reminders, …) use the `send` method from the `KAVENEGAR_SENDER` line. Account-level errors (out of credit 418, API key 403, unapproved template 424, advanced service 426, IP 416, …) appear in the super-admin notifications (at most once an hour per code).
+> On Windows, if `KAVENEGAR_SEND_IN_LOCAL=true` gives "SSL certificate problem", point `curl.cainfo` in `php.ini` at a CA file (e.g. `cacert.pem`) rather than setting `KAVENEGAR_SSL_VERIFY=false`.
 
 ### Push and apps
 ```env
@@ -641,6 +653,12 @@ Cron and workers: [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCH
 ## 🆕 Changelog
 
 Full history, decisions and open items in [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md) (Persian).
+
+**2026-11-04 — Kavenegar: TLS, 2FA template, account-error alerts**
+- The `kavenegar/php` SDK did not verify the TLS certificate of `api.kavenegar.com` by default (API key and login codes sent without checking the other end); it is now on (`KAVENEGAR_SSL_VERIFY`, empty = on).
+- The two-factor code is sent with the `two-factor-auth` template (previously `login-verify`).
+- Account-level Kavenegar errors (out of credit, invalid key or line, unapproved template, advanced service, IP, links) appear in the super-admin notifications, at most once an hour per code.
+- The unused `kavenegar/laravel` package was removed → `composer install` (and a fresh Docker build). No migration.
 
 **2026-11-04 — local Telescope and request speed**
 - The Telescope dashboard rendered blank under the enforcing CSP (`0301`; its Vue build needs `eval`, its font comes from `fonts.bunny.net`) → only with `APP_ENV=local` and only under `/telescope` no CSP is sent; every other page and the server keep the policy.
