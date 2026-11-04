@@ -487,7 +487,7 @@ Beauty-Salon/
 | پارسیان | ✅ | — |
 
 - **فعلاً فقط زرین‌پال روشن است** (`PAYMENT_ENABLED_DRIVERS=zarinpal`)؛ ردیف درگاه‌های دیگر سالن‌ها پاک نمی‌شود ولی استفاده هم نمی‌شود.
-- زرین‌پال طبق مستندات رسمی v4 (فایل مرجع Project: `claude/zarinpal-complete.md`): `currency: IRR`، حد مبلغ ۱٬۰۰۰ تومان تا ۱۰۰ میلیون تومان، آدرس بازگشت همیشه روی دامنه‌ی خود سالن (`{slug}.CENTRAL_DOMAIN`) — همین دامنه را در پنل زرین‌پال ثبت کنید (خطای ‎-14)؛ ‎-50/‎-52 «نیاز به بررسی»؛ تراکنش رهاشده پیش از انقضا verify می‌شود؛ «اتصال حساب زرین‌پال» (OAuth) پشت `ZARINPAL_CONNECT_CLIENT_ID`. فاکتور اشتراک/ارتقای بالای ۱۰۰ میلیون تومان در چند قسط پرداخت می‌شود (هر قسط با `order_id = INV-{id}`؛ اشتراک با آخرین قسط)؛ فاکتور نیمه‌پرداخت ۷ روز باز است و بعد مبلغ پرداخت‌شده «اعتبار پلتفرم» سالن می‌شود و از خرید بعدی کم می‌شود (`billing:expire-installments`، ساعتی). آزمون دستی: [`docs/testing/ZARINPAL_SANDBOX_TESTING.md`](docs/testing/ZARINPAL_SANDBOX_TESTING.md).
+- زرین‌پال طبق مستندات رسمی v4 (فایل مرجع Project: `claude/zarinpal-complete.md`): `currency: IRR`، حد مبلغ ۱٬۰۰۰ تومان تا ۱۰۰ میلیون تومان، آدرس بازگشت همیشه روی دامنه‌ی خود سالن (`{slug}.CENTRAL_DOMAIN`) — همین دامنه را در پنل زرین‌پال ثبت کنید (خطای ‎-14)؛ ‎-50/‎-52 «نیاز به بررسی»؛ تراکنش رهاشده پیش از انقضا verify می‌شود و تراکنش بسته‌شده‌ای که زرین‌پال هنوز «موفقِ تأییدنشده» می‌داند ساعتی با `unVerified` پیدا می‌شود؛ «اتصال حساب زرین‌پال» (OAuth) پشت `ZARINPAL_CONNECT_CLIENT_ID`. فاکتور اشتراک/ارتقای بالای ۱۰۰ میلیون تومان در چند قسط پرداخت می‌شود (هر قسط با `order_id = INV-{id}`؛ اشتراک با آخرین قسط)؛ فاکتور نیمه‌پرداخت ۷ روز باز است و بعد مبلغ پرداخت‌شده «اعتبار پلتفرم» سالن می‌شود و از خرید بعدی کم می‌شود (`billing:expire-installments`، ساعتی). آزمون دستی: [`docs/testing/ZARINPAL_SANDBOX_TESTING.md`](docs/testing/ZARINPAL_SANDBOX_TESTING.md).
 - زرین‌پال در sandbox آزموده شده است؛ بقیه با تست‌های خودکار (`Http::fake`)، و تست دستی واقعی‌شان در [`docs/testing/MANUAL_GATEWAY_TESTING.md`](docs/testing/MANUAL_GATEWAY_TESTING.md) مانده است.
 - درگاه‌های بانکی (سامان، ملت، پارسیان) معمولاً ثبت IP سرور در پنل بانک را لازم دارند.
 - ⚠️ پذیرش «مرچنت هر سالن روی دامنه‌ی پلتفرم» نزد درگاه‌ها هنوز تأیید نشده است (`Rasta unified prompt.md`، کارهای باز 5د).
@@ -506,7 +506,7 @@ Beauty-Salon/
 | لغو نوبت‌های پرداخت‌نشده، تطبیق تراکنش‌های گیرکرده (`payments:reconcile`) | هر ۵ دقیقه |
 | یادآوری نوبت (`bookings:send-reminders`)، تأیید حضور با لینک (`bookings:attendance-checks`)، برگشت خودکار به «بدون پیش‌پرداخت» (`bookings:enforce-payment-mode`) | هر ۱۰ دقیقه |
 | کمپین‌های بازگشت (`winback:campaigns`) | هر دقیقه |
-| انقضای دوره‌ها (`courses:expire`)، اعمال پلن زمان‌بندی‌شده (`plans:apply-scheduled`) | ساعتی |
+| انقضای دوره‌ها (`courses:expire`)، اعمال پلن زمان‌بندی‌شده (`plans:apply-scheduled`)، پرداخت‌های تأییدنشده‌ی زرین‌پال (`payments:zarinpal-unverified`) | ساعتی |
 | تسویه‌ی درآمدهای معلق (`wallet:settle-pending`) | ۰۱:۰۰ |
 | انقضای امتیاز، تمدید توکن وندار، پاک‌سازی‌ها (`model:prune`، توکن‌ها، خروجی گزارش) | شبانه |
 | بازگشت مشتری خودکار (`customers:winback`)، یادآوری دوره (`courses:remind`) | صبح |
@@ -545,6 +545,7 @@ php artisan superadmin:create                 # ساخت مدیر پلتفرم
 php artisan bookings:send-reminders           # یادآوری نوبت
 php artisan bookings:cleanup                  # نوبت‌های منتظر پرداخت منقضی
 php artisan payments:reconcile [--dry-run]    # تطبیق تراکنش‌های گیرکرده
+php artisan payments:zarinpal-unverified [--dry-run]  # پرداخت موفق تأییدنشده‌ی زرین‌پال (unVerified) برای تراکنش‌های بسته‌شده
 php artisan wallet:settle-pending             # تسویه‌ی درآمدهای معلق
 php artisan payouts:refresh-vandar-tokens     # تمدید توکن تسویه‌ی وندار
 php artisan loyalty:expire-points             # انقضای امتیاز
@@ -641,6 +642,12 @@ php artisan up
 ## 🆕 آخرین تغییرات
 
 تاریخچه‌ی کامل، تصمیم‌ها و قدم‌های باز در [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md).
+
+**۲۰۲۶-۱۱-۰۴ — کارهای باز کدی (بسته‌ی 5ح)**
+- **`payments:zarinpal-unverified` (ساعتی):** برای هر مرچنت زرین‌پال (درگاه‌های سالن‌ها، فعال یا نه، و مرچنت پلتفرم) فهرست `unVerified` (حداکثر ۱۰۰ پرداخت موفقِ تأییدنشده) خوانده می‌شود. اگر تراکنش ما `expired`/`failed` است و در ۷ روز اخیر ساخته شده و مبلغش همان است، verify و مثل پرداخت رهاشده واریز می‌شود (نوبت/دوره ← کیف پول مشتری، شارژ ← شارژ، اشتراک ← فاکتور یا اعتبار پلتفرم)؛ قدیمی‌تر یا با مبلغ دیگر ← «پرداخت‌های نیازمند بررسی». اتوریتی ناشناس فقط در لاگ.
+- `phpunit.xml`: ‏`ZARINPAL_MERCHANT_ID` و `ZARINPAL_SANDBOX` ثابت (تست خرید اشتراک با `.env` ساخته‌شده از `.env.example` قرمز می‌شد).
+- نام کلیدهای خارجی `role_user` پیش‌فرض Laravel شد (`role_user_user_id_foreign`…، قبلاً `role_user_scoped_*`)؛ متد بی‌استفاده‌ی `SMSService::sendVerificationCode` حذف شد (کد ورود کادر همچنان هزینه‌ی پلتفرم است)؛ slug تصادفی یکتای `BlogPostFactory` (`migrate:fresh --seed` گاهی با «Duplicate entry … blog_posts_salon_slug_unique» می‌شکست).
+- **بعد از گرفتن پچ‌ها:** دیتابیس از نو (`migrate` معمولی نام کلیدها را عوض نمی‌کند): XAMPP ‏`php artisan migrate:fresh --seed` و `php artisan superadmin:create`؛ داکر تک‌کانتینری پیش از build ‏`docker compose -f docker-compose.single.yml exec -u www app php artisan db:wipe --force`، بعد `up -d --build`، ‏`exec -u www app php artisan db:seed --force` و `superadmin:create` (یا `down -v` و `up -d --build`). متغیر تازه‌ی `.env` ندارد؛ کار زمان‌بندی‌شده‌ی تازه با همان خط cron/scheduler اجرا می‌شود.
 
 **۲۰۲۶-۱۰-۳۱ — ادغام سوم migrationها (۷۲ ← ۶۰، بسته‌ی 5و)**
 - ۱۲ migration اصلاحی حذف و تغییرهایشان به migration سازنده‌ی همان جدول منتقل شد؛ `plans`/`plan_features` حالا پیش از `salons` و سه جدول پایه‌ی دوره (`course_packages`، `course_settings`، `customer_courses`) پیش از `bookings` ساخته می‌شوند تا هر کلید خارجی در create خودش باشد. دو فایل تغییر نام: `…_create_plans_tables` ← `2026_10_14_000005_create_salon_feature_overrides_table` و `…_add_invoice_installments_and_platform_credit` ← `2026_10_31_000001_create_platform_credit_entries_table`.

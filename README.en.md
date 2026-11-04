@@ -487,7 +487,7 @@ Full list: `php artisan route:list`.
 | Parsian | ✅ | — |
 
 - **Only Zarinpal is switched on for now** (`PAYMENT_ENABLED_DRIVERS=zarinpal`); other gateway rows of salons are kept but never used.
-- Zarinpal follows the official v4 docs: `currency: IRR`, 1,000 toman to 100 million toman per payment, the return URL is always on the salon's own domain (`{slug}.CENTRAL_DOMAIN`) — register that domain in the Zarinpal panel (error -14); -50/-52 go to "needs review"; an abandoned payment is verified before it expires; "Connect Zarinpal account" (OAuth) sits behind `ZARINPAL_CONNECT_CLIENT_ID`. A subscription/upgrade invoice above 100 million toman is paid in installments (each with `order_id = INV-{id}`; the subscription starts with the last one); a partly paid invoice stays open for 7 days, then the paid amount becomes the salon's "platform credit" and is deducted from the next purchase (`billing:expire-installments`, hourly). Manual test: [`docs/testing/ZARINPAL_SANDBOX_TESTING.md`](docs/testing/ZARINPAL_SANDBOX_TESTING.md).
+- Zarinpal follows the official v4 docs: `currency: IRR`, 1,000 toman to 100 million toman per payment, the return URL is always on the salon's own domain (`{slug}.CENTRAL_DOMAIN`) — register that domain in the Zarinpal panel (error -14); -50/-52 go to "needs review"; an abandoned payment is verified before it expires, and a closed transaction that Zarinpal still lists as paid-but-unverified is found hourly via `unVerified`; "Connect Zarinpal account" (OAuth) sits behind `ZARINPAL_CONNECT_CLIENT_ID`. A subscription/upgrade invoice above 100 million toman is paid in installments (each with `order_id = INV-{id}`; the subscription starts with the last one); a partly paid invoice stays open for 7 days, then the paid amount becomes the salon's "platform credit" and is deducted from the next purchase (`billing:expire-installments`, hourly). Manual test: [`docs/testing/ZARINPAL_SANDBOX_TESTING.md`](docs/testing/ZARINPAL_SANDBOX_TESTING.md).
 - Zarinpal has been tried in sandbox; the others are covered by automated tests (`Http::fake`), and their real manual test is pending in [`docs/testing/MANUAL_GATEWAY_TESTING.md`](docs/testing/MANUAL_GATEWAY_TESTING.md).
 - Bank gateways (Saman, Mellat, Parsian) usually require the server IP to be registered in the bank panel.
 - ⚠️ Whether gateways accept "each salon's merchant on the platform's domain" is not confirmed yet (`Rasta unified prompt.md`, open item 5d).
@@ -506,7 +506,7 @@ In single-container mode both run inside the container; nothing to do. Without D
 | cancel unpaid bookings, reconcile stuck transactions (`payments:reconcile`) | every 5 minutes |
 | booking reminders (`bookings:send-reminders`), attendance confirmation links (`bookings:attendance-checks`), automatic return to no prepayment (`bookings:enforce-payment-mode`) | every 10 minutes |
 | win-back campaigns (`winback:campaigns`) | every minute |
-| course expiry (`courses:expire`), scheduled plan changes (`plans:apply-scheduled`) | hourly |
+| course expiry (`courses:expire`), scheduled plan changes (`plans:apply-scheduled`), unverified Zarinpal payments (`payments:zarinpal-unverified`) | hourly |
 | settle pending earnings (`wallet:settle-pending`) | 01:00 |
 | point expiry, Vandar token refresh, clean-ups (`model:prune`, tokens, report exports) | nightly |
 | automatic win-back (`customers:winback`), course reminders (`courses:remind`) | morning |
@@ -545,6 +545,7 @@ php artisan superadmin:create                 # create a platform admin
 php artisan bookings:send-reminders           # booking reminders
 php artisan bookings:cleanup                  # expire bookings awaiting payment
 php artisan payments:reconcile [--dry-run]    # reconcile stuck transactions
+php artisan payments:zarinpal-unverified [--dry-run]  # Zarinpal unVerified payments for transactions we closed
 php artisan wallet:settle-pending             # settle pending earnings
 php artisan payouts:refresh-vandar-tokens     # refresh Vandar payout tokens
 php artisan loyalty:expire-points             # expire loyalty points
@@ -641,6 +642,12 @@ Cron and workers: [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCH
 ## 🆕 Changelog
 
 Full history, decisions and open items in [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md) (Persian).
+
+**2026-11-04 — open code items (package 5h)**
+- **`payments:zarinpal-unverified` (hourly):** for every Zarinpal merchant (salon gateways, active or not, and the platform merchant) the `unVerified` list (up to 100 successful but unverified payments) is read. If our transaction is `expired`/`failed`, created within the last 7 days and the amount matches, it is verified and credited like an abandoned payment (booking/course → customer wallet, charge → charged, subscription → invoice or platform credit); older or a different amount → "payments needing review". Unknown authorities are only logged.
+- `phpunit.xml`: fixed `ZARINPAL_MERCHANT_ID` and `ZARINPAL_SANDBOX` (the subscription purchase test failed with a `.env` copied from `.env.example`).
+- `role_user` foreign keys now have Laravel's default names (`role_user_user_id_foreign`…, previously `role_user_scoped_*`); the unused `SMSService::sendVerificationCode` was removed (staff login codes stay a platform cost); `BlogPostFactory` slugs get a random suffix (`migrate:fresh --seed` sometimes failed with "Duplicate entry … blog_posts_salon_slug_unique").
+- **After applying the patches:** rebuild the database (a plain `migrate` does not rename the keys): XAMPP `php artisan migrate:fresh --seed` and `php artisan superadmin:create`; Docker single-container: before the build `docker compose -f docker-compose.single.yml exec -u www app php artisan db:wipe --force`, then `up -d --build`, `exec -u www app php artisan db:seed --force` and `superadmin:create` (or `down -v` and `up -d --build`). No new `.env` keys; the new scheduled task runs from the existing cron/scheduler line.
 
 **2026-10-28 — booking mode, per-customer limits and unreliable customers (package 5e)**
 - New owner page "booking mode" (`/admin/booking-policy`): **no prepayment** (default for every salon, the whole price at the salon, no gateway needed) or online prepayment (only with the plan's online-payment feature and an active gateway), with an explanation of each. If the gateway or the plan feature is lost the salon falls back to no prepayment automatically and the owner gets a notification and an SMS. Every booking keeps its own "with/without prepayment" label (`bookings.prepayment_required`) that auto-cancel, the pay button, SMS and loyalty points follow. Switching to no prepayment moves awaiting-payment bookings to awaiting confirmation and tells the customer and the specialist.
