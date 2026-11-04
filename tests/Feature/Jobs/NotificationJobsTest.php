@@ -89,7 +89,8 @@ class NotificationJobsTest extends TestCase
         $this->mock(SMSService::class, function ($mock) use ($user) {
             $mock->shouldReceive('sendAuthTemplate')
                 ->once()
-                ->withArgs(fn ($phone, $template, $tokens) => $phone === $user->phone && $tokens === ['482913'])
+                ->withArgs(fn ($phone, $template, $tokens) => $phone === $user->phone && $tokens === ['482913']
+                    && $template === 'two-factor-auth')
                 ->andReturn(true);
         });
 
@@ -114,7 +115,7 @@ class NotificationJobsTest extends TestCase
         $this->mock(SMSService::class, function ($mock) use ($user) {
             $mock->shouldReceive('sendAuthTemplate')
                 ->once()
-                ->withArgs(fn ($phone, $template, $tokens) => $phone === $user->phone && $tokens === ['771122'])
+                ->withArgs(fn ($phone, $template, $tokens) => $phone === $user->phone && $tokens === ['771122'] && $template === 'login-verify')
                 ->andReturn(true);
         });
 
