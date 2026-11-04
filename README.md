@@ -645,7 +645,7 @@ php artisan up
 **۲۰۲۶-۱۱-۰۴ — Telescope لوکال و سرعت درخواست‌ها**
 - داشبورد Telescope از CSP اجرایی (`0301`) سفید می‌ماند (Vue آن `eval` می‌خواهد و فونتش از `fonts.bunny.net` است) ← فقط با `APP_ENV=local` و فقط زیر مسیر `/telescope` CSP فرستاده نمی‌شود؛ بقیه‌ی صفحه‌ها و سرور همان CSP.
 - بوت هر درخواست دیگر `information_schema` را نمی‌پرسد (بررسی جدول `salons` داخل کش اسلاگ پیش‌فرض رفت؛ ۴۰ تا ۸۰ میلی‌ثانیه روی MariaDB لوکال).
-- **سرعت لوکال:** `php artisan serve` روی PHP خط فرمان اجرا می‌شود و OPcache آن پیش‌فرض خاموش است (`opcache.enable_cli=0`) ← در `php.ini` لوکال: `opcache.enable_cli=1`، `opcache.memory_consumption=256`، `opcache.interned_strings_buffer=16`، `opcache.max_accelerated_files=20000`، `opcache.validate_timestamps=1`، `opcache.revalidate_freq=0` (تغییر کد همان لحظه دیده می‌شود). Telescope را فقط هنگام نیاز روشن کنید (`TELESCOPE_ENABLED`) و گاهی `php artisan telescope:prune`.
+- **سرعت لوکال (سنجیده ۲۰۲۶-۱۱-۰۴):** هر درخواست روی `php artisan serve` ویندوز حدود ۲۵۰ تا ۶۰۰ میلی‌ثانیه و روی داکر تک‌کانتینری ۱۰۰ تا ۳۴۰ میلی‌ثانیه است؛ نه OPcache (سرور داخلی PHP از `opcache.enable` پیروی می‌کند و از قبل روشن بود) و نه Telescope (خاموش کردنش فرقی نداد) علت نیست — هزینه‌ی ثابت بوت لاراول روی ویندوز و سرور تک‌پردازه‌ی PHP با پکیج‌های dev است. برای عدد نزدیک به سرور، داکر را بسنجید. Telescope را فقط هنگام نیاز روشن کنید (`TELESCOPE_ENABLED`) و گاهی `php artisan telescope:prune`.
 - بی migration و بی متغیر تازه.
 
 **۲۰۲۶-۱۱-۰۴ — کارهای باز کدی (بسته‌ی 5ح)**

@@ -645,7 +645,7 @@ Full history, decisions and open items in [`Rasta unified prompt.md`](Rasta%20un
 **2026-11-04 — local Telescope and request speed**
 - The Telescope dashboard rendered blank under the enforcing CSP (`0301`; its Vue build needs `eval`, its font comes from `fonts.bunny.net`) → only with `APP_ENV=local` and only under `/telescope` no CSP is sent; every other page and the server keep the policy.
 - Booting a request no longer queries `information_schema` (the `salons` table check moved inside the cached default-slug lookup; 40–80 ms on the local MariaDB).
-- **Local speed:** `php artisan serve` runs on the CLI PHP, whose OPcache is off by default (`opcache.enable_cli=0`) → in the local `php.ini`: `opcache.enable_cli=1`, `opcache.memory_consumption=256`, `opcache.interned_strings_buffer=16`, `opcache.max_accelerated_files=20000`, `opcache.validate_timestamps=1`, `opcache.revalidate_freq=0` (code changes show up immediately). Enable Telescope only when needed (`TELESCOPE_ENABLED`) and run `php artisan telescope:prune` now and then.
+- **Local speed (measured 2026-11-04):** a request takes about 250–600 ms on `php artisan serve` on Windows and 100–340 ms on the single-container Docker; neither OPcache (PHP's built-in server follows `opcache.enable`, which was already on) nor Telescope (turning it off changed nothing) is the cause — it is Laravel's fixed boot cost on Windows with PHP's single-process server and the dev packages. Measure Docker for numbers close to a server. Enable Telescope only when needed (`TELESCOPE_ENABLED`) and run `php artisan telescope:prune` now and then.
 - No migration, no new variable.
 
 **2026-11-04 — open code items (package 5h)**
