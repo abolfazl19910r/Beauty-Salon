@@ -123,17 +123,46 @@ class SubdomainRoutingTest extends TestCase
         $this->assertNotSame('central.landing', $response->original->name());
     }
 
-    public function test_path_based_slash_s_slug_url_still_works_as_a_fallback_when_central_domain_is_set(): void
+    public function test_legacy_slash_s_slug_on_the_central_domain_redirects_to_the_subdomain(): void
     {
-        // ⭐ تصمیم تأییدشده با ابوالفضل (۲۰۲۶-۰۹-۱۹، طبق docs/deployment/SUBDOMAINS.md
-        // — «لینک قدیمی نباید بشکنه»): وقتی central_domain ست است، مسیر قدیمی /s/{slug} هنوز
-        // هم‌زمان با ساب‌دامین زنده و قابل‌دسترسیه (نه ۴۰۴).
+        // ⭐ بررسی امنیتی M5 (۲۰۲۶-۱۱-۰۵) — جایگزین «هر دو هم‌زمان زنده» (۲۰۲۶-۰۹-۱۹): لینک قدیمی نمی‌شکند ولی با ۳۰۲ به زیردامنه
+        // می‌رود (مسیر و query حفظ)، چون کوکی session دیگر بین زیردامنه‌ها مشترک نیست.
         $salon = Salon::factory()->create(['slug' => 'sobhan-beauty']);
 
-        $response = $this->get('http://'.self::CENTRAL_DOMAIN.'/s/'.$salon->slug.'/');
+        $this->get('http://'.self::CENTRAL_DOMAIN.'/s/'.$salon->slug)
+            ->assertStatus(302)->assertRedirect('http://sobhan-beauty.'.self::CENTRAL_DOMAIN.'/');
+        $this->get('http://'.self::CENTRAL_DOMAIN.'/s/'.$salon->slug.'/services?category=2&x=%D8%A2')
+            ->assertRedirect('http://sobhan-beauty.'.self::CENTRAL_DOMAIN.'/services?category=2&x=%D8%A2');
+        $this->get('http://'.self::CENTRAL_DOMAIN.':8080/s/'.$salon->slug.'/login')
+            ->assertRedirect('http://sobhan-beauty.'.self::CENTRAL_DOMAIN.':8080/login');
+    }
 
-        $response->assertOk();
+    public function test_legacy_path_unknown_salon_is_still_404_and_post_is_not_redirected(): void
+    {
+        $salon = Salon::factory()->create(['slug' => 'sobhan-beauty']);
+
+        $this->get('http://'.self::CENTRAL_DOMAIN.'/s/no-such-salon/services')->assertNotFound();
+        $response = $this->post('http://'.self::CENTRAL_DOMAIN.'/s/'.$salon->slug.'/login', []);
+        $this->assertNotSame('http://sobhan-beauty.'.self::CENTRAL_DOMAIN.'/login', $response->headers->get('Location'));
+    }
+
+    public function test_legacy_path_on_another_host_still_works_without_redirect(): void
+    {
+        // روی 127.0.0.1 (php artisan serve) زیردامنه‌ای نیست؛ /s/{slug} همان‌جا سرو می‌شود
+        $salon = Salon::factory()->create(['slug' => 'sobhan-beauty']);
+
+        $this->get('http://127.0.0.1:8000/s/'.$salon->slug.'/')->assertOk();
         $this->assertSame($salon->id, app(CurrentSalon::class)->id());
+    }
+
+    public function test_session_cookie_is_host_only(): void
+    {
+        $salon = Salon::factory()->create(['slug' => 'sobhan-beauty']);
+        $this->assertNull(config('session.domain'));
+
+        $cookie = collect($this->get('http://sobhan-beauty.'.self::CENTRAL_DOMAIN.'/')->headers->getCookies())
+            ->first(fn ($c) => $c->getName() === config('session.cookie'));
+        $this->assertNull($cookie?->getDomain());
     }
 
     public function test_route_helper_generates_subdomain_urls_even_from_a_request_reached_via_the_legacy_path(): void
@@ -144,7 +173,7 @@ class SubdomainRoutingTest extends TestCase
         // شناخته‌شده‌ی قطعی‌شدن سشن است که در config/app.php مستند شده، نه یک باگ.
         $salon = Salon::factory()->create(['slug' => 'sobhan-beauty']);
 
-        $this->get('http://'.self::CENTRAL_DOMAIN.'/s/'.$salon->slug.'/')->assertOk();
+        $this->get('http://127.0.0.1:8000/s/'.$salon->slug.'/')->assertOk();
 
         $url = route('services.index');
 

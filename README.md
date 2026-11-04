@@ -255,7 +255,7 @@ APP_URL=http://localhost      # سرور: https://arisheh.ir
 APP_TIMEZONE=Asia/Tehran
 APP_LOCALE=fa
 CENTRAL_DOMAIN=               # arisheh.ir برای زیردامنه‌ی سالن‌ها؛ خالی = فقط /s/{slug}
-SESSION_DOMAIN=               # با زیردامنه: .arisheh.ir
+# SESSION_DOMAIN خوانده نمی‌شود (بررسی امنیتی M5): کوکی session فقط مال همان میزبان، روی HTTPS با پیشوند __Host-
 SESSION_SECURE_COOKIE=        # روی HTTPS: true
 ```
 
@@ -649,7 +649,7 @@ php artisan up
 |---|---|
 | `composer install` در `package:discover` خطای دیتابیس می‌دهد | `.env` نیست یا دیتابیس در دسترس نیست؛ `.env` را بسازید و `php artisan package:discover` |
 | `Vite manifest not found` | `npm run build` |
-| ۴۱۹ Page Expired | `SESSION_DOMAIN` با دامنه یکی نیست (بخش عیب‌یابی `SUBDOMAINS.md`) |
+| ۴۱۹ Page Expired | فرم کهنه از میزبان دیگر — صفحه را تازه کنید (بخش عیب‌یابی `SUBDOMAINS.md`) |
 | بعد از `git pull` خطای ستون یا جدول ناموجود، یا `Table … already exists` | migrationهای سازنده عوض شده‌اند؛ `php artisan migrate:fresh --seed` (داده‌ها فیک‌اند) |
 | تغییر `.env` اثر نمی‌کند | `php artisan config:clear` و `queue:restart`؛ در Docker `up -d` (نه `restart`) |
 | پیامک ارسال نمی‌شود | در `local` یا با `SMS_LOG_ONLY=true` عمدی است؛ متن در لاگ. وگرنه worker صف `sms`/`otp` را چک کنید |

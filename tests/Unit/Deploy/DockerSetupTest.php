@@ -389,7 +389,7 @@ class DockerSetupTest extends TestCase
         $env = self::file('.env.server.example');
         foreach ([
             'APP_ENV=production', 'APP_DEBUG=false', 'APP_URL=https://arisheh.ir', 'CENTRAL_DOMAIN=arisheh.ir',
-            'SESSION_DOMAIN=.arisheh.ir', 'SESSION_SECURE_COOKIE=true', 'MAHRU_SEED=false', 'SMS_LOG_ONLY=true',
+            'SESSION_SECURE_COOKIE=true', 'MAHRU_SEED=false', 'SMS_LOG_ONLY=true',
             'ZARINPAL_SANDBOX=true', 'BACKUP_AT=03:40', 'BACKUP_KEEP=3', 'TELESCOPE_ENABLED=false',
             'BACKUP_REQUIRE_ENCRYPTION=true', 'BACKUP_AGE_RECIPIENT=',
         ] as $line) {
@@ -397,6 +397,9 @@ class DockerSetupTest extends TestCase
         }
         // کلید و رمز را کانتینر می‌سازد؛ خط خالی بر مقدار ساخته‌شده مقدم می‌شد
         $this->assertDoesNotMatchRegularExpression('/^(APP_KEY|DB_PASSWORD)=/m', $env);
+        // بررسی امنیتی M5: کوکی مشترک بین زیردامنه‌ها دیگر تنظیم نمی‌شود
+        $this->assertDoesNotMatchRegularExpression('/^SESSION_DOMAIN=/m', $env);
+        $this->assertDoesNotMatchRegularExpression('/^SESSION_DOMAIN=/m', self::file('.env.single.example'));
         // خالی = بدون CDN (پیش‌فرض کد none)؛ پشت آروان arvan-ips.sh پرش می‌کند؛ «*» هرگز
         $this->assertMatchesRegularExpression('/^TRUSTED_PROXIES=$/m', $env);
         $this->assertStringContainsString('/en/ips.txt', self::file('deploy/single/arvan-ips.sh'));

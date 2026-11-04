@@ -212,8 +212,8 @@ nano .env.server
   اگر `https://www.arvancloud.ir/en/ips.txt` از سرور باز نشد: فهرست را از پنل یا پشتیبانی آروان بگیرید، هر رنج در یک خط در
   `/srv/mahru/arvan-ips.txt` بگذارید و دوباره اجرا کنید. بدون آن، برنامه IP واقعی کاربر و https را نمی‌بیند: محدودیت ورود بین همه مشترک
   می‌شود و لینک بازگشت درگاه با `http://` ساخته می‌شود.
-- **`CENTRAL_DOMAIN` و `SESSION_DOMAIN`:** فقط وقتی گواهی `*.arisheh.ir` در بخش ۸ صادر شد نگهشان دارید. تا آن موقع (یا اگر پلن پایه
-  گواهی wildcard نداد) هر دو را خالی کنید (`CENTRAL_DOMAIN=` و `SESSION_DOMAIN=`) تا آدرس سالن‌ها `https://arisheh.ir/s/{slug}` باشد.
+- **`CENTRAL_DOMAIN`:** فقط وقتی گواهی `*.arisheh.ir` در بخش ۸ صادر شد نگهشان دارید. تا آن موقع (یا اگر پلن پایه
+  گواهی wildcard نداد) آن را خالی کنید (`CENTRAL_DOMAIN=`؛ `SESSION_DOMAIN` از ۲۰۲۶-۱۱-۰۵ خوانده نمی‌شود) تا آدرس سالن‌ها `https://arisheh.ir/s/{slug}` باشد.
 - `APP_KEY` و `DB_PASSWORD` را **ننویسید** (حتی خالی)؛ کانتینر بار اول می‌سازد. `.env` لوکال XAMPP را اینجا کپی نکنید.
 
 ---
@@ -308,7 +308,7 @@ DNS تازه (`--dns dns_…`). بدون API DNS می‌شود فقط `arisheh.i
 4. **HSTS لبه:** خاموش بگذارید؛ خود برنامه HSTS را روی HTTPS می‌فرستد. اگر گواهی `*.arisheh.ir` ندارید، در `.env.server`
    `HSTS_INCLUDE_SUBDOMAINS=false` بگذارید (وگرنه مرورگر ساب‌دامین بی گواهی را هم فقط HTTPS می‌خواهد).
 
-**اگر گواهی `*.arisheh.ir` صادر نشد:** ساب‌دامین‌ها خطای گواهی می‌دهند. در `.env.server` ‏`CENTRAL_DOMAIN=` و `SESSION_DOMAIN=` را خالی کنید و
+**اگر گواهی `*.arisheh.ir` صادر نشد:** ساب‌دامین‌ها خطای گواهی می‌دهند. در `.env.server` ‏`CENTRAL_DOMAIN=` را خالی کنید و
 `docker compose -f docker-compose.server.yml up -d`؛ آدرس سالن‌ها `/s/{slug}` می‌شود و برنامه همین را در لینک‌ها و پیامک‌ها می‌سازد.
 
 **کش:** فقط فایل‌های ثابت کش شوند. اگر پنل «احترام به هدر سرور اصلی» دارد آن را بزنید؛ وگرنه با قانون صفحه: `/build/*` کش طولانی،
@@ -503,7 +503,7 @@ bash deploy/single/server-deploy.sh --use <نسخه‌ی قبلی>
 | `server-deploy.sh`: «healthy نشد» | لاگ چاپ‌شده؛ معمولاً migrate یا `.env.server` (خط خالی `APP_KEY=`/`DB_PASSWORD=`) |
 | ۵۲۰ یا ۵۲۲ از آروان | کانتینر بالا نیست یا فایروال پورت ۸۰ را برای لبه‌ی آروان هم بسته (`docker ps`، بخش ۹) |
 | خطای گواهی روی ساب‌دامین | گواهی `*.arisheh.ir` نیست (بخش ۸) |
-| ۴۱۹ Page Expired | `SESSION_DOMAIN` با دامنه یکی نیست، یا صفحه از کش CDN آمده (بخش ۸ «کش») |
+| ۴۱۹ Page Expired | فرم از صفحه‌ی کهنه‌ی میزبان دیگر آمده (صفحه را تازه کنید)، یا صفحه از کش CDN آمده (بخش ۸ «کش») |
 | لاگ امنیتی IP آروان را نشان می‌دهد | `TRUSTED_PROXIES` (بخش ۵)، بعد `up -d` |
 | پیامک واقعی رفت | `SMS_LOG_ONLY=true` نبود؛ `server-deploy.sh` هشدار می‌دهد |
 | «آخرین پشتیبان‌گیری» قرمز | `docker logs mahru 2>&1 \| grep backup` و `/data/storage/app/backup-status.json` |

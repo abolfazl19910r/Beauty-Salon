@@ -81,7 +81,9 @@ $tenantRoutes = function () {
 // بدون CENTRAL_DOMAIN هیچ پیشوندی اضافه نمی‌شه، چون اون موقع این تنها ثبت این نام‌هاست.
 // اثر جانبی شناخته‌شده و بی‌خطر: روی مسیر قدیمی، request()->routeIs('dashboard') (فقط برای رنگ
 // «فعال» منوی layouts/navigation) false می‌شه چون اسم route جاری legacy.dashboard است.
-Route::prefix('s/{salon_slug}')->middleware(['salon.resolve'])->name($centralDomain ? 'legacy.' : '')->group($tenantRoutes);
+// بررسی امنیتی M5 (۲۰۲۶-۱۱-۰۵): با زیردامنه‌ی فعال، /s/{slug} روی دامنه‌ی اصلی با ۳۰۲ به زیردامنه می‌رود (کوکی session دیگر بین
+// زیردامنه‌ها مشترک نیست؛ RedirectLegacySalonPathToSubdomain). بعد از salon.resolve تا slug ناموجود همان ۴۰۴ را بدهد.
+Route::prefix('s/{salon_slug}')->middleware($centralDomain ? ['salon.resolve', \App\Http\Middleware\RedirectLegacySalonPathToSubdomain::class] : ['salon.resolve'])->name($centralDomain ? 'legacy.' : '')->group($tenantRoutes);
 
 if ($centralDomain) {
     // ⭐ نام‌های بی‌پیشوند متعلق به این گروه ساب‌دامینی‌ان (نسخه‌ی /s/{slug} بالا با «legacy.»
@@ -92,6 +94,10 @@ if ($centralDomain) {
     // قدیمی خودش هنوز کار می‌کنه (۴۰۴ نمی‌ده — تست شده در SubdomainRoutingTest)، ولی هر لینک
     // داخلی جدیدی که از همون صفحه ساخته می‌شه به‌طور طبیعی به شکل مدرن (ساب‌دامین) اشاره می‌کنه.
     //
+    // ⭐ بررسی امنیتی M5 (۲۰۲۶-۱۱-۰۵) — جایگزین تصمیم ۲۰۲۶-۰۹-۲۰ زیر: کوکی session دیگر بین زیردامنه‌ها مشترک نیست
+    // (config/session.php: domain همیشه null، روی HTTPS پیشوند __Host-)، و /s/{slug} روی دامنه‌ی اصلی با ۳۰۲ به زیردامنه می‌رود
+    // (RedirectLegacySalonPathToSubdomain) — پس مشکل ۴۱۹ فرم‌های صفحه‌ی قدیمی که دلیل کوکی مشترک بود دیگر پیش نمی‌آید.
+    // (یادداشت قدیمی:)
     // ✅ ریسک قطعی‌شدن سشن — با تست دستی واقعی تأیید و حل شد (۲۰۲۶-۰۹-۲۰، تصمیم قبلی معکوس
     // شد؛ جزئیات کامل در Rasta unified prompt.md و docs/deployment/SUBDOMAINS.md بخش ۳ و ۴).
     // قبلاً اینجا نوشته بود «SESSION_DOMAIN ایزوله، ریسک پذیرفته‌شده» — اون تصمیم اشتباه بود:

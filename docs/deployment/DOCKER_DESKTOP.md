@@ -219,7 +219,7 @@ docker compose -f docker-compose.single.yml exec -u www app php artisan push:tes
 | `port is already allocated` | پورت 8080 گرفته است: `set MAHRU_PORT=8081` و دوباره `up` |
 | صفحه‌ی ۵۰۰ | `docker compose -f docker-compose.single.yml logs --tail=100` و `storage/logs/laravel-*.log` (بخش ۵) |
 | ساب‌دامین صفحه‌ی فروش را نشان می‌دهد | خط آن سالن در hosts نیست، یا `CENTRAL_DOMAIN` با دامنه‌ی hosts یکی نیست |
-| ۴۱۹ Page Expired روی ساب‌دامین | `SESSION_DOMAIN=.arisheh.test` (با نقطه‌ی اول) و آدرس را از `arisheh.test` باز کنید، نه `localhost` |
+| ۴۱۹ Page Expired روی ساب‌دامین | صفحه را تازه کنید (فرم کهنه از میزبان دیگر)؛ کوکی هر میزبان جداست (M5) — پنل‌ها را از `arisheh.test` و صفحه‌ی سالن را از زیردامنه‌اش باز کنید، نه `localhost` |
 | build در مرحله‌ی کامپوزر یا npm گیر می‌کند | اینترنت/آینه (بخش ۱)؛ دوباره اجرا کنید — مراحل تمام‌شده از cache می‌آیند |
 | کامپوزر: `Failed to download … from dist` و بعد clone کند، یا `exceeded the timeout` | اینترنت کند داخل داکر یا سقف درخواست بی‌نام GitHub — `build-vendor` (بخش ۱) |
 | دانلود imageهای پایه (php، node، composer) ده‌ها دقیقه | آینه‌ی رجیستری (بخش ۱)؛ فقط بار اول است |

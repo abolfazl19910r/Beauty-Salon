@@ -254,7 +254,7 @@ APP_URL=http://localhost      # server: https://arisheh.ir
 APP_TIMEZONE=Asia/Tehran
 APP_LOCALE=fa
 CENTRAL_DOMAIN=               # arisheh.ir for salon subdomains; empty = /s/{slug} only
-SESSION_DOMAIN=               # with subdomains: .arisheh.ir
+# SESSION_DOMAIN is ignored (security audit M5): the session cookie is host-only, __Host- prefixed on HTTPS
 SESSION_SECURE_COOKIE=        # on HTTPS: true
 ```
 
@@ -640,7 +640,7 @@ Cron and workers: [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCH
 |---|---|
 | `composer install` fails in `package:discover` with a database error | `.env` is missing or the database is unreachable; create `.env` and run `php artisan package:discover` |
 | `Vite manifest not found` | `npm run build` |
-| 419 Page Expired | `SESSION_DOMAIN` does not match the domain (troubleshooting in `SUBDOMAINS.md`) |
+| 419 Page Expired | a stale form from another host — reload the page (troubleshooting in `SUBDOMAINS.md`) |
 | After `git pull`: missing column/table, or `Table … already exists` | the creating migrations changed; `php artisan migrate:fresh --seed` (data is fake) |
 | `.env` changes have no effect | `php artisan config:clear` and `queue:restart`; in Docker `up -d` (not `restart`) |
 | SMS is not sent | intentional in `local` or with `SMS_LOG_ONLY=true`; the text is in the log. Otherwise check the `sms`/`otp` queue worker |
