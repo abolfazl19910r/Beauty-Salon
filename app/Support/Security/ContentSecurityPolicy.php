@@ -27,6 +27,28 @@ class ContentSecurityPolicy
         return in_array(config('security.csp.mode'), ['report', 'enforce'], true);
     }
 
+    /**
+     * ⭐ ۲۰۲۶-۱۱-۰۴ (تصمیم ابوالفضل، راه «الف»): داشبورد Telescope (Vue با کامپایل قالب در مرورگر = `eval`، فونت `fonts.bunny.net`)
+     * زیر CSP اجرایی سفید می‌ماند. فقط روی سیستم توسعه (`APP_ENV=local`) و فقط زیر مسیر Telescope سیاستی فرستاده نمی‌شود؛ بقیه‌ی صفحه‌های لوکال
+     * مثل سرور سخت‌گیرند. روی سرور Telescope نصب نیست (`composer install --no-dev`) و این استثنا هیچ‌وقت فعال نمی‌شود.
+     */
+    public function appliesTo(Request $request): bool
+    {
+        if (! $this->enabled()) {
+            return false;
+        }
+
+        if (app()->environment('local') && config('telescope.domain') === null) {
+            $path = trim((string) (config('telescope.path') ?: 'telescope'), '/');
+
+            if ($path !== '' && $request->is($path, $path.'/*')) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public function build(Request $request): string
     {
         $site = $this->siteOrigins($request);

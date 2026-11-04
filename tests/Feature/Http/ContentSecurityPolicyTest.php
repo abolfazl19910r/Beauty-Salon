@@ -120,6 +120,30 @@ class ContentSecurityPolicyTest extends TestCase
         $this->get('/')->assertHeaderMissing('Content-Security-Policy')->assertHeaderMissing('Content-Security-Policy-Report-Only');
     }
 
+    /**
+     * ⭐ ۲۰۲۶-۱۱-۰۴ (راه «الف»): داشبورد Telescope زیر CSP اجرایی سفید می‌ماند (`eval` ‏Vue، فونت bunny) ← فقط روی سیستم توسعه و فقط زیر
+     * مسیر Telescope بی سیاست؛ بقیه‌ی صفحه‌های لوکال و هر محیط دیگر همان CSP.
+     */
+    public function test_only_the_local_telescope_dashboard_is_left_without_a_policy(): void
+    {
+        foreach (['telescope', 'telescope/requests', 'telescopex'] as $uri) {
+            \Illuminate\Support\Facades\Route::get($uri, fn () => response('<!doctype html><title>t</title>', 200, ['Content-Type' => 'text/html; charset=UTF-8']));
+        }
+
+        // محیط تست (و سرور): Telescope هم سیاست دارد
+        $this->get('/telescope/requests')->assertOk()->assertHeader('Content-Security-Policy');
+
+        $this->app->detectEnvironment(fn () => 'local');
+
+        $this->get('/telescope')->assertOk()->assertHeaderMissing('Content-Security-Policy')->assertHeaderMissing('Content-Security-Policy-Report-Only');
+        $this->get('/telescope/requests')->assertOk()->assertHeaderMissing('Content-Security-Policy');
+        $this->get('/telescopex')->assertOk()->assertHeader('Content-Security-Policy');
+        $this->get('/')->assertOk()->assertHeader('Content-Security-Policy');
+
+        config(['telescope.path' => 'dev/telescope']);
+        $this->get('/telescope/requests')->assertOk()->assertHeader('Content-Security-Policy');
+    }
+
     public function test_json_responses_carry_no_policy(): void
     {
         $this->getJson('/api/v1/status')->assertHeaderMissing('Content-Security-Policy-Report-Only')->assertHeaderMissing('Content-Security-Policy');

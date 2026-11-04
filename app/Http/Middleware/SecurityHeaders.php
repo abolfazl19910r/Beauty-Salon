@@ -39,7 +39,7 @@ class SecurityHeaders
         }
 
         // CSP فقط برای صفحه‌های HTML (JSON و فایل‌ها لازمش ندارند)
-        if ($this->csp->enabled() && str_contains((string) $response->headers->get('Content-Type'), 'text/html')
+        if ($this->csp->appliesTo($request) && str_contains((string) $response->headers->get('Content-Type'), 'text/html')
             && ! $response->headers->has($this->csp->header())) {
             $response->headers->set($this->csp->header(), $this->csp->build($request));
         }
