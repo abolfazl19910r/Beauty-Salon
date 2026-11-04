@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Salon\Auth;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendPasswordResetCodeJob;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Support\Auth\SmsCode;
 use App\Support\CurrentSalon;
 use App\Support\Queues;
 use Illuminate\Http\RedirectResponse;
@@ -57,14 +58,10 @@ class CustomerPasswordResetController extends Controller
             return back()->withErrors(['phone' => 'کاربری با این شماره در این سالن یافت نشد.']);
         }
 
-        $verificationCode = rand(100000, 999999);
+        // بررسی امنیتی M1: فقط HMAC کد در users (SmsCode)؛ هر کد حداکثر ۵ بار غلط
+        $verificationCode = SmsCode::issue($user, 'verification_code', 'verification_code_expire_at', (int) config('auth.reset_code_expire_minutes', 2));
         $token = Str::random(60);
         $tokenKey = $salon->id.':'.$request->phone;
-
-        $user->update([
-            'verification_code' => $verificationCode,
-            'verification_code_expire_at' => now()->addMinutes((int) config('auth.reset_code_expire_minutes', 2)),
-        ]);
 
         DB::table('password_reset_tokens')->updateOrInsert(
             ['phone' => $tokenKey],
@@ -72,7 +69,7 @@ class CustomerPasswordResetController extends Controller
         );
 
         // کد تأیید روی صف otp (روی هاست بدون worker بعد از پاسخ)؛ در otp_count همین سالن شمرده می‌شود
-        Queues::dispatchOtp(new SendPasswordResetCodeJob($user->id, (string) $verificationCode, $salon->id));
+        Queues::dispatchOtp(new SendPasswordResetCodeJob($user->id, $verificationCode, $salon->id));
 
         return redirect()->route('salon.password.verify', ['salon_slug' => $salon->slug, 'token' => $token])
             ->with('success', 'کد تایید ارسال شد.');
@@ -124,7 +121,7 @@ class CustomerPasswordResetController extends Controller
             return back()->withErrors(['code' => 'کاربر یافت نشد.']);
         }
 
-        if ($user->verification_code !== $request->code || now()->isAfter($user->verification_code_expire_at)) {
+        if (! SmsCode::check($user, 'verification_code', 'verification_code_expire_at', (string) $request->code)) {
             return back()->withErrors(['code' => 'کد تایید اشتباه یا منقضی شده است.']);
         }
 

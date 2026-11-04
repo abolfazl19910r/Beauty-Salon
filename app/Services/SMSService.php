@@ -8,6 +8,7 @@ use App\Repositories\Contracts\SalonRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Sms\SmsQuotaService;
 use App\Support\Features\Feature;
+use App\Support\Sms\OtpLog;
 use App\Support\SmsParts;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -35,11 +36,7 @@ class SMSService
      */
     protected function isLogOnly(): bool
     {
-        if (config('services.kavenegar.log_only', false)) {
-            return true;
-        }
-
-        return app()->environment(['local', 'testing']) && ! config('services.kavenegar.send_in_local', false);
+        return OtpLog::logOnlyMode();
     }
 
     /**

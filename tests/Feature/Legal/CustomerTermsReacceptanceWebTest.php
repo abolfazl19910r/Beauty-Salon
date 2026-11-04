@@ -4,6 +4,7 @@ namespace Tests\Feature\Legal;
 
 use App\Models\LegalAcceptance;
 use App\Models\User;
+use App\Support\Auth\SmsCode;
 use App\Support\CurrentSalon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\CreatesCourses;
@@ -113,7 +114,7 @@ class CustomerTermsReacceptanceWebTest extends TestCase
     {
         $this->majorTermsChange();
         $salon = app(CurrentSalon::class)->get();
-        $this->customer->update(['login_verification_code' => '123456', 'login_verification_code_expire_at' => now()->addMinutes(2)]);
+        $this->customer->update(['login_verification_code' => SmsCode::hash('123456'), 'login_verification_code_expire_at' => now()->addMinutes(2)]);
         $target = url('/s/'.$salon->slug.'/bookings');
 
         $this->withSession(['customer_login_user_id' => $this->customer->id, 'url.intended' => $target])

@@ -121,7 +121,7 @@ class CustomerAuthApiTest extends CustomerApiTestCase
 
         $this->postJson('/api/v1/customer/salons/rasta/password/reset', [
             'challenge' => $start->json('data.challenge'),
-            'code' => $this->customer->fresh()->verification_code,
+            'code' => $this->lastSmsCode(),
             'password' => 'new-password-9', 'password_confirmation' => 'new-password-9',
         ])->assertOk();
 
@@ -139,7 +139,7 @@ class CustomerAuthApiTest extends CustomerApiTestCase
 
         $challenge = $this->postJson('/api/v1/customer/salons/golbahar/password/forgot', ['phone' => '09129990000'])->json('data.challenge');
         $this->postJson('/api/v1/customer/salons/rasta/password/reset', [
-            'challenge' => $challenge, 'code' => $otherCustomer->fresh()->verification_code,
+            'challenge' => $challenge, 'code' => $this->lastSmsCode(),
             'password' => 'new-password-9', 'password_confirmation' => 'new-password-9',
         ])->assertStatus(410);
     }

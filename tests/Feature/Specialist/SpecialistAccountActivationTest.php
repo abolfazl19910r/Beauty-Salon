@@ -111,7 +111,7 @@ class SpecialistAccountActivationTest extends TestCase
 
         auth()->logout();
         $this->post('/login', ['phone' => '09351112233', 'password' => 'first-pass-1'])->assertRedirect(route('login.verify.show'));
-        $code = Queue::pushed(SendLoginVerificationCodeJob::class)->last() ? $user->fresh()->login_verification_code : null;
+        $code = Queue::pushed(SendLoginVerificationCodeJob::class)->last() ? $this->lastSmsCode() : null;
         $this->post(route('login.verify'), ['code' => $code])->assertRedirect('/my-dashboard');
         $this->assertNotNull($user->fresh()->phone_verified_at, 'کد ورود شماره را تأیید کرد؛ صفحه‌ی تأیید شماره لازم نیست');
         $this->get('/my-dashboard')->assertOk();
@@ -149,7 +149,7 @@ class SpecialistAccountActivationTest extends TestCase
         $booking = Booking::factory()->create(['user_id' => $customer->id]);
 
         $this->post('/s/rasta/login', ['phone' => self::PHONE, 'password' => 'secret-123']);
-        $this->post(route('salon.login.verify'), ['code' => $customer->fresh()->login_verification_code])->assertRedirect('/my-dashboard');
+        $this->post(route('salon.login.verify'), ['code' => $this->lastSmsCode()])->assertRedirect('/my-dashboard');
 
         $this->assertSame('staff', $customer->fresh()->user_type);
         $this->assertSame($customer->id, $this->specialist->fresh()->user_id);

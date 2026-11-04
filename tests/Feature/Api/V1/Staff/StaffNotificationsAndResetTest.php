@@ -90,7 +90,7 @@ class StaffNotificationsAndResetTest extends TestCase
 
         $challenge = $this->postJson('/api/v1/staff/password/forgot', ['phone' => $this->user->phone])
             ->assertOk()->json('data.challenge');
-        $code = $this->user->fresh()->verification_code;
+        $code = $this->lastSmsCode();
         $this->assertNotNull($code);
 
         $this->postJson('/api/v1/staff/password/reset', [
@@ -113,14 +113,14 @@ class StaffNotificationsAndResetTest extends TestCase
         $challenge = $this->postJson('/api/v1/staff/password/forgot', ['phone' => $this->user->phone])->json('data.challenge');
 
         $this->postJson('/api/v1/staff/login/verify', [
-            'challenge' => $challenge, 'code' => $this->user->fresh()->verification_code, 'device_name' => 'x',
+            'challenge' => $challenge, 'code' => $this->lastSmsCode(), 'device_name' => 'x',
         ])->assertStatus(410)->assertJsonPath('error.code', 'challenge_expired');
     }
 
     public function test_reset_code_attempts_are_capped_like_login(): void
     {
         $challenge = $this->postJson('/api/v1/staff/password/forgot', ['phone' => $this->user->phone])->json('data.challenge');
-        $wrong = $this->user->fresh()->verification_code === '111111' ? '222222' : '111111';
+        $wrong = $this->lastSmsCode() === '111111' ? '222222' : '111111';
         $body = fn () => ['challenge' => $challenge, 'code' => $wrong, 'password' => 'NewStaff-123', 'password_confirmation' => 'NewStaff-123'];
 
         foreach (range(1, 4) as $i) {

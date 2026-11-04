@@ -3,6 +3,7 @@
 namespace Tests\Feature\Http;
 
 use App\Models\User;
+use App\Support\Auth\SmsCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -44,7 +45,7 @@ class CustomerRouteThrottleTest extends TestCase
 
     public function test_guessing_the_six_digit_two_factor_code_is_limited(): void
     {
-        $this->user->update(['two_factor_code' => '123456', 'two_factor_code_expires_at' => now()->addMinutes(2)]);
+        $this->user->update(['two_factor_code' => SmsCode::hash('123456'), 'two_factor_code_expires_at' => now()->addMinutes(2)]);
 
         $status = $this->hammer(5, fn () => $this->actingAs($this->user)->postJson(route('security.2fa.verify'), ['code' => '000000'])->status());
 

@@ -4,25 +4,22 @@ namespace App\Services;
 
 use App\Jobs\Send2faVerificationCodeJob;
 use App\Models\User;
+use App\Support\Auth\SmsCode;
 use App\Support\Queues;
 use Illuminate\Support\Facades\Log;
 
 class TwoFactorAuthService
 {
     /**
-     * طول ستون users.two_factor_code — کد بلندتر روی MySQL/MariaDB خطای 1406 می‌داد (SQLite طول رو نادیده می‌گیره).
+     * بیشترین طول کد (TWO_FACTOR_CODE_LENGTH). ستون users.two_factor_code حالا HMAC ‏۶۴ نویسه‌ای را نگه می‌دارد، نه خود کد.
      */
     public const MAX_CODE_LENGTH = 10;
 
     public function generateCode(User $user): string
     {
         $codeLength = min(self::MAX_CODE_LENGTH, max(4, (int) config('services.two_factor.code_length', 6)));
-        $code = $this->generateNumericCode($codeLength);
-
-        $user->update([
-            'two_factor_code' => $code,
-            'two_factor_code_expires_at' => now()->addMinutes($this->timeoutMinutes()),
-        ]);
+        // بررسی امنیتی M1: فقط HMAC کد در users.two_factor_code (SmsCode)
+        $code = SmsCode::issue($user, 'two_factor_code', 'two_factor_code_expires_at', $this->timeoutMinutes(), $codeLength);
 
         Log::info('2FA code generated', [
             'user_id' => $user->id,
@@ -41,21 +38,11 @@ class TwoFactorAuthService
         // previous request -- always read the current DB state before comparing.
         $user->refresh();
 
-        if (! $user->two_factor_code || ! $user->two_factor_code_expires_at || $user->two_factor_code_expires_at->isPast()) {
-            Log::warning('2FA code expired or not found', [
-                'user_id' => $user->id,
-            ]);
-
-            return false;
-        }
-
-        $isValid = hash_equals($user->two_factor_code, $code);
+        // HMAC + hash_equals + حداکثر ۵ تلاش برای هر کد (بعد کد می‌سوزد)
+        $isValid = SmsCode::check($user, 'two_factor_code', 'two_factor_code_expires_at', $code);
 
         if ($isValid) {
-            $user->update([
-                'two_factor_code' => null,
-                'two_factor_code_expires_at' => null,
-            ]);
+            SmsCode::clear($user, 'two_factor_code', 'two_factor_code_expires_at');
             Log::info('2FA verified successfully', [
                 'user_id' => $user->id,
             ]);
@@ -102,17 +89,5 @@ class TwoFactorAuthService
     protected function timeoutMinutes(): int
     {
         return max(1, (int) config('services.two_factor.timeout_minutes', 2));
-    }
-
-    /**
-     * Generates a random numeric code with exactly $length digits (no leading zero,
-     * matching the previous fixed-6-digit random_int(100000, 999999) behavior).
-     */
-    protected function generateNumericCode(int $length): string
-    {
-        $min = (int) ('1'.str_repeat('0', $length - 1));
-        $max = (int) str_repeat('9', $length);
-
-        return (string) random_int($min, $max);
     }
 }

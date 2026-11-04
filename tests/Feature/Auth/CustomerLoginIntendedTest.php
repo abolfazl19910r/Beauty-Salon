@@ -3,6 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use App\Support\Auth\SmsCode;
 use App\Support\CurrentSalon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -20,7 +21,7 @@ class CustomerLoginIntendedTest extends TestCase
         $salon = app(CurrentSalon::class)->get();
         $customer = User::factory()->create([
             'salon_id' => $salon->id, 'user_type' => 'customer', 'phone' => '09121110000',
-            'login_verification_code' => '123456', 'login_verification_code_expire_at' => now()->addMinutes(2),
+            'login_verification_code' => SmsCode::hash('123456'), 'login_verification_code_expire_at' => now()->addMinutes(2),
         ]);
 
         $session = ['customer_login_user_id' => $customer->id];
@@ -75,7 +76,7 @@ class CustomerLoginIntendedTest extends TestCase
     public function test_staff_login_clears_a_stale_intended_address(): void
     {
         $admin = User::factory()->create([
-            'is_admin' => true, 'login_verification_code' => '654321', 'login_verification_code_expire_at' => now()->addMinutes(2),
+            'is_admin' => true, 'login_verification_code' => SmsCode::hash('654321'), 'login_verification_code_expire_at' => now()->addMinutes(2),
         ]);
 
         $this->withSession(['login_user_id' => $admin->id, 'url.intended' => url('/admin/notifications/count')])

@@ -4,6 +4,7 @@ namespace Tests\Feature\Auth;
 
 use App\Jobs\SendLoginVerificationCodeJob;
 use App\Models\User;
+use App\Support\Auth\SmsCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
@@ -67,7 +68,7 @@ class AuthResendAndEdgeCaseTest extends TestCase
     public function test_login_verify_with_correct_code_logs_login_success_with_user_id(): void
     {
         $user = User::factory()->create([
-            'login_verification_code' => '654321',
+            'login_verification_code' => SmsCode::hash('654321'),
             'login_verification_code_expire_at' => now()->addMinutes(2),
         ]);
 
@@ -85,7 +86,7 @@ class AuthResendAndEdgeCaseTest extends TestCase
     {
         $admin = User::factory()->create([
             'is_admin' => true,
-            'login_verification_code' => '111111',
+            'login_verification_code' => SmsCode::hash('111111'),
             'login_verification_code_expire_at' => now()->addMinutes(2),
         ]);
 

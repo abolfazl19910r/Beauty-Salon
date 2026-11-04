@@ -6,6 +6,7 @@ use App\Exceptions\Api\ApiException;
 use App\Models\User;
 use App\Services\PhoneVerificationService;
 use App\Services\SecurityLogService;
+use App\Support\Auth\SmsCode;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -67,7 +68,8 @@ class ApiLoginService
         }
 
         $stored = $user->{static::CODE_FIELD};
-        if ($stored !== null && hash_equals((string) $stored, $code) && $this->consumeCode($user, $code)) {
+        // کد فقط به‌صورت HMAC ذخیره می‌شود (بررسی امنیتی M1، SmsCode)
+        if (is_string($stored) && hash_equals($stored, SmsCode::hash($code)) && $this->consumeCode($user, $code)) {
             $this->forget($challenge);
             $this->logAttempt(true, $user);
 

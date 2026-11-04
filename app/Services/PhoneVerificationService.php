@@ -5,8 +5,9 @@ namespace App\Services;
 use App\Jobs\SendLoginVerificationCodeJob;
 use App\Jobs\SendPhoneVerificationCodeJob;
 use App\Models\User;
+use App\Support\Auth\SmsCode;
 use App\Support\Queues;
-use Carbon\Carbon;
+use App\Support\Sms\OtpLog;
 use Illuminate\Support\Facades\Log;
 
 class PhoneVerificationService
@@ -25,21 +26,9 @@ class PhoneVerificationService
      */
     public function sendCode(User $user): bool
     {
-        $code = $this->generateCode();
+        $code = SmsCode::issue($user, 'verification_code', 'verification_code_expire_at', $this->expiryMinutes());
 
-        $user->update([
-            'verification_code' => $code,
-            'verification_code_expire_at' => Carbon::now()->addMinutes(
-                config('auth.verification_code_expire_minutes', 2)
-            ),
-        ]);
-
-        Log::info('Queued phone verification code for sending', [
-            'user_id' => $user->id,
-            'phone' => $user->phone,
-            'code' => $code,
-            'expires_at' => $user->verification_code_expire_at,
-        ]);
+        Log::info('Queued phone verification code for sending', ['user_id' => $user->id] + OtpLog::code($code));
 
         Queues::dispatchOtp(new SendPhoneVerificationCodeJob($user->id, $code));
 
@@ -48,44 +37,20 @@ class PhoneVerificationService
 
     public function sendLoginCode(User $user): bool
     {
-        $code = $this->generateCode();
+        $code = SmsCode::issue($user, 'login_verification_code', 'login_verification_code_expire_at', $this->expiryMinutes());
 
-        $user->update([
-            'login_verification_code' => $code,
-            'login_verification_code_expire_at' => Carbon::now()->addMinutes(
-                config('auth.verification_code_expire_minutes', 2)
-            ),
-        ]);
-
-        Log::info('Queued login verification code for sending', [
-            'user_id' => $user->id,
-            'phone' => $user->phone,
-            'code' => $code,
-            'expires_at' => $user->login_verification_code_expire_at,
-        ]);
+        Log::info('Queued login verification code for sending', ['user_id' => $user->id] + OtpLog::code($code));
 
         Queues::dispatchOtp(new SendLoginVerificationCodeJob($user->id, $code));
 
         return true;
     }
 
+    /** بررسی امنیتی M1: HMAC + hash_equals + حداکثر ۵ تلاش برای هر کد (SmsCode) */
     public function verify(User $user, string $code): bool
     {
-        if ($user->verification_code !== $code) {
-            Log::warning('Invalid verification code', [
-                'user_id' => $user->id,
-                'expected' => $user->verification_code,
-                'received' => $code,
-            ]);
-
-            return false;
-        }
-
-        if (Carbon::now()->isAfter($user->verification_code_expire_at)) {
-            Log::warning('Verification code expired', [
-                'user_id' => $user->id,
-                'expired_at' => $user->verification_code_expire_at,
-            ]);
+        if (! SmsCode::check($user, 'verification_code', 'verification_code_expire_at', $code)) {
+            Log::warning('Invalid or expired verification code', ['user_id' => $user->id]);
 
             return false;
         }
@@ -95,21 +60,8 @@ class PhoneVerificationService
 
     public function verifyLoginCode(User $user, string $code): bool
     {
-        if ($user->login_verification_code !== $code) {
-            Log::warning('Invalid login verification code', [
-                'user_id' => $user->id,
-                'expected' => $user->login_verification_code,
-                'received' => $code,
-            ]);
-
-            return false;
-        }
-
-        if (Carbon::now()->isAfter($user->login_verification_code_expire_at)) {
-            Log::warning('Login verification code expired', [
-                'user_id' => $user->id,
-                'expired_at' => $user->login_verification_code_expire_at,
-            ]);
+        if (! SmsCode::check($user, 'login_verification_code', 'login_verification_code_expire_at', $code)) {
+            Log::warning('Invalid or expired login verification code', ['user_id' => $user->id]);
 
             return false;
         }
@@ -125,8 +77,8 @@ class PhoneVerificationService
         return true;
     }
 
-    protected function generateCode(): string
+    protected function expiryMinutes(): int
     {
-        return (string) rand(100000, 999999);
+        return (int) config('auth.verification_code_expire_minutes', 2);
     }
 }

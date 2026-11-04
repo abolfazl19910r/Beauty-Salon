@@ -87,8 +87,8 @@ class PasswordResetCodeQueueTest extends TestCase
         $this->requestBothCodes(); // صف sync در تست: job همین‌جا اجرا می‌شود
 
         $this->assertSame([
-            [$this->staff->phone, (string) $this->staff->fresh()->verification_code, $this->salon->id],
-            [$this->customer->phone, (string) $this->customer->fresh()->verification_code, $this->salon->id],
+            [$this->staff->phone, \App\Support\Auth\SmsCode::issued()[0], $this->salon->id],
+            [$this->customer->phone, \App\Support\Auth\SmsCode::issued()[1], $this->salon->id],
         ], $sent);
     }
 

@@ -70,7 +70,7 @@ class ApiLoginTest extends TestCase
 
     protected function wrongCode(User $user): string
     {
-        return $user->refresh()->login_verification_code === '111111' ? '222222' : '111111';
+        return $this->lastSmsCode() === '111111' ? '222222' : '111111';
     }
 
     // ── مشتری ─────────────────────────────────────────────────────────────
@@ -85,7 +85,7 @@ class ApiLoginTest extends TestCase
             ->assertJsonStructure(['data' => ['challenge', 'expires_in', 'code_expires_in', 'resend_after', 'phone_hint']]);
         $this->assertNotNull($user->refresh()->login_verification_code);
 
-        $verify = $this->customerVerify($login->json('data.challenge'), $user->login_verification_code);
+        $verify = $this->customerVerify($login->json('data.challenge'), $this->lastSmsCode());
 
         $verify->assertCreated()
             ->assertJsonPath('data.token_type', 'Bearer')
@@ -147,7 +147,7 @@ class ApiLoginTest extends TestCase
 
         $challenge = $this->customerLogin($user)->json('data.challenge');
 
-        $this->customerVerify($challenge, $user->refresh()->login_verification_code, $other->slug)
+        $this->customerVerify($challenge, $this->lastSmsCode(), $other->slug)
             ->assertStatus(410)
             ->assertJsonPath('error.code', 'challenge_expired');
     }
@@ -180,7 +180,7 @@ class ApiLoginTest extends TestCase
     {
         $user = $this->customer();
         $challenge = $this->customerLogin($user)->json('data.challenge');
-        $code = $user->refresh()->login_verification_code;
+        $code = $this->lastSmsCode();
 
         $this->travel(3)->minutes();
 
@@ -219,7 +219,7 @@ class ApiLoginTest extends TestCase
         $this->travel(61)->seconds();
         $resend()->assertStatus(429)->assertJsonPath('error.code', 'resend_limit_reached');
 
-        $this->customerVerify($challenge, $user->refresh()->login_verification_code)->assertCreated();
+        $this->customerVerify($challenge, $this->lastSmsCode())->assertCreated();
     }
 
     // ── کادر ──────────────────────────────────────────────────────────────
@@ -233,7 +233,7 @@ class ApiLoginTest extends TestCase
 
         $verify = $this->postJson('/api/v1/staff/login/verify', [
             'challenge' => $login->json('data.challenge'),
-            'code' => $user->refresh()->login_verification_code,
+            'code' => $this->lastSmsCode(),
             'device_name' => 'Galaxy A17',
         ]);
 
@@ -287,7 +287,7 @@ class ApiLoginTest extends TestCase
         $user = $this->specialistUser();
         $challenge = $this->postJson('/api/v1/staff/login', ['phone' => $user->phone, 'password' => 'secret123'])->json('data.challenge');
 
-        $this->customerVerify($challenge, $user->refresh()->login_verification_code)
+        $this->customerVerify($challenge, $this->lastSmsCode())
             ->assertStatus(410)
             ->assertJsonPath('error.code', 'challenge_expired');
     }

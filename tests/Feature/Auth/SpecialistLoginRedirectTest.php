@@ -19,7 +19,7 @@ class SpecialistLoginRedirectTest extends TestCase
     {
         $this->post('/login', ['phone' => $user->phone, 'password' => 'password'])->assertRedirect(route('login.verify.show'));
 
-        return $this->post('/login/verify', ['code' => $user->fresh()->login_verification_code]);
+        return $this->post('/login/verify', ['code' => $this->lastSmsCode()]);
     }
 
     public function test_specialist_lands_on_specialist_panel_after_login(): void

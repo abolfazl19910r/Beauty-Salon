@@ -62,7 +62,7 @@ class AuthenticationTest extends TestCase
         $this->post('/login', ['phone' => $superAdmin->phone, 'password' => 'password123']);
         $superAdmin->refresh();
 
-        $response = $this->post('/login/verify', ['code' => $superAdmin->login_verification_code]);
+        $response = $this->post('/login/verify', ['code' => $this->lastSmsCode()]);
 
         $response->assertRedirect('/superadmin/dashboard');
         $this->assertAuthenticatedAs($superAdmin);
@@ -112,7 +112,7 @@ class AuthenticationTest extends TestCase
         $this->post('/login', ['phone' => $user->phone, 'password' => 'password123']);
         $user->refresh();
 
-        $response = $this->post('/login/verify', ['code' => $user->login_verification_code]);
+        $response = $this->post('/login/verify', ['code' => $this->lastSmsCode()]);
 
         $response->assertRedirect();
         $this->assertAuthenticatedAs($user);
@@ -134,7 +134,7 @@ class AuthenticationTest extends TestCase
         $user = User::factory()->create(['password' => bcrypt('password123'), 'user_type' => 'staff']);
         $this->post('/login', ['phone' => $user->phone, 'password' => 'password123']);
         $user->refresh();
-        $code = $user->login_verification_code;
+        $code = $this->lastSmsCode();
 
         $this->post('/login/verify', ['code' => $code]);
 

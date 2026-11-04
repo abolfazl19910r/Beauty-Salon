@@ -50,13 +50,13 @@ return new class extends Migration
             // Dedicated OTP pair for the 2FA flow, deliberately separate from
             // login_verification_code/login_verification_code_expire_at below (the login-OTP
             // pair) so the two flows never clobber each other's codes.
-            // ⭐ طول ۱۰ (نه ۶): TWO_FACTOR_CODE_LENGTH تا ۱۰ رقم مجاز است (TwoFactorAuthService) — روی MySQL کد بلندتر
-            // از ستون ذخیره نمی‌شد (۲۰۲۶-۰۹-۲۷).
-            $table->string('two_factor_code', 10)->nullable();
+            // ⭐ بررسی امنیتی ۲۰۲۶-۱۱-۰۴ (M1): سه ستون کد فقط HMAC-SHA256 کد را نگه می‌دارند (۶۴ نویسه‌ی hex؛ App\Support\Auth\SmsCode)،
+            // نه خود کد ۴ تا ۱۰ رقمی.
+            $table->string('two_factor_code', 64)->nullable();
             $table->timestamp('two_factor_code_expires_at')->nullable();
-            $table->string('verification_code')->nullable();
+            $table->string('verification_code', 64)->nullable();
             $table->timestamp('verification_code_expire_at')->nullable();
-            $table->string('login_verification_code', 6)->nullable();
+            $table->string('login_verification_code', 64)->nullable();
             $table->timestamp('login_verification_code_expire_at')->nullable();
             $table->rememberToken();
             $table->timestamps();

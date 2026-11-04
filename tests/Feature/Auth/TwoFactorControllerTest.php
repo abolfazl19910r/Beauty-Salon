@@ -3,6 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use App\Support\Auth\SmsCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -55,7 +56,7 @@ class TwoFactorControllerTest extends TestCase
     public function test_enable_activates_2fa_with_a_valid_code(): void
     {
         $this->user->update([
-            'two_factor_code' => '123456',
+            'two_factor_code' => SmsCode::hash('123456'),
             'two_factor_code_expires_at' => now()->addMinutes(2),
         ]);
 
@@ -72,7 +73,7 @@ class TwoFactorControllerTest extends TestCase
     public function test_enable_rejects_an_invalid_code(): void
     {
         $this->user->update([
-            'two_factor_code' => '123456',
+            'two_factor_code' => SmsCode::hash('123456'),
             'two_factor_code_expires_at' => now()->addMinutes(2),
         ]);
 
@@ -87,7 +88,7 @@ class TwoFactorControllerTest extends TestCase
     public function test_enable_rejects_an_expired_code(): void
     {
         $this->user->update([
-            'two_factor_code' => '123456',
+            'two_factor_code' => SmsCode::hash('123456'),
             'two_factor_code_expires_at' => now()->subMinute(),
         ]);
 
@@ -102,7 +103,7 @@ class TwoFactorControllerTest extends TestCase
     {
         $this->user->update([
             'two_factor_enabled' => true,
-            'two_factor_code' => '654321',
+            'two_factor_code' => SmsCode::hash('654321'),
             'two_factor_code_expires_at' => now()->addMinutes(2),
         ]);
 
@@ -117,7 +118,7 @@ class TwoFactorControllerTest extends TestCase
     public function test_verify_sets_the_2fa_verified_session_flag(): void
     {
         $this->user->update([
-            'two_factor_code' => '111222',
+            'two_factor_code' => SmsCode::hash('111222'),
             'two_factor_code_expires_at' => now()->addMinutes(2),
         ]);
 
@@ -132,7 +133,7 @@ class TwoFactorControllerTest extends TestCase
     public function test_verify_does_not_set_the_session_flag_for_a_wrong_code(): void
     {
         $this->user->update([
-            'two_factor_code' => '111222',
+            'two_factor_code' => SmsCode::hash('111222'),
             'two_factor_code_expires_at' => now()->addMinutes(2),
         ]);
 
@@ -146,7 +147,7 @@ class TwoFactorControllerTest extends TestCase
     public function test_resend_generates_a_fresh_code_replacing_the_old_one(): void
     {
         $this->user->update([
-            'two_factor_code' => '111111',
+            'two_factor_code' => SmsCode::hash('111111'),
             'two_factor_code_expires_at' => now()->addMinutes(2),
         ]);
 

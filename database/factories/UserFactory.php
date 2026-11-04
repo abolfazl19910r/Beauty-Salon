@@ -136,7 +136,7 @@ class UserFactory extends Factory
     public function withActiveOtp(): static
     {
         return $this->state(fn (array $attributes) => [
-            'verification_code' => '123456',
+            'verification_code' => \App\Support\Auth\SmsCode::hash('123456'),
             'verification_code_expire_at' => now()->addMinutes(2),
         ]);
     }
@@ -144,7 +144,7 @@ class UserFactory extends Factory
     public function withActiveLoginOtp(): static
     {
         return $this->state(fn (array $attributes) => [
-            'login_verification_code' => '987654',
+            'login_verification_code' => \App\Support\Auth\SmsCode::hash('987654'),
             'login_verification_code_expire_at' => now()->addMinutes(2),
         ]);
     }

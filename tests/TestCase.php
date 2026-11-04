@@ -4,6 +4,7 @@ namespace Tests;
 
 use App\Models\Salon;
 use App\Services\SMSService;
+use App\Support\Auth\SmsCode;
 use App\Support\CurrentSalon;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Schema;
@@ -24,6 +25,7 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
+        SmsCode::flushIssued();
 
         $this->app->instance(SMSService::class, Mockery::mock(SMSService::class, function ($mock) {
             $mock->shouldReceive('send')->andReturn(true)->byDefault();
@@ -92,5 +94,16 @@ abstract class TestCase extends BaseTestCase
 
         $current->withSalon((int) $salon->id, fn () => \App\Models\BookingPolicy::current()
             ->update(['payment_mode' => \App\Models\BookingPolicy::MODE_PREPAY]));
+    }
+
+    /**
+     * آخرین کد پیامکی ساخته‌شده در همین آزمون (بررسی امنیتی M1: کد خام دیگر در users نیست، فقط HMAC آن).
+     */
+    protected function lastSmsCode(): string
+    {
+        $code = SmsCode::lastIssued();
+        $this->assertNotNull($code, 'هیچ کد پیامکی ساخته نشد');
+
+        return $code;
     }
 }

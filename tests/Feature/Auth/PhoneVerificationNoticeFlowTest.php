@@ -4,6 +4,7 @@ namespace Tests\Feature\Auth;
 
 use App\Jobs\SendPhoneVerificationCodeJob;
 use App\Models\User;
+use App\Support\Auth\SmsCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
@@ -157,7 +158,7 @@ class PhoneVerificationNoticeFlowTest extends TestCase
     public function test_verify_with_an_expired_code_fails(): void
     {
         $user = User::factory()->unverified()->create([
-            'verification_code' => '123456',
+            'verification_code' => SmsCode::hash('123456'),
             'verification_code_expire_at' => now()->subMinute(),
         ]);
 
@@ -222,7 +223,7 @@ class PhoneVerificationNoticeFlowTest extends TestCase
         $notice = $this->actingAs($user)->get(route('verification.notice'));
         $notice->assertOk();
 
-        $realCode = $user->fresh()->verification_code;
+        $realCode = $this->lastSmsCode();
 
         $verify = $this->actingAs($user)->postJson(route('verification.verify'), ['code' => $realCode]);
         $verify->assertOk();

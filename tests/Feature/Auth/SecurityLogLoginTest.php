@@ -34,7 +34,7 @@ class SecurityLogLoginTest extends TestCase
         $this->post('/login', ['phone' => $user->phone, 'password' => 'password123']);
         $user->refresh();
 
-        $this->post('/login/verify', ['code' => $user->login_verification_code]);
+        $this->post('/login/verify', ['code' => $this->lastSmsCode()]);
 
         $this->assertDatabaseHas('security_logs', [
             'event' => 'login_attempt',

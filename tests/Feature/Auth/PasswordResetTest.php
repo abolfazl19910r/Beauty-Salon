@@ -64,7 +64,7 @@ class PasswordResetTest extends TestCase
 
         $response = $this->post('/reset-password', [
             'token' => $token,
-            'code' => $user->verification_code,
+            'code' => $this->lastSmsCode(),
             'password' => 'new-password-123',
             'password_confirmation' => 'new-password-123',
         ]);
@@ -100,7 +100,7 @@ class PasswordResetTest extends TestCase
 
         $this->post('/reset-password', [
             'token' => $token,
-            'code' => $user->verification_code,
+            'code' => $this->lastSmsCode(),
             'password' => 'new-password-123',
             'password_confirmation' => 'new-password-123',
         ]);
@@ -156,7 +156,7 @@ class PasswordResetTest extends TestCase
 
         $this->post('/reset-password', [
             'token' => $token,
-            'code' => $staff->fresh()->verification_code,
+            'code' => $this->lastSmsCode(),
             'password' => 'NewStaffPass-99',
             'password_confirmation' => 'NewStaffPass-99',
         ])->assertRedirect(route('login'));

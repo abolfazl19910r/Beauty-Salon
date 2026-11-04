@@ -4,6 +4,7 @@ namespace App\Services\Api;
 
 use App\Jobs\SendPasswordResetCodeJob;
 use App\Models\User;
+use App\Support\Auth\SmsCode;
 use App\Support\Queues;
 use App\Support\SalonOfNotifiable;
 use Illuminate\Support\Facades\Hash;
@@ -24,12 +25,7 @@ class ApiPasswordResetService extends ApiLoginService
 
     protected function deliverCode(User $user): void
     {
-        $code = (string) random_int(100000, 999999);
-
-        $user->forceFill([
-            'verification_code' => $code,
-            'verification_code_expire_at' => now()->addMinutes((int) config('auth.reset_code_expire_minutes', 2)),
-        ])->save();
+        $code = SmsCode::issue($user, 'verification_code', 'verification_code_expire_at', (int) config('auth.reset_code_expire_minutes', 2));
 
         Queues::dispatchOtp(new SendPasswordResetCodeJob($user->id, $code, $user->salon_id ?? SalonOfNotifiable::resolve($user)));
     }
