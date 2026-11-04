@@ -83,7 +83,7 @@
                     <div class="space-y-4">
                         @foreach($services as $category)
                             <div class="rounded-lg overflow-hidden" style="border:1px solid var(--admin-border);">
-                                <button type="button" onclick="toggleCategory(this)"
+                                <button type="button" data-ui-click="toggleCategory"
                                         class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium text-right"
                                         style="background:var(--admin-accent-light); color:var(--admin-text);">
                                     <span>{{ $category->name }}</span>
@@ -156,6 +156,8 @@
 
 @push('scripts')
     <script @nonce>
+        uiActions.register({ toggleCategory: function () { toggleCategory(this); } });
+
         function toggleCategory(btn) {
             const body = btn.nextElementSibling;
             const icon = btn.querySelector('svg');

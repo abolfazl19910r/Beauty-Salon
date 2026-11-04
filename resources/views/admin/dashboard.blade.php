@@ -108,9 +108,9 @@
             </div>
             @permission('manage-wallet')
             <div class="flex items-center gap-1 p-1 rounded-lg" style="background: var(--admin-accent-light); border: 1px solid var(--admin-border);">
-                <button id="filter-today" class="filter-btn active" onclick="updateTimeFilter('today')">امروز</button>
-                <button id="filter-week"  class="filter-btn" onclick="updateTimeFilter('week')">هفته</button>
-                <button id="filter-month" class="filter-btn" onclick="updateTimeFilter('month')">ماه</button>
+                <button id="filter-today" class="filter-btn active" data-ui-click="updateTimeFilter" data-ui-args='["today"]'>امروز</button>
+                <button id="filter-week"  class="filter-btn" data-ui-click="updateTimeFilter" data-ui-args='["week"]'>هفته</button>
+                <button id="filter-month" class="filter-btn" data-ui-click="updateTimeFilter" data-ui-args='["month"]'>ماه</button>
             </div>
             @endpermission
         </div>
@@ -374,6 +374,7 @@
     <script @nonce>
         // امنیت (H2): متن آزاد کاربر (نام مشتری، نام خدمت، متن اعلان) پیش از innerHTML escape می‌شود
         function escHtml(v) { return String(v ?? '').replace(/[&<>"']/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c])); }
+        uiActions.register({ updateTimeFilter: function (event, period) { window.updateTimeFilter(period); } });
         document.addEventListener('DOMContentLoaded', function () {
 
             // Keep a reference to the chart to destroy before re-rendering

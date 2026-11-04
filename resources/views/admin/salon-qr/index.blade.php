@@ -20,7 +20,7 @@
         <form method="GET" action="{{ route('admin.salon-qr.index') }}" class="flex flex-wrap items-end gap-2 mb-5">
             <div>
                 <label for="qr-target" class="block text-xs mb-1" style="color:var(--admin-text-dim);">QR برای</label>
-                <select id="qr-target" name="specialist" onchange="this.form.submit()" class="rounded-lg px-3 py-2 text-sm"
+                <select id="qr-target" name="specialist" data-ui-autosubmit class="rounded-lg px-3 py-2 text-sm"
                         style="border:1px solid var(--admin-border); background:var(--admin-surface); color:var(--admin-text); min-width: 14rem;">
                     <option value="">کل سالن (صفحه‌ی اصلی)</option>
                     @foreach ($specialists as $specialist)

@@ -10,7 +10,7 @@
             </div>
             <div class="flex gap-2">
                 @if($wallet->pending_amount > 0)
-                    <button onclick="document.getElementById('settlePendingModal').classList.remove('hidden')"
+                    <button data-ui-show="#settlePendingModal"
                             class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                             style="background:rgb(var(--m-ok));"
                             data-ui-hover="background: rgb(var(--m-ok))"
@@ -21,7 +21,7 @@
                         تسویه‌ی دستی این متخصص
                     </button>
                 @endif
-                <button onclick="document.getElementById('adjustmentModal').classList.remove('hidden')"
+                <button data-ui-show="#adjustmentModal"
                         class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                         style="background:rgb(var(--m-gold));"
                         data-ui-hover="background: rgb(var(--m-gold))"
@@ -178,11 +178,11 @@
     {{-- Modal: manual settlement of pending amount for this specialist only --}}
     <div id="settlePendingModal" class="hidden fixed inset-0 z-50 flex items-center justify-center"
          style="background:rgba(15,23,42,0.5);"
-         onclick="if(event.target===this)this.classList.add('hidden')">
+         data-ui-backdrop>
         <div class="rounded-xl shadow-xl w-full max-w-md mx-4 fade-in" style="background:var(--admin-surface);">
             <div class="flex items-center justify-between px-5 py-4" style="border-bottom:1px solid var(--admin-border);">
                 <h2 class="text-base font-bold" style="color:var(--admin-text);">تسویه‌ی دستی موجودی در انتظار</h2>
-                <button type="button" onclick="document.getElementById('settlePendingModal').classList.add('hidden')"
+                <button type="button" data-ui-hide="#settlePendingModal"
                         class="w-7 h-7 rounded flex items-center justify-center"
                         style="color:var(--admin-text-dim);"
                         data-ui-hover="background: var(--admin-accent-light)"
@@ -206,7 +206,7 @@
                     </label>
                 </div>
                 <div class="flex justify-end gap-2 px-5 py-4" style="border-top:1px solid var(--admin-border);">
-                    <button type="button" onclick="document.getElementById('settlePendingModal').classList.add('hidden')"
+                    <button type="button" data-ui-hide="#settlePendingModal"
                             class="px-4 py-2 rounded-lg text-sm"
                             style="background:var(--admin-accent-light); color:var(--admin-text-dim);">انصراف</button>
                     <button type="submit"
@@ -225,11 +225,11 @@
     {{-- Modal modifier --}}
     <div id="adjustmentModal" class="hidden fixed inset-0 z-50 flex items-center justify-center"
          style="background:rgba(15,23,42,0.5);"
-         onclick="if(event.target===this)this.classList.add('hidden')">
+         data-ui-backdrop>
         <div class="rounded-xl shadow-xl w-full max-w-md mx-4 fade-in" style="background:var(--admin-surface);">
             <div class="flex items-center justify-between px-5 py-4" style="border-bottom:1px solid var(--admin-border);">
                 <h2 class="text-base font-bold" style="color:var(--admin-text);">تعدیل دستی موجودی</h2>
-                <button type="button" onclick="document.getElementById('adjustmentModal').classList.add('hidden')"
+                <button type="button" data-ui-hide="#adjustmentModal"
                         class="w-7 h-7 rounded flex items-center justify-center"
                         style="color:var(--admin-text-dim);"
                         data-ui-hover="background: var(--admin-accent-light)"
@@ -262,7 +262,7 @@
                     </div>
                 </div>
                 <div class="flex justify-end gap-2 px-5 py-4" style="border-top:1px solid var(--admin-border);">
-                    <button type="button" onclick="document.getElementById('adjustmentModal').classList.add('hidden')"
+                    <button type="button" data-ui-hide="#adjustmentModal"
                             class="px-4 py-2 rounded-lg text-sm"
                             style="background:var(--admin-accent-light); color:var(--admin-text-dim);">انصراف</button>
                     <button type="submit"

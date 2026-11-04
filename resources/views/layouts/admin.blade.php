@@ -125,7 +125,7 @@
         @include('layouts.admin-shell.rail', ['menu' => $adminMenu])
     @endif
 
-    <div id="sidebar-backdrop" class="md:hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-40 hidden" onclick="toggleSidebar()"></div>
+    <div id="sidebar-backdrop" class="md:hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-40 hidden" data-ui-click="toggleSidebar"></div>
 
     <div class="flex-1 flex flex-col relative overflow-hidden">
         @if (\App\Services\SuperAdmin\SuperAdminImpersonation::active())
@@ -141,7 +141,7 @@
         <!-- Header -->
         <header class="sticky top-0 z-30 shadow-sm" style="background: var(--admin-surface); border-bottom: 1px solid var(--admin-border);">
             <div class="px-4 py-3 flex justify-between items-center">
-                <button type="button" class="md:hidden focus:outline-none" style="color: var(--admin-text-dim);" onclick="toggleSidebar()">
+                <button type="button" class="md:hidden focus:outline-none" style="color: var(--admin-text-dim);" data-ui-click="toggleSidebar">
                     <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="3" y1="12" x2="21" y2="12"></line>
                         <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -156,7 +156,7 @@
                         {{ $adminSalon?->name ?? 'پنل مدیریت' }}
                     </a>
                 @elseif ($adminShell === 'rail')
-                    <button type="button" class="adm-cmd hidden md:flex" onclick="toggleSearchModal()">
+                    <button type="button" class="adm-cmd hidden md:flex" data-ui-click="toggleSearchModal">
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">{!! \App\Support\Admin\AdminMenu::ICONS['search'] !!}</svg>
                         <span>جستجوی خدمت، متخصص یا کاربر…</span>
                         <kbd dir="ltr">Ctrl K</kbd>
@@ -173,7 +173,7 @@
                             style="color: var(--admin-text-dim);"
                             data-ui-hover="background-color: var(--admin-accent-light)"
                             data-ui-unhover="background-color: "
-                            onclick="toggleSearchModal()">
+                            data-ui-click="toggleSearchModal">
                         <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8"></circle>
                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -326,7 +326,7 @@
                         </svg>
                         <span class="mr-3">{{ session('success') }}</span>
                     </div>
-                    <button onclick="document.getElementById('flash-success').remove()" class="mr-2 opacity-60 hover:opacity-100 transition-opacity">
+                    <button data-ui-remove="#flash-success" class="mr-2 opacity-60 hover:opacity-100 transition-opacity">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
@@ -365,7 +365,7 @@
                         </svg>
                         <span class="mr-3">{{ session('error') }}</span>
                     </div>
-                    <button onclick="document.getElementById('flash-error').remove()" class="mr-2 opacity-60 hover:opacity-100 transition-opacity">
+                    <button data-ui-remove="#flash-error" class="mr-2 opacity-60 hover:opacity-100 transition-opacity">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
@@ -396,7 +396,7 @@
      class="fixed inset-0 z-[100] hidden flex items-start justify-center pt-16"
      style="background: rgba(10, 8, 6, 0.55);"
      aria-modal="true" role="dialog"
-     onclick="closeSearchModalIfClickOutside(event)">
+     data-ui-click="closeSearchModalIfClickOutside">
     <div class="rounded-xl shadow-xl w-full max-w-lg mx-4 overflow-hidden fade-in"
          style="background: var(--admin-surface);"
          role="document"
@@ -419,7 +419,7 @@
                     </div>
                 </div>
                 <div class="mt-4 flex justify-end gap-2">
-                    <button type="button" onclick="toggleSearchModal()"
+                    <button type="button" data-ui-click="toggleSearchModal"
                             class="px-4 py-2 text-sm font-medium rounded-lg transition-colors"
                             style="background: var(--admin-accent-light); color: var(--admin-text-dim);"
                             data-ui-hover="background: var(--admin-border)"
@@ -631,6 +631,13 @@
         const content = document.getElementById('search-modal-content');
         if (modal && content && event.target === modal) toggleSearchModal();
     }
+
+    // H3 مرحله‌ی ۲: دکمه‌های data-ui-click (partials/ui-handlers)
+    uiActions.register({
+        toggleSidebar: function () { toggleSidebar(); },
+        toggleSearchModal: function () { toggleSearchModal(); },
+        closeSearchModalIfClickOutside: function (event) { closeSearchModalIfClickOutside(event); },
+    });
 
     document.addEventListener('DOMContentLoaded', function() {
         fetchUnreadCount();

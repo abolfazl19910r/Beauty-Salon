@@ -85,14 +85,14 @@
                                     <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </a>
                                 <button type="button"
-                                        onclick="toggleReadStatus('{{ $notification->id }}', this)"
+                                        data-ui-click="toggleReadStatus" data-ui-args="{{ json_encode([$notification->id]) }}"
                                         class="toggle-btn p-2 rounded-lg transition-colors"
                                         title="{{ $isRead ? 'علامت‌گذاری خوانده‌نشده' : 'علامت‌گذاری خوانده‌شده' }}"
                                         style="{{ $isRead ? 'color:rgb(var(--m-warn));background:rgb(var(--m-warn) / .1)' : 'color:rgb(var(--m-ok));background:rgb(var(--m-ok) / .1)' }}">
                                     <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
                                 </button>
                                 <button type="button"
-                                        onclick="deleteSingleNotification('{{ $notification->id }}')"
+                                        data-ui-click="deleteSingleNotification" data-ui-args="{{ json_encode([$notification->id]) }}"
                                         class="p-2 rounded-lg transition-colors" title="حذف"
                                         style="color:rgb(var(--m-bad));background:rgb(var(--m-bad) / .1)">
                                     <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -113,6 +113,11 @@
 
 @push('scripts')
     <script @nonce>
+        uiActions.register({
+            toggleReadStatus: function (event, id) { toggleReadStatus(id, this); },
+            deleteSingleNotification: function (event, id) { deleteSingleNotification(id); },
+        });
+
         function updateHeaderNotificationCount() {
             if (typeof window.refreshNotificationCount === 'function') window.refreshNotificationCount();
             try { localStorage.setItem('notification_updated', Date.now().toString()); } catch(e) {}

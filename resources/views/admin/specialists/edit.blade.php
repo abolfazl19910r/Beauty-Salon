@@ -96,7 +96,7 @@
                         @foreach($services as $category)
                             @php $hasChecked = $category->services->pluck('id')->intersect($selectedServices)->isNotEmpty(); @endphp
                             <div class="rounded-lg overflow-hidden" style="border:1px solid var(--admin-border);">
-                                <button type="button" onclick="toggleCategory(this)"
+                                <button type="button" data-ui-click="toggleCategory"
                                         class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium text-right"
                                         style="background:var(--admin-accent-light); color:var(--admin-text);">
                             <span class="flex items-center gap-2">
@@ -163,7 +163,7 @@
                     </div>
                     <div class="flex items-center gap-3 self-end pb-1">
                         <button type="button"
-                                onclick="document.querySelector('[name=commission_rate]').value=''"
+                                data-ui-clear="[name=commission_rate]"
                                 class="inline-flex items-center gap-1 px-3 py-2 text-xs rounded-lg border transition-colors"
                                 style="color:var(--admin-text-dim);border-color:var(--admin-border);background:var(--admin-bg)">
                             <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -200,6 +200,8 @@
 
 @push('scripts')
     <script @nonce>
+        uiActions.register({ toggleCategory: function () { toggleCategory(this); } });
+
         function toggleCategory(btn) {
             const body = btn.nextElementSibling;
             const icon = btn.querySelector('svg');

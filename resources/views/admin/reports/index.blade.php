@@ -79,7 +79,7 @@
                     <label class="block text-xs mb-2 font-medium" style="color:var(--admin-text-dim);">نوع گزارش</label>
                     <div class="flex gap-2">
                         @foreach(['daily'=>'روزانه','weekly'=>'هفتگی','monthly'=>'ماهانه'] as $val=>$lbl)
-                            <button type="button" onclick="setType('{{ $val }}')"
+                            <button type="button" data-ui-click="setType" data-ui-args="{{ json_encode([$val]) }}"
                                     id="type-btn-{{ $val }}"
                                     class="px-4 py-2 rounded-lg text-sm font-medium transition-colors type-btn">
                                 {{ $lbl }}
@@ -184,10 +184,10 @@
         {{-- Fevers --}}
         <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface);border:1px solid var(--admin-border);">
             <div class="flex border-b" style="border-color:var(--admin-border);">
-                <button class="rtab active" onclick="showTab('revenue',this)">📊 درآمد</button>
-                <button class="rtab" onclick="showTab('specialists',this)">👥 متخصصین</button>
-                <button class="rtab" onclick="showTab('services',this)">✂️ خدمات</button>
-                <button class="rtab" onclick="showTab('satisfaction',this)">⭐ رضایت</button>
+                <button class="rtab active" data-ui-click="showTab" data-ui-args='["revenue"]'>📊 درآمد</button>
+                <button class="rtab" data-ui-click="showTab" data-ui-args='["specialists"]'>👥 متخصصین</button>
+                <button class="rtab" data-ui-click="showTab" data-ui-args='["services"]'>✂️ خدمات</button>
+                <button class="rtab" data-ui-click="showTab" data-ui-args='["satisfaction"]'>⭐ رضایت</button>
             </div>
 
             {{-- Income fever --}}
@@ -368,6 +368,11 @@
 @push('scripts')
     @vite('resources/js/vendor/chartjs.js')
     <script @nonce>
+        uiActions.register({
+            setType: function (event, type) { window.setType(type); },
+            showTab: function (event, id) { showTab(id, this); },
+        });
+
         /* ── Data from PHP ── */
         const revenueData    = @json($revenueChart ?? []);
         const monthlyData    = @json($monthlyBreakdown ?? collect());

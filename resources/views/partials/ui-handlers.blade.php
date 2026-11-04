@@ -13,10 +13,13 @@
       data-ui-show / data-ui-hide="#id"    ← کلیک: برداشتن / گذاشتن کلاس hidden
       data-ui-backdrop[="#id"]             ← کلیک روی خود پس‌زمینه‌ی مودال (نه محتوایش): hidden (پیش‌فرض خود عنصر)
       data-ui-remove[="#id"]               ← کلیک: حذف عنصر (پیش‌فرض خود عنصر)
+      data-ui-clear="selector"             ← کلیک: خالی کردن مقدار فیلد(ها)
+      data-ui-change-style="…" + data-ui-target="selector"  ← change: همان style روی عنصر(های) هدف
       data-ui-autosubmit                   ← change: this.form.submit()
       data-ui-navigate                     ← change: رفتن به this.value
     کارهای خاص هر صفحه (تابع‌های خود صفحه، در <script @nonce> همان صفحه):
-      data-ui-click|change|input|submit="نام" و data-ui-args='[…]' (JSON، اختیاری)
+      data-ui-click|change|input|submit="نام" و data-ui-args (آرایه‌ی JSON، اختیاری) — در Blade:
+      data-ui-args="{{ json_encode([...]) }}" (نه @json: آرگومانش را روی «,» می‌شکند و آرایه‌ی چندعضوی خراب می‌شود)
       uiActions.register({ نام: function (event, ...args) { this = عنصر; return false = preventDefault } })
     فقط کارهای ثبت‌شده اجرا می‌شوند (نه هر تابع سراسری) تا HTML تزریقی نتواند تابع دلخواه صدا بزند.
     تست: InlineEventHandlersTest (هیچ on…= و javascript: در resources/views نماند).
@@ -107,6 +110,7 @@
             if (el.hasAttribute('data-ui-hide')) targets(el, 'data-ui-hide').forEach(function (t) { t.classList.add('hidden'); });
             if (el.hasAttribute('data-ui-backdrop') && e.target === el) targets(el, 'data-ui-backdrop').forEach(function (t) { t.classList.add('hidden'); });
             if (el.hasAttribute('data-ui-remove')) targets(el, 'data-ui-remove').forEach(function (t) { t.remove(); });
+            if (el.hasAttribute('data-ui-clear')) targets(el, 'data-ui-clear').forEach(function (t) { t.value = ''; });
             if (e.cancelBubble) return;
         }
     }, true);
@@ -115,6 +119,7 @@
         walk(e, 'data-ui-change', function (el) { run(el, e, 'data-ui-change'); });
         var el = e.target;
         if (el.nodeType !== 1) return;
+        if (el.hasAttribute('data-ui-change-style')) targets(el, 'data-ui-target').forEach(function (t) { applyStyle(t, el.getAttribute('data-ui-change-style')); });
         if (el.hasAttribute('data-ui-autosubmit') && el.form) el.form.submit();
         if (el.hasAttribute('data-ui-navigate')) window.location.href = el.value;
     }, true);

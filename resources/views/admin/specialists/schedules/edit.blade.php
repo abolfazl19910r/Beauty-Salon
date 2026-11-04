@@ -89,7 +89,7 @@
                                 <input type="checkbox"
                                        name="schedules[{{ $dayNum }}][is_active]"
                                        value="1"
-                                       onchange="toggleDay({{ $dayNum }}, this.checked)"
+                                       data-ui-change="toggleDay" data-ui-args="[{{ $dayNum }}]"
                                     {{ $isActive ? 'checked' : '' }}>
                                 <span class="toggle-slider"></span>
                             </label>
@@ -162,6 +162,8 @@
 
 @push('scripts')
     <script @nonce>
+        uiActions.register({ toggleDay: function (event, dayNum) { toggleDay(dayNum, this.checked); } });
+
         function toggleDay(dayNum, isActive) {
             const card = document.getElementById('day-card-' + dayNum);
             const body = document.getElementById('day-body-' + dayNum);

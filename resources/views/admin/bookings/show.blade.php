@@ -288,7 +288,7 @@
 
                     @permission('edit-bookings')
                     @if ($booking->canBeMarkedNoShow())
-                        <form method="POST" action="{{ route('admin.bookings.no-show', $booking) }}" onsubmit="return confirm('مشتری نیامد؟ پیش‌پرداخت برنمی‌گردد و جلسه‌ی دوره (اگر هست) می‌سوزد.')">
+                        <form method="POST" action="{{ route('admin.bookings.no-show', $booking) }}" data-ui-confirm="مشتری نیامد؟ پیش‌پرداخت برنمی‌گردد و جلسه‌ی دوره (اگر هست) می‌سوزد.">
                             @csrf
                             <button type="submit" class="w-full py-2.5 px-4 rounded-lg text-sm font-medium" style="border:1px solid var(--admin-border); color:var(--admin-text);">ثبت «نیامد»</button>
                         </form>

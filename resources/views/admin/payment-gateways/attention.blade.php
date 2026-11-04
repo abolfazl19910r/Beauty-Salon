@@ -53,7 +53,7 @@
                            class="flex-1 rounded-lg px-3 py-2 text-sm" style="border:1px solid var(--admin-border); background:var(--admin-bg); color:var(--admin-text);">
                     @if($canCredit)
                         <button type="submit" name="action" value="wallet_credit" class="px-4 py-2 rounded-lg text-sm font-bold text-m-onsolid" style="background:rgb(var(--m-ok));"
-                                onclick="return confirm('{{ number_format($toman) }} تومان به کیف پول مشتری واریز شود؟ فقط اگر در پنل درگاه دیده‌اید مبلغ گرفته شده.')">
+                                data-ui-confirm="{{ number_format($toman) }} تومان به کیف پول مشتری واریز شود؟ فقط اگر در پنل درگاه دیده‌اید مبلغ گرفته شده.">
                             واریز به کیف پول مشتری
                         </button>
                     @endif

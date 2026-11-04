@@ -100,14 +100,14 @@
                                 <label class="role-check">
                                     <input type="radio" name="salon_role" value="owner"
                                            {{ old('salon_role', $salonRole) === 'owner' ? 'checked' : '' }}
-                                           onchange="document.getElementById('edit-finance-access-box').style.display='none'"
+                                           data-ui-target="#edit-finance-access-box" data-ui-change-style="display: none"
                                            style="accent-color:var(--admin-accent); width:15px; height:15px;">
                                     <span style="color:var(--admin-text);">مالک (owner) — دسترسی کامل به همه‌ی بخش‌های سالن</span>
                                 </label>
                                 <label class="role-check">
                                     <input type="radio" name="salon_role" value="staff"
                                            {{ old('salon_role', $salonRole) === 'staff' ? 'checked' : '' }}
-                                           onchange="document.getElementById('edit-finance-access-box').style.display='flex'"
+                                           data-ui-target="#edit-finance-access-box" data-ui-change-style="display: flex"
                                            style="accent-color:var(--admin-accent); width:15px; height:15px;">
                                     <span style="color:var(--admin-text);">منشی (staff) — فقط ثبت/مدیریت نوبت دستی، بدون مالی و بدون مدیریت ادمین‌ها</span>
                                 </label>

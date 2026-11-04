@@ -71,7 +71,7 @@
             <div class="flex flex-wrap items-center gap-3">
                 {{-- وضعیت --}}
 
-                <select onchange="window.location.href=this.value"
+                <select data-ui-navigate
                         class="text-sm rounded-lg px-3 py-2 outline-none transition"
                         style="border:1px solid var(--admin-border); background:var(--admin-bg); color:var(--admin-text);"
                         data-ui-focus="border-color: var(--admin-accent)"

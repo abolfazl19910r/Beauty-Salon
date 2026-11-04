@@ -9,6 +9,16 @@
         $platformAnnouncements = collect(); // پیش از migrate
     }
 @endphp
+@if ($platformAnnouncements->isNotEmpty())
+    <script @nonce>
+        uiActions.register({
+            dismissPlatformAnnouncement: function () {
+                try { localStorage.setItem(this.parentNode.dataset.platformAnnouncement, '1'); } catch (e) {}
+                this.parentNode.remove();
+            },
+        });
+    </script>
+@endif
 @foreach ($platformAnnouncements as $pa)
     @php
         $paKey = 'pa-'.$pa->id.'-'.$pa->updated_at?->timestamp;
@@ -20,7 +30,7 @@
         <span class="flex-1" style="white-space: pre-line;">{{ $pa->body }}</span>
         @if ($pa->level !== 'critical')
             <button type="button" aria-label="بستن اطلاعیه" class="shrink-0 px-2" style="color: rgb(var(--m-mu));"
-                    onclick="try{localStorage.setItem(this.parentNode.dataset.platformAnnouncement,'1')}catch(e){}this.parentNode.remove()">×</button>
+                    data-ui-click="dismissPlatformAnnouncement">×</button>
             <script @nonce>try{if(localStorage.getItem(@json($paKey)))document.querySelector('[data-platform-announcement="{{ $paKey }}"]').remove()}catch(e){}</script>
         @endif
     </div>

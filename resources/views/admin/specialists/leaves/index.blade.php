@@ -32,7 +32,7 @@
                 <p class="text-sm mt-0.5" style="color:var(--admin-text-dim);">{{ $specialist->name }}</p>
             </div>
             <div class="flex gap-2">
-                <button type="button" onclick="document.getElementById('leave-modal').classList.remove('hidden')"
+                <button type="button" data-ui-show="#leave-modal"
                         class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                         style="background:var(--admin-accent);"
                         data-ui-hover="background: var(--admin-accent-hover)"
@@ -97,7 +97,7 @@
                                             </button>
                                         </form>
                                         <button type="button" title="رد"
-                                                onclick="openRejectModal('{{ route('admin.specialists.leaves.update', [$specialist, $leave]) }}')"
+                                                data-ui-click="openRejectModal" data-ui-args="{{ json_encode([route('admin.specialists.leaves.update', [$specialist, $leave])]) }}"
                                                 class="w-7 h-7 rounded flex items-center justify-center transition-colors"
                                                 style="color:rgb(var(--m-bad));"
                                                 data-ui-hover="background: rgb(var(--m-bad) / .1)"
@@ -130,12 +130,12 @@
 
     <div id="leave-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center"
          style="background:rgba(15,23,42,0.5);"
-         onclick="if(event.target===this)this.classList.add('hidden')">
+         data-ui-backdrop>
         <div class="rounded-xl shadow-xl w-full max-w-md mx-4 fade-in"
              style="background:var(--admin-surface);">
             <div class="flex items-center justify-between px-5 py-4" style="border-bottom:1px solid var(--admin-border);">
                 <h2 class="text-base font-bold" style="color:var(--admin-text);">ثبت مرخصی جدید</h2>
-                <button type="button" onclick="document.getElementById('leave-modal').classList.add('hidden')"
+                <button type="button" data-ui-hide="#leave-modal"
                         class="w-7 h-7 rounded flex items-center justify-center transition-colors"
                         style="color:var(--admin-text-dim);"
                         data-ui-hover="background: var(--admin-accent-light)"
@@ -170,7 +170,7 @@
                     </div>
                 </div>
                 <div class="flex justify-end gap-2 px-5 py-4" style="border-top:1px solid var(--admin-border);">
-                    <button type="button" onclick="document.getElementById('leave-modal').classList.add('hidden')"
+                    <button type="button" data-ui-hide="#leave-modal"
                             class="px-4 py-2 rounded-lg text-sm transition-colors"
                             style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
                             data-ui-hover="background: var(--admin-border)"
@@ -188,11 +188,11 @@
     {{-- Reject reason modal --}}
     <div id="reject-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center"
          style="background:rgba(15,23,42,0.5);"
-         onclick="if(event.target===this)document.getElementById('reject-modal').classList.add('hidden')">
+         data-ui-backdrop="#reject-modal">
         <div class="rounded-xl shadow-xl w-full max-w-md mx-4 fade-in" style="background:var(--admin-surface);">
             <div class="flex items-center justify-between px-5 py-4" style="border-bottom:1px solid var(--admin-border);">
                 <h2 class="text-base font-bold" style="color:rgb(var(--m-bad));">رد درخواست مرخصی</h2>
-                <button type="button" onclick="document.getElementById('reject-modal').classList.add('hidden')"
+                <button type="button" data-ui-hide="#reject-modal"
                         class="w-7 h-7 rounded flex items-center justify-center transition-colors"
                         style="color:var(--admin-text-dim);">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -208,7 +208,7 @@
                     <textarea name="reject_reason" rows="3" required class="form-input" placeholder="دلیل رد درخواست مرخصی را بنویسید..."></textarea>
                 </div>
                 <div class="flex justify-end gap-2 px-5 py-4" style="border-top:1px solid var(--admin-border);">
-                    <button type="button" onclick="document.getElementById('reject-modal').classList.add('hidden')"
+                    <button type="button" data-ui-hide="#reject-modal"
                             class="px-4 py-2 rounded-lg text-sm transition-colors"
                             style="background:var(--admin-accent-light); color:var(--admin-text-dim);">انصراف</button>
                     <button type="submit" class="px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid transition-colors" style="background:rgb(var(--m-bad));">رد درخواست</button>
@@ -222,6 +222,7 @@
             document.getElementById('reject-form').action = actionUrl;
             document.getElementById('reject-modal').classList.remove('hidden');
         }
+        uiActions.register({ openRejectModal: function (event, url) { openRejectModal(url); } });
     </script>
 @endsection
 

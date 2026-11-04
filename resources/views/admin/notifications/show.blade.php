@@ -88,7 +88,7 @@
                     @endif
 
                     <button type="button" id="toggle-btn"
-                            onclick="toggleNotification('{{ $notification->id }}')"
+                            data-ui-click="toggleNotification" data-ui-args="{{ json_encode([$notification->id]) }}"
                             data-read="{{ $isRead ? 'true' : 'false' }}"
                             class="inline-flex items-center gap-2 px-5 py-2 text-sm text-m-onsolid rounded-lg"
                             style="background:{{ $isRead ? 'rgb(var(--m-warn))' : 'rgb(var(--m-ok))' }}">
@@ -97,7 +97,7 @@
                     </button>
 
                     <button type="button"
-                            onclick="deleteNotification('{{ $notification->id }}')"
+                            data-ui-click="deleteNotification" data-ui-args="{{ json_encode([$notification->id]) }}"
                             class="inline-flex items-center gap-2 px-5 py-2 text-sm text-m-onsolid rounded-lg"
                             style="background:rgb(var(--m-bad))">
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -112,6 +112,11 @@
 
 @push('scripts')
     <script @nonce>
+        uiActions.register({
+            toggleNotification: function (event, id) { toggleNotification(id); },
+            deleteNotification: function (event, id) { deleteNotification(id); },
+        });
+
         function updateHeaderNotificationCount() {
             if (typeof window.refreshNotificationCount === 'function') window.refreshNotificationCount();
             try { localStorage.setItem('notification_updated', Date.now().toString()); } catch(e) {}
