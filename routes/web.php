@@ -271,6 +271,7 @@ Route::post('/impersonation/leave', [\App\Http\Controllers\SuperAdmin\Impersonat
     ->middleware('auth')->name('impersonation.leave');
 
 // ⭐ Phase 1 SaaS multi-tenant (feat/saas-multi-tenant-salons, commit 4).
-Route::prefix('superadmin')->name('superadmin.')->middleware(['auth', 'super_admin'])->group(function () {
+// بررسی امنیتی M4: superadmin.ip پیش از auth (SUPERADMIN_ALLOWED_IPS؛ خالی = همه)
+Route::prefix('superadmin')->name('superadmin.')->middleware(['superadmin.ip', 'auth', 'super_admin'])->group(function () {
     require __DIR__.'/super-admin.php';
 });

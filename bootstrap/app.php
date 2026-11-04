@@ -62,6 +62,12 @@ return Application::configure(basePath: dirname(__DIR__))
             );
         }
 
+        // بررسی امنیتی M4: محدودیت IP پنل ابرمدیر پیش از Authenticate — مهمان از IP دیگر ۴۰۴ می‌گیرد، نه انتقال به صفحه‌ی ورود
+        $middleware->prependToPriorityList(
+            before: \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
+            prepend: \App\Http\Middleware\RestrictSuperAdminIp::class,
+        );
+
         $middleware->alias([
             'check.booking.ownership' => \App\Http\Middleware\CheckBookingOwnership::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
@@ -81,6 +87,7 @@ return Application::configure(basePath: dirname(__DIR__))
             '2fa.enabled' => \App\Http\Middleware\EnsureTwoFactorVerifiedForPayment::class,
             // ⭐ Phase 1 SaaS multi-tenant (feat/saas-multi-tenant-salons, commit 3).
             'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
+            'superadmin.ip' => \App\Http\Middleware\RestrictSuperAdminIp::class,
             // «ورود اضطراری» ابرمدیر (۲۰۲۶-۱۰-۱۵): رمز/مشخصات ورود مالک در حالت پشتیبانی عوض نشود
             'not_impersonating' => \App\Http\Middleware\BlockWhileImpersonating::class,
             'salon.active' => \App\Http\Middleware\EnsureAdminSalonActive::class,

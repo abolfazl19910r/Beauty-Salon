@@ -54,4 +54,9 @@ return [
         ],
     ],
 
+    // ─── پنل ابرمدیر فقط از IPهای مشخص (بررسی امنیتی ۲۰۲۶-۱۱-۰۴، M4) ─────────────────────────────────────────────
+    // SUPERADMIN_ALLOWED_IPS: فهرست با کاما، IP یا CIDR (IPv4/IPv6)، مثل «5.6.7.8,10.0.0.0/8». خالی = همه (تصمیم فعلی ابوالفضل:
+    // فعلاً باز، فقط آماده). IP واقعی کاربر پشت CDN از TrustProxies می‌آید. IP دیگر ← ۴۰۴ (وجود پنل لو نمی‌رود)؛ App\Http\Middleware\RestrictSuperAdminIp.
+    'superadmin_allowed_ips' => array_values(array_filter(array_map('trim', explode(',', (string) env('SUPERADMIN_ALLOWED_IPS', ''))))),
+
 ];
