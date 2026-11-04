@@ -82,7 +82,8 @@
 - RBAC با نقش‌های مختص هر سالن و مجوزهای مشترک (مثلاً منشی بدون دسترسی مالی)
 - محدودسازی تلاش ورود، لاگ رویدادهای امنیتی، لاگ کارهای ابرمدیر
 - پروکسی‌های مورد اعتماد قابل تنظیم (`TRUSTED_PROXIES`) تا IP واقعی کاربر پشت CDN دیده شود؛ پیش‌فرض: به هیچ پروکسی اعتماد نمی‌شود
-- امنیت مستقل از CDN: هدرهای امنیتی و HSTS از خود برنامه، CSP (اول فقط گزارش)، محدودیت نرخ روی مسیرهای حساس، HTTPS روی سرور اصلی، حالت بدون CDN
+- امنیت مستقل از CDN: هدرهای امنیتی و HSTS از خود برنامه، CSP اجرایی با nonce (اسکریپت بی `'unsafe-inline'` فعلاً در حالت گزارش)، محدودیت نرخ روی مسیرهای حساس و در nginx، HTTPS روی سرور اصلی، حالت بدون CDN
+- سقف ارسال کد پیامکی (هر شماره، هر IP، کل پلتفرم)، کدهای پیامکی هش‌شده با حداکثر ۵ تلاش، پنل ابرمدیر قابل محدود کردن به IP
 - نگهداری IP و user agent ورودها و کارهای کلیدی شش ماه (ماده‌ی ۶۶۸)، لاگ دسترسی nginx ماندگار، پاک‌سازی خودکار، بایگانی رمزنگاری‌شده‌ی حساب حذف‌شده
 - صفحه‌های حقوقی (حریم خصوصی، قوانین، تماس)، ثبت پذیرش قوانین با نسخه و IP، نشان اینماد، شکایت با مهلت ۷۲ ساعت، احراز هویت و مجوز سالن
 
@@ -301,6 +302,10 @@ KAVENEGAR_TEMPLATE_REGISTER=       # خالی = register-verify
 KAVENEGAR_TEMPLATE_RESET=          # خالی = reset-password
 KAVENEGAR_TEMPLATE_2FA=            # خالی = two-factor-auth
 SMS_LINK_HOST=                     # میزبان لینک کوتاه پیامک؛ خالی = CENTRAL_DOMAIN
+OTP_PER_PHONE_10MIN=               # سقف کد تأیید: خالی = ۳ در ۱۰ دقیقه برای هر شماره
+OTP_PER_PHONE_DAY=                 # خالی = ۱۰ در روز برای هر شماره
+OTP_PER_IP_HOUR=                   # خالی = ۳۰ در ساعت برای هر IP
+OTP_PLATFORM_DAILY=                # خالی = ۲۰۰۰ در روز کل پلتفرم (اعلان ابرمدیر در ۸۰٪ و پر شدن، بعد توقف تا فردا)؛ ۰ = بی سقف
 ```
 > **الگوهای کد تأیید در پنل کاوه‌نگار** (متد `verify/lookup`؛ **سرویس «پیشرفته» کاوه‌نگار لازم است**، وگرنه خطای ۴۲۶ و هیچ کدی نمی‌رسد). هر چهار الگو فقط `%token` (کد عددی) می‌گیرند؛ مهلت‌ها باید با متن بخوانند:
 >
@@ -332,6 +337,9 @@ LOGIN_THROTTLE_MINUTES=1
 TRUSTED_PROXIES=                   # رنج IP لبه‌های CDN (سرور آروان: deploy/single/arvan-ips.sh). هرگز «*»
 HSTS_MAX_AGE=                      # فقط روی HTTPS؛ خالی = یک سال، 0 = خاموش
 SECURITY_CSP=enforce              # enforce (پیش‌فرض؛ تخلف‌ها در storage/logs/csp-*.log)، report (فقط گزارش) یا off — با APP_ENV=local داشبورد /telescope بی CSP است
+SECURITY_CSP_STRICT_SCRIPTS=report # script-src بی 'unsafe-inline' با nonce: report (پیش‌فرض، سیاست دوم Report-Only)، enforce (بعد از انتقال onclick=… به JS)، off
+SUPERADMIN_ALLOWED_IPS=            # پنل ابرمدیر فقط از این IP/CIDRها (با کاما)؛ خالی = همه؛ بقیه ۴۰۴
+AUTH_TRUSTED_DEVICE_STAFF_DAYS=30  # «دستگاه شناخته‌شده» (ورود بی کد) برای کادر سالن؛ ابرمدیر همیشه کد می‌خواهد
 RETENTION_DAYS=190                 # نگهداری IP و لاگ‌ها (ماده‌ی ۶۶۸)؛ کمتر از ۱۸۴ پذیرفته نمی‌شود
 LEGAL_PAGES_REVIEWED=false         # true بعد از بازبینی حقوق‌دان (برچسب «پیش‌نویس» برداشته می‌شود)
 SALON_VERIFIER=manual              # احراز سالن: manual (ابرمدیر)؛ بعداً سامانه‌ی رسمی
@@ -654,6 +662,17 @@ php artisan up
 ## 🆕 آخرین تغییرات
 
 تاریخچه‌ی کامل، تصمیم‌ها و قدم‌های باز در [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md).
+
+**۲۰۲۶-۱۱-۰۴ — پیاده‌سازی بررسی امنیتی (H1–H5، M1–M4، M6، M7، L1، L2؛ H3 مرحله‌ی ۱)**
+- **XSS:** متن مقاله‌ی بلاگ سالن حالا متن ساده است (HTML نوشته‌شده به‌صورت متن نمایش داده می‌شود)؛ نام مشتری و متن اعلان‌ها در فهرست اعلان‌ها، زنگوله‌ی پنل مدیر و متخصص و داشبورد escape می‌شود.
+- **سقف کد پیامکی** (همه‌ی کدهای تأیید): هر شماره ۳ در ۱۰ دقیقه و ۱۰ در روز، هر IP ‏۳۰ در ساعت، کل پلتفرم ۲٬۰۰۰ در روز (در ۸۰٪ و پر شدن اعلان ابرمدیر؛ بعد توقف تا فردا). رد شدن بی‌صداست (صفحه همان «کد فرستاده شد»). `OTP_PER_PHONE_10MIN`، `OTP_PER_PHONE_DAY`، `OTP_PER_IP_HOUR`، `OTP_PLATFORM_DAILY` (خالی = پیش‌فرض، ۰ = بی سقف).
+- **کدهای پیامکی وب** (فراموشی رمز، کد ورود، تأیید موبایل، دومرحله‌ای): فقط HMAC کد در `users` ذخیره می‌شود و هر کد حداکثر ۵ بار غلط؛ بعد کد می‌سوزد و کاربر کد تازه می‌گیرد.
+- **لاگ:** کد ورود/ثبت‌نام فقط در حالت «فقط لاگ» (`SMS_LOG_ONLY=true` یا local) در لاگ می‌آید؛ خطای شارژ کیف پول فقط مبلغ را لاگ می‌کند.
+- **داکر:** nginx سقف نرخ دارد (هر IP ‏۱۰ درخواست PHP در ثانیه با burst ‏۴۰؛ POST ورود/ثبت‌نام/کد ۲۰ در دقیقه؛ پاسخ ۴۲۹)، timeout ‏PHP ‏۶۰ ثانیه، `pm.max_children` ‏۲۰؛ هیچ فایلی زیر `/storage/` به PHP نمی‌رسد. مسیر امضاشده‌ی `/storage/{path}` دیسک خصوصی بسته شد.
+- **ابرمدیر:** «دستگاه شناخته‌شده» دیگر کد پیامکی ابرمدیر را حذف نمی‌کند؛ برای کادر سالن ۳۰ روز (`AUTH_TRUSTED_DEVICE_STAFF_DAYS`)، مشتری همان ۹۰. `SUPERADMIN_ALLOWED_IPS` (خالی = همه، فعلاً خالی): پنل ابرمدیر فقط از این IPها، بقیه ۴۰۴.
+- **وابستگی‌ها:** `npm audit fix` (axios، vite، postcss، …) — ۰ آسیب‌پذیری؛ Symfony ‏http-foundation/http-kernel/routing/yaml ‏7.4.23 (هشدارهای ۲۰۲۶-۱۱-۰۴) — `composer audit` تمیز.
+- **CSP (مرحله‌ی ۱):** هر صفحه nonce دارد و همه‌ی `<script>`های درون‌خطی با `@nonce`؛ کنار سیاست اجرایی فعلی، یک سیاست Report-Only بی `'unsafe-inline'` تخلف‌های باقی‌مانده (onclick/onmouseover=… صفحه‌ها) را در `storage/logs/csp-*.log` ثبت می‌کند (`SECURITY_CSP_STRICT_SCRIPTS`: report پیش‌فرض، enforce بعد از مرحله‌ی ۲، off).
+- **بعد از گرفتن پچ‌ها:** `composer install`؛ دیتابیس از نو (طول سه ستون کد در `users` عوض شد): XAMPP ‏`php artisan migrate:fresh --seed` و `php artisan superadmin:create`؛ `npm ci && npm run build`؛ `php artisan optimize:clear`. داکر تک‌کانتینری: پیش از build ‏`docker compose -f docker-compose.single.yml exec -u www app php artisan db:wipe --force`، بعد `up -d --build`، ‏`exec -u www app php artisan db:seed --force` و `superadmin:create` (یا `down -v` و `up -d --build`).
 
 **۲۰۲۶-۱۱-۰۴ — کاوه‌نگار: TLS، الگوی 2FA، هشدار خطای حساب**
 - SDK ‏`kavenegar/php` گواهی TLS ‏`api.kavenegar.com` را به‌صورت پیش‌فرض بررسی نمی‌کرد (کلید API و کدهای ورود بی اطمینان از طرف مقابل)؛ حالا روشن است (`KAVENEGAR_SSL_VERIFY`، خالی = روشن).

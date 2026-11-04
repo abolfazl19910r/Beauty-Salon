@@ -654,6 +654,17 @@ Cron and workers: [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCH
 
 Full history, decisions and open items in [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md) (Persian).
 
+**2026-11-04 — security audit implemented (H1–H5, M1–M4, M6, M7, L1, L2; H3 stage 1)**
+- **XSS:** salon blog posts are plain text; customer names and notification texts are escaped in the notification list, the admin/specialist bell and the dashboard.
+- **Verification-code SMS caps:** per phone 3 per 10 minutes and 10 per day, per IP 30 per hour, whole platform 2,000 per day (super-admin alert at 80% and when full, then stop until tomorrow). Blocked sends are silent. `OTP_PER_PHONE_10MIN`, `OTP_PER_PHONE_DAY`, `OTP_PER_IP_HOUR`, `OTP_PLATFORM_DAILY` (empty = default, 0 = no cap).
+- **Web SMS codes** (password reset, login, phone verification, 2FA): only an HMAC is stored in `users`; at most 5 wrong guesses per code, then it is burned.
+- **Logs:** codes are logged only in log-only SMS mode; the wallet top-up error logs only the amount.
+- **Docker:** nginx rate limits (10 PHP requests/s per IP, burst 40; auth POSTs 20/min; 429), PHP timeout 60 s, `pm.max_children` 20; nothing under `/storage/` reaches PHP; the private disk's signed `/storage/{path}` route is gone.
+- **Super admin:** never gets a trusted device (always an SMS code); salon staff 30 days (`AUTH_TRUSTED_DEVICE_STAFF_DAYS`), customers 90. `SUPERADMIN_ALLOWED_IPS` (empty = everyone, for now) limits `/superadmin`, others get 404.
+- **Dependencies:** `npm audit fix` — 0 vulnerabilities; Symfony http-foundation/http-kernel/routing/yaml 7.4.23 (advisories of 2026-11-04) — `composer audit` clean.
+- **CSP stage 1:** per-request nonce on every inline `<script>`; next to the current enforced policy a strict Report-Only policy without `'unsafe-inline'` logs the remaining inline handlers to `storage/logs/csp-*.log` (`SECURITY_CSP_STRICT_SCRIPTS`: report default, enforce after stage 2, off).
+- **After pulling:** `composer install`; rebuild the database (three code columns in `users` changed length): XAMPP `php artisan migrate:fresh --seed` and `php artisan superadmin:create`; `npm ci && npm run build`; `php artisan optimize:clear`. Single-container Docker: before building, `docker compose -f docker-compose.single.yml exec -u www app php artisan db:wipe --force`, then `up -d --build`, `exec -u www app php artisan db:seed --force` and `superadmin:create` (or `down -v` and `up -d --build`).
+
 **2026-11-04 — Kavenegar: TLS, 2FA template, account-error alerts**
 - The `kavenegar/php` SDK did not verify the TLS certificate of `api.kavenegar.com` by default (API key and login codes sent without checking the other end); it is now on (`KAVENEGAR_SSL_VERIFY`, empty = on).
 - The two-factor code is sent with the `two-factor-auth` template (previously `login-verify`).
