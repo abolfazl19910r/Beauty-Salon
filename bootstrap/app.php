@@ -190,6 +190,11 @@ return Application::configure(basePath: dirname(__DIR__))
             ->everyFiveMinutes()
             ->withoutOverlapping()
             ->onOneServer();
+        // ⭐ بسته‌ی 5ح: پرداخت موفقِ تأییدنشده‌ی زرین‌پال که تراکنشش پیش ما بسته شده (unVerified، یک درخواست برای هر مرچنت)
+        $schedule->command('payments:zarinpal-unverified')
+            ->hourly()
+            ->withoutOverlapping()
+            ->onOneServer();
         // فاکتور نیمه‌پرداخت ۷ روزه ← اعتبار پلتفرم (۲۰۲۶-۱۰-۳۱)
         $schedule->command('billing:expire-installments')
             ->hourly()

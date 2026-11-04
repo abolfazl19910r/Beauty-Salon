@@ -144,6 +144,52 @@ class ZarinpalDriver implements PaymentGatewayDriver
     }
 
     /**
+     * ⭐ بسته‌ی 5ح (۲۰۲۶-۱۱-۰۴): `unVerified` (`/paymentGateway/otherMethods/unVerified.html`) — آخرین حداکثر ۱۰۰ پرداخت موفقِ
+     * verifyنشده‌ی این مرچنت. مستندات `authorities` را «String (JSON Encode)» می‌گوید ولی نمونه آرایه است و `code` را رشته؛ هر دو پذیرفته
+     * می‌شوند. فقط خواندنی است (پولی جابه‌جا نمی‌شود)؛ نبودن یک اتوریتی در فهرست یعنی «پرداخت نشده» نیست (اعتبارسنجی خودکار پنل،
+     * سقف ۱۰۰) — پس جای verify پرداخت‌های رهاشده را نمی‌گیرد.
+     *
+     * @return array{ok: bool, code: int, authorities: list<array{authority: string, amount: int, date: ?string}>, error?: string}
+     */
+    public function unverified(): array
+    {
+        try {
+            $response = Http::timeout(30)
+                ->withHeaders(['Content-Type' => 'application/json', 'Accept' => 'application/json'])
+                ->post($this->apiUrl.'/unVerified.json', [
+                    'merchant_id' => (string) ($this->credentials['merchant_id'] ?? ''),
+                ]);
+        } catch (Throwable $e) {
+            return ['ok' => false, 'code' => -999, 'authorities' => [], 'error' => class_basename($e).': '.mb_substr($e->getMessage(), 0, 300)];
+        }
+
+        $json = (array) $response->json();
+        $code = self::errorCode($json);
+
+        if (! $response->successful() || $code !== 100) {
+            return ['ok' => false, 'code' => $code, 'authorities' => [], 'error' => 'HTTP '.$response->status()];
+        }
+
+        $items = $json['data']['authorities'] ?? [];
+        if (is_string($items)) {
+            $items = json_decode($items, true);
+        }
+
+        $authorities = [];
+        foreach (is_array($items) ? $items : [] as $item) {
+            if (is_array($item) && filled($item['authority'] ?? null)) {
+                $authorities[] = [
+                    'authority' => (string) $item['authority'],
+                    'amount' => (int) ($item['amount'] ?? 0),
+                    'date' => isset($item['date']) ? (string) $item['date'] : null,
+                ];
+            }
+        }
+
+        return ['ok' => true, 'code' => 100, 'authorities' => $authorities];
+    }
+
+    /**
      * ⭐ بسته‌ی 5ز (۲۰۲۶-۱۰-۳۰): کد خطا از هر دو شکل پاسخ مستند — `{"errors": {"message", "code", "validations"}}` (صفحه‌ی reverse)
      * و `{"message", "errors": {"authority": ["Invalid authority.", "-54"]}}` (صفحه‌ی inquiry)؛ موفق: `data.code`.
      */

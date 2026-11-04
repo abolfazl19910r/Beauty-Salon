@@ -132,23 +132,7 @@ class UnansweredVerifyRecovery
         }
 
         if ($result?->success) {
-            // قسط/پرداخت اشتراک: payable معلوم است (فاکتور، order_id = INV-{id}) ← بی بررسی دستی به فاکتور اضافه یا اعتبار پلتفرم (۲۰۲۶-۱۰-۳۱)
-            if ($tx->purpose === 'subscription' && ($invoice = \App\Models\Invoice::withoutGlobalScopes()->find($tx->payable_id))) {
-                $this->closePending($tx, 'paid', ['recovery' => 'verified_after_abandon'] + $result->raw + $response, false, $result->refId, $result->cardPan);
-                app(InvoiceInstallments::class)->recordPaid($invoice, intdiv((int) $tx->amount_rial, 10), (string) $result->refId, $tx);
-
-                return 'credited';
-            }
-
-            if ($platform || ! in_array($tx->purpose, self::PURPOSES, true) || ! $tx->user_id) {
-                $this->closePending($tx, 'failed', ['recovery' => 'verified_after_abandon'] + $result->raw + $response, true, $result->refId, $result->cardPan);
-
-                return 'attention';
-            }
-
-            $this->credit($tx, $result->refId, $result->cardPan, ['abandoned' => true] + $result->raw + $response, 'automatic');
-
-            return 'credited';
+            return $this->applyLateVerify($tx, $result, $response, 'verified_after_abandon', ['abandoned' => true]);
         }
 
         $code = $result ? \App\Payments\Drivers\ZarinpalDriver::errorCode($result->raw) : null;
@@ -180,6 +164,117 @@ class UnansweredVerifyRecovery
         ]);
 
         return 'unanswered';
+    }
+
+    /**
+     * verify دیرهنگامِ موفق یک تراکنش زرین‌پال که مشتری با آن برنگشته (رهاشده‌ی pending، یا بسته‌شده و پیدا در unVerified):
+     * اشتراک ← فاکتور (یا اعتبار پلتفرم اگر فاکتور بسته شده)؛ بسته‌ی پیامک/مقصد ناشناس ← بررسی ابرمدیر/مدیر؛ نوبت/دوره/شارژ ← credit().
+     *
+     * @return 'credited'|'attention'
+     */
+    private function applyLateVerify(PaymentTransaction $tx, \App\Payments\GatewayVerifyResult $result, array $response, string $recovery, array $creditExtra = []): string
+    {
+        $platform = in_array($tx->purpose, \App\Services\SuperAdmin\PlatformOverview::PLATFORM_PURPOSES, true);
+
+        // قسط/پرداخت اشتراک: payable معلوم است (فاکتور، order_id = INV-{id}) ← بی بررسی دستی به فاکتور اضافه یا اعتبار پلتفرم (۲۰۲۶-۱۰-۳۱)
+        if ($tx->purpose === 'subscription' && ($invoice = \App\Models\Invoice::withoutGlobalScopes()->find($tx->payable_id))) {
+            $this->closePending($tx, 'paid', ['recovery' => $recovery] + $result->raw + $response, false, $result->refId, $result->cardPan);
+            app(InvoiceInstallments::class)->recordPaid($invoice, intdiv((int) $tx->amount_rial, 10), (string) $result->refId, $tx);
+
+            return 'credited';
+        }
+
+        if ($platform || ! in_array($tx->purpose, self::PURPOSES, true) || ! $tx->user_id) {
+            $this->closePending($tx, 'failed', ['recovery' => $recovery] + $result->raw + $response, true, $result->refId, $result->cardPan);
+
+            return 'attention';
+        }
+
+        $this->credit($tx, $result->refId, $result->cardPan, $creditExtra + ['recovery_source' => $recovery] + $result->raw + $response, 'automatic');
+
+        return 'credited';
+    }
+
+    /** وضعیت‌های «بسته‌شده»ای که اگر اتوریتی‌شان در unVerified زرین‌پال بیاید، پولشان هنوز پیش زرین‌پال است. */
+    public const UNVERIFIED_CLOSED_STATUSES = ['expired', 'failed'];
+
+    /** بسته‌ی 5ح (تصمیم ابوالفضل ۲۰۲۶-۱۱-۰۴): تا این مدت از ساخت تراکنش verify و واریز خودکار؛ قدیمی‌تر ← فقط «نیازمند بررسی». */
+    public const UNVERIFIED_AUTO_DAYS = 7;
+
+    /**
+     * ⭐ بسته‌ی 5ح (۲۰۲۶-۱۱-۰۴): اتوریتی یک تراکنش expired/failed ما در فهرست `unVerified` زرین‌پال آمده — یعنی پرداخت موفق بوده و
+     * verify نشده (مثلاً بعد از ۲۴ ساعت `gave_up`، یا مشتری بازگشت ولی پاسخ تأیید نرسید و بازیابی هم تمام شد).
+     * - مبلغ فهرست ≠ amount_rial، یا قدیمی‌تر از UNVERIFIED_AUTO_DAYS ← فقط needs_attention (verify نمی‌شود)؛
+     * - وگرنه claim اتمی (همان وضعیت ← reconciling) و verify با amount_rial دیتابیس: موفق ← applyLateVerify (همان مسیر رهاشده‌ها)؛
+     *   ‎-50/‎-52 ← needs_attention؛ هر پاسخ دیگر یا بی‌پاسخ ← همان وضعیت قبلی برمی‌گردد (اجرای ساعتی بعد دوباره).
+     *
+     * @return 'credited'|'attention'|'not_paid'|'unanswered'|'skipped'
+     */
+    public function recoverUnverified(PaymentTransaction $tx, int $listedAmountRial): string
+    {
+        if ($tx->driver !== 'zarinpal' || ! in_array($tx->status, self::UNVERIFIED_CLOSED_STATUSES, true)) {
+            return 'skipped';
+        }
+
+        $previous = $tx->status;
+        $response = (array) $tx->verify_response;
+        $response['unverified_listed_at'] = now()->toIso8601String();
+        $response['unverified_checks'] = (int) ($response['unverified_checks'] ?? 0) + 1;
+
+        $tooOld = $tx->created_at && $tx->created_at->lt(now()->subDays(self::UNVERIFIED_AUTO_DAYS));
+        if ($tooOld || $listedAmountRial !== (int) $tx->amount_rial) {
+            if ($tx->needs_attention) {
+                return 'skipped';
+            }
+
+            PaymentTransaction::whereKey($tx->id)->where('status', $previous)->toBase()->update([
+                'needs_attention' => true,
+                'verify_response' => json_encode($response + ['recovery' => $tooOld ? 'unverified_too_old' : 'unverified_amount_mismatch', 'unverified_amount_rial' => $listedAmountRial], JSON_UNESCAPED_UNICODE),
+            ]);
+            app(\App\Services\Admin\AttentionNotifier::class)->paymentFlagged($tx->id);
+            Log::warning('Zarinpal lists a closed payment as paid but unverified; needs a human', [
+                'transaction_id' => $tx->id, 'salon_id' => $tx->salon_id, 'purpose' => $tx->purpose, 'too_old' => $tooOld,
+                'listed_amount_rial' => $listedAmountRial, 'amount_rial' => (int) $tx->amount_rial,
+            ]);
+
+            return 'attention';
+        }
+
+        if (PaymentTransaction::whereKey($tx->id)->where('status', $previous)->toBase()->update(['status' => 'reconciling']) !== 1) {
+            return 'skipped';
+        }
+
+        $platform = in_array($tx->purpose, \App\Services\SuperAdmin\PlatformOverview::PLATFORM_PURPOSES, true);
+        $driver = $platform
+            ? \App\Support\PlatformZarinpal::driver()
+            : ($tx->gateway ? $this->gateways->driver($tx->gateway) : null);
+
+        $result = null;
+        if ($driver) {
+            try {
+                $result = $driver->verify(new GatewayVerifyRequest((int) $tx->amount_rial, [], $tx->token, $tx->id));
+            } catch (\Throwable $e) {
+                Log::warning('Unverified-list payment verify threw', ['transaction_id' => $tx->id, 'error' => $e->getMessage()]);
+            }
+        }
+
+        if ($result?->success) {
+            return $this->applyLateVerify($tx, $result, $response, 'verified_from_unverified_list', ['unverified_list' => true]);
+        }
+
+        if ($result && ($result->raw['needs_attention'] ?? false) === true) {
+            $this->closePending($tx, $previous, ['recovery' => 'needs_attention', 'recovery_message' => $result->message] + $result->raw + $response, true);
+
+            return 'attention';
+        }
+
+        $answered = $result && ($result->raw['unanswered'] ?? false) !== true && ($result->raw['verify_not_sent'] ?? false) !== true;
+        PaymentTransaction::whereKey($tx->id)->toBase()->update([
+            'status' => $previous,
+            'verify_response' => json_encode($response + ['last_unverified_check' => $answered ? \App\Payments\Drivers\ZarinpalDriver::errorCode($result->raw) : 'unanswered'], JSON_UNESCAPED_UNICODE),
+        ]);
+
+        return $answered ? 'not_paid' : 'unanswered';
     }
 
     private function closePending(PaymentTransaction $tx, string $status, array $response, bool $attention, ?string $refId = null, ?string $cardPan = null): void
