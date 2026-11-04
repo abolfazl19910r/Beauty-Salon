@@ -155,15 +155,21 @@ class AppServiceProvider extends ServiceProvider
         // docblock), the *oldest* salon by id can never change once it exists (ids are immutable
         // and never reassigned), so there's no reason to hit the database for it on every single
         // request/boot forever. rememberForever needs no invalidation logic as a result.
-        if (Schema::hasTable('salons')) {
-            $defaultSalonSlug = Cache::rememberForever(
-                'app:default_salon_slug',
-                fn () => app(SalonRepositoryInterface::class)->getOldestSlug()
-            );
+        //
+        // ⭐ ۲۰۲۶-۱۱-۰۴: Schema::hasTable داخل کش رفت — بیرون از آن در هر درخواست یک کوئری information_schema می‌زد (۴۰ تا ۸۰ میلی‌ثانیه
+        // روی MariaDB لوکال، در Telescope). null (جدول هنوز نیست یا سالنی نیست) کش نمی‌شود و دفعه‌ی بعد دوباره پرسیده می‌شود.
+        $this->applyDefaultSalonSlug();
+    }
 
-            if ($defaultSalonSlug) {
-                URL::defaults(['salon_slug' => $defaultSalonSlug]);
-            }
+    public function applyDefaultSalonSlug(): void
+    {
+        $defaultSalonSlug = Cache::rememberForever(
+            'app:default_salon_slug',
+            fn () => Schema::hasTable('salons') ? app(SalonRepositoryInterface::class)->getOldestSlug() : null
+        );
+
+        if ($defaultSalonSlug) {
+            URL::defaults(['salon_slug' => $defaultSalonSlug]);
         }
     }
 
