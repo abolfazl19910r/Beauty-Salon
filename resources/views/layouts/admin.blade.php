@@ -447,6 +447,8 @@
 </style>
 
 <script>
+    // امنیت (H2): متن آزاد کاربر (نام مشتری، نام خدمت، متن اعلان) پیش از innerHTML escape می‌شود
+    function escHtml(v) { return String(v ?? '').replace(/[&<>"']/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c])); }
     window.AdminRoutes = {
         notificationsIndex: '{{ route("admin.notifications.index") }}',
         notificationsLatest: '{{ route("admin.notifications.latest") }}',
@@ -555,8 +557,8 @@
                         });
 
                         link.innerHTML = `
-                            <span class="truncate w-full" style="color: var(--admin-text);">${notification.message}</span>
-                            <span class="text-xs mt-0.5" style="color: ${notification.read_at ? 'var(--admin-text-light)' : 'var(--admin-accent)'};">${notification.time_ago}</span>
+                            <span class="truncate w-full" style="color: var(--admin-text);">${escHtml(notification.message)}</span>
+                            <span class="text-xs mt-0.5" style="color: ${notification.read_at ? 'var(--admin-text-light)' : 'var(--admin-accent)'};">${escHtml(notification.time_ago)}</span>
                         `;
 
                         if (!notification.read_at) {

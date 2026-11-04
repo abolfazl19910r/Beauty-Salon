@@ -70,7 +70,7 @@
                 </div>
 
                 <div class="prose-rasta max-w-none">
-                    {!! $post->content !!}
+                    {!! nl2br(e($post->content)) !!}
                 </div>
             </div>
         </article>

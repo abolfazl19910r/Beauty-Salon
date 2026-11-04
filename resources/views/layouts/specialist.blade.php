@@ -330,6 +330,8 @@
 </nav>
 
 <script>
+    // امنیت (H2): متن آزاد کاربر (نام مشتری، نام خدمت، متن اعلان) پیش از innerHTML escape می‌شود
+    function escHtml(v) { return String(v ?? '').replace(/[&<>"']/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c])); }
     window.SpecialistRoutes = {
         notificationsIndex: '{{ route("specialist.notifications.index") }}',
         notificationsLatest: '{{ route("specialist.notifications.latest") }}',
@@ -410,8 +412,8 @@
                         }
 
                         link.innerHTML = `
-                        <span class="truncate w-full">${notification.message}</span>
-                        <span class="text-xs ${notification.read_at ? 'text-[var(--specialist-inactive)]' : 'text-[var(--specialist-plum-mid)]'} mt-0.5">${notification.time_ago}</span>
+                        <span class="truncate w-full">${escHtml(notification.message)}</span>
+                        <span class="text-xs ${notification.read_at ? 'text-[var(--specialist-inactive)]' : 'text-[var(--specialist-plum-mid)]'} mt-0.5">${escHtml(notification.time_ago)}</span>
                     `;
 
                         if (!notification.read_at) {

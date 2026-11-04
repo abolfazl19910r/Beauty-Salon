@@ -372,6 +372,8 @@
 @push('scripts')
     @vite('resources/js/vendor/apexcharts.js')
     <script>
+        // امنیت (H2): متن آزاد کاربر (نام مشتری، نام خدمت، متن اعلان) پیش از innerHTML escape می‌شود
+        function escHtml(v) { return String(v ?? '').replace(/[&<>"']/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c])); }
         document.addEventListener('DOMContentLoaded', function () {
 
             // Keep a reference to the chart to destroy before re-rendering
@@ -529,8 +531,8 @@
                     return `
                 <div>
                     <div class="flex justify-between text-sm mb-1">
-                        <span style="color:var(--admin-text);">${s.name}</span>
-                        <span style="color:var(--admin-text-dim);">${s.bookings_count} نوبت</span>
+                        <span style="color:var(--admin-text);">${escHtml(s.name)}</span>
+                        <span style="color:var(--admin-text-dim);">${escHtml(s.bookings_count)} نوبت</span>
                     </div>
                     <div class="progress-bar-track">
                         <div class="progress-bar-fill" style="width:${pct}%;"></div>
@@ -564,14 +566,14 @@
                     <div class="flex items-center gap-2 min-w-0">
                         <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
                              style="background:var(--admin-accent-light); color:var(--admin-accent);">
-                            ${(b.user_name || 'ن').charAt(0)}
+                            ${escHtml((b.user_name || 'ن').charAt(0))}
                         </div>
                         <div class="min-w-0">
-                            <p class="text-sm font-medium truncate" style="color:var(--admin-text);">${b.user_name || 'کاربر ناشناس'}</p>
-                            <p class="text-xs truncate" style="color:var(--admin-text-dim);">${b.service_name || '—'}</p>
+                            <p class="text-sm font-medium truncate" style="color:var(--admin-text);">${escHtml(b.user_name || 'کاربر ناشناس')}</p>
+                            <p class="text-xs truncate" style="color:var(--admin-text-dim);">${escHtml(b.service_name || '—')}</p>
                         </div>
                     </div>
-                    <span class="badge-status flex-shrink-0 mr-2" style="${style}">${label}</span>
+                    <span class="badge-status flex-shrink-0 mr-2" style="${style}">${escHtml(label)}</span>
                 </div>`;
                 }).join('');
             }

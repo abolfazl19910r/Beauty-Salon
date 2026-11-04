@@ -69,7 +69,7 @@
                             {{-- Text --}}
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm message-text {{ $isRead ? '' : 'font-medium' }}" style="color:var(--admin-text)">
-                                    {!! $message !!}
+                                    {{ $message }}
                                     @if(!$isRead)
                                         <span class="new-tag mr-2 px-2 py-0.5 text-xs rounded-full" style="background:var(--admin-accent);color:rgb(var(--m-on-solid))">جدید</span>
                                     @endif

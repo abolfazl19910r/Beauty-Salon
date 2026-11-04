@@ -58,7 +58,7 @@
                 @endif
 
                 <div class="prose max-w-none text-sm leading-relaxed" style="color:var(--admin-text);">
-                    {!! $post->content !!}
+                    {!! nl2br(e($post->content)) !!}
                 </div>
             </div>
         </div>
