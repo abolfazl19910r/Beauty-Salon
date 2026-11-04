@@ -22,8 +22,8 @@ return new class extends Migration
          * سالن (roles.salon_id) با scope سراسری Role جدا هستند؛ نقش‌های سیستمی (roles.salon_id = null) را هر سالن می‌تواند بدهد، پس
          * role_user.salon_id: null = سراسری (سوپرادمین، کاربران تک‌سالنی)، عدد = فقط در همان سالن (User::effectiveRoles). به همین دلیل
          * کلید اصلی (user_id, role_id) نیست: شناسه + یکتایی (user_id, role_id, salon_id).
-         * نام کلیدهای خارجی «role_user_scoped_*» از جدول موقتی می‌آید که migration قدیمی 2026_10_22_000001 ساخت و rename کرد؛ عمداً
-         * همان مانده تا اسکیمای دیتابیس‌های موجود و تازه یکی باشد.
+         * کلیدهای خارجی نام پیش‌فرض Laravel دارند (`role_user_{col}_foreign`)؛ تا بسته‌ی 5ح (۲۰۲۶-۱۱-۰۴) «role_user_scoped_*» بودند (از جدول
+         * موقت migration قدیمی 2026_10_22_000001) — دیتابیس ساخته‌شده پیش از آن با migrate:fresh یکی می‌شود.
          */
         Schema::create('role_user', function (Blueprint $table) {
             $table->id();
@@ -31,9 +31,9 @@ return new class extends Migration
             $table->foreignId('role_id');
             $table->foreignId('salon_id')->nullable();
 
-            $table->foreign('user_id', 'role_user_scoped_user_id_foreign')->references('id')->on('users')->cascadeOnDelete();
-            $table->foreign('role_id', 'role_user_scoped_role_id_foreign')->references('id')->on('roles')->cascadeOnDelete();
-            $table->foreign('salon_id', 'role_user_scoped_salon_id_foreign')->references('id')->on('salons')->cascadeOnDelete();
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
+            $table->foreign('role_id')->references('id')->on('roles')->cascadeOnDelete();
+            $table->foreign('salon_id')->references('id')->on('salons')->cascadeOnDelete();
             $table->unique(['user_id', 'role_id', 'salon_id'], 'role_user_user_role_salon_unique');
             $table->index(['user_id', 'salon_id'], 'role_user_user_salon_index');
         });
