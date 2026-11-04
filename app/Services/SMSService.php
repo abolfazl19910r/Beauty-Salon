@@ -23,6 +23,8 @@ class SMSService
     {
         // KavenegarApi با کلید null خودش die() می‌کند (کل درخواست یا worker صف می‌میرد)؛ کلید نبودن در .env نباید برنامه را بکشد.
         $this->api = new KavenegarApi((string) config('services.kavenegar.api_key'));
+        // ⭐ ۲۰۲۶-۱۱-۰۴: SDK به‌صورت پیش‌فرض گواهی TLS ‏api.kavenegar.com را بررسی نمی‌کند (config/services.php)
+        $this->api->setSslVerify((bool) config('services.kavenegar.ssl_verify', true));
     }
 
     /**

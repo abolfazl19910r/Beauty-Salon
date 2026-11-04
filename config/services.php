@@ -47,6 +47,9 @@ return [
         'send_in_local' => env('KAVENEGAR_SEND_IN_LOCAL', false),
         // ⭐ ۲۰۲۶-۱۰-۲۴: true = هیچ پیامکی به کاوه‌نگار نمی‌رود، در هیچ محیطی (سرور واقعی پیش از آماده شدن خط/قالب‌ها)؛ متن و کد در لاگ
         'log_only' => filter_var(env('SMS_LOG_ONLY', false), FILTER_VALIDATE_BOOL),
+        // ⭐ ۲۰۲۶-۱۱-۰۴: SDK ‏kavenegar/php (2.1) گواهی TLS را به‌صورت پیش‌فرض بررسی نمی‌کند (CURLOPT_SSL_VERIFYPEER=false) — کلید API در آدرس و
+        // کد ورود بدون اطمینان از طرف مقابل می‌رفتند. پیش‌فرض روشن؛ false فقط برای عیب‌یابی سیستمی که فهرست CA ندارد.
+        'ssl_verify' => ! in_array(env('KAVENEGAR_SSL_VERIFY'), [false, '0', 'off', 'no'], true),
 
         'templates' => [
             'login_verify' => env('KAVENEGAR_TEMPLATE_LOGIN') ?: 'login-verify',
