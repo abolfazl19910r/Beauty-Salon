@@ -85,6 +85,7 @@ class SMSService
                 'mobile' => $mobile,
                 'code' => $e->getCode(),
             ]);
+            $this->reportProviderProblem((int) $e->getCode(), $e->getMessage());
 
             return false;
         } catch (HttpException $e) {
@@ -164,6 +165,7 @@ class SMSService
                 'template' => $templateName,
                 'code' => $e->getCode(),
             ]);
+            $this->reportProviderProblem((int) $e->getCode(), $e->getMessage(), $templateName);
 
             return false;
 
@@ -189,6 +191,48 @@ class SMSService
      * ثبت می‌شود تا قابل پیگیری باشد.
      */
     /** آیا پلن سالن این دسته پیامک را دارد؟ خاموش = یک خط لاگ feature_blocked، بدون پیامک و بدون مصرف سهمیه */
+    /**
+     * ⭐ ۲۰۲۶-۱۱-۰۴: خطاهای سطح حساب کاوه‌نگار (جدول کدهای خطای مستندات REST) — تا رفع نشوند هیچ پیامکی (از جمله کد ورود) نمی‌رود؛ قبلاً
+     * فقط در laravel.log بودند. اعلان داخلی به ابرمدیرها (فقط کانال database؛ نه پیامک که خودش از همین کاوه‌نگار می‌رود)، هر کد حداکثر یک
+     * بار در ساعت. خطاهای یک پیامک خاص (گیرنده‌ی نامعتبر ۴۱۱، متن خالی ۴۱۳، …) و قطعی شبکه (HttpException) هشدار نمی‌دهند.
+     */
+    public const PROVIDER_ALERT_CODES = [
+        401 => 'حساب کاربری کاوه‌نگار غیرفعال است',
+        403 => 'کلید API کاوه‌نگار معتبر نیست (KAVENEGAR_API_KEY)',
+        412 => 'خط فرستنده معتبر نیست (KAVENEGAR_SENDER)',
+        416 => 'IP سرور در تنظیمات امنیتی کاوه‌نگار مجاز نیست',
+        418 => 'اعتبار حساب کاوه‌نگار تمام شده است',
+        420 => 'ارسال لینک در متن پیامک برای این حساب محدود شده است',
+        424 => 'الگوی پیامک پیدا نشد یا هنوز تأیید نشده است',
+        426 => 'ارسال کد با الگو (lookup) سرویس «پیشرفته» کاوه‌نگار می‌خواهد',
+        427 => 'استفاده از این خط نیازمند سطح دسترسی در کاوه‌نگار است',
+    ];
+
+    public const PROVIDER_ALERT_MINUTES = 60;
+
+    private function reportProviderProblem(int $code, string $message, ?string $template = null): void
+    {
+        if (! isset(self::PROVIDER_ALERT_CODES[$code])) {
+            return;
+        }
+
+        try {
+            if (! \Illuminate\Support\Facades\Cache::add('superadmin:kavenegar-alert:'.$code, true, now()->addMinutes(self::PROVIDER_ALERT_MINUTES))) {
+                return;
+            }
+
+            app(\App\Services\SuperAdmin\SuperAdminNotifier::class)->send('sms_provider', sprintf(
+                'پیامک ارسال نشد — %s (کد %d%s): %s',
+                self::PROVIDER_ALERT_CODES[$code],
+                $code,
+                $template ? '، الگوی '.$template : '',
+                \Illuminate\Support\Str::limit($message, 120)
+            ), route('superadmin.sms.index', [], false));
+        } catch (\Throwable $e) {
+            Log::warning('Kavenegar provider alert failed', ['code' => $code, 'error' => $e->getMessage()]);
+        }
+    }
+
     public function featureAllows(int $salonId, Feature $feature): bool
     {
         if (Salon::featureEnabledFor($salonId, $feature)) {

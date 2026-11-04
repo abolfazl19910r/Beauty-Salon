@@ -22,6 +22,7 @@ class PlatformAlertNotification extends Notification
         'sms_pack_paid' => 'خرید بسته‌ی پیامک',
         'payment_attention' => 'پرداخت نیازمند بررسی',
         'job_failed' => 'کار ناموفق صف',
+        'sms_provider' => 'خطای حساب کاوه‌نگار',
     ];
 
     public function __construct(
