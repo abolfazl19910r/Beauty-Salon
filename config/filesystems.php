@@ -9,7 +9,9 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // بررسی امنیتی L1: بدون مسیر GET|PUT /storage/{path} امضاشده‌ی لاراول — این دیسک (فایل FCM، گزارش‌ها، لوگوی ثبت‌نام
+            // در انتظار) هرگز مستقیم سرو نمی‌شود؛ هر فایلی که باید دیده شود کنترلر خودش را دارد.
+            'serve' => false,
             'throw' => false,
         ],
 

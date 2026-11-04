@@ -60,8 +60,8 @@ class DockerSetupTest extends TestCase
         $this->assertStringContainsString('include /etc/nginx/security-headers.conf;', $nginx);
 
         $vhost = self::file('docker/nginx/site.inc');
-        foreach (['/build', '/storage'] as $location) {
-            preg_match('#location '.preg_quote($location, '#').' \{(.*?)\n\}#s', $vhost, $m);
+        foreach (['/build' => 'location /build', '/storage' => 'location ^~ /storage/'] as $location => $block) {
+            preg_match('#'.preg_quote($block, '#').' \{(.*?)\n\}#s', $vhost, $m);
             $this->assertStringContainsString('include /etc/nginx/security-headers.conf;', $m[1], $location);
         }
         $this->assertStringContainsString('COPY docker/nginx/security-headers.conf /etc/nginx/security-headers.conf', self::file('Dockerfile'));
@@ -102,6 +102,18 @@ class DockerSetupTest extends TestCase
         $fpm = self::file('docker/php/php-fpm.conf');
         $this->assertMatchesRegularExpression('/^pm\.max_children = 20$/m', $fpm);
         $this->assertMatchesRegularExpression('/^listen\.backlog = \d+$/m', $fpm);
+    }
+
+    public function test_uploads_under_storage_never_reach_php(): void
+    {
+        // بررسی امنیتی L2: «location /storage» پیشوندی بود و regex «\.php$» بر آن مقدم
+        $site = self::file('docker/nginx/site.inc');
+        $this->assertStringNotContainsString('location /storage {', $site);
+        preg_match('#location \^~ /storage/ \{(.*?)\n\}#s', $site, $m);
+        $this->assertNotEmpty($m);
+        $this->assertStringContainsString('location ~ (\.(php|phtml|phar)$|/\.) {', $m[1]);
+        $this->assertStringContainsString('return 404;', $m[1]);
+        $this->assertStringNotContainsString('fastcgi_pass', $m[1]);
     }
 
     public function test_nginx_takes_the_real_ip_from_trusted_proxies_and_php_keeps_the_peer(): void

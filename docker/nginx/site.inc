@@ -36,10 +36,15 @@ location /build {
 }
 
 # ─── Storage (تصاویر آپلود شده) ──────────────────────────
-location /storage {
+# ⭐ بررسی امنیتی L2: «^~» تا هیچ location regex (از جمله «\.php$» پایین) برای /storage/ انتخاب نشود — فایلی که هر طور در
+# storage/app/public بنشیند هرگز به PHP-FPM نمی‌رسد؛ .php و فایل‌های پنهان هم اصلاً سرو نمی‌شوند.
+location ^~ /storage/ {
     expires 30d;
     add_header Cache-Control "public";
     include /etc/nginx/security-headers.conf;
+    location ~ (\.(php|phtml|phar)$|/\.) {
+        return 404;
+    }
     try_files $uri =404;
 }
 
