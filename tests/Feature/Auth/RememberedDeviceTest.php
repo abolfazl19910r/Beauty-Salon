@@ -185,6 +185,64 @@ class RememberedDeviceTest extends TestCase
         Bus::assertNotDispatched(SendLoginVerificationCodeJob::class);
     }
 
+    /** ورود کامل کادر با «مرا به خاطر بسپار»؛ توکن کوکی دستگاه (یا null) */
+    private function staffLoginWithCode(User $staff): ?string
+    {
+        $this->post(route('login'), ['phone' => $staff->phone, 'password' => 'secret-123', 'remember' => '1'])->assertRedirect(route('login.verify.show'));
+        $response = $this->post(route('login.verify'), ['code' => $this->lastCode()])->assertRedirect();
+        $this->assertAuthenticatedAs($staff);
+
+        return $response->getCookie(TrustedDeviceService::cookieName($staff))?->getValue();
+    }
+
+    public function test_super_admin_device_is_never_trusted_and_always_needs_the_code(): void
+    {
+        // بررسی امنیتی ۲۰۲۶-۱۱-۰۴ (M3)
+        $super = User::factory()->create(['user_type' => 'staff', 'is_admin' => true, 'phone' => '09125550001', 'password' => Hash::make('secret-123')]);
+        $super->assignRole(\App\Models\Role::firstOrCreate(['name' => 'super-admin'], ['label' => 'سوپر ادمین']));
+
+        $this->assertNull($this->staffLoginWithCode($super), 'کوکی دستگاه برای ابرمدیر ساخته نمی‌شود');
+        $this->assertSame(0, TrustedDevice::where('user_id', $super->id)->count());
+
+        // حتی ردیفی که پیش از این تغییر ساخته شده کد را حذف نمی‌کند
+        $token = str_repeat('s', 64);
+        TrustedDevice::create(['user_id' => $super->id, 'token_hash' => hash('sha256', $token), 'last_used_at' => now(), 'expires_at' => now()->addDays(80)]);
+        $this->logoutKeepingCookies();
+        $this->withCookie(TrustedDeviceService::cookieName($super), $token)
+            ->post(route('login'), ['phone' => '09125550001', 'password' => 'secret-123'])
+            ->assertRedirect(route('login.verify.show'));
+        $this->assertGuest();
+        Bus::assertDispatched(SendLoginVerificationCodeJob::class);
+    }
+
+    public function test_staff_device_is_trusted_for_30_days_customers_for_90(): void
+    {
+        $staff = User::factory()->create(['user_type' => 'staff', 'is_admin' => true, 'phone' => '09125550002', 'password' => Hash::make('secret-123')]);
+        $token = $this->staffLoginWithCode($staff);
+        $this->assertNotNull($token);
+        $this->assertEqualsWithDelta(now()->addDays(30)->getTimestamp(), TrustedDevice::where('user_id', $staff->id)->sole()->expires_at->getTimestamp(), 5);
+        $this->assertSame(30, TrustedDeviceService::daysFor($staff));
+        $this->assertSame(90, TrustedDeviceService::daysFor($this->customer()));
+
+        $this->logoutKeepingCookies();
+        $this->travel(31)->days();
+        $this->withCookie(TrustedDeviceService::cookieName($staff), $token)
+            ->post(route('login'), ['phone' => '09125550002', 'password' => 'secret-123'])
+            ->assertRedirect(route('login.verify.show'));
+        $this->assertGuest();
+    }
+
+    public function test_an_older_90_day_staff_device_is_cut_to_30_days_of_inactivity(): void
+    {
+        $staff = User::factory()->create(['user_type' => 'staff', 'is_admin' => true, 'phone' => '09125550003', 'password' => Hash::make('secret-123')]);
+        $token = str_repeat('t', 64);
+        TrustedDevice::create(['user_id' => $staff->id, 'token_hash' => hash('sha256', $token), 'last_used_at' => now()->subDays(40), 'expires_at' => now()->addDays(50)]);
+
+        $this->withCookie(TrustedDeviceService::cookieName($staff), $token)
+            ->post(route('login'), ['phone' => '09125550003', 'password' => 'secret-123'])
+            ->assertRedirect(route('login.verify.show'));
+    }
+
     public function test_login_forms_offer_remember_and_default_it_on_when_installed(): void
     {
         $this->get(route('salon.login', ['salon_slug' => $this->salon->slug]))->assertOk()

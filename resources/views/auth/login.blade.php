@@ -52,7 +52,7 @@ use Illuminate\Support\Facades\Route;
             <label for="remember_me" class="inline-flex items-center gap-2 cursor-pointer">
                 <input id="remember_me" type="checkbox" name="remember"
                        class="w-4 h-4 rounded border-m-gold/30 bg-m-tx/5 text-m-gold focus:ring-m-gold/30">
-                <span class="text-m-tx/70" title="۹۰ روز وارد می‌مانید و دفعه‌ی بعد روی همین دستگاه کد پیامکی لازم نیست">مرا به خاطر بسپار</span>
+                <span class="text-m-tx/70" title="۹۰ روز وارد می‌مانید و تا ۳۰ روز روی همین دستگاه کد پیامکی لازم نیست (ابرمدیر همیشه کد می‌خواهد)">مرا به خاطر بسپار</span>
             </label>
             @if (Route::has('password.request'))
                 <a href="{{ route('password.request') }}" class="text-m-gold2 hover:text-m-gold transition-colors">

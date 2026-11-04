@@ -4,6 +4,8 @@ return [
 
     // «مرا به خاطر بسپار» و دستگاه شناخته‌شده‌ی ورود وب (بسته‌ی ۶، App\Services\Auth\TrustedDeviceService)
     'remember_days' => (int) (env('AUTH_REMEMBER_DAYS') ?: 90),
+    // بررسی امنیتی M3: دستگاه شناخته‌شده‌ی کادر سالن (مدیر، متخصص) کوتاه‌تر؛ ابرمدیر هرگز (TrustedDeviceService::daysFor)
+    'trusted_device_staff_days' => (int) (env('AUTH_TRUSTED_DEVICE_STAFF_DAYS') ?: 30),
 
     'defaults' => [
         'guard' => env('AUTH_GUARD', 'web'),
