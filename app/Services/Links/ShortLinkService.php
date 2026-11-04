@@ -10,7 +10,8 @@ use App\Models\ShortLink;
  */
 class ShortLinkService
 {
-    public const CODE_LENGTH = 6;
+    // بررسی امنیتی L4 (۲۰۲۶-۱۱-۰۵): ۶ ← ۸ نویسه (۳۲^۸ ≈ ۱٫۱ تریلیون)؛ حدس کد لینک‌های حساس (حضور، رضایت عکس، نظر) دیگر عملی نیست
+    public const CODE_LENGTH = 8;
 
     private const ALPHABET = 'abcdefghijkmnpqrstuvwxyz23456789';
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Salon\Auth;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendPasswordResetCodeJob;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Support\Auth\PasswordLockout;
 use App\Support\Auth\SmsCode;
 use App\Support\CurrentSalon;
 use App\Support\Queues;
@@ -54,12 +55,8 @@ class CustomerPasswordResetController extends Controller
 
         $user = $this->userRepository->findCustomerByPhoneInSalon($request->phone, $salon->id);
 
-        if (! $user) {
-            return back()->withErrors(['phone' => 'کاربری با این شماره در این سالن یافت نشد.']);
-        }
-
-        // بررسی امنیتی M1: فقط HMAC کد در users (SmsCode)؛ هر کد حداکثر ۵ بار غلط
-        $verificationCode = SmsCode::issue($user, 'verification_code', 'verification_code_expire_at', (int) config('auth.reset_code_expire_minutes', 2));
+        // بررسی امنیتی L3 (۲۰۲۶-۱۱-۰۵): شماره‌ی ناموجود پاسخ یکسان می‌گیرد (همان صفحه‌ی کد، بی پیامک) — کسی نمی‌تواند بفهمد
+        // یک شماره مشتری این سالن هست یا نه.
         $token = Str::random(60);
         $tokenKey = $salon->id.':'.$request->phone;
 
@@ -68,8 +65,12 @@ class CustomerPasswordResetController extends Controller
             ['phone' => $tokenKey, 'token' => $token, 'created_at' => now()]
         );
 
-        // کد تأیید روی صف otp (روی هاست بدون worker بعد از پاسخ)؛ در otp_count همین سالن شمرده می‌شود
-        Queues::dispatchOtp(new SendPasswordResetCodeJob($user->id, $verificationCode, $salon->id));
+        if ($user) {
+            // بررسی امنیتی M1: فقط HMAC کد در users (SmsCode)؛ هر کد حداکثر ۵ بار غلط
+            $verificationCode = SmsCode::issue($user, 'verification_code', 'verification_code_expire_at', (int) config('auth.reset_code_expire_minutes', 2));
+            // کد تأیید روی صف otp (روی هاست بدون worker بعد از پاسخ)؛ در otp_count همین سالن شمرده می‌شود
+            Queues::dispatchOtp(new SendPasswordResetCodeJob($user->id, $verificationCode, $salon->id));
+        }
 
         return redirect()->route('salon.password.verify', ['salon_slug' => $salon->slug, 'token' => $token])
             ->with('success', 'کد تایید ارسال شد.');
@@ -118,7 +119,7 @@ class CustomerPasswordResetController extends Controller
         $user = $this->userRepository->findCustomerByPhoneInSalon($phone, (int) $tokenSalonId);
 
         if (! $user) {
-            return back()->withErrors(['code' => 'کاربر یافت نشد.']);
+            return back()->withErrors(['code' => 'کد تایید اشتباه یا منقضی شده است.']); // L3: مثل کد غلط
         }
 
         if (! SmsCode::check($user, 'verification_code', 'verification_code_expire_at', (string) $request->code)) {
@@ -130,6 +131,8 @@ class CustomerPasswordResetController extends Controller
             'verification_code' => null,
             'verification_code_expire_at' => null,
         ]);
+        // L5: بازیابی با کد پیامکی (صاحب شماره) قفل رمز را برمی‌دارد
+        PasswordLockout::clear(PasswordLockout::customer((int) $user->salon_id, $user->phone));
 
         DB::table('password_reset_tokens')->where('phone', $resetRecord->phone)->delete();
 

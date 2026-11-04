@@ -105,7 +105,7 @@ class WinbackTest extends TestCase
         [$phone, $text, $salonId] = $this->sent[0];
         $this->assertSame(['09121234567', $this->salon->id], [$phone, $salonId]);
         $this->assertStringStartsWith('مدتی است شما را ندیده‌ایم! نوبت: ', $text);
-        $this->assertMatchesRegularExpression('#لغو: \S+/b/[a-z0-9]{6}$#u', $text);
+        $this->assertMatchesRegularExpression('#لغو: \S+/b/[a-z0-9]{8}$#u', $text);
         $this->assertStringContainsString('رزگلد', $text);
         $this->assertSame('2026-08-10 10:00:00', WinbackMessage::sole()->last_visit_at->format('Y-m-d H:i:s'));
 
@@ -179,7 +179,7 @@ class WinbackTest extends TestCase
         $this->visit($this->customer(), '2026-08-01 10:00');
 
         $this->runWinback();
-        $this->assertMatchesRegularExpression('#^دلمان تنگ شده! کد BK[A-Z0-9]{5}: 50,000 تومان تخفیف تا 1405/08/06\. رزگلد انصراف: \S+/b/[a-z0-9]{6}$#u', $this->sent[0][1]);
+        $this->assertMatchesRegularExpression('#^دلمان تنگ شده! کد BK[A-Z0-9]{5}: 50,000 تومان تخفیف تا 1405/08/06\. رزگلد انصراف: \S+/b/[a-z0-9]{8}$#u', $this->sent[0][1]);
     }
 
     public function test_twenty_percent_of_the_month_is_kept_for_booking_sms(): void

@@ -83,12 +83,15 @@ class CustomerAuthApiTest extends CustomerApiTestCase
         $this->api($done->json('data.token'))->getJson('/api/v1/me')->assertOk()->assertJsonPath('data.user.id', $user->id);
     }
 
-    public function test_a_registered_phone_is_refused_before_any_sms(): void
+    public function test_a_registered_phone_is_refused_only_after_the_code(): void
     {
-        $this->postJson('/api/v1/customer/salons/rasta/register', ['phone' => '09121110000'] + $this->form)
-            ->assertStatus(422)->assertJsonPath('error.code', 'phone_taken');
+        // بررسی امنیتی L3: پیش‌تر پیش از پیامک «phone_taken» — مشتری بودن هر شماره قابل پرسیدن بود
+        $challenge = $this->postJson('/api/v1/customer/salons/rasta/register', ['phone' => '09121110000'] + $this->form)
+            ->assertOk()->json('data.challenge');
+        $code = Queue::pushed(SendRegistrationCodeJob::class)->last()->code;
 
-        Queue::assertNotPushed(SendRegistrationCodeJob::class);
+        $this->postJson('/api/v1/customer/salons/rasta/register/verify', ['challenge' => $challenge, 'code' => $code, 'device_name' => 'test'])
+            ->assertStatus(422)->assertJsonPath('error.code', 'phone_taken');
     }
 
     public function test_a_registration_challenge_only_works_in_its_own_salon(): void
@@ -134,8 +137,13 @@ class CustomerAuthApiTest extends CustomerApiTestCase
         $other = Salon::factory()->create(['slug' => 'golbahar']);
         $otherCustomer = $this->customerOf($other, '09129990000');
 
-        $this->postJson('/api/v1/customer/salons/rasta/password/forgot', ['phone' => '09129990000'])
-            ->assertStatus(422)->assertJsonPath('error.code', 'account_not_found');
+        // L3: شماره‌ای که در این سالن نیست همان شکل پاسخ را می‌گیرد (challenge ساختگی، بی پیامک)
+        $decoy = $this->postJson('/api/v1/customer/salons/rasta/password/forgot', ['phone' => '09129990000'])
+            ->assertOk()->assertJsonPath('data.phone_hint', '0912***0000')->json('data.challenge');
+        $this->assertNull($otherCustomer->fresh()->verification_code);
+        $this->postJson('/api/v1/customer/salons/rasta/password/reset', [
+            'challenge' => $decoy, 'code' => '123456', 'password' => 'new-password-9', 'password_confirmation' => 'new-password-9',
+        ])->assertStatus(422)->assertJsonPath('error.code', 'invalid_code');
 
         $challenge = $this->postJson('/api/v1/customer/salons/golbahar/password/forgot', ['phone' => '09129990000'])->json('data.challenge');
         $this->postJson('/api/v1/customer/salons/rasta/password/reset', [

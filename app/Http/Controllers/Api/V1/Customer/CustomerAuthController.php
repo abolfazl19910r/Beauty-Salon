@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api\V1\Customer;
 
-use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiResponse;
 use App\Repositories\Contracts\UserRepositoryInterface;
@@ -96,7 +95,8 @@ class CustomerAuthController extends Controller
 
         $user = $this->userRepository->findCustomerByPhoneInSalon($input['phone'], $this->currentSalon->id());
         if (! $user) {
-            throw new ApiException('account_not_found', 'کاربری با این شماره در این سالن یافت نشد.', 422);
+            // بررسی امنیتی L3: پاسخ یکسان (challenge ساختگی، بی پیامک) — مشتری بودن یک شماره در این سالن لو نمی‌رود
+            return ApiResponse::success($this->resetService->startDecoy($input['phone'], ApiAudienceGate::CUSTOMER, $this->currentSalon->id()));
         }
 
         $this->gate->resolve($user, ApiAudienceGate::CUSTOMER);

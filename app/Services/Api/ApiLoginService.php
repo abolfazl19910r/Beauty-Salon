@@ -51,7 +51,30 @@ class ApiLoginService
         ], $ttl);
         Cache::put($this->attemptsKey($challenge), 0, $ttl);
 
-        return $this->payload($challenge, $user);
+        return $this->payload($challenge, $user->phone);
+    }
+
+    /**
+     * بررسی امنیتی L3 (۲۰۲۶-۱۱-۰۵): برای شماره‌ای که حساب ندارد، challenge «ساختگی» با همان شکل پاسخ — پیامکی نمی‌رود، هر کدی غلط
+     * است (با همان شمارنده و همان خطاها) و «ارسال دوباره» همان مهلت‌ها را دارد. اپ و مهاجم نمی‌فهمند شماره حساب دارد یا نه.
+     */
+    public function startDecoy(string $phone, string $audience, ?int $salonId): array
+    {
+        $challenge = Str::random(48);
+        $ttl = $this->ttlSeconds();
+
+        Cache::put($this->key($challenge), [
+            'user_id' => null,
+            'decoy_phone' => $phone,
+            'audience' => $audience,
+            'salon_id' => (int) $salonId,
+            'resends' => 0,
+            'last_sent_at' => now()->getTimestamp(),
+            'code_expires_at' => $this->decoyCodeExpiry(),
+        ], $ttl);
+        Cache::put($this->attemptsKey($challenge), 0, $ttl);
+
+        return $this->payload($challenge, $phone);
     }
 
     /**
@@ -60,6 +83,15 @@ class ApiLoginService
     public function verify(string $challenge, string $code, string $audience, ?int $salonId): User
     {
         [$data, $user] = $this->load($challenge, $audience, $salonId);
+
+        if ($user === null) {
+            // challenge ساختگی (L3): همان رفتار کد غلط
+            if (now()->getTimestamp() > (int) ($data['code_expires_at'] ?? 0)) {
+                throw new ApiException('code_expired', 'کد تأیید منقضی شده است. کد جدید بگیرید.', 422);
+            }
+
+            $this->failAttempt($challenge, null);
+        }
 
         // کد منقضی تلاش حساب نمی‌شود؛ اپ باید «ارسال دوباره» را پیشنهاد کند
         $expiresAt = $user->{static::CODE_EXPIRES_FIELD};
@@ -78,17 +110,27 @@ class ApiLoginService
 
         $this->logAttempt(false, $user);
 
+        $this->failAttempt($challenge, $user);
+    }
+
+    private function failAttempt(string $challenge, ?User $user): never
+    {
         $max = (int) config('api.login.max_code_attempts', 5);
         $attempts = (int) Cache::increment($this->attemptsKey($challenge));
 
         if ($attempts >= $max) {
             $this->forget($challenge);
-            $user->forceFill([static::CODE_FIELD => null, static::CODE_EXPIRES_FIELD => null])->save();
+            $user?->forceFill([static::CODE_FIELD => null, static::CODE_EXPIRES_FIELD => null])->save();
 
             throw new ApiException('too_many_code_attempts', 'کد اشتباه بیش از حد مجاز وارد شد. دوباره وارد شوید.', 429);
         }
 
         throw new ApiException('invalid_code', 'کد وارد شده نامعتبر است.', 422, ['attempts_left' => $max - $attempts]);
+    }
+
+    private function decoyCodeExpiry(): int
+    {
+        return now()->addMinutes((int) config(static::CODE_FIELD === 'verification_code' ? 'auth.reset_code_expire_minutes' : 'auth.verification_code_expire_minutes', 2))->getTimestamp();
     }
 
     public function resend(string $challenge, string $audience, ?int $salonId): array
@@ -105,7 +147,11 @@ class ApiLoginService
             throw new ApiException('resend_limit_reached', 'تعداد ارسال دوباره‌ی کد به سقف رسید. دوباره وارد شوید.', 429);
         }
 
-        $this->sendCode($user);
+        if ($user !== null) {
+            $this->sendCode($user);
+        } else {
+            $data['code_expires_at'] = $this->decoyCodeExpiry();
+        }
 
         $data['resends']++;
         $data['last_sent_at'] = now()->getTimestamp();
@@ -113,7 +159,7 @@ class ApiLoginService
         Cache::put($this->key($challenge), $data, $ttl);
         Cache::put($this->attemptsKey($challenge), (int) Cache::get($this->attemptsKey($challenge), 0), $ttl);
 
-        return $this->payload($challenge, $user);
+        return $this->payload($challenge, $user?->phone ?? (string) $data['decoy_phone']);
     }
 
     /**
@@ -133,7 +179,7 @@ class ApiLoginService
     }
 
     /**
-     * @return array{0: array, 1: User}
+     * @return array{0: array, 1: ?User} — کاربر null فقط برای challenge ساختگی (startDecoy)
      */
     protected function load(string $challenge, string $audience, ?int $salonId): array
     {
@@ -143,6 +189,10 @@ class ApiLoginService
             || $data['audience'] !== $audience
             || ($salonId !== null && (int) $data['salon_id'] !== $salonId)) {
             throw $this->expired();
+        }
+
+        if ($data['user_id'] === null && isset($data['decoy_phone'])) {
+            return [$data, null];
         }
 
         $user = User::find($data['user_id']);
@@ -182,14 +232,14 @@ class ApiLoginService
         }
     }
 
-    protected function payload(string $challenge, User $user): array
+    protected function payload(string $challenge, string $phone): array
     {
         return [
             'challenge' => $challenge,
             'expires_in' => $this->ttlSeconds(),
             'code_expires_in' => (int) config('auth.verification_code_expire_minutes', 2) * 60,
             'resend_after' => (int) config('api.login.resend_cooldown_seconds', 60),
-            'phone_hint' => substr($user->phone, 0, 4).'***'.substr($user->phone, -4),
+            'phone_hint' => substr($phone, 0, 4).'***'.substr($phone, -4),
         ];
     }
 

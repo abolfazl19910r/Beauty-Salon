@@ -113,6 +113,12 @@ class SalonSignupController extends Controller
             return response()->json(['available' => false, 'reason' => 'invalid']);
         }
 
+        // ⭐ بررسی امنیتی L3 (۲۰۲۶-۱۱-۰۵): فقط ابرمدیر (فرم ساخت سالن) جواب واقعی می‌گیرد؛ برای بقیه فقط درستی قالب — این endpoint
+        // دیگر فهرست شماره‌های کادر را لو نمی‌دهد. یکتایی بعد از تأیید کد پیامکی گفته می‌شود (SalonSignupChallenge::complete).
+        if (! $request->user()?->hasRole('super-admin')) {
+            return response()->json(['available' => true, 'reason' => null]);
+        }
+
         $available = ! $this->userRepository->staffPhoneExists($phone);
 
         return response()->json(['available' => $available, 'reason' => $available ? null : 'taken']);

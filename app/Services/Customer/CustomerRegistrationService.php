@@ -54,9 +54,8 @@ class CustomerRegistrationService extends SmsCodeChallenge
 
     public function start(int $salonId, string $name, string $phone, string $password): array
     {
-        if ($this->phoneTaken($phone, $salonId)) {
-            throw new ApiException('phone_taken', 'این شماره موبایل قبلاً در همین سالن ثبت شده است. وارد شوید یا رمز را بازیابی کنید.', 422);
-        }
+        // بررسی امنیتی L3 (۲۰۲۶-۱۱-۰۵): «این شماره قبلاً ثبت شده» فقط بعد از تأیید کد (verify ← createOrClaim) گفته می‌شود — پیش از آن
+        // هر کسی می‌توانست بفهمد یک شماره مشتری این سالن هست یا نه. کد به خود صاحب شماره می‌رود (OtpSendGuard سقف دارد).
 
         $challenge = $this->open([
             'salon_id' => $salonId,

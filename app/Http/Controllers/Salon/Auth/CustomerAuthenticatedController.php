@@ -7,6 +7,7 @@ use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Auth\TrustedDeviceService;
 use App\Services\PhoneVerificationService;
 use App\Services\SecurityLogService;
+use App\Support\Auth\PasswordLockout;
 use App\Support\CurrentSalon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -51,13 +52,22 @@ class CustomerAuthenticatedController extends Controller
 
         $user = $this->userRepository->findCustomerByPhoneInSalon($credentials['phone'], $salon->id);
 
+        // بررسی امنیتی L5: قفل موقت هر شماره در این سالن بعد از رمزهای غلط پیاپی
+        $lock = PasswordLockout::customer($salon->id, $credentials['phone']);
+        if (PasswordLockout::locked($lock)) {
+            return back()->withErrors(['phone' => PasswordLockout::MESSAGE])->withInput($request->only('phone'));
+        }
+
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             $this->securityLogService->logLogin(false, $credentials['phone'], $user);
+            PasswordLockout::failed($lock);
 
             return back()->withErrors([
                 'phone' => 'اطلاعات وارد شده صحیح نمی‌باشد.',
             ])->withInput($request->only('phone'));
         }
+
+        PasswordLockout::clear($lock);
 
         // بسته‌ی ۶: دستگاه شناخته‌شده («مرا به خاطر بسپار» قبلی روی همین مرورگر/آیفون) ← بدون کد پیامکی
         if ($this->trustedDevices->isTrusted($user, $request)) {

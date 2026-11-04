@@ -14,14 +14,14 @@ class ShortLinkTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_a_link_is_host_slash_b_slash_a_six_character_code_and_redirects(): void
+    public function test_a_link_is_host_slash_b_slash_an_eight_character_code_and_redirects(): void
     {
         config(['services.sms_links.host' => 'mahru.ir']);
 
         $short = app(ShortLinkService::class)->shorten('http://salon.mahru.ir/review/create?token='.str_repeat('x', 64), now()->addDays(7));
 
-        $this->assertMatchesRegularExpression('#^mahru\.ir/b/[a-z0-9]{6}$#', $short);
-        $code = substr($short, -6);
+        $this->assertMatchesRegularExpression('#^mahru\.ir/b/[a-z0-9]{8}$#', $short);
+        $code = substr($short, -8);
         $this->get('/b/'.$code)->assertRedirect('http://salon.mahru.ir/review/create?token='.str_repeat('x', 64));
     }
 
@@ -79,9 +79,9 @@ class ShortLinkTest extends TestCase
         $this->assertTrue(app(\App\Services\Review\ReviewService::class)->sendReviewRequest($booking));
 
         $this->assertCount(1, $sent);
-        $this->assertMatchesRegularExpression('#mahru\.ir/b/([a-z0-9]{6})#', $sent[0]);
+        $this->assertMatchesRegularExpression('#mahru\.ir/b/([a-z0-9]{8})#', $sent[0]);
         $this->assertStringNotContainsString('token=', $sent[0]);
-        preg_match('#/b/([a-z0-9]{6})#', $sent[0], $m);
+        preg_match('#/b/([a-z0-9]{8})#', $sent[0], $m);
         $token = \App\Models\ReviewToken::where('booking_id', $booking->id)->value('token');
         $this->assertStringEndsWith('/review/create?token='.$token, ShortLink::where('code', $m[1])->value('target_url'));
     }

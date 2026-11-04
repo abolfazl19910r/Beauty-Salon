@@ -38,7 +38,8 @@ Route::prefix('salon-signup')->name('salon-signup.')->group(function () {
     Route::get('/check-slug', [SalonSignupController::class, 'checkSlug'])
         ->middleware('throttle:60,1')
         ->name('check-slug');
+    // L3: سقف کمتر؛ برای مهمان فقط درستی قالب را می‌گوید
     Route::get('/check-phone', [SalonSignupController::class, 'checkPhone'])
-        ->middleware('throttle:60,1')
+        ->middleware('throttle:20,1')
         ->name('check-phone');
 });

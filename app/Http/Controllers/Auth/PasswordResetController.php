@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendPasswordResetCodeJob;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Support\Auth\PasswordLockout;
 use App\Support\Auth\SmsCode;
 use App\Support\Queues;
 use App\Support\SalonOfNotifiable;
@@ -38,12 +39,8 @@ class PasswordResetController extends Controller
         // عوض می‌شد (رمز کادر هرگز). مشتری بازیابی خودش را زیر /s/{slug}/forgot-password دارد.
         $user = $this->userRepository->findStaffByPhone($request->phone);
 
-        if (! $user) {
-            return back()->withErrors(['phone' => 'کاربری با این شماره یافت نشد.']);
-        }
-
-        // بررسی امنیتی M1: فقط HMAC کد در users (SmsCode)؛ هر کد حداکثر ۵ بار غلط
-        $verificationCode = SmsCode::issue($user, 'verification_code', 'verification_code_expire_at', (int) config('auth.reset_code_expire_minutes', 2));
+        // بررسی امنیتی L3 (۲۰۲۶-۱۱-۰۵): شماره‌ی ناموجود پاسخ یکسان می‌گیرد (همان صفحه‌ی کد؛ کدی نمی‌رود و هر کدی «اشتباه» است) —
+        // این فرم دیگر نمی‌گوید کدام شماره حساب کادر دارد.
         $token = Str::random(60);
 
         DB::table('password_reset_tokens')->updateOrInsert(
@@ -55,9 +52,13 @@ class PasswordResetController extends Controller
             ]
         );
 
-        // کد تأیید روی صف otp (روی هاست بدون worker بعد از پاسخ)؛ سالن کارمند همین حالا پیدا می‌شود
-        $salonId = $user->salon_id ?? SalonOfNotifiable::resolve($user);
-        Queues::dispatchOtp(new SendPasswordResetCodeJob($user->id, $verificationCode, $salonId));
+        if ($user) {
+            // بررسی امنیتی M1: فقط HMAC کد در users (SmsCode)؛ هر کد حداکثر ۵ بار غلط
+            $verificationCode = SmsCode::issue($user, 'verification_code', 'verification_code_expire_at', (int) config('auth.reset_code_expire_minutes', 2));
+            // کد تأیید روی صف otp (روی هاست بدون worker بعد از پاسخ)؛ سالن کارمند همین حالا پیدا می‌شود
+            $salonId = $user->salon_id ?? SalonOfNotifiable::resolve($user);
+            Queues::dispatchOtp(new SendPasswordResetCodeJob($user->id, $verificationCode, $salonId));
+        }
 
         return redirect()->route('password.verify', ['token' => $token])
             ->with('success', 'کد تایید ارسال شد.');
@@ -99,7 +100,7 @@ class PasswordResetController extends Controller
         $user = $this->userRepository->findStaffByPhone($resetRecord->phone);
 
         if (! $user) {
-            return back()->withErrors(['code' => 'کاربر یافت نشد.']);
+            return back()->withErrors(['code' => 'کد تایید اشتباه یا منقضی شده است.']); // L3: مثل کد غلط
         }
 
         if (! SmsCode::check($user, 'verification_code', 'verification_code_expire_at', (string) $request->code)) {
@@ -111,6 +112,8 @@ class PasswordResetController extends Controller
             'verification_code' => null,
             'verification_code_expire_at' => null,
         ]);
+        // L5: بازیابی با کد پیامکی (صاحب شماره) قفل رمز را برمی‌دارد
+        PasswordLockout::clear(PasswordLockout::staff($user->phone));
 
         DB::table('password_reset_tokens')->where('phone', $user->phone)->delete();
 

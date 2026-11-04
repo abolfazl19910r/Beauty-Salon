@@ -10,6 +10,7 @@ use App\Services\Api\ApiAccountPresenter;
 use App\Services\Api\ApiAudienceGate;
 use App\Services\Api\ApiLoginService;
 use App\Services\SecurityLogService;
+use App\Support\Auth\PasswordLockout;
 use App\Support\CurrentSalon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -41,11 +42,20 @@ class CustomerLoginController extends Controller
 
         $user = $this->userRepository->findCustomerByPhoneInSalon($credentials['phone'], $salon->id);
 
+        // بررسی امنیتی L5: همان قفل ورود وب مشتری همین سالن
+        $lock = PasswordLockout::customer($salon->id, $credentials['phone']);
+        if (PasswordLockout::locked($lock)) {
+            throw new ApiException('too_many_password_attempts', PasswordLockout::MESSAGE, 429, ['retry_after' => PasswordLockout::availableIn($lock)]);
+        }
+
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             $this->securityLogService->logLogin(false, $credentials['phone'], $user);
+            PasswordLockout::failed($lock);
 
             throw new ApiException('invalid_credentials', 'اطلاعات وارد شده صحیح نمی‌باشد.', 422);
         }
+
+        PasswordLockout::clear($lock);
 
         return ApiResponse::success($this->loginService->start($user, ApiAudienceGate::CUSTOMER, $salon->id));
     }

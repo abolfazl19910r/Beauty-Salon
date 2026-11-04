@@ -6,6 +6,11 @@ return [
     'remember_days' => (int) (env('AUTH_REMEMBER_DAYS') ?: 90),
     // بررسی امنیتی M3: دستگاه شناخته‌شده‌ی کادر سالن (مدیر، متخصص) کوتاه‌تر؛ ابرمدیر هرگز (TrustedDeviceService::daysFor)
     'trusted_device_staff_days' => (int) (env('AUTH_TRUSTED_DEVICE_STAFF_DAYS') ?: 30),
+    // بررسی امنیتی L5: قفل موقت ورود با رمز برای هر شماره (App\Support\Auth\PasswordLockout)
+    'password_lockout' => [
+        'max_attempts' => (int) (env('AUTH_PASSWORD_LOCKOUT_ATTEMPTS') ?: 10),
+        'decay_minutes' => (int) (env('AUTH_PASSWORD_LOCKOUT_MINUTES') ?: 15),
+    ],
 
     'defaults' => [
         'guard' => env('AUTH_GUARD', 'web'),

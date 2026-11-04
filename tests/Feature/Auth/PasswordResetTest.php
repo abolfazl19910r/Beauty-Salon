@@ -30,11 +30,19 @@ class PasswordResetTest extends TestCase
         $this->assertDatabaseHas('password_reset_tokens', ['phone' => $user->phone]);
     }
 
-    public function test_reset_code_request_fails_for_an_unregistered_phone_number(): void
+    public function test_an_unregistered_phone_gets_the_same_answer_but_no_sms_and_no_reset(): void
     {
+        // بررسی امنیتی L3 (۲۰۲۶-۱۱-۰۵): پیش‌تر «کاربری با این شماره یافت نشد» — شماره‌های کادر قابل شمارش بودند
+        \Illuminate\Support\Facades\Bus::fake();
         $response = $this->from('/forgot-password')->post('/forgot-password', ['phone' => '09129999999']);
 
-        $response->assertSessionHasErrors('phone');
+        $response->assertSessionHasNoErrors();
+        $token = DB::table('password_reset_tokens')->where('phone', '09129999999')->value('token');
+        $response->assertRedirect(route('password.verify', ['token' => $token]));
+        \Illuminate\Support\Facades\Bus::assertNotDispatched(\App\Jobs\SendPasswordResetCodeJob::class);
+
+        $this->post('/reset-password', ['token' => $token, 'code' => '123456', 'password' => 'new-password-1', 'password_confirmation' => 'new-password-1'])
+            ->assertSessionHasErrors(['code' => 'کد تایید اشتباه یا منقضی شده است.']);
     }
 
     public function test_reset_screen_can_be_rendered_with_a_valid_token(): void

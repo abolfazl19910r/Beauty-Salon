@@ -130,12 +130,17 @@ class SalonSignupTest extends TestCase
             ->assertSessionHasErrors('slug');
     }
 
-    public function test_store_rejects_duplicate_owner_phone_among_staff(): void
+    public function test_duplicate_owner_phone_is_told_only_after_the_code(): void
     {
+        // بررسی امنیتی L3: فرم پیش از کد نمی‌گوید کدام شماره حساب کادر دارد؛ بعد از تأیید کد (صاحب شماره) می‌گوید
         User::factory()->admin()->create(['phone' => '09121234567']);
 
         $this->post(route('salon-signup.store'), $this->validPayload())
-            ->assertSessionHasErrors('owner_phone');
+            ->assertSessionHasNoErrors()->assertRedirect(route('salon-signup.verify'));
+        $this->post(route('salon-signup.verify.store'), ['code' => $this->lastSignupCode()])
+            ->assertRedirect(route('salon-signup.create'))
+            ->assertSessionHasErrors(['error' => 'این شماره حساب ماهرو دارد (مدیر یا منشی سالن دیگر). برای ساختن سالن دوم، اول با همین شماره وارد شوید و دوباره صفحه‌ی ثبت سالن را باز کنید.']);
+        $this->assertSame(0, \App\Models\Salon::where('slug', $this->validPayload()['slug'])->count());
     }
 
     public function test_full_flow_verifies_otp_and_logs_owner_straight_into_billing(): void
@@ -216,13 +221,18 @@ class SalonSignupTest extends TestCase
             ->assertJson(['available' => true, 'reason' => null]);
     }
 
-    public function test_check_phone_reports_taken_for_an_existing_staff_phone(): void
+    public function test_check_phone_reports_taken_only_to_the_super_admin(): void
     {
+        // بررسی امنیتی L3: برای مهمان فقط درستی قالب (فهرست شماره‌های کادر لو نمی‌رود)
         User::factory()->admin()->create(['phone' => '09129999999']);
 
         $this->getJson(route('salon-signup.check-phone', ['phone' => '09129999999']))
-            ->assertOk()
-            ->assertJson(['available' => false, 'reason' => 'taken']);
+            ->assertOk()->assertJson(['available' => true, 'reason' => null]);
+
+        $super = User::factory()->create(['user_type' => 'staff', 'is_admin' => true]);
+        $super->assignRole(\App\Models\Role::firstOrCreate(['name' => 'super-admin'], ['label' => 'سوپر ادمین']));
+        $this->actingAs($super)->getJson(route('salon-signup.check-phone', ['phone' => '09129999999']))
+            ->assertOk()->assertJson(['available' => false, 'reason' => 'taken']);
     }
 
     public function test_check_phone_does_not_flag_a_customer_phone_as_taken(): void

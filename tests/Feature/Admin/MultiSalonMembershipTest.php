@@ -225,9 +225,17 @@ class MultiSalonMembershipTest extends TestCase
     {
         app(CurrentSalon::class)->clear();
 
+        // بررسی امنیتی L3 (۲۰۲۶-۱۱-۰۵): این راهنما فقط بعد از تأیید کد پیامکی (صاحب شماره) گفته می‌شود، نه روی فرم
+        \Illuminate\Support\Facades\Queue::fake();
         $this->post(route('salon-signup.store'), [
             'name' => 'سالن دوم', 'slug' => 'second-salon', 'specialists_count' => 3,
             'owner_name' => 'x', 'owner_phone' => '09120000001', 'owner_password' => 'Password-123', 'owner_password_confirmation' => 'Password-123',
-        ] + $this->salonContactPayload())->assertSessionHasErrors(['owner_phone' => 'این شماره حساب ماهرو دارد (مدیر یا منشی سالن دیگر). برای ساختن سالن دوم، اول با همین شماره وارد شوید و دوباره این صفحه را باز کنید.']);
+            'accept_terms' => '1',
+        ] + $this->salonContactPayload())->assertSessionHasNoErrors()->assertRedirect(route('salon-signup.verify'));
+
+        $code = \Illuminate\Support\Facades\Queue::pushed(\App\Jobs\SendRegistrationCodeJob::class)->last()->code;
+        $this->post(route('salon-signup.verify.store'), ['code' => $code])
+            ->assertSessionHasErrors(['error' => 'این شماره حساب ماهرو دارد (مدیر یا منشی سالن دیگر). برای ساختن سالن دوم، اول با همین شماره وارد شوید و دوباره صفحه‌ی ثبت سالن را باز کنید.']);
+        $this->assertDatabaseMissing('salons', ['slug' => 'second-salon']);
     }
 }

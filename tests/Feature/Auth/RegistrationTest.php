@@ -137,12 +137,14 @@ class RegistrationTest extends TestCase
         Queue::assertNothingPushed();
     }
 
-    public function test_a_verified_customer_of_the_same_salon_blocks_registration(): void
+    public function test_a_verified_customer_of_the_same_salon_is_told_only_after_the_code(): void
     {
+        // بررسی امنیتی L3: «قبلاً ثبت شده» پیش از کد، مشتری بودن هر شماره را لو می‌داد؛ کد به خود صاحب شماره می‌رود
         User::factory()->create(['phone' => '09121234567', 'salon_id' => app(CurrentSalon::class)->id(), 'user_type' => 'customer', 'phone_verified_at' => now()]);
 
-        $this->post('/s/rasta/register', $this->form)->assertSessionHasErrors('phone');
-        Queue::assertNothingPushed();
+        $this->post('/s/rasta/register', $this->form)->assertSessionHasNoErrors();
+        Queue::assertPushed(\App\Jobs\SendRegistrationCodeJob::class);
+        $this->assertSame(1, User::where('phone', '09121234567')->count());
     }
 
     public function test_the_same_phone_can_register_at_another_salon(): void

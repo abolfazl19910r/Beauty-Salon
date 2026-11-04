@@ -136,10 +136,11 @@ class StaffNotificationsAndResetTest extends TestCase
         $admin = User::factory()->create(['user_type' => 'staff', 'salon_id' => null, 'is_admin' => true]);
         $customer = User::factory()->create(['user_type' => 'customer']);
 
+        // بررسی امنیتی L3: هر دو همان پاسخ «کد فرستاده شد» را می‌گیرند (challenge ساختگی)، ولی کدی ساخته و فرستاده نمی‌شود
         $this->postJson('/api/v1/staff/password/forgot', ['phone' => $admin->phone])
-            ->assertForbidden()->assertJsonPath('error.code', 'wrong_app');
+            ->assertOk()->assertJsonStructure(['data' => ['challenge', 'phone_hint', 'resend_after']]);
         $this->postJson('/api/v1/staff/password/forgot', ['phone' => $customer->phone])
-            ->assertStatus(422)->assertJsonPath('error.code', 'account_not_found');
+            ->assertOk()->assertJsonStructure(['data' => ['challenge', 'phone_hint', 'resend_after']]);
 
         $this->assertNull($admin->fresh()->verification_code);
         $this->assertNull($customer->fresh()->verification_code);

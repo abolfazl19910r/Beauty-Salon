@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 
 /**
  * بازیابی رمز اپ «ماهرو همکار» (بسته‌ی ۲؛ تصمیم ۲۰۲۶-۱۰-۱۰): هم‌ارز /forgot-password وب برای حساب کادر
- * (findStaffByPhone — رفع همین بسته)، فقط متخصص (مثل ورود اپ). مثل وب «شماره پیدا نشد» را می‌گوید.
+ * (findStaffByPhone — رفع همین بسته)، فقط متخصص (مثل ورود اپ). از بررسی امنیتی L3 شماره‌ی ناموجود پاسخ یکسان می‌گیرد.
  * POST /api/v1/staff/password/forgot {phone} → challenge؛ POST .../resend {challenge}؛
  * POST .../reset {challenge, code, password, password_confirmation} → همه‌ی دستگاه‌ها خارج می‌شوند.
  */
@@ -30,11 +30,15 @@ class StaffPasswordResetController extends Controller
         $input = $request->validate(['phone' => ['required', 'string', 'regex:/^09[0-9]{9}$/']]);
 
         $user = $this->userRepository->findStaffByPhone($input['phone']);
-        if (! $user) {
-            throw new ApiException('account_not_found', 'کاربری با این شماره یافت نشد.', 422);
+        // بررسی امنیتی L3: شماره‌ی بی حساب کادر (یا حسابی که اپ همکار نمی‌پذیرد) پاسخ یکسان می‌گیرد — challenge ساختگی، بی پیامک
+        try {
+            $context = $user ? $this->gate->resolve($user, ApiAudienceGate::STAFF) : null;
+        } catch (ApiException) {
+            $context = null;
         }
-
-        $context = $this->gate->resolve($user, ApiAudienceGate::STAFF);
+        if ($context === null) {
+            return ApiResponse::success($this->resetService->startDecoy($input['phone'], ApiAudienceGate::STAFF, null));
+        }
 
         return ApiResponse::success($this->resetService->start($user, ApiAudienceGate::STAFF, $context['salon']->id));
     }

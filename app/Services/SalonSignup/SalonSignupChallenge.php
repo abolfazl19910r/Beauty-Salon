@@ -82,7 +82,8 @@ class SalonSignupChallenge extends SmsCodeChallenge
         }
         if ($this->userRepository->staffPhoneExists($data['owner_phone'])) {
             $this->dropLogo($data);
-            throw new ApiException('phone_taken', 'این شماره در این فاصله برای حساب کادر دیگری ثبت شد.', 422);
+            // L3: یکتایی فقط بعد از تأیید کد گفته می‌شود (صاحب شماره)
+            throw new ApiException('phone_taken', 'این شماره حساب ماهرو دارد (مدیر یا منشی سالن دیگر). برای ساختن سالن دوم، اول با همین شماره وارد شوید و دوباره صفحه‌ی ثبت سالن را باز کنید.', 422);
         }
 
         try {

@@ -4,7 +4,6 @@ namespace App\Http\Requests\SalonSignup;
 
 use App\Http\Requests\Concerns\ValidatesSalonContactDetails;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 
 /**
@@ -52,9 +51,8 @@ class StoreSalonSignupRequest extends FormRequest
             'owner_name' => [$this->existingOwner() ? 'nullable' : 'required', 'string', 'max:255'],
             'owner_phone' => [
                 $this->existingOwner() ? 'nullable' : 'required', 'string', 'regex:/^09[0-9]{9}$/',
-                // ⭐ همون قانون StoreSalonRequest سوپرادمین: چون هنوز هیچ سالنی وجود نداره که
-                // phone رو بهش scope کنیم، سراسری بین user_type='staff' چک می‌شه.
-                Rule::unique('users', 'phone')->where(fn ($query) => $query->where('user_type', 'staff')),
+                // ⭐ بررسی امنیتی L3 (۲۰۲۶-۱۱-۰۵): یکتایی شماره‌ی کادر اینجا (پیش از کد) نه — هر کسی می‌فهمید کدام شماره حساب ماهرو دارد.
+                // SalonSignupChallenge::complete بعد از تأیید کد (صاحب واقعی شماره) «phone_taken» را با راهنمای ورود می‌گوید.
             ],
             'owner_password' => [$this->existingOwner() ? 'nullable' : 'required', 'confirmed', Rules\Password::defaults()],
             // پذیرش «قوانین و شرایط سالن‌ها» و «حریم خصوصی» با نسخه و زمان ثبت می‌شود (بسته‌ی مجوز 5د)

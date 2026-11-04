@@ -4,6 +4,7 @@ namespace App\Services\Api;
 
 use App\Jobs\SendPasswordResetCodeJob;
 use App\Models\User;
+use App\Support\Auth\PasswordLockout;
 use App\Support\Auth\SmsCode;
 use App\Support\Queues;
 use App\Support\SalonOfNotifiable;
@@ -51,6 +52,8 @@ class ApiPasswordResetService extends ApiLoginService
         $user = $this->verify($challenge, $code, $audience, $salonId);
         // کد بازیابی مالکیت شماره را ثابت می‌کند (حساب تأییدنشده‌ی قدیمی با آن تأیید می‌شود)
         $user->forceFill(['password' => Hash::make($password), 'phone_verified_at' => $user->phone_verified_at ?? now()])->save();
+        // L5: بازیابی با کد پیامکی قفل رمز را برمی‌دارد
+        PasswordLockout::clear($user->user_type === 'customer' ? PasswordLockout::customer((int) $user->salon_id, $user->phone) : PasswordLockout::staff($user->phone));
 
         return $user;
     }

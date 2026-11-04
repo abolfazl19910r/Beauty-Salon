@@ -10,6 +10,7 @@ use App\Services\Api\ApiAccountPresenter;
 use App\Services\Api\ApiAudienceGate;
 use App\Services\Api\ApiLoginService;
 use App\Services\SecurityLogService;
+use App\Support\Auth\PasswordLockout;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -36,11 +37,20 @@ class StaffLoginController extends Controller
 
         $user = $this->userRepository->findStaffByPhone($credentials['phone']);
 
+        // بررسی امنیتی L5: همان قفل ورود وب کادر
+        $lock = PasswordLockout::staff($credentials['phone']);
+        if (PasswordLockout::locked($lock)) {
+            throw new ApiException('too_many_password_attempts', PasswordLockout::MESSAGE, 429, ['retry_after' => PasswordLockout::availableIn($lock)]);
+        }
+
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             $this->securityLogService->logLogin(false, $credentials['phone'], $user);
+            PasswordLockout::failed($lock);
 
             throw new ApiException('invalid_credentials', 'اطلاعات وارد شده صحیح نمی‌باشد.', 422);
         }
+
+        PasswordLockout::clear($lock);
 
         // متخصصی که مدیر بعد از ساخت این حساب با همین شماره اضافه کرده، پیش از سنجش «فقط متخصص» وصل می‌شود (۲۰۲۶-۱۰-۲۲)
         app(\App\Services\Specialist\SpecialistAccountLinker::class)->linkPending($user);
