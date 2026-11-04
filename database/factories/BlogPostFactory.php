@@ -18,7 +18,8 @@ class BlogPostFactory extends Factory
 
         return [
             'title' => $title,
-            'slug' => Str::slug($title),
+            // ⭐ 5ح: realText فارسی بعد از Str::slug کوتاه و تکراری می‌شد ← تکرار (salon_id, slug) و شکست migrate:fresh --seed
+            'slug' => ltrim(Str::slug($title).'-'.Str::lower(Str::random(6)), '-'),
             'content' => fake()->realText(1000),
             'excerpt' => fake()->realText(150),
             'image' => null,
