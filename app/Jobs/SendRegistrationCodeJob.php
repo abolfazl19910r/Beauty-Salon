@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Contracts\Sms\OtpJob;
 use App\Services\SMSService;
 use App\Support\Queues;
 use Illuminate\Bus\Queueable;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Log;
  * کد تأیید ثبت‌نام مشتری (۲۰۲۶-۱۰-۱۱) — هنوز حسابی وجود ندارد، پس شماره مستقیم داده می‌شود (نه شناسه‌ی کاربر).
  * همان قالب و هزینه‌ی SendPhoneVerificationCodeJob: پیامک احراز هویت، هزینه‌ی پلتفرم، صف otp. ثبت‌نام سالن هنوز سالنی ندارد (salonId null).
  */
-class SendRegistrationCodeJob implements ShouldQueue
+class SendRegistrationCodeJob implements OtpJob, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -29,6 +30,11 @@ class SendRegistrationCodeJob implements ShouldQueue
         public readonly ?int $salonId,
     ) {
         $this->onQueue(Queues::OTP);
+    }
+
+    public function otpRecipient(): ?string
+    {
+        return $this->phone;
     }
 
     public function handle(SMSService $smsService): void

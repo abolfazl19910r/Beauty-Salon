@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Contracts\Sms\OtpJob;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\SMSService;
 use App\Support\Queues;
@@ -20,7 +21,7 @@ use Illuminate\Support\Facades\Log;
  * 20-30+ seconds on registration, and (now that EnsurePhoneIsVerified is wired up for
  * real) on every first protected-page visit by a not-yet-verified user too.
  */
-class SendPhoneVerificationCodeJob implements ShouldQueue
+class SendPhoneVerificationCodeJob implements OtpJob, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -34,6 +35,11 @@ class SendPhoneVerificationCodeJob implements ShouldQueue
         protected string $code
     ) {
         $this->onQueue(Queues::OTP);
+    }
+
+    public function otpRecipient(): ?string
+    {
+        return app(UserRepositoryInterface::class)->find($this->userId)?->phone;
     }
 
     public function handle(SMSService $smsService, UserRepositoryInterface $userRepository): void

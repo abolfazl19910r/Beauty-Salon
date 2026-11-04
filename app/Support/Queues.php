@@ -36,9 +36,15 @@ final class Queues
 
     /**
      * ارسال job کد تأیید: با worker دائمی روی صف otp؛ روی هاست بدون worker بعد از فرستادن پاسخ، در همان پردازه.
+     * پیش از آن OtpSendGuard (هر job کد باید OtpJob باشد — OtpSendGuardTest همه را می‌سنجد).
      */
     public static function dispatchOtp(object $job): void
     {
+        // بررسی امنیتی ۲۰۲۶-۱۱-۰۴ (H4): سقف هر شماره، هر IP و کل پلتفرم. رد شدن بی‌صداست (پاسخ کاربر همان «کد فرستاده شد»).
+        if ($job instanceof \App\Contracts\Sms\OtpJob && ! app(\App\Services\Sms\OtpSendGuard::class)->allow($job->otpRecipient())) {
+            return;
+        }
+
         if (config('queue.work_via_scheduler')) {
             dispatch($job)->afterResponse();
 

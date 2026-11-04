@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Contracts\Sms\OtpJob;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\SMSService;
 use App\Support\Queues;
@@ -16,7 +17,7 @@ use Illuminate\Support\Facades\Log;
  * کد بازیابی رمز (کارمند و مشتری) — مثل سه کد تأیید دیگر روی صف otp، نه داخل خود درخواست.
  * سالن (برای otp_count) در زمان درخواست حساب و همراه job فرستاده می‌شود؛ worker سالن جاری ندارد.
  */
-class SendPasswordResetCodeJob implements ShouldQueue
+class SendPasswordResetCodeJob implements OtpJob, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -35,6 +36,11 @@ class SendPasswordResetCodeJob implements ShouldQueue
     public function salonId(): ?int
     {
         return $this->salonId;
+    }
+
+    public function otpRecipient(): ?string
+    {
+        return app(UserRepositoryInterface::class)->find($this->userId)?->phone;
     }
 
     public function handle(SMSService $smsService, UserRepositoryInterface $userRepository): void

@@ -51,6 +51,14 @@ return [
         // کد ورود بدون اطمینان از طرف مقابل می‌رفتند. پیش‌فرض روشن؛ false فقط برای عیب‌یابی سیستمی که فهرست CA ندارد.
         'ssl_verify' => ! in_array(env('KAVENEGAR_SSL_VERIFY'), [false, '0', 'off', 'no'], true),
 
+        // ⭐ بررسی امنیتی ۲۰۲۶-۱۱-۰۴ (H4، «پمپاژ پیامک»): سقف ارسال کد تأیید — App\Services\Sms\OtpSendGuard. صفر = بی سقف.
+        'otp_limits' => [
+            'per_phone_10min' => (int) (env('OTP_PER_PHONE_10MIN') ?: 3),
+            'per_phone_day' => (int) (env('OTP_PER_PHONE_DAY') ?: 10),
+            'per_ip_hour' => (int) (env('OTP_PER_IP_HOUR') ?: 30),
+            'platform_per_day' => (int) (env('OTP_PLATFORM_DAILY') ?: 2000),
+        ],
+
         'templates' => [
             'login_verify' => env('KAVENEGAR_TEMPLATE_LOGIN') ?: 'login-verify',
             'register_verify' => env('KAVENEGAR_TEMPLATE_REGISTER') ?: 'register-verify',

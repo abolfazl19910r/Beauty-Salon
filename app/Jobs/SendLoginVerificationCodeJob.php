@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Contracts\Sms\OtpJob;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\SMSService;
 use App\Support\Queues;
@@ -12,7 +13,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class SendLoginVerificationCodeJob implements ShouldQueue
+class SendLoginVerificationCodeJob implements OtpJob, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -26,6 +27,11 @@ class SendLoginVerificationCodeJob implements ShouldQueue
         protected string $code
     ) {
         $this->onQueue(Queues::OTP);
+    }
+
+    public function otpRecipient(): ?string
+    {
+        return app(UserRepositoryInterface::class)->find($this->userId)?->phone;
     }
 
     public function handle(SMSService $smsService, UserRepositoryInterface $userRepository): void
