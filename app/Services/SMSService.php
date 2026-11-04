@@ -133,7 +133,8 @@ class SMSService
         Log::info('SMS Template: در حال ارسال', [
             'mobile' => $mobile,
             'template' => $templateName,
-            'tokens' => $tokens,
+            // M2: کد (token اول) فقط در حالت «فقط لاگ»؛ با ارسال واقعی ***
+            'tokens' => OtpLog::tokens($tokens),
         ]);
 
         try {

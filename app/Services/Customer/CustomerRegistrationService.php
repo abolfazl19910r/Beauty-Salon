@@ -10,6 +10,7 @@ use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Auth\SmsCodeChallenge;
 use App\Services\PasswordStrengthService;
 use App\Support\Queues;
+use App\Support\Sms\OtpLog;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -40,7 +41,7 @@ class CustomerRegistrationService extends SmsCodeChallenge
 
     protected function deliver(array $data, string $code): void
     {
-        Log::info('Queued customer registration code', ['phone' => $data['phone'], 'code' => $code, 'salon_id' => $data['salon_id']]);
+        Log::info('Queued customer registration code', ['phone' => $data['phone'], 'salon_id' => $data['salon_id']] + OtpLog::code($code));
         Queues::dispatchOtp(new SendRegistrationCodeJob($data['phone'], $code, (int) $data['salon_id']));
     }
 

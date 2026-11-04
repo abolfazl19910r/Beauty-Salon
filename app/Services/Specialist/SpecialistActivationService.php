@@ -9,6 +9,7 @@ use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Auth\SmsCodeChallenge;
 use App\Services\PasswordStrengthService;
 use App\Support\Queues;
+use App\Support\Sms\OtpLog;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
@@ -41,7 +42,7 @@ class SpecialistActivationService extends SmsCodeChallenge
 
     protected function deliver(array $data, string $code): void
     {
-        Log::info('Queued specialist activation code', ['phone' => $data['phone'], 'code' => $code, 'salon_id' => $data['salon_id']]);
+        Log::info('Queued specialist activation code', ['phone' => $data['phone'], 'salon_id' => $data['salon_id']] + OtpLog::code($code));
         Queues::dispatchOtp(new SendRegistrationCodeJob($data['phone'], $code, $data['salon_id']));
     }
 

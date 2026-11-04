@@ -11,6 +11,7 @@ use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Auth\SmsCodeChallenge;
 use App\Services\Salon\SalonLogoService;
 use App\Support\Queues;
+use App\Support\Sms\OtpLog;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Crypt;
@@ -44,7 +45,7 @@ class SalonSignupChallenge extends SmsCodeChallenge
 
     protected function deliver(array $data, string $code): void
     {
-        Log::info('Queued salon signup code', ['phone' => $data['phone'], 'code' => $code]);
+        Log::info('Queued salon signup code', ['phone' => $data['phone']] + OtpLog::code($code));
         Queues::dispatchOtp(new SendRegistrationCodeJob($data['phone'], $code, null));
     }
 

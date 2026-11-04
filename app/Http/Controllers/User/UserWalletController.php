@@ -162,7 +162,8 @@ class UserWalletController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::warning('⚠️ خطای اعتبارسنجی شارژ', [
                 'errors' => $e->errors(),
-                'input' => $request->all(),
+                // M6: فقط مبلغ (نه کل ورودی درخواست)
+                'amount' => $request->input('amount'),
             ]);
 
             return back()->withErrors($e->errors())->withInput();
