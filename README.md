@@ -319,7 +319,7 @@ MAX_LOGIN_ATTEMPTS=5
 LOGIN_THROTTLE_MINUTES=1
 TRUSTED_PROXIES=                   # رنج IP لبه‌های CDN (سرور آروان: deploy/single/arvan-ips.sh). هرگز «*»
 HSTS_MAX_AGE=                      # فقط روی HTTPS؛ خالی = یک سال، 0 = خاموش
-SECURITY_CSP=enforce              # enforce (پیش‌فرض؛ تخلف‌ها در storage/logs/csp-*.log)، report (فقط گزارش) یا off
+SECURITY_CSP=enforce              # enforce (پیش‌فرض؛ تخلف‌ها در storage/logs/csp-*.log)، report (فقط گزارش) یا off — با APP_ENV=local داشبورد /telescope بی CSP است
 RETENTION_DAYS=190                 # نگهداری IP و لاگ‌ها (ماده‌ی ۶۶۸)؛ کمتر از ۱۸۴ پذیرفته نمی‌شود
 LEGAL_PAGES_REVIEWED=false         # true بعد از بازبینی حقوق‌دان (برچسب «پیش‌نویس» برداشته می‌شود)
 SALON_VERIFIER=manual              # احراز سالن: manual (ابرمدیر)؛ بعداً سامانه‌ی رسمی
@@ -642,6 +642,12 @@ php artisan up
 ## 🆕 آخرین تغییرات
 
 تاریخچه‌ی کامل، تصمیم‌ها و قدم‌های باز در [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md).
+
+**۲۰۲۶-۱۱-۰۴ — Telescope لوکال و سرعت درخواست‌ها**
+- داشبورد Telescope از CSP اجرایی (`0301`) سفید می‌ماند (Vue آن `eval` می‌خواهد و فونتش از `fonts.bunny.net` است) ← فقط با `APP_ENV=local` و فقط زیر مسیر `/telescope` CSP فرستاده نمی‌شود؛ بقیه‌ی صفحه‌ها و سرور همان CSP.
+- بوت هر درخواست دیگر `information_schema` را نمی‌پرسد (بررسی جدول `salons` داخل کش اسلاگ پیش‌فرض رفت؛ ۴۰ تا ۸۰ میلی‌ثانیه روی MariaDB لوکال).
+- **سرعت لوکال:** `php artisan serve` روی PHP خط فرمان اجرا می‌شود و OPcache آن پیش‌فرض خاموش است (`opcache.enable_cli=0`) ← در `php.ini` لوکال: `opcache.enable_cli=1`، `opcache.memory_consumption=256`، `opcache.interned_strings_buffer=16`، `opcache.max_accelerated_files=20000`، `opcache.validate_timestamps=1`، `opcache.revalidate_freq=0` (تغییر کد همان لحظه دیده می‌شود). Telescope را فقط هنگام نیاز روشن کنید (`TELESCOPE_ENABLED`) و گاهی `php artisan telescope:prune`.
+- بی migration و بی متغیر تازه.
 
 **۲۰۲۶-۱۱-۰۴ — کارهای باز کدی (بسته‌ی 5ح)**
 - **`payments:zarinpal-unverified` (ساعتی):** برای هر مرچنت زرین‌پال (درگاه‌های سالن‌ها، فعال یا نه، و مرچنت پلتفرم) فهرست `unVerified` (حداکثر ۱۰۰ پرداخت موفقِ تأییدنشده) خوانده می‌شود. اگر تراکنش ما `expired`/`failed` است و در ۷ روز اخیر ساخته شده و مبلغش همان است، verify و مثل پرداخت رهاشده واریز می‌شود (نوبت/دوره ← کیف پول مشتری، شارژ ← شارژ، اشتراک ← فاکتور یا اعتبار پلتفرم)؛ قدیمی‌تر یا با مبلغ دیگر ← «پرداخت‌های نیازمند بررسی». اتوریتی ناشناس فقط در لاگ.

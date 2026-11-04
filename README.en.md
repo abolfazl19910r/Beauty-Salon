@@ -319,7 +319,7 @@ MAX_LOGIN_ATTEMPTS=5
 LOGIN_THROTTLE_MINUTES=1
 TRUSTED_PROXIES=                   # CDN edge IP ranges (Arvan server: deploy/single/arvan-ips.sh). Never "*"
 HSTS_MAX_AGE=                      # HTTPS only; empty = one year, 0 = off
-SECURITY_CSP=enforce              # enforce (default; violations in storage/logs/csp-*.log), report (log only) or off
+SECURITY_CSP=enforce              # enforce (default; violations in storage/logs/csp-*.log), report (log only) or off — with APP_ENV=local the /telescope dashboard gets no CSP
 RETENTION_DAYS=190                 # how long IPs and logs are kept (art. 668); below 184 is not accepted
 LEGAL_PAGES_REVIEWED=false         # true once a lawyer has reviewed the texts (removes the "draft" label)
 SALON_VERIFIER=manual              # salon verification: manual (super-admin); an official service later
@@ -642,6 +642,12 @@ Cron and workers: [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCH
 ## 🆕 Changelog
 
 Full history, decisions and open items in [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md) (Persian).
+
+**2026-11-04 — local Telescope and request speed**
+- The Telescope dashboard rendered blank under the enforcing CSP (`0301`; its Vue build needs `eval`, its font comes from `fonts.bunny.net`) → only with `APP_ENV=local` and only under `/telescope` no CSP is sent; every other page and the server keep the policy.
+- Booting a request no longer queries `information_schema` (the `salons` table check moved inside the cached default-slug lookup; 40–80 ms on the local MariaDB).
+- **Local speed:** `php artisan serve` runs on the CLI PHP, whose OPcache is off by default (`opcache.enable_cli=0`) → in the local `php.ini`: `opcache.enable_cli=1`, `opcache.memory_consumption=256`, `opcache.interned_strings_buffer=16`, `opcache.max_accelerated_files=20000`, `opcache.validate_timestamps=1`, `opcache.revalidate_freq=0` (code changes show up immediately). Enable Telescope only when needed (`TELESCOPE_ENABLED`) and run `php artisan telescope:prune` now and then.
+- No migration, no new variable.
 
 **2026-11-04 — open code items (package 5h)**
 - **`payments:zarinpal-unverified` (hourly):** for every Zarinpal merchant (salon gateways, active or not, and the platform merchant) the `unVerified` list (up to 100 successful but unverified payments) is read. If our transaction is `expired`/`failed`, created within the last 7 days and the amount matches, it is verified and credited like an abandoned payment (booking/course → customer wallet, charge → charged, subscription → invoice or platform credit); older or a different amount → "payments needing review". Unknown authorities are only logged.
