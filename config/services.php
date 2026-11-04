@@ -59,8 +59,7 @@ return [
     'zarinpal' => [
         // مرچنت درگاه پلتفرم (اشتراک و بسته‌ی پیامک). بی مقدار معتبر: sandbox یک UUID آزمایشی، درگاه واقعی پیام روشن (App\Support\PlatformZarinpal)
         'merchant_id' => env('ZARINPAL_MERCHANT_ID'),
-        'api_key' => env('ZARINPAL_API_KEY'),
-        'base_url' => env('ZARINPAL_BASE_URL', 'https://api.zarinpal.com/pg/v4'),
+        // ⭐ ۲۰۲۶-۱۱-۰۴: ‏api_key و base_url (ZARINPAL_API_KEY / ZARINPAL_BASE_URL) جایی خوانده نمی‌شدند (API v4 کلید ندارد؛ آدرس‌ها از sandbox و دو خط پایین) — حذف شدند.
         'sandbox' => env('ZARINPAL_SANDBOX', true),
         // ⭐ ۲۰۲۶-۰۹-۲۵: آدرس‌های production درگاه پرداخت طبق مستندات رسمی فعلی زرین‌پال.
         'payment_api_url' => env('ZARINPAL_PAYMENT_API_URL', 'https://payment.zarinpal.com/pg/v4/payment'),

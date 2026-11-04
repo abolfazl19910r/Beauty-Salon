@@ -285,7 +285,6 @@ MAX_SIGNUP_SPECIALISTS=50
 ### درگاه پرداخت پلتفرم (اشتراک و بسته‌ی پیامک)
 ```env
 ZARINPAL_MERCHANT_ID=
-ZARINPAL_API_KEY=
 ZARINPAL_SANDBOX=true              # در go-live: false
 ```
 > درگاه‌های **هر سالن** در `.env` نیستند؛ مدیر سالن از پنل خودش وارد می‌کند و رمزنگاری‌شده ذخیره می‌شود.

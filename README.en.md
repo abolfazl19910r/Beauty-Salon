@@ -285,7 +285,6 @@ MAX_SIGNUP_SPECIALISTS=50
 ### Platform payment gateway (subscriptions and SMS packs)
 ```env
 ZARINPAL_MERCHANT_ID=
-ZARINPAL_API_KEY=
 ZARINPAL_SANDBOX=true              # at go-live: false
 ```
 > **Each salon's** gateways are not in `.env`; the salon admin enters them in their panel and they are stored encrypted.
