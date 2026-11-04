@@ -8,8 +8,8 @@
             <a href="{{ route('admin.reviews.index') }}"
                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium"
                style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
-               onmouseover="this.style.background='var(--admin-border)'"
-               onmouseout="this.style.background='var(--admin-accent-light)'">
+               data-ui-hover="background: var(--admin-border)"
+               data-ui-unhover="background: var(--admin-accent-light)">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
                 بازگشت
             </a>
@@ -91,8 +91,8 @@
                                 <button type="submit"
                                         class="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-m-onsolid"
                                         style="background:rgb(var(--m-ok));"
-                                        onmouseover="this.style.background='rgb(var(--m-ok))'"
-                                        onmouseout="this.style.background='rgb(var(--m-ok))'">
+                                        data-ui-hover="background: rgb(var(--m-ok))"
+                                        data-ui-unhover="background: rgb(var(--m-ok))">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                                     تایید نظر
                                 </button>
@@ -103,8 +103,8 @@
                             <button type="submit"
                                     class="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium"
                                     style="background:rgb(var(--m-info) / .1); color:rgb(var(--m-info));"
-                                    onmouseover="this.style.opacity='0.8'"
-                                    onmouseout="this.style.opacity='1'">
+                                    data-ui-hover="opacity: 0.8"
+                                    data-ui-unhover="opacity: 1">
                                 <svg class="w-4 h-4" fill="{{ $review->is_featured ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
                                 </svg>
@@ -117,8 +117,8 @@
                                     data-confirm-delete data-confirm-message="آیا از حذف این نظر اطمینان دارید؟"
                                     class="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium"
                                     style="background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad));"
-                                    onmouseover="this.style.background='rgb(var(--m-bad) / .14)'"
-                                    onmouseout="this.style.background='rgb(var(--m-bad) / .1)'">
+                                    data-ui-hover="background: rgb(var(--m-bad) / .14)"
+                                    data-ui-unhover="background: rgb(var(--m-bad) / .1)">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <polyline points="3 6 5 6 21 6"/>
                                     <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>

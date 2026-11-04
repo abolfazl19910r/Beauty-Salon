@@ -66,6 +66,7 @@
         html[data-layout=aram] .spec-main-inner{max-width:960px;margin:0 auto}
     </style>
     @stack('styles')
+    @include('partials.ui-handlers')
 </head>
 <body class="m-panel text-[var(--specialist-text)]" style="background-color: var(--specialist-bg);">
 

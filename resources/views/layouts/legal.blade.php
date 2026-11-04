@@ -20,6 +20,7 @@
         .legal ol { list-style: decimal; padding-right: 1.5rem; margin: .5rem 0; }
         .legal a { text-decoration: underline; }
     </style>
+    @include('partials.ui-handlers')
 </head>
 <body class="font-vazir antialiased min-h-screen flex flex-col bg-m-bg text-m-tx" dir="rtl">
     <header class="border-b border-m-gold/10">

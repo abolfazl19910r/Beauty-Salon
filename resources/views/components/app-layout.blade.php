@@ -8,6 +8,7 @@
 
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
+    @include('partials.ui-handlers')
 </head>
 <body class="bg-gray-50">
 <div class="min-h-screen flex">

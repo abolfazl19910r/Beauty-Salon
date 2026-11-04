@@ -17,8 +17,8 @@
             <a href="{{ route('admin.blog.index') }}"
                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium"
                style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
-               onmouseover="this.style.background='var(--admin-border)'"
-               onmouseout="this.style.background='var(--admin-accent-light)'">
+               data-ui-hover="background: var(--admin-border)"
+               data-ui-unhover="background: var(--admin-accent-light)">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
                 بازگشت
             </a>
@@ -57,8 +57,8 @@
                         <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">تصویر مقاله</h2>
                         <label for="blog-image" class="block border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors"
                                style="border-color:var(--admin-border);"
-                               onmouseover="this.style.borderColor='var(--admin-accent)'; this.style.background='var(--admin-accent-light)'"
-                               onmouseout="this.style.borderColor='var(--admin-border)'; this.style.background=''">
+                               data-ui-hover="border-color: var(--admin-accent); background: var(--admin-accent-light)"
+                               data-ui-unhover="border-color: var(--admin-border); background: ">
                             <div id="blog-preview-container" class="mb-3 {{ $post->image_url ? '' : 'hidden' }}">
                                 <img id="blog-image-preview" src="{{ $post->image_url }}" class="w-32 h-24 object-cover rounded-lg mx-auto">
                             </div>
@@ -100,8 +100,8 @@
                             </div>
                             <label class="flex items-center gap-2 p-3 rounded-lg cursor-pointer"
                                    style="border:1px solid var(--admin-border);"
-                                   onmouseover="this.style.background='var(--admin-accent-light)'"
-                                   onmouseout="this.style.background=''">
+                                   data-ui-hover="background: var(--admin-accent-light)"
+                                   data-ui-unhover="background: ">
                                 <input type="checkbox" name="is_published" value="1" {{ old('is_published', $post->is_published) ? 'checked' : '' }}
                                 style="accent-color:var(--admin-accent); width:15px; height:15px;">
                                 <span class="text-sm" style="color:var(--admin-text);">منتشر شده</span>
@@ -113,8 +113,8 @@
                         <button type="submit"
                                 class="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium text-m-onsolid mb-2"
                                 style="background:var(--admin-accent);"
-                                onmouseover="this.style.background='var(--admin-accent-hover)'"
-                                onmouseout="this.style.background='var(--admin-accent)'">
+                                data-ui-hover="background: var(--admin-accent-hover)"
+                                data-ui-unhover="background: var(--admin-accent)">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
                                 <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
@@ -124,8 +124,8 @@
                         <a href="{{ route('admin.blog.index') }}"
                            class="w-full flex items-center justify-center py-2.5 rounded-lg text-sm font-medium"
                            style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
-                           onmouseover="this.style.background='var(--admin-border)'"
-                           onmouseout="this.style.background='var(--admin-accent-light)'">انصراف</a>
+                           data-ui-hover="background: var(--admin-border)"
+                           data-ui-unhover="background: var(--admin-accent-light)">انصراف</a>
                     </div>
                 </div>
             </div>

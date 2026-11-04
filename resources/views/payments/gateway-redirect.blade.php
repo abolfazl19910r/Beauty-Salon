@@ -11,6 +11,7 @@
         .box { text-align:center; padding:2rem; }
         button { margin-top:1rem; padding:.75rem 1.5rem; border:0; border-radius:999px; background:var(--m-btn); color:var(--m-on-gold); font-weight:700; cursor:pointer; }
     </style>
+    @include('partials.ui-handlers')
 </head>
 <body>
     {{-- ⭐ App\Payments\GatewayRedirect — فرم POST خودکار برای درگاه‌هایی که توکن را فقط با POST می‌پذیرند. --}}

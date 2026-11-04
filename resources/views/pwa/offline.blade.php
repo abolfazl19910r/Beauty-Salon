@@ -14,6 +14,7 @@
                  font: inherit; font-weight: 700; cursor: pointer; }
         svg { width: 56px; height: 56px; color: #D8B96A; }
     </style>
+    @include('partials.ui-handlers')
 </head>
 <body>
 <main>

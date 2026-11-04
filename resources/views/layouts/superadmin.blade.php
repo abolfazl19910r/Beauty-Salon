@@ -130,6 +130,7 @@
         input[type=file]::file-selector-button { margin-inline-end: .75rem; padding: .45rem .9rem; border-radius: 10px; border: 1px solid var(--sa-border); background: var(--sa-soft); color: var(--sa-accent); font-family: inherit; font-weight: 600; cursor: pointer; }
         .sa-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, .45); z-index: 55; }
     </style>
+    @include('partials.ui-handlers')
 </head>
 <body>
     <div class="flex min-h-screen">

@@ -25,8 +25,8 @@
             <a href="{{ route('admin.wallet.withdrawals') }}"
                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium"
                style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
-               onmouseover="this.style.background='var(--admin-border)'"
-               onmouseout="this.style.background='var(--admin-accent-light)'">
+               data-ui-hover="background: var(--admin-border)"
+               data-ui-unhover="background: var(--admin-accent-light)">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
                 بازگشت
             </a>
@@ -158,8 +158,8 @@
                                            placeholder="مثلاً کد پیگیری ۱۲ رقمی حواله بانکی"
                                            class="w-full rounded-lg px-3 py-2 text-sm outline-none"
                                            style="border:1px solid {{ $errors->has('payment_reference') ? 'rgb(var(--m-bad))' : 'var(--admin-border)' }}; background:var(--admin-bg); color:var(--admin-text); font-family:inherit;"
-                                           onfocus="this.style.borderColor='var(--admin-accent)'"
-                                           onblur="this.style.borderColor='var(--admin-border)'">
+                                           data-ui-focus="border-color: var(--admin-accent)"
+                                           data-ui-blur="border-color: var(--admin-border)">
                                     @error('payment_reference')
                                     <p class="text-m-bad text-xs mt-1">{{ $message }}</p>
                                     @enderror
@@ -167,8 +167,8 @@
                                 <button type="submit"
                                         class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-m-onsolid"
                                         style="background:rgb(var(--m-ok));"
-                                        onmouseover="this.style.background='rgb(var(--m-ok))'"
-                                        onmouseout="this.style.background='rgb(var(--m-ok))'">
+                                        data-ui-hover="background: rgb(var(--m-ok))"
+                                        data-ui-unhover="background: rgb(var(--m-ok))">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                                     تایید و پردازش پرداخت
                                 </button>
@@ -182,15 +182,15 @@
                                       placeholder="دلیل رد (اختیاری)"
                                       class="w-full rounded-lg px-3 py-2 text-sm outline-none"
                                       style="border:1px solid var(--admin-border); background:var(--admin-bg); color:var(--admin-text); font-family:inherit;"
-                                      onfocus="this.style.borderColor='var(--admin-accent)'"
-                                      onblur="this.style.borderColor='var(--admin-border)'"></textarea>
+                                      data-ui-focus="border-color: var(--admin-accent)"
+                                      data-ui-blur="border-color: var(--admin-border)"></textarea>
                                 </div>
                                 <button type="button"
                                         data-confirm-delete data-confirm-message="آیا از رد این درخواست اطمینان دارید؟"
                                         class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium"
                                         style="background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad));"
-                                        onmouseover="this.style.background='rgb(var(--m-bad) / .14)'"
-                                        onmouseout="this.style.background='rgb(var(--m-bad) / .1)'">
+                                        data-ui-hover="background: rgb(var(--m-bad) / .14)"
+                                        data-ui-unhover="background: rgb(var(--m-bad) / .1)">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                                     </svg>
@@ -225,8 +225,8 @@
                             <button type="submit"
                                     class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-m-onsolid"
                                     style="background:var(--admin-accent);"
-                                    onmouseover="this.style.background='var(--admin-accent-hover)'"
-                                    onmouseout="this.style.background='var(--admin-accent)'">
+                                    data-ui-hover="background: var(--admin-accent-hover)"
+                                    data-ui-unhover="background: var(--admin-accent)">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
                                 </svg>

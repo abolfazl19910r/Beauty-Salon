@@ -98,6 +98,7 @@
             cursor: pointer;
         }
     </style>
+    @include('partials.ui-handlers')
 </head>
 <body>
     <div style="position:fixed;top:1rem;left:1rem;z-index:50">@include('partials.mahru-theme-toggle')</div>

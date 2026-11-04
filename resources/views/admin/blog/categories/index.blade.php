@@ -9,8 +9,8 @@
                 <a href="{{ route('admin.blog.categories.create') }}"
                    class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                    style="background:var(--admin-accent);"
-                   onmouseover="this.style.background='var(--admin-accent-hover)'"
-                   onmouseout="this.style.background='var(--admin-accent)'">
+                   data-ui-hover="background: var(--admin-accent-hover)"
+                   data-ui-unhover="background: var(--admin-accent)">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                     </svg>
@@ -19,8 +19,8 @@
                 <a href="{{ route('admin.blog.index') }}"
                    class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium"
                    style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
-                   onmouseover="this.style.background='var(--admin-border)'"
-                   onmouseout="this.style.background='var(--admin-accent-light)'">
+                   data-ui-hover="background: var(--admin-border)"
+                   data-ui-unhover="background: var(--admin-accent-light)">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
                     بازگشت به مقالات
                 </a>

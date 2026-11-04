@@ -44,7 +44,7 @@
                         </thead>
                         <tbody class="divide-y" style="border-color:var(--admin-border)">
                         @foreach($roles as $role)
-                            <tr class="transition-colors" onmouseover="this.style.background='var(--admin-accent-light)'" onmouseout="this.style.background=''">
+                            <tr class="transition-colors" data-ui-hover="background: var(--admin-accent-light)" data-ui-unhover="background: ">
                                 <td class="py-4 px-6 font-medium" style="color:var(--admin-text)">{{ $role->label }}</td>
                                 <td class="py-4 px-6 font-mono text-sm" dir="ltr" style="color:var(--admin-text-dim)">{{ $role->name }}</td>
                                 <td class="py-4 px-6">

@@ -42,8 +42,8 @@
                                         <a href="{{ $link }}"
                                            class="flex items-center gap-3 p-3 rounded-lg transition-colors"
                                            style="border:1px solid var(--admin-border)"
-                                           onmouseover="this.style.background='var(--admin-accent-light)'"
-                                           onmouseout="this.style.background='transparent'">
+                                           data-ui-hover="background: var(--admin-accent-light)"
+                                           data-ui-unhover="background: transparent">
                                             <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
                                                  style="background:var(--admin-accent-light);color:var(--admin-accent)">
                                                 {{ mb_substr($item->name ?? '؟', 0, 1) }}

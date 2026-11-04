@@ -250,8 +250,8 @@
                         <tbody id="specialists-table-body" style="border-top:1px solid var(--admin-border);">
                         @forelse($topSpecialists as $specialist)
                             <tr style="border-bottom:1px solid var(--admin-border);"
-                                onmouseover="this.style.background='var(--admin-accent-light)'"
-                                onmouseout="this.style.background=''">
+                                data-ui-hover="background: var(--admin-accent-light)"
+                                data-ui-unhover="background: ">
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-2">
                                         <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"

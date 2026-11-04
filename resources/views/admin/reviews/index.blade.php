@@ -18,8 +18,8 @@
             <a href="{{ route('admin.reviews.stats') }}"
                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium"
                style="background:var(--admin-accent-light); color:var(--admin-accent);"
-               onmouseover="this.style.background='var(--admin-border)'"
-               onmouseout="this.style.background='var(--admin-accent-light)'">
+               data-ui-hover="background: var(--admin-border)"
+               data-ui-unhover="background: var(--admin-accent-light)">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                 </svg>
@@ -74,8 +74,8 @@
                     <button type="submit"
                             class="px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                             style="background:var(--admin-accent);"
-                            onmouseover="this.style.background='var(--admin-accent-hover)'"
-                            onmouseout="this.style.background='var(--admin-accent)'">اعمال فیلتر</button>
+                            data-ui-hover="background: var(--admin-accent-hover)"
+                            data-ui-unhover="background: var(--admin-accent)">اعمال فیلتر</button>
                     @if(request('status') || request('rating'))
                         <a href="{{ route('admin.reviews.index') }}"
                            class="px-4 py-2 rounded-lg text-sm font-medium"
@@ -103,8 +103,8 @@
                     <tbody>
                     @forelse($reviews as $review)
                         <tr style="border-bottom:1px solid var(--admin-border);"
-                            onmouseover="this.style.background='var(--admin-accent-light)'"
-                            onmouseout="this.style.background=''">
+                            data-ui-hover="background: var(--admin-accent-light)"
+                            data-ui-unhover="background: ">
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
                                     <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
@@ -144,8 +144,8 @@
                                     <a href="{{ route('admin.reviews.show', $review->id) }}" title="مشاهده"
                                        class="w-7 h-7 rounded flex items-center justify-center transition-colors"
                                        style="color:var(--admin-accent);"
-                                       onmouseover="this.style.background='var(--admin-accent-light)'"
-                                       onmouseout="this.style.background=''">
+                                       data-ui-hover="background: var(--admin-accent-light)"
+                                       data-ui-unhover="background: ">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
                                         </svg>
@@ -156,8 +156,8 @@
                                             <button type="submit" title="تایید"
                                                     class="w-7 h-7 rounded flex items-center justify-center transition-colors"
                                                     style="color:rgb(var(--m-ok));"
-                                                    onmouseover="this.style.background='rgb(var(--m-ok) / .1)'"
-                                                    onmouseout="this.style.background=''">
+                                                    data-ui-hover="background: rgb(var(--m-ok) / .1)"
+                                                    data-ui-unhover="background: ">
                                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                                             </button>
                                         </form>
@@ -168,8 +168,8 @@
                                                 data-confirm-delete data-confirm-message="آیا از حذف این نظر اطمینان دارید؟"
                                                 class="w-7 h-7 rounded flex items-center justify-center transition-colors"
                                                 style="color:rgb(var(--m-bad));"
-                                                onmouseover="this.style.background='rgb(var(--m-bad) / .1)'"
-                                                onmouseout="this.style.background=''">
+                                                data-ui-hover="background: rgb(var(--m-bad) / .1)"
+                                                data-ui-unhover="background: ">
                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <polyline points="3 6 5 6 21 6"/>
                                                 <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>

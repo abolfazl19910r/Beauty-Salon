@@ -14,6 +14,7 @@
 
     @include('partials.mahru-theme')
     @stack('styles')
+    @include('partials.ui-handlers')
 </head>
 <body class="font-vazir min-h-screen flex flex-col" dir="rtl">
 @if (! empty($salonUnverifiedPreview))

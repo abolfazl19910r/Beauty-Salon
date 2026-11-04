@@ -116,8 +116,8 @@
                     <button type="submit"
                             class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-m-onsolid rounded-lg transition-colors"
                             style="background:var(--admin-accent)"
-                            onmouseover="this.style.background='var(--admin-accent-hover)'"
-                            onmouseout="this.style.background='var(--admin-accent)'">
+                            data-ui-hover="background: var(--admin-accent-hover)"
+                            data-ui-unhover="background: var(--admin-accent)">
                         افزودن پاداش
                     </button>
                 </div>

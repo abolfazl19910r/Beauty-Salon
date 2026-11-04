@@ -123,8 +123,8 @@
                     @foreach($roles as $role)
                         <div class="rounded-xl p-4 transition-all"
                              style="border:1px solid var(--admin-border)"
-                             onmouseover="this.style.borderColor='var(--admin-accent)';this.style.background='var(--admin-accent-light)'"
-                             onmouseout="this.style.borderColor='var(--admin-border)';this.style.background=''">
+                             data-ui-hover="border-color: var(--admin-accent); background: var(--admin-accent-light)"
+                             data-ui-unhover="border-color: var(--admin-border); background: ">
                             <div class="flex items-start justify-between">
                                 <div>
                                     <h3 class="font-semibold text-sm" style="color:var(--admin-text)">{{ $role->label }}</h3>

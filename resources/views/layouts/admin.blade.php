@@ -110,6 +110,7 @@
         }
 
     </style>
+    @include('partials.ui-handlers')
 </head>
 @php
     // ⭐ بسته‌ی «و»: قالب پنل مدیر (side / rail / top / dense) و منوی یکتای AdminMenu
@@ -170,8 +171,8 @@
                             id="search-button"
                             class="p-2 rounded-lg focus:outline-none transition-colors"
                             style="color: var(--admin-text-dim);"
-                            onmouseover="this.style.backgroundColor='var(--admin-accent-light)'"
-                            onmouseout="this.style.backgroundColor=''"
+                            data-ui-hover="background-color: var(--admin-accent-light)"
+                            data-ui-unhover="background-color: "
                             onclick="toggleSearchModal()">
                         <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8"></circle>
@@ -185,8 +186,8 @@
                                 id="notification-button"
                                 class="p-2 rounded-lg focus:outline-none transition-colors relative"
                                 style="color: var(--admin-text-dim);"
-                                onmouseover="this.style.backgroundColor='var(--admin-accent-light)'"
-                                onmouseout="this.style.backgroundColor=''"
+                                data-ui-hover="background-color: var(--admin-accent-light)"
+                                data-ui-unhover="background-color: "
                                 aria-expanded="false" aria-haspopup="true">
                             <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
@@ -241,8 +242,8 @@
                                 <a href="{{ route('admin.profile.show') }}"
                                    class="flex items-center px-4 py-2.5 text-sm transition-colors"
                                    style="color: var(--admin-text-dim);"
-                                   onmouseover="this.style.backgroundColor='var(--admin-accent-light)'; this.style.color='var(--admin-text)';"
-                                   onmouseout="this.style.backgroundColor=''; this.style.color='var(--admin-text-dim)';"
+                                   data-ui-hover="background-color: var(--admin-accent-light); color: var(--admin-text)"
+                                   data-ui-unhover="background-color: ; color: var(--admin-text-dim)"
                                    role="menuitem" tabindex="-1">
                                     <svg class="w-4 h-4 ml-2 opacity-60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zM8 12a6 6 0 00-5.43 3.59A8 8 0 0118 10a8 8 0 01-4.57 7.59A6 6 0 008 12z" clip-rule="evenodd" />
@@ -252,8 +253,8 @@
                                 <a href="{{ route('admin.profile.edit') }}"
                                    class="flex items-center px-4 py-2.5 text-sm transition-colors"
                                    style="color: var(--admin-text-dim);"
-                                   onmouseover="this.style.backgroundColor='var(--admin-accent-light)'; this.style.color='var(--admin-text)';"
-                                   onmouseout="this.style.backgroundColor=''; this.style.color='var(--admin-text-dim)';"
+                                   data-ui-hover="background-color: var(--admin-accent-light); color: var(--admin-text)"
+                                   data-ui-unhover="background-color: ; color: var(--admin-text-dim)"
                                    role="menuitem" tabindex="-1">
                                     <svg class="w-4 h-4 ml-2 opacity-60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                         <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
@@ -267,8 +268,8 @@
                                     <a href="{{ route('salon-signup.create') }}" data-add-salon
                                        class="flex items-center px-4 py-2.5 text-sm transition-colors"
                                        style="color: var(--admin-accent);"
-                                       onmouseover="this.style.backgroundColor='var(--admin-accent-light)';"
-                                       onmouseout="this.style.backgroundColor='';"
+                                       data-ui-hover="background-color: var(--admin-accent-light)"
+                                       data-ui-unhover="background-color: "
                                        role="menuitem" tabindex="-1">
                                         <svg class="w-4 h-4 ml-2 opacity-70" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                             <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
@@ -282,8 +283,8 @@
                                     <button type="submit"
                                             class="w-full text-right flex items-center px-4 py-2.5 text-sm transition-colors"
                                             style="color: rgb(var(--m-bad));"
-                                            onmouseover="this.style.backgroundColor='rgb(var(--m-bad) / .1)';"
-                                            onmouseout="this.style.backgroundColor='';"
+                                            data-ui-hover="background-color: rgb(var(--m-bad) / .1)"
+                                            data-ui-unhover="background-color: "
                                             role="menuitem" tabindex="-1">
                                         <svg class="w-4 h-4 ml-2 opacity-70" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m-3 0l3-3m0 0l-3-3m3 3H9" />
@@ -303,8 +304,8 @@
             <!-- Breadcrumb -->
             <div class="hidden md:flex px-4 py-2 border-t text-sm" style="background: var(--admin-accent-light); border-color: var(--admin-border);">
                 <a href="{{ route('admin.dashboard') }}" class="transition-colors" style="color: var(--admin-accent);"
-                   onmouseover="this.style.color='var(--admin-accent-hover)'"
-                   onmouseout="this.style.color='var(--admin-accent)'">پنل مدیریت</a>
+                   data-ui-hover="color: var(--admin-accent-hover)"
+                   data-ui-unhover="color: var(--admin-accent)">پنل مدیریت</a>
                 <span class="mx-2" style="color: var(--admin-text-light);">/</span>
                 <span style="color: var(--admin-text-dim);">@yield('title')</span>
             </div>
@@ -407,8 +408,8 @@
                     <input type="search" name="q" placeholder="جستجو بین خدمات، متخصصین، کاربران..."
                            class="w-full py-2.5 px-4 pr-10 text-sm rounded-lg outline-none transition"
                            style="border: 1px solid var(--admin-border); background: var(--admin-bg); color: var(--admin-text);"
-                           onfocus="this.style.borderColor='var(--admin-accent)'"
-                           onblur="this.style.borderColor='var(--admin-border)'"
+                           data-ui-focus="border-color: var(--admin-accent)"
+                           data-ui-blur="border-color: var(--admin-border)"
                            autofocus>
                     <div class="absolute right-3 top-0 bottom-0 flex items-center pointer-events-none" style="color: var(--admin-text-light);">
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -421,8 +422,8 @@
                     <button type="button" onclick="toggleSearchModal()"
                             class="px-4 py-2 text-sm font-medium rounded-lg transition-colors"
                             style="background: var(--admin-accent-light); color: var(--admin-text-dim);"
-                            onmouseover="this.style.background='var(--admin-border)'"
-                            onmouseout="this.style.background='var(--admin-accent-light)'">
+                            data-ui-hover="background: var(--admin-border)"
+                            data-ui-unhover="background: var(--admin-accent-light)">
                         انصراف
                     </button>
                     <button type="submit"

@@ -18,8 +18,8 @@
             <a href="{{ route('admin.categories.create') }}"
                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                style="background:var(--admin-accent);"
-               onmouseover="this.style.background='var(--admin-accent-hover)'"
-               onmouseout="this.style.background='var(--admin-accent)'">
+               data-ui-hover="background: var(--admin-accent-hover)"
+               data-ui-unhover="background: var(--admin-accent)">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
@@ -42,8 +42,8 @@
                     <tbody>
                     @forelse($categories as $category)
                         <tr style="border-bottom:1px solid var(--admin-border);"
-                            onmouseover="this.style.background='var(--admin-accent-light)'"
-                            onmouseout="this.style.background=''">
+                            data-ui-hover="background: var(--admin-accent-light)"
+                            data-ui-unhover="background: ">
                             <td class="px-4 py-3 font-medium" style="color:var(--admin-text);">{{ $category->name }}</td>
                             <td class="px-4 py-3">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium persian-number"
@@ -59,8 +59,8 @@
                                     <a href="{{ route('admin.categories.show', $category) }}" title="مشاهده"
                                        class="w-7 h-7 rounded flex items-center justify-center transition-colors"
                                        style="color:var(--admin-accent);"
-                                       onmouseover="this.style.background='var(--admin-accent-light)'"
-                                       onmouseout="this.style.background=''">
+                                       data-ui-hover="background: var(--admin-accent-light)"
+                                       data-ui-unhover="background: ">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
                                         </svg>
@@ -69,8 +69,8 @@
                                     <a href="{{ route('admin.categories.edit', $category) }}" title="ویرایش"
                                        class="w-7 h-7 rounded flex items-center justify-center transition-colors"
                                        style="color:rgb(var(--m-gold));"
-                                       onmouseover="this.style.background='rgb(var(--m-gold) / .1)'"
-                                       onmouseout="this.style.background=''">
+                                       data-ui-hover="background: rgb(var(--m-gold) / .1)"
+                                       data-ui-unhover="background: ">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
                                             <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -84,8 +84,8 @@
                                                 data-confirm-delete data-confirm-message="آیا از حذف دسته‌بندی «{{ $category->name }}» اطمینان دارید؟"
                                                 class="w-7 h-7 rounded flex items-center justify-center transition-colors"
                                                 style="color:rgb(var(--m-bad));"
-                                                onmouseover="this.style.background='rgb(var(--m-bad) / .1)'"
-                                                onmouseout="this.style.background=''">
+                                                data-ui-hover="background: rgb(var(--m-bad) / .1)"
+                                                data-ui-unhover="background: ">
                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <polyline points="3 6 5 6 21 6"/>
                                                 <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>

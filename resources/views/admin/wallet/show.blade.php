@@ -13,8 +13,8 @@
                     <button onclick="document.getElementById('settlePendingModal').classList.remove('hidden')"
                             class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                             style="background:rgb(var(--m-ok));"
-                            onmouseover="this.style.background='rgb(var(--m-ok))'"
-                            onmouseout="this.style.background='rgb(var(--m-ok))'">
+                            data-ui-hover="background: rgb(var(--m-ok))"
+                            data-ui-unhover="background: rgb(var(--m-ok))">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
@@ -24,8 +24,8 @@
                 <button onclick="document.getElementById('adjustmentModal').classList.remove('hidden')"
                         class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                         style="background:rgb(var(--m-gold));"
-                        onmouseover="this.style.background='rgb(var(--m-gold))'"
-                        onmouseout="this.style.background='rgb(var(--m-gold))'">
+                        data-ui-hover="background: rgb(var(--m-gold))"
+                        data-ui-unhover="background: rgb(var(--m-gold))">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
@@ -34,8 +34,8 @@
                 <a href="{{ route('admin.wallet.index') }}"
                    class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium"
                    style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
-                   onmouseover="this.style.background='var(--admin-border)'"
-                   onmouseout="this.style.background='var(--admin-accent-light)'">
+                   data-ui-hover="background: var(--admin-border)"
+                   data-ui-unhover="background: var(--admin-accent-light)">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
                     بازگشت
                 </a>
@@ -119,8 +119,8 @@
                                 <button type="submit"
                                         class="w-full py-2 rounded-lg text-xs font-bold transition-colors"
                                         style="background:var(--admin-accent-light); color:var(--admin-accent);"
-                                        onmouseover="this.style.background='var(--admin-border)'"
-                                        onmouseout="this.style.background='var(--admin-accent-light)'">
+                                        data-ui-hover="background: var(--admin-border)"
+                                        data-ui-unhover="background: var(--admin-accent-light)">
                                     تایید دستی شماره شبا
                                 </button>
                             </form>
@@ -150,8 +150,8 @@
                         <tbody>
                         @forelse($wallet->transactions()->latest()->paginate(10) as $transaction)
                             <tr style="border-top:1px solid var(--admin-border);"
-                                onmouseover="this.style.background='var(--admin-accent-light)'"
-                                onmouseout="this.style.background=''">
+                                data-ui-hover="background: var(--admin-accent-light)"
+                                data-ui-unhover="background: ">
                                 <td class="px-4 py-2.5 persian-number text-xs" style="color:var(--admin-text-dim);">{{ verta($transaction->created_at)->format('Y/m/d H:i') }}</td>
                                 <td class="px-4 py-2.5">
                                 <span class="px-2 py-0.5 rounded-md text-xs font-medium"
@@ -185,8 +185,8 @@
                 <button type="button" onclick="document.getElementById('settlePendingModal').classList.add('hidden')"
                         class="w-7 h-7 rounded flex items-center justify-center"
                         style="color:var(--admin-text-dim);"
-                        onmouseover="this.style.background='var(--admin-accent-light)'"
-                        onmouseout="this.style.background=''">
+                        data-ui-hover="background: var(--admin-accent-light)"
+                        data-ui-unhover="background: ">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                     </svg>
@@ -215,8 +215,8 @@
                             data-confirm-text="بله، تسویه شود"
                             class="px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                             style="background:rgb(var(--m-ok));"
-                            onmouseover="this.style.background='rgb(var(--m-ok))'"
-                            onmouseout="this.style.background='rgb(var(--m-ok))'">تسویه شود</button>
+                            data-ui-hover="background: rgb(var(--m-ok))"
+                            data-ui-unhover="background: rgb(var(--m-ok))">تسویه شود</button>
                 </div>
             </form>
         </div>
@@ -232,8 +232,8 @@
                 <button type="button" onclick="document.getElementById('adjustmentModal').classList.add('hidden')"
                         class="w-7 h-7 rounded flex items-center justify-center"
                         style="color:var(--admin-text-dim);"
-                        onmouseover="this.style.background='var(--admin-accent-light)'"
-                        onmouseout="this.style.background=''">
+                        data-ui-hover="background: var(--admin-accent-light)"
+                        data-ui-unhover="background: ">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                     </svg>
@@ -247,8 +247,8 @@
                         <input type="number" name="amount" required
                                class="w-full rounded-lg px-3 py-2 text-sm outline-none transition"
                                style="border:1px solid var(--admin-border); background:var(--admin-bg); color:var(--admin-text);"
-                               onfocus="this.style.borderColor='var(--admin-accent)'"
-                               onblur="this.style.borderColor='var(--admin-border)'"
+                               data-ui-focus="border-color: var(--admin-accent)"
+                               data-ui-blur="border-color: var(--admin-border)"
                                placeholder="مثبت برای افزایش، منفی برای کاهش">
                     </div>
                     <div>
@@ -256,8 +256,8 @@
                         <textarea name="description" required rows="3"
                                   class="w-full rounded-lg px-3 py-2 text-sm outline-none transition font-inherit"
                                   style="border:1px solid var(--admin-border); background:var(--admin-bg); color:var(--admin-text); font-family:inherit;"
-                                  onfocus="this.style.borderColor='var(--admin-accent)'"
-                                  onblur="this.style.borderColor='var(--admin-border)'"
+                                  data-ui-focus="border-color: var(--admin-accent)"
+                                  data-ui-blur="border-color: var(--admin-border)"
                                   placeholder="دلیل این تغییر را بنویسید..."></textarea>
                     </div>
                 </div>
@@ -268,8 +268,8 @@
                     <button type="submit"
                             class="px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                             style="background:var(--admin-accent);"
-                            onmouseover="this.style.background='var(--admin-accent-hover)'"
-                            onmouseout="this.style.background='var(--admin-accent)'">ثبت تغییرات</button>
+                            data-ui-hover="background: var(--admin-accent-hover)"
+                            data-ui-unhover="background: var(--admin-accent)">ثبت تغییرات</button>
                 </div>
             </form>
         </div>

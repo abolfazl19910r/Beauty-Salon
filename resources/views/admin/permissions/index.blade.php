@@ -77,7 +77,7 @@
                         </thead>
                         <tbody class="divide-y" style="border-color:var(--admin-border)">
                         @foreach($permissions as $permission)
-                            <tr class="transition-colors" onmouseover="this.style.background='var(--admin-accent-light)'" onmouseout="this.style.background=''">
+                            <tr class="transition-colors" data-ui-hover="background: var(--admin-accent-light)" data-ui-unhover="background: ">
                                 <td class="py-4 px-6 font-medium text-sm" style="color:var(--admin-text)">{{ $permission->label }}</td>
                                 <td class="py-4 px-6 font-mono text-xs" dir="ltr" style="color:var(--admin-text-dim)">{{ $permission->name }}</td>
                                 <td class="py-4 px-6">

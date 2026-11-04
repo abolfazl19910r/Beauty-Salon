@@ -12,6 +12,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
 
     @include('partials.mahru-theme')
+    @include('partials.ui-handlers')
 </head>
 <body class="font-vazir antialiased min-h-screen flex flex-col" dir="rtl">
 

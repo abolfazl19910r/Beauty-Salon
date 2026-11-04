@@ -10,8 +10,8 @@
                 <a href="{{ route('admin.categories.edit', $category) }}"
                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                    style="background:var(--admin-accent);"
-                   onmouseover="this.style.background='var(--admin-accent-hover)'"
-                   onmouseout="this.style.background='var(--admin-accent)'">
+                   data-ui-hover="background: var(--admin-accent-hover)"
+                   data-ui-unhover="background: var(--admin-accent)">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -22,8 +22,8 @@
                 <a href="{{ route('admin.categories.index') }}"
                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium"
                    style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
-                   onmouseover="this.style.background='var(--admin-border)'"
-                   onmouseout="this.style.background='var(--admin-accent-light)'">
+                   data-ui-hover="background: var(--admin-border)"
+                   data-ui-unhover="background: var(--admin-accent-light)">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
                     بازگشت
                 </a>
@@ -56,8 +56,8 @@
                         <tbody>
                         @foreach($category->services as $service)
                             <tr style="border-top:1px solid var(--admin-border);"
-                                onmouseover="this.style.background='var(--admin-accent-light)'"
-                                onmouseout="this.style.background=''">
+                                data-ui-hover="background: var(--admin-accent-light)"
+                                data-ui-unhover="background: ">
                                 <td class="px-4 py-3 font-medium" style="color:var(--admin-text);">{{ $service->name }}</td>
                                 <td class="px-4 py-3 persian-number" style="color:rgb(var(--m-ok));">{{ number_format($service->price) }} تومان</td>
                                 <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ $service->duration }} دقیقه</td>

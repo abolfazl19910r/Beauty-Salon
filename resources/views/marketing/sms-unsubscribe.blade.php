@@ -15,6 +15,7 @@
         a { color:rgb(var(--m-gold2)); }
         .hint { font-size:.85rem; color:rgb(var(--m-tx) / .55); margin-top:1rem; }
     </style>
+    @include('partials.ui-handlers')
 </head>
 <body>
     {{-- انصراف از پیامک‌های پیگیری سالن (۲۰۲۶-۱۰-۱۴). پیامک‌های نوبت خودِ مشتری (تأیید، یادآوری) قطع نمی‌شوند. --}}

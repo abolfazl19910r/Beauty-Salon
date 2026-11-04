@@ -19,8 +19,8 @@
                 <a href="{{ route('admin.bookings.edit', $booking) }}"
                    class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid transition-colors"
                    style="background:var(--admin-accent);"
-                   onmouseover="this.style.background='var(--admin-accent-hover)'"
-                   onmouseout="this.style.background='var(--admin-accent)'">
+                   data-ui-hover="background: var(--admin-accent-hover)"
+                   data-ui-unhover="background: var(--admin-accent)">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -31,8 +31,8 @@
                 <a href="{{ route('admin.bookings.index') }}"
                    class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                    style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
-                   onmouseover="this.style.background='var(--admin-border)'"
-                   onmouseout="this.style.background='var(--admin-accent-light)'">
+                   data-ui-hover="background: var(--admin-border)"
+                   data-ui-unhover="background: var(--admin-accent-light)">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" transform="scale(-1,1) translate(-24,0)"/>
                     </svg>
@@ -91,8 +91,8 @@
                         <a href="{{ route('admin.users.show', $booking->user) }}"
                            class="mr-auto text-xs px-2.5 py-1 rounded-lg transition-colors"
                            style="color:var(--admin-accent); background:var(--admin-accent-light);"
-                           onmouseover="this.style.background='var(--admin-border)'"
-                           onmouseout="this.style.background='var(--admin-accent-light)'">
+                           data-ui-hover="background: var(--admin-border)"
+                           data-ui-unhover="background: var(--admin-accent-light)">
                             پروفایل
                         </a>
                     </div>
@@ -256,8 +256,8 @@
                             <button type="submit"
                                     class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium text-m-onsolid transition-colors"
                                     style="background:rgb(var(--m-ok));"
-                                    onmouseover="this.style.background='rgb(var(--m-ok))'"
-                                    onmouseout="this.style.background='rgb(var(--m-ok))'">
+                                    data-ui-hover="background: rgb(var(--m-ok))"
+                                    data-ui-unhover="background: rgb(var(--m-ok))">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                                 تایید نوبت
                             </button>
@@ -274,8 +274,8 @@
                                     data-confirm-delete data-confirm-message="آیا از لغو نوبت #{{ $booking->id }} اطمینان دارید؟"
                                     class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium text-m-onsolid transition-colors"
                                     style="background:rgb(var(--m-bad));"
-                                    onmouseover="this.style.background='rgb(var(--m-bad))'"
-                                    onmouseout="this.style.background='rgb(var(--m-bad))'">
+                                    data-ui-hover="background: rgb(var(--m-bad))"
+                                    data-ui-unhover="background: rgb(var(--m-bad))">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"/>
                                     <line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
@@ -296,8 +296,8 @@
                     <a href="{{ route('admin.bookings.edit', $booking) }}"
                        class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors"
                        style="background:var(--admin-accent-light); color:var(--admin-accent);"
-                       onmouseover="this.style.background='var(--admin-border)'"
-                       onmouseout="this.style.background='var(--admin-accent-light)'">
+                       data-ui-hover="background: var(--admin-border)"
+                       data-ui-unhover="background: var(--admin-accent-light)">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
                             <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>

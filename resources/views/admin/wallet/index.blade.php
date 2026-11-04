@@ -25,8 +25,8 @@
                             data-confirm-text="بله، تسویه شود"
                             class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid whitespace-nowrap"
                             style="background:rgb(var(--m-ok));"
-                            onmouseover="this.style.background='rgb(var(--m-ok))'"
-                            onmouseout="this.style.background='rgb(var(--m-ok))'">
+                            data-ui-hover="background: rgb(var(--m-ok))"
+                            data-ui-unhover="background: rgb(var(--m-ok))">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
@@ -36,8 +36,8 @@
                 <a href="{{ route('admin.wallet.withdrawals') }}"
                    class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium"
                    style="background:var(--admin-accent-light); color:var(--admin-accent);"
-                   onmouseover="this.style.background='var(--admin-border)'"
-                   onmouseout="this.style.background='var(--admin-accent-light)'">
+                   data-ui-hover="background: var(--admin-border)"
+                   data-ui-unhover="background: var(--admin-accent-light)">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
                     </svg>
@@ -79,8 +79,8 @@
                            placeholder="نام متخصص یا شماره تماس..."
                            class="w-full text-sm rounded-lg px-3 py-2 outline-none transition"
                            style="border:1px solid var(--admin-border); background:var(--admin-bg); color:var(--admin-text);"
-                           onfocus="this.style.borderColor='var(--admin-accent)'"
-                           onblur="this.style.borderColor='var(--admin-border)'">
+                           data-ui-focus="border-color: var(--admin-accent)"
+                           data-ui-blur="border-color: var(--admin-border)">
                 </div>
                 <div class="min-w-40">
                     <label class="block text-xs font-medium mb-1.5" style="color:var(--admin-text-dim);">مرتب‌سازی</label>
@@ -95,14 +95,14 @@
                     <button type="submit"
                             class="px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                             style="background:var(--admin-accent);"
-                            onmouseover="this.style.background='var(--admin-accent-hover)'"
-                            onmouseout="this.style.background='var(--admin-accent)'">جستجو</button>
+                            data-ui-hover="background: var(--admin-accent-hover)"
+                            data-ui-unhover="background: var(--admin-accent)">جستجو</button>
                     @if(request()->anyFilled(['search','sort_by']))
                         <a href="{{ route('admin.wallet.index') }}"
                            class="px-4 py-2 rounded-lg text-sm font-medium"
                            style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
-                           onmouseover="this.style.background='var(--admin-border)'"
-                           onmouseout="this.style.background='var(--admin-accent-light)'">پاک</a>
+                           data-ui-hover="background: var(--admin-border)"
+                           data-ui-unhover="background: var(--admin-accent-light)">پاک</a>
                     @endif
                 </div>
             </form>
@@ -125,8 +125,8 @@
                     <tbody>
                     @forelse($wallets as $wallet)
                         <tr style="border-bottom:1px solid var(--admin-border);"
-                            onmouseover="this.style.background='var(--admin-accent-light)'"
-                            onmouseout="this.style.background=''">
+                            data-ui-hover="background: var(--admin-accent-light)"
+                            data-ui-unhover="background: ">
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
                                     <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
@@ -167,8 +167,8 @@
                                 <a href="{{ route('admin.wallet.show', $wallet) }}"
                                    class="text-xs px-2.5 py-1 rounded-lg transition-colors"
                                    style="color:var(--admin-accent); background:var(--admin-accent-light);"
-                                   onmouseover="this.style.background='var(--admin-border)'"
-                                   onmouseout="this.style.background='var(--admin-accent-light)'">جزئیات</a>
+                                   data-ui-hover="background: var(--admin-border)"
+                                   data-ui-unhover="background: var(--admin-accent-light)">جزئیات</a>
                             </td>
                         </tr>
                     @empty

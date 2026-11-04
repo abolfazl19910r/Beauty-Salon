@@ -15,6 +15,7 @@
         a.btn { display:inline-block; margin-top:1.25rem; padding:.85rem 1.75rem; border-radius:999px; background:var(--m-btn); color:var(--m-on-gold); font-weight:700; text-decoration:none; }
         .hint { font-size:.85rem; color:rgb(var(--m-tx) / .55); margin-top:1rem; }
     </style>
+    @include('partials.ui-handlers')
 </head>
 <body>
     {{-- بازگشت از درگاه به اپ «ماهرو» (بسته‌ی ۳). اپ به پارامترهای لینک اعتماد نمی‌کند و وضعیت را از API می‌پرسد. --}}

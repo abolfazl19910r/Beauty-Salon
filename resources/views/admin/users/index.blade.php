@@ -18,8 +18,8 @@
             <a href="{{ route('admin.users.create') }}"
                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                style="background:var(--admin-accent);"
-               onmouseover="this.style.background='var(--admin-accent-hover)'"
-               onmouseout="this.style.background='var(--admin-accent)'">
+               data-ui-hover="background: var(--admin-accent-hover)"
+               data-ui-unhover="background: var(--admin-accent)">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
@@ -43,8 +43,8 @@
                                placeholder="نام، موبایل یا ایمیل..."
                                class="w-full text-sm rounded-lg px-3 py-2 pr-9 outline-none transition"
                                style="border:1px solid var(--admin-border); background:var(--admin-bg); color:var(--admin-text);"
-                               onfocus="this.style.borderColor='var(--admin-accent)'"
-                               onblur="this.style.borderColor='var(--admin-border)'">
+                               data-ui-focus="border-color: var(--admin-accent)"
+                               data-ui-blur="border-color: var(--admin-border)">
                     </div>
                 </div>
                 <div class="min-w-36">
@@ -70,14 +70,14 @@
                     <button type="submit"
                             class="px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                             style="background:var(--admin-accent);"
-                            onmouseover="this.style.background='var(--admin-accent-hover)'"
-                            onmouseout="this.style.background='var(--admin-accent)'">جستجو</button>
+                            data-ui-hover="background: var(--admin-accent-hover)"
+                            data-ui-unhover="background: var(--admin-accent)">جستجو</button>
                     @if(request('search') || request('role') || request('status'))
                         <a href="{{ route('admin.users.index') }}"
                            class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                            style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
-                           onmouseover="this.style.background='var(--admin-border)'"
-                           onmouseout="this.style.background='var(--admin-accent-light)'">پاک</a>
+                           data-ui-hover="background: var(--admin-border)"
+                           data-ui-unhover="background: var(--admin-accent-light)">پاک</a>
                     @endif
                 </div>
             </form>
@@ -101,8 +101,8 @@
                     <tbody>
                     @forelse($users as $user)
                         <tr style="border-bottom:1px solid var(--admin-border);"
-                            onmouseover="this.style.background='var(--admin-accent-light)'"
-                            onmouseout="this.style.background=''">
+                            data-ui-hover="background: var(--admin-accent-light)"
+                            data-ui-unhover="background: ">
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
                                     <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
@@ -149,8 +149,8 @@
                                     <a href="{{ route('admin.users.show', $user) }}" title="مشاهده"
                                        class="w-7 h-7 rounded flex items-center justify-center transition-colors"
                                        style="color:var(--admin-accent);"
-                                       onmouseover="this.style.background='var(--admin-accent-light)'"
-                                       onmouseout="this.style.background=''">
+                                       data-ui-hover="background: var(--admin-accent-light)"
+                                       data-ui-unhover="background: ">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
                                         </svg>
@@ -159,8 +159,8 @@
                                     <a href="{{ route('admin.users.edit', $user) }}" title="ویرایش"
                                        class="w-7 h-7 rounded flex items-center justify-center transition-colors"
                                        style="color:rgb(var(--m-gold));"
-                                       onmouseover="this.style.background='rgb(var(--m-gold) / .1)'"
-                                       onmouseout="this.style.background=''">
+                                       data-ui-hover="background: rgb(var(--m-gold) / .1)"
+                                       data-ui-unhover="background: ">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
                                             <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -173,8 +173,8 @@
                                         <button type="submit" title="{{ $user->phone_verified_at ? 'غیرفعال کردن' : 'فعال کردن' }}"
                                                 class="w-7 h-7 rounded flex items-center justify-center transition-colors"
                                                 style="color:{{ $user->phone_verified_at ? 'rgb(var(--m-bad))' : 'rgb(var(--m-ok))' }};"
-                                                onmouseover="this.style.background='{{ $user->phone_verified_at ? 'rgb(var(--m-bad) / .1)' : 'rgb(var(--m-ok) / .1)' }}'"
-                                                onmouseout="this.style.background=''">
+                                                data-ui-hover="background: {{ $user->phone_verified_at ? 'rgb(var(--m-bad) / .1)' : 'rgb(var(--m-ok) / .1)' }}"
+                                                data-ui-unhover="background: ">
                                             @if($user->phone_verified_at)
                                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                     <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
@@ -194,8 +194,8 @@
                                                 data-confirm-delete data-confirm-message="آیا از حذف {{ $user->name }} اطمینان دارید؟"
                                                 class="w-7 h-7 rounded flex items-center justify-center transition-colors"
                                                 style="color:rgb(var(--m-bad));"
-                                                onmouseover="this.style.background='rgb(var(--m-bad) / .1)'"
-                                                onmouseout="this.style.background=''">
+                                                data-ui-hover="background: rgb(var(--m-bad) / .1)"
+                                                data-ui-unhover="background: ">
                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <polyline points="3 6 5 6 21 6"/>
                                                 <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>

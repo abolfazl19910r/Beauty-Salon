@@ -146,7 +146,7 @@
                     </thead>
                     <tbody class="divide-y" style="border-color:var(--admin-border)">
                     @foreach($users as $user)
-                        <tr class="transition-colors" onmouseover="this.style.background='var(--admin-accent-light)'" onmouseout="this.style.background=''">
+                        <tr class="transition-colors" data-ui-hover="background: var(--admin-accent-light)" data-ui-unhover="background: ">
                             <td class="py-4 px-6 font-medium text-sm" style="color:var(--admin-text)">{{ $user->name }}</td>
                             <td class="py-4 px-6 text-sm" dir="ltr" style="color:var(--admin-text-dim)">{{ $user->phone }}</td>
                             <td class="py-4 px-6 text-sm" style="color:var(--admin-text-dim)">{{ $user->email }}</td>

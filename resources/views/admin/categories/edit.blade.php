@@ -20,8 +20,8 @@
             <a href="{{ route('admin.categories.show', $category) }}"
                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium"
                style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
-               onmouseover="this.style.background='var(--admin-border)'"
-               onmouseout="this.style.background='var(--admin-accent-light)'">
+               data-ui-hover="background: var(--admin-border)"
+               data-ui-unhover="background: var(--admin-accent-light)">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
                 بازگشت
             </a>
@@ -55,8 +55,8 @@
                     <button type="submit"
                             class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-m-onsolid"
                             style="background:var(--admin-accent);"
-                            onmouseover="this.style.background='var(--admin-accent-hover)'"
-                            onmouseout="this.style.background='var(--admin-accent)'">
+                            data-ui-hover="background: var(--admin-accent-hover)"
+                            data-ui-unhover="background: var(--admin-accent)">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
                             <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
@@ -66,8 +66,8 @@
                     <a href="{{ route('admin.categories.index') }}"
                        class="px-6 py-2.5 rounded-lg text-sm font-medium"
                        style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
-                       onmouseover="this.style.background='var(--admin-border)'"
-                       onmouseout="this.style.background='var(--admin-accent-light)'">انصراف</a>
+                       data-ui-hover="background: var(--admin-border)"
+                       data-ui-unhover="background: var(--admin-accent-light)">انصراف</a>
                 </div>
             </form>
         </div>
@@ -81,8 +81,8 @@
                 <button type="button" data-confirm-delete data-confirm-message="آیا از حذف دسته‌بندی «{{ $category->name }}» اطمینان دارید؟"
                         class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium"
                         style="background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad));"
-                        onmouseover="this.style.background='rgb(var(--m-bad) / .14)'"
-                        onmouseout="this.style.background='rgb(var(--m-bad) / .1)'">
+                        data-ui-hover="background: rgb(var(--m-bad) / .14)"
+                        data-ui-unhover="background: rgb(var(--m-bad) / .1)">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <polyline points="3 6 5 6 21 6"/>
                         <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>

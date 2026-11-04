@@ -25,8 +25,8 @@
                 <a href="{{ route('admin.specialists.edit', $specialist) }}"
                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                    style="background:var(--admin-accent);"
-                   onmouseover="this.style.background='var(--admin-accent-hover)'"
-                   onmouseout="this.style.background='var(--admin-accent)'">
+                   data-ui-hover="background: var(--admin-accent-hover)"
+                   data-ui-unhover="background: var(--admin-accent)">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -43,8 +43,8 @@
                 <a href="{{ route('admin.schedule.index', $specialist) }}"
                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium"
                    style="background:rgb(var(--m-ok) / .1); color:rgb(var(--m-ok));"
-                   onmouseover="this.style.background='rgb(var(--m-ok) / .14)'"
-                   onmouseout="this.style.background='rgb(var(--m-ok) / .1)'">
+                   data-ui-hover="background: rgb(var(--m-ok) / .14)"
+                   data-ui-unhover="background: rgb(var(--m-ok) / .1)">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                         <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
@@ -54,8 +54,8 @@
                 <a href="{{ route('admin.specialists.leaves.index', $specialist) }}"
                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium"
                    style="background:rgb(var(--m-gold) / .1); color:rgb(var(--m-gold));"
-                   onmouseover="this.style.background='rgb(var(--m-gold) / .14)'"
-                   onmouseout="this.style.background='rgb(var(--m-gold) / .1)'">
+                   data-ui-hover="background: rgb(var(--m-gold) / .14)"
+                   data-ui-unhover="background: rgb(var(--m-gold) / .1)">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                     </svg>
@@ -64,8 +64,8 @@
                 <a href="{{ route('admin.specialists.index') }}"
                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium"
                    style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
-                   onmouseover="this.style.background='var(--admin-border)'"
-                   onmouseout="this.style.background='var(--admin-accent-light)'">
+                   data-ui-hover="background: var(--admin-border)"
+                   data-ui-unhover="background: var(--admin-accent-light)">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <polyline points="15 18 9 12 15 6"/>
                     </svg>

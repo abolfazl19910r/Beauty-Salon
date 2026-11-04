@@ -566,6 +566,7 @@ footer .enamad{margin-top:12px}
 .pl .buy{display:block;text-align:center;margin-top:12px;font-size:13.5px;color:var(--gl);font-weight:700}
 @media(max-width:560px){.nav-login{display:none}}
 </style>
+    @include('partials.ui-handlers')
 </head>
 <body>
 <a class="skip" href="#main">رفتن به محتوای اصلی</a>

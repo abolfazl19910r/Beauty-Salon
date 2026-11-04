@@ -13,8 +13,8 @@
             <a href="{{ route('admin.wallet.index') }}"
                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium"
                style="background:var(--admin-accent-light); color:var(--admin-text-dim);"
-               onmouseover="this.style.background='var(--admin-border)'"
-               onmouseout="this.style.background='var(--admin-accent-light)'">
+               data-ui-hover="background: var(--admin-border)"
+               data-ui-unhover="background: var(--admin-accent-light)">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
                 کیف پول‌ها
             </a>
@@ -93,8 +93,8 @@
                             $st = $statusMap[$item->status] ?? [$item->status, 'rgb(var(--m-tx) / .05)', 'rgb(var(--m-tx))'];
                         @endphp
                         <tr style="border-bottom:1px solid var(--admin-border);"
-                            onmouseover="this.style.background='var(--admin-accent-light)'"
-                            onmouseout="this.style.background=''">
+                            data-ui-hover="background: var(--admin-accent-light)"
+                            data-ui-unhover="background: ">
                             <td class="px-4 py-3 text-xs persian-number" style="color:var(--admin-text-dim);">{{ $item->id }}</td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
@@ -126,8 +126,8 @@
                                 <a href="{{ route('admin.wallet.withdrawals.show', $item) }}"
                                    class="text-xs px-2.5 py-1 rounded-lg"
                                    style="color:var(--admin-accent); background:var(--admin-accent-light);"
-                                   onmouseover="this.style.background='var(--admin-border)'"
-                                   onmouseout="this.style.background='var(--admin-accent-light)'">بررسی</a>
+                                   data-ui-hover="background: var(--admin-border)"
+                                   data-ui-unhover="background: var(--admin-accent-light)">بررسی</a>
                             </td>
                         </tr>
                     @empty
