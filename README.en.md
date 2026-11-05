@@ -661,7 +661,8 @@ Full history, decisions and open items in [`Rasta unified prompt.md`](Rasta%20un
 - **No payment or security log is lost after 14 days:** 90 payment/payout/wallet lines now go to `payments-*.log` (365 days) and 19 security lines (wrong or burned codes, blocked code sends, 2FA, review moderation, specialist account linking) to `security-*.log` (190 days); their warnings and errors also appear in the general log (`payments.WARNING: …`).
 - **Two bugs:** the `security` channel defaulted to `warning`, so "successful login"/"profile changed" never reached the file (now `info`); a "failed payment attempt" was written nowhere (now `payments`).
 - **Less and cleaner:** with real sending the SMS text (names, addresses, short links) is no longer logged and the "code queued" lines are debug; in log-only mode (`SMS_LOG_ONLY=true`/local) text and code are visible as before. Seven duplicate or useless lines removed.
-- **After pulling:** only `php artisan optimize:clear` (no migration, no build). Docker: `up -d --build`. If your `.env` sets `SECURITY_LOG_LEVEL=warning`, clear it.
+- **Manual test on XAMPP and Docker (same day):** two bugs found and fixed — an empty `LOG_MASK_PERSONAL_DATA=` line turned masking off (`0364`), and a cancelled SMS-pack or subscription payment was not logged (`0365`). `.env.docker` now sets `LOG_LEVEL=info` (`0363`).
+- **After pulling:** only `php artisan optimize:clear` (no migration). Docker: `up -d --build`. If your `.env` sets `SECURITY_LOG_LEVEL=warning`, clear it.
 
 **2026-11-05 — strict CSP for scripts (H3 stage 2; security audit complete)**
 - **No inline `onclick`/`onmouseover`/`onsubmit`/… left in the views:** hovers, confirms, modals, submit-once forms and page buttons use `data-ui-*` attributes and one shared script (`partials/ui-handlers`, in the `<head>` of every layout); pages look and behave the same.
