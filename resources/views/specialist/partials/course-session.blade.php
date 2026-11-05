@@ -73,7 +73,7 @@
                 {{-- راه دوم: ثبت حضوری (در سابقه «ثبت حضوری») --}}
                 <form method="POST" action="{{ route('specialist.bookings.course-consent', $booking) }}">
                     @csrf
-                    <button type="submit" class="px-4 py-2 rounded-lg text-sm text-[var(--specialist-text)]" style="border: 1px solid var(--specialist-border);" onclick="return confirm(@js(\App\Support\Courses\PhotoConsent::STAFF_CONFIRM));">ثبت حضوری رضایت مشتری</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg text-sm text-[var(--specialist-text)]" style="border: 1px solid var(--specialist-border);" data-ui-confirm="{{ \App\Support\Courses\PhotoConsent::STAFF_CONFIRM }}">ثبت حضوری رضایت مشتری</button>
                 </form>
             @else
                 <div class="flex flex-wrap gap-2 items-end">

@@ -123,7 +123,7 @@
 
         {{-- Filters --}}
         <div class="specialist-card p-6">
-            <button onclick="toggleFilters()" type="button" class="w-full flex items-center justify-between text-sm font-bold text-[var(--specialist-text)]">
+            <button data-ui-click="toggleFilters" type="button" class="w-full flex items-center justify-between text-sm font-bold text-[var(--specialist-text)]">
                 <span class="flex items-center">
                     <svg class="w-5 h-5 ml-2 text-[var(--specialist-plum-mid)]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -299,6 +299,8 @@
 
     @push('scripts')
         <script @nonce>
+            uiActions.register({ toggleFilters: function () { toggleFilters(); } });
+
             (function() {
                 function div(a, b) { return Math.trunc(a / b); }
 

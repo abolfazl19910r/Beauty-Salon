@@ -94,7 +94,7 @@
                             @if(!$notification->read_at)
                                 <button type="button"
                                         id="notification-read-btn-{{ $notification->id }}"
-                                        onclick="markNotificationAsReadOnPage('{{ $notification->id }}')"
+                                        data-ui-click="markNotificationAsReadOnPage" data-ui-args="{{ json_encode([$notification->id]) }}"
                                         class="mr-2 text-xs text-[var(--specialist-plum-mid)] hover:text-[var(--specialist-plum-light)] flex-shrink-0">
                                     خوانده شد
                                 </button>
@@ -112,6 +112,8 @@
 
     @push('scripts')
         <script @nonce>
+            uiActions.register({ markNotificationAsReadOnPage: function (event, id) { markNotificationAsReadOnPage(id); } });
+
             // ✅ Mark as read (and wait for it) before navigating to the target link
             document.querySelectorAll('.notification-link').forEach(function (link) {
                 link.addEventListener('click', function (e) {

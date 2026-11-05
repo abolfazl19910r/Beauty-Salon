@@ -99,7 +99,7 @@
                         </div>
 
                         <div class="flex gap-3 mt-4">
-                            <button onclick="document.getElementById('editResponseModal').classList.remove('hidden')"
+                            <button data-ui-show="#editResponseModal"
                                     class="px-6 py-2 rounded-lg font-bold transition text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)]"
                                     style="border: 1px solid var(--specialist-border);">
                                 ویرایش پاسخ
@@ -107,7 +107,7 @@
                             <form action="{{ route('specialist.reviews.delete-response', $review->id) }}" method="POST" class="inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" onclick="return confirm('آیا از حذف پاسخ اطمینان دارید؟')"
+                                <button type="submit" data-ui-confirm="آیا از حذف پاسخ اطمینان دارید؟"
                                         class="bg-m-bad/90 text-m-onsolid px-6 py-2 rounded-lg font-bold hover:bg-m-bad transition">
                                     حذف پاسخ
                                 </button>
@@ -180,7 +180,7 @@
                     <button type="submit" class="specialist-cta flex-1 py-3 rounded-xl font-bold transition-opacity hover:opacity-90">
                         ذخیره تغییرات
                     </button>
-                    <button type="button" onclick="document.getElementById('editResponseModal').classList.add('hidden')"
+                    <button type="button" data-ui-hide="#editResponseModal"
                             class="flex-1 py-3 rounded-xl font-bold transition text-[var(--specialist-text-dim)] hover:bg-m-tx/5" style="border: 1px solid var(--specialist-border);">
                         انصراف
                     </button>

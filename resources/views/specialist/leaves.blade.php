@@ -81,7 +81,7 @@
                             @if($leave->status === 'pending')
                                 <button type="button"
                                         class="text-m-bad hover:text-m-bad transition-colors text-sm flex items-center gap-1"
-                                        onclick="showDeleteLeaveModal('{{ route('specialist.leaves.destroy', $leave) }}')">
+                                        data-ui-click="showDeleteLeaveModal" data-ui-args="{{ json_encode([route('specialist.leaves.destroy', $leave)]) }}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                         <polyline points="3 6 5 6 21 6"></polyline>
                                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -127,13 +127,18 @@
                 @method('DELETE')
                 <div class="flex gap-3">
                     <button type="submit" class="flex-1 bg-m-bad text-m-onsolid py-2 rounded-lg font-bold hover:bg-m-bad transition">بله، حذف شود</button>
-                    <button type="button" onclick="hideDeleteLeaveModal()" class="flex-1 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-m-tx/5 transition" style="border: 1px solid var(--specialist-border);">انصراف</button>
+                    <button type="button" data-ui-click="hideDeleteLeaveModal" class="flex-1 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-m-tx/5 transition" style="border: 1px solid var(--specialist-border);">انصراف</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script @nonce>
+        uiActions.register({
+            showDeleteLeaveModal: function (event, url) { showDeleteLeaveModal(url); },
+            hideDeleteLeaveModal: function () { hideDeleteLeaveModal(); },
+        });
+
         function showDeleteLeaveModal(url) {
             document.getElementById('deleteLeaveForm').action = url;
             document.getElementById('deleteLeaveModal').classList.remove('hidden');

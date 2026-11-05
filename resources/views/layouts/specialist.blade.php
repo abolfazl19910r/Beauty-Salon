@@ -139,13 +139,13 @@
         </nav>
     </aside>
 
-    <div id="sidebar-backdrop" class="md:hidden fixed inset-0 bg-black/60 z-40 hidden" onclick="toggleSidebar()"></div>
+    <div id="sidebar-backdrop" class="md:hidden fixed inset-0 bg-black/60 z-40 hidden" data-ui-click="toggleSidebar"></div>
 
     <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
 
         <header class="border-b sticky top-0 z-10 h-16 flex items-center justify-between px-4" style="background-color: var(--specialist-surface); border-color: var(--specialist-border);">
             <div class="flex items-center">
-                <button onclick="toggleSidebar()" class="md:hidden text-[var(--specialist-text-dim)] hover:text-[var(--specialist-plum-light)] focus:outline-none ml-3">
+                <button data-ui-click="toggleSidebar" class="md:hidden text-[var(--specialist-text-dim)] hover:text-[var(--specialist-plum-light)] focus:outline-none ml-3">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
@@ -268,7 +268,7 @@
                         </svg>
                         <span class="text-m-ok">{{ session('success') }}</span>
                     </div>
-                    <button onclick="closeNotification('success-notification')" class="text-m-ok hover:text-m-ok transition-colors">
+                    <button data-ui-click="closeNotification" data-ui-args='["success-notification"]' class="text-m-ok hover:text-m-ok transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -284,7 +284,7 @@
                         </svg>
                         <span class="text-m-bad">{{ session('error') }}</span>
                     </div>
-                    <button onclick="closeNotification('error-notification')" class="text-m-bad hover:text-m-bad transition-colors">
+                    <button data-ui-click="closeNotification" data-ui-args='["error-notification"]' class="text-m-bad hover:text-m-bad transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -481,6 +481,12 @@
         backdrop.classList.toggle('hidden', !open);
     }
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') toggleSidebar(false); });
+
+    // H3 مرحله‌ی ۲: دکمه‌های data-ui-click (partials/ui-handlers)
+    uiActions.register({
+        toggleSidebar: function () { toggleSidebar(); },
+        closeNotification: function (event, id) { closeNotification(id); },
+    });
 
     function closeNotification(id) {
         const notification = document.getElementById(id);

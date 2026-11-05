@@ -247,7 +247,7 @@
 
                                 <div>
                                     @if($request->canBeCancelled())
-                                        <form action="{{ route('specialist.wallet.cancel-withdrawal', $request) }}" method="POST" onsubmit="return confirm('آیا از لغو این درخواست اطمینان دارید؟')">
+                                        <form action="{{ route('specialist.wallet.cancel-withdrawal', $request) }}" method="POST" data-ui-confirm="آیا از لغو این درخواست اطمینان دارید؟">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="bg-m-bad/90 text-m-onsolid px-4 py-2 rounded-lg text-sm font-bold hover:bg-m-bad transition">لغو</button>

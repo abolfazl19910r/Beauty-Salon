@@ -62,7 +62,7 @@
                     </svg>
                     فیلتر نوبت‌ها
                 </h3>
-                <button onclick="toggleFilters()" type="button" class="text-[var(--specialist-plum-mid)] hover:text-[var(--specialist-plum-light)] text-sm font-medium transition-colors">
+                <button data-ui-click="toggleFilters" type="button" class="text-[var(--specialist-plum-mid)] hover:text-[var(--specialist-plum-light)] text-sm font-medium transition-colors">
                     <span id="filterToggleText">نمایش فیلترها</span>
                 </button>
             </div>
@@ -259,24 +259,24 @@
                                     @if(!in_array($status, ['completed', 'cancelled', 'pending_payment']))
 
                                         @if($status == 'pending')
-                                            <button onclick="confirmBooking('{{ route('specialist.bookings.complete', $booking->id) }}', '{{ addslashes($booking->user->name) }}', '{{ addslashes($booking->service?->name ?? '—') }}')"
+                                            <button data-ui-click="confirmBooking" data-ui-args="{{ json_encode([route('specialist.bookings.complete', $booking->id), $booking->user->name, $booking->service?->name ?? '—']) }}"
                                                     class="bg-m-ok text-m-onsolid px-4 py-2 rounded-lg text-sm font-bold hover:bg-m-ok transition">
                                                 تایید
                                             </button>
 
-                                            <button onclick="showCancelModal({{ $booking->id }}, '{{ addslashes($booking->user->name) }}', '{{ addslashes($booking->service?->name ?? '—') }}')"
+                                            <button data-ui-click="showCancelModal" data-ui-args="{{ json_encode([$booking->id, $booking->user->name, $booking->service?->name ?? '—']) }}"
                                                     class="bg-m-bad/90 text-m-onsolid px-4 py-2 rounded-lg text-sm font-bold hover:bg-m-bad transition">
                                                 لغو
                                             </button>
                                         @endif
 
                                         @if($status == 'confirmed')
-                                            <button onclick="markCompleted({{ $booking->id }}, '{{ addslashes($booking->user->name) }}', '{{ addslashes($booking->service?->name ?? '—') }}')"
+                                            <button data-ui-click="markCompleted" data-ui-args="{{ json_encode([$booking->id, $booking->user->name, $booking->service?->name ?? '—']) }}"
                                                     class="specialist-cta px-4 py-2 rounded-lg text-sm font-bold transition-opacity hover:opacity-90">
                                                 انجام شد
                                             </button>
 
-                                            <button onclick="showCancelModal({{ $booking->id }}, '{{ addslashes($booking->user->name) }}', '{{ addslashes($booking->service?->name ?? '—') }}')"
+                                            <button data-ui-click="showCancelModal" data-ui-args="{{ json_encode([$booking->id, $booking->user->name, $booking->service?->name ?? '—']) }}"
                                                     class="bg-m-bad/90 text-m-onsolid px-4 py-2 rounded-lg text-sm font-bold hover:bg-m-bad transition">
                                                 لغو نوبت
                                             </button>
@@ -303,7 +303,7 @@
                 @csrf @method('PUT')
                 <div class="flex gap-3">
                     <button type="submit" class="flex-1 bg-m-ok text-m-onsolid py-2 rounded-lg font-bold hover:bg-m-ok transition">بله، تایید شود</button>
-                    <button type="button" onclick="hideConfirmModal()" class="flex-1 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-m-tx/5 transition" style="border: 1px solid var(--specialist-border);">انصراف</button>
+                    <button type="button" data-ui-click="hideConfirmModal" class="flex-1 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-m-tx/5 transition" style="border: 1px solid var(--specialist-border);">انصراف</button>
                 </div>
             </form>
         </div>
@@ -318,7 +318,7 @@
                 @csrf @method('PUT')
                 <div class="flex gap-3">
                     <button type="submit" class="specialist-cta flex-1 py-2 rounded-lg font-bold transition-opacity hover:opacity-90">بله، انجام شد</button>
-                    <button type="button" onclick="hideCompletedModal()" class="flex-1 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-m-tx/5 transition" style="border: 1px solid var(--specialist-border);">انصراف</button>
+                    <button type="button" data-ui-click="hideCompletedModal" class="flex-1 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-m-tx/5 transition" style="border: 1px solid var(--specialist-border);">انصراف</button>
                 </div>
             </form>
         </div>
@@ -337,7 +337,7 @@
                           placeholder="دلیل لغو را بنویسید..."></textarea>
                 <div class="flex gap-3">
                     <button type="submit" class="flex-1 bg-m-bad text-m-onsolid py-2 rounded-lg font-bold hover:bg-m-bad transition">لغو نوبت</button>
-                    <button type="button" onclick="hideCancelModal()" class="flex-1 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-m-tx/5 transition" style="border: 1px solid var(--specialist-border);">انصراف</button>
+                    <button type="button" data-ui-click="hideCancelModal" class="flex-1 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-m-tx/5 transition" style="border: 1px solid var(--specialist-border);">انصراف</button>
                 </div>
             </form>
         </div>
@@ -346,6 +346,16 @@
 
 @push('scripts')
     <script @nonce>
+        uiActions.register({
+            toggleFilters: function () { toggleFilters(); },
+            confirmBooking: function (event, url, name, service) { confirmBooking(url, name, service); },
+            markCompleted: function (event, id, name, service) { markCompleted(id, name, service); },
+            showCancelModal: function (event, id, name, service) { showCancelModal(id, name, service); },
+            hideConfirmModal: function () { hideConfirmModal(); },
+            hideCompletedModal: function () { hideCompletedModal(); },
+            hideCancelModal: function () { hideCancelModal(); },
+        });
+
         (function() {
             function div(a, b) { return Math.trunc(a / b); }
 

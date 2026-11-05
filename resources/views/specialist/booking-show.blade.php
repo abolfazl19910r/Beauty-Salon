@@ -91,14 +91,14 @@
                                     پذیرش نوبت
                                 </button>
                             </form>
-                            <button onclick="document.getElementById('cancelModal').classList.remove('hidden')"
+                            <button data-ui-show="#cancelModal"
                                     class="bg-m-bad/90 hover:bg-m-bad text-m-onsolid px-8 py-3 rounded-lg font-bold transition">
                                 لغو این نوبت
                             </button>
                         @endif
 
                         @if($booking->canBeMarkedNoShow())
-                            <form action="{{ route('specialist.bookings.no-show', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('مشتری نیامد؟ پیش‌پرداخت برنمی‌گردد و جلسه‌ی دوره (اگر هست) می‌سوزد.')">
+                            <form action="{{ route('specialist.bookings.no-show', $booking->id) }}" method="POST" class="inline" data-ui-confirm="مشتری نیامد؟ پیش‌پرداخت برنمی‌گردد و جلسه‌ی دوره (اگر هست) می‌سوزد.">
                                 @csrf @method('PUT')
                                 <button type="submit" class="px-8 py-3 rounded-lg font-bold transition" style="border: 1px solid var(--specialist-border);">نیامد</button>
                             </form>
@@ -112,7 +112,7 @@
                                 </button>
                             </form>
 
-                            <button onclick="document.getElementById('cancelModal').classList.remove('hidden')"
+                            <button data-ui-show="#cancelModal"
                                     class="bg-m-bad/90 hover:bg-m-bad text-m-onsolid px-8 py-3 rounded-lg font-bold transition">
                                 لغو این نوبت
                             </button>
@@ -151,7 +151,7 @@
                 </div>
                 <div class="flex gap-3">
                     <button type="submit" class="flex-1 bg-m-bad text-m-onsolid py-2 rounded-lg font-bold hover:bg-m-bad transition">تایید لغو نوبت</button>
-                    <button type="button" onclick="document.getElementById('cancelModal').classList.add('hidden')" class="flex-1 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-m-tx/5 transition" style="border: 1px solid var(--specialist-border);">انصراف</button>
+                    <button type="button" data-ui-hide="#cancelModal" class="flex-1 py-2 rounded-lg text-[var(--specialist-text-dim)] hover:bg-m-tx/5 transition" style="border: 1px solid var(--specialist-border);">انصراف</button>
                 </div>
             </form>
         </div>
