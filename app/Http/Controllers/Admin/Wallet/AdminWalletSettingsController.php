@@ -31,7 +31,7 @@ class AdminWalletSettingsController extends Controller
 
             return back()->with('success', 'تنظیمات با موفقیت به‌روزرسانی شد.');
         } catch (Exception $e) {
-            Log::error('خطا در به‌روزرسانی تنظیمات کیف پول', [
+            Log::channel('payments')->error('خطا در به‌روزرسانی تنظیمات کیف پول', [
                 'error' => $e->getMessage(),
             ]);
 

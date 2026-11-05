@@ -70,7 +70,7 @@ class AdminPaymentAttentionController extends Controller
             ]],
         ]);
 
-        Log::info('Payment needing attention marked resolved', ['transaction_id' => $tx->id, 'by' => $request->user()->id, 'applied' => $updated]);
+        Log::channel('payments')->info('Payment needing attention marked resolved', ['transaction_id' => $tx->id, 'by' => $request->user()->id, 'applied' => $updated]);
 
         return back()->with('success', 'رسیدگی ثبت شد.');
     }

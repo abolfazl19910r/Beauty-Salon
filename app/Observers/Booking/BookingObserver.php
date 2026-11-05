@@ -115,7 +115,7 @@ class BookingObserver
         try {
             event(new PaymentSucceeded($booking));
         } catch (\Exception $e) {
-            Log::error('❌ Failed to dispatch PaymentSucceeded event', [
+            Log::channel('payments')->error('❌ Failed to dispatch PaymentSucceeded event', [
                 'booking_id' => $booking->id,
                 'error' => $e->getMessage(),
             ]);
@@ -212,7 +212,7 @@ class BookingObserver
             });
 
         } catch (\Exception $e) {
-            Log::error('❌ Failed to add income and commission', [
+            Log::channel('payments')->error('❌ Failed to add income and commission', [
                 'booking_id' => $booking->id,
                 'error' => $e->getMessage(),
             ]);
@@ -243,7 +243,7 @@ class BookingObserver
                     ->exists();
 
                 if ($existingRefund) {
-                    Log::warning('⚠️ Refund already exists', ['booking_id' => $booking->id]);
+                    Log::channel('payments')->warning('⚠️ Refund already exists', ['booking_id' => $booking->id]);
 
                     return;
                 }
@@ -373,7 +373,7 @@ class BookingObserver
             });
 
         } catch (\Exception $e) {
-            Log::error('❌ Failed to handle cancellation', [
+            Log::channel('payments')->error('❌ Failed to handle cancellation', [
                 'booking_id' => $booking->id,
                 'error' => $e->getMessage(),
             ]);
@@ -398,7 +398,7 @@ class BookingObserver
             );
 
             if ($wasSettled) {
-                Log::warning('⚠️ سهم متخصص از موجودی واقعی (نه در انتظار) کسر شد — اگر قبلاً برداشت شده باشد موجودی منفی می‌شود', [
+                Log::channel('payments')->warning('⚠️ سهم متخصص از موجودی واقعی (نه در انتظار) کسر شد — اگر قبلاً برداشت شده باشد موجودی منفی می‌شود', [
                     'booking_id' => $booking->id,
                     'specialist_wallet_id' => $specialistWallet->id,
                     'amount' => $incomeTransaction->amount,

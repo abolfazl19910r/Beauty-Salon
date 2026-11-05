@@ -79,7 +79,7 @@ class PlatformOperationsController extends Controller
 
         app(\App\Services\SuperAdmin\SuperAdminAudit::class)->record('payment.resolved', sprintf('رسیدگی تراکنش #%d (%s): %s', $tx->id,
             $tx->purpose === 'subscription' ? 'اشتراک' : 'بسته‌ی پیامک', $data['note']), $tx->salon_id);
-        Log::info('Platform payment needing attention marked resolved', ['transaction_id' => $tx->id, 'by' => $request->user()->id]);
+        Log::channel('payments')->info('Platform payment needing attention marked resolved', ['transaction_id' => $tx->id, 'by' => $request->user()->id]);
 
         return back()->with('success', 'رسیدگی ثبت شد.');
     }

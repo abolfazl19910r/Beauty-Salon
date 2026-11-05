@@ -72,7 +72,7 @@ class BookingWalletShare
 
         $user = User::find($transaction->user_id);
         if (! $user) {
-            Log::error('Wallet share could not be returned: the customer no longer exists', ['transaction_id' => $transaction->id, 'toman' => $toman]);
+            Log::channel('payments')->error('Wallet share could not be returned: the customer no longer exists', ['transaction_id' => $transaction->id, 'toman' => $toman]);
 
             return 0.0;
         }

@@ -150,7 +150,7 @@ class BookingPaymentFinalizer
     {
         $refund = $this->lostSlotRefund->refund($booking, $transaction, null, $booking->prepayment_amount, $reason);
 
-        Log::warning('Gateway payment arrived for a booking that can no longer be kept', [
+        Log::channel('payments')->warning('Gateway payment arrived for a booking that can no longer be kept', [
             'booking_id' => $booking->id, 'transaction_id' => $transaction?->id, 'handled' => $refund['handled'],
         ]);
 

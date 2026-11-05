@@ -327,6 +327,7 @@ class MellatGatewayTest extends TestCase
     public function test_reverse_transaction_only_reverses_unsettled_payments(): void
     {
         Log::spy();
+        Log::shouldReceive('channel')->with('payments')->andReturnSelf();   // لاگ پرداخت در payments.log
         $settled = $this->tx();
         $settled->update(['gateway_receipt' => '11', 'status' => 'paid', 'verify_response' => ['settled' => true]]);
         $open = $this->tx();
@@ -340,6 +341,7 @@ class MellatGatewayTest extends TestCase
         $this->bank(['bpReversalRequest' => '45']);
         $this->assertFalse($this->driver()->reverseTransaction($open->fresh()));
         Log::shouldHaveReceived('error')->withArgs(fn ($message) => str_contains($message, 'settled'))->once();
+        Log::shouldHaveReceived('channel')->with('payments');
     }
 
     // ── کاتالوگ و صفحه‌ی مدیریت ──

@@ -44,7 +44,7 @@ class ZarinpalUnverifiedReconciler
 
             if (! $list['ok']) {
                 $stats['failed_calls']++;
-                Log::warning('Zarinpal unVerified call failed', [
+                Log::channel('payments')->warning('Zarinpal unVerified call failed', [
                     'code' => $list['code'], 'error' => $list['error'] ?? null, 'salon_ids' => $merchant['salon_ids'], 'platform' => $merchant['platform'],
                 ]);
 
@@ -57,7 +57,7 @@ class ZarinpalUnverifiedReconciler
 
                 if (! $tx || ! $this->belongsTo($tx, $merchant)) {
                     $stats['unknown']++;
-                    Log::info('Zarinpal unVerified lists an authority we do not own', [
+                    Log::channel('payments')->info('Zarinpal unVerified lists an authority we do not own', [
                         'authority' => $item['authority'], 'amount_rial' => $item['amount'], 'date' => $item['date'],
                         'salon_ids' => $merchant['salon_ids'], 'platform' => $merchant['platform'], 'transaction_id' => $tx?->id,
                     ]);

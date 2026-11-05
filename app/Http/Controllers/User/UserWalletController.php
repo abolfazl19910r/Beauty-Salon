@@ -150,7 +150,7 @@ class UserWalletController extends Controller
 
             session()->forget(['wallet_charge_pending', 'wallet_charge_id']);
 
-            Log::error('❌ خطا در دریافت URL درگاه', [
+            Log::channel('payments')->error('❌ خطا در دریافت URL درگاه', [
                 'user_id' => $user->id,
                 'result' => $result,
             ]);
@@ -160,7 +160,7 @@ class UserWalletController extends Controller
                 ->withInput();
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::warning('⚠️ خطای اعتبارسنجی شارژ', [
+            Log::channel('payments')->warning('⚠️ خطای اعتبارسنجی شارژ', [
                 'errors' => $e->errors(),
                 // M6: فقط مبلغ (نه کل ورودی درخواست)
                 'amount' => $request->input('amount'),
@@ -169,7 +169,7 @@ class UserWalletController extends Controller
             return back()->withErrors($e->errors())->withInput();
 
         } catch (\Exception $e) {
-            Log::error('💥 خطا در پردازش شارژ کیف پول', [
+            Log::channel('payments')->error('💥 خطا در پردازش شارژ کیف پول', [
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -236,7 +236,7 @@ class UserWalletController extends Controller
 
             session()->forget(['wallet_charge_pending', 'wallet_charge_id']);
 
-            Log::warning('⚠️ شارژ کیف پول ناموفق', [
+            Log::channel('payments')->warning('⚠️ شارژ کیف پول ناموفق', [
                 'user_id' => $chargePending['user_id'],
                 'amount' => $chargePending['amount'],
                 'message' => $result['message'] ?? 'نامشخص',
@@ -248,7 +248,7 @@ class UserWalletController extends Controller
         } catch (\Exception $e) {
             session()->forget(['wallet_charge_pending', 'wallet_charge_id']);
 
-            Log::error('💥 خطا در callback شارژ کیف پول', [
+            Log::channel('payments')->error('💥 خطا در callback شارژ کیف پول', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);

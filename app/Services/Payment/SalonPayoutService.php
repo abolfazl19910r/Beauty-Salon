@@ -38,7 +38,7 @@ class SalonPayoutService
         $driver = $this->payouts->driverFor($salon);
 
         if (! $driver) {
-            Log::warning('SalonPayoutService: تسویه‌ی خودکار برای این سالن پیکربندی نشده', [
+            Log::channel('payments')->warning('SalonPayoutService: تسویه‌ی خودکار برای این سالن پیکربندی نشده', [
                 'withdrawal_request_id' => $withdrawalRequest->id,
                 'salon_id' => $salon?->id,
             ]);

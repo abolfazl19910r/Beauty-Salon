@@ -298,6 +298,7 @@ class ParsianGatewayTest extends TestCase
     public function test_reverse_transaction_uses_soap_12_and_accepts_already_reversed(): void
     {
         Log::spy();
+        Log::shouldReceive('channel')->with('payments')->andReturnSelf();   // لاگ پرداخت در payments.log
         $tx = $this->tx();
         $tx->update(['gateway_receipt' => $tx->token, 'status' => 'paid']);
 

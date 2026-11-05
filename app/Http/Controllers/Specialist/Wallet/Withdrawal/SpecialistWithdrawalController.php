@@ -66,7 +66,7 @@ class SpecialistWithdrawalController extends Controller
             return redirect()->route('specialist.wallet.index')
                 ->with('success', 'درخواست برداشت با موفقیت ثبت شد. کد پیگیری: '.$result['withdrawal_request']->reference_code);
         } catch (Exception $e) {
-            Log::error('خطا در ثبت درخواست برداشت', [
+            Log::channel('payments')->error('خطا در ثبت درخواست برداشت', [
                 'specialist_id' => $specialist->id,
                 'amount' => $request->input('amount'),
                 'error' => $e->getMessage(),
@@ -94,7 +94,7 @@ class SpecialistWithdrawalController extends Controller
             return redirect()->route('specialist.wallet.index')
                 ->with('success', 'درخواست برداشت با موفقیت لغو شد و موجودی بازگردانده شد.');
         } catch (Exception $e) {
-            Log::error('خطا در لغو درخواست برداشت', [
+            Log::channel('payments')->error('خطا در لغو درخواست برداشت', [
                 'withdrawal_request_id' => $withdrawalRequest->id,
                 'error' => $e->getMessage(),
             ]);

@@ -134,7 +134,7 @@ class ReconcilePaymentTransactions extends Command
                 ));
             }
 
-            Log::log($ok ? 'info' : 'warning', $ok ? 'Bank payment reversed after unanswered verify' : 'Bank payment reverse failed', [
+            Log::channel('payments')->log($ok ? 'info' : 'warning', $ok ? 'Bank payment reversed after unanswered verify' : 'Bank payment reverse failed', [
                 'driver' => $tx->driver, 'transaction_id' => $tx->id, 'salon_id' => $tx->salon_id, 'gateway_missing' => ! $tx->gateway,
             ]);
             $reversed += $ok ? 1 : 0;
@@ -276,7 +276,7 @@ class ReconcilePaymentTransactions extends Command
 
             PaymentTransaction::whereKey($tx->id)->toBase()->update(['needs_attention' => true]);
             app(\App\Services\Admin\AttentionNotifier::class)->paymentFlagged($tx->id);
-            Log::warning('Payment needs a human: automatic handling window ended', [
+            Log::channel('payments')->warning('Payment needs a human: automatic handling window ended', [
                 'transaction_id' => $tx->id, 'salon_id' => $tx->salon_id, 'driver' => $tx->driver, 'status' => $tx->status,
             ]);
         }

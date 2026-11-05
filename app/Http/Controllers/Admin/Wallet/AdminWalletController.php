@@ -68,7 +68,7 @@ class AdminWalletController extends Controller
 
             return back()->with('success', 'شماره شبا با موفقیت تایید شد.');
         } catch (Exception $e) {
-            Log::error('خطا در تایید شماره شبا', [
+            Log::channel('payments')->error('خطا در تایید شماره شبا', [
                 'wallet_id' => $wallet->id,
                 'error' => $e->getMessage(),
             ]);
@@ -101,7 +101,7 @@ class AdminWalletController extends Controller
 
             return back()->with('success', 'تعدیل با موفقیت انجام شد.');
         } catch (Exception $e) {
-            Log::error('خطا در تعدیل کیف پول', [
+            Log::channel('payments')->error('خطا در تعدیل کیف پول', [
                 'wallet_id' => $wallet->id,
                 'error' => $e->getMessage(),
             ]);
@@ -121,7 +121,7 @@ class AdminWalletController extends Controller
 
             return back()->with('success', $this->buildSettlementMessage($result));
         } catch (Exception $e) {
-            Log::error('خطا در تسویه‌ی دستی کیف‌پول‌ها', [
+            Log::channel('payments')->error('خطا در تسویه‌ی دستی کیف‌پول‌ها', [
                 'error' => $e->getMessage(),
             ]);
 
@@ -142,7 +142,7 @@ class AdminWalletController extends Controller
 
             return back()->with('success', $this->buildSettlementMessage($result));
         } catch (Exception $e) {
-            Log::error('خطا در تسویه‌ی دستی کیف‌پول متخصص', [
+            Log::channel('payments')->error('خطا در تسویه‌ی دستی کیف‌پول متخصص', [
                 'wallet_id' => $wallet->id,
                 'error' => $e->getMessage(),
             ]);

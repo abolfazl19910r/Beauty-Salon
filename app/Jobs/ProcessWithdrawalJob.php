@@ -66,7 +66,7 @@ class ProcessWithdrawalJob implements ShouldQueue
                 ->first();
 
             if (! $withdrawalRequest) {
-                Log::warning('ProcessWithdrawalJob: درخواست برداشت یافت نشد', [
+                Log::channel('payments')->warning('ProcessWithdrawalJob: درخواست برداشت یافت نشد', [
                     'withdrawal_request_id' => $this->withdrawalRequestId,
                 ]);
 
@@ -76,7 +76,7 @@ class ProcessWithdrawalJob implements ShouldQueue
             // If between dispatch and Job execution, the request has been finalized from another path (manual approval/rejection),
             // Do nothing here — prevents double processing or overriding of the previous result.
             if ($withdrawalRequest->status !== 'processing') {
-                Log::info('ProcessWithdrawalJob: درخواست دیگر processing نیست، از پردازش صرف‌نظر شد', [
+                Log::channel('payments')->info('ProcessWithdrawalJob: درخواست دیگر processing نیست، از پردازش صرف‌نظر شد', [
                     'withdrawal_request_id' => $withdrawalRequest->id,
                     'current_status' => $withdrawalRequest->status,
                 ]);
@@ -94,7 +94,7 @@ class ProcessWithdrawalJob implements ShouldQueue
                     ]),
                 ]);
 
-                Log::warning('ProcessWithdrawalJob: تسویه‌ی خودکار مسدود شد — شبای تأییدنشده', [
+                Log::channel('payments')->warning('ProcessWithdrawalJob: تسویه‌ی خودکار مسدود شد — شبای تأییدنشده', [
                     'withdrawal_request_id' => $withdrawalRequest->id,
                     'reason' => $blocker,
                 ]);
@@ -134,7 +134,7 @@ class ProcessWithdrawalJob implements ShouldQueue
                     ]),
                 ]);
 
-                Log::error('ProcessWithdrawalJob: نتیجه‌ی تسویه نامعلوم — بررسی دستی لازم است', [
+                Log::channel('payments')->error('ProcessWithdrawalJob: نتیجه‌ی تسویه نامعلوم — بررسی دستی لازم است', [
                     'withdrawal_request_id' => $withdrawalRequest->id,
                     'message' => $result['message'] ?? null,
                 ]);
@@ -169,7 +169,7 @@ class ProcessWithdrawalJob implements ShouldQueue
                 ],
             ]);
 
-            Log::error('ProcessWithdrawalJob: تسویه‌ی آنلاین ناموفق بود', [
+            Log::channel('payments')->error('ProcessWithdrawalJob: تسویه‌ی آنلاین ناموفق بود', [
                 'withdrawal_request_id' => $withdrawalRequest->id,
                 'message' => $result['message'] ?? null,
             ]);
@@ -191,7 +191,7 @@ class ProcessWithdrawalJob implements ShouldQueue
 
     public function failed(\Throwable $exception): void
     {
-        Log::error('ProcessWithdrawalJob: خود Job با خطا متوقف شد', [
+        Log::channel('payments')->error('ProcessWithdrawalJob: خود Job با خطا متوقف شد', [
             'withdrawal_request_id' => $this->withdrawalRequestId,
             'error' => $exception->getMessage(),
         ]);

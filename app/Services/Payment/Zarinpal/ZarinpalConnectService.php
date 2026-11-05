@@ -81,14 +81,14 @@ class ZarinpalConnectService
                 'redirect_uri' => $this->redirectUri(),
             ]);
         } catch (Throwable $e) {
-            Log::warning('Zarinpal connect: token request failed', ['salon_id' => $salon->id, 'error' => $e->getMessage()]);
+            Log::channel('payments')->warning('Zarinpal connect: token request failed', ['salon_id' => $salon->id, 'error' => $e->getMessage()]);
 
             return self::fail('ارتباط با زرین‌پال برقرار نشد؛ کمی بعد دوباره تلاش کنید.');
         }
 
         $token = (string) ($response->json('access_token') ?? '');
         if (! $response->successful() || $token === '') {
-            Log::warning('Zarinpal connect: no access token', ['salon_id' => $salon->id, 'status' => $response->status(), 'errors' => $response->json('errors')]);
+            Log::channel('payments')->warning('Zarinpal connect: no access token', ['salon_id' => $salon->id, 'status' => $response->status(), 'errors' => $response->json('errors')]);
 
             return self::fail('زرین‌پال توکن دسترسی نداد؛ دوباره تلاش کنید.');
         }
@@ -235,14 +235,14 @@ class ZarinpalConnectService
             $response = Http::timeout(30)->acceptJson()->asJson()->withToken((string) $connection->access_token)
                 ->post((string) config('services.zarinpal.connect.graphql_url'), ['query' => $query, 'variables' => $variables ?: null]);
         } catch (Throwable $e) {
-            Log::warning('Zarinpal connect: GraphQL request failed', ['salon_id' => $connection->salon_id, 'error' => $e->getMessage()]);
+            Log::channel('payments')->warning('Zarinpal connect: GraphQL request failed', ['salon_id' => $connection->salon_id, 'error' => $e->getMessage()]);
 
             return null;
         }
 
         $data = $response->json('data');
         if (! $response->successful() || ! is_array($data) || ! empty($response->json('errors'))) {
-            Log::warning('Zarinpal connect: GraphQL error', ['salon_id' => $connection->salon_id, 'status' => $response->status(), 'errors' => $response->json('errors')]);
+            Log::channel('payments')->warning('Zarinpal connect: GraphQL error', ['salon_id' => $connection->salon_id, 'status' => $response->status(), 'errors' => $response->json('errors')]);
 
             return null;
         }

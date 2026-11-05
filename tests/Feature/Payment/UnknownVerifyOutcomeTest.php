@@ -77,6 +77,7 @@ class UnknownVerifyOutcomeTest extends TestCase
     public function test_asan_pardakht_verified_but_not_settled_is_a_success_flagged_for_the_owner(): void
     {
         Log::spy();
+        Log::shouldReceive('channel')->with('payments')->andReturnSelf();   // لاگ پرداخت در payments.log
         $asan = $this->indirect()['asanpardakht'][0];
 
         foreach ([Http::response('', 503), Http::failedConnection(self::TIMEOUT)] as $settlement) {

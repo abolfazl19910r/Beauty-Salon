@@ -42,7 +42,7 @@ class PaymentController extends Controller
                 return \App\Payments\GatewayRedirect::to($result['gateway']);
             }
 
-            Log::error('❌ Payment Gateway Error', [
+            Log::channel('payments')->error('❌ Payment Gateway Error', [
                 'booking_id' => $booking->id,
                 'error' => $result['message'],
             ]);
@@ -50,7 +50,7 @@ class PaymentController extends Controller
             return back()->with('error', 'خطای بانک: '.$result['message']);
 
         } catch (\Exception $e) {
-            Log::error('💥 Payment Process Exception', [
+            Log::channel('payments')->error('💥 Payment Process Exception', [
                 'booking_id' => $booking->id,
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -98,7 +98,7 @@ class PaymentController extends Controller
         } catch (\Illuminate\Validation\ValidationException|\Illuminate\Auth\Access\AuthorizationException $e) {
             throw $e;
         } catch (\Exception $e) {
-            Log::error('💥 خطا در پرداخت با کیف پول', [
+            Log::channel('payments')->error('💥 خطا در پرداخت با کیف پول', [
                 'booking_id' => $booking->id,
                 'error' => $e->getMessage(),
             ]);
@@ -149,7 +149,7 @@ class PaymentController extends Controller
                 ->with('error', $outcome['message']);
 
         } catch (\Exception $e) {
-            Log::error('💥 Payment Callback Exception', [
+            Log::channel('payments')->error('💥 Payment Callback Exception', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);

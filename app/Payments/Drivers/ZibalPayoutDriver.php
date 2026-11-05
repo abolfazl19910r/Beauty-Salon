@@ -48,7 +48,7 @@ class ZibalPayoutDriver implements PayoutDriver
                     'description' => mb_substr($request->description, 0, 250),
                 ]);
         } catch (Throwable $e) {
-            Log::error('ZibalPayoutDriver: خطای اتصال', ['reference' => $request->reference, 'error' => $e->getMessage()]);
+            Log::channel('payments')->error('ZibalPayoutDriver: خطای اتصال', ['reference' => $request->reference, 'error' => $e->getMessage()]);
 
             return HttpFailure::neverSent($e)
                 ? new PayoutResult(false, message: 'خطا در اتصال به سرویس تسویه‌ی زیبال. لطفاً بعداً دوباره تلاش کنید.')
@@ -65,7 +65,7 @@ class ZibalPayoutDriver implements PayoutDriver
             return new PayoutResult(true, referenceCode: (string) $body['data']['id'], payoutId: (string) $body['data']['id'], raw: $body);
         }
 
-        Log::error('ZibalPayoutDriver: درخواست تسویه ناموفق', ['reference' => $request->reference, 'status' => $response->status(), 'response' => $body]);
+        Log::channel('payments')->error('ZibalPayoutDriver: درخواست تسویه ناموفق', ['reference' => $request->reference, 'status' => $response->status(), 'response' => $body]);
 
         $message = match (true) {
             $response->status() === 401 => 'توکن دسترسی زیبال نامعتبر است یا مجوز تسویه ندارد',
@@ -79,7 +79,7 @@ class ZibalPayoutDriver implements PayoutDriver
     /** ⭐ درخواست فرستاده شد ولی پاسخ نرسید: شاید زیبال واریز کرده باشه — ProcessWithdrawalJob برای بررسی دستی نگه می‌داره. */
     private static function unknown(PayoutRequest $request, ?int $status): PayoutResult
     {
-        Log::error('ZibalPayoutDriver: نتیجه‌ی تسویه نامعلوم — بررسی دستی در پنل زیبال', ['reference' => $request->reference, 'status' => $status]);
+        Log::channel('payments')->error('ZibalPayoutDriver: نتیجه‌ی تسویه نامعلوم — بررسی دستی در پنل زیبال', ['reference' => $request->reference, 'status' => $status]);
 
         return new PayoutResult(
             false,

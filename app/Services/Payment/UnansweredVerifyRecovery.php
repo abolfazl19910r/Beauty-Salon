@@ -52,7 +52,7 @@ class UnansweredVerifyRecovery
 
         if (! $tx->gateway) {
             $this->release($tx, $response);
-            Log::warning('Unanswered verify recovery: gateway row is gone', ['transaction_id' => $tx->id]);
+            Log::channel('payments')->warning('Unanswered verify recovery: gateway row is gone', ['transaction_id' => $tx->id]);
 
             return 'unanswered';
         }
@@ -61,7 +61,7 @@ class UnansweredVerifyRecovery
             $result = $this->gateways->verify($tx->gateway, new GatewayVerifyRequest((int) $tx->amount_rial, [], $tx->token, $tx->id));
         } catch (\Throwable $e) {
             $this->release($tx, $response);
-            Log::warning('Unanswered verify recovery: verify threw', ['transaction_id' => $tx->id, 'error' => $e->getMessage()]);
+            Log::channel('payments')->warning('Unanswered verify recovery: verify threw', ['transaction_id' => $tx->id, 'error' => $e->getMessage()]);
 
             return 'unanswered';
         }
@@ -127,7 +127,7 @@ class UnansweredVerifyRecovery
             try {
                 $result = $driver->verify(new GatewayVerifyRequest((int) $tx->amount_rial, [], $tx->token, $tx->id));
             } catch (\Throwable $e) {
-                Log::warning('Abandoned payment verify threw', ['transaction_id' => $tx->id, 'error' => $e->getMessage()]);
+                Log::channel('payments')->warning('Abandoned payment verify threw', ['transaction_id' => $tx->id, 'error' => $e->getMessage()]);
             }
         }
 
@@ -232,7 +232,7 @@ class UnansweredVerifyRecovery
                 'verify_response' => json_encode($response + ['recovery' => $tooOld ? 'unverified_too_old' : 'unverified_amount_mismatch', 'unverified_amount_rial' => $listedAmountRial], JSON_UNESCAPED_UNICODE),
             ]);
             app(\App\Services\Admin\AttentionNotifier::class)->paymentFlagged($tx->id);
-            Log::warning('Zarinpal lists a closed payment as paid but unverified; needs a human', [
+            Log::channel('payments')->warning('Zarinpal lists a closed payment as paid but unverified; needs a human', [
                 'transaction_id' => $tx->id, 'salon_id' => $tx->salon_id, 'purpose' => $tx->purpose, 'too_old' => $tooOld,
                 'listed_amount_rial' => $listedAmountRial, 'amount_rial' => (int) $tx->amount_rial,
             ]);
@@ -254,7 +254,7 @@ class UnansweredVerifyRecovery
             try {
                 $result = $driver->verify(new GatewayVerifyRequest((int) $tx->amount_rial, [], $tx->token, $tx->id));
             } catch (\Throwable $e) {
-                Log::warning('Unverified-list payment verify threw', ['transaction_id' => $tx->id, 'error' => $e->getMessage()]);
+                Log::channel('payments')->warning('Unverified-list payment verify threw', ['transaction_id' => $tx->id, 'error' => $e->getMessage()]);
             }
         }
 
@@ -290,7 +290,7 @@ class UnansweredVerifyRecovery
 
         if ($attention) {
             app(\App\Services\Admin\AttentionNotifier::class)->paymentFlagged($tx->id);
-            Log::warning('Abandoned payment needs a human', ['transaction_id' => $tx->id, 'driver' => $tx->driver, 'purpose' => $tx->purpose, 'status' => $status]);
+            Log::channel('payments')->warning('Abandoned payment needs a human', ['transaction_id' => $tx->id, 'driver' => $tx->driver, 'purpose' => $tx->purpose, 'status' => $status]);
         }
     }
 
@@ -379,7 +379,7 @@ class UnansweredVerifyRecovery
             $bookingId,
         ));
 
-        Log::warning('Unanswered payment credited to the customer wallet', [
+        Log::channel('payments')->warning('Unanswered payment credited to the customer wallet', [
             'via' => $via, 'transaction_id' => $tx->id, 'driver' => $tx->driver, 'purpose' => $tx->purpose, 'wallet_toman' => $toman,
             'booking_status' => $bookingId ? Booking::find($bookingId)?->payment_status : null,
         ]);

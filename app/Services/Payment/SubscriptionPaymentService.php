@@ -68,13 +68,13 @@ class SubscriptionPaymentService
         }
 
         if ($result->raw === []) {
-            Log::error('SubscriptionPaymentService: خطای اتصال به درگاه پرداخت اشتراک', ['invoice_id' => $invoice->id]);
+            Log::channel('payments')->error('SubscriptionPaymentService: خطای اتصال به درگاه پرداخت اشتراک', ['invoice_id' => $invoice->id]);
 
             return ['success' => false, 'message' => 'خطا در اتصال به درگاه پرداخت. لطفاً دوباره تلاش کنید.'];
         }
 
         $errorCode = ZarinpalDriver::errorCode((array) $result->raw);
-        Log::error('SubscriptionPaymentService: درخواست پرداخت اشتراک ناموفق', [
+        Log::channel('payments')->error('SubscriptionPaymentService: درخواست پرداخت اشتراک ناموفق', [
             'invoice_id' => $invoice->id,
             'error_code' => $errorCode,
             'response' => $result->raw,
@@ -94,7 +94,7 @@ class SubscriptionPaymentService
         }
 
         if (! $authority || $authority !== $invoice->authority) {
-            Log::warning('SubscriptionPaymentService: عدم تطابق authority در کال‌بک', [
+            Log::channel('payments')->warning('SubscriptionPaymentService: عدم تطابق authority در کال‌بک', [
                 'invoice_id' => $invoice->id,
                 'expected' => $invoice->authority,
                 'received' => $authority,
@@ -140,13 +140,13 @@ class SubscriptionPaymentService
         }
 
         if ($result->raw === []) {
-            Log::error('SubscriptionPaymentService: خطای اتصال هنگام تأیید پرداخت اشتراک', ['invoice_id' => $invoice->id]);
+            Log::channel('payments')->error('SubscriptionPaymentService: خطای اتصال هنگام تأیید پرداخت اشتراک', ['invoice_id' => $invoice->id]);
 
             return ['success' => false, 'message' => 'خطا در تأیید پرداخت.'];
         }
 
         $errorCode = ZarinpalDriver::errorCode((array) $result->raw);
-        Log::warning('SubscriptionPaymentService: تأیید پرداخت اشتراک ناموفق', [
+        Log::channel('payments')->warning('SubscriptionPaymentService: تأیید پرداخت اشتراک ناموفق', [
             'invoice_id' => $invoice->id,
             'authority' => $authority,
             'error_code' => $errorCode,

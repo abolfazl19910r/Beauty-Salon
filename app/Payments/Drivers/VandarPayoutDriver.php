@@ -87,7 +87,7 @@ class VandarPayoutDriver implements PayoutDriver
         }
 
         if ($response === null || $response->serverError()) {
-            Log::error('VandarPayoutDriver: نتیجه‌ی تسویه نامعلوم — بررسی دستی در داشبورد وندار', [
+            Log::channel('payments')->error('VandarPayoutDriver: نتیجه‌ی تسویه نامعلوم — بررسی دستی در داشبورد وندار', [
                 'reference' => $request->reference, 'track_id' => $body['track_id'], 'status' => $response?->status(),
             ]);
 
@@ -111,7 +111,7 @@ class VandarPayoutDriver implements PayoutDriver
             );
         }
 
-        Log::error('VandarPayoutDriver: درخواست تسویه ناموفق', ['reference' => $request->reference, 'status' => $response->status(), 'response' => $json]);
+        Log::channel('payments')->error('VandarPayoutDriver: درخواست تسویه ناموفق', ['reference' => $request->reference, 'status' => $response->status(), 'response' => $json]);
 
         return new PayoutResult(false, message: self::errorMessage($response, $json), raw: $json + ['track_id' => $body['track_id']]);
     }
@@ -127,7 +127,7 @@ class VandarPayoutDriver implements PayoutDriver
                 ->withToken((string) ($this->credentials['payout_access_token'] ?? ''))
                 ->post(self::API.'/v3/business/'.rawurlencode((string) ($this->credentials['payout_business'] ?? '')).'/settlement/store', $body);
         } catch (Throwable $e) {
-            Log::warning('VandarPayoutDriver: خطای اتصال', ['error' => $e->getMessage()]);
+            Log::channel('payments')->warning('VandarPayoutDriver: خطای اتصال', ['error' => $e->getMessage()]);
             $this->lastError = $e;
 
             return null;
@@ -158,14 +158,14 @@ class VandarPayoutDriver implements PayoutDriver
                     $response = Http::timeout(30)->acceptJson()->asJson()
                         ->post(self::API.'/v3/refreshtoken', ['refreshtoken' => (string) ($this->credentials['payout_refresh_token'] ?? '')]);
                 } catch (Throwable $e) {
-                    Log::warning('VandarPayoutDriver: تمدید توکن — خطای اتصال', ['gateway_id' => $this->gateway?->id, 'error' => $e->getMessage()]);
+                    Log::channel('payments')->warning('VandarPayoutDriver: تمدید توکن — خطای اتصال', ['gateway_id' => $this->gateway?->id, 'error' => $e->getMessage()]);
 
                     return false;
                 }
 
                 $json = (array) $response->json();
                 if (! $response->successful() || ! filled($json['access_token'] ?? null) || ! filled($json['refresh_token'] ?? null)) {
-                    Log::error('VandarPayoutDriver: تمدید توکن ناموفق — توکن‌های تازه را از داشبورد وندار در «درگاه‌های پرداخت» وارد کنید', [
+                    Log::channel('payments')->error('VandarPayoutDriver: تمدید توکن ناموفق — توکن‌های تازه را از داشبورد وندار در «درگاه‌های پرداخت» وارد کنید', [
                         'gateway_id' => $this->gateway?->id, 'status' => $response->status(),
                     ]);
 

@@ -146,7 +146,7 @@ class InvoiceInstallments
                     $invoice->installments_paid > 0 ? 'installments_expired' : 'invoice_released', $invoice->id);
                 $closed++;
 
-                Log::info('Unfinished invoice closed; paid installments became platform credit', [
+                Log::channel('payments')->info('Unfinished invoice closed; paid installments became platform credit', [
                     'invoice_id' => $invoice->id, 'salon_id' => $invoice->salon_id, 'paid' => $invoice->paid_amount, 'credit' => $invoice->credit_applied,
                 ]);
             });

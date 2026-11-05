@@ -30,7 +30,7 @@ class SecurePaymentService
             ]),
         ]);
 
-        Log::info('Secure payment initiated', [
+        Log::channel('payments')->info('Secure payment initiated', [
             'payment_id' => $payment->id,
             'booking_id' => $booking->id,
             'reference' => $referenceId,
@@ -44,7 +44,7 @@ class SecurePaymentService
         $payment = $this->paymentRepository->findByReference($referenceId);
 
         if (! $payment) {
-            Log::warning('Secure payment verification failed - payment not found', [
+            Log::channel('payments')->warning('Secure payment verification failed - payment not found', [
                 'reference' => $referenceId,
             ]);
 
@@ -66,7 +66,7 @@ class SecurePaymentService
         if ($payment->isExpired()) {
             $payment->markAsFailed();
 
-            Log::warning('Secure payment verification failed - expired', [
+            Log::channel('payments')->warning('Secure payment verification failed - expired', [
                 'payment_id' => $payment->id,
             ]);
 
@@ -76,7 +76,7 @@ class SecurePaymentService
         try {
             $decryptedData = $this->decryptSensitiveData($payment->card_data);
         } catch (\Exception $e) {
-            Log::warning('Secure payment verification failed - could not decrypt reference data', [
+            Log::channel('payments')->warning('Secure payment verification failed - could not decrypt reference data', [
                 'payment_id' => $payment->id,
             ]);
 
@@ -84,7 +84,7 @@ class SecurePaymentService
         }
 
         if ((float) ($decryptedData['amount'] ?? 0) !== (float) $payment->amount) {
-            Log::warning('Secure payment verification failed - amount mismatch', [
+            Log::channel('payments')->warning('Secure payment verification failed - amount mismatch', [
                 'payment_id' => $payment->id,
                 'expected' => $payment->amount,
                 'signed' => $decryptedData['amount'] ?? null,
@@ -96,14 +96,14 @@ class SecurePaymentService
         if (now()->timestamp - ($decryptedData['timestamp'] ?? 0) > $this->expiryMinutes() * 60) {
             $payment->markAsFailed();
 
-            Log::warning('Secure payment verification failed - time expired', [
+            Log::channel('payments')->warning('Secure payment verification failed - time expired', [
                 'payment_id' => $payment->id,
             ]);
 
             return ['success' => false, 'message' => 'مهلت پرداخت به پایان رسیده است. لطفاً دوباره تلاش کنید.'];
         }
 
-        Log::info('Secure payment verified successfully', [
+        Log::channel('payments')->info('Secure payment verified successfully', [
             'payment_id' => $payment->id,
             'reference' => $referenceId,
         ]);

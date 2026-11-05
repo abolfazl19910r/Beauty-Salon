@@ -284,7 +284,7 @@ class WalletAdminService
             } catch (\Throwable $e) {
                 $failedCount++;
 
-                Log::error('خطا در تسویه‌ی تراکنش کیف‌پول', [
+                Log::channel('payments')->error('خطا در تسویه‌ی تراکنش کیف‌پول', [
                     'transaction_id' => $transaction->id,
                     'source' => $source,
                     'error' => $e->getMessage(),

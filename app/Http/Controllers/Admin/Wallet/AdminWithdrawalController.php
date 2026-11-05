@@ -58,7 +58,7 @@ class AdminWithdrawalController extends Controller
             return redirect()->route('admin.wallet.withdrawals')
                 ->with('success', 'درخواست برداشت با موفقیت تایید شد.');
         } catch (Exception $e) {
-            Log::error('خطا در تایید درخواست برداشت', [
+            Log::channel('payments')->error('خطا در تایید درخواست برداشت', [
                 'withdrawal_id' => $withdrawalRequest->id,
                 'error' => $e->getMessage(),
             ]);
@@ -84,7 +84,7 @@ class AdminWithdrawalController extends Controller
             return redirect()->route('admin.wallet.withdrawals')
                 ->with('success', 'درخواست برداشت رد شد و موجودی بازگردانده شد.');
         } catch (Exception $e) {
-            Log::error('خطا در رد درخواست برداشت', [
+            Log::channel('payments')->error('خطا در رد درخواست برداشت', [
                 'withdrawal_id' => $withdrawalRequest->id,
                 'error' => $e->getMessage(),
             ]);
@@ -113,7 +113,7 @@ class AdminWithdrawalController extends Controller
 
             return back()->with('error', $result['message']);
         } catch (Exception $e) {
-            Log::error('Zarinpal Payout Error: '.$e->getMessage());
+            Log::channel('payments')->error('Zarinpal Payout Error: '.$e->getMessage());
 
             return back()->with('error', 'خطای سیستمی: '.$e->getMessage());
         }

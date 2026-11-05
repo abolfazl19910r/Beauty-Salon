@@ -42,6 +42,7 @@ class UnknownPayoutOutcomeTest extends TestCase
     public function test_zibal_payout_never_treats_a_lost_answer_as_failed(): void
     {
         Log::spy();
+        Log::shouldReceive('channel')->with('payments')->andReturnSelf();   // لاگ پرداخت در payments.log
         // زرین‌پال از بسته‌ی 5ز تسویه‌ی خودکار ندارد (ZarinpalPayoutDriver حذف شد)
         $drivers = [
             'zibal' => fn () => new ZibalPayoutDriver(['payout_access_token' => 't', 'payout_wallet_id' => '1']),

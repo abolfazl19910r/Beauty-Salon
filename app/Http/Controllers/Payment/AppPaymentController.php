@@ -53,7 +53,7 @@ class AppPaymentController extends Controller
         try {
             $outcome = $finalizer->handle($request);
         } catch (\Throwable $e) {
-            Log::error('App payment callback failed', ['transaction_id' => $transaction->id, 'error' => $e->getMessage()]);
+            Log::channel('payments')->error('App payment callback failed', ['transaction_id' => $transaction->id, 'error' => $e->getMessage()]);
             $outcome = ['state' => 'failed', 'message' => 'خطا در تأیید پرداخت. وضعیت نوبت را در اپ ببینید.'];
         }
 
@@ -108,7 +108,7 @@ class AppPaymentController extends Controller
         try {
             $outcome = $coursePayments->finalize($request);
         } catch (\Throwable $e) {
-            Log::error('App course payment callback failed', ['transaction_id' => $transaction->id, 'error' => $e->getMessage()]);
+            Log::channel('payments')->error('App course payment callback failed', ['transaction_id' => $transaction->id, 'error' => $e->getMessage()]);
             $outcome = ['state' => 'failed', 'message' => 'خطا در تأیید پرداخت. وضعیت دوره را در اپ ببینید.'];
         }
 

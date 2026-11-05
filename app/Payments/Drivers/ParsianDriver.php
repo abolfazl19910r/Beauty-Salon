@@ -268,9 +268,9 @@ class ParsianDriver implements PaymentGatewayDriver, ReversibleGateway
         $status = $result['answered'] ? ($result['fields']['Status'] ?? null) : null;
 
         if ($status === '-1549') {
-            Log::warning('Parsian reversal window has passed', ['transaction_id' => $transaction->id, 'salon_id' => $transaction->salon_id]);
+            Log::channel('payments')->warning('Parsian reversal window has passed', ['transaction_id' => $transaction->id, 'salon_id' => $transaction->salon_id]);
         } elseif ($result['answered'] && $status === null) {
-            Log::error('Parsian reversal returned no result — check the ReversalService namespace', ['transaction_id' => $transaction->id, 'fault' => $result['fault'], 'status' => $result['status']]);
+            Log::channel('payments')->error('Parsian reversal returned no result — check the ReversalService namespace', ['transaction_id' => $transaction->id, 'fault' => $result['fault'], 'status' => $result['status']]);
         }
 
         return in_array($status, ['0', '-1551'], true);

@@ -83,7 +83,7 @@ class SecurePaymentController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Secure payment initiation failed', [
+            Log::channel('payments')->error('Secure payment initiation failed', [
                 'booking_id' => $booking->id,
                 'error' => $e->getMessage(),
             ]);
@@ -195,7 +195,7 @@ class SecurePaymentController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Secure payment verification failed', [
+            Log::channel('payments')->error('Secure payment verification failed', [
                 'reference' => $reference,
                 'error' => $e->getMessage(),
             ]);

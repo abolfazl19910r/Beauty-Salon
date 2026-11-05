@@ -298,7 +298,7 @@ class MellatDriver implements PaymentGatewayDriver, ReversibleGateway
         $code = $this->reversal($transaction->id, $receipt);
 
         if ($code === '45') {
-            Log::error('Mellat payment is settled but recorded as not paid — needs a manual check', [
+            Log::channel('payments')->error('Mellat payment is settled but recorded as not paid — needs a manual check', [
                 'transaction_id' => $transaction->id, 'salon_id' => $transaction->salon_id, 'sale_reference_id' => $receipt,
             ]);
         }

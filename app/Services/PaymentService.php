@@ -136,7 +136,7 @@ class PaymentService
         // درگاه شروع نشد: سهم کیف پولی که برای این تلاش کم شده بود همین حالا برمی‌گردد
         app(\App\Services\Payment\BookingWalletShare::class)->release($transaction, 'اتصال به درگاه ناموفق بود');
 
-        Log::error('❌ Payment Request Failed', $logContext + [
+        Log::channel('payments')->error('❌ Payment Request Failed', $logContext + [
             'gateway' => $gateway?->driver,
             'message' => $result->message,
             'full_response' => $result->raw,
@@ -248,7 +248,7 @@ class PaymentService
                 if ($status === 'NOK' || $status === 'cancel') {
                     return ['success' => false, 'message' => 'پرداخت توسط کاربر لغو شد'];
                 }
-                Log::error('❌ Booking ID not found in callback');
+                Log::channel('payments')->error('❌ Booking ID not found in callback');
 
                 return ['success' => false, 'message' => 'شناسه رزرو یافت نشد'];
             }
@@ -297,7 +297,7 @@ class PaymentService
             $this->recordVerification($transaction, $result);
 
             if ($result->cancelledByUser) {
-                Log::warning('⚠️ Payment Cancelled by User', ['authority' => $result->token]);
+                Log::channel('payments')->warning('⚠️ Payment Cancelled by User', ['authority' => $result->token]);
 
                 // ⭐ (۲۰۲۶-۰۹-۲۷) booking_id لازم است: بدون آن callback مسیر شکست (برگشت سهم کیف پول، آزادکردن نوبت)
                 // را رد می‌کرد — رایج‌ترین حالت شکست (انصراف در بانک) سهم کیف پولِ پرداخت ترکیبی را برنمی‌گرداند.
@@ -327,7 +327,7 @@ class PaymentService
                     'message' => \App\Services\Payment\HeldBookingPayment::MESSAGE];
             }
 
-            Log::warning('⚠️ Payment Verification Failed', [
+            Log::channel('payments')->warning('⚠️ Payment Verification Failed', [
                 'booking_id' => $booking->id,
                 'authority' => $result->token,
                 'gateway' => $gateway->driver,
@@ -336,7 +336,7 @@ class PaymentService
 
             return ['status' => 'failed', 'success' => false, 'booking_id' => $booking->id, 'message' => $result->message];
         } catch (\Exception $e) {
-            Log::error('💥 Payment Verification Exception', ['error' => $e->getMessage()]);
+            Log::channel('payments')->error('💥 Payment Verification Exception', ['error' => $e->getMessage()]);
 
             return ['status' => 'failed', 'success' => false, 'message' => 'خطا در تایید پرداخت'];
         }
@@ -398,7 +398,7 @@ class PaymentService
                 $transaction->id,
             ));
         } catch (\Exception $e) {
-            Log::error('💥 Course Payment Verification Exception', ['transaction_id' => $transaction->id, 'error' => $e->getMessage()]);
+            Log::channel('payments')->error('💥 Course Payment Verification Exception', ['transaction_id' => $transaction->id, 'error' => $e->getMessage()]);
 
             return ['success' => false, 'transaction' => $transaction, 'message' => 'خطا در تایید پرداخت'];
         }
@@ -473,7 +473,7 @@ class PaymentService
 
             return ['success' => false, 'message' => $result->message];
         } catch (\Exception $e) {
-            Log::error('💥 Wallet Charge Verification Exception', ['error' => $e->getMessage()]);
+            Log::channel('payments')->error('💥 Wallet Charge Verification Exception', ['error' => $e->getMessage()]);
 
             return ['success' => false, 'message' => 'خطا در تایید پرداخت'];
         }

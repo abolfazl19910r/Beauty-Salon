@@ -74,7 +74,7 @@ class HeldBookingPayment
             'verify_response' => ['held' => true, 'hold_until' => now()->addMinutes(self::HOLD_MINUTES)->toIso8601String(), 'hold_checks' => 0] + $response,
         ])->save();
 
-        Log::warning('Booking payment held: gateway verify did not complete', [
+        Log::channel('payments')->warning('Booking payment held: gateway verify did not complete', [
             'transaction_id' => $tx->id, 'booking_id' => $tx->payable_id, 'driver' => $tx->driver,
             'not_sent' => (bool) ($response['verify_not_sent'] ?? false),
         ]);
@@ -116,7 +116,7 @@ class HeldBookingPayment
         try {
             $result = $this->gateways->verify($tx->gateway, new GatewayVerifyRequest((int) $tx->amount_rial, [], $tx->token, $tx->id));
         } catch (\Throwable $e) {
-            Log::warning('Held booking payment: verify threw', ['transaction_id' => $tx->id, 'error' => $e->getMessage()]);
+            Log::channel('payments')->warning('Held booking payment: verify threw', ['transaction_id' => $tx->id, 'error' => $e->getMessage()]);
             $result = null;
         }
 
@@ -138,7 +138,7 @@ class HeldBookingPayment
                 'gateway_fee' => intdiv((int) $tx->fee_rial, 10),
             ], $tx);
 
-            Log::info('Held booking payment confirmed by the gateway', ['transaction_id' => $tx->id, 'booking_id' => $booking->id, 'state' => $outcome['state']]);
+            Log::channel('payments')->info('Held booking payment confirmed by the gateway', ['transaction_id' => $tx->id, 'booking_id' => $booking->id, 'state' => $outcome['state']]);
 
             return $outcome['state'] === 'paid' ? 'paid' : 'refunded';
         }
@@ -187,7 +187,7 @@ class HeldBookingPayment
             $this->cancel($booking, 'تأیید پرداخت از درگاه نرسید');
         }
 
-        Log::warning('Held booking payment released after the hold window', ['transaction_id' => $tx->id, 'reason' => $why]);
+        Log::channel('payments')->warning('Held booking payment released after the hold window', ['transaction_id' => $tx->id, 'reason' => $why]);
 
         return 'expired';
     }

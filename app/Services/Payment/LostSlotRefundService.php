@@ -107,7 +107,7 @@ class LostSlotRefundService
             $booking->id,
         ));
 
-        Log::warning('Booking payment refunded: slot was taken while the customer was at the bank', [
+        Log::channel('payments')->warning('Booking payment refunded: slot was taken while the customer was at the bank', [
             'booking_id' => $booking->id, 'transaction_id' => $transaction?->id,
             'card_toman' => $toCard ? $gatewayToman : 0, 'wallet_toman' => $walletToman, 'wallet_part' => $walletPart,
         ]);

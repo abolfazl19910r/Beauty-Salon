@@ -55,7 +55,7 @@ class SmsPackPaymentService
             return ['success' => true, 'payment_url' => $result->redirectUrl];
         }
 
-        Log::error('SmsPackPaymentService: شروع پرداخت بسته‌ی پیامک ناموفق', ['purchase_id' => $purchase->id, 'response' => $result->raw]);
+        Log::channel('payments')->error('SmsPackPaymentService: شروع پرداخت بسته‌ی پیامک ناموفق', ['purchase_id' => $purchase->id, 'response' => $result->raw]);
 
         return ['success' => false, 'message' => $result->message ?? 'خطا در اتصال به درگاه پرداخت. لطفاً دوباره تلاش کنید.'];
     }
@@ -68,7 +68,7 @@ class SmsPackPaymentService
         }
 
         if (! $authority || $authority !== $purchase->authority) {
-            Log::warning('SmsPackPaymentService: عدم تطابق authority در کال‌بک', ['purchase_id' => $purchase->id]);
+            Log::channel('payments')->warning('SmsPackPaymentService: عدم تطابق authority در کال‌بک', ['purchase_id' => $purchase->id]);
 
             return ['success' => false, 'message' => 'اطلاعات تراکنش نامعتبر است.'];
         }
@@ -106,7 +106,7 @@ class SmsPackPaymentService
             return ['success' => true, 'ref_id' => (string) $result->refId];
         }
 
-        Log::warning('SmsPackPaymentService: تأیید پرداخت بسته‌ی پیامک ناموفق', ['purchase_id' => $purchase->id, 'response' => $result->raw]);
+        Log::channel('payments')->warning('SmsPackPaymentService: تأیید پرداخت بسته‌ی پیامک ناموفق', ['purchase_id' => $purchase->id, 'response' => $result->raw]);
 
         return ['success' => false, 'message' => 'پرداخت تأیید نشد'.($result->message ? ': '.$result->message : '').'.'];
     }

@@ -9,6 +9,7 @@ use App\Payments\GatewayVerifyRequest;
 use App\Payments\GatewayVerifyResult;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
@@ -173,7 +174,7 @@ class AsanPardakhtDriver implements PaymentGatewayDriver
             $settlementStatus = null;
         }
         if ($settlementStatus !== 200) {
-            \Illuminate\Support\Facades\Log::error('AsanPardakht: Verify succeeded but Settlement did not — settle it from the Asan Pardakht panel', [
+            Log::channel('payments')->error('AsanPardakht: Verify succeeded but Settlement did not — settle it from the Asan Pardakht panel', [
                 'local_invoice_id' => $request->transactionId, 'pay_gate_tran_id' => $tran['payGateTranID'], 'settlement_status' => $settlementStatus,
             ]);
         }
