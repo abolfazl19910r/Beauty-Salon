@@ -81,7 +81,7 @@ final class SmsCode
         if ($attempts >= self::MAX_ATTEMPTS) {
             $user->forceFill([$field => null, $expiresField => null])->save();
             Cache::forget($key);
-            Log::warning('SMS code burned after too many wrong attempts', ['user_id' => $user->id, 'field' => $field]);
+            Log::channel('security')->warning('SMS code burned after too many wrong attempts', ['user_id' => $user->id, 'field' => $field]);
         }
 
         return false;

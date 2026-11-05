@@ -117,7 +117,7 @@ class CustomerRegistrationService extends SmsCodeChallenge
         if ($existing) {
             // ثبت‌نام نیمه‌کاره‌ی قدیمی (پیش از این تغییر) — حالا صاحب واقعی شماره آن را تأیید کرد
             $existing->forceFill($attributes)->save();
-            Log::info('Unverified customer account claimed by verified registration', ['user_id' => $existing->id]);
+            Log::channel('security')->info('Unverified customer account claimed by verified registration', ['user_id' => $existing->id]);
 
             return $existing;
         }

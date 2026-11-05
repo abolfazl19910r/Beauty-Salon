@@ -29,7 +29,7 @@ class SuperAdminAudit
                 'created_at' => now(),
             ]);
         } catch (\Throwable $e) {
-            Log::warning('SuperAdminAudit: record failed', ['action' => $action, 'error' => $e->getMessage()]);
+            Log::channel('security')->warning('SuperAdminAudit: record failed', ['action' => $action, 'error' => $e->getMessage()]);
         }
     }
 

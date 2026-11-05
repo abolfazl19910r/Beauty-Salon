@@ -96,7 +96,7 @@ class OtpSendGuard
 
     private function block(string $reason, ?string $phone, ?string $ip): void
     {
-        Log::warning('OTP send blocked', [
+        Log::channel('security')->warning('OTP send blocked', [
             'reason' => $reason,
             'phone' => $phone ? substr($phone, 0, 3).'****'.substr($phone, -3) : null,
             'ip' => $ip,

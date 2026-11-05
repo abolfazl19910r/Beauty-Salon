@@ -192,7 +192,7 @@ class ReviewService
         $reviewToken = $this->reviewTokenRepository->findValidToken($token);
 
         if (! $reviewToken) {
-            Log::warning('❌ Invalid or expired token', ['token' => $token]);
+            Log::channel('security')->warning('❌ Invalid or expired token', ['token' => $token]);
 
             return null;
         }

@@ -53,7 +53,7 @@ class AdminReviewController extends Controller
         try {
             $this->reviewRepository->update($review, ['is_approved' => true]);
 
-            Log::info('Review approved by admin', [
+            Log::channel('security')->info('Review approved by admin', [
                 'review_id' => $review->id,
                 'admin_id' => auth()->id(),
             ]);
@@ -77,7 +77,7 @@ class AdminReviewController extends Controller
         try {
             $this->reviewRepository->update($review, ['is_approved' => false]);
 
-            Log::info('Review rejected by admin', [
+            Log::channel('security')->info('Review rejected by admin', [
                 'review_id' => $review->id,
                 'admin_id' => auth()->id(),
             ]);
@@ -114,7 +114,7 @@ class AdminReviewController extends Controller
         try {
             $this->reviewRepository->delete($review);
 
-            Log::warning('Review soft deleted by admin', [
+            Log::channel('security')->warning('Review soft deleted by admin', [
                 'review_id' => $review->id,
                 'admin_id' => auth()->id(),
             ]);
@@ -150,7 +150,7 @@ class AdminReviewController extends Controller
             $review = $this->reviewRepository->findWithTrashedOrFail($id);
             $review->forceDelete();
 
-            Log::warning('Review permanently deleted by admin', [
+            Log::channel('security')->warning('Review permanently deleted by admin', [
                 'review_id' => $id,
                 'admin_id' => auth()->id(),
             ]);

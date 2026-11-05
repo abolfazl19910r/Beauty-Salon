@@ -43,11 +43,11 @@ class TwoFactorAuthService
 
         if ($isValid) {
             SmsCode::clear($user, 'two_factor_code', 'two_factor_code_expires_at');
-            Log::info('2FA verified successfully', [
+            Log::channel('security')->info('2FA verified successfully', [
                 'user_id' => $user->id,
             ]);
         } else {
-            Log::warning('2FA verification failed', [
+            Log::channel('security')->warning('2FA verification failed', [
                 'user_id' => $user->id,
             ]);
         }
@@ -66,7 +66,7 @@ class TwoFactorAuthService
             'two_factor_enabled' => true,
         ]);
 
-        Log::info('2FA enabled', [
+        Log::channel('security')->info('2FA enabled', [
             'user_id' => $user->id,
         ]);
     }
@@ -77,7 +77,7 @@ class TwoFactorAuthService
             'two_factor_enabled' => false,
         ]);
 
-        Log::info('2FA disabled', [
+        Log::channel('security')->info('2FA disabled', [
             'user_id' => $user->id,
         ]);
     }

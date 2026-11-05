@@ -38,7 +38,7 @@ class ReviewController extends Controller
             $reviewToken = $this->reviewTokenRepository->findValidToken($token);
 
             if (! $reviewToken) {
-                Log::warning('❌ Token not found or invalid', [
+                Log::channel('security')->warning('❌ Token not found or invalid', [
                     'token' => $token,
                 ]);
 

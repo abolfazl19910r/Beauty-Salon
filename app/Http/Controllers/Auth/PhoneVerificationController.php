@@ -59,7 +59,7 @@ class PhoneVerificationController extends Controller
             if ($this->phoneVerificationService->verify(auth()->user(), $request->code)) {
                 session()->forget('phone_verification_code_sent');
 
-                Log::info('Phone verification successful (post-auth notice flow)', [
+                Log::channel('security')->info('Phone verification successful (post-auth notice flow)', [
                     'user_id' => auth()->id(),
                 ]);
 

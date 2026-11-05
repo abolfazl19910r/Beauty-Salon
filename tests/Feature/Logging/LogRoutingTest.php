@@ -74,6 +74,34 @@ class LogRoutingTest extends TestCase
         $this->assertGreaterThan(80, $routed);
     }
 
+    public function test_security_events_go_to_the_security_channel(): void
+    {
+        foreach ([
+            'app/Support/Auth/SmsCode.php' => ['SMS code burned after too many wrong attempts'],
+            'app/Support/Auth/PasswordLockout.php' => ['Password login locked after too many wrong passwords'],
+            'app/Http/Middleware/RestrictSuperAdminIp.php' => ['Super admin panel request from a non-allowed IP'],
+            'app/Services/Sms/OtpSendGuard.php' => ['OTP send blocked'],
+            'app/Services/PhoneVerificationService.php' => ['Invalid or expired verification code', 'Invalid or expired login verification code'],
+            'app/Services/TwoFactorAuthService.php' => ['2FA verified successfully', '2FA verification failed', '2FA enabled', '2FA disabled'],
+            'app/Services/Specialist/SpecialistAccountLinker.php' => ['Specialist records linked to staff account', 'Customer account promoted to specialist'],
+            'app/Services/Customer/CustomerRegistrationService.php' => ['Unverified customer account claimed by verified registration'],
+            'app/Http/Controllers/Admin/Review/AdminReviewController.php' => ['Review approved by admin', 'Review rejected by admin', 'Review soft deleted by admin', 'Review permanently deleted by admin'],
+            'app/Http/Controllers/Auth/PhoneVerificationController.php' => ['Phone verification successful (post-auth notice flow)'],
+            'app/Services/Review/ReviewService.php' => ['Invalid or expired token'],
+            'app/Http/Controllers/User/ReviewController.php' => ['Token not found or invalid'],
+            'app/Services/SuperAdmin/SuperAdminAudit.php' => ['SuperAdminAudit: record failed'],
+        ] as $file => $messages) {
+            $source = (string) file_get_contents(base_path($file));
+            foreach ($messages as $message) {
+                $this->assertMatchesRegularExpression(
+                    "/Log::channel\('security'\)->\w+\(\s*'[^']*".preg_quote($message, '/').'/u',
+                    $source,
+                    "{$file}: {$message}"
+                );
+            }
+        }
+    }
+
     public function test_payment_lines_of_the_booking_observer_go_to_the_payments_channel(): void
     {
         $source = (string) file_get_contents(app_path('Observers/Booking/BookingObserver.php'));

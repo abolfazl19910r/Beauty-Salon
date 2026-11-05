@@ -53,7 +53,7 @@ class SpecialistAccountLinker
         }
 
         $this->currentSalon->allSalons(fn () => Specialist::query()->whereKey($ids)->whereNull('user_id')->update(['user_id' => $staff->id]));
-        Log::info('Specialist records linked to staff account', ['user_id' => $staff->id, 'specialist_ids' => $ids->all()]);
+        Log::channel('security')->info('Specialist records linked to staff account', ['user_id' => $staff->id, 'specialist_ids' => $ids->all()]);
 
         return $ids->count();
     }
@@ -74,7 +74,7 @@ class SpecialistAccountLinker
             $customer->forceFill(['user_type' => 'staff'])->save();
             $this->linkPending($customer);
         });
-        Log::info('Customer account promoted to specialist', ['user_id' => $customer->id, 'salon_id' => $customer->salon_id]);
+        Log::channel('security')->info('Customer account promoted to specialist', ['user_id' => $customer->id, 'salon_id' => $customer->salon_id]);
 
         return true;
     }

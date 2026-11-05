@@ -50,7 +50,7 @@ class PhoneVerificationService
     public function verify(User $user, string $code): bool
     {
         if (! SmsCode::check($user, 'verification_code', 'verification_code_expire_at', $code)) {
-            Log::warning('Invalid or expired verification code', ['user_id' => $user->id]);
+            Log::channel('security')->warning('Invalid or expired verification code', ['user_id' => $user->id]);
 
             return false;
         }
@@ -61,7 +61,7 @@ class PhoneVerificationService
     public function verifyLoginCode(User $user, string $code): bool
     {
         if (! SmsCode::check($user, 'login_verification_code', 'login_verification_code_expire_at', $code)) {
-            Log::warning('Invalid or expired login verification code', ['user_id' => $user->id]);
+            Log::channel('security')->warning('Invalid or expired login verification code', ['user_id' => $user->id]);
 
             return false;
         }
