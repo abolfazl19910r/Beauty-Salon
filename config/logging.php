@@ -15,7 +15,9 @@ return [
     | بررسی لاگ‌ها (۲۰۲۶-۱۱-۰۵؛ docs/deployment/LOGGING.md): لاگ عمومی (laravel.log، stderr) شماره‌ی موبایل و شبا را نصفه می‌نویسد.
     | security و payments خام‌اند (مدرک نگهداری ماده‌ی ۶۶۸ و تطبیق پرداخت). فقط برای عیب‌یابی لوکال: LOG_MASK_PERSONAL_DATA=false
     */
-    'mask_personal_data' => filter_var(env('LOG_MASK_PERSONAL_DATA') ?? true, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE) ?? true,
+    // خالی یا نبودن = روشن (خط خالی «LOG_MASK_PERSONAL_DATA=» قبلاً خاموشش می‌کرد)؛ فقط false/0/off خاموش
+    'mask_personal_data' => in_array(env('LOG_MASK_PERSONAL_DATA'), [null, ''], true)
+        || (filter_var(env('LOG_MASK_PERSONAL_DATA'), FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE) ?? true),
 
     'deprecations' => [
         'channel' => env('LOG_DEPRECATIONS_CHANNEL', 'null'),

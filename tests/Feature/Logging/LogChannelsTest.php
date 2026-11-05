@@ -72,6 +72,31 @@ class LogChannelsTest extends TestCase
         }
     }
 
+    /** خط خالی «LOG_MASK_PERSONAL_DATA=» در .env (همان .env.example) ماسک را خاموش می‌کرد — یافته‌ی آزمون دستی ۲۰۲۶-۱۱-۰۵ */
+    public function test_an_empty_or_missing_env_value_keeps_masking_on_and_only_false_turns_it_off(): void
+    {
+        $evaluate = function (?string $value): bool {
+            putenv($value === null ? 'LOG_MASK_PERSONAL_DATA' : "LOG_MASK_PERSONAL_DATA={$value}");
+            if ($value === null) {
+                unset($_ENV['LOG_MASK_PERSONAL_DATA'], $_SERVER['LOG_MASK_PERSONAL_DATA']);
+            } else {
+                $_ENV['LOG_MASK_PERSONAL_DATA'] = $_SERVER['LOG_MASK_PERSONAL_DATA'] = $value;
+            }
+
+            return (require config_path('logging.php'))['mask_personal_data'];
+        };
+
+        try {
+            $this->assertTrue($evaluate(null));
+            $this->assertTrue($evaluate(''), 'خط خالی در .env');
+            $this->assertTrue($evaluate('true'));
+            $this->assertFalse($evaluate('false'));
+            $this->assertFalse($evaluate('0'));
+        } finally {
+            $evaluate(null);
+        }
+    }
+
     public function test_masking_can_be_turned_off_for_local_debugging(): void
     {
         config(['logging.mask_personal_data' => false]);
