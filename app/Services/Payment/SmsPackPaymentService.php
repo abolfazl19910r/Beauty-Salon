@@ -64,6 +64,9 @@ class SmsPackPaymentService
     public function verifyPayment(SmsCreditPurchase $purchase, ?string $status, ?string $authority): array
     {
         if ($status === 'NOK' || $status === 'cancel') {
+            // آزمون دستی ۲۰۲۶-۱۱-۰۵: انصراف در بانک هیچ‌جا ثبت نمی‌شد (مسیر نوبت «Payment Cancelled by User» را دارد)
+            Log::channel('payments')->info('SmsPackPaymentService: انصراف کاربر در درگاه', ['purchase_id' => $purchase->id, 'salon_id' => $purchase->salon_id]);
+
             return ['success' => false, 'message' => 'پرداخت توسط شما لغو شد.'];
         }
 

@@ -152,4 +152,20 @@ class LogChannelsTest extends TestCase
         $this->assertStringContainsString('Failed payment attempt', $this->read('payments.log'));
         $this->assertStringContainsString('PAY-1', $this->read('payments.log'));
     }
+
+    public function test_a_cancelled_platform_payment_is_written_to_the_payments_log(): void
+    {
+        // آزمون دستی ۲۰۲۶-۱۱-۰۵: انصراف در درگاه sandbox برای بسته‌ی پیامک هیچ خطی نمی‌ساخت
+        $salon = \App\Models\Salon::factory()->create();
+        $purchase = \App\Models\SmsCreditPurchase::create(['salon_id' => $salon->id, 'parts' => 1000, 'amount' => 320000, 'source' => 'purchase', 'status' => 'pending', 'authority' => 'S000000000000000000000000000000abcd']);
+        $invoice = \App\Models\Invoice::factory()->create(['salon_id' => $salon->id]);
+
+        app(\App\Services\Payment\SmsPackPaymentService::class)->verifyPayment($purchase, 'NOK', $purchase->authority);
+        app(\App\Services\Payment\SubscriptionPaymentService::class)->verifyPayment($invoice, 'NOK', null);
+
+        $payments = $this->read('payments.log');
+        $this->assertStringContainsString('SmsPackPaymentService: انصراف کاربر در درگاه {"purchase_id":'.$purchase->id, $payments);
+        $this->assertStringContainsString('SubscriptionPaymentService: انصراف کاربر در درگاه {"invoice_id":'.$invoice->id, $payments);
+        $this->assertStringNotContainsString('انصراف', $this->read('laravel.log'), 'info فقط در payments.log');
+    }
 }

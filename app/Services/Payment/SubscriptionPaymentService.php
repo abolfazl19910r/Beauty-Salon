@@ -90,6 +90,8 @@ class SubscriptionPaymentService
     public function verifyPayment(Invoice $invoice, string $status, ?string $authority): array
     {
         if ($status === 'NOK' || $status === 'cancel') {
+            Log::channel('payments')->info('SubscriptionPaymentService: انصراف کاربر در درگاه', ['invoice_id' => $invoice->id, 'salon_id' => $invoice->salon_id]);
+
             return ['success' => false, 'message' => 'پرداخت توسط شما لغو شد.'];
         }
 
