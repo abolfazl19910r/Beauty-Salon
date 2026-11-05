@@ -337,7 +337,7 @@ LOGIN_THROTTLE_MINUTES=1
 TRUSTED_PROXIES=                   # رنج IP لبه‌های CDN (سرور آروان: deploy/single/arvan-ips.sh). هرگز «*»
 HSTS_MAX_AGE=                      # فقط روی HTTPS؛ خالی = یک سال، 0 = خاموش
 SECURITY_CSP=enforce              # enforce (پیش‌فرض؛ تخلف‌ها در storage/logs/csp-*.log)، report (فقط گزارش) یا off — با APP_ENV=local داشبورد /telescope بی CSP است
-SECURITY_CSP_STRICT_SCRIPTS=report # script-src بی 'unsafe-inline' با nonce: report (پیش‌فرض، سیاست دوم Report-Only)، enforce (بعد از انتقال onclick=… به JS)، off
+SECURITY_CSP_STRICT_SCRIPTS=      # script-src فقط nonce: خالی/enforce (پیش‌فرض از ۲۰۲۶-۱۱-۰۵)، report (برگشت موقت: سیاست قبلی + Report-Only سخت‌گیر)، off
 SUPERADMIN_ALLOWED_IPS=            # پنل ابرمدیر فقط از این IP/CIDRها (با کاما)؛ خالی = همه؛ بقیه ۴۰۴
 AUTH_TRUSTED_DEVICE_STAFF_DAYS=30  # «دستگاه شناخته‌شده» (ورود بی کد) برای کادر سالن؛ ابرمدیر همیشه کد می‌خواهد
 RETENTION_DAYS=190                 # نگهداری IP و لاگ‌ها (ماده‌ی ۶۶۸)؛ کمتر از ۱۸۴ پذیرفته نمی‌شود
@@ -662,6 +662,12 @@ php artisan up
 ## 🆕 آخرین تغییرات
 
 تاریخچه‌ی کامل، تصمیم‌ها و قدم‌های باز در [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md).
+
+**۲۰۲۶-۱۱-۰۵ — CSP سخت‌گیر برای اسکریپت‌ها (H3 مرحله‌ی ۲؛ بررسی امنیتی کامل شد)**
+- **هیچ `onclick`/`onmouseover`/`onsubmit`/… درون‌خطی در viewها نمانده:** hover، تأییدها (`confirm`)، مودال‌ها، فرم‌های یک‌باره و دکمه‌های صفحه‌ها با صفت‌های `data-ui-*` و یک اسکریپت مشترک (`partials/ui-handlers`، در `<head>` همه‌ی layoutها) کار می‌کنند؛ ظاهر و رفتار صفحه‌ها همان است.
+- **`SECURITY_CSP_STRICT_SCRIPTS` پیش‌فرض `enforce`:** مرورگر فقط اسکریپت‌های درون‌خطی با nonce همان درخواست را اجرا می‌کند (`'unsafe-inline'` از `script-src` برداشته شد)؛ اسکریپت تزریقی (مثل XSS) دیگر اجرا نمی‌شود. اگر صفحه‌ای شکست: موقتاً `SECURITY_CSP_STRICT_SCRIPTS=report` و `storage/logs/csp-*.log` را بفرستید.
+- **صفحه‌ی تازه:** به جای `on…=` از `data-ui-click="نام"` + `uiActions.register(...)` (یا صفت‌های آماده‌ی `data-ui-confirm`، `data-ui-show`، …) استفاده کنید؛ تست `InlineEventHandlersTest` جلوی handler درون‌خطی را می‌گیرد. توضیح کامل بالای `resources/views/partials/ui-handlers.blade.php`.
+- **بعد از گرفتن پچ‌ها:** فقط `php artisan optimize:clear` (بی migration و بی build). داکر: `up -d --build`.
 
 **۲۰۲۶-۱۱-۰۵ — بستن باقی‌مانده‌های بررسی امنیتی (M5، L3–L5، اینماد)**
 - **کوکی session فقط مال همان میزبان:** دیگر بین دامنه‌ی اصلی و زیردامنه‌ی سالن‌ها مشترک نیست (`SESSION_DOMAIN` خوانده نمی‌شود؛ روی HTTPS نام کوکی `__Host-…`). با زیردامنه‌ی فعال، `arisheh.ir/s/{slug}/…` با ۳۰۲ به `{slug}.arisheh.ir/…` می‌رود. همه یک بار از حساب خارج می‌شوند.

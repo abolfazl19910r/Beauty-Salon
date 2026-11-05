@@ -331,6 +331,7 @@ LOGIN_THROTTLE_MINUTES=1
 TRUSTED_PROXIES=                   # CDN edge IP ranges (Arvan server: deploy/single/arvan-ips.sh). Never "*"
 HSTS_MAX_AGE=                      # HTTPS only; empty = one year, 0 = off
 SECURITY_CSP=enforce              # enforce (default; violations in storage/logs/csp-*.log), report (log only) or off — with APP_ENV=local the /telescope dashboard gets no CSP
+SECURITY_CSP_STRICT_SCRIPTS=      # script-src nonce only: empty/enforce (default since 2026-11-05), report (temporary way back: previous policy + strict Report-Only), off
 RETENTION_DAYS=190                 # how long IPs and logs are kept (art. 668); below 184 is not accepted
 LEGAL_PAGES_REVIEWED=false         # true once a lawyer has reviewed the texts (removes the "draft" label)
 SALON_VERIFIER=manual              # salon verification: manual (super-admin); an official service later
@@ -653,6 +654,12 @@ Cron and workers: [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCH
 ## 🆕 Changelog
 
 Full history, decisions and open items in [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md) (Persian).
+
+**2026-11-05 — strict CSP for scripts (H3 stage 2; security audit complete)**
+- **No inline `onclick`/`onmouseover`/`onsubmit`/… left in the views:** hovers, confirms, modals, submit-once forms and page buttons use `data-ui-*` attributes and one shared script (`partials/ui-handlers`, in the `<head>` of every layout); pages look and behave the same.
+- **`SECURITY_CSP_STRICT_SCRIPTS` now defaults to `enforce`:** the browser runs only inline scripts carrying the request's nonce (`'unsafe-inline'` removed from `script-src`), so injected script (XSS) no longer runs. If a page breaks: temporarily `SECURITY_CSP_STRICT_SCRIPTS=report` and send `storage/logs/csp-*.log`.
+- **New pages:** instead of `on…=` use `data-ui-click="name"` + `uiActions.register(...)` (or the built-ins `data-ui-confirm`, `data-ui-show`, …); `InlineEventHandlersTest` rejects inline handlers. Details at the top of `resources/views/partials/ui-handlers.blade.php`.
+- **After pulling:** only `php artisan optimize:clear` (no migration, no build). Docker: `up -d --build`.
 
 **2026-11-05 — remaining security-audit items (M5, L3–L5, Enamad)**
 - **Host-only session cookie:** no longer shared between the central domain and salon subdomains (`SESSION_DOMAIN` is ignored; `__Host-` prefix on HTTPS). With subdomains on, `arisheh.ir/s/{slug}/…` redirects (302) to `{slug}.arisheh.ir/…`. Everyone is logged out once.
