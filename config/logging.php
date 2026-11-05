@@ -1,5 +1,6 @@
 <?php
 
+use App\Logging\MaskPersonalData;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -8,6 +9,12 @@ use Monolog\Processor\PsrLogMessageProcessor;
 return [
 
     'default' => env('LOG_CHANNEL', 'daily'),
+
+    /*
+    | بررسی لاگ‌ها (۲۰۲۶-۱۱-۰۵؛ docs/deployment/LOGGING.md): لاگ عمومی (laravel.log، stderr) شماره‌ی موبایل و شبا را نصفه می‌نویسد.
+    | security و payments خام‌اند (مدرک نگهداری ماده‌ی ۶۶۸ و تطبیق پرداخت). فقط برای عیب‌یابی لوکال: LOG_MASK_PERSONAL_DATA=false
+    */
+    'mask_personal_data' => filter_var(env('LOG_MASK_PERSONAL_DATA') ?? true, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE) ?? true,
 
     'deprecations' => [
         'channel' => env('LOG_DEPRECATIONS_CHANNEL', 'null'),
@@ -24,6 +31,7 @@ return [
 
         'single' => [
             'driver' => 'single',
+            'tap' => [MaskPersonalData::class],
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
@@ -31,6 +39,7 @@ return [
 
         'daily' => [
             'driver' => 'daily',
+            'tap' => [MaskPersonalData::class],
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => env('LOG_DAILY_DAYS', 14),
@@ -60,6 +69,7 @@ return [
 
         'stderr' => [
             'driver' => 'monolog',
+            'tap' => [MaskPersonalData::class],
             'level' => env('LOG_LEVEL', 'debug'),
             'handler' => StreamHandler::class,
             'formatter' => env('LOG_STDERR_FORMATTER'),
@@ -71,6 +81,7 @@ return [
 
         'syslog' => [
             'driver' => 'syslog',
+            'tap' => [MaskPersonalData::class],
             'level' => env('LOG_LEVEL', 'debug'),
             'facility' => env('LOG_SYSLOG_FACILITY', LOG_USER),
             'replace_placeholders' => true,
@@ -78,6 +89,7 @@ return [
 
         'errorlog' => [
             'driver' => 'errorlog',
+            'tap' => [MaskPersonalData::class],
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
         ],
