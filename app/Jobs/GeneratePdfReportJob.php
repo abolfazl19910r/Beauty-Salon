@@ -105,7 +105,7 @@ class GeneratePdfReportJob implements ShouldQueue
         // If already processed (ready/failed), don't rerun — prevents creating the file twice
         // due to retry or multiple workers running at the same time.
         if ($reportExport->status !== 'pending') {
-            Log::info('GeneratePdfReportJob: وضعیت دیگر pending نیست، از پردازش صرف‌نظر شد', [
+            Log::debug('GeneratePdfReportJob: وضعیت دیگر pending نیست، از پردازش صرف‌نظر شد', [
                 'report_export_id' => $reportExport->id,
                 'current_status' => $reportExport->status,
             ]);

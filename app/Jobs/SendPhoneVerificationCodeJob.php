@@ -61,7 +61,6 @@ class SendPhoneVerificationCodeJob implements OtpJob, ShouldQueue
         if (! $result) {
             Log::error('SendPhoneVerificationCodeJob: failed to send phone verification code', [
                 'user_id' => $user->id,
-                'phone' => $user->phone,
             ]);
         }
     }

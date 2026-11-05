@@ -63,7 +63,6 @@ class SendPasswordResetCodeJob implements OtpJob, ShouldQueue
         if (! $result) {
             Log::error('SendPasswordResetCodeJob: failed to send password reset code', [
                 'user_id' => $user->id,
-                'phone' => $user->phone,
             ]);
         }
     }

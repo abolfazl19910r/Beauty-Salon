@@ -42,7 +42,7 @@ class SpecialistActivationService extends SmsCodeChallenge
 
     protected function deliver(array $data, string $code): void
     {
-        Log::info('Queued specialist activation code', ['phone' => $data['phone'], 'salon_id' => $data['salon_id']] + OtpLog::code($code));
+        Log::log(OtpLog::level(), 'Queued specialist activation code', ['phone' => $data['phone'], 'salon_id' => $data['salon_id']] + OtpLog::code($code));
         Queues::dispatchOtp(new SendRegistrationCodeJob($data['phone'], $code, $data['salon_id']));
     }
 

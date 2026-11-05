@@ -8,6 +8,7 @@ use App\Repositories\Contracts\SalonRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Sms\SmsQuotaService;
 use App\Support\Features\Feature;
+use App\Support\Logging\PersonalData;
 use App\Support\Sms\OtpLog;
 use App\Support\SmsParts;
 use Illuminate\Support\Facades\Log;
@@ -58,11 +59,13 @@ class SMSService
             return false;
         }
 
-        // ⭐ لاگ متمرکز: تمام پیامک‌های پروژه (بوکینگ، مرخصی، برداشت وجه و...)
-        // در نهایت از همین متد رد می‌شن (از طریق SmsChannel::send() → toSms())،
-        // پس یک لاگ اینجا کافیه برای دیدن محتوای واقعی هر پیامک در فایل لاگ،
-        // بدون نیاز به اتصال واقعی به Kavenegar.
-        Log::info('SMS: در حال ارسال', ['mobile' => $mobile, 'message' => $message]);
+        // ⭐ لاگ متمرکز: همه‌ی پیامک‌ها از همین‌جا رد می‌شوند. متن کامل فقط در حالت «فقط لاگ» (تنها راه دیدنش)؛ با ارسال واقعی
+        // متن (نام مشتری، نشانی، لینک کوتاه با توکن) به laravel.log نمی‌رود و خط فقط debug است (بررسی لاگ‌ها ۲۰۲۶-۱۱-۰۵).
+        if ($this->isLogOnly()) {
+            Log::info('SMS: در حال ارسال', ['mobile' => PersonalData::phone($mobile), 'message' => $message]);
+        } else {
+            Log::debug('SMS: در حال ارسال', ['mobile' => PersonalData::phone($mobile), 'parts' => SmsParts::count($message), 'salon_id' => $salonId]);
+        }
 
         try {
             if ($this->isLogOnly()) {
@@ -79,14 +82,14 @@ class SMSService
 
         } catch (ApiException $e) {
             Log::error('Kavenegar API Error (Send): '.$e->getMessage(), [
-                'mobile' => $mobile,
+                'mobile' => PersonalData::phone($mobile),
                 'code' => $e->getCode(),
             ]);
             $this->reportProviderProblem((int) $e->getCode(), $e->getMessage());
 
             return false;
         } catch (HttpException $e) {
-            Log::error('Kavenegar HTTP Error (Send): '.$e->getMessage(), ['mobile' => $mobile]);
+            Log::error('Kavenegar HTTP Error (Send): '.$e->getMessage(), ['mobile' => PersonalData::phone($mobile)]);
 
             return false;
         } catch (\Exception $e) {
@@ -130,12 +133,11 @@ class SMSService
 
         // ⭐ همین‌جا کد OTP (اولین token) هم قابل مشاهده‌ست — چون sendLoginCode/sendCode
         // هر دو نهایتاً از همین متد رد می‌شن.
-        Log::info('SMS Template: در حال ارسال', [
-            'mobile' => $mobile,
-            'template' => $templateName,
-            // M2: کد (token اول) فقط در حالت «فقط لاگ»؛ با ارسال واقعی ***
-            'tokens' => OtpLog::tokens($tokens),
-        ]);
+        // M2: کد (token اول) فقط در حالت «فقط لاگ» (info)؛ با ارسال واقعی *** و debug
+        $context = ['mobile' => PersonalData::phone($mobile), 'template' => $templateName, 'tokens' => OtpLog::tokens($tokens)];
+        $this->isLogOnly()
+            ? Log::info('SMS Template: در حال ارسال', $context)
+            : Log::debug('SMS Template: در حال ارسال', $context);
 
         try {
             if ($this->isLogOnly()) {
@@ -159,7 +161,7 @@ class SMSService
 
         } catch (ApiException $e) {
             Log::error('Kavenegar API Error (Lookup): '.$e->getMessage(), [
-                'mobile' => $mobile,
+                'mobile' => PersonalData::phone($mobile),
                 'template' => $templateName,
                 'code' => $e->getCode(),
             ]);
@@ -169,7 +171,7 @@ class SMSService
 
         } catch (HttpException $e) {
             Log::error('Kavenegar HTTP Error (Lookup): '.$e->getMessage(), [
-                'mobile' => $mobile,
+                'mobile' => PersonalData::phone($mobile),
                 'template' => $templateName,
             ]);
 

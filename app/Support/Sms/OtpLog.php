@@ -21,6 +21,15 @@ final class OtpLog
         return app()->environment(['local', 'testing']) && ! config('services.kavenegar.send_in_local', false);
     }
 
+    /**
+     * سطح خط‌های «کد صف شد / پیامک رفت»: در حالت «فقط لاگ» info (تنها راه دیدن کد، روی سرور با LOG_LEVEL=info)؛ با ارسال واقعی
+     * debug — روی سرور نوشته نمی‌شود و فقط تکرار کار صف بود (بررسی لاگ‌ها ۲۰۲۶-۱۱-۰۵).
+     */
+    public static function level(): string
+    {
+        return self::logOnlyMode() ? 'info' : 'debug';
+    }
+
     /** @return array{code?: string} برای context لاگ */
     public static function code(string $code): array
     {

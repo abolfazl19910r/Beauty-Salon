@@ -28,7 +28,7 @@ class PhoneVerificationService
     {
         $code = SmsCode::issue($user, 'verification_code', 'verification_code_expire_at', $this->expiryMinutes());
 
-        Log::info('Queued phone verification code for sending', ['user_id' => $user->id] + OtpLog::code($code));
+        Log::log(OtpLog::level(), 'Queued phone verification code for sending', ['user_id' => $user->id] + OtpLog::code($code));
 
         Queues::dispatchOtp(new SendPhoneVerificationCodeJob($user->id, $code));
 
@@ -39,7 +39,7 @@ class PhoneVerificationService
     {
         $code = SmsCode::issue($user, 'login_verification_code', 'login_verification_code_expire_at', $this->expiryMinutes());
 
-        Log::info('Queued login verification code for sending', ['user_id' => $user->id] + OtpLog::code($code));
+        Log::log(OtpLog::level(), 'Queued login verification code for sending', ['user_id' => $user->id] + OtpLog::code($code));
 
         Queues::dispatchOtp(new SendLoginVerificationCodeJob($user->id, $code));
 

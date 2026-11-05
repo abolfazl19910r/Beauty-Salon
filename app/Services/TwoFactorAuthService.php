@@ -6,6 +6,7 @@ use App\Jobs\Send2faVerificationCodeJob;
 use App\Models\User;
 use App\Support\Auth\SmsCode;
 use App\Support\Queues;
+use App\Support\Sms\OtpLog;
 use Illuminate\Support\Facades\Log;
 
 class TwoFactorAuthService
@@ -21,10 +22,7 @@ class TwoFactorAuthService
         // بررسی امنیتی M1: فقط HMAC کد در users.two_factor_code (SmsCode)
         $code = SmsCode::issue($user, 'two_factor_code', 'two_factor_code_expires_at', $this->timeoutMinutes(), $codeLength);
 
-        Log::info('2FA code generated', [
-            'user_id' => $user->id,
-            'phone' => $user->phone,
-        ]);
+        Log::log(OtpLog::level(), '2FA code generated', ['user_id' => $user->id]);
 
         Queues::dispatchOtp(new Send2faVerificationCodeJob($user->id, $code));
 

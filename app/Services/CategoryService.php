@@ -22,8 +22,6 @@ class CategoryService
                 $category = $this->categoryRepository->update($category, ['order' => $maxOrder + 1]);
             }
 
-            Log::info('دسته‌بندی جدید ایجاد شد', ['category_id' => $category->id]);
-
             return $category;
         });
     }
@@ -39,8 +37,6 @@ class CategoryService
             }
 
             $category = $this->categoryRepository->update($category, $data);
-
-            Log::info('دسته‌بندی به‌روزرسانی شد', ['category_id' => $category->id]);
 
             return $category->fresh();
         });
@@ -58,7 +54,6 @@ class CategoryService
     public function delete(Category $category): bool
     {
         return DB::transaction(function () use ($category) {
-            Log::info('دسته‌بندی حذف شد', ['category_id' => $category->id]);
 
             return $this->categoryRepository->delete($category);
         });
@@ -84,7 +79,6 @@ class CategoryService
             }
 
             DB::commit();
-            Log::info('دسته‌بندی‌ها مجددا مرتب‌سازی شدند');
 
             return true;
         } catch (\Exception $e) {

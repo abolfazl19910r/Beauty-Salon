@@ -76,7 +76,7 @@ class ProcessWithdrawalJob implements ShouldQueue
             // If between dispatch and Job execution, the request has been finalized from another path (manual approval/rejection),
             // Do nothing here — prevents double processing or overriding of the previous result.
             if ($withdrawalRequest->status !== 'processing') {
-                Log::channel('payments')->info('ProcessWithdrawalJob: درخواست دیگر processing نیست، از پردازش صرف‌نظر شد', [
+                Log::channel('payments')->debug('ProcessWithdrawalJob: درخواست دیگر processing نیست، از پردازش صرف‌نظر شد', [
                     'withdrawal_request_id' => $withdrawalRequest->id,
                     'current_status' => $withdrawalRequest->status,
                 ]);

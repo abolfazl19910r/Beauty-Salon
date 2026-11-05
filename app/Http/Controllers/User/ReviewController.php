@@ -39,7 +39,7 @@ class ReviewController extends Controller
 
             if (! $reviewToken) {
                 Log::channel('security')->warning('❌ Token not found or invalid', [
-                    'token' => $token,
+                    'token' => \App\Support\Logging\PersonalData::fingerprint($token),
                 ]);
 
                 return redirect()->route('home')
@@ -62,7 +62,7 @@ class ReviewController extends Controller
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             Log::error('❌ Booking not found', [
-                'token' => $request->query('token'),
+                'token' => \App\Support\Logging\PersonalData::fingerprint($request->query('token')),
                 'error' => $e->getMessage(),
             ]);
 

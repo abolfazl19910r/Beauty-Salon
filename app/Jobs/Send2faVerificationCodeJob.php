@@ -54,7 +54,6 @@ class Send2faVerificationCodeJob implements OtpJob, ShouldQueue
         if (! $result) {
             Log::error('Send2faVerificationCodeJob: failed to send 2FA verification code', [
                 'user_id' => $user->id,
-                'phone' => $user->phone,
             ]);
         }
     }

@@ -45,7 +45,7 @@ class SendWithdrawalApprovedNotification implements ShouldQueue
                 ->exists();
 
             if ($alreadySent) {
-                Log::info('نوتیفیکیشن تایید برداشت قبلاً برای این درخواست ارسال شده بود؛ از ارسال دوباره صرف‌نظر شد.', [
+                Log::debug('نوتیفیکیشن تایید برداشت قبلاً برای این درخواست ارسال شده بود؛ از ارسال دوباره صرف‌نظر شد.', [
                     'withdrawal_request_id' => $withdrawalRequest->id,
                 ]);
 

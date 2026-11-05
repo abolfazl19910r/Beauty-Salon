@@ -41,7 +41,7 @@ class CustomerRegistrationService extends SmsCodeChallenge
 
     protected function deliver(array $data, string $code): void
     {
-        Log::info('Queued customer registration code', ['phone' => $data['phone'], 'salon_id' => $data['salon_id']] + OtpLog::code($code));
+        Log::log(OtpLog::level(), 'Queued customer registration code', ['phone' => $data['phone'], 'salon_id' => $data['salon_id']] + OtpLog::code($code));
         Queues::dispatchOtp(new SendRegistrationCodeJob($data['phone'], $code, (int) $data['salon_id']));
     }
 

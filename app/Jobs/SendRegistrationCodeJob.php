@@ -42,7 +42,7 @@ class SendRegistrationCodeJob implements OtpJob, ShouldQueue
         $sent = $smsService->sendAuthTemplate($this->phone, config('services.kavenegar.templates.register_verify'), [$this->code], $this->salonId);
 
         if (! $sent) {
-            Log::error('SendRegistrationCodeJob: failed to send the registration code', ['phone' => $this->phone, 'salon_id' => $this->salonId]);
+            Log::error('SendRegistrationCodeJob: failed to send the registration code', ['phone' => \App\Support\Logging\PersonalData::phone($this->phone), 'salon_id' => $this->salonId]);
         }
     }
 }

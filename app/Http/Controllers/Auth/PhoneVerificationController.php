@@ -91,7 +91,7 @@ class PhoneVerificationController extends Controller
         try {
             $this->phoneVerificationService->sendCode(auth()->user());
 
-            Log::info('Phone verification code resent', [
+            Log::debug('Phone verification code resent', [
                 'user_id' => auth()->id(),
             ]);
 

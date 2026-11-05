@@ -45,7 +45,7 @@ class SalonSignupChallenge extends SmsCodeChallenge
 
     protected function deliver(array $data, string $code): void
     {
-        Log::info('Queued salon signup code', ['phone' => $data['phone']] + OtpLog::code($code));
+        Log::log(OtpLog::level(), 'Queued salon signup code', ['phone' => $data['phone']] + OtpLog::code($code));
         Queues::dispatchOtp(new SendRegistrationCodeJob($data['phone'], $code, null));
     }
 

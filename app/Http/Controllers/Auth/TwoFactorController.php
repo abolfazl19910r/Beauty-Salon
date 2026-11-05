@@ -49,10 +49,6 @@ class TwoFactorController extends Controller
             if ($this->twoFactorService->verify(auth()->user(), $request->code)) {
                 $this->twoFactorService->enable(auth()->user());
 
-                Log::info('2FA enabled', [
-                    'user_id' => auth()->id(),
-                ]);
-
                 return response()->json([
                     'message' => 'احراز هویت دو مرحله‌ای با موفقیت فعال شد.',
                 ]);
@@ -85,10 +81,6 @@ class TwoFactorController extends Controller
 
             if ($this->twoFactorService->verify(auth()->user(), $request->code)) {
                 $this->twoFactorService->disable(auth()->user());
-
-                Log::info('2FA disabled', [
-                    'user_id' => auth()->id(),
-                ]);
 
                 return response()->json([
                     'message' => 'احراز هویت دو مرحله‌ای غیرفعال شد.',
@@ -123,10 +115,6 @@ class TwoFactorController extends Controller
             if ($this->twoFactorService->verify(auth()->user(), $request->code)) {
                 session(['2fa_verified' => true]);
 
-                Log::info('2FA verification successful', [
-                    'user_id' => auth()->id(),
-                ]);
-
                 return response()->json([
                     'message' => 'کد تایید شد.',
                 ]);
@@ -155,7 +143,7 @@ class TwoFactorController extends Controller
         try {
             $code = $this->twoFactorService->generateCode(auth()->user());
 
-            Log::info('2FA code resent', [
+            Log::debug('2FA code resent', [
                 'user_id' => auth()->id(),
             ]);
 
