@@ -85,7 +85,7 @@
         </p>
         <form method="POST" action="{{ route('superadmin.settings.push') }}" class="flex flex-wrap items-end gap-3"
               @if ($push['live_confirm']) data-live-confirm="{{ $push['live_confirm'] }}"
-              onsubmit="return this.mode.value !== 'live' || confirm(this.dataset.liveConfirm);" @endif>
+              data-ui-submit="confirmLivePush" @endif>
             @csrf
             @method('PUT')
             <div class="grow">
@@ -184,7 +184,7 @@
                 <div class="flex items-center gap-4">
                     <button type="submit" class="sa-btn">ذخیره</button>
                     @if (($bot['sources'][$key] ?? null) === 'panel')
-                        <button type="submit" name="remove" value="1" class="text-sm" style="color: var(--sa-danger);" onclick="return confirm('توکن پنل حذف شود؟ (مقدار .env به کار می‌رود)')">حذف توکن پنل</button>
+                        <button type="submit" name="remove" value="1" class="text-sm" style="color: var(--sa-danger);" data-ui-confirm="توکن پنل حذف شود؟ (مقدار .env به کار می‌رود)">حذف توکن پنل</button>
                     @endif
                 </div>
             </form>
@@ -194,3 +194,12 @@
     </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script @nonce>
+        // H3 مرحله‌ی ۲ (جای onsubmit درون‌خطی): رفتن به حالت «live» پوش تأیید می‌خواهد
+        uiActions.register({
+            confirmLivePush: function () { return this.mode.value !== 'live' || confirm(this.dataset.liveConfirm); },
+        });
+    </script>
+@endpush

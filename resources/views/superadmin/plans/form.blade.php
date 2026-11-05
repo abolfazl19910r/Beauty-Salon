@@ -125,7 +125,7 @@
     </form>
 
     @if ($plan->exists && $salonCount === 0 && ! $plan->is_trial)
-        <form method="POST" action="{{ route('superadmin.plans.destroy', $plan) }}" class="mt-6" onsubmit="return confirm('این پلن حذف شود؟');">
+        <form method="POST" action="{{ route('superadmin.plans.destroy', $plan) }}" class="mt-6" data-ui-confirm="این پلن حذف شود؟">
             @csrf
             @method('DELETE')
             <button type="submit" class="text-sm" style="color: var(--sa-danger);">حذف پلن</button>

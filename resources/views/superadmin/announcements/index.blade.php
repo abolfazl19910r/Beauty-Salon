@@ -34,7 +34,7 @@
                     </td>
                     <td class="py-3 px-4 whitespace-nowrap">
                         <a href="{{ route('superadmin.announcements.edit', $a) }}" style="color: var(--sa-accent);">ویرایش</a>
-                        <form method="POST" action="{{ route('superadmin.announcements.destroy', $a) }}" class="inline mr-3" onsubmit="return confirm('این اطلاعیه حذف شود؟')">
+                        <form method="POST" action="{{ route('superadmin.announcements.destroy', $a) }}" class="inline mr-3" data-ui-confirm="این اطلاعیه حذف شود؟">
                             @csrf
                             @method('DELETE')
                             <button type="submit" style="color: var(--sa-danger);">حذف</button>

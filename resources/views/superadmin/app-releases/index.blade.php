@@ -100,7 +100,7 @@
                                         </form>
                                     </td>
                                     <td class="py-2 px-2">
-                                        <form method="POST" action="{{ route('superadmin.app-releases.destroy', $release) }}" onsubmit="return confirm('این نسخه و فایلش حذف شود؟')">
+                                        <form method="POST" action="{{ route('superadmin.app-releases.destroy', $release) }}" data-ui-confirm="این نسخه و فایلش حذف شود؟">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" style="color: var(--sa-danger);">حذف</button>

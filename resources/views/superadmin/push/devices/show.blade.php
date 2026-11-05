@@ -71,7 +71,7 @@
             <div style="border-top: 1px solid var(--sa-border);" class="pt-4">
                 <h3 class="font-bold mb-2">خروج این دستگاه</h3>
                 <p class="text-xs mb-3" style="color: var(--sa-text-dim);">نشست اپ روی این گوشی باطل می‌شود (مثلاً گوشی گم شده) و کاربر باید دوباره با رمز و کد وارد شود. حساب و داده‌ها دست نمی‌خورند.</p>
-                <form method="POST" action="{{ route('superadmin.push.devices.sign-out', $device) }}" onsubmit="return confirm('این گوشی از اپ خارج شود؟');">
+                <form method="POST" action="{{ route('superadmin.push.devices.sign-out', $device) }}" data-ui-confirm="این گوشی از اپ خارج شود؟">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="w-full rounded-lg py-2 font-bold" style="border: 1px solid var(--sa-danger); color: var(--sa-danger);">خروج از اپ روی این گوشی</button>
