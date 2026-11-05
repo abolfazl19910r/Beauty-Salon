@@ -405,6 +405,21 @@ class DockerSetupTest extends TestCase
         $this->assertStringContainsString('/en/ips.txt', self::file('deploy/single/arvan-ips.sh'));
     }
 
+    public function test_deploy_env_files_log_at_info_and_never_unmask_or_drop_security_logs(): void
+    {
+        // بررسی لاگ‌ها ۲۰۲۶-۱۱-۰۵ (docs/deployment/LOGGING.md): پیش‌فرض کد LOG_LEVEL=debug است؛ .env.docker (شش‌سرویسی، production)
+        // هیچ خط LOG نداشت ← خط‌های روزمره‌ی debug روی سرور
+        foreach (['.env.server.example', '.env.single.example', '.env.docker'] as $file) {
+            $env = self::file($file);
+            $this->assertMatchesRegularExpression('/^LOG_LEVEL=info\s*$/m', $env, $file);
+            $this->assertDoesNotMatchRegularExpression('/^LOG_MASK_PERSONAL_DATA=\s*(false|0|off)/mi', $env, $file);
+            $this->assertDoesNotMatchRegularExpression('/^SECURITY_LOG_LEVEL=\s*(warning|error)/mi', $env, $file);
+        }
+        // پیش‌فرض TRUSTED_PROXIES در کد none است (بسته‌ی مجوز)، نه cloudflare
+        $this->assertStringNotContainsString('پیش‌فرض cloudflare', self::file('.env.docker'));
+        $this->assertStringContainsString('payments-', self::file('.env.server.example'));
+    }
+
     public function test_the_single_container_backs_up_database_files_and_app_key_every_night(): void
     {
         $conf = self::file('docker/single/supervisord.conf');
