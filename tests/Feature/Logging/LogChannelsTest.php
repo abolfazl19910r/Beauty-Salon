@@ -3,6 +3,8 @@
 namespace Tests\Feature\Logging;
 
 use App\Logging\MaskPersonalData;
+use App\Logging\MirrorToDefaultChannel;
+use App\Services\SecurityLogService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -78,5 +80,51 @@ class LogChannelsTest extends TestCase
         Log::channel('single')->info('to 09121234567');
 
         $this->assertStringContainsString('09121234567', $this->read('laravel.log'));
+    }
+
+    public function test_security_log_keeps_info_events_raw_and_mirrors_warnings_masked(): void
+    {
+        $this->assertSame('info', config('logging.channels.security.level'), 'پیش‌تر warning بود و «ورود موفق» و «تغییر پروفایل» هیچ‌وقت در security.log نمی‌نشست');
+        $this->assertContains(MirrorToDefaultChannel::class.':warning', config('logging.channels.security.tap', []));
+        config(['logging.channels.security.level' => 'info']);
+        Log::forgetChannel('security');
+
+        Log::channel('security')->info('Successful login', ['username' => '09121234567']);
+        Log::channel('security')->warning('Failed login attempt', ['username' => '09351230011']);
+
+        $security = $this->read('security.log');
+        $this->assertStringContainsString('Successful login', $security);
+        $this->assertStringContainsString('09121234567', $security, 'مدرک ماده‌ی ۶۶۸: خام');
+        $this->assertStringContainsString('09351230011', $security);
+
+        $general = $this->read('laravel.log');
+        $this->assertStringContainsString('Failed login attempt', $general);
+        $this->assertStringContainsString('0935***0011', $general);
+        $this->assertStringNotContainsString('Successful login', $general, 'info فقط در فایل خودش');
+    }
+
+    public function test_payment_warnings_are_kept_in_payments_log_and_shown_in_the_general_log(): void
+    {
+        $this->assertContains(MirrorToDefaultChannel::class.':warning', config('logging.channels.payments.tap', []));
+        $this->assertSame(365, config('logging.channels.payments.days'));
+
+        Log::channel('payments')->info('Successful payment', ['authority' => 'A0001']);
+        Log::channel('payments')->warning('Payment needs a human', ['transaction_id' => 5]);
+
+        $this->assertStringContainsString('Successful payment', $this->read('payments.log'));
+        $this->assertStringContainsString('Payment needs a human', $this->read('payments.log'));
+        $this->assertStringContainsString('payments.WARNING: Payment needs a human', $this->read('laravel.log'));
+        $this->assertStringNotContainsString('Successful payment', $this->read('laravel.log'));
+    }
+
+    public function test_failed_payment_attempt_is_written_to_the_payments_log(): void
+    {
+        $this->actingAs(\App\Models\User::factory()->create());
+
+        app(SecurityLogService::class)->logPaymentAttempt('PAY-1', 250000, false, ['reason' => 'expired']);
+
+        // پیش‌تر: info روی کانال security با سطح warning ← هیچ‌جا نوشته نمی‌شد
+        $this->assertStringContainsString('Failed payment attempt', $this->read('payments.log'));
+        $this->assertStringContainsString('PAY-1', $this->read('payments.log'));
     }
 }

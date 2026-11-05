@@ -1,6 +1,7 @@
 <?php
 
 use App\Logging\MaskPersonalData;
+use App\Logging\MirrorToDefaultChannel;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -106,7 +107,12 @@ return [
         'security' => [
             'driver' => 'daily',
             'path' => storage_path('logs/security.log'),
-            'level' => env('SECURITY_LOG_LEVEL') ?: 'warning',
+            // نام کانال در هر خط (security.WARNING) — نسخه‌ی تکراری‌اش در laravel.log معلوم باشد از کجا آمده
+            'name' => 'security',
+            // پیش‌تر warning بود: «ورود موفق» و «تغییر پروفایل» (info) هیچ‌وقت در فایل نمی‌نشست (بررسی لاگ‌ها ۲۰۲۶-۱۱-۰۵)
+            'level' => env('SECURITY_LOG_LEVEL') ?: 'info',
+            // هشدار و خطا در لاگ عمومی (laravel.log، docker logs) هم — ماسک‌شده؛ نسخه‌ی کامل همین‌جا
+            'tap' => [MirrorToDefaultChannel::class.':warning'],
             // ⭐ بسته‌ی مجوز 5د: پیش‌تر ۹۰ روز؛ IP و هویت دست‌کم شش ماه (config/retention.php، ماده‌ی ۶۶۸ آیین دادرسی کیفری)
             'days' => max(184, is_numeric(env('SECURITY_LOG_DAYS')) ? (int) env('SECURITY_LOG_DAYS') : (is_numeric(env('RETENTION_DAYS')) ? (int) env('RETENTION_DAYS') : 190)),
         ],
@@ -121,8 +127,10 @@ return [
         'payments' => [
             'driver' => 'daily',
             'path' => storage_path('logs/payments.log'),
+            'name' => 'payments',
             'level' => env('PAYMENTS_LOG_LEVEL') ?: 'info',
             'days' => 365,
+            'tap' => [MirrorToDefaultChannel::class.':warning'],
         ],
     ],
 

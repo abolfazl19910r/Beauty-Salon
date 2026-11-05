@@ -81,7 +81,9 @@ class SecurityLogService
             'timestamp' => now(),
         ], $details);
 
-        Log::channel($success ? 'payments' : 'security')->info(
+        // هر دو در payments.log (۳۶۵ روز). پیش‌تر ناموفق‌ها info روی کانال security با سطح warning بودند و هیچ‌جا نوشته نمی‌شدند.
+        Log::channel('payments')->log(
+            $success ? 'info' : 'warning',
             $success ? 'Successful payment' : 'Failed payment attempt',
             $data
         );
