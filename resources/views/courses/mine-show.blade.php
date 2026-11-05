@@ -50,7 +50,7 @@
             <p class="text-sm leading-7" style="{{ $dim }}">{{ \App\Support\Courses\PhotoConsent::TEXT }}</p>
             @if ($course->hasPhotoConsent())
                 <p class="text-sm mt-3 persian-number">رضایت شما در {{ verta($course->photo_consent_at)->format('Y/m/d') }} ثبت شد.</p>
-                <form method="POST" action="{{ route('my-courses.consent.withdraw', $course) }}" class="mt-2" onsubmit="return confirm('رضایت پس گرفته شود؟ از این به بعد عکسی گرفته نمی‌شود.');">
+                <form method="POST" action="{{ route('my-courses.consent.withdraw', $course) }}" class="mt-2" data-ui-confirm="رضایت پس گرفته شود؟ از این به بعد عکسی گرفته نمی‌شود.">
                     @csrf
                     <button type="submit" class="text-sm underline" style="color: #FCA5A5;">پس گرفتن رضایت</button>
                 </form>
@@ -97,7 +97,7 @@
                                     <a href="{{ route('my-courses.photos.show', [$course, $photo]) }}" target="_blank">
                                         <img src="{{ route('my-courses.photos.show', [$course, $photo]) }}" alt="عکس {{ \App\Models\CourseSessionPhoto::KINDS[$photo->kind] ?? '' }}" class="w-20 h-20 object-cover rounded-lg" loading="lazy">
                                     </a>
-                                    <form method="POST" action="{{ route('my-courses.photos.destroy', [$course, $photo]) }}" onsubmit="return confirm('این عکس برای همیشه حذف شود؟');">
+                                    <form method="POST" action="{{ route('my-courses.photos.destroy', [$course, $photo]) }}" data-ui-confirm="این عکس برای همیشه حذف شود؟">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="text-xs mt-1" style="color: #FCA5A5;">{{ \App\Models\CourseSessionPhoto::KINDS[$photo->kind] ?? '' }} · حذف</button>
                                     </form>

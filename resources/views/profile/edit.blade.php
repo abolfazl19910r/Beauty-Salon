@@ -65,7 +65,7 @@
                             <p class="text-xs text-m-ok mt-1">ذخیره شد</p>
                         @endif
                     </label>
-                    <input id="marketing_sms" type="checkbox" name="marketing_sms" value="1" onchange="this.form.submit()"
+                    <input id="marketing_sms" type="checkbox" name="marketing_sms" value="1" data-ui-autosubmit
                            class="w-5 h-5 rounded" style="accent-color:rgb(var(--m-gold))" @checked(auth()->user()->marketing_sms_opted_out_at === null)>
                     <noscript><button type="submit" class="text-xs text-m-gold2">ذخیره</button></noscript>
                 </form>

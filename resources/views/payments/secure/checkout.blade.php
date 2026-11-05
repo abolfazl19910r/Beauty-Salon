@@ -62,7 +62,7 @@
 
         <div id="checkout-message" class="hidden mb-4 text-sm rounded-xl p-3"></div>
 
-        <button id="start-payment-btn" onclick="startSecurePayment()"
+        <button id="start-payment-btn" data-ui-click="startSecurePayment"
                 class="secure-btn w-full py-3.5 rounded-xl text-sm font-bold transition-all hover:shadow-lg hover:shadow-[#C9A24B]/30">
             <span id="start-payment-text">شروع پرداخت امن</span>
         </button>
@@ -75,6 +75,8 @@
     </div>
 
     <script @nonce>
+        uiActions.register({ startSecurePayment: function () { startSecurePayment(); } });
+
         function startSecurePayment() {
             const btn = document.getElementById('start-payment-btn');
             const text = document.getElementById('start-payment-text');

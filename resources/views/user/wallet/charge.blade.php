@@ -57,7 +57,7 @@
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                         @foreach($suggestedAmounts as $suggested)
                             <button type="button"
-                                    onclick="selectAmount({{ $suggested }}, this)"
+                                    data-ui-click="selectAmount" data-ui-args="[{{ (int) $suggested }}]"
                                     class="amount-btn p-4 rounded-xl transition-all text-center"
                                     style="border: 1px solid rgb(var(--m-gold) / 0.3); background-color: rgb(var(--m-gold) / 0.05);">
                                 <div class="text-xl font-bold persian-number" style="color: var(--rasta-cream);">
@@ -84,7 +84,7 @@
                                       border: 1px solid {{ $errors->has('amount') ? '#ef4444' : 'rgb(var(--m-gold) / 0.3)' }};
                                       color: var(--rasta-cream);"
                                value="{{ old('amount') }}"
-                               oninput="formatAmountInput(this)">
+                               data-ui-input="formatAmountInput">
                         <div class="absolute left-4 top-1/2 -translate-y-1/2" style="color: var(--rasta-gold); opacity: 0.6;">
                             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -212,6 +212,11 @@
     </div>
 
     <script @nonce>
+        uiActions.register({
+            selectAmount: function (event, amount) { selectAmount(amount, this); },
+            formatAmountInput: function () { formatAmountInput(this); },
+        });
+
         const currentBalance = {{ $wallet->balance }};
         const MIN_AMOUNT = 10000;
         const MAX_AMOUNT = 50000000;

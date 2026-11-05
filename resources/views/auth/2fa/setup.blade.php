@@ -31,7 +31,7 @@
 
             <div id="setup-message" class="hidden mt-4 text-sm text-center rounded-xl p-3"></div>
 
-            <button id="enable-btn" onclick="submitEnable()"
+            <button id="enable-btn" data-ui-click="submitEnable"
                     class="w-full mt-5 py-3 rounded-lg font-semibold text-sm transition-all duration-300
                        bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-m-ongold
                        hover:shadow-lg hover:shadow-[#C9A24B]/30 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -39,7 +39,7 @@
             </button>
 
             <div class="text-center mt-3">
-                <button onclick="resendCode()" id="resend-btn" class="text-sm text-m-gold2/70 hover:text-m-gold2 transition-colors">
+                <button data-ui-click="resendCode" id="resend-btn" class="text-sm text-m-gold2/70 hover:text-m-gold2 transition-colors">
                     ارسال مجدد کد
                 </button>
             </div>
@@ -47,6 +47,11 @@
     </div>
 
     <script @nonce>
+        uiActions.register({
+            submitEnable: function () { submitEnable(); },
+            resendCode: function () { resendCode(); },
+        });
+
         const enableUrl = '{{ route('security.2fa.enable') }}';
         const resendUrl = '{{ route('security.2fa.resend') }}';
         const csrfToken = '{{ csrf_token() }}';

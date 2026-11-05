@@ -32,7 +32,7 @@
                 <span id="countdown-timer" class="font-bold text-m-gold2 tabular-nums">02:00</span>
             </div>
 
-            <button id="confirm-btn" onclick="submitOtp()"
+            <button id="confirm-btn" data-ui-click="submitOtp"
                     class="w-full mt-5 py-3 rounded-lg font-semibold text-sm transition-all duration-300
                        bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-m-ongold
                        hover:shadow-lg hover:shadow-[#C9A24B]/30 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -40,7 +40,7 @@
             </button>
 
             <div class="flex items-center justify-center mt-3">
-                <button id="resend-btn" onclick="resendOtp()" disabled
+                <button id="resend-btn" data-ui-click="resendOtp" disabled
                         class="text-sm text-m-gold2/40 cursor-not-allowed transition-colors flex items-center gap-1">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -61,6 +61,11 @@
     </div>
 
     <script @nonce>
+        uiActions.register({
+            submitOtp: function () { submitOtp(); },
+            resendOtp: function () { resendOtp(); },
+        });
+
         const verifyUrl = '{{ route('verification.verify') }}';
         const resendUrl = '{{ route('verification.resend') }}';
         const fallbackUrl = '{{ url('/dashboard') }}';

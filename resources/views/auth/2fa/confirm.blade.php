@@ -20,7 +20,7 @@
                 <p class="text-sm text-m-tx/60 mb-4 text-center">
                     برای دریافت کد تایید، روی دکمه‌ی زیر بزنید.
                 </p>
-                <button onclick="requestCode()" id="request-code-btn"
+                <button data-ui-click="requestCode" id="request-code-btn"
                         class="w-full py-3 rounded-lg font-semibold text-sm transition-all duration-300
                            bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-m-ongold
                            hover:shadow-lg hover:shadow-[#C9A24B]/30">
@@ -35,7 +35,7 @@
                     @endfor
                 </div>
 
-                <button onclick="submitCode()" id="confirm-btn"
+                <button data-ui-click="submitCode" id="confirm-btn"
                         class="w-full mt-5 py-3 rounded-lg font-semibold text-sm transition-all duration-300
                            bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-m-ongold
                            hover:shadow-lg hover:shadow-[#C9A24B]/30 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -48,6 +48,11 @@
     </div>
 
     <script @nonce>
+        uiActions.register({
+            requestCode: function () { requestCode(); },
+            submitCode: function () { submitCode(); },
+        });
+
         const verifyUrl = '{{ route('security.2fa.verify') }}';
         const resendUrl = '{{ route('security.2fa.resend') }}';
         const csrfToken = '{{ csrf_token() }}';

@@ -93,7 +93,7 @@
                                     · باقیمانده: {{ $code->max_uses - $code->used_count }} بار
                                 </p>
                             </div>
-                            <button onclick="copyCode('{{ $code->code }}')"
+                            <button data-ui-click="copyCode" data-ui-args="{{ json_encode([$code->code]) }}"
                                     class="w-9 h-9 rounded-xl bg-m-ok/15 flex items-center justify-center text-m-ok hover:bg-m-ok/25 transition-colors">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
@@ -139,7 +139,7 @@
                                 <div class="shrink-0">
                                     @if($available)
                                         <form action="{{ route('loyalty.redeem', $reward) }}" method="POST"
-                                              onsubmit="return confirm('آیا می‌خواهید این پاداش را دریافت کنید؟')">
+                                              data-ui-confirm="آیا می‌خواهید این پاداش را دریافت کنید؟">
                                             @csrf
                                             <button type="submit"
                                                     class="px-4 py-2 rounded-xl text-sm font-semibold transition-all
@@ -196,6 +196,8 @@
     </div>
 
     <script @nonce>
+        uiActions.register({ copyCode: function (event, code) { copyCode(code); } });
+
         function copyCode(code) {
             navigator.clipboard.writeText(code).then(() => {
                 const t = document.createElement('div');

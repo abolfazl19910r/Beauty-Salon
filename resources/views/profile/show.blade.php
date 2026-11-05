@@ -175,7 +175,7 @@
                                                        class="text-m-warn/70 hover:text-m-warn transition-colors">تغییر زمان</a>
                                                     <span class="text-m-gold/30">|</span>
                                                     <form action="{{ route('bookings.cancel', $booking) }}" method="POST" class="inline"
-                                                          onsubmit="return confirm('آیا از لغو نوبت اطمینان دارید؟')">
+                                                          data-ui-confirm="آیا از لغو نوبت اطمینان دارید؟">
                                                         @csrf @method('PUT')
                                                         <button type="submit" class="text-m-bad/70 hover:text-m-bad transition-colors">لغو</button>
                                                     </form>

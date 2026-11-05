@@ -58,7 +58,7 @@
                         <p class="text-sm text-m-tx/60 mb-4">
                             برای غیرفعال‌سازی، ابتدا یک کد تایید برای شماره موبایل شما ارسال می‌شود.
                         </p>
-                        <button onclick="requestDisableCode()" id="request-disable-btn"
+                        <button data-ui-click="requestDisableCode" id="request-disable-btn"
                                 class="px-5 py-2.5 rounded-xl text-sm font-semibold border border-m-bad/30 text-m-bad hover:bg-m-bad/10 transition-colors">
                             <span id="request-disable-text">ارسال کد برای غیرفعال‌سازی</span>
                         </button>
@@ -70,7 +70,7 @@
                             <input type="text" id="disable-code" maxlength="6" inputmode="numeric"
                                    class="flex-1 bg-m-tx/5 border border-m-gold/25 text-m-tx rounded-xl px-4 py-2.5 text-sm tracking-widest text-center"
                                    dir="ltr" placeholder="------">
-                            <button onclick="confirmDisable()" id="confirm-disable-btn"
+                            <button data-ui-click="confirmDisable" id="confirm-disable-btn"
                                     class="px-5 py-2.5 rounded-xl text-sm font-bold bg-m-bad/90 text-white hover:bg-m-bad transition-colors">
                                 غیرفعال‌سازی
                             </button>
@@ -84,6 +84,11 @@
     </div>
 
     <script @nonce>
+        uiActions.register({
+            requestDisableCode: function () { requestDisableCode(); },
+            confirmDisable: function () { confirmDisable(); },
+        });
+
         const resendUrl = '{{ route('security.2fa.resend') }}';
         const disableUrl = '{{ route('security.2fa.disable') }}';
         const csrfToken = '{{ csrf_token() }}';

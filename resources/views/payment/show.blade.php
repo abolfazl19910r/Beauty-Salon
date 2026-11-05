@@ -77,7 +77,7 @@
                 <input type="text" id="discount_code" placeholder="کد تخفیف را وارد کنید"
                        class="flex-1 gold-input"
                        @if($booking->discount_code) value="{{ $booking->discount_code }}" disabled @endif>
-                <button onclick="applyDiscount()" id="apply-discount-btn"
+                <button data-ui-click="applyDiscount" id="apply-discount-btn"
                         @if($booking->discount_code) disabled @endif
                         class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap
                            bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-m-ongold
@@ -111,14 +111,14 @@
                             <p class="text-xl font-bold text-m-ok persian-number">{{ number_format($wallet->balance) }} تومان</p>
                         </div>
                     </div>
-                    <div id="wallet-toggle" class="toggle-switch" onclick="toggleWalletPayment()">
+                    <div id="wallet-toggle" class="toggle-switch" data-ui-click="toggleWalletPayment">
                         <div class="toggle-knob"></div>
                     </div>
                 </div>
 
                 <div id="wallet-options" class="hidden mt-4 space-y-2 border-t border-m-ok/15 pt-4">
                     <label class="wallet-option flex items-center p-3 bg-m-bg/50 rounded-xl">
-                        <input type="radio" name="wallet_option" value="full" class="hidden" onchange="updatePaymentAmount()"
+                        <input type="radio" name="wallet_option" value="full" class="hidden" data-ui-change="updatePaymentAmount"
                             {{ $wallet->balance >= $booking->prepayment_amount ? '' : 'disabled' }}>
                         <span class="opt-indicator w-4 h-4 rounded-full border-2 border-m-tx/30 ml-3 shrink-0"></span>
                         <div class="flex-1">
@@ -136,7 +136,7 @@
 
                     @if($wallet->balance < $booking->prepayment_amount)
                         <label class="wallet-option flex items-center p-3 bg-m-bg/50 rounded-xl">
-                            <input type="radio" name="wallet_option" value="partial" class="hidden" onchange="updatePaymentAmount()">
+                            <input type="radio" name="wallet_option" value="partial" class="hidden" data-ui-change="updatePaymentAmount">
                             <span class="opt-indicator w-4 h-4 rounded-full border-2 border-m-tx/30 ml-3 shrink-0"></span>
                             <div class="flex-1">
                                 <p class="font-medium text-m-tx text-sm">پرداخت ترکیبی</p>
@@ -244,6 +244,12 @@
     </div>
 
     <script @nonce>
+        uiActions.register({
+            applyDiscount: function () { applyDiscount(); },
+            toggleWalletPayment: function () { toggleWalletPayment(); },
+            updatePaymentAmount: function () { updatePaymentAmount(); },
+        });
+
         const bookingId = {{ $booking->id }};
         // ⭐ bookingAmount is the amount actually charged online (gateway/wallet) — a discount code
         // never changes it (see Booking::getRemainingAmountAttribute() / BookingService::

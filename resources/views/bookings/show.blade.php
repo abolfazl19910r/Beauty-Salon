@@ -175,7 +175,7 @@
 
                     @can('cancel', $booking)
                         <form action="{{ route('bookings.cancel', $booking) }}" method="POST"
-                              onsubmit="return confirm('آیا از لغو این نوبت اطمینان دارید؟');">
+                              data-ui-confirm="آیا از لغو این نوبت اطمینان دارید؟">
                             @csrf
                             @method('PUT')
                             <button type="submit"
