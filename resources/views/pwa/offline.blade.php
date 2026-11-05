@@ -23,7 +23,8 @@
     </svg>
     <h1>اتصال به اینترنت برقرار نیست</h1>
     <p>برای دیدن نوبت‌ها و رزرو، اینترنت گوشی را بررسی کنید و دوباره امتحان کنید.</p>
-    <button type="button" onclick="location.reload()">تلاش دوباره</button>
+    <button type="button" data-ui-click="reload">تلاش دوباره</button>
 </main>
+<script @nonce>uiActions.register({ reload: function () { location.reload(); } });</script>
 </body>
 </html>
