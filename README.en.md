@@ -295,6 +295,7 @@ KAVENEGAR_API_KEY=
 KAVENEGAR_SENDER=
 KAVENEGAR_SEND_IN_LOCAL=false      # in local, SMS goes to the log only
 SMS_LOG_ONLY=false                 # true = no real SMS in any environment (even production); text and code only in the log
+LOG_MASK_PERSONAL_DATA=            # empty/true: mobiles and IBANs half-hidden in laravel.log; false for local debugging only (docs/deployment/LOGGING.md)
 KAVENEGAR_SSL_VERIFY=              # empty = verify the TLS certificate (recommended); false only for troubleshooting
 KAVENEGAR_TEMPLATE_LOGIN=          # empty = login-verify
 KAVENEGAR_TEMPLATE_REGISTER=       # empty = register-verify
@@ -655,6 +656,13 @@ Cron and workers: [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCH
 
 Full history, decisions and open items in [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md) (Persian).
 
+**2026-11-05 — full log review (personal data masked, payment and security logs kept)** — details and the complete list: [`docs/deployment/LOGGING.md`](docs/deployment/LOGGING.md) (Persian)
+- **General log is masked:** `laravel-*.log` and `docker logs` show mobiles as `0912***4567` and IBANs half-hidden (also inside SQL error text). `security-*.log` and `payments-*.log` stay raw (Article 668 evidence, bank reconciliation). Local debugging only: `LOG_MASK_PERSONAL_DATA=false`.
+- **No payment or security log is lost after 14 days:** 90 payment/payout/wallet lines now go to `payments-*.log` (365 days) and 19 security lines (wrong or burned codes, blocked code sends, 2FA, review moderation, specialist account linking) to `security-*.log` (190 days); their warnings and errors also appear in the general log (`payments.WARNING: …`).
+- **Two bugs:** the `security` channel defaulted to `warning`, so "successful login"/"profile changed" never reached the file (now `info`); a "failed payment attempt" was written nowhere (now `payments`).
+- **Less and cleaner:** with real sending the SMS text (names, addresses, short links) is no longer logged and the "code queued" lines are debug; in log-only mode (`SMS_LOG_ONLY=true`/local) text and code are visible as before. Seven duplicate or useless lines removed.
+- **After pulling:** only `php artisan optimize:clear` (no migration, no build). Docker: `up -d --build`. If your `.env` sets `SECURITY_LOG_LEVEL=warning`, clear it.
+
 **2026-11-05 — strict CSP for scripts (H3 stage 2; security audit complete)**
 - **No inline `onclick`/`onmouseover`/`onsubmit`/… left in the views:** hovers, confirms, modals, submit-once forms and page buttons use `data-ui-*` attributes and one shared script (`partials/ui-handlers`, in the `<head>` of every layout); pages look and behave the same.
 - **`SECURITY_CSP_STRICT_SCRIPTS` now defaults to `enforce`:** the browser runs only inline scripts carrying the request's nonce (`'unsafe-inline'` removed from `script-src`), so injected script (XSS) no longer runs. If a page breaks: temporarily `SECURITY_CSP_STRICT_SCRIPTS=report` and send `storage/logs/csp-*.log`.
@@ -782,6 +790,7 @@ Most project documents are in Persian.
 | [`docs/deployment/DOCKER_DESKTOP.md`](docs/deployment/DOCKER_DESKTOP.md) | single container on Docker Desktop for Windows |
 | [`docs/deployment/SUBDOMAINS.md`](docs/deployment/SUBDOMAINS.md) | salon subdomains: settings, mechanism, cookie decision |
 | [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCHEDULER_AND_QUEUE.md) | scheduler and queues for every deployment method |
+| [`docs/deployment/LOGGING.md`](docs/deployment/LOGGING.md) | log channels, retention (Article 668), personal-data masking, every log call (Persian) |
 | [`docs/deployment/BACKUP.md`](docs/deployment/BACKUP.md) | backup and restore |
 | [`docs/testing/MANUAL_GATEWAY_TESTING.md`](docs/testing/MANUAL_GATEWAY_TESTING.md) | manual testing of Zibal, Vandar and AsanPardakht |
 

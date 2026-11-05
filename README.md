@@ -296,6 +296,7 @@ KAVENEGAR_API_KEY=
 KAVENEGAR_SENDER=
 KAVENEGAR_SEND_IN_LOCAL=false      # در local پیامک فقط در لاگ
 SMS_LOG_ONLY=false                 # true = در هیچ محیطی (حتی production) پیامک واقعی نمی‌رود؛ متن و کد فقط در لاگ
+LOG_MASK_PERSONAL_DATA=            # خالی/true: موبایل و شبا در laravel.log نصفه؛ false فقط عیب‌یابی لوکال (docs/deployment/LOGGING.md)
 KAVENEGAR_SSL_VERIFY=              # خالی = بررسی گواهی TLS روشن (پیشنهادی)؛ false فقط برای عیب‌یابی
 KAVENEGAR_TEMPLATE_LOGIN=          # خالی = login-verify
 KAVENEGAR_TEMPLATE_REGISTER=       # خالی = register-verify
@@ -663,6 +664,13 @@ php artisan up
 
 تاریخچه‌ی کامل، تصمیم‌ها و قدم‌های باز در [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md).
 
+**۲۰۲۶-۱۱-۰۵ — بررسی همه‌ی لاگ‌ها (ماسک داده‌ی شخصی، لاگ پرداخت و امنیت ماندگار)** — جزئیات و فهرست کامل: [`docs/deployment/LOGGING.md`](docs/deployment/LOGGING.md)
+- **لاگ عمومی ماسک‌شده:** در `laravel-*.log` و `docker logs` شماره‌ی موبایل `0912***4567` و شبا نصفه نوشته می‌شود (حتی داخل متن خطای SQL). `security-*.log` و `payments-*.log` خام می‌مانند (مدرک ماده‌ی ۶۶۸ و تطبیق با بانک). فقط برای عیب‌یابی لوکال: `LOG_MASK_PERSONAL_DATA=false`.
+- **هیچ لاگ پرداخت و امنیتی ۱۴ روزه گم نمی‌شود:** ۹۰ خط پرداخت/تسویه/کیف پول به `payments-*.log` (۳۶۵ روز) و ۱۹ خط امنیتی (کد غلط، کد سوخته، مسدود شدن ارسال کد، 2FA، نظارت نظرها، پیوند حساب متخصص) به `security-*.log` (۱۹۰ روز) رفتند؛ هشدار و خطای این دو در لاگ عمومی هم دیده می‌شود (`payments.WARNING: …`).
+- **دو باگ:** سطح `security` پیش‌فرض `warning` بود و «ورود موفق»/«تغییر پروفایل» هرگز در فایل نمی‌نشست (حالا `info`)؛ «تلاش پرداخت ناموفق» اصلاً هیچ‌جا نوشته نمی‌شد (حالا `payments`).
+- **کمتر و تمیزتر:** با ارسال واقعی، متن پیامک (نام، نشانی، لینک کوتاه) دیگر در لاگ نیست و خط‌های «کد صف شد» debug‌اند؛ در حالت «فقط لاگ» (`SMS_LOG_ONLY=true`/local) متن و کد مثل قبل دیده می‌شوند. هفت خط تکراری/بی‌فایده حذف شد.
+- **بعد از گرفتن پچ‌ها:** فقط `php artisan optimize:clear` (بی migration، بی build). داکر: `up -d --build`. اگر `SECURITY_LOG_LEVEL=warning` در `.env` دارید، خالی‌اش کنید.
+
 **۲۰۲۶-۱۱-۰۵ — CSP سخت‌گیر برای اسکریپت‌ها (H3 مرحله‌ی ۲؛ بررسی امنیتی کامل شد)**
 - **هیچ `onclick`/`onmouseover`/`onsubmit`/… درون‌خطی در viewها نمانده:** hover، تأییدها (`confirm`)، مودال‌ها، فرم‌های یک‌باره و دکمه‌های صفحه‌ها با صفت‌های `data-ui-*` و یک اسکریپت مشترک (`partials/ui-handlers`، در `<head>` همه‌ی layoutها) کار می‌کنند؛ ظاهر و رفتار صفحه‌ها همان است.
 - **`SECURITY_CSP_STRICT_SCRIPTS` پیش‌فرض `enforce`:** مرورگر فقط اسکریپت‌های درون‌خطی با nonce همان درخواست را اجرا می‌کند (`'unsafe-inline'` از `script-src` برداشته شد)؛ اسکریپت تزریقی (مثل XSS) دیگر اجرا نمی‌شود. اگر صفحه‌ای شکست: موقتاً `SECURITY_CSP_STRICT_SCRIPTS=report` و `storage/logs/csp-*.log` را بفرستید.
@@ -793,6 +801,7 @@ php artisan up
 | [`docs/deployment/DOCKER_DESKTOP.md`](docs/deployment/DOCKER_DESKTOP.md) | اجرای تک‌کانتینری روی Docker Desktop ویندوز |
 | [`docs/deployment/SUBDOMAINS.md`](docs/deployment/SUBDOMAINS.md) | زیردامنه‌ی سالن‌ها: تنظیمات، سازوکار، تصمیم کوکی |
 | [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCHEDULER_AND_QUEUE.md) | زمان‌بندی و صف در همه‌ی روش‌ها |
+| [`docs/deployment/LOGGING.md`](docs/deployment/LOGGING.md) | کانال‌های لاگ، مدت نگهداری (ماده‌ی ۶۶۸)، ماسک داده‌ی شخصی، فهرست همه‌ی لاگ‌ها |
 | [`docs/deployment/BACKUP.md`](docs/deployment/BACKUP.md) | پشتیبان‌گیری و بازگردانی |
 | [`docs/testing/MANUAL_GATEWAY_TESTING.md`](docs/testing/MANUAL_GATEWAY_TESTING.md) | تست دستی زیبال، وندار و آسان‌پرداخت |
 
