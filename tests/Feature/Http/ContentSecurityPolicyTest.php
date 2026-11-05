@@ -83,7 +83,9 @@ class ContentSecurityPolicyTest extends TestCase
 
         $this->assertContains("'self'", $csp['worker-src']);
         $this->assertContains("'self'", $csp['manifest-src']);
-        $this->assertContains("'unsafe-inline'", $csp['script-src'], 'اسکریپت‌های درون‌خطی صفحه‌ها در مرحله‌ی ۱ می‌مانند');
+        // H3 مرحله‌ی ۲: اسکریپت درون‌خطی فقط با nonce (نه 'unsafe-inline')؛ style درون‌خطی همچنان مجاز
+        $this->assertNotEmpty(array_filter($csp['script-src'], fn ($t) => str_starts_with($t, "'nonce-")), 'اسکریپت‌های درون‌خطی با nonce');
+        $this->assertContains("'unsafe-inline'", $csp['style-src']);
         $this->assertContains('data:', $csp['img-src']);
     }
 
@@ -232,11 +234,34 @@ class ContentSecurityPolicyTest extends TestCase
     }
 
     /**
-     * ⭐ بررسی امنیتی ۲۰۲۶-۱۱-۰۴ (H3، مرحله‌ی ۱): پیش‌فرض strict_scripts=report — سیاست اجرایی همان قبلی ('unsafe-inline' تا انتقال
-     * onclick=…)، و یک Report-Only با script-src فقط nonce. همه‌ی <script>های درون‌خطی صفحه nonce همین درخواست را دارند.
+     * ⭐ بررسی امنیتی H3 مرحله‌ی ۲ (۲۰۲۶-۱۱-۰۵): پیش‌فرض strict_scripts=enforce — سیاست اجرایی script-src فقط nonce، بی
+     * 'unsafe-inline' و بی هدر Report-Only دوم؛ همه‌ی <script>های درون‌خطی nonce همین درخواست را دارند.
+     */
+    public function test_scripts_are_nonce_only_and_enforced_by_default(): void
+    {
+        $response = $this->get('/')->assertOk();
+
+        $response->assertHeaderMissing('Content-Security-Policy-Report-Only');
+        $csp = self::parse((string) $response->headers->get('Content-Security-Policy'));
+        $this->assertNotContains("'unsafe-inline'", $csp['script-src']);
+        $nonces = array_values(array_filter($csp['script-src'], fn ($t) => str_starts_with($t, "'nonce-")));
+        $this->assertCount(1, $nonces);
+
+        $nonce = substr($nonces[0], 7, -1);
+        preg_match_all('/<script(?![^>]*\bsrc=)([^>]*)>/i', (string) $response->getContent(), $inline);
+        $this->assertNotEmpty($inline[1]);
+        foreach ($inline[1] as $attrs) {
+            $this->assertStringContainsString('nonce="'.$nonce.'"', $attrs, 'اسکریپت درون‌خطی بی nonce');
+        }
+    }
+
+    /**
+     * مرحله‌ی ۱ (۲۰۲۶-۱۱-۰۴) — حالا راه برگشت موقت (SECURITY_CSP_STRICT_SCRIPTS=report): سیاست اجرایی قبلی ('unsafe-inline')
+     * و یک Report-Only با script-src فقط nonce. همه‌ی <script>های درون‌خطی صفحه nonce همین درخواست را دارند.
      */
     public function test_a_strict_nonce_policy_reports_alongside_the_enforced_one(): void
     {
+        config(['security.csp.strict_scripts' => 'report']);
         $response = $this->get('/')->assertOk();
 
         $enforced = self::parse((string) $response->headers->get('Content-Security-Policy'));
@@ -261,10 +286,10 @@ class ContentSecurityPolicyTest extends TestCase
 
     public function test_each_request_gets_a_fresh_nonce(): void
     {
-        $a = (string) $this->get('/')->headers->get('Content-Security-Policy-Report-Only');
+        $a = (string) $this->get('/')->headers->get('Content-Security-Policy');
         $this->app->forgetInstance(\Illuminate\Foundation\Vite::class);
         \Illuminate\Support\Facades\Vite::clearResolvedInstance(\Illuminate\Foundation\Vite::class);
-        $b = (string) $this->get('/')->headers->get('Content-Security-Policy-Report-Only');
+        $b = (string) $this->get('/')->headers->get('Content-Security-Policy');
 
         preg_match("/'nonce-([^']+)'/", $a, $na);
         preg_match("/'nonce-([^']+)'/", $b, $nb);

@@ -35,9 +35,10 @@ return [
         // ⭐ ۲۰۲۶-۱۰-۳۱ (تصمیم ابوالفضل): پیش‌فرض enforce — در Report-Only آزمون‌های دستی لوکال هیچ گزارشی ثبت نشد
         'mode' => in_array(env('SECURITY_CSP'), ['off', 'report', 'enforce'], true) ? env('SECURITY_CSP') : 'enforce',
 
-        // ⭐ بررسی امنیتی H3 (۲۰۲۶-۱۱-۰۴): script-src بی 'unsafe-inline' (فقط nonce هر درخواست). report = سیاست سخت‌گیر فقط گزارش می‌دهد
-        // (کنار سیاست اجرایی فعلی)؛ enforce فقط بعد از انتقال onclick/onmouseover=… صفحه‌ها به فایل JS (مرحله‌ی ۲). off = مثل قبل.
-        'strict_scripts' => in_array(env('SECURITY_CSP_STRICT_SCRIPTS'), ['off', 'report', 'enforce'], true) ? env('SECURITY_CSP_STRICT_SCRIPTS') : 'report',
+        // ⭐ بررسی امنیتی H3: script-src بی 'unsafe-inline' (فقط nonce هر درخواست). از ۲۰۲۶-۱۱-۰۵ (مرحله‌ی ۲: هیچ handler درون‌خطی در
+        // viewها نمانده — InlineEventHandlersTest) پیش‌فرض enforce. report = سیاست سخت‌گیر فقط گزارش می‌دهد (کنار سیاست اجرایی قبلی با
+        // 'unsafe-inline') — راه برگشت موقت اگر صفحه‌ای شکست؛ off = بی nonce، مثل پیش از H3.
+        'strict_scripts' => in_array(env('SECURITY_CSP_STRICT_SCRIPTS'), ['off', 'report', 'enforce'], true) ? env('SECURITY_CSP_STRICT_SCRIPTS') : 'enforce',
 
         // لوگوی اینماد: کد پنل اینماد اسکریپت یا تصویر از همین میزبان است و لینکش به trustseal.enamad.ir می‌رود
         'enamad_hosts' => ['https://trustseal.enamad.ir', 'https://*.enamad.ir'],

@@ -13,10 +13,11 @@ use Illuminate\Support\Facades\Vite;
  * خود سایت، اینماد و (در توسعه) سرور Vite؛ ارسال فرم فقط به خود سایت و درگاه‌های پرداخت؛ frame فقط خود سایت؛ object هیچ.
  *
  * ⭐ بررسی امنیتی ۲۰۲۶-۱۱-۰۴ (H3، مرحله‌ی ۱): «'unsafe-inline'» در script-src یعنی اسکریپت درون‌خطی تزریقی (مثل H1/H2) اجرا می‌شود.
- * هر درخواست یک nonce دارد (Vite::useCspNonce؛ تگ‌های Vite و همه‌ی <script>های درون‌خطی با @nonce). تا وقتی صفحه‌ها هنوز
- * onclick/onmouseover=… دارند، سیاست اجرایی 'unsafe-inline' را نگه می‌دارد (nonce در همان سیاست 'unsafe-inline' را بی‌اثر می‌کرد) و
- * یک سیاست دوم Report-Only با script-src سخت‌گیر (فقط nonce، بی 'unsafe-inline') تخلف‌های باقی‌مانده را به /csp-report می‌فرستد.
- * security.csp.strict_scripts (SECURITY_CSP_STRICT_SCRIPTS): off | report (پیش‌فرض) | enforce — enforce بعد از انتقال همه‌ی handlerها.
+ * هر درخواست یک nonce دارد (Vite::useCspNonce؛ تگ‌های Vite و همه‌ی <script>های درون‌خطی با @nonce). مرحله‌ی ۲ (۲۰۲۶-۱۱-۰۵): همه‌ی
+ * handlerهای درون‌خطی (onclick/onmouseover=…) به data-ui-* و partials/ui-handlers رفتند، پس سیاست اجرایی script-src فقط nonce دارد.
+ * security.csp.strict_scripts (SECURITY_CSP_STRICT_SCRIPTS): enforce (پیش‌فرض) | report (سیاست اجرایی قبلی با 'unsafe-inline' + یک
+ * Report-Only سخت‌گیر؛ راه برگشت موقت) | off. nonce هرگز کنار 'unsafe-inline' در یک سیاست نمی‌آید (آن را بی‌اثر می‌کرد).
+ * view تازه: هیچ on…= یا javascript: (تست InlineEventHandlersTest)؛ <script> درون‌خطی فقط با @nonce.
  *
  * نباید بشکند (تست: ContentSecurityPolicyTest): لوگوی اینماد (اسکریپت، تصویر و لینک trustseal.enamad.ir)، فرم POST خودکار
  * درگاه‌ها (payments/gateway-redirect)، Vite (build و hot)، PWA (sw.js، manifest)، دامنه‌ی مرکزی و ساب‌دامین سالن‌ها.
