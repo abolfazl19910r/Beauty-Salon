@@ -41,7 +41,9 @@
                 var standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
                 var closedAt = 0;
                 try { closedAt = parseInt(localStorage.getItem(key) || '0', 10) || 0; } catch (e) {}
-                if (standalone || Date.now() - closedAt < 30 * 24 * 3600 * 1000) return;
+                // آیفون بنر «افزودن به صفحه‌ی اصلی» خودش را دارد (partials/pwa-client) — دو پیشنهاد هم‌زمان نه
+                var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+                if (standalone || ios || Date.now() - closedAt < 30 * 24 * 3600 * 1000) return;
                 box.hidden = false;
                 box.querySelector('[data-staff-app-promo-close]').addEventListener('click', function () {
                     box.hidden = true;

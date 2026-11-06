@@ -470,10 +470,10 @@ section{padding:110px 0}
 /* apps (۲۰۲۶-۱۱-۰۶) */
 .apps{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
 @media(max-width:760px){.apps{grid-template-columns:1fr}}
-.apps .card{padding:26px}
+.apps .card{padding:26px;display:flex;flex-direction:column;align-items:flex-start}
 .apps h3{font-size:19px;margin:14px 0 6px}
-.apps p{color:var(--mu);font-size:14.5px;line-height:1.9}
-.apps .btn{margin-top:16px}
+.apps p{color:var(--mu);font-size:14.5px;line-height:1.9;margin-bottom:16px}
+.apps .btn{margin-top:auto}
 /* trust strip */
 .trust{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
 @media(max-width:900px){.trust{grid-template-columns:repeat(2,1fr)}}

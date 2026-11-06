@@ -68,7 +68,8 @@ class AppDiscoveryTest extends TestCase
         $this->actingAs($user)->get(route('specialist.my-dashboard'))->assertOk()
             ->assertSee('data-staff-app-promo', false)
             ->assertSee('data-staff-app-menu', false)
-            ->assertSee('ماهرو همکار');
+            ->assertSee('ماهرو همکار')
+            ->assertSee('if (standalone || ios ||', false); // آیفون بنر PWA خودش را دارد (آزمون دستی ۲۰۲۶-۱۱-۰۶)
 
         $this->get(route('specialist.install'))->assertOk()
             ->assertSee('data-specialist-install-desktop', false);
