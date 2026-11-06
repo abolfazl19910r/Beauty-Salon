@@ -141,6 +141,7 @@ All salons share **one database**; isolation is done in the application:
 
 - **Two apps from one Expo codebase** on the orphan branch `mobile-app` of this repository: "Mahru" (customer) and "Mahru Hamkar" (specialists only; the admin panel stays on the web).
 - **No app store:** the APK is uploaded in the super-admin panel ("App releases") and downloaded from `https://arisheh.ir/app`. iPhone: PWA.
+- **Where people find them:** the "Mahru apps" section and footer of the landing page, the staff login page (`/app#staff`), a footer card on every salon page (all devices), a dismissible card on the specialist dashboard plus "Install app" in the user menu, and an "Introduce the apps" card on the admin QR page.
 - Customers enter the app via the salon's link or QR; the app holds one salon at a time. Payment runs in the phone's external browser.
 - **Push:** FCM with delivery receipts; "off / shadow / live" modes in platform settings; in "live", if no receipt arrives within the deadline a fallback SMS is sent. ntfy is planned for international-internet outages.
 - API: see [Routes and APIs](#-routes-and-apis); builds via expo.dev.
