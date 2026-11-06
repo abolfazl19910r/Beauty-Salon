@@ -656,6 +656,8 @@ Cron and workers: [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCH
 
 Full history, decisions and open items in [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md) (Persian).
 
+**2026-11-06 — specialist email optional** — creating or editing a specialist in the admin panel no longer requires an email (the database column is nullable too; after pulling run `php artisan migrate:fresh --seed`). An email that is given must still be valid and unique.
+
 **2026-11-05 — full log review (personal data masked, payment and security logs kept)** — details and the complete list: [`docs/deployment/LOGGING.md`](docs/deployment/LOGGING.md) (Persian)
 - **General log is masked:** `laravel-*.log` and `docker logs` show mobiles as `0912***4567` and IBANs half-hidden (also inside SQL error text). `security-*.log` and `payments-*.log` stay raw (Article 668 evidence, bank reconciliation). Local debugging only: `LOG_MASK_PERSONAL_DATA=false`.
 - **No payment or security log is lost after 14 days:** 90 payment/payout/wallet lines now go to `payments-*.log` (365 days) and 19 security lines (wrong or burned codes, blocked code sends, 2FA, review moderation, specialist account linking) to `security-*.log` (190 days); their warnings and errors also appear in the general log (`payments.WARNING: …`).
