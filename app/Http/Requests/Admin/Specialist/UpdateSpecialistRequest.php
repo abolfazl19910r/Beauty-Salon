@@ -31,7 +31,7 @@ class UpdateSpecialistRequest extends FormRequest
             'photo' => \App\Services\Salon\SpecialistPhotoService::RULES,
             'remove_photo' => ['nullable', 'boolean'],
             'phone' => ['required', 'string', 'max:11', 'unique:specialists,phone,'.$specialistId],
-            'email' => ['required', 'email', 'unique:specialists,email,'.$specialistId],
+            'email' => ['nullable', 'email', 'unique:specialists,email,'.$specialistId],
             'services' => ['required', 'array'],
             'services.*' => ['exists:beauty_services,id'],
             'commission_rate' => ['nullable', 'numeric', 'min:0', new MaxPercentage],

@@ -197,6 +197,46 @@ class AdminSpecialistTest extends TestCase
         $response->assertSessionHas('success');
     }
 
+    /** ۲۰۲۶-۱۱-۰۶: ایمیل متخصص اختیاری است — بیشتر متخصص‌ها ایمیل ندارند (پیش‌تر هم فرم و هم ستون دیتابیس اجباری‌اش می‌کردند) */
+    public function test_store_and_update_work_without_an_email(): void
+    {
+        foreach (['09121110001' => null, '09121110002' => ''] as $phone => $email) {
+            $this->actingAs($this->admin)->post('/admin/specialists', [
+                'name' => 'بی ایمیل',
+                'phone' => $phone,
+                'email' => $email,
+                'services' => [$this->service->id],
+            ])->assertSessionHasNoErrors()->assertRedirect(route('admin.specialists.index'));
+
+            $this->assertNull(Specialist::where('phone', $phone)->value('email'), 'دو متخصص بی ایمیل با هم (unique روی NULL)');
+        }
+
+        $specialist = Specialist::factory()->create(['email' => 'had@example.com']);
+        $this->actingAs($this->admin)->put("/admin/specialists/{$specialist->id}", [
+            'name' => $specialist->name,
+            'phone' => $specialist->phone,
+            'email' => '',
+            'services' => [$this->service->id],
+        ])->assertSessionHasNoErrors()->assertRedirect(route('admin.specialists.index'));
+        $this->assertNull($specialist->fresh()->email, 'ایمیل را می‌شود پاک کرد');
+
+        $this->actingAs($this->admin)->get('/admin/specialists/create')->assertOk()->assertSee('ایمیل (اختیاری)');
+    }
+
+    public function test_an_email_that_is_given_must_still_be_valid_and_unique(): void
+    {
+        Specialist::factory()->create(['email' => 'taken@example.com']);
+
+        foreach (['taken@example.com', 'not-an-email'] as $i => $email) {
+            $this->actingAs($this->admin)->from('/admin/specialists/create')->post('/admin/specialists', [
+                'name' => 'x',
+                'phone' => '0912222000'.$i,
+                'email' => $email,
+                'services' => [$this->service->id],
+            ])->assertSessionHasErrors('email');
+        }
+    }
+
     public function test_destroy_soft_deletes_the_specialist_and_detaches_services(): void
     {
         $specialist = Specialist::factory()->create();

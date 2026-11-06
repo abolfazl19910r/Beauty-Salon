@@ -36,7 +36,8 @@ class StoreSpecialistRequest extends FormRequest
             'photo' => \App\Services\Salon\SpecialistPhotoService::RULES,
             'remove_photo' => ['nullable', 'boolean'],
             'phone' => ['required', 'string', 'max:11', 'unique:specialists,phone'],
-            'email' => ['required', 'email', 'unique:specialists,email'],
+            // ۲۰۲۶-۱۱-۰۶: اختیاری (پیش‌تر required)؛ خالی ← NULL با ConvertEmptyStringsToNull
+            'email' => ['nullable', 'email', 'unique:specialists,email'],
             'services' => ['required', 'array'],
             'services.*' => ['exists:beauty_services,id'],
             'commission_rate' => ['nullable', 'numeric', 'min:0', new MaxPercentage],

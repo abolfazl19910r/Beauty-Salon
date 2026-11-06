@@ -15,7 +15,8 @@ return new class extends Migration
             $table->string('phone');
             $table->string('photo_path')->nullable();
             $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
-            $table->string('email')->unique();
+            // ۲۰۲۶-۱۱-۰۶: اختیاری — بیشتر متخصص‌ها ایمیل ندارند؛ unique چند NULL را می‌پذیرد
+            $table->string('email')->nullable()->unique();
             $table->boolean('auto_confirm_bookings')->default(false);
             $table->decimal('commission_rate', 5, 2)
                 ->nullable()

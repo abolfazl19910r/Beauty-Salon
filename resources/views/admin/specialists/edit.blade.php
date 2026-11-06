@@ -60,7 +60,7 @@
                             @error('initial_password') <p class="form-error">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="form-label">ایمیل</label>
+                            <label class="form-label">ایمیل (اختیاری)</label>
                             <input type="email" name="email" value="{{ old('email', $specialist->email) }}" class="form-input" dir="ltr">
                             @error('email') <p class="form-error">{{ $message }}</p> @enderror
                         </div>
