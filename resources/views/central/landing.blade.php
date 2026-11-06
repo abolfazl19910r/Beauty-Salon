@@ -467,6 +467,13 @@ section{padding:110px 0}
 .pl li.no{color:var(--mu2)}.pl li.no:before{content:"—";color:var(--mu2)}
 .incl{margin-top:26px;text-align:center;color:var(--mu);font-size:14px;display:flex;flex-wrap:wrap;gap:8px 22px;justify-content:center}
 .incl span:before{content:"✦ ";color:var(--gl)}
+/* apps (۲۰۲۶-۱۱-۰۶) */
+.apps{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+@media(max-width:760px){.apps{grid-template-columns:1fr}}
+.apps .card{padding:26px}
+.apps h3{font-size:19px;margin:14px 0 6px}
+.apps p{color:var(--mu);font-size:14.5px;line-height:1.9}
+.apps .btn{margin-top:16px}
 /* trust strip */
 .trust{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
 @media(max-width:900px){.trust{grid-template-columns:repeat(2,1fr)}}
@@ -593,7 +600,7 @@ footer .enamad{margin-top:12px}
 <!-- ============ HEADER ============ -->
 <header id="hd"><div class="wrap nav">
 <a class="brand" href="#top" aria-label="ماهرو — صفحه اصلی"><svg aria-hidden="true"><use href="#mark"/></svg><span>ماهرو<small>MAHRU</small></span></a>
-<nav class="links" aria-label="ناوبری اصلی"><a href="#why">چرا ماهرو</a><a href="#features">امکانات</a><a href="#product">پنل مدیریت</a><a href="#how">نحوه کار</a><a href="#plans">تعرفه‌ها</a><a href="#faq">سؤالات</a></nav>
+<nav class="links" aria-label="ناوبری اصلی"><a href="#why">چرا ماهرو</a><a href="#features">امکانات</a><a href="#product">پنل مدیریت</a><a href="#how">نحوه کار</a><a href="#plans">تعرفه‌ها</a><a href="#apps">اپ</a><a href="#faq">سؤالات</a></nav>
 <div class="nav-cta">
 <button class="icon-btn" id="themeBtn" type="button" aria-label="تغییر به حالت روشن">
 <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
@@ -608,7 +615,7 @@ footer .enamad{margin-top:12px}
 
 <div class="mnav" id="mnav" role="dialog" aria-modal="true" aria-label="منوی موبایل" aria-hidden="true">
 <div class="top"><span class="brand"><svg width="36" height="36" aria-hidden="true"><use href="#mark"/></svg>ماهرو</span><button class="icon-btn" id="mnavX" type="button" aria-label="بستن منو">✕</button></div>
-<a class="m" href="#why">چرا ماهرو</a><a class="m" href="#features">امکانات</a><a class="m" href="#product">پنل مدیریت</a><a class="m" href="#how">نحوه کار</a><a class="m" href="#plans">تعرفه‌ها</a><a class="m" href="#faq">سؤالات</a>
+<a class="m" href="#why">چرا ماهرو</a><a class="m" href="#features">امکانات</a><a class="m" href="#product">پنل مدیریت</a><a class="m" href="#how">نحوه کار</a><a class="m" href="#plans">تعرفه‌ها</a><a class="m" href="#apps">اپ</a><a class="m" href="#faq">سؤالات</a>
 <a class="btn btn-gold btn-block" href="#start">درخواست دمو رایگان</a>
 <a class="btn btn-line btn-block" href="{{ route('salon-signup.create') }}">ساخت سالن</a>
 <a class="btn btn-line btn-block" href="{{ route('my-salons.show') }}">سالن‌های من (مشتری)</a>
@@ -627,7 +634,7 @@ footer .enamad{margin-top:12px}
 <div class="cta"><a class="btn btn-gold" href="{{ route('salon-signup.create') }}">@if ($trialDays > 0)شروع رایگان {{ to_persian_num((string) $trialDays) }} روزه@else ساخت سالن@endif <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></a><a class="btn btn-line" href="#product">دیدن پنل مدیریت</a></div>
 <div class="proof">
 <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>راه‌اندازی در یک روز</span>
-<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>بدون نصب، روی هر دستگاه</span>
+<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>روی هر دستگاه، با اپ اندروید</span>
 <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z"/></svg>پشتیبانی فارسی</span>
 </div>
 </div>
@@ -913,6 +920,16 @@ footer .enamad{margin-top:12px}
 </div></section>
 
 
+<!-- ============ APPS ============ -->
+{{-- ۲۰۲۶-۱۱-۰۶: اپ‌ها فقط از سایت خود ماهرو (App Store/Google Play از ایران ممکن نیست) — باید جایی دیده شوند --}}
+<section id="apps" style="padding-top:0"><div class="wrap">
+<div class="sh rv"><span class="kicker">اپ‌های ماهرو</span><h2>روی گوشی، <span class="gold">یک لمس فاصله</span></h2><p>رزرو با لینک سالن روی هر مرورگری کار می‌کند؛ برای راحتی بیشتر، اپ اندروید هم هست.</p></div>
+<div class="apps">
+<div class="card rv" data-landing-apps-customer><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></div><h3>اپ ماهرو برای مشتری‌ها</h3><p>مشتری با لینک یا QR سالن شما اپ را نصب می‌کند و مستقیم وارد صفحه‌ی همان سالن می‌شود؛ رزرو، یادآوری و سابقه‌ی نوبت‌ها در یک جا. روی آیفون، سایت سالن مثل اپ به صفحه‌ی اصلی اضافه می‌شود.</p><a class="btn btn-line" href="{{ \App\Support\CentralUrl::route('app-download.show') }}">دانلود اپ</a></div>
+<div class="card rv d1" data-landing-apps-staff><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a5.5 5.5 0 0 1 3.5 6"/></svg></div><h3>ماهرو همکار برای متخصص‌ها</h3><p>متخصص‌های سالن نوبت‌های امروز، تقویم و کیف پولشان را در اپ «ماهرو همکار» می‌بینند؛ ورود با همان شماره و رمز پنل، بدون وارد کردن آدرس.</p><a class="btn btn-line" href="{{ \App\Support\CentralUrl::route('app-download.show') }}#staff">دانلود ماهرو همکار</a></div>
+</div>
+</div></section>
+
 <!-- ============ TRUST ============ -->
 <section style="padding-top:0"><div class="wrap"><div class="trust">
 <div class="card rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div><h4>داده‌های جدا برای هر سالن</h4><p>اطلاعات مشتریان هر سالن فقط برای همان سالن قابل دسترس است.</p></div>
@@ -926,7 +943,7 @@ footer .enamad{margin-top:12px}
 <div class="sh rv"><span class="kicker">پرسش‌های پرتکرار</span><h2>سؤالات <span class="gold">متداول</span></h2></div>
 <div class="faq rv">
 <details open><summary>برای شروع به چه چیزی نیاز دارم؟</summary><p>فقط اطلاعات سالن و فهرست خدمات‌تان. سالن را خودتان در چند دقیقه می‌سازید (یا درخواست دمو بدهید تا با هم بسازیم) و بقیه‌ی تنظیمات داخل پنل انجام می‌شود.</p></details>
-<details><summary>مشتریان باید برنامه‌ای نصب کنند؟</summary><p>خیر. رزرو از طریق لینک اختصاصی سالن و روی هر مرورگری انجام می‌شود؛ روی موبایل، تبلت و کامپیوتر.</p></details>
+<details><summary>مشتریان باید برنامه‌ای نصب کنند؟</summary><p>لازم نیست؛ رزرو از طریق لینک اختصاصی سالن و روی هر مرورگری انجام می‌شود؛ روی موبایل، تبلت و کامپیوتر. ولی اپ اندروید هم هست و مشتری با لینک یا QR سالن آن را نصب می‌کند؛ روی آیفون هم سایت سالن به صفحه‌ی اصلی اضافه می‌شود.</p></details>
 <details><summary>پیامک یادآوری چطور کار می‌کند؟</summary><p>پس از ثبت نوبت پیامک تأیید ارسال می‌شود و پیش از نوبت هم یادآوری می‌رسد. پیامک‌ها از سهمیه‌ی ماهانه‌ی پلن ({{ to_persian_num(number_format($smsQuota)) }} قطعه) ارسال می‌شوند و هر نوع اعلان را در تنظیمات سالن روشن یا خاموش می‌کنید. متن پیامک‌های نوبت و باشگاه را هم می‌توانید به سلیقه‌ی سالن خودتان بنویسید.</p></details>
 @if ($trialDays > 0)
 <details><summary>بعد از تمام شدن دوره‌ی رایگان چه می‌شود؟</summary><p>پنل مدیریت فقط صفحه‌ی خرید اشتراک را نشان می‌دهد و آدرس رزرو سالن برای مشتری‌ها موقتاً بسته می‌شود. هیچ اطلاعاتی پاک نمی‌شود؛ به محض خرید، همه‌چیز همان‌طور که بود ادامه پیدا می‌کند. اگر وسط دوره‌ی رایگان بخرید، اشتراک از همان روز خرید فعال می‌شود.</p></details>
@@ -968,7 +985,7 @@ footer .enamad{margin-top:12px}
 <footer><div class="wrap"><div class="fg">
 <div><a class="brand" href="#top" style="margin-bottom:14px"><svg aria-hidden="true"><use href="#mark"/></svg><span>ماهرو<small>MAHRU</small></span></a><p style="max-width:300px">نرم‌افزار نوبت‌دهی و مدیریت سالن‌های زیبایی؛ ساده برای مشتری، قدرتمند برای مدیر.</p></div>
 <div><h4>محصول</h4><a href="#features">امکانات</a><a href="#product">پنل مدیریت</a><a href="#plans">تعرفه‌ها</a><a href="#for">مناسب چه کسانی</a></div>
-<div><h4>پشتیبانی</h4><a href="#faq">سؤالات متداول</a><a href="#start">درخواست دمو</a><a href="{{ route('login') }}">ورود به پنل</a><a href="{{ route('legal.contact') }}" data-footer-contact>تماس با ما</a>@if ($contact['support_phone'])<a href="tel:{{ $contact['support_phone'] }}">تلفن پشتیبانی</a>@endif</div>
+<div><h4>پشتیبانی</h4><a href="{{ \App\Support\CentralUrl::route('app-download.show') }}" data-landing-footer-app>دانلود اپ</a><a href="#faq">سؤالات متداول</a><a href="#start">درخواست دمو</a><a href="{{ route('login') }}">ورود به پنل</a><a href="{{ route('legal.contact') }}" data-footer-contact>تماس با ما</a>@if ($contact['support_phone'])<a href="tel:{{ $contact['support_phone'] }}">تلفن پشتیبانی</a>@endif</div>
 {{-- بسته‌ی مجوز 5د: صفحه‌های حقوقی، و لوگوی اینماد — کد پنل اینماد عیناً، بی escape و بی هیچ تغییری (تنظیمات پلتفرم ابرمدیر) --}}<div data-footer-legal><h4>قوانین</h4><a href="{{ route('legal.terms') }}">قوانین و شرایط</a><a href="{{ route('legal.privacy') }}">حریم خصوصی</a>@if ($enamadBadge)<div class="enamad" data-enamad-badge>{!! $enamadBadge !!}</div>@endif</div>
 @if (array_filter(\Illuminate\Support\Arr::except($contact, ['support_phone'])))<div><h4>شبکه‌ها</h4>@if ($contact['instagram_url'])<a href="{{ $contact['instagram_url'] }}" rel="noopener" target="_blank">اینستاگرام</a>@endif @if ($contact['linkedin_url'])<a href="{{ $contact['linkedin_url'] }}" rel="noopener" target="_blank">لینکدین</a>@endif @if ($contact['telegram_url'])<a href="{{ $contact['telegram_url'] }}" rel="noopener" target="_blank">تلگرام</a>@endif @if ($contact['bale_url'])<a href="{{ $contact['bale_url'] }}" rel="noopener" target="_blank">بله</a>@endif @if ($contact['public_email'])<a href="mailto:{{ $contact['public_email'] }}">ایمیل</a>@endif</div>@endif
 </div><div class="copy"><span>© <span id="yr">{{ to_persian_num((string) \Morilog\Jalali\Jalalian::now()->getYear()) }}</span> ماهرو · همه‌ی حقوق محفوظ است</span><span>ساخته‌شده برای سالن‌های ایران</span></div></div></footer>

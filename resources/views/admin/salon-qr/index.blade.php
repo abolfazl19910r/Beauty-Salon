@@ -85,6 +85,24 @@
                     @endif
                     <p class="text-xs mt-2" style="color:var(--admin-text-light);">هر گوشی در هر روز یک بار شمرده می‌شود.</p>
                 </div>
+
+                {{-- ۲۰۲۶-۱۱-۰۶: اپ‌ها فقط از سایت ماهرو منتشر می‌شوند؛ صاحب سالن باید بتواند به مشتری و کادر معرفی‌شان کند --}}
+                <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);" data-admin-apps-card>
+                    @php($apps = \App\Support\CustomerAppLink::forSalon($salon))
+                    @php($staffAppUrl = \App\Support\CentralUrl::route('app-download.show').'#staff')
+                    <h2 class="font-bold mb-2" style="color:var(--admin-text);">معرفی اپ به مشتری‌ها و کادر</h2>
+                    <p class="text-sm leading-7" style="color:var(--admin-text-dim);">همین QR مشتری را به سایت سالن می‌برد و روی اندروید پیشنهاد نصب اپ «ماهرو» را می‌دهد. برای فرستادن در پیام یا شبکه‌های اجتماعی:</p>
+                    <div class="mt-3 space-y-3 text-sm">
+                        <div>
+                            <div style="color:var(--admin-text);">صفحه‌ی اپ سالن برای مشتری‌ها</div>
+                            <a href="{{ $apps['install_url'] }}" target="_blank" rel="noopener" dir="ltr" class="block break-all text-xs mt-1 underline" style="color:var(--admin-text-dim);">{{ $apps['install_url'] }}</a>
+                        </div>
+                        <div>
+                            <div style="color:var(--admin-text);">اپ «ماهرو همکار» برای متخصص‌ها (ورود با شماره و رمز خودشان)</div>
+                            <a href="{{ $staffAppUrl }}" target="_blank" rel="noopener" dir="ltr" class="block break-all text-xs mt-1 underline" style="color:var(--admin-text-dim);">{{ $staffAppUrl }}</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

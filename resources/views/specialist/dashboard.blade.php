@@ -19,6 +19,37 @@
 @section('content')
     <div class="fade-in space-y-6">
 
+        {{-- ۲۰۲۶-۱۱-۰۶: معرفی «ماهرو همکار»؛ قابل‌بستن (۳۰ روز)، و در حالت نصب‌شده (اپ/PWA) دیده نمی‌شود --}}
+        <div class="specialist-card rounded-xl p-4 flex items-center gap-3" data-staff-app-promo hidden>
+            <svg class="w-8 h-8 shrink-0 text-[var(--specialist-plum-light)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <rect x="6" y="2" width="12" height="20" rx="3" /><path stroke-linecap="round" d="M11 18h2" />
+            </svg>
+            <div class="flex-1 min-w-0">
+                <p class="font-bold text-sm text-[var(--specialist-text)]">پنل را روی گوشی داشته باشید</p>
+                <p class="text-xs text-[var(--specialist-text-dim)] leading-6">اندروید: اپ «ماهرو همکار» با اعلان نوبت‌ها · آیفون: افزودن به صفحه‌ی اصلی</p>
+            </div>
+            <a href="{{ route('specialist.install') }}" class="specialist-cta shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold">نصب</a>
+            <button type="button" data-staff-app-promo-close aria-label="بستن" class="shrink-0 p-1 text-[var(--specialist-inactive)] hover:text-[var(--specialist-text)]">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M6 6l12 12M18 6L6 18" /></svg>
+            </button>
+        </div>
+        <script @nonce>
+            (function () {
+                var box = document.querySelector('[data-staff-app-promo]');
+                if (!box) return;
+                var key = 'mahru:staff-app-promo-closed';
+                var standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+                var closedAt = 0;
+                try { closedAt = parseInt(localStorage.getItem(key) || '0', 10) || 0; } catch (e) {}
+                if (standalone || Date.now() - closedAt < 30 * 24 * 3600 * 1000) return;
+                box.hidden = false;
+                box.querySelector('[data-staff-app-promo-close]').addEventListener('click', function () {
+                    box.hidden = true;
+                    try { localStorage.setItem(key, String(Date.now())); } catch (e) {}
+                });
+            })();
+        </script>
+
         {{-- Welcome header --}}
         <div class="flex items-center gap-3">
             <div class="w-12 h-12 rounded-full specialist-cta flex items-center justify-center text-lg font-bold flex-shrink-0">

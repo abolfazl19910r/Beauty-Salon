@@ -57,7 +57,7 @@
     </div>
 
     @php($staff = $latest['staff'])
-    <div class="mt-6 pt-5 border-t border-m-gold/15" data-app-download-staff-section>
+    <div id="staff" class="mt-6 pt-5 border-t border-m-gold/15 scroll-mt-6" data-app-download-staff-section>
         <h3 class="font-bold text-m-tx mb-1">متخصص سالن هستید؟</h3>
         <p class="text-sm text-m-tx/70 leading-7">اپ «ماهرو همکار» برای دیدن نوبت‌های امروز، تقویم و کیف پول.</p>
         @if ($staff)

@@ -75,6 +75,10 @@ use Illuminate\Support\Facades\Route;
                 متخصص سالن هستید و هنوز حساب ندارید؟
                 <a href="{{ route('specialist.activate') }}" class="text-m-gold2 hover:text-m-gold transition-colors font-medium mr-1">فعال‌سازی حساب متخصص</a>
             </p>
+            <p data-staff-app-link>
+                روی گوشی راحت‌ترید؟
+                <a href="{{ \App\Support\CentralUrl::route('app-download.show') }}#staff" class="text-m-gold2 hover:text-m-gold transition-colors font-medium mr-1">اپ ماهرو همکار برای متخصص‌ها</a>
+            </p>
             <p>
                 صاحب سالن هستید؟
                 <a href="{{ route('salon-signup.create') }}" class="text-m-gold2 hover:text-m-gold transition-colors font-medium mr-1">ثبت سالن</a>

@@ -425,6 +425,23 @@
             </div>
         </div>
 
+        {{-- ۲۰۲۶-۱۱-۰۶: بنر «باز کردن در اپ» فقط روی اندروید و قابل‌بستن است؛ این نشانی همیشه و روی هر دستگاه دیده می‌شود --}}
+        @if ($footerAppSalon = app(\App\Support\CurrentSalon::class)->get())
+            <div class="mt-10 rounded-2xl border border-m-gold/20 bg-m-bg/60 px-5 py-4 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 text-center sm:text-right" data-salon-app-promo>
+                <svg class="w-9 h-9 shrink-0 text-m-gold2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <rect x="6" y="2" width="12" height="20" rx="3" /><path stroke-linecap="round" d="M11 18h2" />
+                </svg>
+                <div class="flex-1">
+                    <p class="font-bold text-m-tx">اپ {{ $currentSalonTitle }} روی گوشی شما</p>
+                    <p class="text-m-tx/60 text-sm leading-6">رزرو سریع‌تر و یادآوری نوبت‌ها؛ اندروید با نصب اپ، آیفون با افزودن به صفحه‌ی اصلی.</p>
+                </div>
+                <a href="{{ \App\Support\CustomerAppLink::forSalon($footerAppSalon)['install_url'] }}"
+                   class="shrink-0 px-4 py-2 rounded-xl text-sm font-semibold border border-m-gold/50 text-m-gold2 hover:bg-m-gold/10 transition-colors">
+                    دریافت اپ
+                </a>
+            </div>
+        @endif
+
         <div class="border-t border-m-gold/10 mt-8 pt-6 text-center text-m-tx/40 text-sm">
             <p>© {{ date('Y') }} {{ $currentSalonTitle }}. تمامی حقوق محفوظ است.</p>
             @include('partials.platform-legal-links')

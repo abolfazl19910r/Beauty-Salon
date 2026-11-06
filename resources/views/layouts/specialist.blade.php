@@ -230,6 +230,16 @@
                                 ویرایش پروفایل
                             </a>
 
+                            {{-- ۲۰۲۶-۱۱-۰۶: همیشه در دسترس، حتی پس از بستن کارت داشبورد --}}
+                            <a href="{{ route('specialist.install') }}" data-staff-app-menu
+                               class="text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)] flex items-center px-4 py-2 text-sm"
+                               role="menuitem" tabindex="-1">
+                                <svg class="w-5 h-5 mr-2 text-[var(--specialist-inactive)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                    <rect x="6" y="2" width="12" height="20" rx="3" /><path stroke-linecap="round" d="M11 18h2" />
+                                </svg>
+                                نصب اپ روی گوشی
+                            </a>
+
                             <form method="POST" action="{{ route('logout') }}" role="none" class="border-t" style="border-color: var(--specialist-border);">
                                 @csrf
                                 <button type="submit"
