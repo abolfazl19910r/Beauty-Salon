@@ -664,6 +664,8 @@ php artisan up
 
 تاریخچه‌ی کامل، تصمیم‌ها و قدم‌های باز در [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md).
 
+**۲۰۲۶-۱۱-۰۶ — داکر روی دیتابیس خالی بالا می‌آید** — با `CACHE_STORE=database` (پیش‌فرض داکر) و دیتابیس خالی، برنامه هنگام boot خطای «Table cache doesn't exist» می‌داد و حتی `migrate` اجرا نمی‌شد؛ کانتینر در حلقه‌ی راه‌اندازی می‌ماند. رفع شد. **داکر، دیتابیس از نو:** پیش از build روی کانتینر سالم `exec -u www app php artisan db:wipe --force`، بعد `up -d --build`، بعد `exec -u www app php artisan db:seed --force` و `superadmin:create` — `migrate:fresh` را بلافاصله بعد از `up` نزنید (با migrate خود entrypoint هم‌زمان می‌شود). کانتینری که الان در حلقه است: `down -v` و `up -d --build`.
+
 **۲۰۲۶-۱۱-۰۶ — ایمیل متخصص اختیاری** — ساخت و ویرایش متخصص در پنل مدیر بدون ایمیل خطا نمی‌دهد (ستون دیتابیس هم nullable شد؛ بعد از گرفتن پچ `php artisan migrate:fresh --seed`). ایمیل واردشده هنوز باید معتبر و تکراری‌نشده باشد.
 
 **۲۰۲۶-۱۱-۰۵ — بررسی همه‌ی لاگ‌ها (ماسک داده‌ی شخصی، لاگ پرداخت و امنیت ماندگار)** — جزئیات و فهرست کامل: [`docs/deployment/LOGGING.md`](docs/deployment/LOGGING.md)

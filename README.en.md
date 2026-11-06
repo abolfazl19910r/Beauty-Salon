@@ -656,6 +656,8 @@ Cron and workers: [`docs/deployment/SCHEDULER_AND_QUEUE.md`](docs/deployment/SCH
 
 Full history, decisions and open items in [`Rasta unified prompt.md`](Rasta%20unified%20prompt.md) (Persian).
 
+**2026-11-06 — Docker boots on an empty database** — with `CACHE_STORE=database` (the Docker default) and an empty database, booting failed with "Table cache doesn't exist", so not even `migrate` could run and the container restarted in a loop. Fixed. **Docker, fresh database:** before building, on a healthy container `exec -u www app php artisan db:wipe --force`, then `up -d --build`, then `exec -u www app php artisan db:seed --force` and `superadmin:create` — do not run `migrate:fresh` right after `up` (it races the entrypoint's own migrate). A container already stuck in the loop: `down -v` and `up -d --build`.
+
 **2026-11-06 — specialist email optional** — creating or editing a specialist in the admin panel no longer requires an email (the database column is nullable too; after pulling run `php artisan migrate:fresh --seed`). An email that is given must still be valid and unique.
 
 **2026-11-05 — full log review (personal data masked, payment and security logs kept)** — details and the complete list: [`docs/deployment/LOGGING.md`](docs/deployment/LOGGING.md) (Persian)
