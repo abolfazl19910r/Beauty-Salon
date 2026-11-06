@@ -15,6 +15,7 @@ use App\Support\CurrentSalon;
 use App\View\Composers\ViewComposer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\LazyLoadingViolationException;
+use Illuminate\Database\QueryException;
 use Illuminate\Notifications\ChannelManager;
 use Illuminate\Notifications\Channels\DatabaseChannel as BaseDatabaseChannel;
 use Illuminate\Pagination\Paginator;
@@ -167,10 +168,15 @@ class AppServiceProvider extends ServiceProvider
 
     public function applyDefaultSalonSlug(): void
     {
-        $defaultSalonSlug = Cache::rememberForever(
-            'app:default_salon_slug',
-            fn () => Schema::hasTable('salons') ? app(SalonRepositoryInterface::class)->getOldestSlug() : null
-        );
+        $resolve = fn () => Schema::hasTable('salons') ? app(SalonRepositoryInterface::class)->getOldestSlug() : null;
+
+        try {
+            $defaultSalonSlug = Cache::rememberForever('app:default_salon_slug', $resolve);
+        } catch (QueryException) {
+            // ۲۰۲۶-۱۱-۰۶: CACHE_STORE=database (پیش‌فرض داکر) و جدول cache هنوز ساخته نشده (دیتابیس خالی، وسط migrate:fresh) ←
+            // بی کش. پیش‌تر همین خط خطا می‌داد و حتی `php artisan migrate` بالا نمی‌آمد (کانتینر در حلقه‌ی راه‌اندازی دوباره).
+            $defaultSalonSlug = $resolve();
+        }
 
         if ($defaultSalonSlug) {
             URL::defaults(['salon_slug' => $defaultSalonSlug]);

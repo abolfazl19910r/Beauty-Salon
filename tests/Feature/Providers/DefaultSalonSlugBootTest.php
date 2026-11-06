@@ -39,4 +39,20 @@ class DefaultSalonSlugBootTest extends TestCase
         $this->assertSame(0, $this->boot(), 'کش گرم: نه hasTable، نه select');
         $this->assertSame($oldest, URL::getDefaultParameters()['salon_slug'] ?? null);
     }
+
+    /**
+     * ۲۰۲۶-۱۱-۰۶ (آزمون دستی داکر): با CACHE_STORE=database (پیش‌فرض داکر تک‌کانتینری) و دیتابیس خالی، خواندن همین کش در boot خطای
+     * «Table 'mahru.cache' doesn't exist» می‌داد ← حتی `php artisan migrate` بالا نمی‌آمد و کانتینر در حلقه‌ی راه‌اندازی دوباره می‌ماند.
+     */
+    public function test_boot_survives_a_cache_store_whose_table_does_not_exist_yet(): void
+    {
+        config(['cache.default' => 'database', 'cache.stores.database.table' => 'no_such_cache_table']);
+        Cache::forgetDriver('database');
+        URL::defaults(['salon_slug' => null]);
+        $oldest = \App\Models\Salon::query()->orderBy('id')->value('slug');
+
+        (new AppServiceProvider($this->app))->applyDefaultSalonSlug();
+
+        $this->assertSame($oldest, URL::getDefaultParameters()['salon_slug'] ?? null, 'بی کش هم مستقیم از دیتابیس');
+    }
 }
