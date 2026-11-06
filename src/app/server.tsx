@@ -1,13 +1,21 @@
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
 
 import { createClient } from '@/lib/api';
-import { APP_VERSION, DEFAULT_API_URL } from '@/lib/config';
+import { ALLOW_SERVER_OVERRIDE, APP_VERSION, DEFAULT_API_URL } from '@/lib/config';
 import { useSession } from '@/lib/session';
 import { Button, ErrorBox, Field, Notice, Screen, T } from '@/ui/kit';
 
 /** فقط نسخه‌ی آزمایشی: آدرس سرور لاراول (مثلاً XAMPP روی شبکه‌ی محلی) — با GET /api/v1/status امتحان می‌شود */
 export default function Server() {
+  // production: صفحه با لینک mahru://server هم باز می‌شد (هر صفحه‌ی expo-router لینک دارد) ← فیشینگ آدرس سرور
+  if (!ALLOW_SERVER_OVERRIDE) {
+    return <Redirect href="/" />;
+  }
+  return <ServerForm />;
+}
+
+function ServerForm() {
   const { serverUrl, setServerUrl } = useSession();
   const [url, setUrl] = useState(serverUrl);
   const [busy, setBusy] = useState(false);

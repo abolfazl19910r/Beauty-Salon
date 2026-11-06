@@ -181,3 +181,11 @@ npm test
 npx expo export --platform android                                   # همکار
 $env:APP_VARIANT="customer"; npx expo export --platform android      # مشتری
 ```
+
+## آدرس سرور فقط در نسخه‌ی آزمایشی (نسخه‌ی 0.3.9 / versionCode 17، ۲۰۲۶-۱۱-۰۶)
+- نسخه‌ی production (`customer-production` / `staff-production`) آدرس سرور ذخیره‌شده را نه می‌خواند نه ذخیره می‌کند و همیشه به
+  `EXPO_PUBLIC_API_URL` (پیش‌فرض `https://arisheh.ir`) وصل است. پیش‌تر نصب production روی یک نسخه‌ی آزمایشی آدرس قدیمی (مثلاً
+  `http://192.168.1.2:8000`) را نگه می‌داشت و چون فیلد خاموش است، دیگر راهی برای برگشت نبود.
+- صفحه‌ی «آدرس سرور» در production به خانه برمی‌گردد؛ پیش‌تر لینک `mahru://server` آن را باز می‌کرد (هر صفحه‌ی expo-router لینک دارد)
+  و یک لینک فریبنده می‌توانست ورود و کد پیامکی را به سرور دیگری بفرستد.
+- نسخه‌های آزمایشی (`*-apk`) مثل قبل: پنج ضربه روی لوگو.

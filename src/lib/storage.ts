@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 
+import { ALLOW_SERVER_OVERRIDE } from './config';
 import type { Account } from './types';
 
 const TOKEN_KEY = 'mahru.token';
@@ -31,12 +32,21 @@ export async function clearSession(): Promise<void> {
   await AsyncStorage.removeItem(ACCOUNT_KEY);
 }
 
+/**
+ * آدرس سرور ذخیره‌شده — فقط نسخه‌ی آزمایشی. نسخه‌ی production همیشه DEFAULT_API_URL (۲۰۲۶-۱۱-۰۶): نصب production روی نسخه‌ی آزمایشی
+ * (Update، همان بسته) آدرس قدیمی (مثلاً http://192.168.1.2:8000) را با خودش می‌آورد و بی فیلد تغییر، اپ برای همیشه به آن وصل می‌ماند؛
+ * و یک آدرس ذخیره‌شده در production یعنی همه‌ی ورودها و کدهای پیامکی به سرور دیگری می‌رود.
+ */
 export async function loadServerOverride(): Promise<string | null> {
+  if (!ALLOW_SERVER_OVERRIDE) {
+    await AsyncStorage.removeItem(SERVER_KEY);
+    return null;
+  }
   return AsyncStorage.getItem(SERVER_KEY);
 }
 
 export async function saveServerOverride(url: string | null): Promise<void> {
-  if (url) {
+  if (url && ALLOW_SERVER_OVERRIDE) {
     await AsyncStorage.setItem(SERVER_KEY, url);
   } else {
     await AsyncStorage.removeItem(SERVER_KEY);
