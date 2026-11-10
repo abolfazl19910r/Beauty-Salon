@@ -523,8 +523,8 @@ section{padding:110px 0}
    ========================================================= */
 footer{border-top:1px solid var(--ln);padding:60px 0 32px;color:var(--mu);font-size:14px}
 footer .enamad{margin-top:12px}
-.fg{display:grid;grid-template-columns:1.6fr repeat(auto-fit,minmax(120px,1fr));gap:34px;margin-bottom:38px}
-@media(max-width:780px){.fg{grid-template-columns:1fr 1fr}.fg>div:first-child{grid-column:1/-1}}
+.fg{display:grid;grid-template-columns:minmax(200px,1.6fr);grid-auto-flow:column;grid-auto-columns:minmax(120px,1fr);gap:34px;margin-bottom:38px}
+@media(max-width:780px){.fg{grid-template-columns:1fr 1fr;grid-auto-flow:row}.fg>div:first-child{grid-column:1/-1}}
 .fg h4{color:var(--tx);margin-bottom:14px;font-size:15px}
 .fg a{display:block;margin-bottom:9px;transition:color .25s;width:max-content}
 .fg a:hover{color:var(--gl)}
