@@ -288,7 +288,7 @@ WinSCP: پروتکل **SFTP**، میزبان `SERVER_IP`، کاربر `root`، �
 |---|---|
 | `docker-compose.server.yml` | `/srv/mahru/docker-compose.server.yml` |
 | `.env.server.example` | `/srv/mahru/.env.server` (با همین نام تازه) |
-| `deploy/single/server-deploy.sh`، `deploy/single/arvan-ips.sh` و `deploy/single/tls-reload.sh` | `/srv/mahru/deploy/single/` |
+| `deploy/single/server-deploy.sh`، `deploy/single/arvan-ips.sh`، `deploy/single/tls-reload.sh` و `deploy/single/mahru.sh` | `/srv/mahru/deploy/single/` |
 | `build-images\mahru-single-<commit>.tar` | `/srv/mahru/images/` |
 
 هر نسخه‌ی تازه فقط فایل `.tar` (و اگر پچی آن‌ها را عوض کرد، همان فایل‌ها) دوباره منتقل می‌شود.
@@ -654,6 +654,26 @@ bash deploy/single/server-deploy.sh --use <نسخه‌ی قبلی>
 ---
 
 ## ۱۳. دستورهای روزمره (از `/srv/mahru`)
+
+**کوتاه‌شده: دستور `mahru`** (`deploy/single/mahru.sh`، ۲۰۲۶-۱۱-۱۱). نصب یک‌باره روی سرور، بعد از رساندن فایل به `/srv/mahru/deploy/single/`:
+
+```bash
+ln -sf /srv/mahru/deploy/single/mahru.sh /usr/local/bin/mahru
+mahru              # فهرست
+```
+
+| دستور | کار |
+|---|---|
+| `mahru status` | کانتینر، `https://…/up`، روزهای مانده‌ی گواهی، آخرین پشتیبان و سنش، دیسک، رم، NTP |
+| `mahru logs 30` / `mahru follow` | لاگ کانتینر در ۳۰ دقیقه‌ی اخیر / زنده |
+| `mahru errors 5` | پنج خطای آخر Laravel (`production.ERROR`) |
+| `mahru sms 15` | پیامک‌ها و کد ورود (تا `SMS_LOG_ONLY=true`) |
+| `mahru backups` / `mahru backup` | فهرست پشتیبان‌ها / پشتیبان همین الان |
+| `mahru restart` / `mahru recreate` | ری‌استارت / کانتینر از نو بعد از تغییر `.env.server` (هر دو تا healthy صبر می‌کنند) |
+| `mahru artisan …` / `mahru shell` | artisan / خط فرمان داخل کانتینر (کاربر www) |
+| `mahru cert` | گواهی و زمان تمدید |
+
+هر کدام دستور docker زیرش را کم‌رنگ چاپ می‌کند. جدول زیر همان‌ها به شکل کامل:
 
 | کار | دستور |
 |---|---|
