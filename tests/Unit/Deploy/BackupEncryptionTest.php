@@ -91,6 +91,28 @@ class BackupEncryptionTest extends TestCase
         $this->assertSame(['ok', true], [$status['status'], $status['encrypted']]);
     }
 
+    public function test_app_release_apks_stay_out_of_the_backup_but_other_private_files_do_not(): void
+    {
+        // تصمیم ۲۰۲۶-۱۱-۰۷: APKها اصلشان روی ویندوز است و ۳ پشتیبان × همه‌ی APKها دیسک ۳۰ گیگ سرور را پر می‌کرد
+        mkdir($this->dir.'/app/storage/app/private/app-releases/customer', 0777, true);
+        mkdir($this->dir.'/app/storage/app/private/reports', 0777, true);
+        file_put_contents($this->dir.'/app/storage/app/private/app-releases/customer/0b1c.apk', 'APK');
+        file_put_contents($this->dir.'/app/storage/app/private/reports/r.pdf', 'PDF');
+        file_put_contents($this->dir.'/app/storage/app/private/mahru-fcm-sa.json', '{}');
+
+        $run = $this->backup(['BACKUP_AGE_RECIPIENT' => $this->publicKey()]);
+        $this->assertSame(0, $run->getExitCode(), $run->getErrorOutput());
+
+        file_put_contents($this->dir.'/files.tgz', $this->decrypt(glob($this->dir.'/backups/20*')[0].'/storage-app.tar.gz.age'));
+        $list = (string) shell_exec('tar -tzf '.escapeshellarg($this->dir.'/files.tgz'));
+        $this->assertStringNotContainsString('app-releases', $list);
+        $this->assertStringNotContainsString('.apk', $list);
+        $this->assertStringContainsString('storage/app/private/reports/r.pdf', $list);
+        $this->assertStringContainsString('storage/app/private/mahru-fcm-sa.json', $list);
+        $this->assertStringContainsString('storage/app/course-photos/face.jpg', $list);
+        $this->assertFileExists($this->dir.'/app/storage/app/private/app-releases/customer/0b1c.apk', 'خود فایل روی سرور دست نمی‌خورد');
+    }
+
     public function test_the_server_refuses_to_write_an_unencrypted_backup(): void
     {
         $run = $this->backup(['BACKUP_REQUIRE_ENCRYPTION' => 'true']);

@@ -6,7 +6,7 @@
 #          ۲) فایل‌های آپلودی storage/app:
 #             course-photos  عکس‌های قبل/بعد دوره‌های درمانی (دیسک خصوصی course_photos — داده‌ی حساس چهره)
 #             public         لوگوی سالن، عکس متخصص، گالری، ...
-#             private        خروجی گزارش‌ها و فایل‌های خصوصی دیگر
+#             private        خروجی گزارش‌ها و فایل‌های خصوصی دیگر — جز private/app-releases (APKها؛ اصلشان روی ویندوز مالک)
 # هر اجرا یک پوشه‌ی تاریخ‌دار؛ پشتیبان‌های قدیمی‌تر از KEEP_DAYS روز پاک می‌شوند. همه‌ی فایل‌ها فقط برای مالک خواندنی‌اند
 # (umask 077) چون عکس‌های دوره و دیتابیس داده‌ی شخصی مشتری‌اند — پوشه‌ی پشتیبان هرگز زیر public_html نباشد.
 #
@@ -135,8 +135,12 @@ DIRS=()
 for dir in course-photos public private; do
     [[ -d "$APP_DIR/storage/app/$dir" ]] && DIRS+=("storage/app/$dir")
 done
+# فایل‌های APK «نسخه‌های اپ» (ابرمدیر، storage/app/private/app-releases) بیرون می‌مانند (تصمیم ۲۰۲۶-۱۱-۰۷): هر کدام ده‌ها مگابایت‌اند،
+# اصلشان روی ویندوز مالک است، و BACKUP_KEEP نسخه × همه‌ی APKها دیسک سرور را پر می‌کرد. پس از بازگردانی، ردیف نسخه در پنل حذف و APK
+# دوباره بارگذاری شود (docs/deployment/BACKUP.md). ردیف‌های دیتابیس می‌مانند؛ دانلود فایل نبوده ۴۰۴ می‌دهد، نه خطا.
+EXCLUDES=(--exclude='storage/app/private/app-releases')
 if [[ ${#DIRS[@]} -gt 0 ]]; then
-    tar -czf - -C "$APP_DIR" "${DIRS[@]}" | seal > "$DEST/storage-app.tar.gz$SUFFIX"
+    tar -czf - -C "$APP_DIR" "${EXCLUDES[@]}" "${DIRS[@]}" | seal > "$DEST/storage-app.tar.gz$SUFFIX"
 fi
 
 # کلید APP_KEY (تک‌کانتینری: /data/app.key) — بدون آن داده‌ی رمزشده‌ی دیتابیس بازگردانی نمی‌شود
