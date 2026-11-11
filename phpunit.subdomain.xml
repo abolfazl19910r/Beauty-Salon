@@ -26,6 +26,8 @@
     <testsuites>
         <testsuite name="Subdomain">
             <file>tests/Feature/Middleware/SubdomainRoutingTest.php</file>
+            <!-- ۲۰۲۶-۱۱-۱۱: صفحه‌های دامنه‌ی اصلی روی سرور تازه بی هیچ سالنی (همان شکل production: CENTRAL_DOMAIN پر) -->
+            <file>tests/Feature/Central/CentralPagesWithoutSalonsTest.php</file>
         </testsuite>
     </testsuites>
     <source>

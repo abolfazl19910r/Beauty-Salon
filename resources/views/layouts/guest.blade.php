@@ -20,7 +20,9 @@
 
 <div class="min-h-screen flex flex-col justify-center items-center px-4 py-10">
     <div class="fade-in mb-2">
-        <a href="{{ route('home') }}" class="flex items-center justify-center gap-2">
+        {{-- 🐞 ۲۰۲۶-۱۱-۱۱: صفحه‌های دامنه‌ی اصلی (ورود کادر، فراموشی رمز، «سالن‌های من»، /app) سالن جاری ندارند؛ route('home') فقط با
+             URL::defaults قدیمی‌ترین سالن کار می‌کرد و روی سرور تازه بی سالن ۵۰۰ می‌داد. بی سالن ← صفحه‌ی اصلی پلتفرم. --}}
+        <a href="{{ app(\App\Support\CurrentSalon::class)->get() ? route('home') : \App\Support\CentralUrl::route('central.home') }}" class="flex items-center justify-center gap-2">
             <x-brand-emblem class="h-12 w-auto max-w-[160px]" />
             <span class="text-2xl font-serif-fa font-bold text-m-gold2">{{ $currentSalonName }}</span>
         </a>
