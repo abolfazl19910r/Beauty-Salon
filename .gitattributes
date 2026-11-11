@@ -10,5 +10,6 @@
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore
 
-# اسکریپت‌های ویندوز (cmd) با CRLF بیرون بیایند
+# اسکریپت‌های ویندوز (cmd و ps1) با CRLF بیرون بیایند
 *.cmd text eol=crlf
+*.ps1 text eol=crlf

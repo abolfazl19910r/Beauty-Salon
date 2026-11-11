@@ -54,6 +54,27 @@ cron (DirectAdmin → Cron Jobs)، هر شب ۰۳:۴۰:
 `database.sql.gz`، `storage-app.tar.gz` و `app.key` می‌گذارد؛ فقط `BACKUP_KEEP` نسخه‌ی آخر می‌ماند و `backup-status.json` هم نوشته می‌شود.
 دستی: `docker exec -u www mahru mahru-backup now`. دانلود و بازگردانی: `docs/deployment/ARVAN_SERVER.md` بخش ۱۱.
 
+### کپی هفتگی خودکار روی ویندوز (۲۰۲۶-۱۱-۱۱)
+
+سرور فقط ۳ پشتیبان آخر را دارد؛ اگر خود سرور از دست برود، همه با آن می‌روند. `deploy/backup/pull-backup.ps1` تازه‌ترین پشتیبان را با `scp`
+به ویندوز می‌آورد (پیش‌فرض `%USERPROFILE%\MahruBackups`)، **sha256 هر فایل را با سرور می‌سنجد**، اول در پوشه‌ی `.partial-…` می‌گیرد و فقط
+بعد از درستی نام نهایی می‌دهد، تکراری را دوباره نمی‌گیرد، ۸ نسخه‌ی آخر را نگه می‌دارد و لاگش `pull-backup.log` است. شکست ←
+`LAST-PULL-FAILED.txt` در همان پوشه (با موفقیت بعدی پاک می‌شود). فایل‌ها رمزنگاری‌شده می‌مانند.
+
+یک بار (PowerShell): کلید SSH در ssh-agent ویندوز، چون کار زمان‌بندی‌شده passphrase را نمی‌تواند تایپ کند —
+
+```powershell
+# PowerShell «Run as administrator»:
+Get-Service ssh-agent | Set-Service -StartupType Automatic; Start-Service ssh-agent
+# PowerShell معمولی، در پوشه‌ی پروژه (passphrase برای آخرین بار؛ بعد از ری‌استارت هم می‌ماند):
+ssh-add $HOME\.ssh\mahru_prod
+powershell -ExecutionPolicy Bypass -File deploy\backup\install-pull-task.ps1
+```
+
+کار «Mahru weekly backup pull» در Task Scheduler: هر جمعه ۱۳:۰۰؛ اگر کامپیوتر خاموش بود، اولین فرصت بعد (`StartWhenAvailable`)؛ فقط وقتی
+وارد ویندوز هستید. اجرای دستی: `Start-ScheduledTask "Mahru weekly backup pull"`. حذف: `Unregister-ScheduledTask "Mahru weekly backup pull"`.
+متن اسکریپت‌ها ASCII است: PowerShell 5.1 فایل UTF-8 بی BOM را خراب می‌خواند.
+
 ## Docker شش‌سرویسی
 
 ```
