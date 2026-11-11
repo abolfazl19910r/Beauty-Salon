@@ -141,6 +141,8 @@ class DockerSetupTest extends TestCase
         $this->assertStringContainsString('include /etc/nginx/mahru/https-redirect.inc;', self::file('docker/nginx/default.conf'));
         $tls = self::file('docker/nginx/tls.conf');
         $this->assertStringContainsString('listen 443 ssl', $tls);
+        $this->assertStringContainsString('http2 on;', $tls);
+        $this->assertStringNotContainsString('ssl http2', $tls, 'nginx ≥ 1.25.1: listen … http2 منسوخ است');
         $this->assertStringContainsString('ssl_certificate     /data/tls/fullchain.pem;', $tls);
         $this->assertStringContainsString('include /etc/nginx/mahru/site.inc;', $tls);
         $this->assertStringContainsString('ssl_protocols TLSv1.2 TLSv1.3;', $tls);
