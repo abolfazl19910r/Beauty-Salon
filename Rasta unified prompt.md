@@ -6227,7 +6227,8 @@ fwupd گیر کرد** (قفل dpkg ماند؛ نصب تمام شده بود — 
    (تکرار خودکار با ستون `fr` ترکیب نمی‌شود) و مرورگر کل اعلان را دور می‌ریخت ← یک ستون. حالا `minmax(200px,1.6fr)` + `grid-auto-flow:column` +
    `grid-auto-columns:minmax(120px,1fr)`؛ گوشی همان دو ستونی (`grid-auto-flow:row`). `LandingFooterLayoutTest`. Chromium: ۵ ستون در ۱۲۸۰، ۲×۲ در ۳۹۰.
    کل مجموعه در sandbox (PHP 8.3، SQLite): ۲۶۶۷ تست، فقط ۴ شکست PDF/QR به‌خاطر نبودن فونت‌های `storage/fonts` در zip (روی پایه‌ی 0376 هم همان).
-   روی سرور تا deploy بعدی با `docker cp` همین view (بی build تازه).
+   روی سرور ✅ (۲۰۲۶-۱۱-۱۱) تا deploy بعدی با `docker cp` همین view (بی build تازه). **درس:** بعد از `docker cp` و `view:cache` صفحه قدیمی ماند چون
+   `opcache.validate_timestamps = 0` (`docker/php/php.ini`) ← باید `docker exec mahru supervisorctl restart php-fpm` هم زد (در `0378` به راهنما).
 1. **`0378` (اول نشست بعد):** `ARVAN_SERVER.md` برای سرور غیرآروان/پارس وی دی اس (Docker از مخزن اوبونتو، پورت SSH غیر ۲۲ در fail2ban و
    `journalmatch` ‏`ssh.service`، عوض کردن کلیدهای میزبان قالب، VNC و بازیابی کلید، NTP، اینترنت بین‌الملل بسته، `scp`/`sftp reput`، needrestart)؛
    `deploy/backup/mahru-backup.sh`: بیرون گذاشتن `storage/app/private/app-releases` + تست + بند بازگردانی در `BACKUP.md`؛ `.env.server.example`: افزودن
