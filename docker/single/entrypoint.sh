@@ -71,6 +71,11 @@ export DB_DATABASE DB_USERNAME
 
 # دستورهای «docker compose exec … php artisan» از این entrypoint ارث نمی‌برند (env فقط برای همین درخت پردازه export شده)؛
 # در APP_ENV=local که config کش نمی‌شود، بی این فایل artisan کلید و رمز دیتابیس را نمی‌دید. متغیرهای واقعی محیط بر .env مقدم‌اند.
+# 🐞 ۲۰۲۶-۱۱-۱۱ (سرور production): /var/www/html در image رسمی php ‏1777 و مال www-data است و .env مال www؛ روی میزبانی با
+# fs.protected_regular=1 (پیش‌فرض اوبونتو، نه Docker Desktop) کرنل حتی به root اجازه نمی‌دهد فایل موجود دیگری را در پوشه‌ی sticky با
+# O_CREAT باز کند ← «can't create .env: Permission denied» و چرخه‌ی ری‌استارت در هر «docker restart» یا ری‌استارت سرور (کانتینر تازه
+# .env ندارد و مشکلی نداشت). پاک کردن و ساختن دوباره محدود نمی‌شود. Dockerfile هم پوشه را 755 می‌کند.
+rm -f "$APP_DIR/.env"
 printf 'APP_KEY=%s\nDB_PASSWORD=%s\n' "$APP_KEY" "$DB_PASSWORD" > "$APP_DIR/.env"
 chown www:www "$APP_DIR/.env"
 chmod 600 "$APP_DIR/.env"

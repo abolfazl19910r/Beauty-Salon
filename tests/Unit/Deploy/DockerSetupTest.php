@@ -216,6 +216,16 @@ class DockerSetupTest extends TestCase
         $this->assertStringContainsString('validate_timestamps = 0', self::file('docker/php/php.ini'));
     }
 
+    public function test_the_single_container_survives_a_restart_on_a_protected_regular_host(): void
+    {
+        // 🐞 ۲۰۲۶-۱۱-۱۱: اولین «docker restart» روی سرور (tls-reload.sh) ← «can't create /var/www/html/.env: Permission denied» و چرخه‌ی
+        // ری‌استارت. ریشه‌ی 1777 image رسمی php + fs.protected_regular=1 اوبونتو: root فایل موجود www را در پوشه‌ی sticky با O_CREAT باز
+        // نمی‌کند (در sandbox با sysctl بازتولید شد؛ rm و ساخت دوباره مجاز است). کانتینر تازه .env نداشت و هرگز دیده نشده بود.
+        $entrypoint = self::file('docker/single/entrypoint.sh');
+        $this->assertMatchesRegularExpression('/rm -f "\$APP_DIR\/\.env"\nprintf \'APP_KEY=%s\\\\nDB_PASSWORD=%s\\\\n\' "\$APP_KEY" "\$DB_PASSWORD" > "\$APP_DIR\/\.env"/', $entrypoint);
+        $this->assertStringContainsString('chmod 0755 /var/www/html', self::file('Dockerfile'));
+    }
+
     public function test_the_health_check_reaches_laravel_not_a_static_nginx_reply(): void
     {
         preg_match('/location = \/up \{(.*?)\n\}/s', self::file('docker/nginx/site.inc'), $m);

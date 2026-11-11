@@ -686,6 +686,7 @@ docker exec mahru supervisorctl restart php-fpm      # ⚠️ لازم: OPcache 
 
 | نشانه | علت و راه |
 |---|---|
+| `Restarting (1)` و در لاگ `can't create /var/www/html/.env: Permission denied` | image پیش از `0383` روی میزبان با `fs.protected_regular=1` (اوبونتو): هر `docker restart` یا ری‌استارت سرور. راه فوری: `docker compose -f docker-compose.server.yml up -d --force-recreate` (کانتینر تازه)؛ راه اصلی: image تازه |
 | `server-deploy.sh`: «healthy نشد» | لاگ چاپ‌شده؛ معمولاً migrate یا `.env.server` (خط خالی `APP_KEY=`/`DB_PASSWORD=`) |
 | ۵۲۰ یا ۵۲۲ از آروان | کانتینر بالا نیست یا فایروال پورت ۸۰ را برای لبه‌ی آروان هم بسته (`docker ps`، بخش ۹) |
 | خطای گواهی روی ساب‌دامین | گواهی `*.arisheh.ir` نیست (بخش ۸) |

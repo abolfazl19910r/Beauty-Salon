@@ -176,8 +176,11 @@ RUN mkdir -p /var/www/html/storage/fonts \
 
 # ─── Permissions ─────────────────────────────────────────────
 # فقط پوشه‌های قابل‌نوشتن (بقیه با COPY --chown مال www شده‌اند؛ chown -R کل پروژه vendor را در لایه‌ای تازه تکرار می‌کرد)
+# ریشه‌ی پروژه: image رسمی php آن را 1777 (sticky، نوشتنی برای همه) می‌سازد؛ کسی جز root نباید در آن فایل بسازد، و sticky با
+# fs.protected_regular میزبان بازنویسی .env را در ری‌استارت می‌شکست (docker/single/entrypoint.sh، ۲۰۲۶-۱۱-۱۱)
 RUN chown -R www:www storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+    && chmod -R 775 storage bootstrap/cache \
+    && chmod 0755 /var/www/html
 
 # ─── Entrypoint ──────────────────────────────────────────────
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
