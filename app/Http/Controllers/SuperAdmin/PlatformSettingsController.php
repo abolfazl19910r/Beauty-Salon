@@ -20,6 +20,8 @@ class PlatformSettingsController extends Controller
             'fields' => PlatformSettings::FIELDS,
             'legalFields' => PlatformSettings::LEGAL_FIELDS,
             'stored' => PlatformSettings::stored(),
+            // فایل تأیید مالکیت دامنه (اینماد، ۲۰۲۶-۱۱-۱۱)
+            'verificationFile' => \App\Support\Legal\DomainVerificationFile::current(),
             // ⭐ ۲۰۲۶-۱۰-۱۵: وضعیت ربات بله/تلگرام (قبلاً فقط در .env معلوم بود)
             'bot' => app(\App\Services\SuperAdmin\PlatformOverview::class)->botStatus(),
             // پوش اپ‌ها (بسته‌ی ۴)
@@ -200,6 +202,53 @@ class PlatformSettingsController extends Controller
         }
 
         return back()->with('success', 'اطلاعات حقوقی و اینماد ذخیره شد.');
+    }
+
+    /**
+     * فایل تأیید مالکیت دامنه (اینماد، ۲۰۲۶-۱۱-۱۱): فایل txt‌ای که اینماد می‌دهد بارگذاری می‌شود (یا نام و محتوا دستی) و
+     * https://دامنه/<نام> عیناً همان را برمی‌گرداند (Central\DomainVerificationFileController). «برداشتن» = ۴۰۴.
+     */
+    public function updateVerificationFile(Request $request): RedirectResponse
+    {
+        $audit = app(\App\Services\SuperAdmin\SuperAdminAudit::class);
+        $before = \App\Support\Legal\DomainVerificationFile::current();
+
+        if ($request->boolean('remove')) {
+            \App\Support\Legal\DomainVerificationFile::clear();
+            if ($before !== null) {
+                $audit->record('settings.updated', 'فایل تأیید مالکیت دامنه', null, ['domain_verification_filename' => [$before['name'], null]]);
+            }
+
+            return back()->with('success', 'فایل تأیید مالکیت دامنه برداشته شد.');
+        }
+
+        $request->validate([
+            'verification_file' => ['nullable', 'file', 'max:'.(int) ceil(\App\Support\Legal\DomainVerificationFile::MAX_BYTES / 1024)],
+            'verification_name' => ['nullable', 'string', 'max:100'],
+            'verification_content' => ['nullable', 'string', 'max:'.\App\Support\Legal\DomainVerificationFile::MAX_BYTES],
+        ], [
+            'verification_file.max' => 'فایل تأیید بزرگ‌تر از ۴ کیلوبایت است؛ فایل درست اینماد را انتخاب کنید.',
+        ]);
+
+        if ($file = $request->file('verification_file')) {
+            $name = $file->getClientOriginalName();
+            $content = (string) file_get_contents($file->getRealPath());
+        } else {
+            $name = trim((string) $request->input('verification_name'));
+            // متن دستی: پایان خط ویندوز ← \n؛ بقیه عیناً
+            $content = str_replace("\r\n", "\n", (string) $request->input('verification_content'));
+        }
+
+        if ($problem = \App\Support\Legal\DomainVerificationFile::problem($name, $content)) {
+            return back()->withErrors(['verification_file' => $problem])->withInput($request->except('verification_file'));
+        }
+
+        \App\Support\Legal\DomainVerificationFile::save($name, $content);
+        $audit->record('settings.updated', 'فایل تأیید مالکیت دامنه', null, [
+            'domain_verification_filename' => [$before['name'] ?? null, $name],
+        ]);
+
+        return back()->with('success', 'فایل تأیید ذخیره شد: '.\App\Support\CentralUrl::to('/'.$name));
     }
 
     private static function latinDigits(string $value): string

@@ -152,6 +152,13 @@ Route::get('/sw.js', [\App\Http\Controllers\Pwa\PwaController::class, 'serviceWo
 Route::get('/offline', [\App\Http\Controllers\Pwa\PwaController::class, 'offline'])->name('pwa.offline');
 Route::get('/specialist/manifest.webmanifest', [\App\Http\Controllers\Pwa\PwaController::class, 'specialistManifest'])->name('pwa.specialist-manifest');
 
+// فایل تأیید مالکیت دامنه (اینماد، ۲۰۲۶-۱۱-۱۱): https://arisheh.ir/<نام>.txt که ابرمدیر در «تنظیمات پلتفرم» بارگذاری کرده. فقط همان یک
+// نام جواب می‌دهد (بقیه ۴۰۴)؛ nginx فایل txt نبوده در public/ را به Laravel می‌دهد. بدون Route::domain مثل صفحه‌ی اصلی.
+Route::get('/{verificationFile}', \App\Http\Controllers\Central\DomainVerificationFileController::class)
+    ->where('verificationFile', \App\Support\Legal\DomainVerificationFile::NAME_PATTERN)
+    ->middleware('throttle:60,1')
+    ->name('domain-verification');
+
 // صفحه‌های حقوقی پلتفرم (بسته‌ی مجوز 5د): بدون Route::domain مثل صفحه‌ی اصلی؛ لینک‌ها همیشه با CentralUrl روی دامنه‌ی اصلی ساخته می‌شوند
 Route::controller(\App\Http\Controllers\Legal\LegalPageController::class)->name('legal.')->group(function () {
     Route::get('/privacy', 'privacy')->name('privacy');

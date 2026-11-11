@@ -76,6 +76,55 @@
     </div>
 
     <div class="space-y-6">
+    {{-- ۲۰۲۶-۱۱-۱۱: تأیید مالکیت دامنه‌ی اینماد با فایل txt (بی سرویس ایمیل روی سرور) — App\Support\Legal\DomainVerificationFile --}}
+    <div class="sa-card sa-card-pad" id="domain-verification" data-domain-verification>
+        <h2 class="sa-card-title">فایل تأیید مالکیت دامنه (اینماد)</h2>
+        <p class="sa-card-desc mb-4">
+            در پنل اینماد روش «بارگذاری فایل» را بزنید و فایل txt‌ای را که می‌دهد همین‌جا بارگذاری کنید؛ بی هیچ تغییری در ریشه‌ی سایت باز می‌شود
+            و بعد در پنل اینماد «بررسی» را بزنید. بعد از تأیید هم نگهش دارید (اینماد ممکن است دوباره بسنجد). فقط یک فایل در هر زمان.
+        </p>
+        @if ($verificationFile)
+            <div class="mb-4 text-sm space-y-2">
+                <div>الان: <a href="{{ \App\Support\CentralUrl::to('/'.$verificationFile['name']) }}" target="_blank" rel="noopener" dir="ltr"
+                              style="color: var(--sa-accent);">{{ \App\Support\CentralUrl::to('/'.$verificationFile['name']) }}</a></div>
+                <pre dir="ltr" class="sa-input" style="text-align: left; font-size: 12px; white-space: pre-wrap; max-height: 8rem; overflow: auto;">{{ $verificationFile['content'] }}</pre>
+                <form method="POST" action="{{ route('superadmin.settings.verification-file') }}">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="remove" value="1">
+                    <button type="submit" class="text-sm underline" style="color: var(--sa-danger);">برداشتن فایل</button>
+                </form>
+            </div>
+        @endif
+        <form method="POST" action="{{ route('superadmin.settings.verification-file') }}" enctype="multipart/form-data" class="space-y-3">
+            @csrf
+            @method('PUT')
+            <div>
+                <label for="dv-file" class="sa-label">فایل اینماد (‎.txt)</label>
+                <input id="dv-file" type="file" name="verification_file" accept=".txt,text/plain" class="sa-input" dir="ltr">
+            </div>
+            <details class="text-sm">
+                <summary style="cursor: pointer; color: var(--sa-text-dim);">یا نام و متن را دستی بنویسید (اگر اینماد فایل نداد و فقط نام و متن را نشان داد)</summary>
+                <div class="grid gap-3 mt-3">
+                    <div>
+                        <label for="dv-name" class="sa-label">نام فایل</label>
+                        <input id="dv-name" name="verification_name" value="{{ old('verification_name') }}" dir="ltr" placeholder="123456.txt"
+                               class="sa-input" style="text-align: left;" spellcheck="false">
+                    </div>
+                    <div>
+                        <label for="dv-content" class="sa-label">متن فایل</label>
+                        <textarea id="dv-content" name="verification_content" rows="3" dir="ltr" class="sa-input"
+                                  style="text-align: left; font-family: monospace; font-size: 12px;" spellcheck="false">{{ old('verification_content') }}</textarea>
+                    </div>
+                </div>
+            </details>
+            @error('verification_file')
+                <p class="text-sm" style="color: var(--sa-danger);">{{ $message }}</p>
+            @enderror
+            <button type="submit" class="sa-btn">ذخیره</button>
+        </form>
+    </div>
+
     <div class="sa-card sa-card-pad" data-push-settings>
         <h2 class="sa-card-title">اعلان اپ‌ها (پوش)</h2>
         <p class="sa-card-desc mb-4">
