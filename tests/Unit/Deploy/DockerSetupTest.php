@@ -195,6 +195,27 @@ class DockerSetupTest extends TestCase
         }
     }
 
+    public function test_the_server_guide_covers_a_non_arvan_vps(): void
+    {
+        // سرور production ۲۰۲۶-۱۱-۰۷ (پارس وی دی اس): هر کدام از این‌ها روی سرور واقعی یک گیر بود
+        $guide = self::file('docs/deployment/ARVAN_SERVER.md');
+        foreach ([
+            'apt install -y docker.io docker-compose-v2',           // download.docker.com از ایران بسته
+            'journalmatch = _SYSTEMD_UNIT=ssh.service + _COMM=sshd', // fail2ban 1.0 روی اوبونتو ۲۴ هیچ چیز نمی‌دید
+            'port = ${SSH_PORT}',                                    // پورت SSH غیر ۲۲
+            'rm /etc/ssh/ssh_host_* && ssh-keygen -A',               // کلیدهای میزبان مشترک قالب
+            'NEEDRESTART_SUSPEND=1',
+            '/etc/systemd/timesyncd.conf.d/mahru.conf',
+            'reput ',
+            'supervisorctl restart php-fpm',                         // opcache.validate_timestamps=0 بعد از docker cp
+        ] as $needle) {
+            $this->assertStringContainsString($needle, $guide, $needle);
+        }
+        // heredoc پورت را جای‌گذاری می‌کند (بی نقل‌قول)، نه متن «${SSH_PORT}» را در فایل jail
+        $this->assertStringContainsString("cat > /etc/fail2ban/jail.d/mahru-sshd.local <<CONF\n", $guide);
+        $this->assertStringContainsString('validate_timestamps = 0', self::file('docker/php/php.ini'));
+    }
+
     public function test_the_health_check_reaches_laravel_not_a_static_nginx_reply(): void
     {
         preg_match('/location = \/up \{(.*?)\n\}/s', self::file('docker/nginx/site.inc'), $m);

@@ -1,7 +1,11 @@
-# ماهرو روی سرور ابری آروان — همان کانتینر تک‌کانتینری، پشت CDN آروان
+# ماهرو روی سرور (ابری آروان یا VPS دیگر مثل پارس وی دی اس) — همان کانتینر تک‌کانتینری، DNS آروان، CDN اختیاری
 
-این راهنما همان image تک‌کانتینری که روی Docker Desktop آزمودید (`docs/deployment/DOCKER_DESKTOP.md`) را روی یک سرور ابری آروان بالا
+این راهنما همان image تک‌کانتینری که روی Docker Desktop آزمودید (`docs/deployment/DOCKER_DESKTOP.md`) را روی یک سرور لینوکسی بالا
 می‌آورد. image روی ویندوز ساخته و به سرور منتقل می‌شود؛ روی سرور نه git لازم است، نه build، نه رجیستری.
+
+**سرور production فعلی (از ۲۰۲۶-۱۱-۰۷):** پارس وی دی اس، نه سرور ابری آروان؛ DNS روی آروان با **ابر خاموش** (بی CDN، `TRUSTED_PROXIES`
+خالی). هر جا این راهنما «پنل آروان ← سرور» می‌گوید، معادلش در پارس وی دی اس بخش **۲ج** است. تفاوت‌های این سرور (پورت SSH، Docker از مخزن
+اوبونتو، کلیدهای میزبان قالب، کنسول VNC، اینترنت بین‌الملل، NTP) همه در ۲ج آمده‌اند.
 
 ```
 کاربر ── HTTPS ──► لبه‌ی CDN آروان (گواهی رایگان، هدایت http→https)
@@ -68,17 +72,32 @@ ssh -i path\to\key root@SERVER_IP
 روی سرور:
 
 ```bash
-apt update && apt -y upgrade
-docker --version && docker compose version || (curl -fsSL https://get.docker.com | sh)
+# needrestart بعد از apt گاهی روی ری‌استارت یک سرویس گیر می‌کند و قفل dpkg می‌ماند (بخش ۲ج)
+export NEEDRESTART_SUSPEND=1
+apt update && apt -y full-upgrade
+# Docker از مخزن خود اوبونتو (آینه‌ی داخلی دیتاسنتر کار می‌کند؛ download.docker.com و get.docker.com از ایران معمولاً بسته‌اند)
+docker --version && docker compose version || apt install -y docker.io docker-compose-v2
+systemctl enable --now docker
 
 # ۲ گیگ swap (رم کم در پیک‌ها)
 fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
 echo '/swapfile none swap sw 0 0' >> /etc/fstab
 
-mkdir -p /srv/mahru/images /srv/mahru/backups /srv/mahru/deploy/single
+mkdir -p /srv/mahru/images /srv/mahru/backups /srv/mahru/deploy/single /srv/mahru/tls
+chmod 700 /srv/mahru/tls
 ```
 
-اگر `get.docker.com` باز نشد، آینه‌ی رجیستری آروان یا قالب Docker پنل را به کار ببرید؛ روی این سرور هیچ image از اینترنت کشیده نمی‌شود.
+روی این سرور هیچ image از اینترنت کشیده نمی‌شود؛ پس فقط خود Docker و Compose لازم است و نسخه‌ی مخزن اوبونتو (۲۴.۰۴: `docker.io` 29.x و
+`docker-compose-v2` 2.40) کافی است. اگر کرنل تازه نصب شد (`/var/run/reboot-required`)، یک بار `reboot`.
+
+**کلیدهای میزبان SSH قالب:** بعضی قالب‌های VPS کلیدهای میزبان یکسانی برای همه‌ی سرورهای ساخته‌شده از قالب دارند (پارس وی دی اس:
+`root@localhost.localdomain` و DSA ‏۱۰۲۴). یک بار عوض کنید (پنجره‌ی SSH باز بماند؛ اتصال بعدی هشدار «REMOTE HOST IDENTIFICATION HAS
+CHANGED» می‌دهد و روی ویندوز `ssh-keygen -R "[SERVER_IP]:PORT"` آن را پاک می‌کند):
+
+```bash
+ssh-keygen -l -f /etc/ssh/ssh_host_ed25519_key.pub    # اگر root@localhost.localdomain بود ← عوض کنید
+rm /etc/ssh/ssh_host_* && ssh-keygen -A && systemctl restart ssh
+```
 
 ---
 
@@ -143,10 +162,15 @@ permitrootlogin without-password
 
 ```bash
 apt install -y fail2ban
-cat > /etc/fail2ban/jail.d/mahru-sshd.local <<'CONF'
+SSH_PORT=$(sshd -T | awk '$1=="port"{print $2; exit}')    # پارس وی دی اس: 9011
+cat > /etc/fail2ban/jail.d/mahru-sshd.local <<CONF
 [sshd]
 enabled = true
 backend = systemd
+# اوبونتو ۲۴: نام سرویس «ssh» است؛ پیش‌فرض fail2ban 1.0 «sshd.service» را می‌پاید و هیچ خطایی نمی‌بیند
+journalmatch = _SYSTEMD_UNIT=ssh.service + _COMM=sshd
+# پورت SSH غیر ۲۲: بدون این، fail2ban پورت ۲۲ را می‌بندد و حمله‌کننده روی پورت واقعی آزاد است
+port = ${SSH_PORT}
 maxretry = 5
 findtime = 10m
 bantime = 1h
@@ -159,10 +183,85 @@ systemctl enable --now fail2ban
 fail2ban-client status sshd
 ```
 
-`fail2ban-client status sshd` باید `Currently banned` و `Total failed` را نشان دهد. اگر خودتان قفل شدید: از کنسول پنل
-`fail2ban-client set sshd unbanip YOUR_IP`. fail2ban فقط SSH را می‌پاید؛ وب را محدودیت نرخ خود برنامه و nginx کانتینر می‌پایند.
+`fail2ban-client status sshd` باید `Currently banned` و `Total failed` را نشان دهد. آزمون اینکه واقعاً می‌بیند: از ویندوز یک بار با
+کاربر غلط وصل شوید (`ssh -p PORT nobody@SERVER_IP`) ← `Total failed` یکی بالا می‌رود. اگر صفر ماند، `journalmatch` درست نیست
+(`journalctl -u ssh -n 5`). اگر خودتان قفل شدید: از کنسول پنل `fail2ban-client set sshd unbanip YOUR_IP`. fail2ban فقط SSH را
+می‌پاید؛ وب را محدودیت نرخ خود برنامه و nginx کانتینر می‌پایند.
 
 **به‌روزرسانی امنیتی خودکار:** اوبونتو `unattended-upgrades` را از قبل دارد؛ `systemctl status unattended-upgrades` باید `active` باشد.
+
+---
+
+## ۲ج. VPS غیر آروان — پارس وی دی اس (سرور production فعلی)
+
+| چیز | مقدار |
+|---|---|
+| پلن | `IR_VPS_03_shatel`: ۲ هسته، ۴ گیگ رم، ۳۰ گیگ دیسک، ۳۰۰ گیگ ترافیک ماهانه، KVM، Ubuntu 24.04 |
+| شبکه | IPv4 عمومی مستقیم روی `eth0` (بی NAT؛ ۸۰ و ۴۴۳ مستقیم)، IPv6 هم دارد |
+| SSH | پورت **`9011`** (نه ۲۲) |
+| کنسول نجات | پنل ← تنظیمات ← VNC ← «Launch HTML 5 VNC Client»؛ ورود با **رمز root** |
+| اینترنت بین‌الملل | از منوی پنل «فعال‌سازی اینترنت بین‌الملل» (پیش‌فرض بسته؛ از ۲۰۲۶-۱۱-۱۱ باز) |
+
+**`~/.ssh/config` ویندوز** (پوشه‌ی `.ssh` را `ssh-keygen` نمی‌سازد: `New-Item -ItemType Directory $HOME\.ssh`):
+
+```
+Host mahru
+    HostName SERVER_IP
+    Port 9011
+    User root
+    IdentityFile ~/.ssh/mahru_prod
+    ServerAliveInterval 15
+```
+
+از آن به بعد `ssh mahru`، `scp … mahru:/srv/mahru/…` و `sftp mahru`. WinSCP: همان میزبان و **پورت ۹۰۱۱**.
+
+**passphrase فراموش‌شده‌ی کلید (SSH فقط با کلید است):** اول روی ویندوز بی شمارش در fail2ban بیازمایید:
+`ssh-keygen -y -f $HOME\.ssh\mahru_prod` (passphrase درست ← کلید عمومی چاپ می‌شود). اگر واقعاً فراموش شده، از VNC:
+
+```bash
+mv /etc/ssh/sshd_config.d/00-mahru-hardening.conf /root/ && systemctl reload ssh     # موقتاً ورود با رمز
+# ویندوز: کلید تازه (ssh-keygen -t ed25519 -f $HOME\.ssh\mahru_prod) و با رمز root:
+#   type $HOME\.ssh\mahru_prod.pub | ssh -p 9011 root@SERVER_IP "cat > ~/.ssh/authorized_keys"
+mv /root/00-mahru-hardening.conf /etc/ssh/sshd_config.d/ && systemctl reload ssh       # دوباره فقط کلید
+```
+
+`Connection closed` بلافاصله بعد از رمز = `Timeout before authentication` (۱۲۰ ثانیه)؛ تند‌تر تایپ کنید یا از VNC بروید.
+
+**اینترنت بین‌الملل:** پیش از هر کاری که به خارج نیاز دارد (acme.sh، Let's Encrypt، FCM، NTP خارجی) بیازمایید:
+
+```bash
+for u in https://github.com https://get.acme.sh https://acme-v02.api.letsencrypt.org/directory https://fcm.googleapis.com \
+         https://oauth2.googleapis.com https://napi.arvancloud.ir https://api.kavenegar.com https://payment.zarinpal.com; do
+  printf '%-50s %s\n' "$u" "$(curl -s -o /dev/null -m 10 -w '%{http_code}' "$u")"
+done
+```
+
+کد `000` یعنی بسته؛ هر کد دیگری (حتی ۴۰۴ ریشه‌ی `fcm.googleapis.com`) یعنی باز. سرویس‌های داخلی (کاوه‌نگار، زرین‌پال، API آروان)
+همیشه باز بوده‌اند. در قطعی بین‌الملل: گواهی (تمدید ۶۰ روز پیش از انقضای ۹۰ روزه، بخش ۸الف) و پوش FCM می‌مانند؛ بقیه کار می‌کند.
+
+**needrestart:** بعد از `apt` گاهی روی ری‌استارت یک سرویس (اینجا `fwupd`) گیر می‌کند و قفل dpkg می‌ماند، هرچند نصب تمام شده
+(`Log ended` آخر `/var/log/apt/term.log`). پردازه‌ی needrestart را `kill` کنید و از آن به بعد `export NEEDRESTART_SUSPEND=1` پیش از apt.
+`fwupd` روی VPS لازم نیست: `systemctl mask fwupd`.
+
+### ۲د. ساعت سرور (NTP)
+
+اعتبار گواهی، توکن‌های پرداخت و امضای JWT حساب سرویس FCM به ساعت درست وابسته‌اند (کانتینر ساعت میزبان را دارد). اوبونتو با
+`systemd-timesyncd` همگام می‌شود؛ پیش‌فرضش `ntp.ubuntu.com` (خارج). سرورهای ایرانی pool اول، تا در قطعی بین‌الملل هم همگام بماند:
+
+```bash
+mkdir -p /etc/systemd/timesyncd.conf.d
+cat > /etc/systemd/timesyncd.conf.d/mahru.conf <<'CONF'
+[Time]
+NTP=ir.pool.ntp.org ntp.ubuntu.com
+FallbackNTP=0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org time.cloudflare.com
+CONF
+systemctl restart systemd-timesyncd
+timedatectl set-ntp true
+sleep 10; timedatectl timesync-status; timedatectl | grep -E 'synchronized|NTP service'
+```
+
+انتظار: `System clock synchronized: yes` و در `timesync-status` یک `Server:` با `Offset` چند میلی‌ثانیه. اگر `Server: n/a` ماند، UDP ‏۱۲۳
+بسته است (`journalctl -u systemd-timesyncd -n 20`)؛ در تیکت از دیتاسنتر سرور NTP داخلی بخواهید و همان را اول `NTP=` بگذارید.
 
 ---
 
@@ -193,6 +292,24 @@ WinSCP: پروتکل **SFTP**، میزبان `SERVER_IP`، کاربر `root`، �
 | `build-images\mahru-single-<commit>.tar` | `/srv/mahru/images/` |
 
 هر نسخه‌ی تازه فقط فایل `.tar` (و اگر پچی آن‌ها را عوض کرد، همان فایل‌ها) دوباره منتقل می‌شود.
+
+**بی WinSCP، با `scp`/`sftp` ویندوز** (با `Host mahru` بخش ۲ج):
+
+```
+scp build-images\mahru-single-<commit>.tar mahru:/srv/mahru/images/
+```
+
+آپلود کند خانه (~۳۰۰ KB/s برای ~۳۰۰ مگابایت) ممکن است وسط کار قطع شود. **ادامه از همان‌جا** (نه از اول):
+
+```
+sftp mahru
+sftp> cd /srv/mahru/images
+sftp> reput build-images\mahru-single-<commit>.tar
+sftp> bye
+```
+
+بعد درستی فایل: روی ویندوز `certutil -hashfile build-images\mahru-single-<commit>.tar SHA256` و روی سرور
+`sha256sum /srv/mahru/images/mahru-single-<commit>.tar` باید یکی باشند.
 
 ---
 
@@ -488,11 +605,25 @@ bash deploy/single/server-deploy.sh --use <نسخه‌ی قبلی>
 | کد ورود | `docker logs --since 10m mahru 2>&1 \| grep SMS` |
 | artisan | `docker exec -u www mahru php artisan …` |
 | شل دیتابیس | `docker exec -it mahru mariadb mahru` |
-| اعمال تغییر `.env.server` | `docker compose -f docker-compose.server.yml up -d` (`restart` کافی نیست) |
+| اعمال تغییر `.env.server` | `docker compose -f docker-compose.server.yml up -d` (`restart` کافی نیست؛ کانتینر از نو ساخته می‌شود) |
+| فضای دیسک (هفته‌ای یک بار) | `df -h /` — بالای ۷۰٪: پشتیبان‌ها و imageهای قدیمی (بخش ۱۲)؛ بالای ۸۵٪: دیسک بیشتر |
 | پشتیبان دستی | `docker exec -u www mahru mahru-backup now` |
 | خاموش (داده می‌ماند) | `docker compose -f docker-compose.server.yml down` |
 
 ⚠️ هرگز `down -v` نزنید: volume دیتابیس و آپلودها پاک می‌شود.
+
+**وصله‌ی فوری یک فایل بی build تازه** (مثلاً یک view؛ فقط تا deploy بعدی):
+
+```bash
+docker cp <فایل> mahru:/var/www/html/<مسیر همان فایل>
+docker exec mahru chown www:www /var/www/html/<مسیر همان فایل>
+docker exec -u www mahru php artisan view:cache      # اگر view است (یا config:cache / route:cache)
+docker exec mahru supervisorctl restart php-fpm      # ⚠️ لازم: OPcache زمان فایل را نمی‌سنجد
+```
+
+`docker/php/php.ini` در image ‏`opcache.validate_timestamps = 0` دارد؛ بی ری‌استارت php-fpm، PHP همان نسخه‌ی قدیمی را از حافظه می‌دهد (درس
+۲۰۲۶-۱۱-۱۰). این تغییر در لایه‌ی خود کانتینر است: `docker restart mahru` آن را نگه می‌دارد، ولی ساختن دوباره‌ی کانتینر
+(`server-deploy.sh`، `up -d --force-recreate` یا تغییر `.env.server` + `up -d`) آن را دور می‌ریزد. پس همان تغییر باید پچ و در image بعدی باشد.
 
 ---
 
