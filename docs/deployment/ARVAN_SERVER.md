@@ -288,7 +288,7 @@ WinSCP: پروتکل **SFTP**، میزبان `SERVER_IP`، کاربر `root`، �
 |---|---|
 | `docker-compose.server.yml` | `/srv/mahru/docker-compose.server.yml` |
 | `.env.server.example` | `/srv/mahru/.env.server` (با همین نام تازه) |
-| `deploy/single/server-deploy.sh` و `deploy/single/arvan-ips.sh` | `/srv/mahru/deploy/single/` |
+| `deploy/single/server-deploy.sh`، `deploy/single/arvan-ips.sh` و `deploy/single/tls-reload.sh` | `/srv/mahru/deploy/single/` |
 | `build-images\mahru-single-<commit>.tar` | `/srv/mahru/images/` |
 
 هر نسخه‌ی تازه فقط فایل `.tar` (و اگر پچی آن‌ها را عوض کرد، همان فایل‌ها) دوباره منتقل می‌شود.
@@ -392,23 +392,60 @@ rm /srv/mahru/mahru-fcm-sa.json
 
 ### ۸الف. گواهی خود سرور (acme.sh روی میزبان)
 
-گواهی `arisheh.ir` و `*.arisheh.ir` با **DNS-01** (wildcard فقط با DNS-01 صادر می‌شود). acme.sh برای DNS آروان افزونه‌ی `dns_arvan` دارد:
+گواهی `arisheh.ir` و `*.arisheh.ir` با **DNS-01** (wildcard فقط با DNS-01 صادر می‌شود) و Let's Encrypt. acme.sh افزونه‌ی `dns_arvan` دارد:
+رکورد TXT ‏`_acme-challenge` را با API آروان می‌سازد و بعد پاک می‌کند. نیاز: اینترنت بین‌الملل سرور (`get.acme.sh`، GitHub، Let's Encrypt؛
+آزمون بخش ۲ج) و API آروان (داخلی).
+
+**کلید API آروان:** فقط برای همین دامنه و فقط DNS — پنل ← IAM ← مدیریت منابع و دسترسی‌ها ← یک «ماشین یوزر» (اینجا `mahru-acme-dns`) با
+قانونی روی منبع دامنه‌ی `arisheh.ir` و نقش‌های «مدیر DNS» و «بیننده دامنه» (در توضیحات قانون نقطه و پرانتز ننویسید:
+`validation.xss_safe`). متن کپی‌شده از پنل خودش با `apikey ` شروع می‌شود؛ همان را کامل بگذارید (افزونه با یا بی پیشوند می‌پذیرد).
+acme.sh کلید را در `/root/.acme.sh/account.conf` (فقط root) نگه می‌دارد تا تمدید خودکار کار کند؛ دسترسی کلید فقط DNS همین دامنه است.
 
 ```bash
-curl -fsSL https://get.acme.sh | sh -s email=you@example.com      # یا از GitHub: acmesh-official/acme.sh
-# پنل آروان ← کلیدهای API ← کلید فقط با دسترسی DNS
-export Arvan_Token="apikey xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-~/.acme.sh/acme.sh --issue --dns dns_arvan -d arisheh.ir -d '*.arisheh.ir' --server letsencrypt
-~/.acme.sh/acme.sh --install-cert -d arisheh.ir \
+# ۱) نصب (یک بار) — کرون تمدید روزانه را هم خودش می‌گذارد
+curl -fsSL https://get.acme.sh | sh -s email=YOUR_EMAIL
+. ~/.bashrc
+~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
+crontab -l | grep acme          # باید یک خط «acme.sh --cron» باشد
+
+# ۲) کلید API (فاصله‌ی اول خط = در history نمی‌ماند)
+ export Arvan_Token="apikey xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# ۳) آزمون روی staging (سقف خطای Let's Encrypt را نمی‌خورد؛ گواهی‌اش معتبر نیست)
+~/.acme.sh/acme.sh --issue --staging --dns dns_arvan -d arisheh.ir -d '*.arisheh.ir' --keylength ec-256
+
+# ۴) گواهی واقعی (--force: جای گواهی staging همان دامنه)
+~/.acme.sh/acme.sh --issue --force --dns dns_arvan -d arisheh.ir -d '*.arisheh.ir' --keylength ec-256 --server letsencrypt
+
+# ۵) نصب در /srv/mahru/tls + hook تمدید (بار اول کانتینر را restart می‌کند تا nginx پورت ۴۴۳ را روشن کند)
+~/.acme.sh/acme.sh --install-cert -d arisheh.ir --ecc \
     --fullchain-file /srv/mahru/tls/fullchain.pem --key-file /srv/mahru/tls/privkey.pem \
-    --reloadcmd "chmod 600 /srv/mahru/tls/privkey.pem; docker exec mahru nginx -s reload"
-docker compose -f docker-compose.server.yml up -d      # بار اول: nginx با دیدن گواهی ۴۴۳ را روشن می‌کند
-curl -skI https://127.0.0.1/up -H 'Host: arisheh.ir' | head -1   # HTTP/2 200
+    --reloadcmd "bash /srv/mahru/deploy/single/tls-reload.sh"
+unset Arvan_Token
+
+# ۶) آزمون
+curl -sI https://arisheh.ir/up | head -1                         # HTTP/2 200 (بی -k: زنجیره‌ی گواهی واقعاً معتبر است)
+curl -sI http://arisheh.ir/ | grep -iE '^(HTTP|location)'         # 301 ← https://arisheh.ir/
+echo | openssl s_client -connect arisheh.ir:443 -servername demo.arisheh.ir 2>/dev/null | openssl x509 -noout -subject -ext subjectAltName -dates
 ```
 
-acme.sh خودش کرون تمدید می‌گذارد (`crontab -l`). وابستگی به آروان فقط در **صدور** است؛ اگر DNS جای دیگری رفت، همان دستور با افزونه‌ی
-DNS تازه (`--dns dns_…`). بدون API DNS می‌شود فقط `arisheh.ir` و `www` را با HTTP-01 گرفت (`--webroot /srv/mahru/acme`)، ولی
-ساب‌دامین سالن‌ها پوشش ندارند (بخش ۹ب).
+اگر مرحله‌ی ۳ با `Verify error` یا «TXT پیدا نشد» ماند: احتمالاً انتشار DNS آروان کند است؛ همان دستور با `--dnssleep 120` (به‌جای پرسش
+DNS عمومی، دو دقیقه صبر). با `--debug 2` جزئیات API آروان دیده می‌شود. رکوردهای TXT را خود افزونه پاک می‌کند؛ اگر نیمه‌کاره ماند، از
+پنل DNS آروان رکوردهای `_acme-challenge` را دستی بردارید.
+
+**تمدید:** کرون acme.sh هر روز سر می‌زند و ۶۰ روز پس از صدور (۳۰ روز پیش از انقضای ۹۰ روزه) تمدید می‌کند؛ بعد `tls-reload.sh` با
+`nginx -t` و `nginx -s reload` بی قطعی جایگزین می‌کند. آزمون بی صدور تازه: `~/.acme.sh/acme.sh --list` (ستون Renew)، و
+`~/.acme.sh/acme.sh --cron --home ~/.acme.sh` (چیزی تمدید نمی‌شود مگر موعدش رسیده باشد). در قطعی بین‌الملل تمدید شکست می‌خورد ولی
+۳۰ روز فرصت هست؛ کرون هر روز دوباره تلاش می‌کند.
+
+**`tls-reload.sh` (`deploy/single/`، با WinSCP/scp کنار `server-deploy.sh`):** دسترسی‌ها را درست می‌کند (`privkey.pem` ‏۶۰۰)؛ اگر nginx
+کانتینر هنوز HTTPS ندارد (اولین گواهی) `docker restart mahru`، وگرنه `nginx -t` و reload. چرا restart: `docker/nginx-setup.sh` فقط هنگام
+شروع کانتینر `tls.conf` و هدایت ۸۰ ← ۴۴۳ را روشن می‌کند؛ `up -d` بی تغییر کانتینر را دوباره نمی‌سازد (پس nginx-setup هم دوباره اجرا
+نمی‌شود)، و `up -d --force-recreate` تغییرهای `docker cp` لایه‌ی کانتینر را دور می‌ریزد (بخش ۱۳).
+
+وابستگی به آروان فقط در **صدور و تمدید** است؛ اگر DNS جای دیگری رفت، همان دستور با افزونه‌ی DNS تازه (`--dns dns_…`). بدون API DNS
+می‌شود فقط `arisheh.ir` و `www` را با HTTP-01 گرفت (`--webroot`؛ نیاز به mount ‏`./acme:/data/acme:ro` در `docker-compose.server.yml` که
+فعلاً نیست)، ولی ساب‌دامین سالن‌ها پوشش ندارند (بخش ۹ب).
 
 وقتی `./tls` گواهی دارد: پورت ۸۰ به HTTPS هدایت می‌شود (جز `/up` و چالش ACME)، و درخواستی که لبه‌ی آروانِ مورد اعتماد خودش با HTTPS گرفته
 هدایت نمی‌شود (حلقه ساخته نمی‌شود). برنامه روی HTTPS هدر **HSTS** (یک سال، با ساب‌دامین‌ها) می‌فرستد.
@@ -645,8 +682,9 @@ docker exec mahru supervisorctl restart php-fpm      # ⚠️ لازم: OPcache 
 
 ## ۱۵. آنچه تأییدنشده است (روی سرور واقعی بسنجید)
 
-- (بسته‌ی مجوز 5د) صدور گواهی `*.arisheh.ir` با `dns_arvan` روی پلن پایه و اتصال «HTTPS به مبدا» لبه‌ی آروان به گواهی خود سرور؛
-  HTTPS و هدایت ۸۰ در sandbox با گواهی خودامضا و nginx و php-fpm واقعی آزموده شد، خود image آلپاین نه.
+- (بسته‌ی مجوز 5د) صدور گواهی `*.arisheh.ir` با `dns_arvan` روی پلن پایه (بخش ۸الف، ۲۰۲۶-۱۱-۱۱ در حال اجرا روی پارس وی دی اس) و
+  اتصال «HTTPS به مبدا» لبه‌ی آروان به گواهی خود سرور (فقط اگر CDN روشن شد)؛ HTTPS و هدایت ۸۰ در sandbox با گواهی خودامضا و nginx و
+  php-fpm واقعی آزموده شد، خود image آلپاین نه. `tls-reload.sh` با docker ساختگی آزموده شد (`TlsReloadTest`).
 - (بسته‌ی مجوز 5د) نام دقیق کنسول وب و بازنشانی رمز در پنل سرور ابری آروان.
 
 - آدرس فهرست IP آروان (`/en/ips.txt`) — ابزارهای متن‌باز همین را استفاده می‌کنند؛ از بیرون ایران برای Claude بسته بود.
