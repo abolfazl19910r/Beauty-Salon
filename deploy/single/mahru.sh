@@ -2,7 +2,7 @@
 # ============================================================
 # mahru — دستورهای روزمره‌ی سرور در یک جا (۲۰۲۶-۱۱-۱۱؛ راهنما: docs/deployment/ARVAN_SERVER.md بخش ۱۳)
 #
-# نصب (یک بار، روی سرور):  ln -sf /srv/mahru/deploy/single/mahru.sh /usr/local/bin/mahru
+# نصب (یک بار، روی سرور):  chmod +x /srv/mahru/deploy/single/mahru.sh && ln -sf /srv/mahru/deploy/single/mahru.sh /usr/local/bin/mahru
 # بعد:                      mahru            (فهرست دستورها)
 #
 # فقط چیزهایی را که هر روز لازم است کوتاه می‌کند؛ هر کدام همان دستور docker زیرش را هم چاپ می‌کند تا یاد بماند.
