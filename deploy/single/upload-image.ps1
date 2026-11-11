@@ -59,8 +59,15 @@ for ($i = 1; $i -le $MaxAttempts; $i++) {
     Write-Host ("[{0}] attempt {1}: {2} from {3}%" -f (Get-Date -Format 'HH:mm:ss'), $i, $verb, $pct)
     Set-Content -Path $batch -Encoding ASCII -Value @("cd $RemoteDir", ('{0} "{1}"' -f $verb, $item.FullName.Replace('\', '/')))
     & sftp @opts -b $batch $SshHost
-    if ($LASTEXITCODE -eq 0) { $wait = 5 } else {
-        Write-Host ("connection dropped, resume in {0}s" -f $wait) -ForegroundColor Yellow
+    if ($LASTEXITCODE -eq 0) { $wait = 5; continue }
+    # The line drops every few minutes but each connection still moves data: after progress, retry almost at once.
+    # Only back off (up to MaxWaitSeconds) while nothing gets through.
+    $now = Get-RemoteSize
+    if ($null -ne $now -and $now -gt [Math]::Max($have, 0)) {
+        Write-Host ("connection dropped after {0:N1} MB, resuming in 3s" -f (($now - [Math]::Max($have, 0)) / 1MB)) -ForegroundColor Yellow
+        $wait = 5; Start-Sleep -Seconds 3
+    } else {
+        Write-Host ("connection dropped, no progress, resume in {0}s" -f $wait) -ForegroundColor Yellow
         Start-Sleep -Seconds $wait; $wait = [Math]::Min($wait * 2, $MaxWaitSeconds)
     }
 }
