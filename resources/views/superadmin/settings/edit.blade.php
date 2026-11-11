@@ -80,14 +80,18 @@
     <div class="sa-card sa-card-pad" id="domain-verification" data-domain-verification>
         <h2 class="sa-card-title">فایل تأیید مالکیت دامنه (اینماد)</h2>
         <p class="sa-card-desc mb-4">
-            در پنل اینماد روش «بارگذاری فایل» را بزنید و فایل txt‌ای را که می‌دهد همین‌جا بارگذاری کنید؛ بی هیچ تغییری در ریشه‌ی سایت باز می‌شود
+            در پنل اینماد روش «بارگذاری فایل» را بزنید و فایل txt‌ای را که می‌دهد (معمولاً خالی، با نامی مثل ‎14305914.txt) همین‌جا بارگذاری کنید؛ بی هیچ تغییری در ریشه‌ی سایت باز می‌شود
             و بعد در پنل اینماد «بررسی» را بزنید. بعد از تأیید هم نگهش دارید (اینماد ممکن است دوباره بسنجد). فقط یک فایل در هر زمان.
         </p>
         @if ($verificationFile)
             <div class="mb-4 text-sm space-y-2">
                 <div>الان: <a href="{{ \App\Support\CentralUrl::to('/'.$verificationFile['name']) }}" target="_blank" rel="noopener" dir="ltr"
                               style="color: var(--sa-accent);">{{ \App\Support\CentralUrl::to('/'.$verificationFile['name']) }}</a></div>
-                <pre dir="ltr" class="sa-input" style="text-align: left; font-size: 12px; white-space: pre-wrap; max-height: 8rem; overflow: auto;">{{ $verificationFile['content'] }}</pre>
+                @if ($verificationFile['content'] === '')
+                    <p class="sa-card-desc">فایل خالی (۰ بایت) — همان فایل اینماد.</p>
+                @else
+                    <pre dir="ltr" class="sa-input" style="text-align: left; font-size: 12px; white-space: pre-wrap; max-height: 8rem; overflow: auto;">{{ $verificationFile['content'] }}</pre>
+                @endif
                 <form method="POST" action="{{ route('superadmin.settings.verification-file') }}">
                     @csrf
                     @method('PUT')
@@ -104,7 +108,7 @@
                 <input id="dv-file" type="file" name="verification_file" accept=".txt,text/plain" class="sa-input" dir="ltr">
             </div>
             <details class="text-sm">
-                <summary style="cursor: pointer; color: var(--sa-text-dim);">یا نام و متن را دستی بنویسید (اگر اینماد فایل نداد و فقط نام و متن را نشان داد)</summary>
+                <summary style="cursor: pointer; color: var(--sa-text-dim);">یا نام (و اگر هست متن) را دستی بنویسید — برای فایل خالی فقط نام کافی است</summary>
                 <div class="grid gap-3 mt-3">
                     <div>
                         <label for="dv-name" class="sa-label">نام فایل</label>

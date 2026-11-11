@@ -33,13 +33,11 @@ final class DomainVerificationFile
         if (in_array(strtolower($name), self::RESERVED, true)) {
             return 'این نام مال خود سایت است و نمی‌شود برای فایل تأیید به کار برد.';
         }
-        if ($content === null || trim($content) === '') {
-            return 'فایل خالی است.';
-        }
-        if (strlen($content) > self::MAX_BYTES) {
+        // فایل اینماد خالی است (۰ بایت؛ ۲۰۲۶-۱۱-۱۱): فقط نامش سنجیده می‌شود — خالی مجاز است
+        if (strlen((string) $content) > self::MAX_BYTES) {
             return 'فایل تأیید بزرگ‌تر از ۴ کیلوبایت است؛ فایل درست اینماد را انتخاب کنید.';
         }
-        if (! mb_check_encoding($content, 'UTF-8') || preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', $content)) {
+        if (! mb_check_encoding((string) $content, 'UTF-8') || preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', (string) $content)) {
             return 'فایل متنی ساده نیست (نویسه‌ی دودویی دارد).';
         }
 
@@ -50,9 +48,8 @@ final class DomainVerificationFile
     public static function current(): ?array
     {
         $name = PlatformSettings::raw(self::NAME_KEY);
-        $content = PlatformSettings::stored()[self::CONTENT_KEY] ?? null;
-
-        return $name !== null && $content !== null && $content !== '' ? ['name' => $name, 'content' => (string) $content] : null;
+        // نام تعیین‌کننده است؛ محتوای خالی (فایل ۰ بایتی اینماد) هم یک فایل ذخیره‌شده است
+        return $name !== null ? ['name' => $name, 'content' => (string) (PlatformSettings::stored()[self::CONTENT_KEY] ?? '')] : null;
     }
 
     public static function contentFor(string $name): ?string
@@ -71,7 +68,7 @@ final class DomainVerificationFile
 
     public static function clear(): void
     {
-        PlatformSettings::put(self::CONTENT_KEY, null);
         PlatformSettings::put(self::NAME_KEY, null);
+        PlatformSettings::put(self::CONTENT_KEY, null);
     }
 }

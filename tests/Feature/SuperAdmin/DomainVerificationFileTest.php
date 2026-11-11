@@ -47,6 +47,38 @@ class DomainVerificationFileTest extends TestCase
         $this->get('/robots-x.txt')->assertNotFound();
     }
 
+    public function test_an_empty_enamad_file_is_accepted_and_served_as_an_empty_200(): void
+    {
+        // ۲۰۲۶-۱۱-۱۱: فایل اینماد ‎14305914.txt خالی (۰ بایت) است و باید در https://arisheh.ir/14305914.txt باز شود
+        $this->upload('14305914.txt', '')->assertRedirect()->assertSessionHasNoErrors()->assertSessionHas('success');
+
+        auth()->logout();
+        $response = $this->get('/14305914.txt')->assertOk();
+        $this->assertSame('', $response->getContent());
+        $this->assertStringStartsWith('text/plain', (string) $response->headers->get('Content-Type'));
+        $this->get('/14305915.txt')->assertNotFound();
+
+        $this->actingAs($this->superAdmin())->get(route('superadmin.settings.edit'))->assertOk()->assertSee('فایل خالی (۰ بایت)')->assertSee('/14305914.txt', false);
+    }
+
+    public function test_an_empty_file_can_also_be_given_by_name_only(): void
+    {
+        $this->actingAs($this->superAdmin())->put(route('superadmin.settings.verification-file'), [
+            'verification_name' => '14305914.txt', 'verification_content' => '',
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $this->assertSame('', $this->get('/14305914.txt')->assertOk()->getContent());
+        $this->actingAs($this->superAdmin())->put(route('superadmin.settings.verification-file'), ['remove' => '1']);
+        $this->get('/14305914.txt')->assertNotFound();
+    }
+
+    public function test_saving_with_no_file_and_no_name_is_an_error(): void
+    {
+        $this->actingAs($this->superAdmin())->put(route('superadmin.settings.verification-file'), [])
+            ->assertSessionHasErrors('verification_file');
+        $this->assertNull(DomainVerificationFile::current());
+    }
+
     public function test_nothing_is_served_before_a_file_is_saved(): void
     {
         $this->get('/8213457.txt')->assertNotFound();
@@ -87,7 +119,6 @@ class DomainVerificationFileTest extends TestCase
                 'verification_name' => $name, 'verification_content' => 'abc',
             ])->assertSessionHasErrors('verification_file');
         }
-        $this->upload('ok.txt', '')->assertSessionHasErrors('verification_file');
         $this->upload('ok.txt', str_repeat('a', 5000))->assertSessionHasErrors('verification_file');
         $this->upload('ok.txt', "bin\x00ary")->assertSessionHasErrors('verification_file');
 
