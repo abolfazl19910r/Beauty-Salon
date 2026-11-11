@@ -426,6 +426,24 @@ class DockerSetupTest extends TestCase
         $this->assertStringContainsString('/en/ips.txt', self::file('deploy/single/arvan-ips.sh'));
     }
 
+    public function test_server_env_example_publishes_the_customer_app_fingerprint(): void
+    {
+        // ۲۰۲۶-۱۱-۰۷: .env.server سرور از روی example ساخته شد و CUSTOMER_APP_SHA256_FINGERPRINTS نداشت ← assetlinks.json خالی و لینک
+        // سالن هرگز اپ را باز نمی‌کرد. همان اثرانگشت .env.example (یک کلید امضای EAS برای لوکال و سرور).
+        $env = self::file('.env.server.example');
+        preg_match('/^CUSTOMER_APP_SHA256_FINGERPRINTS=(.+)$/m', $env, $server);
+        preg_match('/^CUSTOMER_APP_SHA256_FINGERPRINTS=(.+)$/m', self::file('.env.example'), $local);
+        $this->assertNotEmpty($server[1] ?? null);
+        $this->assertSame($local[1] ?? null, $server[1]);
+        $this->assertMatchesRegularExpression('/^([0-9A-F]{2}:){31}[0-9A-F]{2}$/', trim($server[1]));
+
+        foreach (['PUSH_MODE=shadow', 'APP_RELEASE_MAX_MB=150', 'BRAND_EMAIL=', 'BRAND_DEMO_NOTIFY_EMAIL='] as $line) {
+            $this->assertMatchesRegularExpression('/^'.preg_quote($line, '/').'$/m', $env, $line);
+        }
+        // ریپو عمومی است: ایمیل شخصی در example نمی‌آید
+        $this->assertStringNotContainsString('@gmail.com', $env);
+    }
+
     public function test_deploy_env_files_log_at_info_and_never_unmask_or_drop_security_logs(): void
     {
         // بررسی لاگ‌ها ۲۰۲۶-۱۱-۰۵ (docs/deployment/LOGGING.md): پیش‌فرض کد LOG_LEVEL=debug است؛ .env.docker (شش‌سرویسی، production)
