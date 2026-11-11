@@ -121,6 +121,7 @@ class TlsReloadTest extends TestCase
             '--fullchain-file /srv/mahru/tls/fullchain.pem',
             '--key-file /srv/mahru/tls/privkey.pem',
             '--staging',
+            '--dnssleep 120',
             'crontab -l | grep acme',
         ] as $needle) {
             $this->assertStringContainsString($needle, $guide, $needle);

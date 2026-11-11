@@ -412,10 +412,10 @@ crontab -l | grep acme          # باید یک خط «acme.sh --cron» باشد
  export Arvan_Token="apikey xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 # ۳) آزمون روی staging (سقف خطای Let's Encrypt را نمی‌خورد؛ گواهی‌اش معتبر نیست)
-~/.acme.sh/acme.sh --issue --staging --dns dns_arvan -d arisheh.ir -d '*.arisheh.ir' --keylength ec-256
+~/.acme.sh/acme.sh --issue --staging --dns dns_arvan -d arisheh.ir -d '*.arisheh.ir' --keylength ec-256 --dnssleep 120
 
 # ۴) گواهی واقعی (--force: جای گواهی staging همان دامنه)
-~/.acme.sh/acme.sh --issue --force --dns dns_arvan -d arisheh.ir -d '*.arisheh.ir' --keylength ec-256 --server letsencrypt
+~/.acme.sh/acme.sh --issue --force --dns dns_arvan -d arisheh.ir -d '*.arisheh.ir' --keylength ec-256 --server letsencrypt --dnssleep 120
 
 # ۵) نصب در /srv/mahru/tls + hook تمدید (بار اول کانتینر را restart می‌کند تا nginx پورت ۴۴۳ را روشن کند)
 ~/.acme.sh/acme.sh --install-cert -d arisheh.ir --ecc \
@@ -429,8 +429,10 @@ curl -sI http://arisheh.ir/ | grep -iE '^(HTTP|location)'         # 301 ← http
 echo | openssl s_client -connect arisheh.ir:443 -servername demo.arisheh.ir 2>/dev/null | openssl x509 -noout -subject -ext subjectAltName -dates
 ```
 
-اگر مرحله‌ی ۳ با `Verify error` یا «TXT پیدا نشد» ماند: احتمالاً انتشار DNS آروان کند است؛ همان دستور با `--dnssleep 120` (به‌جای پرسش
-DNS عمومی، دو دقیقه صبر). با `--debug 2` جزئیات API آروان دیده می‌شود. رکوردهای TXT را خود افزونه پاک می‌کند؛ اگر نیمه‌کاره ماند، از
+**چرا `--dnssleep 120`:** بی آن acme.sh پیش از درخواست به Let's Encrypt رکورد TXT را با DoH (`cloudflare-dns.com`، `dns.google`) می‌پرسد؛ از سرور
+پارس وی دی اس DoH حتی با بین‌الملل باز بسته است (`curl` خطای ۲۸، «No DOH») و حلقه تمام نمی‌شود (۲۰۲۶-۱۱-۱۱). با `--dnssleep` فقط دو دقیقه
+صبر می‌کند و خود Let's Encrypt از NSهای آروان می‌خواند؛ acme.sh این گزینه را برای تمدید نگه می‌دارد. پیش از صدور:
+`dig +short TXT _acme-challenge.arisheh.ir @i.ns.arvancdn.ir`. اگر Let's Encrypt خطای `Verify error` داد، `--dnssleep 300`. با `--debug 2` جزئیات API آروان دیده می‌شود. رکوردهای TXT را خود افزونه پاک می‌کند؛ اگر نیمه‌کاره ماند، از
 پنل DNS آروان رکوردهای `_acme-challenge` را دستی بردارید.
 
 **تمدید:** کرون acme.sh هر روز سر می‌زند و ۶۰ روز پس از صدور (۳۰ روز پیش از انقضای ۹۰ روزه) تمدید می‌کند؛ بعد `tls-reload.sh` با
