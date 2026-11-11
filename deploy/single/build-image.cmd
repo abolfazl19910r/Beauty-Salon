@@ -34,6 +34,7 @@ docker save mahru:single-%V% -o build-images\mahru-single-%V%.tar || exit /b 1
 
 echo.
 echo آماده: build-images\mahru-single-%V%.tar
-echo با WinSCP به /srv/mahru/images بفرستید و روی سرور:
+echo آپلود با ادامه‌ی خودکار پس از قطع: powershell -ExecutionPolicy Bypass -File deploy\single\upload-image.ps1 build-images\mahru-single-%V%.tar
+echo (یا با WinSCP به /srv/mahru/images^) و بعد روی سرور:
 echo   cd /srv/mahru ^&^& bash deploy/single/server-deploy.sh images/mahru-single-%V%.tar
 endlocal

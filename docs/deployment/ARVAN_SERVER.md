@@ -293,6 +293,15 @@ WinSCP: پروتکل **SFTP**، میزبان `SERVER_IP`، کاربر `root`، �
 
 هر نسخه‌ی تازه فقط فایل `.tar` (و اگر پچی آن‌ها را عوض کرد، همان فایل‌ها) دوباره منتقل می‌شود.
 
+**ساده‌ترین: `upload-image.ps1`** (۲۰۲۶-۱۱-۱۱؛ کلید باید در ssh-agent ویندوز باشد، `BACKUP.md` «کپی هفتگی»):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File deploy\single\upload-image.ps1 build-images\mahru-single-<commit>.tar
+```
+
+خودش بار اول `put` و بعد از هر قطع `reput` (ادامه از همان‌جا) می‌زند، هر بار کمی بیشتر صبر می‌کند، در آخر sha256 دو طرف را می‌سنجد (نسخه‌ی
+خراب سرور را پاک می‌کند) و دستور deploy را چاپ می‌کند. Ctrl+C و اجرای دوباره هم از همان‌جا ادامه می‌دهد. شکل دستی همان:
+
 **بی WinSCP، با `scp`/`sftp` ویندوز** (با `Host mahru` بخش ۲ج):
 
 ```

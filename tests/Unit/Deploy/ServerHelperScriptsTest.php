@@ -144,10 +144,62 @@ class ServerHelperScriptsTest extends TestCase
         $this->assertSame(['20261103_034000', '20261111_034000'], array_values(array_filter(scandir($dest), fn ($f) => preg_match('/^\d{8}_\d{6}$/', $f))));
     }
 
+    public function test_upload_image_resumes_after_dropped_connections_and_verifies_the_checksum(): void
+    {
+        $pwsh = getenv('PWSH') ?: trim((string) shell_exec('command -v pwsh 2>/dev/null'));
+        if ($pwsh === '' || ! is_executable($pwsh)) {
+            $this->markTestSkipped('PowerShell (pwsh) نصب نیست — PWSH=/path/to/pwsh');
+        }
+        mkdir($this->dir.'/remote');
+        mkdir($this->dir.'/local');
+        file_put_contents($this->dir.'/local/mahru-single-abc.tar', random_bytes(300000));
+        $this->fake('ssh', "echo 'Warning: Permanently added' >&2\nbash -c \"\${@: -1}\"\n");
+        // هر اتصال حداکثر ۱۲۰ کیلوبایت و بعد «Connection reset» (مثل خط خانه، ۲۰۲۶-۱۱-۱۱)
+        $this->fake('sftp', <<<'SH'
+            while [[ $# -gt 0 ]]; do [[ "$1" == -b ]] && { B="$2"; shift; }; shift; done
+            dir=$(sed -n 's/^cd //p' "$B"); line=$(tail -1 "$B"); verb=${line%% *}; src=$(echo "$line" | sed 's/^[a-z]* "\(.*\)"$/\1/')
+            dst="$dir/$(basename "$src")"; total=$(stat -c %s "$src"); have=0
+            [[ "$verb" == reput ]] && have=$(stat -c %s "$dst"); [[ "$verb" == put ]] && : > "$dst"
+            echo "$verb $have" >> "$LOG"
+            n=$(( total - have < 120000 ? total - have : 120000 ))
+            tail -c +$((have+1)) "$src" 2>/dev/null | head -c $n >> "$dst"
+            [[ $((have+n)) -lt $total ]] && { echo "Connection reset" >&2; exit 1; }
+            exit 0
+            SH);
+        $upload = function () use ($pwsh): Process {
+            $p = new Process([$pwsh, '-NoProfile', '-File', self::root('deploy/single/upload-image.ps1'), 'mahru-single-abc.tar',
+                '-RemoteDir', $this->dir.'/remote', '-MaxWaitSeconds', '1'], $this->dir.'/local',
+                ['PATH' => $this->dir.'/bin:'.getenv('PATH'), 'LOG' => $this->dir.'/calls.log', 'TEMP' => $this->dir], null, 120);
+            $p->run();
+
+            return $p;
+        };
+
+        $run = $upload();
+        $this->assertSame(0, $run->getExitCode(), $run->getOutput());
+        $this->assertSame("put 0\nreput 120000\nreput 240000\n", $this->calls(), 'بار اول put، بعد از هر قطع reput از همان‌جا');
+        $this->assertFileEquals($this->dir.'/local/mahru-single-abc.tar', $this->dir.'/remote/mahru-single-abc.tar');
+        $this->assertStringContainsString('server-deploy.sh images/mahru-single-abc.tar', $run->getOutput());
+
+        // کامل روی سرور ← بی آپلود دوباره
+        $this->assertSame(0, $upload()->getExitCode());
+        $this->assertSame(3, substr_count($this->calls(), "\n"));
+
+        // هم‌اندازه ولی خراب ← شناخته و پاک می‌شود
+        $fh = fopen($this->dir.'/remote/mahru-single-abc.tar', 'r+');
+        fseek($fh, 10);
+        fwrite($fh, 'X');
+        fclose($fh);
+        $run = $upload();
+        $this->assertSame(1, $run->getExitCode());
+        $this->assertStringContainsString('CHECKSUM MISMATCH', $run->getOutput());
+        $this->assertFileDoesNotExist($this->dir.'/remote/mahru-single-abc.tar');
+    }
+
     public function test_windows_scripts_are_ascii_and_crlf_on_checkout(): void
     {
         // PowerShell 5.1 فایل UTF-8 بی BOM را ANSI می‌خواند: متن فارسی خراب و حتی خطای parse
-        foreach (['deploy/backup/pull-backup.ps1', 'deploy/backup/install-pull-task.ps1'] as $f) {
+        foreach (['deploy/backup/pull-backup.ps1', 'deploy/backup/install-pull-task.ps1', 'deploy/single/upload-image.ps1'] as $f) {
             $this->assertDoesNotMatchRegularExpression('/[^\x00-\x7F]/', (string) file_get_contents(self::root($f)), $f);
         }
         $this->assertStringContainsString('*.ps1 text eol=crlf', (string) file_get_contents(self::root('.gitattributes')));
