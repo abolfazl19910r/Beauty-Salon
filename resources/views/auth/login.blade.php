@@ -77,7 +77,7 @@ use Illuminate\Support\Facades\Route;
             </p>
             <p data-staff-app-link>
                 روی گوشی راحت‌ترید؟
-                <a href="{{ \App\Support\CentralUrl::route('app-download.show') }}#staff" class="text-m-gold2 hover:text-m-gold transition-colors font-medium mr-1">اپ ماهرو همکار برای متخصص‌ها</a>
+                <a href="{{ \App\Support\CentralUrl::route('app-download.staff') }}" class="text-m-gold2 hover:text-m-gold transition-colors font-medium mr-1">اپ ماهرو همکار برای متخصص‌ها</a>
             </p>
             <p>
                 صاحب سالن هستید؟

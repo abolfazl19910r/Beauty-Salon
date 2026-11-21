@@ -43,8 +43,9 @@ class AppDiscoveryTest extends TestCase
     {
         $this->get(route('login'))->assertOk()
             ->assertSee('data-staff-app-link', false)
-            ->assertSee(CentralUrl::route('app-download.show').'#staff', false);
+            ->assertSee(CentralUrl::route('app-download.staff'), false);
 
+        // لنگر قدیمی /app#staff (لینک‌ها و QRهای چاپ‌شده‌ی قبلی) همچنان کار می‌کند
         $this->get(CentralUrl::route('app-download.show'))->assertOk()->assertSee('id="staff"', false);
     }
 
@@ -82,6 +83,6 @@ class AppDiscoveryTest extends TestCase
         $this->actingAs($admin)->get(route('admin.salon-qr.index'))->assertOk()
             ->assertSee('data-admin-apps-card', false)
             ->assertSee(CustomerAppLink::forSalon($this->salon)['install_url'], false)
-            ->assertSee(CentralUrl::route('app-download.show').'#staff', false);
+            ->assertSee(CentralUrl::route('app-download.staff'), false);
     }
 }

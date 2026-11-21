@@ -26,6 +26,12 @@ class AppDownloadController extends Controller
         return view('central.app-download', ['latest' => $latest]);
     }
 
+    /** GET /app/staff: صفحه‌ی اختصاصی دانلود «ماهرو همکار» برای متخصص‌ها (فقط آخرین نسخه‌ی منتشرشده‌ی اپ همکار). */
+    public function staff(): View
+    {
+        return view('central.app-download-staff', ['staff' => AppRelease::latestFor('staff')]);
+    }
+
     public function download(string $variant): StreamedResponse
     {
         abort_unless(array_key_exists($variant, AppRelease::VARIANTS), 404);

@@ -66,6 +66,7 @@
                 دانلود ماهرو همکار
             </a>
             <span class="text-xs text-m-tx/50 mr-2">نسخه‌ی <span dir="ltr">{{ $staff->version_name }}</span> · {{ $staff->sizeLabel() }}</span>
+            <a href="{{ route('app-download.staff') }}" data-app-download-staff-page-link class="block mt-2 text-xs text-m-gold2 hover:text-m-gold underline">صفحه‌ی اختصاصی ماهرو همکار و راهنمای نصب</a>
         @else
             <p class="text-xs text-m-tx/50 mt-1">به‌زودی.</p>
         @endif

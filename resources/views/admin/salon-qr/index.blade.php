@@ -89,7 +89,7 @@
                 {{-- ۲۰۲۶-۱۱-۰۶: اپ‌ها فقط از سایت ماهرو منتشر می‌شوند؛ صاحب سالن باید بتواند به مشتری و کادر معرفی‌شان کند --}}
                 <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);" data-admin-apps-card>
                     @php($apps = \App\Support\CustomerAppLink::forSalon($salon))
-                    @php($staffAppUrl = \App\Support\CentralUrl::route('app-download.show').'#staff')
+                    @php($staffAppUrl = \App\Support\CentralUrl::route('app-download.staff'))
                     <h2 class="font-bold mb-2" style="color:var(--admin-text);">معرفی اپ به مشتری‌ها و کادر</h2>
                     <p class="text-sm leading-7" style="color:var(--admin-text-dim);">همین QR مشتری را به سایت سالن می‌برد و روی اندروید پیشنهاد نصب اپ «ماهرو» را می‌دهد. برای فرستادن در پیام یا شبکه‌های اجتماعی:</p>
                     <div class="mt-3 space-y-3 text-sm">

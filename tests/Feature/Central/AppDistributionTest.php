@@ -158,6 +158,32 @@ class AppDistributionTest extends TestCase
         $this->get(route('app-download.file', ['variant' => 'customer']))->assertNotFound();
     }
 
+    public function test_staff_download_page_is_separate_from_the_customer_page(): void
+    {
+        $this->get(route('app-download.staff'))->assertOk()
+            ->assertSee('data-staff-page', false)
+            ->assertSee('data-staff-page-soon', false)
+            ->assertDontSee('data-staff-page-download', false)
+            ->assertDontSee('data-app-download-customer', false);
+
+        $this->actingAs($this->superAdmin());
+        $this->upload([], $this->fakeApkUpload(versionCode: 8, versionName: '0.3.0'));
+        $this->post(route('superadmin.app-releases.store'), ['variant' => 'staff', 'apk' => $this->fakeApkUpload('ir.mahru.staff', 4, '0.2.0')]);
+        auth()->logout();
+
+        $this->get(route('app-download.staff'))->assertOk()
+            ->assertSee('data-staff-page-download', false)
+            ->assertSee(route('app-download.file', ['variant' => 'staff']), false)
+            ->assertSee('0.2.0')->assertDontSee('0.3.0')
+            ->assertDontSee('data-app-download-customer', false)
+            ->assertSee('data-staff-page-customer-link', false);
+
+        // صفحه‌ی /app (اپ مشتری) به صفحه‌ی اختصاصی همکار لینک دارد و لنگر قدیمی #staff را هم نگه می‌دارد
+        $this->get(route('app-download.show'))->assertOk()
+            ->assertSee('id="staff"', false)
+            ->assertSee(route('app-download.staff'), false);
+    }
+
     public function test_unknown_salon_code_is_not_shown_on_download_page(): void
     {
         $this->get(route('app-download.show', ['salon' => 'nist']))->assertOk()->assertDontSee('data-app-download-salon-code', false);

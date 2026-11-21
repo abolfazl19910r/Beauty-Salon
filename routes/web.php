@@ -142,6 +142,8 @@ Route::get('/.well-known/assetlinks.json', \App\Http\Controllers\Central\AssetLi
 // بسته‌ی ۵: «دانلود اپ ماهرو» — اپ‌ها در مارکت نیستند؛ ابرمدیر APK را آپلود می‌کند. روی ساب‌دامین سالن، /app صفحه‌ی خود سالن است
 // (گروه بالا زودتر ثبت شده)؛ لینک به این صفحه همیشه با App\Support\CentralUrl ساخته می‌شود.
 Route::get('/app', [\App\Http\Controllers\Central\AppDownloadController::class, 'show'])->name('app-download.show');
+// ۲۰۲۶-۱۱-۲۱: صفحه‌ی جدا و اختصاصی «ماهرو همکار» (به‌جای لنگر /app#staff که اسکرول آن دیده نمی‌شد و مشتری/متخصص را قاطی می‌کرد)
+Route::get('/app/staff', [\App\Http\Controllers\Central\AppDownloadController::class, 'staff'])->name('app-download.staff');
 Route::get('/app/download/{variant}', [\App\Http\Controllers\Central\AppDownloadController::class, 'download'])
     ->whereIn('variant', ['customer', 'staff'])
     ->middleware('throttle:30,1')

@@ -14,7 +14,7 @@
         <div class="specialist-card rounded-xl p-5" data-specialist-install-desktop>
             <h2 class="font-bold text-[var(--specialist-text)] mb-2">روی کامپیوتر هستید؟</h2>
             <p class="text-sm text-[var(--specialist-text-dim)] leading-7">این نشانی را روی گوشی باز کنید و با همان شماره و رمز وارد شوید؛ لازم نیست آدرس سرور یا کد سالن وارد کنید.</p>
-            <p class="mt-2 text-sm font-medium text-[var(--specialist-text)] break-all" dir="ltr">{{ \App\Support\CentralUrl::route('app-download.show') }}#staff</p>
+            <p class="mt-2 text-sm font-medium text-[var(--specialist-text)] break-all" dir="ltr">{{ \App\Support\CentralUrl::route('app-download.staff') }}</p>
         </div>
 
         <div class="specialist-card rounded-xl p-5">
@@ -26,7 +26,7 @@
         <div class="specialist-card rounded-xl p-5">
             <h2 class="font-bold text-[var(--specialist-text)] mb-2">اندروید</h2>
             <p class="text-sm text-[var(--specialist-text-dim)] leading-7">اپ «ماهرو همکار» را از صفحه‌ی دانلود ماهرو نصب کنید؛ نوبت‌ها، تقویم و کیف پول با اعلان روی گوشی.</p>
-            <a href="{{ \App\Support\CentralUrl::route('app-download.show') }}#staff" class="specialist-cta inline-block mt-3 px-4 py-2 rounded-lg text-sm font-bold">صفحه‌ی دانلود اپ</a>
+            <a href="{{ \App\Support\CentralUrl::route('app-download.staff') }}" class="specialist-cta inline-block mt-3 px-4 py-2 rounded-lg text-sm font-bold">صفحه‌ی دانلود اپ</a>
         </div>
     </div>
 @endsection
