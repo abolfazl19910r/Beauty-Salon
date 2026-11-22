@@ -255,6 +255,16 @@ class PlatformGatewayTest extends TestCase
         $this->assertSame(3, PlatformSettlement::count());
     }
 
+    public function test_auto_settlement_runs_every_24_hours_only_when_switched_on(): void
+    {
+        $find = fn () => collect(app(\Illuminate\Console\Scheduling\Schedule::class)->events())
+            ->first(fn ($e) => str_contains((string) $e->command, 'platform-gateway:settle'));
+
+        config(['payments.platform_gateway.auto_settle' => true]);
+        $this->artisan('schedule:list')->assertSuccessful();
+        $this->assertSame('20 9 * * *', $find()?->expression);
+    }
+
     public function test_revoked_salon_stops_taking_payments_but_its_balance_can_still_be_settled(): void
     {
         $this->approved($this->salon, 10);

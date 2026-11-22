@@ -202,10 +202,10 @@ return Application::configure(basePath: dirname(__DIR__))
             ->hourly()
             ->withoutOverlapping()
             ->onOneServer();
-        // درگاه پلتفرم (۲۰۲۶-۱۱-۲۲): تسویه‌ی «منتظر واریز» هفتگی برای سالن‌ها؛ فقط با PLATFORM_GATEWAY_AUTO_SETTLE=true
+        // درگاه پلتفرم (۲۰۲۶-۱۱-۲۲): تسویه‌ی «منتظر واریز» هر ۲۴ ساعت برای سالن‌ها؛ فقط با PLATFORM_GATEWAY_AUTO_SETTLE=true
         if (config('payments.platform_gateway.auto_settle')) {
             $schedule->command('platform-gateway:settle')
-                ->weeklyOn(6, '09:20')
+                ->dailyAt('09:20')
                 ->withoutOverlapping()
                 ->onOneServer();
         }

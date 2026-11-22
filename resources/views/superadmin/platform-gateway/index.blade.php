@@ -22,7 +22,8 @@
     <div class="sa-card sa-card-pad mb-6" data-platform-gateway-totals>
         <div class="sa-card-head">
             <div class="sa-card-title">حساب همه‌ی سالن‌ها (تومان)</div>
-            <div class="sa-card-desc">کل دریافتی از مشتری‌ها با درگاه پلتفرم = سهم پلتفرم (کارمزد) + سهم سالن‌ها. واریز بانکی سهم سالن بیرون از سیستم انجام و با شماره‌ی پیگیری ثبت می‌شود.</div>
+            <div class="sa-card-desc">کل دریافتی از مشتری‌ها با درگاه پلتفرم = سهم پلتفرم (کارمزد) + سهم سالن‌ها. واریز بانکی سهم سالن بیرون از سیستم انجام و با شماره‌ی پیگیری ثبت می‌شود.
+                @if (config('payments.platform_gateway.auto_settle')) تسویه‌ی «منتظر واریز» هر روز ساعت ۰۹:۲۰ خودکار ساخته می‌شود.@endif</div>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-6 gap-3 text-sm">
             <div><div style="color: var(--sa-text-dim);">کل دریافتی</div><b>{{ $toman($totals['gross']) }}</b></div>
