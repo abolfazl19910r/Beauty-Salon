@@ -19,7 +19,6 @@ class ServerHelperScriptsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->requireLinuxShell();
         $this->dir = sys_get_temp_dir().'/mahru-helpers-'.uniqid();
         mkdir($this->dir.'/bin', 0777, true);
     }
@@ -37,6 +36,8 @@ class ServerHelperScriptsTest extends TestCase
 
     private function fake(string $name, string $body): void
     {
+        // هر تستی که اسکریپت bash (mahru.sh یا docker/ssh/sftp ساختگی) اجرا می‌کند از همین‌جا می‌گذرد؛ بقیه روی ویندوز هم اجرا می‌شوند
+        $this->requireLinuxShell();
         file_put_contents($this->dir.'/bin/'.$name, "#!/usr/bin/env bash\n".$body);
         chmod($this->dir.'/bin/'.$name, 0755);
     }

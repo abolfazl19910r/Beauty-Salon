@@ -19,7 +19,6 @@ class TlsReloadTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->requireLinuxShell();
         $this->dir = sys_get_temp_dir().'/mahru-tls-'.uniqid();
         mkdir($this->dir.'/tls', 0777, true);
         file_put_contents($this->dir.'/tls/fullchain.pem', 'CERT');
@@ -36,6 +35,7 @@ class TlsReloadTest extends TestCase
     /** docker ساختگی: running / tls.conf هست / nginx -t قبول از متغیرها */
     private function reload(bool $running, bool $httpsOn, bool $configOk = true): Process
     {
+        $this->requireLinuxShell();
         $fake = $this->dir.'/docker';
         file_put_contents($fake, <<<'SH'
             #!/usr/bin/env bash

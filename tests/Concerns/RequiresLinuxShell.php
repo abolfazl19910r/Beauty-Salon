@@ -11,15 +11,24 @@ use Symfony\Component\Process\Process;
  */
 trait RequiresLinuxShell
 {
+    private static ?bool $linuxShellUsable = null;
+
+    /**
+     * فقط در helperی صدا بزنید که bash اجرا می‌کند (نه setUp): تست‌های همان کلاس که bash لازم ندارند روی ویندوز هم اجرا شوند، و
+     * پراپرتی‌هایی که setUp مقدار می‌دهد پیش از tearDown مقدار گرفته باشند.
+     */
     protected function requireLinuxShell(): void
     {
         if (PHP_OS_FAMILY === 'Windows') {
             $this->markTestSkipped('اسکریپت‌های bash سرور فقط روی لینوکس/macOS آزموده می‌شوند (ویندوز: WSL یا Git Bash با docker ساختگی کار نمی‌کند).');
         }
 
-        $probe = new Process(['bash', '-c', 'echo ok']);
-        $probe->run();
-        if (trim($probe->getOutput()) !== 'ok') {
+        if (self::$linuxShellUsable === null) {
+            $probe = new Process(['bash', '-c', 'echo ok']);
+            $probe->run();
+            self::$linuxShellUsable = trim($probe->getOutput()) === 'ok';
+        }
+        if (! self::$linuxShellUsable) {
             $this->markTestSkipped('bash در دسترس نیست.');
         }
     }
