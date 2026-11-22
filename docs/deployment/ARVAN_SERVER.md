@@ -678,12 +678,19 @@ mahru              # فهرست
 | `mahru logs 30` / `mahru follow` | لاگ کانتینر در ۳۰ دقیقه‌ی اخیر / زنده |
 | `mahru errors 5` | پنج خطای آخر Laravel (`production.ERROR`) |
 | `mahru sms 15` | پیامک‌ها و کد ورود (تا `SMS_LOG_ONLY=true`) |
-| `mahru backups` / `mahru backup` | فهرست پشتیبان‌ها / پشتیبان همین الان |
+| `mahru backups` / `mahru backup` | فهرست پشتیبان‌ها با اندازه و فایل‌ها / پشتیبان همین الان |
 | `mahru restart` / `mahru recreate` | ری‌استارت / کانتینر از نو بعد از تغییر `.env.server` (هر دو تا healthy صبر می‌کنند) |
 | `mahru artisan …` / `mahru shell` | artisan / خط فرمان داخل کانتینر (کاربر www) |
 | `mahru cert` | گواهی و زمان تمدید |
+| `mahru nginx 50 /superadmin/app-releases` | ۵۰ درخواست آخر nginx (کوتاه: زمان، کد، متد، مسیر، `rt`، IP)؛ فیلتر `/…` فقط مسیر، هر متن دیگر (`POST`، IP، `499`) همه‌جای خط (۲۰۲۶-۱۱-۲۲) |
+| `mahru nginx follow POST` / `mahru nginx codes /superadmin/app-releases` / `mahru nginx errors 20` | زنده / شمارش کدهای امروز / `error.log` ‏nginx |
+| `mahru images` | imageها و tarهای روی سرور، نسخه‌ی در حال اجرا، دیسک (قاعده: فعلی + یکی قبل، فقط tar آخر) |
+| `mahru deploy <نسخه>` / `mahru rollback <نسخه>` | همان `server-deploy.sh images/mahru-single-<نسخه>.tar` / `--use <نسخه>` |
 
-هر کدام دستور docker زیرش را کم‌رنگ چاپ می‌کند. جدول زیر همان‌ها به شکل کامل:
+هر کدام دستور docker زیرش را کم‌رنگ چاپ می‌کند. **چرا `mahru nginx` جدا از `mahru logs`:** درخواستی که خود nginx رد کند (`408` = ‏`client_body_timeout`،
+`499` = کاربر اتصال را بست، `413` = حجم) به PHP نمی‌رسد و در `docker logs` اثری ندارد؛ access ماندگار nginx در volume است
+(`/data/logs/nginx/access-<تاریخ UTC>.log`، JSON) و `error.log` در لایه‌ی کانتینر (با ساختن دوباره از نو). **به‌روز کردن خود `mahru`:** این فایل
+بیرون از image است ← بعد از تغییرش `scp deploy/single/mahru.sh mahru:/srv/mahru/deploy/single/mahru.sh` و روی سرور `chmod +x` همان فایل. جدول زیر همان‌ها به شکل کامل:
 
 | کار | دستور |
 |---|---|

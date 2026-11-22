@@ -62,7 +62,7 @@ class ServerHelperScriptsTest extends TestCase
     {
         $run = $this->mahru();
         $this->assertSame(0, $run->getExitCode());
-        foreach (['status', 'logs', 'errors', 'sms', 'backups', 'backup', 'restart', 'recreate', 'artisan', 'cert'] as $cmd) {
+        foreach (['status', 'logs', 'errors', 'sms', 'nginx', 'nginx follow', 'nginx codes', 'nginx errors', 'backups', 'backup', 'restart', 'recreate', 'artisan', 'cert', 'images', 'deploy', 'rollback'] as $cmd) {
             $this->assertStringContainsString('mahru '.$cmd, $run->getOutput());
         }
         $this->assertSame(2, $this->mahru('nonsense')->getExitCode());
@@ -85,6 +85,75 @@ class ServerHelperScriptsTest extends TestCase
         $this->mahru('sms', '5');
         $this->assertStringContainsString('logs --since 5m mahru', $this->calls());
         $this->assertStringContainsString("grep -h 'production\\.ERROR'", (string) file_get_contents(self::root('deploy/single/mahru.sh')));
+    }
+
+    /** ۲۰۲۶-۱۱-۲۲: «mahru nginx» ← اجرای واقعی دستور داخل کانتینر روی نمونه‌ی لاگ access ‏(docker ساختگی exec را محلی اجرا می‌کند) */
+    private function mahruWithLogs(string ...$args): Process
+    {
+        $root = $this->dir.'/root';
+        is_dir($root.'/data/logs/nginx') || mkdir($root.'/data/logs/nginx', 0777, true);
+        is_dir($root.'/var/log/nginx') || mkdir($root.'/var/log/nginx', 0777, true);
+        $line = fn (string $t, string $m, string $u, int $st, string $ref = '') => json_encode(['time' => "2026-11-21T{$t}+03:30", 'ip' => '5.215.100.80',
+            'peer' => '5.215.100.80', 'host' => 'arisheh.ir', 'method' => $m, 'uri' => $u, 'status' => $st, 'bytes' => 0, 'rt' => 98.121,
+            'scheme' => 'https', 'ref' => $ref, 'ua' => 'Firefox', 'xff' => ''], JSON_UNESCAPED_SLASHES);
+        file_put_contents($root.'/data/logs/nginx/access-2026-11-21.log', implode("\n", [
+            $line('20:19:37', 'POST', '/superadmin/app-releases', 302),
+            $line('21:05:44', 'POST', '/superadmin/app-releases', 499),
+            $line('21:06:45', 'POST', '/superadmin/app-releases', 408),
+            $line('21:07:00', 'GET', '/fonts/a.woff2', 200, 'https://arisheh.ir/superadmin/app-releases'),
+        ])."\n");
+        file_put_contents($root.'/var/log/nginx/error.log', "2026/11/21 21:07:53 [warn] a client request body is buffered\n");
+        $this->fake('docker', <<<'SH'
+            echo "$*" >> "$LOG"
+            [[ "$1" == exec ]] || exit 0
+            shift; envs=()
+            while [[ "$1" == -e || "$1" == -u ]]; do [[ "$1" == -e ]] && envs+=("$2"); shift 2; done
+            shift
+            script="${3//\/data\//$ROOT/data/}"; script="${script//\/var\/log\//$ROOT/var/log/}"
+            env "${envs[@]}" sh -c "$script"
+            SH);
+        $p = new Process(['bash', self::root('deploy/single/mahru.sh'), ...$args], null, [
+            'PATH' => $this->dir.'/bin:'.getenv('PATH'), 'LOG' => $this->dir.'/calls.log', 'MAHRU_DIR' => $this->dir, 'ROOT' => $root,
+        ]);
+        $p->run();
+
+        return $p;
+    }
+
+    public function test_mahru_nginx_shows_compact_access_lines_counts_codes_and_errors(): void
+    {
+        $out = $this->mahruWithLogs('nginx', '2', 'POST')->getOutput();
+        $this->assertStringContainsString('11-21 21:05:44  499  POST /superadmin/app-releases  rt=98.121s  0B  5.215.100.80', $out);
+        $this->assertStringContainsString('11-21 21:06:45  408  POST', $out);
+        $this->assertStringNotContainsString('302', $out, 'tail -n 2');
+        $this->assertStringContainsString('-e MAHRU_N=2 -e MAHRU_FILTER=POST mahru sh -c', $this->calls(), 'فیلتر با -e، نه درون متن sh');
+
+        // فیلتر «/…» فقط مسیر درخواست است، نه referrer فونتی که از همان صفحه آمده
+        $codes = $this->mahruWithLogs('nginx', 'codes', '/superadmin/app-releases')->getOutput();
+        $this->assertMatchesRegularExpression('/1 302\b/', $codes);
+        $this->assertMatchesRegularExpression('/1 499\b/', $codes);
+        $this->assertStringNotContainsString(' 200', $codes);
+
+        $this->assertStringContainsString('buffered', $this->mahruWithLogs('nginx', 'errors', '5')->getOutput());
+    }
+
+    public function test_mahru_images_deploy_and_rollback_use_server_deploy(): void
+    {
+        mkdir($this->dir.'/images');
+        mkdir($this->dir.'/deploy/single', 0777, true);
+        file_put_contents($this->dir.'/images/mahru-single-abc123.tar', 'tar');
+        file_put_contents($this->dir.'/.env', "MAHRU_VERSION=abc123\n");
+        file_put_contents($this->dir.'/deploy/single/server-deploy.sh', 'echo "server-deploy $* in $(pwd)" >> "$LOG"');
+
+        $this->assertStringContainsString('mahru-single-abc123.tar', $this->mahru('images')->getOutput());
+        $this->assertStringContainsString('image ls mahru', $this->calls());
+
+        $this->assertSame(0, $this->mahru('deploy', 'abc123')->getExitCode());
+        $this->assertStringContainsString('server-deploy '.$this->dir.'/images/mahru-single-abc123.tar in '.$this->dir, $this->calls());
+        $this->assertSame(1, $this->mahru('deploy', 'nist')->getExitCode());
+
+        $this->mahru('rollback', 'old999');
+        $this->assertStringContainsString('server-deploy --use old999 in '.$this->dir, $this->calls());
     }
 
     public function test_pull_backup_copies_verifies_skips_and_prunes(): void
