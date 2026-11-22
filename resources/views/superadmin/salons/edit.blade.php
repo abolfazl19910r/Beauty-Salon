@@ -177,6 +177,31 @@
         </div>
 
         {{-- بسته‌ی «ح»، ۸: توقف موقت رزرو (SuperAdminSalonPauseController) --}}
+        {{-- قرارداد و درگاه پلتفرم (۲۰۲۶-۱۱-۲۲): فقط ابرمدیر — سابقه‌ی پذیرش قوانین با PDF هر کدام، و حساب درگاه پلتفرم این سالن --}}
+        @php
+            $saAcceptances = \App\Models\LegalAcceptance::query()->with('user')->where('salon_id', $salon->id)->latest('id')->get();
+            $saPlatformRequest = \App\Models\PlatformGatewayRequest::query()->where('salon_id', $salon->id)->latest('id')->first();
+        @endphp
+        <div class="sa-card sa-card-pad text-sm space-y-3" data-salon-contracts style="color: var(--sa-text);">
+            <div class="sa-card-head">
+                <div class="sa-card-title">قرارداد و سابقه‌ی پذیرش</div>
+                <div class="sa-card-desc">هر پذیرش «قوانین سالن‌ها» یا «حریم خصوصی» با نسخه، زمان و IP. سند PDF فقط همین‌جاست و در پنل سالن دیده نمی‌شود.</div>
+            </div>
+            @forelse ($saAcceptances as $acc)
+                <div class="flex flex-wrap items-center justify-between gap-2 py-1" style="border-top: 1px solid var(--sa-border);" data-contract-row="{{ $acc->id }}">
+                    <span>{{ $acc->documentLabel() }} · نسخه‌ی {{ to_persian_num(str_replace('-', '/', (string) $acc->version)) }} · {{ $acc->user?->name }}
+                        · {{ \Morilog\Jalali\Jalalian::fromCarbon($acc->accepted_at ?? $acc->created_at)->format('Y/m/d H:i') }} <span dir="ltr" class="text-xs" style="color: var(--sa-text-dim);">{{ $acc->ip_address }}</span></span>
+                    <a href="{{ route('superadmin.salons.contract-pdf', [$salon, $acc->id]) }}" style="color: var(--sa-accent);">PDF</a>
+                </div>
+            @empty
+                <div style="color: var(--sa-text-dim);">سابقه‌ی پذیرشی برای این سالن ثبت نشده است (سالن‌های ساخته‌شده پیش از ۲۰۲۶-۱۰-۲۵ یا با پنل ابرمدیر).</div>
+            @endforelse
+            <div class="pt-2" style="border-top: 1px solid var(--sa-border);">
+                درگاه پلتفرم: {{ $saPlatformRequest ? $saPlatformRequest->statusLabel() : 'درخواستی نداده' }}
+                @if ($saPlatformRequest)· <a href="{{ route('superadmin.platform-gateway.salon', $salon->id) }}" style="color: var(--sa-accent);">حساب و تسویه</a>@endif
+            </div>
+        </div>
+
         <div class="sa-card sa-card-pad text-sm space-y-3" data-salon-pause style="color: var(--sa-text);">
             <div class="sa-card-head">
                 <div class="sa-card-title">توقف موقت رزرو</div>

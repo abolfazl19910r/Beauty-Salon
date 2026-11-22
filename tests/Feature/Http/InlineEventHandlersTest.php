@@ -19,6 +19,7 @@ class InlineEventHandlersTest extends TestCase
         'admin/reports/pdf-report.blade.php',
         'specialist/reports/pdf.blade.php',
         'exports/report.blade.php',
+        'superadmin/salons/contract-pdf.blade.php',
     ];
 
     /** @return array<string, string> مسیر نسبی ← متن بدون کامنت Blade */

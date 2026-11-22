@@ -135,3 +135,7 @@ Route::prefix('platform-gateway')->name('platform-gateway.')->controller(\App\Ht
     Route::post('/settlements/{settlement}/paid', 'markPaid')->whereNumber('settlement')->name('settlements.paid');
     Route::post('/settlements/{settlement}/cancel', 'cancelSettlement')->whereNumber('settlement')->name('settlements.cancel');
 });
+
+// سند PDF پذیرش قرارداد سالن (۲۰۲۶-۱۱-۲۲) — فقط ابرمدیر، برای هر سابقه‌ی پذیرش همان سالن
+Route::get('/salons/{salon}/contracts/{acceptance}/pdf', [\App\Http\Controllers\SuperAdmin\SalonContractController::class, 'pdf'])
+    ->whereNumber('acceptance')->middleware('throttle:30,1')->name('salons.contract-pdf');

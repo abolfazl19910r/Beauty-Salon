@@ -16,4 +16,14 @@ class LegalAcceptance extends Model
     protected $fillable = ['user_id', 'salon_id', 'document', 'version', 'source', 'app_version', 'ip_address', 'user_agent', 'accepted_at'];
 
     protected $casts = ['accepted_at' => 'datetime'];
+
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function documentLabel(): string
+    {
+        return self::DOCUMENTS[$this->document] ?? $this->document;
+    }
 }
