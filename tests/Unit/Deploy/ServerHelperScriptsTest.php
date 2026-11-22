@@ -12,11 +12,14 @@ use Symfony\Component\Process\Process;
  */
 class ServerHelperScriptsTest extends TestCase
 {
+    use \Tests\Concerns\RequiresLinuxShell;
+
     private string $dir;
 
     protected function setUp(): void
     {
         parent::setUp();
+        $this->requireLinuxShell();
         $this->dir = sys_get_temp_dir().'/mahru-helpers-'.uniqid();
         mkdir($this->dir.'/bin', 0777, true);
     }

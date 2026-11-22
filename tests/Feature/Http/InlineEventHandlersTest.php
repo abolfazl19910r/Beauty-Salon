@@ -26,11 +26,13 @@ class InlineEventHandlersTest extends TestCase
     private function views(): array
     {
         $views = [];
-        $root = resource_path('views').'/';
-        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root)) as $file) {
+        // مسیر نسبی همیشه با «/» (روی ویندوز getPathname با «\\» است و فهرست NOT_BROWSER_DOCUMENTS را نمی‌گرفت، ۲۰۲۶-۱۱-۲۲)
+        $root = str_replace('\\', '/', resource_path('views')).'/';
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(resource_path('views'))) as $file) {
             if (str_ends_with($file->getFilename(), '.blade.php')) {
                 $source = (string) file_get_contents($file->getPathname());
-                $views[str_replace($root, '', $file->getPathname())] = (string) preg_replace('/\{\{--.*?--\}\}/s', '', $source);
+                $path = str_replace('\\', '/', $file->getPathname());
+                $views[str_starts_with($path, $root) ? substr($path, strlen($root)) : $path] = (string) preg_replace('/\{\{--.*?--\}\}/s', '', $source);
             }
         }
         ksort($views);
