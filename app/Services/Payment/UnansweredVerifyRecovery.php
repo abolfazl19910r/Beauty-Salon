@@ -29,7 +29,8 @@ use Illuminate\Support\Facades\Log;
  */
 class UnansweredVerifyRecovery
 {
-    public const DRIVERS = ['zarinpal', 'zibal', 'vandar', 'asanpardakht'];
+    // platform = درگاه پلتفرم برای سالن‌ها (۲۰۲۶-۱۱-۲۲)، همان زرین‌پال با مرچنت پلتفرم
+    public const DRIVERS = ['zarinpal', 'platform', 'zibal', 'vandar', 'asanpardakht'];
 
     public const PURPOSES = ['booking', 'wallet_charge', 'course'];
 
@@ -88,7 +89,7 @@ class UnansweredVerifyRecovery
     }
 
     /** درگاه‌هایی که تراکنش pending رهاشده‌شان پیش از expired یک verify می‌گیرد (بسته‌ی 5ز). */
-    public const PENDING_DRIVERS = ['zarinpal'];
+    public const PENDING_DRIVERS = ['zarinpal', 'platform'];
 
     /** پاسخ قطعی «پرداخت نشده» زرین‌پال: ‎-51 ناموفق، ‎-54 اتوریتی نامعتبر، ‎-55 تراکنش یافت نشد */
     public const ZARINPAL_NOT_PAID_CODES = [-51, -54, -55];
@@ -212,7 +213,7 @@ class UnansweredVerifyRecovery
      */
     public function recoverUnverified(PaymentTransaction $tx, int $listedAmountRial): string
     {
-        if ($tx->driver !== 'zarinpal' || ! in_array($tx->status, self::UNVERIFIED_CLOSED_STATUSES, true)) {
+        if (! in_array($tx->driver, ['zarinpal', 'platform'], true) || ! in_array($tx->status, self::UNVERIFIED_CLOSED_STATUSES, true)) {
             return 'skipped';
         }
 

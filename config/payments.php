@@ -10,4 +10,21 @@
  */
 return [
     'enabled_drivers' => array_values(array_filter(array_map('trim', explode(',', (string) (env('PAYMENT_ENABLED_DRIVERS') ?: 'zarinpal'))))),
+
+    /*
+     * درگاه پرداخت پلتفرم برای سالن‌ها (۲۰۲۶-۱۱-۲۲): سالن درخواست می‌دهد، ابرمدیر با درصد کارمزد تأیید می‌کند و پرداخت مشتری‌های آن
+     * سالن با مرچنت پلتفرم (ZARINPAL_MERCHANT_ID) گرفته می‌شود؛ سهم سالن با «تسویه»ی ابرمدیر واریز می‌شود.
+     * enabled = false (پیش‌فرض): فرم درخواست در پنل مالک دیده نمی‌شود و ردیف درگاه پلتفرم هیچ پرداختی شروع نمی‌کند (درخواست‌ها و
+     * حساب‌ها در پنل ابرمدیر دیده می‌شوند). پیش از روشن کردن: متن «قوانین سالن‌ها» (بند ۸: «پول مشتری‌ها با درگاه پرداخت خود سالن»)
+     * و پاسخ زرین‌پال/اینماد درباره‌ی پرداخت برای سالن‌ها روی مرچنت پلتفرم.
+     * auto_settle: هر هفته (شنبه ۰۹:۲۰ تهران) برای هر سالن تأییدشده که مانده‌اش دست‌کم auto_settle_min_toman است یک تسویه‌ی
+     * «منتظر واریز» ساخته می‌شود؛ واریز بانکی همچنان با ابرمدیر است (API واریز به شخص ثالث در مستندات زرین‌پال نیست).
+     */
+    'platform_gateway' => [
+        'enabled' => in_array(env('PLATFORM_GATEWAY_ENABLED'), [true, 'true', '1', 1], true),
+        'label' => env('PLATFORM_GATEWAY_LABEL') ?: 'درگاه پرداخت ماهرو',
+        'max_fee_percent' => (float) (env('PLATFORM_GATEWAY_MAX_FEE_PERCENT') ?: 30),
+        'auto_settle' => in_array(env('PLATFORM_GATEWAY_AUTO_SETTLE'), [true, 'true', '1', 1], true),
+        'auto_settle_min_toman' => (int) (env('PLATFORM_GATEWAY_AUTO_SETTLE_MIN_TOMAN') ?: 100000),
+    ],
 ];

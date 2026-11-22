@@ -151,6 +151,8 @@
                     $saOverdue = (clone $saAwaiting)->where('response_due_at', '<', now())->count();
                     $saComplaints = $saOverdue > 0 ? -$saOverdue : $saAwaiting->count();
                     $saVerifications = \App\Models\SalonVerification::query()->where('status', 'pending')->count();
+                    // درگاه پلتفرم (۲۰۲۶-۱۱-۲۲): درخواست‌های در انتظار
+                    $saPlatformGateway = \App\Models\PlatformGatewayRequest::query()->where('status', 'pending')->count();
                     $saNav = [
                         'سالن‌ها' => [
                             ['superadmin.dashboard', 'superadmin.dashboard', 'داشبورد', 0],
@@ -166,6 +168,7 @@
                             ['superadmin.push.index', 'superadmin.push.*', 'اعلان اپ (پوش)', 0],
                             ['superadmin.app-releases.index', 'superadmin.app-releases.*', 'نسخه‌های اپ', 0],
                             ['superadmin.payment-attention.index', 'superadmin.payment-attention.*', 'پرداخت‌های نیازمند بررسی', -$saAttention],
+                            ['superadmin.platform-gateway.index', 'superadmin.platform-gateway.*', 'درگاه پلتفرم سالن‌ها', $saPlatformGateway],
                         ],
                         'ارتباط' => [
                             ['superadmin.notifications.index', 'superadmin.notifications.*', 'اعلان‌ها', $saUnread],

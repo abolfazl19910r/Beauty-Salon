@@ -38,7 +38,8 @@ class GatewayManager
         }
 
         // فقط درگاه‌های روشن در پلتفرم (بسته‌ی 5ز)؛ ردیف درگاه پنهان (مثلاً زیبال قدیمی) هیچ پرداختی شروع نمی‌کند.
-        return $salon->paymentGateways()->enabledDriver()->where('is_active', true)->orderBy('priority')->orderBy('id')->get();
+        // + درگاه پلتفرم سالنِ تأییدشده (۲۰۲۶-۱۱-۲۲)
+        return $salon->paymentGateways()->payable()->where('is_active', true)->orderBy('priority')->orderBy('id')->get();
     }
 
     public function driver(SalonPaymentGateway $gateway): PaymentGatewayDriver
@@ -47,6 +48,8 @@ class GatewayManager
 
         return match ($gateway->driver) {
             'zarinpal' => new ZarinpalDriver($credentials, (bool) config('services.zarinpal.sandbox', true)),
+            // درگاه پلتفرم (۲۰۲۶-۱۱-۲۲): مرچنت خود پلتفرم؛ بی مرچنت معتبر، شروع پرداخت با پیام روشن رد می‌شود و درگاه بعدی امتحان می‌شود
+            PlatformGateway::DRIVER => PlatformZarinpalDriver::make(),
             'zibal' => new ZibalDriver($credentials),
             'vandar' => new VandarDriver($credentials),
             'asanpardakht' => new AsanPardakhtDriver($credentials),

@@ -35,11 +35,14 @@ class PaymentTransaction extends Model
         'public_id', 'salon_id', 'gateway_id', 'driver', 'purpose', 'installment', 'payable_type', 'payable_id', 'user_id',
         'amount_rial', 'fee_rial', 'token', 'ref_id', 'gateway_receipt', 'card_pan', 'status', 'callback_url',
         'start_response', 'verify_response', 'verified_at', 'needs_attention', 'wallet_toman', 'wallet_state',
+        'platform_fee_percent', 'platform_share_rial', 'platform_settlement_id',
     ];
 
     protected $casts = [
         'amount_rial' => 'integer',
         'fee_rial' => 'integer',
+        'platform_fee_percent' => 'decimal:2',
+        'platform_share_rial' => 'integer',
         'installment' => 'integer',
         'wallet_toman' => 'float',
         'needs_attention' => 'boolean',
@@ -52,6 +55,24 @@ class PaymentTransaction extends Model
     {
         static::creating(function (PaymentTransaction $tx) {
             $tx->public_id ??= (string) Str::uuid();
+        });
+
+        // درگاه پلتفرم (۲۰۲۶-۱۱-۲۲): درصد کارمزد همان لحظه‌ی رفتن تراکنش روی درگاه پلتفرم عکس‌برداری می‌شود و سهم پلتفرم با هر تغییر
+        // مبلغ دوباره حساب می‌شود؛ تغییر بعدی درصد سالن حساب تراکنش‌های گذشته را عوض نمی‌کند.
+        static::saving(function (PaymentTransaction $tx) {
+            if ($tx->driver !== \App\Payments\PlatformGateway::DRIVER) {
+                // تراکنش با درگاه پلتفرم ساخته شد ولی در جایگزینی خودکار با درگاه خود سالن پرداخت شد ← سهمی برای پلتفرم نیست
+                if ($tx->platform_settlement_id === null) {
+                    $tx->platform_fee_percent = null;
+                    $tx->platform_share_rial = null;
+                }
+
+                return;
+            }
+            if ($tx->platform_fee_percent === null) {
+                $tx->platform_fee_percent = \App\Payments\PlatformGateway::feePercentFor($tx->salon_id ? (int) $tx->salon_id : null);
+            }
+            $tx->platform_share_rial = \App\Payments\PlatformGateway::platformShare((int) $tx->amount_rial, (float) $tx->platform_fee_percent);
         });
     }
 
@@ -73,6 +94,17 @@ class PaymentTransaction extends Model
             $direct => 'پاسخ تایید بانک نرسید و برگشت خودکار به کارت در مهلت بانک انجام نشد. در پنل بانک ببینید مبلغ برداشت و واریز شده یا نه.',
             default => 'پاسخ تایید درگاه نرسید و ۲۴ ساعت بررسی خودکار نتیجه‌ای نداشت. در پنل درگاه ببینید مبلغ از مشتری گرفته شده یا نه.',
         };
+    }
+
+    public function platformSettlement(): BelongsTo
+    {
+        return $this->belongsTo(PlatformSettlement::class, 'platform_settlement_id');
+    }
+
+    /** سهم سالن از پرداخت درگاه پلتفرم (ریال) */
+    public function salonShareRial(): int
+    {
+        return max(0, (int) $this->amount_rial - (int) $this->platform_share_rial);
     }
 
     public function user(): BelongsTo

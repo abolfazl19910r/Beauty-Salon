@@ -53,7 +53,7 @@ class ZarinpalUnverifiedReconciler
 
             foreach ($list['authorities'] as $item) {
                 $stats['listed']++;
-                $tx = PaymentTransaction::query()->where('driver', 'zarinpal')->where('token', $item['authority'])->first();
+                $tx = PaymentTransaction::query()->whereIn('driver', ['zarinpal', 'platform'])->where('token', $item['authority'])->first();
 
                 if (! $tx || ! $this->belongsTo($tx, $merchant)) {
                     $stats['unknown']++;
@@ -119,7 +119,8 @@ class ZarinpalUnverifiedReconciler
     /** پرداخت سالن فقط با مرچنت همان سالن، و اشتراک/بسته‌ی پیامک فقط با مرچنت پلتفرم. */
     private function belongsTo(PaymentTransaction $tx, array $merchant): bool
     {
-        if (in_array($tx->purpose, PlatformOverview::PLATFORM_PURPOSES, true)) {
+        // درگاه پلتفرم برای سالن‌ها (۲۰۲۶-۱۱-۲۲): پرداخت مشتری سالن ولی با مرچنت پلتفرم
+        if ($tx->driver === 'platform' || in_array($tx->purpose, PlatformOverview::PLATFORM_PURPOSES, true)) {
             return $merchant['platform'];
         }
 

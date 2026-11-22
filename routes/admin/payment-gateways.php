@@ -15,6 +15,8 @@ Route::prefix('payment-gateways')->name('payment-gateways.')->group(function () 
         Route::delete('/connection', 'disconnect')->name('disconnect');
     });
     Route::post('/', [AdminPaymentGatewayController::class, 'store'])->name('store');
+    // درگاه پرداخت پلتفرم (۲۰۲۶-۱۱-۲۲): درخواست مالک؛ بررسی در پنل ابرمدیر
+    Route::post('/platform', [\App\Http\Controllers\Admin\PaymentGateway\AdminPlatformGatewayController::class, 'store'])->middleware('throttle:5,60')->name('platform.store');
     Route::put('/{gatewayId}', [AdminPaymentGatewayController::class, 'update'])->whereNumber('gatewayId')->name('update');
     Route::delete('/{gatewayId}', [AdminPaymentGatewayController::class, 'destroy'])->whereNumber('gatewayId')->name('destroy');
     Route::post('/{gatewayId}/move', [AdminPaymentGatewayController::class, 'move'])->whereNumber('gatewayId')->name('move');

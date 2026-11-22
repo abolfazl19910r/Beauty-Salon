@@ -41,6 +41,7 @@ class AdminPaymentGatewayController extends Controller
             'gateways' => $salon->paymentGateways()->enabledDriver()->orderBy('priority')->orderBy('id')->get(),
             'catalog' => GatewayCatalog::enabled(),
             'returnDomain' => \App\Payments\PaymentReturnUrl::domain($salon),
+            'platformGateway' => $this->platformGateway($salon),
             'zarinpalConnect' => \App\Services\Payment\Zarinpal\ZarinpalConnectService::enabled() ? [
                 'connection' => $connection = $salon->zarinpalConnection()->first(),
                 // فرم درخواست درگاه فقط وقتی اتصال زنده است و درگاه هم‌دامنه‌ی فعالی پیدا نشد
@@ -48,6 +49,25 @@ class AdminPaymentGatewayController extends Controller
                     ? app(\App\Services\Payment\Zarinpal\ZarinpalConnectService::class)->bankAccounts($salon) : [],
             ] : null,
         ]);
+    }
+
+    /** کارت «درگاه پرداخت پلتفرم» (۲۰۲۶-۱۱-۲۲)؛ null اگر امکان در پلتفرم خاموش است و سالن هیچ سابقه‌ای ندارد */
+    private function platformGateway(\App\Models\Salon $salon): ?array
+    {
+        $service = app(\App\Services\Payment\PlatformGateway\PlatformGatewayService::class);
+        $latest = $service->latestFor($salon);
+        if (! \App\Payments\PlatformGateway::enabled() && ! $latest) {
+            return null;
+        }
+
+        return [
+            'enabled' => \App\Payments\PlatformGateway::enabled(),
+            'latest' => $latest,
+            'active' => \App\Payments\PlatformGateway::enabled() && $latest?->status === 'approved',
+            'summary' => app(\App\Services\Payment\PlatformGateway\PlatformGatewayLedger::class)->summary($salon->id),
+            'settlements' => \App\Models\PlatformSettlement::query()->where('salon_id', $salon->id)->where('status', '!=', 'cancelled')->latest('id')->limit(10)->get(),
+            'maxFee' => \App\Payments\PlatformGateway::maxFeePercent(),
+        ];
     }
 
     public function store(SavePaymentGatewayRequest $request): RedirectResponse

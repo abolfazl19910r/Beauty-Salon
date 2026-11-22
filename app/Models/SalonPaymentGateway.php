@@ -51,6 +51,25 @@ class SalonPaymentGateway extends Model
     }
 
     /**
+     * درگاه‌هایی که پرداخت مشتری با آن‌ها شروع می‌شود: درگاه‌های روشن پلتفرم (enabledDriver) + ردیف «درگاه پلتفرم» سالنِ
+     * تأییدشده (driver = platform، ۲۰۲۶-۱۱-۲۲) وقتی این امکان در پلتفرم روشن است.
+     */
+    public function scopePayable(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    {
+        $enabled = \App\Payments\GatewayCatalog::enabledKeys();
+        if (\App\Payments\PlatformGateway::enabled()) {
+            $enabled[] = \App\Payments\PlatformGateway::DRIVER;
+        }
+
+        return $query->whereIn('driver', $enabled);
+    }
+
+    public function isPlatform(): bool
+    {
+        return $this->driver === \App\Payments\PlatformGateway::DRIVER;
+    }
+
+    /**
      * ⭐ کارمزد درگاه که به مبلغ مشتری اضافه می‌شه (تصمیم ابوالفضل، ۲۰۲۶-۰۹-۲۵): درصد از مبلغ پایه +
      * مبلغ ثابت، رو به بالا گرد به تومان کامل (هیچ‌وقت کسر ریال به درگاه نمی‌ره). هر درگاه کارمزد خودش
      * رو داره، پس در جایگزینی خودکار مبلغ نهایی با درگاه جدید دوباره حساب می‌شه.
@@ -79,6 +98,6 @@ class SalonPaymentGateway extends Model
 
     public function displayName(): string
     {
-        return $this->label ?: \App\Payments\GatewayCatalog::label($this->driver);
+        return $this->label ?: ($this->isPlatform() ? \App\Payments\PlatformGateway::label() : \App\Payments\GatewayCatalog::label($this->driver));
     }
 }

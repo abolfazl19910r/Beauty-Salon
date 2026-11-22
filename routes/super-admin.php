@@ -119,3 +119,19 @@ Route::get('/app-releases', [\App\Http\Controllers\SuperAdmin\AppReleaseControll
 Route::post('/app-releases', [\App\Http\Controllers\SuperAdmin\AppReleaseController::class, 'store'])->name('app-releases.store');
 Route::patch('/app-releases/{release}', [\App\Http\Controllers\SuperAdmin\AppReleaseController::class, 'update'])->whereNumber('release')->name('app-releases.update');
 Route::delete('/app-releases/{release}', [\App\Http\Controllers\SuperAdmin\AppReleaseController::class, 'destroy'])->whereNumber('release')->name('app-releases.destroy');
+
+// درگاه پرداخت پلتفرم برای سالن‌ها (۲۰۲۶-۱۱-۲۲): درخواست‌ها، حساب جدای هر سالن و تسویه‌ها
+Route::prefix('platform-gateway')->name('platform-gateway.')->controller(\App\Http\Controllers\SuperAdmin\PlatformGatewayController::class)->group(function () {
+    Route::get('/', 'index')->name('index');
+    Route::get('/export', 'export')->middleware('throttle:10,1')->name('export');
+    Route::post('/settle-all', 'settleAll')->middleware('throttle:5,1')->name('settle-all');
+    Route::get('/requests/{gatewayRequest}', 'show')->whereNumber('gatewayRequest')->name('requests.show');
+    Route::post('/requests/{gatewayRequest}/approve', 'approve')->whereNumber('gatewayRequest')->name('requests.approve');
+    Route::post('/requests/{gatewayRequest}/reject', 'reject')->whereNumber('gatewayRequest')->name('requests.reject');
+    Route::get('/salons/{salon}', 'salon')->whereNumber('salon')->name('salon');
+    Route::put('/salons/{salon}/fee', 'updateFee')->whereNumber('salon')->name('fee');
+    Route::post('/salons/{salon}/revoke', 'revoke')->whereNumber('salon')->name('revoke');
+    Route::post('/salons/{salon}/settlements', 'createSettlement')->whereNumber('salon')->middleware('throttle:20,1')->name('settlements.store');
+    Route::post('/settlements/{settlement}/paid', 'markPaid')->whereNumber('settlement')->name('settlements.paid');
+    Route::post('/settlements/{settlement}/cancel', 'cancelSettlement')->whereNumber('settlement')->name('settlements.cancel');
+});
