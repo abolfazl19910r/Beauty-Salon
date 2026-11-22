@@ -42,6 +42,7 @@ class CentralPagesWithoutSalonsTest extends TestCase
             'terms' => ['/terms'],
             'contact' => ['/contact'],
             'app download' => ['/app'],
+            'staff app download' => ['/app/staff'],
             'offline' => ['/offline'],
         ];
     }

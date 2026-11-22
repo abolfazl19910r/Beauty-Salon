@@ -209,6 +209,19 @@ class AppDistributionTest extends TestCase
         $latest(8)->assertJsonPath('data.update_available', true)->assertJsonPath('data.update_required', false);
         $latest(9)->assertJsonPath('data.update_available', false)->assertJsonPath('data.update_required', false);
         $this->assertStringEndsWith('/app/download/customer', $latest(7)->json('data.latest.download_url'));
+        $this->assertStringEndsWith('/app', $latest(7)->json('data.latest.page_url'));
+    }
+
+    public function test_staff_app_update_notice_links_to_the_staff_page(): void
+    {
+        $this->actingAs($this->superAdmin());
+        $this->post(route('superadmin.app-releases.store'), ['variant' => 'staff', 'apk' => $this->fakeApkUpload('ir.mahru.staff', 4, '0.2.0')]);
+        auth()->logout();
+
+        $latest = $this->getJson(route('api.v1.app.latest', ['variant' => 'staff', 'version_code' => 3]))->assertOk()
+            ->assertJsonPath('data.update_available', true);
+        $this->assertStringEndsWith('/app/staff', $latest->json('data.latest.page_url'));
+        $this->assertStringEndsWith('/app/download/staff', $latest->json('data.latest.download_url'));
     }
 
     public function test_assetlinks_lists_normalized_fingerprints(): void

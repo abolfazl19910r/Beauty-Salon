@@ -108,7 +108,8 @@ class AppReleaseService
                 'sha256' => $latest->sha256,
                 'published_at' => $latest->created_at?->toIso8601String(),
                 'download_url' => \App\Support\CentralUrl::route('app-download.file', ['variant' => $variant]),
-                'page_url' => \App\Support\CentralUrl::route('app-download.show'),
+                // ۲۰۲۶-۱۱-۲۱: دکمه‌ی «صفحه‌ی دانلود و راهنمای نصب» اعلان به‌روزرسانی اپ همکار به صفحه‌ی خودش برود، نه صفحه‌ی اپ مشتری
+                'page_url' => \App\Support\CentralUrl::route($variant === 'staff' ? 'app-download.staff' : 'app-download.show'),
             ],
             'update_available' => $available,
             'update_required' => $required,
