@@ -6,14 +6,14 @@
 #   mahru-backup loop   برنامه‌ی supervisord «backup»: هر روز ساعت BACKUP_AT به وقت APP_TIMEZONE
 #
 # خروجی: /data/backups/<تاریخ>/ — database.sql.gz، storage-app.tar.gz (course-photos، public، private) و app.key
-# فقط BACKUP_KEEP پشتیبان آخر می‌ماند (پیش‌فرض ۳). روی سرور، /data/backups پوشه‌ی میزبان است تا با WinSCP دانلود شود.
+# فقط BACKUP_KEEP پشتیبان آخر می‌ماند (پیش‌فرض ۵؛ تا ۲۰۲۶-۱۱-۲۲ سه بود). روی سرور، /data/backups پوشه‌ی میزبان است تا با WinSCP دانلود شود.
 # storage/app/backup-status.json را می‌نویسد (داشبورد ابرمدیر «آخرین پشتیبان‌گیری»).
 # BACKUP_AT خالی یا off = پشتیبان خودکار خاموش (لوکال)؛ «now» همیشه کار می‌کند.
 # ============================================================
 set -eu
 
 run_once() {
-    KEEP_LAST="${BACKUP_KEEP:-3}" BACKUP_APP_KEY_FILE=/data/app.key \
+    KEEP_LAST="${BACKUP_KEEP:-5}" BACKUP_APP_KEY_FILE=/data/app.key \
         bash /var/www/html/deploy/backup/mahru-backup.sh /var/www/html /data/backups
 }
 
@@ -27,7 +27,7 @@ case "${1:-now}" in
             echo "backup: BACKUP_AT is empty — automatic backup is off"
             exec sleep infinity
         fi
-        echo "backup: daily at $at (${APP_TIMEZONE:-Asia/Tehran}), keeping the last ${BACKUP_KEEP:-3}"
+        echo "backup: daily at $at (${APP_TIMEZONE:-Asia/Tehran}), keeping the last ${BACKUP_KEEP:-5}"
         last=""
         while true; do
             now="$(TZ="${APP_TIMEZONE:-Asia/Tehran}" date +%H:%M)"

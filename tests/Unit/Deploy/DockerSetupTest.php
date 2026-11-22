@@ -424,7 +424,7 @@ class DockerSetupTest extends TestCase
         foreach ([
             'APP_ENV=production', 'APP_DEBUG=false', 'APP_URL=https://arisheh.ir', 'CENTRAL_DOMAIN=arisheh.ir',
             'SESSION_SECURE_COOKIE=true', 'MAHRU_SEED=false', 'SMS_LOG_ONLY=true',
-            'ZARINPAL_SANDBOX=true', 'BACKUP_AT=03:40', 'BACKUP_KEEP=3', 'TELESCOPE_ENABLED=false',
+            'ZARINPAL_SANDBOX=true', 'BACKUP_AT=03:40', 'BACKUP_KEEP=5', 'TELESCOPE_ENABLED=false',
             'BACKUP_REQUIRE_ENCRYPTION=true', 'BACKUP_AGE_RECIPIENT=',
         ] as $line) {
             $this->assertMatchesRegularExpression('/^'.preg_quote($line, '/').'$/m', $env, $line);
@@ -483,7 +483,7 @@ class DockerSetupTest extends TestCase
 
         $backup = self::file('docker/single/backup.sh');
         $this->assertStringContainsString('BACKUP_APP_KEY_FILE=/data/app.key', $backup);
-        $this->assertStringContainsString('KEEP_LAST="${BACKUP_KEEP:-3}"', $backup);
+        $this->assertStringContainsString('KEEP_LAST="${BACKUP_KEEP:-5}"', $backup);
         $this->assertStringContainsString('/var/www/html /data/backups', $backup);
 
         // اسکریپت مشترک DirectAdmin: محیط کانتینر بر .env مقدم، و app.key و نگه‌داری N پشتیبان آخر

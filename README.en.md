@@ -339,7 +339,7 @@ LEGAL_PAGES_REVIEWED=false         # true once a lawyer has reviewed the texts (
 SALON_VERIFIER=manual              # salon verification: manual (super-admin); an official service later
 BACKUP_AT=03:40                    # single container only: nightly backup; empty = off
 BACKUP_AGE_RECIPIENT=              # age public key (age1…); backups are encrypted, the private key stays off the server
-BACKUP_KEEP=3
+BACKUP_KEEP=5                      # latest backups kept on the server (pre-deploy backups count too)
 BACKUP_STALE_HOURS=36
 ```
 > An empty `TRUSTED_PROXIES` trusts no proxy (no-CDN mode: the direct IP is the real one); behind the Arvan CDN, set Arvan's ranges (`arvan-ips.sh`).

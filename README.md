@@ -347,7 +347,7 @@ LEGAL_PAGES_REVIEWED=false         # true بعد از بازبینی حقوق‌
 SALON_VERIFIER=manual              # احراز سالن: manual (ابرمدیر)؛ بعداً سامانه‌ی رسمی
 BACKUP_AT=03:40                    # فقط تک‌کانتینری: پشتیبان شبانه؛ خالی = خاموش
 BACKUP_AGE_RECIPIENT=              # کلید عمومی age (age1…)؛ پشتیبان‌ها رمزنگاری می‌شوند، کلید خصوصی بیرون از سرور
-BACKUP_KEEP=3
+BACKUP_KEEP=5                      # پشتیبان‌های آخر روی سرور (پشتیبان پیش از deploy هم شمرده می‌شود)
 BACKUP_STALE_HOURS=36
 ```
 > `TRUSTED_PROXIES` خالی یعنی به هیچ پروکسی اعتماد نمی‌شود (حالت بدون CDN، IP مستقیم واقعی است)؛ پشت CDN آروان رنج آروان را بگذارید (`arvan-ips.sh`).
