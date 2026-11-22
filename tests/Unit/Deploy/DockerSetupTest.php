@@ -251,6 +251,7 @@ class DockerSetupTest extends TestCase
         $this->assertStringContainsString('client_max_body_size 25M;', self::file('docker/nginx/nginx.conf'), 'بقیه‌ی مسیرها همان ۲۵M');
         $this->assertSame(1, preg_match('/location = \/superadmin\/app-releases \{(.*?)\n\}/s', self::file('docker/nginx/site.inc'), $m));
         $this->assertStringContainsString('client_max_body_size '.$post[1].'M;', $m[1]);
+        $this->assertStringContainsString('client_body_timeout 600s;', $m[1], 'آپلود کند APK نباید با ۴۰۸ بعد از مکث ۳۰ ثانیه‌ای قطع شود (۲۰۲۶-۱۱-۲۱)');
         // خود همین location به PHP می‌دهد؛ با try_files، location نهایی «\.php$» با ۲۵M بدنه را رد می‌کرد
         $this->assertStringContainsString('fastcgi_pass unix:/var/run/php-fpm/php-fpm.sock;', $m[1]);
         $this->assertStringContainsString('include /etc/nginx/mahru/fastcgi-remote-addr.inc;', $m[1]);

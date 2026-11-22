@@ -75,6 +75,8 @@ location /telescope {
 # «\.php$» با سقف ۲۵M بدنه را رد می‌کرد. دسترسی را خود Laravel می‌سنجد (auth + super_admin).
 location = /superadmin/app-releases {
     client_max_body_size 160M;
+    # ۲۰۲۶-۱۱-۲۲: APK چندصدمگی روی خط خانه چند دقیقه طول می‌کشد و گاهی بیش از ۳۰ ثانیه مکث دارد؛ سراسری 30s (nginx.conf) آپلود را با ۴۰۸ می‌کشت
+    client_body_timeout 600s;
     fastcgi_pass unix:/var/run/php-fpm/php-fpm.sock;
     fastcgi_param SCRIPT_FILENAME $realpath_root/index.php;
     include fastcgi_params;
