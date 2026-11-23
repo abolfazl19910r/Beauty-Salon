@@ -15,6 +15,8 @@
                  به docblock بالای خودِ SubdomainRoutingTest.php نگاه کن. با این exclude، سوییت
                  اصلی همچنان دقیقاً همون ۱۰۱۳ تست/۱ skip/۰ fail قبلی رو می‌ده. -->
             <exclude>tests/Feature/Middleware/SubdomainRoutingTest.php</exclude>
+            <!-- سئو با CENTRAL_DOMAIN پر — فقط phpunit.subdomain.xml -->
+            <exclude>tests/Feature/Seo/SeoSubdomainTest.php</exclude>
         </testsuite>
     </testsuites>
     <source>

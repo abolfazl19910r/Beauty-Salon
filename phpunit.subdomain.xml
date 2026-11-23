@@ -28,6 +28,8 @@
             <file>tests/Feature/Middleware/SubdomainRoutingTest.php</file>
             <!-- ۲۰۲۶-۱۱-۱۱: صفحه‌های دامنه‌ی اصلی روی سرور تازه بی هیچ سالنی (همان شکل production: CENTRAL_DOMAIN پر) -->
             <file>tests/Feature/Central/CentralPagesWithoutSalonsTest.php</file>
+            <!-- سئو (۲۰۲۶-۱۱-۲۳): robots/sitemap هر زیردامنه و canonical روی زیردامنه -->
+            <file>tests/Feature/Seo/SeoSubdomainTest.php</file>
         </testsuite>
     </testsuites>
     <source>
