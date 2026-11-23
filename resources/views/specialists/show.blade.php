@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', $specialist->name)
+@section('description', $specialist->name.' — متخصص '.$currentSalonName.'؛ خدمات، ساعت کاری و نظرهای مشتری‌ها، و رزرو آنلاین نوبت.')
 
 {{--
     ⭐ صفحه‌ی عمومی پروفایل متخصص (۲۰۲۶-۰۹-۲۴). SpecialistController::show از قبل به view

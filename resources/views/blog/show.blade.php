@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', $post->title)
+@section('description', \App\Support\Seo\StructuredData::clean($post->excerpt ?: $post->content))
 
 @section('content')
     <style>

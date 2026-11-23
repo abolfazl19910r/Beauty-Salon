@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', $service->name)
+@section('description', \App\Support\Seo\StructuredData::clean($service->description) ?: 'خدمت '.$service->name.' — رزرو آنلاین نوبت در '.$currentSalonName)
 
 @section('content')
     <style>

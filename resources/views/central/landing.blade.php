@@ -7,21 +7,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{{ config('brand.name') }} | نرم‌افزار نوبت‌دهی و مدیریت سالن زیبایی</title>
-<meta name="description" content="ماهرو؛ رزرو آنلاین ۲۴ ساعته، تقویم پرسنل، یادآوری پیامکی، پرداخت بیعانه، باشگاه مشتریان و گزارش مالی — همه در یک پنل برای سالن‌های زیبایی.">
 <meta name="theme-color" content="#15110E" id="metaTheme">
 <meta name="color-scheme" content="dark light">
-<meta property="og:title" content="ماهرو | نوبت‌دهی آنلاین سالن زیبایی">
-<meta property="og:description" content="سالن شما همیشه پر از نوبت؛ بدون یک تماس بی‌پاسخ.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="{{ route('central.home') }}">
-<meta property="og:image" content="{{ asset('brand/mahru-og.png') }}">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:site_name" content="{{ config('brand.name') }}">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="{{ asset('brand/mahru-og.png') }}">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<meta property="og:locale" content="fa_IR">
+{{-- سئو (۲۰۲۶-۱۱-۲۳): canonical، description، OG و JSON-LD (Organization، WebSite، SoftwareApplication — قبلاً «IRT» که کد ارز معتبر نیست) از partials/seo --}}
+@include('partials.seo', [
+    'seoTitle' => 'ماهرو | نوبت‌دهی آنلاین سالن زیبایی',
+    'seoDescription' => 'ماهرو؛ رزرو آنلاین ۲۴ ساعته، تقویم پرسنل، یادآوری پیامکی، پرداخت بیعانه، باشگاه مشتریان و گزارش مالی — همه در یک پنل برای سالن‌های زیبایی.',
+    'seoJsonLd' => \App\Support\Seo\StructuredData::platform(collect($plans ?? [])->pluck('price')->filter()->min()),
+])
 <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="48x48">
 <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
 <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
@@ -47,9 +41,6 @@ if(t!=='light'&&t!=='dark'){var def=d.getAttribute('data-default-theme');t=(def=
 @font-face{font-family:"Sora";src:url("{{ asset('fonts/mahru/Sora-600.woff2') }}") format("woff2");font-weight:600;font-style:normal;font-display:swap}
 @font-face{font-family:"Sora";src:url("{{ asset('fonts/mahru/Sora-700.woff2') }}") format("woff2");font-weight:700;font-style:normal;font-display:swap}
 </style>
-<script type="application/ld+json" @nonce>
-{"@@context":"https://schema.org","@type":"SoftwareApplication","name":"ماهرو","alternateName":"Mahru","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":"fa","offers":{"@type":"AggregateOffer","lowPrice":"{{ $plans[0]['price'] ?? 0 }}","priceCurrency":"IRT"},"description":"نرم‌افزار نوبت‌دهی و مدیریت سالن‌های زیبایی"}
-</script>
 <style>
 /* =========================================================
    TOKENS

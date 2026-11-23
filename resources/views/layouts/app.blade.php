@@ -10,6 +10,15 @@
     @include('partials.favicons')
 
     <title>@yield('title') | {{ $currentSalonName }}</title>
+    {{-- سئو (۲۰۲۶-۱۱-۲۳): صفحه‌های عمومی سالن تأییدشده canonical/description/OG می‌گیرند و خانه JSON-LD ‏BeautySalon؛
+         صفحه‌های مشتری واردشده و پیش‌نمایش سالن احرازنشده noindex. description صفحه: @section('description') --}}
+    @php $seoSalon = app(\App\Support\CurrentSalon::class)->get(); @endphp
+    @include('partials.seo', [
+        'seoTitle' => trim($__env->yieldContent('title')).' | '.$currentSalonName,
+        'seoDescription' => trim($__env->yieldContent('description')) ?: ($seoSalon ? \App\Support\Seo\StructuredData::salonDescription($seoSalon) : null),
+        'seoImage' => $seoSalon ? \App\Support\Seo\StructuredData::salonImage($seoSalon) : null,
+        'seoJsonLd' => $seoSalon && request()->routeIs('home') ? [\App\Support\Seo\StructuredData::salon($seoSalon)] : [],
+    ])
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
 
     @include('partials.mahru-theme')

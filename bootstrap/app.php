@@ -30,6 +30,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // یک نسخه‌ی اصلی دامنه: www ← بی www (اینماد؛ بسته‌ی مجوز 5د)
         // append: بعد از TrustProxies تا پشت CDN آدرس مقصد https بماند
         $middleware->append(\App\Http\Middleware\RedirectToCanonicalHost::class);
+        // سئو (۲۰۲۶-۱۱-۲۳): noindex روی هر پاسخی جز صفحه‌های عمومی config/seo.php — درونی‌ترین سراسری تا route و سالن جاری معلوم باشد
+        $middleware->append(\App\Http\Middleware\AddRobotsTag::class);
 
         $middleware->web(append: [
             \Illuminate\Session\Middleware\StartSession::class,

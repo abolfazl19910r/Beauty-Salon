@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', $package->name)
+@section('description', \App\Support\Seo\StructuredData::clean($package->description) ?: 'دوره‌ی '.$package->name.' در '.$currentSalonName)
 
 @section('content')
     @php extract(\App\Support\Courses\CourseUi::customer()) @endphp

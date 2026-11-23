@@ -6,7 +6,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @include('partials.favicons')
 
-    <title>{{ $currentSalonName }}</title>
+    <title>{{ isset($title) && trim((string) $title) !== '' ? trim((string) $title).' | ' : '' }}{{ $currentSalonName }}</title>
+    {{-- سئو (۲۰۲۶-۱۱-۲۳): slotهای اختیاری title و description؛ ورود و بقیه‌ی صفحه‌های این layout noindex می‌گیرند --}}
+    @include('partials.seo', [
+        'seoTitle' => isset($title) ? trim((string) $title) : null,
+        'seoDescription' => isset($description) ? (string) $description : null,
+    ])
 
 
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])

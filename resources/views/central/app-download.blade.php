@@ -9,6 +9,8 @@
     }
 @endphp
 <x-guest-layout>
+    <x-slot name="title">دانلود اپ ماهرو برای اندروید</x-slot>
+    <x-slot name="description">اپ اندروید ماهرو برای مشتری‌های سالن‌های زیبایی: رزرو نوبت، پرداخت، یادآوری و باشگاه مشتریان. نصب مستقیم با فایل APK؛ آیفون: نسخه‌ی وب (PWA).</x-slot>
     <div class="text-center mb-6" data-app-download>
         <img src="{{ asset('brand/mahru-customer-app-192.png') }}" alt="" width="72" height="72" class="mx-auto mb-3 rounded-2xl">
         <h2 class="text-2xl font-bold" style="font-family:'Mahru','Vazirmatn',sans-serif;font-weight:800;color:rgb(var(--m-gold2))">اپ ماهرو</h2>

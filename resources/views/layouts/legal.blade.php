@@ -9,7 +9,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @include('partials.favicons')
     <title>@yield('title') — {{ $platform['brand'] }}</title>
-    <link rel="canonical" href="{{ \App\Support\CentralUrl::to(request()->path()) }}">
+    {{-- سئو (۲۰۲۶-۱۱-۲۳): canonical، description و OG از partials/seo (قبلاً فقط canonical) --}}
+    @include('partials.seo', [
+        'seoTitle' => trim($__env->yieldContent('title')).' — '.$platform['brand'],
+        'seoDescription' => trim($__env->yieldContent('description')) ?: trim($__env->yieldContent('title')).' پلتفرم نوبت‌دهی آنلاین سالن‌های زیبایی '.$platform['brand'].' ('.$platform['domain'].').',
+    ])
     @vite(['resources/css/app.css'])
     @include('partials.mahru-theme')
     <style>

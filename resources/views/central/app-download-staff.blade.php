@@ -3,6 +3,8 @@
     ورودی: $staff = ?AppRelease (آخرین نسخه‌ی منتشرشده‌ی اپ همکار). فایل از همان /app/download/staff می‌آید.
 --}}
 <x-guest-layout>
+    <x-slot name="title">دانلود اپ ماهرو همکار</x-slot>
+    <x-slot name="description">اپ اندروید «ماهرو همکار» برای متخصص‌های سالن: نوبت‌های امروز، تقویم و ساعت کاری، مرخصی و کیف پول. نصب مستقیم با فایل APK.</x-slot>
     <div class="text-center mb-6" data-staff-page>
         <img src="{{ asset('brand/mahru-app-icon.svg') }}" alt="" width="72" height="72" class="mx-auto mb-3 rounded-2xl">
         <h2 class="text-2xl font-bold" style="font-family:'Mahru','Vazirmatn',sans-serif;font-weight:800;color:rgb(var(--m-gold2))">ماهرو همکار</h2>
