@@ -59,6 +59,21 @@ class ServiceControllerTest extends TestCase
         $this->assertFalse($relatedIds->contains($service->id));
     }
 
+    /**
+     * 🐞 ۲۰۲۶-۱۱-۲۳ (کشف‌شده حین سئو): category_id در فرم مدیر اختیاری است، ولی getRelated(int) با null ← TypeError و صفحه‌ی
+     * عمومی خدمت ۵۰۰ — همان صفحه‌ای که در sitemap به گوگل داده می‌شود.
+     */
+    public function test_show_works_for_a_service_without_a_category(): void
+    {
+        $service = BeautyService::factory()->create(['category_id' => null]);
+        BeautyService::factory()->create(['category_id' => null]);
+
+        $response = $this->get(route('services.show', ['service' => $service->id]));
+
+        $response->assertOk();
+        $this->assertCount(0, $response->viewData('relatedServices'));
+    }
+
     public function test_api_list_computes_prepayment_amount_from_current_admin_settings(): void
     {
         $this->usePrepaymentMode(); // بسته‌ی 5ه: رفتار «با پیش‌پرداخت»

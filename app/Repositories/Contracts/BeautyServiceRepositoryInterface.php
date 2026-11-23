@@ -14,7 +14,7 @@ interface BeautyServiceRepositoryInterface extends RepositoryInterface
 
     public function paginateWithCategory(int $perPage = 10): LengthAwarePaginator;
 
-    public function getRelated(int $categoryId, int $excludeId, int $limit = 3): Collection;
+    public function getRelated(?int $categoryId, int $excludeId, int $limit = 3): Collection;
 
     public function getLatest(int $limit): Collection;
 }

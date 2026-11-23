@@ -33,8 +33,13 @@ class BeautyServiceRepository extends BaseRepository implements BeautyServiceRep
         return $this->model->with('category')->latest()->paginate($perPage);
     }
 
-    public function getRelated(int $categoryId, int $excludeId, int $limit = 3): Collection
+    public function getRelated(?int $categoryId, int $excludeId, int $limit = 3): Collection
     {
+        // خدمت بی دسته (category_id در فرم مدیر اختیاری است) خدمت مرتبطی ندارد — قبلاً TypeError و صفحه‌ی عمومی خدمت ۵۰۰ (۲۰۲۶-۱۱-۲۳)
+        if ($categoryId === null) {
+            return $this->model->newCollection();
+        }
+
         return $this->model->where('category_id', $categoryId)
             ->where('id', '!=', $excludeId)
             ->limit($limit)
