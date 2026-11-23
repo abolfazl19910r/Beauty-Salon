@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->middleware('qr.scan')->name('home');
 
 // PWA سایت سالن (بسته‌ی ۶، آیفون: «افزودن به صفحه‌ی اصلی»): manifest و آیکون از لوگوی سالن
+// سئو (۲۰۲۶-۱۱-۲۳): robots و sitemap هر سالن روی زیردامنه‌ی خودش (پیش از route‌های بی‌دامنه‌ی هم‌نام دامنه‌ی اصلی ثبت می‌شود)
+Route::get('/robots.txt', \App\Http\Controllers\Seo\RobotsController::class)->name('salon.robots');
+Route::get('/sitemap.xml', [\App\Http\Controllers\Seo\SitemapController::class, 'salon'])->name('salon.sitemap');
+
 Route::get('/manifest.webmanifest', [\App\Http\Controllers\Pwa\PwaController::class, 'salonManifest'])->name('salon.pwa.manifest');
 Route::get('/pwa/icon-{variant}.png', [\App\Http\Controllers\Pwa\PwaController::class, 'salonIcon'])
     ->whereIn('variant', array_keys(\App\Services\Pwa\SalonPwaIcon::VARIANTS))->name('salon.pwa.icon');

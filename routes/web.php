@@ -119,6 +119,12 @@ if ($centralDomain) {
 // که با هیچ گروه ساب‌دامینی جور نیست (دامنه‌ی مرکزی خام، 127.0.0.1، localhost) به اینجا می‌رسه.
 Route::get('/', \App\Http\Controllers\Central\CentralLandingController::class)->name('central.home');
 
+// سئو (۲۰۲۶-۱۱-۲۳): robots.txt و sitemap دامنه‌ی اصلی. پیش از route فایل تأیید دامنه (/{name}.txt) تا robots.txt به آن نرسد؛
+// روی زیردامنه‌ی سالن نسخه‌ی routes/web/public.php (زودتر ثبت‌شده) جواب می‌دهد.
+Route::get('/robots.txt', \App\Http\Controllers\Seo\RobotsController::class)->name('seo.robots');
+Route::get('/sitemap.xml', [\App\Http\Controllers\Seo\SitemapController::class, 'index'])->name('seo.sitemap');
+Route::get('/sitemap-pages.xml', [\App\Http\Controllers\Seo\SitemapController::class, 'pages'])->name('seo.sitemap.pages');
+
 // فرم «درخواست دموی رایگان» صفحه‌ی فروش (لندینگ تازه، ۲۰۲۶-۱۰-۱۴). سقف ۵ درخواست در ساعت برای هر آی‌پی.
 Route::post('/demo-request', [\App\Http\Controllers\Central\DemoRequestController::class, 'store'])
     ->middleware('throttle:5,60')

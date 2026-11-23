@@ -55,9 +55,11 @@ location = /favicon.ico {
     expires max;
 }
 
+# سئو (۲۰۲۶-۱۱-۲۳): robots.txt پویاست (هر میزبان — دامنه‌ی اصلی و هر زیردامنه‌ی سالن — sitemap خودش را دارد)؛ public/robots.txt
+# ثابت حذف شد. بی try_files، nginx فایل نبوده را ۴۰۴ می‌داد و error_page همان ۴۰۴ را نگه می‌داشت. /sitemap.xml از location / می‌رود.
 location = /robots.txt {
     access_log off;
-    log_not_found off;
+    try_files $uri /index.php?$query_string;
 }
 
 # ─── Laravel Telescope (فقط در local/dev) ────────────────
