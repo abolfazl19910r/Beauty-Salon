@@ -60,6 +60,12 @@ final class SmsText
     }
 
     /** بسته‌ی 5ه: لینک «حضورم را تأیید می‌کنم» */
+    /** یادآوری پیش‌پرداخت (دکمه‌ی پنل مدیر، بسته‌ی ۲ ظاهری) — $link لینک کوتاه صفحه‌ی پرداخت نوبت */
+    public static function bookingPaymentReminder(Booking $b, string $link): string
+    {
+        return self::render($b, 'booking_payment_reminder', ['مبلغ' => self::money($b->prepayment_amount), 'لینک' => $link]);
+    }
+
     public static function attendanceRequest(Booking $b, string $link): string
     {
         return self::render($b, 'attendance_request', ['لینک' => $link]);

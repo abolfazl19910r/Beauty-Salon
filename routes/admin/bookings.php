@@ -15,6 +15,8 @@ Route::prefix('bookings')->name('bookings.')->group(function () {
     Route::get('/{booking}/edit', [AdminBookingController::class, 'edit'])->name('edit');
     // «نیامد» (بسته‌ی ب، ادامه ۷)
     Route::post('/{booking}/no-show', \App\Http\Controllers\Admin\Booking\AdminBookingNoShowController::class)->name('no-show');
+    // «یادآوری پرداخت» (بسته‌ی ۲ ظاهری، ۲۰۲۶-۱۱-۲۵)
+    Route::post('/{booking}/payment-reminder', \App\Http\Controllers\Admin\Booking\AdminBookingPaymentReminderController::class)->name('payment-reminder');
     Route::get('/{booking}', [AdminBookingController::class, 'show'])->name('show');
     Route::put('/{booking}', [AdminBookingController::class, 'update'])->name('update');
     Route::delete('/{booking}', [AdminBookingController::class, 'destroy'])->name('destroy');
