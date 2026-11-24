@@ -75,6 +75,11 @@ class AppServiceProvider extends ServiceProvider
         // بیرون از درخواست وب (ایمیل، PDF، صف) nonce نیست و چیزی چاپ نمی‌شود.
         Blade::directive('nonce', fn () => "<?php if (\\Illuminate\\Support\\Facades\\Vite::cspNonce()) { echo 'nonce=\"'.e(\\Illuminate\\Support\\Facades\\Vite::cspNonce()).'\"'; } ?>");
 
+        // نمایش فارسی (بسته‌ی ۰ به‌روزرسانی ظاهری): رقم، مبلغ و تاریخ خوانا — App\Support\Fa؛ خروجی escape می‌شود.
+        Blade::directive('fa', fn (string $e) => "<?php echo e(\\App\\Support\\Fa::number({$e})); ?>");
+        Blade::directive('money', fn (string $e) => "<?php echo e(\\App\\Support\\Fa::money({$e})); ?>");
+        Blade::directive('faDate', fn (string $e) => "<?php echo e(\\App\\Support\\Fa::date({$e})); ?>");
+
         $this->guardAgainstLazyLoading();
 
         Blade::if('role', function ($role) {

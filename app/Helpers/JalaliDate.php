@@ -97,3 +97,40 @@ if (! function_exists('to_persian_num')) {
         return str_replace($english, $persian, $number);
     }
 }
+
+// ─── نمایش فارسی (بسته‌ی ۰ به‌روزرسانی ظاهری، ۲۰۲۶-۱۱-۲۴) — جزئیات در App\Support\Fa ───
+
+if (! function_exists('fa_num')) {
+    function fa_num(int|float|string|null $value, int $decimals = 0, bool $signed = false): string
+    {
+        return \App\Support\Fa::number($value, $decimals, $signed);
+    }
+}
+
+if (! function_exists('fa_money')) {
+    function fa_money(int|float|string|null $amount, bool $unit = false, bool $signed = false): string
+    {
+        return \App\Support\Fa::money($amount, $unit, $signed);
+    }
+}
+
+if (! function_exists('fa_date')) {
+    function fa_date(DateTimeInterface|string|null $date, bool $withTime = false, bool $weekday = true): string
+    {
+        return \App\Support\Fa::date($date, $withTime, $weekday);
+    }
+}
+
+if (! function_exists('fa_time')) {
+    function fa_time(DateTimeInterface|string|null $date): string
+    {
+        return \App\Support\Fa::time($date);
+    }
+}
+
+if (! function_exists('fa_jdate')) {
+    function fa_jdate(DateTimeInterface|string|null $date, string $format = 'Y/m/d'): string
+    {
+        return \App\Support\Fa::jdate($date, $format);
+    }
+}
