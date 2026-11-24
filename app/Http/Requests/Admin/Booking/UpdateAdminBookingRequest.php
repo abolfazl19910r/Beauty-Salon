@@ -38,6 +38,25 @@ class UpdateAdminBookingRequest extends FormRequest
         return $this->has('status') && ! $this->has('user_id');
     }
 
+    /** وضعیت‌هایی که مدیر دستی می‌گذارد؛ «انجام‌شده» و «نیامد» دکمه‌ی جدای خودشان را دارند */
+    public const EDITABLE_STATUSES = ['pending', 'confirmed', 'cancelled'];
+
+    /**
+     * فرم ویرایش کامل: یکی از EDITABLE_STATUSES، یا همان وضعیت فعلی نوبت بی تغییر (۲۰۲۶-۱۱-۲۴). پیش‌تر فرم «انجام‌شده» را نشان
+     * می‌داد ولی قاعده ردش می‌کرد، و برای نوبت «نیامد»/«منتظر پرداخت» گزینه‌ای نبود و ذخیره، وضعیت را بی‌صدا «منتظر تأیید» می‌کرد.
+     *
+     * @return list<string>
+     */
+    public static function allowedStatusesFor(?string $current): array
+    {
+        $allowed = self::EDITABLE_STATUSES;
+        if ($current !== null && ! in_array($current, $allowed, true)) {
+            $allowed[] = $current;
+        }
+
+        return $allowed;
+    }
+
     public function rules(): array
     {
         if ($this->isStatusOnly()) {
@@ -51,7 +70,7 @@ class UpdateAdminBookingRequest extends FormRequest
             'service_id' => ['required', 'exists:beauty_services,id'],
             'specialist_id' => ['required', 'exists:specialists,id'],
             'booking_time' => ['required', 'date'],
-            'status' => ['required', 'in:pending,confirmed,cancelled'],
+            'status' => ['required', \Illuminate\Validation\Rule::in(self::allowedStatusesFor($this->route('booking')?->status))],
             'payment_status' => ['required', 'in:paid,unpaid'],
             'notes' => ['nullable', 'string'],
         ];

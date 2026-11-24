@@ -54,7 +54,7 @@ class ExpertTermTest extends TestCase
         $offenders = [];
         foreach (File::allFiles(app_path()) as $file) {
             // خود تعریف واژه و دستور تغییر نام
-            if (in_array($file->getRelativePathname(), ['Support/Text/ExpertTerm.php', 'Console/Commands/RenameExpertLabels.php'], true)) {
+            if (in_array(str_replace('\\', '/', $file->getRelativePathname()), ['Support/Text/ExpertTerm.php', 'Console/Commands/RenameExpertLabels.php'], true)) { // ویندوز: «\\»
                 continue;
             }
             $tokens = token_get_all($file->getContents());

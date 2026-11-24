@@ -88,7 +88,7 @@ class StoredXssTest extends TestCase
         foreach (['${b.user_name', '${s.name}', '${b.service_name'] as $raw) {
             $this->assertStringNotContainsString($raw, $dashboard, "sink بی escape: {$raw}");
         }
-        $this->assertStringContainsString("\${escHtml(b.user_name || 'کاربر ناشناس')}", $dashboard);
+        // renderer «نوبت‌های اخیر» (updateRecentBookings) کد مرده بود و ۲۰۲۶-۱۱-۲۴ حذف شد؛ آن کارت سمت سرور escape می‌شود
         $this->assertStringContainsString('${escHtml(s.name)}', $dashboard);
     }
 

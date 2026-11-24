@@ -151,11 +151,11 @@
                     <div>
                         <label for="status" class="form-label">وضعیت نوبت</label>
                         <select id="status" name="status" class="form-select">
-                            <option value="pending"   {{ old('status',$booking->status)=='pending'   ?'selected':'' }}>{{ \App\Support\Bookings\BookingLabels::status('pending') }}</option>
-                            <option value="confirmed" {{ old('status',$booking->status)=='confirmed' ?'selected':'' }}>{{ \App\Support\Bookings\BookingLabels::status('confirmed') }}</option>
-                            <option value="completed" {{ old('status',$booking->status)=='completed' ?'selected':'' }}>{{ \App\Support\Bookings\BookingLabels::status('completed') }}</option>
-                            <option value="cancelled" {{ old('status',$booking->status)=='cancelled' ?'selected':'' }}>{{ \App\Support\Bookings\BookingLabels::status('cancelled') }}</option>
+                            @foreach(\App\Http\Requests\Admin\Booking\UpdateAdminBookingRequest::allowedStatusesFor($booking->status) as $statusKey)
+                                <option value="{{ $statusKey }}" @selected(old('status', $booking->status) === $statusKey)>{{ \App\Support\Bookings\BookingLabels::status($statusKey) }}</option>
+                            @endforeach
                         </select>
+                        <p class="text-xs mt-1" style="color:var(--admin-text-light);">«انجام‌شده» را کارشناس می‌زند و «نیامد» دکمه‌ی صفحه‌ی جزئیات نوبت است.</p>
                         @error('status') <p class="form-error">{{ $message }}</p> @enderror
                     </div>
 

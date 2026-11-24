@@ -528,7 +528,7 @@
                 <div>
                     <div class="flex justify-between text-sm mb-1">
                         <span style="color:var(--admin-text);">${escHtml(s.name)}</span>
-                        <span style="color:var(--admin-text-dim);">${escHtml(s.bookings_count)} نوبت</span>
+                        <span style="color:var(--admin-text-dim);">${escHtml(new Intl.NumberFormat('fa-IR').format(s.bookings_count))} نوبت</span>
                     </div>
                     <div class="progress-bar-track">
                         <div class="progress-bar-fill" style="width:${pct}%;"></div>
@@ -537,42 +537,6 @@
                 }).join('');
             }
 
-            // --- Recent turn updates ---
-            function updateRecentBookings(bookings) {
-                const el = document.getElementById('recent-bookings-container');
-                if (!bookings || !bookings.length) {
-                    el.innerHTML = '<p class="text-sm text-center py-8" style="color:var(--admin-text-dim);">نوبتی وجود ندارد</p>';
-                    return;
-                }
-
-                const statusStyles = {
-                    confirmed: 'background:#EFF6FF;color:#1D4ED8;',
-                    completed:  'background:#F0FDF4;color:#166534;',
-                    cancelled:  'background:#FEF2F2;color:#991B1B;',
-                };
-                const defaultStyle = 'background:#FFFBEB;color:#92400E;';
-
-                el.innerHTML = bookings.map(b => {
-                    const style = statusStyles[b.status] || defaultStyle;
-                    const label = b.status === 'completed' ? 'تکمیل'
-                        : b.status === 'cancelled'  ? 'لغو'
-                            : (b.booking_time || '');
-                    return `
-                <div class="flex items-center justify-between px-4 py-3" style="border-bottom:1px solid var(--admin-border);">
-                    <div class="flex items-center gap-2 min-w-0">
-                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-                             style="background:var(--admin-accent-light); color:var(--admin-accent);">
-                            ${escHtml((b.user_name || 'ن').charAt(0))}
-                        </div>
-                        <div class="min-w-0">
-                            <p class="text-sm font-medium truncate" style="color:var(--admin-text);">${escHtml(b.user_name || 'کاربر ناشناس')}</p>
-                            <p class="text-xs truncate" style="color:var(--admin-text-dim);">${escHtml(b.service_name || '—')}</p>
-                        </div>
-                    </div>
-                    <span class="badge-status flex-shrink-0 mr-2" style="${style}">${escHtml(label)}</span>
-                </div>`;
-                }).join('');
-            }
 
             // Auto-run today on load
             updateTimeFilter('today');
