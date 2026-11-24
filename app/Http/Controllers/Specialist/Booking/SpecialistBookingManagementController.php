@@ -40,7 +40,7 @@ class SpecialistBookingManagementController extends Controller
             ->with(['service', 'user']);
 
         $this->applyFilters($query, $request);
-        $this->applySort($query, $request->get('sort_by', 'latest'));
+        $this->applySort($query, (string) $request->get('sort_by', 'upcoming'));
 
         $bookings = $query->paginate(10)->withQueryString();
 
@@ -169,7 +169,8 @@ class SpecialistBookingManagementController extends Controller
         match ($sortBy) {
             'oldest', 'date_asc' => $query->orderBy('booking_time', 'asc'),
             'date_desc' => $query->orderBy('booking_time', 'desc'),
-            default => $query->latest(),
+            'latest' => $query->latest(),
+            default => $query->chronological(),
         };
     }
 }

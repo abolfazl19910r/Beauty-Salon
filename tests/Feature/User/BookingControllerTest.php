@@ -10,9 +10,9 @@ use Tests\TestCase;
 /**
  * User\BookingController (index/show/success/failed/rate) had zero dedicated HTTP test
  * coverage before this session — notably including the "مرتب‌سازی هوشمند لیست نوبت‌های من"
- * feature (status-priority ordering: confirmed/completed > pending/pending_payment >
- * cancelled, newest-within-group first) documented as a real feature addition in
- * Rasta_unified_prompt.md, which had never actually been exercised via a real HTTP request.
+ * feature (status-priority ordering) documented in Rasta_unified_prompt.md. Since package 0 of
+ * the UI refresh (2026-11-24) the list is chronological instead: upcoming nearest first, then past
+ * newest first.
  */
 class BookingControllerTest extends TestCase
 {
@@ -26,7 +26,7 @@ class BookingControllerTest extends TestCase
         $this->user = User::factory()->create();
     }
 
-    public function test_index_orders_by_status_priority_then_recency_within_group(): void
+    public function test_index_orders_upcoming_bookings_nearest_first_regardless_of_status(): void
     {
         $cancelled = Booking::factory()->create([
             'user_id' => $this->user->id,
@@ -59,12 +59,9 @@ class BookingControllerTest extends TestCase
         $response->assertOk();
         $ids = collect($response->viewData('bookings')->items())->pluck('id')->all();
 
-        // Group 1 (confirmed/completed) first, newest booking_time first within the group;
-        // group 2 (pending/pending_payment) next, same rule; group 3 (cancelled) last.
+        // بسته‌ی ۰ (۲۰۲۶-۱۱-۲۴): جای «اولویت وضعیت» قبلی، ترتیب زمانی — همه آینده‌اند، پس از نزدیک به دور (Booking::scopeChronological)
         $this->assertSame([
-            $confirmedNew->id, $confirmedOld->id,
-            $pendingNew->id, $pendingOld->id,
-            $cancelled->id,
+            $pendingOld->id, $confirmedOld->id, $pendingNew->id, $confirmedNew->id, $cancelled->id,
         ], $ids);
     }
 

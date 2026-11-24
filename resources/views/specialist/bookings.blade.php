@@ -135,7 +135,8 @@
                     <div>
                         <label class="block text-xs text-[var(--specialist-plum-muted)] mb-2">مرتب‌سازی</label>
                         <select name="sort_by" class="w-full rounded-lg px-4 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]" style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);">
-                            <option value="latest" {{ request('sort_by') == 'latest' ? 'selected' : '' }}>جدیدترین</option>
+                            <option value="upcoming" {{ in_array(request('sort_by'), [null, '', 'upcoming'], true) ? 'selected' : '' }}>نزدیک‌ترین نوبت اول</option>
+                            <option value="latest" {{ request('sort_by') == 'latest' ? 'selected' : '' }}>تازه‌ترین ثبت</option>
                             <option value="oldest" {{ request('sort_by') == 'oldest' ? 'selected' : '' }}>قدیمی‌ترین</option>
                             <option value="date_asc" {{ request('sort_by') == 'date_asc' ? 'selected' : '' }}>تاریخ صعودی</option>
                             <option value="date_desc" {{ request('sort_by') == 'date_desc' ? 'selected' : '' }}>تاریخ نزولی</option>

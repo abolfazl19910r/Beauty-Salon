@@ -25,17 +25,7 @@ class BookingRepository extends BaseRepository implements BookingRepositoryInter
     {
         $query = $this->model->with(['service', 'specialist'])
             ->where('user_id', $userId)
-            ->orderByRaw("
-                CASE `status`
-                    WHEN 'confirmed' THEN 1
-                    WHEN 'completed' THEN 1
-                    WHEN 'pending' THEN 2
-                    WHEN 'pending_payment' THEN 2
-                    WHEN 'cancelled' THEN 3
-                    ELSE 4
-                END
-            ")
-            ->orderBy('booking_time', 'desc');
+            ->chronological();
 
         if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
@@ -104,7 +94,7 @@ class BookingRepository extends BaseRepository implements BookingRepositoryInter
 
     public function paginateWithFilters(array $filters, int $perPage = 15): LengthAwarePaginator
     {
-        $query = $this->model->with(['user', 'specialist', 'service'])->latest();
+        $query = $this->model->with(['user', 'specialist', 'service'])->chronological();
 
         if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);

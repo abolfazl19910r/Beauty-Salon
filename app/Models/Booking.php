@@ -100,6 +100,22 @@ class Booking extends Model
     }
 
     /**
+     * ترتیب زمانی فهرست نوبت‌ها (بسته‌ی ۰ به‌روزرسانی ظاهری، تصمیم ۲۰۲۶-۱۱-۲۴): اول نوبت‌های آینده از نزدیک به دور، بعد
+     * نوبت‌های گذشته از تازه به قدیم. پیش‌تر فهرست مدیر بر اساس زمان ثبت (`latest()`) بود و نوبت فردا لابه‌لای نوبت‌های قدیمی
+     * گم می‌شد. نوبت بی زمان آخر می‌آید. بی تابع خاص دیتابیس (SQLite و MySQL).
+     */
+    public function scopeChronological($query, ?\DateTimeInterface $now = null)
+    {
+        $now = ($now ?? now())->format('Y-m-d H:i:s');
+        $column = $query->getModel()->qualifyColumn('booking_time');
+
+        return $query
+            ->orderByRaw("CASE WHEN {$column} IS NULL THEN 2 WHEN {$column} >= ? THEN 0 ELSE 1 END", [$now])
+            ->orderByRaw("CASE WHEN {$column} >= ? THEN {$column} END ASC", [$now])
+            ->orderBy($column, 'desc');
+    }
+
+    /**
      * ⭐ نوبت‌هایی که پرداختشون در جریان نیست — لغو خودکار «پرداخت‌نشده بعد از ۳۰ دقیقه» فقط روی این‌ها. مهلت ۳۰
      * دقیقه از ساخت نوبت شمرده می‌شه نه از رفتن به بانک؛ بدون این، مشتری‌ای که در دقیقه‌ی ۲۸ پرداخت می‌کرد و در
      * ۳۲ برمی‌گشت نوبتش وسط پرداخت لغو می‌شد (و اگه ساعتش رو کس دیگه‌ای می‌گرفت، پولش گیر می‌کرد).
