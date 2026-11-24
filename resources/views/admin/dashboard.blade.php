@@ -306,7 +306,7 @@
                                 </div>
                                 <div class="min-w-0">
                                     <p class="text-sm font-medium truncate" style="color:var(--admin-text);">{{ $booking->user->name ?? 'کاربر ناشناس' }}</p>
-                                    <p class="text-xs truncate" style="color:var(--admin-text-dim);">{{ $booking->service?->name ?? '—' ?? '—' }}</p>
+                                    <p class="text-xs truncate" style="color:var(--admin-text-dim);">{{ $booking->service?->name ?? '—' }}</p>
                                 </div>
                             </div>
                             <span class="badge-status flex-shrink-0 mr-2

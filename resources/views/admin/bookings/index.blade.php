@@ -182,11 +182,7 @@
                                 @endif
                             </td>
 
-                            <td class="px-4 py-3" style="color:var(--admin-text);">{{ $booking->service->name ?? '—' }}</td>
-
-                            <td class="px-4 py-3" style="color:var(--admin-text);">{{ $booking->specialist?->name ?? '—' }}</td>
-
-                            <td class="px-4 py-3" style="color:var(--admin-text);">{{ $booking->service?->name ?? '—' ?? '—' }}</td>
+                            <td class="px-4 py-3" style="color:var(--admin-text);">{{ $booking->service?->name ?? '—' }}</td>
 
                             <td class="px-4 py-3" style="color:var(--admin-text);">{{ $booking->specialist?->name ?? '—' }}</td>
 

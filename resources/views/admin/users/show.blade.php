@@ -132,8 +132,8 @@
                                         data-ui-unhover="background: ">
                                         <td class="px-4 py-2.5 persian-number" style="color:var(--admin-text-dim);">{{ $booking->id }}</td>
                                         <td class="px-4 py-2.5 persian-number" style="color:var(--admin-text);">{{ verta($booking->booking_time)->format('Y/m/d H:i') }}</td>
-                                        <td class="px-4 py-2.5" style="color:var(--admin-text);">{{ $booking->service?->name ?? '—' ?? '—' }}</td>
-                                        <td class="px-4 py-2.5" style="color:var(--admin-text-dim);">{{ $booking->specialist?->name ?? '—' ?? '—' }}</td>
+                                        <td class="px-4 py-2.5" style="color:var(--admin-text);">{{ $booking->service?->name ?? '—' }}</td>
+                                        <td class="px-4 py-2.5" style="color:var(--admin-text-dim);">{{ $booking->specialist?->name ?? '—' }}</td>
                                         <td class="px-4 py-2.5">
                                             <span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background:{{ $bs[1] }}; color:{{ $bs[2] }};">{{ $bs[0] }}</span>
                                         </td>
