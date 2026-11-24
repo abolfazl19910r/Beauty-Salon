@@ -51,6 +51,21 @@
 
         /* ⭐ بسته‌ی «و»: قالب‌های پنل مدیر */
         .adm-drawer{width:16rem}
+        /* بسته‌ی ۲ ظاهری (۲۰۲۶-۱۱-۲۴): منوی گروه‌بندی‌شده، نشان شمار و دکمه‌ی «ثبت نوبت» */
+        .adm-drawer__site{display:block;margin-top:.5rem;font-size:.75rem;color:var(--admin-accent);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .adm-drawer__glabel{font-size:.72rem;font-weight:600;padding:0 .75rem .35rem;color:var(--admin-text-light)}
+        .adm-drawer__sub{margin:.75rem;padding:.75rem;border-radius:12px;background:var(--admin-accent-light);font-size:.78rem;line-height:1.9;color:var(--admin-text-dim)}
+        .adm-group{margin:.15rem 0}
+        .adm-group>summary{list-style:none}
+        .adm-group>summary::-webkit-details-marker{display:none}
+        .adm-group__head{display:flex;align-items:center;gap:.5rem;padding:.6rem .75rem;border-radius:10px;cursor:pointer;font-size:.86rem;font-weight:600;color:var(--admin-text)}
+        .adm-group__head:hover{background:var(--admin-accent-light)}
+        .adm-group__head::after{content:"";width:.4rem;height:.4rem;border:solid var(--admin-text-light);border-width:0 0 2px 2px;transform:rotate(-45deg);transition:transform .15s;margin-inline-start:.25rem}
+        .adm-group[open]>.adm-group__head::after{transform:rotate(135deg)}
+        .adm-group__n{font-size:.72rem;font-weight:400;color:var(--admin-text-light)}
+        .adm-count{display:inline-flex;align-items:center;justify-content:center;min-width:1.4rem;padding:0 .45rem;border-radius:999px;font-size:.72rem;font-weight:700;background:rgb(var(--m-gold) / .18);color:var(--admin-accent-hover, var(--admin-accent))}
+        .adm-new-booking{display:inline-flex;align-items:center;gap:.35rem;padding:.5rem .95rem;border-radius:999px;font-size:.85rem;font-weight:700;background:var(--admin-accent);color:rgb(var(--m-on-solid))}
+        .adm-new-booking:hover{background:var(--admin-accent-hover)}
         .adm-link{color:var(--admin-text-dim)}
         .adm-link:not(.sidebar-active):hover{background-color:var(--admin-accent-light)}
         .adm-logout{color:var(--admin-text-dim)}
@@ -116,7 +131,10 @@
     // ⭐ بسته‌ی «و»: قالب پنل مدیر (side / rail / top / dense) و منوی یکتای AdminMenu
     $adminSalon = app(\App\Support\CurrentSalon::class)->get();
     $adminShell = app(\App\Support\Themes\CurrentAppearance::class)->get()->admin;
-    $adminMenu = \App\Support\Admin\AdminMenu::groups(auth()->user(), $adminSalon);
+    $adminMenuAll = \App\Support\Admin\AdminMenu::groups(auth()->user(), $adminSalon);
+    // بسته‌ی ۲ ظاهری: پشتیبانی و پروفایل در منوی حساب نوار بالا، بقیه در منوی پوسته
+    $adminMenu = \App\Support\Admin\AdminMenu::sideGroups($adminMenuAll);
+    $adminAccountItems = \App\Support\Admin\AdminMenu::accountItems($adminMenuAll);
 @endphp
 <body class="rtl m-panel adm adm--{{ $adminShell }}" data-admin-shell="{{ $adminShell }}" style="background-color: var(--admin-bg); color: var(--admin-text);">
 <div class="flex h-screen overflow-hidden">
@@ -164,6 +182,12 @@
                 @endif
 
                 <div class="flex items-center space-x-3 space-x-reverse">
+                    @permission('create-bookings')
+                        <a href="{{ route('admin.bookings.create') }}" class="adm-new-booking" data-new-booking>
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                            <span class="hidden sm:inline">ثبت نوبت</span>
+                        </a>
+                    @endpermission
                     @include('partials.admin-salon-switcher')
                     @include('partials.mahru-theme-toggle')
                     <!-- Search button -->
@@ -250,7 +274,7 @@
                                     </svg>
                                     نمایش پروفایل
                                 </a>
-                                <a href="{{ route('admin.profile.edit') }}"
+                                <a href="{{ route('admin.profile.edit') }}" data-menu-key="profile"
                                    class="flex items-center px-4 py-2.5 text-sm transition-colors"
                                    style="color: var(--admin-text-dim);"
                                    data-ui-hover="background-color: var(--admin-accent-light); color: var(--admin-text)"
@@ -262,6 +286,20 @@
                                     </svg>
                                     ویرایش پروفایل
                                 </a>
+
+                                {{-- بسته‌ی ۲ ظاهری: «پشتیبانی» از منوی کناری به منوی حساب آمد --}}
+                                @foreach ($adminAccountItems as $accountItem)
+                                    @continue($accountItem['key'] === 'profile')
+                                    <a href="{{ $accountItem['url'] }}" data-menu-key="{{ $accountItem['key'] }}"
+                                       class="flex items-center px-4 py-2.5 text-sm transition-colors"
+                                       style="color: var(--admin-text-dim);"
+                                       data-ui-hover="background-color: var(--admin-accent-light); color: var(--admin-text)"
+                                       data-ui-unhover="background-color: ; color: var(--admin-text-dim)"
+                                       role="menuitem" tabindex="-1">
+                                        <svg class="w-4 h-4 ml-2 opacity-60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $accountItem['icon'] !!}</svg>
+                                        {{ $accountItem['label'] }}
+                                    </a>
+                                @endforeach
 
                                 {{-- سالن دوم (تصمیم ۵، آزمون ۲۰۲۶-۱۰-۲۲: مالک راهی برای فهمیدنش نداشت) — فقط مالک سالن جاری، نه هنگام ورود ابرمدیر به‌جای سالن --}}
                                 @if (app(\App\Support\CurrentSalon::class)->id() !== null && auth()->user()->salonRoleIn(app(\App\Support\CurrentSalon::class)->id()) === 'owner' && ! \App\Services\SuperAdmin\SuperAdminImpersonation::active())

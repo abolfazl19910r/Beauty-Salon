@@ -14,7 +14,10 @@ use App\Support\Features\Feature;
 final class AdminMenu
 {
     /**
-     * @return list<array{label: string, items: list<array{key: string, label: string, url: string, active: bool, icon: string, lock: bool, badge: ?string}>}>
+     * بسته‌ی ۲ ظاهری (۲۰۲۶-۱۱-۲۴، گروه‌بندی تأییدشده): «کار روزانه» همیشه باز + ۴ گروه جمع‌شونده؛ «پشتیبانی» و «پروفایل» در
+     * گروه account (placement=account) که منوی حساب نوار بالا نشانش می‌دهد، نه منوی کناری.
+     *
+     * @return list<array{key: string, label: string, collapsible: bool, placement: string, items: list<array{key: string, label: string, url: string, active: bool, icon: string, lock: bool, badge: ?string, count: int}>}>
      */
     public static function groups(?User $user, ?Salon $salon): array
     {
@@ -22,75 +25,109 @@ final class AdminMenu
         $locked = fn (Feature $feature) => ! ($salon?->hasFeature($feature) ?? true);
         $isOwner = $user !== null && ($user->hasRole('super-admin')
             || ($salon !== null && $salon->admins()->wherePivot('user_id', $user->id)->wherePivot('role', 'owner')->exists()));
+        $counts = self::counts($salon, $can('view-bookings'), $can('view-specialists'));
 
         $groups = [
-            ['داشبورد', [
+            ['daily', 'کار روزانه', false, [
                 self::item('dashboard', 'داشبورد', 'admin.dashboard', 'admin.dashboard', 'grid'),
-                self::item('salon-qr', 'QR و پوستر سالن', 'admin.salon-qr.index', 'admin.salon-qr.*', 'qr'),
-                $can('view-reports') ? self::item('reports', 'گزارشات', 'admin.reports.index', 'admin.reports*', 'pie') : null,
-            ]],
-            ['مدیریت', [
-                $can('view-services') ? self::item('services', 'خدمات', 'admin.services.index', 'admin.services*', 'help') : null,
-                $can('view-specialists') ? self::item('specialists', 'کارشناسان', 'admin.specialists.index', 'admin.specialists*', 'user') : null,
-                $can('view-specialists') ? self::item('leaves', 'مرخصی‌ها', 'admin.leaves.index', 'admin.leaves*', 'calendar') : null,
-                $can('view-bookings') ? self::item('bookings', 'نوبت‌ها', 'admin.bookings.index', 'admin.bookings*', 'calendar') : null,
+                $can('view-bookings') ? self::item('bookings', 'نوبت‌ها', 'admin.bookings.index', 'admin.bookings*', 'calendar', count: $counts['bookings']) : null,
                 $can('view-bookings') ? self::item('customers', 'مشتری‌ها', 'admin.customers.index', 'admin.customers*', 'users') : null,
-                $can('view-bookings') ? self::item('courses', 'دوره‌های درمانی', 'admin.courses.index', 'admin.courses*', 'check', $locked(Feature::TreatmentCourses)) : null,
-                $can('view-reviews') ? self::item('reviews', 'نظرات و ارزیابی‌ها', 'admin.reviews.index', 'admin.reviews*', 'star') : null,
-                $can('view-categories') ? self::item('categories', 'دسته‌بندی‌ها', 'admin.categories.index', 'admin.categories*', 'layers') : null,
+                $can('view-specialists') ? self::item('leaves', 'مرخصی‌ها', 'admin.leaves.index', 'admin.leaves*', 'calendar', count: $counts['leaves']) : null,
+                self::item('notifications', 'اعلان‌ها', 'admin.notifications.index', 'admin.notifications*', 'bell', false, 'sidebar-notification-count'),
             ]],
-            ['سیستم‌ها', [
-                self::item('notifications', 'اعلانات', 'admin.notifications.index', 'admin.notifications*', 'bell', false, 'sidebar-notification-count'),
+            ['salon', 'سالن و خدمات', true, [
+                $can('view-services') ? self::item('services', 'خدمات', 'admin.services.index', 'admin.services*', 'help') : null,
+                $can('view-categories') ? self::item('categories', 'دسته‌بندی‌ها', 'admin.categories.index', 'admin.categories*', 'layers') : null,
+                $can('view-specialists') ? self::item('specialists', 'کارشناسان', 'admin.specialists.index', 'admin.specialists*', 'user') : null,
+                $can('view-bookings') ? self::item('courses', 'دوره‌های درمانی', 'admin.courses.index', 'admin.courses*', 'check', $locked(Feature::TreatmentCourses)) : null,
+                $can('view-gallery') ? self::item('gallery', 'گالری', 'admin.gallery.index', 'admin.gallery*', 'image') : null,
+                self::item('salon-qr', 'QR و پوستر سالن', 'admin.salon-qr.index', 'admin.salon-qr.*', 'qr'),
+            ]],
+            ['marketing', 'مشتری‌مداری و تبلیغ', true, [
+                $can('view-reviews') ? self::item('reviews', 'نظرات و ارزیابی‌ها', 'admin.reviews.index', 'admin.reviews*', 'star') : null,
                 $can('view-loyalty') ? self::item('loyalty', 'امتیازات', 'admin.loyalty.index', 'admin.loyalty*', 'heart', $locked(Feature::Loyalty)) : null,
                 $can('view-loyalty') ? self::item('winback', 'پیگیری مشتریان غایب', 'admin.winback.index', 'admin.winback*', 'undo', $locked(Feature::Winback)) : null,
-                $can('view-blog') ? self::item('blog', 'وبلاگ', 'admin.blog.index', 'admin.blog*', 'book') : null,
-                $can('view-gallery') ? self::item('gallery', 'گالری', 'admin.gallery.index', 'admin.gallery*', 'image') : null,
-                $can('view-announcements') ? self::item('announcements', 'اطلاعیه', 'admin.announcements.index', 'admin.announcements*', 'file') : null,
                 $can('view-discount-codes') ? self::item('discount-codes', 'کدهای تخفیف', 'admin.discount-codes.index', 'admin.discount-codes*', 'tag') : null,
-                $can('view-security-logs') ? self::item('security', 'امنیت', 'admin.security.logs', 'admin.security*', 'shield') : null,
-                $can('view-security-logs') ? self::item('notification-settings', 'تنظیمات اطلاع‌رسانی', 'admin.notification-settings.index', 'admin.notification-settings*', 'bell') : null,
+                $can('view-announcements') ? self::item('announcements', 'اطلاعیه', 'admin.announcements.index', 'admin.announcements*', 'file') : null,
+                $can('view-blog') ? self::item('blog', 'وبلاگ', 'admin.blog.index', 'admin.blog*', 'book') : null,
             ]],
-            // «اطلاعات سالن»، «ظاهر سالن» و «نحوه‌ی رزرو» فقط برای مالک (همان قاعده‌ی EnsureSalonOwner)
-            ['سالن', $salon !== null && $isOwner ? [
-                self::item('salon-settings', 'اطلاعات سالن', 'admin.salon-settings.edit', 'admin.salon-settings.*', 'home'),
-                // بسته‌ی مجوز 5د
-                self::item('verification', 'احراز سالن', 'admin.verification.show', 'admin.verification.*', 'shield'),
-                self::item('appearance', 'ظاهر سالن', 'admin.appearance.edit', 'admin.appearance.*', 'palette'),
-                self::item('payment-gateways', 'درگاه‌های پرداخت', 'admin.payment-gateways.index', 'admin.payment-gateways.*', 'card'),
+            ['finance', 'مالی و گزارش', true, [
+                $can('view-reports') ? self::item('reports', 'گزارش‌ها', 'admin.reports.index', 'admin.reports*', 'pie') : null,
+                self::item('wallets', 'کیف پول‌ها', 'admin.wallet.index', 'admin.wallet.index', 'wallet'),
+                self::item('withdrawals', 'درخواست‌های برداشت', 'admin.wallet.withdrawals', 'admin.wallet.withdrawals*', 'cash'),
+                self::item('wallet-settings', 'تنظیمات مالی', 'admin.wallet.settings', 'admin.wallet.settings', 'coin'),
+                // اشتراک و صورتحساب (۲۰۲۶-۱۰-۱۷): در منوی بسته‌ی «و» جا مانده بود
+                self::item('billing', 'اشتراک و صورتحساب', 'admin.billing.index', 'admin.billing.*', 'receipt'),
+            ]],
+            ['settings', 'تنظیمات سالن', true, [
+                // «اطلاعات سالن»، «ظاهر سالن»، «نحوه‌ی رزرو»، درگاه‌ها و احراز فقط برای مالک (همان قاعده‌ی EnsureSalonOwner)
+                $salon !== null && $isOwner ? self::item('salon-settings', 'اطلاعات سالن', 'admin.salon-settings.edit', 'admin.salon-settings.*', 'home') : null,
+                $salon !== null && $isOwner ? self::item('appearance', 'ظاهر سالن', 'admin.appearance.edit', 'admin.appearance.*', 'palette') : null,
                 // بسته‌ی 5ه: با/بدون پیش‌پرداخت، سقف نوبت مشتری، مشتری بدقول، تأیید حضور (فقط مالک)
-                self::item('booking-policy', 'نحوه‌ی رزرو', 'admin.booking-policy.edit', 'admin.booking-policy.*', 'calendar'),
-            ] : []],
-            ['مدیریت کاربران', [
+                $salon !== null && $isOwner ? self::item('booking-policy', 'نحوه‌ی رزرو', 'admin.booking-policy.edit', 'admin.booking-policy.*', 'calendar') : null,
+                $salon !== null && $isOwner ? self::item('payment-gateways', 'درگاه‌های پرداخت', 'admin.payment-gateways.index', 'admin.payment-gateways.*', 'card') : null,
+                // بسته‌ی مجوز 5د
+                $salon !== null && $isOwner ? self::item('verification', 'احراز سالن', 'admin.verification.show', 'admin.verification.*', 'shield') : null,
+                $can('view-security-logs') ? self::item('notification-settings', 'تنظیمات اطلاع‌رسانی', 'admin.notification-settings.index', 'admin.notification-settings*', 'bell') : null,
+                $can('view-security-logs') ? self::item('security', 'امنیت', 'admin.security.logs', 'admin.security*', 'shield') : null,
                 $can('view-users') ? self::item('users', 'کاربران', 'admin.users.index', 'admin.users*', 'users') : null,
                 $can('manage-roles') ? self::item('permissions', 'دسترسی‌ها', 'admin.permissions.index', 'admin.permissions*', 'lock') : null,
                 $can('manage-roles') ? self::item('roles', 'نقش‌ها', 'admin.roles.index', 'admin.roles*', 'badge') : null,
             ]],
-            ['امور مالی', [
-                // اشتراک و صورتحساب (۲۰۲۶-۱۰-۱۷): در منوی بسته‌ی «و» جا مانده بود؛ صفحه فقط با redirect انقضا یا آدرس مستقیم باز می‌شد
-                self::item('billing', 'اشتراک و صورتحساب', 'admin.billing.index', 'admin.billing.*', 'receipt'),
-                self::item('wallets', 'کیف پول‌ها', 'admin.wallet.index', 'admin.wallet.index', 'wallet'),
-                self::item('withdrawals', 'درخواست‌های برداشت', 'admin.wallet.withdrawals', 'admin.wallet.withdrawals*', 'cash'),
-                self::item('wallet-settings', 'تنظیمات مالی', 'admin.wallet.settings', 'admin.wallet.settings', 'coin'),
-            ]],
-            ['تنظیمات', [
+            ['account', 'حساب', false, [
                 self::item('support', 'پشتیبانی', 'admin.support-tickets.index', 'admin.support-tickets*', 'chat'),
                 self::item('profile', 'پروفایل', 'admin.profile.edit', 'admin.profile*', 'user'),
             ]],
         ];
 
         $out = [];
-        foreach ($groups as [$label, $items]) {
+        foreach ($groups as [$key, $label, $collapsible, $items]) {
             $items = array_values(array_filter($items));
             if ($items !== []) {
-                $out[] = ['label' => $label, 'items' => $items];
+                $out[] = ['key' => $key, 'label' => $label, 'collapsible' => $collapsible, 'placement' => $key === 'account' ? 'account' : 'side', 'items' => $items];
             }
         }
 
         return $out;
     }
 
-    /** @return array{key: string, label: string, url: string, active: bool, icon: string, lock: bool, badge: ?string} */
-    private static function item(string $key, string $label, string $route, string $pattern, string $icon, bool $lock = false, ?string $badge = null): array
+    /** فقط گروه‌های منوی کناری (بی گروه حساب) */
+    public static function sideGroups(array $groups): array
+    {
+        return array_values(array_filter($groups, fn ($g) => ($g['placement'] ?? 'side') === 'side'));
+    }
+
+    /** آیتم‌های منوی حساب نوار بالا */
+    public static function accountItems(array $groups): array
+    {
+        foreach ($groups as $group) {
+            if (($group['placement'] ?? null) === 'account') {
+                return $group['items'];
+            }
+        }
+
+        return [];
+    }
+
+    /**
+     * شمار «کار مانده»: نوبت‌های آینده‌ی منتظر تأیید یا پرداخت و مرخصی‌های منتظر بررسی.
+     *
+     * @return array{bookings: int, leaves: int}
+     */
+    private static function counts(?Salon $salon, bool $bookings, bool $leaves): array
+    {
+        if ($salon === null) {
+            return ['bookings' => 0, 'leaves' => 0];
+        }
+
+        return [
+            'bookings' => $bookings ? \App\Models\Booking::query()->whereIn('status', ['pending', 'pending_payment'])->where('booking_time', '>=', now())->count() : 0,
+            'leaves' => $leaves ? \App\Models\Leave::query()->whereHas('specialist')->where('status', 'pending')->count() : 0,
+        ];
+    }
+
+    /** @return array{key: string, label: string, url: string, active: bool, icon: string, lock: bool, badge: ?string, count: int} */
+    private static function item(string $key, string $label, string $route, string $pattern, string $icon, bool $lock = false, ?string $badge = null, int $count = 0): array
     {
         return [
             'key' => $key,
@@ -100,6 +137,7 @@ final class AdminMenu
             'icon' => self::ICONS[$icon],
             'lock' => $lock,
             'badge' => $badge,
+            'count' => $count,
         ];
     }
 

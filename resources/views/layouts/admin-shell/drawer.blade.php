@@ -1,59 +1,86 @@
 {{--
     ⭐ بسته‌ی «و»: منوی کناری پنل مدیر از App\Support\Admin\AdminMenu. در قالب‌های «منوی کناری» و «فشرده» روی دسکتاپ دیده می‌شود؛
     در «ریل آیکونی» و «منوی بالایی» فقط کشوی موبایل است (دکمه‌ی ☰ هدر).
+    بسته‌ی ۲ ظاهری (۲۰۲۶-۱۱-۲۴): «کار روزانه» همیشه باز با نشان شمار، ۴ گروه جمع‌شونده (گروه صفحه‌ی فعلی خودکار باز؛ بقیه را
+    مرورگر به یاد می‌آورد)، کارت اشتراک پایین منو.
 --}}
-<aside id="admin-drawer" data-nav-scroll class="adm-drawer min-h-screen shadow-sm border-l overflow-y-auto hidden {{ $desktop ? 'md:block' : '' }}"
+@php
+    $subscriptionEnds = $adminSalon?->subscription_ends_at;
+@endphp
+<aside id="admin-drawer" data-nav-scroll class="adm-drawer min-h-screen shadow-sm border-l overflow-y-auto hidden {{ $desktop ? 'md:flex' : '' }} flex-col"
        style="background: var(--admin-surface); border-color: var(--admin-border);">
-    <div class="p-4 border-b" style="border-color: var(--admin-border);">
-        <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold flex items-center" style="color: var(--admin-text);">
-                <svg class="w-8 h-8 ml-2" style="color: var(--admin-accent);" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="8.5" cy="7" r="4"></circle>
-                    <path d="M20 8v6M23 11h-6"></path>
-                </svg>
-                <span style="color: var(--admin-accent);">پنل مدیریت</span>
-            </h2>
-        </div>
-        {{-- ⭐ ۲۰۲۶-۰۹-۲۴: لوگو و نام همین سالن (وقتی CurrentSalon داریم)؛ سوپرادمین همون متن قبلی رو می‌بینه. --}}
+    <div class="px-4 pt-4 pb-3 border-b" style="border-color: var(--admin-border);">
         @if ($adminSalon)
-            <div class="flex items-center gap-2 mt-3">
-                <x-brand-emblem class="w-9 h-9 rounded" pad="3px" />
-                <span class="text-sm font-bold" style="color: var(--admin-text);">{{ $adminSalon->name }}</span>
-            </div>
+            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5" style="color: var(--admin-text);">
+                <x-brand-emblem class="w-10 h-10 rounded" pad="3px" />
+                <span class="flex flex-col min-w-0">
+                    <b class="text-sm truncate">{{ $adminSalon->name }}</b>
+                    <span class="text-xs truncate" style="color: var(--admin-text-light);">پنل مدیریت سالن</span>
+                </span>
+            </a>
+            <a href="{{ $adminSalon->publicUrl() }}" target="_blank" rel="noopener" class="adm-drawer__site" dir="ltr">{{ \App\Support\SalonAddress::short($adminSalon) }}</a>
         @else
-            <p class="text-xs mt-2" style="color: var(--admin-text-light);">سیستم مدیریت سالن زیبایی</p>
+            <h2 class="text-lg font-bold" style="color: var(--admin-accent);">پنل مدیریت</h2>
+            <p class="text-xs mt-1" style="color: var(--admin-text-light);">سیستم مدیریت سالن زیبایی</p>
         @endif
     </div>
 
-    <nav class="mt-4 px-2" aria-label="منوی پنل مدیر">
+    <nav class="mt-3 px-2 flex-1" aria-label="منوی پنل مدیر">
         @foreach ($menu as $group)
-            <div class="py-2">
-                <h3 class="text-xs font-semibold px-3 mb-2 uppercase tracking-wider" style="color: var(--admin-text-light);">{{ $group['label'] }}</h3>
-                @foreach ($group['items'] as $item)
-                    <a href="{{ $item['url'] }}" data-menu-key="{{ $item['key'] }}" @if ($item['active']) aria-current="page" @endif
-                       class="adm-link flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors {{ $item['active'] ? 'sidebar-active' : '' }}">
-                        <svg class="w-5 h-5 ml-2 opacity-75 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $item['icon'] !!}</svg>
-                        <span class="flex-1">{{ $item['label'] }}</span>
-                        @if ($item['lock'])
-                            <span class="mr-auto text-xs" title="در پلن سالن شما نیست">🔒</span>
-                        @endif
-                        @if ($item['badge'])
-                            <span id="{{ $item['badge'] }}" data-notif-badge class="mr-2 px-2.5 py-0.5 rounded-full text-xs font-medium hidden"
-                                  style="background: rgb(var(--m-bad) / .14); color: rgb(var(--m-bad));"></span>
-                        @endif
-                    </a>
-                @endforeach
-            </div>
+            @php
+                $groupActive = collect($group['items'])->contains('active', true);
+                $groupCount = collect($group['items'])->sum('count');
+            @endphp
+            @if (! $group['collapsible'])
+                <div class="py-1.5" data-adm-group-fixed="{{ $group['key'] }}">
+                    <h3 class="adm-drawer__glabel">{{ $group['label'] }}</h3>
+                    @foreach ($group['items'] as $item)
+                        @include('layouts.admin-shell.drawer-link', ['item' => $item])
+                    @endforeach
+                </div>
+            @else
+                <details class="adm-group" data-adm-group="{{ $group['key'] }}" @if ($groupActive) open data-adm-group-active @endif>
+                    <summary class="adm-group__head">
+                        <span class="flex-1">{{ $group['label'] }}</span>
+                        @if ($groupCount > 0)<span class="adm-count">{{ fa_num($groupCount) }}</span>@endif
+                        <span class="adm-group__n">{{ fa_num(count($group['items'])) }} مورد</span>
+                    </summary>
+                    <div class="pb-1">
+                        @foreach ($group['items'] as $item)
+                            @include('layouts.admin-shell.drawer-link', ['item' => $item])
+                        @endforeach
+                    </div>
+                </details>
+            @endif
         @endforeach
-        <div class="py-2">
-            <form method="POST" action="{{ route('logout') }}" class="w-full">
-                @csrf
-                <button type="submit" class="adm-logout w-full flex items-center px-3 py-2.5 mb-1 text-sm font-medium rounded-lg transition-colors text-right">
-                    <svg class="w-5 h-5 ml-2 opacity-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! \App\Support\Admin\AdminMenu::ICONS['logout'] !!}</svg>
-                    خروج
-                </button>
-            </form>
-        </div>
     </nav>
+
+    @if ($adminSalon && $subscriptionEnds)
+        <div class="adm-drawer__sub" data-drawer-subscription>
+            @if ($adminSalon->isOnTrial())
+                دوره‌ی آزمایشی: {{ fa_num($adminSalon->trialDaysLeft()) }} روز مانده.
+            @elseif ($subscriptionEnds->isPast())
+                <span style="color: rgb(var(--m-bad)); font-weight: 700;">اشتراک تمام شده است.</span>
+            @else
+                اشتراک تا {{ fa_date($subscriptionEnds, false, false) }}.
+            @endif
+            <a href="{{ route('admin.billing.index') }}" class="font-bold" style="color: var(--admin-accent);">اشتراک و صورتحساب</a>
+        </div>
+    @endif
 </aside>
+<script @nonce>
+    // گروه‌های جمع‌شونده‌ی منو: باز/بسته را مرورگر به یاد می‌آورد؛ گروه صفحه‌ی فعلی همیشه باز
+    (function () {
+        var KEY = 'mahru-admin-menu-open';
+        var saved = {};
+        try { saved = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) {}
+        document.querySelectorAll('[data-adm-group]').forEach(function (group) {
+            var key = group.getAttribute('data-adm-group');
+            if (!group.hasAttribute('data-adm-group-active') && saved[key] === true) group.open = true;
+            group.addEventListener('toggle', function () {
+                saved[key] = group.open;
+                try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {}
+            });
+        });
+    })();
+</script>
