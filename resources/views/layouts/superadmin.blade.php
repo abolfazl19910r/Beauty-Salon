@@ -41,6 +41,7 @@
             --sa-warn: #A86410;
             --sa-danger-bg: #FBECEA;
             --sa-success-bg: #E6F4EE;
+            --sa-warn-bg: #FDF1DD;
             --sa-shadow: 0 10px 30px -22px rgba(14, 90, 110, .45);
         }
         html[data-theme=dark] {
@@ -61,6 +62,7 @@
             --sa-warn: #E5B262;
             --sa-danger-bg: rgba(233, 144, 131, .12);
             --sa-success-bg: rgba(114, 201, 162, .12);
+            --sa-warn-bg: rgba(229, 178, 98, .14);
             --sa-shadow: 0 18px 40px -24px rgba(0, 0, 0, .8);
         }
 
@@ -113,7 +115,35 @@
         .sa-stat { padding: 1.1rem 1.25rem; display: flex; flex-direction: column; gap: .35rem; min-height: 6.5rem; }
         .sa-stat__label { font-size: .8rem; color: var(--sa-text-dim); line-height: 1.6; }
         .sa-stat__value { font-size: 1.6rem; font-weight: 800; line-height: 1.2; margin-top: auto; }
-        .sa-stat__unit { font-size: .72rem; color: var(--sa-text-dim); }
+        .sa-stat__unit { font-size: .8rem; font-weight: 500; color: var(--sa-text-dim); }
+        /* بسته‌ی ۱ ظاهری (۲۰۲۶-۱۱-۲۴): برچسب قرصی، فهرست «نیاز به رسیدگی»، نوار وضعیت و مصرف */
+        .sa-stat { gap: .6rem; }
+        .sa-stat__label { font-size: .85rem; font-weight: 600; margin: 0; }
+        .sa-stat__value { margin-top: 0; }
+        .sa-stat__note { font-size: .82rem; line-height: 1.8; color: var(--sa-text-dim); margin: 0; }
+        .sa-stat__note b { color: var(--sa-text); }
+        .sa-pill { display: inline-block; font-size: .76rem; font-weight: 700; line-height: 1.5; padding: .12rem .65rem; border-radius: 999px; white-space: nowrap; }
+        .sa-pill--success { background: var(--sa-success-bg); color: var(--sa-success); }
+        .sa-pill--accent { background: var(--sa-soft); color: var(--sa-accent); }
+        .sa-pill--warn { background: var(--sa-warn-bg); color: var(--sa-warn); }
+        .sa-pill--danger { background: var(--sa-danger-bg); color: var(--sa-danger); }
+        .sa-pill--muted { background: var(--sa-bg); color: var(--sa-text-dim); font-weight: 500; }
+        .sa-section-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.25rem; border-bottom: 1px solid var(--sa-border); }
+        .sa-section-foot { padding: .75rem 1.25rem; border-top: 1px solid var(--sa-border); font-size: .82rem; line-height: 1.9; color: var(--sa-text-dim); background: var(--sa-bg); border-radius: 0 0 16px 16px; }
+        .sa-section-foot p { margin: 0; }
+        .sa-attention { margin: 0; padding: 0; list-style: none; }
+        .sa-attention li { display: flex; align-items: center; gap: .9rem; padding: .85rem 1.25rem; font-size: .92rem; }
+        .sa-attention li + li { border-top: 1px solid var(--sa-soft); }
+        .sa-attention__n { min-width: 2rem; height: 2rem; padding: 0 .4rem; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; }
+        .sa-attention__n--warn { background: var(--sa-warn-bg); color: var(--sa-warn); }
+        .sa-attention__n--danger { background: var(--sa-danger-bg); color: var(--sa-danger); }
+        .sa-bar { display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: var(--sa-soft); }
+        .sa-legend { display: flex; flex-wrap: wrap; gap: .35rem 1rem; font-size: .82rem; color: var(--sa-text-dim); }
+        .sa-legend a { color: inherit; }
+        .sa-legend a:hover { color: var(--sa-accent); }
+        .sa-meter { margin-top: .35rem; height: 5px; width: 4.5rem; border-radius: 999px; background: var(--sa-soft); overflow: hidden; }
+        .sa-meter span { display: block; height: 100%; border-radius: 999px; background: var(--sa-accent); }
+        .sa-meter span.is-full { background: var(--sa-warn); }
         .sa-ltr { direction: ltr; unicode-bidi: isolate; display: inline-block; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .85em; }
         .sa-table-wrap { overflow-x: auto; }
         /* فرزند grid پیش‌فرض min-width: auto دارد؛ یک جدول عریض کل ستون را پهن و صفحه‌ی گوشی را افقی می‌کرد */

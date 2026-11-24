@@ -40,11 +40,14 @@ class DashboardLoadTest extends TestCase
         $response = $this->actingAs($super)->get(route('superadmin.dashboard'))->assertOk();
 
         $stats = $response->viewData('stats');
-        $this->assertSame($expected->filter(fn ($s) => $s->hasActiveSubscription())->count(), $stats['active_salons']);
-        $this->assertSame($expected->filter(fn ($s) => $s->hasActiveSubscription() && $s->subscription_ends_at->lessThanOrEqualTo(now()->addDays(7)))->count(), $stats['expiring_soon']);
-        $this->assertSame($expected->filter(fn ($s) => $s->subscription_ends_at->isPast())->count(), $stats['expired']);
+        // بسته‌ی ۱ ظاهری: دسته‌های جدا از هم (SalonStatus) — همان جواب PHP برای تک‌تک سالن‌ها
+        foreach (\App\Support\SuperAdmin\SalonStatus::keys() as $key) {
+            $this->assertSame($expected->filter(fn ($s) => \App\Support\SuperAdmin\SalonStatus::of($s) === $key)->count(), $stats[$key], $key);
+        }
         $this->assertSame(1, $stats['expiring_soon']);
-        $this->assertSame(2, $stats['expired']);
+        $this->assertSame(1, $stats['expired']);
+        $this->assertSame(2, $stats['suspended']);
+        $this->assertSame($expected->count(), $stats['total']);
         $this->assertSame($base + 11, $expected->count());
 
         $recent = $response->viewData('recentSalons');

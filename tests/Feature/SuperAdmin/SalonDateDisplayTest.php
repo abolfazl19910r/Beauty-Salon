@@ -46,7 +46,7 @@ class SalonDateDisplayTest extends TestCase
         $response->assertDontSee($salon->subscription_ends_at->format('Y-m-d'));
     }
 
-    public function test_dashboard_shows_jalali_dates_and_started_at(): void
+    public function test_dashboard_shows_jalali_end_date_and_time_left(): void
     {
         $this->actingAsSuperAdmin();
 
@@ -57,8 +57,9 @@ class SalonDateDisplayTest extends TestCase
 
         $response = $this->get('/superadmin/dashboard');
 
-        $response->assertSee(fa_date($salon->subscription_started_at));
-        $response->assertSee(fa_date($salon->subscription_ends_at));
+        // بسته‌ی ۱ ظاهری: ستون «اشتراک» = «تا …» + زمان باقی‌مانده (ستون «از تاریخ» در فهرست سالن‌ها می‌ماند)
+        $response->assertSee('تا '.fa_date($salon->subscription_ends_at, false, false));
+        $response->assertSee(\App\Support\SuperAdmin\SalonStatus::remaining($salon->subscription_ends_at)['text']);
         $response->assertDontSee($salon->subscription_ends_at->format('Y-m-d'));
     }
 }

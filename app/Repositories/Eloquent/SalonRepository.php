@@ -60,6 +60,7 @@ class SalonRepository extends BaseRepository implements SalonRepositoryInterface
     public function getRecentWithSpecialistCount(int $limit = 5): Collection
     {
         return $this->model->withCount('specialists')
+            ->with('plan')->withPaidInvoiceFlag()
             ->orderByDesc('created_at')
             ->limit($limit)
             ->get();

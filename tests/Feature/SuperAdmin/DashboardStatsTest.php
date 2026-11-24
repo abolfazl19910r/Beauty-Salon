@@ -44,8 +44,13 @@ class DashboardStatsTest extends TestCase
 
         $response = $this->get('/superadmin/dashboard');
 
-        // healthy + expiring-soon + the default 'rasta' salon = 3 (expired and suspended salons excluded)
-        $this->assertSame(3, $response->viewData('stats')['active_salons']);
+        // UI package 1: buckets are exclusive — healthy + the default 'rasta' salon = 2 active;
+        // the expiring-soon salon has its own bucket, expired and suspended salons are never active
+        $stats = $response->viewData('stats');
+        $this->assertSame(2, $stats['active']);
+        $this->assertSame(1, $stats['expiring_soon']);
+        $this->assertSame(1, $stats['expired']);
+        $this->assertSame(1, $stats['suspended']);
     }
 
     /**

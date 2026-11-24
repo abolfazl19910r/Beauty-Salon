@@ -37,18 +37,19 @@ class SuperAdminController extends Controller
 
     public function dashboard(): View
     {
-        // ⭐ باگ‌های ۳ و ۴ (۲۰۲۶-۰۹-۱۸): «فعال» = تعلیق‌نشده و اشتراک معتبر؛ «رو به انقضا» با مقایسه‌ی مستقیم تاریخ. هر دو تعریف حالا
-        // در SalonRepository::subscriptionCounts() در SQL‌اند — ۲۰۲۶-۰۹-۳۰: قبلاً همه‌ی سالن‌ها و مدیرانشان برای شمردن بار می‌شدند.
-        $stats = $this->salonRepository->subscriptionCounts(now()) + [
+        // بسته‌ی ۱ ظاهری (۲۰۲۶-۱۱-۲۴): دسته‌های جدا از هم وضعیت سالن (SalonStatus) در یک کوئری SQL — همان شمار تراشه‌های فهرست سالن‌ها.
+        $stats = \App\Support\SuperAdmin\SalonStatus::counts(now()) + [
             'total_specialists' => $this->specialistRepository->count(),
         ];
 
         $recentSalons = $this->salonRepository->getRecentWithSpecialistCount(5);
 
-        $overview = app(\App\Services\SuperAdmin\PlatformOverview::class)->dashboard();
-        $backup = app(\App\Services\SuperAdmin\PlatformOverview::class)->backup();
+        $platform = app(\App\Services\SuperAdmin\PlatformOverview::class);
+        $overview = $platform->dashboard();
+        $backup = $platform->backup();
+        $attention = $platform->attention($overview, $backup);
 
-        return view('superadmin.dashboard', compact('stats', 'recentSalons', 'overview', 'backup'));
+        return view('superadmin.dashboard', compact('stats', 'recentSalons', 'overview', 'backup', 'attention'));
     }
 
     /**

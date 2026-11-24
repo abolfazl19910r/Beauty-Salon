@@ -117,7 +117,7 @@ class PlatformOperationsTest extends TestCase
         config(['services.bale.bot_token' => 'x', 'services.bale.username' => 'mahru_bot', 'services.telegram.bot_token' => null]);
 
         $this->actingAs($this->super)->get(route('superadmin.dashboard'))->assertOk()
-            ->assertSee('درآمد بسته‌ی پیامک این ماه')->assertSee(fa_num(320000))->assertSee('پرداخت پلتفرم نیازمند بررسی');
+            ->assertSee('بسته‌ی پیامک')->assertSee(fa_num(320000))->assertSee('پرداخت پلتفرم نیازمند بررسی');
 
         $html = $this->actingAs($this->super)->get(route('superadmin.settings.edit'))->assertOk()->getContent();
         $this->assertStringContainsString('data-bot-status', $html);
