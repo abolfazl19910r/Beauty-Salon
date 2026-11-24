@@ -12,7 +12,7 @@
          style="position:fixed;left:.75rem;right:.75rem;bottom:calc({{ $pwaMode === 'specialist' ? '5rem' : '.75rem' }} + env(safe-area-inset-bottom));z-index:60;background:rgb(var(--m-card));color:rgb(var(--m-tx));border:1px solid rgb(var(--m-gold) / .45);border-radius:1rem;box-shadow:var(--m-sh-soft);padding:.8rem 1rem;font-family:'Mahru',Vazirmatn,sans-serif;">
         <div style="display:flex;align-items:center;gap:.75rem;">
             <div style="flex:1;min-width:0;">
-                <div style="font-weight:700;font-size:.92rem;">{{ $pwaMode === 'specialist' ? 'پنل متخصص' : $currentSalonName }} روی صفحه‌ی اصلی آیفون</div>
+                <div style="font-weight:700;font-size:.92rem;">{{ $pwaMode === 'specialist' ? 'پنل کارشناس' : $currentSalonName }} روی صفحه‌ی اصلی آیفون</div>
                 <div style="font-size:.78rem;opacity:.75;">مثل یک اپ باز شود، بدون نوار مرورگر</div>
             </div>
             <a href="{{ $pwaGuideUrl }}" data-ios-install-guide style="background:var(--m-btn);color:var(--m-on-gold);font-weight:700;border-radius:999px;padding:.5rem .9rem;text-decoration:none;font-size:.85rem;white-space:nowrap;">چطور؟</a>

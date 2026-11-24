@@ -12,7 +12,7 @@
                 @if(! empty($pd['payout_raw']['track_id']))
                     <p>شناسه‌ی پیگیری در درگاه: <span class="font-mono" dir="ltr">{{ $pd['payout_raw']['track_id'] }}</span></p>
                 @endif
-                <p class="mt-1">در پنل درگاه تسویه‌ی سالن ببینید: اگر واریز شده، <strong>تایید</strong> کنید و کد پیگیری بانک را وارد کنید؛ اگر واریز نشده، <strong>رد</strong> کنید تا مبلغ به کیف پول متخصص برگردد. تسویه‌ی خودکار دوباره برای این درخواست فرستاده نمی‌شود.</p>
+                <p class="mt-1">در پنل درگاه تسویه‌ی سالن ببینید: اگر واریز شده، <strong>تایید</strong> کنید و کد پیگیری بانک را وارد کنید؛ اگر واریز نشده، <strong>رد</strong> کنید تا مبلغ به کیف پول کارشناس برگردد. تسویه‌ی خودکار دوباره برای این درخواست فرستاده نمی‌شود.</p>
             </div>
         @endif
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
@@ -58,7 +58,7 @@
             {{-- Request information --}}
             <div class="lg:col-span-2 space-y-5">
                 <div class="rounded-xl p-5" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
-                    <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">اطلاعات متخصص</h2>
+                    <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">اطلاعات کارشناس</h2>
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
                             <p class="mb-1" style="color:var(--admin-text-dim);">نام</p>

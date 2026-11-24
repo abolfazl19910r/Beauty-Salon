@@ -15,12 +15,12 @@
 
             <p class="text-[var(--specialist-text-dim)] mb-2">کاربر گرامی {{ auth()->user()->name }}</p>
             <p class="text-[var(--specialist-text-dim)] mb-6">
-                شما به عنوان متخصص در سیستم ثبت شده‌اید، اما اطلاعات پروفایل شما هنوز تکمیل نشده است.
+                شما به عنوان کارشناس در سیستم ثبت شده‌اید، اما اطلاعات پروفایل شما هنوز تکمیل نشده است.
             </p>
 
             <div class="rounded-lg p-4 mb-6 text-right" style="background-color: rgba(216, 174, 224, 0.08); border: 1px solid var(--specialist-border);">
                 <p class="text-sm text-[var(--specialist-text-dim)]">
-                    <strong class="text-[var(--specialist-plum-light)]">توجه:</strong> لطفاً با مدیر سیستم تماس بگیرید تا اطلاعات شما در بخش متخصصین ثبت شود.
+                    <strong class="text-[var(--specialist-plum-light)]">توجه:</strong> لطفاً با مدیر سیستم تماس بگیرید تا اطلاعات شما در بخش کارشناسان ثبت شود.
                 </p>
             </div>
 

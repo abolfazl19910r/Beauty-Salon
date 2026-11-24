@@ -26,7 +26,7 @@ class AdminNotificationSettingControllerTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('رزرو نوبت');
-        $response->assertSee('برداشت وجه متخصص');
+        $response->assertSee('برداشت وجه کارشناس');
         $response->assertSee('تنظیمات اطلاع‌رسانی');
     }
 

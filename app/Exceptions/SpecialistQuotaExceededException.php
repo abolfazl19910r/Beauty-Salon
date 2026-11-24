@@ -6,7 +6,7 @@ class SpecialistQuotaExceededException extends DomainException
 {
     protected int $httpStatus = 422; // Unprocessable Entity
 
-    protected ?string $userMessage = 'سقف تعداد متخصصین این سالن تکمیل شده است. برای افزودن متخصص جدید، سقف را با سوپر ادمین در میان بگذارید.';
+    protected ?string $userMessage = 'سقف تعداد کارشناسان این سالن تکمیل شده است. برای افزودن کارشناس جدید، سقف را با سوپر ادمین در میان بگذارید.';
 
     /**
      * @var array<string, mixed>

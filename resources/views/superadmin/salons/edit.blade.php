@@ -51,8 +51,8 @@
             <div class="grid md:grid-cols-2 gap-5">
             <div>
                 <label class="sa-label">
-                    سقف تعداد متخصص
-                    <span style="color: var(--sa-text-dim);">(فعلاً {{ fa_num($salon->specialists()->count()) }} متخصص ثبت‌شده)</span>
+                    سقف تعداد کارشناس
+                    <span style="color: var(--sa-text-dim);">(فعلاً {{ fa_num($salon->specialists()->count()) }} کارشناس ثبت‌شده)</span>
                 </label>
                 <input type="number" name="max_specialists_count" value="{{ old('max_specialists_count', $salon->max_specialists_count) }}" min="0" class="sa-input" required>
             </div>

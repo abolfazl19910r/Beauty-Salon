@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
             <x-brand-emblem class="h-16 w-auto max-w-[180px]" />
         </div>
         <h2 class="text-2xl font-bold" style="font-family:'Mahru','Vazirmatn',sans-serif;font-weight:800;color:rgb(var(--m-gold2))">ورود به {{ $currentSalonName }}</h2>
-        <p class="text-sm text-m-tx/60 mt-1">ورود مدیر و متخصص سالن</p>
+        <p class="text-sm text-m-tx/60 mt-1">ورود مدیر و کارشناس سالن</p>
     </div>
 
     <x-auth-session-status class="mb-5" :status="session('status')" />
@@ -72,12 +72,12 @@ use Illuminate\Support\Facades\Route;
         {{-- /register مرکزی از ۲۰۲۶-۱۰-۱۱ به صفحه‌ی فروش می‌رود؛ متخصص تازه از این‌جا حسابش را فعال می‌کند (۲۰۲۶-۱۰-۲۲) --}}
         <div class="text-center text-sm text-m-tx/60 space-y-2" data-staff-no-account>
             <p>
-                متخصص سالن هستید و هنوز حساب ندارید؟
-                <a href="{{ route('specialist.activate') }}" class="text-m-gold2 hover:text-m-gold transition-colors font-medium mr-1">فعال‌سازی حساب متخصص</a>
+                کارشناس سالن هستید و هنوز حساب ندارید؟
+                <a href="{{ route('specialist.activate') }}" class="text-m-gold2 hover:text-m-gold transition-colors font-medium mr-1">فعال‌سازی حساب کارشناس</a>
             </p>
             <p data-staff-app-link>
                 روی گوشی راحت‌ترید؟
-                <a href="{{ \App\Support\CentralUrl::route('app-download.staff') }}" class="text-m-gold2 hover:text-m-gold transition-colors font-medium mr-1">اپ ماهرو همکار برای متخصص‌ها</a>
+                <a href="{{ \App\Support\CentralUrl::route('app-download.staff') }}" class="text-m-gold2 hover:text-m-gold transition-colors font-medium mr-1">اپ ماهرو همکار برای کارشناسان</a>
             </p>
             <p>
                 صاحب سالن هستید؟

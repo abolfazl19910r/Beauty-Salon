@@ -167,7 +167,7 @@ class CustomerCatalogController extends CustomerController
 
         $serviceId = $request->input('service_id');
         if ($serviceId !== null && ! $specialist->services()->whereKey((int) $serviceId)->exists()) {
-            throw new ApiException('service_not_offered', 'این متخصص این خدمت را انجام نمی‌دهد.', 422);
+            throw new ApiException('service_not_offered', 'این کارشناس این خدمت را انجام نمی‌دهد.', 422);
         }
 
         return $specialist;

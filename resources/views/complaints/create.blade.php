@@ -27,7 +27,7 @@
                 <x-input-error :messages="$errors->get('title')" />
             </div>
             <div>
-                <x-input-label for="description" value="شرح (تاریخ و ساعت نوبت، نام متخصص، آنچه پیش آمد)" />
+                <x-input-label for="description" value="شرح (تاریخ و ساعت نوبت، نام کارشناس، آنچه پیش آمد)" />
                 <textarea id="description" name="description" rows="6" maxlength="3000" required
                           class="w-full rounded-lg bg-m-bg border border-m-gold/20 p-3 text-sm">{{ old('description') }}</textarea>
                 <x-input-error :messages="$errors->get('description')" />

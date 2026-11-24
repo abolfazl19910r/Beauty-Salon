@@ -256,7 +256,7 @@ class CustomerCourseController extends CustomerController
         $request->validate(['specialist_id' => ['required', 'integer']]);
         $specialist = $this->availability->specialists($course)->firstWhere('id', (int) $request->query('specialist_id'));
         if (! $specialist) {
-            throw new ApiException('not_found', 'این متخصص این دوره را انجام نمی‌دهد.', 404);
+            throw new ApiException('not_found', 'این کارشناس این دوره را انجام نمی‌دهد.', 404);
         }
 
         return [$course, $specialist];

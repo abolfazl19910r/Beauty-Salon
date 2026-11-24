@@ -34,7 +34,7 @@ class AdminSearchController extends Controller
                 ->limit(5)
                 ->get();
             if ($specialists->isNotEmpty()) {
-                $results['متخصصین'] = $specialists;
+                $results['کارشناسان'] = $specialists;
             }
 
             $services = $this->beautyServiceRepository->query()

@@ -55,8 +55,8 @@
                     <span class="font-medium text-m-tx">{{ $booking->service ? $booking->service?->name ?? '—' : 'خدمت نامشخص' }}</span>
                 </div>
                 <div class="flex justify-between items-center px-5 py-3.5 text-sm">
-                    <span class="text-m-tx/55">متخصص</span>
-                    <span class="font-medium text-m-tx">{{ $booking->specialist ? $booking->specialist?->name ?? '—' : 'متخصص نامشخص' }}</span>
+                    <span class="text-m-tx/55">کارشناس</span>
+                    <span class="font-medium text-m-tx">{{ $booking->specialist ? $booking->specialist?->name ?? '—' : 'کارشناس نامشخص' }}</span>
                 </div>
                 <div class="flex justify-between items-center px-5 py-3.5 text-sm">
                     <span class="text-m-tx/55">تاریخ و ساعت</span>
@@ -166,7 +166,7 @@
                         <span class="text-m-tx/80 persian-number">{{ fa_num($booking->service->price) }} تومان</span>
                     </div>
                     <div class="flex justify-between border-b border-m-gold/8 pb-3">
-                        <span class="text-m-tx/55">باقی‌مانده (موقع نوبت به متخصص می‌دهید)</span>
+                        <span class="text-m-tx/55">باقی‌مانده (موقع نوبت به کارشناس می‌دهید)</span>
                         <span class="text-m-tx/70 persian-number" id="remaining-amount">{{ fa_num($booking->remaining_amount) }} تومان</span>
                     </div>
                     @if($booking->discount_amount > 0)

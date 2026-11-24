@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title') | پنل متخصصین</title>
+    <title>@yield('title') | پنل کارشناسان</title>
 
     @include('partials.favicons')
 
@@ -96,7 +96,7 @@
             <a href="{{ route('home') }}" class="flex items-center gap-2">
                 {{-- ⭐ لوگوی سالن متخصص (۲۰۲۶-۰۹-۲۴)، وگرنه آیکون پیش‌فرض. --}}
                 <x-brand-emblem class="w-9 h-9 rounded" pad="3px" />
-                <span class="text-lg font-bold font-serif-fa" style="color: var(--specialist-plum-light);">پنل متخصص</span>
+                <span class="text-lg font-bold font-serif-fa" style="color: var(--specialist-plum-light);">پنل کارشناس</span>
             </a>
         </div>
 
@@ -208,7 +208,7 @@
 
                             <div class="px-4 py-2 border-b" style="border-color: var(--specialist-border);">
                                 <p class="text-sm font-medium text-[var(--specialist-text)] truncate">{{ auth()->user()->name ?? 'کاربر' }}</p>
-                                <p class="text-xs text-[var(--specialist-plum-muted)] truncate">متخصص زیبایی</p>
+                                <p class="text-xs text-[var(--specialist-plum-muted)] truncate">کارشناس زیبایی</p>
                             </div>
 
                             <a href="{{ route('specialist.profile.show') }}"
@@ -258,7 +258,7 @@
         </header>
         @if ($__specTop)
             {{-- بسته‌ی «و»: منوی بالایی پنل متخصص در چیدمان‌های مجله/آرام/بنتو (روی موبایل همان کشو و نوار پایین) --}}
-            <nav class="spec-top spec-top--{{ $__specLayout }} hidden md:flex" aria-label="منوی پنل متخصص">
+            <nav class="spec-top spec-top--{{ $__specLayout }} hidden md:flex" aria-label="منوی پنل کارشناس">
                 @foreach ($__specNav as [$__route, $__pattern, $__label])
                     <a href="{{ route($__route) }}" @if (request()->routeIs($__pattern)) aria-current="page" @endif>{{ $__label }}</a>
                 @endforeach
@@ -308,7 +308,7 @@
         </main>
 
         <footer class="hidden md:block border-t p-4 text-center text-sm" style="background-color: var(--specialist-surface); border-color: var(--specialist-border); color: var(--specialist-text-dim);">
-            © {{ fa_jdate(now(), 'Y') }} پنل متخصصین سالن زیبایی.
+            © {{ fa_jdate(now(), 'Y') }} پنل کارشناسان سالن زیبایی.
         </footer>
     </div>
 </div>

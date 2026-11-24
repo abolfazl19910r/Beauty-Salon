@@ -80,7 +80,7 @@ class AdminSpecialistAccountEditTest extends TestCase
 
         $account = $this->account->fresh();
         $this->assertSame(self::NEW, $account->phone);
-        $this->assertSame($account->id, $this->specialist->fresh()->user_id, 'پرونده‌ی متخصص به همان حساب وصل می‌ماند');
+        $this->assertSame($account->id, $this->specialist->fresh()->user_id, 'پرونده‌ی کارشناس به همان حساب وصل می‌ماند');
         $this->assertSame(0, $account->tokens()->count(), 'توکن اپ همکار بسته شد');
         $this->assertDatabaseMissing('sessions', ['id' => 'sess-1']);
         $this->assertTrue(Hash::check('old-pass-1', $account->password), 'رمز همان می‌ماند');
@@ -111,7 +111,7 @@ class AdminSpecialistAccountEditTest extends TestCase
         $account = $this->account->fresh();
         $this->assertTrue(Hash::check('new-pass-22', $account->password));
         $this->assertSame(0, $account->tokens()->count());
-        $this->assertContains(self::OLD, array_column($this->sms, 0), 'خبر تغییر رمز به متخصص');
+        $this->assertContains(self::OLD, array_column($this->sms, 0), 'خبر تغییر رمز به کارشناس');
         $this->actingAs($this->owner)->get(route('admin.specialists.edit', $this->specialist))->assertOk()->assertSee('name="initial_password"', false);
     }
 

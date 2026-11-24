@@ -143,7 +143,7 @@
                                 <thead>
                                 <tr class="border-b border-m-gold/10 bg-m-bg/40">
                                     <th class="px-5 py-3 text-right text-xs font-semibold text-m-tx/50">خدمت</th>
-                                    <th class="px-5 py-3 text-right text-xs font-semibold text-m-tx/50">متخصص</th>
+                                    <th class="px-5 py-3 text-right text-xs font-semibold text-m-tx/50">کارشناس</th>
                                     <th class="px-5 py-3 text-right text-xs font-semibold text-m-tx/50">تاریخ</th>
                                     <th class="px-5 py-3 text-right text-xs font-semibold text-m-tx/50">وضعیت</th>
                                     <th class="px-5 py-3 text-right text-xs font-semibold text-m-tx/50">عملیات</th>

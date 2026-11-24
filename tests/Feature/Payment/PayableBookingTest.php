@@ -102,7 +102,7 @@ class PayableBookingTest extends TestCase
     {
         $booking = $this->booking();
         $this->actingAs($this->user)->post(route('payment.process', $booking));
-        $booking->update(['status' => 'cancelled', 'cancelled_by' => 'admin', 'cancelled_at' => now(), 'cancellation_reason' => 'بیماری متخصص']);
+        $booking->update(['status' => 'cancelled', 'cancelled_by' => 'admin', 'cancelled_at' => now(), 'cancellation_reason' => 'بیماری کارشناس']);
 
         $tx = PaymentTransaction::sole();
         $location = $this->get("/payments/return/{$tx->public_id}?trackId=9&success=1&status=2")->headers->get('Location');
@@ -113,7 +113,7 @@ class PayableBookingTest extends TestCase
         $booking->refresh();
         $this->assertSame('cancelled', $booking->status);
         $this->assertSame('unpaid', $booking->payment_status);
-        $this->assertStringContainsString('بیماری متخصص', $booking->cancellation_reason);
+        $this->assertStringContainsString('بیماری کارشناس', $booking->cancellation_reason);
         $this->assertSame(60000.0, (float) $this->user->getOrCreateWallet()->fresh()->balance);
         Notification::assertSentTo($this->user, PaymentRefundedNotification::class, fn ($n) => $n->reason === 'booking_cancelled');
     }

@@ -245,11 +245,11 @@ class CourseService
                 throw new CourseException($blocker);
             }
             if ($locked->specialist_id && (int) $locked->specialist_id !== $specialistId) {
-                throw new CourseException('این دوره فقط با متخصص تعیین‌شده انجام می‌شود.');
+                throw new CourseException('این دوره فقط با کارشناس تعیین‌شده انجام می‌شود.');
             }
             foreach ($locked->sessionServices() as $service) {
                 if (! $this->specialistOffersService($specialistId, (int) $service->id)) {
-                    throw new CourseException('این متخصص همه‌ی خدمت‌های این دوره را انجام نمی‌دهد.');
+                    throw new CourseException('این کارشناس همه‌ی خدمت‌های این دوره را انجام نمی‌دهد.');
                 }
             }
             if (! $time->isFuture()) {

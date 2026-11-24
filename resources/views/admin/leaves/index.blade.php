@@ -7,7 +7,7 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
             <div>
                 <h1 class="text-xl font-bold" style="color:var(--admin-text);">مرخصی‌ها</h1>
-                <p class="text-sm mt-0.5" style="color:var(--admin-text-dim);">تمام درخواست‌های مرخصی همه‌ی متخصصین</p>
+                <p class="text-sm mt-0.5" style="color:var(--admin-text-dim);">تمام درخواست‌های مرخصی همه‌ی کارشناسان</p>
             </div>
         </div>
 
@@ -40,7 +40,7 @@
                         <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">تاریخ پایان</th>
                         <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">دلیل</th>
                         <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">وضعیت</th>
-                        <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">نام متخصص</th>
+                        <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">نام کارشناس</th>
                         <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">عملیات</th>
                     </tr>
                     </thead>

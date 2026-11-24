@@ -38,7 +38,7 @@ class AdminSpecialistQuotaTest extends TestCase
         $service = BeautyService::factory()->create();
 
         $response = $this->actingAs($admin)->post('/admin/specialists', [
-            'name' => 'متخصص سوم بیش از سقف',
+            'name' => 'کارشناس سوم بیش از سقف',
             'phone' => '09121234599',
             'email' => 'over-quota@example.com',
             'services' => [$service->id],
@@ -57,7 +57,7 @@ class AdminSpecialistQuotaTest extends TestCase
         $service = BeautyService::factory()->create();
 
         $response = $this->actingAs($admin)->post('/admin/specialists', [
-            'name' => 'متخصص دوم',
+            'name' => 'کارشناس دوم',
             'phone' => '09121234598',
             'email' => 'under-quota@example.com',
             'services' => [$service->id],
@@ -75,7 +75,7 @@ class AdminSpecialistQuotaTest extends TestCase
         $service = BeautyService::factory()->create();
 
         $response = $this->actingAs($admin)->post('/admin/specialists', [
-            'name' => 'اولین متخصص',
+            'name' => 'اولین کارشناس',
             'phone' => '09121234597',
             'email' => 'zero-quota@example.com',
             'services' => [$service->id],

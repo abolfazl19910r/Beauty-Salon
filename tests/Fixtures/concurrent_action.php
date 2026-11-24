@@ -26,7 +26,7 @@ try {
             [$salonId, $phone, $email, $serviceId] = $args;
             $inSalon((int) $salonId);
             $app->make(App\Services\Admin\Specialist\AdminSpecialistService::class)->create(
-                ['name' => 'متخصص هم‌زمان', 'phone' => $phone, 'email' => $email, 'services' => [(int) $serviceId]],
+                ['name' => 'کارشناس هم‌زمان', 'phone' => $phone, 'email' => $email, 'services' => [(int) $serviceId]],
                 null,
             );
             echo 'created';

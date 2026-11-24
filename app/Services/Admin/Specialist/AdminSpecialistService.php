@@ -154,7 +154,7 @@ class AdminSpecialistService
 
         $field = $phoneChanged ? 'phone' : 'initial_password';
         if (! $this->accountOwnedHere($account)) {
-            throw \Illuminate\Validation\ValidationException::withMessages([$field => 'این حساب در سالن دیگری هم کار می‌کند یا مدیر است؛ شماره و رمز آن را فقط خود متخصص از پروفایلش عوض می‌کند.']);
+            throw \Illuminate\Validation\ValidationException::withMessages([$field => 'این حساب در سالن دیگری هم کار می‌کند یا مدیر است؛ شماره و رمز آن را فقط خود کارشناس از پروفایلش عوض می‌کند.']);
         }
 
         if ($phoneChanged && $this->phoneTakenByAnotherAccount($phone, $account)) {
@@ -167,13 +167,13 @@ class AdminSpecialistService
 
         if ($phoneChanged) {
             $account->forceFill(['phone' => $phone])->save();
-            $notices[] = [$oldPhone, sprintf('مدیر %s شماره‌ی ورود حساب متخصص شما را به ...%s تغییر داد.', $salonName, substr($phone, -4))];
-            $notices[] = [$phone, sprintf('حساب متخصص شما در %s از این پس با همین شماره وارد می‌شود.', $salonName)];
+            $notices[] = [$oldPhone, sprintf('مدیر %s شماره‌ی ورود حساب کارشناس شما را به ...%s تغییر داد.', $salonName, substr($phone, -4))];
+            $notices[] = [$phone, sprintf('حساب کارشناس شما در %s از این پس با همین شماره وارد می‌شود.', $salonName)];
         }
 
         if ($password) {
             $account->forceFill(['password' => \Illuminate\Support\Facades\Hash::make($password)])->save();
-            $notices[] = [$phone, sprintf('مدیر %s رمز ورود حساب متخصص شما را تغییر داد. اگر خبر ندارید با سالن تماس بگیرید.', $salonName)];
+            $notices[] = [$phone, sprintf('مدیر %s رمز ورود حساب کارشناس شما را تغییر داد. اگر خبر ندارید با سالن تماس بگیرید.', $salonName)];
         }
 
         // همه‌ی ورودهای همین حساب: نشست وب، توکن اپ همکار، «مرا به خاطر بسپار» (تغییر رمز را User::booted هم می‌بندد؛ شماره را نه)

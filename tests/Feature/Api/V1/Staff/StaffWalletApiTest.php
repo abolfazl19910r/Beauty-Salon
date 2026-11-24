@@ -40,7 +40,7 @@ class StaffWalletApiTest extends TestCase
         $this->token = $this->user->createToken('A17', ['staff'], now()->addDays(90))->plainTextToken;
 
         $wallet = $this->specialist->getOrCreateWallet();
-        $wallet->forceFill(['balance' => 500000, 'iban' => 'IR'.self::IBAN, 'account_holder_name' => 'متخصص', 'bank_name' => 'ملی', 'iban_verified' => true])->save();
+        $wallet->forceFill(['balance' => 500000, 'iban' => 'IR'.self::IBAN, 'account_holder_name' => 'کارشناس', 'bank_name' => 'ملی', 'iban_verified' => true])->save();
     }
 
     protected function api(): static
@@ -116,7 +116,7 @@ class StaffWalletApiTest extends TestCase
             ->assertStatus(422)
             ->assertJsonPath('error.code', 'validation_failed')
             ->assertJsonStructure(['error' => ['fields' => ['current_password']]]);
-        $this->assertSame('متخصص', $this->specialist->getOrCreateWallet()->fresh()->account_holder_name);
+        $this->assertSame('کارشناس', $this->specialist->getOrCreateWallet()->fresh()->account_holder_name);
         Notification::assertNothingSent();
 
         $this->api()->putJson('/api/v1/staff/wallet/iban', $newIban + ['current_password' => 'staff-pass-1'])

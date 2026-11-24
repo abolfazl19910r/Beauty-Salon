@@ -46,13 +46,13 @@
                 @endif
                 @if($review->specialist_response)
                     <div class="mt-3 pt-3 text-sm" style="border-top: 1px dashed rgb(var(--m-gold) / 0.2);">
-                        <span class="font-bold" style="color: var(--rasta-gold-light);">پاسخ متخصص:</span>
+                        <span class="font-bold" style="color: var(--rasta-gold-light);">پاسخ کارشناس:</span>
                         {{ $review->specialist_response }}
                     </div>
                 @endif
             </div>
         @empty
-            <p class="text-center opacity-60 py-10">هنوز نظری برای این متخصص ثبت نشده است.</p>
+            <p class="text-center opacity-60 py-10">هنوز نظری برای این کارشناس ثبت نشده است.</p>
         @endforelse
 
         <div class="mt-6">

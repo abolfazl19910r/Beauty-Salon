@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'مدیریت متخصصین')
+@section('title', 'مدیریت کارشناسان')
 
 @section('content')
     <div class="fade-in">
@@ -9,9 +9,9 @@
                     <svg class="w-5 h-5" style="color:var(--admin-accent);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
                     </svg>
-                    مدیریت متخصصین
+                    مدیریت کارشناسان
                 </h1>
-                <p class="text-sm mt-0.5" style="color:var(--admin-text-dim);">مشاهده و مدیریت تمام متخصصین سالن</p>
+                <p class="text-sm mt-0.5" style="color:var(--admin-text-dim);">مشاهده و مدیریت تمام کارشناسان سالن</p>
             </div>
             @permission('create-specialists')
             <a href="{{ route('admin.specialists.create') }}"
@@ -22,7 +22,7 @@
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
-                افزودن متخصص
+                افزودن کارشناس
             </a>
             @endpermission
         </div>
@@ -62,7 +62,7 @@
                 <table class="w-full text-sm">
                     <thead>
                     <tr style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border);">
-                        <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">متخصص</th>
+                        <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">کارشناس</th>
                         <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">شماره تماس</th>
                         <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">ایمیل</th>
                         <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">خدمات</th>
@@ -87,7 +87,7 @@
                                     @endif
                                     <div>
                                         <p class="font-medium" style="color:var(--admin-text);">{{ $specialist->name }}</p>
-                                        <p class="text-xs" style="color:var(--admin-text-light);">متخصص زیبایی</p>
+                                        <p class="text-xs" style="color:var(--admin-text-light);">کارشناس زیبایی</p>
                                     </div>
                                 </div>
                             </td>
@@ -116,7 +116,7 @@
                                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
                                         </svg>
                                     </a>
-                                    <a href="{{ route('admin.salon-qr.index', ['specialist' => $specialist->id]) }}" title="QR متخصص" data-specialist-qr-link
+                                    <a href="{{ route('admin.salon-qr.index', ['specialist' => $specialist->id]) }}" title="QR کارشناس" data-specialist-qr-link
                                        class="w-7 h-7 rounded flex items-center justify-center transition-colors"
                                        style="color:var(--admin-accent);"
                                        data-ui-hover="background: var(--admin-accent-light)"
@@ -160,9 +160,9 @@
                                 <svg class="w-10 h-10 mx-auto mb-3" style="color:var(--admin-text-light);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                     <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
                                 </svg>
-                                هیچ متخصصی یافت نشد
+                                هیچ کارشناسی یافت نشد
                                 @permission('create-specialists')
-                                <br><a href="{{ route('admin.specialists.create') }}" class="inline-block mt-3 text-xs px-3 py-1.5 rounded-lg text-m-onsolid" style="background:var(--admin-accent);">افزودن متخصص جدید</a>
+                                <br><a href="{{ route('admin.specialists.create') }}" class="inline-block mt-3 text-xs px-3 py-1.5 rounded-lg text-m-onsolid" style="background:var(--admin-accent);">افزودن کارشناس جدید</a>
                                 @endpermission
                             </td>
                         </tr>

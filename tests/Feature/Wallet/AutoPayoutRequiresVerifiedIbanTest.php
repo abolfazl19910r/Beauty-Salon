@@ -108,6 +108,6 @@ class AutoPayoutRequiresVerifiedIbanTest extends TestCase
             ->get("/admin/wallet/withdrawals/{$withdrawal->id}")
             ->assertOk()
             ->assertDontSee(route('admin.wallet.withdrawals.auto-payout', $withdrawal))
-            ->assertSee('شبای متخصص هنوز تأیید نشده');
+            ->assertSee('شبای کارشناس هنوز تأیید نشده');
     }
 }

@@ -31,7 +31,7 @@ final class AdminMenu
             ]],
             ['مدیریت', [
                 $can('view-services') ? self::item('services', 'خدمات', 'admin.services.index', 'admin.services*', 'help') : null,
-                $can('view-specialists') ? self::item('specialists', 'متخصصین', 'admin.specialists.index', 'admin.specialists*', 'user') : null,
+                $can('view-specialists') ? self::item('specialists', 'کارشناسان', 'admin.specialists.index', 'admin.specialists*', 'user') : null,
                 $can('view-specialists') ? self::item('leaves', 'مرخصی‌ها', 'admin.leaves.index', 'admin.leaves*', 'calendar') : null,
                 $can('view-bookings') ? self::item('bookings', 'نوبت‌ها', 'admin.bookings.index', 'admin.bookings*', 'calendar') : null,
                 $can('view-bookings') ? self::item('customers', 'مشتری‌ها', 'admin.customers.index', 'admin.customers*', 'users') : null,

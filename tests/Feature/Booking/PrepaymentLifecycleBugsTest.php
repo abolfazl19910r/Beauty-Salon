@@ -83,6 +83,6 @@ class PrepaymentLifecycleBugsTest extends TestCase
         $this->travel(31)->minutes();
         $this->runCancelUnpaid();
 
-        $this->assertSame('cancelled', $booking->fresh()->status, 'ساعت متخصص بعد از مهلت پرداخت آزاد می‌شود');
+        $this->assertSame('cancelled', $booking->fresh()->status, 'ساعت کارشناس بعد از مهلت پرداخت آزاد می‌شود');
     }
 }

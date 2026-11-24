@@ -171,7 +171,7 @@ class CustomerAuthenticatedController extends Controller
         if (app(\App\Services\Specialist\SpecialistAccountLinker::class)->promoteCustomer($user)) {
             $request->session()->forget('url.intended');
 
-            return redirect()->to($user->homePath())->with('success', 'حساب شما به حساب متخصص این سالن وصل شد. خوش آمدید!');
+            return redirect()->to($user->homePath())->with('success', 'حساب شما به حساب کارشناس این سالن وصل شد. خوش آمدید!');
         }
 
         $intended = $this->customerIntendedUrl($request);

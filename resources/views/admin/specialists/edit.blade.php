@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'ویرایش متخصص')
+@section('title', 'ویرایش کارشناس')
 
 @push('styles')
     <style>
@@ -18,7 +18,7 @@
 
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
             <div>
-                <h1 class="text-xl font-bold" style="color:var(--admin-text);">ویرایش متخصص</h1>
+                <h1 class="text-xl font-bold" style="color:var(--admin-text);">ویرایش کارشناس</h1>
                 <p class="text-sm mt-0.5" style="color:var(--admin-text-dim);">{{ $specialist->name }}</p>
             </div>
             <a href="{{ route('admin.specialists.show', $specialist) }}"
@@ -39,7 +39,7 @@
                     <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">اطلاعات شخصی</h2>
                     <div class="space-y-4">
                         <div>
-                            <label class="form-label">نام متخصص <span style="color:rgb(var(--m-bad));">*</span></label>
+                            <label class="form-label">نام کارشناس <span style="color:rgb(var(--m-bad));">*</span></label>
                             <input type="text" name="name" value="{{ old('name', $specialist->name) }}" class="form-input" required>
                             @error('name') <p class="form-error">{{ $message }}</p> @enderror
                         </div>
@@ -47,7 +47,7 @@
                             <label class="form-label">شماره تماس <span style="color:rgb(var(--m-bad));">*</span></label>
                             <input type="text" name="phone" value="{{ old('phone', $specialist->phone) }}" class="form-input" dir="ltr" required>
                             @error('phone') <p class="form-error">{{ $message }}</p> @enderror
-                            <p class="text-xs mt-1" style="color:var(--admin-text-light);">با تغییر شماره، حساب ورود متخصص هم با شماره‌ی تازه وارد می‌شود و ورودهای قبلی‌اش بسته می‌شوند.</p>
+                            <p class="text-xs mt-1" style="color:var(--admin-text-light);">با تغییر شماره، حساب ورود کارشناس هم با شماره‌ی تازه وارد می‌شود و ورودهای قبلی‌اش بسته می‌شوند.</p>
                         </div>
                         {{-- ⭐ رمز ورود متخصص (۲۰۲۶-۱۰-۲۹): بی حساب ← ساخت حساب؛ با حساب ← رمز تازه --}}
                         <div data-initial-password>
@@ -56,7 +56,7 @@
                                 <input type="password" name="initial_password" class="form-input" dir="ltr" autocomplete="new-password" placeholder="حداقل ۸ حرف">
                                 <input type="password" name="initial_password_confirmation" class="form-input" dir="ltr" autocomplete="new-password" placeholder="تکرار رمز">
                             </div>
-                            <p class="text-xs mt-1" style="color:var(--admin-text-light);">به متخصص پیامک خبر می‌رود و باید با رمز تازه دوباره وارد شود.</p>
+                            <p class="text-xs mt-1" style="color:var(--admin-text-light);">به کارشناس پیامک خبر می‌رود و باید با رمز تازه دوباره وارد شود.</p>
                             @error('initial_password') <p class="form-error">{{ $message }}</p> @enderror
                         </div>
                         <div>
@@ -84,7 +84,7 @@
 
                     <div class="mt-5 p-3 rounded-lg text-xs" style="background:rgb(var(--m-info) / .1); color:rgb(var(--m-info));">
                         <p class="font-medium mb-1">یادآوری:</p>
-                        پس از ذخیره، برنامه کاری و مرخصی‌ها را از صفحه نمایش متخصص تنظیم کنید.
+                        پس از ذخیره، برنامه کاری و مرخصی‌ها را از صفحه نمایش کارشناس تنظیم کنید.
                     </div>
                 </div>
 
@@ -157,7 +157,7 @@
                         <p class="text-xs mt-1" style="color:var(--admin-text-light)">
                             نرخ global فعلی: <strong>{{ fa_num($globalRate, 2) }}٪</strong>
                             @if(!is_null($specialist->commission_rate))
-                                — این متخصص نرخ اختصاصی دارد
+                                — این کارشناس نرخ اختصاصی دارد
                             @endif
                         </p>
                     </div>

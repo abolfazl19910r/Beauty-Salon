@@ -137,7 +137,7 @@
                         </div>
                     @endif
                     <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
-                        <span style="color:var(--admin-text-dim);">متخصص</span>
+                        <span style="color:var(--admin-text-dim);">کارشناس</span>
                         <span class="font-medium" style="color:var(--admin-text);">
                         @if($booking->specialist)
                                 <a href="{{ route('admin.specialists.show', $booking->specialist) }}"
@@ -183,7 +183,7 @@
                             <span class="persian-number font-medium" style="color:rgb(var(--m-ok));">{{ fa_num($salonShare) }} تومان</span>
                         </div>
                         <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
-                            <span style="color:var(--admin-text-dim);">سهم متخصص</span>
+                            <span style="color:var(--admin-text-dim);">سهم کارشناس</span>
                             <span class="persian-number font-medium" style="color:var(--admin-text);">{{ fa_num($specialistShare) }} تومان</span>
                         </div>
                         <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">

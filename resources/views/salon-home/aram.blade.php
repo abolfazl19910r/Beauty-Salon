@@ -54,7 +54,7 @@
         @endforelse
 
         @if ($aSpecialists->isNotEmpty())
-            <div class="a-ttl text-center" id="specialists">متخصص‌ها</div>
+            <div class="a-ttl text-center" id="specialists">کارشناسان</div>
             <div class="flex flex-wrap justify-center gap-6">
                 @foreach ($aSpecialists as $specialist)
                     <a href="{{ route('specialists.show', $specialist) }}" class="text-center text-sm text-m-mu hover:text-m-tx">

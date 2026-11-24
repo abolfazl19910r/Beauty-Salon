@@ -144,7 +144,7 @@
                             <span style="color:var(--admin-text);">{{ $service->category->name ?? '—' }}</span>
                         </div>
                         <div class="flex justify-between">
-                            <span style="color:var(--admin-text-dim);">متخصصین:</span>
+                            <span style="color:var(--admin-text-dim);">کارشناسان:</span>
                             <span class="persian-number font-bold" style="color:var(--admin-accent);">{{ fa_num($service->specialists()->count()) }}</span>
                         </div>
                     </div>

@@ -207,7 +207,7 @@ class BookingObserver
                 $adminWallet->addCommission(
                     $adminCommission,
                     $booking->id,
-                    "کمیسیون از نوبت #{$booking->id} - متخصص: {$specialist->name}"
+                    "کمیسیون از نوبت #{$booking->id} - کارشناس: {$specialist->name}"
                 );
             });
 
@@ -287,7 +287,7 @@ class BookingObserver
                         $refundTransaction = $customerWallet->addRefund(
                             $refundAmount,
                             $booking->id,
-                            "بازگشت وجه از نوبت #{$booking->id} - لغو توسط متخصص"
+                            "بازگشت وجه از نوبت #{$booking->id} - لغو توسط کارشناس"
                         );
                         $refundDetails = [
                             'method' => 'wallet',
@@ -300,7 +300,7 @@ class BookingObserver
                         AdminWallet::getWallet()->addCommission(
                             $specialistPenalty,
                             $booking->id,
-                            "جریمه لغو نوبت #{$booking->id} توسط متخصص"
+                            "جریمه لغو نوبت #{$booking->id} توسط کارشناس"
                         );
                     }
                 } elseif ($cancelledBy === 'customer') {

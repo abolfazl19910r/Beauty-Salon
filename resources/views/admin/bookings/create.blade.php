@@ -166,7 +166,7 @@
                     </div>
 
                     <div>
-                        <label for="specialist_id" class="form-label">متخصص</label>
+                        <label for="specialist_id" class="form-label">کارشناس</label>
                         <select id="specialist_id" name="specialist_id" class="form-select">
                             @foreach($specialists as $specialist)
                                 <option value="{{ $specialist->id }}" {{ old('specialist_id') == $specialist->id ? 'selected' : '' }}>

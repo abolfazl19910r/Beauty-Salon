@@ -25,7 +25,7 @@ class NotificationJobsTest extends TestCase
     public function test_reminder_job_sends_a_message_to_both_customer_and_specialist(): void
     {
         $user = User::factory()->create(['phone' => '09120000001', 'name' => 'مشتری تست']);
-        $specialist = Specialist::factory()->create(['phone' => '09120000002', 'name' => 'متخصص تست']);
+        $specialist = Specialist::factory()->create(['phone' => '09120000002', 'name' => 'کارشناس تست']);
         $booking = Booking::factory()->create([
             'user_id' => $user->id,
             'specialist_id' => $specialist->id,

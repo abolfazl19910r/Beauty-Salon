@@ -98,7 +98,7 @@ class SuperAdminService
 
             if ($data['max_specialists_count'] < $currentSpecialistCount) {
                 throw new \InvalidArgumentException(
-                    "سقف جدید ({$data['max_specialists_count']}) نمی‌تواند کمتر از تعداد متخصصین فعلی ({$currentSpecialistCount}) باشد."
+                    "سقف جدید ({$data['max_specialists_count']}) نمی‌تواند کمتر از تعداد کارشناسان فعلی ({$currentSpecialistCount}) باشد."
                 );
             }
 

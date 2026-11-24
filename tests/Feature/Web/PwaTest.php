@@ -112,7 +112,7 @@ class PwaTest extends TestCase
 
         auth()->logout();
         $this->get('/specialist/manifest.webmanifest')->assertOk()
-            ->assertJson(['id' => '/specialist/', 'scope' => '/', 'start_url' => '/my-dashboard?source=pwa', 'short_name' => 'پنل متخصص']);
+            ->assertJson(['id' => '/specialist/', 'scope' => '/', 'start_url' => '/my-dashboard?source=pwa', 'short_name' => 'پنل کارشناس']);
     }
 
     public function test_service_worker_and_offline_page(): void

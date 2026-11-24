@@ -30,7 +30,7 @@ class NegativeReviewNotification extends Notification
         return [
             'title' => '⚠️ نظر منفی دریافت شد',
             'message' => sprintf(
-                'نظر منفی (%d ستاره) از %s برای متخصص %s ثبت شد.',
+                'نظر منفی (%d ستاره) از %s برای کارشناس %s ثبت شد.',
                 $this->review->overall_rating,
                 $this->review->user->name,
                 $this->review->specialist->name

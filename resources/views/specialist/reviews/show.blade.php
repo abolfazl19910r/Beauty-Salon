@@ -49,7 +49,7 @@
                         @php
                             $subRatings = [
                                 ['label' => 'کیفیت کار', 'value' => $review->quality_rating, 'class' => 'text-m-info'],
-                                ['label' => 'رفتار متخصص', 'value' => $review->behavior_rating, 'class' => 'text-m-ok'],
+                                ['label' => 'رفتار کارشناس', 'value' => $review->behavior_rating, 'class' => 'text-m-ok'],
                                 ['label' => 'تمیزی', 'value' => $review->cleanliness_rating, 'class' => 'text-m-ok'],
                                 ['label' => 'سرعت', 'value' => $review->speed_rating, 'class' => 'text-m-warn'],
                             ];

@@ -54,14 +54,14 @@ class SmsTextTest extends TestCase
             'نوبت جدید با لینک تایید' => [SmsText::newBookingForSpecialist($b, true), 2],
             'نوبت جدید، تایید خودکار' => [SmsText::newBookingForSpecialist($b, false), 1],
             'یادآوری مشتری' => [SmsText::reminderForCustomer($b), 1],
-            'یادآوری متخصص' => [SmsText::reminderForSpecialist($b), 1],
-            'لغو بدون بازگشت' => [SmsText::bookingCancelledForCustomer($b, 'بیماری متخصص'), 1],
+            'یادآوری کارشناس' => [SmsText::reminderForSpecialist($b), 1],
+            'لغو بدون بازگشت' => [SmsText::bookingCancelledForCustomer($b, 'بیماری کارشناس'), 1],
             'لغو عدم پرداخت' => [SmsText::bookingCancelledUnpaid($b), 1],
             'بدون پیش‌پرداخت شد (بسته‌ی 5ه)' => [SmsText::bookingPrepaymentWaived($b), 2],
             'تأیید حضور با لینک (بسته‌ی 5ه)' => [SmsText::attendanceRequest($b, 'rasta.ir/b/t7q2xk'), 2],
-            'لغو به متخصص' => [SmsText::cancelledForSpecialist($b, 'customer'), 1],
+            'لغو به کارشناس' => [SmsText::cancelledForSpecialist($b, 'customer'), 1],
             'تغییر زمان مشتری' => [SmsText::rescheduledForCustomer($b), 1],
-            'تغییر زمان متخصص' => [SmsText::rescheduledForSpecialist($b, now()->addDay()->setTime(12, 0)), 1],
+            'تغییر زمان کارشناس' => [SmsText::rescheduledForSpecialist($b, now()->addDay()->setTime(12, 0)), 1],
             'درخواست نظر' => [SmsText::reviewRequest($b, 'rasta.ir/b/ab3xk9'), 1],
             'واریز برداشت' => [SmsText::withdrawalApproved(1333340, 'WD-ZEZBZOFX'), 1],
         ];
@@ -85,7 +85,7 @@ class SmsTextTest extends TestCase
         $this->assertStringContainsString('rasta.ir/b/', SmsText::bookingConfirmed($b));
         $this->assertStringContainsString('۱۵ دقیقه زودتر', SmsText::reminderForCustomer($b));
         $this->assertStringContainsString('09121234567', SmsText::reminderForSpecialist($b));
-        $this->assertStringContainsString('دلیل: بیماری متخصص', SmsText::bookingCancelledForCustomer($b, 'بیماری متخصص'));
+        $this->assertStringContainsString('دلیل: بیماری کارشناس', SmsText::bookingCancelledForCustomer($b, 'بیماری کارشناس'));
         $this->assertStringContainsString('بازگشت 90,000 تومان (جریمه 10,000)', SmsText::bookingCancelledForCustomer($b, null, 90000, 10000));
     }
 }

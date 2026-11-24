@@ -147,7 +147,7 @@
                     <div class="buy-summary">
                         <div>
                             <div class="buy-title">پلن {{ $planName ? $planName.' · ' : '' }}{{ $planLabels[old('subscription_type', $selectedPlan)] ?? '' }}</div>
-                            <div class="buy-price">{{ fa_num($selectedPlanPrice) }} تومان برای {{ to_persian_num((string) $includedSpecialists) }} متخصص (هر متخصص بیشتر هم اضافه می‌شود) — پرداخت آنلاین بعد از تایید موبایل</div>
+                            <div class="buy-price">{{ fa_num($selectedPlanPrice) }} تومان برای {{ to_persian_num((string) $includedSpecialists) }} کارشناس (هر کارشناس بیشتر هم اضافه می‌شود) — پرداخت آنلاین بعد از تایید موبایل</div>
                         </div>
                         <a href="{{ route('central.home') }}#pricing">تغییر پلن</a>
                     </div>
@@ -168,12 +168,12 @@
                     </div>
                     {{-- تعداد متخصص (۲۰۲۶-۰۹-۳۰): سقف متخصص سالن همین عدد است و قیمت اشتراک بر اساس آن (SubscriptionPricing). --}}
                     <div class="row">
-                        <label for="specialists_count">تعداد متخصص‌های سالن</label>
+                        <label for="specialists_count">تعداد کارشناسان سالن</label>
                         <input type="number" id="specialists_count" name="specialists_count" value="{{ old('specialists_count', $includedSpecialists) }}"
                                required min="1" max="{{ $maxSignupSpecialists }}" dir="ltr">
                         <div class="hint">
-                            تا {{ to_persian_num((string) $includedSpecialists) }} متخصص در قیمت پلن است؛ هر متخصص بیشتر ماهانه
-                            {{ fa_num($extraSpecialistPrice) }} تومان. سالن بیشتر از این تعداد متخصص نمی‌تواند ثبت کند.
+                            تا {{ to_persian_num((string) $includedSpecialists) }} کارشناس در قیمت پلن است؛ هر کارشناس بیشتر ماهانه
+                            {{ fa_num($extraSpecialistPrice) }} تومان. سالن بیشتر از این تعداد کارشناس نمی‌تواند ثبت کند.
                             @if ($trialDays > 0 && $intent !== 'buy')
                                 <br data-trial-specialists="{{ $trialSpecialists }}">در دوره‌ی رایگان {{ to_persian_num((string) $trialDays) }} روزه حداکثر {{ fa_num($trialSpecialists) }} کارشناس می‌توانید اضافه کنید؛ بعد از خرید اشتراک، همین عدد بالا سقف سالن است.
                             @endif
@@ -243,7 +243,7 @@
                                 </div>
                             @endforeach
                         </div>
-                        <div class="hint">فقط برای نمایش به مشتری‌هاست؛ ساعت‌های قابل رزرو را برنامه‌ی کاری هر متخصص تعیین می‌کند.</div>
+                        <div class="hint">فقط برای نمایش به مشتری‌هاست؛ ساعت‌های قابل رزرو را برنامه‌ی کاری هر کارشناس تعیین می‌کند.</div>
                     </div>
                 </fieldset>
 

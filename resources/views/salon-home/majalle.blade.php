@@ -72,7 +72,7 @@
             @if ($jSpecialists->isNotEmpty())
                 <section id="specialists" class="py-10">
                     <div class="flex items-baseline justify-between mb-6">
-                        <h2 class="j-display text-3xl text-m-tx">متخصص‌ها</h2>
+                        <h2 class="j-display text-3xl text-m-tx">کارشناسان</h2>
                         <a href="{{ route('specialists.search') }}" class="j-link text-sm">همه</a>
                     </div>
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">

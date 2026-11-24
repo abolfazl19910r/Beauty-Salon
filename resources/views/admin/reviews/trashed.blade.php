@@ -29,7 +29,7 @@
                     <thead>
                         <tr style="border-bottom:1px solid var(--admin-border);">
                             <th class="px-4 py-3 text-right" style="color:var(--admin-text-dim);">کاربر</th>
-                            <th class="px-4 py-3 text-right" style="color:var(--admin-text-dim);">متخصص</th>
+                            <th class="px-4 py-3 text-right" style="color:var(--admin-text-dim);">کارشناس</th>
                             <th class="px-4 py-3 text-right" style="color:var(--admin-text-dim);">امتیاز</th>
                             <th class="px-4 py-3 text-right" style="color:var(--admin-text-dim);">تاریخ حذف</th>
                             <th class="px-4 py-3 text-right" style="color:var(--admin-text-dim);">عملیات</th>

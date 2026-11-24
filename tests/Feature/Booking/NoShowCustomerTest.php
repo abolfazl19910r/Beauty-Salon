@@ -101,7 +101,7 @@ class NoShowCustomerTest extends TestCase
 
         $first = $this->book(3);
         $this->assertFalse($first->prepayment_required);
-        $this->assertSame('pending', $first->status, 'تأیید دستی اجباری حتی با متخصص تأیید خودکار');
+        $this->assertSame('pending', $first->status, 'تأیید دستی اجباری حتی با کارشناس تأیید خودکار');
 
         $this->expectException(BookingLimitException::class);
         $this->book(5);

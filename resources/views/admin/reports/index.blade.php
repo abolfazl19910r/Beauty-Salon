@@ -185,7 +185,7 @@
         <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface);border:1px solid var(--admin-border);">
             <div class="flex border-b" style="border-color:var(--admin-border);">
                 <button class="rtab active" data-ui-click="showTab" data-ui-args='["revenue"]'>📊 درآمد</button>
-                <button class="rtab" data-ui-click="showTab" data-ui-args='["specialists"]'>👥 متخصصین</button>
+                <button class="rtab" data-ui-click="showTab" data-ui-args='["specialists"]'>👥 کارشناسان</button>
                 <button class="rtab" data-ui-click="showTab" data-ui-args='["services"]'>✂️ خدمات</button>
                 <button class="rtab" data-ui-click="showTab" data-ui-args='["satisfaction"]'>⭐ رضایت</button>
             </div>
@@ -256,13 +256,13 @@
 
             {{-- Experts' Fever --}}
             <div id="tab-specialists" class="tab-content p-6">
-                <h3 class="text-base font-semibold mb-4" style="color:var(--admin-text)">عملکرد متخصصین</h3>
+                <h3 class="text-base font-semibold mb-4" style="color:var(--admin-text)">عملکرد کارشناسان</h3>
                 @if($specialists->count())
                     <div style="height:300px" class="mb-6"><canvas id="specialistChart"></canvas></div>
                     <table class="report-table">
                         <thead><tr>
-                            <th>نام متخصص</th><th>تعداد نوبت</th><th>درآمد کل (تومان)</th>
-                            <th>نرخ کمیسیون</th><th>سهم متخصص (تومان)</th>
+                            <th>نام کارشناس</th><th>تعداد نوبت</th><th>درآمد کل (تومان)</th>
+                            <th>نرخ کمیسیون</th><th>سهم کارشناس (تومان)</th>
                             <th>نرخ تکمیل</th><th>نرخ بازگشت</th>
                         </tr></thead>
                         <tbody>
@@ -335,7 +335,7 @@
                 @if($satisfaction->count())
                     <table class="report-table">
                         <thead><tr>
-                            <th>نام متخصص</th><th>میانگین امتیاز</th><th>تعداد نظر</th><th>درصد رضایت</th>
+                            <th>نام کارشناس</th><th>میانگین امتیاز</th><th>تعداد نظر</th><th>درصد رضایت</th>
                         </tr></thead>
                         <tbody>
                         @foreach($satisfaction as $sat)

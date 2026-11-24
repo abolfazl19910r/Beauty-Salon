@@ -131,7 +131,7 @@
                             <svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:rgb(var(--m-info));" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                             </svg>
-                            <span>پس از ساخت خدمت می‌توانید آن را به متخصصین اختصاص دهید.</span>
+                            <span>پس از ساخت خدمت می‌توانید آن را به کارشناسان اختصاص دهید.</span>
                         </div>
                         <div class="flex items-start gap-2">
                             <svg class="w-4 h-4 mt-0.5 flex-shrink-0" style="color:rgb(var(--m-warn));" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

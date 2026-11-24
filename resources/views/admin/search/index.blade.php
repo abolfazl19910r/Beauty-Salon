@@ -36,7 +36,7 @@
                                         @php
                                             $link = '#';
                                             if ($key === 'کاربران')     $link = route('admin.users.show',      $item->id);
-                                            if ($key === 'متخصصین')    $link = route('admin.specialists.show', $item->id);
+                                            if ($key === 'کارشناسان')    $link = route('admin.specialists.show', $item->id);
                                             if ($key === 'خدمات')      $link = route('admin.services.edit',    $item->id);
                                         @endphp
                                         <a href="{{ $link }}"
@@ -52,7 +52,7 @@
                                                 <p class="text-sm font-medium" style="color:var(--admin-text)">{{ $item->name ?? 'بدون نام' }}</p>
                                                 <p class="text-xs" style="color:var(--admin-text-dim)">
                                                     @if($key === 'کاربران')    {{ \App\Support\Fa::digits($item->phone) }}
-                                                    @elseif($key === 'متخصصین') {{ \App\Support\Fa::digits($item->phone) }}
+                                                    @elseif($key === 'کارشناسان') {{ \App\Support\Fa::digits($item->phone) }}
                                                     @elseif($key === 'خدمات')   {{ $item->duration ?? '' }} دقیقه
                                                     @endif
                                                 </p>

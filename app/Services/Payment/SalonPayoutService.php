@@ -52,7 +52,7 @@ class SalonPayoutService
         return $driver->payout(new PayoutRequest(
             (int) (($withdrawalRequest->net_amount ?? $withdrawalRequest->amount) * 10),
             (string) $withdrawalRequest->iban,
-            sprintf('تسویه حساب متخصص: %s (درخواست #%d)', $withdrawalRequest->specialist?->name ?? '—', $withdrawalRequest->id),
+            sprintf('تسویه حساب کارشناس: %s (درخواست #%d)', $withdrawalRequest->specialist?->name ?? '—', $withdrawalRequest->id),
             (string) $withdrawalRequest->id,
         ))->toArray();
     }

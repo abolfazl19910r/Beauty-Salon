@@ -55,7 +55,7 @@ class SpecialistWalletController extends Controller
         $specialist = $this->resolveSpecialist();
 
         if (! $specialist) {
-            return response()->json(['error' => 'متخصص یافت نشد'], 404);
+            return response()->json(['error' => 'کارشناس یافت نشد'], 404);
         }
 
         $wallet = $specialist->getOrCreateWallet();

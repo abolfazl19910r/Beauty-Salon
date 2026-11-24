@@ -92,7 +92,7 @@ final class StructuredData
 
         return $text !== ''
             ? self::clean($text)
-            : 'رزرو آنلاین نوبت در '.$salon->name.' — خدمات، متخصص‌ها و ساعت‌های خالی را ببینید و نوبت بگیرید.';
+            : 'رزرو آنلاین نوبت در '.$salon->name.' — خدمات، کارشناسان و ساعت‌های خالی را ببینید و نوبت بگیرید.';
     }
 
     public static function salonImage(Salon $salon): string

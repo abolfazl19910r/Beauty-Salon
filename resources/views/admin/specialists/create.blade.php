@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'افزودن متخصص جدید')
+@section('title', 'افزودن کارشناس جدید')
 
 @push('styles')
     <style>
@@ -21,7 +21,7 @@
                 <svg class="w-5 h-5" style="color:var(--admin-accent);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
-                افزودن متخصص جدید
+                افزودن کارشناس جدید
             </h1>
             <a href="{{ route('admin.specialists.index') }}"
                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
@@ -41,7 +41,7 @@
                     <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">اطلاعات شخصی</h2>
                     <div class="space-y-4">
                         <div>
-                            <label class="form-label">نام متخصص <span style="color:rgb(var(--m-bad));">*</span></label>
+                            <label class="form-label">نام کارشناس <span style="color:rgb(var(--m-bad));">*</span></label>
                             <input type="text" name="name" value="{{ old('name') }}" class="form-input" required>
                             @error('name') <p class="form-error">{{ $message }}</p> @enderror
                         </div>
@@ -57,7 +57,7 @@
                                 <input type="password" name="initial_password" class="form-input" dir="ltr" autocomplete="new-password" placeholder="حداقل ۸ حرف">
                                 <input type="password" name="initial_password_confirmation" class="form-input" dir="ltr" autocomplete="new-password" placeholder="تکرار رمز">
                             </div>
-                            <p class="text-xs mt-1" style="color:var(--admin-text-light);">خالی بگذارید تا متخصص خودش از صفحه‌ی ورود کادر یا اپ «ماهرو همکار» ← «فعال‌سازی حساب متخصص» با کد پیامکی رمز بگذارد.</p>
+                            <p class="text-xs mt-1" style="color:var(--admin-text-light);">خالی بگذارید تا کارشناس خودش از صفحه‌ی ورود کادر یا اپ «ماهرو همکار» ← «فعال‌سازی حساب کارشناس» با کد پیامکی رمز بگذارد.</p>
                             @error('initial_password') <p class="form-error">{{ $message }}</p> @enderror
                         </div>
                         <div>
@@ -142,7 +142,7 @@
                         <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
                         <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
                     </svg>
-                    ذخیره متخصص
+                    ذخیره کارشناس
                 </button>
                 <a href="{{ route('admin.specialists.index') }}"
                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"

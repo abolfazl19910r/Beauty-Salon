@@ -37,8 +37,8 @@
                     <span class="font-medium text-m-tx">{{ $booking->service?->name ?? 'خدمت نامشخص' }}</span>
                 </div>
                 <div class="flex justify-between items-center px-5 py-3.5 text-sm">
-                    <span class="text-m-tx/55">متخصص</span>
-                    <span class="font-medium text-m-tx">{{ $booking->specialist?->name ?? 'متخصص نامشخص' }}</span>
+                    <span class="text-m-tx/55">کارشناس</span>
+                    <span class="font-medium text-m-tx">{{ $booking->specialist?->name ?? 'کارشناس نامشخص' }}</span>
                 </div>
                 <div class="flex justify-between items-center px-5 py-3.5 text-sm">
                     <span class="text-m-tx/55">تاریخ و ساعت</span>

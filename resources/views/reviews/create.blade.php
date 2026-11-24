@@ -46,7 +46,7 @@
             <div class="bg-m-bg/60 rounded-xl border border-m-gold/8 p-5 flex items-center justify-between text-right">
                 <div>
                     <h3 class="font-bold text-m-tx">{{ $booking->service?->name ?? '—' }}</h3>
-                    <p class="text-m-tx/55 text-sm mt-1">متخصص: {{ $booking->specialist?->name ?? '—' }}</p>
+                    <p class="text-m-tx/55 text-sm mt-1">کارشناس: {{ $booking->specialist?->name ?? '—' }}</p>
                 </div>
                 <div class="text-left">
                     <p class="text-xs text-m-tx/45">تاریخ خدمت</p>
@@ -62,7 +62,7 @@
             @foreach([
                 ['name'=>'overall_rating','title'=>'امتیاز کلی','icon'=>'star'],
                 ['name'=>'quality_rating','title'=>'کیفیت کار','icon'=>'check'],
-                ['name'=>'behavior_rating','title'=>'رفتار متخصص','icon'=>'smile'],
+                ['name'=>'behavior_rating','title'=>'رفتار کارشناس','icon'=>'smile'],
                 ['name'=>'cleanliness_rating','title'=>'تمیزی','icon'=>'check2'],
                 ['name'=>'speed_rating','title'=>'سرعت','icon'=>'bolt'],
             ] as $cat)

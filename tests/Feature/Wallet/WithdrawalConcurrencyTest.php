@@ -44,7 +44,7 @@ class WithdrawalConcurrencyTest extends TestCase
         WalletSetting::get()->update(['minimum_withdrawal_amount' => 10000, 'maximum_withdrawal_amount' => 50000000, 'withdrawal_fee_percentage' => 0]);
         $this->specialist = Specialist::factory()->create(['salon_id' => $this->salon->id]);
         $this->wallet = $this->specialist->getOrCreateWallet();
-        $this->wallet->update(['balance' => 100000, 'iban' => 'IR062960000000100324200001', 'account_holder_name' => 'متخصص']);
+        $this->wallet->update(['balance' => 100000, 'iban' => 'IR062960000000100324200001', 'account_holder_name' => 'کارشناس']);
     }
 
     protected function tearDown(): void

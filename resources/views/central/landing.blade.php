@@ -701,7 +701,7 @@ footer .enamad{margin-top:12px}
 <div class="row"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M7 15h4"/></svg></div><div><h3>پرداخت و بیعانه</h3><p>برای خدمات طولانی بیعانه‌ی آنلاین بگیرید تا نوبت‌ها بی‌خبر خالی نمانند. گزارش مالی روزانه، هفتگی و ماهانه هم آماده است.</p></div></div>
 </div>
 <div class="card tile w3 rv d1">
-<div class="row"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H5a2 2 0 0 1 0-4h13v4M3 5v14a2 2 0 0 0 2 2h15V7"/><path d="M16 14h.01"/></svg></div><div><h3>کیف پول و تسویه‌ی پرسنل</h3><p>سهم هر متخصص از هر نوبت خودکار حساب می‌شود؛ متخصص موجودی‌اش را می‌بیند و برداشت به شبا را از پنل خودش درخواست می‌کند.</p></div></div>
+<div class="row"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H5a2 2 0 0 1 0-4h13v4M3 5v14a2 2 0 0 0 2 2h15V7"/><path d="M16 14h.01"/></svg></div><div><h3>کیف پول و تسویه‌ی پرسنل</h3><p>سهم هر کارشناس از هر نوبت خودکار حساب می‌شود؛ کارشناس موجودی‌اش را می‌بیند و برداشت به شبا را از پنل خودش درخواست می‌کند.</p></div></div>
 </div>
 </div></div></section>
 
@@ -804,7 +804,7 @@ footer .enamad{margin-top:12px}
 <div class="rv">
 <div class="card aud on" role="tabpanel"><div><h3>آرایشگاه و سالن مو</h3><p>رنگ، لایت و کوتاهی زمان‌های متفاوتی می‌خواهند. ماهرو مدت هر خدمت را جدا حساب می‌کند تا تداخلی پیش نیاید.</p></div><ul><li>زمان‌بندی خدمات طولانی مثل رنگ و لایت</li><li>انتخاب آرایشگر مورد علاقه‌ی مشتری</li><li>پیگیری خودکار مشتریانی که مدتی نیامده‌اند</li></ul></div>
 <div class="card aud" role="tabpanel"><div><h3>ناخن و زیبایی</h3><p>نوبت‌های کوتاه و پشت‌سرهم، بدون فاصله‌ی هدررفته و با یادآوری دقیق.</p></div><ul><li>رزرو سریع خدمات کوتاه</li><li>بیعانه برای جلوگیری از غیبت</li><li>پرونده‌ی سلیقه و سابقه‌ی هر مشتری</li></ul></div>
-<div class="card aud" role="tabpanel"><div><h3>پوست، مو و لیزر</h3><p>خدمات طولانی با مدت‌زمان دقیق و متخصص مشخص، بدون تداخل در تقویم.</p></div><ul><li>سابقه‌ی نوبت‌های هر مشتری در پرونده‌اش</li><li>یادآوری پیامکی پیش از هر نوبت</li>@if ($coursesOffered)<li>دوره‌های چندجلسه‌ای مثل لیزر ۶ جلسه، با یادآوری خودکار جلسه‌ی بعد@if ($coursesPlanName) (پلن {{ $coursesPlanName }})@endif</li>@endif<li>گزارش دقیق از هر خدمت انجام‌شده</li></ul></div>
+<div class="card aud" role="tabpanel"><div><h3>پوست، مو و لیزر</h3><p>خدمات طولانی با مدت‌زمان دقیق و کارشناس مشخص، بدون تداخل در تقویم.</p></div><ul><li>سابقه‌ی نوبت‌های هر مشتری در پرونده‌اش</li><li>یادآوری پیامکی پیش از هر نوبت</li>@if ($coursesOffered)<li>دوره‌های چندجلسه‌ای مثل لیزر ۶ جلسه، با یادآوری خودکار جلسه‌ی بعد@if ($coursesPlanName) (پلن {{ $coursesPlanName }})@endif</li>@endif<li>گزارش دقیق از هر خدمت انجام‌شده</li></ul></div>
 </div></div></section>
 
 <!-- ============ PRICING ============ -->
@@ -817,7 +817,7 @@ footer .enamad{margin-top:12px}
 <div class="tc-h"><h3>{{ $trialCard['name'] }}</h3><div class="pr gold num">رایگان <small>{{ to_persian_num((string) $trialCard['days']) }} روز</small></div></div>
 <ul>
 <li>بدون کارت بانکی؛ خرید پلن هر وقت خواستید از داخل پنل</li>
-<li>{{ to_persian_num((string) $trialCard['specialists']) }} متخصص و {{ fa_num($trialCard['sms']) }} قطعه پیامک</li>
+<li>{{ to_persian_num((string) $trialCard['specialists']) }} کارشناس و {{ fa_num($trialCard['sms']) }} قطعه پیامک</li>
 <li>@if ($trialCard['theme_detail']['count'] > 0){{ to_persian_num((string) $trialCard['theme_detail']['count']) }} قالب ظاهری@else قالب «طلایی ماهرو» (تیره و روشن)@endif</li>
 </ul>
 <a class="btn btn-line" href="{{ $trialCard['signup_url'] }}">شروع {{ to_persian_num((string) $trialCard['days']) }} روز رایگان</a>
@@ -844,7 +844,7 @@ footer .enamad{margin-top:12px}
 <ul>
 @if ($card['previous'])<li>همه‌ی امکانات {{ $card['previous'] }}</li>@else<li>نوبت‌دهی آنلاین، پیامک تأیید و یادآوری، بیعانه</li>@endif
 @foreach ($card['adds'] as $label)<li>{{ $label }}</li>@endforeach
-<li>{{ to_persian_num((string) $card['specialists']) }} متخصص در قیمت پلن</li>
+<li>{{ to_persian_num((string) $card['specialists']) }} کارشناس در قیمت پلن</li>
 <li>{{ fa_num($card['sms']) }} قطعه پیامک در هر ماه</li>
 @foreach ($card['periods'] as $type => $period)
 <li class="pp thm" data-p="{{ $type }}" data-themes="{{ $period['themes'] }}"><span>@if ($period['theme_detail']['all'])همه‌ی {{ to_persian_num((string) $period['themes']) }} قالب ظاهری + طلایی ماهرو@elseif ($period['themes'] > 0){{ to_persian_num((string) $period['themes']) }} قالب ظاهری + طلایی ماهرو@else فقط قالب طلایی ماهرو (تیره و روشن)@endif
@@ -869,7 +869,7 @@ footer .enamad{margin-top:12px}
 {{-- ⭐ بسته‌ی «و»: کدام پلن در کدام بازه کدام چیدمان‌ها و پالت‌ها را دارد --}}
 <div class="tt rv" id="templates-table">
 <h3>قالب‌های ظاهری در هر پلن و مدت اشتراک</h3>
-<p class="tt-sub">هر قالب = یک چیدمان × یک پالت، هر دو در نسخه‌ی تیره و روشن، برای سایت سالن، پنل مشتری، پنل متخصص و اپ. «طلایی ماهرو» در همه‌ی پلن‌ها هست.</p>
+<p class="tt-sub">هر قالب = یک چیدمان × یک پالت، هر دو در نسخه‌ی تیره و روشن، برای سایت سالن، پنل مشتری، پنل کارشناس و اپ. «طلایی ماهرو» در همه‌ی پلن‌ها هست.</p>
 <div class="tt-legend">
 @foreach ($themeLayouts as $layout)<span><b>{{ $layout['name'] }}</b> — {{ $layout['description'] }}</span>@endforeach
 </div>
@@ -896,7 +896,7 @@ footer .enamad{margin-top:12px}
 <div class="card pl rv" data-plan="{{ $plan['type'] }}">
 <h3>{{ $plan['label'] }}</h3>
 <div class="pr gold num">{{ fa_num($plan['price']) }} <small>تومان</small></div>
-<ul><li>{{ to_persian_num((string) $maxSpecialists) }} متخصص در قیمت پلن</li><li>{{ fa_num($smsQuota) }} قطعه پیامک در هر ماه</li></ul>
+<ul><li>{{ to_persian_num((string) $maxSpecialists) }} کارشناس در قیمت پلن</li><li>{{ fa_num($smsQuota) }} قطعه پیامک در هر ماه</li></ul>
 @if ($trialDays > 0)
 <a class="btn btn-line btn-block" href="{{ $plan['signup_url'] }}">شروع {{ to_persian_num((string) $trialDays) }} روز رایگان</a>
 <a class="buy" href="{{ $plan['buy_url'] }}">خرید فوری، بدون دوره‌ی رایگان</a>
@@ -907,7 +907,7 @@ footer .enamad{margin-top:12px}
 @endforeach
 </div>
 @endif
-<div class="incl rv"><span>هر متخصص بیشتر ماهانه {{ fa_num($extraSpecialistPrice) }} تومان</span><span>بدون هزینه‌ی راه‌اندازی</span><span>تیکت پشتیبانی فارسی</span><span>به‌روزرسانی رایگان</span></div>
+<div class="incl rv"><span>هر کارشناس بیشتر ماهانه {{ fa_num($extraSpecialistPrice) }} تومان</span><span>بدون هزینه‌ی راه‌اندازی</span><span>تیکت پشتیبانی فارسی</span><span>به‌روزرسانی رایگان</span></div>
 </div></section>
 
 
@@ -917,7 +917,7 @@ footer .enamad{margin-top:12px}
 <div class="sh rv"><span class="kicker">اپ‌های ماهرو</span><h2>روی گوشی، <span class="gold">یک لمس فاصله</span></h2><p>رزرو با لینک سالن روی هر مرورگری کار می‌کند؛ برای راحتی بیشتر، اپ اندروید هم هست.</p></div>
 <div class="apps">
 <div class="card rv" data-landing-apps-customer><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></div><h3>اپ ماهرو برای مشتری‌ها</h3><p>مشتری با لینک یا QR سالن شما اپ را نصب می‌کند و مستقیم وارد صفحه‌ی همان سالن می‌شود؛ رزرو، یادآوری و سابقه‌ی نوبت‌ها در یک جا. روی آیفون، سایت سالن مثل اپ به صفحه‌ی اصلی اضافه می‌شود.</p><a class="btn btn-line" href="{{ \App\Support\CentralUrl::route('app-download.show') }}">دانلود اپ</a></div>
-<div class="card rv d1" data-landing-apps-staff><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a5.5 5.5 0 0 1 3.5 6"/></svg></div><h3>ماهرو همکار برای متخصص‌ها</h3><p>متخصص‌های سالن نوبت‌های امروز، تقویم و کیف پولشان را در اپ «ماهرو همکار» می‌بینند؛ ورود با همان شماره و رمز پنل، بدون وارد کردن آدرس.</p><a class="btn btn-line" href="{{ \App\Support\CentralUrl::route('app-download.staff') }}">دانلود ماهرو همکار</a></div>
+<div class="card rv d1" data-landing-apps-staff><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a5.5 5.5 0 0 1 3.5 6"/></svg></div><h3>ماهرو همکار برای کارشناسان</h3><p>کارشناسان سالن نوبت‌های امروز، تقویم و کیف پولشان را در اپ «ماهرو همکار» می‌بینند؛ ورود با همان شماره و رمز پنل، بدون وارد کردن آدرس.</p><a class="btn btn-line" href="{{ \App\Support\CentralUrl::route('app-download.staff') }}">دانلود ماهرو همکار</a></div>
 </div>
 </div></section>
 
@@ -941,7 +941,7 @@ footer .enamad{margin-top:12px}
 <details><summary>در دوره‌ی رایگان محدودیتی هست؟</summary><p>@if ($trialMissing === [])خیر؛ همه‌ی امکانات@if ($salePlanName) پلن {{ $salePlanName }}@endif در دوره‌ی رایگان باز است.@else بیشتر امکانات باز است. این‌ها فقط بعد از خرید اشتراک فعال می‌شوند: {{ implode('، ', $trialMissing) }}.@endif</p></details>
 @endif
 @if ($themeFaq !== '')<details><summary>قالب سایت و پنل به پلن بستگی دارد؟</summary><p>بله. قالب پیش‌فرض «طلایی ماهرو» (تیره و روشن) در همه‌ی پلن‌ها و دوره‌ی رایگان هست. بقیه‌ی قالب‌ها ({{ to_persian_num((string) \App\Support\Themes\ThemeCatalog::siteTotal()) }} قالب برای سایت، پنل مشتری و اپ) با پلن و مدت اشتراک باز می‌شوند: {{ $themeFaq }}. با پایان اشتراک یا پایین آمدن پلن، سایت به قالب پیش‌فرض برمی‌گردد و انتخاب‌تان ذخیره می‌ماند تا با تمدید برگردد.</p></details>@endif
-<details><summary>اگر بیشتر از {{ to_persian_num((string) $maxSpecialists) }} متخصص داشته باشم؟</summary><p>موقع ساخت سالن تعداد متخصص‌ها را وارد کنید؛ هر متخصص بیشتر ماهانه {{ fa_num($extraSpecialistPrice) }} تومان به قیمت پلن اضافه می‌شود (در پلن‌های چندماهه با همان تخفیف).</p></details>
+<details><summary>اگر بیشتر از {{ to_persian_num((string) $maxSpecialists) }} کارشناس داشته باشم؟</summary><p>موقع ساخت سالن تعداد کارشناسان را وارد کنید؛ هر کارشناس بیشتر ماهانه {{ fa_num($extraSpecialistPrice) }} تومان به قیمت پلن اضافه می‌شود (در پلن‌های چندماهه با همان تخفیف).</p></details>
 <details><summary>پول پیش‌پرداخت مشتری‌ها به حساب چه کسی واریز می‌شود؟</summary><p>مستقیم به حساب درگاه پرداخت خود سالن. اطلاعات درگاه را موقع ساخت سالن یا بعداً از پنل مدیریت وارد می‌کنید؛ تا درگاهی ثبت نشود، پرداخت آنلاین برای مشتری‌های سالن ممکن نیست.</p></details>
 <details><summary>اطلاعات مشتریانم امن است؟</summary><p>داده‌های هر سالن فقط برای خود آن سالن قابل دسترس است، با رمزنگاری منتقل می‌شود و بین سالن‌ها هیچ اشتراکی وجود ندارد.</p></details>
 <details><summary>اگر به کمک نیاز داشتم چه؟</summary><p>تیم پشتیبانی فارسی در راه‌اندازی و کار روزمره کنار شماست؛ از داخل پنل تیکت بزنید@if ($contact['support_phone']) یا تماس بگیرید@endif.</p></details>

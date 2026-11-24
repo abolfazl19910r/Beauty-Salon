@@ -64,7 +64,7 @@ class SpecialistCountPricingTest extends TestCase
 
         $this->assertSame(1500000, $pricing->price('1m', 10));
         $this->assertSame(1500000, $pricing->price('1m', 3), 'کمتر از تعداد شامل‌شده ارزان‌تر نمی‌شود');
-        $this->assertSame(1500000, $pricing->price('1m', 9), 'تا ۱۰ متخصص داخل قیمت پلن است');
+        $this->assertSame(1500000, $pricing->price('1m', 9), 'تا ۱۰ کارشناس داخل قیمت پلن است');
         $this->assertSame(1750000, $pricing->price('1m', 11));
         $this->assertSame(2000000, $pricing->price('1m', 12));
         // ۳ ماهه: ۲ متخصص اضافه × ۲۵۰٬۰۰۰ × ۳ ماه × (۴٬۱۵۰٬۰۰۰ ÷ ۴٬۵۰۰٬۰۰۰) = ۱٬۳۸۳٬۳۳۳ → گرد به هزار
@@ -82,14 +82,14 @@ class SpecialistCountPricingTest extends TestCase
 
         $this->actingAs($owner)->get(route('admin.billing.index'))->assertOk()
             ->assertSee(fa_num(2000000))
-            ->assertSee('۱۲ متخصص');
+            ->assertSee('۱۲ کارشناس');
     }
 
     public function test_the_sales_page_and_super_admin_form_use_the_included_count(): void
     {
         $landing = $this->get(route('central.home'));
         if ($landing->status() === 200) {
-            $landing->assertSee('هر متخصص بیشتر');
+            $landing->assertSee('هر کارشناس بیشتر');
         }
 
         $superAdmin = User::factory()->create(['is_admin' => false]);

@@ -75,7 +75,7 @@
                                 <div class="text-xs mt-1" style="color: var(--admin-text-dim);">کارمزد روی مبلغ مشتری: {{ $feeText($gateway) }}</div>
                                 @if (\App\Payments\GatewayCatalog::supportsPayout($gateway->driver))
                                     <div class="text-xs mt-1" style="color: var(--admin-text-dim);">
-                                        تسویه‌ی خودکار متخصص‌ها:
+                                        تسویه‌ی خودکار کارشناسان:
                                         {{ app(\App\Payments\PayoutManager::class)->isConfigured($gateway) ? 'فعال' : 'غیرفعال (اطلاعات تسویه وارد نشده)' }}
                                     </div>
                                 @endif
@@ -153,7 +153,7 @@
             اگر گزینه‌ی «کارمزد بر عهده‌ی خریدار» را در پنل خود درگاه هم فعال کرده‌اید، اینجا کارمزد وارد نکنید تا دوبار گرفته نشود.
             «تست اتصال» فقط یک درخواست پرداخت آزمایشی می‌سازد؛ مشتری‌ای به درگاه نمی‌رود و پولی جابه‌جا نمی‌شود.
             @if (\App\Payments\GatewayCatalog::payoutLabels() === '')
-                <br><b>تسویه‌ی متخصص‌ها:</b> {{ \App\Payments\GatewayCatalog::NO_PAYOUT_NOTE }}
+                <br><b>تسویه‌ی کارشناسان:</b> {{ \App\Payments\GatewayCatalog::NO_PAYOUT_NOTE }}
             @endif
         </section>
     </div>

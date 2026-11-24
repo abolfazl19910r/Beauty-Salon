@@ -71,7 +71,7 @@ class SpecialistBookingCancelledNotification extends Notification implements Sho
     {
         return match ($this->cancelledBy) {
             'user' => 'مشتری',
-            'specialist' => 'متخصص',
+            'specialist' => 'کارشناس',
             'admin' => 'مدیر سالن',
             'system' => 'سیستم (مانند پرداخت ناموفق)',
             default => 'نامشخص',

@@ -75,7 +75,7 @@ class PlanBillingTest extends TestCase
         $full = $paid->plan;
         $this->assertSame([1900000, 5250000, 9700000, 17550000], [$full->price_1m, $full->price_3m, $full->price_6m, $full->price_12m]);
         $this->assertSame(12, $full->included_specialists);
-        $this->assertSame(0, app(SubscriptionPricing::class)->price('1m', 12, $full) - 1900000, '۱۲ متخصص در قیمت کامل است');
+        $this->assertSame(0, app(SubscriptionPricing::class)->price('1m', 12, $full) - 1900000, '۱۲ کارشناس در قیمت کامل است');
 
         // کامل = همه‌ی امکانات جز دوره‌های درمانی (آن فقط کلینیک)؛ ارسال دستی فرق کامل با حرفه‌ای است
         $this->assertSame(['treatment_courses'], array_values(array_diff(Feature::keys(), $paid->enabledFeatureKeys())));

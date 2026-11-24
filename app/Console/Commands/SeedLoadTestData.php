@@ -17,13 +17,13 @@ class SeedLoadTestData extends Command
         {--salons=100 : تعداد سالن (مثلاً ۱۰۰ یا ۱۰۰۰)}
         {--months=4 : چند ماه نوبت گذشته}
         {--future-days=30 : چند روز نوبت آینده}
-        {--specialists=6 : متخصص هر سالن}
+        {--specialists=6 : کارشناس هر سالن}
         {--services=10 : خدمت هر سالن}
         {--customers=150 : مشتری هر سالن}
         {--bookings-per-day=6 : میانگین نوبت روزانه‌ی هر سالن}
         {--force : اجرا در production}';
 
-    protected $description = 'ساخت داده‌ی فیک بار (سالن، متخصص، مشتری، نوبت، پرداخت، کیف پول، برداشت، اعلان، نظر) برای اندازه‌گیری کارایی';
+    protected $description = 'ساخت داده‌ی فیک بار (سالن، کارشناس، مشتری، نوبت، پرداخت، کیف پول، برداشت، اعلان، نظر) برای اندازه‌گیری کارایی';
 
     public const REPORTED_TABLES = ['salons', 'users', 'specialists', 'beauty_services', 'specialist_services', 'specialist_schedules', 'bookings', 'payments',
         'payment_transactions', 'specialist_wallets', 'wallet_transactions', 'admin_wallet_transactions', 'withdrawal_requests', 'user_wallets',

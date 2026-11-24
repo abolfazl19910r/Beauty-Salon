@@ -27,7 +27,7 @@ class SalonListFilter
         'oldest' => 'قدیمی‌ترین',
         'ends_asc' => 'نزدیک‌ترین انقضا',
         'ends_desc' => 'دورترین انقضا',
-        'specialists_desc' => 'بیشترین متخصص',
+        'specialists_desc' => 'بیشترین کارشناس',
     ];
 
     public function query(array $filters): Builder

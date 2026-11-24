@@ -116,7 +116,7 @@
                                     <th class="px-4 py-2.5 text-right font-medium">#</th>
                                     <th class="px-4 py-2.5 text-right font-medium">تاریخ</th>
                                     <th class="px-4 py-2.5 text-right font-medium">خدمت</th>
-                                    <th class="px-4 py-2.5 text-right font-medium">متخصص</th>
+                                    <th class="px-4 py-2.5 text-right font-medium">کارشناس</th>
                                     <th class="px-4 py-2.5 text-right font-medium">وضعیت</th>
                                     <th class="px-4 py-2.5 text-right font-medium">مبلغ</th>
                                 </tr>

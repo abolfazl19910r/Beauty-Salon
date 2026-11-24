@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', $specialist->name)
-@section('description', $specialist->name.' — متخصص '.$currentSalonName.'؛ خدمات، ساعت کاری و نظرهای مشتری‌ها، و رزرو آنلاین نوبت.')
+@section('description', $specialist->name.' — کارشناس '.$currentSalonName.'؛ خدمات، ساعت کاری و نظرهای مشتری‌ها، و رزرو آنلاین نوبت.')
 
 {{--
     ⭐ صفحه‌ی عمومی پروفایل متخصص (۲۰۲۶-۰۹-۲۴). SpecialistController::show از قبل به view
@@ -27,7 +27,7 @@
             @endif
             <div class="flex-1">
                 <h1 class="text-2xl md:text-3xl font-bold mb-2" style="color: var(--rasta-gold-light);">{{ $specialist->name }}</h1>
-                <p class="text-sm opacity-80 mb-3">متخصص {{ $currentSalonName }}</p>
+                <p class="text-sm opacity-80 mb-3">کارشناس {{ $currentSalonName }}</p>
                 <div class="flex flex-wrap justify-center sm:justify-start gap-4 text-sm persian-number">
                     @if ($specialist->rating_count > 0)
                         <span><span style="color: var(--rasta-gold);">★</span> {{ fa_num((float) $specialist->rating_avg, 1) }} از ۵ ({{ to_persian_num((string) $specialist->rating_count) }} نظر)</span>

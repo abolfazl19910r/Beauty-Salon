@@ -124,7 +124,7 @@
 
                 {{-- ⭐ بسته‌ی 5ز (۲۰۲۶-۱۰-۳۰): توکن Payout زرین‌پال حذف شد؛ تسویه‌ی خودکار فقط با درگاه‌هایی که API واریز دارند. --}}
                 <p class="text-xs" style="color: var(--admin-text-light);">
-                    تسویه‌ی خودکار کیف پول متخصص‌ها:
+                    تسویه‌ی خودکار کیف پول کارشناسان:
                     @if ($salon->canAutoPayout())
                         <b style="color:rgb(var(--m-ok));">فعال</b> — از حساب درگاه سالن.
                     @elseif (\App\Payments\GatewayCatalog::payoutLabels() === '')
@@ -176,7 +176,7 @@
                             <x-time-input name="working_hours[{{ $day }}][close]" :value="$value['close'] ?? '21:00'" :label="'پایان '.\App\Support\SalonWorkingHours::DAY_NAMES[$day]" class="min-w-0 max-[359px]:col-span-2" :select-class="$input" :select-style="$inputStyle" />
                         </div>
                     @endforeach
-                    <p class="text-xs" style="color: var(--admin-text-light);">فقط برای نمایش به مشتری‌هاست؛ ساعت‌های قابل رزرو را برنامه‌ی کاری هر متخصص تعیین می‌کند.</p>
+                    <p class="text-xs" style="color: var(--admin-text-light);">فقط برای نمایش به مشتری‌هاست؛ ساعت‌های قابل رزرو را برنامه‌ی کاری هر کارشناس تعیین می‌کند.</p>
                 </fieldset>
             </section>
 

@@ -13,7 +13,7 @@ class PlatformAnnouncement extends Model
 {
     public const LEVELS = ['info' => 'اطلاع', 'warning' => 'هشدار', 'critical' => 'مهم / قطعی'];
 
-    public const AUDIENCES = ['admins' => 'مدیران سالن‌ها', 'specialists' => 'متخصص‌ها', 'all' => 'مدیران و متخصص‌ها'];
+    public const AUDIENCES = ['admins' => 'مدیران سالن‌ها', 'specialists' => 'کارشناسان', 'all' => 'مدیران و کارشناسان'];
 
     protected $fillable = ['title', 'body', 'level', 'audience', 'starts_at', 'ends_at', 'is_active', 'created_by'];
 

@@ -24,7 +24,7 @@ class RepairLegacyTenantRows extends Command
         {--rewards-salon= : slug سالنی که جوایز بدون سالن به آن داده شوند}
         {--dry-run : فقط نمایش، بدون تغییر}';
 
-    protected $description = 'اصلاح یک‌باره‌ی ردیف‌های قدیمی با مالکیت سالن/کاربر اشتباه (اعلان‌های متخصص، جوایز بدون سالن)';
+    protected $description = 'اصلاح یک‌باره‌ی ردیف‌های قدیمی با مالکیت سالن/کاربر اشتباه (اعلان‌های کارشناس، جوایز بدون سالن)';
 
     public function handle(): int
     {
@@ -43,7 +43,7 @@ class RepairLegacyTenantRows extends Command
         }
 
         $notifications = $this->repairSpecialistNotifications($dryRun);
-        $this->info("اعلان‌های متخصص با user_id اشتباه: {$notifications}".($dryRun ? ' (dry-run)' : ' اصلاح شد'));
+        $this->info("اعلان‌های کارشناس با user_id اشتباه: {$notifications}".($dryRun ? ' (dry-run)' : ' اصلاح شد'));
 
         $orphanRewards = DB::table('rewards')->whereNull('salon_id')->count();
 

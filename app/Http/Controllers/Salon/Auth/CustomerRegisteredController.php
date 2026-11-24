@@ -109,7 +109,7 @@ class CustomerRegisteredController extends Controller
         $request->session()->regenerate();
 
         if ($isSpecialist) {
-            return redirect()->to($user->homePath())->with('success', 'حساب متخصص شما فعال شد. خوش آمدید!');
+            return redirect()->to($user->homePath())->with('success', 'حساب کارشناس شما فعال شد. خوش آمدید!');
         }
 
         return redirect()->route('home', ['salon_slug' => $this->currentSalon->get()->slug])

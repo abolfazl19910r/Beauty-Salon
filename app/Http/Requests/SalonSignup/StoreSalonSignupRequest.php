@@ -79,9 +79,9 @@ class StoreSalonSignupRequest extends FormRequest
     {
         return $this->salonContactMessages() + \App\Services\Salon\SalonLogoService::MESSAGES + \App\Support\ZarinpalMerchant::MESSAGES + \App\Support\SalonSubdomain::messages() + [
             'accept_terms.accepted' => 'برای ثبت‌نام، قوانین و شرایط و حریم خصوصی را بپذیرید.',
-            'specialists_count.required' => 'تعداد متخصص‌های سالن را وارد کنید.',
-            'specialists_count.min' => 'سالن حداقل یک متخصص دارد.',
-            'specialists_count.max' => 'برای بیشتر از :max متخصص با پشتیبانی تماس بگیرید.',
+            'specialists_count.required' => 'تعداد کارشناسان سالن را وارد کنید.',
+            'specialists_count.min' => 'سالن حداقل یک کارشناس دارد.',
+            'specialists_count.max' => 'برای بیشتر از :max کارشناس با پشتیبانی تماس بگیرید.',
             'owner_phone.regex' => 'شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد.',
             'owner_phone.unique' => 'این شماره حساب ماهرو دارد (مدیر یا منشی سالن دیگر). برای ساختن سالن دوم، اول با همین شماره وارد شوید و دوباره این صفحه را باز کنید.',
         ];

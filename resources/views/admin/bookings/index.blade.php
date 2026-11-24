@@ -142,7 +142,7 @@
                         <th class="px-4 py-3 text-right font-medium">#</th>
                         <th class="px-4 py-3 text-right font-medium">مشتری</th>
                         <th class="px-4 py-3 text-right font-medium">خدمت</th>
-                        <th class="px-4 py-3 text-right font-medium">متخصص</th>
+                        <th class="px-4 py-3 text-right font-medium">کارشناس</th>
                         <th class="px-4 py-3 text-right font-medium">تاریخ و ساعت</th>
                         <th class="px-4 py-3 text-right font-medium">پرداخت</th>
                         <th class="px-4 py-3 text-right font-medium">وضعیت</th>

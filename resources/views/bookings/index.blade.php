@@ -114,7 +114,7 @@
                         <thead>
                         <tr style="background-color: var(--rasta-dark);">
                             <th class="px-6 py-3 text-right" style="color: var(--rasta-gold-light);">خدمت</th>
-                            <th class="px-6 py-3 text-right" style="color: var(--rasta-gold-light);">متخصص</th>
+                            <th class="px-6 py-3 text-right" style="color: var(--rasta-gold-light);">کارشناس</th>
                             <th class="px-6 py-3 text-right" style="color: var(--rasta-gold-light);">تاریخ و ساعت</th>
                             <th class="px-6 py-3 text-right" style="color: var(--rasta-gold-light);">وضعیت پرداخت</th>
                             <th class="px-6 py-3 text-right" style="color: var(--rasta-gold-light);">وضعیت</th>

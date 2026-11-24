@@ -34,7 +34,7 @@
                             </li>
                         @endforeach
                         <li class="persian-number" style="color:var(--admin-text);">✓ سهمیه‌ی پیامک ماهانه {{ fa_num($plan->sms_quota_per_month) }} قطعه</li>
-                        <li class="persian-number" style="color:var(--admin-text);">✓ {{ to_persian_num((string) $option['included']) }} متخصص در قیمت؛ هر متخصص بیشتر ماهانه {{ fa_num($option['extra_price']) }} تومان</li>
+                        <li class="persian-number" style="color:var(--admin-text);">✓ {{ to_persian_num((string) $option['included']) }} کارشناس در قیمت؛ هر کارشناس بیشتر ماهانه {{ fa_num($option['extra_price']) }} تومان</li>
                         <li class="persian-number" style="color:var(--admin-text);" data-plan-admin-themes>✓ قالب پنل مدیر: پیش‌فرض{{ ($option['admin_themes'] ?? 0) > 0 ? ' + '.to_persian_num((string) $option['admin_themes']) : '' }}</li>
                     </ul>
 
@@ -75,8 +75,8 @@
         </div>
 
         <p class="text-xs mt-3 leading-6" style="color:var(--admin-text-dim);">
-            قیمت‌ها برای {{ to_persian_num((string) $specialists) }} متخصص (سقف متخصص سالن شما) است؛ قیمت پایه‌ی صفحه‌ی معرفی ماهرو برای تعداد
-            متخصصِ شامل‌شده‌ی هر پلن است و هر متخصص بیشتر جدا حساب می‌شود. برای تغییر تعداد متخصص با پشتیبانی تماس بگیرید.
+            قیمت‌ها برای {{ to_persian_num((string) $specialists) }} کارشناس (سقف کارشناس سالن شما) است؛ قیمت پایه‌ی صفحه‌ی معرفی ماهرو برای تعداد
+            کارشناسِ شامل‌شده‌ی هر پلن است و هر کارشناس بیشتر جدا حساب می‌شود. برای تغییر تعداد کارشناس با پشتیبانی تماس بگیرید.
             خرید پلن دیگر در دوره‌ی آزمایشی یا بعد از پایان اشتراک همان لحظه اثر می‌کند؛ وسط اشتراک فعال، از پایان دوره‌ی فعلی (مبلغی برنمی‌گردد).
             برای پلن گران‌تر، «ارتقای فوری» همین حالا پلن را عوض می‌کند.
         </p>

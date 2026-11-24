@@ -91,7 +91,7 @@ class CustomerBookingController extends CustomerController
         $service = BeautyService::query()->findOrFail((int) $input['service_id']);
         $specialist = Specialist::query()->findOrFail((int) $input['specialist_id']);
         if (! $specialist->services()->whereKey($service->id)->exists()) {
-            throw new ApiException('service_not_offered', 'این متخصص این خدمت را انجام نمی‌دهد.', 422);
+            throw new ApiException('service_not_offered', 'این کارشناس این خدمت را انجام نمی‌دهد.', 422);
         }
 
         // بسته‌ی 5ه: بی درگاه، نوبت «بدون پیش‌پرداخت» ثبت می‌شود (BookingPaymentPolicy) — پول مشتری هرگز به حساب پلتفرم نمی‌رود

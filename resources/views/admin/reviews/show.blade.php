@@ -56,7 +56,7 @@
                             <p class="font-medium" style="color:var(--admin-text);">{{ $review->user->name ?? '—' }}</p>
                         </div>
                         <div>
-                            <p class="mb-1" style="color:var(--admin-text-dim);">متخصص</p>
+                            <p class="mb-1" style="color:var(--admin-text-dim);">کارشناس</p>
                             <p class="font-medium" style="color:var(--admin-text);">{{ $review->specialist->name ?? '—' }}</p>
                         </div>
                         <div>

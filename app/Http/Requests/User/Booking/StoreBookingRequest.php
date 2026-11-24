@@ -27,8 +27,8 @@ class StoreBookingRequest extends FormRequest
         return [
             'service_id.required' => 'لطفاً سرویس مورد نظر را انتخاب کنید.',
             'service_id.exists' => 'سرویس انتخابی معتبر نیست.',
-            'specialist_id.required' => 'لطفاً متخصص مورد نظر را انتخاب کنید.',
-            'specialist_id.exists' => 'متخصص انتخابی معتبر نیست.',
+            'specialist_id.required' => 'لطفاً کارشناس مورد نظر را انتخاب کنید.',
+            'specialist_id.exists' => 'کارشناس انتخابی معتبر نیست.',
             'booking_time.required' => 'لطفاً زمان نوبت را انتخاب کنید.',
             'booking_time.date' => 'فرمت تاریخ نوبت معتبر نیست.',
             'booking_time.after' => 'زمان نوبت باید بعد از لحظه‌ی فعلی باشد.',

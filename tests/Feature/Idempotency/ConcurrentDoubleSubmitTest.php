@@ -115,7 +115,7 @@ class ConcurrentDoubleSubmitTest extends TestCase
         WalletSetting::get()->update(['minimum_withdrawal_amount' => 10000, 'maximum_withdrawal_amount' => 50000000, 'withdrawal_fee_percentage' => 0]);
         $specialist = Specialist::factory()->create(['salon_id' => $this->salon->id]);
         $wallet = $specialist->getOrCreateWallet();
-        $wallet->update(['balance' => 500000, 'iban' => 'IR062960000000100324200001', 'account_holder_name' => 'متخصص']);
+        $wallet->update(['balance' => 500000, 'iban' => 'IR062960000000100324200001', 'account_holder_name' => 'کارشناس']);
         $key = (string) Str::uuid();
 
         $this->pauseOnFirstWithdrawalCreate(fn () => $this->startConcurrent('create-withdrawal', (string) $specialist->id, '100000', $key));

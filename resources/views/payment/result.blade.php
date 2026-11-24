@@ -70,7 +70,7 @@
                             <span class="font-medium text-m-tx">{{ $booking->service?->name ?? '—' }}</span>
                         </div>
                         <div class="result-row flex justify-between py-3">
-                            <span class="text-m-tx/60">متخصص</span>
+                            <span class="text-m-tx/60">کارشناس</span>
                             <span class="font-medium text-m-tx">{{ $booking->specialist?->name ?? '—' }}</span>
                         </div>
                         <div class="result-row flex justify-between py-3">
@@ -97,8 +97,8 @@
                     </div>
                 @else
                     <div class="rounded-xl p-4 text-sm leading-7" style="background: rgb(var(--m-gold) / 0.08); border: 1px solid rgb(var(--m-gold) / 0.3);">
-                        <p class="font-bold text-m-gold2">در انتظار تأیید متخصص</p>
-                        <p class="text-m-tx/80">نوبت ثبت شد. بعد از تأیید متخصص برایتان پیامک فرستاده می‌شود.</p>
+                        <p class="font-bold text-m-gold2">در انتظار تأیید کارشناس</p>
+                        <p class="text-m-tx/80">نوبت ثبت شد. بعد از تأیید کارشناس برایتان پیامک فرستاده می‌شود.</p>
                     </div>
                 @endif
 
@@ -122,7 +122,7 @@
                                 <span class="font-medium text-m-tx">{{ $booking->service?->name ?? '—' }}</span>
                             </div>
                             <div class="result-row flex justify-between py-3">
-                                <span class="text-m-tx/60">متخصص</span>
+                                <span class="text-m-tx/60">کارشناس</span>
                                 <span class="font-medium text-m-tx">{{ $booking->specialist?->name ?? '—' }}</span>
                             </div>
                             <div class="result-row flex justify-between py-3">

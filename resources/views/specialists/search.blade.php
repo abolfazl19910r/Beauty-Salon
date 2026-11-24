@@ -1,16 +1,16 @@
 @extends('layouts.app')
-@section('title', 'متخصص‌های سالن')
+@section('title', 'کارشناسان سالن')
 
 {{-- ⭐ صفحه‌ی عمومی جستجوی متخصص‌ها (۲۰۲۶-۰۹-۲۴) — قبلاً view نداشت (۵۰۰). --}}
 @section('content')
     <div class="max-w-6xl mx-auto px-4 py-10" style="color: var(--rasta-cream);">
-        <h1 class="text-2xl md:text-3xl font-bold mb-2" style="color: var(--rasta-gold-light);">متخصص‌های {{ $currentSalonName }}</h1>
-        <p class="text-sm opacity-75 mb-6">متخصص مورد نظرتان را پیدا کنید، پروفایلش را ببینید و آنلاین نوبت بگیرید.</p>
+        <h1 class="text-2xl md:text-3xl font-bold mb-2" style="color: var(--rasta-gold-light);">کارشناسان {{ $currentSalonName }}</h1>
+        <p class="text-sm opacity-75 mb-6">کارشناس مورد نظرتان را پیدا کنید، پروفایلش را ببینید و آنلاین نوبت بگیرید.</p>
 
         @include('specialists.partials.nav')
 
         <form method="GET" action="{{ route('specialists.search') }}" class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-8">
-            <input type="text" name="name" value="{{ $search }}" placeholder="نام متخصص" maxlength="100"
+            <input type="text" name="name" value="{{ $search }}" placeholder="نام کارشناس" maxlength="100"
                    class="md:col-span-2 rounded-lg px-4 py-2" style="background: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / .25); color: var(--rasta-cream);">
             <select name="service_id" class="rounded-lg px-4 py-2" style="background: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / .25); color: var(--rasta-cream);">
                 <option value="">همه‌ی خدمات</option>
@@ -29,7 +29,7 @@
         </form>
 
         @if ($specialists->isEmpty())
-            <p class="text-center opacity-70 py-10">متخصصی با این مشخصات پیدا نشد.</p>
+            <p class="text-center opacity-70 py-10">کارشناسی با این مشخصات پیدا نشد.</p>
         @else
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 @foreach ($specialists as $specialist)

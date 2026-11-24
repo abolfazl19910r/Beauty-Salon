@@ -47,7 +47,7 @@ class SmsTemplateDefaultsTest extends TestCase
             'bookingConfirmed' => SmsText::bookingConfirmed($b),
             'bookingCompleted' => SmsText::bookingCompleted($b),
             'cancelledPlain' => SmsText::bookingCancelledForCustomer($b),
-            'cancelledFull' => SmsText::bookingCancelledForCustomer($b, 'بیماری متخصص', 300000, 50000),
+            'cancelledFull' => SmsText::bookingCancelledForCustomer($b, 'بیماری کارشناس', 300000, 50000),
             'cancelledUnpaid' => SmsText::bookingCancelledUnpaid($b),
             'reminderCustomer' => SmsText::reminderForCustomer($b),
             'rescheduled' => SmsText::rescheduledForCustomer($b),

@@ -28,12 +28,12 @@
                 <div class="specialist-card overflow-hidden">
                     <div class="p-5 border-b flex items-center gap-3" style="border-color: var(--specialist-border);">
                         <div class="w-12 h-12 rounded-full specialist-cta flex items-center justify-center text-lg font-bold flex-shrink-0">
-                            {{ mb_substr($user->name ?? 'متخصص', 0, 1) }}
+                            {{ mb_substr($user->name ?? 'کارشناس', 0, 1) }}
                         </div>
                         <div>
                             <h2 class="text-sm font-bold text-[var(--specialist-text)]">{{ $user->name }}</h2>
                             @if($specialist)
-                                <span class="specialist-badge inline-block px-3 py-0.5 text-xs font-medium mt-1">متخصص</span>
+                                <span class="specialist-badge inline-block px-3 py-0.5 text-xs font-medium mt-1">کارشناس</span>
                             @endif
                         </div>
                     </div>
@@ -102,7 +102,7 @@
                                             <div class="space-y-1 text-sm text-[var(--specialist-text-dim)]">
                                                 <p class="flex items-center gap-1.5">
                                                     <svg class="w-4 h-4 text-[var(--specialist-inactive)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                                                    متخصص: {{ $booking->specialist?->name ?? '—' }}
+                                                    کارشناس: {{ $booking->specialist?->name ?? '—' }}
                                                 </p>
                                                 <p class="flex items-center gap-1.5 persian-number">
                                                     <svg class="w-4 h-4 text-[var(--specialist-inactive)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>

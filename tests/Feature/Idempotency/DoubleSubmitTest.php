@@ -26,7 +26,7 @@ class DoubleSubmitTest extends TestCase
         $user = User::factory()->create(['phone' => '09121234567']);
         $specialist = Specialist::factory()->create(['phone' => '09121234567', 'user_id' => $user->id]);
         $specialist->getOrCreateWallet()->update([
-            'balance' => $balance, 'iban' => 'IR062960000000100324200001', 'account_holder_name' => 'متخصص',
+            'balance' => $balance, 'iban' => 'IR062960000000100324200001', 'account_holder_name' => 'کارشناس',
         ]);
         WalletSetting::get()->update(['minimum_withdrawal_amount' => 10000, 'maximum_withdrawal_amount' => 50000000, 'withdrawal_fee_percentage' => 0]);
 

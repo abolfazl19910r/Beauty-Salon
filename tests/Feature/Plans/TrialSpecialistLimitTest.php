@@ -110,6 +110,6 @@ class TrialSpecialistLimitTest extends TestCase
             ->assertSee('حداکثر ۲ کارشناس');
 
         $html = $this->get(route('central.home'))->assertOk()->getContent();
-        $this->assertMatchesRegularExpression('/data-plan-card="trial".*?۲ (متخصص|کارشناس)/su', $html);
+        $this->assertMatchesRegularExpression('/data-plan-card="trial".*?۲ (کارشناس|کارشناس)/su', $html);
     }
 }

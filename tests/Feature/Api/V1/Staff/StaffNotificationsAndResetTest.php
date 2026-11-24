@@ -54,7 +54,7 @@ class StaffNotificationsAndResetTest extends TestCase
         $salonId = app(CurrentSalon::class)->id();
         $other = Salon::factory()->create();
         $mine = $this->notification($this->user, $salonId, 'برای حساب');
-        $this->notification($this->specialist, $salonId, 'برای رکورد متخصص', true);
+        $this->notification($this->specialist, $salonId, 'برای رکورد کارشناس', true);
         $this->notification($this->user, $other->id, 'سالن دیگر');
         $this->notification(User::factory()->create(), $salonId, 'کاربر دیگر');
         // نوع دیگری با همان شناسه‌ی رکورد متخصص (نوع notifiable هم باید بخواند، نه فقط id)
@@ -66,7 +66,7 @@ class StaffNotificationsAndResetTest extends TestCase
 
         $list = $this->api($token)->getJson('/api/v1/staff/notifications');
         $list->assertOk()->assertJsonPath('meta.total', 2)->assertJsonPath('meta.unread_count', 1);
-        $this->assertEqualsCanonicalizing(['برای حساب', 'برای رکورد متخصص'], array_column($list->json('data'), 'message'));
+        $this->assertEqualsCanonicalizing(['برای حساب', 'برای رکورد کارشناس'], array_column($list->json('data'), 'message'));
         $this->assertSame('booking', $list->json('data.0.category'));
 
         $this->api($token)->getJson('/api/v1/staff/notifications?unread=1')->assertJsonPath('meta.total', 1);

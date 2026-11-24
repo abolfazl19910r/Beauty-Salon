@@ -58,7 +58,7 @@
                         <span><b class="text-m-tx">{{ fa_num($reviewStats['avg'], 1) }}</b> از {{ to_persian_num((string) $reviewStats['count']) }} نظر</span>
                     @endif
                     @if ($vSpecialists->isNotEmpty())
-                        <span><b class="text-m-tx">{{ to_persian_num((string) $vSpecialists->count()) }}</b> متخصص</span>
+                        <span><b class="text-m-tx">{{ to_persian_num((string) $vSpecialists->count()) }}</b> کارشناس</span>
                     @endif
                     @if ($currentSalonExperienceYears)
                         <span><b class="text-m-tx">{{ to_persian_num((string) $currentSalonExperienceYears) }}</b> سال تجربه</span>
@@ -119,7 +119,7 @@
         @if ($vSpecialists->isNotEmpty())
             <section id="specialists" class="max-w-7xl mx-auto px-4 py-10">
                 <div class="flex items-center justify-between mb-6">
-                    <h2 class="font-serif-fa text-2xl md:text-3xl text-m-tx">متخصص‌ها</h2>
+                    <h2 class="font-serif-fa text-2xl md:text-3xl text-m-tx">کارشناسان</h2>
                     <a href="{{ route('specialists.search') }}" class="text-m-gold font-bold text-sm">همه ←</a>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

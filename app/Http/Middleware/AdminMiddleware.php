@@ -26,11 +26,11 @@ class AdminMiddleware
 
         if ($user->hasRole('specialist')) {
             if ($request->expectsJson()) {
-                return response()->json(['message' => 'متخصصین نمی‌توانند به پنل مدیریت دسترسی داشته باشند.'], 403);
+                return response()->json(['message' => 'کارشناسان نمی‌توانند به پنل مدیریت دسترسی داشته باشند.'], 403);
             }
 
             return redirect()->route('specialist.my-dashboard')
-                ->with('error', 'شما باید از پنل متخصص استفاده کنید.');
+                ->with('error', 'شما باید از پنل کارشناس استفاده کنید.');
         }
 
         return $next($request);

@@ -64,9 +64,9 @@ class PwaController extends Controller
     {
         return $this->manifest([
             'id' => '/specialist/',
-            'name' => config('brand.name').' — پنل متخصص',
-            'short_name' => 'پنل متخصص',
-            'description' => 'نوبت‌های امروز، تقویم و کیف پول متخصص',
+            'name' => config('brand.name').' — پنل کارشناس',
+            'short_name' => 'پنل کارشناس',
+            'description' => 'نوبت‌های امروز، تقویم و کیف پول کارشناس',
             'start_url' => route('specialist.my-dashboard', [], false).'?source=pwa',
             'scope' => '/',
             'background_color' => '#1A1410',

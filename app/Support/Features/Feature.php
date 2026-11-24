@@ -59,7 +59,7 @@ enum Feature: string
             self::Loyalty => 'باشگاه مشتریان (امتیاز و پاداش)',
             self::TreatmentCourses => 'دوره‌های درمانی چندجلسه‌ای',
             self::OnlinePayment => 'پرداخت آنلاین مشتری',
-            self::SpecialistPayouts => 'تسویه‌ی خودکار متخصص',
+            self::SpecialistPayouts => 'تسویه‌ی خودکار کارشناس',
             self::CustomLogo => 'لوگوی اختصاصی سالن',
             self::ReportsExport => 'خروجی Excel/PDF گزارش‌ها',
         };
@@ -68,16 +68,16 @@ enum Feature: string
     public function description(): string
     {
         return match ($this) {
-            self::SmsReminders => 'حدود یک ساعت پیش از هر نوبت به مشتری و متخصص.',
+            self::SmsReminders => 'حدود یک ساعت پیش از هر نوبت به مشتری و کارشناس.',
             self::SmsCustomer => 'ثبت، تأیید، لغو، جابه‌جایی و نظرسنجی نوبت، امتیاز باشگاه و کد تخفیف.',
-            self::SmsStaff => 'نوبت تازه، لغو و جابه‌جایی به متخصص؛ پرداخت و نظر به مدیر؛ برداشت و مرخصی.',
+            self::SmsStaff => 'نوبت تازه، لغو و جابه‌جایی به کارشناس؛ پرداخت و نظر به مدیر؛ برداشت و مرخصی.',
             self::SmsTemplates => 'خاموش: پیامک‌ها همیشه با متن پیش‌فرض می‌روند.',
             self::Winback => 'پیامک روزانه به مشتری‌هایی که مدتی نیامده‌اند، با کد تخفیف اختیاری.',
             self::WinbackManual => 'کمپین دستی برای مشتری‌های خیلی قدیمی.',
             self::Loyalty => 'امتیاز تازه برای نوبت و نظر، و مدیریت پاداش‌ها.',
             self::TreatmentCourses => 'فروش بسته‌ی چندجلسه‌ای و یادآوری جلسه‌ی بعد.',
             self::OnlinePayment => 'پیش‌پرداخت آنلاین نوبت و شارژ کیف پول از درگاه خود سالن.',
-            self::SpecialistPayouts => 'واریز خودکار برداشت متخصص از حساب درگاه سالن.',
+            self::SpecialistPayouts => 'واریز خودکار برداشت کارشناس از حساب درگاه سالن.',
             self::CustomLogo => 'لوگوی سالن در صفحه‌ی عمومی، پنل و اپ.',
             self::ReportsExport => 'ساخت فایل Excel و PDF از گزارش‌ها.',
         };

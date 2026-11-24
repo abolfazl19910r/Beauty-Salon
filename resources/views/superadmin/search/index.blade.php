@@ -20,7 +20,7 @@
                 $pivot = $user->salons->first()?->pivot?->role;
                 if ($pivot === 'owner') return 'مالک سالن';
                 if ($pivot) return 'کادر مدیریت';
-                if ($user->roles->contains('name', 'specialist')) return 'متخصص';
+                if ($user->roles->contains('name', 'specialist')) return 'کارشناس';
                 return $user->user_type === 'customer' ? 'مشتری' : 'کادر';
             };
             $total = $results['users']->count() + $results['specialists']->count() + $results['demos']->count();
@@ -54,7 +54,7 @@
 
         @if ($results['specialists']->isNotEmpty())
             <div class="sa-card mb-5 overflow-x-auto">
-                <h2 class="font-bold px-5 pt-4 pb-2">متخصص‌ها ({{ to_persian_num((string) $results['specialists']->count()) }})</h2>
+                <h2 class="font-bold px-5 pt-4 pb-2">کارشناسان ({{ to_persian_num((string) $results['specialists']->count()) }})</h2>
                 <table class="w-full text-sm text-right">
                     <thead><tr style="color: var(--sa-text-dim);"><th class="py-2 px-4">نام</th><th class="py-2 px-4">موبایل</th><th class="py-2 px-4">سالن</th><th class="py-2 px-4">وضعیت</th></tr></thead>
                     <tbody>

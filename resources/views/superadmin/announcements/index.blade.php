@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
-        <p class="text-sm" style="color: var(--sa-text-dim);">بنری که بالای پنل مدیر و/یا متخصص همه‌ی سالن‌ها نشان داده می‌شود؛ مثلاً خبر به‌روزرسانی یا قطعی برنامه‌ریزی‌شده.</p>
+        <p class="text-sm" style="color: var(--sa-text-dim);">بنری که بالای پنل مدیر و/یا کارشناس همه‌ی سالن‌ها نشان داده می‌شود؛ مثلاً خبر به‌روزرسانی یا قطعی برنامه‌ریزی‌شده.</p>
         <a href="{{ route('superadmin.announcements.create') }}" class="sa-btn">اطلاعیه‌ی تازه</a>
     </div>
 

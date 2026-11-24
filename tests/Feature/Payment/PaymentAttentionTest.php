@@ -266,7 +266,7 @@ class PaymentAttentionTest extends TestCase
         $this->actingAs($this->owner)->get(route('admin.dashboard'))->assertOk()
             ->assertSee('data-attention-alert', false)
             ->assertSee('پرداخت مشتری که پاسخ درگاهش نرسید')
-            ->assertSee('تسویه‌ی متخصص با نتیجه‌ی نامعلوم')
+            ->assertSee('تسویه‌ی کارشناس با نتیجه‌ی نامعلوم')
             ->assertSee(route('admin.payment-attention.index'), false);
 
         $other = Salon::factory()->create(['slug' => 'other-dashboard']);

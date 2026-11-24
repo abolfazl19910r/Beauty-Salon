@@ -64,7 +64,7 @@ class VandarPayoutTest extends TestCase
 
     private function request(int $rial = 2500000, string $reference = '7'): PayoutRequest
     {
-        return new PayoutRequest($rial, 'IR062960000000100324200001', 'تسویه حساب متخصص: مریم (درخواست #7)', $reference);
+        return new PayoutRequest($rial, 'IR062960000000100324200001', 'تسویه حساب کارشناس: مریم (درخواست #7)', $reference);
     }
 
     public function test_driver_posts_the_documented_settlement_in_toman_with_a_deterministic_track_id(): void
@@ -169,7 +169,7 @@ class VandarPayoutTest extends TestCase
             $result = (new VandarPayoutDriver((array) $this->vandar()->credentials))->payout($this->request());
 
             $this->assertFalse($result->success);
-            $this->assertFalse($result->unknown, 'وندار چیزی ندیده — برگشت به کیف پول متخصص امنه');
+            $this->assertFalse($result->unknown, 'وندار چیزی ندیده — برگشت به کیف پول کارشناس امنه');
         }
     }
 

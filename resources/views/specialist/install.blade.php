@@ -6,7 +6,7 @@
 @section('content')
     <div class="fade-in max-w-xl mx-auto space-y-6" data-specialist-install>
         <div>
-            <h1 class="text-xl font-bold text-[var(--specialist-text)] font-serif-fa">پنل متخصص روی گوشی</h1>
+            <h1 class="text-xl font-bold text-[var(--specialist-text)] font-serif-fa">پنل کارشناس روی گوشی</h1>
             <p class="text-sm text-[var(--specialist-text-dim)] mt-1">یک بار نصب کنید و هر بار از صفحه‌ی اصلی گوشی باز کنید.</p>
         </div>
 
@@ -19,7 +19,7 @@
 
         <div class="specialist-card rounded-xl p-5">
             <h2 class="font-bold text-[var(--specialist-text)] mb-3">آیفون</h2>
-            @include('partials.ios-add-to-home-steps', ['appTitle' => 'پنل متخصص'])
+            @include('partials.ios-add-to-home-steps', ['appTitle' => 'پنل کارشناس'])
             <p class="text-xs text-[var(--specialist-text-dim)] mt-3">هنگام ورود «مرا به خاطر بسپار» را بزنید تا ۹۰ روز وارد بمانید. خبر نوبت‌ها روی آیفون با پیامک می‌آید.</p>
         </div>
 

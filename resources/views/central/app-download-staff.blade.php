@@ -4,11 +4,11 @@
 --}}
 <x-guest-layout>
     <x-slot name="title">دانلود اپ ماهرو همکار</x-slot>
-    <x-slot name="description">اپ اندروید «ماهرو همکار» برای متخصص‌های سالن: نوبت‌های امروز، تقویم و ساعت کاری، مرخصی و کیف پول. نصب مستقیم با فایل APK.</x-slot>
+    <x-slot name="description">اپ اندروید «ماهرو همکار» برای کارشناسان سالن: نوبت‌های امروز، تقویم و ساعت کاری، مرخصی و کیف پول. نصب مستقیم با فایل APK.</x-slot>
     <div class="text-center mb-6" data-staff-page>
         <img src="{{ asset('brand/mahru-app-icon.svg') }}" alt="" width="72" height="72" class="mx-auto mb-3 rounded-2xl">
         <h2 class="text-2xl font-bold" style="font-family:'Mahru','Vazirmatn',sans-serif;font-weight:800;color:rgb(var(--m-gold2))">ماهرو همکار</h2>
-        <p class="text-sm text-m-tx/60 mt-1">اپ ویژه‌ی متخصص‌های سالن: نوبت‌های امروز، تقویم و کیف پول</p>
+        <p class="text-sm text-m-tx/60 mt-1">اپ ویژه‌ی کارشناسان سالن: نوبت‌های امروز، تقویم و کیف پول</p>
     </div>
 
     @if ($staff)
@@ -31,7 +31,7 @@
         <ol class="list-decimal pr-5 space-y-1 text-sm text-m-tx/75 leading-7">
             <li>دکمه‌ی «دانلود» را بزنید و فایل را باز کنید.</li>
             <li>اگر گوشی پرسید «نصب از منبع ناشناس»، در همان پیام به مرورگرتان اجازه‌ی نصب بدهید و برگردید.</li>
-            <li>«نصب» را بزنید، اپ را باز کنید و با حساب متخصص‌تان وارد شوید.</li>
+            <li>«نصب» را بزنید، اپ را باز کنید و با حساب کارشناس‌تان وارد شوید.</li>
         </ol>
         <p class="text-xs text-m-tx/50 mt-2 leading-6">اپ ماهرو همکار فقط از همین صفحه منتشر می‌شود؛ فایل را از جای دیگری نصب نکنید.</p>
     </div>
@@ -39,7 +39,7 @@
     <div class="mt-6">
         <h3 class="font-bold text-m-tx mb-2">آیفون</h3>
         <p class="text-sm text-m-tx/75 leading-7">
-            برای آیفون اپ جدا نداریم: پنل متخصص را در Safari باز کنید و از دکمه‌ی اشتراک‌گذاری «افزودن به صفحه‌ی اصلی» را بزنید؛
+            برای آیفون اپ جدا نداریم: پنل کارشناس را در Safari باز کنید و از دکمه‌ی اشتراک‌گذاری «افزودن به صفحه‌ی اصلی» را بزنید؛
             مثل یک اپ روی صفحه‌ی گوشی می‌ماند.
         </p>
     </div>

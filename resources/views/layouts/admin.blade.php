@@ -158,7 +158,7 @@
                 @elseif ($adminShell === 'rail')
                     <button type="button" class="adm-cmd hidden md:flex" data-ui-click="toggleSearchModal">
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">{!! \App\Support\Admin\AdminMenu::ICONS['search'] !!}</svg>
-                        <span>جستجوی خدمت، متخصص یا کاربر…</span>
+                        <span>جستجوی خدمت، کارشناس یا کاربر…</span>
                         <kbd dir="ltr">Ctrl K</kbd>
                     </button>
                 @endif
@@ -405,7 +405,7 @@
             <h3 class="text-base font-semibold border-b pb-3 mb-4" style="color: var(--admin-text); border-color: var(--admin-border);">جستجوی سریع در پنل</h3>
             <form action="{{ route('admin.search.index') }}" method="GET">
                 <div class="relative">
-                    <input type="search" name="q" placeholder="جستجو بین خدمات، متخصصین، کاربران..."
+                    <input type="search" name="q" placeholder="جستجو بین خدمات، کارشناسان، کاربران..."
                            class="w-full py-2.5 px-4 pr-10 text-sm rounded-lg outline-none transition"
                            style="border: 1px solid var(--admin-border); background: var(--admin-bg); color: var(--admin-text);"
                            data-ui-focus="border-color: var(--admin-accent)"

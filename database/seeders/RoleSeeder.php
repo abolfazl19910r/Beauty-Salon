@@ -11,7 +11,7 @@ class RoleSeeder extends Seeder
     {
         Role::firstOrCreate(['name' => 'admin'], ['label' => 'مدیر سیستم']);
         Role::firstOrCreate(['name' => 'user'], ['label' => 'کاربر عادی']);
-        Role::firstOrCreate(['name' => 'specialist'], ['label' => 'متخصص/پشتیبان']);
+        Role::firstOrCreate(['name' => 'specialist'], ['label' => 'کارشناس/پشتیبان']);
         // ⭐ SaaS multi-tenant (2026-08-30): EnsureSuperAdmin/EnsureAdminSalonActive check
         // hasRole('super-admin') specifically — see those middlewares' docblocks for why
         // hasPermission('super_admin') was rejected (User::hasPermission()'s is_admin bypass).

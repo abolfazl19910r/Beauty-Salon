@@ -82,7 +82,7 @@ class SpecialistQuotaConcurrencyTest extends TestCase
         $total = Specialist::withoutGlobalScopes()->where('salon_id', $this->salon->id)->count();
         $max = Salon::whereKey($this->salon->id)->value('max_specialists_count');
 
-        $this->assertLessThanOrEqual($max, $total, "سالن {$total} متخصص با سقف {$max} دارد (ساخت={$first}، کاهش سقف={$update})");
+        $this->assertLessThanOrEqual($max, $total, "سالن {$total} کارشناس با سقف {$max} دارد (ساخت={$first}، کاهش سقف={$update})");
         $this->assertSame(['created', 'invalid'], [$first, $update]);
     }
 
@@ -90,7 +90,7 @@ class SpecialistQuotaConcurrencyTest extends TestCase
     {
         try {
             app(AdminSpecialistService::class)->create(
-                ['name' => 'متخصص اول', 'phone' => '09120000101', 'email' => 'race-first-'.uniqid().'@example.test', 'services' => [$serviceId]],
+                ['name' => 'کارشناس اول', 'phone' => '09120000101', 'email' => 'race-first-'.uniqid().'@example.test', 'services' => [$serviceId]],
                 null,
             );
 

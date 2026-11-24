@@ -124,7 +124,7 @@
                 </h1>
                 <p class="hero-anim delay-2 text-base md:text-lg text-m-tx/80 max-w-xl mx-auto mb-10 leading-8">
                     {{-- بسته‌ی مجوز 5د: شعار خود سالن؛ پیش‌تر وعده‌ی ثابت «میکاپ عروس… ناخن» برای هر سالنی --}}
-                    {{ app(\App\Support\CurrentSalon::class)->get()?->tagline ?: 'نوبت خود را آنلاین رزرو کنید؛ خدمات، متخصص‌ها و ساعت‌های خالی را همین‌جا ببینید.' }}
+                    {{ app(\App\Support\CurrentSalon::class)->get()?->tagline ?: 'نوبت خود را آنلاین رزرو کنید؛ خدمات، کارشناسان و ساعت‌های خالی را همین‌جا ببینید.' }}
                 </p>
                 <div class="hero-anim delay-3 flex flex-col sm:flex-row items-center justify-center gap-4">
                     <a href="{{ route('bookings.create') }}" class="btn-gold rounded-full px-8 py-3.5 font-semibold w-full sm:w-auto">
@@ -150,7 +150,7 @@
         @php
             $statTiles = array_values(array_filter([
                 ($stats['customers'] ?? 0) > 0 ? ['value' => $stats['customers'], 'label' => 'مشتری', 'decimal' => 0] : null,
-                ($stats['specialists'] ?? 0) > 0 ? ['value' => $stats['specialists'], 'label' => 'متخصص', 'decimal' => 0] : null,
+                ($stats['specialists'] ?? 0) > 0 ? ['value' => $stats['specialists'], 'label' => 'کارشناس', 'decimal' => 0] : null,
                 $currentSalonExperienceYears !== null ? ['value' => $currentSalonExperienceYears, 'label' => 'سال تجربه', 'decimal' => 0] : null,
                 ($stats['reviews'] ?? 0) > 0 ? ['value' => $stats['rating'], 'label' => 'امتیاز ('.to_persian_num((string) $stats['reviews']).' نظر)', 'decimal' => 1] : null,
             ]));
@@ -235,11 +235,11 @@
         ========================================================= --}}
         <section id="specialists" class="py-20 px-4 max-w-7xl mx-auto">
             <div class="text-center mb-14 fade-up">
-                <h2 class="font-serif-fa text-3xl md:text-5xl font-bold text-m-gold2 mb-4">متخصصین ما</h2>
+                <h2 class="font-serif-fa text-3xl md:text-5xl font-bold text-m-gold2 mb-4">کارشناسان ما</h2>
                 <p class="text-m-tx/70 max-w-2xl mx-auto leading-8">
-                    با تیمی از حرفه‌ای‌ترین متخصصان زیبایی آشنا شوید.
+                    با تیمی از حرفه‌ای‌ترین کارشناسان زیبایی آشنا شوید.
                 </p>
-                <a href="{{ route('specialists.search') }}" class="inline-block mt-4 text-sm underline text-m-gold2">مشاهده‌ی همه‌ی متخصص‌ها</a>
+                <a href="{{ route('specialists.search') }}" class="inline-block mt-4 text-sm underline text-m-gold2">مشاهده‌ی همه‌ی کارشناسان</a>
             </div>
 
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
@@ -257,13 +257,13 @@
                         <h3 class="font-serif-fa font-bold text-lg mb-1">
                             <a href="{{ route('specialists.show', $specialist) }}" class="hover:text-m-gold2">{{ $specialist->name }}</a>
                         </h3>
-                        <p class="text-xs text-m-gold2 mb-3">متخصص زیبایی</p>
+                        <p class="text-xs text-m-gold2 mb-3">کارشناس زیبایی</p>
                         <a href="{{ route('specialists.show', $specialist) }}" class="text-xs underline text-m-tx/70">مشاهده‌ی پروفایل</a>
                         {{-- ⭐ ۲۰۲۶-۰۹-۲۴: شماره موبایل شخصی متخصص (همون شماره‌ی ورودش) دیگه در صفحه‌ی عمومی نمایش داده نمی‌شه. --}}
                     </div>
                 @empty
                     {{-- بسته‌ی مجوز 5د: پیش‌تر چهار متخصص ساختگی («زهرا احمدی»…) با عکس Unsplash --}}
-                    <p class="col-span-full text-center text-m-tx/60" data-no-specialists>معرفی متخصص‌های این سالن به‌زودی اضافه می‌شود.</p>
+                    <p class="col-span-full text-center text-m-tx/60" data-no-specialists>معرفی کارشناسان این سالن به‌زودی اضافه می‌شود.</p>
                 @endforelse
             </div>
         </section>

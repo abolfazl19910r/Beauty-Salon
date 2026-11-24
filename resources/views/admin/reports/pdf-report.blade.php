@@ -115,9 +115,9 @@
     $maxSpRevenue = max(1, (float) $specialists->max(fn ($sp) => $sp->total_revenue ?? 0));
 @endphp
 @if($specialists->count())
-    <div class="section">عملکرد متخصص‌ها</div>
+    <div class="section">عملکرد کارشناسان</div>
     <table class="data">
-        <thead><tr><th>متخصص</th><th class="num">تعداد نوبت</th><th class="num">درآمد (تومان)</th><th style="width:30%"></th></tr></thead>
+        <thead><tr><th>کارشناس</th><th class="num">تعداد نوبت</th><th class="num">درآمد (تومان)</th><th style="width:30%"></th></tr></thead>
         <tbody>
         @foreach($specialists as $sp)
             <tr class="{{ $loop->odd ? '' : 'alt' }}">
@@ -164,8 +164,8 @@
         <thead>
         <tr>
             <th>تاریخ ثبت</th><th>ساعت ثبت</th><th>تاریخ نوبت</th><th>ساعت نوبت</th><th>مشتری</th><th>شماره تماس</th>
-            <th>خدمت</th><th>متخصص</th><th>وضعیت نوبت</th><th>وضعیت پرداخت</th><th>روش پرداخت</th><th class="num">مبلغ (تومان)</th>
-            <th class="num">سهم متخصص</th><th>کد تخفیف</th><th class="num">مبلغ تخفیف</th><th>کد پیگیری</th><th>امتیاز</th>
+            <th>خدمت</th><th>کارشناس</th><th>وضعیت نوبت</th><th>وضعیت پرداخت</th><th>روش پرداخت</th><th class="num">مبلغ (تومان)</th>
+            <th class="num">سهم کارشناس</th><th>کد تخفیف</th><th class="num">مبلغ تخفیف</th><th>کد پیگیری</th><th>امتیاز</th>
             <th>دلیل لغو</th><th>بازگشت وجه</th><th class="num">مبلغ بازگشتی</th>
         </tr>
         </thead>

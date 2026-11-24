@@ -24,7 +24,7 @@
                         style="border:1px solid var(--admin-border); background:var(--admin-surface); color:var(--admin-text); min-width: 14rem;">
                     <option value="">کل سالن (صفحه‌ی اصلی)</option>
                     @foreach ($specialists as $specialist)
-                        <option value="{{ $specialist->id }}" @selected($selected?->id === $specialist->id)>متخصص: {{ $specialist->name }}</option>
+                        <option value="{{ $specialist->id }}" @selected($selected?->id === $specialist->id)>کارشناس: {{ $specialist->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -98,7 +98,7 @@
                             <a href="{{ $apps['install_url'] }}" target="_blank" rel="noopener" dir="ltr" class="block break-all text-xs mt-1 underline" style="color:var(--admin-text-dim);">{{ $apps['install_url'] }}</a>
                         </div>
                         <div>
-                            <div style="color:var(--admin-text);">اپ «ماهرو همکار» برای متخصص‌ها (ورود با شماره و رمز خودشان)</div>
+                            <div style="color:var(--admin-text);">اپ «ماهرو همکار» برای کارشناسان (ورود با شماره و رمز خودشان)</div>
                             <a href="{{ $staffAppUrl }}" target="_blank" rel="noopener" dir="ltr" class="block break-all text-xs mt-1 underline" style="color:var(--admin-text-dim);">{{ $staffAppUrl }}</a>
                         </div>
                     </div>

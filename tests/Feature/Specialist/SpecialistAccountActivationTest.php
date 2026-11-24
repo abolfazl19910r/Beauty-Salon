@@ -120,7 +120,7 @@ class SpecialistAccountActivationTest extends TestCase
     public function test_without_an_initial_password_the_admin_is_told_how_the_specialist_activates(): void
     {
         $this->actingAs($this->owner)->post(route('admin.specialists.store'), $this->adminForm())
-            ->assertSessionHas('success', fn ($m) => str_contains($m, 'فعال‌سازی حساب متخصص'));
+            ->assertSessionHas('success', fn ($m) => str_contains($m, 'فعال‌سازی حساب کارشناس'));
         $this->assertDatabaseMissing('users', ['phone' => '09351112233']);
         $this->get(route('admin.specialists.create'))->assertOk()->assertSee('data-initial-password', false);
     }

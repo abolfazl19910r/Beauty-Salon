@@ -40,7 +40,7 @@
             ['سالن تازه‌ی این ماه', fa_num($overview['new_salons_month']), 'در دوره‌ی آزمایشی: '.fa_num($overview['trial_salons']), null],
             ['پیامک این ماه (همه‌ی سالن‌ها)', fa_num($overview['sms_parts_month']), 'قطعه + '.fa_num($overview['otp_month']).' کد تأیید', null],
             ['سالن‌های فعال', fa_num($stats['active_salons']), null, null],
-            ['مجموع متخصصین', fa_num($stats['total_specialists']), null, null],
+            ['مجموع کارشناسان', fa_num($stats['total_specialists']), null, null],
             ['نزدیک به انقضا (۷ روز)', fa_num($stats['expiring_soon']), null, 'var(--sa-accent)'],
             ['منقضی‌شده', fa_num($stats['expired']), null, 'var(--sa-danger)'],
         ];
@@ -88,7 +88,7 @@
                 <tr style="color: var(--sa-text-dim);" class="border-b" style="border-color: var(--sa-border);">
                     <th class="py-2">نام سالن</th>
                     <th class="py-2">آدرس</th>
-                    <th class="py-2">متخصص</th>
+                    <th class="py-2">کارشناس</th>
                     <th class="py-2">از تاریخ</th>
                     <th class="py-2">اشتراک تا</th>
                     <th class="py-2">وضعیت</th>

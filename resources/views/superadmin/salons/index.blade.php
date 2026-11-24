@@ -46,7 +46,7 @@
                 </select>
             </div>
             <div>
-                <label class="sa-label" for="quota">سقف متخصص</label>
+                <label class="sa-label" for="quota">سقف کارشناس</label>
                 <select id="quota" name="quota" class="sa-input">
                     <option value="">همه</option>
                     <option value="full" @selected(($filters['quota'] ?? null) === 'full')>پر شده</option>
@@ -100,7 +100,7 @@
                 <tr style="color: var(--sa-text-dim); border-bottom: 1px solid var(--sa-border);">
                     <th class="py-3 px-4">نام / آدرس</th>
                     <th class="py-3 px-4">ادمین</th>
-                    <th class="py-3 px-4">سقف / مصرف متخصص</th>
+                    <th class="py-3 px-4">سقف / مصرف کارشناس</th>
                     <th class="py-3 px-4">از تاریخ</th>
                     <th class="py-3 px-4">اشتراک تا</th>
                     <th class="py-3 px-4">وضعیت</th>

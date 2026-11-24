@@ -7,7 +7,7 @@
         <div class="font-bold mb-1">قالب‌های ظاهری سالن‌ها</div>
         <p style="color: var(--sa-text-dim);">
             «طلایی ماهرو» قالب پیش‌فرض و رایگان همه‌ی پلن‌هاست. علاوه بر آن {{ to_persian_num((string) ($layoutTotal * $paletteTotal)) }} قالب برای
-            سایت سالن، پنل مشتری، پنل متخصص و اپ‌ها هست ({{ to_persian_num((string) $layoutTotal) }} چیدمان × {{ to_persian_num((string) $paletteTotal) }} پالت،
+            سایت سالن، پنل مشتری، پنل کارشناس و اپ‌ها هست ({{ to_persian_num((string) $layoutTotal) }} چیدمان × {{ to_persian_num((string) $paletteTotal) }} پالت،
             هر کدام تیره و روشن) و {{ to_persian_num((string) $adminTotal) }} قالب برای پنل مدیر.
             هر پلن در هر بازه‌ی اشتراک <b style="color: var(--sa-text);">چند چیدمانِ اول × چند پالتِ اول</b> را باز می‌کند، به ترتیبی که پایین چیده‌اید.
             پایان اشتراک یا پایین آمدن پلن، سالن را به پیش‌فرض برمی‌گرداند و انتخابش برای تمدید نگه داشته می‌شود.

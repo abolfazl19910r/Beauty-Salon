@@ -6,7 +6,7 @@
     <p class="text-sm leading-7" style="color: var(--admin-text-dim);">
         {{ to_persian_num((string) \App\Services\Booking\AttendanceCheckService::REQUEST_HOURS) }} ساعت پیش از نوبت، پیامکی با لینک «حضورم را تأیید می‌کنم»
         برای مشتری می‌رود (یا پوش، اگر اپ دارد). اگر تا {{ to_persian_num((string) \App\Services\Booking\AttendanceCheckService::DEADLINE_HOURS) }} ساعت
-        مانده تأیید نکند، نوبت خودکار لغو و ساعت آزاد می‌شود و به مشتری و متخصص خبر داده می‌شود. فقط برای نوبت‌های بدون پیش‌پرداخت.
+        مانده تأیید نکند، نوبت خودکار لغو و ساعت آزاد می‌شود و به مشتری و کارشناس خبر داده می‌شود. فقط برای نوبت‌های بدون پیش‌پرداخت.
         هر پیامک از سهمیه‌ی پیامک سالن کم می‌شود؛ اگر پیامک نرود (مثلاً سهمیه تمام شده باشد) نوبت لغو نمی‌شود.
     </p>
     @foreach ([

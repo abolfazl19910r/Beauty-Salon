@@ -98,7 +98,7 @@ class BookingStatusUpdated extends Notification implements \App\Notifications\Co
     {
         return match ($this->status) {
             'paid' => 'رزرو شما با موفقیت پرداخت شد.',
-            'confirmed' => 'نوبت شما توسط متخصص تایید شد.',
+            'confirmed' => 'نوبت شما توسط کارشناس تایید شد.',
             'completed' => 'خدمات شما با موفقیت انجام شد. لطفاً نظر خود را ثبت کنید.',
             'cancelled' => 'نوبت شما لغو شد.',
             default => 'وضعیت نوبت تغییر کرد.'

@@ -32,7 +32,7 @@ class AdminSearchTest extends TestCase
 
         $response->assertOk();
         $results = $response->viewData('results');
-        $this->assertArrayHasKey('متخصصین', $results);
+        $this->assertArrayHasKey('کارشناسان', $results);
         $this->assertArrayHasKey('خدمات', $results);
         $this->assertArrayNotHasKey('کاربران', $results);
     }
@@ -59,7 +59,7 @@ class AdminSearchTest extends TestCase
     {
         $user = User::factory()->create(['name' => 'محمد احمدی', 'phone' => '09121234567']);
         $service = BeautyService::factory()->create(['name' => 'اصلاح مو احمدی']);
-        $specialist = Specialist::factory()->create(['name' => 'احمدی متخصص']);
+        $specialist = Specialist::factory()->create(['name' => 'احمدی کارشناس']);
         $post = BlogPost::factory()->create(['title' => 'مقاله احمدی']);
         $booking = Booking::factory()->create(['user_id' => $user->id]);
 
@@ -110,10 +110,10 @@ class AdminSearchTest extends TestCase
         // searchSpecialists زنجیره‌ی where/orWhere بی‌گروه داره؛ scope سراسری سالن باید همچنان اعمال بشه
         $other = \App\Models\Salon::factory()->create(['slug' => 'other-search']);
         app(\App\Support\CurrentSalon::class)->set($other);
-        \App\Models\Specialist::factory()->create(['name' => 'متخصص سالن دیگر', 'phone' => '09125556677', 'email' => 'other@example.com']);
+        \App\Models\Specialist::factory()->create(['name' => 'کارشناس سالن دیگر', 'phone' => '09125556677', 'email' => 'other@example.com']);
         app(\App\Support\CurrentSalon::class)->clear();
 
-        foreach (['متخصص سالن دیگر', '09125556677', 'other@example.com'] as $q) {
+        foreach (['کارشناس سالن دیگر', '09125556677', 'other@example.com'] as $q) {
             $this->assertEmpty($this->actingAs($this->admin)->getJson('/admin/search/api?q='.urlencode($q))->assertOk()->json('results.specialists'), $q);
         }
     }

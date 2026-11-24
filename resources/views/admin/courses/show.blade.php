@@ -80,7 +80,7 @@
                         {{-- بسته‌ی مجوز 5د: متنی که باید برای مشتری خوانده شود (ماده‌ی ۵۸) --}}
                         <p class="text-xs leading-6 mb-2 p-3 rounded-lg" style="{{ $ghost }}" data-photo-consent-text>{{ \App\Support\Courses\PhotoConsent::TEXT }}</p>
                         <button type="submit" class="text-xs px-3 py-1 rounded-lg" style="{{ $ghost }}" data-confirm-action="{{ \App\Support\Courses\PhotoConsent::STAFF_CONFIRM }}">ثبت حضوری رضایت مشتری</button>
-                        <span class="text-xs mr-2" style="{{ $dim }}">یا متخصص از اپ همکار «درخواست رضایت» بفرستد تا مشتری خودش تأیید کند.</span>
+                        <span class="text-xs mr-2" style="{{ $dim }}">یا کارشناس از اپ همکار «درخواست رضایت» بفرستد تا مشتری خودش تأیید کند.</span>
                     </form>
                 @endif
                 <div class="w-full">@include('courses._consent-history', ['course' => $course, 'dimStyle' => $dim, 'showStaff' => true])</div>

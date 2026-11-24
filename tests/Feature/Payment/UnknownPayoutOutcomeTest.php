@@ -36,7 +36,7 @@ class UnknownPayoutOutcomeTest extends TestCase
 
     private function payoutRequest(): PayoutRequest
     {
-        return new PayoutRequest(2500000, 'IR062960000000100324200001', 'تسویه حساب متخصص', '9');
+        return new PayoutRequest(2500000, 'IR062960000000100324200001', 'تسویه حساب کارشناس', '9');
     }
 
     public function test_zibal_payout_never_treats_a_lost_answer_as_failed(): void

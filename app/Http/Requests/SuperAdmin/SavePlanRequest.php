@@ -79,7 +79,7 @@ class SavePlanRequest extends FormRequest
     {
         return [
             'key' => 'شناسه', 'name' => 'نام', 'price_1m' => 'قیمت یک‌ماهه', 'price_3m' => 'قیمت سه‌ماهه', 'price_6m' => 'قیمت شش‌ماهه',
-            'price_12m' => 'قیمت دوازده‌ماهه', 'included_specialists' => 'متخصص شامل', 'extra_specialist_price_per_month' => 'قیمت متخصص اضافه',
+            'price_12m' => 'قیمت دوازده‌ماهه', 'included_specialists' => 'کارشناس شامل', 'extra_specialist_price_per_month' => 'قیمت کارشناس اضافه',
             'sms_quota_per_month' => 'سهمیه‌ی پیامک', 'trial_days' => 'روزهای آزمایشی',
         ];
     }

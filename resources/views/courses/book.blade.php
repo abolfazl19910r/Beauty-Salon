@@ -13,13 +13,13 @@
             </p>
 
             <div class="mt-5">
-                <div class="text-sm mb-2" style="color: var(--rasta-cream);">متخصص</div>
+                <div class="text-sm mb-2" style="color: var(--rasta-cream);">کارشناس</div>
                 <div class="flex flex-wrap gap-2">
                     @forelse ($specialists as $option)
                         <a href="{{ route('my-courses.book', [$course, 'specialist' => $option->id]) }}" class="px-4 py-2 rounded-lg text-sm"
                            style="{{ $specialist?->id === $option->id ? $btn : $ghost }}">{{ $option->name }}</a>
                     @empty
-                        <p class="text-sm" style="{{ $dim }}">فعلاً متخصصی برای این خدمت نیست؛ با سالن تماس بگیرید.</p>
+                        <p class="text-sm" style="{{ $dim }}">فعلاً کارشناسی برای این خدمت نیست؛ با سالن تماس بگیرید.</p>
                     @endforelse
                 </div>
             </div>
@@ -32,7 +32,7 @@
                             <a href="{{ route('my-courses.book', [$course, 'specialist' => $specialist->id, 'date' => $option]) }}" class="px-3 py-2 rounded-lg text-sm persian-number"
                                style="{{ $date === $option ? $btn : $ghost }}">{{ fa_jdate($option, 'l d F') }}</a>
                         @empty
-                            <p class="text-sm" style="{{ $dim }}">در بازه‌ی مجاز روز آزادی برای این متخصص نیست.</p>
+                            <p class="text-sm" style="{{ $dim }}">در بازه‌ی مجاز روز آزادی برای این کارشناس نیست.</p>
                         @endforelse
                     </div>
                 </div>

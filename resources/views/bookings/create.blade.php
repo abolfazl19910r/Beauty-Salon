@@ -103,11 +103,11 @@
                             <svg class="w-4 h-4 text-m-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                             </svg>
-                            انتخاب متخصص
+                            انتخاب کارشناس
                         </span>
                     </label>
                     <select id="specialist-select" class="gold-select">
-                        <option value="">متخصص مورد نظر را انتخاب کنید</option>
+                        <option value="">کارشناس مورد نظر را انتخاب کنید</option>
                     </select>
                 </div>
 
@@ -133,7 +133,7 @@
                         </span>
                     </label>
                     <div id="dates-empty" class="hidden-block text-center py-4 rounded-lg" style="background-color: rgb(var(--m-gold) / 0.05); border: 1px dashed rgb(var(--m-gold) / 0.3);">
-                        <p class="text-sm text-m-tx/60">تاریخ خالی برای این متخصص یافت نشد</p>
+                        <p class="text-sm text-m-tx/60">تاریخ خالی برای این کارشناس یافت نشد</p>
                     </div>
                     <div id="dates-grid" class="grid grid-cols-4 sm:grid-cols-7 gap-2"></div>
                 </div>
@@ -183,7 +183,7 @@
                             <span id="summary-duration" class="font-medium text-m-tx persian-number"></span>
                         </div>
                         <div class="summary-row flex justify-between pb-3">
-                            <span class="text-m-tx/60">متخصص</span>
+                            <span class="text-m-tx/60">کارشناس</span>
                             <span class="inline-flex items-center gap-2">
                                 <img id="summary-specialist-photo" alt="" class="w-7 h-7 rounded-full object-cover" hidden>
                                 <span id="summary-specialist" class="font-medium text-m-tx"></span>
@@ -210,7 +210,7 @@
                             <span id="summary-prepayment" class="font-bold text-m-gold2 persian-number">—</span>
                         </div>
                         <div class="flex justify-between pt-1">
-                            <span class="text-m-tx/60" id="summary-remaining-label">باقی‌مانده (موقع نوبت به متخصص می‌دهید)</span>
+                            <span class="text-m-tx/60" id="summary-remaining-label">باقی‌مانده (موقع نوبت به کارشناس می‌دهید)</span>
                             <span id="summary-remaining" class="font-medium text-m-tx/80 persian-number">—</span>
                         </div>
                     </div>
@@ -384,7 +384,7 @@
                 // بسته‌ی 5ه: نوبت بدون پیش‌پرداخت — کل مبلغ در سالن
                 document.getElementById('summary-prepayment-row').hidden = prepayment <= 0;
                 document.getElementById('summary-remaining-label').textContent = prepayment > 0
-                    ? 'باقی‌مانده (موقع نوبت به متخصص می‌دهید)'
+                    ? 'باقی‌مانده (موقع نوبت به کارشناس می‌دهید)'
                     : 'پرداخت در سالن (بدون پیش‌پرداخت)';
 
                 if (service.duration) {
@@ -462,7 +462,7 @@
                     specialists = await response.json();
 
                     const select = document.getElementById('specialist-select');
-                    select.innerHTML = '<option value="">متخصص مورد نظر را انتخاب کنید</option>';
+                    select.innerHTML = '<option value="">کارشناس مورد نظر را انتخاب کنید</option>';
                     specialists.forEach(specialist => {
                         const option = document.createElement('option');
                         option.value = specialist.id;
@@ -470,7 +470,7 @@
                         select.appendChild(option);
                     });
                 } catch (error) {
-                    console.error('خطا در بارگذاری متخصصین:', error);
+                    console.error('خطا در بارگذاری کارشناسان:', error);
                 }
             }
 

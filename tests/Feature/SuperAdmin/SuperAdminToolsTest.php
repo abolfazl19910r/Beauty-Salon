@@ -232,7 +232,7 @@ class SuperAdminToolsTest extends TestCase
     public function test_phone_search_finds_people_across_salons(): void
     {
         $other = Salon::factory()->create(['slug' => 'other-search', 'name' => 'سالن دیگر']);
-        $sp = Specialist::factory()->create(['name' => 'متخصص سالن دیگر', 'phone' => '09121112299']);
+        $sp = Specialist::factory()->create(['name' => 'کارشناس سالن دیگر', 'phone' => '09121112299']);
         Specialist::withoutGlobalScopes()->whereKey($sp->id)->toBase()->update(['salon_id' => $other->id]);
         DemoRequest::create(['name' => 'دموخواه', 'phone' => '09121112233']);
 
@@ -240,7 +240,7 @@ class SuperAdminToolsTest extends TestCase
             ->assertSee('مالک آزمایشی')->assertSee('مالک سالن')->assertSee($this->salon->name)->assertSee('دموخواه');
 
         $this->actingAs($this->super)->get(route('superadmin.search.index', ['q' => '۱۱۱۲۲۹۹']))->assertOk()
-            ->assertSee('متخصص سالن دیگر')->assertSee('سالن دیگر');
+            ->assertSee('کارشناس سالن دیگر')->assertSee('سالن دیگر');
 
         $this->actingAs($this->super)->get(route('superadmin.search.index', ['q' => '091']))->assertOk()->assertSee('دست‌کم ۴ رقم');
     }

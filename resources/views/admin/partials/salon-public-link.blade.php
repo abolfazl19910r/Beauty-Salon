@@ -31,7 +31,7 @@
         <div class="p-5 text-sm space-y-3">
             <p style="color:var(--admin-text-dim);">
                 این لینک را در اینستاگرام، واتساپ یا روی کارت ویزیت سالن قرار دهید تا مشتری‌ها بتوانند
-                خدمات و متخصص‌ها را ببینند و آنلاین نوبت رزرو کنند.
+                خدمات و کارشناسان را ببینند و آنلاین نوبت رزرو کنند.
             </p>
             <div class="flex flex-col sm:flex-row gap-2 items-stretch">
                 <input type="text" readonly dir="ltr" value="{{ $primaryUrl }}" data-salon-link-input

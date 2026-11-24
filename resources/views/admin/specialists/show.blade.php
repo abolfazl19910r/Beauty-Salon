@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'اطلاعات متخصص')
+@section('title', 'اطلاعات کارشناس')
 
 @section('content')
     <div class="fade-in">
@@ -17,7 +17,7 @@
                 @endif
                 <div>
                     <h1 class="text-xl font-bold" style="color:var(--admin-text);">{{ $specialist->name }}</h1>
-                    <p class="text-sm" style="color:var(--admin-text-dim);">متخصص زیبایی</p>
+                    <p class="text-sm" style="color:var(--admin-text-dim);">کارشناس زیبایی</p>
                 </div>
             </div>
             <div class="flex flex-wrap gap-2">
@@ -38,7 +38,7 @@
                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium"
                    style="border:1px solid var(--admin-border); color:var(--admin-text);">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">{!! \App\Support\Admin\AdminMenu::ICONS['qr'] !!}</svg>
-                    QR متخصص
+                    QR کارشناس
                 </a>
                 <a href="{{ route('admin.schedule.index', $specialist) }}"
                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium"
@@ -116,7 +116,7 @@
                                         <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
                                     </svg>
                                     <span>
-                                        هنوز هیچ کاربری با این شماره ثبت‌نام نکرده — متخصص تا ثبت‌نام با همین شماره، نمی‌تواند وارد پنل شود.
+                                        هنوز هیچ کاربری با این شماره ثبت‌نام نکرده — کارشناس تا ثبت‌نام با همین شماره، نمی‌تواند وارد پنل شود.
                                     </span>
                                 </div>
                             @endif

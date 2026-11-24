@@ -92,28 +92,28 @@ class NotificationEvents
     {
         return [
             'رزرو نوبت' => [
-                self::BOOKING_CREATED_SPECIALIST => ['label' => 'ثبت نوبت جدید — اطلاع به متخصص', 'sms' => true],
+                self::BOOKING_CREATED_SPECIALIST => ['label' => 'ثبت نوبت جدید — اطلاع به کارشناس', 'sms' => true],
                 self::BOOKING_CREATED_ADMIN => ['label' => 'ثبت نوبت جدید — اطلاع به ادمین', 'sms' => false],
-                self::BOOKING_CONFIRMED_CUSTOMER => ['label' => 'پرداخت/تایید نوبت (خودکار یا توسط متخصص) — اطلاع به مشتری', 'sms' => true],
-                self::BOOKING_PAID_PENDING_APPROVAL_CUSTOMER => ['label' => 'پرداخت موفق، در انتظار تایید متخصص — اطلاع به مشتری', 'sms' => true],
+                self::BOOKING_CONFIRMED_CUSTOMER => ['label' => 'پرداخت/تایید نوبت (خودکار یا توسط کارشناس) — اطلاع به مشتری', 'sms' => true],
+                self::BOOKING_PAID_PENDING_APPROVAL_CUSTOMER => ['label' => 'پرداخت موفق، در انتظار تایید کارشناس — اطلاع به مشتری', 'sms' => true],
                 self::BOOKING_COMPLETED_REVIEW_REQUEST => ['label' => 'انجام‌شدن نوبت — اطلاع به مشتری (شامل لینک نظرسنجی)', 'sms' => true],
                 self::BOOKING_CANCELLED_CUSTOMER => ['label' => 'لغو نوبت — اطلاع به مشتری', 'sms' => true],
-                self::BOOKING_CANCELLED_SPECIALIST => ['label' => 'لغو نوبت — اطلاع به متخصص', 'sms' => true],
+                self::BOOKING_CANCELLED_SPECIALIST => ['label' => 'لغو نوبت — اطلاع به کارشناس', 'sms' => true],
                 self::BOOKING_RESCHEDULED_CUSTOMER => ['label' => 'تغییر زمان نوبت — اطلاع به مشتری', 'sms' => true],
-                self::BOOKING_RESCHEDULED_SPECIALIST => ['label' => 'تغییر زمان نوبت — اطلاع به متخصص', 'sms' => true],
+                self::BOOKING_RESCHEDULED_SPECIALIST => ['label' => 'تغییر زمان نوبت — اطلاع به کارشناس', 'sms' => true],
             ],
-            'برداشت وجه متخصص' => [
+            'برداشت وجه کارشناس' => [
                 self::WITHDRAWAL_REQUESTED_ADMIN => ['label' => 'ثبت درخواست برداشت — اطلاع به ادمین', 'sms' => false],
-                self::WITHDRAWAL_APPROVED_SPECIALIST => ['label' => 'تایید برداشت — اطلاع به متخصص', 'sms' => true],
-                self::WITHDRAWAL_REJECTED_SPECIALIST => ['label' => 'رد برداشت — اطلاع به متخصص', 'sms' => true],
+                self::WITHDRAWAL_APPROVED_SPECIALIST => ['label' => 'تایید برداشت — اطلاع به کارشناس', 'sms' => true],
+                self::WITHDRAWAL_REJECTED_SPECIALIST => ['label' => 'رد برداشت — اطلاع به کارشناس', 'sms' => true],
             ],
             'مرخصی' => [
-                self::LEAVE_STATUS_SPECIALIST => ['label' => 'تایید/رد مرخصی — اطلاع به متخصص', 'sms' => true],
+                self::LEAVE_STATUS_SPECIALIST => ['label' => 'تایید/رد مرخصی — اطلاع به کارشناس', 'sms' => true],
             ],
             'نظرات' => [
-                self::REVIEW_NEW_SPECIALIST => ['label' => 'ثبت نظر جدید — اطلاع به متخصص', 'sms' => true],
+                self::REVIEW_NEW_SPECIALIST => ['label' => 'ثبت نظر جدید — اطلاع به کارشناس', 'sms' => true],
                 self::REVIEW_NEGATIVE_ADMIN => ['label' => 'نظر منفی — اطلاع به ادمین', 'sms' => false],
-                self::REVIEW_RESPONDED_CUSTOMER => ['label' => 'پاسخ متخصص به نظر — اطلاع به مشتری', 'sms' => false],
+                self::REVIEW_RESPONDED_CUSTOMER => ['label' => 'پاسخ کارشناس به نظر — اطلاع به مشتری', 'sms' => false],
             ],
             'مالی و سیستمی (ادمین)' => [
                 self::PAYMENT_RECEIVED_ADMIN => ['label' => 'دریافت پرداخت جدید — اطلاع به ادمین', 'sms' => true],

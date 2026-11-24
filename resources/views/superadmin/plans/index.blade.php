@@ -27,7 +27,7 @@
                 <tr style="color: var(--sa-text-dim); border-bottom: 1px solid var(--sa-border);">
                     <th class="p-3">پلن</th>
                     <th class="p-3">ماهانه / ۳ / ۶ / ۱۲ ماهه (تومان)</th>
-                    <th class="p-3">متخصص شامل</th>
+                    <th class="p-3">کارشناس شامل</th>
                     <th class="p-3">پیامک ماهانه</th>
                     <th class="p-3">امکانات</th>
                     <th class="p-3">سالن‌ها</th>

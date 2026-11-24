@@ -43,7 +43,7 @@ class AdminBookingsTableColumnsTest extends TestCase
             $column = fn (string $title) => $cells[array_search($title, $headers, true)];
 
             $this->assertStringContainsString($booking->service->name, $column('خدمت'), $template);
-            $this->assertStringContainsString($booking->specialist->name, $column('متخصص'), $template);
+            $this->assertStringContainsString($booking->specialist->name, $column('کارشناس'), $template);
             $this->assertStringContainsString(fa_date($booking->booking_time), $column('تاریخ و ساعت'), $template);
             $this->assertStringContainsString('پرداخت', $column('پرداخت'), $template);
             $this->assertStringContainsString('تأییدشده', $column('وضعیت'), $template);

@@ -86,7 +86,7 @@ class SpecialistActivationController extends Controller
         $request->session()->regenerate();
         $this->securityLog->logLogin(true, $user->phone, $user);
 
-        return redirect()->to($user->homePath())->with('success', 'حساب متخصص شما فعال شد. خوش آمدید!');
+        return redirect()->to($user->homePath())->with('success', 'حساب کارشناس شما فعال شد. خوش آمدید!');
     }
 
     public function resend(): RedirectResponse

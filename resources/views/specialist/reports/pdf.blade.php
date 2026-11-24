@@ -23,7 +23,7 @@
 
 <table class="masthead"><tr>
     <td>
-        <div class="ms-kicker">گزارش عملکرد متخصص</div>
+        <div class="ms-kicker">گزارش عملکرد کارشناس</div>
         <div class="ms-salon">{{ $specialist->name }}</div>
     </td>
     <td class="ms-doc">
@@ -35,12 +35,12 @@
 
 <table class="meta"><tr>
     <td>بازه‌ی گزارش: <b>{{ $startDate }}</b> تا <b>{{ $endDate }}</b></td>
-    <td style="text-align:left;">سهم متخصص: <b>{{ round($shareRate * 100) }}٪</b> از مبلغ پرداختی (کمیسیون سالن {{ $commissionRate ?? 10 }}٪)</td>
+    <td style="text-align:left;">سهم کارشناس: <b>{{ round($shareRate * 100) }}٪</b> از مبلغ پرداختی (کمیسیون سالن {{ $commissionRate ?? 10 }}٪)</td>
 </tr></table>
 
 <table class="kpis"><tr>
     <td class="lead">
-        <div class="kpi-label">درآمد متخصص (پس از کمیسیون)</div>
+        <div class="kpi-label">درآمد کارشناس (پس از کمیسیون)</div>
         <div class="kpi-value">{{ fa_num($totalRevenue) }}</div>
         <div class="kpi-unit">تومان</div>
     </td>
@@ -70,7 +70,7 @@
             <th style="width:22%">مشتری</th>
             <th style="width:22%">خدمت</th>
             <th style="width:18%">تاریخ و ساعت</th>
-            <th class="num" style="width:17%">درآمد متخصص (تومان)</th>
+            <th class="num" style="width:17%">درآمد کارشناس (تومان)</th>
             <th style="width:15%">وضعیت</th>
         </tr>
         </thead>

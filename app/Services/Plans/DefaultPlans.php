@@ -43,7 +43,7 @@ class DefaultPlans
                 'features' => $existing,
             ],
             [
-                'key' => Plan::FULL, 'name' => 'کامل', 'description' => 'حرفه‌ای + ارسال دستی به مشتری‌های قدیمی، ۱۲ متخصص و ۳٬۰۰۰ پیامک در ماه.',
+                'key' => Plan::FULL, 'name' => 'کامل', 'description' => 'حرفه‌ای + ارسال دستی به مشتری‌های قدیمی، ۱۲ کارشناس و ۳٬۰۰۰ پیامک در ماه.',
                 'is_trial' => false, 'is_public' => true, 'is_active' => true, 'sort' => 35,
                 'price_1m' => 1900000, 'price_3m' => 5250000, 'price_6m' => 9700000, 'price_12m' => 17550000,
                 'included_specialists' => 12,
@@ -63,7 +63,7 @@ class DefaultPlans
                 'features' => array_values(array_diff($existing, [Feature::Winback->value, Feature::Loyalty->value, Feature::ReportsExport->value])),
             ],
             [
-                'key' => 'pro', 'name' => 'حرفه‌ای', 'description' => 'همه‌ی امکانات اصلی سالن، با ۱۰ متخصص و ۲٬۰۰۰ پیامک در ماه.',
+                'key' => 'pro', 'name' => 'حرفه‌ای', 'description' => 'همه‌ی امکانات اصلی سالن، با ۱۰ کارشناس و ۲٬۰۰۰ پیامک در ماه.',
                 'is_trial' => false, 'is_public' => true, 'is_active' => true, 'sort' => 30,
                 'price_1m' => 1500000, 'price_3m' => 4150000, 'price_6m' => 7650000, 'price_12m' => 13850000,
                 'included_specialists' => 10, 'extra_specialist_price_per_month' => 250000, 'sms_quota_per_month' => 2000,
@@ -72,7 +72,7 @@ class DefaultPlans
                 'features' => $existing,
             ],
             [
-                'key' => 'clinic', 'name' => 'کلینیک', 'description' => 'کامل + دوره‌های درمانی چندجلسه‌ای، ۱۵ متخصص و ۴٬۰۰۰ پیامک در ماه.',
+                'key' => 'clinic', 'name' => 'کلینیک', 'description' => 'کامل + دوره‌های درمانی چندجلسه‌ای، ۱۵ کارشناس و ۴٬۰۰۰ پیامک در ماه.',
                 'is_trial' => false, 'is_public' => true, 'is_active' => true, 'sort' => 40,
                 'price_1m' => 2400000, 'price_3m' => 6650000, 'price_6m' => 12250000, 'price_12m' => 22150000,
                 'included_specialists' => 15, 'extra_specialist_price_per_month' => 250000, 'sms_quota_per_month' => 4000,

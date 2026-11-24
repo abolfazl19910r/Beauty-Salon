@@ -13,7 +13,7 @@ trait ResolvesSpecialist
         $specialist = app(\App\Support\CurrentSalon::class)->id() !== null ? auth()->user()?->specialist : null;
 
         if (! $specialist && $orFail) {
-            abort(404, 'رکورد متخصص برای این حساب کاربری یافت نشد.');
+            abort(404, 'رکورد کارشناس برای این حساب کاربری یافت نشد.');
         }
 
         return $specialist;

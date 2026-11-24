@@ -177,7 +177,7 @@ class AdminCustomerCourseController extends Controller
         } catch (CourseException $e) {
             return back()->withInput()->with('error', $e->getMessage());
         } catch (BookingNotAvailableException) {
-            return back()->withInput()->with('error', 'این ساعت برای این متخصص آزاد نیست.');
+            return back()->withInput()->with('error', 'این ساعت برای این کارشناس آزاد نیست.');
         }
 
         $warning = $booking->booking_time->lt($course->earliestNextSession($booking->id)) ? ' (زودتر از فاصله‌ی حداقل دوره)' : '';

@@ -50,7 +50,7 @@ class AdminSpecialistTest extends TestCase
     public function test_store_creates_a_specialist_with_no_matching_user_yet(): void
     {
         $response = $this->actingAs($this->admin)->post('/admin/specialists', [
-            'name' => 'متخصص جدید',
+            'name' => 'کارشناس جدید',
             'phone' => '09121234567',
             'email' => 'new-specialist@example.com',
             'services' => [$this->service->id],
@@ -73,7 +73,7 @@ class AdminSpecialistTest extends TestCase
         $user = User::factory()->create(['phone' => '09129998877']);
 
         $this->actingAs($this->admin)->post('/admin/specialists', [
-            'name' => 'متخصص لینک‌شده',
+            'name' => 'کارشناس لینک‌شده',
             'phone' => '09129998877',
             'email' => 'linked@example.com',
             'services' => [$this->service->id],
@@ -208,7 +208,7 @@ class AdminSpecialistTest extends TestCase
                 'services' => [$this->service->id],
             ])->assertSessionHasNoErrors()->assertRedirect(route('admin.specialists.index'));
 
-            $this->assertNull(Specialist::where('phone', $phone)->value('email'), 'دو متخصص بی ایمیل با هم (unique روی NULL)');
+            $this->assertNull(Specialist::where('phone', $phone)->value('email'), 'دو کارشناس بی ایمیل با هم (unique روی NULL)');
         }
 
         $specialist = Specialist::factory()->create(['email' => 'had@example.com']);

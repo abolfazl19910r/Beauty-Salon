@@ -51,7 +51,7 @@ class PublicSpecialistPagesTest extends TestCase
 
     public function test_top_rated_page_is_public(): void
     {
-        $this->get('/s/rasta/specialists/top-rated')->assertOk()->assertSee('هنوز متخصصی به حد نصاب امتیاز نرسیده است.');
+        $this->get('/s/rasta/specialists/top-rated')->assertOk()->assertSee('هنوز کارشناسی به حد نصاب امتیاز نرسیده است.');
     }
 
     public function test_top_rated_lists_qualifying_specialists(): void

@@ -23,7 +23,7 @@
                 <div class="bg-m-bg/60 rounded-xl border border-m-gold/8 divide-y divide-m-gold/8">
                     @foreach([
                         ['label' => 'خدمت', 'value' => $service->name],
-                        ['label' => 'متخصص', 'value' => $specialist->name],
+                        ['label' => 'کارشناس', 'value' => $specialist->name],
                         ['label' => 'تاریخ', 'value' => verta($bookingTime)->format('Y/m/d'), 'persian' => true],
                         ['label' => 'ساعت', 'value' => verta($bookingTime)->format('H:i')],
                         ['label' => 'مدت زمان', 'value' => $service->duration . ' دقیقه', 'persian' => true],
@@ -44,7 +44,7 @@
                     </div>
                     <div class="flex items-center justify-between px-5 py-3.5 text-sm">
                         <span class="text-m-tx/55">
-                            {{ $prepaymentRequired ? 'باقی‌مانده (موقع نوبت به متخصص پرداخت می‌کنید)' : 'قابل پرداخت در سالن (بدون پیش‌پرداخت)' }}
+                            {{ $prepaymentRequired ? 'باقی‌مانده (موقع نوبت به کارشناس پرداخت می‌کنید)' : 'قابل پرداخت در سالن (بدون پیش‌پرداخت)' }}
                         </span>
                         <span class="font-medium text-m-tx/80 persian-number" id="remaining-amount">
                             {{ fa_num(max(0, $service->price - $prepaymentAmount)) }} تومان
@@ -61,7 +61,7 @@
                     <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.72-1.36 3.486 0l6.518 11.6c.75 1.334-.213 2.99-1.743 2.99H3.482c-1.53 0-2.493-1.656-1.743-2.99l6.518-11.6zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                 </svg>
                 @if ($prepaymentRequired)
-                    فقط مبلغ «پیش‌پرداخت» از طریق درگاه پرداخت می‌شود؛ مابقی مبلغ خدمت را موقع حضور در سالن، طبق توافق با متخصص، به‌صورت مستقیم پرداخت خواهید کرد.
+                    فقط مبلغ «پیش‌پرداخت» از طریق درگاه پرداخت می‌شود؛ مابقی مبلغ خدمت را موقع حضور در سالن، طبق توافق با کارشناس، به‌صورت مستقیم پرداخت خواهید کرد.
                 @else
                     این سالن پیش‌پرداخت آنلاین نمی‌گیرد؛ کل مبلغ خدمت را موقع حضور در سالن پرداخت می‌کنید.
                 @endif

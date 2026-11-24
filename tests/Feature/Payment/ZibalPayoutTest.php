@@ -45,7 +45,7 @@ class ZibalPayoutTest extends TestCase
         Http::fake(['api.zibal.ir/v1/wallet/checkout' => Http::response(['result' => 1, 'message' => 'موفق', 'data' => ['id' => 'xfg99754ae7abb06d63f1d60', 'amount' => 1500000]])]);
 
         $result = (new ZibalPayoutDriver(['payout_access_token' => 'zb-token', 'payout_wallet_id' => '10101']))
-            ->payout(new PayoutRequest(1500000, 'IR062960000000100324200001', 'تسویه حساب متخصص', '7'));
+            ->payout(new PayoutRequest(1500000, 'IR062960000000100324200001', 'تسویه حساب کارشناس', '7'));
 
         $this->assertTrue($result->success);
         $this->assertSame('xfg99754ae7abb06d63f1d60', $result->referenceCode);

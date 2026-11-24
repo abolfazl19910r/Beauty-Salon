@@ -111,7 +111,7 @@ class LogRoutingTest extends TestCase
             'Failed to add income and commission',
             'Refund already exists',
             'Failed to handle cancellation',
-            'سهم متخصص از موجودی واقعی',
+            'سهم متخصص از موجودی واقعی', // پیام لاگ — تغییر نام بسته‌ی ۰ فقط متن کاربر است
         ] as $message) {
             $this->assertMatchesRegularExpression(
                 "/Log::channel\('payments'\)->\w+\(\s*'[^']*".preg_quote($message, '/').'/u',

@@ -52,7 +52,7 @@
                 </div>
             @else
                 <div class="b-t flex flex-col justify-between">
-                    <span class="b-lab">متخصص‌ها</span>
+                    <span class="b-lab">کارشناسان</span>
                     <span class="b-k text-5xl text-m-gold persian-number">{{ to_persian_num((string) $bSpecialists->count()) }}</span>
                 </div>
             @endif
@@ -82,7 +82,7 @@
 
             @if ($bSpecialists->isNotEmpty())
                 <a href="{{ route('specialists.search') }}" class="b-t b-span2 flex items-center justify-between gap-4" id="specialists">
-                    <span><span class="b-lab">متخصص‌ها</span><span class="b-k text-xl block mt-1 text-m-tx">{{ $bSpecialists->pluck('name')->take(3)->implode('، ') }}</span></span>
+                    <span><span class="b-lab">کارشناسان</span><span class="b-k text-xl block mt-1 text-m-tx">{{ $bSpecialists->pluck('name')->take(3)->implode('، ') }}</span></span>
                     <span class="flex -space-x-3 space-x-reverse">
                         @foreach ($bSpecialists as $specialist)
                             @if ($specialist->photoUrl())

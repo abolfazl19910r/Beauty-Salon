@@ -56,11 +56,11 @@ class AdminWalletController extends Controller
         }
 
         if (! $wallet->iban) {
-            return back()->with('error', 'این متخصص هنوز شماره شبا ثبت نکرده است.');
+            return back()->with('error', 'این کارشناس هنوز شماره شبا ثبت نکرده است.');
         }
 
         if (! Iban::isValid($wallet->iban)) {
-            return back()->with('error', 'شماره شبای ثبت‌شده معتبر نیست (رقم کنترلی آن نمی‌خواند) و قابل تأیید نیست. متخصص باید شبا را اصلاح کند.');
+            return back()->with('error', 'شماره شبای ثبت‌شده معتبر نیست (رقم کنترلی آن نمی‌خواند) و قابل تأیید نیست. کارشناس باید شبا را اصلاح کند.');
         }
 
         try {
@@ -83,7 +83,7 @@ class AdminWalletController extends Controller
 
         $this->walletAdminService->unverifyIban($wallet);
 
-        return back()->with('success', 'تأیید شماره شبا لغو شد. تا تأیید دوباره، تسویه‌ی خودکار برای این متخصص انجام نمی‌شود.');
+        return back()->with('success', 'تأیید شماره شبا لغو شد. تا تأیید دوباره، تسویه‌ی خودکار برای این کارشناس انجام نمی‌شود.');
     }
 
     public function adjust(AdjustWalletRequest $request, SpecialistWallet $wallet): RedirectResponse

@@ -72,7 +72,7 @@
 
                     @if($transaction->booking->specialist)
                         <div class="flex justify-between items-center">
-                            <span class="text-sm" style="color: var(--rasta-cream); opacity: 0.6;">متخصص</span>
+                            <span class="text-sm" style="color: var(--rasta-cream); opacity: 0.6;">کارشناس</span>
                             <span class="text-sm font-medium" style="color: var(--rasta-cream);">{{ $transaction->booking->specialist?->name ?? '—' }}</span>
                         </div>
                     @endif

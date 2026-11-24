@@ -31,13 +31,13 @@
                             <label class="text-sm flex items-center gap-1"><input type="checkbox" name="extra_service_ids[]" value="{{ $service->id }}" @checked(in_array($service->id, $extras, true))> {{ $service->name }}</label>
                         @endforeach
                     </div>
-                    <p class="text-xs mt-1" style="{{ $dim }}">مثلاً «لیزر صورت + زیربغل»: هر جلسه همه‌ی خدمت‌ها با هم در یک نوبت، با مدتِ جمع آن‌ها. متخصص باید همه را انجام دهد.</p>
+                    <p class="text-xs mt-1" style="{{ $dim }}">مثلاً «لیزر صورت + زیربغل»: هر جلسه همه‌ی خدمت‌ها با هم در یک نوبت، با مدتِ جمع آن‌ها. کارشناس باید همه را انجام دهد.</p>
                     @error('extra_service_ids') <p class="text-xs mt-1" style="color:rgb(var(--m-bad));">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1" for="specialist_id">فقط این متخصص (اختیاری)</label>
+                    <label class="block text-sm font-medium mb-1" for="specialist_id">فقط این کارشناس (اختیاری)</label>
                     <select id="specialist_id" name="specialist_id" class="{{ $input }}" style="{{ $inputStyle }}">
-                        <option value="">هر متخصصِ این خدمت</option>
+                        <option value="">هر کارشناسِ این خدمت</option>
                         @foreach ($specialists as $specialist)
                             <option value="{{ $specialist->id }}" @selected((int) old('specialist_id', $package->specialist_id) === $specialist->id)>{{ $specialist->name }}</option>
                         @endforeach

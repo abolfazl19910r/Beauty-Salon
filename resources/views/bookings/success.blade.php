@@ -41,7 +41,7 @@
                         <span class="font-medium" style="color: var(--rasta-cream);">{{ fa_num($booking->prepayment_amount) }} تومان</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span style="color: var(--rasta-cream); opacity: 0.6;">باقی‌مانده (موقع نوبت به متخصص می‌دهید):</span>
+                        <span style="color: var(--rasta-cream); opacity: 0.6;">باقی‌مانده (موقع نوبت به کارشناس می‌دهید):</span>
                         <span class="font-medium" style="color: var(--rasta-cream); opacity: 0.85;">{{ fa_num($booking->remaining_amount) }} تومان</span>
                     </div>
                     <div class="flex justify-between items-center">
@@ -59,7 +59,7 @@
                         <span class="font-medium" style="color: var(--rasta-cream);">{{ $booking->service?->name ?? '—' }}</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span style="color: var(--rasta-cream); opacity: 0.6;">متخصص:</span>
+                        <span style="color: var(--rasta-cream); opacity: 0.6;">کارشناس:</span>
                         <span class="font-medium" style="color: var(--rasta-cream);">{{ $booking->specialist?->name ?? '—' }}</span>
                     </div>
                     <div class="flex justify-between items-center">

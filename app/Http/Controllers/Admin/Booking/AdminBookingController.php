@@ -73,7 +73,7 @@ class AdminBookingController extends Controller
                 } catch (\App\Services\Courses\CourseException $e) {
                     return back()->withInput()->with('error', $e->getMessage());
                 } catch (BookingNotAvailableException $e) {
-                    return back()->withInput()->with('error', 'این ساعت برای این متخصص قبلاً رزرو شده است. لطفاً ساعت دیگری انتخاب کنید.');
+                    return back()->withInput()->with('error', 'این ساعت برای این کارشناس قبلاً رزرو شده است. لطفاً ساعت دیگری انتخاب کنید.');
                 }
 
                 return redirect()->route('admin.bookings.show', $booking)
@@ -86,7 +86,7 @@ class AdminBookingController extends Controller
             $booking = $this->sharedBookingService->createManualBooking($request->validated());
         } catch (BookingNotAvailableException $e) {
             return back()->withInput()
-                ->with('error', 'این ساعت برای این متخصص قبلاً رزرو شده است. لطفاً ساعت دیگری انتخاب کنید.');
+                ->with('error', 'این ساعت برای این کارشناس قبلاً رزرو شده است. لطفاً ساعت دیگری انتخاب کنید.');
         }
 
         return redirect()->route('admin.bookings.show', $booking)
@@ -146,7 +146,7 @@ class AdminBookingController extends Controller
 
         } catch (BookingNotAvailableException $e) {
             return redirect()->route($redirectRoute, $redirectParams)
-                ->with('error', 'این ساعت برای این متخصص قبلاً رزرو شده است. لطفاً ساعت دیگری انتخاب کنید.');
+                ->with('error', 'این ساعت برای این کارشناس قبلاً رزرو شده است. لطفاً ساعت دیگری انتخاب کنید.');
         } catch (\Exception $e) {
             return redirect()->route($redirectRoute, $redirectParams)
                 ->with('error', 'خطایی در بروزرسانی وضعیت نوبت رخ داد. لطفا مجددا تلاش کنید.');

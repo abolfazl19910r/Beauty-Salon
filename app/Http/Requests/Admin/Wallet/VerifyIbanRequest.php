@@ -21,7 +21,7 @@ class VerifyIbanRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'holder_name_checked.accepted' => 'پیش از تأیید، شبا را در اپ بانک وارد کنید، نام صاحب حساب را با نام متخصص مقایسه کنید و این گزینه را تیک بزنید.',
+            'holder_name_checked.accepted' => 'پیش از تأیید، شبا را در اپ بانک وارد کنید، نام صاحب حساب را با نام کارشناس مقایسه کنید و این گزینه را تیک بزنید.',
         ];
     }
 }

@@ -199,9 +199,9 @@
                     @endforeach
                 </div>
                 <p class="text-xs mt-3" style="color:var(--admin-text-dim);">
-                    قیمت‌ها برای {{ to_persian_num((string) $specialists) }} متخصص (سقف متخصص سالن شما) است؛
-                    {{ to_persian_num((string) $includedSpecialists) }} متخصص در قیمت پلن و هر متخصص بیشتر ماهانه {{ fa_num($extraSpecialistPrice) }} تومان.
-                    برای تغییر تعداد متخصص با پشتیبانی تماس بگیرید.
+                    قیمت‌ها برای {{ to_persian_num((string) $specialists) }} کارشناس (سقف کارشناس سالن شما) است؛
+                    {{ to_persian_num((string) $includedSpecialists) }} کارشناس در قیمت پلن و هر کارشناس بیشتر ماهانه {{ fa_num($extraSpecialistPrice) }} تومان.
+                    برای تغییر تعداد کارشناس با پشتیبانی تماس بگیرید.
                 </p>
                 <p class="mt-2 text-xs" style="color:var(--admin-text-dim);" data-billing-terms>
                     خرید طبق <a href="{{ \App\Support\CentralUrl::route('legal.terms') }}#salons" target="_blank" class="underline">قوانین و شرایط سالن‌ها</a>؛

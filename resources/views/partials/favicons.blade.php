@@ -39,7 +39,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="{{ $__pwaSalon ? route('salon.pwa.icon', ['salon_slug' => $__pwaSalon->slug, 'variant' => '180']) : asset('apple-touch-icon.png') }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="پنل متخصص">
+    <meta name="apple-mobile-web-app-title" content="پنل کارشناس">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#1A1410">
 @endif

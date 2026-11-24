@@ -57,7 +57,7 @@
         <div class="mb-5">
             <h1 class="text-xl font-bold" style="color: var(--admin-text);">ظاهر سالن</h1>
             <p class="text-sm mt-1 leading-7" style="color: var(--admin-text-dim);">
-                قالب سایت روی سایت رزرو سالن، پنل مشتری، پنل متخصص و هر دو اپ اثر می‌گذارد؛ هر قالب نسخه‌ی تیره و روشن دارد و هر کس
+                قالب سایت روی سایت رزرو سالن، پنل مشتری، پنل کارشناس و هر دو اپ اثر می‌گذارد؛ هر قالب نسخه‌ی تیره و روشن دارد و هر کس
                 با دکمه‌ی تم خودش بینشان جابه‌جا می‌شود. قالب پنل مدیر فقط ظاهر همین پنل را عوض می‌کند و همه‌ی صفحه‌ها و دسترسی‌ها در هر قالب یکی است.
             </p>
         </div>
@@ -87,7 +87,7 @@
             @csrf
             @method('PUT')
 
-            <h2 class="font-bold text-lg mb-3" style="color: var(--admin-text);">قالب سایت، پنل مشتری، پنل متخصص و اپ‌ها</h2>
+            <h2 class="font-bold text-lg mb-3" style="color: var(--admin-text);">قالب سایت، پنل مشتری، پنل کارشناس و اپ‌ها</h2>
 
             <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                 <label class="ap-card" data-site-theme="mahru">

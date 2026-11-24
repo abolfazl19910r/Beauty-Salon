@@ -24,7 +24,7 @@ class AdminSpecialistPhoneNormalizationTest extends TestCase
         $service = BeautyService::factory()->create();
 
         return array_merge([
-            'name' => 'متخصص تست',
+            'name' => 'کارشناس تست',
             'email' => 'specialist-'.uniqid().'@example.com',
             'services' => [$service->id],
         ], $overrides);

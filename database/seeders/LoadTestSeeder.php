@@ -131,9 +131,9 @@ class LoadTestSeeder extends Seeder
             $uid = $this->id('users');
             $spid = $this->id('specialists');
             $phone = $this->phone('093', $tag * 100 + $p);
-            $this->push('users', $this->staffUser($uid, "متخصص {$p} سالن {$tag}", $phone, false));
+            $this->push('users', $this->staffUser($uid, "کارشناس {$p} سالن {$tag}", $phone, false));
             $this->push('role_user', ['user_id' => $uid, 'role_id' => $roles['specialist']]);
-            $this->push('specialists', ['id' => $spid, 'salon_id' => $salonId, 'name' => "متخصص {$p}", 'phone' => $phone, 'photo_path' => null, 'user_id' => $uid,
+            $this->push('specialists', ['id' => $spid, 'salon_id' => $salonId, 'name' => "کارشناس {$p}", 'phone' => $phone, 'photo_path' => null, 'user_id' => $uid,
                 'email' => "sp-{$tag}-{$p}@load.test", 'auto_confirm_bookings' => mt_rand(0, 1), 'commission_rate' => null, 'created_at' => $now, 'updated_at' => $now, 'deleted_at' => null]);
             $offered = [];
             foreach ($services as $srv) {
@@ -401,7 +401,7 @@ class LoadTestSeeder extends Seeder
     private function systemRoles(): array
     {
         $roles = [];
-        foreach (['admin' => 'مدیر سیستم', 'specialist' => 'متخصص/پشتیبان', 'super-admin' => 'سوپر ادمین'] as $name => $label) {
+        foreach (['admin' => 'مدیر سیستم', 'specialist' => 'کارشناس/پشتیبان', 'super-admin' => 'سوپر ادمین'] as $name => $label) {
             $id = DB::table('roles')->whereNull('salon_id')->where('name', $name)->value('id');
             $roles[$name] = $id ?? DB::table('roles')->insertGetId(['salon_id' => null, 'name' => $name, 'label' => $label, 'created_at' => now(), 'updated_at' => now()]);
         }

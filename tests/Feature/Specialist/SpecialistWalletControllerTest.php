@@ -92,7 +92,7 @@ class SpecialistWalletControllerTest extends TestCase
         ]);
 
         $response->assertStatus(404);
-        $response->assertJson(['error' => 'متخصص یافت نشد']);
+        $response->assertJson(['error' => 'کارشناس یافت نشد']);
     }
 
     public function test_a_specialist_cannot_view_another_specialists_wallet_by_forging_the_route(): void

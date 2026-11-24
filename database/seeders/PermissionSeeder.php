@@ -25,8 +25,8 @@ class PermissionSeeder extends Seeder
             ['name' => 'view-services', 'label' => 'مشاهده خدمات', 'group' => 'خدمات', 'description' => 'مشاهده لیست خدمات و دسته‌بندی‌ها'],
             ['name' => 'manage-services', 'label' => 'مدیریت خدمات', 'group' => 'خدمات', 'description' => 'ایجاد، ویرایش و حذف خدمات و دسته‌بندی‌ها'],
 
-            ['name' => 'view-specialists', 'label' => 'مشاهده متخصصان', 'group' => 'متخصصان', 'description' => 'مشاهده لیست متخصصان'],
-            ['name' => 'manage-specialists', 'label' => 'مدیریت متخصصان', 'group' => 'متخصصان', 'description' => 'ایجاد، ویرایش، حذف متخصصان و زمان‌بندی آن‌ها'],
+            ['name' => 'view-specialists', 'label' => 'مشاهده کارشناسان', 'group' => 'کارشناسان', 'description' => 'مشاهده لیست کارشناسان'],
+            ['name' => 'manage-specialists', 'label' => 'مدیریت کارشناسان', 'group' => 'کارشناسان', 'description' => 'ایجاد، ویرایش، حذف کارشناسان و زمان‌بندی آن‌ها'],
 
             ['name' => 'manage-settings', 'label' => 'مدیریت تنظیمات', 'group' => 'تنظیمات', 'description' => 'ویرایش تنظیمات سیستم'],
             ['name' => 'manage-roles', 'label' => 'مدیریت نقش‌ها', 'group' => 'تنظیمات', 'description' => 'مدیریت نقش‌ها و دسترسی‌ها'],
@@ -34,7 +34,7 @@ class PermissionSeeder extends Seeder
             ['name' => 'access_admin_panel', 'label' => 'دسترسی به پنل مدیریت', 'group' => 'تنظیمات', 'description' => 'دسترسی به پنل مدیریت سیستم'],
 
             // ⭐ فاز ۲ SaaS، محور «۲. چند ادمین برای یک سالن».
-            ['name' => 'manage-wallet', 'label' => 'مدیریت کیف‌پول و امور مالی', 'group' => 'مالی', 'description' => 'دسترسی به کیف‌پول متخصصان، تسویه، برداشت وجه، و خرید/تمدید اشتراک سالن'],
+            ['name' => 'manage-wallet', 'label' => 'مدیریت کیف‌پول و امور مالی', 'group' => 'مالی', 'description' => 'دسترسی به کیف‌پول کارشناسان، تسویه، برداشت وجه، و خرید/تمدید اشتراک سالن'],
         ];
 
         foreach ($permissions as $permission) {

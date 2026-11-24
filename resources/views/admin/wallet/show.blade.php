@@ -5,7 +5,7 @@
     <div class="fade-in">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
             <div>
-                <h1 class="text-xl font-bold" style="color:var(--admin-text);">کیف پول متخصص</h1>
+                <h1 class="text-xl font-bold" style="color:var(--admin-text);">کیف پول کارشناس</h1>
                 <p class="text-sm mt-0.5" style="color:var(--admin-text-dim);">{{ $wallet->specialist?->name ?? '—' }} — {{ $wallet->specialist?->phone ?? '—' }}</p>
             </div>
             <div class="flex gap-2">
@@ -18,7 +18,7 @@
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
-                        تسویه‌ی دستی این متخصص
+                        تسویه‌ی دستی این کارشناس
                     </button>
                 @endif
                 <button data-ui-show="#adjustmentModal"
@@ -86,7 +86,7 @@
                     </div>
                     <div class="pt-2">
                         @if($wallet->iban && ! $wallet->has_valid_iban)
-                            <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad));">✗ شبا نامعتبر است (رقم کنترلی نمی‌خواند) — متخصص باید اصلاحش کند</span>
+                            <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad));">✗ شبا نامعتبر است (رقم کنترلی نمی‌خواند) — کارشناس باید اصلاحش کند</span>
                         @elseif($wallet->iban_verified)
                             <span class="px-2.5 py-1 rounded-full text-xs font-medium" style="background:rgb(var(--m-ok) / .1); color:rgb(var(--m-ok));">✓ تایید شده</span>
                             <p class="text-xs mt-2 persian-number" style="color:var(--admin-text-dim);">
@@ -96,7 +96,7 @@
                                 @endif
                             </p>
                             <form action="{{ route('admin.wallet.unverify-iban', $wallet) }}" method="POST" class="mt-2"
-                                  data-confirm-action data-confirm-message="تأیید این شبا لغو شود؟ تا تأیید دوباره، تسویه‌ی خودکار برای این متخصص انجام نمی‌شود.">
+                                  data-confirm-action data-confirm-message="تأیید این شبا لغو شود؟ تا تأیید دوباره، تسویه‌ی خودکار برای این کارشناس انجام نمی‌شود.">
                                 @csrf
                                 <button type="submit" class="w-full py-2 rounded-lg text-xs font-medium" style="background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad));">
                                     لغو تأیید شبا
@@ -107,11 +107,11 @@
                                 @csrf
                                 <div class="rounded-lg p-3 mb-2 text-xs leading-6" style="background:var(--admin-bg); color:var(--admin-text-dim);">
                                     برای تأیید، شبا را در اپ بانک خودتان در صفحه‌ی انتقال پایا/ساتنا وارد کنید (لازم نیست انتقال را انجام دهید)؛
-                                    بانک نام صاحب حساب را نشان می‌دهد. آن را با «{{ $wallet->account_holder_name ?? '—' }}» و نام متخصص مقایسه کنید.
+                                    بانک نام صاحب حساب را نشان می‌دهد. آن را با «{{ $wallet->account_holder_name ?? '—' }}» و نام کارشناس مقایسه کنید.
                                 </div>
                                 <label class="flex items-start gap-2 text-xs mb-2" style="color:var(--admin-text);">
                                     <input type="checkbox" name="holder_name_checked" value="1" class="mt-1" required>
-                                    <span>نام صاحب حساب را در بانک دیدم و با این متخصص یکی بود.</span>
+                                    <span>نام صاحب حساب را در بانک دیدم و با این کارشناس یکی بود.</span>
                                 </label>
                                 @error('holder_name_checked')
                                     <p class="text-m-bad text-xs mb-2">{{ $message }}</p>
@@ -196,7 +196,7 @@
                 @csrf
                 <div class="p-5 space-y-3 text-sm">
                     <p style="color:var(--admin-text-dim);">
-                        مبلغ در انتظار فعلی این متخصص:
+                        مبلغ در انتظار فعلی این کارشناس:
                         <span class="font-bold persian-number" style="color:rgb(var(--m-warn));">{{ fa_num($wallet->pending_amount) }}</span>
                         تومان
                     </p>
@@ -211,7 +211,7 @@
                             style="background:var(--admin-accent-light); color:var(--admin-text-dim);">انصراف</button>
                     <button type="submit"
                             data-confirm-action
-                            data-confirm-message="این عملیات مبلغ در انتظار این متخصص را به موجودی قابل‌برداشت او منتقل می‌کند. ادامه می‌دهید؟"
+                            data-confirm-message="این عملیات مبلغ در انتظار این کارشناس را به موجودی قابل‌برداشت او منتقل می‌کند. ادامه می‌دهید؟"
                             data-confirm-text="بله، تسویه شود"
                             class="px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid"
                             style="background:rgb(var(--m-ok));"

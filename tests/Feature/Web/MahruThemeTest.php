@@ -57,7 +57,7 @@ class MahruThemeTest extends TestCase
             $html = $this->actingAs(User::find($specialist->user_id))->get($url)->assertOk()->getContent();
             $this->assertPanelThemed($html);
             $this->assertStringContainsString('--specialist-plum-mid:rgb(var(--m-gold))', $html);
-            $this->assertStringNotContainsString('#1F1424', $html, 'بنفش قدیمی پنل متخصص');
+            $this->assertStringNotContainsString('#1F1424', $html, 'بنفش قدیمی پنل کارشناس');
         }
     }
 

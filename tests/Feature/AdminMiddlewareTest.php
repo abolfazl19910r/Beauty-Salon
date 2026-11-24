@@ -91,7 +91,7 @@ class AdminMiddlewareTest extends TestCase
         $response = $this->actingAs($admin)->getJson('/__test/admin-only');
 
         $response->assertForbidden();
-        $response->assertJson(['message' => 'متخصصین نمی‌توانند به پنل مدیریت دسترسی داشته باشند.']);
+        $response->assertJson(['message' => 'کارشناسان نمی‌توانند به پنل مدیریت دسترسی داشته باشند.']);
     }
 
     public function test_an_admin_who_is_also_a_specialist_is_redirected_on_a_non_json_request(): void

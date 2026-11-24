@@ -21,7 +21,7 @@
                     </label>
                     <button type="submit"
                             data-confirm-action
-                            data-confirm-message="این عملیات درآمدهای سررسیدشده‌ی در انتظار تسویه‌ی همه‌ی متخصصین (یا در صورت انتخاب گزینه‌ی بالا، حتی سررسیدنشده‌ها) را به موجودی قابل‌برداشت منتقل می‌کند. ادامه می‌دهید؟"
+                            data-confirm-message="این عملیات درآمدهای سررسیدشده‌ی در انتظار تسویه‌ی همه‌ی کارشناسان (یا در صورت انتخاب گزینه‌ی بالا، حتی سررسیدنشده‌ها) را به موجودی قابل‌برداشت منتقل می‌کند. ادامه می‌دهید؟"
                             data-confirm-text="بله، تسویه شود"
                             class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-m-onsolid whitespace-nowrap"
                             style="background:rgb(var(--m-ok));"
@@ -49,12 +49,12 @@
         {{-- Statistics cards --}}
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-info));">
-                <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل موجودی متخصصین</p>
+                <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل موجودی کارشناسان</p>
                 <p class="text-xl font-bold persian-number" style="color:var(--admin-text);">{{ fa_num($totalBalance) }}</p>
                 <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">تومان</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-ok));">
-                <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل درآمد متخصصین</p>
+                <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل درآمد کارشناسان</p>
                 <p class="text-xl font-bold persian-number" style="color:var(--admin-text);">{{ fa_num($totalEarned) }}</p>
                 <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">تاکنون</p>
             </div>
@@ -76,7 +76,7 @@
                 <div class="flex-1 min-w-48">
                     <label class="block text-xs font-medium mb-1.5" style="color:var(--admin-text-dim);">جستجو</label>
                     <input type="text" name="search" value="{{ request('search') }}"
-                           placeholder="نام متخصص یا شماره تماس..."
+                           placeholder="نام کارشناس یا شماره تماس..."
                            class="w-full text-sm rounded-lg px-3 py-2 outline-none transition"
                            style="border:1px solid var(--admin-border); background:var(--admin-bg); color:var(--admin-text);"
                            data-ui-focus="border-color: var(--admin-accent)"
@@ -114,7 +114,7 @@
                 <table class="w-full text-sm">
                     <thead>
                     <tr style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border);">
-                        <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">متخصص</th>
+                        <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">کارشناس</th>
                         <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">موجودی فعلی</th>
                         <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">در انتظار</th>
                         <th class="px-4 py-3 text-right font-medium" style="color:var(--admin-text-dim);">کل درآمد</th>

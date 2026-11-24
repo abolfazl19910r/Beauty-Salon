@@ -32,7 +32,7 @@
                             @if ($__courseLabel = $booking->courseSessionLabel())<span class="text-xs mr-1 px-2 py-0.5 rounded-full" style="background:rgb(var(--m-gold) / 0.15); color:rgb(var(--m-gold));">{{ $__courseLabel }}</span>@endif
                         </div>
                         <div class="flex justify-between">
-                            <span style="color: var(--rasta-cream); opacity: 0.6;">متخصص:</span>
+                            <span style="color: var(--rasta-cream); opacity: 0.6;">کارشناس:</span>
                             <span class="font-medium" style="color: var(--rasta-cream);">{{ $booking->specialist?->name ?? '—' }}</span>
                         </div>
                         <div class="flex justify-between">
@@ -109,7 +109,7 @@
                         </div>
                         @endif
                         <div class="flex justify-between">
-                            <span style="color: var(--rasta-cream); opacity: 0.6;">{{ $booking->prepayment_required ? 'باقی‌مانده (موقع نوبت به متخصص می‌دهید):' : 'پرداخت در سالن (بدون پیش‌پرداخت):' }}</span>
+                            <span style="color: var(--rasta-cream); opacity: 0.6;">{{ $booking->prepayment_required ? 'باقی‌مانده (موقع نوبت به کارشناس می‌دهید):' : 'پرداخت در سالن (بدون پیش‌پرداخت):' }}</span>
                             <span class="font-medium persian-number" style="color: var(--rasta-cream); opacity: 0.85;">{{ fa_num($booking->remaining_amount) }} تومان</span>
                         </div>
                         @if($booking->discount_code)

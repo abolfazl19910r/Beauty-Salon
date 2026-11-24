@@ -64,7 +64,7 @@
             {{-- Top experts --}}
             <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
-                    برترین متخصصین (بر اساس نظرات)
+                    برترین کارشناسان (بر اساس نظرات)
                 </div>
                 <div class="divide-y" style="border-color:var(--admin-border);">
                     @forelse($topSpecialists ?? [] as $specialist)

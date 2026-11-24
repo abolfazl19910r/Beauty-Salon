@@ -94,7 +94,7 @@
                         <a href="{{ route('admin.payment-attention.index') }}" class="underline"><span class="persian-number">{{ $__attention->payments() }}</span> پرداخت مشتری که پاسخ درگاهش نرسید</a>
                     @endif
                     @if($__attention->withdrawals() > 0)
-                        <a href="{{ route('admin.wallet.withdrawals', ['needs_check' => 1]) }}" class="underline"><span class="persian-number">{{ $__attention->withdrawals() }}</span> تسویه‌ی متخصص با نتیجه‌ی نامعلوم</a>
+                        <a href="{{ route('admin.wallet.withdrawals', ['needs_check' => 1]) }}" class="underline"><span class="persian-number">{{ $__attention->withdrawals() }}</span> تسویه‌ی کارشناس با نتیجه‌ی نامعلوم</a>
                     @endif
                 </div>
             </div>
@@ -176,7 +176,7 @@
                     </svg>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-xs mb-1" style="color:var(--admin-text-dim);">متخصصین</p>
+                    <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کارشناسان</p>
                     <p class="text-2xl font-bold persian-number" id="specialists-count" style="color:var(--admin-text);">{{ fa_num($specialistsCount) }}</p>
                 </div>
                 <a href="{{ route('admin.specialists.index') }}" class="text-xs px-2 py-1 rounded" style="color:rgb(var(--m-warn)); background:rgb(var(--m-warn) / .1);">مشاهده</a>
@@ -234,12 +234,12 @@
 
             {{-- Experts table --}}
             <div class="section-card xl:col-span-2">
-                <div class="section-header">آمار متخصصین (۳۰ روز اخیر)</div>
+                <div class="section-header">آمار کارشناسان (۳۰ روز اخیر)</div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead>
                         <tr style="background:var(--admin-accent-light); color:var(--admin-text-dim);">
-                            <th class="px-4 py-3 text-right font-medium">متخصص</th>
+                            <th class="px-4 py-3 text-right font-medium">کارشناس</th>
                             <th class="px-4 py-3 text-right font-medium">نوبت‌ها</th>
                             <th class="px-4 py-3 text-right font-medium">نرخ تکمیل</th>
                             <th class="px-4 py-3 text-right font-medium">امتیاز</th>
@@ -289,7 +289,7 @@
                     </table>
                 </div>
                 <div class="px-4 py-3 text-center" style="border-top:1px solid var(--admin-border);">
-                    <a href="{{ route('admin.specialists.index') }}" class="text-sm font-medium" style="color:var(--admin-accent);">مشاهده همه متخصصین</a>
+                    <a href="{{ route('admin.specialists.index') }}" class="text-sm font-medium" style="color:var(--admin-accent);">مشاهده همه کارشناسان</a>
                 </div>
             </div>
 

@@ -112,7 +112,7 @@ class SpecialistProfileController extends Controller
         $specialist = $this->resolveSpecialist();
 
         if (! $specialist) {
-            abort(404, 'رکورد متخصص یافت نشد.');
+            abort(404, 'رکورد کارشناس یافت نشد.');
         }
 
         $this->authorize('manageSchedule', $specialist);

@@ -37,7 +37,7 @@ class BookingAvailabilityController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json(['slots' => [], 'message' => 'متخصص مورد نظر یافت نشد'], 404);
+            return response()->json(['slots' => [], 'message' => 'کارشناس مورد نظر یافت نشد'], 404);
         }
 
         $this->ensureSalonOwnership($specialistModel->salon_id);
@@ -52,13 +52,13 @@ class BookingAvailabilityController extends Controller
             }
 
             if ($this->leaveRepository->hasApprovedLeaveOnDate($specialistModel->id, $date)) {
-                return response()->json(['slots' => [], 'message' => 'متخصص در این روز مرخصی است']);
+                return response()->json(['slots' => [], 'message' => 'کارشناس در این روز مرخصی است']);
             }
 
             $schedule = $this->specialistScheduleRepository->findActiveForDay($specialistModel->id, $dayOfWeek);
 
             if (! $schedule) {
-                return response()->json(['slots' => [], 'message' => 'این روز جزو روزهای کاری متخصص نیست']);
+                return response()->json(['slots' => [], 'message' => 'این روز جزو روزهای کاری کارشناس نیست']);
             }
 
             $availableSlots = $specialistModel->getAvailableSlots($date, $serviceDuration);
@@ -100,7 +100,7 @@ class BookingAvailabilityController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json(['error' => 'متخصص مورد نظر یافت نشد', 'dates' => []], 404);
+            return response()->json(['error' => 'کارشناس مورد نظر یافت نشد', 'dates' => []], 404);
         }
 
         $this->ensureSalonOwnership($specialistModel->salon_id);
@@ -149,7 +149,7 @@ class BookingAvailabilityController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json(['error' => 'خطا در دریافت متخصصین'], 500);
+            return response()->json(['error' => 'خطا در دریافت کارشناسان'], 500);
         }
 
         $this->ensureSalonOwnership($service->salon_id);
@@ -173,7 +173,7 @@ class BookingAvailabilityController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json(['error' => 'خطا در دریافت متخصصین'], 500);
+            return response()->json(['error' => 'خطا در دریافت کارشناسان'], 500);
         }
     }
 

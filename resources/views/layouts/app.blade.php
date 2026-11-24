@@ -75,7 +75,7 @@
                     </div>
                 </div>
             @endif
-            <a href="{{ route('specialists.search') }}" class="nav-link">متخصص‌ها</a>
+            <a href="{{ route('specialists.search') }}" class="nav-link">کارشناسان</a>
             <a href="{{ route('blog.index') }}" class="nav-link">وبلاگ</a>
             {{-- دوره‌های درمانی (بسته‌ی ب): فقط با امکان پلن سالن --}}
             @php
@@ -188,7 +188,7 @@
                     </div>
                 </details>
             @endif
-            <a href="{{ route('specialists.search') }}" class="block py-2 nav-link">متخصص‌ها</a>
+            <a href="{{ route('specialists.search') }}" class="block py-2 nav-link">کارشناسان</a>
             <a href="{{ route('blog.index') }}" class="block py-2 nav-link">وبلاگ</a>
             @if ($__coursesOn)
                 <a href="{{ route('courses.index') }}" class="block py-2 nav-link">دوره‌ها</a>

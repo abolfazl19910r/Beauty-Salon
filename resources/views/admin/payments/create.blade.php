@@ -29,7 +29,7 @@
                         <div>
                             <p class="text-m-tx">مشتری: <span class="font-medium">{{ $booking->user->name ?? 'نامشخص' }}</span></p>
                             <p class="text-m-tx">خدمت: <span class="font-medium">{{ $booking->service?->name ?? '—' ?? 'نامشخص' }}</span></p>
-                            <p class="text-m-tx">متخصص: <span class="font-medium">{{ $booking->specialist?->name ?? '—' ?? 'نامشخص' }}</span></p>
+                            <p class="text-m-tx">کارشناس: <span class="font-medium">{{ $booking->specialist?->name ?? '—' ?? 'نامشخص' }}</span></p>
                         </div>
                         <div>
                             <p class="text-m-tx">تاریخ نوبت: <span class="font-medium">{{ $booking->booking_time ? fa_date($booking->booking_time, true) : 'نامشخص' }}</span></p>

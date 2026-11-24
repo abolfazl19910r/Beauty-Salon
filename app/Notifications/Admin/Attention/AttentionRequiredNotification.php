@@ -84,7 +84,7 @@ class AttentionRequiredNotification extends Notification implements ShouldQueue
             $tx = PaymentTransaction::withoutGlobalScopes()->find($this->recordId);
 
             return sprintf(
-                "⚠️ پرداخت نیازمند بررسی\nسالن: %s\nمبلغ: %s تومان\nدرگاه: %s\nتراکنش #%s\nنتیجه در درگاه روشن نشد؛ از پنل مدیریت ← «پرداخت‌های نیازمند بررسی» رسیدگی کنید.",
+                "پرداخت نیازمند بررسی\nسالن: %s\nمبلغ: %s تومان\nدرگاه: %s\nتراکنش #%s\nنتیجه در درگاه روشن نشد؛ از پنل مدیریت ← «پرداخت‌های نیازمند بررسی» رسیدگی کنید.",
                 $salonName, number_format($this->paymentToman($tx)), $this->driverLabel($tx), $this->recordId
             );
         }
@@ -92,7 +92,7 @@ class AttentionRequiredNotification extends Notification implements ShouldQueue
         $withdrawal = WithdrawalRequest::find($this->recordId);
 
         return sprintf(
-            "⚠️ تسویه‌ی نیازمند بررسی\nسالن: %s\nمتخصص: %s\nمبلغ: %s تومان\nبرداشت #%s\nنتیجه‌ی واریز خودکار نامعلوم است؛ قبل از تأیید یا رد، در پنل درگاه بررسی کنید.",
+            "تسویه‌ی نیازمند بررسی\nسالن: %s\nکارشناس: %s\nمبلغ: %s تومان\nبرداشت #%s\nنتیجه‌ی واریز خودکار نامعلوم است؛ قبل از تأیید یا رد، در پنل درگاه بررسی کنید.",
             $salonName, $this->specialistName($withdrawal), number_format((float) ($withdrawal->net_amount ?? 0)), $this->recordId
         );
     }

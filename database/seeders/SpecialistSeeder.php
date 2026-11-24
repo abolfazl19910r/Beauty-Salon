@@ -12,7 +12,7 @@ class SpecialistSeeder extends Seeder
     public function run(): void
     {
         $manager = Specialist::factory()->create([
-            'name' => 'متخصص اصلی (تایید خودکار)',
+            'name' => 'کارشناس اصلی (تایید خودکار)',
             'email' => 'specialist@example.com',
             'auto_confirm_bookings' => true,
         ]);

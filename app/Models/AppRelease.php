@@ -15,7 +15,7 @@ class AppRelease extends Model
 {
     public const VARIANTS = [
         'customer' => ['name' => 'ماهرو', 'audience' => 'مشتری‌های سالن‌ها', 'package_config' => 'api.customer_app_package'],
-        'staff' => ['name' => 'ماهرو همکار', 'audience' => 'متخصص‌های سالن‌ها', 'package_config' => 'api.staff_app_package'],
+        'staff' => ['name' => 'ماهرو همکار', 'audience' => 'کارشناسان سالن‌ها', 'package_config' => 'api.staff_app_package'],
     ];
 
     protected $fillable = [

@@ -3,7 +3,7 @@
     @csrf @method('PUT')
     <h2 class="font-bold" style="color: var(--admin-accent);">مشتری بدقول</h2>
     <p class="text-sm leading-7" style="color: var(--admin-text-dim);">
-        مشتری‌ای که چند بار «نیامد» ثبت شده، در پنل شما و پنل متخصص برچسب «بدقول» می‌گیرد.
+        مشتری‌ای که چند بار «نیامد» ثبت شده، در پنل شما و پنل کارشناس برچسب «بدقول» می‌گیرد.
         @if ($canPrepay)
             چون سالن شما درگاه فعال دارد، چنین مشتری‌ای (حتی در حالت بدون پیش‌پرداخت) فقط با پیش‌پرداخت آنلاین رزرو می‌کند.
         @else
@@ -28,7 +28,7 @@
         <label class="flex items-start gap-2 text-sm" style="color: var(--admin-text);">
             <input type="hidden" name="flagged_force_pending" value="0">
             <input type="checkbox" name="flagged_force_pending" value="1" class="mt-1" @checked(old('flagged_force_pending', $policy->flagged_force_pending))>
-            <span>تأیید دستی اجباری — نوبتش همیشه «منتظر تأیید» ثبت می‌شود، حتی با متخصصی که تأیید خودکار دارد.</span>
+            <span>تأیید دستی اجباری — نوبتش همیشه «منتظر تأیید» ثبت می‌شود، حتی با کارشناسی که تأیید خودکار دارد.</span>
         </label>
         <div>
             <label class="block text-sm mb-1" for="flagged_active_limit" style="color: var(--admin-text-dim);">سقف کمتر: حداکثر نوبت‌های آینده‌ی فعال مشتری بدقول</label>

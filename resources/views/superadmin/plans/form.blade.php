@@ -74,12 +74,12 @@
                 @endforeach
             @endif
             <div>
-                <label class="sa-label" for="included_specialists">متخصص شامل قیمت</label>
+                <label class="sa-label" for="included_specialists">کارشناس شامل قیمت</label>
                 <input id="included_specialists" name="included_specialists" value="{{ $field('included_specialists', $plan->included_specialists) }}" class="sa-input" inputmode="numeric" dir="ltr">
             </div>
             @unless ($plan->is_trial)
                 <div>
-                    <label class="sa-label" for="extra_specialist_price_per_month">هر متخصص بیشتر، ماهانه (تومان)</label>
+                    <label class="sa-label" for="extra_specialist_price_per_month">هر کارشناس بیشتر، ماهانه (تومان)</label>
                     <input id="extra_specialist_price_per_month" name="extra_specialist_price_per_month" value="{{ $field('extra_specialist_price_per_month', $plan->extra_specialist_price_per_month) }}" class="sa-input persian-number" inputmode="numeric" dir="ltr">
                 </div>
             @else

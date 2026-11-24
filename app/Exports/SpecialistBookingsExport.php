@@ -27,7 +27,7 @@ class SpecialistBookingsExport implements FromCollection, ShouldAutoSize, WithHe
 
     public function headings(): array
     {
-        return ['شناسه نوبت', 'نام مشتری', 'خدمت', 'تاریخ و ساعت', 'درآمد متخصص (تومان)', 'وضعیت'];
+        return ['شناسه نوبت', 'نام مشتری', 'خدمت', 'تاریخ و ساعت', 'درآمد کارشناس (تومان)', 'وضعیت'];
     }
 
     public function map($booking): array

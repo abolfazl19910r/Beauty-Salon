@@ -50,10 +50,10 @@
         {{-- Welcome header --}}
         <div class="flex items-center gap-3">
             <div class="w-12 h-12 rounded-full specialist-cta flex items-center justify-center text-lg font-bold flex-shrink-0">
-                {{ mb_substr(optional(auth()->user())->name ?? 'متخصص', 0, 1) }}
+                {{ mb_substr(optional(auth()->user())->name ?? 'کارشناس', 0, 1) }}
             </div>
             <div>
-                <h2 class="text-lg font-bold text-[var(--specialist-text)]">سلام، {{ auth()->user()->name ?? 'متخصص' }}</h2>
+                <h2 class="text-lg font-bold text-[var(--specialist-text)]">سلام، {{ auth()->user()->name ?? 'کارشناس' }}</h2>
                 <p class="text-sm text-[var(--specialist-plum-muted)] persian-number">{{ fa_num($todayPersian) }}</p>
             </div>
         </div>

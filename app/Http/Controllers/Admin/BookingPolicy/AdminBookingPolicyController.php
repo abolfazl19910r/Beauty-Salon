@@ -79,7 +79,7 @@ class AdminBookingPolicyController extends Controller
         $message = match (true) {
             $data['payment_mode'] === BookingPolicy::MODE_PREPAY && $before !== BookingPolicy::MODE_PREPAY => 'رزرو با پیش‌پرداخت روشن شد؛ فقط نوبت‌های تازه پیش‌پرداخت لازم دارند و نوبت‌های قبلی دست نخوردند.',
             $data['payment_mode'] === BookingPolicy::MODE_NONE && $before !== BookingPolicy::MODE_NONE => $waived > 0
-                ? sprintf('رزرو بدون پیش‌پرداخت شد. %s نوبت در انتظار پرداخت حالا منتظر تأیید شماست و به مشتری‌ها و متخصص‌ها خبر داده شد.', to_persian_num((string) $waived))
+                ? sprintf('رزرو بدون پیش‌پرداخت شد. %s نوبت در انتظار پرداخت حالا منتظر تأیید شماست و به مشتری‌ها و کارشناسان خبر داده شد.', to_persian_num((string) $waived))
                 : 'رزرو بدون پیش‌پرداخت شد.',
             default => 'تنظیمات ذخیره شد.',
         };

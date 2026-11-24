@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Log;
  */
 class SpecialistActivationService extends SmsCodeChallenge
 {
-    public const NOT_SPECIALIST = 'این شماره به‌عنوان متخصص در هیچ سالنی ثبت نشده است. از مدیر سالن بخواهید شما را با همین شماره در «متخصصین» اضافه کند.';
+    public const NOT_SPECIALIST = 'این شماره به‌عنوان کارشناس در هیچ سالنی ثبت نشده است. از مدیر سالن بخواهید شما را با همین شماره در «کارشناسان» اضافه کند.';
 
     public const HAS_ACCOUNT = 'این شماره حساب کادر دارد. با همین شماره وارد شوید یا رمز را بازیابی کنید.';
 

@@ -124,8 +124,8 @@ class ReportsExport implements FromCollection, WithCharts, WithColumnWidths, Wit
                 $afterSpecialists = $this->writeTitledSubTable(
                     $sheet,
                     $lastRow + 2,
-                    'عملکرد متخصصین',
-                    ['نام متخصص', 'تعداد نوبت', 'درآمد (تومان)'],
+                    'عملکرد کارشناسان',
+                    ['نام کارشناس', 'تعداد نوبت', 'درآمد (تومان)'],
                     $specialistRows
                 );
 
