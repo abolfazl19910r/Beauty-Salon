@@ -25,6 +25,18 @@ class SpecialistQuotaExceededException extends DomainException
         return $instance;
     }
 
+    /** دوره‌ی آزمایشی (بسته‌ی ۰، ۲۰۲۶-۱۱-۲۴): سقف ثابت پلن آزمایشی، نه سقف دستی سالن — راهش خرید پلن است */
+    public static function trialLimitReached(int $limit, array $context = []): self
+    {
+        $instance = self::quotaReached('Trial specialist limit reached for salon.', $context + ['trial_limit' => $limit]);
+        $instance->userMessage = sprintf(
+            'در دوره‌ی آزمایشی رایگان حداکثر %s کارشناس می‌توانید اضافه کنید. برای کارشناس بیشتر، از «اشتراک و صورتحساب» پلن بخرید.',
+            to_persian_num((string) $limit)
+        );
+
+        return $instance;
+    }
+
     public function context(): array
     {
         return $this->contextData;

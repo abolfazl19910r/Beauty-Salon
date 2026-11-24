@@ -33,15 +33,13 @@ class AdminSpecialistService
             $salon = $this->salonRepository->lockForUpdateFindOrFail($this->currentSalon->id());
             $currentCount = $this->specialistRepository->countBySalonIgnoringScope($salon->id);
 
-            if ($currentCount >= $salon->max_specialists_count) {
-                throw SpecialistQuotaExceededException::quotaReached(
-                    'Specialist quota reached for salon.',
-                    [
-                        'salon_id' => $salon->id,
-                        'current_count' => $currentCount,
-                        'max_specialists_count' => $salon->max_specialists_count,
-                    ]
-                );
+            $context = ['salon_id' => $salon->id, 'current_count' => $currentCount, 'max_specialists_count' => $salon->max_specialists_count];
+            $trialLimit = $salon->trialSpecialistLimit();
+            if ($trialLimit !== null && $currentCount >= $trialLimit && $trialLimit < (int) $salon->max_specialists_count) {
+                throw SpecialistQuotaExceededException::trialLimitReached($trialLimit, $context);
+            }
+            if ($currentCount >= $salon->specialistLimit()) {
+                throw SpecialistQuotaExceededException::quotaReached('Specialist quota reached for salon.', $context);
             }
 
             $validated['phone'] = $this->normalizePhone($validated['phone']);

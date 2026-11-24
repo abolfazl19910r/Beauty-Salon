@@ -35,7 +35,7 @@ class DefaultPlans
                 'key' => Plan::TRIAL, 'name' => 'آزمایشی', 'description' => 'دوره‌ی آزمایشی رایگان سالن تازه.',
                 'is_trial' => true, 'is_public' => false, 'is_active' => true, 'sort' => 0,
                 'price_1m' => null, 'price_3m' => null, 'price_6m' => null, 'price_12m' => null,
-                'included_specialists' => max(1, (int) config('billing.included_specialists', 10)),
+                'included_specialists' => max(1, (int) config('billing.trial_specialists', 2)),
                 'extra_specialist_price_per_month' => 0,
                 'sms_quota_per_month' => (int) config('billing.trial_sms_quota'),
                 'trial_days' => max(0, (int) config('billing.trial_days', 0)),
@@ -83,7 +83,13 @@ class DefaultPlans
         ];
     }
 
-    /** @return array{created: list<string>, assigned_trial: int, assigned_full: int} */
+    /**
+     * سقف کارشناس پلن آزمایشی پیش از ۲۰۲۶-۱۱-۲۴ (همان included_specialists سراسری). sync() پلن آزمایشیِ ساخته‌شده با این عدد
+     * را به billing.trial_specialists می‌رساند؛ عددی که ابرمدیر دستی گذاشته دست نمی‌خورد.
+     */
+    public const LEGACY_TRIAL_SPECIALISTS = 10;
+
+    /** @return array{created: list<string>, assigned_trial: int, assigned_full: int, trial_specialists_updated: bool} */
     public function sync(): array
     {
         $created = [];
@@ -102,6 +108,13 @@ class DefaultPlans
 
         $trial = Plan::byKey(Plan::TRIAL);
         $full = Plan::byKey(Plan::FULL);
+
+        $trialSpecialists = max(1, (int) config('billing.trial_specialists', 2));
+        $trialUpdated = false;
+        if ($trial && (int) $trial->included_specialists === self::LEGACY_TRIAL_SPECIALISTS && $trialSpecialists !== self::LEGACY_TRIAL_SPECIALISTS) {
+            $trial->update(['included_specialists' => $trialSpecialists]);
+            $trialUpdated = true;
+        }
         $assigned = ['trial' => 0, 'full' => 0];
 
         Salon::withoutGlobalScopes()->whereNull('plan_id')->orderBy('id')->each(function (Salon $salon) use ($trial, $full, &$assigned) {
@@ -117,6 +130,6 @@ class DefaultPlans
             }
         });
 
-        return ['created' => $created, 'assigned_trial' => $assigned['trial'], 'assigned_full' => $assigned['full']];
+        return ['created' => $created, 'assigned_trial' => $assigned['trial'], 'assigned_full' => $assigned['full'], 'trial_specialists_updated' => $trialUpdated];
     }
 }

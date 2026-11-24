@@ -174,6 +174,9 @@
                         <div class="hint">
                             تا {{ to_persian_num((string) $includedSpecialists) }} متخصص در قیمت پلن است؛ هر متخصص بیشتر ماهانه
                             {{ to_persian_num(number_format($extraSpecialistPrice)) }} تومان. سالن بیشتر از این تعداد متخصص نمی‌تواند ثبت کند.
+                            @if ($trialDays > 0 && $intent !== 'buy')
+                                <br data-trial-specialists="{{ $trialSpecialists }}">در دوره‌ی رایگان {{ to_persian_num((string) $trialDays) }} روزه حداکثر {{ fa_num($trialSpecialists) }} کارشناس می‌توانید اضافه کنید؛ بعد از خرید اشتراک، همین عدد بالا سقف سالن است.
+                            @endif
                         </div>
                     </div>
                     {{-- ⭐ لوگوی اختصاصی سالن (۲۰۲۶-۰۹-۲۴) — اختیاری. --}}

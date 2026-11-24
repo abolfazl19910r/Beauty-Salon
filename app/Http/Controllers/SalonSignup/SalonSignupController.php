@@ -61,6 +61,8 @@ class SalonSignupController extends Controller
             'includedSpecialists' => $pricing->includedSpecialists($salePlan),
             'extraSpecialistPrice' => $pricing->extraSpecialistPricePerMonth($salePlan),
             'maxSignupSpecialists' => max(1, (int) config('billing.max_signup_specialists', 50)),
+            // بسته‌ی ۰ (۲۰۲۶-۱۱-۲۴): سقف کارشناس دوره‌ی رایگان (پلن آزمایشی؛ بی جدول پلن همان config)
+            'trialSpecialists' => max(1, (int) (\App\Models\Plan::trial()?->included_specialists ?? config('billing.trial_specialists', 2))),
             // ⭐ «خرید مستقیم بدون دوره‌ی رایگان» (۲۰۲۶-۰۹-۲۳): ?intent=buy از دکمه‌ی «خرید و پرداخت
             // آنلاین» صفحه‌ی فروش میاد؛ هر مقدار دیگه‌ای یعنی مسیر عادی (آزمایشی).
             'intent' => request()->query('intent') === 'buy' ? 'buy' : 'trial',

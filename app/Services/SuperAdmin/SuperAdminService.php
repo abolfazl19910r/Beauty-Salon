@@ -195,7 +195,7 @@ class SuperAdminService
         // ⭐ Same fix as updateSalon() above — see that docblock.
         $current = $this->specialistRepository->countBySalonIgnoringScope($salon->id);
 
-        return max(0, $salon->max_specialists_count - $current);
+        return max(0, $salon->specialistLimit() - $current);
     }
 
     private function computeSubscriptionEnd(string $subscriptionType): \Illuminate\Support\Carbon

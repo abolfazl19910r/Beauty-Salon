@@ -80,6 +80,9 @@ return [
     'included_specialists' => $int('INCLUDED_SPECIALISTS_COUNT', 10),
     'extra_specialist_price_per_month' => $int('EXTRA_SPECIALIST_PRICE_PER_MONTH', 250000),
     'max_signup_specialists' => $int('MAX_SIGNUP_SPECIALISTS', 50),
+    // ⭐ سقف کارشناس دوره‌ی آزمایشی رایگان (تصمیم ۲۰۲۶-۱۱-۲۴، قبلاً همان included_specialists یعنی ۱۰): included_specialists
+    // پلن trial؛ سقف واقعی سالن آزمایشی کمترینِ این و عدد فرم ثبت‌نام است (Salon::specialistLimit()).
+    'trial_specialists' => $int('TRIAL_SPECIALISTS_COUNT', 2),
 
     // ⭐ فیچر «دوره‌ی آزمایشی رایگان» (۲۰۲۶-۰۹-۲۳): سالنی که از صفحه‌ی ثبت‌نام عمومی ساخته
     // می‌شه، به‌جای «از همون لحظه منقضی»، به این تعداد روز دسترسی کامل و رایگان می‌گیره (پنل

@@ -262,6 +262,31 @@ class Salon extends Model
      * خرید، سالن دیگه «آزمایشی» حساب نمی‌شه (و SuperAdminService::renewSubscription خودِ
      * trial_ends_at رو هم به لحظه‌ی خرید می‌آره — به subscriptionPeriodBase() نگاه کن).
      */
+    /**
+     * سقف واقعی تعداد کارشناس سالن (بسته‌ی ۰، تصمیم ۲۰۲۶-۱۱-۲۴): در دوره‌ی آزمایشی رایگان (پلن آزمایشی و آزمایشی هنوز
+     * باز) کمترینِ max_specialists_count (عدد فرم ثبت‌نام، برای قیمت بعد از خرید) و included_specialists پلن آزمایشی (۲)
+     * است — دوره‌ی رایگان برای امتحان امکانات است، نه کار با ۵۰ کارشناس. بعد از خرید یا با پلن دستی ابرمدیر همان
+     * max_specialists_count.
+     */
+    public function specialistLimit(): int
+    {
+        $max = (int) $this->max_specialists_count;
+        $trialLimit = $this->trialSpecialistLimit();
+
+        return $trialLimit === null ? $max : min($max, $trialLimit);
+    }
+
+    /** سقف کارشناس دوره‌ی آزمایشی اگر همین حالا اعمال می‌شود، وگرنه null */
+    public function trialSpecialistLimit(): ?int
+    {
+        $plan = $this->plan;
+        if (! $plan || ! $plan->is_trial || ! $this->isOnTrial()) {
+            return null;
+        }
+
+        return max(1, (int) $plan->included_specialists);
+    }
+
     public function isOnTrial(): bool
     {
         return $this->trial_ends_at !== null
