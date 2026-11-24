@@ -11,7 +11,7 @@
     $groups = collect($menu)->where('collapsible', true)->values();
 @endphp
 <div class="adm-rail-slot hidden md:block">
-    <nav class="adm-rail" data-nav-scroll aria-label="منوی پنل مدیر" data-adm-rail>
+    <nav class="adm-rail" aria-label="منوی پنل مدیر" data-adm-rail>
         <a href="{{ route('admin.dashboard') }}" class="adm-rail__brand" aria-label="پنل مدیریت {{ $adminSalon?->name }}" title="{{ $adminSalon?->name ?? 'پنل مدیریت' }}">
             @if ($adminSalon)
                 <x-brand-emblem class="w-10 h-10 rounded-xl" pad="3px" />

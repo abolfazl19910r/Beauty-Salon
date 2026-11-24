@@ -34,7 +34,9 @@ class NavRevealActiveTest extends TestCase
         ])->save();
         \App\Support\Themes\SalonAppearance::flush();
         $html = $this->actingAs($admin)->get('/admin/wallet/settings')->assertOk()->getContent();
-        $this->assertStringContainsString('<nav class="adm-rail" data-nav-scroll', $html);
+        // ریل همه‌ی صفحه‌ها را با آیکون نشان می‌دهد؛ اسکرول خودکار روی صفحه‌ی کوتاه نشان و کار روزانه را پنهان می‌کرد (۲ب، آزمون ویندوز)
+        $this->assertStringContainsString('<nav class="adm-rail" aria-label="منوی پنل مدیر" data-adm-rail>', $html);
+        $this->assertStringNotContainsString('class="adm-rail" data-nav-scroll', $html);
     }
 
     public function test_super_admin_side_menu_scrolls_on_its_own_and_marks_the_active_item(): void

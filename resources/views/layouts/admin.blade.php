@@ -124,6 +124,8 @@
         .adm-rail__dot{position:absolute;top:9px;left:9px;width:8px;height:8px;border-radius:50%;background:rgb(var(--m-gold))}
         .adm-rail__sep{width:28px;height:1px;background:var(--admin-border);margin:8px 0}
         .adm-rail__logout:hover{background:rgb(var(--m-bad) / .1);color:rgb(var(--m-bad))}
+        /* صفحه‌ی کوتاه (لپ‌تاپ ۷۶۸px با نوار ابزار مرورگر): ریل فشرده‌تر تا نشان و کار روزانه همیشه دیده شوند */
+        @media (max-height:760px){.adm-rail{padding:10px 0;gap:3px}.adm-rail__icon{width:40px;height:40px;border-radius:12px}.adm-rail__brand{margin-bottom:4px}.adm-rail__brand>*{width:2.25rem;height:2.25rem}.adm-rail__sep{margin:5px 0}}
         .adm-rail-panel{position:fixed;z-index:60;width:16rem;padding:10px;border-radius:18px;background:var(--admin-surface);border:1px solid var(--admin-border);box-shadow:0 30px 60px -20px rgba(0,0,0,.55)}
         .adm-rail-panel[hidden]{display:none}
         .adm-rail-panel__head{display:flex;justify-content:space-between;align-items:baseline;padding:6px 12px 10px}
