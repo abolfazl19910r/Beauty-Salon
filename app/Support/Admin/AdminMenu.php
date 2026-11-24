@@ -91,6 +91,20 @@ final class AdminMenu
         return $out;
     }
 
+    /**
+     * میانبرهای صفحه‌کلید (بسته‌ی ۲ب، تصمیم ابوالفضل ۱۱-۲۵: همه‌ی آیتم‌ها، به سبک استاندارد Gmail/GitHub):
+     * «g» یعنی «برو به» و «s» یعنی «تنظیمات سالن»؛ بعد یک حرف. با e.code کار می‌کند تا روی صفحه‌کلید فارسی هم جواب بدهد.
+     */
+    public const SHORTCUTS = [
+        'dashboard' => 'g d', 'bookings' => 'g b', 'customers' => 'g c', 'leaves' => 'g l', 'notifications' => 'g n',
+        'services' => 'g v', 'categories' => 'g t', 'specialists' => 'g e', 'courses' => 'g o', 'gallery' => 'g i', 'salon-qr' => 'g q',
+        'reviews' => 'g w', 'loyalty' => 'g p', 'winback' => 'g u', 'discount-codes' => 'g x', 'announcements' => 'g a', 'blog' => 'g z',
+        'reports' => 'g r', 'wallets' => 'g m', 'withdrawals' => 'g h', 'wallet-settings' => 'g f', 'billing' => 'g s',
+        'salon-settings' => 's i', 'appearance' => 's a', 'booking-policy' => 's b', 'payment-gateways' => 's p', 'verification' => 's v',
+        'notification-settings' => 's n', 'security' => 's e', 'users' => 's u', 'permissions' => 's m', 'roles' => 's r',
+        'support' => 'g k', 'profile' => 'g y',
+    ];
+
     /** فقط گروه‌های منوی کناری (بی گروه حساب) */
     public static function sideGroups(array $groups): array
     {
@@ -126,7 +140,7 @@ final class AdminMenu
         ];
     }
 
-    /** @return array{key: string, label: string, url: string, active: bool, icon: string, lock: bool, badge: ?string, count: int} */
+    /** @return array{key: string, label: string, url: string, active: bool, icon: string, lock: bool, badge: ?string, count: int, shortcut: ?string} */
     private static function item(string $key, string $label, string $route, string $pattern, string $icon, bool $lock = false, ?string $badge = null, int $count = 0): array
     {
         return [
@@ -138,6 +152,7 @@ final class AdminMenu
             'lock' => $lock,
             'badge' => $badge,
             'count' => $count,
+            'shortcut' => self::SHORTCUTS[$key] ?? null,
         ];
     }
 

@@ -66,6 +66,27 @@
         .adm-count{display:inline-flex;align-items:center;justify-content:center;min-width:1.4rem;padding:0 .45rem;border-radius:999px;font-size:.72rem;font-weight:700;background:rgb(var(--m-gold) / .18);color:var(--admin-accent-hover, var(--admin-accent))}
         .adm-new-booking{display:inline-flex;align-items:center;gap:.35rem;padding:.5rem .95rem;border-radius:999px;font-size:.85rem;font-weight:700;background:var(--admin-accent);color:rgb(var(--m-on-solid))}
         .adm-new-booking:hover{background:var(--admin-accent-hover)}
+        /* میانبرهای صفحه‌کلید (بسته‌ی ۲ب) */
+        kbd{display:inline-flex;align-items:center;justify-content:center;min-width:1.5rem;padding:0 .35rem;border-radius:6px;border:1px solid var(--admin-border);border-bottom-width:2px;background:var(--admin-bg);font:600 .72rem/1.6 inherit;color:var(--admin-text)}
+        .adm-kbd-then{font-size:.68rem;color:var(--admin-text-light);margin:0 .15rem}
+        .adm-shortcuts{width:min(46rem,calc(100vw - 2rem));max-height:calc(100vh - 3rem);padding:0;border:1px solid var(--admin-border);border-radius:18px;background:var(--admin-surface);color:var(--admin-text);box-shadow:0 30px 60px -20px rgba(0,0,0,.5)}
+        .adm-shortcuts::backdrop{background:rgba(0,0,0,.45)}
+        .adm-shortcuts__head{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--admin-border)}
+        .adm-shortcuts__head h2{margin:0;font-size:1.05rem;font-weight:800}
+        .adm-shortcuts__close{width:2rem;height:2rem;border-radius:8px;color:var(--admin-text-dim)}
+        .adm-shortcuts__close:hover{background:var(--admin-accent-light)}
+        .adm-shortcuts__intro{margin:0;padding:.85rem 1.25rem 0;font-size:.85rem;line-height:1.9;color:var(--admin-text-dim)}
+        .adm-shortcuts__toggle{display:flex;align-items:center;gap:.5rem;margin:.75rem 1.25rem 0;padding:.6rem .8rem;border-radius:10px;background:var(--admin-accent-light);font-size:.88rem;font-weight:600}
+        .adm-shortcuts__hint{font-size:.75rem;font-weight:400;color:var(--admin-text-light)}
+        .adm-shortcuts__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:.25rem 1.5rem;padding:.75rem 1.25rem 1.25rem}
+        .adm-shortcuts h3{margin:.75rem 0 .35rem;font-size:.78rem;font-weight:700;color:var(--admin-text-light)}
+        .adm-shortcuts dl{margin:0}
+        .adm-shortcuts dl>div{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.3rem 0;border-bottom:1px dashed var(--admin-border);font-size:.85rem}
+        .adm-shortcuts dt{order:2;white-space:nowrap}
+        .adm-shortcuts dd{margin:0}
+        .adm-seq{position:fixed;bottom:1.25rem;left:1.25rem;z-index:60;padding:.4rem .8rem;border-radius:10px;background:var(--admin-text);color:var(--admin-surface);font-weight:700;font-size:.85rem;direction:ltr}
+        .adm-seq[hidden]{display:none}
+        .adm-shortcut-hint{margin-inline-start:auto;font-size:.68rem;color:var(--admin-text-light);direction:ltr;letter-spacing:.04em}
         /* کار ردیف و منوی «⋯» (بسته‌ی ۲ ظاهری) */
         .adm-act{display:inline-flex;align-items:center;white-space:nowrap;padding:.42rem .85rem;border-radius:999px;font-size:.8rem;font-weight:700;border:1px solid var(--admin-border);background:var(--admin-surface);color:var(--admin-text)}
         .adm-act:hover{border-color:var(--admin-accent)}
@@ -292,7 +313,7 @@
                                     </svg>
                                     نمایش پروفایل
                                 </a>
-                                <a href="{{ route('admin.profile.edit') }}" data-menu-key="profile"
+                                <a href="{{ route('admin.profile.edit') }}" data-menu-key="profile" data-shortcut="g y"
                                    class="flex items-center px-4 py-2.5 text-sm transition-colors"
                                    style="color: var(--admin-text-dim);"
                                    data-ui-hover="background-color: var(--admin-accent-light); color: var(--admin-text)"
@@ -308,7 +329,7 @@
                                 {{-- بسته‌ی ۲ ظاهری: «پشتیبانی» از منوی کناری به منوی حساب آمد --}}
                                 @foreach ($adminAccountItems as $accountItem)
                                     @continue($accountItem['key'] === 'profile')
-                                    <a href="{{ $accountItem['url'] }}" data-menu-key="{{ $accountItem['key'] }}"
+                                    <a href="{{ $accountItem['url'] }}" data-menu-key="{{ $accountItem['key'] }}" data-shortcut="{{ $accountItem['shortcut'] }}"
                                        class="flex items-center px-4 py-2.5 text-sm transition-colors"
                                        style="color: var(--admin-text-dim);"
                                        data-ui-hover="background-color: var(--admin-accent-light); color: var(--admin-text)"
@@ -318,6 +339,16 @@
                                         {{ $accountItem['label'] }}
                                     </a>
                                 @endforeach
+
+                                <a href="#" data-adm-shortcuts-open
+                                   class="flex items-center px-4 py-2.5 text-sm transition-colors"
+                                   style="color: var(--admin-text-dim);"
+                                   data-ui-hover="background-color: var(--admin-accent-light); color: var(--admin-text)"
+                                   data-ui-unhover="background-color: ; color: var(--admin-text-dim)"
+                                   role="menuitem" tabindex="-1">
+                                    <svg class="w-4 h-4 ml-2 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg>
+                                    میانبرهای صفحه‌کلید <kbd class="mr-auto text-xs opacity-70">?</kbd>
+                                </a>
 
                                 {{-- سالن دوم (تصمیم ۵، آزمون ۲۰۲۶-۱۰-۲۲: مالک راهی برای فهمیدنش نداشت) — فقط مالک سالن جاری، نه هنگام ورود ابرمدیر به‌جای سالن --}}
                                 @if (app(\App\Support\CurrentSalon::class)->id() !== null && auth()->user()->salonRoleIn(app(\App\Support\CurrentSalon::class)->id()) === 'owner' && ! \App\Services\SuperAdmin\SuperAdminImpersonation::active())
@@ -833,7 +864,8 @@
 
         // Ctrl+K / ⌘K: جستجوی سریع پنل
         document.addEventListener('keydown', function (e) {
-            if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+            // e.code تا روی صفحه‌کلید فارسی هم کار کند (بسته‌ی ۲ب)
+            if ((e.ctrlKey || e.metaKey) && (e.code === 'KeyK' || e.key === 'k' || e.key === 'K')) {
                 e.preventDefault();
                 toggleSearchModal();
             }
@@ -849,6 +881,7 @@
     });
 </script>
 
+@include('layouts.admin-shell.shortcuts', ['menuAll' => $adminMenuAll, 'shell' => $adminShell])
 <script @nonce>
     // منوی «⋯» ردیف‌ها (بسته‌ی ۲ ظاهری): پنل fixed کنار دکمه (ظرف اسکرول جدول نبُرد)، فقط یکی باز، بستن با کلیک بیرون/Escape
     (function () {

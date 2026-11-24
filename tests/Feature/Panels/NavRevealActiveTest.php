@@ -23,7 +23,7 @@ class NavRevealActiveTest extends TestCase
 
         $html = $this->actingAs($admin)->get('/admin/wallet/settings')->assertOk()->getContent();
         $this->assertMatchesRegularExpression('/<aside id="admin-drawer" data-nav-scroll/', $html);
-        $this->assertMatchesRegularExpression('/data-menu-key="wallet-settings"\s+aria-current="page"/', $html);
+        $this->assertMatchesRegularExpression('/data-menu-key="wallet-settings"[^>]*aria-current="page"/', $html);
         $this->assertStringContainsString("querySelectorAll('[data-nav-scroll]')", $html);
 
         // قالب «ریل» فقط در پلن‌هایی که اجازه می‌دهند (کلینیک همه را دارد)
