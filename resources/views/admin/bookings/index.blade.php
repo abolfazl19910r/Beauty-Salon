@@ -31,7 +31,7 @@
             <div>
                 <h1 class="text-xl font-extrabold" style="color: var(--admin-text);">نوبت‌ها</h1>
                 <p class="text-sm mt-1" style="color: var(--admin-text-dim);" data-bookings-summary>
-                    {{ fa_num($totalBookings) }} نوبت@if ($waitingCount > 0)؛ {{ fa_num($waitingCount) }} نوبت منتظر کار شما@endif
+                    {{ fa_num($totalBookings) }} نوبت فعال@if ($waitingCount > 0)؛ {{ fa_num($waitingCount) }} نوبت منتظر کار شما@endif
                 </p>
             </div>
             @permission('create-bookings')
@@ -57,7 +57,7 @@
                 </label>
                 <label class="flex items-center gap-1.5 text-sm" style="color: var(--admin-text-dim);">وضعیت
                     <select name="status" class="bk-select" data-ui-autosubmit>
-                        <option value="">همه</option>
+                        <option value="">همه‌ی فعال‌ها</option>
                         @foreach (\App\Support\Bookings\BookingLabels::statusOptions() as $statusKey => $statusLabel)
                             <option value="{{ $statusKey }}" @selected(($filters['status'] ?? null) === $statusKey)>{{ $statusLabel }}</option>
                         @endforeach

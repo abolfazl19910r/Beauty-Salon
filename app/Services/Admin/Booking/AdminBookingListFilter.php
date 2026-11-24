@@ -10,6 +10,7 @@ use Illuminate\Support\Carbon;
 /**
  * فهرست نوبت‌های پنل مدیر (بسته‌ی ۲ ظاهری، ۲۰۲۶-۱۱-۲۴): تب امروز / فردا / این هفته / همه (پیش‌فرض امروز؛ «این هفته» = شنبه
  * تا جمعه‌ی همین هفته)، جستجوی نام یا موبایل مشتری، فیلتر وضعیت و کارشناس. ترتیب همان chronological بسته‌ی ۰.
+ * بی فیلتر وضعیت، نوبت‌های لغوشده نه نشان داده و نه شمرده می‌شوند (یکسان با داشبورد).
  */
 final class AdminBookingListFilter
 {
@@ -55,6 +56,9 @@ final class AdminBookingListFilter
         }
         if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
+        } else {
+            // تصمیم ابوالفضل (۱۱-۲۵): بی فیلتر وضعیت فقط نوبت‌های فعال — همان شمار «امروز» داشبورد؛ لغوشده‌ها با فیلتر «لغوشده»
+            $query->where('status', '!=', 'cancelled');
         }
         if (! empty($filters['specialist_id'])) {
             $query->where('specialist_id', (int) $filters['specialist_id']);

@@ -47,7 +47,7 @@ class AdminBookingController extends Controller
             'filters' => $filters,
             'tabCounts' => $list->tabCounts($filters),
             'waitingCount' => $list->waitingCount(),
-            'totalBookings' => \App\Models\Booking::query()->count(),
+            'totalBookings' => \App\Models\Booking::query()->where('status', '!=', 'cancelled')->count(),
             'specialists' => $this->specialistRepository->all(),
         ]);
     }

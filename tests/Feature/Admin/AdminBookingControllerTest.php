@@ -75,10 +75,15 @@ class AdminBookingControllerTest extends TestCase
         $response = $this->actingAs($this->admin)->get('/admin/bookings');
 
         $response->assertOk();
-        $response->assertViewHas('totalBookings', 5);
+        // تصمیم ۱۱-۲۵: بی فیلتر وضعیت، لغوشده نه نشان داده و نه شمرده می‌شود (یکسان با «امروز» داشبورد)
+        $response->assertViewHas('totalBookings', 4);
         $response->assertViewHas('waitingCount', 1);
-        $response->assertViewHas('tabCounts', ['today' => 2, 'tomorrow' => 1, 'week' => 4, 'all' => 5]);
+        $response->assertViewHas('tabCounts', ['today' => 2, 'tomorrow' => 1, 'week' => 3, 'all' => 4]);
         $this->assertCount(2, $response->viewData('bookings')); // پیش‌فرض: امروز
+        $this->assertSame(2, $this->actingAs($this->admin)->get(route('admin.dashboard'))->viewData('todayBookingsCount'));
+
+        $cancelled = $this->actingAs($this->admin)->get('/admin/bookings?tab=all&status=cancelled');
+        $cancelled->assertViewHas('tabCounts', ['today' => 0, 'tomorrow' => 0, 'week' => 1, 'all' => 1]);
     }
 
     public function test_index_filters_by_status(): void
@@ -95,15 +100,15 @@ class AdminBookingControllerTest extends TestCase
 
     public function test_index_tomorrow_tab_and_customer_search_and_expert_filter(): void
     {
-        $tomorrow = Booking::factory()->create(['booking_time' => now()->addDay()->setTime(10, 0)]);
-        Booking::factory()->create(['booking_time' => now()->addDays(5)->setTime(10, 0)]);
+        $tomorrow = Booking::factory()->create(['status' => 'confirmed', 'booking_time' => now()->addDay()->setTime(10, 0)]);
+        Booking::factory()->create(['status' => 'confirmed', 'booking_time' => now()->addDays(5)->setTime(10, 0)]);
 
         $bookings = $this->actingAs($this->admin)->get('/admin/bookings?tab=tomorrow')->viewData('bookings');
         $this->assertCount(1, $bookings);
         $this->assertSame($tomorrow->id, $bookings->first()->id);
 
         $customer = \App\Models\User::factory()->create(['name' => 'نسترن آزمون', 'phone' => '09125557788']);
-        $found = Booking::factory()->create(['user_id' => $customer->id, 'booking_time' => now()->addDays(2)->setTime(11, 0)]);
+        $found = Booking::factory()->create(['user_id' => $customer->id, 'status' => 'confirmed', 'booking_time' => now()->addDays(2)->setTime(11, 0)]);
         foreach (['نسترن', '۵۵۷۷۸۸'] as $q) {
             $ids = $this->actingAs($this->admin)->get('/admin/bookings?tab=all&q='.urlencode($q))->viewData('bookings')->pluck('id')->all();
             $this->assertSame([$found->id], $ids, $q);
