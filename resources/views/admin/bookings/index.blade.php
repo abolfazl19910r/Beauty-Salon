@@ -15,7 +15,11 @@
         .bk-search { flex: 1 1 16rem; display: flex; align-items: center; gap: .5rem; height: 42px; padding: 0 .85rem; border-radius: .75rem; background: var(--admin-bg); border: 1px solid var(--admin-border); }
         .bk-search input { flex: 1; min-width: 0; border: 0 !important; background: transparent !important; box-shadow: none !important; padding: 0; font: inherit; font-size: .9rem; color: var(--admin-text); }
         .desk-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: .8rem; align-items: start; }
-        @media (min-width: 1100px) { .desk-layout { grid-template-columns: minmax(0, 1fr) 20rem; } }
+        @media (min-width: 1100px) { .desk-layout { grid-template-columns: minmax(0, 1fr) 18rem; } }
+        @media (min-width: 1500px) { .desk-layout { grid-template-columns: minmax(0, 1fr) 20rem; } }
+        /* کنار پنل جزئیات جدول کمینه‌ی عرض ندارد تا روی لپ‌تاپ ۱۳۶۶px ستون کارها بریده نشود (آزمون ویندوز ۱۱-۲۵) */
+        .desk-layout [data-bookings-table] { min-width: 0 !important; }
+        .desk-layout [data-bookings-table] td, .desk-layout [data-bookings-table] th { padding-left: .5rem; padding-right: .5rem; }
         .desk-panel { position: sticky; top: 4.5rem; padding: 1rem; display: flex; flex-direction: column; gap: .8rem; font-size: 13.5px; min-height: 18rem; }
         .desk-panel:focus { outline: none; }
         .desk-panel__body { display: flex; flex-direction: column; gap: .8rem; }
