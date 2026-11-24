@@ -103,6 +103,36 @@
         .sa-search input:focus { outline: none; }
         .sa-search-btn { display: none; }
         @media (max-width: 767px) { .sa-search { display: none; } .sa-search-btn { display: inline-flex; } }
+        .sa-search--block { flex: 1 1 20rem; height: 42px; }
+        @media (max-width: 767px) { .sa-search.sa-search--block { display: flex; } }
+        .sa-chip { display: inline-flex; align-items: center; gap: .35rem; min-height: 36px; padding: 0 .9rem; border-radius: 999px; font-size: .85rem;
+            border: 1px solid var(--sa-border); background: var(--sa-surface); color: var(--sa-text); transition: background .15s, border-color .15s; }
+        .sa-chip b { font-weight: 700; color: var(--sa-text-dim); }
+        .sa-chip:hover { border-color: var(--sa-accent); }
+        .sa-chip[aria-current] { background: var(--sa-text); border-color: var(--sa-text); color: var(--sa-surface); }
+        .sa-chip[aria-current] b { color: inherit; }
+        .sa-more > summary { cursor: pointer; display: inline-flex; align-items: center; gap: .4rem; font-size: .85rem; font-weight: 600; color: var(--sa-accent); list-style: none; }
+        .sa-more > summary::-webkit-details-marker { display: none; }
+        .sa-more > summary::after { content: ""; width: .45rem; height: .45rem; border: solid currentColor; border-width: 0 0 2px 2px; transform: rotate(-45deg) translateY(-2px); transition: transform .15s; }
+        .sa-more[open] > summary::after { transform: rotate(135deg) translateY(-2px); }
+        .sa-btn-ghost { display: inline-flex; align-items: center; height: 38px; padding: 0 .8rem; border-radius: 8px; border: 1px solid var(--sa-border); font-size: .85rem; font-weight: 700; color: var(--sa-accent); background: var(--sa-surface); }
+        .sa-btn-ghost:hover { border-color: var(--sa-accent); background: var(--sa-soft); }
+        .sa-menu { position: relative; }
+        .sa-menu > summary { list-style: none; }
+        .sa-menu > summary::-webkit-details-marker { display: none; }
+        .sa-menu__btn { width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer;
+            border: 1px solid var(--sa-border); background: var(--sa-surface); color: var(--sa-text); }
+        .sa-menu__btn:hover, .sa-menu[open] > .sa-menu__btn { border-color: var(--sa-accent); background: var(--sa-soft); }
+        .sa-menu__btn:focus-visible { outline: 2px solid var(--sa-accent); outline-offset: 2px; }
+        .sa-menu__panel { position: absolute; z-index: 40; top: calc(100% + 6px); left: 0; width: 13.5rem; padding: .35rem; display: flex; flex-direction: column;
+            background: var(--sa-surface); border: 1px solid var(--sa-border); border-radius: 12px; box-shadow: 0 18px 40px -18px rgba(14, 90, 110, .45); }
+        html[data-theme=dark] .sa-menu__panel { box-shadow: 0 18px 40px -18px rgba(0, 0, 0, .9); }
+        .sa-menu__group { font-size: .75rem; color: var(--sa-text-dim); padding: .4rem .65rem .2rem; }
+        .sa-menu__item { width: 100%; text-align: right; padding: .55rem .65rem; border-radius: 8px; font-size: .88rem; color: var(--sa-text); background: transparent; }
+        .sa-menu__item:hover, .sa-menu__item:focus-visible { background: var(--sa-soft); outline: none; }
+        .sa-menu__item--danger { color: var(--sa-danger); font-weight: 700; }
+        .sa-menu__item--danger:hover, .sa-menu__item--danger:focus-visible { background: var(--sa-danger-bg); }
+        .sa-menu__sep { height: 1px; background: var(--sa-border); margin: .35rem .25rem; }
         .sa-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
         .sa-badge-bad { background: var(--sa-danger); color: #FFFFFF; }
         /* ورودی‌های بی‌کلاس (پلاگین forms پس‌زمینه‌ی سفید ثابت می‌دهد) */
@@ -157,7 +187,7 @@
         .sa-meter span { display: block; height: 100%; border-radius: 999px; background: var(--sa-accent); }
         .sa-meter span.is-full { background: var(--sa-warn); }
         .sa-ltr { direction: ltr; unicode-bidi: isolate; display: inline-block; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .85em; }
-        .sa-table-wrap { overflow-x: auto; }
+        .sa-table-wrap { overflow-x: auto; position: relative; }
         /* فرزند grid پیش‌فرض min-width: auto دارد؛ یک جدول عریض کل ستون را پهن و صفحه‌ی گوشی را افقی می‌کرد */
         main .grid > * { min-width: 0; }
         .sa-table-wrap table { min-width: 40rem; }
@@ -318,6 +348,49 @@
             btn.addEventListener('click', function () { toggle(!side.classList.contains('is-open')); });
             back.addEventListener('click', function () { toggle(false); });
             document.addEventListener('keydown', function (e) { if (e.key === 'Escape') toggle(false); });
+        })();
+
+        // منوی «⋯» ردیف‌ها (بسته‌ی ۱ ظاهری): پنل fixed کنار دکمه تا ظرف اسکرول جدول آن را نبُرد؛ فقط یکی باز، بستن با کلیک بیرون/Escape/اسکرول
+        (function () {
+            var menus = document.querySelectorAll('[data-sa-menu-root]');
+            if (!menus.length) return;
+            function closeAll(except) { menus.forEach(function (m) { if (m !== except) m.open = false; }); }
+            function place(menu) {
+                var btn = menu.querySelector('summary'), panel = menu.querySelector('.sa-menu__panel');
+                var r = btn.getBoundingClientRect();
+                panel.style.position = 'fixed';
+                var width = panel.offsetWidth, height = panel.offsetHeight;
+                var left = Math.max(8, Math.min(r.left, window.innerWidth - width - 8));
+                var top = r.bottom + 6;
+                if (top + height > window.innerHeight - 8 && r.top - height - 6 > 8) top = r.top - height - 6;
+                panel.style.left = left + 'px';
+                panel.style.top = top + 'px';
+            }
+            menus.forEach(function (menu) {
+                menu.addEventListener('toggle', function () {
+                    if (!menu.open) return;
+                    closeAll(menu);
+                    place(menu);
+                    var first = menu.querySelector('[role=menuitem]');
+                    if (first) first.focus({ preventScroll: true });
+                });
+            });
+            document.addEventListener('click', function (e) { if (!e.target.closest('[data-sa-menu-root]')) closeAll(null); });
+            document.addEventListener('keydown', function (e) {
+                if (e.key !== 'Escape') return;
+                var open = document.querySelector('[data-sa-menu-root][open]');
+                if (open) { open.open = false; open.querySelector('summary').focus(); }
+            });
+            // اسکرول/تغییر اندازه: پنل همراه دکمه جابه‌جا می‌شود؛ اگر دکمه از دید بیرون رفت بسته می‌شود
+            function follow() {
+                var open = document.querySelector('[data-sa-menu-root][open]');
+                if (!open) return;
+                var r = open.querySelector('summary').getBoundingClientRect();
+                if (r.bottom < 0 || r.top > window.innerHeight || r.right < 0 || r.left > window.innerWidth) { open.open = false; return; }
+                place(open);
+            }
+            window.addEventListener('scroll', follow, true);
+            window.addEventListener('resize', follow);
         })();
 
         // جدول‌هایی که در کادر خودشان اسکرول ندارند، روی گوشی بریده می‌شدند (کادر overflow-hidden): هر جدول یک ظرف اسکرول افقی می‌گیرد

@@ -91,6 +91,29 @@ class SalonListFilter
         return $query;
     }
 
+    /**
+     * شمار هر دسته‌ی وضعیت با همان جستجو و «فیلترهای بیشتر» (بی خود فیلتر وضعیت) — برای تراشه‌ها؛ یک کوئری.
+     *
+     * @return array<string, int> کلیدهای SalonStatus::LABELS + total
+     */
+    public function statusCounts(array $filters): array
+    {
+        unset($filters['status'], $filters['sort']);
+        [$sql, $bindings] = SalonStatus::caseSql();
+        $ids = $this->query($filters)->reorder()->toBase()->cloneWithout(['columns'])->cloneWithoutBindings(['select'])->select('salons.id');
+
+        $rows = Salon::query()->toBase()->whereIn('salons.id', $ids)
+            ->selectRaw("{$sql} AS bucket, COUNT(*) AS n", $bindings)->groupBy('bucket')->pluck('n', 'bucket');
+
+        $counts = array_map(fn () => 0, SalonStatus::LABELS);
+        foreach ($rows as $bucket => $n) {
+            $counts[$bucket] = (int) $n;
+        }
+        $counts['total'] = array_sum($counts);
+
+        return $counts;
+    }
+
     public function paginate(array $filters, int $perPage = 20): LengthAwarePaginator
     {
         return $this->query($filters)->paginate($perPage)->withQueryString();

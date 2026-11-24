@@ -41,8 +41,9 @@ class SalonDateDisplayTest extends TestCase
 
         $response = $this->get('/superadmin/salons');
 
-        $response->assertSee(fa_date($salon->subscription_started_at));
-        $response->assertSee(fa_date($salon->subscription_ends_at));
+        // بسته‌ی ۱ ظاهری: «تا …» + زمان باقی‌مانده؛ تاریخ شروع در راهنمای همان خانه
+        $response->assertSee('title="شروع اشتراک: '.fa_date($salon->subscription_started_at).'"', false);
+        $response->assertSee('تا '.fa_date($salon->subscription_ends_at, false, false));
         $response->assertDontSee($salon->subscription_ends_at->format('Y-m-d'));
     }
 

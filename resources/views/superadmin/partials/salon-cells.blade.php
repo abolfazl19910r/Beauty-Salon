@@ -26,7 +26,7 @@
     </td>
 @endif
 @if (in_array('subscription', $cells, true))
-    <td class="py-3 px-3" data-cell-subscription>
+    <td class="py-3 px-3" data-cell-subscription @if ($salon->subscription_started_at) title="شروع اشتراک: {{ fa_date($salon->subscription_started_at) }}" @endif>
         @if ($salon->subscription_ends_at)
             تا {{ fa_date($salon->subscription_ends_at, false, false) }}
             @if ($remaining)

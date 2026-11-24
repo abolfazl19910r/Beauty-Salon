@@ -58,11 +58,16 @@ class SuperAdminController extends Controller
     public function index(\App\Http\Requests\SuperAdmin\FilterSalonsRequest $request): View
     {
         $filters = $request->filters();
-        $salons = app(\App\Services\SuperAdmin\SalonListFilter::class)->paginate($filters);
+        $listFilter = app(\App\Services\SuperAdmin\SalonListFilter::class);
+        $salons = $listFilter->paginate($filters);
 
         return view('superadmin.salons.index', [
             'salons' => $salons,
             'filters' => $filters,
+            // بسته‌ی ۱ ظاهری: شمار تراشه‌های وضعیت (با همان جستجو و فیلترهای بیشتر) و شمار کل کارشناسان
+            'statusCounts' => $listFilter->statusCounts($filters),
+            'totalSpecialists' => $this->specialistRepository->count(),
+            'plans' => \App\Models\Plan::query()->orderByDesc('is_trial')->orderBy('sort')->get(),
             'statuses' => \App\Services\SuperAdmin\SalonListFilter::STATUSES,
             'sorts' => \App\Services\SuperAdmin\SalonListFilter::SORTS,
         ]);
