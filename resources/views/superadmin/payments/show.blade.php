@@ -4,7 +4,7 @@
 
 @php
     $labels = \App\Http\Controllers\SuperAdmin\SuperAdminPaymentController::labels();
-    $toman = fn ($n) => to_persian_num(number_format((int) $n));
+    $toman = fn ($n) => fa_num((int) $n);
     $date = fn ($d, $f = 'Y/m/d H:i') => $d ? to_persian_num(jalali_date($d, $f)) : '—';
 @endphp
 

@@ -70,11 +70,11 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 persian-number font-medium" style="color:rgb(var(--m-ok));">
-                                {{ number_format($service->price) }}
+                                {{ fa_num($service->price) }}
                                 <span class="text-xs font-normal" style="color:var(--admin-text-light);">تومان</span>
                             </td>
                             <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">
-                                {{ $service->duration }} دقیقه
+                                {{ fa_num($service->duration) }} دقیقه
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-1.5">

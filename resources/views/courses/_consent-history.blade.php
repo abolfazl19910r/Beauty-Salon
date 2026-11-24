@@ -10,7 +10,7 @@
             @foreach ($consentHistory as $entry)
                 @php($consentStaff = empty($showStaff) ? null : ($entry->source === 'in_person' ? $entry->recorder?->name : ($entry->status === \App\Models\CoursePhotoConsent::PENDING && $entry->requester ? 'درخواست: '.$entry->requester->name : null)))
                 <li class="persian-number" data-consent-entry="{{ $entry->status }}">
-                    {{ verta($entry->decided_at ?? $entry->requested_at)->format('Y/m/d H:i') }} — {{ $entry->label() }}{{ $consentStaff ? ' ('.$consentStaff.')' : '' }}
+                    {{ fa_date($entry->decided_at ?? $entry->requested_at, true) }} — {{ $entry->label() }}{{ $consentStaff ? ' ('.$consentStaff.')' : '' }}
                     <span class="opacity-70">· نسخه‌ی متن {{ to_persian_num(str_replace('-', '/', $entry->text_version)) }}</span>
                 </li>
             @endforeach

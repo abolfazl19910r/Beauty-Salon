@@ -33,19 +33,19 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs" style="color:var(--admin-text-dim);">کل اطلاعیه‌ها</p>
-                <p class="text-xl font-bold mt-1 persian-number" style="color:var(--admin-text);">{{ $totalAnnouncements }}</p>
+                <p class="text-xl font-bold mt-1 persian-number" style="color:var(--admin-text);">{{ fa_num($totalAnnouncements) }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs" style="color:var(--admin-text-dim);">فعال</p>
-                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-ok));">{{ $activeAnnouncements }}</p>
+                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-ok));">{{ fa_num($activeAnnouncements) }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs" style="color:var(--admin-text-dim);">در انتظار انتشار</p>
-                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-warn));">{{ $pendingAnnouncements }}</p>
+                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-warn));">{{ fa_num($pendingAnnouncements) }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs" style="color:var(--admin-text-dim);">منقضی‌شده</p>
-                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-bad));">{{ $expiredAnnouncements }}</p>
+                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-bad));">{{ fa_num($expiredAnnouncements) }}</p>
             </div>
         </div>
 
@@ -73,7 +73,7 @@
                                     @default عمومی
                                 @endswitch
                             </td>
-                            <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ $announcement->priority }}</td>
+                            <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ fa_num($announcement->priority) }}</td>
                             <td class="px-4 py-3">
                                 @if($announcement->is_active)
                                     <span class="px-2 py-1 rounded-full text-xs" style="background-color: rgba(34,197,94,0.1); color: rgb(var(--m-ok));">فعال</span>

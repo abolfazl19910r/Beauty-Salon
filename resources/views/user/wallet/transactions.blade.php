@@ -95,19 +95,19 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div class="rounded-xl p-5" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.2);">
                 <p class="text-sm mb-1" style="color: var(--rasta-cream); opacity: 0.6;">موجودی فعلی</p>
-                <p class="text-2xl font-bold persian-number" style="color: var(--rasta-gold-light);">{{ number_format($wallet->balance) }}</p>
+                <p class="text-2xl font-bold persian-number" style="color: var(--rasta-gold-light);">{{ fa_num($wallet->balance) }}</p>
                 <p class="text-xs mt-1" style="color: var(--rasta-cream); opacity: 0.5;">تومان</p>
             </div>
 
             <div class="rounded-xl p-5" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.2);">
                 <p class="text-sm mb-1" style="color: var(--rasta-cream); opacity: 0.6;">کل واریزی‌ها</p>
-                <p class="text-2xl font-bold persian-number" style="color: rgb(var(--m-ok));">{{ number_format($wallet->total_deposited) }}</p>
+                <p class="text-2xl font-bold persian-number" style="color: rgb(var(--m-ok));">{{ fa_num($wallet->total_deposited) }}</p>
                 <p class="text-xs mt-1" style="color: var(--rasta-cream); opacity: 0.5;">تومان</p>
             </div>
 
             <div class="rounded-xl p-5" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.2);">
                 <p class="text-sm mb-1" style="color: var(--rasta-cream); opacity: 0.6;">کل پرداختی‌ها</p>
-                <p class="text-2xl font-bold persian-number" style="color: rgb(var(--m-bad));">{{ number_format($wallet->total_spent) }}</p>
+                <p class="text-2xl font-bold persian-number" style="color: rgb(var(--m-bad));">{{ fa_num($wallet->total_spent) }}</p>
                 <p class="text-xs mt-1" style="color: var(--rasta-cream); opacity: 0.5;">تومان</p>
             </div>
         </div>
@@ -211,12 +211,12 @@
                                 </div>
                                 <p class="text-sm" style="color: var(--rasta-cream); opacity: 0.8;">{{ $transaction->description }}</p>
                                 <div class="flex items-center gap-4 mt-1.5 text-xs flex-wrap" style="color: var(--rasta-cream); opacity: 0.55;">
-                                    <span class="persian-number">{{ \Morilog\Jalali\Jalalian::forge($transaction->created_at)->format('Y/m/d - H:i') }}</span>
+                                    <span class="persian-number">{{ fa_date($transaction->created_at, true) }}</span>
                                     @if($transaction->booking)
-                                        <span class="persian-number">نوبت #{{ $transaction->booking_id }}</span>
+                                        <span class="persian-number">نوبت #{{ fa_num($transaction->booking_id) }}</span>
                                         @if($transaction->booking->payment_reference)
                                             <span class="persian-number" dir="ltr" style="color: var(--rasta-gold-light); opacity: 0.85;">
-                                                شماره پیگیری: {{ $transaction->booking->payment_reference }}
+                                                شماره پیگیری: {{ fa_num($transaction->booking->payment_reference) }}
                                             </span>
                                         @endif
                                     @endif
@@ -226,10 +226,10 @@
 
                         <div class="text-left">
                             <p class="text-xl font-bold persian-number" style="color: {{ $transaction->amount >= 0 ? 'rgb(var(--m-ok))' : 'rgb(var(--m-bad))' }};">
-                                {{ $transaction->amount >= 0 ? '+' : '' }}{{ number_format($transaction->amount) }}
+                                {{ $transaction->amount >= 0 ? '+' : '' }}{{ fa_num($transaction->amount) }}
                             </p>
                             <p class="text-xs mt-0.5 persian-number" style="color: var(--rasta-cream); opacity: 0.5;">
-                                موجودی: {{ number_format($transaction->balance_after) }}
+                                موجودی: {{ fa_num($transaction->balance_after) }}
                             </p>
                         </div>
                     </a>

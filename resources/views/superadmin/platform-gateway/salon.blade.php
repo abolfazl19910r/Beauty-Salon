@@ -3,7 +3,7 @@
 @section('title', 'حساب درگاه پلتفرم — '.$salon->name)
 
 @php
-    $toman = fn (int $rial) => to_persian_num(number_format(intdiv($rial, 10)));
+    $toman = fn (int $rial) => fa_num(intdiv($rial, 10));
     $pct = fn ($v) => to_persian_num(rtrim(rtrim(number_format((float) $v, 2, '.', ''), '0'), '.')).'٪';
     $txStatus = ['paid' => 'پرداخت‌شده', 'refunded' => 'به کیف پول مشتری', 'pending' => 'در جریان', 'failed' => 'ناموفق', 'cancelled' => 'لغو', 'expired' => 'منقضی', 'reversing' => 'در حال برگشت', 'reversed' => 'برگشت به کارت', 'reconciling' => 'در حال بررسی'];
 @endphp
@@ -73,13 +73,13 @@
             @forelse ($settlements as $s)
                 <tr style="border-top: 1px solid var(--sa-border);" data-settlement-row="{{ $s->id }}">
                     <td class="py-3 px-4">{{ to_persian_num((string) $s->id) }}@if ($s->automatic) <span class="text-xs" style="color: var(--sa-text-dim);">خودکار</span>@endif</td>
-                    <td class="py-3 px-4 whitespace-nowrap">{{ $s->period_from ? \Morilog\Jalali\Jalalian::fromCarbon($s->period_from)->format('Y/m/d') : '' }} تا {{ $s->period_to ? \Morilog\Jalali\Jalalian::fromCarbon($s->period_to)->format('Y/m/d') : '' }}</td>
+                    <td class="py-3 px-4 whitespace-nowrap">{{ $s->period_from ? fa_date($s->period_from) : '' }} تا {{ $s->period_to ? fa_date($s->period_to) : '' }}</td>
                     <td class="py-3 px-4">{{ to_persian_num((string) $s->transactions_count) }}</td>
                     <td class="py-3 px-4">{{ $toman($s->gross_rial) }}</td>
                     <td class="py-3 px-4">{{ $toman($s->platform_share_rial) }}</td>
                     <td class="py-3 px-4"><b>{{ $toman($s->salon_share_rial) }}</b></td>
                     <td class="py-3 px-4" dir="ltr"><span class="select-all">{{ $s->payout_destination }}</span><br><span class="text-xs">{{ $s->account_holder }}</span></td>
-                    <td class="py-3 px-4">{{ $s->statusLabel() }}@if ($s->bank_reference)<br><span class="text-xs" dir="ltr">{{ $s->bank_reference }}</span>@endif @if ($s->paid_at)<br><span class="text-xs">{{ \Morilog\Jalali\Jalalian::fromCarbon($s->paid_at)->format('Y/m/d') }}</span>@endif</td>
+                    <td class="py-3 px-4">{{ $s->statusLabel() }}@if ($s->bank_reference)<br><span class="text-xs" dir="ltr">{{ $s->bank_reference }}</span>@endif @if ($s->paid_at)<br><span class="text-xs">{{ fa_date($s->paid_at) }}</span>@endif</td>
                     <td class="py-3 px-4">
                         @if ($s->status === 'pending')
                             <form method="POST" action="{{ route('superadmin.platform-gateway.settlements.paid', $s) }}" class="flex gap-1 mb-1">
@@ -116,7 +116,7 @@
             @forelse ($transactions as $tx)
                 @php($counts = in_array($tx->status, \App\Payments\PlatformGateway::SETTLEABLE_STATUSES, true))
                 <tr style="border-top: 1px solid var(--sa-border); {{ $counts ? '' : 'opacity: .55;' }}" data-platform-tx="{{ $tx->id }}">
-                    <td class="py-3 px-4 whitespace-nowrap">{{ \Morilog\Jalali\Jalalian::fromCarbon($tx->created_at)->format('Y/m/d H:i') }}</td>
+                    <td class="py-3 px-4 whitespace-nowrap">{{ fa_date($tx->created_at, true) }}</td>
                     <td class="py-3 px-4">{{ $tx->purpose }}</td>
                     <td class="py-3 px-4">{{ $txStatus[$tx->status] ?? $tx->status }}</td>
                     <td class="py-3 px-4">{{ $toman((int) $tx->amount_rial) }}</td>

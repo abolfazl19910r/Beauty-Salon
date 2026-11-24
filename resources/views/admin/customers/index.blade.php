@@ -32,9 +32,9 @@
                         @foreach ($customers as $customer)
                             <tr style="border-top:1px solid var(--admin-border);">
                                 <td class="px-4 py-2.5"><a href="{{ route('admin.customers.show', $customer->id) }}" style="color:var(--admin-accent);">{{ $customer->name }}</a></td>
-                                <td class="px-4 py-2.5" dir="ltr" style="color:var(--admin-text);">{{ $customer->phone }}</td>
+                                <td class="px-4 py-2.5" dir="ltr" style="color:var(--admin-text);">{{ \App\Support\Fa::digits($customer->phone) }}</td>
                                 <td class="px-4 py-2.5 persian-number" style="color:var(--admin-text);">{{ to_persian_num((string) $customer->completed_count) }}</td>
-                                <td class="px-4 py-2.5 persian-number" style="{{ $dim }}">{{ $customer->last_visit_at ? verta($customer->last_visit_at)->format('Y/m/d') : '—' }}</td>
+                                <td class="px-4 py-2.5 persian-number" style="{{ $dim }}">{{ $customer->last_visit_at ? fa_date($customer->last_visit_at) : '—' }}</td>
                             </tr>
                         @endforeach
                         </tbody>

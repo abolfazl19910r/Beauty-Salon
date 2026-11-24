@@ -8,7 +8,7 @@
 --}}
 @php
     $labels = \App\Http\Controllers\SuperAdmin\SuperAdminPaymentController::labels();
-    $toman = fn ($n) => to_persian_num(number_format((int) $n));
+    $toman = fn ($n) => fa_num((int) $n);
     $hasFilters = count($filters) > 0;
 @endphp
 
@@ -186,8 +186,8 @@
                         </td>
                         <td class="py-3 px-3" dir="ltr">{{ $invoice->ref_id ?? '—' }}</td>
                         <td class="py-3 px-3">{{ $invoice->createdBy?->name ?? '—' }}</td>
-                        <td class="py-3 px-3 persian-number">{{ jalali_date($invoice->created_at, 'Y/m/d H:i') }}</td>
-                        <td class="py-3 px-3 persian-number">{{ $invoice->paid_at ? jalali_date($invoice->paid_at, 'Y/m/d H:i') : '—' }}</td>
+                        <td class="py-3 px-3 persian-number">{{ fa_date($invoice->created_at, true) }}</td>
+                        <td class="py-3 px-3 persian-number">{{ $invoice->paid_at ? fa_date($invoice->paid_at, true) : '—' }}</td>
                         <td class="py-3 px-3"><a href="{{ route('superadmin.payments.show', $invoice->id) }}" style="color: var(--sa-accent);">جزئیات</a></td>
                     </tr>
                 @empty

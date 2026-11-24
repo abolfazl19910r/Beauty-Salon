@@ -12,7 +12,7 @@
                     {{ $campaign->statusLabel() }}@if ($campaign->pause_reason) — {{ $campaign->pauseReasonLabel() }}@endif
                     · آخرین مراجعه {{ to_persian_num((string) $campaign->last_visit_from_days) }} تا {{ to_persian_num((string) $campaign->last_visit_to_days) }} روز پیش
                     @if ($campaign->hasDiscount()) · کد {{ $campaign->discountLabel() }}@endif
-                    · شروع {{ verta($campaign->scheduled_at)->format('Y/m/d H:i') }}
+                    · شروع {{ fa_date($campaign->scheduled_at, true) }}
                 </p>
             </div>
             <div class="flex gap-2 flex-wrap">
@@ -40,19 +40,19 @@
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5 persian-number">
-            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">گیرنده</div><div class="text-2xl font-bold mt-1">{{ to_persian_num(number_format($campaign->targeted)) }}</div></div>
-            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">فرستاده‌شده</div><div class="text-2xl font-bold mt-1">{{ to_persian_num(number_format($campaign->sent)) }}</div><div class="text-xs" style="{{ $dim }}">{{ to_persian_num(number_format($campaign->parts_used)) }} قطعه</div></div>
-            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">رد شده</div><div class="text-2xl font-bold mt-1">{{ to_persian_num(number_format($campaign->skipped)) }}</div></div>
-            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">در صف</div><div class="text-2xl font-bold mt-1">{{ to_persian_num(number_format($pending)) }}</div></div>
+            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">گیرنده</div><div class="text-2xl font-bold mt-1">{{ fa_num($campaign->targeted) }}</div></div>
+            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">فرستاده‌شده</div><div class="text-2xl font-bold mt-1">{{ fa_num($campaign->sent) }}</div><div class="text-xs" style="{{ $dim }}">{{ fa_num($campaign->parts_used) }} قطعه</div></div>
+            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">رد شده</div><div class="text-2xl font-bold mt-1">{{ fa_num($campaign->skipped) }}</div></div>
+            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">در صف</div><div class="text-2xl font-bold mt-1">{{ fa_num($pending) }}</div></div>
         </div>
 
         <div class="rounded-xl p-4 mb-5" style="{{ $box }}">
             <div class="font-bold text-sm mb-3">نتیجه (تا ۳۰ روز بعد از هر پیامک)</div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm persian-number">
-                <div><div class="text-xs" style="{{ $dim }}">نوبت گرفتند</div><b style="color:var(--admin-accent);">{{ to_persian_num(number_format($results['booked'])) }}</b>@if ($campaign->sent > 0) <span class="text-xs" style="{{ $dim }}">({{ to_persian_num((string) round($results['booked'] * 100 / $campaign->sent)) }}٪)</span>@endif</div>
-                <div><div class="text-xs" style="{{ $dim }}">جمع مبلغ آن نوبت‌ها</div><b>{{ to_persian_num(number_format($results['revenue'])) }}</b> تومان</div>
-                <div><div class="text-xs" style="{{ $dim }}">کد تخفیف استفاده‌شده</div><b>{{ to_persian_num(number_format($results['codes_used'])) }}</b></div>
-                <div><div class="text-xs" style="{{ $dim }}">انصراف</div><b>{{ to_persian_num(number_format($results['opted_out'])) }}</b></div>
+                <div><div class="text-xs" style="{{ $dim }}">نوبت گرفتند</div><b style="color:var(--admin-accent);">{{ fa_num($results['booked']) }}</b>@if ($campaign->sent > 0) <span class="text-xs" style="{{ $dim }}">({{ to_persian_num((string) round($results['booked'] * 100 / $campaign->sent)) }}٪)</span>@endif</div>
+                <div><div class="text-xs" style="{{ $dim }}">جمع مبلغ آن نوبت‌ها</div><b>{{ fa_num($results['revenue']) }}</b> تومان</div>
+                <div><div class="text-xs" style="{{ $dim }}">کد تخفیف استفاده‌شده</div><b>{{ fa_num($results['codes_used']) }}</b></div>
+                <div><div class="text-xs" style="{{ $dim }}">انصراف</div><b>{{ fa_num($results['opted_out']) }}</b></div>
             </div>
         </div>
 
@@ -60,9 +60,9 @@
             <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light);">آخرین گیرنده‌ها</div>
             @forelse ($recent as $r)
                 <div class="px-4 py-2.5 text-sm flex justify-between gap-3" style="border-top:1px solid var(--admin-border);">
-                    <span>{{ $r->user?->name }} <span dir="ltr" style="{{ $dim }}">{{ $r->user?->phone }}</span></span>
+                    <span>{{ $r->user?->name }} <span dir="ltr" style="{{ $dim }}">{{ \App\Support\Fa::digits($r->user?->phone) }}</span></span>
                     <span class="text-xs persian-number" style="{{ $dim }}">
-                        @if ($r->status === 'sent') فرستاده شد {{ verta($r->sent_at)->format('m/d H:i') }}@if ($r->discountCode) · کد {{ $r->discountCode->code }}{{ $r->discountCode->used_count > 0 ? ' (استفاده شد)' : '' }}@endif
+                        @if ($r->status === 'sent') فرستاده شد {{ fa_jdate($r->sent_at, 'm/d H:i') }}@if ($r->discountCode) · کد {{ $r->discountCode->code }}{{ $r->discountCode->used_count > 0 ? ' (استفاده شد)' : '' }}@endif
                         @else رد شد: {{ \App\Models\WinbackCampaignRecipient::SKIP_REASONS[$r->skip_reason] ?? $r->skip_reason }}@endif
                     </span>
                 </div>

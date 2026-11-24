@@ -14,7 +14,7 @@
                     مدیریت گالری
                 </h1>
                 <p class="text-sm mt-0.5" style="color:var(--admin-text-dim);">
-                    تصاویر نمونه کارهای سالن — <span class="persian-number">{{ $imagesCount }}</span> تصویر، <span class="persian-number">{{ $usedSpace }}</span> مگابایت
+                    تصاویر نمونه کارهای سالن — <span class="persian-number">{{ fa_num($imagesCount) }}</span> تصویر، <span class="persian-number">{{ fa_num($usedSpace) }}</span> مگابایت
                 </p>
             </div>
         </div>

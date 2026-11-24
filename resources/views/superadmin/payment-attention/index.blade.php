@@ -18,10 +18,10 @@
             <div class="sa-card p-5">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <div class="font-bold">{{ $tx->purpose === 'subscription' ? 'خرید/تمدید اشتراک' : 'خرید بسته‌ی پیامک' }} · {{ number_format(intdiv((int) $tx->amount_rial, 10)) }} تومان</div>
+                        <div class="font-bold">{{ $tx->purpose === 'subscription' ? 'خرید/تمدید اشتراک' : 'خرید بسته‌ی پیامک' }} · {{ fa_num(intdiv((int) $tx->amount_rial, 10)) }} تومان</div>
                         <div class="text-sm mt-1" style="color: var(--sa-text-dim);">
                             سالن: <a href="{{ route('superadmin.salons.edit', $tx->salon_id) }}" style="color: var(--sa-accent);">{{ $salonNames[$tx->salon_id] ?? '#'.$tx->salon_id }}</a>
-                            · {{ $tx->user?->name ?? '—' }} · {{ \Morilog\Jalali\Jalalian::fromCarbon(\Illuminate\Support\Carbon::parse($tx->created_at))->format('Y/m/d H:i') }} · تراکنش #{{ $tx->id }} ({{ $tx->status }})
+                            · {{ $tx->user?->name ?? '—' }} · {{ fa_date(\Illuminate\Support\Carbon::parse($tx->created_at), true) }} · تراکنش #{{ \App\Support\Fa::digits($tx->id) }} ({{ $tx->status }})
                         </div>
                         <div class="text-sm mt-2">{{ $tx->attentionReason() }}</div>
                     </div>

@@ -24,7 +24,7 @@
             @foreach ($courseSessions->where('id', '!=', $booking->id) as $session)
                 @php $note = $courseRecords['notes'][$session->id] ?? null; @endphp
                 <div class="rounded-lg p-3 text-sm" style="{{ $field }}">
-                    <div class="text-[var(--specialist-text-dim)] persian-number">{{ $session->course_session_number ? $course->sessionLabel($session->course_session_number) : '' }} — {{ verta($session->booking_time)->format('Y/m/d') }} · {{ $session->specialist?->name }} · {{ $session->status === 'completed' ? 'انجام شد' : ($session->status === 'cancelled' ? 'لغو' : 'رزرو') }}</div>
+                    <div class="text-[var(--specialist-text-dim)] persian-number">{{ $session->course_session_number ? $course->sessionLabel($session->course_session_number) : '' }} — {{ fa_date($session->booking_time) }} · {{ $session->specialist?->name }} · {{ $session->status === 'completed' ? 'انجام شد' : ($session->status === 'cancelled' ? 'لغو' : 'رزرو') }}</div>
                     @if ($note?->note)<p class="mt-1 text-[var(--specialist-text)] leading-7">{{ $note->note }}</p>@endif
                     <div class="flex flex-wrap gap-2 mt-2">
                         @foreach ($courseRecords['photos'][$session->id] ?? [] as $photo)
@@ -56,7 +56,7 @@
                 {{-- ۲۰۲۶-۱۰-۲۸: راه اول، خود مشتری در اپ، سایت سالن یا لینک پیامک تأیید می‌کند --}}
                 <div class="flex flex-wrap items-center gap-2 mb-3" data-photo-consent-request>
                     @if ($consentState['open_request'])
-                        <span class="text-xs text-[var(--specialist-text-dim)]">در انتظار پاسخ مشتری (فرستاده‌شده {{ verta($consentState['open_request']->last_sent_at)->format('Y/m/d H:i') }})</span>
+                        <span class="text-xs text-[var(--specialist-text-dim)]">در انتظار پاسخ مشتری (فرستاده‌شده {{ fa_date($consentState['open_request']->last_sent_at, true) }})</span>
                         @if ($consentState['can_resend'])
                             <form method="POST" action="{{ route('specialist.bookings.course-consent.resend', $booking) }}">@csrf
                                 <button type="submit" class="px-3 py-1.5 rounded-lg text-xs text-[var(--specialist-text)]" style="border: 1px solid var(--specialist-border);">ارسال دوباره</button>

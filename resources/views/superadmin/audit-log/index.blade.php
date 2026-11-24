@@ -39,7 +39,7 @@
             <tbody>
             @forelse ($logs as $log)
                 <tr style="border-top: 1px solid var(--sa-border);" data-audit-row>
-                    <td class="py-3 px-4 whitespace-nowrap">{{ \Morilog\Jalali\Jalalian::fromCarbon($log->created_at)->format('Y/m/d H:i') }}</td>
+                    <td class="py-3 px-4 whitespace-nowrap">{{ fa_date($log->created_at, true) }}</td>
                     <td class="py-3 px-4 whitespace-nowrap">{{ $log->user_name ?? '—' }}</td>
                     <td class="py-3 px-4 whitespace-nowrap"><span class="sa-badge">{{ $log->actionLabel() }}</span></td>
                     <td class="py-3 px-4">

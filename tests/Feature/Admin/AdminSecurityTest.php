@@ -36,7 +36,7 @@ class AdminSecurityTest extends TestCase
         $this->assertSame(2, $response->viewData('stats')['warnings_last_30_days']);
         // ستون «تاریخ و زمان»: ساعت واقعی، نه «H:i» خام (بسته‌ی «ح»، ۹)
         $log = $response->viewData('logs')->first();
-        $response->assertSee(jalali_date($log->created_at, 'Y/m/d H:i'))->assertDontSee(' H:i');
+        $response->assertSee(fa_date($log->created_at, true))->assertDontSee(' H:i');
     }
 
     public function test_logs_page_filters_by_event_and_level(): void

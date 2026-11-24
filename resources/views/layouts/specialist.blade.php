@@ -164,7 +164,7 @@
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                         </svg>
-                        <span id="notification-count" class="absolute top-0 right-0 hidden items-center justify-center px-2 py-1 text-xs font-bold leading-none text-m-onsolid bg-m-bad rounded-full">0</span>
+                        <span id="notification-count" class="absolute top-0 right-0 hidden items-center justify-center px-2 py-1 text-xs font-bold leading-none text-m-onsolid bg-m-bad rounded-full">۰</span>
                     </button>
 
                     <div id="notification-dropdown"
@@ -308,7 +308,7 @@
         </main>
 
         <footer class="hidden md:block border-t p-4 text-center text-sm" style="background-color: var(--specialist-surface); border-color: var(--specialist-border); color: var(--specialist-text-dim);">
-            © {{ date('Y') }} پنل متخصصین سالن زیبایی.
+            © {{ fa_jdate(now(), 'Y') }} پنل متخصصین سالن زیبایی.
         </footer>
     </div>
 </div>
@@ -365,7 +365,7 @@
                 const count = data.count;
 
                 if (count > 0) {
-                    countElement.textContent = count > 99 ? '99+' : count;
+                    countElement.textContent = String(count > 99 ? '99+' : count).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
                     countElement.classList.remove('hidden');
                     countElement.classList.add('flex');
                 } else {

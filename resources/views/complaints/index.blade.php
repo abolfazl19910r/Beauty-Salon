@@ -17,7 +17,7 @@
                 <a href="{{ route('complaints.show', $complaint) }}" class="flex flex-wrap items-center justify-between gap-2 px-5 py-4 hover:bg-m-gold/5" data-complaint-row>
                     <span>
                         <span class="font-bold">{{ $complaint->title }}</span>
-                        <span class="block text-xs text-m-tx/50">{{ $complaint->categoryLabel() }} · {{ verta($complaint->created_at)->format('Y/m/d H:i') }}</span>
+                        <span class="block text-xs text-m-tx/50">{{ $complaint->categoryLabel() }} · {{ fa_date($complaint->created_at, true) }}</span>
                     </span>
                     <span class="text-xs">
                         @if ($complaint->first_responded_at)

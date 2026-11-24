@@ -19,11 +19,11 @@
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل نظرات</p>
-                <p class="text-2xl font-bold persian-number" style="color:var(--admin-text);">{{ $totalReviews ?? 0 }}</p>
+                <p class="text-2xl font-bold persian-number" style="color:var(--admin-text);">{{ fa_num($totalReviews ?? 0) }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">میانگین امتیاز</p>
-                <p class="text-2xl font-bold persian-number" style="color:rgb(var(--m-warn));">{{ number_format($averageRating ?? 0, 1) }}</p>
+                <p class="text-2xl font-bold persian-number" style="color:rgb(var(--m-warn));">{{ fa_num($averageRating ?? 0, 1) }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">تایید شده</p>
@@ -50,12 +50,12 @@
                             $pct   = $total > 0 ? ($count / $total) * 100 : 0;
                         @endphp
                         <div class="flex items-center gap-3 text-sm">
-                            <span class="w-12 text-left persian-number" style="color:var(--admin-text-dim);">{{ $i }} ★</span>
+                            <span class="w-12 text-left persian-number" style="color:var(--admin-text-dim);">{{ fa_num($i) }} ★</span>
                             <div class="flex-1 h-2 rounded-full" style="background:var(--admin-border);">
                                 <div class="h-2 rounded-full transition-all"
                                      style="width:{{ $pct }}%; background:{{ $i>=4 ? 'rgb(var(--m-ok))' : ($i>=3 ? 'rgb(var(--m-warn))' : 'rgb(var(--m-bad))') }};"></div>
                             </div>
-                            <span class="w-10 persian-number text-xs" style="color:var(--admin-text-dim);">{{ $count }}</span>
+                            <span class="w-10 persian-number text-xs" style="color:var(--admin-text-dim);">{{ fa_num($count) }}</span>
                         </div>
                     @endfor
                 </div>
@@ -77,9 +77,9 @@
                                 <span style="color:var(--admin-text);">{{ $specialist->name }}</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <span class="persian-number text-xs" style="color:var(--admin-text-dim);">{{ $specialist->reviews_count }} نظر</span>
+                                <span class="persian-number text-xs" style="color:var(--admin-text-dim);">{{ fa_num($specialist->reviews_count) }} نظر</span>
                                 <span class="px-2 py-0.5 rounded-full text-xs font-bold persian-number" style="background:rgb(var(--m-warn) / .1); color:rgb(var(--m-warn));">
-                                ★ {{ number_format($specialist->reviews_avg_overall_rating ?? 0, 1) }}
+                                ★ {{ fa_num($specialist->reviews_avg_overall_rating ?? 0, 1) }}
                             </span>
                             </div>
                         </div>

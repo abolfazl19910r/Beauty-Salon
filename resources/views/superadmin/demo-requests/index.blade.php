@@ -41,10 +41,10 @@
                 @forelse ($requests as $demo)
                     <tr style="border-bottom: 1px solid var(--sa-border);" data-demo-request="{{ $demo->id }}">
                         <td class="py-3 px-4">{{ $demo->name }}</td>
-                        <td class="py-3 px-4"><a href="tel:{{ $demo->phone }}" dir="ltr" style="color: var(--sa-accent);">{{ $demo->phone }}</a></td>
+                        <td class="py-3 px-4"><a href="tel:{{ $demo->phone }}" dir="ltr" style="color: var(--sa-accent);">{{ \App\Support\Fa::digits($demo->phone) }}</a></td>
                         <td class="py-3 px-4">{{ $demo->salon_name ?: '—' }}</td>
                         <td class="py-3 px-4">{{ $demo->typeLabel() ?? '—' }}</td>
-                        <td class="py-3 px-4" title="{{ $demo->updated_at }}">{{ \Morilog\Jalali\Jalalian::fromCarbon($demo->created_at)->format('Y/m/d H:i') }}</td>
+                        <td class="py-3 px-4" title="{{ $demo->updated_at }}">{{ fa_date($demo->created_at, true) }}</td>
                         <td class="py-3 px-4" style="min-width: 16rem;">
                             <form method="POST" action="{{ route('superadmin.demo-requests.update', $demo) }}" class="flex flex-wrap items-center gap-2">
                                 @csrf
@@ -57,7 +57,7 @@
                                 </button>
                             </form>
                             @if ($demo->handled_at)
-                                <p class="mt-1" style="color: var(--sa-text-dim); font-size: .75rem;">{{ $demo->handler?->name ?? '—' }} — {{ \Morilog\Jalali\Jalalian::fromCarbon($demo->handled_at)->format('Y/m/d H:i') }}</p>
+                                <p class="mt-1" style="color: var(--sa-text-dim); font-size: .75rem;">{{ $demo->handler?->name ?? '—' }} — {{ fa_date($demo->handled_at, true) }}</p>
                             @endif
                         </td>
                     </tr>

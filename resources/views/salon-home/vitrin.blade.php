@@ -55,7 +55,7 @@
 
                 <div class="flex flex-wrap gap-6 mt-5 text-sm text-m-mu persian-number">
                     @if (($reviewStats['count'] ?? 0) > 0)
-                        <span><b class="text-m-tx">{{ to_persian_num(number_format($reviewStats['avg'], 1)) }}</b> از {{ to_persian_num((string) $reviewStats['count']) }} نظر</span>
+                        <span><b class="text-m-tx">{{ fa_num($reviewStats['avg'], 1) }}</b> از {{ to_persian_num((string) $reviewStats['count']) }} نظر</span>
                     @endif
                     @if ($vSpecialists->isNotEmpty())
                         <span><b class="text-m-tx">{{ to_persian_num((string) $vSpecialists->count()) }}</b> متخصص</span>
@@ -105,7 +105,7 @@
                             <h3 class="font-bold text-m-tx mb-2">{{ $service->name }}</h3>
                             <div class="flex justify-between text-sm text-m-mu persian-number">
                                 <span>{{ to_persian_num((string) $service->duration) }} دقیقه</span>
-                                <span class="font-bold text-m-tx">{{ to_persian_num(number_format($service->price)) }} تومان</span>
+                                <span class="font-bold text-m-tx">{{ fa_num($service->price) }} تومان</span>
                             </div>
                         </div>
                     </a>

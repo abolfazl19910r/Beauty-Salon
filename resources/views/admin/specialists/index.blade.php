@@ -91,18 +91,18 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-4 py-3 text-sm" dir="ltr" style="color:var(--admin-text-dim);">{{ $specialist->phone }}</td>
+                            <td class="px-4 py-3 text-sm" dir="ltr" style="color:var(--admin-text-dim);">{{ \App\Support\Fa::digits($specialist->phone) }}</td>
                             <td class="px-4 py-3 text-sm" style="color:var(--admin-text-dim);">{{ $specialist->email ?? '—' }}</td>
                             <td class="px-4 py-3">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium persian-number"
                                   style="background:var(--admin-accent-light); color:var(--admin-accent);">
-                                {{ $specialist->services->count() }} خدمت
+                                {{ fa_num($specialist->services->count()) }} خدمت
                             </span>
                             </td>
                             <td class="px-4 py-3">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold persian-number"
                                   style="background:rgb(var(--m-info) / .1); color:rgb(var(--m-info));">
-                                {{ $specialist->bookings_count ?? 0 }}
+                                {{ fa_num($specialist->bookings_count ?? 0) }}
                             </span>
                             </td>
                             <td class="px-4 py-3">

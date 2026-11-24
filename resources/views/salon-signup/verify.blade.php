@@ -76,7 +76,7 @@
     <div class="card">
         <h1>تایید شماره موبایل</h1>
         <p>
-            کد ۶ رقمی ارسال‌شده به شماره‌ی <strong dir="ltr">{{ $owner->phone }}</strong>
+            کد ۶ رقمی ارسال‌شده به شماره‌ی <strong dir="ltr">{{ \App\Support\Fa::digits($owner->phone) }}</strong>
             را برای فعال‌سازی سالن «{{ $salon->name }}» وارد کنید.
         </p>
 

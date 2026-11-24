@@ -6,7 +6,7 @@
     <div class="max-w-6xl mx-auto px-4 py-10" style="color: var(--rasta-cream);">
         <h1 class="text-2xl md:text-3xl font-bold mb-2" style="color: var(--rasta-gold-light);">متخصص‌های «{{ $service->name }}»</h1>
         <p class="text-sm opacity-75 mb-6 persian-number">
-            قیمت: {{ to_persian_num(number_format((int) $service->price)) }} تومان
+            قیمت: {{ fa_num((int) $service->price) }} تومان
             @if ($service->duration) — مدت: {{ to_persian_num((string) $service->duration) }} دقیقه @endif
         </p>
 

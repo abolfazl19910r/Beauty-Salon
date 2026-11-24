@@ -20,7 +20,7 @@
     </h3>
     <div class="text-sm mb-4 persian-number" style="color: var(--rasta-cream); opacity: .8; min-height: 1.5rem;">
         @if ($avg)
-            <span style="color: var(--rasta-gold);">★</span> {{ to_persian_num(number_format((float) $avg, 1)) }}
+            <span style="color: var(--rasta-gold);">★</span> {{ fa_num((float) $avg, 1) }}
             @if ($ratingCount) <span class="opacity-70">({{ to_persian_num((string) $ratingCount) }} امتیاز)</span> @endif
         @endif
         @if (! empty($specialist->completed_bookings))

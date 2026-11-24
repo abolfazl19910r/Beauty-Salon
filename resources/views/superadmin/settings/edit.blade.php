@@ -154,7 +154,7 @@
         <div class="mt-4 text-sm flex flex-wrap items-center gap-x-6 gap-y-2">
             <span>FCM: @if ($push['fcm_configured'])<span style="color: var(--sa-success);">کلید حساب سرویس تنظیم شده</span>@else<span style="color: var(--sa-danger);">تنظیم نشده (<span dir="ltr">PUSH_FCM_CREDENTIALS</span>)</span>@endif</span>
             <span>ntfy: @if ($push['ntfy_configured'])<span style="color: var(--sa-success);">تنظیم شده</span>@else<span style="color: var(--sa-text-dim);">بدون سرور (برای قطعی اینترنت بین‌الملل)</span>@endif</span>
-            <span>گوشی‌های ثبت‌شده: {{ to_persian_num(number_format($push['devices'])) }}</span>
+            <span>گوشی‌های ثبت‌شده: {{ fa_num($push['devices']) }}</span>
             <a href="{{ route('superadmin.push.index') }}#push-readiness" style="color: var(--sa-accent);">آمادگی برای «فعال»</a>
             @if ($push['fcm_configured'])
                 <form method="POST" action="{{ route('superadmin.settings.push.check') }}">
@@ -198,7 +198,7 @@
                             —
                         @endif
                     </td>
-                    <td class="py-2 px-3">{{ number_format($bot['links'][$key] ?? 0) }}</td>
+                    <td class="py-2 px-3">{{ fa_num($bot['links'][$key] ?? 0) }}</td>
                 </tr>
             @endforeach
             </tbody>

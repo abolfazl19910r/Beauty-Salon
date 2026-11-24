@@ -47,7 +47,7 @@
                         </svg>
                         <span class="text-sm" style="color:var(--admin-text-dim);">
                         تعداد خدمات این دسته‌بندی:
-                        <span class="font-bold persian-number" style="color:var(--admin-accent);">{{ $category->services->count() }}</span>
+                        <span class="font-bold persian-number" style="color:var(--admin-accent);">{{ fa_num($category->services->count()) }}</span>
                     </span>
                     </div>
                 </div>

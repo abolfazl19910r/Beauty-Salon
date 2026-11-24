@@ -12,9 +12,9 @@
             @if ($panel === 'site')
                 {{ $bpSalon->bookingPauseMessage() }} نوبت‌های ثبت‌شده‌ی شما سر جایشان هستند.
             @elseif ($panel === 'specialists')
-                نوبت تازه ثبت نمی‌شود؛ نوبت‌های ثبت‌شده مثل همیشه انجام می‌شوند.{{ $bpSalon->paused_until ? ' باز شدن خودکار: '.verta($bpSalon->paused_until)->format('Y/m/d') : '' }}
+                نوبت تازه ثبت نمی‌شود؛ نوبت‌های ثبت‌شده مثل همیشه انجام می‌شوند.{{ $bpSalon->paused_until ? ' باز شدن خودکار: '.fa_date($bpSalon->paused_until) : '' }}
             @else
-                {{ $bpSalon->isPausedByPlatform() ? 'مدیریت ماهرو رزرو این سالن را متوقف کرده است.' : 'مشتری‌ها نوبت تازه نمی‌توانند بگیرند.' }}{{ $bpSalon->paused_until ? ' باز شدن خودکار: '.verta($bpSalon->paused_until)->format('Y/m/d') : '' }}
+                {{ $bpSalon->isPausedByPlatform() ? 'مدیریت ماهرو رزرو این سالن را متوقف کرده است.' : 'مشتری‌ها نوبت تازه نمی‌توانند بگیرند.' }}{{ $bpSalon->paused_until ? ' باز شدن خودکار: '.fa_date($bpSalon->paused_until) : '' }}
                 @unless ($bpSalon->isPausedByPlatform())
                     <a href="{{ route('admin.salon-settings.edit') }}" class="font-bold underline mr-1" style="color: rgb(var(--m-warn));">بازکردن رزرو</a>
                 @endunless

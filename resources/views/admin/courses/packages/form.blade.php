@@ -19,7 +19,7 @@
                     <label class="block text-sm font-medium mb-1" for="service_id">خدمت</label>
                     <select id="service_id" name="service_id" class="{{ $input }}" style="{{ $inputStyle }}">
                         @foreach ($services as $service)
-                            <option value="{{ $service->id }}" @selected((int) old('service_id', $package->service_id) === $service->id)>{{ $service->name }} ({{ number_format($service->price) }})</option>
+                            <option value="{{ $service->id }}" @selected((int) old('service_id', $package->service_id) === $service->id)>{{ $service->name }} ({{ fa_num($service->price) }})</option>
                         @endforeach
                     </select>
                 </div>

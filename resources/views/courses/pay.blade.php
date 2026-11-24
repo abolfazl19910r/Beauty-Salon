@@ -8,8 +8,8 @@
             @include('courses._flash')
             <h1 class="text-xl font-bold" style="{{ $gold }}">پرداخت دوره‌ی «{{ $course->name }}»</h1>
             <p class="text-sm mt-2 persian-number" style="{{ $dim }}">
-                قیمت کل {{ number_format($course->price_total) }} تومان@if ($course->discount_amount > 0) (با {{ number_format($course->discount_amount) }} تومان تخفیف)@endif؛
-                پرداخت‌شده {{ number_format($course->amount_paid) }}؛ مانده {{ number_format($course->balanceDue()) }} تومان.
+                قیمت کل {{ fa_num($course->price_total) }} تومان@if ($course->discount_amount > 0) (با {{ fa_num($course->discount_amount) }} تومان تخفیف)@endif؛
+                پرداخت‌شده {{ fa_num($course->amount_paid) }}؛ مانده {{ fa_num($course->balanceDue()) }} تومان.
             </p>
 
             @if (! $onlinePayment)
@@ -25,7 +25,7 @@
                            style="background-color: var(--rasta-dark); border: 1px solid rgb(var(--m-gold) / 0.3); color: var(--rasta-cream);">
                     <p class="text-xs mt-1 persian-number" style="{{ $dim }}">
                         @if ($minAmount < $course->balanceDue())
-                            حداقل {{ number_format($minAmount) }} و حداکثر {{ number_format($course->balanceDue()) }} تومان. جلسه‌ها به اندازه‌ی مبلغ پرداخت‌شده رزرو می‌شوند (هر جلسه {{ number_format($course->per_session_value) }} تومان).
+                            حداقل {{ fa_num($minAmount) }} و حداکثر {{ fa_num($course->balanceDue()) }} تومان. جلسه‌ها به اندازه‌ی مبلغ پرداخت‌شده رزرو می‌شوند (هر جلسه {{ fa_num($course->per_session_value) }} تومان).
                         @else
                             پرداخت کل مبلغ.
                         @endif
@@ -35,7 +35,7 @@
                 @if ($walletBalance > 0)
                     <label class="flex items-center gap-2 text-sm persian-number" style="color: var(--rasta-cream);">
                         <input type="checkbox" name="use_wallet" value="1" @checked(old('use_wallet', true))>
-                        استفاده از کیف پول (موجودی {{ number_format($walletBalance) }} تومان)
+                        استفاده از کیف پول (موجودی {{ fa_num($walletBalance) }} تومان)
                     </label>
                 @endif
 
@@ -45,7 +45,7 @@
                         @foreach ($gateways as $gateway)
                             <label class="flex items-center gap-2 text-sm mb-1 persian-number" style="color: var(--rasta-cream);">
                                 <input type="radio" name="gateway_id" value="{{ $gateway['id'] }}" @checked($loop->first)>
-                                {{ $gateway['name'] }}@if ($gateway['fee'] > 0) <span style="{{ $dim }}">(کارمزد {{ number_format($gateway['fee']) }} تومان)</span>@endif
+                                {{ $gateway['name'] }}@if ($gateway['fee'] > 0) <span style="{{ $dim }}">(کارمزد {{ fa_num($gateway['fee']) }} تومان)</span>@endif
                             </label>
                         @endforeach
                     </div>

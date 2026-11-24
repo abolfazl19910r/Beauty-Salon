@@ -119,7 +119,7 @@
             <div class="px-6 py-4 flex items-center justify-between" style="border-bottom:1px solid var(--admin-border)">
                 <h2 class="text-base font-semibold" style="color:var(--admin-text)">
                     کاربران دارای این نقش
-                    <span class="mr-2 px-2 py-0.5 text-xs rounded-full" style="background:var(--admin-accent-light);color:var(--admin-accent)">{{ $users->total() }}</span>
+                    <span class="mr-2 px-2 py-0.5 text-xs rounded-full" style="background:var(--admin-accent-light);color:var(--admin-accent)">{{ fa_num($users->total()) }}</span>
                 </h2>
                 @if($role->name !== 'super-admin' || auth()->user()->hasRole('super-admin'))
                 <a href="{{ route('admin.roles.assign.form', $role) }}"
@@ -148,7 +148,7 @@
                     @foreach($users as $user)
                         <tr class="transition-colors" data-ui-hover="background: var(--admin-accent-light)" data-ui-unhover="background: ">
                             <td class="py-4 px-6 font-medium text-sm" style="color:var(--admin-text)">{{ $user->name }}</td>
-                            <td class="py-4 px-6 text-sm" dir="ltr" style="color:var(--admin-text-dim)">{{ $user->phone }}</td>
+                            <td class="py-4 px-6 text-sm" dir="ltr" style="color:var(--admin-text-dim)">{{ \App\Support\Fa::digits($user->phone) }}</td>
                             <td class="py-4 px-6 text-sm" style="color:var(--admin-text-dim)">{{ $user->email }}</td>
                             <td class="py-4 px-6">
                                 @if($role->name !== 'super-admin' || auth()->user()->hasRole('super-admin'))

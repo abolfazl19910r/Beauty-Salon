@@ -25,7 +25,7 @@
                 <div class="mt-2 flex justify-between text-xs persian-number" style="{{ $dim }}">
                     <span>{{ to_persian_num((string) $done) }} از {{ to_persian_num((string) $course->sessions_total) }} جلسه</span>
                     @if ($course->status === 'active' && $course->next_due_at)
-                        <span>موعد جلسه‌ی بعد: {{ verta($course->next_due_at)->format('Y/m/d') }}</span>
+                        <span>موعد جلسه‌ی بعد: {{ fa_date($course->next_due_at) }}</span>
                     @elseif ($course->status === 'pending_payment')
                         <span>در انتظار پرداخت</span>
                     @endif

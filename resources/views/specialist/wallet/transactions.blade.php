@@ -131,14 +131,14 @@
                                 <div>
                                     <p class="text-sm text-[var(--specialist-text)]">{{ $transaction->description }}</p>
                                     @if($transaction->booking_id)
-                                        <p class="text-xs text-[var(--specialist-plum-muted)] persian-number">نوبت #{{ $transaction->booking_id }}</p>
+                                        <p class="text-xs text-[var(--specialist-plum-muted)] persian-number">نوبت #{{ fa_num($transaction->booking_id) }}</p>
                                     @endif
                                 </div>
                             </div>
                             <div class="flex items-center gap-4">
-                                <span class="text-sm text-[var(--specialist-plum-muted)] persian-number">{{ verta($transaction->created_at)->format('Y/m/d H:i') }}</span>
+                                <span class="text-sm text-[var(--specialist-plum-muted)] persian-number">{{ fa_date($transaction->created_at, true) }}</span>
                                 <span class="persian-number font-semibold {{ $transaction->amount >= 0 ? 'text-m-ok' : 'text-m-bad' }}">
-                                    {{ $transaction->formatted_amount }}
+                                    {{ fa_num($transaction->formatted_amount) }}
                                 </span>
                             </div>
                         </div>

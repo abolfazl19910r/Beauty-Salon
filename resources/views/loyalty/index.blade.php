@@ -18,7 +18,7 @@
                     <p class="text-m-tx/60 text-sm">از هر خرید امتیاز بگیرید و جوایز ویژه دریافت کنید</p>
                 </div>
                 <div class="text-center bg-m-gold/15 border border-m-gold/30 rounded-2xl p-6 shrink-0">
-                    <p class="text-5xl font-bold text-m-gold2 persian-number">{{ number_format($userPoints) }}</p>
+                    <p class="text-5xl font-bold text-m-gold2 persian-number">{{ fa_num($userPoints) }}</p>
                     <p class="text-sm text-m-tx/60 mt-1">امتیاز فعال</p>
                 </div>
             </div>
@@ -36,7 +36,7 @@
                             </svg>
                         </div>
                     </div>
-                    <p class="text-3xl font-bold text-m-warn persian-number">{{ number_format($expiringPoints) }}</p>
+                    <p class="text-3xl font-bold text-m-warn persian-number">{{ fa_num($expiringPoints) }}</p>
                     <p class="text-xs text-m-tx/45 mt-1">امتیاز تا ۳۰ روز آینده</p>
                 </div>
             @endif
@@ -50,7 +50,7 @@
                         </svg>
                     </div>
                 </div>
-                <p class="text-3xl font-bold text-m-ok persian-number">{{ $activeCodes->count() }}</p>
+                <p class="text-3xl font-bold text-m-ok persian-number">{{ fa_num($activeCodes->count()) }}</p>
                 <p class="text-xs text-m-tx/45 mt-1">کد قابل استفاده</p>
             </div>
 
@@ -63,7 +63,7 @@
                              style="width:{{ min(($userPoints/$nextReward->required_points)*100,100) }}%"></div>
                     </div>
                     <p class="text-xs text-m-tx/45 persian-number">
-                        {{ number_format($nextReward->required_points - $userPoints) }} امتیاز مانده
+                        {{ fa_num($nextReward->required_points - $userPoints) }} امتیاز مانده
                     </p>
                 </div>
             @endif
@@ -87,8 +87,8 @@
                             <div>
                                 <p class="font-mono text-lg font-bold text-m-ok">{{ $code->code }}</p>
                                 <p class="text-xs text-m-tx/55 mt-1">
-                                    @if($code->type==='percentage') {{ $code->amount }}% تخفیف
-                                    @else {{ number_format($code->amount) }} تومان
+                                    @if($code->type==='percentage') {{ fa_num($code->amount, 2) }}٪ تخفیف
+                                    @else {{ fa_num($code->amount) }} تومان
                                     @endif
                                     · باقیمانده: {{ $code->max_uses - $code->used_count }} بار
                                 </p>
@@ -122,10 +122,10 @@
                                     <h3 class="font-bold text-m-tx mb-1">{{ $reward->title }}</h3>
                                     <p class="text-xs text-m-tx/55 mb-3">{{ $reward->description }}</p>
                                     <div class="flex flex-wrap gap-3 text-xs">
-                                        <span class="text-m-gold persian-number">{{ number_format($reward->required_points) }} امتیاز</span>
+                                        <span class="text-m-gold persian-number">{{ fa_num($reward->required_points) }} امتیاز</span>
                                         <span class="text-m-ok">
-                                        @if($reward->discount_type==='percentage') {{ $reward->discount_amount }}% تخفیف
-                                            @else {{ number_format($reward->discount_amount) }} تومان
+                                        @if($reward->discount_type==='percentage') {{ fa_num($reward->discount_amount, 2) }}٪ تخفیف
+                                            @else {{ fa_num($reward->discount_amount) }} تومان
                                             @endif
                                     </span>
                                     </div>
@@ -152,7 +152,7 @@
                                         <div class="text-center">
                                             <p class="text-xs text-m-tx/40 mb-1">نیاز به</p>
                                             <p class="text-sm font-bold text-m-tx/60 persian-number">
-                                                {{ number_format($reward->required_points - $userPoints) }}
+                                                {{ fa_num($reward->required_points - $userPoints) }}
                                             </p>
                                             <p class="text-xs text-m-tx/40">امتیاز بیشتر</p>
                                         </div>
@@ -177,11 +177,11 @@
                             <div class="flex items-start justify-between">
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-bold {{ $point->type==='earned' ? 'text-m-ok' : 'text-m-bad' }} persian-number">
-                                        {{ $point->type==='earned' ? '+' : '-' }}{{ number_format(abs($point->points)) }} امتیاز
+                                        {{ $point->type==='earned' ? '+' : '-' }}{{ fa_num(abs($point->points)) }} امتیاز
                                     </p>
                                     <p class="text-xs text-m-tx/55 mt-0.5 truncate">{{ $point->description }}</p>
                                     @if($point->expires_at && $point->type==='earned')
-                                        <p class="text-xs text-m-warn/70 mt-0.5 persian-number">انقضا: {{ verta($point->expires_at)->format('Y/m/d') }}</p>
+                                        <p class="text-xs text-m-warn/70 mt-0.5 persian-number">انقضا: {{ fa_date($point->expires_at) }}</p>
                                     @endif
                                 </div>
                                 <p class="text-xs text-m-tx/40 whitespace-nowrap mr-3">{{ verta($point->created_at)->formatDifference() }}</p>

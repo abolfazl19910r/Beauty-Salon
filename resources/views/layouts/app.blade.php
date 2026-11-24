@@ -131,7 +131,7 @@
                         @endphp
                         @if($userPoints > 0)
                             <span class="absolute -top-2 -left-3 bg-m-gold text-m-ongold text-[10px] px-1.5 py-0.5 rounded-full persian-number min-w-[20px] text-center font-bold">
-                                {{ number_format($userPoints) }}
+                                {{ fa_num($userPoints) }}
                             </span>
                         @endif
                     </a>
@@ -201,7 +201,7 @@
                     <a href="{{ route('loyalty.index') }}" class="block py-2 nav-link flex items-center">
                         امتیازات من
                         @if(isset($userPoints) && $userPoints > 0)
-                            <span class="mr-2 text-m-gold2 text-sm persian-number">({{ number_format($userPoints) }})</span>
+                            <span class="mr-2 text-m-gold2 text-sm persian-number">({{ fa_num($userPoints) }})</span>
                         @endif
                     </a>
                     <a href="{{ route('wallet.index') }}" class="block py-2 nav-link">کیف پول</a>
@@ -452,7 +452,7 @@
         @endif
 
         <div class="border-t border-m-gold/10 mt-8 pt-6 text-center text-m-tx/40 text-sm">
-            <p>© {{ date('Y') }} {{ $currentSalonTitle }}. تمامی حقوق محفوظ است.</p>
+            <p>© {{ fa_jdate(now(), 'Y') }} {{ $currentSalonTitle }}. تمامی حقوق محفوظ است.</p>
             @include('partials.platform-legal-links')
         </div>
     </div>

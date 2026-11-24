@@ -35,14 +35,14 @@
     {{-- بسته‌ی «ح»، ۲: هشت کارت در یک شبکه‌ی یک‌دست (پیش‌تر ردیف دوم روی موبایل تک‌ستونه می‌شد و ارتفاع کارت‌ها برابر نبود) --}}
     @php
         $statCards = [
-            ['درآمد اشتراک این ماه', number_format($overview['subscription_revenue_month']), 'تومان', 'var(--sa-accent)'],
-            ['درآمد بسته‌ی پیامک این ماه', number_format($overview['sms_revenue_month']), 'تومان', 'var(--sa-accent)'],
-            ['سالن تازه‌ی این ماه', number_format($overview['new_salons_month']), 'در دوره‌ی آزمایشی: '.$overview['trial_salons'], null],
-            ['پیامک این ماه (همه‌ی سالن‌ها)', number_format($overview['sms_parts_month']), 'قطعه + '.number_format($overview['otp_month']).' کد تأیید', null],
-            ['سالن‌های فعال', number_format($stats['active_salons']), null, null],
-            ['مجموع متخصصین', number_format($stats['total_specialists']), null, null],
-            ['نزدیک به انقضا (۷ روز)', number_format($stats['expiring_soon']), null, 'var(--sa-accent)'],
-            ['منقضی‌شده', number_format($stats['expired']), null, 'var(--sa-danger)'],
+            ['درآمد اشتراک این ماه', fa_num($overview['subscription_revenue_month']), 'تومان', 'var(--sa-accent)'],
+            ['درآمد بسته‌ی پیامک این ماه', fa_num($overview['sms_revenue_month']), 'تومان', 'var(--sa-accent)'],
+            ['سالن تازه‌ی این ماه', fa_num($overview['new_salons_month']), 'در دوره‌ی آزمایشی: '.fa_num($overview['trial_salons']), null],
+            ['پیامک این ماه (همه‌ی سالن‌ها)', fa_num($overview['sms_parts_month']), 'قطعه + '.fa_num($overview['otp_month']).' کد تأیید', null],
+            ['سالن‌های فعال', fa_num($stats['active_salons']), null, null],
+            ['مجموع متخصصین', fa_num($stats['total_specialists']), null, null],
+            ['نزدیک به انقضا (۷ روز)', fa_num($stats['expiring_soon']), null, 'var(--sa-accent)'],
+            ['منقضی‌شده', fa_num($stats['expired']), null, 'var(--sa-danger)'],
         ];
     @endphp
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6" data-dashboard-stats>
@@ -65,7 +65,7 @@
             <div class="font-bold">{{ $backupLabel }}</div>
             <div class="text-sm" style="color: var(--sa-text-dim);">
                 @if ($backup['at'])
-                    {{ \Morilog\Jalali\Jalalian::fromCarbon($backup['at'])->format('Y/m/d H:i') }} ({{ $backup['at']->diffForHumans() }})
+                    {{ fa_date($backup['at'], true) }} ({{ $backup['at']->diffForHumans() }})
                     @if ($backup['size']) · حجم {{ $backup['size'] }} @endif
                     @if ($backup['encrypted'] === true) · <span data-backup-encrypted>رمزنگاری‌شده</span>
                     @elseif ($backup['encrypted'] === false) · <span data-backup-plain style="color: var(--sa-danger);">بدون رمزنگاری</span> @endif
@@ -99,9 +99,9 @@
                     <tr class="border-b" style="border-color: var(--sa-border);">
                         <td class="py-3">{{ $salon->name }}</td>
                         <td class="py-3" style="color: var(--sa-text-dim);"><a href="{{ $salon->publicUrl() }}" target="_blank" rel="noopener" class="sa-ltr" style="color: var(--sa-accent);">{{ \App\Support\SalonAddress::short($salon) }}</a></td>
-                        <td class="py-3">{{ $salon->specialists_count }} / {{ $salon->max_specialists_count }}</td>
-                        <td class="py-3">{{ $salon->subscription_started_at ? jalali_date($salon->subscription_started_at) : '—' }}</td>
-                        <td class="py-3">{{ jalali_date($salon->subscription_ends_at) }}</td>
+                        <td class="py-3">{{ fa_num($salon->specialists_count) }} / {{ fa_num($salon->max_specialists_count) }}</td>
+                        <td class="py-3">{{ $salon->subscription_started_at ? fa_date($salon->subscription_started_at) : '—' }}</td>
+                        <td class="py-3">{{ fa_date($salon->subscription_ends_at) }}</td>
                         <td class="py-3">
                             @if ($salon->is_suspended)
                                 <span style="color: var(--sa-danger);">تعلیق‌شده</span>

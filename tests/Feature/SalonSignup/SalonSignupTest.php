@@ -60,7 +60,7 @@ class SalonSignupTest extends TestCase
         $this->assertDatabaseMissing('users', ['phone' => '09121234567']);
         $this->assertMatchesRegularExpression('/^\d{6}$/', $this->lastSignupCode());
         Queue::assertPushedOn('otp', \App\Jobs\SendRegistrationCodeJob::class);
-        $this->get(route('salon-signup.verify'))->assertOk()->assertSee('09121234567')->assertSee('سالن الماس');
+        $this->get(route('salon-signup.verify'))->assertOk()->assertSee(\App\Support\Fa::digits('09121234567'))->assertSee('سالن الماس');
         $this->getJson(route('salon-signup.check-slug', ['slug' => 'almas-test-salon']))->assertJson(['available' => true]);
 
         $this->assertGuest();

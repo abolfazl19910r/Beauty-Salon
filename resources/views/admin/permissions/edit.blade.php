@@ -78,7 +78,7 @@
                     <div class="p-4 rounded-lg mb-5 text-sm"
                          style="background:rgb(var(--m-warn) / .1);border-right:3px solid rgb(var(--m-warn));color:rgb(var(--m-warn))">
                         <strong>توجه!</strong> این دسترسی در
-                        <strong>{{ $permission->roles->count() }}</strong> نقش استفاده شده:
+                        <strong>{{ fa_num($permission->roles->count()) }}</strong> نقش استفاده شده:
                         <span class="mr-1">{{ $permission->roles->pluck('label')->implode('، ') }}</span>
                     </div>
                 @endif

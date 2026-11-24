@@ -58,7 +58,7 @@
                         <svg class="w-4 h-4 text-m-gold/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
                         </svg>
-                        {{ number_format($post->views ?? 0) }} بازدید
+                        {{ fa_num($post->views ?? 0) }} بازدید
                     </span>
                     @if($post->author)
                         <span class="flex items-center gap-1.5">

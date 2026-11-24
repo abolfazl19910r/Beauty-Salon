@@ -9,7 +9,7 @@
             @include('courses._flash')
             <h1 class="text-xl font-bold" style="{{ $gold }}">رزرو {{ $course->sessionLabel($course->sessions_used + $course->reservedCount() + 1) }}</h1>
             <p class="text-sm mt-1" style="{{ $dim }}">بدون پرداخت؛ هزینه‌ی جلسه با خرید دوره پرداخت شده است.
-                @if ($course->min_interval_days > 0) زودترین روز مجاز: {{ verta($course->earliestNextSession())->format('Y/m/d') }}.@endif
+                @if ($course->min_interval_days > 0) زودترین روز مجاز: {{ fa_date($course->earliestNextSession()) }}.@endif
             </p>
 
             <div class="mt-5">
@@ -30,7 +30,7 @@
                     <div class="flex flex-wrap gap-2">
                         @forelse ($dates as $option)
                             <a href="{{ route('my-courses.book', [$course, 'specialist' => $specialist->id, 'date' => $option]) }}" class="px-3 py-2 rounded-lg text-sm persian-number"
-                               style="{{ $date === $option ? $btn : $ghost }}">{{ verta($option)->format('l d F') }}</a>
+                               style="{{ $date === $option ? $btn : $ghost }}">{{ fa_jdate($option, 'l d F') }}</a>
                         @empty
                             <p class="text-sm" style="{{ $dim }}">در بازه‌ی مجاز روز آزادی برای این متخصص نیست.</p>
                         @endforelse
@@ -48,7 +48,7 @@
                                 <input type="hidden" name="specialist_id" value="{{ $specialist->id }}">
                                 <input type="hidden" name="date" value="{{ $date }}">
                                 <input type="hidden" name="time" value="{{ $slot }}">
-                                <button type="submit" class="px-3 py-2 rounded-lg text-sm persian-number" style="{{ $ghost }}">{{ $slot }}</button>
+                                <button type="submit" class="px-3 py-2 rounded-lg text-sm persian-number" style="{{ $ghost }}">{{ fa_num($slot) }}</button>
                             </form>
                         @empty
                             <p class="text-sm" style="{{ $dim }}">ساعت خالی نمانده؛ روز دیگری انتخاب کنید.</p>

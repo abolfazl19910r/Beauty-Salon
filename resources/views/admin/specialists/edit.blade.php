@@ -115,7 +115,7 @@
                                             <input type="checkbox" name="services[]" value="{{ $service->id }}"
                                                 {{ in_array($service->id, $selectedServices) ? 'checked' : '' }}>
                                             <span class="flex-1 text-sm" style="color:var(--admin-text);">{{ $service->name }}</span>
-                                            <span class="text-xs persian-number" style="color:var(--admin-text-light);">{{ number_format($service->price) }} ت</span>
+                                            <span class="text-xs persian-number" style="color:var(--admin-text-light);">{{ fa_num($service->price) }} ت</span>
                                         </label>
                                     @endforeach
                                 </div>
@@ -155,7 +155,7 @@
                             $globalRate = app(\App\Repositories\Contracts\WalletSettingRepositoryInterface::class)->first()?->admin_commission_percentage ?? 10;
                         @endphp
                         <p class="text-xs mt-1" style="color:var(--admin-text-light)">
-                            نرخ global فعلی: <strong>{{ $globalRate }}%</strong>
+                            نرخ global فعلی: <strong>{{ fa_num($globalRate, 2) }}٪</strong>
                             @if(!is_null($specialist->commission_rate))
                                 — این متخصص نرخ اختصاصی دارد
                             @endif

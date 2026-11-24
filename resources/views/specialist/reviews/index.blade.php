@@ -43,7 +43,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm mb-1 opacity-80">میانگین امتیاز</p>
-                        <p class="text-3xl font-bold persian-number">{{ number_format($averageRating, 1) }}</p>
+                        <p class="text-3xl font-bold persian-number">{{ fa_num($averageRating, 1) }}</p>
                         <p class="text-xs mt-1 opacity-70">از 5 ستاره</p>
                     </div>
                     <svg class="w-9 h-9 opacity-80" fill="currentColor" viewBox="0 0 20 20">
@@ -56,7 +56,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">تعداد نظرات</p>
-                        <p class="text-2xl font-bold text-[var(--specialist-text)] persian-number">{{ number_format($stats['total']) }}</p>
+                        <p class="text-2xl font-bold text-[var(--specialist-text)] persian-number">{{ fa_num($stats['total']) }}</p>
                     </div>
                     <svg class="w-8 h-8 text-[var(--specialist-plum-mid)]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
@@ -68,7 +68,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">نظرات 5 ستاره</p>
-                        <p class="text-2xl font-bold text-m-ok persian-number">{{ number_format($stats['five_star']) }}</p>
+                        <p class="text-2xl font-bold text-m-ok persian-number">{{ fa_num($stats['five_star']) }}</p>
                     </div>
                     <svg class="w-8 h-8 text-m-ok" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
@@ -105,7 +105,7 @@
                     @endphp
                     <div class="flex items-center gap-4">
                         <div class="flex items-center gap-1 w-16">
-                            <span class="font-semibold text-[var(--specialist-text-dim)] persian-number">{{ $rating }}</span>
+                            <span class="font-semibold text-[var(--specialist-text-dim)] persian-number">{{ fa_num($rating) }}</span>
                             <svg class="w-4 h-4 text-[var(--specialist-plum-mid)]" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                             </svg>
@@ -115,7 +115,7 @@
                                 <div class="rating-bar-fill" style="width: {{ $percentage }}%"></div>
                             </div>
                         </div>
-                        <span class="text-sm font-medium text-[var(--specialist-text-dim)] w-12 text-left persian-number">{{ number_format($count) }}</span>
+                        <span class="text-sm font-medium text-[var(--specialist-text-dim)] w-12 text-left persian-number">{{ fa_num($count) }}</span>
                     </div>
                 @endforeach
             </div>
@@ -223,26 +223,26 @@
                                         </svg>
                                     @endfor
                                 </div>
-                                <p class="text-xs text-[var(--specialist-plum-muted)] persian-number">{{ verta($review->reviewed_at)->format('Y/m/d') }}</p>
+                                <p class="text-xs text-[var(--specialist-plum-muted)] persian-number">{{ fa_date($review->reviewed_at) }}</p>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 p-4 rounded-lg" style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);">
                             <div class="text-center">
                                 <p class="text-xs text-[var(--specialist-plum-muted)] mb-1">کیفیت</p>
-                                <p class="font-bold text-m-info persian-number">{{ $review->quality_rating }}/5</p>
+                                <p class="font-bold text-m-info persian-number">{{ fa_num($review->quality_rating) }}/5</p>
                             </div>
                             <div class="text-center">
                                 <p class="text-xs text-[var(--specialist-plum-muted)] mb-1">رفتار</p>
-                                <p class="font-bold text-m-ok persian-number">{{ $review->behavior_rating }}/5</p>
+                                <p class="font-bold text-m-ok persian-number">{{ fa_num($review->behavior_rating) }}/5</p>
                             </div>
                             <div class="text-center">
                                 <p class="text-xs text-[var(--specialist-plum-muted)] mb-1">تمیزی</p>
-                                <p class="font-bold text-m-ok persian-number">{{ $review->cleanliness_rating }}/5</p>
+                                <p class="font-bold text-m-ok persian-number">{{ fa_num($review->cleanliness_rating) }}/5</p>
                             </div>
                             <div class="text-center">
                                 <p class="text-xs text-[var(--specialist-plum-muted)] mb-1">سرعت</p>
-                                <p class="font-bold text-m-warn persian-number">{{ $review->speed_rating }}/5</p>
+                                <p class="font-bold text-m-warn persian-number">{{ fa_num($review->speed_rating) }}/5</p>
                             </div>
                         </div>
 
@@ -261,7 +261,7 @@
                                     <span class="text-sm font-bold text-[var(--specialist-plum-light)]">پاسخ شما:</span>
                                 </div>
                                 <p class="text-[var(--specialist-text-dim)]">{{ $review->specialist_response }}</p>
-                                <p class="text-xs text-[var(--specialist-plum-muted)] mt-2 persian-number">{{ verta($review->responded_at)->format('Y/m/d H:i') }}</p>
+                                <p class="text-xs text-[var(--specialist-plum-muted)] mt-2 persian-number">{{ fa_date($review->responded_at, true) }}</p>
                             </div>
                         @endif
 

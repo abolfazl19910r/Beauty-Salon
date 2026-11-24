@@ -22,11 +22,11 @@
                 </div>
                 <div class="flex justify-between items-center px-5 py-3.5 text-sm">
                     <span class="text-m-tx/55">شماره نوبت</span>
-                    <span class="font-medium text-m-tx persian-number">#{{ $booking->id }}</span>
+                    <span class="font-medium text-m-tx persian-number">#{{ \App\Support\Fa::digits($booking->id) }}</span>
                 </div>
                 <div class="flex justify-between items-center px-5 py-3.5 text-sm">
                     <span class="text-m-tx/55">مبلغ قابل پرداخت</span>
-                    <span class="font-bold text-m-gold2 persian-number">{{ number_format($payment->amount) }} تومان</span>
+                    <span class="font-bold text-m-gold2 persian-number">{{ fa_num($payment->amount) }} تومان</span>
                 </div>
             </div>
         </div>

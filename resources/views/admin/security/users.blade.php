@@ -52,7 +52,7 @@
                         <tr style="border-top: 1px solid var(--admin-border);">
                             <td class="px-4 py-3" style="color:var(--admin-text);">
                                 {{ $user->name }}
-                                <span class="text-xs persian-number block" style="color:var(--admin-text-light);" dir="ltr">{{ $user->phone }}</span>
+                                <span class="text-xs persian-number block" style="color:var(--admin-text-light);" dir="ltr">{{ \App\Support\Fa::digits($user->phone) }}</span>
                             </td>
                             <td class="px-4 py-3">
                                 @if($user->two_factor_enabled)
@@ -62,10 +62,10 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 persian-number" style="color: {{ $user->suspicious_activity_count > 2 ? 'rgb(var(--m-bad))' : 'var(--admin-text-dim)' }};">
-                                {{ $user->suspicious_activity_count }}
+                                {{ fa_num($user->suspicious_activity_count) }}
                             </td>
                             <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">
-                                {{ $user->last_successful_login_at ? jalali_date($user->last_successful_login_at, 'Y/m/d H:i') : '—' }}
+                                {{ $user->last_successful_login_at ? fa_date($user->last_successful_login_at, true) : '—' }}
                             </td>
                         </tr>
                     @empty

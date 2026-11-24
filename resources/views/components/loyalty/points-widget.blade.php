@@ -1,12 +1,12 @@
 <div class="bg-white rounded-lg shadow p-4">
     <div class="flex justify-between items-center">
         <div class="text-gray-600">موجودی امتیاز</div>
-        <div class="text-2xl font-bold">{{ number_format(auth()->user()->getCurrentPoints()) }}</div>
+        <div class="text-2xl font-bold">{{ fa_num(auth()->user()->getCurrentPoints()) }}</div>
     </div>
 
     @if($expiringPoints = auth()->user()->getExpiringPoints())
         <div class="mt-2 text-sm text-red-500">
-            {{ number_format($expiringPoints) }} امتیاز در حال انقضا
+            {{ fa_num($expiringPoints) }} امتیاز در حال انقضا
         </div>
     @endif
 

@@ -61,19 +61,19 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs" style="color:var(--admin-text-dim);">رخداد (۳۰ روز اخیر)</p>
-                <p class="text-xl font-bold mt-1 persian-number" style="color:var(--admin-text);">{{ $stats['logs_last_30_days'] }}</p>
+                <p class="text-xl font-bold mt-1 persian-number" style="color:var(--admin-text);">{{ fa_num($stats['logs_last_30_days']) }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs" style="color:var(--admin-text-dim);">هشدار (۳۰ روز اخیر)</p>
-                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-warn));">{{ $stats['warnings_last_30_days'] }}</p>
+                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-warn));">{{ fa_num($stats['warnings_last_30_days']) }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs" style="color:var(--admin-text-dim);">ورود ناموفق (۲۴ ساعت اخیر)</p>
-                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-bad));">{{ $stats['failed_logins_last_24h'] }}</p>
+                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-bad));">{{ fa_num($stats['failed_logins_last_24h']) }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs" style="color:var(--admin-text-dim);">کاربران با ۲FA فعال</p>
-                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-ok));">{{ $stats['users_with_2fa'] }}</p>
+                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-ok));">{{ fa_num($stats['users_with_2fa']) }}</p>
             </div>
         </div>
 
@@ -142,7 +142,7 @@
                             <td class="px-4 py-3" style="color:var(--admin-text);">
                                 @if($log->user)
                                     {{ $log->user->name }}
-                                    <span class="text-xs persian-number" style="color:var(--admin-text-light);" dir="ltr">{{ $log->user->phone }}</span>
+                                    <span class="text-xs persian-number" style="color:var(--admin-text-light);" dir="ltr">{{ \App\Support\Fa::digits($log->user->phone) }}</span>
                                 @else
                                     <span style="color:var(--admin-text-light);">ناشناس</span>
                                 @endif
@@ -156,7 +156,7 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 persian-number" dir="ltr" style="color:var(--admin-text-dim);">{{ $log->ip_address ?: '—' }}</td>
-                            <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ jalali_date($log->created_at, 'Y/m/d H:i') }}</td>
+                            <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ fa_date($log->created_at, true) }}</td>
                         </tr>
                     @empty
                         <tr>

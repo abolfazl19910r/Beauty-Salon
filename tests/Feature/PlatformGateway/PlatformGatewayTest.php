@@ -195,7 +195,7 @@ class PlatformGatewayTest extends TestCase
         $this->assertSame([2_000_000, 100_000, 1_900_000], [$theirs['gross'], $theirs['platform'], $theirs['salon']]);
 
         $this->actingAs($this->superAdmin)->get(route('superadmin.platform-gateway.salon', $this->salon->id))->assertOk()
-            ->assertSeeInOrder(['data-sum-gross', '۱۵۰,۰۰۰', 'data-sum-platform', '۱۵,۰۰۰', 'data-sum-salon', '۱۳۵,۰۰۰'], false);
+            ->assertSeeInOrder(['data-sum-gross', '۱۵۰٬۰۰۰', 'data-sum-platform', '۱۵٬۰۰۰', 'data-sum-salon', '۱۳۵٬۰۰۰'], false);
     }
 
     public function test_settlement_lifecycle_create_pay_cancel_and_csv(): void

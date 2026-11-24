@@ -37,7 +37,7 @@
                 @forelse ($archives as $archive)
                     <tr style="border-top: 1px solid var(--sa-border);" data-archive-row>
                         <td class="py-3 px-4 whitespace-nowrap">{{ $jalali($archive->deleted_at) }}<div class="text-xs" dir="ltr">{{ $archive->deletion_ip ?? '—' }}</div></td>
-                        <td class="py-3 px-4">{{ $archive->name }}<div class="text-xs" dir="ltr">{{ $archive->phone }}</div></td>
+                        <td class="py-3 px-4">{{ $archive->name }}<div class="text-xs" dir="ltr">{{ \App\Support\Fa::digits($archive->phone) }}</div></td>
                         <td class="py-3 px-4">{{ $archive->salon?->name ?? '—' }}</td>
                         <td class="py-3 px-4 text-xs leading-6" dir="ltr">
                             @foreach ($archive->ip_history ?? [] as $row)
@@ -66,7 +66,7 @@
                         <td class="py-3 px-4 whitespace-nowrap">{{ $jalali($log->created_at) }}</td>
                         <td class="py-3 px-4 whitespace-nowrap"><span class="sa-badge">{{ $log->event_label }}</span>
                             @if ($log->subject_type)<div class="text-xs" style="color: var(--sa-text-dim);">{{ $log->subject_type }} #{{ $log->subject_id }}</div>@endif</td>
-                        <td class="py-3 px-4">{{ $log->user?->name ?? '—' }}<div class="text-xs" dir="ltr">{{ $log->user?->phone }}</div></td>
+                        <td class="py-3 px-4">{{ $log->user?->name ?? '—' }}<div class="text-xs" dir="ltr">{{ \App\Support\Fa::digits($log->user?->phone) }}</div></td>
                         <td class="py-3 px-4">{{ $log->salon?->name ?? '—' }}</td>
                         <td class="py-3 px-4 text-xs" dir="ltr">{{ $log->ip_address }}<div style="color: var(--sa-text-dim);">{{ \Illuminate\Support\Str::limit((string) $log->user_agent, 80) }}</div></td>
                     </tr>

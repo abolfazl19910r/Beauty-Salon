@@ -33,12 +33,12 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <div class="text-xs" style="color:var(--admin-text-dim);">پیامک ۳۰ روز اخیر</div>
-                <div class="text-2xl font-bold mt-1" style="color:var(--admin-text);">{{ to_persian_num(number_format($stats['sent'])) }}</div>
+                <div class="text-2xl font-bold mt-1" style="color:var(--admin-text);">{{ fa_num($stats['sent']) }}</div>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <div class="text-xs" style="color:var(--admin-text-dim);">بعد از پیامک نوبت گرفتند</div>
                 <div class="text-2xl font-bold mt-1" style="color:var(--admin-accent);">
-                    {{ to_persian_num(number_format($stats['returned'])) }}
+                    {{ fa_num($stats['returned']) }}
                     @if ($stats['sent'] > 0)
                         <span class="text-sm font-medium" style="color:var(--admin-text-dim);">({{ to_persian_num(round($stats['returned'] * 100 / $stats['sent'])) }}٪)</span>
                     @endif
@@ -46,7 +46,7 @@
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <div class="text-xs" style="color:var(--admin-text-dim);">در نوبت پیامک امروز</div>
-                <div class="text-2xl font-bold mt-1" style="color:var(--admin-text);">{{ $setting->enabled ? to_persian_num(number_format($dueToday)) : '—' }}</div>
+                <div class="text-2xl font-bold mt-1" style="color:var(--admin-text);">{{ $setting->enabled ? fa_num($dueToday) : '—' }}</div>
             </div>
         </div>
 
@@ -128,8 +128,8 @@
                             @foreach ($recent as $m)
                                 <tr style="border-top:1px solid var(--admin-border); color:var(--admin-text);">
                                     <td class="py-2">{{ $m->user?->name ?? '—' }}</td>
-                                    <td class="py-2">{{ to_persian_num(verta($m->last_visit_at)->format('Y/m/d')) }}</td>
-                                    <td class="py-2">{{ to_persian_num(verta($m->sent_at)->format('Y/m/d')) }}</td>
+                                    <td class="py-2">{{ to_persian_num(fa_date($m->last_visit_at)) }}</td>
+                                    <td class="py-2">{{ to_persian_num(fa_date($m->sent_at)) }}</td>
                                     <td class="py-2" dir="ltr" style="text-align:right;">{{ $m->discountCode?->code ?? '—' }}</td>
                                     <td class="py-2">
                                         @if ($m->returned)

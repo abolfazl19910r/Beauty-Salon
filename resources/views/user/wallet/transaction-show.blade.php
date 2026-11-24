@@ -27,7 +27,7 @@
             <div class="p-6 border-b text-center" style="border-color: rgb(var(--m-gold) / 0.15); background-color: rgb(var(--m-gold) / 0.05);">
                 <span class="px-3 py-1 rounded-full text-xs font-medium" style="{{ $typeInfo['class'] }}">{{ $typeInfo['label'] }}</span>
                 <p class="text-3xl font-bold persian-number mt-4" style="color: {{ $transaction->amount >= 0 ? 'rgb(var(--m-ok))' : 'rgb(var(--m-bad))' }};">
-                    {{ $transaction->amount >= 0 ? '+' : '' }}{{ number_format($transaction->amount) }}
+                    {{ $transaction->amount >= 0 ? '+' : '' }}{{ fa_num($transaction->amount) }}
                     <span class="text-base font-normal" style="color: var(--rasta-cream); opacity: 0.6;">تومان</span>
                 </p>
             </div>
@@ -41,25 +41,25 @@
                 <div class="flex justify-between items-center pb-3 border-b" style="border-color: rgb(var(--m-gold) / 0.1);">
                     <span class="text-sm" style="color: var(--rasta-cream); opacity: 0.6;">تاریخ و ساعت</span>
                     <span class="text-sm font-medium persian-number" dir="ltr" style="color: var(--rasta-cream);">
-                        {{ \Morilog\Jalali\Jalalian::forge($transaction->created_at)->format('Y/m/d - H:i') }}
+                        {{ fa_date($transaction->created_at, true) }}
                     </span>
                 </div>
 
                 <div class="flex justify-between items-center pb-3 border-b" style="border-color: rgb(var(--m-gold) / 0.1);">
                     <span class="text-sm" style="color: var(--rasta-cream); opacity: 0.6;">موجودی پس از تراکنش</span>
-                    <span class="text-sm font-medium persian-number" style="color: var(--rasta-cream);">{{ number_format($transaction->balance_after) }} تومان</span>
+                    <span class="text-sm font-medium persian-number" style="color: var(--rasta-cream);">{{ fa_num($transaction->balance_after) }} تومان</span>
                 </div>
 
                 @if($transaction->booking)
                     <div class="flex justify-between items-center pb-3 border-b" style="border-color: rgb(var(--m-gold) / 0.1);">
                         <span class="text-sm" style="color: var(--rasta-cream); opacity: 0.6;">شماره نوبت</span>
-                        <span class="text-sm font-medium persian-number" style="color: var(--rasta-cream);">#{{ $transaction->booking_id }}</span>
+                        <span class="text-sm font-medium persian-number" style="color: var(--rasta-cream);">#{{ fa_num($transaction->booking_id) }}</span>
                     </div>
 
                     @if($transaction->booking->payment_reference)
                         <div class="flex justify-between items-center pb-3 border-b" style="border-color: rgb(var(--m-gold) / 0.1);">
                             <span class="text-sm" style="color: var(--rasta-cream); opacity: 0.6;">شماره پیگیری</span>
-                            <span class="text-sm font-medium persian-number" dir="ltr" style="color: var(--rasta-gold-light);">{{ $transaction->booking->payment_reference }}</span>
+                            <span class="text-sm font-medium persian-number" dir="ltr" style="color: var(--rasta-gold-light);">{{ fa_num($transaction->booking->payment_reference) }}</span>
                         </div>
                     @endif
 

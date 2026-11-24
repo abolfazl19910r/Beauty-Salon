@@ -46,7 +46,7 @@
 
                         <div>
                             <label class="block text-xs text-[var(--specialist-plum-muted)] mb-1">شماره تماس</label>
-                            <div class="text-[var(--specialist-text)] font-medium persian-number" dir="ltr">{{ $user->phone }}</div>
+                            <div class="text-[var(--specialist-text)] font-medium persian-number" dir="ltr">{{ \App\Support\Fa::digits($user->phone) }}</div>
                         </div>
 
                         @if($user->email)
@@ -69,15 +69,15 @@
                 <div class="grid grid-cols-3 gap-3">
                     <div class="specialist-card p-4 text-center">
                         <p class="text-xs text-[var(--specialist-plum-muted)] mb-1">کل نوبت‌ها</p>
-                        <p class="text-xl font-bold text-[var(--specialist-text)] persian-number">{{ number_format($totalBookings) }}</p>
+                        <p class="text-xl font-bold text-[var(--specialist-text)] persian-number">{{ fa_num($totalBookings) }}</p>
                     </div>
                     <div class="specialist-card p-4 text-center">
                         <p class="text-xs text-[var(--specialist-plum-muted)] mb-1">انجام شده</p>
-                        <p class="text-xl font-bold text-[var(--specialist-plum-light)] persian-number">{{ number_format($completedBookings) }}</p>
+                        <p class="text-xl font-bold text-[var(--specialist-plum-light)] persian-number">{{ fa_num($completedBookings) }}</p>
                     </div>
                     <div class="specialist-card p-4 text-center">
                         <p class="text-xs text-[var(--specialist-plum-muted)] mb-1">لغو شده</p>
-                        <p class="text-xl font-bold text-m-bad persian-number">{{ number_format($cancelledBookings) }}</p>
+                        <p class="text-xl font-bold text-m-bad persian-number">{{ fa_num($cancelledBookings) }}</p>
                     </div>
                 </div>
             </div>
@@ -110,7 +110,7 @@
                                                 </p>
                                                 <p class="flex items-center gap-1.5 persian-number" dir="ltr">
                                                     <svg class="w-4 h-4 text-[var(--specialist-inactive)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                    {{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }}
+                                                    {{ fa_time($booking->booking_time) }}
                                                 </p>
                                             </div>
                                         </div>
@@ -118,7 +118,7 @@
                                         <div class="text-left">
                                             <span class="px-3 py-1 rounded-full text-xs font-medium {{ $upStatus['class'] }}">{{ $upStatus['label'] }}</span>
                                             <div class="mt-2 text-sm font-bold text-[var(--specialist-text)] persian-number">
-                                                {{ number_format($booking->prepayment_amount) }} تومان
+                                                {{ fa_num($booking->prepayment_amount) }} تومان
                                             </div>
                                         </div>
                                     </div>
@@ -172,7 +172,7 @@
                                                             <svg class="w-4 h-4 text-[var(--specialist-inactive)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                                             {{ $booking->booking_date_persian }}
                                                         </span>
-                                                        - {{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }}
+                                                        - {{ fa_time($booking->booking_time) }}
                                                     </p>
                                                 </div>
                                             </div>
@@ -180,7 +180,7 @@
                                             <div class="text-left">
                                                 <span class="px-3 py-1 rounded-full text-xs font-medium {{ $histStatus['class'] }}">{{ $histStatus['label'] }}</span>
                                                 <div class="mt-2 text-sm font-bold text-[var(--specialist-text)] persian-number">
-                                                    {{ number_format($booking->prepayment_amount) }} تومان
+                                                    {{ fa_num($booking->prepayment_amount) }} تومان
                                                 </div>
                                             </div>
                                         </div>

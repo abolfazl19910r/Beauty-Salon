@@ -56,8 +56,8 @@ class PlatformOperationsTest extends TestCase
         SmsCreditPurchase::create(['salon_id' => $salon->id, 'parts' => 200, 'amount' => 0, 'source' => 'grant', 'status' => 'paid', 'paid_at' => now(), 'created_by' => $this->super->id]);
 
         $this->actingAs($this->super)->get(route('superadmin.sms.index'))->assertOk()
-            ->assertSee($salon->name)->assertSee('1,234')->assertSee('REF-777')
-            ->assertSee('320,000')->assertSee('اعطای دستی ('.$this->super->name.')', false);
+            ->assertSee($salon->name)->assertSee(fa_num(1234))->assertSee('REF-777')
+            ->assertSee(fa_num(320000))->assertSee('اعطای دستی ('.$this->super->name.')', false);
 
         $this->actingAs($this->super)->get(route('superadmin.sms.index', ['source' => 'grant']))->assertOk()->assertDontSee('REF-777');
     }
@@ -68,7 +68,7 @@ class PlatformOperationsTest extends TestCase
         $owner = User::factory()->create(['is_admin' => true]);
 
         $this->actingAs($this->super)->get(route('superadmin.payment-attention.index'))->assertOk()
-            ->assertSee('خرید/تمدید اشتراک')->assertSee('4,150,000');
+            ->assertSee('خرید/تمدید اشتراک')->assertSee(fa_num(4150000));
         $this->actingAs($owner)->get(route('admin.payment-attention.index'))->assertOk()->assertDontSee('#'.$tx->id.' ', false);
         $this->actingAs($owner)->post(route('admin.payment-attention.resolve', $tx->id), ['action' => 'resolved', 'note' => 'تست'])->assertNotFound();
 
@@ -117,7 +117,7 @@ class PlatformOperationsTest extends TestCase
         config(['services.bale.bot_token' => 'x', 'services.bale.username' => 'mahru_bot', 'services.telegram.bot_token' => null]);
 
         $this->actingAs($this->super)->get(route('superadmin.dashboard'))->assertOk()
-            ->assertSee('درآمد بسته‌ی پیامک این ماه')->assertSee('320,000')->assertSee('پرداخت پلتفرم نیازمند بررسی');
+            ->assertSee('درآمد بسته‌ی پیامک این ماه')->assertSee(fa_num(320000))->assertSee('پرداخت پلتفرم نیازمند بررسی');
 
         $html = $this->actingAs($this->super)->get(route('superadmin.settings.edit'))->assertOk()->getContent();
         $this->assertStringContainsString('data-bot-status', $html);

@@ -195,8 +195,8 @@
                             <h3 class="font-serif-fa text-xl font-bold mb-2">{{ $service->name }}</h3>
                             <p class="text-sm text-m-tx/70 leading-7 mb-4">{{ $service->description ?? 'توضیح کوتاهی درباره این خدمت در اینجا نمایش داده می‌شود.' }}</p>
                             <div class="flex items-center justify-between text-sm border-t border-m-gold/10 pt-4">
-                                <span class="text-m-gold2 font-bold persian-number">{{ number_format($service->price) }} تومان</span>
-                                <span class="text-m-tx/60 persian-number">{{ $service->duration }} دقیقه</span>
+                                <span class="text-m-gold2 font-bold persian-number">{{ fa_num($service->price) }} تومان</span>
+                                <span class="text-m-tx/60 persian-number">{{ fa_num($service->duration) }} دقیقه</span>
                             </div>
                             <a href="{{ route('bookings.create', ['service' => $service->id]) }}" class="mt-4 block text-center btn-glass text-m-tx rounded-full py-2 text-sm font-semibold">
                                 رزرو این خدمت

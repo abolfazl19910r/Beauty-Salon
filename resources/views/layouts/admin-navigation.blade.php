@@ -141,7 +141,7 @@
                     </svg>
                     درخواست‌های برداشت
                     @if(($__withdrawalChecks = app(\App\Services\Admin\AttentionCounts::class)->withdrawals()) > 0)
-                        <span class="mr-auto px-1.5 rounded-full text-xs font-bold persian-number" style="background:rgb(var(--m-warn)); color:rgb(var(--m-on-solid));" title="نیاز به بررسی دستی">{{ $__withdrawalChecks }}</span>
+                        <span class="mr-auto px-1.5 rounded-full text-xs font-bold persian-number" style="background:rgb(var(--m-warn)); color:rgb(var(--m-on-solid));" title="نیاز به بررسی دستی">{{ fa_num($__withdrawalChecks) }}</span>
                     @endif
                 </x-admin-nav-link>
 
@@ -153,7 +153,7 @@
                     </svg>
                     پرداخت‌های نیازمند بررسی
                     @if(($__paymentChecks = app(\App\Services\Admin\AttentionCounts::class)->payments()) > 0)
-                        <span class="mr-auto px-1.5 rounded-full text-xs font-bold persian-number" style="background:rgb(var(--m-warn)); color:rgb(var(--m-on-solid));">{{ $__paymentChecks }}</span>
+                        <span class="mr-auto px-1.5 rounded-full text-xs font-bold persian-number" style="background:rgb(var(--m-warn)); color:rgb(var(--m-on-solid));">{{ fa_num($__paymentChecks) }}</span>
                     @endif
                 </x-admin-nav-link>
 

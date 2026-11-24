@@ -13,9 +13,9 @@
                 </div>
                 <h1 class="text-2xl font-bold mb-4">پرداخت با موفقیت انجام شد</h1>
                 <div class="bg-gray-50 p-5 rounded-lg mb-6">
-                    <p class="mb-3">شماره نوبت: <span class="font-medium">{{ $booking->id }}</span></p>
-                    <p class="mb-3">مبلغ پرداخت شده: <span class="font-medium">{{ number_format($booking->prepayment_amount) }} تومان</span></p>
-                    <p>شماره پیگیری: <span class="font-medium persian-number" dir="ltr">{{ $booking->payment_reference }}</span></p>
+                    <p class="mb-3">شماره نوبت: <span class="font-medium">{{ \App\Support\Fa::digits($booking->id) }}</span></p>
+                    <p class="mb-3">مبلغ پرداخت شده: <span class="font-medium">{{ fa_num($booking->prepayment_amount) }} تومان</span></p>
+                    <p>شماره پیگیری: <span class="font-medium persian-number" dir="ltr">{{ fa_num($booking->payment_reference) }}</span></p>
                 </div>
                 <p class="text-gray-600 mb-8">
                     پیامک تاییدیه برای شما ارسال خواهد شد.

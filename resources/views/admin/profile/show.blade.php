@@ -59,7 +59,7 @@
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="w-28 flex-shrink-0" style="color:var(--admin-text-dim)">آخرین ورود</span>
-                        <span style="color:var(--admin-text)">{{ jalali_date(now(), 'Y/m/d') }}</span>
+                        <span style="color:var(--admin-text)">{{ fa_date(now()) }}</span>
                     </div>
                 </div>
             </div>

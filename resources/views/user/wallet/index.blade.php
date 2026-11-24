@@ -40,7 +40,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
-                <p class="text-3xl font-bold persian-number">{{ number_format($wallet->balance) }}</p>
+                <p class="text-3xl font-bold persian-number">{{ fa_num($wallet->balance) }}</p>
                 <p class="text-sm opacity-80 mt-1">تومان</p>
             </div>
 
@@ -51,7 +51,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                     </svg>
                 </div>
-                <p class="text-3xl font-bold persian-number" style="color: var(--rasta-gold-light);">{{ number_format($currentMonthRefunds) }}</p>
+                <p class="text-3xl font-bold persian-number" style="color: var(--rasta-gold-light);">{{ fa_num($currentMonthRefunds) }}</p>
                 <p class="text-sm mt-1" style="color: var(--rasta-cream); opacity: 0.6;">تومان</p>
             </div>
 
@@ -62,7 +62,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                 </div>
-                <p class="text-3xl font-bold persian-number" style="color: var(--rasta-cream);">{{ number_format($currentMonthSpent) }}</p>
+                <p class="text-3xl font-bold persian-number" style="color: var(--rasta-cream);">{{ fa_num($currentMonthSpent) }}</p>
                 <p class="text-sm mt-1" style="color: var(--rasta-cream); opacity: 0.6;">تومان</p>
             </div>
         </div>
@@ -124,12 +124,12 @@
                                                 <svg class="w-3 h-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
-                                                {{ \Morilog\Jalali\Jalalian::forge($transaction->created_at)->format('Y/m/d - H:i') }}
+                                                {{ fa_date($transaction->created_at, true) }}
                                             </span>
                                             @if($transaction->booking)
-                                                <span class="persian-number">نوبت #{{ $transaction->booking_id }}</span>
+                                                <span class="persian-number">نوبت #{{ fa_num($transaction->booking_id) }}</span>
                                                 @if($transaction->booking->payment_reference)
-                                                    <span class="persian-number" dir="ltr">پیگیری: {{ $transaction->booking->payment_reference }}</span>
+                                                    <span class="persian-number" dir="ltr">پیگیری: {{ fa_num($transaction->booking->payment_reference) }}</span>
                                                 @endif
                                             @endif
                                         </div>
@@ -138,7 +138,7 @@
 
                                 <div class="text-left mr-4">
                                     <p class="text-lg font-bold persian-number" style="color: {{ $transaction->amount >= 0 ? 'var(--rasta-gold-light)' : 'rgb(var(--m-bad))' }};">
-                                        {{ $transaction->amount >= 0 ? '+' : '' }}{{ number_format($transaction->amount) }}
+                                        {{ $transaction->amount >= 0 ? '+' : '' }}{{ fa_num($transaction->amount) }}
                                     </p>
                                     <p class="text-xs" style="color: var(--rasta-cream); opacity: 0.5;">تومان</p>
                                 </div>
@@ -168,23 +168,23 @@
                     <div class="space-y-4">
                         <div class="flex justify-between items-center pb-3 border-b" style="border-color: rgb(var(--m-gold) / 0.15);">
                             <span class="text-sm" style="color: var(--rasta-cream); opacity: 0.7;">موجودی کل</span>
-                            <span class="text-lg font-bold persian-number" style="color: var(--rasta-cream);">{{ number_format($wallet->balance) }} تومان</span>
+                            <span class="text-lg font-bold persian-number" style="color: var(--rasta-cream);">{{ fa_num($wallet->balance) }} تومان</span>
                         </div>
 
                         <div class="flex justify-between items-center pb-3 border-b" style="border-color: rgb(var(--m-gold) / 0.15);">
                             <span class="text-sm" style="color: var(--rasta-cream); opacity: 0.7;">کل واریزی‌ها</span>
-                            <span class="text-sm font-semibold persian-number" style="color: var(--rasta-gold-light);">{{ number_format($wallet->total_deposited) }} تومان</span>
+                            <span class="text-sm font-semibold persian-number" style="color: var(--rasta-gold-light);">{{ fa_num($wallet->total_deposited) }} تومان</span>
                         </div>
 
                         <div class="flex justify-between items-center pb-3 border-b" style="border-color: rgb(var(--m-gold) / 0.15);">
                             <span class="text-sm" style="color: var(--rasta-cream); opacity: 0.7;">کل پرداختی‌ها</span>
-                            <span class="text-sm font-semibold persian-number" style="color: rgb(var(--m-bad));">{{ number_format($wallet->total_spent) }} تومان</span>
+                            <span class="text-sm font-semibold persian-number" style="color: rgb(var(--m-bad));">{{ fa_num($wallet->total_spent) }} تومان</span>
                         </div>
 
                         <div class="flex justify-between items-center">
                             <span class="text-sm" style="color: var(--rasta-cream); opacity: 0.7;">آخرین بروزرسانی</span>
                             <span class="text-xs persian-number" style="color: var(--rasta-cream); opacity: 0.5;">
-                                {{ \Morilog\Jalali\Jalalian::forge($wallet->updated_at)->format('Y/m/d H:i') }}
+                                {{ fa_date($wallet->updated_at, true) }}
                             </span>
                         </div>
                     </div>

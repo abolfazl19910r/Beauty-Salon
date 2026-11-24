@@ -89,7 +89,7 @@
                             <svg class="w-4 h-4 flex-shrink-0" style="color:var(--admin-text-light);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                             </svg>
-                            <span dir="ltr" style="color:var(--admin-text);">{{ $specialist->phone }}</span>
+                            <span dir="ltr" style="color:var(--admin-text);">{{ \App\Support\Fa::digits($specialist->phone) }}</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <svg class="w-4 h-4 flex-shrink-0" style="color:var(--admin-text-light);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -136,7 +136,7 @@
                                     <span class="w-2 h-2 rounded-full" style="background:rgb(var(--m-ok));"></span>
                                     <span style="color:var(--admin-text);">{{ $service->name }}</span>
                                 </div>
-                                <span class="persian-number" style="color:var(--admin-text-dim);">{{ number_format($service->price) }} تومان</span>
+                                <span class="persian-number" style="color:var(--admin-text-dim);">{{ fa_num($service->price) }} تومان</span>
                             </div>
                         @empty
                             <p class="px-4 py-8 text-center text-sm" style="color:var(--admin-text-dim);">هیچ خدمتی ثبت نشده</p>
@@ -167,9 +167,9 @@
                                     <div class="font-bold mb-1" style="color:var(--admin-text);">{{ $day }}</div>
                                     @if($schedule)
                                         <div class="persian-number" style="color:rgb(var(--m-ok));">
-                                            {{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }}
+                                            {{ fa_time($schedule->start_time) }}
                                             <br>تا<br>
-                                            {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}
+                                            {{ fa_time($schedule->end_time) }}
                                         </div>
                                     @else
                                         <div style="color:rgb(var(--m-bad));">تعطیل</div>
@@ -206,8 +206,8 @@
                                 <tbody>
                                 @foreach($currentLeaves as $leave)
                                     <tr style="border-top:1px solid var(--admin-border);">
-                                        <td class="px-4 py-2.5 persian-number" style="color:var(--admin-text);">{{ verta($leave->start_date)->format('Y/m/d') }}</td>
-                                        <td class="px-4 py-2.5 persian-number" style="color:var(--admin-text);">{{ verta($leave->end_date)->format('Y/m/d') }}</td>
+                                        <td class="px-4 py-2.5 persian-number" style="color:var(--admin-text);">{{ fa_date($leave->start_date) }}</td>
+                                        <td class="px-4 py-2.5 persian-number" style="color:var(--admin-text);">{{ fa_date($leave->end_date) }}</td>
                                         <td class="px-4 py-2.5" style="color:var(--admin-text-dim);">{{ $leave->reason ?: '—' }}</td>
                                         <td class="px-4 py-2.5">
                                             <span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background:rgb(var(--m-ok) / .1); color:rgb(var(--m-ok));">تایید شده</span>
@@ -249,7 +249,7 @@
                                         $bs=\App\Support\Bookings\BookingLabels::statusPill($booking->status);
                                     @endphp
                                     <tr style="border-top:1px solid var(--admin-border);">
-                                        <td class="px-4 py-2.5 persian-number font-medium" style="color:var(--admin-text);">{{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }}</td>
+                                        <td class="px-4 py-2.5 persian-number font-medium" style="color:var(--admin-text);">{{ fa_time($booking->booking_time) }}</td>
                                         <td class="px-4 py-2.5">
                                             <div class="flex items-center gap-2">
                                                 <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"

@@ -33,9 +33,9 @@
                 <div class="flex flex-wrap justify-between gap-2 mb-2">
                     <div class="font-bold" style="color:var(--admin-text);">
                         {{ $subject }}
-                        <span class="text-xs font-normal persian-number" style="color:var(--admin-text-light);">— تراکنش #{{ $tx->id }}</span>
+                        <span class="text-xs font-normal persian-number" style="color:var(--admin-text-light);">— تراکنش #{{ \App\Support\Fa::digits($tx->id) }}</span>
                     </div>
-                    <div class="font-bold persian-number" style="color:var(--admin-text);">{{ number_format($toman) }} <span class="text-xs font-normal">تومان</span></div>
+                    <div class="font-bold persian-number" style="color:var(--admin-text);">{{ fa_num($toman) }} <span class="text-xs font-normal">تومان</span></div>
                 </div>
 
                 <p class="text-sm mb-3" style="color:rgb(var(--m-warn));">{{ $tx->attentionReason() }}</p>
@@ -43,8 +43,8 @@
                 <dl class="grid grid-cols-2 lg:grid-cols-4 gap-2 text-xs mb-3" style="color:var(--admin-text-dim);">
                     <div><dt>درگاه</dt><dd style="color:var(--admin-text);">{{ \App\Payments\GatewayCatalog::label($tx->driver) }}</dd></div>
                     <div><dt>شناسه‌ی درگاه</dt><dd class="font-mono" dir="ltr" style="color:var(--admin-text);">{{ $tx->gateway_receipt ?: $tx->token ?: '—' }}</dd></div>
-                    <div><dt>مشتری</dt><dd style="color:var(--admin-text);">{{ $tx->user?->name ?? '—' }} <span class="persian-number" dir="ltr">{{ $tx->user?->phone }}</span></dd></div>
-                    <div><dt>آخرین تلاش</dt><dd class="persian-number" style="color:var(--admin-text);">{{ verta($tx->updated_at)->format('Y/m/d H:i') }}</dd></div>
+                    <div><dt>مشتری</dt><dd style="color:var(--admin-text);">{{ $tx->user?->name ?? '—' }} <span class="persian-number" dir="ltr">{{ \App\Support\Fa::digits($tx->user?->phone) }}</span></dd></div>
+                    <div><dt>آخرین تلاش</dt><dd class="persian-number" style="color:var(--admin-text);">{{ fa_date($tx->updated_at, true) }}</dd></div>
                 </dl>
 
                 <form method="POST" action="{{ route('admin.payment-attention.resolve', $tx->id) }}" class="flex flex-col lg:flex-row gap-2">
@@ -53,7 +53,7 @@
                            class="flex-1 rounded-lg px-3 py-2 text-sm" style="border:1px solid var(--admin-border); background:var(--admin-bg); color:var(--admin-text);">
                     @if($canCredit)
                         <button type="submit" name="action" value="wallet_credit" class="px-4 py-2 rounded-lg text-sm font-bold text-m-onsolid" style="background:rgb(var(--m-ok));"
-                                data-ui-confirm="{{ number_format($toman) }} تومان به کیف پول مشتری واریز شود؟ فقط اگر در پنل درگاه دیده‌اید مبلغ گرفته شده.">
+                                data-ui-confirm="{{ fa_num($toman) }} تومان به کیف پول مشتری واریز شود؟ فقط اگر در پنل درگاه دیده‌اید مبلغ گرفته شده.">
                             واریز به کیف پول مشتری
                         </button>
                     @endif

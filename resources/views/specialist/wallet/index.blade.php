@@ -32,7 +32,7 @@
                     </svg>
                 </div>
                 <p class="text-sm opacity-80 mb-1">موجودی قابل برداشت</p>
-                <p class="text-3xl font-bold persian-number">{{ number_format($wallet->balance) }}</p>
+                <p class="text-3xl font-bold persian-number">{{ fa_num($wallet->balance) }}</p>
                 <p class="text-xs opacity-70 mt-1">تومان</p>
             </div>
 
@@ -43,8 +43,8 @@
                     </svg>
                 </div>
                 <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">در انتظار تسویه</p>
-                <p class="text-2xl font-bold text-[var(--specialist-text)] persian-number">{{ number_format($wallet->pending_amount) }}</p>
-                <p class="text-xs text-[var(--specialist-text-dim)] mt-1 persian-number">تومان ({{ $settings->settlement_delay_days }} روز تاخیر)</p>
+                <p class="text-2xl font-bold text-[var(--specialist-text)] persian-number">{{ fa_num($wallet->pending_amount) }}</p>
+                <p class="text-xs text-[var(--specialist-text-dim)] mt-1 persian-number">تومان ({{ fa_num($settings->settlement_delay_days) }} روز تاخیر)</p>
             </div>
 
             <div class="specialist-card p-6">
@@ -54,7 +54,7 @@
                     </svg>
                 </div>
                 <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">کل درآمد</p>
-                <p class="text-2xl font-bold text-[var(--specialist-text)] persian-number">{{ number_format($wallet->total_earned) }}</p>
+                <p class="text-2xl font-bold text-[var(--specialist-text)] persian-number">{{ fa_num($wallet->total_earned) }}</p>
                 <p class="text-xs text-[var(--specialist-text-dim)] mt-1">تومان</p>
             </div>
         </div>
@@ -65,7 +65,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">درآمد این ماه</p>
-                        <p class="text-xl font-bold text-m-ok persian-number">{{ number_format($currentMonthIncome) }}</p>
+                        <p class="text-xl font-bold text-m-ok persian-number">{{ fa_num($currentMonthIncome) }}</p>
                         <p class="text-xs text-[var(--specialist-text-dim)] mt-1">تومان</p>
                     </div>
                     <svg class="w-8 h-8 text-m-ok" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -78,7 +78,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">برداشت این ماه</p>
-                        <p class="text-xl font-bold text-m-info persian-number">{{ number_format(abs($currentMonthWithdrawals)) }}</p>
+                        <p class="text-xl font-bold text-m-info persian-number">{{ fa_num(abs($currentMonthWithdrawals)) }}</p>
                         <p class="text-xs text-[var(--specialist-text-dim)] mt-1">تومان</p>
                     </div>
                     <svg class="w-8 h-8 text-m-info" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -199,9 +199,9 @@
                                 <span class="text-sm text-[var(--specialist-text-dim)]">{{ $transaction->description }}</span>
                             </div>
                             <div class="flex items-center gap-4">
-                                <span class="text-sm text-[var(--specialist-plum-muted)] persian-number">{{ verta($transaction->created_at)->format('Y/m/d H:i') }}</span>
+                                <span class="text-sm text-[var(--specialist-plum-muted)] persian-number">{{ fa_date($transaction->created_at, true) }}</span>
                                 <span class="persian-number font-semibold {{ $transaction->amount >= 0 ? 'text-m-ok' : 'text-m-bad' }}">
-                                    {{ $transaction->formatted_amount }}
+                                    {{ fa_num($transaction->formatted_amount) }}
                                 </span>
                             </div>
                         </div>
@@ -237,11 +237,11 @@
                                         <span class="px-3 py-1 rounded-full text-xs font-medium {{ $statusInfo['class'] }}">{{ $statusInfo['label'] }}</span>
                                     </div>
                                     <div class="text-sm text-[var(--specialist-text-dim)] flex flex-wrap gap-x-4 gap-y-1">
-                                        <span class="persian-number"><span class="text-[var(--specialist-plum-muted)]">مبلغ:</span> {{ number_format($request->amount) }} تومان</span>
-                                        <span class="persian-number"><span class="text-[var(--specialist-plum-muted)]">کارمزد:</span> <span class="text-m-bad">{{ number_format($request->fee) }}</span> تومان</span>
-                                        <span class="persian-number"><span class="text-[var(--specialist-plum-muted)]">مبلغ خالص:</span> <span class="text-m-ok font-semibold">{{ number_format($request->net_amount) }}</span> تومان</span>
+                                        <span class="persian-number"><span class="text-[var(--specialist-plum-muted)]">مبلغ:</span> {{ fa_num($request->amount) }} تومان</span>
+                                        <span class="persian-number"><span class="text-[var(--specialist-plum-muted)]">کارمزد:</span> <span class="text-m-bad">{{ fa_num($request->fee) }}</span> تومان</span>
+                                        <span class="persian-number"><span class="text-[var(--specialist-plum-muted)]">مبلغ خالص:</span> <span class="text-m-ok font-semibold">{{ fa_num($request->net_amount) }}</span> تومان</span>
                                         <span><span class="text-[var(--specialist-plum-muted)]">روش:</span> {{ $request->method_text }}</span>
-                                        <span class="persian-number"><span class="text-[var(--specialist-plum-muted)]">تاریخ:</span> {{ verta($request->created_at)->format('Y/m/d') }}</span>
+                                        <span class="persian-number"><span class="text-[var(--specialist-plum-muted)]">تاریخ:</span> {{ fa_date($request->created_at) }}</span>
                                     </div>
                                 </div>
 

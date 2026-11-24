@@ -40,7 +40,7 @@
             </div>
             <div>
                 <h1 class="text-2xl font-bold text-m-gold2" style="font-family:'Mahru','Vazirmatn',sans-serif;font-weight:800;">پرداخت نوبت</h1>
-                <p class="text-m-tx/50 text-sm persian-number">شماره نوبت: {{ $booking->id }}</p>
+                <p class="text-m-tx/50 text-sm persian-number">شماره نوبت: {{ \App\Support\Fa::digits($booking->id) }}</p>
             </div>
         </div>
 
@@ -60,7 +60,7 @@
                 </div>
                 <div class="flex justify-between items-center px-5 py-3.5 text-sm">
                     <span class="text-m-tx/55">تاریخ و ساعت</span>
-                    <span class="font-medium text-m-tx persian-number" dir="ltr">{{ verta($booking->booking_time)->format('Y/m/d H:i') }}</span>
+                    <span class="font-medium text-m-tx persian-number" dir="ltr">{{ fa_date($booking->booking_time, true) }}</span>
                 </div>
             </div>
         </div>
@@ -108,7 +108,7 @@
                         </div>
                         <div>
                             <p class="font-bold text-m-tx text-sm">موجودی کیف پول شما</p>
-                            <p class="text-xl font-bold text-m-ok persian-number">{{ number_format($wallet->balance) }} تومان</p>
+                            <p class="text-xl font-bold text-m-ok persian-number">{{ fa_num($wallet->balance) }} تومان</p>
                         </div>
                     </div>
                     <div id="wallet-toggle" class="toggle-switch" data-ui-click="toggleWalletPayment">
@@ -127,11 +127,11 @@
                                 @if($wallet->balance >= $booking->prepayment_amount)
                                     <span class="text-m-ok">موجودی شما کافی است</span>
                                 @else
-                                    <span class="text-m-bad">موجودی کافی نیست (کمبود: {{ number_format($booking->prepayment_amount - $wallet->balance) }})</span>
+                                    <span class="text-m-bad">موجودی کافی نیست (کمبود: {{ fa_num($booking->prepayment_amount - $wallet->balance) }})</span>
                                 @endif
                             </p>
                         </div>
-                        <p class="font-bold text-m-ok text-sm persian-number">{{ number_format(min($wallet->balance, $booking->prepayment_amount)) }}</p>
+                        <p class="font-bold text-m-ok text-sm persian-number">{{ fa_num(min($wallet->balance, $booking->prepayment_amount)) }}</p>
                     </label>
 
                     @if($wallet->balance < $booking->prepayment_amount)
@@ -141,10 +141,10 @@
                             <div class="flex-1">
                                 <p class="font-medium text-m-tx text-sm">پرداخت ترکیبی</p>
                                 <p class="text-xs text-m-info mt-0.5">
-                                    {{ number_format($wallet->balance) }} از کیف پول + {{ number_format($booking->prepayment_amount - $wallet->balance) }} از درگاه
+                                    {{ fa_num($wallet->balance) }} از کیف پول + {{ fa_num($booking->prepayment_amount - $wallet->balance) }} از درگاه
                                 </p>
                             </div>
-                            <p class="font-bold text-m-info text-sm persian-number">{{ number_format($wallet->balance) }}</p>
+                            <p class="font-bold text-m-info text-sm persian-number">{{ fa_num($wallet->balance) }}</p>
                         </label>
                     @endif
                 </div>
@@ -163,16 +163,16 @@
                 @if($booking->service)
                     <div class="flex justify-between border-b border-m-gold/8 pb-3">
                         <span class="text-m-tx/55">مبلغ کل خدمت</span>
-                        <span class="text-m-tx/80 persian-number">{{ number_format($booking->service->price) }} تومان</span>
+                        <span class="text-m-tx/80 persian-number">{{ fa_num($booking->service->price) }} تومان</span>
                     </div>
                     <div class="flex justify-between border-b border-m-gold/8 pb-3">
                         <span class="text-m-tx/55">باقی‌مانده (موقع نوبت به متخصص می‌دهید)</span>
-                        <span class="text-m-tx/70 persian-number" id="remaining-amount">{{ number_format($booking->remaining_amount) }} تومان</span>
+                        <span class="text-m-tx/70 persian-number" id="remaining-amount">{{ fa_num($booking->remaining_amount) }} تومان</span>
                     </div>
                     @if($booking->discount_amount > 0)
                         <div class="flex justify-between border-b border-m-gold/8 pb-3 text-m-ok">
                             <span>تخفیف اعمال‌شده ({{ $booking->discount_code }}) — از باقی‌مانده کسر شد</span>
-                            <span class="persian-number">- {{ number_format($booking->discount_amount) }} تومان</span>
+                            <span class="persian-number">- {{ fa_num($booking->discount_amount) }} تومان</span>
                         </div>
                     @endif
                     <div id="discount-summary" class="hidden flex justify-between border-b border-m-gold/8 pb-3 text-m-ok">
@@ -182,7 +182,7 @@
                 @endif
                 <div class="flex justify-between border-b border-m-gold/8 pb-3">
                     <span class="text-m-tx/55">مبلغ پیش‌پرداخت</span>
-                    <span class="font-bold text-m-tx persian-number" id="original-amount">{{ number_format($booking->prepayment_amount) }} تومان</span>
+                    <span class="font-bold text-m-tx persian-number" id="original-amount">{{ fa_num($booking->prepayment_amount) }} تومان</span>
                 </div>
 
                 {{-- ⭐ Business decision: a discount code reduces the "remaining" amount settled
@@ -197,7 +197,7 @@
                     </div>
                     <div class="flex justify-between border-b border-m-gold/8 pb-3 pt-3 text-m-gold">
                         <span>پرداخت از درگاه</span>
-                        <span class="font-semibold persian-number" id="gateway-amount">{{ number_format($booking->prepayment_amount) }} تومان</span>
+                        <span class="font-semibold persian-number" id="gateway-amount">{{ fa_num($booking->prepayment_amount) }} تومان</span>
                     </div>
                 </div>
 
@@ -209,7 +209,7 @@
 
                 <div class="flex justify-between items-center text-lg font-bold pt-2 border-t-2 border-m-gold/20">
                     <span class="text-m-gold2">مبلغ قابل پرداخت</span>
-                    <span class="text-m-gold2 persian-number" id="final-amount">{{ number_format($booking->prepayment_amount) }} تومان</span>
+                    <span class="text-m-gold2 persian-number" id="final-amount">{{ fa_num($booking->prepayment_amount) }} تومان</span>
                 </div>
             </div>
         </div>

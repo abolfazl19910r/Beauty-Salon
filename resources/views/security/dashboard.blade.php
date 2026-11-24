@@ -38,7 +38,7 @@
                     </div>
                     <div class="w-full h-2 rounded-full bg-black/30 overflow-hidden">
                         <div class="h-full rounded-full {{ $security_score >= 70 ? 'bg-m-ok' : ($security_score >= 40 ? 'bg-m-warn' : 'bg-m-bad') }}"
-                             style="width: {{ $security_score }}%"></div>
+                             style="width: {{ fa_num($security_score, 2) }}٪"></div>
                     </div>
                     <p class="text-xs text-m-tx/45 mt-3">
                         این امتیاز بر اساس فعال بودن تایید دو مرحله‌ای، قدرت و تازگی رمز عبور، و نبود فعالیت مشکوک اخیر محاسبه می‌شود.
@@ -80,7 +80,7 @@
                         </svg>
                         <div>
                             <h2 class="font-bold text-sm text-m-gold2">نشست‌های فعال</h2>
-                            <p class="text-xs text-m-tx/45">{{ $active_sessions_count }} دستگاه در حال حاضر وارد شده</p>
+                            <p class="text-xs text-m-tx/45">{{ fa_num($active_sessions_count) }} دستگاه در حال حاضر وارد شده</p>
                         </div>
                     </div>
                     <svg class="w-4 h-4 text-m-tx/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -106,7 +106,7 @@
                                 <span class="w-2 h-2 rounded-full {{ $activity->level === 'warning' ? 'bg-m-warn' : 'bg-m-ok' }}"></span>
                                 <span class="text-sm text-m-tx/80">{{ $activity->event_label }}</span>
                             </div>
-                            <span class="text-xs text-m-tx/40">{{ jalali_date($activity->created_at, 'Y/m/d H:i') }}</span>
+                            <span class="text-xs text-m-tx/40">{{ fa_date($activity->created_at, true) }}</span>
                         </div>
                     @empty
                         <p class="px-6 py-6 text-sm text-m-tx/45 text-center">هنوز فعالیتی ثبت نشده است.</p>
@@ -121,7 +121,7 @@
                         <h2 class="font-bold text-sm text-m-gold2 mb-1">رمز عبور</h2>
                         <p class="text-xs text-m-tx/45">
                             @if ($last_password_change)
-                                آخرین تغییر: {{ jalali_date($last_password_change, 'Y/m/d') }}
+                                آخرین تغییر: {{ fa_date($last_password_change) }}
                             @else
                                 رمز عبور شما تا الان هیچ‌وقت تغییر نکرده است.
                             @endif

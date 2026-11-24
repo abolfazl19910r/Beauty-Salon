@@ -38,7 +38,7 @@
 
         <div class="rounded-xl overflow-hidden" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
             <div class="px-4 py-3 text-sm font-bold" style="background:var(--admin-accent-light); border-bottom:1px solid var(--admin-border); color:var(--admin-text);">
-                خدمات این دسته‌بندی ({{ $category->services->count() }})
+                خدمات این دسته‌بندی ({{ fa_num($category->services->count()) }})
             </div>
             @if($category->services->isEmpty())
                 <p class="px-4 py-8 text-center text-sm" style="color:var(--admin-text-dim);">هیچ خدمتی در این دسته‌بندی وجود ندارد</p>
@@ -59,8 +59,8 @@
                                 data-ui-hover="background: var(--admin-accent-light)"
                                 data-ui-unhover="background: ">
                                 <td class="px-4 py-3 font-medium" style="color:var(--admin-text);">{{ $service->name }}</td>
-                                <td class="px-4 py-3 persian-number" style="color:rgb(var(--m-ok));">{{ number_format($service->price) }} تومان</td>
-                                <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ $service->duration }} دقیقه</td>
+                                <td class="px-4 py-3 persian-number" style="color:rgb(var(--m-ok));">{{ fa_num($service->price) }} تومان</td>
+                                <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ fa_num($service->duration) }} دقیقه</td>
                                 <td class="px-4 py-3">
                                     <a href="{{ route('admin.services.edit', $service) }}"
                                        class="text-xs px-2.5 py-1 rounded-lg"

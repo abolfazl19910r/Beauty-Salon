@@ -62,8 +62,8 @@
                             </span>
                             <div>
                                 <p class="text-sm text-[var(--specialist-text)] persian-number">
-                                    <span class="text-[var(--specialist-plum-muted)]">از</span> {{ jdate($leave->start_date)->format('Y/m/d') }}
-                                    <span class="text-[var(--specialist-plum-muted)]">تا</span> {{ jdate($leave->end_date)->format('Y/m/d') }}
+                                    <span class="text-[var(--specialist-plum-muted)]">از</span> {{ fa_date($leave->start_date) }}
+                                    <span class="text-[var(--specialist-plum-muted)]">تا</span> {{ fa_date($leave->end_date) }}
                                 </p>
                                 <p class="text-sm text-[var(--specialist-text-dim)] mt-1">
                                     @if($leave->reason)

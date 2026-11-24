@@ -125,7 +125,7 @@ class PaymentAttentionTest extends TestCase
         $this->tx(['needs_attention' => true, 'salon_id' => $other->id, 'token' => 'TOKEN-OTHER-SALON']);
 
         $this->actingAs($this->owner)->get(route('admin.payment-attention.index'))->assertOk()
-            ->assertSee('TOKEN-OWN')->assertSee('مشتری-الف')->assertSee('60,500')->assertSee('پیش‌پرداخت نوبت')
+            ->assertSee('TOKEN-OWN')->assertSee('مشتری-الف')->assertSee(fa_num(60500))->assertSee('پیش‌پرداخت نوبت')
             ->assertDontSee('TOKEN-NOT-FLAGGED')->assertDontSee('TOKEN-OTHER-SALON');
 
         $staff = User::factory()->create(['is_admin' => true]);

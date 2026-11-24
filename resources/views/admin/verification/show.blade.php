@@ -20,12 +20,12 @@
             <div class="flex justify-between items-center flex-wrap gap-2">
                 <span style="color: var(--admin-text);">وضعیت: <b data-verification-status="{{ $salon->verification_status }}">{{ $salon->verificationLabel() }}</b></span>
                 @if ($salon->verified_at)
-                    <span class="text-xs persian-number" style="color: var(--admin-text-dim);">{{ verta($salon->verified_at)->format('Y/m/d') }}</span>
+                    <span class="text-xs persian-number" style="color: var(--admin-text-dim);">{{ fa_date($salon->verified_at) }}</span>
                 @endif
             </div>
             @if ($latest)
                 <div class="text-sm mt-3 leading-7" style="color: var(--admin-text-dim);">
-                    آخرین ارسال: {{ verta($latest->created_at)->format('Y/m/d H:i') }} — {{ $latest->licenseLabel() }}، شناسه‌ی <span dir="ltr">{{ $latest->license_unique_id }}</span>
+                    آخرین ارسال: {{ fa_date($latest->created_at, true) }} — {{ $latest->licenseLabel() }}، شناسه‌ی <span dir="ltr">{{ $latest->license_unique_id }}</span>
                     @if ($latest->status === 'rejected' && $latest->rejection_reason)
                         <div class="mt-2 p-3 rounded-lg" style="background: rgb(var(--m-bad) / .12); color: rgb(var(--m-bad));" data-rejection-reason>دلیل رد: {{ $latest->rejection_reason }}</div>
                     @endif

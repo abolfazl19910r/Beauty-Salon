@@ -77,7 +77,7 @@ class RegistrationTest extends TestCase
         $this->assertGuest();
         $this->assertMatchesRegularExpression('/^\d{6}$/', $this->sentCode());
         Queue::assertPushedOn('otp', SendRegistrationCodeJob::class);
-        $this->get('/s/rasta/register/verify')->assertOk()->assertSee('09121234567');
+        $this->get('/s/rasta/register/verify')->assertOk()->assertSee(\App\Support\Fa::digits('09121234567'));
     }
 
     public function test_the_right_code_creates_a_verified_customer_of_this_salon_and_logs_in(): void

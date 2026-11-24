@@ -8,7 +8,7 @@
     <div class="sa-card sa-card-pad text-sm space-y-2 mb-6" style="color: var(--sa-text);" data-platform-request>
         <div class="sa-card-head">
             <div class="sa-card-title">{{ $req->salon?->name }} <span class="text-xs" dir="ltr" style="color: var(--sa-text-dim);">{{ $req->salon?->slug }}</span></div>
-            <div class="sa-card-desc">وضعیت: <b>{{ $req->statusLabel() }}</b> · ارسال: {{ \Morilog\Jalali\Jalalian::fromCarbon($req->created_at)->format('Y/m/d H:i') }} توسط {{ $req->requester?->name }} <span dir="ltr">{{ $req->requester?->phone }}</span></div>
+            <div class="sa-card-desc">وضعیت: <b>{{ $req->statusLabel() }}</b> · ارسال: {{ fa_date($req->created_at, true) }} توسط {{ $req->requester?->name }} <span dir="ltr">{{ \App\Support\Fa::digits($req->requester?->phone) }}</span></div>
         </div>
         <div>روش واریز: <b>{{ \App\Support\PayoutDestination::label($req->payout_method) }}</b></div>
         <div>شماره‌ی کامل: <b dir="ltr" class="select-all" data-full-destination>{{ $req->destination() }}</b></div>
@@ -49,7 +49,7 @@
         <div class="sa-card sa-card-pad mt-6 text-sm">
             <div class="sa-card-title mb-2">درخواست‌های قبلی همین سالن</div>
             @foreach ($history as $h)
-                <div class="py-1">#{{ to_persian_num((string) $h->id) }} · {{ $h->statusLabel() }} · {{ \Morilog\Jalali\Jalalian::fromCarbon($h->created_at)->format('Y/m/d') }} · <span dir="ltr">{{ $h->maskedDestination() }}</span>@if ($h->review_note) · {{ $h->review_note }}@endif</div>
+                <div class="py-1">#{{ to_persian_num((string) $h->id) }} · {{ $h->statusLabel() }} · {{ fa_date($h->created_at) }} · <span dir="ltr">{{ $h->maskedDestination() }}</span>@if ($h->review_note) · {{ $h->review_note }}@endif</div>
             @endforeach
         </div>
     @endif

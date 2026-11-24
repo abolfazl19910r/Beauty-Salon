@@ -51,8 +51,8 @@
                                             <div>
                                                 <p class="text-sm font-medium" style="color:var(--admin-text)">{{ $item->name ?? 'بدون نام' }}</p>
                                                 <p class="text-xs" style="color:var(--admin-text-dim)">
-                                                    @if($key === 'کاربران')    {{ $item->phone }}
-                                                    @elseif($key === 'متخصصین') {{ $item->phone }}
+                                                    @if($key === 'کاربران')    {{ \App\Support\Fa::digits($item->phone) }}
+                                                    @elseif($key === 'متخصصین') {{ \App\Support\Fa::digits($item->phone) }}
                                                     @elseif($key === 'خدمات')   {{ $item->duration ?? '' }} دقیقه
                                                     @endif
                                                 </p>

@@ -50,22 +50,22 @@
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-info));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل موجودی متخصصین</p>
-                <p class="text-xl font-bold persian-number" style="color:var(--admin-text);">{{ number_format($totalBalance) }}</p>
+                <p class="text-xl font-bold persian-number" style="color:var(--admin-text);">{{ fa_num($totalBalance) }}</p>
                 <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">تومان</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-ok));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل درآمد متخصصین</p>
-                <p class="text-xl font-bold persian-number" style="color:var(--admin-text);">{{ number_format($totalEarned) }}</p>
+                <p class="text-xl font-bold persian-number" style="color:var(--admin-text);">{{ fa_num($totalEarned) }}</p>
                 <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">تاکنون</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-bad));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل برداشت‌ها</p>
-                <p class="text-xl font-bold persian-number" style="color:var(--admin-text);">{{ number_format($totalWithdrawn) }}</p>
+                <p class="text-xl font-bold persian-number" style="color:var(--admin-text);">{{ fa_num($totalWithdrawn) }}</p>
                 <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">پرداخت شده</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-warn));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">بلوکه شده</p>
-                <p class="text-xl font-bold persian-number" style="color:var(--admin-text);">{{ number_format($totalPending) }}</p>
+                <p class="text-xl font-bold persian-number" style="color:var(--admin-text);">{{ fa_num($totalPending) }}</p>
                 <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">در انتظار تسویه</p>
             </div>
         </div>
@@ -140,15 +140,15 @@
                                 </div>
                             </td>
                             <td class="px-4 py-3">
-                                <span class="font-bold persian-number" style="color:rgb(var(--m-ok));">{{ number_format($wallet->balance) }}</span>
+                                <span class="font-bold persian-number" style="color:rgb(var(--m-ok));">{{ fa_num($wallet->balance) }}</span>
                                 <span class="text-xs" style="color:var(--admin-text-light);"> ت</span>
                             </td>
                             <td class="px-4 py-3">
-                                <span class="persian-number" style="color:rgb(var(--m-warn));">{{ number_format($wallet->pending_amount ?? 0) }}</span>
+                                <span class="persian-number" style="color:rgb(var(--m-warn));">{{ fa_num($wallet->pending_amount ?? 0) }}</span>
                                 <span class="text-xs" style="color:var(--admin-text-light);"> ت</span>
                             </td>
                             <td class="px-4 py-3">
-                                <span class="persian-number" style="color:var(--admin-text-dim);">{{ number_format($wallet->total_earned) }}</span>
+                                <span class="persian-number" style="color:var(--admin-text-dim);">{{ fa_num($wallet->total_earned) }}</span>
                             </td>
                             <td class="px-4 py-3">
                                 @if($wallet->iban)

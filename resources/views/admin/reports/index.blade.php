@@ -165,12 +165,12 @@
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
             @php
                 $statCards = [
-                    ['label'=>'درآمد کل','value'=>number_format($summary['total_revenue']).' ت','color'=>'rgb(var(--m-ok))'],
-                    ['label'=>'کل نوبت‌ها','value'=>number_format($summary['total_bookings']),'color'=>'rgb(var(--m-tx))'],
-                    ['label'=>'انجام‌شده','value'=>number_format($summary['completed_bookings']),'color'=>'rgb(var(--m-info))'],
-                    ['label'=>'لغو شده','value'=>number_format($summary['cancelled_bookings']),'color'=>'rgb(var(--m-bad))'],
-                    ['label'=>'درآمد معلق','value'=>number_format($summary['pending_payments']).' ت','color'=>'rgb(var(--m-warn))'],
-                    ['label'=>'میانگین نوبت','value'=>number_format($summary['average_booking_value']).' ت','color'=>'rgb(var(--m-gold))'],
+                    ['label'=>'درآمد کل','value'=>fa_num($summary['total_revenue']).' ت','color'=>'rgb(var(--m-ok))'],
+                    ['label'=>'کل نوبت‌ها','value'=>fa_num($summary['total_bookings']),'color'=>'rgb(var(--m-tx))'],
+                    ['label'=>'انجام‌شده','value'=>fa_num($summary['completed_bookings']),'color'=>'rgb(var(--m-info))'],
+                    ['label'=>'لغو شده','value'=>fa_num($summary['cancelled_bookings']),'color'=>'rgb(var(--m-bad))'],
+                    ['label'=>'درآمد معلق','value'=>fa_num($summary['pending_payments']).' ت','color'=>'rgb(var(--m-warn))'],
+                    ['label'=>'میانگین نوبت','value'=>fa_num($summary['average_booking_value']).' ت','color'=>'rgb(var(--m-gold))'],
                 ];
             @endphp
             @foreach($statCards as $card)
@@ -213,21 +213,21 @@
                         <div class="stat-card">
                             <div class="label">کیف پول</div>
                             <div class="value" style="color:rgb(var(--m-info))">
-                                {{ number_format($paymentBreakdown['wallet']) }} نوبت
+                                {{ fa_num($paymentBreakdown['wallet']) }} نوبت
                                 <span class="text-xs font-normal" style="color:var(--admin-text-dim)">({{ $paymentBreakdown['wallet_percent'] }}٪)</span>
                             </div>
                         </div>
                         <div class="stat-card">
                             <div class="label">درگاه بانکی</div>
                             <div class="value" style="color:rgb(var(--m-ok))">
-                                {{ number_format($paymentBreakdown['gateway']) }} نوبت
+                                {{ fa_num($paymentBreakdown['gateway']) }} نوبت
                                 <span class="text-xs font-normal" style="color:var(--admin-text-dim)">({{ $paymentBreakdown['gateway_percent'] }}٪)</span>
                             </div>
                         </div>
                         <div class="stat-card">
                             <div class="label">ثبت دستی توسط ادمین</div>
                             <div class="value" style="color:rgb(var(--m-warn))">
-                                {{ number_format($paymentBreakdown['admin_manual']) }} نوبت
+                                {{ fa_num($paymentBreakdown['admin_manual']) }} نوبت
                                 <span class="text-xs font-normal" style="color:var(--admin-text-dim)">({{ $paymentBreakdown['admin_manual_percent'] }}٪)</span>
                             </div>
                         </div>
@@ -243,10 +243,10 @@
                 @if($courses)
                     <h3 class="text-base font-semibold mt-8 mb-4" style="color:var(--admin-text)">دوره‌های درمانی (بازه‌ی انتخابی)</h3>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="stat-card"><div class="label">دوره‌ی فروخته‌شده</div><div class="value">{{ number_format($courses['courses_sold']) }}</div></div>
-                        <div class="stat-card"><div class="label">پرداخت‌های دوره</div><div class="value">{{ number_format($courses['sales_amount']) }} تومان</div></div>
-                        <div class="stat-card"><div class="label">جلسه‌ی انجام‌شده</div><div class="value">{{ number_format($courses['sessions_delivered']) }}</div></div>
-                        <div class="stat-card"><div class="label">ارزش جلسه‌های پیش‌فروش‌شده‌ی مانده</div><div class="value">{{ number_format($courses['liability']) }} تومان</div></div>
+                        <div class="stat-card"><div class="label">دوره‌ی فروخته‌شده</div><div class="value">{{ fa_num($courses['courses_sold']) }}</div></div>
+                        <div class="stat-card"><div class="label">پرداخت‌های دوره</div><div class="value">{{ fa_num($courses['sales_amount']) }} تومان</div></div>
+                        <div class="stat-card"><div class="label">جلسه‌ی انجام‌شده</div><div class="value">{{ fa_num($courses['sessions_delivered']) }}</div></div>
+                        <div class="stat-card"><div class="label">ارزش جلسه‌های پیش‌فروش‌شده‌ی مانده</div><div class="value">{{ fa_num($courses['liability']) }} تومان</div></div>
                     </div>
                     <p class="text-xs mt-2" style="color:var(--admin-text-dim)">
                         پرداخت‌های دوره در درآمد نوبت‌های بالا شمرده نمی‌شوند. «ارزش مانده» خدمتی است که سالن هنوز به مشتری‌های دوره‌های فعال بدهکار است (امروز، مستقل از بازه).
@@ -269,17 +269,17 @@
                         @foreach($specialists as $sp)
                             <tr>
                                 <td>{{ $sp['name'] }}</td>
-                                <td>{{ number_format($sp['total_bookings']) }}</td>
-                                <td>{{ number_format($sp['total_revenue']) }}</td>
+                                <td>{{ fa_num($sp['total_bookings']) }}</td>
+                                <td>{{ fa_num($sp['total_revenue']) }}</td>
                                 <td>
                         <span class="px-2 py-0.5 text-xs rounded-full font-medium"
                               style="background:var(--admin-accent-light);color:var(--admin-accent)">
-                            {{ $sp['commission_rate'] }}%
+                            {{ $sp['commission_rate'] }}٪
                         </span>
                                 </td>
-                                <td style="color:rgb(var(--m-ok));font-weight:600">{{ number_format($sp['specialist_share']) }}</td>
-                                <td>{{ $sp['booking_completion_rate'] }}%</td>
-                                <td>{{ $sp['customer_return_rate'] }}%</td>
+                                <td style="color:rgb(var(--m-ok));font-weight:600">{{ fa_num($sp['specialist_share']) }}</td>
+                                <td>{{ $sp['booking_completion_rate'] }}٪</td>
+                                <td>{{ $sp['customer_return_rate'] }}٪</td>
                             </tr>
                         @endforeach
                         </tbody>
@@ -301,8 +301,8 @@
                             @foreach($serviceRevenue as $svc)
                                 <tr>
                                     <td>{{ $svc['name'] }}</td>
-                                    <td>{{ number_format($svc['bookings'] ?? 0) }}</td>
-                                    <td>{{ number_format($svc['revenue'] ?? 0) }}</td>
+                                    <td>{{ fa_num($svc['bookings'] ?? 0) }}</td>
+                                    <td>{{ fa_num($svc['revenue'] ?? 0) }}</td>
                                 </tr>
                             @endforeach
                             </tbody>
@@ -320,8 +320,8 @@
                         @foreach($popularServices as $ps)
                             <tr>
                                 <td>{{ $ps->name }}</td>
-                                <td>{{ number_format($ps->bookings_count) }}</td>
-                                <td>{{ number_format($ps->revenue ?? 0) }}</td>
+                                <td>{{ fa_num($ps->bookings_count) }}</td>
+                                <td>{{ fa_num($ps->revenue ?? 0) }}</td>
                             </tr>
                         @endforeach
                         </tbody>
@@ -342,13 +342,13 @@
                             <tr>
                                 <td>{{ $sat['specialist_name'] }}</td>
                                 <td>{{ $sat['average_rating'] }} / 5</td>
-                                <td>{{ number_format($sat['total_ratings']) }}</td>
+                                <td>{{ fa_num($sat['total_ratings']) }}</td>
                                 <td>
                                     <div class="flex items-center gap-2">
                                         <div class="flex-1 rounded-full h-2" style="background:var(--admin-border)">
                                             <div class="h-2 rounded-full" style="width:{{ $sat['satisfaction_rate'] }}%;background:rgb(var(--m-ok))"></div>
                                         </div>
-                                        <span class="text-xs font-medium">{{ $sat['satisfaction_rate'] }}%</span>
+                                        <span class="text-xs font-medium">{{ $sat['satisfaction_rate'] }}٪</span>
                                     </div>
                                 </td>
                             </tr>

@@ -108,7 +108,7 @@
         <p class="sub">
             در چند دقیقه، پنل مدیریت اختصاصی سالن خودتان را راه‌اندازی کنید.
             @if ($existingOwner)
-                <br>سالن تازه برای حساب <span dir="ltr">{{ $existingOwner->phone }}</span> ({{ $existingOwner->name }}) ساخته می‌شود و از سربرگ پنل بین سالن‌هایتان جابه‌جا می‌کنید.
+                <br>سالن تازه برای حساب <span dir="ltr">{{ \App\Support\Fa::digits($existingOwner->phone) }}</span> ({{ $existingOwner->name }}) ساخته می‌شود و از سربرگ پنل بین سالن‌هایتان جابه‌جا می‌کنید.
                 دوره‌ی رایگان فقط برای اولین سالن هر شماره است؛ اشتراک این سالن را {{ $intent === 'buy' ? 'همین حالا در درگاه' : 'از صفحه‌ی صورتحساب همان سالن' }} می‌خرید.
             @elseif ($intent === 'buy')
                 <br>بعد از تایید شماره موبایل، مستقیم به درگاه پرداخت زرین‌پال هدایت می‌شوید و اشتراک از همان لحظه فعال می‌شود.
@@ -147,7 +147,7 @@
                     <div class="buy-summary">
                         <div>
                             <div class="buy-title">پلن {{ $planName ? $planName.' · ' : '' }}{{ $planLabels[old('subscription_type', $selectedPlan)] ?? '' }}</div>
-                            <div class="buy-price">{{ to_persian_num(number_format($selectedPlanPrice)) }} تومان برای {{ to_persian_num((string) $includedSpecialists) }} متخصص (هر متخصص بیشتر هم اضافه می‌شود) — پرداخت آنلاین بعد از تایید موبایل</div>
+                            <div class="buy-price">{{ fa_num($selectedPlanPrice) }} تومان برای {{ to_persian_num((string) $includedSpecialists) }} متخصص (هر متخصص بیشتر هم اضافه می‌شود) — پرداخت آنلاین بعد از تایید موبایل</div>
                         </div>
                         <a href="{{ route('central.home') }}#pricing">تغییر پلن</a>
                     </div>
@@ -173,7 +173,7 @@
                                required min="1" max="{{ $maxSignupSpecialists }}" dir="ltr">
                         <div class="hint">
                             تا {{ to_persian_num((string) $includedSpecialists) }} متخصص در قیمت پلن است؛ هر متخصص بیشتر ماهانه
-                            {{ to_persian_num(number_format($extraSpecialistPrice)) }} تومان. سالن بیشتر از این تعداد متخصص نمی‌تواند ثبت کند.
+                            {{ fa_num($extraSpecialistPrice) }} تومان. سالن بیشتر از این تعداد متخصص نمی‌تواند ثبت کند.
                             @if ($trialDays > 0 && $intent !== 'buy')
                                 <br data-trial-specialists="{{ $trialSpecialists }}">در دوره‌ی رایگان {{ to_persian_num((string) $trialDays) }} روزه حداکثر {{ fa_num($trialSpecialists) }} کارشناس می‌توانید اضافه کنید؛ بعد از خرید اشتراک، همین عدد بالا سقف سالن است.
                             @endif
@@ -266,7 +266,7 @@
                 </fieldset>
 
                 @if ($existingOwner)
-                <p class="sub" data-existing-owner>مدیر سالن: {{ $existingOwner->name }} · <span dir="ltr">{{ $existingOwner->phone }}</span> (حساب فعلی شما)</p>
+                <p class="sub" data-existing-owner>مدیر سالن: {{ $existingOwner->name }} · <span dir="ltr">{{ \App\Support\Fa::digits($existingOwner->phone) }}</span> (حساب فعلی شما)</p>
                 @else
                 <fieldset>
                     <legend>مشخصات مدیر سالن (شما)</legend>

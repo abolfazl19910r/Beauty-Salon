@@ -7,11 +7,11 @@
         <a href="{{ route('complaints.index') }}" class="text-sm text-m-tx/60 hover:text-m-gold2">← شکایت‌های من</a>
         <h1 class="text-xl font-bold text-m-gold2 mt-3">{{ $complaint->title }}</h1>
         <p class="text-xs text-m-tx/50 mt-1 persian-number">
-            {{ $complaint->categoryLabel() }} · ثبت {{ verta($complaint->created_at)->format('Y/m/d H:i') }}
+            {{ $complaint->categoryLabel() }} · ثبت {{ fa_date($complaint->created_at, true) }}
             @if ($complaint->first_responded_at)
-                · پاسخ {{ verta($complaint->first_responded_at)->format('Y/m/d H:i') }}
+                · پاسخ {{ fa_date($complaint->first_responded_at, true) }}
             @elseif ($complaint->response_due_at)
-                · مهلت پاسخ تا {{ verta($complaint->response_due_at)->format('Y/m/d H:i') }}
+                · مهلت پاسخ تا {{ fa_date($complaint->response_due_at, true) }}
             @endif
         </p>
 
@@ -19,7 +19,7 @@
             <div class="bg-m-card rounded-2xl border border-m-gold/10 p-4 text-sm leading-7 whitespace-pre-line">{{ $complaint->description }}</div>
             @foreach ($complaint->messages as $message)
                 <div class="rounded-2xl border p-4 text-sm leading-7 whitespace-pre-line {{ $message->is_staff_reply ? 'border-m-gold/30 bg-m-gold/5' : 'border-m-gold/10 bg-m-card' }}">
-                    <div class="text-xs text-m-tx/50 mb-1">{{ $message->is_staff_reply ? 'پاسخ '.config('brand.name') : 'شما' }} · {{ verta($message->created_at)->format('Y/m/d H:i') }}</div>
+                    <div class="text-xs text-m-tx/50 mb-1">{{ $message->is_staff_reply ? 'پاسخ '.config('brand.name') : 'شما' }} · {{ fa_date($message->created_at, true) }}</div>
                     {{ $message->message }}
                 </div>
             @endforeach

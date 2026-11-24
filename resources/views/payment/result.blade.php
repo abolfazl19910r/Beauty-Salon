@@ -49,15 +49,15 @@
                         </div>
                         <div class="result-tile p-4">
                             <span class="text-xs text-m-tx/60 block mb-1">مبلغ پرداختی</span>
-                            <span class="font-bold text-m-ok persian-number">{{ number_format($booking->prepayment_amount) }} تومان</span>
+                            <span class="font-bold text-m-ok persian-number">{{ fa_num($booking->prepayment_amount) }} تومان</span>
                         </div>
                         <div class="result-tile p-4">
                             <span class="text-xs text-m-tx/60 block mb-1">تاریخ پرداخت</span>
-                            <span class="font-medium text-m-tx persian-number" dir="ltr">{{ $booking->paid_at ? verta($booking->paid_at)->format('Y/m/d H:i') : '—' }}</span>
+                            <span class="font-medium text-m-tx persian-number" dir="ltr">{{ $booking->paid_at ? fa_date($booking->paid_at, true) : '—' }}</span>
                         </div>
                         <div class="result-tile p-4">
                             <span class="text-xs text-m-tx/60 block mb-1">کد نوبت</span>
-                            <span class="font-bold text-m-gold2 persian-number">#{{ $booking->id }}</span>
+                            <span class="font-bold text-m-gold2 persian-number">#{{ \App\Support\Fa::digits($booking->id) }}</span>
                         </div>
                     </div>
                 </section>
@@ -75,11 +75,11 @@
                         </div>
                         <div class="result-row flex justify-between py-3">
                             <span class="text-m-tx/60">تاریخ</span>
-                            <span class="font-medium text-m-tx persian-number" dir="ltr">{{ verta($booking->booking_time)->format('Y/m/d') }}</span>
+                            <span class="font-medium text-m-tx persian-number" dir="ltr">{{ fa_date($booking->booking_time) }}</span>
                         </div>
                         <div class="result-row flex justify-between py-3">
                             <span class="text-m-tx/60">ساعت</span>
-                            <span class="font-medium text-m-tx persian-number" dir="ltr">{{ verta($booking->booking_time)->format('H:i') }}</span>
+                            <span class="font-medium text-m-tx persian-number" dir="ltr">{{ fa_time($booking->booking_time) }}</span>
                         </div>
                         @if ($booking->service?->duration)
                             <div class="result-row flex justify-between py-3">
@@ -127,11 +127,11 @@
                             </div>
                             <div class="result-row flex justify-between py-3">
                                 <span class="text-m-tx/60">تاریخ و ساعت</span>
-                                <span class="font-medium text-m-tx persian-number" dir="ltr">{{ verta($booking->booking_time)->format('Y/m/d H:i') }}</span>
+                                <span class="font-medium text-m-tx persian-number" dir="ltr">{{ fa_date($booking->booking_time, true) }}</span>
                             </div>
                             <div class="result-row flex justify-between py-3">
                                 <span class="text-m-tx/60">مبلغ قابل پرداخت</span>
-                                <span class="font-bold text-m-bad persian-number">{{ number_format($booking->prepayment_amount) }} تومان</span>
+                                <span class="font-bold text-m-bad persian-number">{{ fa_num($booking->prepayment_amount) }} تومان</span>
                             </div>
                         </div>
                     </section>

@@ -46,22 +46,22 @@
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid var(--admin-accent);">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">موجودی فعلی</p>
-                <p class="text-xl font-bold persian-number" style="color:var(--admin-text);">{{ number_format($wallet->balance) }}</p>
+                <p class="text-xl font-bold persian-number" style="color:var(--admin-text);">{{ fa_num($wallet->balance) }}</p>
                 <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">تومان</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-warn));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">در انتظار تسویه</p>
-                <p class="text-xl font-bold persian-number" style="color:rgb(var(--m-warn));">{{ number_format($wallet->pending_amount) }}</p>
+                <p class="text-xl font-bold persian-number" style="color:rgb(var(--m-warn));">{{ fa_num($wallet->pending_amount) }}</p>
                 <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">تومان</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-ok));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل درآمد</p>
-                <p class="text-xl font-bold persian-number" style="color:rgb(var(--m-ok));">{{ number_format($wallet->total_earned) }}</p>
+                <p class="text-xl font-bold persian-number" style="color:rgb(var(--m-ok));">{{ fa_num($wallet->total_earned) }}</p>
                 <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">تومان</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-bad));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل برداشت شده</p>
-                <p class="text-xl font-bold persian-number" style="color:rgb(var(--m-bad));">{{ number_format($wallet->total_withdrawn) }}</p>
+                <p class="text-xl font-bold persian-number" style="color:rgb(var(--m-bad));">{{ fa_num($wallet->total_withdrawn) }}</p>
                 <p class="text-xs mt-0.5" style="color:var(--admin-text-light);">تومان</p>
             </div>
         </div>
@@ -92,7 +92,7 @@
                             <p class="text-xs mt-2 persian-number" style="color:var(--admin-text-dim);">
                                 توسط {{ $wallet->ibanVerifiedBy?->name ?? '—' }}
                                 @if($wallet->iban_verified_at)
-                                    — {{ verta($wallet->iban_verified_at)->format('Y/m/d H:i') }}
+                                    — {{ fa_date($wallet->iban_verified_at, true) }}
                                 @endif
                             </p>
                             <form action="{{ route('admin.wallet.unverify-iban', $wallet) }}" method="POST" class="mt-2"
@@ -152,7 +152,7 @@
                             <tr style="border-top:1px solid var(--admin-border);"
                                 data-ui-hover="background: var(--admin-accent-light)"
                                 data-ui-unhover="background: ">
-                                <td class="px-4 py-2.5 persian-number text-xs" style="color:var(--admin-text-dim);">{{ verta($transaction->created_at)->format('Y/m/d H:i') }}</td>
+                                <td class="px-4 py-2.5 persian-number text-xs" style="color:var(--admin-text-dim);">{{ fa_date($transaction->created_at, true) }}</td>
                                 <td class="px-4 py-2.5">
                                 <span class="px-2 py-0.5 rounded-md text-xs font-medium"
                                       style="{{ $transaction->type=='income' ? 'background:rgb(var(--m-ok) / .1); color:rgb(var(--m-ok));' : ($transaction->type=='withdrawal' ? 'background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad));' : 'background:var(--admin-accent-light); color:var(--admin-accent);') }}">
@@ -160,10 +160,10 @@
                                 </span>
                                 </td>
                                 <td class="px-4 py-2.5 font-bold persian-number" style="color:{{ $transaction->amount >= 0 ? 'rgb(var(--m-ok))' : 'rgb(var(--m-bad))' }};">
-                                    {{ number_format($transaction->amount) }}
+                                    {{ fa_num($transaction->amount) }}
                                 </td>
                                 <td class="px-4 py-2.5 max-w-xs truncate" style="color:var(--admin-text-dim);">{{ $transaction->description }}</td>
-                                <td class="px-4 py-2.5 persian-number text-xs" style="color:var(--admin-text-dim);">{{ number_format($transaction->balance_after) }}</td>
+                                <td class="px-4 py-2.5 persian-number text-xs" style="color:var(--admin-text-dim);">{{ fa_num($transaction->balance_after) }}</td>
                             </tr>
                         @empty
                             <tr><td colspan="5" class="px-4 py-8 text-center text-sm" style="color:var(--admin-text-dim);">تراکنشی یافت نشد</td></tr>
@@ -197,7 +197,7 @@
                 <div class="p-5 space-y-3 text-sm">
                     <p style="color:var(--admin-text-dim);">
                         مبلغ در انتظار فعلی این متخصص:
-                        <span class="font-bold persian-number" style="color:rgb(var(--m-warn));">{{ number_format($wallet->pending_amount) }}</span>
+                        <span class="font-bold persian-number" style="color:rgb(var(--m-warn));">{{ fa_num($wallet->pending_amount) }}</span>
                         تومان
                     </p>
                     <label class="flex items-center gap-2" style="color:var(--admin-text-dim);">

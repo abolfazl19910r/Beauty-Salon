@@ -133,11 +133,11 @@
                     <div class="space-y-2.5 text-sm">
                         <div class="flex justify-between">
                             <span style="color:var(--admin-text-dim);">قیمت:</span>
-                            <span class="persian-number font-medium" style="color:rgb(var(--m-ok));">{{ number_format($service->price) }} تومان</span>
+                            <span class="persian-number font-medium" style="color:rgb(var(--m-ok));">{{ fa_num($service->price) }} تومان</span>
                         </div>
                         <div class="flex justify-between">
                             <span style="color:var(--admin-text-dim);">مدت:</span>
-                            <span class="persian-number" style="color:var(--admin-text);">{{ $service->duration }} دقیقه</span>
+                            <span class="persian-number" style="color:var(--admin-text);">{{ fa_num($service->duration) }} دقیقه</span>
                         </div>
                         <div class="flex justify-between">
                             <span style="color:var(--admin-text-dim);">دسته‌بندی:</span>
@@ -145,7 +145,7 @@
                         </div>
                         <div class="flex justify-between">
                             <span style="color:var(--admin-text-dim);">متخصصین:</span>
-                            <span class="persian-number font-bold" style="color:var(--admin-accent);">{{ $service->specialists()->count() }}</span>
+                            <span class="persian-number font-bold" style="color:var(--admin-accent);">{{ fa_num($service->specialists()->count()) }}</span>
                         </div>
                     </div>
                 </div>

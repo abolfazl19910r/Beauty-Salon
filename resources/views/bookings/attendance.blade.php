@@ -15,7 +15,7 @@
             <h1 class="text-xl font-bold text-m-gold2">تأیید حضور در نوبت</h1>
             <div class="text-sm leading-8 text-m-tx/80">
                 <div>{{ $booking->service?->name }} — {{ $booking->specialist?->name }}</div>
-                <div class="persian-number">{{ verta($booking->booking_time)->format('l j F Y') }}، ساعت {{ to_persian_num($booking->booking_time->format('H:i')) }}</div>
+                <div class="persian-number">{{ fa_date($booking->booking_time) }}، ساعت {{ to_persian_num($booking->booking_time->format('H:i')) }}</div>
             </div>
 
             @if ($booking->attendance_confirmed_at)

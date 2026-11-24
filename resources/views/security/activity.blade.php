@@ -33,7 +33,7 @@
                                 @endif
                             </div>
                         </div>
-                        <span class="text-xs text-m-tx/40">{{ jalali_date($log->created_at, 'Y/m/d H:i') }}</span>
+                        <span class="text-xs text-m-tx/40">{{ fa_date($log->created_at, true) }}</span>
                     </div>
                 @empty
                     <p class="px-6 py-10 text-sm text-m-tx/45 text-center">هنوز فعالیتی ثبت نشده است.</p>

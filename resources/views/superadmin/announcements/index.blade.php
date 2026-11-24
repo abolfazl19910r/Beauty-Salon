@@ -26,7 +26,7 @@
                     <td class="py-3 px-4 font-bold">{{ $a->title }}</td>
                     <td class="py-3 px-4">{{ \App\Models\PlatformAnnouncement::AUDIENCES[$a->audience] ?? $a->audience }}</td>
                     <td class="py-3 px-4">{{ \App\Models\PlatformAnnouncement::LEVELS[$a->level] ?? $a->level }}</td>
-                    <td class="py-3 px-4" style="color: var(--sa-text-dim);">{{ $a->starts_at ? jalali_date($a->starts_at) : 'از حالا' }} تا {{ $a->ends_at ? jalali_date($a->ends_at) : 'بی‌پایان' }}</td>
+                    <td class="py-3 px-4" style="color: var(--sa-text-dim);">{{ $a->starts_at ? fa_date($a->starts_at) : 'از حالا' }} تا {{ $a->ends_at ? fa_date($a->ends_at) : 'بی‌پایان' }}</td>
                     <td class="py-3 px-4">
                         @if ($a->isLive())<span style="color: var(--sa-success);">در حال نمایش</span>
                         @elseif (! $a->is_active)<span style="color: var(--sa-text-dim);">خاموش</span>

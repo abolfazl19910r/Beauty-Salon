@@ -74,7 +74,7 @@
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
                             <p class="mb-1" style="color:var(--admin-text-dim);">شماره موبایل</p>
-                            <p dir="ltr" class="font-medium" style="color:var(--admin-text);">{{ $user->phone }}</p>
+                            <p dir="ltr" class="font-medium" style="color:var(--admin-text);">{{ \App\Support\Fa::digits($user->phone) }}</p>
                         </div>
                         <div>
                             <p class="mb-1" style="color:var(--admin-text-dim);">ایمیل</p>
@@ -82,11 +82,11 @@
                         </div>
                         <div>
                             <p class="mb-1" style="color:var(--admin-text-dim);">تاریخ عضویت</p>
-                            <p class="persian-number font-medium" style="color:var(--admin-text);">{{ verta($user->created_at)->format('Y/m/d H:i') }}</p>
+                            <p class="persian-number font-medium" style="color:var(--admin-text);">{{ fa_date($user->created_at, true) }}</p>
                         </div>
                         <div>
                             <p class="mb-1" style="color:var(--admin-text-dim);">آخرین بروزرسانی</p>
-                            <p class="persian-number font-medium" style="color:var(--admin-text);">{{ verta($user->updated_at)->format('Y/m/d') }}</p>
+                            <p class="persian-number font-medium" style="color:var(--admin-text);">{{ fa_date($user->updated_at) }}</p>
                         </div>
                         <div class="col-span-2">
                             <p class="mb-2" style="color:var(--admin-text-dim);">نقش‌ها</p>
@@ -129,14 +129,14 @@
                                     <tr style="border-top:1px solid var(--admin-border);"
                                         data-ui-hover="background: var(--admin-accent-light)"
                                         data-ui-unhover="background: ">
-                                        <td class="px-4 py-2.5 persian-number" style="color:var(--admin-text-dim);">{{ $booking->id }}</td>
-                                        <td class="px-4 py-2.5 persian-number" style="color:var(--admin-text);">{{ verta($booking->booking_time)->format('Y/m/d H:i') }}</td>
+                                        <td class="px-4 py-2.5 persian-number" style="color:var(--admin-text-dim);">{{ \App\Support\Fa::digits($booking->id) }}</td>
+                                        <td class="px-4 py-2.5 persian-number" style="color:var(--admin-text);">{{ fa_date($booking->booking_time, true) }}</td>
                                         <td class="px-4 py-2.5" style="color:var(--admin-text);">{{ $booking->service?->name ?? '—' }}</td>
                                         <td class="px-4 py-2.5" style="color:var(--admin-text-dim);">{{ $booking->specialist?->name ?? '—' }}</td>
                                         <td class="px-4 py-2.5">
                                             <span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background:{{ $bs[1] }}; color:{{ $bs[2] }};">{{ $bs[0] }}</span>
                                         </td>
-                                        <td class="px-4 py-2.5 persian-number" style="color:var(--admin-text);">{{ number_format($booking->prepayment_amount) }} ت</td>
+                                        <td class="px-4 py-2.5 persian-number" style="color:var(--admin-text);">{{ fa_num($booking->prepayment_amount) }} ت</td>
                                     </tr>
                                 @endforeach
                                 </tbody>

@@ -211,15 +211,15 @@
                     <div class="text-xs space-y-1.5" style="color:var(--admin-text-dim);">
                         <div class="flex justify-between">
                             <span>موبایل:</span>
-                            <span dir="ltr" style="color:var(--admin-text);">{{ $user->phone }}</span>
+                            <span dir="ltr" style="color:var(--admin-text);">{{ \App\Support\Fa::digits($user->phone) }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span>عضویت:</span>
-                            <span class="persian-number" style="color:var(--admin-text);">{{ verta($user->created_at)->format('Y/m/d') }}</span>
+                            <span class="persian-number" style="color:var(--admin-text);">{{ fa_date($user->created_at) }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span>نوبت‌ها:</span>
-                            <span class="persian-number font-bold" style="color:var(--admin-accent);">{{ $user->bookings()->count() }}</span>
+                            <span class="persian-number font-bold" style="color:var(--admin-accent);">{{ fa_num($user->bookings()->count()) }}</span>
                         </div>
                     </div>
                 </div>

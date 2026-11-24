@@ -18,7 +18,7 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
             <div>
                 <h1 class="text-xl font-bold" style="color:var(--admin-text);">درخواست برداشت
-                    <span class="text-base font-normal persian-number" style="color:var(--admin-text-dim);">#{{ $withdrawalRequest->id }}</span>
+                    <span class="text-base font-normal persian-number" style="color:var(--admin-text-dim);">#{{ \App\Support\Fa::digits($withdrawalRequest->id) }}</span>
                 </h1>
                 <p class="text-sm mt-0.5" style="color:var(--admin-text-dim);">{{ $withdrawalRequest->specialist?->name ?? '—' }}</p>
             </div>
@@ -49,7 +49,7 @@
                 <span class="text-sm font-bold" style="color:{{ $st[2] }};">{{ $st[0] }}</span>
             </div>
             <span class="persian-number font-bold text-lg" style="color:{{ $st[2] }};">
-            {{ number_format($withdrawalRequest->amount) }} تومان
+            {{ fa_num($withdrawalRequest->amount) }} تومان
         </span>
         </div>
 
@@ -71,13 +71,13 @@
                         <div>
                             <p class="mb-1" style="color:var(--admin-text-dim);">موجودی کیف پول</p>
                             <p class="persian-number font-bold" style="color:rgb(var(--m-ok));">
-                                {{ number_format($withdrawalRequest->wallet?->balance ?? 0) }} تومان
+                                {{ fa_num($withdrawalRequest->wallet?->balance ?? 0) }} تومان
                             </p>
                         </div>
                         <div>
                             <p class="mb-1" style="color:var(--admin-text-dim);">تاریخ درخواست</p>
                             <p class="persian-number" style="color:var(--admin-text);">
-                                {{ verta($withdrawalRequest->created_at)->format('Y/m/d H:i') }}
+                                {{ fa_date($withdrawalRequest->created_at, true) }}
                             </p>
                         </div>
                     </div>
@@ -95,14 +95,14 @@
                         <div class="flex justify-between py-2" style="border-bottom:1px dashed var(--admin-border);">
                             <span style="color:var(--admin-text-dim);">مبلغ درخواستی</span>
                             <span class="persian-number font-bold" style="color:var(--admin-text);">
-                            {{ number_format($withdrawalRequest->amount) }} تومان
+                            {{ fa_num($withdrawalRequest->amount) }} تومان
                         </span>
                         </div>
                         @if($withdrawalRequest->net_amount)
                             <div class="flex justify-between py-2" style="border-bottom:1px dashed var(--admin-border);">
                                 <span style="color:var(--admin-text-dim);">مبلغ خالص (پس از کارمزد)</span>
                                 <span class="persian-number font-bold" style="color:rgb(var(--m-ok));">
-                            {{ number_format($withdrawalRequest->net_amount) }} تومان
+                            {{ fa_num($withdrawalRequest->net_amount) }} تومان
                         </span>
                             </div>
                         @endif
@@ -118,7 +118,7 @@
                             <div class="flex justify-between py-2">
                                 <span style="color:var(--admin-text-dim);">تاریخ پردازش</span>
                                 <span class="persian-number" style="color:var(--admin-text);">
-                            {{ verta($withdrawalRequest->processed_at)->format('Y/m/d H:i') }}
+                            {{ fa_date($withdrawalRequest->processed_at, true) }}
                         </span>
                             </div>
                         @endif
@@ -254,7 +254,7 @@
                         <p class="text-sm font-medium" style="color:var(--admin-text);">این درخواست نهایی شده</p>
                         @if($withdrawalRequest->processed_at)
                             <p class="text-xs mt-1 persian-number" style="color:var(--admin-text-dim);">
-                                تاریخ پردازش: {{ verta($withdrawalRequest->processed_at)->format('Y/m/d H:i') }}
+                                تاریخ پردازش: {{ fa_date($withdrawalRequest->processed_at, true) }}
                             </p>
                         @endif
                         @if($withdrawalRequest->reference_code)

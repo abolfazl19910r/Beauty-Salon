@@ -27,19 +27,19 @@
                         ['label' => 'تاریخ', 'value' => verta($bookingTime)->format('Y/m/d'), 'persian' => true],
                         ['label' => 'ساعت', 'value' => verta($bookingTime)->format('H:i')],
                         ['label' => 'مدت زمان', 'value' => $service->duration . ' دقیقه', 'persian' => true],
-                        ['label' => 'قیمت کل خدمت', 'value' => number_format($service->price) . ' تومان', 'persian' => true],
+                        ['label' => 'قیمت کل خدمت', 'value' => fa_num($service->price) . ' تومان', 'persian' => true],
                     ] as $row)
                         <div class="flex items-center justify-between px-5 py-3.5 text-sm">
                             <span class="text-m-tx/55">{{ $row['label'] }}</span>
                             <span class="font-medium text-m-tx {{ isset($row['persian']) ? 'persian-number' : '' }}">
-                            {{ $row['value'] }}
+                            {{ fa_num($row['value']) }}
                         </span>
                         </div>
                     @endforeach
                     <div class="flex items-center justify-between px-5 py-4 text-sm" @unless ($prepaymentRequired) hidden @endunless>
                         <span class="font-bold text-m-tx">مبلغ پیش‌پرداخت</span>
                         <span class="font-bold text-m-gold2 text-lg persian-number" id="final-price">
-                        {{ number_format($prepaymentAmount) }} تومان
+                        {{ fa_num($prepaymentAmount) }} تومان
                     </span>
                     </div>
                     <div class="flex items-center justify-between px-5 py-3.5 text-sm">
@@ -47,7 +47,7 @@
                             {{ $prepaymentRequired ? 'باقی‌مانده (موقع نوبت به متخصص پرداخت می‌کنید)' : 'قابل پرداخت در سالن (بدون پیش‌پرداخت)' }}
                         </span>
                         <span class="font-medium text-m-tx/80 persian-number" id="remaining-amount">
-                            {{ number_format(max(0, $service->price - $prepaymentAmount)) }} تومان
+                            {{ fa_num(max(0, $service->price - $prepaymentAmount)) }} تومان
                         </span>
                     </div>
                 </div>

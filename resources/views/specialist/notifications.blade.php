@@ -87,7 +87,7 @@
                                     {{ $text }}
                                 </p>
                                 <p class="text-xs text-[var(--specialist-plum-muted)] mt-1 persian-number">
-                                    {{ \Morilog\Jalali\Jalalian::fromCarbon($notification->created_at)->format('Y/m/d H:i') }}
+                                    {{ fa_date($notification->created_at, true) }}
                                 </p>
                             </a>
 

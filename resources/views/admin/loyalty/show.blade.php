@@ -27,11 +27,11 @@
                         $rows = [
                             ['عنوان', $reward->title],
                             ['توضیحات', $reward->description ?? 'بدون توضیحات'],
-                            ['امتیاز مورد نیاز', number_format($reward->required_points)],
+                            ['امتیاز مورد نیاز', fa_num($reward->required_points)],
                             ['نوع تخفیف', $reward->discount_type === 'fixed' ? 'مبلغ ثابت' : 'درصدی'],
-                            ['مقدار تخفیف', number_format($reward->discount_amount) . ($reward->discount_type === 'percentage' ? ' %' : ' تومان')],
-                            ['حداکثر استفاده', number_format($reward->max_uses)],
-                            ['تعداد استفاده شده', number_format($reward->used_count)],
+                            ['مقدار تخفیف', fa_num($reward->discount_amount) . ($reward->discount_type === 'percentage' ? ' %' : ' تومان')],
+                            ['حداکثر استفاده', fa_num($reward->max_uses)],
+                            ['تعداد استفاده شده', fa_num($reward->used_count)],
                         ];
                     @endphp
                     @foreach($rows as [$label, $val])

@@ -37,19 +37,19 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs" style="color:var(--admin-text-dim);">کل کدها</p>
-                <p class="text-xl font-bold mt-1 persian-number" style="color:var(--admin-text);">{{ $stats['total'] }}</p>
+                <p class="text-xl font-bold mt-1 persian-number" style="color:var(--admin-text);">{{ fa_num($stats['total']) }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs" style="color:var(--admin-text-dim);">فعال و قابل استفاده</p>
-                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-ok));">{{ $stats['active'] }}</p>
+                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-ok));">{{ fa_num($stats['active']) }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs" style="color:var(--admin-text-dim);">منقضی‌شده</p>
-                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-bad));">{{ $stats['expired'] }}</p>
+                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-bad));">{{ fa_num($stats['expired']) }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border);">
                 <p class="text-xs" style="color:var(--admin-text-dim);">ظرفیت تمام‌شده</p>
-                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-warn));">{{ $stats['used_up'] }}</p>
+                <p class="text-xl font-bold mt-1 persian-number" style="color:rgb(var(--m-warn));">{{ fa_num($stats['used_up']) }}</p>
             </div>
         </div>
 
@@ -73,22 +73,22 @@
                             <td class="px-4 py-3 font-medium persian-number" dir="ltr" style="color:var(--admin-text);">{{ $discountCode->code }}</td>
                             <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">
                                 @if($discountCode->type === 'percentage')
-                                    {{ number_format((float) $discountCode->amount) }}٪
+                                    {{ fa_num((float) $discountCode->amount) }}٪
                                     @if($discountCode->max_amount)
-                                        <span class="text-xs">(تا سقف {{ number_format((float) $discountCode->max_amount) }})</span>
+                                        <span class="text-xs">(تا سقف {{ fa_num((float) $discountCode->max_amount) }})</span>
                                     @endif
                                 @else
-                                    {{ number_format((float) $discountCode->amount) }} تومان
+                                    {{ fa_num((float) $discountCode->amount) }} تومان
                                 @endif
                             </td>
                             <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">
-                                {{ $discountCode->used_count }} / {{ $discountCode->max_uses }}
+                                {{ fa_num($discountCode->used_count) }} / {{ $discountCode->max_uses }}
                             </td>
                             <td class="px-4 py-3" style="color:var(--admin-text-dim);">
                                 {{ $discountCode->user?->name ?? 'همه‌ی کاربران' }}
                             </td>
                             <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">
-                                {{ $discountCode->expires_at ? jalali_date($discountCode->expires_at) : 'بدون انقضا' }}
+                                {{ $discountCode->expires_at ? fa_date($discountCode->expires_at) : 'بدون انقضا' }}
                             </td>
                             <td class="px-4 py-3">
                                 @if($discountCode->isValid())

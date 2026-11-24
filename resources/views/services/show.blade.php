@@ -58,13 +58,13 @@
                         @endif
                     </div>
                     <div class="text-left sm:text-right shrink-0">
-                        <p class="text-2xl font-bold text-m-gold2 persian-number">{{ number_format($service->price) }}</p>
+                        <p class="text-2xl font-bold text-m-gold2 persian-number">{{ fa_num($service->price) }}</p>
                         <p class="text-xs text-m-tx/50 mt-0.5">تومان</p>
                         <div class="flex items-center gap-1.5 mt-2 text-sm text-m-tx/60 justify-end">
                             <svg class="w-4 h-4 text-m-gold/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 6v6l4 2"/>
                             </svg>
-                            <span class="persian-number">{{ $service->duration }} دقیقه</span>
+                            <span class="persian-number">{{ fa_num($service->duration) }} دقیقه</span>
                         </div>
                     </div>
                 </div>
@@ -150,7 +150,7 @@
                                 <h3 class="font-bold text-m-tx mb-2 text-sm">{{ $rel->name }}</h3>
                                 <div class="flex items-center justify-between">
                                 <span class="text-m-gold2 text-sm font-semibold persian-number">
-                                    {{ number_format($rel->price) }} تومان
+                                    {{ fa_num($rel->price) }} تومان
                                 </span>
                                     <a href="{{ route('services.show', $rel) }}"
                                        class="text-xs text-m-gold hover:text-m-gold2 transition-colors flex items-center gap-1">

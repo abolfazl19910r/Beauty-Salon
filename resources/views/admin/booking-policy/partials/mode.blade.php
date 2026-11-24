@@ -8,7 +8,7 @@
 
     @if ($policy->payment_mode_fallback_at && $policy->payment_mode === \App\Models\BookingPolicy::MODE_NONE)
         <div class="rounded-lg p-3 text-sm" style="background:rgb(var(--m-warn) / .14); color:rgb(var(--m-warn));" role="alert">
-            رزرو با پیش‌پرداخت در {{ verta($policy->payment_mode_fallback_at)->format('Y/m/d H:i') }} خودکار متوقف شد، چون
+            رزرو با پیش‌پرداخت در {{ fa_date($policy->payment_mode_fallback_at, true) }} خودکار متوقف شد، چون
             {{ $hasOnlinePaymentFeature ? 'سالن درگاه پرداخت فعالی نداشت' : 'پلن سالن امکان پرداخت آنلاین مشتری را نداشت' }}.
             رزرو مشتری‌ها قطع نشد و بدون پیش‌پرداخت ادامه دارد.
         </div>

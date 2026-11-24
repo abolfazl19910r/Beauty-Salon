@@ -289,8 +289,8 @@ class PlanBillingTest extends TestCase
             ->assertSee('data-testid="current-plan"', false)
             ->assertSee('پایه')
             ->assertSee('کامل')
-            ->assertSee(number_format(990000))
-            ->assertSee(number_format(1500000))
+            ->assertSee(fa_num(990000))
+            ->assertSee(fa_num(1500000))
             ->assertSee('ارتقای فوری')
             ->assertDontSee('کلینیک'); // غیرعمومی
     }
@@ -303,10 +303,10 @@ class PlanBillingTest extends TestCase
         $page = $this->get(route('central.home'));
         $page->assertOk();
         foreach ($prices as $price) {
-            $page->assertSee(to_persian_num(number_format($price)));
+            $page->assertSee(fa_num($price));
         }
 
         Plan::byKey('full')->update(['price_3m' => 4000000]);
-        $this->get(route('central.home'))->assertSee(to_persian_num(number_format(4000000)));
+        $this->get(route('central.home'))->assertSee(fa_num(4000000));
     }
 }

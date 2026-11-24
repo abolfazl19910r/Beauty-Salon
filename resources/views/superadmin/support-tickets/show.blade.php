@@ -20,7 +20,7 @@
                     @if ($ticket->user?->salons?->isNotEmpty())
                         <span>سالن: <span style="color: var(--sa-text);">{{ $ticket->user->salons->first()->name }}</span></span>
                     @endif
-                    <span>تاریخ ثبت: <span style="color: var(--sa-text);">{{ jalali_date($ticket->created_at) }}</span></span>
+                    <span>تاریخ ثبت: <span style="color: var(--sa-text);">{{ fa_date($ticket->created_at) }}</span></span>
                 </div>
                 <p style="color: var(--sa-text); white-space: pre-line;">{{ $ticket->description }}</p>
             </div>
@@ -68,7 +68,7 @@
                         <div class="flex justify-between" data-complaint-due>
                             <dt style="color: var(--sa-text-dim);">مهلت پاسخ (شکایت)</dt>
                             <dd @if ($ticket->isOverdue()) style="color: var(--sa-danger);" @endif>
-                                {{ $ticket->response_due_at ? \Morilog\Jalali\Jalalian::fromCarbon($ticket->response_due_at)->format('Y/m/d H:i') : '—' }}
+                                {{ $ticket->response_due_at ? fa_date($ticket->response_due_at, true) : '—' }}
                                 @if ($ticket->first_responded_at) · پاسخ داده شد @elseif ($ticket->isOverdue()) · گذشته @endif
                             </dd>
                         </div>

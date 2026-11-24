@@ -23,14 +23,14 @@
     </td>
     <td class="ms-doc">
         <div class="ms-title">گزارش {{ $typeLabel ?? 'مدیریتی' }}</div>
-        صادر شده {{ jalali_date(now(), 'Y/m/d') }} · ساعت {{ now()->format('H:i') }}
+        صادر شده {{ fa_date(now()) }} · ساعت {{ now()->format('H:i') }}
     </td>
 </tr></table>
 <div class="masthead-rule"></div>
 
 @if(isset($period))
     <table class="meta"><tr>
-        <td>بازه‌ی گزارش: <b>{{ jalali_date($period['start'], 'Y/m/d') }}</b> تا <b>{{ jalali_date($period['end'], 'Y/m/d') }}</b></td>
+        <td>بازه‌ی گزارش: <b>{{ fa_date($period['start']) }}</b> تا <b>{{ fa_date($period['end']) }}</b></td>
     </tr></table>
 @endif
 
@@ -39,22 +39,22 @@
     <table class="kpis"><tr>
         <td class="lead">
             <div class="kpi-label">درآمد کل</div>
-            <div class="kpi-value">{{ number_format($s['total_revenue'] ?? 0) }}</div>
+            <div class="kpi-value">{{ fa_num($s['total_revenue'] ?? 0) }}</div>
             <div class="kpi-unit">تومان</div>
         </td>
         <td class="info">
             <div class="kpi-label">کل نوبت‌ها</div>
-            <div class="kpi-value">{{ number_format($s['total_bookings'] ?? 0) }}</div>
+            <div class="kpi-value">{{ fa_num($s['total_bookings'] ?? 0) }}</div>
             <div class="kpi-unit">نوبت</div>
         </td>
         <td class="good">
             <div class="kpi-label">انجام‌شده</div>
-            <div class="kpi-value">{{ number_format($s['completed_bookings'] ?? 0) }}</div>
+            <div class="kpi-value">{{ fa_num($s['completed_bookings'] ?? 0) }}</div>
             <div class="kpi-unit">نوبت</div>
         </td>
         <td class="bad">
             <div class="kpi-label">لغو شده</div>
-            <div class="kpi-value">{{ number_format($s['cancelled_bookings'] ?? 0) }}</div>
+            <div class="kpi-value">{{ fa_num($s['cancelled_bookings'] ?? 0) }}</div>
             <div class="kpi-unit">نوبت</div>
         </td>
     </tr></table>
@@ -70,7 +70,7 @@
         @foreach ([['کیف پول', 'wallet'], ['درگاه بانکی', 'gateway'], ['ثبت دستی مدیر', 'admin_manual']] as $i => [$label, $key])
             <tr class="{{ $i % 2 ? 'alt' : '' }}">
                 <td class="strong">{{ $label }}</td>
-                <td class="num">{{ number_format($pb[$key] ?? 0) }}</td>
+                <td class="num">{{ fa_num($pb[$key] ?? 0) }}</td>
                 <td class="num">{{ $pb[$key.'_percent'] ?? 0 }}٪</td>
                 <td>@include('partials.pdf-bar', ['percent' => max(0, min(100, (float) ($pb[$key.'_percent'] ?? 0)))])</td>
             </tr>
@@ -94,17 +94,17 @@
         <tbody>
         @foreach($rows as $row)
             <tr class="{{ $loop->odd ? '' : 'alt' }}">
-                @if(isset($row['date']))<td>{{ jalali_date($row['date'], 'Y/m/d') }}</td>@endif
+                @if(isset($row['date']))<td>{{ fa_date($row['date']) }}</td>@endif
                 @if($type !== 'daily')<td>{{ $row['label'] ?? '' }}</td>@endif
-                <td class="num">{{ number_format($row['bookings'] ?? 0) }}</td>
-                <td class="num strong">{{ number_format($row['revenue'] ?? 0) }}</td>
+                <td class="num">{{ fa_num($row['bookings'] ?? 0) }}</td>
+                <td class="num strong">{{ fa_num($row['revenue'] ?? 0) }}</td>
             </tr>
         @endforeach
         <tr class="total">
             @if(isset($rows[0]['date']))<td>جمع</td>@endif
             @if($type !== 'daily')<td>{{ isset($rows[0]['date']) ? '' : 'جمع' }}</td>@endif
-            <td class="num">{{ number_format($rows->sum(fn ($r) => $r['bookings'] ?? 0)) }}</td>
-            <td class="num">{{ number_format($rows->sum(fn ($r) => $r['revenue'] ?? 0)) }}</td>
+            <td class="num">{{ fa_num($rows->sum(fn ($r) => $r['bookings'] ?? 0)) }}</td>
+            <td class="num">{{ fa_num($rows->sum(fn ($r) => $r['revenue'] ?? 0)) }}</td>
         </tr>
         </tbody>
     </table>
@@ -122,8 +122,8 @@
         @foreach($specialists as $sp)
             <tr class="{{ $loop->odd ? '' : 'alt' }}">
                 <td class="strong">{{ $sp->name }}</td>
-                <td class="num">{{ number_format($sp->total_bookings ?? 0) }}</td>
-                <td class="num">{{ number_format($sp->total_revenue ?? 0) }}</td>
+                <td class="num">{{ fa_num($sp->total_bookings ?? 0) }}</td>
+                <td class="num">{{ fa_num($sp->total_revenue ?? 0) }}</td>
                 <td>@include('partials.pdf-bar', ['percent' => round(100 * ($sp->total_revenue ?? 0) / $maxSpRevenue)])</td>
             </tr>
         @endforeach
@@ -143,8 +143,8 @@
         @foreach($services as $svc)
             <tr class="{{ $loop->odd ? '' : 'alt' }}">
                 <td class="strong">{{ $svc->name }}</td>
-                <td class="num">{{ number_format($svc->bookings_count ?? 0) }}</td>
-                <td class="num">{{ number_format($svc->revenue ?? 0) }}</td>
+                <td class="num">{{ fa_num($svc->bookings_count ?? 0) }}</td>
+                <td class="num">{{ fa_num($svc->revenue ?? 0) }}</td>
                 <td>@include('partials.pdf-bar', ['percent' => round(100 * ($svc->bookings_count ?? 0) / $maxSvcCount)])</td>
             </tr>
         @endforeach
@@ -159,7 +159,7 @@
 @php $rawBookings = $data['rawBookings'] ?? collect(); @endphp
 @if($rawBookings->count())
     <pagebreak orientation="L" />
-    <div class="section">پیوست: جزئیات خام نوبت‌ها <span class="muted" style="font-weight:normal; font-size:8pt;">({{ number_format($rawBookings->count()) }} ردیف)</span></div>
+    <div class="section">پیوست: جزئیات خام نوبت‌ها <span class="muted" style="font-weight:normal; font-size:8pt;">({{ fa_num($rawBookings->count()) }} ردیف)</span></div>
     <table class="data compact">
         <thead>
         <tr>
@@ -197,15 +197,15 @@
                 <td class="{{ $statusClass }}">{{ $b['status'] ?? '' }}</td>
                 <td class="{{ $paymentStatusClass }}">{{ $b['payment_status'] ?? '' }}</td>
                 <td>{{ $b['payment_method'] ?? '' }}</td>
-                <td class="num">{{ number_format($b['amount'] ?? 0) }}</td>
-                <td class="num">{{ $b['specialist_share'] !== null ? number_format($b['specialist_share']) : '—' }}</td>
+                <td class="num">{{ fa_num($b['amount'] ?? 0) }}</td>
+                <td class="num">{{ $b['specialist_share'] !== null ? fa_num($b['specialist_share']) : '—' }}</td>
                 <td>{{ $b['discount_code'] ?? '' }}</td>
-                <td class="num">{{ number_format($b['discount_amount'] ?? 0) }}</td>
+                <td class="num">{{ fa_num($b['discount_amount'] ?? 0) }}</td>
                 <td>{{ $b['payment_reference'] ?? '' }}</td>
                 <td>{{ $b['rating'] ?? '' }}</td>
                 <td>{{ $b['cancellation_reason'] ?? '' }}</td>
                 <td>{{ $b['refund_status'] ?? '' }}</td>
-                <td class="num">{{ $b['refunded_amount'] !== null ? number_format($b['refunded_amount']) : '—' }}</td>
+                <td class="num">{{ $b['refunded_amount'] !== null ? fa_num($b['refunded_amount']) : '—' }}</td>
             </tr>
         @endforeach
         </tbody>

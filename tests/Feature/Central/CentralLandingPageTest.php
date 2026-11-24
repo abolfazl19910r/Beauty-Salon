@@ -85,7 +85,7 @@ class CentralLandingPageTest extends TestCase
             // بسته‌ی «و»: لندینگ چهارپلنی — هر پلن عمومی کارت خودش را دارد و فقط چیزی که به پلن قبلی اضافه می‌کند فهرست می‌شود
             ->assertSee('data-plan-card="full"', false)
             ->assertSee('data-plan-card="clinic"', false)
-            ->assertSee('۲,۴۰۰,۰۰۰')
+            ->assertSee('۲٬۴۰۰٬۰۰۰')
             ->assertSee('همه‌ی امکانات کامل')
             ->assertSee('دوره‌های درمانی چندجلسه‌ای')
             ->assertSee('ارسال دستی به مشتری‌های قدیمی')
@@ -118,7 +118,7 @@ class CentralLandingPageTest extends TestCase
         $this->assertSame(10, $plans['3m']['saving_percent']);
         $this->assertSame(0, $plans['1m']['saving']);
         $this->assertSame(route('salon-signup.create', ['plan' => '6m']), $plans['6m']['signup_url']);
-        $response->assertSee('۲,۷۰۰,۰۰۰');
+        $response->assertSee('۲٬۷۰۰٬۰۰۰');
     }
 
     /**
@@ -131,8 +131,8 @@ class CentralLandingPageTest extends TestCase
 
         $html = $this->get(route('central.home'))->assertOk()->getContent();
 
-        $this->assertSame(4, substr_count($html, '۱,۵۰۰ قطعه پیامک در هر ماه'));
-        foreach (['۴,۵۰۰', '۹,۰۰۰', '۱۸,۰۰۰'] as $total) {
+        $this->assertSame(4, substr_count($html, '۱٬۵۰۰ قطعه پیامک در هر ماه'));
+        foreach (['۴٬۵۰۰', '۹٬۰۰۰', '۱۸٬۰۰۰'] as $total) {
             $this->assertStringNotContainsString($total.' قطعه پیامک', $html);
         }
     }

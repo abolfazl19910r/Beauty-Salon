@@ -75,7 +75,7 @@ class AdminPaymentGatewayTest extends TestCase
 
         $this->actingAs($this->owner)->get(route('admin.payment-gateways.index'))
             ->assertDontSee('vandar-secret-key-123')->assertDontSee('asan-pass-999')
-            ->assertSee('asan-user')->assertSee('1.5٪ + 500 تومان');
+            ->assertSee('asan-user')->assertSee('۱٫۵٪ + ۵۰۰ تومان');
     }
 
     public function test_validation_rejects_duplicates_bad_credentials_and_excessive_fees(): void

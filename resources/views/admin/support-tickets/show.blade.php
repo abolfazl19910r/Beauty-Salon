@@ -19,7 +19,7 @@
                 <span style="color:var(--admin-text-dim);">دسته‌بندی: <span style="color:var(--admin-text);">{{ $ticket->categoryLabel() }}</span></span>
                 <span style="color:var(--admin-text-dim);">اولویت: <span style="color:var(--admin-text);">{{ $ticket->priority_text }}</span></span>
                 <span style="color:var(--admin-text-dim);">وضعیت: <span style="color:var(--admin-text);">{{ $ticket->status_text }}</span></span>
-                <span class="persian-number" style="color:var(--admin-text-dim);">تاریخ ثبت: <span style="color:var(--admin-text);">{{ jalali_date($ticket->created_at) }}</span></span>
+                <span class="persian-number" style="color:var(--admin-text-dim);">تاریخ ثبت: <span style="color:var(--admin-text);">{{ fa_date($ticket->created_at) }}</span></span>
             </div>
             <p style="color:var(--admin-text); white-space: pre-line;">{{ $ticket->description }}</p>
         </div>
@@ -32,7 +32,7 @@
                      style="background: {{ $message->is_staff_reply ? 'var(--admin-accent-light)' : 'var(--admin-surface)' }}; border:1px solid var(--admin-border);">
                     <div class="flex items-center justify-between mb-2 text-xs" style="color:var(--admin-text-dim);">
                         <span>{{ $message->is_staff_reply ? 'پشتیبانی پلتفرم' : ($message->user->name ?? 'شما') }}</span>
-                        <span class="persian-number">{{ $message->formatted_created_at }}</span>
+                        <span class="persian-number">{{ fa_num($message->formatted_created_at) }}</span>
                     </div>
                     <p style="color:var(--admin-text); white-space: pre-line;">{{ $message->message }}</p>
                 </div>

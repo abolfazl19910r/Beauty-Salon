@@ -24,22 +24,22 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
             <div class="bg-m-card rounded-2xl border border-m-ok/20 p-6">
                 <p class="text-sm text-m-ok font-semibold mb-3">کدهای فعال</p>
-                <p class="text-4xl font-bold text-m-ok persian-number">{{ $activeCodes->count() }}</p>
+                <p class="text-4xl font-bold text-m-ok persian-number">{{ fa_num($activeCodes->count()) }}</p>
             </div>
             <div class="bg-m-card rounded-2xl border border-blue-500/20 p-6">
                 <p class="text-sm text-m-info font-semibold mb-3">مجموع تخفیف‌ها</p>
-                <p class="text-2xl font-bold text-m-info persian-number">{{ number_format($totalDiscount) }} تومان</p>
+                <p class="text-2xl font-bold text-m-info persian-number">{{ fa_num($totalDiscount) }} تومان</p>
             </div>
             <div class="bg-m-card rounded-2xl border border-m-gold/15 p-6">
                 <p class="text-sm text-m-tx/55 font-semibold mb-3">استفاده شده / منقضی</p>
-                <p class="text-4xl font-bold text-m-tx/70 persian-number">{{ $expiredCodes->count() }}</p>
+                <p class="text-4xl font-bold text-m-tx/70 persian-number">{{ fa_num($expiredCodes->count()) }}</p>
             </div>
         </div>
 
         {{-- Active codes --}}
         <div class="bg-m-card rounded-2xl border border-m-gold/10 overflow-hidden mb-6">
             <div class="px-5 py-4 border-b border-m-gold/10">
-                <h2 class="font-bold text-sm text-m-gold2">کدهای تخفیف فعال ({{ $activeCodes->count() }})</h2>
+                <h2 class="font-bold text-sm text-m-gold2">کدهای تخفیف فعال ({{ fa_num($activeCodes->count()) }})</h2>
             </div>
 
             @if($activeCodes->count() > 0)
@@ -54,9 +54,9 @@
                                     <p class="font-mono text-2xl font-bold text-m-ok tracking-wider">{{ $code->code }}</p>
                                     <p class="text-sm text-m-ok/80 mt-1">
                                         @if($code->type === 'percentage')
-                                            {{ $code->amount }}% تخفیف
+                                            {{ fa_num($code->amount, 2) }}٪ تخفیف
                                         @else
-                                            {{ number_format($code->amount) }} تومان
+                                            {{ fa_num($code->amount) }} تومان
                                         @endif
                                     </p>
                                 </div>
@@ -71,7 +71,7 @@
                             <div class="flex justify-between items-center text-xs pt-3 border-t border-m-ok/15 text-m-tx/55">
                                 <span class="persian-number">باقیمانده: {{ $code->max_uses - $code->used_count }} بار</span>
                                 @if($code->expires_at)
-                                    <span class="text-m-warn/80 persian-number">تا {{ verta($code->expires_at)->format('Y/m/d') }}</span>
+                                    <span class="text-m-warn/80 persian-number">تا {{ fa_date($code->expires_at) }}</span>
                                 @endif
                             </div>
                             <a href="{{ route('bookings.create') }}"
@@ -96,7 +96,7 @@
         @if($expiredCodes->count() > 0)
             <div class="bg-m-card rounded-2xl border border-m-gold/10 overflow-hidden">
                 <div class="px-5 py-4 border-b border-m-gold/10">
-                    <h2 class="font-bold text-sm text-m-gold2">کدهای استفاده‌شده یا منقضی ({{ $expiredCodes->count() }})</h2>
+                    <h2 class="font-bold text-sm text-m-gold2">کدهای استفاده‌شده یا منقضی ({{ fa_num($expiredCodes->count()) }})</h2>
                 </div>
                 <div class="divide-y divide-m-gold/8">
                     @foreach($expiredCodes as $code)
@@ -104,8 +104,8 @@
                             <div>
                                 <p class="font-mono text-sm font-bold text-m-tx/60">{{ $code->code }}</p>
                                 <p class="text-xs text-m-tx/40 mt-0.5">
-                                    @if($code->type === 'percentage') {{ $code->amount }}% تخفیف
-                                    @else {{ number_format($code->amount) }} تومان
+                                    @if($code->type === 'percentage') {{ fa_num($code->amount, 2) }}٪ تخفیف
+                                    @else {{ fa_num($code->amount) }} تومان
                                     @endif
                                 </p>
                             </div>

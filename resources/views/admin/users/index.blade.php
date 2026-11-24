@@ -115,7 +115,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-4 py-3 text-sm" dir="ltr" style="color:var(--admin-text-dim);">{{ $user->phone }}</td>
+                            <td class="px-4 py-3 text-sm" dir="ltr" style="color:var(--admin-text-dim);">{{ \App\Support\Fa::digits($user->phone) }}</td>
                             <td class="px-4 py-3">
                                 @forelse($user->roles as $role)
                                     <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium mr-1"
@@ -142,7 +142,7 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-xs persian-number" style="color:var(--admin-text-dim);">
-                                {{ verta($user->created_at)->format('Y/m/d') }}
+                                {{ fa_date($user->created_at) }}
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-1.5">

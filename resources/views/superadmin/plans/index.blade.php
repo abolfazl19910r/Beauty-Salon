@@ -51,21 +51,21 @@
                             @if ($plan->is_trial)
                                 <span style="color: var(--sa-text-dim);">رایگان</span>
                             @else
-                                {{ collect(['1m', '3m', '6m', '12m'])->map(fn ($p) => $plan->priceFor($p) === null ? '—' : number_format($plan->priceFor($p)))->implode(' / ') }}
+                                {{ collect(['1m', '3m', '6m', '12m'])->map(fn ($p) => $plan->priceFor($p) === null ? '—' : fa_num($plan->priceFor($p)))->implode(' / ') }}
                             @endif
                         </td>
                         <td class="p-3 persian-number">
                             {{ to_persian_num((string) $plan->included_specialists) }}
                             @unless ($plan->is_trial)
-                                <div class="text-xs" style="color: var(--sa-text-dim);">+{{ number_format($plan->extra_specialist_price_per_month) }} هر نفر</div>
+                                <div class="text-xs" style="color: var(--sa-text-dim);">+{{ fa_num($plan->extra_specialist_price_per_month) }} هر نفر</div>
                             @endunless
                         </td>
-                        <td class="p-3 persian-number">{{ number_format($plan->sms_quota_per_month) }}</td>
+                        <td class="p-3 persian-number">{{ fa_num($plan->sms_quota_per_month) }}</td>
                         <td class="p-3 text-xs persian-number">{{ to_persian_num((string) count($plan->featureKeys())) }} از {{ to_persian_num((string) count(\App\Support\Features\Feature::cases())) }}</td>
                         <td class="p-3 persian-number">
                             <a href="{{ route('superadmin.salons.index', ['plan_id' => $plan->id]) }}" style="color: var(--sa-accent);">{{ to_persian_num((string) ($salonCounts[$plan->id] ?? 0)) }}</a>
                         </td>
-                        <td class="p-3 persian-number">{{ number_format((int) ($revenue[$plan->id] ?? 0)) }}</td>
+                        <td class="p-3 persian-number">{{ fa_num((int) ($revenue[$plan->id] ?? 0)) }}</td>
                         <td class="p-3"><a href="{{ route('superadmin.plans.edit', $plan) }}" style="color: var(--sa-accent);">ویرایش</a></td>
                     </tr>
                 @endforeach

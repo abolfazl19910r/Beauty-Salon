@@ -70,7 +70,7 @@ class SalonBuyNowTest extends TestCase
         $html = $this->get(route('salon-signup.create', ['plan' => '6m', 'intent' => 'buy']))
             ->assertOk()
             ->assertSee('پلن شش‌ماهه')
-            ->assertSee('۷,۶۵۰,۰۰۰ تومان', false)
+            ->assertSee('۷٬۶۵۰٬۰۰۰ تومان', false)
             ->assertSee('ادامه، تایید موبایل و پرداخت')
             ->getContent();
 

@@ -28,7 +28,7 @@
             <tbody>
             @forelse ($jobs as $job)
                 <tr style="border-top: 1px solid var(--sa-border);">
-                    <td class="py-3 px-4 whitespace-nowrap">{{ \Morilog\Jalali\Jalalian::fromCarbon(\Illuminate\Support\Carbon::parse($job->failed_at))->format('Y/m/d H:i') }}</td>
+                    <td class="py-3 px-4 whitespace-nowrap">{{ fa_date(\Illuminate\Support\Carbon::parse($job->failed_at), true) }}</td>
                     <td class="py-3 px-4 font-bold" dir="ltr" style="text-align: right;">{{ $job->display_name }}</td>
                     <td class="py-3 px-4" style="color: var(--sa-text-dim);">{{ $job->queue }}</td>
                     <td class="py-3 px-4" dir="ltr" style="text-align: left; color: var(--sa-danger); max-width: 28rem; overflow-wrap: anywhere;">{{ \Illuminate\Support\Str::limit($job->error, 220) }}</td>

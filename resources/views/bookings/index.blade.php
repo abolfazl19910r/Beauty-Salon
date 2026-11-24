@@ -127,7 +127,7 @@
                                 <td class="px-6 py-4" style="color: var(--rasta-cream);">{{ $booking->service->name }} @if ($__courseLabel = $booking->courseSessionLabel())<span class="text-xs mr-1 px-2 py-0.5 rounded-full" style="background:rgb(var(--m-gold) / 0.15); color:rgb(var(--m-gold));">{{ $__courseLabel }}</span>@endif</td>
                                 <td class="px-6 py-4" style="color: var(--rasta-cream);">{{ $booking->specialist->name }}</td>
                                 <td class="px-6 py-4 persian-number" dir="ltr" style="color: var(--rasta-cream);">
-                                    {{ verta($booking->booking_time)->format('Y/m/d H:i') }}
+                                    {{ fa_date($booking->booking_time, true) }}
                                 </td>
                                 <td class="px-6 py-4">
                                     <x-payment-status :booking="$booking" />

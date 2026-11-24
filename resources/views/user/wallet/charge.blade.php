@@ -34,7 +34,7 @@
                     <div>
                         <p class="text-sm mb-1" style="color: var(--rasta-gold);">موجودی فعلی کیف پول</p>
                         <p class="text-3xl font-bold persian-number" style="color: var(--rasta-gold-light);">
-                            {{ number_format($wallet->balance) }}
+                            {{ fa_num($wallet->balance) }}
                         </p>
                         <p class="text-sm mt-1" style="color: var(--rasta-cream); opacity: 0.6;">تومان</p>
                     </div>
@@ -61,7 +61,7 @@
                                     class="amount-btn p-4 rounded-xl transition-all text-center"
                                     style="border: 1px solid rgb(var(--m-gold) / 0.3); background-color: rgb(var(--m-gold) / 0.05);">
                                 <div class="text-xl font-bold persian-number" style="color: var(--rasta-cream);">
-                                    {{ number_format($suggested) }}
+                                    {{ fa_num($suggested) }}
                                 </div>
                                 <div class="text-xs mt-1" style="color: var(--rasta-cream); opacity: 0.5;">تومان</div>
                             </button>
@@ -133,7 +133,7 @@
                              style="border-bottom: 1px solid rgb(var(--m-gold) / 0.2);">
                             <span style="color: var(--rasta-cream); opacity: 0.7;">موجودی فعلی:</span>
                             <span class="persian-number" style="color: var(--rasta-cream);">
-                                {{ number_format($wallet->balance) }} تومان
+                                {{ fa_num($wallet->balance) }} تومان
                             </span>
                         </div>
                         {{-- ⭐ مرحله‌ی ۱ چند درگاه: کارمزد درگاه به مبلغ پرداختی اضافه می‌شود، نه از شارژ کم --}}
@@ -146,7 +146,7 @@
                             <span style="color: var(--rasta-cream);">موجودی جدید:</span>
                             <span class="persian-number" id="preview-new-balance"
                                   style="color: var(--rasta-gold);">
-                                {{ number_format($wallet->balance) }} تومان
+                                {{ fa_num($wallet->balance) }} تومان
                             </span>
                         </div>
                     </div>

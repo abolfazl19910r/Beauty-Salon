@@ -14,8 +14,8 @@
     $oldDriver = old('driver', collect($catalog)->keys()->first(fn ($k) => ! $gateways->contains('driver', $k)));
     $feeText = function ($g) {
         $parts = [];
-        if ((float) $g->fee_percent > 0) { $parts[] = rtrim(rtrim(number_format((float) $g->fee_percent, 2), '0'), '.').'٪'; }
-        if ((int) $g->fee_fixed_toman > 0) { $parts[] = number_format($g->fee_fixed_toman).' تومان'; }
+        if ((float) $g->fee_percent > 0) { $parts[] = fa_num((float) $g->fee_percent, 2).'٪'; }
+        if ((int) $g->fee_fixed_toman > 0) { $parts[] = fa_num($g->fee_fixed_toman).' تومان'; }
         return $parts ? implode(' + ', $parts) : 'بدون کارمزد';
     };
 @endphp

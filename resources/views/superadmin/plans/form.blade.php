@@ -67,7 +67,7 @@
                         @if ($monthly && $period !== '1m' && $plan->priceFor($period))
                             @php $months = \App\Support\Billing\SubscriptionPricing::PLAN_MONTHS[$period]; $saving = $monthly * $months - $plan->priceFor($period); @endphp
                             <p class="text-xs mt-1 persian-number" style="color: var(--sa-text-dim);">
-                                صرفه‌جویی نسبت به ماه‌به‌ماه: {{ number_format(max(0, $saving)) }} تومان ({{ to_persian_num((string) round($saving / ($monthly * $months) * 100)) }}٪)
+                                صرفه‌جویی نسبت به ماه‌به‌ماه: {{ fa_num(max(0, $saving)) }} تومان ({{ to_persian_num((string) round($saving / ($monthly * $months) * 100)) }}٪)
                             </p>
                         @endif
                     </div>

@@ -21,7 +21,7 @@
     <div class="grid md:grid-cols-3 gap-6 mb-6">
         <div class="sa-card p-5 md:col-span-2">
             <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
-                <h2 class="font-bold text-lg">{{ $device->user?->name ?? '—' }} <span class="text-sm font-normal" dir="ltr" style="color: var(--sa-text-dim);">{{ $device->user?->phone }}</span></h2>
+                <h2 class="font-bold text-lg">{{ $device->user?->name ?? '—' }} <span class="text-sm font-normal" dir="ltr" style="color: var(--sa-text-dim);">{{ \App\Support\Fa::digits($device->user?->phone) }}</span></h2>
                 <span class="sa-badge" style="margin: 0; color: {{ $statusColor[$status] }};" data-status="{{ $status }}">{{ $statuses[$status] }}</span>
             </div>
             <dl class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">

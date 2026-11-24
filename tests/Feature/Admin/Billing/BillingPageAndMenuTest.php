@@ -48,7 +48,7 @@ class BillingPageAndMenuTest extends TestCase
         // با ۵ متخصص قیمت‌ها همان لندینگ است و هشداری نیست
         $salon->update(['max_specialists_count' => 5]);
         $this->get(route('admin.billing.index'))->assertOk()
-            ->assertSee(number_format(990000))
+            ->assertSee(fa_num(990000))
             ->assertDontSee('data-cheaper-plan', false);
     }
 

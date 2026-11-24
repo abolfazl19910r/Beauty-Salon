@@ -49,11 +49,11 @@
                                 <td class="py-4 px-6 font-mono text-sm" dir="ltr" style="color:var(--admin-text-dim)">{{ $role->name }}</td>
                                 <td class="py-4 px-6">
                         <span class="px-2 py-1 text-xs font-semibold rounded-full" style="background:var(--admin-accent-light);color:var(--admin-accent)">
-                            {{ $role->users_count }}
+                            {{ fa_num($role->users_count) }}
                         </span>
                                 </td>
                                 <td class="py-4 px-6 text-sm" dir="ltr" style="color:var(--admin-text-dim)">
-                                    {{ verta($role->created_at)->format('Y/m/d H:i') }}
+                                    {{ fa_date($role->created_at, true) }}
                                 </td>
                                 <td class="py-4 px-6">
                                     <div class="flex items-center gap-2">

@@ -28,9 +28,9 @@
                         <p class="text-sm mt-1" style="{{ $dim }}">{{ $package->sessionServices()->pluck('name')->implode(' + ') }}@if ($package->specialist) — {{ $package->specialist->name }}@endif</p>
                         <div class="mt-4 flex items-end justify-between">
                             <div>
-                                <div class="text-xl font-bold persian-number" style="color: var(--rasta-cream);">{{ number_format($package->price) }} <span class="text-xs">تومان</span></div>
+                                <div class="text-xl font-bold persian-number" style="color: var(--rasta-cream);">{{ fa_num($package->price) }} <span class="text-xs">تومان</span></div>
                                 @if ($package->savingAmount() > 0)
-                                    <div class="text-xs mt-1 persian-number" style="color: #6EE7B7;">{{ number_format($package->savingAmount()) }} تومان کمتر از جلسه‌های تکی</div>
+                                    <div class="text-xs mt-1 persian-number" style="color: #6EE7B7;">{{ fa_num($package->savingAmount()) }} تومان کمتر از جلسه‌های تکی</div>
                                 @endif
                             </div>
                             <div class="text-xs text-left" style="{{ $dim }}">

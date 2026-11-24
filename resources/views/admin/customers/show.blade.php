@@ -8,16 +8,16 @@
         <div class="flex justify-between items-center mb-5 flex-wrap gap-3">
             <div>
                 <h1 class="text-xl font-bold" style="color:var(--admin-text);">{{ $customer->name }}</h1>
-                <p class="text-sm mt-1" style="{{ $dim }}"><span dir="ltr">{{ $customer->phone }}</span> · عضو از {{ verta($customer->created_at)->format('Y/m/d') }}@if ($customer->marketing_sms_opted_out_at) · از پیامک‌های پیگیری انصراف داده@endif</p>
+                <p class="text-sm mt-1" style="{{ $dim }}"><span dir="ltr">{{ \App\Support\Fa::digits($customer->phone) }}</span> · عضو از {{ fa_date($customer->created_at) }}@if ($customer->marketing_sms_opted_out_at) · از پیامک‌های پیگیری انصراف داده@endif</p>
             </div>
             <a href="{{ route('admin.customers.index') }}" class="px-4 py-2 rounded-lg text-sm" style="{{ $ghost }}">همه‌ی مشتری‌ها</a>
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
             <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">نوبت انجام‌شده</div><div class="text-2xl font-bold mt-1 persian-number">{{ to_persian_num((string) $stats['completed']) }}</div></div>
-            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">آخرین مراجعه</div><div class="text-lg font-bold mt-1 persian-number">{{ $stats['last_visit'] ? verta($stats['last_visit'])->format('Y/m/d') : '—' }}</div></div>
-            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">کیف پول</div><div class="text-lg font-bold mt-1 persian-number">{{ to_persian_num(number_format($walletBalance)) }} <span class="text-xs">تومان</span></div></div>
-            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">امتیاز باشگاه</div><div class="text-2xl font-bold mt-1 persian-number">{{ to_persian_num(number_format($points)) }}</div></div>
+            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">آخرین مراجعه</div><div class="text-lg font-bold mt-1 persian-number">{{ $stats['last_visit'] ? fa_date($stats['last_visit']) : '—' }}</div></div>
+            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">کیف پول</div><div class="text-lg font-bold mt-1 persian-number">{{ fa_num($walletBalance) }} <span class="text-xs">تومان</span></div></div>
+            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">امتیاز باشگاه</div><div class="text-2xl font-bold mt-1 persian-number">{{ fa_num($points) }}</div></div>
         </div>
 
         {{-- مشتری بدقول (بسته‌ی 5ه، تصمیم ۱۶): برچسب و برداشتن دستی محدودیت --}}
@@ -27,7 +27,7 @@
                     <x-no-show-badge :label="$noShow['label']" />
                     <span style="{{ $dim }}">«نیامد» در {{ to_persian_num((string) $noShow['days']) }} روز گذشته: {{ to_persian_num((string) $noShow['count']) }} بار</span>
                     @if ($customer->no_show_cleared_at)
-                        <span class="block text-xs" style="{{ $dim }}">محدودیت در {{ verta($customer->no_show_cleared_at)->format('Y/m/d H:i') }} برداشته شد؛ «نیامد»های پیش از آن شمرده نمی‌شوند.</span>
+                        <span class="block text-xs" style="{{ $dim }}">محدودیت در {{ fa_date($customer->no_show_cleared_at, true) }} برداشته شد؛ «نیامد»های پیش از آن شمرده نمی‌شوند.</span>
                     @endif
                     @if ($noShow['label'])
                         <span class="block text-xs" style="{{ $dim }}">{{ $noShow['effect'] }}</span>
@@ -59,8 +59,8 @@
                         </div>
                         <div class="text-xs mt-1 persian-number" style="{{ $dim }}">
                             {{ to_persian_num((string) $course->sessions_used) }} از {{ to_persian_num((string) $course->sessions_total) }} جلسه
-                            · پرداخت‌شده {{ to_persian_num(number_format($course->amount_paid)) }} از {{ to_persian_num(number_format($course->price_total)) }} تومان
-                            @if ($course->expires_at) · مهلت تا {{ verta($course->expires_at)->format('Y/m/d') }}@endif
+                            · پرداخت‌شده {{ fa_num($course->amount_paid) }} از {{ fa_num($course->price_total) }} تومان
+                            @if ($course->expires_at) · مهلت تا {{ fa_date($course->expires_at) }}@endif
                         </div>
                     </a>
                 @empty
@@ -80,7 +80,7 @@
                         {{ $booking->service?->name ?? '—' }} · {{ $booking->specialist?->name ?? '—' }}
                         @if ($label = $booking->courseSessionLabel()) <span class="text-xs" style="color:var(--admin-accent);">({{ $label }})</span>@endif
                     </span>
-                    <span class="persian-number text-xs" style="{{ $dim }}">{{ verta($booking->booking_time)->format('Y/m/d H:i') }} · {{ \App\Support\Bookings\BookingLabels::status($booking->status) }}</span>
+                    <span class="persian-number text-xs" style="{{ $dim }}">{{ fa_date($booking->booking_time, true) }} · {{ \App\Support\Bookings\BookingLabels::status($booking->status) }}</span>
                 </a>
             @empty
                 <p class="px-4 py-6 text-center text-sm" style="{{ $dim }}">نوبتی ثبت نشده.</p>

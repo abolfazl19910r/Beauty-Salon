@@ -112,10 +112,10 @@
                         <svg class="w-4 h-4 text-m-gold/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 6v6l4 2"/>
                         </svg>
-                        <span class="persian-number">{{ $service->duration }} دقیقه</span>
+                        <span class="persian-number">{{ fa_num($service->duration) }} دقیقه</span>
                     </span>
                         <span class="text-m-gold2 font-bold persian-number">
-                        {{ number_format($service->price) }} تومان
+                        {{ fa_num($service->price) }} تومان
                     </span>
                     </div>
 

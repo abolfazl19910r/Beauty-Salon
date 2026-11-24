@@ -58,7 +58,7 @@ class MySalonsTest extends TestCase
         User::factory()->create(['salon_id' => $other->id, 'user_type' => 'staff', 'phone' => self::PHONE]);
 
         $this->get(route('my-salons.show'))->assertOk()->assertSee('data-my-salons-phone', false)
-            ->assertSee('© '.date('Y').' '.config('brand.name').'.')->assertDontSee('سالن زیبایی '.config('brand.name'));
+            ->assertSee('© '.fa_jdate(now(), 'Y').' '.config('brand.name').'.')->assertDontSee('سالن زیبایی '.config('brand.name'));
         $this->post(route('my-salons.send'), ['phone' => '۰۹۱۲۷۷۷۸۸۹۹'])->assertRedirect(route('my-salons.verify'));
         $this->get(route('my-salons.verify'))->assertOk()->assertSee(self::PHONE);
         // پیش از کد هیچ سالنی دیده نمی‌شود

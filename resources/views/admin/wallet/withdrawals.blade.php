@@ -24,23 +24,23 @@
         <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-warn));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">در انتظار تایید</p>
-                <p class="text-2xl font-bold persian-number" style="color:rgb(var(--m-warn));">{{ $pendingCount }}</p>
-                <p class="text-xs mt-0.5 persian-number" style="color:var(--admin-text-light);">{{ number_format($pendingAmount) }} تومان</p>
+                <p class="text-2xl font-bold persian-number" style="color:rgb(var(--m-warn));">{{ fa_num($pendingCount) }}</p>
+                <p class="text-xs mt-0.5 persian-number" style="color:var(--admin-text-light);">{{ fa_num($pendingAmount) }} تومان</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-ok));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">تکمیل شده امروز</p>
-                <p class="text-2xl font-bold persian-number" style="color:rgb(var(--m-ok));">{{ $completedToday }}</p>
+                <p class="text-2xl font-bold persian-number" style="color:rgb(var(--m-ok));">{{ fa_num($completedToday) }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid var(--admin-accent);">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل درخواست‌ها</p>
-                <p class="text-2xl font-bold persian-number" style="color:var(--admin-text);">{{ $withdrawals->total() }}</p>
+                <p class="text-2xl font-bold persian-number" style="color:var(--admin-text);">{{ fa_num($withdrawals->total()) }}</p>
             </div>
         </div>
 
         {{-- ⭐ نتیجه‌ی تسویه‌ی خودکار نامعلوم (۲۰۲۶-۰۹-۲۶) --}}
         @if(($needsCheckCount ?? 0) > 0)
             <a href="{{ route('admin.wallet.withdrawals', ['needs_check' => 1]) }}" class="block rounded-xl p-4 mb-4 text-sm" style="background:rgb(var(--m-warn) / .1); border:1px solid rgb(var(--m-warn) / .35); color:rgb(var(--m-warn));">
-                <strong class="persian-number">{{ $needsCheckCount }}</strong> تسویه‌ی خودکار نتیجه‌ی نامعلوم داشت (پاسخ درگاه نرسید) و منتظر بررسی دستی شماست — ممکن است پول واریز شده باشد. ببینید ←
+                <strong class="persian-number">{{ fa_num($needsCheckCount) }}</strong> تسویه‌ی خودکار نتیجه‌ی نامعلوم داشت (پاسخ درگاه نرسید) و منتظر بررسی دستی شماست — ممکن است پول واریز شده باشد. ببینید ←
             </a>
         @endif
 
@@ -95,7 +95,7 @@
                         <tr style="border-bottom:1px solid var(--admin-border);"
                             data-ui-hover="background: var(--admin-accent-light)"
                             data-ui-unhover="background: ">
-                            <td class="px-4 py-3 text-xs persian-number" style="color:var(--admin-text-dim);">{{ $item->id }}</td>
+                            <td class="px-4 py-3 text-xs persian-number" style="color:var(--admin-text-dim);">{{ \App\Support\Fa::digits($item->id) }}</td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
                                     <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
@@ -106,14 +106,14 @@
                                 </div>
                             </td>
                             <td class="px-4 py-3 font-bold persian-number" style="color:var(--admin-text);">
-                                {{ number_format($item->amount) }}
+                                {{ fa_num($item->amount) }}
                                 <span class="text-xs font-normal" style="color:var(--admin-text-light);"> ت</span>
                             </td>
                             <td class="px-4 py-3 text-xs font-mono" dir="ltr" style="color:var(--admin-text-dim);">
                                 {{ $item->formatted_iban ?? $item->iban ?? '—' }}
                             </td>
                             <td class="px-4 py-3 text-xs persian-number" style="color:var(--admin-text-dim);">
-                                {{ verta($item->created_at)->format('Y/m/d') }}
+                                {{ fa_date($item->created_at) }}
                             </td>
                             <td class="px-4 py-3">
                             <span class="px-2.5 py-0.5 rounded-full text-xs font-medium"

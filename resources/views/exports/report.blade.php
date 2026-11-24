@@ -60,10 +60,10 @@
 </div>
 
 <div class="date">
-    تاریخ: {{ jalali_date(now(), 'Y/m/d') }}
+    تاریخ: {{ fa_date(now()) }}
     @if(isset($period) && isset($period['start']) && isset($period['end']))
         <div>
-            بازه زمانی: {{ jalali_date(date('Y-m-d', strtotime($period['start'])), 'Y/m/d') }} تا {{ jalali_date(date('Y-m-d', strtotime($period['end'])), 'Y/m/d') }}
+            بازه زمانی: {{ fa_date(date('Y-m-d', strtotime($period['start']))) }} تا {{ fa_date(date('Y-m-d', strtotime($period['end']))) }}
         </div>
     @endif
 </div>
@@ -80,7 +80,7 @@
     @foreach($data as $row)
         <tr>
             @foreach($row as $value)
-                <td>{{ is_numeric($value) ? number_format($value) : $value }}</td>
+                <td>{{ is_numeric($value) ? fa_num($value) : $value }}</td>
             @endforeach
         </tr>
     @endforeach

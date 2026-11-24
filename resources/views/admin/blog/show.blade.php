@@ -45,7 +45,7 @@
 
                 <div class="flex items-center gap-4 text-xs mb-6" style="color:var(--admin-text-dim);">
                     <span class="persian-number">تاریخ انتشار: {{ $post->published_at_jalali ?? 'تنظیم نشده' }}</span>
-                    <span class="persian-number">بازدید: {{ number_format($post->views ?? 0) }}</span>
+                    <span class="persian-number">بازدید: {{ fa_num($post->views ?? 0) }}</span>
                     @if($post->author)
                         <span>نویسنده: {{ $post->author->name }}</span>
                     @endif

@@ -54,7 +54,7 @@
             </div>
             <div>
                 <h2 class="text-lg font-bold text-[var(--specialist-text)]">سلام، {{ auth()->user()->name ?? 'متخصص' }}</h2>
-                <p class="text-sm text-[var(--specialist-plum-muted)] persian-number">{{ $todayPersian }}</p>
+                <p class="text-sm text-[var(--specialist-plum-muted)] persian-number">{{ fa_num($todayPersian) }}</p>
             </div>
         </div>
 
@@ -62,15 +62,15 @@
         <div class="grid grid-cols-3 gap-3">
             <div class="specialist-card p-4 text-center">
                 <p class="text-xs text-[var(--specialist-plum-muted)] mb-1">نوبت امروز</p>
-                <p class="text-xl font-bold text-[var(--specialist-text)] persian-number">{{ number_format($todayBookingsCount) }}</p>
+                <p class="text-xl font-bold text-[var(--specialist-text)] persian-number">{{ fa_num($todayBookingsCount) }}</p>
             </div>
             <div class="specialist-card p-4 text-center">
                 <p class="text-xs text-[var(--specialist-plum-muted)] mb-1">درآمد ماه</p>
-                <p class="text-xl font-bold text-[var(--specialist-text)] persian-number">{{ number_format($monthRevenue) }}</p>
+                <p class="text-xl font-bold text-[var(--specialist-text)] persian-number">{{ fa_num($monthRevenue) }}</p>
             </div>
             <div class="specialist-card p-4 text-center">
                 <p class="text-xs text-[var(--specialist-plum-muted)] mb-1">امتیاز</p>
-                <p class="text-xl font-bold text-[var(--specialist-text)] persian-number">{{ number_format($averageRating, 1) }}</p>
+                <p class="text-xl font-bold text-[var(--specialist-text)] persian-number">{{ fa_num($averageRating, 1) }}</p>
             </div>
         </div>
 
@@ -90,7 +90,7 @@
                         <p class="text-sm text-[var(--specialist-text-dim)]">{{ $nextBooking->service->name }}</p>
                     </div>
                     <div class="text-left">
-                        <p class="font-bold text-[var(--specialist-plum-mid)] persian-number" dir="ltr">{{ \Carbon\Carbon::parse($nextBooking->booking_time)->format('H:i') }}</p>
+                        <p class="font-bold text-[var(--specialist-plum-mid)] persian-number" dir="ltr">{{ fa_time($nextBooking->booking_time) }}</p>
                         <p class="text-xs text-[var(--specialist-text-dim)] persian-number">{{ $nextBookingIsToday ? 'امروز' : $nextBooking->booking_date_persian }}</p>
                     </div>
                 </div>
@@ -114,19 +114,19 @@
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="specialist-card p-5">
                     <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">کل نوبت‌ها</p>
-                    <h3 class="text-2xl font-bold text-[var(--specialist-text)] persian-number">{{ number_format($allBookingsCount) }}</h3>
+                    <h3 class="text-2xl font-bold text-[var(--specialist-text)] persian-number">{{ fa_num($allBookingsCount) }}</h3>
                 </div>
                 <div class="specialist-card p-5">
                     <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">تایید شده</p>
-                    <h3 class="text-2xl font-bold text-m-ok persian-number">{{ number_format($confirmedBookingsCount) }}</h3>
+                    <h3 class="text-2xl font-bold text-m-ok persian-number">{{ fa_num($confirmedBookingsCount) }}</h3>
                 </div>
                 <div class="specialist-card p-5">
                     <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">در انتظار تایید</p>
-                    <h3 class="text-2xl font-bold text-m-warn persian-number">{{ number_format($pendingBookingsCount) }}</h3>
+                    <h3 class="text-2xl font-bold text-m-warn persian-number">{{ fa_num($pendingBookingsCount) }}</h3>
                 </div>
                 <div class="specialist-card p-5">
                     <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">انجام شده</p>
-                    <h3 class="text-2xl font-bold text-[var(--specialist-plum-light)] persian-number">{{ number_format($completedBookingsCount) }}</h3>
+                    <h3 class="text-2xl font-bold text-[var(--specialist-plum-light)] persian-number">{{ fa_num($completedBookingsCount) }}</h3>
                 </div>
             </div>
         </div>
@@ -151,13 +151,13 @@
                                                 @php $__pay = \App\Support\Bookings\BookingLabels::paymentInfo($booking); @endphp
                                                 <span class="{{ $__pay['class'] }}">{{ $__pay['label'] }}</span>
                                                 @if ($booking->due_at_salon > 0 && $booking->status !== 'no_show')
-                                                    <span class="text-[var(--specialist-text-dim)]"> · دریافت در سالن: {{ number_format($booking->due_at_salon) }} تومان</span>
+                                                    <span class="text-[var(--specialist-text-dim)]"> · دریافت در سالن: {{ fa_num($booking->due_at_salon) }} تومان</span>
                                                 @endif
                                             </p>
                                         @endunless
                                     </div>
                                     <div class="text-left">
-                                        <p class="font-bold text-[var(--specialist-plum-mid)] persian-number" dir="ltr">{{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }}</p>
+                                        <p class="font-bold text-[var(--specialist-plum-mid)] persian-number" dir="ltr">{{ fa_time($booking->booking_time) }}</p>
                                         <span class="specialist-badge px-2 py-0.5 text-xs">{{ $statusLabels[$booking->status] ?? 'نامشخص' }}</span>
                                     </div>
                                 </div>
@@ -176,7 +176,7 @@
                         {{-- لغوشده‌های امروز، جمع‌شده (۲۰۲۶-۱۰-۲۲) --}}
                         @php $cancelledBy = ['customer' => 'مشتری', 'specialist' => 'خودتان', 'admin' => 'مدیر سالن', 'system' => 'سیستم (پرداخت نشد)']; @endphp
                         <details class="mt-5 pt-4 border-t" style="border-color: var(--specialist-border);" data-today-cancelled>
-                            <summary class="cursor-pointer text-sm text-[var(--specialist-plum-muted)] persian-number">لغوشده‌های امروز ({{ number_format($todayCancelled->count()) }})</summary>
+                            <summary class="cursor-pointer text-sm text-[var(--specialist-plum-muted)] persian-number">لغوشده‌های امروز ({{ fa_num($todayCancelled->count()) }})</summary>
                             <div class="space-y-3 mt-3">
                                 @foreach($todayCancelled as $booking)
                                     <a href="{{ route('specialist.bookings.show', $booking) }}" class="flex justify-between items-start text-sm" data-cancelled-booking="{{ $booking->id }}">
@@ -204,8 +204,8 @@
                                 @foreach($upcomingBookings->take(5) as $booking)
                                     <div class="flex justify-between items-start border-b pb-3" style="border-color: var(--specialist-border);">
                                         <div>
-                                            <p class="font-semibold text-sm text-[var(--specialist-text)] persian-number">{{ $booking->booking_date_persian }}</p>
-                                            <p class="text-xs text-[var(--specialist-text-dim)] persian-number" dir="ltr">{{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }} - {{ $booking->user->name }}</p>
+                                            <p class="font-semibold text-sm text-[var(--specialist-text)] persian-number">{{ fa_num($booking->booking_date_persian) }}</p>
+                                            <p class="text-xs text-[var(--specialist-text-dim)] persian-number" dir="ltr">{{ fa_time($booking->booking_time) }} - {{ $booking->user->name }}</p>
                                             <p class="text-xs text-[var(--specialist-text-dim)]">{{ $booking->service?->name ?? '—' }}</p>
                                         </div>
                                         <span class="specialist-badge px-2 py-1 text-xs">{{ $booking->status_fa }}</span>

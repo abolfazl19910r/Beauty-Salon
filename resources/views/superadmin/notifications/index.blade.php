@@ -28,7 +28,7 @@
                 <span class="flex-1 min-w-0">
                     <span class="sa-badge" style="margin: 0;">{{ $kinds[$n->data['kind'] ?? ''] ?? 'اعلان' }}</span>
                     <span class="block mt-1 {{ $n->read_at ? '' : 'font-bold' }}" style="color: var(--sa-text);">{{ $n->data['message'] ?? '' }}</span>
-                    <span class="block text-xs mt-1" style="color: var(--sa-text-dim);">{{ \Morilog\Jalali\Jalalian::fromCarbon($n->created_at)->format('Y/m/d H:i') }}</span>
+                    <span class="block text-xs mt-1" style="color: var(--sa-text-dim);">{{ fa_date($n->created_at, true) }}</span>
                 </span>
             </a>
         @empty

@@ -17,7 +17,7 @@
         @if ($platform['legal_name'])
             <div>
                 <dt class="text-sm text-m-tx/60">صاحب امتیاز</dt>
-                <dd class="font-bold">{{ $platform['legal_name'] }}@if ($platform['national_id']) <span class="text-sm font-normal persian-number">(شناسه‌ی ملی {{ $platform['national_id'] }})</span>@endif</dd>
+                <dd class="font-bold">{{ $platform['legal_name'] }}@if ($platform['national_id']) <span class="text-sm font-normal persian-number">(شناسه‌ی ملی {{ fa_num($platform['national_id']) }})</span>@endif</dd>
             </div>
         @endif
         @if ($platform['landline_phone'])

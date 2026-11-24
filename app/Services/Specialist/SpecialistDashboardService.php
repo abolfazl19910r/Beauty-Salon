@@ -29,7 +29,7 @@ class SpecialistDashboardService
         return [
             'todaySchedule' => $this->getTodaySchedule($specialist),
             'todayCancelled' => $this->getTodayCancelled($specialist),
-            'todayPersian' => $this->toJalali(Carbon::now(), 'l، j F Y'),
+            'todayPersian' => \App\Support\Fa::date(Carbon::now()),
             'todayBookingsCount' => $this->getTodayBookingsCount($specialist),
             'todayRevenue' => $this->getTodayRevenue($specialist),
             'monthBookingsCount' => $this->getMonthBookingsCount($specialist),
@@ -120,7 +120,7 @@ class SpecialistDashboardService
             ->get();
 
         return $bookings->each(function ($booking) {
-            $booking->booking_date_persian = $this->toJalali($booking->booking_time);
+            $booking->booking_date_persian = \App\Support\Fa::date($booking->booking_time);
             $booking->status_fa = \App\Support\Bookings\BookingLabels::status($booking->status);
         });
     }

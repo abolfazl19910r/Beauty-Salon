@@ -15,7 +15,7 @@
     @else
         <p class="text-sm" style="color: var(--admin-text-dim);">
             حساب زرین‌پال وصل است
-            @if ($connection->synced_at) — آخرین به‌روزرسانی {{ jalali_date($connection->synced_at, 'Y/m/d H:i') }}@endif
+            @if ($connection->synced_at) — آخرین به‌روزرسانی {{ fa_date($connection->synced_at, true) }}@endif
             @unless ($usable) <b style="color:rgb(var(--m-bad));">(اتصال منقضی شده؛ دوباره وصل شوید)</b>@endunless
         </p>
 

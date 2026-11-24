@@ -33,8 +33,8 @@
                                 {{ $on ? '✓' : '—' }} {{ $feature->label() }}{{ $feature->isComingSoon() ? ' (به‌زودی)' : '' }}
                             </li>
                         @endforeach
-                        <li class="persian-number" style="color:var(--admin-text);">✓ سهمیه‌ی پیامک ماهانه {{ to_persian_num(number_format($plan->sms_quota_per_month)) }} قطعه</li>
-                        <li class="persian-number" style="color:var(--admin-text);">✓ {{ to_persian_num((string) $option['included']) }} متخصص در قیمت؛ هر متخصص بیشتر ماهانه {{ to_persian_num(number_format($option['extra_price'])) }} تومان</li>
+                        <li class="persian-number" style="color:var(--admin-text);">✓ سهمیه‌ی پیامک ماهانه {{ fa_num($plan->sms_quota_per_month) }} قطعه</li>
+                        <li class="persian-number" style="color:var(--admin-text);">✓ {{ to_persian_num((string) $option['included']) }} متخصص در قیمت؛ هر متخصص بیشتر ماهانه {{ fa_num($option['extra_price']) }} تومان</li>
                         <li class="persian-number" style="color:var(--admin-text);" data-plan-admin-themes>✓ قالب پنل مدیر: پیش‌فرض{{ ($option['admin_themes'] ?? 0) > 0 ? ' + '.to_persian_num((string) $option['admin_themes']) : '' }}</li>
                     </ul>
 
@@ -45,10 +45,10 @@
                                        {{ $plan->id === $defaultPlanId && $salon->subscription_type === $type ? 'checked' : '' }}>
                                 <div class="font-bold mt-1" style="color:var(--admin-text);">{{ $periodLabels[$type] }}</div>
                                 @php $detail = $option['periods'][$type] ?? null; @endphp
-                                <div class="mt-1 persian-number" style="color:var(--admin-text-dim);">{{ number_format($price) }} تومان</div>
+                                <div class="mt-1 persian-number" style="color:var(--admin-text-dim);">{{ fa_num($price) }} تومان</div>
                                 @if ($detail)
                                     <div class="mt-1 text-xs persian-number" style="color:var(--admin-text-dim);" data-period-detail="{{ $type }}">
-                                        @if ($type !== '1m')ماهانه {{ to_persian_num(number_format($detail['per_month'])) }}@endif
+                                        @if ($type !== '1m')ماهانه {{ fa_num($detail['per_month']) }}@endif
                                         @if ($detail['saving_percent'] > 0)<span style="color:rgb(var(--m-ok));"> · {{ to_persian_num((string) $detail['saving_percent']) }}٪ تخفیف</span>@endif
                                         <div>{{ $detail['themes'] > 0 ? to_persian_num((string) $detail['themes']).' قالب سایت' : 'فقط قالب پیش‌فرض' }}</div>
                                     </div>
@@ -65,7 +65,7 @@
 
                     @if ($option['upgrade_price'] !== null)
                         <div class="mt-3 p-3 rounded-lg text-xs persian-number" style="background:var(--admin-accent-light); color:var(--admin-text);">
-                            ارتقای فوری: {{ to_persian_num(number_format($option['upgrade_price'])) }} تومان برای {{ to_persian_num((string) $remainingDays) }} روز مانده‌ی اشتراک؛
+                            ارتقای فوری: {{ fa_num($option['upgrade_price']) }} تومان برای {{ to_persian_num((string) $remainingDays) }} روز مانده‌ی اشتراک؛
                             تاریخ پایان عوض نمی‌شود.
                             <button type="submit" form="upgrade-{{ $plan->id }}" class="mr-2 px-3 py-1 rounded-lg text-m-onsolid font-bold" style="background:var(--admin-accent);">ارتقا</button>
                         </div>

@@ -20,7 +20,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm opacity-80 mb-1">موجودی امتیاز فعلی</p>
-                    <p class="text-3xl font-bold persian-number">{{ number_format($currentBalance) }}</p>
+                    <p class="text-3xl font-bold persian-number">{{ fa_num($currentBalance) }}</p>
                     <p class="text-xs opacity-70 mt-1">امتیاز</p>
                 </div>
                 <svg class="w-12 h-12 opacity-80" fill="currentColor" viewBox="0 0 20 20">
@@ -35,7 +35,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <p class="text-sm text-[var(--specialist-text-dim)]">
-                    <span class="font-bold text-m-warn persian-number">{{ number_format($expiringPoints) }}</span>
+                    <span class="font-bold text-m-warn persian-number">{{ fa_num($expiringPoints) }}</span>
                     امتیاز شما تا ۳۰ روز آینده منقضی می‌شود.
                 </p>
             </div>
@@ -74,9 +74,9 @@
                                 <div>
                                     <p class="text-sm font-medium text-[var(--specialist-text)]">{{ $point->description }}</p>
                                     <div class="flex items-center gap-3 mt-1 text-xs text-[var(--specialist-plum-muted)] flex-wrap">
-                                        <span class="persian-number">{{ verta($point->created_at)->format('Y/m/d H:i') }}</span>
+                                        <span class="persian-number">{{ fa_date($point->created_at, true) }}</span>
                                         @if($point->booking)
-                                            <span class="persian-number">نوبت #{{ $point->booking_id }}</span>
+                                            <span class="persian-number">نوبت #{{ fa_num($point->booking_id) }}</span>
                                             @if($point->booking->service)
                                                 <span>{{ $point->booking?->service?->name ?? '—' }}</span>
                                             @endif
@@ -87,7 +87,7 @@
 
                             <span class="text-lg font-bold persian-number"
                                   style="color: {{ $point->type === 'earned' ? 'var(--specialist-plum-light)' : '#E08989' }};">
-                                {{ $point->type === 'earned' ? '+' : '-' }}{{ number_format($point->points) }}
+                                {{ $point->type === 'earned' ? '+' : '-' }}{{ fa_num($point->points) }}
                             </span>
                         </div>
                     @endforeach

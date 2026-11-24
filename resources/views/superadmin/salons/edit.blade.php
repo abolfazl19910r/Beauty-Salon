@@ -52,7 +52,7 @@
             <div>
                 <label class="sa-label">
                     سقف تعداد متخصص
-                    <span style="color: var(--sa-text-dim);">(فعلاً {{ $salon->specialists()->count() }} متخصص ثبت‌شده)</span>
+                    <span style="color: var(--sa-text-dim);">(فعلاً {{ fa_num($salon->specialists()->count()) }} متخصص ثبت‌شده)</span>
                 </label>
                 <input type="number" name="max_specialists_count" value="{{ old('max_specialists_count', $salon->max_specialists_count) }}" min="0" class="sa-input" required>
             </div>
@@ -61,7 +61,7 @@
                 <label class="sa-label">
                     سهمیه‌ی پیامک ماهانه (قطعه)
                     @php $defaultQuota = (int) ($salon->effectivePlan()?->sms_quota_per_month ?? config('billing.sms_quota_per_month')); @endphp
-                    <span style="color: var(--sa-text-dim);">— خالی = سهمیه‌ی پلن سالن، {{ to_persian_num(number_format($defaultQuota)) }} قطعه</span>
+                    <span style="color: var(--sa-text-dim);">— خالی = سهمیه‌ی پلن سالن، {{ fa_num($defaultQuota) }} قطعه</span>
                 </label>
                 <input type="number" name="sms_quota_per_month" value="{{ old('sms_quota_per_month', $salon->sms_quota_per_month) }}" min="0" class="sa-input"
                        placeholder="{{ $defaultQuota }}">
@@ -111,7 +111,7 @@
                 <div>
                     <div class="font-bold">مالک سالن</div>
                     @if ($owner)
-                        <div style="color: var(--sa-text-dim);">{{ $owner->name }} · <span dir="ltr">{{ $owner->phone }}</span></div>
+                        <div style="color: var(--sa-text-dim);">{{ $owner->name }} · <span dir="ltr">{{ \App\Support\Fa::digits($owner->phone) }}</span></div>
                         @php $ownerOtherSalons = \Illuminate\Support\Facades\DB::table('salon_admins')->where('user_id', $owner->id)->where('salon_id', '!=', $salon->id)->count(); @endphp
                         @if ($ownerOtherSalons > 0)
                             <div class="text-xs mt-1" style="color: var(--sa-warn);" data-owner-shared>این حساب در {{ to_persian_num((string) $ownerOtherSalons) }} سالن دیگر هم عضو است؛ تغییر نام، شماره یا رمز در همه‌ی آن‌ها اثر دارد.</div>
@@ -190,7 +190,7 @@
             @forelse ($saAcceptances as $acc)
                 <div class="flex flex-wrap items-center justify-between gap-2 py-1" style="border-top: 1px solid var(--sa-border);" data-contract-row="{{ $acc->id }}">
                     <span>{{ $acc->documentLabel() }} · نسخه‌ی {{ to_persian_num(str_replace('-', '/', (string) $acc->version)) }} · {{ $acc->user?->name }}
-                        · {{ \Morilog\Jalali\Jalalian::fromCarbon($acc->accepted_at ?? $acc->created_at)->format('Y/m/d H:i') }} <span dir="ltr" class="text-xs" style="color: var(--sa-text-dim);">{{ $acc->ip_address }}</span></span>
+                        · {{ fa_date($acc->accepted_at ?? $acc->created_at, true) }} <span dir="ltr" class="text-xs" style="color: var(--sa-text-dim);">{{ $acc->ip_address }}</span></span>
                     <a href="{{ route('superadmin.salons.contract-pdf', [$salon, $acc->id]) }}" style="color: var(--sa-accent);">PDF</a>
                 </div>
             @empty
@@ -211,8 +211,8 @@
                 <p>
                     <strong style="color: rgb(var(--m-warn));">متوقف</strong>
                     از طرف {{ $salon->paused_by === \App\Models\Salon::PAUSED_BY_PLATFORM ? 'ماهرو' : 'مدیر سالن' }}
-                    — از {{ verta($salon->paused_at)->format('Y/m/d H:i') }}
-                    {{ $salon->paused_until ? '، باز شدن خودکار '.verta($salon->paused_until)->format('Y/m/d') : '، تا بازکردن دستی' }}
+                    — از {{ fa_date($salon->paused_at, true) }}
+                    {{ $salon->paused_until ? '، باز شدن خودکار '.fa_date($salon->paused_until) : '، تا بازکردن دستی' }}
                     @if (filled($salon->pause_reason)) <br>دلیل: «{{ $salon->pause_reason }}» @endif
                 </p>
                 <form method="POST" action="{{ route('superadmin.salons.resume', $salon) }}">
@@ -248,7 +248,7 @@
             <dl class="grid grid-cols-[1fr_auto] gap-x-4 gap-y-2">
                 <dt style="color: var(--sa-text-dim);">از سقف سالن</dt><dd class="font-bold">{{ to_persian_num((string) $smsUsage['used']) }} از {{ to_persian_num((string) $smsUsage['quota']) }} قطعه</dd>
                 <dt style="color: var(--sa-text-dim);">کدهای تأیید (خرج پلتفرم، خارج از سقف)</dt><dd class="font-bold">{{ to_persian_num((string) $smsUsage['otp']) }}</dd>
-                <dt style="color: var(--sa-text-dim);">اعتبار خریده‌شده‌ی باقی‌مانده</dt><dd class="font-bold">{{ to_persian_num(number_format($smsUsage['credit'])) }} قطعه</dd>
+                <dt style="color: var(--sa-text-dim);">اعتبار خریده‌شده‌ی باقی‌مانده</dt><dd class="font-bold">{{ fa_num($smsUsage['credit']) }} قطعه</dd>
             </dl>
 
         {{-- اعطای دستی اعتبار پیامک (هدیه/جبران) — ۲۰۲۶-۰۹-۳۰ --}}

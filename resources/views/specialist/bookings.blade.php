@@ -225,9 +225,9 @@
                                     </div>
 
                                     <div class="text-sm text-[var(--specialist-text-dim)] space-y-1">
-                                        <p><span class="text-[var(--specialist-plum-muted)]">مشتری:</span> {{ $booking->user->name }} | <span dir="ltr">{{ $booking->user->phone }}</span></p>
+                                        <p><span class="text-[var(--specialist-plum-muted)]">مشتری:</span> {{ $booking->user->name }} | <span dir="ltr">{{ \App\Support\Fa::digits($booking->user->phone) }}</span></p>
                                         <x-no-show-badge :label="$noShowLabels[$booking->user_id] ?? null" />
-                                        <p class="persian-number"><span class="text-[var(--specialist-plum-muted)]">زمان:</span> {{ verta($booking->booking_time)->format('Y/m/d ساعت H:i') }}</p>
+                                        <p class="persian-number"><span class="text-[var(--specialist-plum-muted)]">زمان:</span> {{ fa_jdate($booking->booking_time, 'Y/m/d ساعت H:i') }}</p>
                                         <p><span class="text-[var(--specialist-plum-muted)]">وضعیت مالی:</span> <span class="font-medium {{ $paymentInfo['class'] }}">{{ $paymentInfo['label'] }}</span></p>
                                     </div>
                                 </div>

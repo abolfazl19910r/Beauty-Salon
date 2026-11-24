@@ -41,8 +41,8 @@ class SalonDateDisplayTest extends TestCase
 
         $response = $this->get('/superadmin/salons');
 
-        $response->assertSee(jalali_date($salon->subscription_started_at));
-        $response->assertSee(jalali_date($salon->subscription_ends_at));
+        $response->assertSee(fa_date($salon->subscription_started_at));
+        $response->assertSee(fa_date($salon->subscription_ends_at));
         $response->assertDontSee($salon->subscription_ends_at->format('Y-m-d'));
     }
 
@@ -57,8 +57,8 @@ class SalonDateDisplayTest extends TestCase
 
         $response = $this->get('/superadmin/dashboard');
 
-        $response->assertSee(jalali_date($salon->subscription_started_at));
-        $response->assertSee(jalali_date($salon->subscription_ends_at));
+        $response->assertSee(fa_date($salon->subscription_started_at));
+        $response->assertSee(fa_date($salon->subscription_ends_at));
         $response->assertDontSee($salon->subscription_ends_at->format('Y-m-d'));
     }
 }

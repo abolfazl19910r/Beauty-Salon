@@ -49,8 +49,8 @@
                             <tr style="border-bottom:1px solid var(--admin-border)">
                                 <td class="p-4 font-medium" style="color:var(--admin-text);">{{ $category->name }}</td>
                                 <td class="p-4" style="color:var(--admin-text-dim);">{{ \Illuminate\Support\Str::limit($category->description, 60) ?: '—' }}</td>
-                                <td class="p-4 persian-number" style="color:var(--admin-text-dim);">{{ number_format($category->posts_count) }}</td>
-                                <td class="p-4 persian-number" style="color:var(--admin-text-dim);">{{ $category->order }}</td>
+                                <td class="p-4 persian-number" style="color:var(--admin-text-dim);">{{ fa_num($category->posts_count) }}</td>
+                                <td class="p-4 persian-number" style="color:var(--admin-text-dim);">{{ fa_num($category->order) }}</td>
                                 <td class="p-4">
                                     <div class="flex items-center gap-3">
                                         <a href="{{ route('admin.blog.categories.edit', $category) }}" class="text-xs font-medium" style="color:var(--admin-accent);">ویرایش</a>

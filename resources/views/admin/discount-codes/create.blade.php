@@ -127,7 +127,7 @@
                     <option value="">— برای همه‌ی کاربران —</option>
                     @foreach($users as $user)
                         <option value="{{ $user->id }}" @selected((string) old('user_id') === (string) $user->id)>
-                            {{ $user->name }} @if($user->phone) ({{ $user->phone }}) @endif
+                            {{ $user->name }} @if($user->phone) ({{ \App\Support\Fa::digits($user->phone) }}) @endif
                         </option>
                     @endforeach
                 </select>

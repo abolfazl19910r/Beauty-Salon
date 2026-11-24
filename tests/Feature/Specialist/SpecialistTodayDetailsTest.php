@@ -71,7 +71,7 @@ class SpecialistTodayDetailsTest extends TestCase
 
         $response->assertSee('data-payment="unpaid"', false)
             ->assertSee(\App\Support\Bookings\BookingLabels::payment($manual))
-            ->assertSee('دریافت در سالن: '.number_format(400000), false)
+            ->assertSee('دریافت در سالن: '.fa_num(400000), false)
             ->assertSee('نیامد')
             ->assertSee('data-today-cancelled', false)
             ->assertSee('data-cancelled-booking="'.$cancelled->id.'"', false)
@@ -85,7 +85,7 @@ class SpecialistTodayDetailsTest extends TestCase
 
         $this->actingAs(User::find($this->specialist->user_id))->get(route('specialist.bookings.show', $manual))->assertOk()
             ->assertSee('پیش‌پرداخت انجام نشده')
-            ->assertSeeInOrder(['data-due-at-salon', number_format(400000)], false)
+            ->assertSeeInOrder(['data-due-at-salon', fa_num(400000)], false)
             ->assertDontSee('data-prepaid', false);
     }
 

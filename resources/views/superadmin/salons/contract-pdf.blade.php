@@ -22,13 +22,13 @@
 
     <table class="meta">
         <tr><td class="k">سالن</td><td>{{ $salon->name }} <span class="ltr">({{ $salon->slug }})</span></td></tr>
-        <tr><td class="k">پذیرنده</td><td>{{ $acceptance->user?->name ?: '—' }} @if ($acceptance->user?->phone)<span class="ltr">{{ $acceptance->user->phone }}</span>@endif</td></tr>
+        <tr><td class="k">پذیرنده</td><td>{{ $acceptance->user?->name ?: '—' }} @if ($acceptance->user?->phone)<span class="ltr">{{ \App\Support\Fa::digits($acceptance->user->phone) }}</span>@endif</td></tr>
         <tr><td class="k">سند و نسخه</td><td>{{ $acceptance->documentLabel() }} — نسخه‌ی {{ to_persian_num(str_replace('-', '/', (string) $acceptance->version)) }}</td></tr>
-        <tr><td class="k">زمان پذیرش</td><td>{{ $at ? to_persian_num(\Morilog\Jalali\Jalalian::fromCarbon($at->copy()->timezone(config('app.timezone')))->format('Y/m/d H:i:s')) : '—' }} به وقت <span class="ltr">{{ config('app.timezone') }}</span><br><span class="ltr" style="font-size: 8.5pt;">UTC {{ $at?->copy()->utc()->format('Y-m-d H:i:s') }}</span></td></tr>
+        <tr><td class="k">زمان پذیرش</td><td>{{ $at ? to_persian_num(fa_date($at->copy()->timezone(config('app.timezone')), true)) : '—' }} به وقت <span class="ltr">{{ config('app.timezone') }}</span><br><span class="ltr" style="font-size: 8.5pt;">UTC {{ $at?->copy()->utc()->format('Y-m-d H:i:s') }}</span></td></tr>
         <tr><td class="k">نشانی IP</td><td class="ltr">{{ $acceptance->ip_address ?: '—' }}</td></tr>
         <tr><td class="k">مرورگر / دستگاه</td><td class="ltr" style="font-size: 8.5pt;">{{ $acceptance->user_agent ?: '—' }}</td></tr>
         <tr><td class="k">منبع پذیرش</td><td>{{ $sources[$acceptance->source] ?? $acceptance->source }}@if ($acceptance->app_version) — اپ <span class="ltr">{{ $acceptance->app_version }}</span>@endif</td></tr>
-        <tr><td class="k">شناسه‌ی سابقه</td><td class="ltr">legal_acceptances #{{ $acceptance->id }}</td></tr>
+        <tr><td class="k">شناسه‌ی سابقه</td><td class="ltr">legal_acceptances #{{ \App\Support\Fa::digits($acceptance->id) }}</td></tr>
     </table>
 
     @unless ($isCurrent)

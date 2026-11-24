@@ -32,9 +32,9 @@
                             <p class="text-m-tx">متخصص: <span class="font-medium">{{ $booking->specialist?->name ?? '—' ?? 'نامشخص' }}</span></p>
                         </div>
                         <div>
-                            <p class="text-m-tx">تاریخ نوبت: <span class="font-medium">{{ $booking->booking_time ? verta($booking->booking_time)->format('Y/m/d H:i') : 'نامشخص' }}</span></p>
+                            <p class="text-m-tx">تاریخ نوبت: <span class="font-medium">{{ $booking->booking_time ? fa_date($booking->booking_time, true) : 'نامشخص' }}</span></p>
                             <p class="text-m-tx">وضعیت: <span class="font-medium">{{ \App\Support\Bookings\BookingLabels::status($booking->status) }}</span></p>
-                            <p class="text-m-tx">مبلغ: <span class="font-medium">{{ $booking->prepayment_amount ? number_format($booking->prepayment_amount) . ' تومان' : 'نامشخص' }}</span></p>
+                            <p class="text-m-tx">مبلغ: <span class="font-medium">{{ $booking->prepayment_amount ? fa_num($booking->prepayment_amount) . ' تومان' : 'نامشخص' }}</span></p>
                         </div>
                     </div>
                 </div>

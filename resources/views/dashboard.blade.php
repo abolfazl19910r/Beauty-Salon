@@ -13,7 +13,7 @@
                         سلام، {{ auth()->user()->name }}
                     </h1>
                     <p class="mt-1 text-sm persian-number" style="color: var(--rasta-cream); opacity: 0.7;">
-                        {{ \Morilog\Jalali\Jalalian::forge(now())->format('l، j F Y') }}
+                        {{ fa_jdate(now(), 'l، j F Y') }}
                     </p>
                 </div>
                 <a href="{{ route('services.index') }}"
@@ -86,7 +86,7 @@
                                         <div>
                                             <p class="text-sm font-medium" style="color: var(--rasta-cream);">{{ $booking->service?->name ?? '—' }}</p>
                                             <p class="text-xs persian-number" style="color: var(--rasta-cream); opacity: 0.6;">
-                                                {{ \Morilog\Jalali\Jalalian::forge($booking->booking_time)->format('Y/m/d H:i') }}
+                                                {{ fa_date($booking->booking_time, true) }}
                                                 @if($booking->specialist)
                                                     — {{ $booking->specialist?->name ?? '—' }}
                                                 @endif
@@ -128,7 +128,7 @@
                                     <div>
                                         <p class="text-sm font-medium" style="color: var(--rasta-cream);">{{ $booking->service?->name ?? '—' }}</p>
                                         <p class="text-xs persian-number mt-1" style="color: var(--rasta-gold-light); opacity: 0.8;">
-                                            {{ \Morilog\Jalali\Jalalian::forge($booking->booking_time)->format('l، j F Y — H:i') }}
+                                            {{ fa_jdate($booking->booking_time, 'l، j F Y — H:i') }}
                                         </p>
                                         @if($booking->specialist)
                                             <p class="text-xs mt-0.5" style="color: var(--rasta-cream); opacity: 0.6;">متخصص: {{ $booking->specialist?->name ?? '—' }}</p>
@@ -167,7 +167,7 @@
                                     <div>
                                         <p class="text-sm font-medium" style="color: var(--rasta-cream);">{{ $service->name }}</p>
                                         @if($service->price)
-                                            <p class="text-xs persian-number mt-0.5" style="color: var(--rasta-gold); opacity: 0.85;">{{ number_format($service->price) }} تومان</p>
+                                            <p class="text-xs persian-number mt-0.5" style="color: var(--rasta-gold); opacity: 0.85;">{{ fa_num($service->price) }} تومان</p>
                                         @endif
                                     </div>
                                     <svg class="w-4 h-4 flex-shrink-0" style="color: var(--rasta-gold); opacity: 0.5;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -204,7 +204,7 @@
                                                 <svg class="w-3 h-3" style="color: var(--rasta-gold);" fill="currentColor" viewBox="0 0 20 20">
                                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                                 </svg>
-                                                <span class="text-xs persian-number" style="color: var(--rasta-gold-light);">{{ number_format($specialist->bookings_avg_rating, 1) }}</span>
+                                                <span class="text-xs persian-number" style="color: var(--rasta-gold-light);">{{ fa_num($specialist->bookings_avg_rating, 1) }}</span>
                                             </div>
                                         @endif
                                     </div>

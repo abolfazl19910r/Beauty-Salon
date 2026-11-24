@@ -131,25 +131,25 @@
             <div class="specialist-cta rounded-xl p-6">
                 <div class="text-sm opacity-80 mb-1">درآمد حاصله (بیعانه)</div>
                 <div class="text-2xl font-bold persian-number">
-                    {{ number_format($totalRevenue) }}
+                    {{ fa_num($totalRevenue) }}
                     <span class="text-xs opacity-70 font-normal mr-1">تومان</span>
                 </div>
             </div>
 
             <div class="specialist-card p-6">
                 <div class="text-sm text-[var(--specialist-plum-muted)] mb-1">کل نوبت‌های دریافتی</div>
-                <div class="text-2xl font-bold text-m-info persian-number">{{ $totalBookings }}</div>
+                <div class="text-2xl font-bold text-m-info persian-number">{{ fa_num($totalBookings) }}</div>
                 <div class="text-[10px] text-[var(--specialist-inactive)] mt-1">شامل همه وضعیت‌ها در این بازه</div>
             </div>
 
             <div class="specialist-card p-6">
                 <div class="text-sm text-[var(--specialist-plum-muted)] mb-1">خدمات ارائه شده</div>
-                <div class="text-2xl font-bold text-m-ok persian-number">{{ $completedBookings }}</div>
+                <div class="text-2xl font-bold text-m-ok persian-number">{{ fa_num($completedBookings) }}</div>
             </div>
 
             <div class="specialist-card p-6">
                 <div class="text-sm text-[var(--specialist-plum-muted)] mb-1">نوبت‌های لغو شده</div>
-                <div class="text-2xl font-bold text-m-bad persian-number">{{ $cancelledBookings }}</div>
+                <div class="text-2xl font-bold text-m-bad persian-number">{{ fa_num($cancelledBookings) }}</div>
             </div>
         </div>
 
@@ -157,7 +157,7 @@
         <div class="specialist-card overflow-hidden">
             <div class="p-5 border-b flex justify-between items-center" style="border-color: var(--specialist-border);">
                 <h3 class="text-sm font-bold text-[var(--specialist-plum-light)] font-serif-fa">ریز تراکنش‌ها و نوبت‌ها</h3>
-                <span class="text-xs text-[var(--specialist-inactive)] persian-number">نمایش {{ $bookings->count() }} مورد</span>
+                <span class="text-xs text-[var(--specialist-inactive)] persian-number">نمایش {{ fa_num($bookings->count()) }} مورد</span>
             </div>
 
             @forelse($bookings as $booking)
@@ -167,20 +167,20 @@
                 @endphp
                 <div class="p-4 border-b flex flex-wrap items-center justify-between gap-4" style="border-color: var(--specialist-border);">
                     <div class="flex items-center gap-4 flex-1 min-w-[220px]">
-                        <span class="font-mono text-xs text-[var(--specialist-inactive)] persian-number">#{{ $booking->id }}</span>
+                        <span class="font-mono text-xs text-[var(--specialist-inactive)] persian-number">#{{ \App\Support\Fa::digits($booking->id) }}</span>
                         <div>
                             <p class="text-sm font-medium text-[var(--specialist-text)]">{{ $booking->user->name }}</p>
-                            <p class="text-xs text-[var(--specialist-plum-muted)]" dir="ltr">{{ $booking->user->phone }}</p>
+                            <p class="text-xs text-[var(--specialist-plum-muted)]" dir="ltr">{{ \App\Support\Fa::digits($booking->user->phone) }}</p>
                         </div>
                         <span class="text-sm text-[var(--specialist-text-dim)]">{{ $booking->service?->name ?? '—' ?? 'حذف شده' }}</span>
                     </div>
 
                     <div class="text-sm text-[var(--specialist-text-dim)] persian-number">
-                        {{ \Morilog\Jalali\Jalalian::fromCarbon($booking->booking_time)->format('Y/m/d') }}
-                        <span class="text-[var(--specialist-inactive)]">{{ \Morilog\Jalali\Jalalian::fromCarbon($booking->booking_time)->format('H:i') }}</span>
+                        {{ fa_date($booking->booking_time) }}
+                        <span class="text-[var(--specialist-inactive)]">{{ fa_time($booking->booking_time) }}</span>
                     </div>
 
-                    <span class="font-bold text-[var(--specialist-text)] persian-number">{{ number_format($booking->prepayment_amount * (1 - ($commissionRate ?? 10) / 100)) }} تومان</span>
+                    <span class="font-bold text-[var(--specialist-text)] persian-number">{{ fa_num($booking->prepayment_amount * (1 - ($commissionRate ?? 10) / 100)) }} تومان</span>
 
                     <span class="px-3 py-1 rounded-full text-xs font-medium {{ $statusClass }}">{{ $statusText }}</span>
                 </div>

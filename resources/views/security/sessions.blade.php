@@ -47,7 +47,7 @@
                                 @endif
                             </p>
                             <p class="text-xs text-m-tx/40 mt-0.5">
-                                آخرین فعالیت: {{ jalali_date($session->last_activity, 'Y/m/d H:i') }}
+                                آخرین فعالیت: {{ fa_date($session->last_activity, true) }}
                             </p>
                         </div>
                     </div>

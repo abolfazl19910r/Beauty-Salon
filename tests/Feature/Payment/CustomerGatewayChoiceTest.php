@@ -50,7 +50,7 @@ class CustomerGatewayChoiceTest extends TestCase
         $this->actingAs($user)->get(route('payment.show', $this->booking($user)))
             ->assertOk()
             ->assertSee('انتخاب درگاه پرداخت')
-            ->assertSeeInOrder(['زیبال', 'بدون کارمزد', 'پرداخت سریع', 'کارمزد: 600 تومان'])
+            ->assertSeeInOrder(['زیبال', 'بدون کارمزد', 'پرداخت سریع', 'کارمزد: ۶۰۰ تومان'])
             ->assertDontSee('آسان پرداخت')
             ->assertSee('اگر درگاه انتخابی در دسترس نباشد')
             ->assertDontSee('درگاه امن زرین‌پال');

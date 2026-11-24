@@ -25,7 +25,7 @@
                     <h2 class="text-sm font-bold mb-4 pb-3" style="color:var(--admin-text); border-bottom:1px solid var(--admin-border);">امتیازها</h2>
                     @php $r = $review->overall_rating ?? 0; @endphp
                     <div class="flex items-center gap-3 mb-4">
-                        <span class="text-4xl font-bold persian-number" style="color:{{ $r>=4 ? 'rgb(var(--m-ok))' : ($r>=3 ? 'rgb(var(--m-warn))' : 'rgb(var(--m-bad))') }};">{{ $r }}</span>
+                        <span class="text-4xl font-bold persian-number" style="color:{{ $r>=4 ? 'rgb(var(--m-ok))' : ($r>=3 ? 'rgb(var(--m-warn))' : 'rgb(var(--m-bad))') }};">{{ fa_num($r) }}</span>
                         <div>
                             <div class="flex gap-1 mb-1">
                                 @for($i=1;$i<=5;$i++)
@@ -65,7 +65,7 @@
                         </div>
                         <div>
                             <p class="mb-1" style="color:var(--admin-text-dim);">تاریخ ثبت نظر</p>
-                            <p class="persian-number font-medium" style="color:var(--admin-text);">{{ verta($review->reviewed_at ?? $review->created_at)->format('Y/m/d H:i') }}</p>
+                            <p class="persian-number font-medium" style="color:var(--admin-text);">{{ fa_date($review->reviewed_at ?? $review->created_at, true) }}</p>
                         </div>
                     </div>
                 </div>

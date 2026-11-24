@@ -31,7 +31,7 @@
                         <span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--admin-accent-light); color:var(--admin-accent);">{{ $campaign->statusLabel() }}</span>
                     </div>
                     <div class="text-xs mt-1 persian-number" style="{{ $dim }}">
-                        {{ verta($campaign->created_at)->format('Y/m/d') }} · {{ to_persian_num((string) $campaign->sent) }} از {{ to_persian_num((string) $campaign->targeted) }} پیامک
+                        {{ fa_date($campaign->created_at) }} · {{ to_persian_num((string) $campaign->sent) }} از {{ to_persian_num((string) $campaign->targeted) }} پیامک
                         @if ($campaign->pause_reason) · {{ $campaign->pauseReasonLabel() }}@endif
                     </div>
                 </a>

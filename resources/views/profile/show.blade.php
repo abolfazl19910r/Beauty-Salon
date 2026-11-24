@@ -155,7 +155,7 @@
                                         <td class="px-5 py-3.5 font-medium text-m-tx">{{ $booking->service->name }}</td>
                                         <td class="px-5 py-3.5 text-m-tx/70">{{ $booking->specialist->name }}</td>
                                         <td class="px-5 py-3.5 text-m-tx/70 persian-number text-xs" dir="ltr">
-                                            {{ verta($booking->booking_time)->format('Y/m/d H:i') }}
+                                            {{ fa_date($booking->booking_time, true) }}
                                         </td>
                                         <td class="px-5 py-3.5">
                                             <x-booking-status :status="$booking->status" audience="customer" />

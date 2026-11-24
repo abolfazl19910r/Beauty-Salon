@@ -14,7 +14,7 @@
                 </svg>
             </a>
             <div>
-                <p class="text-xs persian-number" style="color: var(--rasta-gold); opacity: 0.7;">نوبت #{{ $booking->id }}</p>
+                <p class="text-xs persian-number" style="color: var(--rasta-gold); opacity: 0.7;">نوبت #{{ \App\Support\Fa::digits($booking->id) }}</p>
                 <h1 class="text-xl font-bold" style="color: var(--rasta-cream);">تغییر زمان نوبت</h1>
             </div>
         </div>
@@ -31,7 +31,7 @@
                     <div class="text-left">
                         <p class="text-xs mb-1" style="color: var(--rasta-gold-light); opacity: 0.7;">زمان فعلی نوبت</p>
                         <p class="font-semibold persian-number" dir="ltr" style="color: var(--rasta-gold-light);">
-                            {{ verta($booking->booking_time)->format('Y/m/d H:i') }}
+                            {{ fa_date($booking->booking_time, true) }}
                         </p>
                     </div>
                 </div>
@@ -93,7 +93,7 @@
                         <div class="rounded-lg p-3" style="background-color: var(--rasta-bg); border: 1px solid rgb(var(--m-gold) / 0.15);">
                             <p class="text-xs mb-1" style="color: var(--rasta-cream); opacity: 0.6;">زمان فعلی:</p>
                             <p class="font-medium persian-number" dir="ltr" style="color: var(--rasta-cream);">
-                                {{ verta($booking->booking_time)->format('Y/m/d H:i') }}
+                                {{ fa_date($booking->booking_time, true) }}
                             </p>
                         </div>
                         <div class="rounded-lg p-3" style="background: linear-gradient(135deg, rgb(var(--m-gold) / 0.2), rgb(var(--m-gold2) / 0.15)); border: 1px solid rgb(var(--m-gold) / 0.3);">

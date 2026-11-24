@@ -55,7 +55,7 @@
                                     <span style="color:var(--admin-text-dim);">{{ $ticket->status_text }}</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ jalali_date($ticket->created_at) }}</td>
+                            <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ fa_date($ticket->created_at) }}</td>
                             <td class="px-4 py-3">
                                 <a href="{{ route('admin.support-tickets.show', $ticket) }}" style="color: var(--admin-accent);">مشاهده</a>
                             </td>

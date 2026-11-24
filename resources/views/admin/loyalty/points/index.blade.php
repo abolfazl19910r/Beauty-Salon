@@ -49,7 +49,7 @@
                                 @foreach($users as $u)
                                     <tr style="border-bottom:1px solid var(--admin-border)">
                                         <td class="p-3" style="color:var(--admin-text)">{{ $u->name }}</td>
-                                        <td class="p-3" style="color:var(--admin-text)">{{ $u->phone }}</td>
+                                        <td class="p-3" style="color:var(--admin-text)">{{ \App\Support\Fa::digits($u->phone) }}</td>
                                         <td class="p-3">
                                             <a href="{{ route('admin.loyalty.points.index', ['user_id' => $u->id]) }}"
                                                class="text-xs font-medium" style="color:var(--admin-accent)">
@@ -72,9 +72,9 @@
                 @php
                     $cards = [
                         ['label' => 'کاربر', 'value' => $selectedUser->name . ' (' . $selectedUser->phone . ')'],
-                        ['label' => 'مجموع کسب‌شده', 'value' => number_format($pointsData['total_earned'])],
-                        ['label' => 'مجموع مصرف‌شده', 'value' => number_format($pointsData['total_spent'])],
-                        ['label' => 'موجودی فعلی', 'value' => number_format($pointsData['current_balance'])],
+                        ['label' => 'مجموع کسب‌شده', 'value' => fa_num($pointsData['total_earned'])],
+                        ['label' => 'مجموع مصرف‌شده', 'value' => fa_num($pointsData['total_spent'])],
+                        ['label' => 'موجودی فعلی', 'value' => fa_num($pointsData['current_balance'])],
                     ];
                 @endphp
                 @foreach($cards as $card)
@@ -87,7 +87,7 @@
 
             @if($pointsData['expiring_soon'] > 0)
                 <div class="rounded-xl p-4 mb-6 text-sm" style="background:rgb(var(--m-warn) / .1);color:rgb(var(--m-warn));border:1px solid rgb(var(--m-warn) / .35)">
-                    {{ number_format($pointsData['expiring_soon']) }} امتیاز این کاربر تا ۳۰ روز آینده منقضی می‌شود.
+                    {{ fa_num($pointsData['expiring_soon']) }} امتیاز این کاربر تا ۳۰ روز آینده منقضی می‌شود.
                 </div>
             @endif
 
@@ -194,7 +194,7 @@
                                             {{ $point->type === 'earned' ? 'کسب‌شده' : ($point->type === 'expired' ? 'منقضی‌شده' : 'مصرف‌شده') }}
                                         </span>
                                     </td>
-                                    <td class="p-4" style="color:var(--admin-text)">{{ $point->points > 0 ? '+' : '' }}{{ number_format($point->points) }}</td>
+                                    <td class="p-4" style="color:var(--admin-text)">{{ $point->points > 0 ? '+' : '' }}{{ fa_num($point->points) }}</td>
                                     <td class="p-4" style="color:var(--admin-text)">{{ $point->description }}</td>
                                 </tr>
                             @endforeach

@@ -87,7 +87,7 @@
                                         @if ($release->is_required)<span class="sa-badge sa-badge-bad">اجباری</span>@endif
                                     </td>
                                     <td class="py-2 px-2">{{ $release->sizeLabel() }}</td>
-                                    <td class="py-2 px-2" title="{{ $release->uploader?->name }}">{{ \Morilog\Jalali\Jalalian::fromCarbon($release->created_at)->format('Y/m/d H:i') }}</td>
+                                    <td class="py-2 px-2" title="{{ $release->uploader?->name }}">{{ fa_date($release->created_at, true) }}</td>
                                     <td class="py-2 px-2">{{ to_persian_num((string) $release->download_count) }}</td>
                                     <td class="py-2 px-2">
                                         <form method="POST" action="{{ route('superadmin.app-releases.update', $release) }}">

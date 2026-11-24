@@ -4,7 +4,7 @@
 
 {{-- درگاه پرداخت پلتفرم برای سالن‌ها (۲۰۲۶-۱۱-۲۲) — App\Http\Controllers\SuperAdmin\PlatformGatewayController --}}
 @php
-    $toman = fn (int $rial) => to_persian_num(number_format(intdiv($rial, 10)));
+    $toman = fn (int $rial) => fa_num(intdiv($rial, 10));
     $pct = fn ($v) => to_persian_num(rtrim(rtrim(number_format((float) $v, 2, '.', ''), '0'), '.')).'٪';
 @endphp
 
@@ -90,7 +90,7 @@
                     <td class="py-3 px-4">{{ $r->salon?->name }} <span class="text-xs" dir="ltr" style="color: var(--sa-text-dim);">{{ $r->salon?->slug }}</span></td>
                     <td class="py-3 px-4" dir="ltr">{{ $r->maskedDestination() }}</td>
                     <td class="py-3 px-4">{{ $r->account_holder }}</td>
-                    <td class="py-3 px-4 whitespace-nowrap">{{ \Morilog\Jalali\Jalalian::fromCarbon($r->created_at)->format('Y/m/d H:i') }}</td>
+                    <td class="py-3 px-4 whitespace-nowrap">{{ fa_date($r->created_at, true) }}</td>
                     <td class="py-3 px-4"><a href="{{ route('superadmin.platform-gateway.requests.show', $r) }}" style="color: var(--sa-accent);">بررسی</a></td>
                 </tr>
             @empty

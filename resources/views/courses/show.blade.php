@@ -17,14 +17,14 @@
             <dl class="grid grid-cols-2 gap-3 mt-5 text-sm persian-number">
                 <div class="rounded-lg p-3" style="{{ $inner }}"><dt style="{{ $dim }}">تعداد جلسه</dt><dd class="font-bold mt-1" style="color: var(--rasta-cream);">{{ to_persian_num((string) $package->sessions_count) }}</dd></div>
                 <div class="rounded-lg p-3" style="{{ $inner }}"><dt style="{{ $dim }}">فاصله‌ی جلسه‌ها</dt><dd class="font-bold mt-1" style="color: var(--rasta-cream);">حدود {{ to_persian_num((string) $package->interval_days) }} روز</dd></div>
-                <div class="rounded-lg p-3" style="{{ $inner }}"><dt style="{{ $dim }}">قیمت کل</dt><dd class="font-bold mt-1" style="color: var(--rasta-cream);">{{ number_format($package->price) }} تومان</dd></div>
+                <div class="rounded-lg p-3" style="{{ $inner }}"><dt style="{{ $dim }}">قیمت کل</dt><dd class="font-bold mt-1" style="color: var(--rasta-cream);">{{ fa_num($package->price) }} تومان</dd></div>
                 <div class="rounded-lg p-3" style="{{ $inner }}"><dt style="{{ $dim }}">مهلت استفاده</dt><dd class="font-bold mt-1" style="color: var(--rasta-cream);">{{ $package->validity_days ? to_persian_num((string) $package->validity_days).' روز از خرید' : 'بدون محدودیت' }}</dd></div>
             </dl>
             @if ($package->savingAmount() > 0)
-                <p class="mt-3 text-sm persian-number" style="color: #6EE7B7;">{{ number_format($package->savingAmount()) }} تومان کمتر از {{ to_persian_num((string) $package->sessions_count) }} جلسه‌ی تکی.</p>
+                <p class="mt-3 text-sm persian-number" style="color: #6EE7B7;">{{ fa_num($package->savingAmount()) }} تومان کمتر از {{ to_persian_num((string) $package->sessions_count) }} جلسه‌ی تکی.</p>
             @endif
             @if ($package->min_prepayment_percent)
-                <p class="mt-2 text-sm persian-number" style="{{ $dim }}">می‌توانید اول دست‌کم {{ number_format($package->minPrepaymentFor($package->price)) }} تومان بدهید و باقی را بعداً؛ جلسه‌ها به اندازه‌ی مبلغ پرداخت‌شده رزرو می‌شوند.</p>
+                <p class="mt-2 text-sm persian-number" style="{{ $dim }}">می‌توانید اول دست‌کم {{ fa_num($package->minPrepaymentFor($package->price)) }} تومان بدهید و باقی را بعداً؛ جلسه‌ها به اندازه‌ی مبلغ پرداخت‌شده رزرو می‌شوند.</p>
             @endif
 
             @auth

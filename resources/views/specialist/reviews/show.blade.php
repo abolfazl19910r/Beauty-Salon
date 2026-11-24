@@ -32,7 +32,7 @@
                                 </svg>
                             @endfor
                         </div>
-                        <p class="text-[var(--specialist-text-dim)] text-sm persian-number">{{ verta($review->reviewed_at)->format('Y/m/d - H:i') }}</p>
+                        <p class="text-[var(--specialist-text-dim)] text-sm persian-number">{{ fa_date($review->reviewed_at, true) }}</p>
                     </div>
                 </div>
             </div>
@@ -95,7 +95,7 @@
                         </h3>
                         <div class="rounded-xl p-6" style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);">
                             <p class="text-[var(--specialist-text)] leading-relaxed text-lg mb-3">{{ $review->specialist_response }}</p>
-                            <p class="text-sm text-[var(--specialist-plum-muted)] persian-number">پاسخ داده شده در: {{ verta($review->responded_at)->format('Y/m/d - H:i') }}</p>
+                            <p class="text-sm text-[var(--specialist-plum-muted)] persian-number">پاسخ داده شده در: {{ fa_date($review->responded_at, true) }}</p>
                         </div>
 
                         <div class="flex gap-3 mt-4">
@@ -144,15 +144,15 @@
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
                             <span class="text-[var(--specialist-plum-muted)]">شماره نوبت:</span>
-                            <span class="font-bold text-[var(--specialist-text)] mr-2 persian-number">#{{ $review->booking_id }}</span>
+                            <span class="font-bold text-[var(--specialist-text)] mr-2 persian-number">#{{ fa_num($review->booking_id) }}</span>
                         </div>
                         <div>
                             <span class="text-[var(--specialist-plum-muted)]">تاریخ نوبت:</span>
-                            <span class="font-bold text-[var(--specialist-text)] mr-2 persian-number">{{ verta($review->booking->booking_time)->format('Y/m/d') }}</span>
+                            <span class="font-bold text-[var(--specialist-text)] mr-2 persian-number">{{ fa_date($review->booking->booking_time) }}</span>
                         </div>
                         <div>
                             <span class="text-[var(--specialist-plum-muted)]">شماره تماس:</span>
-                            <span class="font-bold text-[var(--specialist-text)] mr-2" dir="ltr">{{ $review->user->phone }}</span>
+                            <span class="font-bold text-[var(--specialist-text)] mr-2" dir="ltr">{{ \App\Support\Fa::digits($review->user->phone) }}</span>
                         </div>
                         <div>
                             <span class="text-[var(--specialist-plum-muted)]">وضعیت پرداخت:</span>

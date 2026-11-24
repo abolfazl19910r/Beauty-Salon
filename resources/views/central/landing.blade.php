@@ -817,7 +817,7 @@ footer .enamad{margin-top:12px}
 <div class="tc-h"><h3>{{ $trialCard['name'] }}</h3><div class="pr gold num">رایگان <small>{{ to_persian_num((string) $trialCard['days']) }} روز</small></div></div>
 <ul>
 <li>بدون کارت بانکی؛ خرید پلن هر وقت خواستید از داخل پنل</li>
-<li>{{ to_persian_num((string) $trialCard['specialists']) }} متخصص و {{ to_persian_num(number_format($trialCard['sms'])) }} قطعه پیامک</li>
+<li>{{ to_persian_num((string) $trialCard['specialists']) }} متخصص و {{ fa_num($trialCard['sms']) }} قطعه پیامک</li>
 <li>@if ($trialCard['theme_detail']['count'] > 0){{ to_persian_num((string) $trialCard['theme_detail']['count']) }} قالب ظاهری@else قالب «طلایی ماهرو» (تیره و روشن)@endif</li>
 </ul>
 <a class="btn btn-line" href="{{ $trialCard['signup_url'] }}">شروع {{ to_persian_num((string) $trialCard['days']) }} روز رایگان</a>
@@ -837,15 +837,15 @@ footer .enamad{margin-top:12px}
 <p class="for">{{ $card['description'] }}</p>
 @foreach ($card['periods'] as $type => $period)
 <div class="pp" data-p="{{ $type }}">
-<div class="pr gold num">{{ to_persian_num(number_format($period['price'])) }} <small>تومان</small></div>
-<p class="per">@if ($type !== '1m')ماهانه حدود {{ to_persian_num(number_format($period['per_month'])) }} تومان@if ($period['saving_percent'] > 0) · {{ to_persian_num((string) $period['saving_percent']) }}٪ کمتر@endif @else پرداخت ماه‌به‌ماه@endif</p>
+<div class="pr gold num">{{ fa_num($period['price']) }} <small>تومان</small></div>
+<p class="per">@if ($type !== '1m')ماهانه حدود {{ fa_num($period['per_month']) }} تومان@if ($period['saving_percent'] > 0) · {{ to_persian_num((string) $period['saving_percent']) }}٪ کمتر@endif @else پرداخت ماه‌به‌ماه@endif</p>
 </div>
 @endforeach
 <ul>
 @if ($card['previous'])<li>همه‌ی امکانات {{ $card['previous'] }}</li>@else<li>نوبت‌دهی آنلاین، پیامک تأیید و یادآوری، بیعانه</li>@endif
 @foreach ($card['adds'] as $label)<li>{{ $label }}</li>@endforeach
 <li>{{ to_persian_num((string) $card['specialists']) }} متخصص در قیمت پلن</li>
-<li>{{ to_persian_num(number_format($card['sms'])) }} قطعه پیامک در هر ماه</li>
+<li>{{ fa_num($card['sms']) }} قطعه پیامک در هر ماه</li>
 @foreach ($card['periods'] as $type => $period)
 <li class="pp thm" data-p="{{ $type }}" data-themes="{{ $period['themes'] }}"><span>@if ($period['theme_detail']['all'])همه‌ی {{ to_persian_num((string) $period['themes']) }} قالب ظاهری + طلایی ماهرو@elseif ($period['themes'] > 0){{ to_persian_num((string) $period['themes']) }} قالب ظاهری + طلایی ماهرو@else فقط قالب طلایی ماهرو (تیره و روشن)@endif
 @if ($period['themes'] > 0)<small class="td">چیدمان: {{ implode('، ', $period['theme_detail']['layouts']) }}<br>پالت: @foreach ($period['theme_detail']['palettes'] as $pal)<i class="sw" style="background:{{ $pal['swatch'] }}"></i>{{ $pal['name'] }}@if (! $loop->last)، @endif @endforeach</small>@endif</span></li>
@@ -895,8 +895,8 @@ footer .enamad{margin-top:12px}
 @foreach ($plans as $plan)
 <div class="card pl rv" data-plan="{{ $plan['type'] }}">
 <h3>{{ $plan['label'] }}</h3>
-<div class="pr gold num">{{ to_persian_num(number_format($plan['price'])) }} <small>تومان</small></div>
-<ul><li>{{ to_persian_num((string) $maxSpecialists) }} متخصص در قیمت پلن</li><li>{{ to_persian_num(number_format($smsQuota)) }} قطعه پیامک در هر ماه</li></ul>
+<div class="pr gold num">{{ fa_num($plan['price']) }} <small>تومان</small></div>
+<ul><li>{{ to_persian_num((string) $maxSpecialists) }} متخصص در قیمت پلن</li><li>{{ fa_num($smsQuota) }} قطعه پیامک در هر ماه</li></ul>
 @if ($trialDays > 0)
 <a class="btn btn-line btn-block" href="{{ $plan['signup_url'] }}">شروع {{ to_persian_num((string) $trialDays) }} روز رایگان</a>
 <a class="buy" href="{{ $plan['buy_url'] }}">خرید فوری، بدون دوره‌ی رایگان</a>
@@ -907,7 +907,7 @@ footer .enamad{margin-top:12px}
 @endforeach
 </div>
 @endif
-<div class="incl rv"><span>هر متخصص بیشتر ماهانه {{ to_persian_num(number_format($extraSpecialistPrice)) }} تومان</span><span>بدون هزینه‌ی راه‌اندازی</span><span>تیکت پشتیبانی فارسی</span><span>به‌روزرسانی رایگان</span></div>
+<div class="incl rv"><span>هر متخصص بیشتر ماهانه {{ fa_num($extraSpecialistPrice) }} تومان</span><span>بدون هزینه‌ی راه‌اندازی</span><span>تیکت پشتیبانی فارسی</span><span>به‌روزرسانی رایگان</span></div>
 </div></section>
 
 
@@ -935,13 +935,13 @@ footer .enamad{margin-top:12px}
 <div class="faq rv">
 <details open><summary>برای شروع به چه چیزی نیاز دارم؟</summary><p>فقط اطلاعات سالن و فهرست خدمات‌تان. سالن را خودتان در چند دقیقه می‌سازید (یا درخواست دمو بدهید تا با هم بسازیم) و بقیه‌ی تنظیمات داخل پنل انجام می‌شود.</p></details>
 <details><summary>مشتریان باید برنامه‌ای نصب کنند؟</summary><p>لازم نیست؛ رزرو از طریق لینک اختصاصی سالن و روی هر مرورگری انجام می‌شود؛ روی موبایل، تبلت و کامپیوتر. ولی اپ اندروید هم هست و مشتری با لینک یا QR سالن آن را نصب می‌کند؛ روی آیفون هم سایت سالن به صفحه‌ی اصلی اضافه می‌شود.</p></details>
-<details><summary>پیامک یادآوری چطور کار می‌کند؟</summary><p>پس از ثبت نوبت پیامک تأیید ارسال می‌شود و پیش از نوبت هم یادآوری می‌رسد. پیامک‌ها از سهمیه‌ی ماهانه‌ی پلن ({{ to_persian_num(number_format($smsQuota)) }} قطعه) ارسال می‌شوند و هر نوع اعلان را در تنظیمات سالن روشن یا خاموش می‌کنید. متن پیامک‌های نوبت و باشگاه را هم می‌توانید به سلیقه‌ی سالن خودتان بنویسید.</p></details>
+<details><summary>پیامک یادآوری چطور کار می‌کند؟</summary><p>پس از ثبت نوبت پیامک تأیید ارسال می‌شود و پیش از نوبت هم یادآوری می‌رسد. پیامک‌ها از سهمیه‌ی ماهانه‌ی پلن ({{ fa_num($smsQuota) }} قطعه) ارسال می‌شوند و هر نوع اعلان را در تنظیمات سالن روشن یا خاموش می‌کنید. متن پیامک‌های نوبت و باشگاه را هم می‌توانید به سلیقه‌ی سالن خودتان بنویسید.</p></details>
 @if ($trialDays > 0)
 <details><summary>بعد از تمام شدن دوره‌ی رایگان چه می‌شود؟</summary><p>پنل مدیریت فقط صفحه‌ی خرید اشتراک را نشان می‌دهد و آدرس رزرو سالن برای مشتری‌ها موقتاً بسته می‌شود. هیچ اطلاعاتی پاک نمی‌شود؛ به محض خرید، همه‌چیز همان‌طور که بود ادامه پیدا می‌کند. اگر وسط دوره‌ی رایگان بخرید، اشتراک از همان روز خرید فعال می‌شود.</p></details>
 <details><summary>در دوره‌ی رایگان محدودیتی هست؟</summary><p>@if ($trialMissing === [])خیر؛ همه‌ی امکانات@if ($salePlanName) پلن {{ $salePlanName }}@endif در دوره‌ی رایگان باز است.@else بیشتر امکانات باز است. این‌ها فقط بعد از خرید اشتراک فعال می‌شوند: {{ implode('، ', $trialMissing) }}.@endif</p></details>
 @endif
 @if ($themeFaq !== '')<details><summary>قالب سایت و پنل به پلن بستگی دارد؟</summary><p>بله. قالب پیش‌فرض «طلایی ماهرو» (تیره و روشن) در همه‌ی پلن‌ها و دوره‌ی رایگان هست. بقیه‌ی قالب‌ها ({{ to_persian_num((string) \App\Support\Themes\ThemeCatalog::siteTotal()) }} قالب برای سایت، پنل مشتری و اپ) با پلن و مدت اشتراک باز می‌شوند: {{ $themeFaq }}. با پایان اشتراک یا پایین آمدن پلن، سایت به قالب پیش‌فرض برمی‌گردد و انتخاب‌تان ذخیره می‌ماند تا با تمدید برگردد.</p></details>@endif
-<details><summary>اگر بیشتر از {{ to_persian_num((string) $maxSpecialists) }} متخصص داشته باشم؟</summary><p>موقع ساخت سالن تعداد متخصص‌ها را وارد کنید؛ هر متخصص بیشتر ماهانه {{ to_persian_num(number_format($extraSpecialistPrice)) }} تومان به قیمت پلن اضافه می‌شود (در پلن‌های چندماهه با همان تخفیف).</p></details>
+<details><summary>اگر بیشتر از {{ to_persian_num((string) $maxSpecialists) }} متخصص داشته باشم؟</summary><p>موقع ساخت سالن تعداد متخصص‌ها را وارد کنید؛ هر متخصص بیشتر ماهانه {{ fa_num($extraSpecialistPrice) }} تومان به قیمت پلن اضافه می‌شود (در پلن‌های چندماهه با همان تخفیف).</p></details>
 <details><summary>پول پیش‌پرداخت مشتری‌ها به حساب چه کسی واریز می‌شود؟</summary><p>مستقیم به حساب درگاه پرداخت خود سالن. اطلاعات درگاه را موقع ساخت سالن یا بعداً از پنل مدیریت وارد می‌کنید؛ تا درگاهی ثبت نشود، پرداخت آنلاین برای مشتری‌های سالن ممکن نیست.</p></details>
 <details><summary>اطلاعات مشتریانم امن است؟</summary><p>داده‌های هر سالن فقط برای خود آن سالن قابل دسترس است، با رمزنگاری منتقل می‌شود و بین سالن‌ها هیچ اشتراکی وجود ندارد.</p></details>
 <details><summary>اگر به کمک نیاز داشتم چه؟</summary><p>تیم پشتیبانی فارسی در راه‌اندازی و کار روزمره کنار شماست؛ از داخل پنل تیکت بزنید@if ($contact['support_phone']) یا تماس بگیرید@endif.</p></details>

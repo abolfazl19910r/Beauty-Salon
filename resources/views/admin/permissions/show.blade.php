@@ -91,7 +91,7 @@
                     <div class="space-y-2 text-sm">
                         <div class="flex justify-between">
                             <span style="color:var(--admin-text-dim)">تعداد نقش‌ها</span>
-                            <span class="font-bold" style="color:var(--admin-accent)">{{ $roles->count() }}</span>
+                            <span class="font-bold" style="color:var(--admin-accent)">{{ fa_num($roles->count()) }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span style="color:var(--admin-text-dim)">کل کاربران</span>
@@ -108,7 +108,7 @@
                 <h2 class="text-base font-semibold" style="color:var(--admin-text)">
                     نقش‌های دارای این دسترسی
                     <span class="mr-2 px-2 py-0.5 text-xs rounded-full" style="background:var(--admin-accent-light);color:var(--admin-accent)">
-                    {{ $roles->count() }}
+                    {{ fa_num($roles->count()) }}
                 </span>
                 </h2>
             </div>
@@ -137,7 +137,7 @@
                             </div>
                             <div class="mt-3 pt-3 text-xs flex items-center gap-1" style="border-top:1px solid var(--admin-border);color:var(--admin-text-dim)">
                                 <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                                {{ $role->users_count }} کاربر
+                                {{ fa_num($role->users_count) }} کاربر
                             </div>
                         </div>
                     @endforeach

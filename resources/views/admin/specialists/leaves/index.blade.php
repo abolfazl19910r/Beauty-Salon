@@ -70,8 +70,8 @@
                         <tr style="border-bottom:1px solid var(--admin-border);"
                             data-ui-hover="background: var(--admin-accent-light)"
                             data-ui-unhover="background: ">
-                            <td class="px-4 py-3 persian-number" style="color:var(--admin-text);">{{ verta($leave->start_date)->format('Y/m/d') }}</td>
-                            <td class="px-4 py-3 persian-number" style="color:var(--admin-text);">{{ verta($leave->end_date)->format('Y/m/d') }}</td>
+                            <td class="px-4 py-3 persian-number" style="color:var(--admin-text);">{{ fa_date($leave->start_date) }}</td>
+                            <td class="px-4 py-3 persian-number" style="color:var(--admin-text);">{{ fa_date($leave->end_date) }}</td>
                             <td class="px-4 py-3" style="color:var(--admin-text-dim);">{{ $leave->reason ?: '—' }}</td>
                             <td class="px-4 py-3">
                                 @if($leave->status === 'pending')

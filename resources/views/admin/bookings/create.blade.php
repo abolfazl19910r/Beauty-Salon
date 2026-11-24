@@ -158,7 +158,7 @@
                         <select id="service_id" name="service_id" class="form-select">
                             @foreach($services as $service)
                                 <option value="{{ $service->id }}" {{ old('service_id') == $service->id ? 'selected' : '' }}>
-                                    {{ $service->name }} — {{ number_format($service->price) }} تومان
+                                    {{ $service->name }} — {{ fa_num($service->price) }} تومان
                                 </option>
                             @endforeach
                         </select>

@@ -47,8 +47,8 @@
                     <tbody>
                     @forelse($leaves as $leave)
                         <tr style="border-bottom:1px solid var(--admin-border);">
-                            <td class="px-4 py-3 persian-number" style="color:var(--admin-text);">{{ verta($leave->start_date)->format('Y/m/d') }}</td>
-                            <td class="px-4 py-3 persian-number" style="color:var(--admin-text);">{{ verta($leave->end_date)->format('Y/m/d') }}</td>
+                            <td class="px-4 py-3 persian-number" style="color:var(--admin-text);">{{ fa_date($leave->start_date) }}</td>
+                            <td class="px-4 py-3 persian-number" style="color:var(--admin-text);">{{ fa_date($leave->end_date) }}</td>
                             <td class="px-4 py-3" style="color:var(--admin-text-dim); max-width:220px;">
                                 {{ $leave->reason ?: '—' }}
                                 @if($leave->status === 'rejected' && $leave->reject_reason)

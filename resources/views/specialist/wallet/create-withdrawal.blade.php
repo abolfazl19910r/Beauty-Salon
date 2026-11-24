@@ -11,7 +11,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm opacity-80 mb-1">موجودی قابل برداشت</p>
-                        <p class="text-3xl font-bold persian-number">{{ number_format($wallet->balance) }}</p>
+                        <p class="text-3xl font-bold persian-number">{{ fa_num($wallet->balance) }}</p>
                         <p class="text-xs opacity-70 mt-1">تومان</p>
                     </div>
                     <div class="bg-m-tx/15 rounded-full p-4">
@@ -64,8 +64,8 @@
                     @enderror
 
                     <p class="text-xs text-[var(--specialist-text-dim)] mt-1 persian-number">
-                        حداقل: {{ number_format($settings->minimum_withdrawal_amount) }} تومان
-                        | حداکثر: {{ number_format(min($wallet->balance, $settings->maximum_withdrawal_amount)) }} تومان
+                        حداقل: {{ fa_num($settings->minimum_withdrawal_amount) }} تومان
+                        | حداکثر: {{ fa_num(min($wallet->balance, $settings->maximum_withdrawal_amount)) }} تومان
                     </p>
                 </div>
 
@@ -82,7 +82,7 @@
                                     <span class="text-xs px-2 py-1 rounded-full bg-m-info/10 text-m-info">پیشنهادی</span>
                                 </div>
                                 <p class="text-sm text-[var(--specialist-text-dim)] mb-1">انتقال به حساب بانکی شما</p>
-                                <p class="text-xs text-[var(--specialist-plum-muted)] persian-number">کارمزد: {{ $settings->withdrawal_fee_percentage }}٪</p>
+                                <p class="text-xs text-[var(--specialist-plum-muted)] persian-number">کارمزد: {{ fa_num($settings->withdrawal_fee_percentage) }}٪</p>
                                 <p class="text-xs text-[var(--specialist-plum-muted)]">مدت زمان: 2-3 روز کاری</p>
                             </div>
                         </label>
@@ -96,7 +96,7 @@
                                         <span class="text-xs px-2 py-1 rounded-full bg-m-warn/10 text-m-warn">سریع</span>
                                     </div>
                                     <p class="text-sm text-[var(--specialist-text-dim)] mb-1">واریز فوری به حساب شما</p>
-                                    <p class="text-xs text-[var(--specialist-plum-muted)] persian-number">کارمزد ثابت: {{ number_format($settings->instant_withdrawal_fee) }} تومان</p>
+                                    <p class="text-xs text-[var(--specialist-plum-muted)] persian-number">کارمزد ثابت: {{ fa_num($settings->instant_withdrawal_fee) }} تومان</p>
                                     <p class="text-xs text-[var(--specialist-plum-muted)]">مدت زمان: کمتر از 1 ساعت</p>
                                 </div>
                             </label>

@@ -27,7 +27,7 @@
             <div class="divide-y divide-m-gold/8">
                 <div class="flex justify-between items-center px-5 py-3.5 text-sm">
                     <span class="text-m-tx/55">مبلغ شارژ</span>
-                    <span class="font-bold text-m-ok text-lg persian-number">{{ number_format($amount) }} تومان</span>
+                    <span class="font-bold text-m-ok text-lg persian-number">{{ fa_num($amount) }} تومان</span>
                 </div>
                 <div class="flex justify-between items-center px-5 py-3.5 text-sm">
                     <span class="text-m-tx/55">کد پیگیری</span>
@@ -43,7 +43,7 @@
         {{-- New inventory --}}
         <div class="bg-m-card rounded-2xl border border-m-gold/20 p-6 mb-8">
             <p class="text-xs text-m-tx/50 mb-2">موجودی جدید کیف پول</p>
-            <p class="text-4xl font-bold text-m-gold2 persian-number">{{ number_format($newBalance) }}</p>
+            <p class="text-4xl font-bold text-m-gold2 persian-number">{{ fa_num($newBalance) }}</p>
             <p class="text-sm text-m-tx/45 mt-1">تومان</p>
         </div>
 

@@ -22,7 +22,7 @@
                     <td class="py-3 px-4">{{ $v->salon?->name }} <span class="text-xs" dir="ltr" style="color: var(--sa-text-dim);">{{ $v->salon?->slug }}</span></td>
                     <td class="py-3 px-4">{{ $v->owner_name }} <span class="text-xs" dir="ltr">{{ $v->maskedNationalCode() }}</span></td>
                     <td class="py-3 px-4">{{ $v->licenseLabel() }}</td>
-                    <td class="py-3 px-4 whitespace-nowrap">{{ \Morilog\Jalali\Jalalian::fromCarbon($v->created_at)->format('Y/m/d H:i') }}</td>
+                    <td class="py-3 px-4 whitespace-nowrap">{{ fa_date($v->created_at, true) }}</td>
                     <td class="py-3 px-4"><a href="{{ route('superadmin.verifications.show', $v) }}" style="color: var(--sa-accent);">بررسی</a></td>
                 </tr>
             @empty

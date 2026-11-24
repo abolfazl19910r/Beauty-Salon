@@ -4,7 +4,7 @@
 
 @section('content')
     @php
-        $fa = fn ($n) => to_persian_num(number_format((float) $n));
+        $fa = fn ($n) => fa_num((float) $n);
         $sec = fn ($s) => $s === null ? '—' : ($s < 60 ? to_persian_num((string) $s).' ثانیه' : to_persian_num((string) round($s / 60, 1)).' دقیقه');
         $reasons = ['shadow' => 'دوره‌ی آزمایشی (همیشه)', 'no_receipt' => 'بدون رسید در مهلت', 'unhealthy' => 'دستگاه ناسالم (فوری)', 'outage' => 'قطعی FCM'];
         $urgencies = ['urgent' => 'فوری ۱ دقیقه', 'normal' => 'عادی ۱۰ دقیقه', 'info' => 'فقط پوش'];

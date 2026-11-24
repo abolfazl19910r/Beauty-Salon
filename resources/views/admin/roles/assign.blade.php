@@ -33,7 +33,7 @@
                                 style="border:1px solid var(--admin-border);background:var(--admin-bg);color:var(--admin-text)">
                             <option value="">انتخاب کنید...</option>
                             @foreach($users as $user)
-                                <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->phone }})</option>
+                                <option value="{{ $user->id }}">{{ $user->name }} ({{ \App\Support\Fa::digits($user->phone) }})</option>
                             @endforeach
                         </select>
                         @error('user_id')<p class="text-xs mt-1 text-m-bad">{{ $message }}</p>@enderror

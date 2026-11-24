@@ -25,9 +25,9 @@
             <tbody>
                 @forelse ($invoices as $invoice)
                     <tr style="border-bottom: 1px solid var(--sa-border);">
-                        <td class="py-3 px-4">{{ jalali_date($invoice->created_at) }}</td>
+                        <td class="py-3 px-4">{{ fa_date($invoice->created_at) }}</td>
                         <td class="py-3 px-4">{{ $invoice->subscription_type }}</td>
-                        <td class="py-3 px-4">{{ number_format($invoice->amount) }} تومان</td>
+                        <td class="py-3 px-4">{{ fa_num($invoice->amount) }} تومان</td>
                         <td class="py-3 px-4">{{ $invoice->payment_method === 'online' ? 'آنلاین (زرین‌پال)' : 'دستی' }}</td>
                         <td class="py-3 px-4">
                             @if ($invoice->status === 'paid')
@@ -41,7 +41,7 @@
                         <td class="py-3 px-4">{{ $invoice->ref_id ?? '—' }}</td>
                         <td class="py-3 px-4">
                             @if ($invoice->period_start && $invoice->period_end)
-                                {{ jalali_date($invoice->period_start) }} تا {{ jalali_date($invoice->period_end) }}
+                                {{ fa_date($invoice->period_start) }} تا {{ fa_date($invoice->period_end) }}
                             @else
                                 —
                             @endif

@@ -45,7 +45,7 @@ class AdminLoyaltyPointsControllerTest extends TestCase
             ->get('/admin/loyalty/points?search=زهرا');
 
         $response->assertOk();
-        $response->assertSee($user->phone);
+        $response->assertSee(\App\Support\Fa::digits($user->phone));
         $response->assertDontSee('09129999999');
     }
 
@@ -59,7 +59,7 @@ class AdminLoyaltyPointsControllerTest extends TestCase
             ->get('/admin/loyalty/points?user_id='.$user->id);
 
         $response->assertOk();
-        $response->assertSee('300'); // earned appears somewhere (formatted)
+        $response->assertSee(fa_num(300)); // earned appears somewhere (formatted)
     }
 
     public function test_selecting_a_nonexistent_user_id_shows_not_found_message(): void

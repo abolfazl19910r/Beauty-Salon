@@ -55,7 +55,7 @@
     </div>
 
     <div class="mt-8 text-center text-m-tx/40 text-sm fade-in">
-        <p>© {{ date('Y') }} {{ $currentSalonTitle }}. تمامی حقوق محفوظ است.</p>
+        <p>© {{ fa_jdate(now(), 'Y') }} {{ $currentSalonTitle }}. تمامی حقوق محفوظ است.</p>
         @include('partials.platform-legal-links')
     </div>
 </div>

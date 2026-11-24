@@ -7,19 +7,19 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div class="sa-card sa-stat">
             <div class="sa-stat__label">درآمد بسته‌ی پیامک این ماه</div>
-            <div class="sa-stat__value" style="color: var(--sa-accent);">{{ number_format($totals['revenue_month']) }} <span class="text-xs font-normal" style="color: var(--sa-text-dim);">تومان</span></div>
+            <div class="sa-stat__value" style="color: var(--sa-accent);">{{ fa_num($totals['revenue_month']) }} <span class="text-xs font-normal" style="color: var(--sa-text-dim);">تومان</span></div>
         </div>
         <div class="sa-card sa-stat">
             <div class="sa-stat__label">درآمد بسته‌ی پیامک تا امروز</div>
-            <div class="sa-stat__value">{{ number_format($totals['revenue_all']) }} <span class="text-xs font-normal" style="color: var(--sa-text-dim);">تومان</span></div>
+            <div class="sa-stat__value">{{ fa_num($totals['revenue_all']) }} <span class="text-xs font-normal" style="color: var(--sa-text-dim);">تومان</span></div>
         </div>
         <div class="sa-card sa-stat">
             <div class="sa-stat__label">قطعه‌ی فروخته‌شده</div>
-            <div class="sa-stat__value">{{ number_format($totals['parts_sold']) }}</div>
+            <div class="sa-stat__value">{{ fa_num($totals['parts_sold']) }}</div>
         </div>
         <div class="sa-card sa-stat">
             <div class="sa-stat__label">قطعه‌ی اعطای دستی</div>
-            <div class="sa-stat__value">{{ number_format($totals['parts_granted']) }}</div>
+            <div class="sa-stat__value">{{ fa_num($totals['parts_granted']) }}</div>
         </div>
     </div>
 
@@ -45,15 +45,15 @@
                 <tr style="border-top: 1px solid var(--sa-border);">
                     <td class="py-3 px-4"><a href="{{ route('superadmin.salons.edit', $row['salon']) }}" style="color: var(--sa-accent);">{{ $row['salon']->name }}</a></td>
                     <td class="py-3 px-4" style="color: var(--sa-text-dim);">{{ $row['salon']->plan?->name ?? '—' }}</td>
-                    <td class="py-3 px-4" dir="ltr" style="text-align: right;">{{ number_format($row['used']) }} / {{ number_format($row['quota']) }}</td>
+                    <td class="py-3 px-4" dir="ltr" style="text-align: right;">{{ fa_num($row['used']) }} / {{ fa_num($row['quota']) }}</td>
                     <td class="py-3 px-4">
                         <div style="height: 6px; border-radius: 99px; background: var(--sa-soft);">
                             <div data-sms-bar style="height: 6px; border-radius: 99px; width: {{ $row['percent'] }}%; background: {{ $row['percent'] >= 100 ? 'var(--sa-danger)' : ($row['percent'] >= 80 ? 'var(--sa-warn)' : 'var(--sa-accent)') }};"></div>
                         </div>
                     </td>
-                    <td class="py-3 px-4">{{ number_format($row['credit_used']) }}</td>
-                    <td class="py-3 px-4">{{ number_format($row['credit_left']) }}</td>
-                    <td class="py-3 px-4" style="color: var(--sa-text-dim);">{{ number_format($row['otp']) }}</td>
+                    <td class="py-3 px-4">{{ fa_num($row['credit_used']) }}</td>
+                    <td class="py-3 px-4">{{ fa_num($row['credit_left']) }}</td>
+                    <td class="py-3 px-4" style="color: var(--sa-text-dim);">{{ fa_num($row['otp']) }}</td>
                 </tr>
             @empty
                 <tr><td colspan="7" class="py-6 text-center" style="color: var(--sa-text-dim);">سالنی نیست.</td></tr>
@@ -92,11 +92,11 @@
             <tbody>
             @forelse ($purchases as $purchase)
                 <tr style="border-top: 1px solid var(--sa-border);">
-                    <td class="py-3 px-4">{{ \Morilog\Jalali\Jalalian::fromCarbon(\Illuminate\Support\Carbon::parse($purchase->paid_at ?? $purchase->created_at))->format('Y/m/d H:i') }}</td>
+                    <td class="py-3 px-4">{{ fa_date(\Illuminate\Support\Carbon::parse($purchase->paid_at ?? $purchase->created_at), true) }}</td>
                     <td class="py-3 px-4">{{ $purchase->salon?->name ?? '—' }}</td>
                     <td class="py-3 px-4">{{ $purchase->source === 'grant' ? 'اعطای دستی'.($purchase->createdBy ? ' ('.$purchase->createdBy->name.')' : '') : 'خرید آنلاین' }}</td>
-                    <td class="py-3 px-4">{{ number_format($purchase->parts) }}</td>
-                    <td class="py-3 px-4">{{ $purchase->amount ? number_format($purchase->amount) : '—' }}</td>
+                    <td class="py-3 px-4">{{ fa_num($purchase->parts) }}</td>
+                    <td class="py-3 px-4">{{ $purchase->amount ? fa_num($purchase->amount) : '—' }}</td>
                     <td class="py-3 px-4">
                         @php $statusColor = ['paid' => 'var(--sa-success)', 'pending' => 'var(--sa-warn)', 'failed' => 'var(--sa-danger)'][$purchase->status] ?? 'var(--sa-text-dim)'; @endphp
                         <span style="color: {{ $statusColor }};">{{ ['paid' => 'پرداخت‌شده', 'pending' => 'در انتظار', 'failed' => 'ناموفق'][$purchase->status] ?? $purchase->status }}</span>

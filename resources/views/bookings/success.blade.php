@@ -28,7 +28,7 @@
                 <div class="space-y-2 persian-number">
                     <div class="flex justify-between items-center">
                         <span style="color: var(--rasta-cream); opacity: 0.6;">شماره نوبت:</span>
-                        <span class="font-medium" style="color: var(--rasta-cream);">#{{ $booking->id }}</span>
+                        <span class="font-medium" style="color: var(--rasta-cream);">#{{ \App\Support\Fa::digits($booking->id) }}</span>
                     </div>
                     @if($booking->payment_reference)
                         <div class="flex justify-between items-center">
@@ -38,15 +38,15 @@
                     @endif
                     <div class="flex justify-between items-center">
                         <span style="color: var(--rasta-cream); opacity: 0.6;">مبلغ پرداختی:</span>
-                        <span class="font-medium" style="color: var(--rasta-cream);">{{ number_format($booking->prepayment_amount) }} تومان</span>
+                        <span class="font-medium" style="color: var(--rasta-cream);">{{ fa_num($booking->prepayment_amount) }} تومان</span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span style="color: var(--rasta-cream); opacity: 0.6;">باقی‌مانده (موقع نوبت به متخصص می‌دهید):</span>
-                        <span class="font-medium" style="color: var(--rasta-cream); opacity: 0.85;">{{ number_format($booking->remaining_amount) }} تومان</span>
+                        <span class="font-medium" style="color: var(--rasta-cream); opacity: 0.85;">{{ fa_num($booking->remaining_amount) }} تومان</span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span style="color: var(--rasta-cream); opacity: 0.6;">تاریخ پرداخت:</span>
-                        <span class="font-medium" dir="ltr" style="color: var(--rasta-cream);">{{ verta($booking->paid_at)->format('Y/m/d H:i') }}</span>
+                        <span class="font-medium" dir="ltr" style="color: var(--rasta-cream);">{{ fa_date($booking->paid_at, true) }}</span>
                     </div>
                 </div>
             </div>
@@ -64,11 +64,11 @@
                     </div>
                     <div class="flex justify-between items-center">
                         <span style="color: var(--rasta-cream); opacity: 0.6;">تاریخ:</span>
-                        <span class="font-medium persian-number" dir="ltr" style="color: var(--rasta-cream);">{{ verta($booking->booking_time)->format('Y/m/d') }}</span>
+                        <span class="font-medium persian-number" dir="ltr" style="color: var(--rasta-cream);">{{ fa_date($booking->booking_time) }}</span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span style="color: var(--rasta-cream); opacity: 0.6;">ساعت:</span>
-                        <span class="font-medium persian-number" dir="ltr" style="color: var(--rasta-cream);">{{ verta($booking->booking_time)->format('H:i') }}</span>
+                        <span class="font-medium persian-number" dir="ltr" style="color: var(--rasta-cream);">{{ fa_time($booking->booking_time) }}</span>
                     </div>
                     @if($booking->service->duration)
                         <div class="flex justify-between items-center">

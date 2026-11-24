@@ -12,7 +12,7 @@
                         <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
                         <line x1="7" y1="7" x2="7.01" y2="7"></line>
                     </svg>
-                    شماره نوبت: <span class="persian-number">{{ $booking->id }}</span>
+                    شماره نوبت: <span class="persian-number">{{ \App\Support\Fa::digits($booking->id) }}</span>
                 </p>
             </div>
 
@@ -38,7 +38,7 @@
                         <div class="flex justify-between">
                             <span style="color: var(--rasta-cream); opacity: 0.6;">تاریخ و ساعت:</span>
                             <span class="font-medium persian-number" dir="ltr" style="color: var(--rasta-cream);">
-                                {{ verta($booking->booking_time)->format('Y/m/d H:i') }}
+                                {{ fa_date($booking->booking_time, true) }}
                             </span>
                         </div>
                         <div class="flex justify-between items-center">
@@ -100,22 +100,22 @@
                     <div class="space-y-3">
                         <div class="flex justify-between">
                             <span style="color: var(--rasta-cream); opacity: 0.6;">مبلغ کل:</span>
-                            <span class="font-medium persian-number" style="color: var(--rasta-cream);">{{ number_format($booking->service->price) }} تومان</span>
+                            <span class="font-medium persian-number" style="color: var(--rasta-cream);">{{ fa_num($booking->service->price) }} تومان</span>
                         </div>
                         @if($booking->prepayment_required)
                         <div class="flex justify-between">
                             <span style="color: var(--rasta-cream); opacity: 0.6;">پیش پرداخت:</span>
-                            <span class="font-medium persian-number" style="color: var(--rasta-cream);">{{ number_format($booking->prepayment_amount) }} تومان</span>
+                            <span class="font-medium persian-number" style="color: var(--rasta-cream);">{{ fa_num($booking->prepayment_amount) }} تومان</span>
                         </div>
                         @endif
                         <div class="flex justify-between">
                             <span style="color: var(--rasta-cream); opacity: 0.6;">{{ $booking->prepayment_required ? 'باقی‌مانده (موقع نوبت به متخصص می‌دهید):' : 'پرداخت در سالن (بدون پیش‌پرداخت):' }}</span>
-                            <span class="font-medium persian-number" style="color: var(--rasta-cream); opacity: 0.85;">{{ number_format($booking->remaining_amount) }} تومان</span>
+                            <span class="font-medium persian-number" style="color: var(--rasta-cream); opacity: 0.85;">{{ fa_num($booking->remaining_amount) }} تومان</span>
                         </div>
                         @if($booking->discount_code)
                             <div class="flex justify-between">
                                 <span style="color: var(--rasta-cream); opacity: 0.6;">کد تخفیف اعمال‌شده:</span>
-                                <span class="font-medium persian-number" dir="ltr" style="color: rgb(var(--m-ok));">{{ $booking->discount_code }} (-{{ number_format($booking->discount_amount) }} تومان)</span>
+                                <span class="font-medium persian-number" dir="ltr" style="color: rgb(var(--m-ok));">{{ $booking->discount_code }} (-{{ fa_num($booking->discount_amount) }} تومان)</span>
                             </div>
                         @endif
                         <div class="flex justify-between items-center">
@@ -139,7 +139,7 @@
                         @if($booking->payment_reference)
                             <div class="flex justify-between">
                                 <span style="color: var(--rasta-cream); opacity: 0.6;">شماره پیگیری:</span>
-                                <span class="font-medium persian-number" dir="ltr" style="color: var(--rasta-gold-light);">{{ $booking->payment_reference }}</span>
+                                <span class="font-medium persian-number" dir="ltr" style="color: var(--rasta-gold-light);">{{ fa_num($booking->payment_reference) }}</span>
                             </div>
                         @endif
                     </div>

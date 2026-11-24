@@ -50,7 +50,7 @@
                 </div>
                 <div class="text-left">
                     <p class="text-xs text-m-tx/45">تاریخ خدمت</p>
-                    <p class="font-semibold text-m-gold2 text-sm persian-number">{{ verta($booking->booking_time)->format('Y/m/d') }}</p>
+                    <p class="font-semibold text-m-gold2 text-sm persian-number">{{ fa_date($booking->booking_time) }}</p>
                 </div>
             </div>
         </div>

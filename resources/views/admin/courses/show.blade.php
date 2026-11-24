@@ -15,7 +15,7 @@
             <div class="flex justify-between items-start flex-wrap gap-3">
                 <div>
                     <h1 class="text-xl font-bold" style="color:var(--admin-text);">{{ $course->name }}</h1>
-                    <p class="text-sm mt-1" style="{{ $dim }}">@if ($course->user)<a href="{{ route('admin.customers.show', $course->user_id) }}" style="color:var(--admin-accent);">{{ $course->user->name }}</a>@endif <span dir="ltr">{{ $course->user?->phone }}</span> — {{ $course->servicesLabel() }}@if ($course->specialist) · فقط {{ $course->specialist->name }}@endif</p>
+                    <p class="text-sm mt-1" style="{{ $dim }}">@if ($course->user)<a href="{{ route('admin.customers.show', $course->user_id) }}" style="color:var(--admin-accent);">{{ $course->user->name }}</a>@endif <span dir="ltr">{{ \App\Support\Fa::digits($course->user?->phone) }}</span> — {{ $course->servicesLabel() }}@if ($course->specialist) · فقط {{ $course->specialist->name }}@endif</p>
                 </div>
                 <span class="px-3 py-1 rounded-full text-sm" style="background:var(--admin-accent-light); color:var(--admin-accent);">{{ $course->statusLabel() }}</span>
             </div>
@@ -24,13 +24,13 @@
             </div>
             <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4 text-sm persian-number">
                 <div><div style="{{ $dim }}">انجام/سوخت</div><div class="font-bold">{{ to_persian_num((string) $course->sessions_used) }} از {{ to_persian_num((string) $course->sessions_total) }}@if ($course->sessions_burned) <span class="text-xs" style="color:rgb(var(--m-warn));">({{ to_persian_num((string) $course->sessions_burned) }} سوخت)</span>@endif</div></div>
-                <div><div style="{{ $dim }}">پرداخت‌شده</div><div class="font-bold">{{ number_format($course->amount_paid) }} از {{ number_format($course->price_total) }}</div></div>
-                <div><div style="{{ $dim }}">ارزش هر جلسه</div><div class="font-bold">{{ number_format($course->per_session_value) }}</div></div>
-                <div><div style="{{ $dim }}">موعد جلسه‌ی بعد</div><div class="font-bold">{{ $course->next_due_at && $course->status === 'active' ? verta($course->next_due_at)->format('Y/m/d') : '—' }}</div></div>
-                <div><div style="{{ $dim }}">مهلت تا</div><div class="font-bold">{{ $course->expires_at ? verta($course->expires_at)->format('Y/m/d') : 'بی‌مهلت' }}</div></div>
+                <div><div style="{{ $dim }}">پرداخت‌شده</div><div class="font-bold">{{ fa_num($course->amount_paid) }} از {{ fa_num($course->price_total) }}</div></div>
+                <div><div style="{{ $dim }}">ارزش هر جلسه</div><div class="font-bold">{{ fa_num($course->per_session_value) }}</div></div>
+                <div><div style="{{ $dim }}">موعد جلسه‌ی بعد</div><div class="font-bold">{{ $course->next_due_at && $course->status === 'active' ? fa_date($course->next_due_at) : '—' }}</div></div>
+                <div><div style="{{ $dim }}">مهلت تا</div><div class="font-bold">{{ $course->expires_at ? fa_date($course->expires_at) : 'بی‌مهلت' }}</div></div>
             </div>
             @if ($course->discount_amount > 0)
-                <p class="text-xs mt-3 persian-number" style="{{ $dim }}">قیمت بسته {{ number_format($course->list_price) }} با کد «{{ $course->discount_code }}» ({{ number_format($course->discount_amount) }} تخفیف).</p>
+                <p class="text-xs mt-3 persian-number" style="{{ $dim }}">قیمت بسته {{ fa_num($course->list_price) }} با کد «{{ $course->discount_code }}» ({{ fa_num($course->discount_amount) }} تخفیف).</p>
             @endif
         </div>
 
@@ -42,7 +42,7 @@
                     @if ($blocker)
                         <p class="text-sm" style="color:rgb(var(--m-warn));">{{ $blocker }}</p>
                     @else
-                        <p class="text-xs mb-3" style="{{ $dim }}">زودترین روز طبق فاصله‌ی حداقل: {{ verta($course->earliestNextSession())->format('Y/m/d') }} (مدیر می‌تواند زودتر بگذارد).</p>
+                        <p class="text-xs mb-3" style="{{ $dim }}">زودترین روز طبق فاصله‌ی حداقل: {{ fa_date($course->earliestNextSession()) }} (مدیر می‌تواند زودتر بگذارد).</p>
                         <div class="grid grid-cols-3 gap-2">
                             <select name="specialist_id" class="{{ $input }}" style="{{ $inputStyle }}">
                                 @foreach ($specialists as $specialist)
@@ -59,7 +59,7 @@
                 <form method="POST" action="{{ route('admin.courses.payments.store', $course) }}" class="rounded-xl p-5" style="{{ $box }}">
                     @csrf
                     <h2 class="font-bold mb-1" style="color:var(--admin-text);">ثبت پرداخت حضوری</h2>
-                    <p class="text-xs mb-3 persian-number" style="{{ $dim }}">مانده: {{ number_format($course->balanceDue()) }} تومان@if ($course->status === 'pending_payment') — حداقل پرداخت اول {{ number_format($course->min_prepayment) }}@endif</p>
+                    <p class="text-xs mb-3 persian-number" style="{{ $dim }}">مانده: {{ fa_num($course->balanceDue()) }} تومان@if ($course->status === 'pending_payment') — حداقل پرداخت اول {{ fa_num($course->min_prepayment) }}@endif</p>
                     <div class="grid grid-cols-2 gap-2">
                         <input name="amount" dir="ltr" inputmode="numeric" class="{{ $input }}" style="{{ $inputStyle }}" placeholder="مبلغ (تومان)" value="{{ $course->balanceDue() > 0 ? (int) $course->balanceDue() : '' }}">
                         <input name="note" class="{{ $input }}" style="{{ $inputStyle }}" placeholder="یادداشت (اختیاری)">
@@ -73,7 +73,7 @@
             <div class="flex justify-between items-center flex-wrap gap-2 mb-3">
                 <h2 class="font-bold" style="color:var(--admin-text);">جلسه‌ها</h2>
                 @if ($course->hasPhotoConsent())
-                    <span class="text-xs" style="{{ $dim }}">رضایت عکس: {{ verta($course->photo_consent_at)->format('Y/m/d') }}</span>
+                    <span class="text-xs" style="{{ $dim }}">رضایت عکس: {{ fa_date($course->photo_consent_at) }}</span>
                 @else
                     <form method="POST" action="{{ route('admin.courses.consent', $course) }}" class="w-full">
                         @csrf
@@ -88,7 +88,7 @@
             @forelse ($bookings as $booking)
                 <div class="py-4 {{ $loop->last ? '' : 'border-b' }}" style="border-color:var(--admin-border);" data-session="{{ $booking->id }}">
                     <div class="flex justify-between text-sm persian-number flex-wrap gap-2">
-                        <a href="{{ route('admin.bookings.show', $booking) }}" style="color:var(--admin-accent);">{{ $booking->course_session_number ? $course->sessionLabel($booking->course_session_number) : 'جلسه' }} — {{ verta($booking->booking_time)->format('Y/m/d') }} {{ $booking->booking_time->format('H:i') }} · {{ $booking->specialist?->name }}</a>
+                        <a href="{{ route('admin.bookings.show', $booking) }}" style="color:var(--admin-accent);">{{ $booking->course_session_number ? $course->sessionLabel($booking->course_session_number) : 'جلسه' }} — {{ fa_date($booking->booking_time) }} {{ $booking->booking_time->format('H:i') }} · {{ $booking->specialist?->name }}</a>
                         <span style="{{ $dim }}">{{ $booking->course_session_burned ? 'سوخت (لغو دیرهنگام)' : ($statusLabels[$booking->status] ?? $booking->status) }}</span>
                     </div>
                     @if ($booking->status !== 'cancelled')
@@ -128,8 +128,8 @@
                 <h2 class="font-bold mb-3" style="color:var(--admin-text);">پرداخت‌ها</h2>
                 @forelse ($course->payments->sortByDesc('id') as $payment)
                     <div class="flex justify-between text-sm py-1 persian-number">
-                        <span>{{ verta($payment->created_at)->format('Y/m/d H:i') }} — {{ $payment->methodLabel() }}@if ($payment->recordedBy) · {{ $payment->recordedBy->name }}@endif</span>
-                        <span>{{ number_format($payment->amount) }}</span>
+                        <span>{{ fa_date($payment->created_at, true) }} — {{ $payment->methodLabel() }}@if ($payment->recordedBy) · {{ $payment->recordedBy->name }}@endif</span>
+                        <span>{{ fa_num($payment->amount) }}</span>
                     </div>
                 @empty
                     <p class="text-sm" style="{{ $dim }}">پرداختی ثبت نشده است.</p>
@@ -149,7 +149,7 @@
                     <form method="POST" action="{{ route('admin.courses.cancel', $course) }}">
                         @csrf
                         <h2 class="font-bold mb-2" style="color:rgb(var(--m-bad));">لغو دوره و برگشت پول</h2>
-                        <p class="text-xs mb-2 persian-number" style="{{ $dim }}">پیشنهاد: {{ number_format($refundable) }} تومان (پرداخت‌شده − جلسه‌های مصرف‌شده × ارزش هر جلسه) به کیف پول مشتری. نوبت‌های آینده‌ی دوره هم لغو می‌شوند.</p>
+                        <p class="text-xs mb-2 persian-number" style="{{ $dim }}">پیشنهاد: {{ fa_num($refundable) }} تومان (پرداخت‌شده − جلسه‌های مصرف‌شده × ارزش هر جلسه) به کیف پول مشتری. نوبت‌های آینده‌ی دوره هم لغو می‌شوند.</p>
                         <div class="grid grid-cols-2 gap-2">
                             <input name="refund" dir="ltr" inputmode="numeric" class="{{ $input }}" style="{{ $inputStyle }}" value="{{ (int) $refundable }}">
                             <input name="reason" class="{{ $input }}" style="{{ $inputStyle }}" placeholder="دلیل">
@@ -164,7 +164,7 @@
             <div class="rounded-xl p-5" style="{{ $box }}">
                 <h2 class="font-bold mb-2" style="color:var(--admin-text);">تاریخچه</h2>
                 @foreach ($activity as $entry)
-                    <div class="text-xs py-1 persian-number" style="{{ $dim }}">{{ verta($entry->created_at)->format('Y/m/d H:i') }} — {{ ['course_cancelled' => 'لغو دوره', 'course_extended' => 'تمدید مهلت', 'course_photo_consent' => 'ثبت رضایت عکس', 'course_photo_consent_withdrawn' => 'پس گرفتن رضایت عکس (مشتری)', 'course_photo_consent_requested' => 'درخواست رضایت عکس', 'course_photo_consent_declined' => 'مخالفت با رضایت عکس (مشتری)', 'course_sold_in_person' => 'فروش حضوری', 'course_payment_in_person' => 'پرداخت حضوری'][$entry->description] ?? $entry->description }}@if ($entry->causer) · {{ $entry->causer->name ?? '' }}@endif</div>
+                    <div class="text-xs py-1 persian-number" style="{{ $dim }}">{{ fa_date($entry->created_at, true) }} — {{ ['course_cancelled' => 'لغو دوره', 'course_extended' => 'تمدید مهلت', 'course_photo_consent' => 'ثبت رضایت عکس', 'course_photo_consent_withdrawn' => 'پس گرفتن رضایت عکس (مشتری)', 'course_photo_consent_requested' => 'درخواست رضایت عکس', 'course_photo_consent_declined' => 'مخالفت با رضایت عکس (مشتری)', 'course_sold_in_person' => 'فروش حضوری', 'course_payment_in_person' => 'پرداخت حضوری'][$entry->description] ?? $entry->description }}@if ($entry->causer) · {{ $entry->causer->name ?? '' }}@endif</div>
                 @endforeach
             </div>
         @endif

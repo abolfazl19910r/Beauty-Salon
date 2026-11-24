@@ -30,10 +30,10 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             @php
                 $statCards = [
-                    ['icon'=>'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z','bg'=>'rgb(var(--m-gold) / .1)','ic'=>'rgb(var(--m-gold))','label'=>'کل امتیازات فعال','value'=>number_format($totalActivePoints)],
-                    ['icon'=>'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75','bg'=>'rgb(var(--m-info) / .1)','ic'=>'rgb(var(--m-info))','label'=>'کاربران دارای امتیاز','value'=>number_format($totalPointUsers)],
-                    ['icon'=>'M23 6 13.5 15.5 8.5 10.5 1 18M17 6h6v6','bg'=>'rgb(var(--m-ok) / .1)','ic'=>'rgb(var(--m-ok))','label'=>'میانگین امتیاز','value'=>number_format($averageUserPoints)],
-                    ['icon'=>'M1 4h22v16H1zM1 10h22','bg'=>'rgb(var(--m-warn) / .1)','ic'=>'rgb(var(--m-warn))','label'=>'پاداش‌های استفاده شده','value'=>number_format($totalRedeemedRewards)],
+                    ['icon'=>'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z','bg'=>'rgb(var(--m-gold) / .1)','ic'=>'rgb(var(--m-gold))','label'=>'کل امتیازات فعال','value'=>fa_num($totalActivePoints)],
+                    ['icon'=>'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75','bg'=>'rgb(var(--m-info) / .1)','ic'=>'rgb(var(--m-info))','label'=>'کاربران دارای امتیاز','value'=>fa_num($totalPointUsers)],
+                    ['icon'=>'M23 6 13.5 15.5 8.5 10.5 1 18M17 6h6v6','bg'=>'rgb(var(--m-ok) / .1)','ic'=>'rgb(var(--m-ok))','label'=>'میانگین امتیاز','value'=>fa_num($averageUserPoints)],
+                    ['icon'=>'M1 4h22v16H1zM1 10h22','bg'=>'rgb(var(--m-warn) / .1)','ic'=>'rgb(var(--m-warn))','label'=>'پاداش‌های استفاده شده','value'=>fa_num($totalRedeemedRewards)],
                 ];
             @endphp
             @foreach($statCards as $card)
@@ -151,12 +151,12 @@
                         @foreach($rewards as $reward)
                             <tr style="border-bottom:1px solid var(--admin-border)">
                                 <td class="p-4" style="color:var(--admin-text)">{{ $reward->title }}</td>
-                                <td class="p-4" style="color:var(--admin-text)">{{ number_format($reward->required_points) }}</td>
+                                <td class="p-4" style="color:var(--admin-text)">{{ fa_num($reward->required_points) }}</td>
                                 <td class="p-4" style="color:var(--admin-text)">
-                                    {{ number_format($reward->discount_amount) }}{{ $reward->discount_type === 'percentage' ? ' %' : ' تومان' }}
+                                    {{ fa_num($reward->discount_amount) }}{{ $reward->discount_type === 'percentage' ? ' %' : ' تومان' }}
                                 </td>
                                 <td class="p-4" style="color:var(--admin-text)">
-                                    {{ number_format($reward->used_count) }} / {{ number_format($reward->max_uses) }}
+                                    {{ fa_num($reward->used_count) }} / {{ fa_num($reward->max_uses) }}
                                 </td>
                                 <td class="p-4">
                                         <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $reward->is_active ? 'bg-m-ok/10 text-m-ok' : 'bg-m-bad/10 text-m-bad' }}">

@@ -38,9 +38,9 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             @php
                 $statCards = [
-                    ['label' => 'تعداد مقالات', 'value' => number_format($stats['post_count'])],
-                    ['label' => 'دسته‌بندی‌ها', 'value' => number_format($stats['category_count'])],
-                    ['label' => 'مجموع بازدیدها', 'value' => number_format($stats['total_views'])],
+                    ['label' => 'تعداد مقالات', 'value' => fa_num($stats['post_count'])],
+                    ['label' => 'دسته‌بندی‌ها', 'value' => fa_num($stats['category_count'])],
+                    ['label' => 'مجموع بازدیدها', 'value' => fa_num($stats['total_views'])],
                 ];
             @endphp
             @foreach($statCards as $card)
@@ -82,7 +82,7 @@
                                 </td>
                                 <td class="p-4" style="color:var(--admin-text-dim);">{{ $post->category->name ?? '—' }}</td>
                                 <td class="p-4 persian-number" style="color:var(--admin-text-dim);">{{ $post->published_at_jalali ?? '—' }}</td>
-                                <td class="p-4 persian-number" style="color:var(--admin-text-dim);">{{ number_format($post->views ?? 0) }}</td>
+                                <td class="p-4 persian-number" style="color:var(--admin-text-dim);">{{ fa_num($post->views ?? 0) }}</td>
                                 <td class="p-4">
                                     <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $post->is_published ? 'bg-m-ok/10 text-m-ok' : 'bg-m-warn/10 text-m-warn' }}">
                                         {{ $post->is_published ? 'منتشر شده' : 'پیش‌نویس' }}

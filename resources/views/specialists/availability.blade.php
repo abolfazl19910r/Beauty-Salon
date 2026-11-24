@@ -60,7 +60,7 @@
                         [$bg, $label] = ['rgb(var(--m-tx) / .07)', 'پر / غیرکاری'];
                     }
                 @endphp
-                <div class="rounded-lg py-2 px-1" style="background: {{ $bg }}; {{ $isPast ? 'opacity:.45;' : '' }}" title="{{ jalali_date($date) }}">
+                <div class="rounded-lg py-2 px-1" style="background: {{ $bg }}; {{ $isPast ? 'opacity:.45;' : '' }}" title="{{ fa_date($date) }}">
                     <div class="font-bold">{{ to_persian_num((string) $jDay) }}</div>
                     <div class="text-[10px] opacity-80">{{ $label }}</div>
                 </div>

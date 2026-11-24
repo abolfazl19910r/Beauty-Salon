@@ -31,19 +31,19 @@
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-info));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کل نظرات</p>
-                <p class="text-2xl font-bold persian-number" style="color:var(--admin-text);">{{ number_format($totalReviews) }}</p>
+                <p class="text-2xl font-bold persian-number" style="color:var(--admin-text);">{{ fa_num($totalReviews) }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-ok));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">تایید شده</p>
-                <p class="text-2xl font-bold persian-number" style="color:var(--admin-text);">{{ number_format($approvedReviews) }}</p>
+                <p class="text-2xl font-bold persian-number" style="color:var(--admin-text);">{{ fa_num($approvedReviews) }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-bad));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">نظرات منفی</p>
-                <p class="text-2xl font-bold persian-number" style="color:var(--admin-text);">{{ number_format($negativeReviews) }}</p>
+                <p class="text-2xl font-bold persian-number" style="color:var(--admin-text);">{{ fa_num($negativeReviews) }}</p>
             </div>
             <div class="rounded-xl p-4" style="background:var(--admin-surface); border:1px solid var(--admin-border); border-right:3px solid rgb(var(--m-warn));">
                 <p class="text-xs mb-1" style="color:var(--admin-text-dim);">میانگین امتیاز</p>
-                <p class="text-2xl font-bold persian-number" style="color:var(--admin-text);">{{ number_format($averageRating, 1) }}</p>
+                <p class="text-2xl font-bold persian-number" style="color:var(--admin-text);">{{ fa_num($averageRating, 1) }}</p>
             </div>
         </div>
 
@@ -121,11 +121,11 @@
                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold persian-number"
                                       style="background:{{ $r>=4 ? 'rgb(var(--m-ok) / .1)' : ($r>=3 ? 'rgb(var(--m-warn) / .1)' : 'rgb(var(--m-bad) / .1)') }};
                                          color:{{ $r>=4 ? 'rgb(var(--m-ok))' : ($r>=3 ? 'rgb(var(--m-warn))' : 'rgb(var(--m-bad))') }};">
-                                ★ {{ $r }}
+                                ★ {{ fa_num($r) }}
                             </span>
                             </td>
                             <td class="px-4 py-3 persian-number text-xs" style="color:var(--admin-text-dim);">
-                                {{ verta($review->reviewed_at ?? $review->created_at)->format('Y/m/d') }}
+                                {{ fa_date($review->reviewed_at ?? $review->created_at) }}
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex flex-col gap-1">

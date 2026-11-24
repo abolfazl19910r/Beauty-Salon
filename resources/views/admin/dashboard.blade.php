@@ -130,7 +130,7 @@
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-xs mb-1" style="color:var(--admin-text-dim);">نوبت‌های امروز</p>
-                    <p class="text-2xl font-bold persian-number" id="today-bookings-count" style="color:var(--admin-text);">{{ $todayBookingsCount }}</p>
+                    <p class="text-2xl font-bold persian-number" id="today-bookings-count" style="color:var(--admin-text);">{{ fa_num($todayBookingsCount) }}</p>
                 </div>
                 <a href="{{ route('admin.bookings.index') }}" class="text-xs px-2 py-1 rounded" style="color:var(--admin-accent); background:var(--admin-accent-light);">مشاهده</a>
             </div>
@@ -146,9 +146,9 @@
                 <div class="flex-1 min-w-0">
                     <p class="text-xs mb-1" style="color:var(--admin-text-dim);">
                         درآمد سالن
-                        <span class="text-xs px-1.5 py-0.5 rounded mr-1" style="background:rgb(var(--m-ok) / .14); color:rgb(var(--m-ok));">%{{ $commissionRate ?? 10 }} کمیسیون</span>
+                        <span class="text-xs px-1.5 py-0.5 rounded mr-1" style="background:rgb(var(--m-ok) / .14); color:rgb(var(--m-ok));">{{ fa_num($commissionRate ?? 10, 2) }}٪ کمیسیون</span>
                     </p>
-                    <p class="text-2xl font-bold persian-number" id="total-revenue" style="color:var(--admin-text);">{{ number_format($totalRevenue ?? 0) }}</p>
+                    <p class="text-2xl font-bold persian-number" id="total-revenue" style="color:var(--admin-text);">{{ fa_num($totalRevenue ?? 0) }}</p>
                 </div>
                 <a href="{{ route('admin.reports.index') }}" class="text-xs px-2 py-1 rounded" style="color:rgb(var(--m-ok)); background:rgb(var(--m-ok) / .1);">گزارش</a>
             </div>
@@ -163,7 +163,7 @@
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کاربران</p>
-                    <p class="text-2xl font-bold persian-number" id="users-count" style="color:var(--admin-text);">{{ $usersCount }}</p>
+                    <p class="text-2xl font-bold persian-number" id="users-count" style="color:var(--admin-text);">{{ fa_num($usersCount) }}</p>
                 </div>
                 <a href="{{ route('admin.users.index') }}" class="text-xs px-2 py-1 rounded" style="color:rgb(var(--m-gold)); background:rgb(var(--m-gold) / .1);">مشاهده</a>
             </div>
@@ -177,7 +177,7 @@
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-xs mb-1" style="color:var(--admin-text-dim);">متخصصین</p>
-                    <p class="text-2xl font-bold persian-number" id="specialists-count" style="color:var(--admin-text);">{{ $specialistsCount }}</p>
+                    <p class="text-2xl font-bold persian-number" id="specialists-count" style="color:var(--admin-text);">{{ fa_num($specialistsCount) }}</p>
                 </div>
                 <a href="{{ route('admin.specialists.index') }}" class="text-xs px-2 py-1 rounded" style="color:rgb(var(--m-warn)); background:rgb(var(--m-warn) / .1);">مشاهده</a>
             </div>
@@ -212,9 +212,9 @@
                             <div class="flex justify-between text-sm mb-1">
                                 <span style="color:var(--admin-text);">{{ $service->name }}</span>
                                 <span class="flex items-center gap-2">
-                                    <span style="color:var(--admin-text-dim);">{{ $service->bookings_count }} نوبت</span>
+                                    <span style="color:var(--admin-text-dim);">{{ fa_num($service->bookings_count) }} نوبت</span>
                                     <span class="text-xs persian-number" style="color: {{ $service->trend >= 0 ? 'rgb(var(--m-ok))' : 'rgb(var(--m-bad))' }};">
-                                        {{ $service->trend >= 0 ? '▲' : '▼' }}{{ number_format(abs($service->trend), 0) }}٪
+                                        {{ $service->trend >= 0 ? '▲' : '▼' }}{{ fa_num(abs($service->trend), 0) }}٪
                                     </span>
                                 </span>
                             </div>
@@ -261,17 +261,17 @@
                                         <span style="color:var(--admin-text);">{{ $specialist->name }}</span>
                                     </div>
                                 </td>
-                                <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ $specialist->bookings_count }}</td>
+                                <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ fa_num($specialist->bookings_count) }}</td>
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-2">
                                         <div class="progress-bar-track" style="width:64px;">
                                             <div class="progress-bar-fill" style="width:{{ $specialist->completion_rate }}%; background:rgb(var(--m-ok));"></div>
                                         </div>
-                                        <span class="text-xs persian-number" style="color:var(--admin-text-dim);">{{ number_format($specialist->completion_rate, 0) }}%</span>
+                                        <span class="text-xs persian-number" style="color:var(--admin-text-dim);">{{ fa_num($specialist->completion_rate, 0) }}٪</span>
                                     </div>
                                 </td>
-                                <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ $specialist->rating ?? '—' }}</td>
-                                <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ number_format($specialist->revenue ?? 0) }}</td>
+                                <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ $specialist->rating !== null ? fa_num($specialist->rating, 1) : '—' }}</td>
+                                <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ fa_num($specialist->revenue ?? 0) }}</td>
                                 <td class="px-4 py-3">
                                     @if($specialist->completion_rate >= 80)
                                         <span class="badge-status" style="background:rgb(var(--m-ok) / .1);color:rgb(var(--m-ok));">عالی</span>
@@ -348,7 +348,7 @@
                                 </div>
                             </div>
                             <span class="badge-status" style="background:var(--admin-accent-light); color:var(--admin-accent);">
-                            {{ $role->users_count }} کاربر
+                            {{ fa_num($role->users_count) }} کاربر
                         </span>
                         </div>
                     @empty

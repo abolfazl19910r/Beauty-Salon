@@ -4,7 +4,7 @@
     $pg: enabled, latest (?PlatformGatewayRequest), active, summary (ریال), settlements, maxFee
 --}}
 @php
-    $toman = fn (int $rial) => to_persian_num(number_format(intdiv($rial, 10))).' تومان';
+    $toman = fn (int $rial) => fa_num(intdiv($rial, 10)).' تومان';
     $pct = fn ($v) => to_persian_num(rtrim(rtrim(number_format((float) $v, 2, '.', ''), '0'), '.')).'٪';
     $latest = $pg['latest'];
     $canRequest = $pg['enabled'] && (! $latest || in_array($latest->status, ['rejected', 'revoked'], true));
@@ -48,9 +48,9 @@
                 <tbody>
                 @foreach ($pg['settlements'] as $s)
                     <tr style="border-top:1px solid var(--admin-border);">
-                        <td class="py-2">#{{ to_persian_num((string) $s->id) }} · {{ \Morilog\Jalali\Jalalian::fromCarbon($s->created_at)->format('Y/m/d') }}</td>
+                        <td class="py-2">#{{ to_persian_num((string) $s->id) }} · {{ fa_date($s->created_at) }}</td>
                         <td class="py-2">{{ $toman($s->salon_share_rial) }}</td>
-                        <td class="py-2">{{ $s->statusLabel() }}@if ($s->paid_at) ({{ \Morilog\Jalali\Jalalian::fromCarbon($s->paid_at)->format('Y/m/d') }})@endif</td>
+                        <td class="py-2">{{ $s->statusLabel() }}@if ($s->paid_at) ({{ fa_date($s->paid_at) }})@endif</td>
                         <td class="py-2" dir="ltr">{{ $s->bank_reference ?: '—' }}</td>
                     </tr>
                 @endforeach

@@ -48,7 +48,7 @@
             @if (($reviewStats['count'] ?? 0) > 0)
                 <div class="b-t flex flex-col justify-between">
                     <span class="b-lab">امتیاز مشتری‌ها</span>
-                    <span><span class="b-k text-5xl text-m-gold block persian-number">{{ to_persian_num(number_format($reviewStats['avg'], 1)) }}</span><span class="text-sm text-m-mu">از {{ to_persian_num((string) $reviewStats['count']) }} نظر</span></span>
+                    <span><span class="b-k text-5xl text-m-gold block persian-number">{{ fa_num($reviewStats['avg'], 1) }}</span><span class="text-sm text-m-mu">از {{ to_persian_num((string) $reviewStats['count']) }} نظر</span></span>
                 </div>
             @else
                 <div class="b-t flex flex-col justify-between">
@@ -69,7 +69,7 @@
             @forelse ($bServices->take(3) as $service)
                 <a href="{{ route('bookings.create', ['service' => $service->id]) }}" class="b-t flex flex-col gap-4 justify-between">
                     <span class="b-ic" aria-hidden="true"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><circle cx="6" cy="7" r="3"/><circle cx="6" cy="17" r="3"/><path d="M8.5 8.5L20 18M8.5 15.5L20 6"/></svg></span>
-                    <span><b class="block text-m-tx">{{ $service->name }}</b><span class="text-sm text-m-mu persian-number">{{ to_persian_num((string) $service->duration) }} دقیقه · {{ to_persian_num(number_format($service->price)) }} ت</span></span>
+                    <span><b class="block text-m-tx">{{ $service->name }}</b><span class="text-sm text-m-mu persian-number">{{ to_persian_num((string) $service->duration) }} دقیقه · {{ fa_num($service->price) }} ت</span></span>
                 </a>
             @empty
                 <div class="b-t b-span2"><p class="text-m-mu">فهرست خدمات به‌زودی اضافه می‌شود.</p></div>

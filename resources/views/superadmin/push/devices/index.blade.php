@@ -4,7 +4,7 @@
 
 @section('content')
     @php
-        $fa = fn ($n) => to_persian_num(number_format((float) $n));
+        $fa = fn ($n) => fa_num((float) $n);
         $statuses = \App\Http\Controllers\SuperAdmin\PushDeviceController::STATUSES;
         $statusColor = ['active' => 'var(--sa-success)', 'never_acked' => 'var(--sa-warn)', 'disabled' => 'var(--sa-danger)', 'expired' => 'var(--sa-text-dim)'];
         $apps = ['customer' => 'ماهرو (مشتری)', 'staff' => 'ماهرو همکار'];
@@ -115,7 +115,7 @@
                 <tr style="border-top: 1px solid var(--sa-border);" data-device-row="{{ $device->id }}">
                     <td class="py-3 px-4">
                         <a href="{{ route('superadmin.push.devices.show', $device) }}" style="color: var(--sa-accent);" class="font-bold">{{ $device->user?->name ?? '—' }}</a>
-                        <div class="text-xs" dir="ltr" style="text-align: right; color: var(--sa-text-dim);">{{ $device->user?->phone }}</div>
+                        <div class="text-xs" dir="ltr" style="text-align: right; color: var(--sa-text-dim);">{{ \App\Support\Fa::digits($device->user?->phone) }}</div>
                         <div class="text-xs" style="color: var(--sa-text-dim);">{{ $roles[$device->user?->user_type] ?? '' }}</div>
                     </td>
                     <td class="py-3 px-4">{{ $device->salon?->name ?? '—' }}</td>

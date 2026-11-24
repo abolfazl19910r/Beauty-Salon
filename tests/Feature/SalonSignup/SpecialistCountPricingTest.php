@@ -81,7 +81,7 @@ class SpecialistCountPricingTest extends TestCase
         $this->assertSame(2000000, (int) $invoice->amount);
 
         $this->actingAs($owner)->get(route('admin.billing.index'))->assertOk()
-            ->assertSee(number_format(2000000))
+            ->assertSee(fa_num(2000000))
             ->assertSee('۱۲ متخصص');
     }
 

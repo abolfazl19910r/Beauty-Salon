@@ -10,7 +10,7 @@
     <div class="mb-3">
         پلن فعلی: <strong>{{ $current?->name ?? 'بدون پلن (همه‌ی امکانات، قیمت از فایل تنظیمات)' }}</strong>
         @if ($scheduled)
-            <span style="color: var(--sa-text-dim);">— از {{ jalali_date($salon->next_plan_starts_at) }} «{{ $scheduled->name }}» (خریده‌شده)</span>
+            <span style="color: var(--sa-text-dim);">— از {{ fa_date($salon->next_plan_starts_at) }} «{{ $scheduled->name }}» (خریده‌شده)</span>
         @endif
     </div>
 
@@ -49,7 +49,7 @@
                     <tr style="border-top:1px solid var(--sa-border); {{ $override->isInEffect() ? '' : 'opacity:.5;' }}">
                         <td class="p-1">{{ $feature?->label() ?? $override->feature }}</td>
                         <td class="p-1">{{ $override->enabled ? 'روشن اجباری' : 'خاموش اجباری' }}</td>
-                        <td class="p-1">{{ $override->expires_at ? jalali_date($override->expires_at, 'Y/m/d H:i') : 'همیشه' }}{{ $override->isInEffect() ? '' : ' (منقضی)' }}</td>
+                        <td class="p-1">{{ $override->expires_at ? fa_date($override->expires_at, true) : 'همیشه' }}{{ $override->isInEffect() ? '' : ' (منقضی)' }}</td>
                         <td class="p-1">{{ $override->note }} @if ($override->setBy)<span style="color: var(--sa-text-dim);">— {{ $override->setBy->name }}</span>@endif</td>
                         <td class="p-1">
                             <form method="POST" action="{{ route('superadmin.salons.feature-overrides.destroy', [$salon, $override]) }}">

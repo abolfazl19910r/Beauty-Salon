@@ -109,20 +109,20 @@
                         <p class="text-sm" style="color:rgb(var(--m-warn));">با این فیلترها مشتری‌ای برای پیامک نیست.</p>
                     @else
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm persian-number">
-                            <div><div class="text-xs" style="{{ $dim }}">گیرنده</div><b>{{ to_persian_num(number_format($preview['capped'])) }}</b>@if ($preview['count'] > $preview['capped']) <span class="text-xs" style="{{ $dim }}">از {{ to_persian_num(number_format($preview['count'])) }}</span>@endif</div>
+                            <div><div class="text-xs" style="{{ $dim }}">گیرنده</div><b>{{ fa_num($preview['capped']) }}</b>@if ($preview['count'] > $preview['capped']) <span class="text-xs" style="{{ $dim }}">از {{ fa_num($preview['count']) }}</span>@endif</div>
                             <div><div class="text-xs" style="{{ $dim }}">قطعه‌ی هر پیامک</div><b>{{ to_persian_num((string) $preview['parts']) }}</b></div>
-                            <div><div class="text-xs" style="{{ $dim }}">کل قطعه</div><b>{{ to_persian_num(number_format($preview['total_parts'])) }}</b></div>
-                            <div><div class="text-xs" style="{{ $dim }}">سهمیه‌ی مانده بعد از کمپین</div><b>{{ to_persian_num(number_format($preview['after'])) }}</b> <span class="text-xs" style="{{ $dim }}">(۲۰٪ = {{ to_persian_num(number_format($preview['reserve'])) }} برای نوبت‌ها)</span></div>
+                            <div><div class="text-xs" style="{{ $dim }}">کل قطعه</div><b>{{ fa_num($preview['total_parts']) }}</b></div>
+                            <div><div class="text-xs" style="{{ $dim }}">سهمیه‌ی مانده بعد از کمپین</div><b>{{ fa_num($preview['after']) }}</b> <span class="text-xs" style="{{ $dim }}">(۲۰٪ = {{ fa_num($preview['reserve']) }} برای نوبت‌ها)</span></div>
                         </div>
                         <div class="rounded-lg p-3 text-sm" style="background:var(--admin-bg); border:1px dashed var(--admin-border); line-height:1.9;">{{ $preview['sample'] }}</div>
                         @if ($preview['allowed'] < $preview['capped'])
                             <div class="rounded-lg p-3 text-sm" style="background:rgb(var(--m-warn) / .14); color:rgb(var(--m-warn));">
-                                سهمیه‌ی این ماه (با نگه داشتن ۲۰٪) فقط برای {{ to_persian_num(number_format($preview['allowed'])) }} نفر جا دارد؛ باقی وقتی جا شد (بسته‌ی پیامک یا ماه بعد) فرستاده می‌شوند.
+                                سهمیه‌ی این ماه (با نگه داشتن ۲۰٪) فقط برای {{ fa_num($preview['allowed']) }} نفر جا دارد؛ باقی وقتی جا شد (بسته‌ی پیامک یا ماه بعد) فرستاده می‌شوند.
                                 @if ($preview['allowed'] > 0)
-                                    <button name="max_recipients" value="{{ $preview['allowed'] }}" class="underline font-bold">فقط {{ to_persian_num(number_format($preview['allowed'])) }} نفر جدیدتر</button>
+                                    <button name="max_recipients" value="{{ $preview['allowed'] }}" class="underline font-bold">فقط {{ fa_num($preview['allowed']) }} نفر جدیدتر</button>
                                 @endif
                                 @if ($preview['buy_parts'] > 0)
-                                    یا <a href="{{ route('admin.billing.index') }}#sms" class="underline font-bold">بسته‌ی {{ to_persian_num(number_format($preview['buy_parts'])) }} قطعه‌ای ({{ to_persian_num(number_format($preview['buy_price'])) }} تومان)</a> بخرید.
+                                    یا <a href="{{ route('admin.billing.index') }}#sms" class="underline font-bold">بسته‌ی {{ fa_num($preview['buy_parts']) }} قطعه‌ای ({{ fa_num($preview['buy_price']) }} تومان)</a> بخرید.
                                 @endif
                             </div>
                         @endif

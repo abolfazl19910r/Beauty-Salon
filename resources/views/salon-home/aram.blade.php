@@ -36,7 +36,7 @@
         <div class="a-info mt-8 persian-number">
             @if ($currentSalonAddress)<span>{{ $currentSalonAddress }}</span>@endif
             @if ($currentSalonHours)<span>{{ $currentSalonHours[0] }}</span>@endif
-            @if (($reviewStats['count'] ?? 0) > 0)<span>{{ to_persian_num(number_format($reviewStats['avg'], 1)) }} از {{ to_persian_num((string) $reviewStats['count']) }} نظر</span>@endif
+            @if (($reviewStats['count'] ?? 0) > 0)<span>{{ fa_num($reviewStats['avg'], 1) }} از {{ to_persian_num((string) $reviewStats['count']) }} نظر</span>@endif
             @if ($currentSalonPhone)<a href="tel:{{ $currentSalonPhone }}" dir="ltr">{{ $currentSalonPhone }}</a>@endif
         </div>
 
@@ -46,7 +46,7 @@
                 <span class="text-m-tx">{{ $service->name }}</span>
                 <span class="flex items-center gap-5 text-sm text-m-mu persian-number">
                     <span>{{ to_persian_num((string) $service->duration) }} دقیقه</span>
-                    <b class="text-m-tx font-medium whitespace-nowrap">{{ to_persian_num(number_format($service->price)) }} ت</b>
+                    <b class="text-m-tx font-medium whitespace-nowrap">{{ fa_num($service->price) }} ت</b>
                 </span>
             </a>
         @empty

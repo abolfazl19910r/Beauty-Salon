@@ -19,7 +19,7 @@
                     <span class="flex-1 text-sm" style="color:rgb(var(--m-tx));">{{ $option['name'] }}</span>
                     <span class="text-xs persian-number" style="color:rgb(var(--m-tx) / 0.6);" data-gateway-fee-label>
                         @if ($option['fee'] > 0)
-                            کارمزد: {{ number_format($option['fee']) }} تومان
+                            کارمزد: {{ fa_num($option['fee']) }} تومان
                         @elseif ($option['fee_percent'] > 0 || $option['fee_fixed'] > 0)
                             دارای کارمزد
                         @else

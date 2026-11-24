@@ -195,7 +195,7 @@
                             </svg>
                             <span id="notification-count"
                                   class="absolute top-0 right-0 hidden items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none rounded-full"
-                                  style="background: rgb(var(--m-bad)); color: rgb(var(--m-on-solid)); min-width: 18px; text-align: center;">0</span>
+                                  style="background: rgb(var(--m-bad)); color: rgb(var(--m-on-solid)); min-width: 18px; text-align: center;">۰</span>
                         </button>
 
                         <div id="notification-dropdown"
@@ -386,7 +386,7 @@
 
         <footer class="py-3 px-4 text-center text-xs border-t"
                 style="background: var(--admin-surface); border-color: var(--admin-border); color: var(--admin-text-light);">
-            <p>© {{ date('Y') }} سیستم مدیریت سالن زیبایی. تمامی حقوق محفوظ است.</p>
+            <p>© {{ fa_jdate(now(), 'Y') }} سیستم مدیریت سالن زیبایی. تمامی حقوق محفوظ است.</p>
         </footer>
     </div>
 </div>
@@ -473,7 +473,7 @@
                 const count = data.count;
 
                 if (count > 0) {
-                    const label = count > 99 ? '99+' : count;
+                    const label = String(count > 99 ? '99+' : count).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
                     countElement.textContent = label;
                     countElement.classList.remove('hidden');
                     countElement.classList.add('flex');

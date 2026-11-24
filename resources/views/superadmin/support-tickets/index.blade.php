@@ -113,7 +113,7 @@
                             @endif
                         </td>
                         <td class="py-3 px-4">{{ $ticket->assignedTo->name ?? '—' }}</td>
-                        <td class="py-3 px-4">{{ jalali_date($ticket->created_at) }}</td>
+                        <td class="py-3 px-4">{{ fa_date($ticket->created_at) }}</td>
                         <td class="py-3 px-4">
                             <a href="{{ route('superadmin.support-tickets.show', $ticket) }}" style="color: var(--sa-accent);">مشاهده</a>
                         </td>

@@ -18,9 +18,9 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
-            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">دوره‌های فعال</div><div class="text-2xl font-bold mt-1 persian-number">{{ to_persian_num(number_format($stats['active'])) }}</div></div>
-            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">موعد گذشته، بدون نوبت</div><div class="text-2xl font-bold mt-1 persian-number" style="color:rgb(var(--m-warn));">{{ to_persian_num(number_format($stats['overdue'])) }}</div></div>
-            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">ارزش جلسه‌های پیش‌فروش‌شده‌ی مانده</div><div class="text-2xl font-bold mt-1 persian-number">{{ to_persian_num(number_format($stats['liability'])) }} <span class="text-xs">تومان</span></div></div>
+            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">دوره‌های فعال</div><div class="text-2xl font-bold mt-1 persian-number">{{ fa_num($stats['active']) }}</div></div>
+            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">موعد گذشته، بدون نوبت</div><div class="text-2xl font-bold mt-1 persian-number" style="color:rgb(var(--m-warn));">{{ fa_num($stats['overdue']) }}</div></div>
+            <div class="rounded-xl p-4" style="{{ $box }}"><div class="text-xs" style="{{ $dim }}">ارزش جلسه‌های پیش‌فروش‌شده‌ی مانده</div><div class="text-2xl font-bold mt-1 persian-number">{{ fa_num($stats['liability']) }} <span class="text-xs">تومان</span></div></div>
         </div>
 
         <form method="GET" class="rounded-xl p-4 mb-5 grid grid-cols-1 md:grid-cols-5 gap-3" style="{{ $box }}">
@@ -54,12 +54,12 @@
                 <tbody>
                     @forelse ($courses as $course)
                         <tr style="border-bottom:1px solid var(--admin-border);" data-course="{{ $course->id }}">
-                            <td class="p-3"><a href="{{ route('admin.courses.show', $course) }}" style="color:var(--admin-accent);">{{ $course->user?->name ?? '—' }}</a><div class="text-xs" dir="ltr" style="{{ $dim }}">{{ $course->user?->phone }}</div></td>
+                            <td class="p-3"><a href="{{ route('admin.courses.show', $course) }}" style="color:var(--admin-accent);">{{ $course->user?->name ?? '—' }}</a><div class="text-xs" dir="ltr" style="{{ $dim }}">{{ \App\Support\Fa::digits($course->user?->phone) }}</div></td>
                             <td class="p-3">{{ $course->name }}</td>
                             <td class="p-3 persian-number">{{ to_persian_num((string) $course->sessions_used) }} از {{ to_persian_num((string) $course->sessions_total) }}</td>
-                            <td class="p-3 persian-number">{{ number_format($course->amount_paid) }} / {{ number_format($course->price_total) }}</td>
-                            <td class="p-3 persian-number">{{ $course->status === 'active' && $course->next_due_at ? verta($course->next_due_at)->format('Y/m/d') : '—' }}</td>
-                            <td class="p-3 persian-number">{{ $course->expires_at ? verta($course->expires_at)->format('Y/m/d') : '—' }}</td>
+                            <td class="p-3 persian-number">{{ fa_num($course->amount_paid) }} / {{ fa_num($course->price_total) }}</td>
+                            <td class="p-3 persian-number">{{ $course->status === 'active' && $course->next_due_at ? fa_date($course->next_due_at) : '—' }}</td>
+                            <td class="p-3 persian-number">{{ $course->expires_at ? fa_date($course->expires_at) : '—' }}</td>
                             <td class="p-3">{{ $course->statusLabel() }}</td>
                         </tr>
                     @empty

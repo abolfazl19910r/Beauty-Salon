@@ -30,7 +30,7 @@
                 <p class="text-sm opacity-80 mb-3">متخصص {{ $currentSalonName }}</p>
                 <div class="flex flex-wrap justify-center sm:justify-start gap-4 text-sm persian-number">
                     @if ($specialist->rating_count > 0)
-                        <span><span style="color: var(--rasta-gold);">★</span> {{ to_persian_num(number_format((float) $specialist->rating_avg, 1)) }} از ۵ ({{ to_persian_num((string) $specialist->rating_count) }} نظر)</span>
+                        <span><span style="color: var(--rasta-gold);">★</span> {{ fa_num((float) $specialist->rating_avg, 1) }} از ۵ ({{ to_persian_num((string) $specialist->rating_count) }} نظر)</span>
                     @endif
                     @if ($specialist->completed_bookings > 0)
                         <span>{{ to_persian_num((string) $specialist->completed_bookings) }} نوبت انجام‌شده</span>
@@ -49,7 +49,7 @@
                 @foreach ($specialist->services as $service)
                     <div class="rounded-xl p-4 flex items-center justify-between" style="background: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / .12);">
                         <span>{{ $service->name }}</span>
-                        <span class="text-sm persian-number" style="color: var(--rasta-gold);">{{ to_persian_num(number_format((int) $service->price)) }} تومان</span>
+                        <span class="text-sm persian-number" style="color: var(--rasta-gold);">{{ fa_num((int) $service->price) }} تومان</span>
                     </div>
                 @endforeach
             </div>

@@ -23,7 +23,7 @@
         <div class="specialist-card overflow-hidden">
             <div class="px-6 py-4 border-b flex justify-between items-center" style="border-color: var(--specialist-border);">
                 <div>
-                    <span class="text-xs text-[var(--specialist-plum-muted)] persian-number">شماره پیگیری: #{{ $booking->id }}</span>
+                    <span class="text-xs text-[var(--specialist-plum-muted)] persian-number">شماره پیگیری: #{{ \App\Support\Fa::digits($booking->id) }}</span>
                     <h1 class="text-xl font-bold text-[var(--specialist-text)] mt-1 font-serif-fa">{{ $booking->service?->name ?? '—' }}</h1>
                 </div>
                 <span class="px-4 py-2 rounded-lg font-bold text-sm {{ $statusInfo['class'] }}">{{ $statusInfo['label'] }}</span>
@@ -34,13 +34,13 @@
                     <div class="space-y-3">
                         <h3 class="text-sm font-bold text-[var(--specialist-plum-light)] font-serif-fa border-b pb-2" style="border-color: var(--specialist-border);">اطلاعات مشتری</h3>
                         <p class="text-[var(--specialist-text-dim)]"><span class="text-[var(--specialist-plum-muted)]">نام مشتری:</span> {{ $booking->user->name }}</p>
-                        <p class="text-[var(--specialist-text-dim)]"><span class="text-[var(--specialist-plum-muted)]">شماره تماس:</span> <span dir="ltr">{{ $booking->user->phone }}</span></p>
+                        <p class="text-[var(--specialist-text-dim)]"><span class="text-[var(--specialist-plum-muted)]">شماره تماس:</span> <span dir="ltr">{{ \App\Support\Fa::digits($booking->user->phone) }}</span></p>
                         <x-no-show-badge :label="app(\App\Services\Booking\NoShowRecord::class)->label($booking->user)" />
                     </div>
 
                     <div class="space-y-3">
                         <h3 class="text-sm font-bold text-[var(--specialist-plum-light)] font-serif-fa border-b pb-2" style="border-color: var(--specialist-border);">زمان و وضعیت مالی</h3>
-                        <p class="text-[var(--specialist-text-dim)] persian-number"><span class="text-[var(--specialist-plum-muted)]">تاریخ نوبت:</span> {{ verta($booking->booking_time)->format('l، d F Y') }}</p>
+                        <p class="text-[var(--specialist-text-dim)] persian-number"><span class="text-[var(--specialist-plum-muted)]">تاریخ نوبت:</span> {{ fa_jdate($booking->booking_time, 'l، d F Y') }}</p>
                         <p class="text-[var(--specialist-text-dim)] persian-number" dir="ltr"><span class="text-[var(--specialist-plum-muted)]" dir="rtl">ساعت:</span> {{ $booking->booking_time->format('H:i') }}</p>
                         <p class="text-[var(--specialist-text-dim)]">
                             <span class="text-[var(--specialist-plum-muted)]">وضعیت پرداخت:</span>
@@ -51,19 +51,19 @@
                         @elseif($booking->service)
                             <p class="text-[var(--specialist-text-dim)] persian-number">
                                 <span class="text-[var(--specialist-plum-muted)]">قیمت کل خدمت:</span>
-                                {{ number_format($booking->service->price) }} تومان
+                                {{ fa_num($booking->service->price) }} تومان
                             </p>
                             {{-- پیش‌پرداخت فقط وقتی واقعاً پرداخت شده؛ نوبت دستیِ مدیر ستون prepayment_amount پیش‌فرض دارد که هرگز خواسته نشده --}}
                             @if($booking->payment_status === 'paid')
                             <p class="text-[var(--specialist-text-dim)] persian-number" data-prepaid>
                                 <span class="text-[var(--specialist-plum-muted)]">پیش‌پرداخت مشتری (از طریق سایت):</span>
-                                {{ number_format($booking->prepayment_amount) }} تومان
+                                {{ fa_num($booking->prepayment_amount) }} تومان
                             </p>
                             @endif
                             @if(! in_array($booking->status, ['cancelled', 'no_show'], true))
                             <p class="text-[var(--specialist-plum-light)] font-bold persian-number" data-due-at-salon>
                                 <span class="text-[var(--specialist-plum-muted)] font-normal">{{ $booking->payment_status === 'paid' ? 'باقی‌مانده (موقع نوبت مستقیماً از مشتری دریافت کنید):' : 'پیش‌پرداخت انجام نشده — کل مبلغ را موقع نوبت از مشتری دریافت کنید:' }}</span>
-                                {{ number_format($booking->due_at_salon) }} تومان
+                                {{ fa_num($booking->due_at_salon) }} تومان
                             </p>
                             @endif
                         @endif

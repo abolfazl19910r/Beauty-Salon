@@ -12,7 +12,7 @@
                     <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
                 </svg>
                 جزئیات نوبت
-                <span class="persian-number text-base font-normal" style="color:var(--admin-text-dim);">#{{ $booking->id }}</span>
+                <span class="persian-number text-base font-normal" style="color:var(--admin-text-dim);">#{{ \App\Support\Fa::digits($booking->id) }}</span>
             </h1>
             <div class="flex items-center gap-2">
                 @permission('edit-bookings')
@@ -69,7 +69,7 @@
                         </div>
                         <div>
                             <p class="font-bold" style="color:var(--admin-text);">{{ $booking->user->name }}</p>
-                            <p class="text-sm" dir="ltr" style="color:var(--admin-text-dim);">{{ $booking->user->phone }}</p>
+                            <p class="text-sm" dir="ltr" style="color:var(--admin-text-dim);">{{ \App\Support\Fa::digits($booking->user->phone) }}</p>
                             <x-no-show-badge :label="app(\App\Services\Booking\NoShowRecord::class)->label($booking->user)" class="mt-1" />
                         </div>
                         <a href="{{ route('admin.users.show', $booking->user) }}"
@@ -87,11 +87,11 @@
                         </div>
                         <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
                             <span style="color:var(--admin-text-dim);">تاریخ عضویت</span>
-                            <span class="persian-number" style="color:var(--admin-text);">{{ verta($booking->user->created_at)->format('Y/m/d') }}</span>
+                            <span class="persian-number" style="color:var(--admin-text);">{{ fa_date($booking->user->created_at) }}</span>
                         </div>
                         <div class="flex justify-between py-1">
                             <span style="color:var(--admin-text-dim);">تعداد نوبت‌ها</span>
-                            <span class="persian-number font-bold" style="color:var(--admin-accent);">{{ $booking->user->bookings()->count() }}</span>
+                            <span class="persian-number font-bold" style="color:var(--admin-accent);">{{ fa_num($booking->user->bookings()->count()) }}</span>
                         </div>
                     </div>
                 @else
@@ -113,11 +113,11 @@
                 <div class="space-y-2.5 text-sm">
                     <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
                         <span style="color:var(--admin-text-dim);">تاریخ</span>
-                        <span class="persian-number font-medium" style="color:var(--admin-text);">{{ verta($booking->booking_time)->format('Y/m/d') }}</span>
+                        <span class="persian-number font-medium" style="color:var(--admin-text);">{{ fa_date($booking->booking_time) }}</span>
                     </div>
                     <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
                         <span style="color:var(--admin-text-dim);">ساعت</span>
-                        <span class="persian-number font-medium" style="color:var(--admin-text);">{{ verta($booking->booking_time)->format('H:i') }}</span>
+                        <span class="persian-number font-medium" style="color:var(--admin-text);">{{ fa_time($booking->booking_time) }}</span>
                     </div>
                     <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
                         <span style="color:var(--admin-text-dim);">خدمت</span>
@@ -129,7 +129,7 @@
                     @if($booking->service)
                         <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
                             <span style="color:var(--admin-text-dim);">قیمت خدمت</span>
-                            <span class="persian-number font-medium" style="color:var(--admin-text);">{{ number_format($booking->service->price) }} تومان</span>
+                            <span class="persian-number font-medium" style="color:var(--admin-text);">{{ fa_num($booking->service->price) }} تومان</span>
                         </div>
                         <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
                             <span style="color:var(--admin-text-dim);">مدت زمان</span>
@@ -149,7 +149,7 @@
                     </div>
                     <div class="flex justify-between py-1">
                         <span style="color:var(--admin-text-dim);">تاریخ ثبت</span>
-                        <span class="persian-number" style="color:var(--admin-text);">{{ verta($booking->created_at)->format('Y/m/d H:i') }}</span>
+                        <span class="persian-number" style="color:var(--admin-text);">{{ fa_date($booking->created_at, true) }}</span>
                     </div>
                     @if($booking->notes)
                         <div class="mt-3 p-3 rounded-lg text-sm" style="background:var(--admin-accent-light); color:var(--admin-text-dim);">
@@ -176,15 +176,15 @@
                     <div class="space-y-2.5 text-sm">
                         <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
                             <span style="color:var(--admin-text-dim);">مبلغ پرداختی</span>
-                            <span class="persian-number font-bold" style="color:var(--admin-text);">{{ number_format($booking->prepayment_amount) }} تومان</span>
+                            <span class="persian-number font-bold" style="color:var(--admin-text);">{{ fa_num($booking->prepayment_amount) }} تومان</span>
                         </div>
                         <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
-                            <span style="color:var(--admin-text-dim);">سهم سالن ({{ $commissionRate }}%)</span>
-                            <span class="persian-number font-medium" style="color:rgb(var(--m-ok));">{{ number_format($salonShare) }} تومان</span>
+                            <span style="color:var(--admin-text-dim);">سهم سالن ({{ fa_num($commissionRate, 2) }}٪)</span>
+                            <span class="persian-number font-medium" style="color:rgb(var(--m-ok));">{{ fa_num($salonShare) }} تومان</span>
                         </div>
                         <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
                             <span style="color:var(--admin-text-dim);">سهم متخصص</span>
-                            <span class="persian-number font-medium" style="color:var(--admin-text);">{{ number_format($specialistShare) }} تومان</span>
+                            <span class="persian-number font-medium" style="color:var(--admin-text);">{{ fa_num($specialistShare) }} تومان</span>
                         </div>
                         <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
                             <span style="color:var(--admin-text-dim);">شماره پیگیری</span>
@@ -193,13 +193,13 @@
                         @if($booking->paid_at)
                             <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
                                 <span style="color:var(--admin-text-dim);">تاریخ پرداخت</span>
-                                <span class="persian-number" style="color:var(--admin-text);">{{ verta($booking->paid_at)->format('Y/m/d H:i') }}</span>
+                                <span class="persian-number" style="color:var(--admin-text);">{{ fa_date($booking->paid_at, true) }}</span>
                             </div>
                         @endif
                         @if($booking->discount_amount)
                             <div class="flex justify-between py-1" style="border-bottom:1px dashed var(--admin-border);">
                                 <span style="color:var(--admin-text-dim);">تخفیف ({{ $booking->discount_code }})</span>
-                                <span class="persian-number" style="color:rgb(var(--m-bad));">- {{ number_format($booking->discount_amount) }} تومان</span>
+                                <span class="persian-number" style="color:rgb(var(--m-bad));">- {{ fa_num($booking->discount_amount) }} تومان</span>
                             </div>
                         @endif
                         @php

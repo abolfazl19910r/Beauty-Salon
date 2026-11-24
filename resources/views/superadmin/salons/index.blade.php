@@ -117,10 +117,10 @@
                         <td class="py-3 px-4">
                             {{ optional($salon->admins->firstWhere('pivot.role', 'owner'))->name ?? '—' }}
                         </td>
-                        <td class="py-3 px-4">{{ $salon->specialists_count }} / {{ $salon->max_specialists_count }}</td>
-                        <td class="py-3 px-4">{{ $salon->subscription_started_at ? jalali_date($salon->subscription_started_at) : '—' }}</td>
+                        <td class="py-3 px-4">{{ fa_num($salon->specialists_count) }} / {{ fa_num($salon->max_specialists_count) }}</td>
+                        <td class="py-3 px-4">{{ $salon->subscription_started_at ? fa_date($salon->subscription_started_at) : '—' }}</td>
                         <td class="py-3 px-4">
-                            {{ jalali_date($salon->subscription_ends_at) }}
+                            {{ fa_date($salon->subscription_ends_at) }}
                             <div class="text-xs" style="color: var(--sa-text-dim);">{{ $salon->plan?->name ?? 'بدون پلن' }}</div>
                         </td>
                         <td class="py-3 px-4">

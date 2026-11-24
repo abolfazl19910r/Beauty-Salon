@@ -41,22 +41,22 @@
 <table class="kpis"><tr>
     <td class="lead">
         <div class="kpi-label">درآمد متخصص (پس از کمیسیون)</div>
-        <div class="kpi-value">{{ number_format($totalRevenue) }}</div>
+        <div class="kpi-value">{{ fa_num($totalRevenue) }}</div>
         <div class="kpi-unit">تومان</div>
     </td>
     <td class="info">
         <div class="kpi-label">کل نوبت‌ها</div>
-        <div class="kpi-value">{{ number_format($totalBookings) }}</div>
+        <div class="kpi-value">{{ fa_num($totalBookings) }}</div>
         <div class="kpi-unit">نوبت</div>
     </td>
     <td class="good">
         <div class="kpi-label">انجام شده</div>
-        <div class="kpi-value">{{ number_format($completedBookings) }}</div>
+        <div class="kpi-value">{{ fa_num($completedBookings) }}</div>
         <div class="kpi-unit">نوبت</div>
     </td>
     <td class="bad">
         <div class="kpi-label">لغو شده</div>
-        <div class="kpi-value">{{ number_format($cancelledBookings) }}</div>
+        <div class="kpi-value">{{ fa_num($cancelledBookings) }}</div>
         <div class="kpi-unit">نوبت</div>
     </td>
 </tr></table>
@@ -81,8 +81,8 @@
                 <td class="muted">{{ $loop->iteration }}</td>
                 <td class="strong">{{ $booking->user?->name ?? '—' }}</td>
                 <td>{{ $booking->service?->name ?? '—' }}</td>
-                <td>{{ \Morilog\Jalali\Jalalian::fromCarbon($booking->booking_time)->format('Y/m/d H:i') }}</td>
-                <td class="num">{{ number_format($booking->prepayment_amount * $shareRate) }}</td>
+                <td>{{ fa_date($booking->booking_time, true) }}</td>
+                <td class="num">{{ fa_num($booking->prepayment_amount * $shareRate) }}</td>
                 <td><span class="pill {{ $statusPill }}">{{ $statusText }}</span></td>
             </tr>
         @endforeach

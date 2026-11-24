@@ -24,7 +24,7 @@
                         </div>
                         <div class="flex justify-between items-center px-6 py-3.5 text-sm">
                             <span class="text-m-tx/55">مبلغ پرداختی</span>
-                            <span class="font-bold text-m-ok persian-number">{{ number_format($booking->prepayment_amount) }} تومان</span>
+                            <span class="font-bold text-m-ok persian-number">{{ fa_num($booking->prepayment_amount) }} تومان</span>
                         </div>
                         <div class="flex justify-between items-center px-6 py-3.5 text-sm">
                             <span class="text-m-tx/55">خدمت</span>
@@ -32,7 +32,7 @@
                         </div>
                         <div class="flex justify-between items-center px-6 py-3.5 text-sm">
                             <span class="text-m-tx/55">تاریخ و ساعت</span>
-                            <span class="font-medium text-m-tx persian-number" dir="ltr">{{ verta($booking->booking_time)->format('Y/m/d H:i') }}</span>
+                            <span class="font-medium text-m-tx persian-number" dir="ltr">{{ fa_date($booking->booking_time, true) }}</span>
                         </div>
                     </div>
                 @endif

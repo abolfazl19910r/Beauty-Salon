@@ -64,7 +64,7 @@
                             @endif
                         </td>
                         <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">
-                            {{ verta($export->created_at)->format('Y/m/d H:i') }}
+                            {{ fa_date($export->created_at, true) }}
                         </td>
                         <td class="px-4 py-3">
                             @if($export->isDownloadable())

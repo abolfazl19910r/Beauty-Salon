@@ -17,8 +17,8 @@
 
     @if ($paused)
         <div class="text-sm space-y-1" style="color: var(--admin-text);">
-            <div>از {{ verta($salon->paused_at)->format('Y/m/d H:i') }}
-                {{ $salon->paused_until ? '— باز شدن خودکار '.verta($salon->paused_until)->format('Y/m/d') : '— تا بازکردن دستی' }}</div>
+            <div>از {{ fa_date($salon->paused_at, true) }}
+                {{ $salon->paused_until ? '— باز شدن خودکار '.fa_date($salon->paused_until) : '— تا بازکردن دستی' }}</div>
             @if (filled($salon->pause_reason))
                 <div>دلیلی که مشتری می‌بیند: «{{ $salon->pause_reason }}»</div>
             @endif

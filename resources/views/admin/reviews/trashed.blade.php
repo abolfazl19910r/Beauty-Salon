@@ -40,7 +40,7 @@
                             <tr style="border-bottom:1px solid var(--admin-border);">
                                 <td class="px-4 py-3" style="color:var(--admin-text);">{{ $review->user->name ?? '—' }}</td>
                                 <td class="px-4 py-3" style="color:var(--admin-text);">{{ $review->specialist->name ?? '—' }}</td>
-                                <td class="px-4 py-3 persian-number" style="color:var(--admin-text);">{{ $review->overall_rating }}</td>
+                                <td class="px-4 py-3 persian-number" style="color:var(--admin-text);">{{ fa_num($review->overall_rating) }}</td>
                                 <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ $review->deleted_at?->format('Y/m/d H:i') }}</td>
                                 <td class="px-4 py-3">
                                     <div class="flex gap-2">

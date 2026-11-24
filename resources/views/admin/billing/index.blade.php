@@ -30,8 +30,8 @@
                 <div class="space-y-1">
                     <div class="font-bold">فاکتور {{ to_persian_num((string) $partial->id) }} — {{ \App\Services\Payment\InvoiceInstallments::label($partial) }} مانده</div>
                     <div class="persian-number">
-                        پرداخت‌شده: {{ number_format($partial->paid_amount) }} از {{ number_format($partial->payableAmount()) }} تومان
-                        — مهلت: {{ jalali_date($partial->partial_expires_at, 'Y/m/d H:i') }}
+                        پرداخت‌شده: {{ fa_num($partial->paid_amount) }} از {{ fa_num($partial->payableAmount()) }} تومان
+                        — مهلت: {{ fa_date($partial->partial_expires_at, true) }}
                     </div>
                     <div style="color:var(--admin-text-dim);">اشتراک با آخرین قسط فعال می‌شود. اگر تا مهلت کامل نشود، مبلغ پرداخت‌شده «اعتبار پلتفرم» سالن می‌شود و از خرید بعدی کم می‌شود.</div>
                 </div>
@@ -39,7 +39,7 @@
                     @csrf
                     <button type="submit" class="px-4 py-2 rounded-lg text-sm font-bold" style="background:var(--admin-accent); color:#fff;">
                         پرداخت {{ \App\Services\Payment\InvoiceInstallments::label($partial) }}
-                        (<span class="persian-number">{{ number_format(app(\App\Services\Payment\InvoiceInstallments::class)->nextAmount($partial)) }}</span> تومان)
+                        (<span class="persian-number">{{ fa_num(app(\App\Services\Payment\InvoiceInstallments::class)->nextAmount($partial)) }}</span> تومان)
                     </button>
                 </form>
             </div>
@@ -47,7 +47,7 @@
 
         @if ($platformCredit > 0)
             <div class="mb-4 p-3 rounded-lg text-sm" style="background:var(--admin-accent-light); color:var(--admin-text);" data-platform-credit>
-                اعتبار پلتفرم سالن: <span class="persian-number font-bold">{{ number_format($platformCredit) }}</span> تومان — از خرید یا ارتقای بعدی اشتراک کم می‌شود.
+                اعتبار پلتفرم سالن: <span class="persian-number font-bold">{{ fa_num($platformCredit) }}</span> تومان — از خرید یا ارتقای بعدی اشتراک کم می‌شود.
             </div>
         @endif
 
@@ -74,7 +74,7 @@
                 </div>
                 <div>
                     <div style="color:var(--admin-text-dim);">اشتراک تا</div>
-                    <div class="font-bold mt-1">{{ jalali_date($salon->subscription_ends_at) }}</div>
+                    <div class="font-bold mt-1">{{ fa_date($salon->subscription_ends_at) }}</div>
                 </div>
                 <div>
                     <div style="color:var(--admin-text-dim);">نوع فعلی</div>
@@ -87,7 +87,7 @@
                     <div>
                         پلن: <strong>{{ $currentPlan->name }}</strong>
                         @if ($scheduledPlan)
-                            <span style="color:var(--admin-text-dim);">— از {{ jalali_date($salon->next_plan_starts_at) }} پلن «{{ $scheduledPlan->name }}»</span>
+                            <span style="color:var(--admin-text-dim);">— از {{ fa_date($salon->next_plan_starts_at) }} پلن «{{ $scheduledPlan->name }}»</span>
                         @endif
                     </div>
                     <div class="flex flex-wrap gap-2 mt-3">
@@ -142,22 +142,22 @@
             </div>
             <div class="p-5 text-sm">
                 <div class="mb-4 persian-number">
-                    اعتبار خریده‌شده‌ی باقی‌مانده: <strong>{{ to_persian_num(number_format($smsUsage['credit'])) }}</strong> قطعه
-                    <span style="color:var(--admin-text-dim);">(این ماه {{ to_persian_num(number_format($smsUsage['credit_used'])) }} قطعه از اعتبار مصرف شد)</span>
+                    اعتبار خریده‌شده‌ی باقی‌مانده: <strong>{{ fa_num($smsUsage['credit']) }}</strong> قطعه
+                    <span style="color:var(--admin-text-dim);">(این ماه {{ fa_num($smsUsage['credit_used']) }} قطعه از اعتبار مصرف شد)</span>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     @foreach ($smsPacks as $pack)
                         <form method="POST" action="{{ route('admin.billing.sms-pack.purchase') }}" class="rounded-lg p-4 text-center" style="border:1px solid var(--admin-border);">
                             @csrf
                             <input type="hidden" name="parts" value="{{ $pack['parts'] }}">
-                            <div class="font-bold persian-number">{{ to_persian_num(number_format($pack['parts'])) }} قطعه</div>
-                            <div class="mt-1 persian-number">{{ to_persian_num(number_format($pack['price'])) }} تومان</div>
+                            <div class="font-bold persian-number">{{ fa_num($pack['parts']) }} قطعه</div>
+                            <div class="mt-1 persian-number">{{ fa_num($pack['price']) }} تومان</div>
                             <button type="submit" class="mt-3 px-4 py-2 rounded-lg text-m-onsolid text-sm" style="background:var(--admin-accent);">خرید</button>
                         </form>
                     @endforeach
                 </div>
                 <p class="text-xs leading-6 mt-4" style="color:var(--admin-text-dim);">
-                    هر قطعه {{ to_persian_num(number_format($smsPartPrice)) }} تومان. اعتبار منقضی نمی‌شود و ماه بعد هم می‌ماند؛ فقط وقتی سهمیه‌ی ماهانه‌ی
+                    هر قطعه {{ fa_num($smsPartPrice) }} تومان. اعتبار منقضی نمی‌شود و ماه بعد هم می‌ماند؛ فقط وقتی سهمیه‌ی ماهانه‌ی
                     اشتراک تمام شد مصرف می‌شود.
                 </p>
                 @if ($smsPurchases->isNotEmpty())
@@ -167,9 +167,9 @@
                             <tbody>
                                 @foreach ($smsPurchases as $purchase)
                                     <tr style="border-top:1px solid var(--admin-border);">
-                                        <td class="p-2">{{ jalali_date($purchase->paid_at ?? $purchase->created_at, 'Y/m/d H:i') }}</td>
-                                        <td class="p-2">{{ to_persian_num(number_format($purchase->parts)) }}</td>
-                                        <td class="p-2">{{ $purchase->amount ? to_persian_num(number_format($purchase->amount)).' تومان' : '—' }}</td>
+                                        <td class="p-2">{{ fa_date($purchase->paid_at ?? $purchase->created_at, true) }}</td>
+                                        <td class="p-2">{{ fa_num($purchase->parts) }}</td>
+                                        <td class="p-2">{{ $purchase->amount ? fa_num($purchase->amount).' تومان' : '—' }}</td>
                                         <td class="p-2">{{ $purchase->source === 'grant' ? 'هدیه/جبران پشتیبانی' : 'خرید آنلاین' }}</td>
                                         <td class="p-2">{{ $purchase->status === 'paid' ? 'موفق' : 'ناموفق' }}</td>
                                     </tr>
@@ -194,13 +194,13 @@
                         <label class="rounded-lg p-4 cursor-pointer text-center" style="border:1px solid var(--admin-border);">
                             <input type="radio" name="subscription_type" value="{{ $type }}" class="ml-1" {{ $salon->subscription_type === $type ? 'checked' : '' }}>
                             <div class="font-bold mt-2" style="color:var(--admin-text);">{{ $label }}</div>
-                            <div class="text-sm mt-1 persian-number" style="color:var(--admin-text-dim);">{{ number_format($prices[$type]) }} تومان</div>
+                            <div class="text-sm mt-1 persian-number" style="color:var(--admin-text-dim);">{{ fa_num($prices[$type]) }} تومان</div>
                         </label>
                     @endforeach
                 </div>
                 <p class="text-xs mt-3" style="color:var(--admin-text-dim);">
                     قیمت‌ها برای {{ to_persian_num((string) $specialists) }} متخصص (سقف متخصص سالن شما) است؛
-                    {{ to_persian_num((string) $includedSpecialists) }} متخصص در قیمت پلن و هر متخصص بیشتر ماهانه {{ to_persian_num(number_format($extraSpecialistPrice)) }} تومان.
+                    {{ to_persian_num((string) $includedSpecialists) }} متخصص در قیمت پلن و هر متخصص بیشتر ماهانه {{ fa_num($extraSpecialistPrice) }} تومان.
                     برای تغییر تعداد متخصص با پشتیبانی تماس بگیرید.
                 </p>
                 <p class="mt-2 text-xs" style="color:var(--admin-text-dim);" data-billing-terms>
@@ -249,7 +249,7 @@
                 <tbody>
                     @forelse ($invoices as $invoice)
                         <tr style="border-bottom:1px solid var(--admin-border);">
-                            <td class="py-3 px-4">{{ jalali_date($invoice->created_at) }}</td>
+                            <td class="py-3 px-4">{{ fa_date($invoice->created_at) }}</td>
                             <td class="py-3 px-4">
                                 {{ $invoice->subscription_type }}
                                 @if ($invoice->planName())
@@ -257,12 +257,12 @@
                                 @endif
                             </td>
                             <td class="py-3 px-4 persian-number">
-                                {{ number_format($invoice->amount) }} تومان
+                                {{ fa_num($invoice->amount) }} تومان
                                 @if ($invoice->credit_applied > 0)
-                                    <div class="text-xs" style="color:var(--admin-text-dim);">از اعتبار پلتفرم: {{ number_format($invoice->credit_applied) }}</div>
+                                    <div class="text-xs" style="color:var(--admin-text-dim);">از اعتبار پلتفرم: {{ fa_num($invoice->credit_applied) }}</div>
                                 @endif
                                 @if ($invoice->installments > 1)
-                                    <div class="text-xs" style="color:var(--admin-text-dim);">{{ to_persian_num((string) $invoice->installments_paid) }} از {{ to_persian_num((string) $invoice->installments) }} قسط — پرداخت‌شده {{ number_format($invoice->paid_amount) }}</div>
+                                    <div class="text-xs" style="color:var(--admin-text-dim);">{{ to_persian_num((string) $invoice->installments_paid) }} از {{ to_persian_num((string) $invoice->installments) }} قسط — پرداخت‌شده {{ fa_num($invoice->paid_amount) }}</div>
                                 @endif
                             </td>
                             <td class="py-3 px-4">{{ $invoice->ref_id === 'CREDIT' ? 'اعتبار پلتفرم' : ($invoice->payment_method === 'online' ? 'آنلاین' : 'دستی (سوپر ادمین)') }}</td>

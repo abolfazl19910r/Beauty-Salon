@@ -51,7 +51,7 @@ class WalletListSalonScopeTest extends TestCase
 
         $response = $this->actingAs($this->owner)->get(route('admin.wallet.withdrawals'))->assertOk();
 
-        $response->assertSee('111,111')->assertDontSee('777,777');
+        $response->assertSee(fa_num(111111))->assertDontSee(fa_num(777777));
         $this->assertSame(1, $response->viewData('pendingCount'));
         $this->assertEquals(111111, $response->viewData('pendingAmount'));
         $this->assertSame(1, $response->viewData('withdrawals')->total());

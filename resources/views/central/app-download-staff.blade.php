@@ -17,7 +17,7 @@
             دانلود ماهرو همکار برای اندروید
         </a>
         <p class="text-xs text-m-tx/50 text-center mt-2">
-            نسخه‌ی <span dir="ltr">{{ $staff->version_name }}</span> · {{ $staff->sizeLabel() }} · {{ \Morilog\Jalali\Jalalian::fromCarbon($staff->created_at)->format('Y/m/d') }}
+            نسخه‌ی <span dir="ltr">{{ $staff->version_name }}</span> · {{ $staff->sizeLabel() }} · {{ fa_date($staff->created_at) }}
         </p>
         @if ($staff->notes)
             <p class="text-sm text-m-tx/70 mt-3 leading-7 whitespace-pre-line">{{ $staff->notes }}</p>

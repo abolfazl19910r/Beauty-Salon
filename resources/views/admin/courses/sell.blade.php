@@ -18,7 +18,7 @@
                     <select id="package_id" name="package_id" class="{{ $input }}" style="{{ $inputStyle }}">
                         @foreach ($packages as $package)
                             <option value="{{ $package->id }}" @selected((int) old('package_id') === $package->id)>
-                                {{ $package->name }} — {{ number_format($package->price) }} تومان{{ $package->min_prepayment_percent ? ' (پیش‌پرداخت از '.$package->min_prepayment_percent.'٪)' : '' }}
+                                {{ $package->name }} — {{ fa_num($package->price) }} تومان{{ $package->min_prepayment_percent ? ' (پیش‌پرداخت از '.$package->min_prepayment_percent.'٪)' : '' }}
                             </option>
                         @endforeach
                     </select>

@@ -30,7 +30,7 @@
             <div class="flex flex-wrap justify-between gap-3 py-3 text-xs text-m-mu border-b j-rule persian-number">
                 <span>{{ $currentSalonName }}@if ($currentSalonAddress) · {{ $currentSalonAddress }}@endif</span>
                 @if ($currentSalonHours)<span>{{ $currentSalonHours[0] }}</span>@endif
-                @if (($reviewStats['count'] ?? 0) > 0)<span>{{ to_persian_num(number_format($reviewStats['avg'], 1)) }} از {{ to_persian_num((string) $reviewStats['count']) }} نظر</span>@endif
+                @if (($reviewStats['count'] ?? 0) > 0)<span>{{ fa_num($reviewStats['avg'], 1) }} از {{ to_persian_num((string) $reviewStats['count']) }} نظر</span>@endif
             </div>
 
             <section class="j-hero border-b j-rule">
@@ -61,7 +61,7 @@
                         <a href="{{ route('bookings.create', ['service' => $service->id]) }}" class="j-item hover:bg-m-tx/5">
                             <span class="j-num">{{ $jNum($i) }}</span>
                             <span><b class="text-m-tx font-semibold">{{ $service->name }}</b><small class="block text-xs text-m-mu persian-number">{{ to_persian_num((string) $service->duration) }} دقیقه</small></span>
-                            <span class="font-bold text-m-tx persian-number whitespace-nowrap">{{ to_persian_num(number_format($service->price)) }}</span>
+                            <span class="font-bold text-m-tx persian-number whitespace-nowrap">{{ fa_num($service->price) }}</span>
                         </a>
                     @empty
                         <p class="text-m-mu py-6">فهرست خدمات به‌زودی اضافه می‌شود.</p>

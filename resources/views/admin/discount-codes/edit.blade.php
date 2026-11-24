@@ -58,13 +58,13 @@
             <div>
                 <p class="text-xs" style="color:var(--admin-text-dim);">مقدار</p>
                 <p class="text-sm mt-1 persian-number" style="color:var(--admin-text);">
-                    {{ number_format((float) $discountCode->amount) }}{{ $discountCode->type === 'percentage' ? '٪' : ' تومان' }}
+                    {{ fa_num((float) $discountCode->amount) }}{{ $discountCode->type === 'percentage' ? '٪' : ' تومان' }}
                 </p>
             </div>
             <div>
                 <p class="text-xs" style="color:var(--admin-text-dim);">سقف مبلغ تخفیف</p>
                 <p class="text-sm mt-1 persian-number" style="color:var(--admin-text);">
-                    {{ $discountCode->max_amount ? number_format((float) $discountCode->max_amount) . ' تومان' : 'بدون سقف' }}
+                    {{ $discountCode->max_amount ? fa_num((float) $discountCode->max_amount) . ' تومان' : 'بدون سقف' }}
                 </p>
             </div>
             <div>
@@ -74,9 +74,9 @@
         </div>
 
         <div class="rounded-lg p-4 mb-4 text-sm" style="background:var(--admin-bg); border:1px solid var(--admin-border); color:var(--admin-text-dim);">
-            پیش‌نمایش: روی مبلغ نمونه‌ی <strong class="persian-number">{{ number_format($sampleAmount) }}</strong> تومان،
-            این کد <strong class="persian-number">{{ number_format((int) $preview['discount_amount']) }}</strong> تومان تخفیف می‌دهد
-            و مبلغ نهایی <strong class="persian-number">{{ number_format((int) $preview['final_amount']) }}</strong> تومان می‌شود.
+            پیش‌نمایش: روی مبلغ نمونه‌ی <strong class="persian-number">{{ fa_num($sampleAmount) }}</strong> تومان،
+            این کد <strong class="persian-number">{{ fa_num((int) $preview['discount_amount']) }}</strong> تومان تخفیف می‌دهد
+            و مبلغ نهایی <strong class="persian-number">{{ fa_num((int) $preview['final_amount']) }}</strong> تومان می‌شود.
         </div>
 
         <form action="{{ route('admin.discount-codes.update', $discountCode) }}" method="POST"
@@ -91,7 +91,7 @@
                            value="{{ old('max_uses', $discountCode->max_uses) }}" required
                            class="w-full px-3 py-2 rounded-lg persian-number" style="border:1px solid var(--admin-border); color:var(--admin-text);">
                     <p class="text-xs mt-1" style="color:var(--admin-text-dim);">
-                        تا امروز <span class="persian-number">{{ $discountCode->used_count }}</span> بار استفاده شده؛ نمی‌تواند از این عدد کمتر شود.
+                        تا امروز <span class="persian-number">{{ fa_num($discountCode->used_count) }}</span> بار استفاده شده؛ نمی‌تواند از این عدد کمتر شود.
                     </p>
                 </div>
                 <div>

@@ -24,7 +24,7 @@
             دانلود اپ برای اندروید
         </a>
         <p class="text-xs text-m-tx/50 text-center mt-2">
-            نسخه‌ی <span dir="ltr">{{ $customer->version_name }}</span> · {{ $customer->sizeLabel() }} · {{ \Morilog\Jalali\Jalalian::fromCarbon($customer->created_at)->format('Y/m/d') }}
+            نسخه‌ی <span dir="ltr">{{ $customer->version_name }}</span> · {{ $customer->sizeLabel() }} · {{ fa_date($customer->created_at) }}
         </p>
         @if ($customer->notes)
             <p class="text-sm text-m-tx/70 mt-3 leading-7 whitespace-pre-line">{{ $customer->notes }}</p>

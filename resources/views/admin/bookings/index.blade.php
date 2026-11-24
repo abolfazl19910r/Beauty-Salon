@@ -121,15 +121,15 @@
                 </p>
                 <div class="stat-mini" style="background:rgb(var(--m-info) / .1);">
                     <div class="text-xs mb-0.5" style="color:rgb(var(--m-info));">کل</div>
-                    <div class="text-lg font-bold persian-number" style="color:rgb(var(--m-info));">{{ $totalBookings ?? 0 }}</div>
+                    <div class="text-lg font-bold persian-number" style="color:rgb(var(--m-info));">{{ fa_num($totalBookings ?? 0) }}</div>
                 </div>
                 <div class="stat-mini" style="background:rgb(var(--m-ok) / .1);">
                     <div class="text-xs mb-0.5" style="color:rgb(var(--m-ok));">تایید</div>
-                    <div class="text-lg font-bold persian-number" style="color:rgb(var(--m-ok));">{{ $confirmedBookings ?? 0 }}</div>
+                    <div class="text-lg font-bold persian-number" style="color:rgb(var(--m-ok));">{{ fa_num($confirmedBookings ?? 0) }}</div>
                 </div>
                 <div class="stat-mini" style="background:rgb(var(--m-bad) / .1);">
                     <div class="text-xs mb-0.5" style="color:rgb(var(--m-bad));">لغو</div>
-                    <div class="text-lg font-bold persian-number" style="color:rgb(var(--m-bad));">{{ $cancelledBookings ?? 0 }}</div>
+                    <div class="text-lg font-bold persian-number" style="color:rgb(var(--m-bad));">{{ fa_num($cancelledBookings ?? 0) }}</div>
                 </div>
             </div>
         </div>
@@ -156,7 +156,7 @@
                             data-ui-hover="background: var(--admin-accent-light)"
                             data-ui-unhover="background: ">
 
-                            <td class="px-4 py-3 persian-number font-medium" style="color:var(--admin-text-dim);">{{ $booking->id }}</td>
+                            <td class="px-4 py-3 persian-number font-medium" style="color:var(--admin-text-dim);">{{ \App\Support\Fa::digits($booking->id) }}</td>
 
                             <td class="px-4 py-3">
                                 @if($booking->user)
@@ -167,7 +167,7 @@
                                         </div>
                                         <div>
                                             <p class="font-medium" style="color:var(--admin-text);">{{ $booking->user->name }}</p>
-                                            <p class="text-xs" dir="ltr" style="color:var(--admin-text-dim);">{{ $booking->user->phone }}</p>
+                                            <p class="text-xs" dir="ltr" style="color:var(--admin-text-dim);">{{ \App\Support\Fa::digits($booking->user->phone) }}</p>
                                             <x-no-show-badge :label="$noShowLabels[$booking->user_id] ?? null" class="mt-1" />
                                         </div>
                                     </div>
@@ -181,8 +181,8 @@
                             <td class="px-4 py-3" style="color:var(--admin-text);">{{ $booking->specialist?->name ?? '—' }}</td>
 
                             <td class="px-4 py-3 persian-number">
-                                <p style="color:var(--admin-text);">{{ verta($booking->booking_time)->format('Y/m/d') }}</p>
-                                <p class="text-xs" style="color:var(--admin-text-dim);">{{ verta($booking->booking_time)->format('H:i') }}</p>
+                                <p style="color:var(--admin-text);">{{ fa_date($booking->booking_time) }}</p>
+                                <p class="text-xs" style="color:var(--admin-text-dim);">{{ fa_time($booking->booking_time) }}</p>
                             </td>
 
                             <td class="px-4 py-3">

@@ -22,7 +22,7 @@
             <div>
                 <p class="text-xs font-semibold text-m-gold tracking-[0.3em] uppercase mb-0.5">پرداخت امن</p>
                 <h1 class="text-2xl font-bold text-m-gold2" style="font-family:'Mahru','Vazirmatn',sans-serif;font-weight:800;">پرداخت با تایید دو مرحله‌ای</h1>
-                <p class="text-m-tx/50 text-sm persian-number">شماره نوبت: {{ $booking->id }}</p>
+                <p class="text-m-tx/50 text-sm persian-number">شماره نوبت: {{ \App\Support\Fa::digits($booking->id) }}</p>
             </div>
         </div>
 
@@ -42,11 +42,11 @@
                 </div>
                 <div class="flex justify-between items-center px-5 py-3.5 text-sm">
                     <span class="text-m-tx/55">تاریخ و ساعت</span>
-                    <span class="font-medium text-m-tx persian-number" dir="ltr">{{ verta($booking->booking_time)->format('Y/m/d H:i') }}</span>
+                    <span class="font-medium text-m-tx persian-number" dir="ltr">{{ fa_date($booking->booking_time, true) }}</span>
                 </div>
                 <div class="flex justify-between items-center px-5 py-3.5 text-sm">
                     <span class="text-m-tx/55">مبلغ قابل پرداخت</span>
-                    <span class="font-bold text-m-gold2 persian-number">{{ number_format($booking->prepayment_amount) }} تومان</span>
+                    <span class="font-bold text-m-gold2 persian-number">{{ fa_num($booking->prepayment_amount) }} تومان</span>
                 </div>
             </div>
         </div>

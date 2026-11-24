@@ -39,12 +39,12 @@
                         @php $salon = $user->salons->first() ?? ($user->salon_id ? (object) ['id' => $user->salon_id, 'name' => $salons[$user->salon_id] ?? '#'.$user->salon_id] : null); @endphp
                         <tr style="border-top: 1px solid var(--sa-border);" data-search-user>
                             <td class="py-2 px-4 font-bold">{{ $user->name }}</td>
-                            <td class="py-2 px-4" dir="ltr" style="text-align: right;">{{ $user->phone }}</td>
+                            <td class="py-2 px-4" dir="ltr" style="text-align: right;">{{ \App\Support\Fa::digits($user->phone) }}</td>
                             <td class="py-2 px-4"><span class="sa-badge" style="margin: 0;">{{ $roleLabel($user) }}</span></td>
                             <td class="py-2 px-4">
                                 @if ($salon)<a href="{{ route('superadmin.salons.edit', $salon->id) }}" style="color: var(--sa-accent);">{{ $salon->name }}</a>@else — @endif
                             </td>
-                            <td class="py-2 px-4" style="color: var(--sa-text-dim);">{{ $user->created_at ? jalali_date($user->created_at) : '—' }}</td>
+                            <td class="py-2 px-4" style="color: var(--sa-text-dim);">{{ $user->created_at ? fa_date($user->created_at) : '—' }}</td>
                         </tr>
                     @endforeach
                     </tbody>
@@ -61,7 +61,7 @@
                     @foreach ($results['specialists'] as $sp)
                         <tr style="border-top: 1px solid var(--sa-border);">
                             <td class="py-2 px-4 font-bold">{{ $sp->name }}</td>
-                            <td class="py-2 px-4" dir="ltr" style="text-align: right;">{{ $sp->phone }}</td>
+                            <td class="py-2 px-4" dir="ltr" style="text-align: right;">{{ \App\Support\Fa::digits($sp->phone) }}</td>
                             <td class="py-2 px-4"><a href="{{ route('superadmin.salons.edit', $sp->salon_id) }}" style="color: var(--sa-accent);">{{ $salons[$sp->salon_id] ?? '#'.$sp->salon_id }}</a></td>
                             <td class="py-2 px-4">{{ $sp->trashed() ? 'حذف‌شده' : 'فعال' }}</td>
                         </tr>
@@ -81,7 +81,7 @@
                         <tr style="border-top: 1px solid var(--sa-border);">
                             <td class="py-2 px-4 font-bold">{{ $demo->name }}</td>
                             <td class="py-2 px-4">{{ $demo->salon_name ?: '—' }}</td>
-                            <td class="py-2 px-4">{{ jalali_date($demo->created_at) }}</td>
+                            <td class="py-2 px-4">{{ fa_date($demo->created_at) }}</td>
                             <td class="py-2 px-4">{{ $demo->handled_at ? 'پیگیری‌شده' : 'پیگیری‌نشده' }}</td>
                         </tr>
                     @endforeach

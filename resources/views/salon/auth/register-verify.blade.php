@@ -8,7 +8,7 @@
         <h2 class="text-2xl font-bold" style="font-family:'Mahru','Vazirmatn',sans-serif;font-weight:800;color:rgb(var(--m-gold2))">تایید شماره موبایل</h2>
         <p class="text-sm text-m-tx/60 mt-1">کد تایید به شماره موبایل شما ارسال شد</p>
         @if(isset($user))
-            <p class="text-m-gold2 font-medium mt-2 tracking-widest persian-number" dir="ltr">{{ $user->phone }}</p>
+            <p class="text-m-gold2 font-medium mt-2 tracking-widest persian-number" dir="ltr">{{ \App\Support\Fa::digits($user->phone) }}</p>
         @endif
     </div>
 

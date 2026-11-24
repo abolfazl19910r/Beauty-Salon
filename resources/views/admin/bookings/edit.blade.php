@@ -42,7 +42,7 @@
                     <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
                 </svg>
                 ویرایش نوبت
-                <span class="persian-number text-base font-normal" style="color:var(--admin-text-dim);">#{{ $booking->id }}</span>
+                <span class="persian-number text-base font-normal" style="color:var(--admin-text-dim);">#{{ \App\Support\Fa::digits($booking->id) }}</span>
             </h1>
             <a href="{{ route('admin.bookings.show', $booking) }}"
                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
@@ -64,7 +64,7 @@
             @endphp
             <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:{{ $st[1] }}; color:{{ $st[2] }};">{{ $st[0] }}</span>
             <span style="color:var(--admin-text-dim);">تاریخ نوبت:</span>
-            <span class="persian-number font-medium" style="color:var(--admin-text);">{{ verta($booking->booking_time)->format('Y/m/d H:i') }}</span>
+            <span class="persian-number font-medium" style="color:var(--admin-text);">{{ fa_date($booking->booking_time, true) }}</span>
             <span style="color:var(--admin-text-dim);">مشتری:</span>
             <span class="font-medium" style="color:var(--admin-text);">{{ $booking->user->name ?? '—' }}</span>
         </div>
@@ -84,7 +84,7 @@
                                  change that's guaranteed to be rejected. disabled fields aren't
                                  submitted, so a hidden input keeps the current user_id in the payload. --}}
                             <select id="user_id" class="form-select" disabled>
-                                <option>{{ $booking->user->name }} ({{ $booking->user->phone }})</option>
+                                <option>{{ $booking->user->name }} ({{ \App\Support\Fa::digits($booking->user->phone) }})</option>
                             </select>
                             <input type="hidden" name="user_id" value="{{ $booking->user_id }}">
                             <p style="font-size:0.75rem; color:var(--admin-text-dim); margin-top:4px;">
@@ -94,7 +94,7 @@
                             <select id="user_id" name="user_id" class="form-select">
                                 @foreach($users as $user)
                                     <option value="{{ $user->id }}" {{ (old('user_id', $booking->user_id) == $user->id) ? 'selected' : '' }}>
-                                        {{ $user->name }} ({{ $user->phone }})
+                                        {{ $user->name }} ({{ \App\Support\Fa::digits($user->phone) }})
                                     </option>
                                 @endforeach
                             </select>
@@ -107,7 +107,7 @@
                         <select id="service_id" name="service_id" class="form-select">
                             @foreach($services as $service)
                                 <option value="{{ $service->id }}" {{ (old('service_id', $booking->service_id) == $service->id) ? 'selected' : '' }}>
-                                    {{ $service->name }} — {{ number_format($service->price) }} تومان
+                                    {{ $service->name }} — {{ fa_num($service->price) }} تومان
                                 </option>
                             @endforeach
                         </select>
