@@ -167,10 +167,26 @@
         .adm--top main > *{max-width:1360px;margin-left:auto;margin-right:auto}
         .adm--top .rounded-lg,.adm--top .rounded-xl{border-radius:16px}
         /* فشرده‌ی پرتراکم */
-        .adm--dense .adm-drawer{width:13rem}
-        .adm--dense .adm-link{padding-top:.35rem;padding-bottom:.35rem;font-size:13px;margin-bottom:1px}
-        .adm--dense .adm-drawer h3{margin-bottom:.25rem}
-        .adm--dense .adm-drawer .py-2{padding-top:.25rem;padding-bottom:.25rem}
+        /* میز پذیرش (بسته‌ی ۲ب): منوی ۲۰۰px شب‌آبی، فقط متن ۱۳px، گروه‌های جمع‌شو (کار روزانه باز) */
+        .adm--dense .adm-drawer{width:200px}
+        @media (min-width:768px){
+            .adm--dense .adm-drawer{--dk-bg:#0F1724;--dk-line:#1E2A3B;--dk-text:#D4DCE6;--dk-dim:#8FA0B5;--dk-accent:#5FE0B7;background:var(--dk-bg)!important;border-color:var(--dk-line)!important}
+            .adm--dense .adm-drawer>div:first-child{border-color:var(--dk-line)!important;padding:.85rem .75rem .7rem}
+            .adm--dense .adm-drawer b,.adm--dense .adm-drawer h2{color:#fff!important}
+            .adm--dense .adm-drawer .adm-drawer__site{color:var(--dk-accent)}
+            .adm--dense .adm-drawer .adm-drawer__glabel,.adm--dense .adm-drawer .adm-group__head{font-size:11.5px;font-weight:500;color:var(--dk-dim);padding:.35rem .6rem}
+            .adm--dense .adm-drawer .adm-group__head:hover{background:transparent;color:#fff}
+            .adm--dense .adm-drawer .adm-group__head::after{border-color:var(--dk-dim)}
+            .adm--dense .adm-drawer .adm-group__n{display:none}
+            .adm--dense .adm-drawer .adm-link{padding:.3rem .6rem;font-size:13px;margin-bottom:1px;border-radius:8px;color:var(--dk-text)}
+            .adm--dense .adm-drawer .adm-link svg{display:none}
+            .adm--dense .adm-drawer .adm-link:not(.sidebar-active):hover{background:var(--dk-line);color:#fff}
+            .adm--dense .adm-drawer .adm-link.sidebar-active{background:var(--dk-line)!important;color:#fff!important;box-shadow:inset -2px 0 0 var(--dk-accent)}
+            .adm--dense .adm-drawer .adm-count{background:transparent;color:var(--dk-accent);font-size:11px;padding:0}
+            .adm--dense .adm-drawer .adm-drawer__sub{background:var(--dk-line);color:var(--dk-dim);font-size:12px}
+            .adm--dense .adm-drawer .adm-drawer__sub a{color:var(--dk-accent)!important}
+            .adm--dense .adm-drawer nav{margin-top:.25rem;padding-inline:.4rem}
+        }
         .adm--dense main{padding:.6rem .8rem;font-size:13px}
         .adm--dense main table th,.adm--dense main table td{padding-top:.4rem!important;padding-bottom:.4rem!important}
         .adm--dense main .p-6{padding:.9rem}

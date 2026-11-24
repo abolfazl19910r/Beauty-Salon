@@ -14,6 +14,22 @@
         .bk-tab[aria-current] b { color: inherit; }
         .bk-search { flex: 1 1 16rem; display: flex; align-items: center; gap: .5rem; height: 42px; padding: 0 .85rem; border-radius: .75rem; background: var(--admin-bg); border: 1px solid var(--admin-border); }
         .bk-search input { flex: 1; min-width: 0; border: 0 !important; background: transparent !important; box-shadow: none !important; padding: 0; font: inherit; font-size: .9rem; color: var(--admin-text); }
+        .desk-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: .8rem; align-items: start; }
+        @media (min-width: 1100px) { .desk-layout { grid-template-columns: minmax(0, 1fr) 20rem; } }
+        .desk-panel { position: sticky; top: 4.5rem; padding: 1rem; display: flex; flex-direction: column; gap: .8rem; font-size: 13.5px; min-height: 18rem; }
+        .desk-panel:focus { outline: none; }
+        .desk-panel__body { display: flex; flex-direction: column; gap: .8rem; }
+        .desk-panel__grid { display: grid; grid-template-columns: auto 1fr; gap: .4rem .9rem; padding: .75rem; border-radius: .75rem; background: var(--admin-bg); }
+        .desk-panel__grid dt { color: var(--admin-text-dim); }
+        .desk-panel__grid dd { color: var(--admin-text); margin: 0; }
+        .desk-panel .adm-act--primary kbd { background: transparent; border-color: currentColor; color: inherit; opacity: .75; font-size: 11px; padding: 0 5px; }
+        .desk-panel__empty { color: var(--admin-text-dim); line-height: 1.9; }
+        .desk-panel__keys { margin-top: auto; padding-top: .75rem; border-top: 1px solid var(--admin-border); font-size: 12px; line-height: 2.1; color: var(--admin-text-dim); }
+        [data-desk-row] { cursor: pointer; }
+        [data-desk-row]:hover { background: var(--admin-accent-light); }
+        [data-desk-row].is-selected { background: rgb(var(--m-gold) / .1); box-shadow: inset -3px 0 0 rgb(var(--m-gold)); }
+        [data-desk-row]:focus { outline: none; }
+        [data-desk-row]:focus-visible { outline: 2px solid rgb(var(--m-gold)); outline-offset: -2px; }
         .bk-select { height: 42px; padding: 0 .6rem; border-radius: .75rem; border: 1px solid var(--admin-border); background: var(--admin-surface); color: var(--admin-text); font: inherit; font-size: .88rem; }
     </style>
 @endpush
@@ -25,6 +41,8 @@
         $tabUrl = fn (string $tab) => route('admin.bookings.index', array_filter(['tab' => $tab] + array_diff_key($filters, ['tab' => 1]), fn ($v) => $v !== null && $v !== ''));
         $hasFilters = count(array_intersect_key($filters, array_flip(['q', 'status', 'specialist_id']))) > 0;
         $noShowLabels = app(\App\Services\Booking\NoShowRecord::class)->labelsFor($bookings->pluck('user_id'));
+        // پوسته‌ی «میز پذیرش» (بسته‌ی ۲ب): فهرست + پنل جزئیات نوبت انتخاب‌شده کنار آن
+        $desk = app(\App\Support\Themes\CurrentAppearance::class)->get()->admin === 'dense';
     @endphp
     <div class="fade-in flex flex-col gap-4">
         <div class="flex items-center justify-between gap-3 flex-wrap">
@@ -81,7 +99,8 @@
             @endif
         </form>
 
-        <section class="bk-card" aria-label="فهرست نوبت‌ها">
+        <div class="{{ $desk ? 'desk-layout' : '' }}">
+        <section class="bk-card min-w-0" aria-label="فهرست نوبت‌ها" @if ($desk) data-desk-list @endif>
             <div class="overflow-x-auto relative">
                 <table class="w-full text-sm text-right" style="min-width: 54rem;" data-bookings-table>
                     <thead>
@@ -96,7 +115,8 @@
                     </thead>
                     <tbody>
                         @forelse ($bookings as $booking)
-                            <tr style="border-top: 1px solid var(--admin-border);" data-booking-row="{{ $booking->id }}">
+                            <tr style="border-top: 1px solid var(--admin-border);" data-booking-row="{{ $booking->id }}"
+                                @if ($desk) data-desk-row data-panel-url="{{ route('admin.bookings.panel', $booking) }}" tabindex="-1" @endif>
                                 <td class="px-4 py-3">
                                     <b style="color: var(--admin-text);">{{ fa_time($booking->booking_time) }}</b>
                                     <span class="block text-xs" style="color: var(--admin-text-dim);">{{ fa_date($booking->booking_time) }}</span>
@@ -141,5 +161,82 @@
                 </div>
             @endif
         </section>
+        @if ($desk)
+            <aside class="desk-panel bk-card" aria-label="جزئیات نوبت انتخاب‌شده" aria-live="polite" data-desk-panel>
+                <div data-desk-panel-slot>
+                    <p class="desk-panel__empty">{{ $bookings->isEmpty() ? 'نوبتی برای نمایش نیست.' : 'روی یک نوبت بزنید یا با J و K بین ردیف‌ها بروید.' }}</p>
+                </div>
+                <p class="desk-panel__keys">
+                    <kbd dir="ltr">J</kbd>/<kbd dir="ltr">K</kbd> ردیف بعد و قبل، <kbd dir="ltr">Enter</kbd> جزئیات، <kbd dir="ltr">T</kbd> تأیید (با پرسش)،
+                    <kbd dir="ltr">N</kbd> نوبت تازه، <kbd dir="ltr">/</kbd> جستجو
+                </p>
+            </aside>
+        @endif
+        </div>
     </div>
 @endsection
+
+@if ($desk ?? false)
+@push('scripts')
+<script @nonce>
+    // «میز پذیرش» (بسته‌ی ۲ب): انتخاب ردیف با کلیک یا J/K، پنل جزئیات با fetch بی بارگذاری صفحه، Enter فوکوس به پنل،
+    // T تأیید نوبت منتظر — همیشه با پرسش. فقط وقتی فوکوس در فیلد متنی نیست و میانبرها روشن‌اند.
+    (function () {
+        var rows = Array.prototype.slice.call(document.querySelectorAll('[data-desk-row]'));
+        var slot = document.querySelector('[data-desk-panel-slot]');
+        if (!rows.length || !slot) return;
+        var current = -1, timer = null, request = 0;
+
+        function load(row) {
+            var id = ++request;
+            slot.setAttribute('aria-busy', 'true');
+            fetch(row.getAttribute('data-panel-url'), { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' }, credentials: 'same-origin' })
+                .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+                .then(function (html) { if (id === request) { slot.innerHTML = html; slot.removeAttribute('aria-busy'); } })
+                .catch(function () { if (id === request) { slot.innerHTML = '<p class="desk-panel__empty">بار کردن جزئیات نشد؛ دوباره امتحان کنید.</p>'; slot.removeAttribute('aria-busy'); } });
+        }
+        function select(index, immediate) {
+            if (index < 0 || index >= rows.length) return;
+            if (current >= 0) { rows[current].classList.remove('is-selected'); rows[current].removeAttribute('aria-selected'); }
+            current = index;
+            var row = rows[index];
+            row.classList.add('is-selected'); row.setAttribute('aria-selected', 'true');
+            row.focus({ preventScroll: true });
+            row.scrollIntoView({ block: 'nearest' });
+            clearTimeout(timer);
+            if (immediate) load(row); else timer = setTimeout(function () { load(row); }, 180);
+        }
+
+        rows.forEach(function (row, index) {
+            row.addEventListener('click', function (e) {
+                if (e.target.closest('a,button,form,summary,details,input,select')) return;
+                select(index, true);
+            });
+        });
+
+        function typing(el) {
+            return el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
+        }
+        document.addEventListener('keydown', function (e) {
+            if (e.ctrlKey || e.metaKey || e.altKey || typing(e.target)) return;
+            if (window.mahruShortcuts && !window.mahruShortcuts.enabled()) return;
+            if (document.querySelector('dialog[open]')) return;
+            if (e.code === 'KeyJ') { e.preventDefault(); select(current < 0 ? 0 : Math.min(current + 1, rows.length - 1)); }
+            else if (e.code === 'KeyK') { e.preventDefault(); select(current < 0 ? 0 : Math.max(current - 1, 0)); }
+            else if (e.key === 'Enter' && current >= 0 && e.target === rows[current]) {
+                e.preventDefault(); clearTimeout(timer); load(rows[current]);
+                var panel = document.querySelector('[data-desk-panel]');
+                if (panel) { panel.setAttribute('tabindex', '-1'); panel.focus({ preventScroll: true }); }
+            }
+            else if (e.code === 'KeyT' && current >= 0) {
+                var id = rows[current].getAttribute('data-booking-row');
+                var form = document.querySelector('[data-desk-panel-body="' + id + '"] form[data-desk-confirm]');
+                if (!form) return;
+                e.preventDefault();
+                form.requestSubmit(); // data-ui-confirm پیش از ارسال می‌پرسد
+            }
+        });
+    })();
+</script>
+@endpush
+@endif

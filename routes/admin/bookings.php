@@ -17,6 +17,8 @@ Route::prefix('bookings')->name('bookings.')->group(function () {
     Route::post('/{booking}/no-show', \App\Http\Controllers\Admin\Booking\AdminBookingNoShowController::class)->name('no-show');
     // «یادآوری پرداخت» (بسته‌ی ۲ ظاهری، ۲۰۲۶-۱۱-۲۵)
     Route::post('/{booking}/payment-reminder', \App\Http\Controllers\Admin\Booking\AdminBookingPaymentReminderController::class)->name('payment-reminder');
+    // پنل جزئیات «میز پذیرش» (بسته‌ی ۲ب)
+    Route::get('/{booking}/panel', \App\Http\Controllers\Admin\Booking\AdminBookingPanelController::class)->name('panel');
     Route::get('/{booking}', [AdminBookingController::class, 'show'])->name('show');
     Route::put('/{booking}', [AdminBookingController::class, 'update'])->name('update');
     Route::delete('/{booking}', [AdminBookingController::class, 'destroy'])->name('destroy');
