@@ -92,6 +92,18 @@
         table thead { background: var(--sa-soft); }
         .sa-nav-group { font-size: .72rem; letter-spacing: .04em; color: var(--sa-side-text); opacity: .65; padding: .9rem 1rem .3rem; }
         .sa-badge { border-radius: 999px; padding: 0 .5rem; font-size: .75rem; font-weight: 700; margin-inline-start: .35rem; background: var(--sa-soft); color: var(--sa-accent); }
+        /* بسته‌ی ۱ ظاهری: شمار «کار مانده» در منو کهربایی، هشدار قرمز؛ عدد سمت چپ آیتم */
+        .sa-nav-link { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+        .sa-nav-link .sa-badge { background: #E5B262; color: #2B1A02; margin: 0; }
+        .sa-nav-link .sa-badge.sa-badge-bad { background: var(--sa-danger); color: #FFFFFF; }
+        html[data-theme=dark] .sa-nav-link .sa-badge.sa-badge-bad { background: #C8503F; }
+        .sa-search { flex: 0 1 26rem; display: flex; align-items: center; gap: .5rem; height: 40px; padding: 0 .85rem; border-radius: 10px; background: var(--sa-bg); border: 1px solid var(--sa-border); }
+        .sa-search:focus-within { border-color: var(--sa-accent); box-shadow: 0 0 0 3px rgba(14, 90, 110, .14); }
+        .sa-search input { flex: 1; min-width: 0; border: 0 !important; background: transparent !important; box-shadow: none !important; padding: 0; font: inherit; font-size: .9rem; color: var(--sa-text); }
+        .sa-search input:focus { outline: none; }
+        .sa-search-btn { display: none; }
+        @media (max-width: 767px) { .sa-search { display: none; } .sa-search-btn { display: inline-flex; } }
+        .sa-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
         .sa-badge-bad { background: var(--sa-danger); color: #FFFFFF; }
         /* ورودی‌های بی‌کلاس (پلاگین forms پس‌زمینه‌ی سفید ثابت می‌دهد) */
         input:not([type=checkbox]):not([type=radio]):not([type=file]), select, textarea { background-color: var(--sa-surface); color: var(--sa-text); border-color: var(--sa-border); }
@@ -188,7 +200,6 @@
                             ['superadmin.dashboard', 'superadmin.dashboard', 'داشبورد', 0],
                             ['superadmin.salons.index', 'superadmin.salons.*', 'مدیریت سالن‌ها', 0],
                             ['superadmin.verifications.index', 'superadmin.verifications.*', 'احراز سالن‌ها', $saVerifications],
-                            ['superadmin.search.index', 'superadmin.search.*', 'جستجوی شماره', 0],
                             ['superadmin.plans.index', 'superadmin.plans.*', 'پلن‌ها و امکانات', 0],
                             ['superadmin.templates.index', 'superadmin.templates.*', 'قالب‌ها', 0],
                         ],
@@ -241,7 +252,16 @@
                     </button>
                     <h1 class="text-lg font-bold truncate">@yield('title')</h1>
                 </div>
+                {{-- بسته‌ی ۱ ظاهری: جستجوی سراسری (سالن، شماره، فاکتور)؛ روی موبایل فقط آیکن ذره‌بین --}}
+                <form method="GET" action="{{ route('superadmin.search.index') }}" class="sa-search" role="search" data-global-search>
+                    <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--sa-text-dim);" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+                    <label for="sa-global-q" class="sa-sr">جستجو در پلتفرم</label>
+                    <input id="sa-global-q" type="search" name="q" value="{{ request()->routeIs('superadmin.search.*') ? request('q') : '' }}" placeholder="جستجوی سالن، شماره موبایل یا فاکتور" maxlength="100" autocomplete="off">
+                </form>
                 <div class="flex items-center gap-3 md:gap-4 shrink-0">
+                    <a href="{{ route('superadmin.search.index') }}" class="sa-search-btn w-[38px] h-[38px] items-center justify-center rounded-full" style="border: 1px solid var(--sa-border); color: var(--sa-accent); background: var(--sa-soft);" aria-label="جستجو">
+                        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+                    </a>
                     @include('partials.mahru-theme-toggle')
                     <a href="{{ route('superadmin.notifications.index') }}" class="relative inline-flex w-[38px] h-[38px] items-center justify-center rounded-full" style="border: 1px solid var(--sa-border); color: var(--sa-accent); background: var(--sa-soft);" aria-label="اعلان‌ها">
                         <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>

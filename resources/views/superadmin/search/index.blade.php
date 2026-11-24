@@ -1,19 +1,24 @@
 @extends('layouts.superadmin')
 
-@section('title', 'جستجوی شماره')
+@section('title', 'جستجو')
 
 @section('content')
-    <form method="GET" class="sa-card p-4 mb-5 flex flex-wrap gap-3 items-end">
+    {{-- بسته‌ی ۱ ظاهری: جستجوی سراسری نوار بالا (سالن، شماره‌ی موبایل، فاکتور) — پیش‌تر فقط «جستجوی شماره» --}}
+    <form method="GET" class="sa-card p-4 mb-5 flex flex-wrap gap-3 items-end" role="search">
         <div class="flex-1" style="min-width: 16rem;">
-            <label class="sa-label" for="q">شماره‌ی موبایل (کامل یا بخشی از آن، دست‌کم ۴ رقم)</label>
-            <input id="q" name="q" dir="ltr" class="sa-input" value="{{ $q }}" placeholder="09121234567" autofocus>
+            <label class="sa-label" for="q">نام یا آدرس سالن، شماره‌ی موبایل (دست‌کم ۴ رقم) یا شماره‌ی فاکتور / کد پیگیری</label>
+            <input id="q" name="q" type="search" class="sa-input" value="{{ $q }}" placeholder="مثلاً راستا یا 09121234567" autofocus>
         </div>
         <button type="submit" class="sa-btn">جستجو در همه‌ی سالن‌ها</button>
     </form>
 
-    @if ($query !== '' && strlen($query) < 4)
-        <div class="sa-card p-6 text-center" style="color: var(--sa-text-dim);">دست‌کم ۴ رقم وارد کنید.</div>
-    @elseif (strlen($query) >= 4)
+    @php
+        $total = collect($results)->sum(fn ($c) => $c->count());
+        $tooShort = $numeric ? strlen($query) < 4 && $results['invoices']->isEmpty() : mb_strlen(trim((string) $q)) < 2;
+    @endphp
+    @if (trim((string) $q) !== '' && $tooShort && $total === 0)
+        <div class="sa-card p-6 text-center" style="color: var(--sa-text-dim);">{{ $numeric ? 'دست‌کم ۴ رقم وارد کنید.' : 'دست‌کم دو حرف وارد کنید.' }}</div>
+    @elseif (trim((string) $q) !== '')
         @php
             $roleLabel = function ($user) {
                 if ($user->roles->contains('name', 'super-admin')) return 'ابرمدیر';
@@ -23,10 +28,50 @@
                 if ($user->roles->contains('name', 'specialist')) return 'کارشناس';
                 return $user->user_type === 'customer' ? 'مشتری' : 'کادر';
             };
-            $total = $results['users']->count() + $results['specialists']->count() + $results['demos']->count();
         @endphp
         @if ($total === 0)
-            <div class="sa-card p-6 text-center" style="color: var(--sa-text-dim);">با شماره‌ی <span dir="ltr">{{ $query }}</span> چیزی پیدا نشد.</div>
+            <div class="sa-card p-6 text-center" style="color: var(--sa-text-dim);">برای «<bdi>{{ $q }}</bdi>» چیزی پیدا نشد.</div>
+        @endif
+
+        @if ($results['salons']->isNotEmpty())
+            <div class="sa-card mb-5 overflow-x-auto" data-search-salons>
+                <h2 class="font-bold px-5 pt-4 pb-2">سالن‌ها ({{ fa_num($results['salons']->count()) }})</h2>
+                <table class="w-full text-sm text-right">
+                    <thead><tr style="color: var(--sa-text-dim);"><th class="py-2 px-4">سالن</th><th class="py-2 px-4">مالک</th><th class="py-2 px-3">پلن</th><th class="py-2 px-3">اشتراک</th><th class="py-2 px-3">وضعیت</th></tr></thead>
+                    <tbody>
+                    @foreach ($results['salons'] as $salon)
+                        @php $owner = $salon->admins->firstWhere('pivot.role', 'owner'); @endphp
+                        <tr style="border-top: 1px solid var(--sa-border);" data-search-salon>
+                            <td class="py-2 px-4"><a href="{{ route('superadmin.salons.edit', $salon) }}" class="font-bold" style="color: var(--sa-accent);">{{ $salon->name }}</a>
+                                <div><span class="sa-ltr" style="color: var(--sa-text-dim);">{{ \App\Support\SalonAddress::short($salon) }}</span></div></td>
+                            <td class="py-2 px-4">{{ $owner?->name ?? '—' }}@if ($owner?->phone)<div class="text-xs" style="color: var(--sa-text-dim);">{{ \App\Support\Fa::digits($owner->phone) }}</div>@endif</td>
+                            @include('superadmin.partials.salon-cells', ['cells' => ['plan', 'subscription', 'status']])
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+
+        @if ($results['invoices']->isNotEmpty())
+            <div class="sa-card mb-5 overflow-x-auto" data-search-invoices>
+                <h2 class="font-bold px-5 pt-4 pb-2">فاکتورها ({{ fa_num($results['invoices']->count()) }})</h2>
+                <table class="w-full text-sm text-right">
+                    <thead><tr style="color: var(--sa-text-dim);"><th class="py-2 px-4">فاکتور</th><th class="py-2 px-4">سالن</th><th class="py-2 px-3">مبلغ</th><th class="py-2 px-3">وضعیت</th><th class="py-2 px-3">کد پیگیری</th><th class="py-2 px-3">تاریخ</th></tr></thead>
+                    <tbody>
+                    @foreach ($results['invoices'] as $invoice)
+                        <tr style="border-top: 1px solid var(--sa-border);" data-search-invoice>
+                            <td class="py-2 px-4"><a href="{{ route('superadmin.payments.show', $invoice) }}" class="font-bold" style="color: var(--sa-accent);">#{{ fa_num($invoice->id) }}</a></td>
+                            <td class="py-2 px-4">{{ $invoice->salon?->name ?? '—' }}</td>
+                            <td class="py-2 px-3">{{ fa_money($invoice->amount, true) }}</td>
+                            <td class="py-2 px-3"><x-sa.pill :tone="['paid' => 'success', 'failed' => 'danger'][$invoice->status] ?? 'warn'">{{ ['paid' => 'پرداخت‌شده', 'pending' => 'در انتظار', 'failed' => 'ناموفق'][$invoice->status] ?? $invoice->status }}</x-sa.pill></td>
+                            <td class="py-2 px-3"><span class="sa-ltr">{{ $invoice->ref_id ?? '—' }}</span></td>
+                            <td class="py-2 px-3">{{ fa_date($invoice->paid_at ?? $invoice->created_at) }}</td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
         @endif
 
         @if ($results['users']->isNotEmpty())
