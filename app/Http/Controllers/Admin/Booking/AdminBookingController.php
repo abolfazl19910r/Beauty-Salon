@@ -30,21 +30,25 @@ class AdminBookingController extends Controller
 
     public function index(Request $request): View
     {
-        $filters = [
-            'status' => ($request->has('status') && $request->status !== '') ? $request->status : null,
-            'date' => $request->filled('date') ? $request->date : null,
-        ];
+        // بسته‌ی ۲ ظاهری (۲۰۲۶-۱۱-۲۴): تب امروز/فردا/این هفته/همه، جستجوی مشتری، فیلتر وضعیت و کارشناس
+        $validated = $request->validate([
+            'tab' => ['nullable', \Illuminate\Validation\Rule::in(array_keys(\App\Services\Admin\Booking\AdminBookingListFilter::TABS))],
+            'q' => ['nullable', 'string', 'max:100'],
+            'status' => ['nullable', \Illuminate\Validation\Rule::in(array_keys(\App\Support\Bookings\BookingLabels::statusOptions()))],
+            'specialist_id' => ['nullable', 'integer'],
+        ]);
+        $filters = array_filter($validated, fn ($v) => $v !== null && $v !== '');
+        $filters['tab'] ??= \App\Services\Admin\Booking\AdminBookingListFilter::DEFAULT_TAB;
 
-        $bookings = $this->bookingRepository->paginateWithFilters($filters, 15);
-        $stats = $this->bookingRepository->getStats($filters);
-        $hasDateFilter = $request->filled('date');
+        $list = app(\App\Services\Admin\Booking\AdminBookingListFilter::class);
 
         return view('admin.bookings.index', [
-            'bookings' => $bookings,
-            'totalBookings' => $stats['total'],
-            'confirmedBookings' => $stats['confirmed'],
-            'cancelledBookings' => $stats['cancelled'],
-            'hasDateFilter' => $hasDateFilter,
+            'bookings' => $list->paginate($filters, 15),
+            'filters' => $filters,
+            'tabCounts' => $list->tabCounts($filters),
+            'waitingCount' => $list->waitingCount(),
+            'totalBookings' => \App\Models\Booking::query()->count(),
+            'specialists' => $this->specialistRepository->all(),
         ]);
     }
 

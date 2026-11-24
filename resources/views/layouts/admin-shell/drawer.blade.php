@@ -18,7 +18,7 @@
                     <span class="text-xs truncate" style="color: var(--admin-text-light);">پنل مدیریت سالن</span>
                 </span>
             </a>
-            <a href="{{ $adminSalon->publicUrl() }}" target="_blank" rel="noopener" class="adm-drawer__site" dir="ltr">{{ \App\Support\SalonAddress::short($adminSalon) }}</a>
+            <a href="{{ $adminSalon->publicUrl() }}" target="_blank" rel="noopener" class="adm-drawer__site font-mono" dir="ltr">{{ \App\Support\SalonAddress::short($adminSalon) }}</a>
         @else
             <h2 class="text-lg font-bold" style="color: var(--admin-accent);">پنل مدیریت</h2>
             <p class="text-xs mt-1" style="color: var(--admin-text-light);">سیستم مدیریت سالن زیبایی</p>

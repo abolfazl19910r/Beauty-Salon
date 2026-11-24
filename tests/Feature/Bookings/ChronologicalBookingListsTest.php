@@ -62,7 +62,7 @@ class ChronologicalBookingListsTest extends TestCase
         $this->seedBookings();
         $admin = User::factory()->create(['is_admin' => true]);
 
-        $this->actingAs($admin)->get(route('admin.bookings.index'))->assertOk()
+        $this->actingAs($admin)->get(route('admin.bookings.index', ['tab' => 'all']))->assertOk()
             ->assertViewHas('bookings', fn ($bookings) => $bookings->pluck('id')->all() === $this->expected());
     }
 

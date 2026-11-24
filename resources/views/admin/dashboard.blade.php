@@ -78,7 +78,7 @@
                     <div class="p-4 flex flex-col gap-2" id="salon-public-link-card">
                         <b class="text-sm" style="color: var(--admin-text);">لینک رزرو را به مشتری‌ها بدهید</b>
                         <div class="flex gap-2 items-center flex-wrap">
-                            <span class="dash-code" data-salon-link>{{ \App\Support\SalonAddress::short($salon) }}</span>
+                            <span class="dash-code font-mono" dir="ltr" data-salon-link>{{ \App\Support\SalonAddress::short($salon) }}</span>
                             <button type="button" data-copy-salon-link="{{ $publicUrl }}" class="adm-act">کپی لینک</button>
                             <a href="{{ route('admin.salon-qr.index') }}" class="adm-act" data-salon-qr-page-link>QR و پوستر</a>
                             <a href="{{ $publicUrl }}" target="_blank" rel="noopener" class="adm-act adm-act--ghost">دیدن صفحه</a>

@@ -159,7 +159,7 @@ class NoShowCustomerTest extends TestCase
         $owner = User::factory()->create(['is_admin' => true]);
 
         $this->actingAs($owner)->get(route('admin.bookings.show', $booking))->assertOk()->assertSee('بدقول: ۲ بار نیامد در ۹۰ روز');
-        $this->actingAs($owner)->get(route('admin.bookings.index'))->assertOk()->assertSee('بدقول: ۲ بار نیامد در ۹۰ روز');
+        $this->actingAs($owner)->get(route('admin.bookings.index', ['tab' => 'all']))->assertOk()->assertSee('بدقول: ۲ بار نیامد در ۹۰ روز');
 
         $presented = \App\Services\Api\StaffBookingPresenter::present($booking->load(['user', 'service']));
         $this->assertSame('بدقول: ۲ بار نیامد در ۹۰ روز', $presented['customer']['no_show_label']);

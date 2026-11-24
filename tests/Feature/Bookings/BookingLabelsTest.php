@@ -54,13 +54,13 @@ class BookingLabelsTest extends TestCase
         Booking::factory()->create(['status' => 'pending_payment', 'booking_time' => now()->addDay()]);
         Booking::factory()->create(['status' => 'confirmed', 'booking_time' => now()->addDays(2)]);
 
-        $this->actingAs($admin)->get(route('admin.bookings.index'))->assertOk()
+        $this->actingAs($admin)->get(route('admin.bookings.index', ['tab' => 'all']))->assertOk()
             ->assertSee('data-booking-status="pending_payment"', false)
             ->assertSee('منتظر پرداخت')
             ->assertDontSee('>pending_payment<', false)
-            ->assertSee(route('admin.bookings.index', ['status' => 'pending_payment']), false);
+            ->assertSee('<option value="pending_payment"', false); // فیلتر وضعیت (بسته‌ی ۲ ظاهری: select در فرم)
 
-        $this->actingAs($admin)->get(route('admin.bookings.index', ['status' => 'pending_payment']))->assertOk()
+        $this->actingAs($admin)->get(route('admin.bookings.index', ['tab' => 'all', 'status' => 'pending_payment']))->assertOk()
             ->assertViewHas('bookings', fn ($bookings) => $bookings->total() === 1);
 
         $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()

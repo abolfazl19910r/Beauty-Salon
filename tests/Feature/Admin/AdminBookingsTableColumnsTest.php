@@ -31,7 +31,7 @@ class AdminBookingsTableColumnsTest extends TestCase
         foreach (['side', 'rail', 'top', 'dense'] as $template) {
             $salon->forceFill(['admin_theme' => $template === 'side' ? null : $template])->saveQuietly();
 
-            $html = $this->actingAs($admin)->get(route('admin.bookings.index'))->assertOk()->getContent();
+            $html = $this->actingAs($admin)->get(route('admin.bookings.index', ['tab' => 'all']))->assertOk()->getContent();
             [$headers, $rows] = $this->bookingsTable($html);
 
             $this->assertNotEmpty($rows, "قالب {$template}: ردیفی نیست");
@@ -42,12 +42,13 @@ class AdminBookingsTableColumnsTest extends TestCase
             $cells = $rows[0];
             $column = fn (string $title) => $cells[array_search($title, $headers, true)];
 
-            $this->assertStringContainsString($booking->service->name, $column('خدمت'), $template);
-            $this->assertStringContainsString($booking->specialist->name, $column('کارشناس'), $template);
-            $this->assertStringContainsString(fa_date($booking->booking_time), $column('تاریخ و ساعت'), $template);
-            $this->assertStringContainsString('پرداخت', $column('پرداخت'), $template);
+            // بسته‌ی ۲ ظاهری: زمان | مشتری | خدمت و کارشناس | وضعیت | مبلغ (+ پرداخت) | کارها
+            $this->assertStringContainsString($booking->service->name, $column('خدمت و کارشناس'), $template);
+            $this->assertStringContainsString($booking->specialist->name, $column('خدمت و کارشناس'), $template);
+            $this->assertStringContainsString(fa_date($booking->booking_time), $column('زمان'), $template);
+            $this->assertStringContainsString('پرداخت', $column('مبلغ'), $template);
             $this->assertStringContainsString('تأییدشده', $column('وضعیت'), $template);
-            $this->assertStringNotContainsString($booking->service->name, $column('تاریخ و ساعت'), $template);
+            $this->assertStringNotContainsString($booking->service->name, $column('زمان'), $template);
         }
     }
 
@@ -61,8 +62,8 @@ class AdminBookingsTableColumnsTest extends TestCase
         $dom->loadHTML('<?xml encoding="UTF-8">'.$html);
         libxml_clear_errors();
         $xpath = new DOMXPath($dom);
-
-        $table = $xpath->query('//table[.//th[normalize-space()="تاریخ و ساعت"]]')->item(0);
+        // بسته‌ی ۲ ظاهری: سرستون «زمان»؛ جدول با data-bookings-table
+        $table = $xpath->query('//table[@data-bookings-table]')->item(0);
         $this->assertInstanceOf(DOMElement::class, $table, 'جدول نوبت‌ها پیدا نشد');
 
         $headers = [];

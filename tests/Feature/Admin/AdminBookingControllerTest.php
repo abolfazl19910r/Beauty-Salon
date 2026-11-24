@@ -62,17 +62,23 @@ class AdminBookingControllerTest extends TestCase
         return $specialist;
     }
 
-    public function test_index_lists_bookings_and_computes_stats(): void
+    public function test_index_lists_bookings_and_computes_tab_counts(): void
     {
-        Booking::factory()->count(2)->create(['status' => 'confirmed']);
-        Booking::factory()->create(['status' => 'cancelled']);
+        // بسته‌ی ۲ ظاهری: تب امروز/فردا/این هفته/همه با شمار؛ «منتظر کار شما» = نوبت آینده‌ی منتظر تأیید یا پرداخت
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-24 08:00:00')); // سه‌شنبه
+        Booking::factory()->create(['status' => 'confirmed', 'booking_time' => now()->setTime(10, 0)]);
+        Booking::factory()->create(['status' => 'pending', 'booking_time' => now()->setTime(12, 0)]);
+        Booking::factory()->create(['status' => 'confirmed', 'booking_time' => now()->addDay()->setTime(10, 0)]);
+        Booking::factory()->create(['status' => 'cancelled', 'booking_time' => now()->addDays(3)->setTime(10, 0)]); // جمعه، همین هفته
+        Booking::factory()->create(['status' => 'confirmed', 'booking_time' => now()->addDays(10)->setTime(10, 0)]);
 
         $response = $this->actingAs($this->admin)->get('/admin/bookings');
 
         $response->assertOk();
-        $response->assertViewHas('totalBookings', 3);
-        $response->assertViewHas('confirmedBookings', 2);
-        $response->assertViewHas('cancelledBookings', 1);
+        $response->assertViewHas('totalBookings', 5);
+        $response->assertViewHas('waitingCount', 1);
+        $response->assertViewHas('tabCounts', ['today' => 2, 'tomorrow' => 1, 'week' => 4, 'all' => 5]);
+        $this->assertCount(2, $response->viewData('bookings')); // پیش‌فرض: امروز
     }
 
     public function test_index_filters_by_status(): void
@@ -80,23 +86,33 @@ class AdminBookingControllerTest extends TestCase
         Booking::factory()->create(['status' => 'pending']);
         Booking::factory()->create(['status' => 'confirmed']);
 
-        $response = $this->actingAs($this->admin)->get('/admin/bookings?status=pending');
+        $response = $this->actingAs($this->admin)->get('/admin/bookings?tab=all&status=pending');
 
         $bookings = $response->viewData('bookings');
         $this->assertCount(1, $bookings);
         $this->assertSame('pending', $bookings->first()->status);
     }
 
-    public function test_index_filters_by_date(): void
+    public function test_index_tomorrow_tab_and_customer_search_and_expert_filter(): void
     {
-        $today = Booking::factory()->create(['booking_time' => now()->addDay()->setTime(10, 0)]);
+        $tomorrow = Booking::factory()->create(['booking_time' => now()->addDay()->setTime(10, 0)]);
         Booking::factory()->create(['booking_time' => now()->addDays(5)->setTime(10, 0)]);
 
-        $response = $this->actingAs($this->admin)->get('/admin/bookings?date='.now()->addDay()->format('Y-m-d'));
-
-        $bookings = $response->viewData('bookings');
+        $bookings = $this->actingAs($this->admin)->get('/admin/bookings?tab=tomorrow')->viewData('bookings');
         $this->assertCount(1, $bookings);
-        $this->assertSame($today->id, $bookings->first()->id);
+        $this->assertSame($tomorrow->id, $bookings->first()->id);
+
+        $customer = \App\Models\User::factory()->create(['name' => 'نسترن آزمون', 'phone' => '09125557788']);
+        $found = Booking::factory()->create(['user_id' => $customer->id, 'booking_time' => now()->addDays(2)->setTime(11, 0)]);
+        foreach (['نسترن', '۵۵۷۷۸۸'] as $q) {
+            $ids = $this->actingAs($this->admin)->get('/admin/bookings?tab=all&q='.urlencode($q))->viewData('bookings')->pluck('id')->all();
+            $this->assertSame([$found->id], $ids, $q);
+        }
+
+        $ids = $this->actingAs($this->admin)->get('/admin/bookings?tab=all&specialist_id='.$found->specialist_id)->viewData('bookings')->pluck('id')->all();
+        $this->assertContains($found->id, $ids);
+
+        $this->actingAs($this->admin)->get('/admin/bookings?tab=nope')->assertSessionHasErrors('tab');
     }
 
     public function test_create_renders_the_form_with_reference_data(): void
