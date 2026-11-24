@@ -14,6 +14,20 @@
         <a href="{{ route('superadmin.plans.create') }}" class="sa-btn whitespace-nowrap">+ پلن جدید</a>
     </div>
 
+    {{-- بسته‌ی ۱ ظاهری: سقف تازه‌ی آزمایشی (۱۰ ← ۲، تصمیم ۱۱-۲۴) — اگر هنوز sync نشده هشدار --}}
+    @php
+        $trialPlan = $plans->firstWhere('is_trial', true);
+        $trialTarget = max(1, (int) config('billing.trial_specialists', 2));
+        $trialStale = $trialPlan && (int) $trialPlan->included_specialists === \App\Services\Plans\DefaultPlans::LEGACY_TRIAL_SPECIALISTS
+            && $trialTarget !== \App\Services\Plans\DefaultPlans::LEGACY_TRIAL_SPECIALISTS;
+    @endphp
+    @if ($trialStale)
+        <div class="sa-card p-4 mb-5 text-sm" style="border-color: var(--sa-warn); background: var(--sa-warn-bg);" data-trial-stale>
+            سقف کارشناس پلن «{{ $trialPlan->name }}» هنوز {{ fa_num($trialPlan->included_specialists) }} است؛ سقف تصمیم‌گرفته‌شده {{ fa_num($trialTarget) }} کارشناس است.
+            دستور <code dir="ltr">php artisan plans:sync-defaults</code> آن را درست می‌کند (عددی که دستی عوض کرده باشید دست نمی‌خورد).
+        </div>
+    @endif
+
     @if ($noPlan > 0)
         <div class="sa-card p-4 mb-5 text-sm" style="border-color: var(--sa-accent);">
             {{ to_persian_num((string) $noPlan) }} سالن هنوز پلن ندارند (همه‌ی امکانات، قیمت از فایل تنظیمات). دستور
@@ -40,11 +54,11 @@
                     <tr style="border-bottom: 1px solid var(--sa-border);" data-plan="{{ $plan->key }}">
                         <td class="p-3">
                             <div class="font-bold">{{ $plan->name }}</div>
-                            <div class="text-xs mt-1" style="color: var(--sa-text-dim);">
-                                <span dir="ltr">{{ $plan->key }}</span>
-                                @if ($plan->is_trial) · آزمایشی {{ to_persian_num((string) $plan->trial_days) }} روز @endif
-                                · {{ $plan->is_active ? 'فعال' : 'غیرفعال' }}
-                                · {{ $plan->is_public ? 'عمومی' : 'غیرعمومی' }}
+                            <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
+                                <span class="sa-ltr" style="color: var(--sa-text-dim);">{{ $plan->key }}</span>
+                                @if ($plan->is_trial)<x-sa.pill tone="accent">آزمایشی {{ fa_num($plan->trial_days) }} روز</x-sa.pill>@endif
+                                <x-sa.pill :tone="$plan->is_active ? 'success' : 'muted'">{{ $plan->is_active ? 'فعال' : 'غیرفعال' }}</x-sa.pill>
+                                <x-sa.pill tone="muted">{{ $plan->is_public ? 'عمومی' : 'غیرعمومی' }}</x-sa.pill>
                             </div>
                         </td>
                         <td class="p-3 persian-number">
@@ -55,10 +69,12 @@
                             @endif
                         </td>
                         <td class="p-3 persian-number">
-                            {{ to_persian_num((string) $plan->included_specialists) }}
-                            @unless ($plan->is_trial)
-                                <div class="text-xs" style="color: var(--sa-text-dim);">+{{ fa_num($plan->extra_specialist_price_per_month) }} هر نفر</div>
-                            @endunless
+                            {{ fa_num($plan->included_specialists) }}
+                            @if ($plan->is_trial)
+                                <div class="text-xs" style="color: var(--sa-text-dim);" data-trial-cap-note>سقف ثابت دوره؛ کمترینِ عدد ثبت‌نام و این عدد</div>
+                            @else
+                                <div class="text-xs" style="color: var(--sa-text-dim);">{{ fa_num($plan->extra_specialist_price_per_month, signed: true) }} تومان هر نفر بیشتر</div>
+                            @endif
                         </td>
                         <td class="p-3 persian-number">{{ fa_num($plan->sms_quota_per_month) }}</td>
                         <td class="p-3 text-xs persian-number">{{ to_persian_num((string) count($plan->featureKeys())) }} از {{ to_persian_num((string) count(\App\Support\Features\Feature::cases())) }}</td>

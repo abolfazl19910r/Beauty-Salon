@@ -133,6 +133,20 @@
         .sa-menu__item--danger { color: var(--sa-danger); font-weight: 700; }
         .sa-menu__item--danger:hover, .sa-menu__item--danger:focus-visible { background: var(--sa-danger-bg); }
         .sa-menu__sep { height: 1px; background: var(--sa-border); margin: .35rem .25rem; }
+        .sa-settings { display: grid; gap: 1.5rem; align-items: start; }
+        .sa-settings__body { display: flex; flex-direction: column; gap: 1.5rem; min-width: 0; max-width: 56rem; }
+        .sa-settings__body > .sa-card { scroll-margin-top: 1rem; }
+        .sa-settings__nav { display: flex; gap: .5rem; overflow-x: auto; padding-bottom: .25rem; }
+        .sa-settings__nav a { white-space: nowrap; font-size: .85rem; padding: .45rem .8rem; border-radius: 999px; border: 1px solid var(--sa-border); background: var(--sa-surface); color: var(--sa-text); }
+        .sa-settings__nav a:hover { border-color: var(--sa-accent); color: var(--sa-accent); }
+        .sa-settings__nav-title { display: none; }
+        @media (min-width: 1024px) {
+            .sa-settings { grid-template-columns: 13rem minmax(0, 1fr); }
+            .sa-settings__nav { position: sticky; top: 1rem; flex-direction: column; gap: 2px; overflow: visible; padding: .75rem; border-radius: 16px; background: var(--sa-surface); border: 1px solid var(--sa-border); }
+            .sa-settings__nav a { border: 0; border-radius: 10px; padding: .55rem .75rem; background: transparent; }
+            .sa-settings__nav a:hover { background: var(--sa-soft); }
+            .sa-settings__nav-title { display: block; font-size: .75rem; color: var(--sa-text-dim); padding: .25rem .75rem .5rem; }
+        }
         .sa-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
         .sa-badge-bad { background: var(--sa-danger); color: #FFFFFF; }
         /* ورودی‌های بی‌کلاس (پلاگین forms پس‌زمینه‌ی سفید ثابت می‌دهد) */

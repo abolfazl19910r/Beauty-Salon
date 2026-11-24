@@ -76,6 +76,10 @@
             <div>
                 <label class="sa-label" for="included_specialists">کارشناس شامل قیمت</label>
                 <input id="included_specialists" name="included_specialists" value="{{ $field('included_specialists', $plan->included_specialists) }}" class="sa-input" inputmode="numeric" dir="ltr">
+                @if ($plan->is_trial)
+                    {{-- بسته‌ی ۱ ظاهری: قاعده‌ی سقف آزمایشی (بسته‌ی ۰، تصمیم ۱۱-۲۴) --}}
+                    <p class="sa-help" data-trial-cap-help>در دوره‌ی آزمایشی سالن هرگز بیش از این عدد کارشناس ندارد، حتی اگر در ثبت‌نام عدد بیشتری زده باشد (سقف = کمترینِ عدد ثبت‌نام و این عدد). بعد از خرید، همان عدد ثبت‌نام. پیش‌فرض {{ fa_num(max(1, (int) config('billing.trial_specialists', 2))) }}.</p>
+                @endif
             </div>
             @unless ($plan->is_trial)
                 <div>

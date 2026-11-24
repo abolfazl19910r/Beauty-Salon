@@ -3,9 +3,25 @@
 @section('title', 'تنظیمات پلتفرم')
 
 @section('content')
-    {{-- بسته‌ی «ح»، ۲: کادرها فاصله‌ی داخلی نداشتند (متن به لبه چسبیده بود) و همه در ستون باریک ۴۴rem بودند --}}
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-    <div class="sa-card sa-card-pad">
+    {{-- بسته‌ی ۱ ظاهری (۲۰۲۶-۱۱-۲۴): کارت‌های دوستونه‌ی نامساوی ← یک ستون با فهرست بخش‌ها (روی دسکتاپ کنار صفحه و چسبان، روی گوشی ردیف بالا) --}}
+    @php
+        $sections = array_filter([
+            'contact-settings' => 'راه‌های تماس',
+            'legal-settings' => 'اطلاعات حقوقی و اینماد',
+            'domain-verification' => 'فایل تأیید دامنه',
+            'push-settings' => 'اعلان اپ‌ها (پوش)',
+            'bot-settings' => \App\Services\Bot\BotSettings::featureEnabled() ? 'ربات اعلان' : null,
+        ]);
+    @endphp
+    <div class="sa-settings">
+    <nav class="sa-settings__nav" aria-label="بخش‌های تنظیمات" data-settings-index>
+        <span class="sa-settings__nav-title">بخش‌ها</span>
+        @foreach ($sections as $id => $label)
+            <a href="#{{ $id }}">{{ $label }}</a>
+        @endforeach
+    </nav>
+    <div class="sa-settings__body">
+    <div class="sa-card sa-card-pad" id="contact-settings">
         <h2 class="sa-card-title">راه‌های تماس و اطلاع‌رسانی</h2>
         <p class="sa-card-desc mb-5">
             این‌ها در صفحه‌ی فروش (پایین صفحه و فرم دمو) نشان داده می‌شوند؛ فیلد خالی یعنی پیش‌فرض فایل ‎.env و اگر آن هم خالی باشد، آن لینک اصلاً نمایش داده نمی‌شود.
@@ -75,7 +91,6 @@
         </form>
     </div>
 
-    <div class="space-y-6">
     {{-- ۲۰۲۶-۱۱-۱۱: تأیید مالکیت دامنه‌ی اینماد با فایل txt (بی سرویس ایمیل روی سرور) — App\Support\Legal\DomainVerificationFile --}}
     <div class="sa-card sa-card-pad" id="domain-verification" data-domain-verification>
         <h2 class="sa-card-title">فایل تأیید مالکیت دامنه (اینماد)</h2>
@@ -129,7 +144,7 @@
         </form>
     </div>
 
-    <div class="sa-card sa-card-pad" data-push-settings>
+    <div class="sa-card sa-card-pad" id="push-settings" data-push-settings>
         <h2 class="sa-card-title">اعلان اپ‌ها (پوش)</h2>
         <p class="sa-card-desc mb-4">
             «آزمایشی»: پیامک مثل قبل همیشه می‌رود و پوش هم؛ فقط نرخ رسید سنجیده می‌شود (۲ تا ۴ هفته). «فعال»: پیامک فقط وقتی اپ رسید نفرستد
@@ -167,7 +182,7 @@
 
     {{-- ربات کنار گذاشته شده (بسته‌ی ۸): فقط با BOT_ENABLED=true دیده می‌شود --}}
     @if (\App\Services\Bot\BotSettings::featureEnabled())
-    <div class="sa-card sa-card-pad" data-bot-status>
+    <div class="sa-card sa-card-pad" id="bot-settings" data-bot-status>
         <h2 class="sa-card-title">ربات اعلان (بله / تلگرام)</h2>
         <p class="sa-card-desc mb-4">
             مدیر، کارشناس و مشتری از کارت «دریافت اعلان‌ها در پیام‌رسان» در پروفایل خودشان به ربات وصل می‌شوند و اعلان‌های حسابشان علاوه بر پیامک در پیام‌رسان هم می‌آید.
