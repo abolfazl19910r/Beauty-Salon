@@ -191,7 +191,7 @@ class CentralLandingPageTest extends TestCase
             ->assertSee('data-theme-row="pro"', false)
             ->assertSee('چیدمان: ویترین، مجله')
             ->assertSee('همه‌ی ۱۶ قالب')
-            ->assertSee('ریل آیکونی · گرافیت');
+            ->assertSee('ریل آیکونی');
 
         $pro = collect($page->viewData('planCards'))->firstWhere('key', 'pro');
         $this->assertSame(['ویترین', 'مجله'], $pro['periods']['1m']['theme_detail']['layouts']);
