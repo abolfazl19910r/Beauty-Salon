@@ -73,14 +73,7 @@
                         <div class="divide-y" style="border-color: rgb(var(--m-gold) / 0.1);">
                             @foreach($userBookings as $booking)
                                 @php
-                                    $statusMap = [
-                                        'pending'         => ['label' => 'در انتظار تایید', 'color' => '#F5C56B'],
-                                        'confirmed'       => ['label' => 'تایید شده',       'color' => 'rgb(var(--m-ok))'],
-                                        'completed'       => ['label' => 'انجام شده',       'color' => 'var(--rasta-gold-light)'],
-                                        'cancelled'       => ['label' => 'لغو شده',         'color' => 'rgb(var(--m-bad))'], 'no_show' => ['label' => 'نیامد',         'color' => 'rgb(var(--m-bad))'],
-                                        'pending_payment' => ['label' => 'در انتظار پرداخت','color' => '#F5A623'],
-                                    ];
-                                    $statusInfo = $statusMap[$booking->status] ?? ['label' => $booking->status, 'color' => 'var(--rasta-cream)'];
+                                    $statusInfo = \App\Support\Bookings\BookingLabels::statusPill($booking->status, 'customer');
                                 @endphp
                                 <div class="p-4 flex items-center justify-between flex-wrap gap-3">
                                     <div class="flex items-center gap-3">

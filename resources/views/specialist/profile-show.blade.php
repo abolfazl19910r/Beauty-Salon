@@ -3,13 +3,7 @@
 @section('title', 'پروفایل من')
 
 @php
-    $statusBadgeMap = [
-        'pending'         => ['label' => 'در انتظار تایید', 'class' => 'bg-m-warn/10 text-m-warn'],
-        'confirmed'       => ['label' => 'تایید شده',       'class' => 'bg-m-ok/10 text-m-ok'],
-        'completed'       => ['label' => 'انجام شده',        'class' => 'bg-[var(--specialist-plum-mid)]/15 text-[var(--specialist-plum-light)]'],
-        'cancelled'       => ['label' => 'لغو شده',          'class' => 'bg-m-bad/10 text-m-bad'], 'no_show' => ['label' => 'نیامد',          'class' => 'bg-m-bad/10 text-m-bad'],
-        'pending_payment' => ['label' => 'در انتظار پرداخت', 'class' => 'bg-m-warn/10 text-m-warn'],
-    ];
+    $statusBadgeMap = \App\Support\Bookings\BookingLabels::statusPills();
 @endphp
 
 @section('content')

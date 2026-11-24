@@ -52,7 +52,7 @@ class StaffBookingController extends StaffController
         $input = $request->validate([
             'from' => ['nullable', 'date_format:Y-m-d'],
             'to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from'],
-            'status' => ['nullable', 'in:'.implode(',', array_keys(StaffBookingPresenter::STATUS_LABELS))],
+            'status' => ['nullable', 'in:'.implode(',', array_keys(\App\Support\Bookings\BookingLabels::statusOptions()))],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:50'],
         ]);
 

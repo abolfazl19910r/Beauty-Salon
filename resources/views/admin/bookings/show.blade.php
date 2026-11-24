@@ -42,30 +42,14 @@
         </div>
 
         @php
-            $statusMap = [
-                'pending'   => ['label'=>'در انتظار تایید', 'bg'=>'rgb(var(--m-warn) / .1)', 'color'=>'rgb(var(--m-warn))', 'border'=>'rgb(var(--m-warn) / .35)'],
-                'confirmed' => ['label'=>'تایید شده',       'bg'=>'rgb(var(--m-ok) / .1)', 'color'=>'rgb(var(--m-ok))', 'border'=>'rgb(var(--m-ok) / .35)'],
-                'completed' => ['label'=>'انجام شده',       'bg'=>'rgb(var(--m-info) / .1)', 'color'=>'rgb(var(--m-info))', 'border'=>'rgb(var(--m-info) / .35)'],
-                'cancelled' => ['label'=>'لغو شده',         'bg'=>'rgb(var(--m-bad) / .1)', 'color'=>'rgb(var(--m-bad))', 'border'=>'rgb(var(--m-bad) / .35)'], 'no_show' => ['label'=>'نیامد',         'bg'=>'rgb(var(--m-bad) / .1)', 'color'=>'rgb(var(--m-bad))', 'border'=>'rgb(var(--m-bad) / .35)'],
-            ];
-            $s = $statusMap[$booking->status] ?? ['label'=>$booking->status,'bg'=>'rgb(var(--m-tx) / .05)','color'=>'rgb(var(--m-tx))','border'=>'var(--m-line2)'];
+            $tv = \App\Support\Bookings\BookingLabels::toneVar(\App\Support\Bookings\BookingLabels::statusTone($booking->status));
+            $s = ['label' => \App\Support\Bookings\BookingLabels::status($booking->status), 'bg' => "rgb(var($tv) / .1)", 'color' => "rgb(var($tv))", 'border' => "rgb(var($tv) / .35)"];
         @endphp
         <div class="rounded-xl px-5 py-3 mb-5 flex items-center gap-3 border"
              style="background:{{ $s['bg'] }}; border-color:{{ $s['border'] }};">
             <span class="text-sm font-semibold" style="color:{{ $s['color'] }};">وضعیت نوبت:</span>
             <span class="text-sm font-bold" style="color:{{ $s['color'] }};">{{ $s['label'] }}</span>
-            @if($booking->payment_status == 'paid')
-                <span class="mr-auto inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium"
-                      style="background:rgb(var(--m-ok) / .1); color:rgb(var(--m-ok));">
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                پرداخت شده
-            </span>
-            @else
-                <span class="mr-auto inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium"
-                      style="background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad));">
-                پرداخت نشده
-            </span>
-            @endif
+            <x-payment-status :booking="$booking" class="mr-auto" />
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">

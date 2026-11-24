@@ -54,12 +54,6 @@ class SpecialistBookingsExport implements FromCollection, ShouldAutoSize, WithHe
 
     private function translateStatus($status)
     {
-        return match ($status) {
-            'completed' => 'انجام شده',
-            'cancelled' => 'لغو شده', 'no_show' => 'نیامد',
-            'pending' => 'در انتظار',
-            'confirmed' => 'تایید شده',
-            default => $status
-        };
+        return \App\Support\Bookings\BookingLabels::status($status);
     }
 }

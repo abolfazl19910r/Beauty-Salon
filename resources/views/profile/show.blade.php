@@ -158,11 +158,7 @@
                                             {{ verta($booking->booking_time)->format('Y/m/d H:i') }}
                                         </td>
                                         <td class="px-5 py-3.5">
-                                            @php
-                                                $st = ['pending'=>['badge-pending','در انتظار تایید'],'confirmed'=>['badge-confirmed','تایید شده'],'cancelled'=>['badge-cancelled','لغو شده'],'pending_payment'=>['badge-pending_payment','در انتظار پرداخت']];
-                                                [$cls, $lbl] = $st[$booking->status] ?? ['badge-pending', $booking->status];
-                                            @endphp
-                                            <span class="status-badge {{ $cls }}">{{ $lbl }}</span>
+                                            <x-booking-status :status="$booking->status" audience="customer" />
                                         </td>
                                         <td class="px-5 py-3.5">
                                             <div class="flex gap-2 text-xs">

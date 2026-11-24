@@ -3,12 +3,7 @@
 @section('title', 'داشبورد')
 
 @php
-    $statusLabels = [
-        'pending'   => 'در انتظار تایید',
-        'confirmed' => 'تایید شده',
-        'completed' => 'انجام شده',
-        'cancelled' => 'لغو شده', 'no_show' => 'نیامد',
-    ];
+    $statusLabels = \App\Support\Bookings\BookingLabels::statusOptions();
 
     $nextBooking = $todaySchedule->first() ?: $upcomingBookings->first();
     $nextBookingIsToday = $todaySchedule->isNotEmpty()
@@ -153,11 +148,8 @@
                                         {{-- پرداخت و مبلغ دریافتی در سالن (۲۰۲۶-۱۰-۲۲) --}}
                                         @unless ($booking->customer_course_id)
                                             <p class="text-xs mt-1 persian-number" data-payment="{{ $booking->payment_status === 'paid' ? 'paid' : 'unpaid' }}">
-                                                @if ($booking->payment_status === 'paid')
-                                                    <span style="color: rgb(var(--m-ok));">پیش‌پرداخت شده</span>
-                                                @else
-                                                    <span style="color: rgb(var(--m-warn));">پیش‌پرداخت نشده</span>
-                                                @endif
+                                                @php $__pay = \App\Support\Bookings\BookingLabels::paymentInfo($booking); @endphp
+                                                <span class="{{ $__pay['class'] }}">{{ $__pay['label'] }}</span>
                                                 @if ($booking->due_at_salon > 0 && $booking->status !== 'no_show')
                                                     <span class="text-[var(--specialist-text-dim)]"> · دریافت در سالن: {{ number_format($booking->due_at_salon) }} تومان</span>
                                                 @endif

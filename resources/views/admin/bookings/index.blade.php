@@ -78,16 +78,10 @@
                         data-ui-blur="border-color: var(--admin-border)">
                     <option value="{{ route('admin.bookings.index', request('date') ? ['date' => request('date')] : []) }}"
                         {{ !request('status') ? 'selected' : '' }}>همه وضعیت‌ها</option>
-                    <option value="{{ route('admin.bookings.index', array_filter(['status' => 'pending',   'date' => request('date')])) }}"
-                        {{ request('status') == 'pending'   ? 'selected' : '' }}>در انتظار تایید</option>
-                    <option value="{{ route('admin.bookings.index', array_filter(['status' => 'confirmed', 'date' => request('date')])) }}"
-                        {{ request('status') == 'confirmed' ? 'selected' : '' }}>تایید شده</option>
-                    <option value="{{ route('admin.bookings.index', array_filter(['status' => 'completed', 'date' => request('date')])) }}"
-                        {{ request('status') == 'completed' ? 'selected' : '' }}>انجام شده</option>
-                    <option value="{{ route('admin.bookings.index', array_filter(['status' => 'cancelled', 'date' => request('date')])) }}"
-                        {{ request('status') == 'cancelled' ? 'selected' : '' }}>لغو شده</option>
-                    <option value="{{ route('admin.bookings.index', array_filter(['status' => 'no_show', 'date' => request('date')])) }}"
-                        {{ request('status') == 'no_show' ? 'selected' : '' }}>نیامد</option>
+                    @foreach(\App\Support\Bookings\BookingLabels::statusOptions() as $statusKey => $statusLabel)
+                        <option value="{{ route('admin.bookings.index', array_filter(['status' => $statusKey, 'date' => request('date')])) }}"
+                            {{ request('status') == $statusKey ? 'selected' : '' }}>{{ $statusLabel }}</option>
+                    @endforeach
                 </select>
 
                 <div class="relative jcal-wrapper">
@@ -192,35 +186,11 @@
                             </td>
 
                             <td class="px-4 py-3">
-                                @if($booking->payment_status == 'paid')
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"
-                                          style="background:rgb(var(--m-ok) / .1); color:rgb(var(--m-ok));">
-                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                    پرداخت شده
-                                </span>
-                                @else
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"
-                                          style="background:rgb(var(--m-bad) / .1); color:rgb(var(--m-bad));">
-                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                    پرداخت نشده
-                                </span>
-                                @endif
+                                <x-payment-status :booking="$booking" />
                             </td>
 
                             <td class="px-4 py-3">
-                                @php
-                                    $statusMap = [
-                                        'pending'   => ['label' => 'در انتظار', 'bg' => 'rgb(var(--m-warn) / .1)', 'color' => 'rgb(var(--m-warn))'],
-                                        'confirmed' => ['label' => 'تایید شده', 'bg' => 'rgb(var(--m-ok) / .1)', 'color' => 'rgb(var(--m-ok))'],
-                                        'completed' => ['label' => 'انجام شده', 'bg' => 'rgb(var(--m-info) / .1)', 'color' => 'rgb(var(--m-info))'],
-                                        'cancelled' => ['label' => 'لغو شده',   'bg' => 'rgb(var(--m-bad) / .1)', 'color' => 'rgb(var(--m-bad))'], 'no_show' => ['label' => 'نیامد',   'bg' => 'rgb(var(--m-bad) / .1)', 'color' => 'rgb(var(--m-bad))'],
-                                    ];
-                                    $s = $statusMap[$booking->status] ?? ['label' => $booking->status, 'bg' => 'rgb(var(--m-tx) / .05)', 'color' => 'rgb(var(--m-tx))'];
-                                @endphp
-                                <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium"
-                                      style="background:{{ $s['bg'] }}; color:{{ $s['color'] }};">
-                                {{ $s['label'] }}
-                            </span>
+                                <x-booking-status :status="$booking->status" />
                             </td>
 
                             <td class="px-4 py-3">

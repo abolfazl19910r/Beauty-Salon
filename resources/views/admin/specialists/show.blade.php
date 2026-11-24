@@ -246,8 +246,7 @@
                                 <tbody>
                                 @foreach($todayBookings as $booking)
                                     @php
-                                        $sm=['pending'=>['در انتظار','rgb(var(--m-warn) / .1)','rgb(var(--m-warn))'],'confirmed'=>['تایید شده','rgb(var(--m-ok) / .1)','rgb(var(--m-ok))'],'cancelled'=>['لغو شده','rgb(var(--m-bad) / .1)','rgb(var(--m-bad))'], 'no_show' => ['نیامد','rgb(var(--m-bad) / .1)','rgb(var(--m-bad))'],'completed'=>['انجام شده','rgb(var(--m-info) / .1)','rgb(var(--m-info))']];
-                                        $bs=$sm[$booking->status]??[$booking->status,'rgb(var(--m-tx) / .05)','rgb(var(--m-tx))'];
+                                        $bs=\App\Support\Bookings\BookingLabels::statusPill($booking->status);
                                     @endphp
                                     <tr style="border-top:1px solid var(--admin-border);">
                                         <td class="px-4 py-2.5 persian-number font-medium" style="color:var(--admin-text);">{{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }}</td>

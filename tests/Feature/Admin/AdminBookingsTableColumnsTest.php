@@ -46,7 +46,7 @@ class AdminBookingsTableColumnsTest extends TestCase
             $this->assertStringContainsString($booking->specialist->name, $column('متخصص'), $template);
             $this->assertStringContainsString(verta($booking->booking_time)->format('Y/m/d'), $column('تاریخ و ساعت'), $template);
             $this->assertStringContainsString('پرداخت', $column('پرداخت'), $template);
-            $this->assertStringContainsString('تایید شده', $column('وضعیت'), $template);
+            $this->assertStringContainsString('تأییدشده', $column('وضعیت'), $template);
             $this->assertStringNotContainsString($booking->service->name, $column('تاریخ و ساعت'), $template);
         }
     }

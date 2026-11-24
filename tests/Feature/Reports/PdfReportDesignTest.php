@@ -40,7 +40,7 @@ class PdfReportDesignTest extends TestCase
         ])->render();
 
         $this->assertStringContainsString('class="masthead"', $html);
-        $this->assertStringContainsString('pill pill-good', $html);
+        $this->assertStringContainsString('pill pill-info', $html); // «انجام‌شده» با tone ‏info از BookingLabels
         $this->assertStringContainsString('<sethtmlpagefooter', $html);
         $this->assertStringNotContainsString('vazir-bold', $html, 'خانواده‌ی فونت تعریف‌نشده');
 

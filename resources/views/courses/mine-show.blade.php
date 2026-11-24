@@ -4,7 +4,7 @@
 @section('content')
     @php extract(\App\Support\Courses\CourseUi::customer()) @endphp
     @php
-        $statusLabels = ['pending' => 'منتظر تایید', 'confirmed' => 'تایید شده', 'completed' => 'انجام شد', 'cancelled' => 'لغو شد', 'no_show' => 'نیامد', 'pending_payment' => 'در انتظار پرداخت'];
+        $statusLabels = \App\Support\Bookings\BookingLabels::statusOptions('customer');
     @endphp
     <div class="max-w-3xl mx-auto fade-in">
         <a href="{{ route('my-courses.index') }}" class="text-sm" style="{{ $dim }}">→ دوره‌های من</a>

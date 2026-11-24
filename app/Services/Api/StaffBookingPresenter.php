@@ -11,14 +11,6 @@ use Morilog\Jalali\Jalalian;
  */
 class StaffBookingPresenter
 {
-    public const STATUS_LABELS = [
-        'pending' => 'در انتظار تأیید',
-        'confirmed' => 'تأیید شده',
-        'completed' => 'انجام شده',
-        'cancelled' => 'لغو شده', 'no_show' => 'نیامد',
-        'pending_payment' => 'در انتظار پرداخت',
-    ];
-
     /**
      * @param  array<int, string>|null  $noShowLabels  برچسب‌های بدقولی یک فهرست (NoShowRecord::labelsFor)؛ null = برای همین نوبت حساب شود
      */
@@ -29,7 +21,7 @@ class StaffBookingPresenter
         return [
             'id' => $booking->id,
             'status' => $booking->status,
-            'status_label' => self::STATUS_LABELS[$booking->status] ?? $booking->status,
+            'status_label' => \App\Support\Bookings\BookingLabels::status($booking->status, \App\Support\Bookings\BookingLabels::AUDIENCE_STAFF),
             'payment_status' => $booking->payment_status,
             'booking_time' => $time?->toIso8601String(),
             'booking_time_jalali' => $time ? Jalalian::fromCarbon($time)->format('Y/m/d H:i') : null,

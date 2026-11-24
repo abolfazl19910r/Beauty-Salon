@@ -35,19 +35,7 @@
 @endpush
 
 @php
-    $statusBadgeMap = [
-        'pending'         => ['label' => 'در انتظار تایید', 'class' => 'bg-m-warn/10 text-m-warn'],
-        'confirmed'       => ['label' => 'تایید شده',       'class' => 'bg-m-ok/10 text-m-ok'],
-        'completed'       => ['label' => 'انجام شده',        'class' => 'bg-[var(--specialist-plum-mid)]/15 text-[var(--specialist-plum-light)]'],
-        'cancelled'       => ['label' => 'لغو شده',          'class' => 'bg-m-bad/10 text-m-bad'], 'no_show' => ['label' => 'نیامد',          'class' => 'bg-m-bad/10 text-m-bad'],
-        'pending_payment' => ['label' => 'در انتظار پرداخت', 'class' => 'bg-m-warn/10 text-m-warn'],
-    ];
-
-    $paymentBadgeMap = [
-        'paid'            => ['label' => 'پرداخت شده',       'class' => 'text-m-ok'],
-        'pending_payment' => ['label' => 'در انتظار پرداخت',  'class' => 'text-m-warn'],
-        'unpaid'          => ['label' => 'پرداخت نشده',       'class' => 'text-m-bad'],
-    ];
+    $statusBadgeMap = \App\Support\Bookings\BookingLabels::statusPills();
 @endphp
 
 @section('content')
@@ -109,12 +97,9 @@
                         <label class="block text-xs text-[var(--specialist-plum-muted)] mb-2">وضعیت سرویس</label>
                         <select name="status" class="w-full rounded-lg px-4 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]" style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);">
                             <option value="">همه وضعیت‌ها</option>
-                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>در انتظار تایید</option>
-                            <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>تایید شده</option>
-                            <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>انجام شده</option>
-                            <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>لغو شده</option>
-                            <option value="no_show" {{ request('status') == 'no_show' ? 'selected' : '' }}>نیامد</option>
-                            <option value="pending_payment" {{ request('status') == 'pending_payment' ? 'selected' : '' }}>در انتظار پرداخت</option>
+                            @foreach(\App\Support\Bookings\BookingLabels::statusOptions() as $statusKey => $statusLabel)
+                                <option value="{{ $statusKey }}" {{ request('status') == $statusKey ? 'selected' : '' }}>{{ $statusLabel }}</option>
+                            @endforeach
                         </select>
                     </div>
 
@@ -122,9 +107,9 @@
                         <label class="block text-xs text-[var(--specialist-plum-muted)] mb-2">وضعیت مالی</label>
                         <select name="payment_status" class="w-full rounded-lg px-4 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]" style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);">
                             <option value="">همه وضعیت‌ها</option>
-                            <option value="paid" {{ request('payment_status') == 'paid' ? 'selected' : '' }}>پرداخت شده</option>
-                            <option value="pending_payment" {{ request('payment_status') == 'pending_payment' ? 'selected' : '' }}>در انتظار پرداخت</option>
-                            <option value="unpaid" {{ request('payment_status') == 'unpaid' ? 'selected' : '' }}>پرداخت نشده</option>
+                            <option value="paid" {{ request('payment_status') == 'paid' ? 'selected' : '' }}>{{ \App\Support\Bookings\BookingLabels::paymentStatus('paid') }}</option>
+                            <option value="pending_payment" {{ request('payment_status') == 'pending_payment' ? 'selected' : '' }}>{{ \App\Support\Bookings\BookingLabels::status('pending_payment') }}</option>
+                            <option value="unpaid" {{ request('payment_status') == 'unpaid' ? 'selected' : '' }}>{{ \App\Support\Bookings\BookingLabels::paymentStatus('unpaid') }}</option>
                         </select>
                     </div>
 
@@ -188,7 +173,7 @@
                                 <span class="specialist-badge px-3 py-1 text-xs font-medium">تا تاریخ: {{ request('date_to') }}</span>
                             @endif
                             @if(request('status'))
-                                <span class="specialist-badge px-3 py-1 text-xs font-medium">وضعیت سرویس</span>
+                                <span class="specialist-badge px-3 py-1 text-xs font-medium">وضعیت: {{ \App\Support\Bookings\BookingLabels::status(request('status')) }}</span>
                             @endif
                             @if(request('payment_status'))
                                 <span class="specialist-badge px-3 py-1 text-xs font-medium">وضعیت مالی</span>
@@ -228,7 +213,7 @@
                         @php
                             $status = trim($booking->status);
                             $statusInfo = $statusBadgeMap[$status] ?? ['label' => 'نامشخص', 'class' => 'bg-m-tx/5 text-[var(--specialist-text-dim)]'];
-                            $paymentInfo = $paymentBadgeMap[$booking->payment_status] ?? ['label' => $booking->payment_status, 'class' => 'text-[var(--specialist-text-dim)]'];
+                            $paymentInfo = \App\Support\Bookings\BookingLabels::paymentInfo($booking);
                         @endphp
                         <div class="p-5 booking-row" style="border-color: var(--specialist-border);">
                             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

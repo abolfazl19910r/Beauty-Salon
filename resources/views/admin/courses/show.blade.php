@@ -3,7 +3,7 @@
 
 @section('content')
     @php
-        $statusLabels = ['pending' => 'منتظر تایید', 'confirmed' => 'تایید شده', 'completed' => 'انجام شد', 'cancelled' => 'لغو شد', 'no_show' => 'نیامد', 'pending_payment' => 'در انتظار پرداخت'];
+        $statusLabels = \App\Support\Bookings\BookingLabels::statusOptions();
         $open = ! in_array($course->status, ['cancelled', 'completed'], true);
     @endphp
     <div class="fade-in" style="max-width: 64rem;">

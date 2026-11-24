@@ -21,14 +21,6 @@ class CustomerPresenter
     /** مهلت پرداخت نوبت «در انتظار پرداخت» پیش از لغو خودکار (CancelUnpaidBookings) — دقیقه */
     public const PAYMENT_WINDOW_MINUTES = 30;
 
-    public const STATUS_LABELS = [
-        'pending_payment' => 'در انتظار پرداخت',
-        'pending' => 'در انتظار تأیید سالن',
-        'confirmed' => 'تأیید شده',
-        'completed' => 'انجام شده',
-        'cancelled' => 'لغو شده', 'no_show' => 'نیامد',
-    ];
-
     /** کارت عمومی سالن — تنها چیزی که پیش از ورود دیده می‌شود (تصمیم ۲۰۲۶-۱۰-۱۱). */
     public static function salonCard(Salon $salon): array
     {
@@ -106,7 +98,7 @@ class CustomerPresenter
         return [
             'id' => $booking->id,
             'status' => $booking->status,
-            'status_label' => self::STATUS_LABELS[$booking->status] ?? $booking->status,
+            'status_label' => \App\Support\Bookings\BookingLabels::status($booking->status, \App\Support\Bookings\BookingLabels::AUDIENCE_CUSTOMER),
             'payment_status' => $booking->payment_status,
             'booking_time' => $time?->toIso8601String(),
             'booking_time_jalali' => $time ? Jalalian::fromCarbon($time)->format('Y/m/d H:i') : null,

@@ -369,19 +369,6 @@ class AdminReportService
      */
     public function getRawBookingsForExport(Carbon $start, Carbon $end): Collection
     {
-        $statusLabels = [
-            'pending' => 'در انتظار',
-            'pending_payment' => 'در انتظار پرداخت',
-            'confirmed' => 'تایید شده',
-            'completed' => 'انجام شده',
-            'cancelled' => 'لغو شده', 'no_show' => 'نیامد',
-        ];
-
-        $paymentStatusLabels = [
-            'paid' => 'پرداخت‌شده',
-            'unpaid' => 'پرداخت‌نشده',
-        ];
-
         $paymentMethodLabels = [
             'wallet' => 'کیف پول',
             'gateway' => 'درگاه بانکی',
@@ -404,7 +391,7 @@ class AdminReportService
             $bookings->pluck('discount_code')->filter()->unique()
         );
 
-        return $bookings->map(function (Booking $booking) use ($statusLabels, $paymentStatusLabels, $paymentMethodLabels, $discountTypeLabels, $discountCodeTypes) {
+        return $bookings->map(function (Booking $booking) use ($paymentMethodLabels, $discountTypeLabels, $discountCodeTypes) {
             $method = $booking->payment_details['method'] ?? null;
             $isAdminManual = (bool) ($booking->payment_details['admin_recorded'] ?? false);
 
@@ -428,8 +415,8 @@ class AdminReportService
                 'service' => $booking->service->name ?? '—',
                 'specialist' => $booking->specialist->name ?? '—',
                 'specialist_phone' => $booking->specialist->phone ?? '—',
-                'status' => $statusLabels[$booking->status] ?? $booking->status,
-                'payment_status' => $paymentStatusLabels[$booking->payment_status] ?? $booking->payment_status,
+                'status' => \App\Support\Bookings\BookingLabels::status($booking->status),
+                'payment_status' => \App\Support\Bookings\BookingLabels::paymentStatus($booking->payment_status),
                 'payment_method' => $isAdminManual
                     ? 'ثبت دستی ادمین'
                     : ($paymentMethodLabels[$method] ?? '—'),

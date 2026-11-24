@@ -309,17 +309,12 @@
                                     <p class="text-xs truncate" style="color:var(--admin-text-dim);">{{ $booking->service?->name ?? '—' }}</p>
                                 </div>
                             </div>
-                            <span class="badge-status flex-shrink-0 mr-2
-                            @if($booking->status=='confirmed') " style="background:rgb(var(--m-info) / .1);color:rgb(var(--m-info));"
-                            @elseif($booking->status=='completed') " style="background:rgb(var(--m-ok) / .1);color:rgb(var(--m-ok));"
-                            @elseif($booking->status=='cancelled') " style="background:rgb(var(--m-bad) / .1);color:rgb(var(--m-bad));"
-                            @else " style="background:rgb(var(--m-warn) / .1);color:rgb(var(--m-warn));"
-                            @endif>
+                            @php $__pill = \App\Support\Bookings\BookingLabels::statusPill($booking->status); @endphp
+                            <span class="badge-status flex-shrink-0 mr-2" style="background:{{ $__pill['bg'] }};color:{{ $__pill['color'] }};" data-booking-status="{{ $booking->status }}">
                             @if(in_array($booking->status, ['pending','confirmed']))
-                                {{ verta($booking->booking_time)->format('H:i') }}
-                            @elseif($booking->status=='completed') تکمیل
-                            @elseif($booking->status=='cancelled') لغو
-                            @else {{ $booking->status }}
+                                {{ fa_time($booking->booking_time) }}
+                            @else
+                                {{ $__pill['label'] }}
                             @endif
                             </span>
                         </div>

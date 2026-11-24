@@ -58,10 +58,9 @@
                                 class="px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-m-gold"
                                 style="background-color: var(--rasta-dark); border: 1px solid rgb(var(--m-gold) / 0.25); color: var(--rasta-cream);">
                             <option value="">همه وضعیت‌ها</option>
-                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>در انتظار تایید</option>
-                            <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>تایید شده</option>
-                            <option value="pending_payment" {{ request('status') == 'pending_payment' ? 'selected' : '' }}>در انتظار پرداخت</option>
-                            <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>لغو شده</option>
+                            @foreach(\App\Support\Bookings\BookingLabels::statusOptions('customer') as $statusKey => $statusLabel)
+                                <option value="{{ $statusKey }}" {{ request('status') == $statusKey ? 'selected' : '' }}>{{ $statusLabel }}</option>
+                            @endforeach
                         </select>
                     </div>
 
@@ -131,57 +130,10 @@
                                     {{ verta($booking->booking_time)->format('Y/m/d H:i') }}
                                 </td>
                                 <td class="px-6 py-4">
-                                    @if($booking->payment_status == 'paid')
-                                        <span class="px-2 py-1 rounded-full text-xs inline-flex items-center" style="background-color: rgb(var(--m-ok) / 0.12); color: rgb(var(--m-ok));">
-                                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                            </svg>
-                                            پرداخت شده
-                                        </span>
-                                    @else
-                                        <span class="px-2 py-1 rounded-full text-xs inline-flex items-center" style="background-color: rgb(var(--m-bad) / 0.12); color: rgb(var(--m-bad));">
-                                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                            </svg>
-                                            پرداخت نشده
-                                        </span>
-                                    @endif
+                                    <x-payment-status :booking="$booking" />
                                 </td>
                                 <td class="px-6 py-4">
-                                    @switch($booking->status)
-                                        @case('pending')
-                                            <span class="px-2 py-1 rounded-full text-xs inline-flex items-center" style="background-color: rgba(251,191,36,0.12); color: #FBBF24;">
-                                                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                </svg>
-                                                در انتظار تایید
-                                            </span>
-                                            @break
-                                        @case('confirmed')
-                                            <span class="px-2 py-1 rounded-full text-xs inline-flex items-center" style="background-color: rgb(var(--m-ok) / 0.12); color: rgb(var(--m-ok));">
-                                                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                </svg>
-                                                تایید شده
-                                            </span>
-                                            @break
-                                        @case('pending_payment')
-                                            <span class="px-2 py-1 rounded-full text-xs inline-flex items-center" style="background-color: rgb(var(--m-gold) / 0.15); color: var(--rasta-gold-light);">
-                                                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                                                </svg>
-                                                در انتظار پرداخت
-                                            </span>
-                                            @break
-                                        @case('cancelled')
-                                            <span class="px-2 py-1 rounded-full text-xs inline-flex items-center" style="background-color: rgb(var(--m-bad) / 0.12); color: rgb(var(--m-bad));">
-                                                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                </svg>
-                                                لغو شده
-                                            </span>
-                                            @break
-                                    @endswitch
+                                    <x-booking-status :status="$booking->status" audience="customer" />
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">

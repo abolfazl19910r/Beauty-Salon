@@ -9,14 +9,7 @@
 {{-- ⭐ ظاهر تازه (۲۰۲۶-۱۰-۱۵): همان داده‌ها؛ رنگ‌ها و چیدمان از partials/pdf-report-style، فونت از App\Support\Pdf\ReportPdf. --}}
 @php
     $salonName = $specialist->salon?->name ?? config('brand.name');
-    $statusLabels = [
-        'completed' => ['انجام شده', 'pill-good'],
-        'confirmed' => ['تایید شده', 'pill-info'],
-        'pending' => ['در انتظار', 'pill-warn'],
-        'pending_payment' => ['در انتظار پرداخت', 'pill-warn'],
-        'cancelled' => ['لغو شده', 'pill-bad'],
-        'no_show' => ['نیامد', 'pill-bad'],
-    ];
+    $statusLabels = collect(\App\Support\Bookings\BookingLabels::statusOptions())->map(fn ($label, $key) => [$label, \App\Support\Bookings\BookingLabels::pdfPill(\App\Support\Bookings\BookingLabels::statusTone($key))])->all();
     $shareRate = 1 - ($commissionRate ?? 10) / 100;
 @endphp
 

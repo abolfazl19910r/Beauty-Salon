@@ -121,13 +121,7 @@ class SpecialistDashboardService
 
         return $bookings->each(function ($booking) {
             $booking->booking_date_persian = $this->toJalali($booking->booking_time);
-            $booking->status_fa = match ($booking->status) {
-                'pending' => 'در انتظار تایید',
-                'confirmed' => 'تایید شده',
-                'completed' => 'انجام شده',
-                'cancelled' => 'لغو شده', 'no_show' => 'نیامد',
-                default => 'نامشخص',
-            };
+            $booking->status_fa = \App\Support\Bookings\BookingLabels::status($booking->status);
         });
     }
 

@@ -201,9 +201,9 @@
                     <div>
                         <label for="status" class="form-label">وضعیت نوبت</label>
                         <select id="status" name="status" class="form-select">
-                            <option value="pending"   {{ old('status','pending')   == 'pending'   ? 'selected' : '' }}>در انتظار تایید</option>
-                            <option value="confirmed" {{ old('status') == 'confirmed' ? 'selected' : '' }}>تایید شده</option>
-                            <option value="cancelled" {{ old('status') == 'cancelled' ? 'selected' : '' }}>لغو شده</option>
+                            <option value="pending"   {{ old('status','pending')   == 'pending'   ? 'selected' : '' }}>{{ \App\Support\Bookings\BookingLabels::status('pending') }}</option>
+                            <option value="confirmed" {{ old('status') == 'confirmed' ? 'selected' : '' }}>{{ \App\Support\Bookings\BookingLabels::status('confirmed') }}</option>
+                            <option value="cancelled" {{ old('status') == 'cancelled' ? 'selected' : '' }}>{{ \App\Support\Bookings\BookingLabels::status('cancelled') }}</option>
                         </select>
                         @error('status') <p class="form-error">{{ $message }}</p> @enderror
                     </div>
@@ -220,8 +220,8 @@
                     <div>
                         <label for="payment_status" class="form-label">وضعیت پرداخت</label>
                         <select id="payment_status" name="payment_status" class="form-select">
-                            <option value="unpaid" {{ old('payment_status','unpaid') == 'unpaid' ? 'selected' : '' }}>پرداخت نشده</option>
-                            <option value="paid"   {{ old('payment_status') == 'paid'   ? 'selected' : '' }}>پرداخت شده</option>
+                            <option value="unpaid" {{ old('payment_status','unpaid') == 'unpaid' ? 'selected' : '' }}>{{ \App\Support\Bookings\BookingLabels::paymentStatus('unpaid') }}</option>
+                            <option value="paid"   {{ old('payment_status') == 'paid'   ? 'selected' : '' }}>{{ \App\Support\Bookings\BookingLabels::paymentStatus('paid') }}</option>
                         </select>
                         @error('payment_status') <p class="form-error">{{ $message }}</p> @enderror
                     </div>

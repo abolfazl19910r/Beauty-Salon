@@ -70,7 +70,7 @@ class SpecialistTodayDetailsTest extends TestCase
         $this->assertSame([$cancelled->id], $response->viewData('todayCancelled')->pluck('id')->all());
 
         $response->assertSee('data-payment="unpaid"', false)
-            ->assertSee('پیش‌پرداخت نشده')
+            ->assertSee(\App\Support\Bookings\BookingLabels::payment($manual))
             ->assertSee('دریافت در سالن: '.number_format(400000), false)
             ->assertSee('نیامد')
             ->assertSee('data-today-cancelled', false)

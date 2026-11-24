@@ -84,10 +84,10 @@
                         <label class="block text-xs text-[var(--specialist-plum-muted)] mb-2">وضعیت نوبت</label>
                         <select name="status" class="w-full rounded-lg px-4 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]" style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);">
                             <option value="all" {{ $status == 'all' ? 'selected' : '' }}>همه وضعیت‌ها</option>
-                            <option value="completed" {{ $status == 'completed' ? 'selected' : '' }}>انجام شده</option>
-                            <option value="confirmed" {{ $status == 'confirmed' ? 'selected' : '' }}>تایید شده</option>
-                            <option value="pending" {{ $status == 'pending' ? 'selected' : '' }}>در انتظار</option>
-                            <option value="cancelled" {{ $status == 'cancelled' ? 'selected' : '' }}>لغو شده</option>
+                            <option value="completed" {{ $status == 'completed' ? 'selected' : '' }}>{{ \App\Support\Bookings\BookingLabels::status('completed') }}</option>
+                            <option value="confirmed" {{ $status == 'confirmed' ? 'selected' : '' }}>{{ \App\Support\Bookings\BookingLabels::status('confirmed') }}</option>
+                            <option value="pending" {{ $status == 'pending' ? 'selected' : '' }}>{{ \App\Support\Bookings\BookingLabels::status('pending') }}</option>
+                            <option value="cancelled" {{ $status == 'cancelled' ? 'selected' : '' }}>{{ \App\Support\Bookings\BookingLabels::status('cancelled') }}</option>
                         </select>
                     </div>
                 </div>
@@ -162,20 +162,8 @@
 
             @forelse($bookings as $booking)
                 @php
-                    $statusClass = match($booking->status) {
-                        'completed' => 'bg-m-ok/10 text-m-ok',
-                        'confirmed' => 'bg-m-info/10 text-m-info',
-                        'pending' => 'bg-m-warn/10 text-m-warn',
-                        'cancelled' => 'bg-m-bad/10 text-m-bad', 'no_show' => 'bg-m-bad/10 text-m-bad',
-                        default => 'bg-m-tx/5 text-[var(--specialist-text-dim)]'
-                    };
-                    $statusText = match($booking->status) {
-                        'completed' => 'انجام شده',
-                        'confirmed' => 'تایید شده',
-                        'pending' => 'در انتظار',
-                        'cancelled' => 'لغو شده', 'no_show' => 'نیامد',
-                        default => 'نامشخص'
-                    };
+                    $statusClass = \App\Support\Bookings\BookingLabels::pillClass(\App\Support\Bookings\BookingLabels::statusTone($booking->status));
+                    $statusText = \App\Support\Bookings\BookingLabels::status($booking->status);
                 @endphp
                 <div class="p-4 border-b flex flex-wrap items-center justify-between gap-4" style="border-color: var(--specialist-border);">
                     <div class="flex items-center gap-4 flex-1 min-w-[220px]">

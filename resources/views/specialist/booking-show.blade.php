@@ -3,23 +3,11 @@
 @section('title', 'جزئیات نوبت رزرو شده')
 
 @php
-    $statusBadgeMap = [
-        'pending'         => ['label' => 'در انتظار تایید', 'class' => 'bg-m-warn/10 text-m-warn'],
-        'confirmed'       => ['label' => 'تایید شده',       'class' => 'bg-m-ok/10 text-m-ok'],
-        'completed'       => ['label' => 'انجام شده',        'class' => 'bg-[var(--specialist-plum-mid)]/15 text-[var(--specialist-plum-light)]'],
-        'cancelled'       => ['label' => 'لغو شده',          'class' => 'bg-m-bad/10 text-m-bad'], 'no_show' => ['label' => 'نیامد',          'class' => 'bg-m-bad/10 text-m-bad'],
-        'pending_payment' => ['label' => 'در انتظار پرداخت', 'class' => 'bg-m-warn/10 text-m-warn'],
-    ];
-
-    $paymentBadgeMap = [
-        'paid'            => ['label' => 'پرداخت شده',      'class' => 'text-m-ok'],
-        'pending_payment' => ['label' => 'در انتظار پرداخت', 'class' => 'text-m-warn'],
-        'unpaid'          => ['label' => 'پرداخت نشده',      'class' => 'text-m-bad'],
-    ];
+    $statusBadgeMap = \App\Support\Bookings\BookingLabels::statusPills();
 
     $status = trim($booking->status);
     $statusInfo = $statusBadgeMap[$status] ?? ['label' => 'نامشخص', 'class' => 'bg-m-tx/5 text-[var(--specialist-text-dim)]'];
-    $paymentInfo = $paymentBadgeMap[$booking->payment_status] ?? ['label' => $booking->payment_status, 'class' => 'text-[var(--specialist-text-dim)]'];
+    $paymentInfo = \App\Support\Bookings\BookingLabels::paymentInfo($booking);
     $isAutoConfirm = $specialist->auto_confirm_bookings ?? false;
     $canShowButtons = !in_array($status, ['completed', 'cancelled', 'pending_payment', 'no_show']);
 @endphp

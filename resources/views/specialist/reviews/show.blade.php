@@ -157,7 +157,7 @@
                         <div>
                             <span class="text-[var(--specialist-plum-muted)]">وضعیت پرداخت:</span>
                             <span class="font-bold mr-2 {{ $review->booking->payment_status === 'paid' ? 'text-m-ok' : 'text-m-bad' }}">
-                                {{ $review->booking->payment_status === 'paid' ? 'پرداخت شده' : 'پرداخت نشده' }}
+                                {{ \App\Support\Bookings\BookingLabels::paymentStatus($review->booking->payment_status) }}
                             </span>
                         </div>
                     </div>

@@ -173,10 +173,10 @@
         @foreach($rawBookings as $b)
             @php
                 $b = (array) $b;
-                $statusClass = match ($b['status'] ?? '') {
-                    'در انتظار پرداخت', 'لغو شده', 'نیامد' => 'cell-bad',
-                    'در انتظار' => 'cell-warn',
-                    'تایید شده', 'انجام شده' => 'cell-good',
+                $statusClass = match (\App\Support\Bookings\BookingLabels::statusTone(array_search($b['status'] ?? '', \App\Support\Bookings\BookingLabels::statusOptions(), true) ?: null)) {
+                    'bad' => 'cell-bad',
+                    'warn' => 'cell-warn',
+                    'ok', 'info' => 'cell-good',
                     default => '',
                 };
                 $paymentStatusClass = match ($b['payment_status'] ?? '') {

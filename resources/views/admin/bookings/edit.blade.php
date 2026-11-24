@@ -60,8 +60,7 @@
              style="background:var(--admin-accent-light); border:1px solid var(--admin-border);">
             <span style="color:var(--admin-text-dim);">وضعیت فعلی:</span>
             @php
-                $statusMap=['pending'=>['در انتظار','rgb(var(--m-warn) / .1)','rgb(var(--m-warn))'],'confirmed'=>['تایید شده','rgb(var(--m-ok) / .1)','rgb(var(--m-ok))'],'completed'=>['انجام شده','rgb(var(--m-info) / .1)','rgb(var(--m-info))'],'cancelled'=>['لغو شده','rgb(var(--m-bad) / .1)','rgb(var(--m-bad))'], 'no_show' => ['نیامد','rgb(var(--m-bad) / .1)','rgb(var(--m-bad))']];
-                $st=$statusMap[$booking->status]??[$booking->status,'rgb(var(--m-tx) / .05)','rgb(var(--m-tx))'];
+                $st=\App\Support\Bookings\BookingLabels::statusPill($booking->status);
             @endphp
             <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:{{ $st[1] }}; color:{{ $st[2] }};">{{ $st[0] }}</span>
             <span style="color:var(--admin-text-dim);">تاریخ نوبت:</span>
@@ -151,10 +150,10 @@
                     <div>
                         <label for="status" class="form-label">وضعیت نوبت</label>
                         <select id="status" name="status" class="form-select">
-                            <option value="pending"   {{ old('status',$booking->status)=='pending'   ?'selected':'' }}>در انتظار تایید</option>
-                            <option value="confirmed" {{ old('status',$booking->status)=='confirmed' ?'selected':'' }}>تایید شده</option>
-                            <option value="completed" {{ old('status',$booking->status)=='completed' ?'selected':'' }}>انجام شده</option>
-                            <option value="cancelled" {{ old('status',$booking->status)=='cancelled' ?'selected':'' }}>لغو شده</option>
+                            <option value="pending"   {{ old('status',$booking->status)=='pending'   ?'selected':'' }}>{{ \App\Support\Bookings\BookingLabels::status('pending') }}</option>
+                            <option value="confirmed" {{ old('status',$booking->status)=='confirmed' ?'selected':'' }}>{{ \App\Support\Bookings\BookingLabels::status('confirmed') }}</option>
+                            <option value="completed" {{ old('status',$booking->status)=='completed' ?'selected':'' }}>{{ \App\Support\Bookings\BookingLabels::status('completed') }}</option>
+                            <option value="cancelled" {{ old('status',$booking->status)=='cancelled' ?'selected':'' }}>{{ \App\Support\Bookings\BookingLabels::status('cancelled') }}</option>
                         </select>
                         @error('status') <p class="form-error">{{ $message }}</p> @enderror
                     </div>
@@ -162,8 +161,8 @@
                     <div>
                         <label for="payment_status" class="form-label">وضعیت پرداخت</label>
                         <select id="payment_status" name="payment_status" class="form-select">
-                            <option value="unpaid" {{ old('payment_status',$booking->payment_status)=='unpaid'?'selected':'' }}>پرداخت نشده</option>
-                            <option value="paid"   {{ old('payment_status',$booking->payment_status)=='paid'  ?'selected':'' }}>پرداخت شده</option>
+                            <option value="unpaid" {{ old('payment_status',$booking->payment_status)=='unpaid'?'selected':'' }}>{{ \App\Support\Bookings\BookingLabels::paymentStatus('unpaid') }}</option>
+                            <option value="paid"   {{ old('payment_status',$booking->payment_status)=='paid'  ?'selected':'' }}>{{ \App\Support\Bookings\BookingLabels::paymentStatus('paid') }}</option>
                         </select>
                         @error('payment_status') <p class="form-error">{{ $message }}</p> @enderror
                     </div>
