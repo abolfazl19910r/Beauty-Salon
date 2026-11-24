@@ -108,9 +108,9 @@ class SalonStaffFinancePermissionTest extends TestCase
         $response = $this->actingAs($staff)->get('/admin');
 
         $response->assertOk();
-        $this->assertNull($response->viewData('totalRevenue'));
-        $response->assertDontSee('id="total-revenue"', false);
-        $response->assertDontSee('نمودار درآمد');
+        $this->assertNull($response->viewData('monthRevenue'));
+        $response->assertDontSee('data-stat="revenue"', false);
+        $response->assertSee('data-stat="month-bookings"', false); // بسته‌ی ۲ ظاهری: به‌جای کارت درآمد
     }
 
     /**
@@ -140,9 +140,9 @@ class SalonStaffFinancePermissionTest extends TestCase
         $response = $this->actingAs($this->owner)->get('/admin');
 
         $response->assertOk();
-        $this->assertNotNull($response->viewData('totalRevenue'));
-        $response->assertSee('id="total-revenue"', false);
-        $response->assertSee('نمودار درآمد');
+        $this->assertNotNull($response->viewData('monthRevenue'));
+        $response->assertSee('data-stat="revenue"', false);
+        $response->assertDontSee('data-stat="month-bookings"', false);
     }
 
     public function test_staff_with_finance_access_sees_revenue_on_dashboard(): void
@@ -152,8 +152,8 @@ class SalonStaffFinancePermissionTest extends TestCase
         $response = $this->actingAs($staff)->get('/admin');
 
         $response->assertOk();
-        $this->assertNotNull($response->viewData('totalRevenue'));
-        $response->assertSee('id="total-revenue"', false);
+        $this->assertNotNull($response->viewData('monthRevenue'));
+        $response->assertSee('data-stat="revenue"', false);
     }
 
     public function test_owner_bypasses_the_wallet_permission_via_is_admin(): void

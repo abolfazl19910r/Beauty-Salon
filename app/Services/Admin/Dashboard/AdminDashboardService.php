@@ -9,7 +9,6 @@ use App\Repositories\Contracts\RoleRepositoryInterface;
 use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class AdminDashboardService
 {
@@ -30,78 +29,78 @@ class AdminDashboardService
      */
     public function getOverviewData(): array
     {
-        // ⭐ فاز ۲ SaaS، محور «۲» (تصمیم تأییدشده ۲۰۲۶-۰۹-۱۹): قبل از این فیکس، این متد بدون هیچ
-        // چک permission‌ای totalRevenue/weeklyRevenue رو محاسبه و به داشبورد اصلی (اولین صفحه‌ای
-        // که هر ادمین از جمله «منشی» می‌بینه) پاس می‌داد — یعنی محدودیت مالی manage-wallet که
-        // routes/web.php روی wallet/billing/reports اعمال می‌کنه، برای همین دو رقم روی خودِ
-        // داشبورد اصلاً وجود نداشت. حالا این دو مقدار فقط برای کاربری که manage-wallet داره
-        // محاسبه می‌شن (bypass همیشگی is_admin طبق User::hasPermission() اینجا هم برقراره)؛
-        // dashboard.blade.php هم با @permission('manage-wallet') کارت درآمد و نمودار رو مخفی
-        // می‌کنه — این دو لایه با هم کار می‌کنن، نه جایگزین هم.
+        // ⭐ فاز ۲ SaaS، محور «۲» (تصمیم ۲۰۲۶-۰۹-۱۹): رقم‌های مالی فقط برای کاربری که manage-wallet دارد محاسبه و نشان داده می‌شوند.
         $canViewFinancials = auth()->user()?->hasPermission('manage-wallet') ?? false;
+        $salon = app(\App\Support\CurrentSalon::class)->get();
 
         [$commissionRate, $commissionFactor] = $this->getCommissionRateAndFactor();
 
-        $todayBookingsCount = $this->bookingRepository->query()->whereDate('booking_time', today())->count();
-        $totalRevenue = null;
-        if ($canViewFinancials) {
-            $rawRevenue = $this->bookingRepository->query()->where('payment_status', 'paid')->sum('prepayment_amount');
-            $totalRevenue = (int) ($rawRevenue * $commissionFactor);
-        }
-        $usersCount = $this->userRepository->querySalonMembers()->count();
-        $specialistsCount = $this->specialistRepository->count();
-        $rolesCount = $this->roleRepository->count();
+        // بسته‌ی ۲ ظاهری (۲۰۲۶-۱۱-۲۴، تصمیم‌های «الف»): امروز با جمله‌ی خلاصه، ۴ کارت، نوبت‌های امروز با کار مستقیم،
+        // «ماه» = ماه شمسی؛ نمودار، کارت نقش‌ها و «نوبت‌های اخیر» حذف شدند.
+        $month = verta();
+        $monthStart = \Illuminate\Support\Carbon::instance($month->startMonth()->datetime());
 
-        $roles = $this->roleRepository->getTopByUserCount(4);
+        $todayBookings = $this->bookingRepository->query()
+            ->with(['user:id,name,phone', 'service:id,name', 'specialist:id,name'])
+            ->whereDate('booking_time', today())
+            ->whereNotIn('status', ['cancelled'])
+            ->orderBy('booking_time')
+            ->get();
+        $todayWaiting = $todayBookings->whereIn('status', ['pending', 'pending_payment'])->count();
+
+        $monthRevenue = null;
+        if ($canViewFinancials) {
+            $raw = $this->bookingRepository->query()->where('payment_status', 'paid')
+                ->where('paid_at', '>=', $monthStart)->sum('prepayment_amount');
+            $monthRevenue = (int) ($raw * $commissionFactor);
+        }
+        $monthBookings = $this->bookingRepository->query()->where('booking_time', '>=', $monthStart)
+            ->whereNotIn('status', ['cancelled'])->count();
+
+        $customers = $this->userRepository->querySalonCustomers();
+        $customersCount = (clone $customers)->count();
+        $newCustomersMonth = (clone $customers)->where('users.created_at', '>=', $monthStart)->count();
+
+        $specialistsCount = $this->specialistRepository->count();
+        $specialistLimit = $salon?->specialistLimit();
+        $onLeaveToday = \App\Models\Leave::query()->whereHas('specialist')->where('status', 'approved')
+            ->whereDate('start_date', '<=', today())->whereDate('end_date', '>=', today())
+            ->distinct()->count('specialist_id');
 
         $popularServices = $this->getPopularServicesWithTrend()
             ->take(4)
             ->map(fn (array $item) => (object) $item);
 
         $topSpecialists = $this->getActiveSpecialistsWithPerformance()
-            ->take(3)
+            ->take(5)
             ->map(fn (array $item) => (object) $item);
 
-        $recentBookings = $this->bookingRepository->query()
-            ->with(['user', 'service'])
-            ->latest()
-            ->take(4)
-            ->get();
+        $prepayMode = \App\Models\BookingPolicy::current()->wantsPrepayment() && ($salon?->acceptsOnlinePayments() ?? false);
+        $isOwner = auth()->user()?->hasRole('super-admin')
+            || ($salon !== null && auth()->user()?->salonRoleIn($salon->id) === 'owner');
+        $setup = $salon ? SalonSetupChecklist::for($salon) : null;
 
-        $weeklyRevenue = collect();
-        if ($canViewFinancials) {
-            $weeklyRevenue = $this->bookingRepository->query()
-                ->where('payment_status', 'paid')
-                ->whereBetween('created_at', [now()->subDays(6)->startOfDay(), now()])
-                ->groupBy(DB::raw('DATE(created_at)'))
-                ->select(
-                    DB::raw('DATE(created_at) as date'),
-                    DB::raw('SUM(prepayment_amount) as total'),
-                    DB::raw('COUNT(*) as bookings_count')
-                )
-                ->orderBy('date')
-                ->get()
-                ->map(function ($item) use ($commissionFactor) {
-                    $item->date = verta($item->date)->format('Y/m/d');
-                    $item->total = (int) ($item->total * $commissionFactor);
-
-                    return $item;
-                });
-        }
-
-        return compact(
-            'commissionRate',
-            'todayBookingsCount',
-            'totalRevenue',
-            'usersCount',
-            'specialistsCount',
-            'rolesCount',
-            'roles',
-            'popularServices',
-            'topSpecialists',
-            'recentBookings',
-            'weeklyRevenue'
-        );
+        return [
+            'salon' => $salon,
+            'isOwner' => (bool) $isOwner,
+            'setup' => $setup,
+            'canViewFinancials' => $canViewFinancials,
+            'commissionRate' => $commissionRate,
+            'monthName' => $month->format('F'),
+            'todayBookings' => $todayBookings,
+            'todayBookingsCount' => $todayBookings->count(),
+            'todayWaiting' => $todayWaiting,
+            'monthRevenue' => $monthRevenue,
+            'monthBookings' => $monthBookings,
+            'prepayMode' => $prepayMode,
+            'customersCount' => $customersCount,
+            'newCustomersMonth' => $newCustomersMonth,
+            'specialistsCount' => $specialistsCount,
+            'specialistLimit' => $specialistLimit,
+            'onLeaveToday' => $onLeaveToday,
+            'popularServices' => $popularServices,
+            'topSpecialists' => $topSpecialists,
+        ];
     }
 
     /**

@@ -66,6 +66,24 @@
         .adm-count{display:inline-flex;align-items:center;justify-content:center;min-width:1.4rem;padding:0 .45rem;border-radius:999px;font-size:.72rem;font-weight:700;background:rgb(var(--m-gold) / .18);color:var(--admin-accent-hover, var(--admin-accent))}
         .adm-new-booking{display:inline-flex;align-items:center;gap:.35rem;padding:.5rem .95rem;border-radius:999px;font-size:.85rem;font-weight:700;background:var(--admin-accent);color:rgb(var(--m-on-solid))}
         .adm-new-booking:hover{background:var(--admin-accent-hover)}
+        /* کار ردیف و منوی «⋯» (بسته‌ی ۲ ظاهری) */
+        .adm-act{display:inline-flex;align-items:center;white-space:nowrap;padding:.42rem .85rem;border-radius:999px;font-size:.8rem;font-weight:700;border:1px solid var(--admin-border);background:var(--admin-surface);color:var(--admin-text)}
+        .adm-act:hover{border-color:var(--admin-accent)}
+        .adm-act--primary{background:var(--admin-text);border-color:var(--admin-text);color:var(--admin-surface)}
+        .adm-act--primary:hover{opacity:.9}
+        .adm-act--ghost{border-color:transparent;background:transparent;color:var(--admin-accent);font-weight:600}
+        .adm-act--ghost:hover{background:var(--admin-accent-light);border-color:transparent}
+        .adm-menu{position:relative}
+        .adm-menu>summary{list-style:none}
+        .adm-menu>summary::-webkit-details-marker{display:none}
+        .adm-menu__btn{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;cursor:pointer;border:1px solid var(--admin-border);background:var(--admin-surface);color:var(--admin-text)}
+        .adm-menu__btn:hover,.adm-menu[open]>.adm-menu__btn{border-color:var(--admin-accent);background:var(--admin-accent-light)}
+        .adm-menu__panel{position:absolute;z-index:45;top:calc(100% + 6px);left:0;width:12.5rem;padding:.35rem;display:flex;flex-direction:column;background:var(--admin-surface);border:1px solid var(--admin-border);border-radius:12px;box-shadow:0 18px 40px -18px rgba(0,0,0,.45)}
+        .adm-menu__item{display:block;width:100%;text-align:right;padding:.55rem .65rem;border-radius:8px;font-size:.86rem;color:var(--admin-text);background:transparent}
+        .adm-menu__item:hover,.adm-menu__item:focus-visible{background:var(--admin-accent-light);outline:none}
+        .adm-menu__item--danger{color:rgb(var(--m-bad));font-weight:700}
+        .adm-menu__item--danger:hover,.adm-menu__item--danger:focus-visible{background:rgb(var(--m-bad) / .1)}
+        .adm-menu__sep{height:1px;background:var(--admin-border);margin:.35rem .25rem}
         .adm-link{color:var(--admin-text-dim)}
         .adm-link:not(.sidebar-active):hover{background-color:var(--admin-accent-light)}
         .adm-logout{color:var(--admin-text-dim)}
@@ -831,6 +849,45 @@
     });
 </script>
 
+<script @nonce>
+    // منوی «⋯» ردیف‌ها (بسته‌ی ۲ ظاهری): پنل fixed کنار دکمه (ظرف اسکرول جدول نبُرد)، فقط یکی باز، بستن با کلیک بیرون/Escape
+    (function () {
+        var menus = document.querySelectorAll('[data-adm-menu-root]');
+        if (!menus.length) return;
+        function closeAll(except) { menus.forEach(function (m) { if (m !== except) m.open = false; }); }
+        function place(menu) {
+            var r = menu.querySelector('summary').getBoundingClientRect(), panel = menu.querySelector('.adm-menu__panel');
+            panel.style.position = 'fixed';
+            var w = panel.offsetWidth, h = panel.offsetHeight, top = r.bottom + 6;
+            if (top + h > window.innerHeight - 8 && r.top - h - 6 > 8) top = r.top - h - 6;
+            panel.style.left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8)) + 'px';
+            panel.style.top = top + 'px';
+        }
+        menus.forEach(function (menu) {
+            menu.addEventListener('toggle', function () {
+                if (!menu.open) return;
+                closeAll(menu); place(menu);
+                var first = menu.querySelector('[role=menuitem]');
+                if (first) first.focus({ preventScroll: true });
+            });
+        });
+        document.addEventListener('click', function (e) { if (!e.target.closest('[data-adm-menu-root]')) closeAll(null); });
+        document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Escape') return;
+            var open = document.querySelector('[data-adm-menu-root][open]');
+            if (open) { open.open = false; open.querySelector('summary').focus(); }
+        });
+        function follow() {
+            var open = document.querySelector('[data-adm-menu-root][open]');
+            if (!open) return;
+            var r = open.querySelector('summary').getBoundingClientRect();
+            if (r.bottom < 0 || r.top > window.innerHeight || r.right < 0 || r.left > window.innerWidth) { open.open = false; return; }
+            place(open);
+        }
+        window.addEventListener('scroll', follow, true);
+        window.addEventListener('resize', follow);
+    })();
+</script>
 @stack('scripts')
 @include('partials.password-reveal')
 @include('partials.nav-reveal-active')

@@ -4,542 +4,242 @@
 
 @push('styles')
     <style>
-        .stat-card {
-            background: var(--admin-surface);
-            border: 1px solid var(--admin-border);
-            border-radius: 0.75rem;
-            transition: box-shadow 0.2s, transform 0.2s;
-        }
-        .stat-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.07);
-            transform: translateY(-2px);
-        }
-        .stat-icon {
-            width: 48px; height: 48px;
-            border-radius: 0.625rem;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-        }
-        .filter-btn {
-            padding: 6px 16px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: background 0.15s, color 0.15s;
-            cursor: pointer;
-            border: none;
-            color: var(--admin-text-dim);
-            background: transparent;
-        }
-        .filter-btn:hover { background: var(--admin-accent-light); }
-        .filter-btn.active {
-            background: var(--admin-accent);
-            color: rgb(var(--m-on-solid));
-        }
-        .section-card {
-            background: var(--admin-surface);
-            border: 1px solid var(--admin-border);
-            border-radius: 0.75rem;
-            overflow: hidden;
-        }
-        .section-header {
-            padding: 1rem 1.25rem;
-            border-bottom: 1px solid var(--admin-border);
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: var(--admin-text);
-        }
-        .progress-bar-track {
-            width: 100%; height: 6px;
-            background: var(--admin-border);
-            border-radius: 9999px;
-            overflow: hidden;
-        }
-        .progress-bar-fill {
-            height: 100%;
-            background: var(--admin-accent);
-            border-radius: 9999px;
-            transition: width 0.5s;
-        }
-        .badge-status {
-            padding: 2px 10px;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .chart-spinner {
-            display: flex; align-items: center; justify-content: center;
-            height: 100%;
-        }
-        .chart-spinner-inner {
-            width: 36px; height: 36px;
-            border: 3px solid var(--admin-border);
-            border-top-color: var(--admin-accent);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        /* بسته‌ی ۲ ظاهری (۲۰۲۶-۱۱-۲۴): داشبورد مدیر سالن — همان توکن‌های پوسته (--admin-*)، کم کردن شلوغی */
+        .dash-card { background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: 1rem; }
+        .dash-head { padding: .9rem 1.15rem; border-bottom: 1px solid var(--admin-border); display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+        .dash-head h2 { margin: 0; font-size: 1rem; font-weight: 800; color: var(--admin-text); }
+        .dash-link { font-size: .85rem; font-weight: 700; color: var(--admin-accent); }
+        .dash-stat { padding: 1rem 1.15rem; display: flex; flex-direction: column; gap: .25rem; }
+        .dash-stat__label { font-size: .85rem; color: var(--admin-text-dim); }
+        .dash-stat__value { font-size: 1.6rem; font-weight: 800; line-height: 1.3; color: var(--admin-text); }
+        .dash-stat__unit { font-size: .8rem; font-weight: 500; color: var(--admin-text-dim); }
+        .dash-stat__note { font-size: .78rem; color: var(--admin-text-dim); line-height: 1.7; }
+        .dash-setup > summary { list-style: none; cursor: pointer; }
+        .dash-setup > summary::-webkit-details-marker { display: none; }
+        .dash-steps { display: flex; gap: 4px; }
+        .dash-steps i { width: 22px; height: 6px; border-radius: 99px; background: var(--admin-border); }
+        .dash-steps i.is-done { background: rgb(var(--m-ok)); }
+        .dash-row { display: flex; align-items: center; gap: .9rem; padding: .75rem 1.15rem; }
+        .dash-row + .dash-row { border-top: 1px solid var(--admin-border); }
+        .dash-time { min-width: 3rem; font-weight: 800; font-size: .95rem; color: var(--admin-text); }
+        .dash-bar { height: 6px; border-radius: 99px; background: var(--admin-border); overflow: hidden; }
+        .dash-bar i { display: block; height: 100%; border-radius: 99px; background: var(--admin-accent); }
+        .dash-code { direction: ltr; font-size: .85rem; padding: .45rem .7rem; border-radius: .6rem; background: var(--admin-bg); border: 1px solid var(--admin-border); color: var(--admin-text); }
     </style>
 @endpush
 
 @section('content')
-    <div class="fade-in">
+    <div class="fade-in flex flex-col gap-4">
         {{-- ⭐ مواردی که پیگیری خودکار پرداخت/تسویه به نتیجه نرسید (۲۰۲۶-۰۹-۲۶) — فقط owner (صفحه‌هاش owner-only‌اند) --}}
-        @if((auth()->user()->hasRole('super-admin') || (($__salon = app(\App\Support\CurrentSalon::class)->get()) && $__salon->admins()->wherePivot('user_id', auth()->id())->wherePivot('role', 'owner')->exists()))
-            && ($__attention = app(\App\Services\Admin\AttentionCounts::class))->total() > 0)
-            <div class="rounded-xl p-4 mb-5 text-sm" style="background:rgb(var(--m-warn) / .1); border:1px solid rgb(var(--m-warn) / .35); color:rgb(var(--m-warn));" data-attention-alert>
+        @if ($isOwner && ($__attention = app(\App\Services\Admin\AttentionCounts::class))->total() > 0)
+            <div class="rounded-xl p-4 text-sm" style="background:rgb(var(--m-warn) / .1); border:1px solid rgb(var(--m-warn) / .35); color:rgb(var(--m-warn));" data-attention-alert>
                 <p class="font-bold mb-1">پرداخت‌هایی که به بررسی شما نیاز دارند</p>
                 <div class="flex flex-wrap gap-4">
-                    @if($__attention->payments() > 0)
-                        <a href="{{ route('admin.payment-attention.index') }}" class="underline"><span class="persian-number">{{ $__attention->payments() }}</span> پرداخت مشتری که پاسخ درگاهش نرسید</a>
+                    @if ($__attention->payments() > 0)
+                        <a href="{{ route('admin.payment-attention.index') }}" class="underline">{{ fa_num($__attention->payments()) }} پرداخت مشتری که پاسخ درگاهش نرسید</a>
                     @endif
-                    @if($__attention->withdrawals() > 0)
-                        <a href="{{ route('admin.wallet.withdrawals', ['needs_check' => 1]) }}" class="underline"><span class="persian-number">{{ $__attention->withdrawals() }}</span> تسویه‌ی کارشناس با نتیجه‌ی نامعلوم</a>
+                    @if ($__attention->withdrawals() > 0)
+                        <a href="{{ route('admin.wallet.withdrawals', ['needs_check' => 1]) }}" class="underline">{{ fa_num($__attention->withdrawals()) }} تسویه‌ی کارشناس با نتیجه‌ی نامعلوم</a>
                     @endif
                 </div>
             </div>
         @endif
 
-        {{-- Page header + filter --}}
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-            <div>
-                <h1 class="text-xl font-bold" style="color: var(--admin-text);">داشبورد</h1>
-                <p class="text-sm mt-0.5" style="color: var(--admin-text-dim);">خلاصه وضعیت سیستم مدیریت سالن زیبایی</p>
-            </div>
-            @permission('manage-wallet')
-            <div class="flex items-center gap-1 p-1 rounded-lg" style="background: var(--admin-accent-light); border: 1px solid var(--admin-border);">
-                <button id="filter-today" class="filter-btn active" data-ui-click="updateTimeFilter" data-ui-args='["today"]'>امروز</button>
-                <button id="filter-week"  class="filter-btn" data-ui-click="updateTimeFilter" data-ui-args='["week"]'>هفته</button>
-                <button id="filter-month" class="filter-btn" data-ui-click="updateTimeFilter" data-ui-args='["month"]'>ماه</button>
-            </div>
-            @endpermission
+        {{-- عنوان امروز + یک جمله‌ی خلاصه --}}
+        <div data-dash-today>
+            <h1 class="text-xl font-extrabold" style="color: var(--admin-text);">امروز، {{ fa_date(now(), false, true) }}</h1>
+            <p class="text-sm mt-1" style="color: var(--admin-text-dim);">
+                @if ($todayBookingsCount === 0)
+                    امروز نوبتی ندارید.
+                @else
+                    {{ fa_num($todayBookingsCount) }} نوبت دارید@if ($todayWaiting > 0)؛ {{ fa_num($todayWaiting) }} نوبت منتظر تأیید یا پرداخت است@endif.
+                @endif
+            </p>
         </div>
 
-        @include('admin.partials.merchant-warning', ['salon' => app(\App\Support\CurrentSalon::class)->get()])
-        @include('admin.partials.salon-public-link', ['salon' => app(\App\Support\CurrentSalon::class)->get()])
-
-        {{-- Statistics cards --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
-
-            {{-- Today's shifts --}}
-            <div class="stat-card p-5 flex items-center gap-4">
-                <div class="stat-icon" style="background:rgb(var(--m-info) / .1); color:rgb(var(--m-info));">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-xs mb-1" style="color:var(--admin-text-dim);">نوبت‌های امروز</p>
-                    <p class="text-2xl font-bold persian-number" id="today-bookings-count" style="color:var(--admin-text);">{{ fa_num($todayBookingsCount) }}</p>
-                </div>
-                <a href="{{ route('admin.bookings.index') }}" class="text-xs px-2 py-1 rounded" style="color:var(--admin-accent); background:var(--admin-accent-light);">مشاهده</a>
-            </div>
-
-            {{-- Income --}}
-            @permission('manage-wallet')
-            <div class="stat-card p-5 flex items-center gap-4">
-                <div class="stat-icon" style="background:rgb(var(--m-ok) / .1); color:rgb(var(--m-ok));">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-xs mb-1" style="color:var(--admin-text-dim);">
-                        درآمد سالن
-                        <span class="text-xs px-1.5 py-0.5 rounded mr-1" style="background:rgb(var(--m-ok) / .14); color:rgb(var(--m-ok));">{{ fa_num($commissionRate ?? 10, 2) }}٪ کمیسیون</span>
-                    </p>
-                    <p class="text-2xl font-bold persian-number" id="total-revenue" style="color:var(--admin-text);">{{ fa_num($totalRevenue ?? 0) }}</p>
-                </div>
-                <a href="{{ route('admin.reports.index') }}" class="text-xs px-2 py-1 rounded" style="color:rgb(var(--m-ok)); background:rgb(var(--m-ok) / .1);">گزارش</a>
-            </div>
-            @endpermission
-
-            {{-- Users --}}
-            <div class="stat-card p-5 flex items-center gap-4">
-                <div class="stat-icon" style="background:rgb(var(--m-gold) / .1); color:rgb(var(--m-gold));">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 108 0 4 4 0 00-8 0zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
-                    </svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کاربران</p>
-                    <p class="text-2xl font-bold persian-number" id="users-count" style="color:var(--admin-text);">{{ fa_num($usersCount) }}</p>
-                </div>
-                <a href="{{ route('admin.users.index') }}" class="text-xs px-2 py-1 rounded" style="color:rgb(var(--m-gold)); background:rgb(var(--m-gold) / .1);">مشاهده</a>
-            </div>
-
-            {{-- Experts --}}
-            <div class="stat-card p-5 flex items-center gap-4">
-                <div class="stat-icon" style="background:rgb(var(--m-warn) / .1); color:rgb(var(--m-warn));">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                    </svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-xs mb-1" style="color:var(--admin-text-dim);">کارشناسان</p>
-                    <p class="text-2xl font-bold persian-number" id="specialists-count" style="color:var(--admin-text);">{{ fa_num($specialistsCount) }}</p>
-                </div>
-                <a href="{{ route('admin.specialists.index') }}" class="text-xs px-2 py-1 rounded" style="color:rgb(var(--m-warn)); background:rgb(var(--m-warn) / .1);">مشاهده</a>
-            </div>
-        </div>
-
-        {{-- First row: chart + popular services --}}
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-5">
-
-            {{-- Income chart --}}
-            @permission('manage-wallet')
-            <div class="section-card xl:col-span-2">
-                <div class="section-header flex justify-between items-center">
-                    <span>نمودار درآمد (<span id="revenue-chart-title">امروز</span>)</span>
-                </div>
-                <div class="p-4">
-                    <div id="revenue-chart" style="height:280px;">
-                        <div class="chart-spinner"><div class="chart-spinner-inner"></div></div>
+        {{-- راه‌اندازی سالن (جای بنر قرمز درگاه و کارت بزرگ لینک/QR) --}}
+        @if ($salon)
+            @php $publicUrl = $salon->publicUrl(); @endphp
+            <details class="dash-card dash-setup" data-salon-setup @if ($isOwner && $setup && ! $setup['required_done']) open @endif>
+                <summary class="dash-head" style="border-bottom: 0;">
+                    <span class="flex items-center gap-3 flex-wrap">
+                        <b style="color: var(--admin-text);">{{ $isOwner ? 'راه‌اندازی سالن' : 'لینک رزرو سالن' }}</b>
+                        @if ($isOwner && $setup)
+                            <span class="text-sm" style="color: var(--admin-text-dim);" data-setup-progress>{{ fa_num($setup['done']) }} از {{ fa_num($setup['total']) }} انجام شده</span>
+                        @endif
+                    </span>
+                    @if ($isOwner && $setup)
+                        <span class="dash-steps" aria-hidden="true">
+                            @foreach ($setup['steps'] as $step)<i @class(['is-done' => $step['done']])></i>@endforeach
+                        </span>
+                    @endif
+                </summary>
+                <div style="border-top: 1px solid var(--admin-border);" class="grid grid-cols-1 lg:grid-cols-2">
+                    <div class="p-4 flex flex-col gap-2" id="salon-public-link-card">
+                        <b class="text-sm" style="color: var(--admin-text);">لینک رزرو را به مشتری‌ها بدهید</b>
+                        <div class="flex gap-2 items-center flex-wrap">
+                            <span class="dash-code" data-salon-link>{{ \App\Support\SalonAddress::short($salon) }}</span>
+                            <button type="button" data-copy-salon-link="{{ $publicUrl }}" class="adm-act">کپی لینک</button>
+                            <a href="{{ route('admin.salon-qr.index') }}" class="adm-act" data-salon-qr-page-link>QR و پوستر</a>
+                            <a href="{{ $publicUrl }}" target="_blank" rel="noopener" class="adm-act adm-act--ghost">دیدن صفحه</a>
+                        </div>
+                        @unless ($salon->hasActiveSubscription())
+                            <p class="text-xs" style="color: rgb(var(--m-bad));">تا اشتراک سالن فعال نباشد، این لینک برای مشتری‌ها باز نمی‌شود.</p>
+                        @endunless
                     </div>
-                </div>
-            </div>
-            @endpermission
-
-            {{-- Popular services --}}
-            <div class="section-card @if(auth()->user()->hasPermission('manage-wallet')) @else xl:col-span-3 @endif">
-                <div class="section-header">خدمات محبوب (۳۰ روز اخیر)</div>
-                <div class="p-4 space-y-4" id="popular-services-container">
-                    @forelse($popularServices as $service)
-                        @php $pct = $popularServices->max('bookings_count') > 0
-                        ? min(($service->bookings_count / $popularServices->max('bookings_count')) * 100, 100)
-                        : 0; @endphp
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
-                                <span style="color:var(--admin-text);">{{ $service->name }}</span>
-                                <span class="flex items-center gap-2">
-                                    <span style="color:var(--admin-text-dim);">{{ fa_num($service->bookings_count) }} نوبت</span>
-                                    <span class="text-xs persian-number" style="color: {{ $service->trend >= 0 ? 'rgb(var(--m-ok))' : 'rgb(var(--m-bad))' }};">
-                                        {{ $service->trend >= 0 ? '▲' : '▼' }}{{ fa_num(abs($service->trend), 0) }}٪
+                    @if ($isOwner && $setup)
+                        <ul class="p-4 flex flex-col gap-2.5 lg:border-r" style="border-color: var(--admin-border);" data-setup-steps>
+                            @foreach ($setup['steps'] as $step)
+                                <li class="flex items-start gap-2.5 text-sm" data-setup-step="{{ $step['key'] }}" data-done="{{ $step['done'] ? '1' : '0' }}">
+                                    <span class="mt-0.5 inline-flex w-5 h-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                                          style="{{ $step['done'] ? 'background: rgb(var(--m-ok)); color: rgb(var(--m-on-solid));' : 'border: 1.5px solid var(--admin-border); color: var(--admin-text-light);' }}">{{ $step['done'] ? '✓' : '' }}</span>
+                                    <span class="flex-1 min-w-0">
+                                        <b style="color: var(--admin-text);">{{ $step['label'] }}</b>
+                                        @if ($step['optional'])<span class="text-xs" style="color: var(--admin-text-light);">(اختیاری)</span>@endif
+                                        @unless ($step['done'])
+                                            <span class="block text-xs leading-6" style="color: var(--admin-text-dim);">{{ $step['hint'] }}</span>
+                                            <a href="{{ $step['url'] }}" class="text-xs font-bold" style="color: var(--admin-accent);">{{ $step['cta'] }}</a>
+                                        @endunless
                                     </span>
-                                </span>
-                            </div>
-                            <div class="progress-bar-track">
-                                <div class="progress-bar-fill" style="width:{{ $pct }}%;"></div>
-                            </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </div>
+            </details>
+        @endif
+
+        {{-- ۴ کارت عدد --}}
+        <div class="grid grid-cols-2 xl:grid-cols-4 gap-3" data-dash-stats>
+            <div class="dash-card dash-stat" data-stat="today">
+                <span class="dash-stat__label">نوبت‌های امروز</span>
+                <b class="dash-stat__value">{{ fa_num($todayBookingsCount) }}</b>
+                <span class="dash-stat__note" @if ($todayWaiting > 0) style="color: rgb(var(--m-warn));" @endif>
+                    {{ $todayWaiting > 0 ? fa_num($todayWaiting).' منتظر تأیید یا پرداخت' : 'همه‌ی نوبت‌های امروز تعیین‌تکلیف شده‌اند' }}
+                </span>
+            </div>
+            @if ($canViewFinancials)
+                <div class="dash-card dash-stat" data-stat="revenue">
+                    <span class="dash-stat__label">درآمد {{ $monthName }}</span>
+                    <b class="dash-stat__value">{{ fa_num($monthRevenue) }} <span class="dash-stat__unit">تومان</span></b>
+                    <span class="dash-stat__note">
+                        @if (! $prepayMode && $monthRevenue === 0)
+                            رزرو بدون پیش‌پرداخت است؛ پول آنلاین گرفته نمی‌شود و مبلغ در سالن پرداخت می‌شود.
+                        @else
+                            سهم سالن از پیش‌پرداخت‌ها ({{ fa_num($commissionRate) }}٪ کمیسیون)
+                        @endif
+                    </span>
+                </div>
+            @else
+                <div class="dash-card dash-stat" data-stat="month-bookings">
+                    <span class="dash-stat__label">نوبت‌های {{ $monthName }}</span>
+                    <b class="dash-stat__value">{{ fa_num($monthBookings) }}</b>
+                    <span class="dash-stat__note">بی نوبت‌های لغوشده</span>
+                </div>
+            @endif
+            <div class="dash-card dash-stat" data-stat="customers">
+                <span class="dash-stat__label">مشتری‌ها</span>
+                <b class="dash-stat__value">{{ fa_num($customersCount) }}</b>
+                <span class="dash-stat__note" @if ($newCustomersMonth > 0) style="color: rgb(var(--m-ok));" @endif>{{ $newCustomersMonth > 0 ? fa_num($newCustomersMonth).' مشتری تازه در '.$monthName : 'مشتری تازه‌ای در '.$monthName.' نیامده' }}</span>
+            </div>
+            <div class="dash-card dash-stat" data-stat="experts">
+                <span class="dash-stat__label">کارشناسان</span>
+                <b class="dash-stat__value">{{ fa_num($specialistsCount) }}@if ($specialistLimit) <span class="dash-stat__unit">از {{ fa_num($specialistLimit) }} ظرفیت</span>@endif</b>
+                <span class="dash-stat__note">{{ $onLeaveToday > 0 ? fa_num($onLeaveToday).' نفر امروز مرخصی' : 'امروز کسی مرخصی نیست' }}</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 items-start">
+            {{-- نوبت‌های امروز با کار مستقیم --}}
+            <section class="dash-card xl:col-span-2 overflow-hidden" aria-labelledby="today-title" data-dash-today-list>
+                <div class="dash-head">
+                    <h2 id="today-title">نوبت‌های امروز</h2>
+                    <a href="{{ route('admin.bookings.index', ['tab' => 'today']) }}" class="dash-link">همه‌ی نوبت‌ها</a>
+                </div>
+                @forelse ($todayBookings as $booking)
+                    <div class="dash-row" data-today-booking="{{ $booking->id }}">
+                        <b class="dash-time">{{ fa_time($booking->booking_time) }}</b>
+                        <span class="flex-1 min-w-0 flex flex-col">
+                            <b class="text-sm truncate" style="color: var(--admin-text);">{{ $booking->user?->name ?? 'مشتری' }}</b>
+                            <span class="text-xs truncate" style="color: var(--admin-text-dim);">{{ $booking->service?->name ?? '—' }} با {{ $booking->specialist?->name ?? '—' }}</span>
+                            <span class="sm:hidden mt-1"><x-booking-status :status="$booking->status" /></span>
+                        </span>
+                        <span class="hidden sm:inline-flex"><x-booking-status :status="$booking->status" /></span>
+                        @include('admin.bookings.partials.actions', ['booking' => $booking, 'withMenu' => false])
+                    </div>
+                @empty
+                    <p class="p-6 text-center text-sm" style="color: var(--admin-text-dim);">امروز نوبتی ثبت نشده است.
+                        @permission('create-bookings')<a href="{{ route('admin.bookings.create') }}" class="dash-link mr-1">ثبت نوبت</a>@endpermission
+                    </p>
+                @endforelse
+            </section>
+
+            {{-- خدمات پرطرفدار --}}
+            <section class="dash-card" aria-labelledby="popular-title">
+                <div class="dash-head"><h2 id="popular-title">خدمات پرطرفدار، ۳۰ روز اخیر</h2></div>
+                <div class="p-4 flex flex-col gap-3.5 text-sm">
+                    @php $maxPopular = max(1, (int) ($popularServices->max('bookings_count') ?? 0)); @endphp
+                    @forelse ($popularServices as $service)
+                        <div class="flex flex-col gap-1.5">
+                            <span class="flex justify-between gap-2"><b style="color: var(--admin-text);">{{ $service->name }}</b><span style="color: var(--admin-text-dim);">{{ fa_num($service->bookings_count) }} نوبت</span></span>
+                            <span class="dash-bar"><i style="width: {{ round(100 * $service->bookings_count / $maxPopular) }}%;"></i></span>
                         </div>
                     @empty
-                        <p class="text-sm text-center py-8" style="color:var(--admin-text-dim);">داده‌ای موجود نیست</p>
+                        <p style="color: var(--admin-text-dim);">در ۳۰ روز اخیر نوبتی ثبت نشده است.</p>
                     @endforelse
                 </div>
-            </div>
+            </section>
         </div>
 
-        {{-- Second row: statistics of specialists + recent appointments --}}
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-5">
-
-            {{-- Experts table --}}
-            <div class="section-card xl:col-span-2">
-                <div class="section-header">آمار کارشناسان (۳۰ روز اخیر)</div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead>
-                        <tr style="background:var(--admin-accent-light); color:var(--admin-text-dim);">
-                            <th class="px-4 py-3 text-right font-medium">کارشناس</th>
-                            <th class="px-4 py-3 text-right font-medium">نوبت‌ها</th>
-                            <th class="px-4 py-3 text-right font-medium">نرخ تکمیل</th>
-                            <th class="px-4 py-3 text-right font-medium">امتیاز</th>
-                            <th class="px-4 py-3 text-right font-medium">درآمد (ت)</th>
-                            <th class="px-4 py-3 text-right font-medium">عملکرد</th>
+        {{-- کارشناسان، ۳۰ روز اخیر — ستون خنثی، بی برچسب «عملکرد ضعیف» --}}
+        <section class="dash-card overflow-hidden" aria-labelledby="experts-title" data-dash-experts>
+            <div class="dash-head">
+                <h2 id="experts-title">کارشناسان، ۳۰ روز اخیر</h2>
+                @permission('view-specialists')<a href="{{ route('admin.specialists.index') }}" class="dash-link">همه‌ی کارشناسان</a>@endpermission
+            </div>
+            <div class="overflow-x-auto relative">
+                <table class="w-full text-sm text-right" style="min-width: 36rem;">
+                    <thead>
+                        <tr style="background: var(--admin-accent-light); color: var(--admin-text-dim);">
+                            <th scope="col" class="px-4 py-2.5 font-semibold">کارشناس</th>
+                            <th scope="col" class="px-3 py-2.5 font-semibold">نوبت</th>
+                            <th scope="col" class="px-3 py-2.5 font-semibold">انجام‌شده</th>
+                            @if ($canViewFinancials)<th scope="col" class="px-3 py-2.5 font-semibold">پیش‌پرداخت</th>@endif
+                            <th scope="col" class="px-4 py-2.5 font-semibold">امتیاز</th>
                         </tr>
-                        </thead>
-                        <tbody id="specialists-table-body" style="border-top:1px solid var(--admin-border);">
-                        @forelse($topSpecialists as $specialist)
-                            <tr style="border-bottom:1px solid var(--admin-border);"
-                                data-ui-hover="background: var(--admin-accent-light)"
-                                data-ui-unhover="background: ">
-                                <td class="px-4 py-3">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-                                             style="background:var(--admin-accent); color:rgb(var(--m-on-solid));">
-                                            {{ mb_substr($specialist->name, 0, 1) }}
-                                        </div>
-                                        <span style="color:var(--admin-text);">{{ $specialist->name }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ fa_num($specialist->bookings_count) }}</td>
-                                <td class="px-4 py-3">
-                                    <div class="flex items-center gap-2">
-                                        <div class="progress-bar-track" style="width:64px;">
-                                            <div class="progress-bar-fill" style="width:{{ $specialist->completion_rate }}%; background:rgb(var(--m-ok));"></div>
-                                        </div>
-                                        <span class="text-xs persian-number" style="color:var(--admin-text-dim);">{{ fa_num($specialist->completion_rate, 0) }}٪</span>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ $specialist->rating !== null ? fa_num($specialist->rating, 1) : '—' }}</td>
-                                <td class="px-4 py-3 persian-number" style="color:var(--admin-text-dim);">{{ fa_num($specialist->revenue ?? 0) }}</td>
-                                <td class="px-4 py-3">
-                                    @if($specialist->completion_rate >= 80)
-                                        <span class="badge-status" style="background:rgb(var(--m-ok) / .1);color:rgb(var(--m-ok));">عالی</span>
-                                    @elseif($specialist->completion_rate >= 60)
-                                        <span class="badge-status" style="background:rgb(var(--m-warn) / .1);color:rgb(var(--m-warn));">خوب</span>
-                                    @else
-                                        <span class="badge-status" style="background:rgb(var(--m-bad) / .1);color:rgb(var(--m-bad));">ضعیف</span>
-                                    @endif
-                                </td>
+                    </thead>
+                    <tbody>
+                        @forelse ($topSpecialists as $specialist)
+                            <tr style="border-top: 1px solid var(--admin-border);">
+                                <td class="px-4 py-2.5 font-bold" style="color: var(--admin-text);">{{ $specialist->name }}</td>
+                                <td class="px-3 py-2.5">{{ fa_num($specialist->bookings_count) }}</td>
+                                <td class="px-3 py-2.5">{{ fa_num($specialist->successful_bookings) }}</td>
+                                @if ($canViewFinancials)<td class="px-3 py-2.5">{{ fa_money((int) $specialist->revenue, true) }}</td>@endif
+                                <td class="px-4 py-2.5" style="{{ $specialist->rating > 0 ? '' : 'color: var(--admin-text-dim);' }}">{{ $specialist->rating > 0 ? fa_num($specialist->rating, 1).' از ۵' : 'هنوز نظری نیست' }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="5" class="px-4 py-8 text-center text-sm" style="color:var(--admin-text-dim);">داده‌ای موجود نیست</td></tr>
+                            <tr><td colspan="5" class="px-4 py-6 text-center" style="color: var(--admin-text-dim);">هنوز کارشناسی ثبت نشده است.</td></tr>
                         @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                <div class="px-4 py-3 text-center" style="border-top:1px solid var(--admin-border);">
-                    <a href="{{ route('admin.specialists.index') }}" class="text-sm font-medium" style="color:var(--admin-accent);">مشاهده همه کارشناسان</a>
-                </div>
+                    </tbody>
+                </table>
             </div>
-
-            {{-- Recent turns --}}
-            <div class="section-card">
-                <div class="section-header">نوبت‌های اخیر</div>
-                <div class="divide-y" id="recent-bookings-container" style="border-color:var(--admin-border);">
-                    @forelse($recentBookings as $booking)
-                        <div class="flex items-center justify-between px-4 py-3">
-                            <div class="flex items-center gap-2 min-w-0">
-                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-                                     style="background:var(--admin-accent-light); color:var(--admin-accent);">
-                                    {{ mb_substr($booking->user->name ?? 'ن', 0, 1) }}
-                                </div>
-                                <div class="min-w-0">
-                                    <p class="text-sm font-medium truncate" style="color:var(--admin-text);">{{ $booking->user->name ?? 'کاربر ناشناس' }}</p>
-                                    <p class="text-xs truncate" style="color:var(--admin-text-dim);">{{ $booking->service?->name ?? '—' }}</p>
-                                </div>
-                            </div>
-                            @php $__pill = \App\Support\Bookings\BookingLabels::statusPill($booking->status); @endphp
-                            <span class="badge-status flex-shrink-0 mr-2" style="background:{{ $__pill['bg'] }};color:{{ $__pill['color'] }};" data-booking-status="{{ $booking->status }}">
-                            @if(in_array($booking->status, ['pending','confirmed']))
-                                {{ fa_time($booking->booking_time) }}
-                            @else
-                                {{ $__pill['label'] }}
-                            @endif
-                            </span>
-                        </div>
-                    @empty
-                        <p class="text-sm text-center py-8" style="color:var(--admin-text-dim);">نوبتی وجود ندارد</p>
-                    @endforelse
-                </div>
-                <div class="px-4 py-3 text-center" style="border-top:1px solid var(--admin-border);">
-                    <a href="{{ route('admin.bookings.index') }}" class="text-sm font-medium" style="color:var(--admin-accent);">مشاهده همه نوبت‌ها</a>
-                </div>
-            </div>
-        </div>
-
-        {{-- Third row: System roles --}}
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
-            <div class="section-card">
-                <div class="section-header">نقش‌های سیستم</div>
-                <div class="p-4 space-y-3">
-                    @forelse($roles as $role)
-                        <div class="flex items-center justify-between py-2" style="border-bottom:1px solid var(--admin-border);">
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-lg flex items-center justify-center"
-                                     style="background:var(--admin-accent-light); color:var(--admin-accent);">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-medium" style="color:var(--admin-text);">{{ $role->label }}</p>
-                                    <p class="text-xs" dir="ltr" style="color:var(--admin-text-light);">{{ $role->name }}</p>
-                                </div>
-                            </div>
-                            <span class="badge-status" style="background:var(--admin-accent-light); color:var(--admin-accent);">
-                            {{ fa_num($role->users_count) }} کاربر
-                        </span>
-                        </div>
-                    @empty
-                        <p class="text-sm text-center py-4" style="color:var(--admin-text-dim);">نقشی تعریف نشده</p>
-                    @endforelse
-                </div>
-                <div class="px-4 py-3 text-center" style="border-top:1px solid var(--admin-border);">
-                    <a href="{{ route('admin.roles.index') }}" class="text-sm font-medium" style="color:var(--admin-accent);">مدیریت نقش‌ها</a>
-                </div>
-            </div>
-        </div>
-
+        </section>
     </div>
 @endsection
 
 @push('scripts')
-    @vite('resources/js/vendor/apexcharts.js')
     <script @nonce>
-        // امنیت (H2): متن آزاد کاربر (نام مشتری، نام خدمت، متن اعلان) پیش از innerHTML escape می‌شود
-        function escHtml(v) { return String(v ?? '').replace(/[&<>"']/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c])); }
-        uiActions.register({ updateTimeFilter: function (event, period) { window.updateTimeFilter(period); } });
-        document.addEventListener('DOMContentLoaded', function () {
-
-            // Keep a reference to the chart to destroy before re-rendering
-            let chartInstance = null;
-            // آخرین داده‌ی نمودار برای کشیدن دوباره بعد از عوض شدن تم (باید پیش از اولین renderChart تعریف شود)
-            let lastChartData = null;
-
-            // Initial rendering with week data (server-side)
-            // initialData format from PHP: [{date, total}]
-            // ⭐ فاز ۲ SaaS، محور «۲» — این عنصر فقط وقتی در DOM هست که کاربر مجوز manage-wallet
-            // داره (@@permission در بالای همین فایل)؛ بدون این گارد، renderChart روی null.innerHTML
-            // خطای جاوااسکریپت می‌داد.
-            if (document.getElementById('revenue-chart')) {
-                const initialData = @json($weeklyRevenue ?? []);
-                renderChart(initialData);
-            }
-
-            // --- Interval filter ---
-            function updateTimeFilter(period) {
-                // Change active button
-                ['today','week','month'].forEach(p => {
-                    const btn = document.getElementById('filter-' + p);
-                    btn.classList.toggle('active', p === period);
-                });
-
-                const titles = { today: 'امروز', week: '۷ روز گذشته', month: '۳۰ روز گذشته' };
-                document.getElementById('revenue-chart-title').textContent = titles[period];
-
-                // Chart spinner
-                document.getElementById('revenue-chart').innerHTML =
-                    '<div class="chart-spinner"><div class="chart-spinner-inner"></div></div>';
-                fetch('/admin/reports/' + period)
-                    .then(res => {
-                        if (!res.ok) throw new Error('HTTP ' + res.status);
-                        return res.json();
-                    })
-                    .then(response => {
-                        // API format: {success, data: [{label, date, revenue, bookings}]}
-                        // normalize to {date, total} which renderChart expects
-                        if (response.success && Array.isArray(response.data)) {
-                            const chartData = response.data.map(d => ({
-                                date:  d.label   ?? d.date,
-                                total: d.revenue ?? d.total ?? 0,
-                            }));
-                            renderChart(chartData);
-                        } else {
-                            renderChart([]);
-                        }
-                    })
-                    .catch(() => {
-                        document.getElementById('revenue-chart').innerHTML =
-                            '<div class="chart-spinner" style="color:#991B1B;">خطا در دریافت اطلاعات. لطفاً مجدداً تلاش کنید.</div>';
-                    });
-            }
-
-            // ApexCharts chart rendering
-            window.updateTimeFilter = updateTimeFilter;
-
-            // --- ApexCharts chart rendering ---
-            // بسته‌ی ه: نمودار رنگ را از توکن تم می‌خواند؛ با عوض شدن تم دوباره کشیده می‌شود
-            document.addEventListener('click', e => {
-                if (e.target.closest && e.target.closest('[data-m-theme-toggle]') && lastChartData) setTimeout(() => renderChart(lastChartData), 0);
+        // کپی لینک رزرو سالن
+        document.querySelectorAll('[data-copy-salon-link]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var url = btn.getAttribute('data-copy-salon-link'), label = btn.textContent;
+                var done = function () { btn.textContent = 'کپی شد'; setTimeout(function () { btn.textContent = label; }, 1800); };
+                if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(url).then(done, function () {}); return; }
+                var t = document.createElement('textarea'); t.value = url; t.style.position = 'fixed'; t.style.opacity = '0';
+                document.body.appendChild(t); t.select();
+                try { document.execCommand('copy'); done(); } catch (e) {}
+                t.remove();
             });
-
-            function renderChart(data) {
-                lastChartData = data;
-                const el = document.getElementById('revenue-chart');
-
-                // Destroy previous chart before creating new one
-                if (chartInstance) {
-                    chartInstance.destroy();
-                    chartInstance = null;
-                }
-
-                if (!data || !data.length) {
-                    el.innerHTML = '<div class="chart-spinner" style="color:var(--admin-text-dim);">اطلاعاتی برای نمایش وجود ندارد</div>';
-                    return;
-                }
-
-                el.innerHTML = '';
-
-                chartInstance = new ApexCharts(el, {
-                    chart: {
-                        type: 'area',
-                        height: 280,
-                        fontFamily: 'Mahru, Vazirmatn, sans-serif',
-                        foreColor: window.mToken('mu'),
-                        background: 'transparent',
-                        toolbar: { show: false },
-                        zoom: { enabled: false },
-                    },
-                    series: [{
-                        name: 'درآمد (تومان)',
-                        data: data.map(d => d.total ?? 0),
-                    }],
-                    xaxis: {
-                        categories: data.map(d => d.date),
-                        labels: {
-                            style: { fontFamily: 'Vazirmatn, Vazir, sans-serif', fontSize: '11px' },
-                        },
-                        axisBorder: { show: false },
-                        axisTicks: { show: false },
-                    },
-                    yaxis: {
-                        labels: {
-                            formatter: val => new Intl.NumberFormat('fa-IR').format(val),
-                            style: { fontFamily: 'Vazirmatn, Vazir, sans-serif', fontSize: '11px' },
-                        },
-                    },
-                    stroke: { curve: 'smooth', width: 2 },
-                    fill: {
-                        type: 'gradient',
-                        gradient: { shadeIntensity: 1, opacityFrom: 0.5, opacityTo: 0.05 },
-                    },
-                    colors: [window.mToken('gold')],
-                    grid: {
-                        borderColor: window.mToken('tx', .08),
-                        row: { colors: ['transparent'], opacity: 0.5 },
-                    },
-                    dataLabels: { enabled: false },
-                    tooltip: {
-                        theme: document.documentElement.dataset.theme === 'light' ? 'light' : 'dark',
-                        y: { formatter: val => new Intl.NumberFormat('fa-IR').format(val) + ' تومان' },
-                    },
-                });
-                chartInstance.render();
-                requestAnimationFrame(function() {
-                    window.dispatchEvent(new Event('resize'));
-                });
-            }
-
-            // --- Update statistics cards ---
-            function updateStats(stats) {
-                const fmt = v => new Intl.NumberFormat('fa-IR').format(v);
-                if (stats.todayBookingsCount !== undefined)
-                    document.getElementById('today-bookings-count').textContent = fmt(stats.todayBookingsCount);
-                if (stats.totalRevenue !== undefined)
-                    document.getElementById('total-revenue').textContent = fmt(stats.totalRevenue);
-                if (stats.usersCount !== undefined)
-                    document.getElementById('users-count').textContent = fmt(stats.usersCount);
-                if (stats.specialistsCount !== undefined)
-                    document.getElementById('specialists-count').textContent = fmt(stats.specialistsCount);
-            }
-
-            // --- Popular service updates ---
-            function updatePopularServices(services) {
-                const el = document.getElementById('popular-services-container');
-                if (!services || !services.length) {
-                    el.innerHTML = '<p class="text-sm text-center py-8" style="color:var(--admin-text-dim);">داده‌ای موجود نیست</p>';
-                    return;
-                }
-                const max = Math.max(...services.map(s => s.bookings_count), 1);
-                el.innerHTML = services.map(s => {
-                    const pct = Math.min((s.bookings_count / max) * 100, 100).toFixed(0);
-                    return `
-                <div>
-                    <div class="flex justify-between text-sm mb-1">
-                        <span style="color:var(--admin-text);">${escHtml(s.name)}</span>
-                        <span style="color:var(--admin-text-dim);">${escHtml(new Intl.NumberFormat('fa-IR').format(s.bookings_count))} نوبت</span>
-                    </div>
-                    <div class="progress-bar-track">
-                        <div class="progress-bar-fill" style="width:${pct}%;"></div>
-                    </div>
-                </div>`;
-                }).join('');
-            }
-
-
-            // Auto-run today on load
-            updateTimeFilter('today');
         });
     </script>
 @endpush

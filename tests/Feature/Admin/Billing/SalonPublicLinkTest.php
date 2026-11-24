@@ -35,18 +35,18 @@ class SalonPublicLinkTest extends TestCase
     {
         $salon = app(CurrentSalon::class)->get();
 
+        // بسته‌ی ۲ ظاهری: داشبورد لینک را در کارت «راه‌اندازی سالن» با کپی و «QR و پوستر» نشان می‌دهد (کارت بزرگ در صفحه‌ی اشتراک)
         $this->actingAs($this->salonAdmin())->get(route('admin.dashboard'))
             ->assertOk()
-            ->assertSee('آدرس اختصاصی رزرو آنلاین سالن شما')
-            ->assertSee(url('/s/'.$salon->slug), false)
-            ->assertSee('data-copy-salon-link', false);
+            ->assertSee('لینک رزرو را به مشتری‌ها بدهید')
+            ->assertSee('data-copy-salon-link="'.url('/s/'.$salon->slug).'"', false);
     }
 
     public function test_the_card_has_the_salon_qr_and_the_app_code(): void
     {
         $salon = app(CurrentSalon::class)->get();
 
-        $this->actingAs($this->salonAdmin())->get(route('admin.dashboard'))
+        $this->actingAs($this->salonAdmin())->get(route('admin.billing.index'))
             ->assertOk()
             ->assertSee('data-salon-qr="'.url('/s/'.$salon->slug).'?src=qr"', false)
             ->assertSee('data-salon-qr-page-link', false)

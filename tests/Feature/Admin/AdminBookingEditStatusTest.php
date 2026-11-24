@@ -71,6 +71,7 @@ class AdminBookingEditStatusTest extends TestCase
         $html = $this->actingAs($this->admin())->get(route('admin.dashboard'))->assertOk()->getContent();
 
         $this->assertStringNotContainsString('updateRecentBookings', $html);
-        $this->assertStringContainsString('id="recent-bookings-container"', $html);
+        // بسته‌ی ۲ ظاهری: «نوبت‌های امروز» سمت سرور (جای «نوبت‌های اخیر»)
+        $this->assertStringContainsString('data-dash-today-list', $html);
     }
 }

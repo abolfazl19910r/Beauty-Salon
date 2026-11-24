@@ -32,7 +32,8 @@ class DashboardUserCountSalonScopeTest extends TestCase
         Specialist::factory()->create();
         app(CurrentSalon::class)->set($salonA);
 
-        $this->assertSame($expected, $this->actingAs($owner)->get(route('admin.dashboard'))->assertOk()->viewData('usersCount'));
+        // بسته‌ی ۲ ظاهری: کارت داشبورد «مشتری‌ها»ی همین سالن است (۲ مشتری سالن A، نه ۵ مشتری سالن دیگر)
+        $this->assertSame(2, $this->actingAs($owner)->get(route('admin.dashboard'))->assertOk()->viewData('customersCount'));
         $this->assertSame($expected, $this->actingAs($owner)->getJson(route('admin.dashboard.data'))->assertOk()->json('stats.totalUsers'));
     }
 }

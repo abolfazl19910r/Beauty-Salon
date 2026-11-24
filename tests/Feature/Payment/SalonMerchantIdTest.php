@@ -124,10 +124,14 @@ class SalonMerchantIdTest extends TestCase
     {
         $admin = User::factory()->create(['is_admin' => true]);
 
-        $this->actingAs($admin)->get(route('admin.dashboard'))->assertDontSee('درگاه پرداخت سالن شما هنوز تنظیم نشده است');
+        // بسته‌ی ۲ ظاهری: روی داشبورد قدم «درگاه پرداخت (اختیاری)» کارت راه‌اندازی است؛ هشدار کامل در صفحه‌ی اشتراک می‌ماند
+        $this->actingAs($admin)->get(route('admin.dashboard'))->assertSee('data-setup-step="gateway" data-done="1"', false);
+        $this->actingAs($admin)->get(route('admin.billing.index'))->assertDontSee('درگاه پرداخت سالن شما هنوز تنظیم نشده است');
 
         $this->withoutMerchant();
-        $this->actingAs($admin)->get(route('admin.dashboard'))->assertSee('درگاه پرداخت سالن شما هنوز تنظیم نشده است');
+        $this->actingAs($admin)->get(route('admin.dashboard'))->assertSee('data-setup-step="gateway" data-done="0"', false)
+            ->assertSee('بدون درگاه، رزرو بدون پیش‌پرداخت انجام می‌شود');
+        $this->actingAs($admin)->get(route('admin.billing.index'))->assertSee('درگاه پرداخت سالن شما هنوز تنظیم نشده است');
     }
 
     public function test_without_a_merchant_booking_goes_on_without_prepayment(): void
