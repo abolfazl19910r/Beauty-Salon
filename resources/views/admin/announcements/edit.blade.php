@@ -89,9 +89,7 @@
                                    value="{{ old('published_at', $announcement->published_at) }}">
                             <div class="jcal-popup" id="published-popup"></div>
                         </div>
-                        <input type="time" id="published-time"
-                               value="{{ $announcement->published_at ? $announcement->published_at->format('H:i') : '00:00' }}"
-                               class="w-24 rounded-lg px-2 py-2 text-sm" style="border:1px solid var(--admin-border); color:var(--admin-text);">
+                        <x-time-input id="published-time" :value="$announcement->published_at ? $announcement->published_at->format('H:i') : '00:00'" label="ساعت" select-class="rounded-lg px-2 py-2 text-sm" select-style="border:1px solid var(--admin-border); color:var(--admin-text);" />
                     </div>
                 </div>
                 <div>
@@ -106,9 +104,7 @@
                                    value="{{ old('expires_at', $announcement->expires_at) }}">
                             <div class="jcal-popup" id="expires-popup"></div>
                         </div>
-                        <input type="time" id="expires-time"
-                               value="{{ $announcement->expires_at ? $announcement->expires_at->format('H:i') : '00:00' }}"
-                               class="w-24 rounded-lg px-2 py-2 text-sm" style="border:1px solid var(--admin-border); color:var(--admin-text);">
+                        <x-time-input id="expires-time" :value="$announcement->expires_at ? $announcement->expires_at->format('H:i') : '00:00'" label="ساعت" select-class="rounded-lg px-2 py-2 text-sm" select-style="border:1px solid var(--admin-border); color:var(--admin-text);" />
                     </div>
                 </div>
             </div>

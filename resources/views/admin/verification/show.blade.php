@@ -67,7 +67,7 @@
                     </div>
                     <div>
                         <label class="block text-sm mb-1" style="color:var(--admin-text);" for="license_file">فایل پروانه (PDF یا عکس، حداکثر ۵ مگ)</label>
-                        <input id="license_file" name="license_file" type="file" required accept=".pdf,.jpg,.jpeg,.png" class="{{ $input }}" style="{{ $inputStyle }}">
+                        <x-file-input id="license_file" name="license_file" required accept=".pdf,.jpg,.jpeg,.png" button-style="border:1px solid var(--admin-border); color:var(--admin-text);" />
                     </div>
                 </div>
                 <p class="text-xs leading-6" style="color: var(--admin-text-dim);">کد ملی رمزنگاری‌شده و فایل پروانه روی دیسک خصوصی نگه داشته می‌شود و فقط مدیر پلتفرم برای بررسی آن را می‌بیند.</p>

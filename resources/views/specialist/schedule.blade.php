@@ -152,35 +152,19 @@
                                 <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block mb-2 text-sm text-[var(--specialist-plum-muted)]">ساعت شروع</label>
-                                        <input type="time"
-                                               name="schedules[{{ $dayNumber }}][start_time]"
-                                               value="{{ isset($schedules[$dayNumber]) && isset($schedules[$dayNumber]->first()->start_time) ? $schedules[$dayNumber]->first()->start_time : '' }}"
-                                               class="w-full rounded-lg px-4 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]"
-                                               style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);">
+                                        <x-time-input name="schedules[{{ $dayNumber }}][start_time]" :value="isset($schedules[$dayNumber]) && isset($schedules[$dayNumber]->first()->start_time) ? $schedules[$dayNumber]->first()->start_time : ''" class="w-full" select-class="rounded-lg px-3 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]" select-style="flex:1; background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);" />
                                     </div>
                                     <div>
                                         <label class="block mb-2 text-sm text-[var(--specialist-plum-muted)]">ساعت پایان</label>
-                                        <input type="time"
-                                               name="schedules[{{ $dayNumber }}][end_time]"
-                                               value="{{ isset($schedules[$dayNumber]) && isset($schedules[$dayNumber]->first()->end_time) ? $schedules[$dayNumber]->first()->end_time : '' }}"
-                                               class="w-full rounded-lg px-4 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]"
-                                               style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);">
+                                        <x-time-input name="schedules[{{ $dayNumber }}][end_time]" :value="isset($schedules[$dayNumber]) && isset($schedules[$dayNumber]->first()->end_time) ? $schedules[$dayNumber]->first()->end_time : ''" class="w-full" select-class="rounded-lg px-3 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]" select-style="flex:1; background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);" />
                                     </div>
                                     <div>
                                         <label class="block mb-2 text-sm text-[var(--specialist-plum-muted)]">شروع استراحت (اختیاری)</label>
-                                        <input type="time"
-                                               name="schedules[{{ $dayNumber }}][break_start]"
-                                               value="{{ isset($schedules[$dayNumber]) ? $schedules[$dayNumber]->first()->break_start : '' }}"
-                                               class="w-full rounded-lg px-4 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]"
-                                               style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);">
+                                        <x-time-input name="schedules[{{ $dayNumber }}][break_start]" :value="isset($schedules[$dayNumber]) ? $schedules[$dayNumber]->first()->break_start : ''" :nullable="true" class="w-full" select-class="rounded-lg px-3 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]" select-style="flex:1; background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);" />
                                     </div>
                                     <div>
                                         <label class="block mb-2 text-sm text-[var(--specialist-plum-muted)]">پایان استراحت (اختیاری)</label>
-                                        <input type="time"
-                                               name="schedules[{{ $dayNumber }}][break_end]"
-                                               value="{{ isset($schedules[$dayNumber]) ? $schedules[$dayNumber]->first()->break_end : '' }}"
-                                               class="w-full rounded-lg px-4 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]"
-                                               style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);">
+                                        <x-time-input name="schedules[{{ $dayNumber }}][break_end]" :value="isset($schedules[$dayNumber]) ? $schedules[$dayNumber]->first()->break_end : ''" :nullable="true" class="w-full" select-class="rounded-lg px-3 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]" select-style="flex:1; background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);" />
                                     </div>
                                 </div>
                             </div>

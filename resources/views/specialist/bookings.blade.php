@@ -64,7 +64,7 @@
                                    value="{{ request('date_from') }}"
                                    class="w-full rounded-lg px-4 py-2 text-center cursor-pointer text-[var(--specialist-text)] placeholder-[var(--specialist-inactive)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]"
                                    style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);"
-                                   placeholder="مثال: 1403/09/15"
+                                   placeholder="مثال: {{ jalali_date(now()) }}"
                                    dir="ltr"
                                    autocomplete="off" readonly>
                             <div class="jcal-popup" id="jcal-popup-date_from"></div>
@@ -78,7 +78,7 @@
                                    value="{{ request('date_to') }}"
                                    class="w-full rounded-lg px-4 py-2 text-center cursor-pointer text-[var(--specialist-text)] placeholder-[var(--specialist-inactive)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]"
                                    style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);"
-                                   placeholder="مثال: 1403/09/20"
+                                   placeholder="مثال: {{ jalali_date(now()->addDays(5)) }}"
                                    dir="ltr"
                                    autocomplete="off" readonly>
                             <div class="jcal-popup" id="jcal-popup-date_to"></div>
@@ -87,10 +87,7 @@
 
                     <div>
                         <label class="block text-xs text-[var(--specialist-plum-muted)] mb-2">زمان</label>
-                        <input type="time" name="time"
-                               value="{{ request('time') }}"
-                               class="w-full rounded-lg px-4 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]"
-                               style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);">
+                        <x-time-input name="time" :value="request('time')" :nullable="true" label="زمان" class="w-full" select-class="rounded-lg px-3 py-2 text-[var(--specialist-text)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]" select-style="flex:1; background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);" />
                     </div>
 
                     <div>

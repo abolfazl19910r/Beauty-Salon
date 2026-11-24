@@ -138,6 +138,7 @@
                                 </div>
                                 <input type="text" id="booking_time_display" readonly
                                        class="form-input pr-9 cursor-pointer persian-number"
+                                       style="padding-right: 2.25rem;" data-icon-input
                                        value="{{ verta($booking->booking_time)->format('Y/m/d H:i') }}">
                             </div>
                             <input type="hidden" name="booking_time" id="booking_time_hidden"

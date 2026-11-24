@@ -59,15 +59,15 @@
         .hours-row { display: grid; grid-template-columns: 5.5rem auto 1fr 1fr; gap: .5rem; align-items: center; }
         .hours-row .day { font-size: .9rem; }
         .hours-row .closed { display: flex; align-items: center; gap: .3rem; font-size: .8rem; margin: 0; opacity: .85; white-space: nowrap; }
-        .hours-row input[type=time] { padding: .4rem .5rem; direction: ltr; min-width: 0; }
-        .hours-row.is-closed input[type=time] { opacity: .35; }
+        .hours-row [data-ui-time] select { padding: .4rem .5rem; direction: ltr; min-width: 0; }
+        .hours-row.is-closed [data-ui-time] { opacity: .35; }
         /* گوشی: روز و «تعطیل» در خط اول، دو ساعت کنار هم در خط دوم (چهار ستون در یک خط ~۴۰۰px جا می‌خواست) */
         @media (max-width: 520px) {
             .hours-row { grid-template-columns: 1fr 1fr; gap: .35rem .5rem; padding-bottom: .45rem; border-bottom: 1px solid rgb(var(--m-gold) / .12); }
             .hours-row .closed { justify-self: end; }
         }
         /* گوشی خیلی باریک (۳۲۰): ساعت ۱۱۱px جا ندارد و AM/PM بریده می‌شد ← هر ساعت یک خط کامل */
-        @media (max-width: 359px) { .hours-row input[type=time] { grid-column: 1 / -1; } }
+        @media (max-width: 359px) { .hours-row [data-ui-time] { grid-column: 1 / -1; } }
         .buy-summary { display: flex; justify-content: space-between; align-items: center; gap: 1rem; border: 1px solid var(--rasta-gold); border-radius: .7rem; padding: .8rem 1rem; margin-bottom: 1.5rem; background: rgb(var(--m-gold) / .08); }
         .buy-title { font-weight: 800; color: var(--rasta-gold-light); }
         .buy-price { font-size: .85rem; opacity: .8; margin-top: .15rem; }
@@ -184,7 +184,7 @@
                         <label for="logo">لوگوی سالن <span style="opacity:.6; font-weight:400;">(اختیاری)</span></label>
                         <div class="logo-pick">
                             <img id="logo-preview" alt="" hidden>
-                            <input type="file" id="logo" name="logo" accept="image/png,image/jpeg,image/webp">
+                            <x-file-input id="logo" name="logo" accept="image/png,image/jpeg,image/webp" button-style="border:1px solid currentColor;" />
                         </div>
                         <div class="hint">PNG، JPG یا WEBP، حداکثر ۲ مگابایت. در سایت سالن، صفحه‌ی ورود و پنل مدیریت نمایش داده می‌شود. بعداً هم قابل تغییر است.</div>
                     </div>
@@ -238,10 +238,8 @@
                                         <input type="checkbox" name="working_hours[{{ $day }}][closed]" value="1" data-closed-toggle @checked($isClosed)>
                                         تعطیل
                                     </label>
-                                    <input type="time" name="working_hours[{{ $day }}][open]" value="{{ $row['open'] ?? '09:00' }}"
-                                           aria-label="ساعت شروع {{ \App\Support\SalonWorkingHours::DAY_NAMES[$day] }}" @disabled($isClosed)>
-                                    <input type="time" name="working_hours[{{ $day }}][close]" value="{{ $row['close'] ?? '21:00' }}"
-                                           aria-label="ساعت پایان {{ \App\Support\SalonWorkingHours::DAY_NAMES[$day] }}" @disabled($isClosed)>
+                                    <x-time-input name="working_hours[{{ $day }}][open]" :value="$row['open'] ?? '09:00'" :label="'ساعت شروع '.\App\Support\SalonWorkingHours::DAY_NAMES[$day]" :disabled="$isClosed" />
+                                    <x-time-input name="working_hours[{{ $day }}][close]" :value="$row['close'] ?? '21:00'" :label="'ساعت پایان '.\App\Support\SalonWorkingHours::DAY_NAMES[$day]" :disabled="$isClosed" />
                                 </div>
                             @endforeach
                         </div>
@@ -392,7 +390,7 @@
             box.addEventListener('change', function () {
                 var row = box.closest('[data-hours-row]');
                 row.classList.toggle('is-closed', box.checked);
-                row.querySelectorAll('input[type=time]').forEach(function (input) { input.disabled = box.checked; });
+                row.querySelectorAll('[data-ui-time] select, [data-ui-time] input').forEach(function (input) { input.disabled = box.checked; });
             });
         });
     </script>

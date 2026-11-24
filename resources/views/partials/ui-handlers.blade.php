@@ -17,6 +17,9 @@
       data-ui-change-style="…" + data-ui-target="selector"  ← change: همان style روی عنصر(های) هدف
       data-ui-autosubmit                   ← change: this.form.submit()
       data-ui-navigate                     ← change: رفتن به this.value
+    مؤلفه‌های فرم مشترک (بسته‌ی ۰ به‌روزرسانی ظاهری، ۲۰۲۶-۱۱-۲۴):
+      data-ui-time                         ← <x-time-input>: دو select ساعت/دقیقه ← input مخفی «HH:MM» (یا خالی) + رویداد change روی آن
+      data-ui-file                         ← <x-file-input>: نام فایل‌های انتخاب‌شده در [data-ui-file-name]
     کارهای خاص هر صفحه (تابع‌های خود صفحه، در <script @nonce> همان صفحه):
       data-ui-click|change|input|submit="نام" و data-ui-args (آرایه‌ی JSON، اختیاری) — در Blade:
       data-ui-args="{{ json_encode([...]) }}" (نه @json: آرگومانش را روی «,» می‌شکند و آرایه‌ی چندعضوی خراب می‌شود)
@@ -122,6 +125,24 @@
         if (el.hasAttribute('data-ui-change-style')) targets(el, 'data-ui-target').forEach(function (t) { applyStyle(t, el.getAttribute('data-ui-change-style')); });
         if (el.hasAttribute('data-ui-autosubmit') && el.form) el.form.submit();
         if (el.hasAttribute('data-ui-navigate')) window.location.href = el.value;
+
+        var time = el.closest ? el.closest('[data-ui-time]') : null;
+        if (time && el.tagName === 'SELECT') {
+            var hour = time.querySelector('[data-ui-time-hour]'), minute = time.querySelector('[data-ui-time-minute]');
+            var hidden = time.querySelector('input[type=hidden]');
+            if (hour && minute && hidden) {
+                if (hour.value !== '' && minute.value === '') minute.value = '00';
+                hidden.value = hour.value !== '' && minute.value !== '' ? hour.value + ':' + minute.value : '';
+                hidden.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+
+        var file = el.type === 'file' && el.closest ? el.closest('[data-ui-file]') : null;
+        if (file) {
+            var label = file.querySelector('[data-ui-file-name]');
+            var names = Array.prototype.map.call(el.files || [], function (f) { return f.name; });
+            if (label) label.textContent = names.length ? names.join('، ') : label.getAttribute('data-empty');
+        }
     }, true);
 
     document.addEventListener('input', function (e) {

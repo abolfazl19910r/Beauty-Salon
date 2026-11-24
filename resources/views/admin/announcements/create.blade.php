@@ -87,8 +87,7 @@
                             <input type="hidden" name="published_at" id="published-hidden" value="{{ old('published_at') }}">
                             <div class="jcal-popup" id="published-popup"></div>
                         </div>
-                        <input type="time" id="published-time" value="00:00"
-                               class="w-24 rounded-lg px-2 py-2 text-sm" style="border:1px solid var(--admin-border); color:var(--admin-text);">
+                        <x-time-input id="published-time" :value="'00:00'" label="ساعت" select-class="rounded-lg px-2 py-2 text-sm" select-style="border:1px solid var(--admin-border); color:var(--admin-text);" />
                     </div>
                 </div>
                 <div>
@@ -102,8 +101,7 @@
                             <input type="hidden" name="expires_at" id="expires-hidden" value="{{ old('expires_at') }}">
                             <div class="jcal-popup" id="expires-popup"></div>
                         </div>
-                        <input type="time" id="expires-time" value="00:00"
-                               class="w-24 rounded-lg px-2 py-2 text-sm" style="border:1px solid var(--admin-border); color:var(--admin-text);">
+                        <x-time-input id="expires-time" :value="'00:00'" label="ساعت" select-class="rounded-lg px-2 py-2 text-sm" select-style="border:1px solid var(--admin-border); color:var(--admin-text);" />
                     </div>
                 </div>
             </div>

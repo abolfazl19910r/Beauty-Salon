@@ -100,29 +100,21 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-medium mb-1.5" style="color:var(--admin-text-dim);">ساعت شروع</label>
-                                    <input type="time" name="schedules[{{ $dayNum }}][start_time]"
-                                           class="time-input"
-                                           value="{{ $schedule?->start_time ?? '09:00' }}">
+                                    <x-time-input name="schedules[{{ $dayNum }}][start_time]" :value="$schedule?->start_time ?? '09:00'" class="w-full" select-class="time-input" select-style="width:auto;flex:1" />
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium mb-1.5" style="color:var(--admin-text-dim);">ساعت پایان</label>
-                                    <input type="time" name="schedules[{{ $dayNum }}][end_time]"
-                                           class="time-input"
-                                           value="{{ $schedule?->end_time ?? '18:00' }}">
+                                    <x-time-input name="schedules[{{ $dayNum }}][end_time]" :value="$schedule?->end_time ?? '18:00'" class="w-full" select-class="time-input" select-style="width:auto;flex:1" />
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-4 mt-4">
                                 <div>
                                     <label class="block text-xs font-medium mb-1.5" style="color:var(--admin-text-dim);">شروع استراحت (اختیاری)</label>
-                                    <input type="time" name="schedules[{{ $dayNum }}][break_start]"
-                                           class="time-input"
-                                           value="{{ $schedule?->break_start }}">
+                                    <x-time-input name="schedules[{{ $dayNum }}][break_start]" :value="$schedule?->break_start" :nullable="true" class="w-full" select-class="time-input" select-style="width:auto;flex:1" />
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium mb-1.5" style="color:var(--admin-text-dim);">پایان استراحت (اختیاری)</label>
-                                    <input type="time" name="schedules[{{ $dayNum }}][break_end]"
-                                           class="time-input"
-                                           value="{{ $schedule?->break_end }}">
+                                    <x-time-input name="schedules[{{ $dayNum }}][break_end]" :value="$schedule?->break_end" :nullable="true" class="w-full" select-class="time-input" select-style="width:auto;flex:1" />
                                 </div>
                             </div>
                         </div>

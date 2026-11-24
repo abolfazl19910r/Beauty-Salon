@@ -131,7 +131,7 @@
                     <label class="block text-xs mb-2" style="color: var(--rasta-gold-light); opacity: 0.8;">از تاریخ</label>
                     <div class="jcal-wrapper">
                         <input type="text" id="date_from" name="date_from" value="{{ request('date_from') }}"
-                               placeholder="1403/09/15" readonly
+                               placeholder="{{ jalali_date(now()) }}" readonly
                                class="w-full px-4 py-2 rounded-lg text-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-m-gold"
                                style="background-color: var(--rasta-dark); border: 1px solid rgb(var(--m-gold) / 0.25); color: var(--rasta-cream);"
                                dir="ltr" autocomplete="off">
@@ -143,7 +143,7 @@
                     <label class="block text-xs mb-2" style="color: var(--rasta-gold-light); opacity: 0.8;">تا تاریخ</label>
                     <div class="jcal-wrapper">
                         <input type="text" id="date_to" name="date_to" value="{{ request('date_to') }}"
-                               placeholder="1403/09/20" readonly
+                               placeholder="{{ jalali_date(now()->addDays(5)) }}" readonly
                                class="w-full px-4 py-2 rounded-lg text-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-m-gold"
                                style="background-color: var(--rasta-dark); border: 1px solid rgb(var(--m-gold) / 0.25); color: var(--rasta-cream);"
                                dir="ltr" autocomplete="off">

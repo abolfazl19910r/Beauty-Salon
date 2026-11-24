@@ -95,7 +95,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1" for="start_date">شروع ارسال (اختیاری، شمسی)</label>
-                        <input id="start_date" name="start_date" dir="ltr" placeholder="1405/08/10" class="{{ $input }}" style="{{ $inputStyle }}" value="{{ $v('start_date') }}">
+                        <input id="start_date" name="start_date" dir="ltr" placeholder="{{ jalali_date(now()->addWeek()) }}" class="{{ $input }}" style="{{ $inputStyle }}" value="{{ $v('start_date') }}">
                         <p class="text-xs mt-1" style="{{ $dim }}">خالی = همین حالا (در ساعت ۹ تا ۲۰)؛ با تاریخ، از ساعت ۹ همان روز.</p>
                         @error('start_date') <p class="text-xs mt-1" style="color:rgb(var(--m-bad));">{{ $message }}</p> @enderror
                     </div>

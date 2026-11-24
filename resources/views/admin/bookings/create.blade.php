@@ -189,6 +189,7 @@
                                 </div>
                                 <input type="text" id="booking_time_display" readonly
                                        class="form-input pr-9 cursor-pointer persian-number"
+                                       style="padding-right: 2.25rem;" data-icon-input
                                        placeholder="انتخاب تاریخ و ساعت"
                                        value="{{ old('booking_time') ? verta(old('booking_time'))->format('Y/m/d H:i') : '' }}">
                             </div>

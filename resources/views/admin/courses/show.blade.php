@@ -49,8 +49,8 @@
                                     <option value="{{ $specialist->id }}">{{ $specialist->name }}</option>
                                 @endforeach
                             </select>
-                            <input name="date" dir="ltr" placeholder="1405/08/10" class="{{ $input }}" style="{{ $inputStyle }}" value="{{ old('date') }}">
-                            <input name="time" type="time" dir="ltr" class="{{ $input }}" style="{{ $inputStyle }}" value="{{ old('time', '10:00') }}">
+                            <input name="date" dir="ltr" placeholder="{{ jalali_date(now()->addWeek()) }}" class="{{ $input }}" style="{{ $inputStyle }}" value="{{ old('date') }}">
+                            <x-time-input name="time" :value="old('time', '10:00')" label="ساعت جلسه" :select-class="$input" :select-style="$inputStyle" />
                         </div>
                         <button type="submit" class="mt-3 px-4 py-2 rounded-lg text-sm font-bold" style="{{ $btn }}">رزرو</button>
                     @endif
@@ -111,7 +111,7 @@
                                 <form method="POST" action="{{ route('admin.courses.sessions.photos.store', [$course, $booking]) }}" enctype="multipart/form-data" class="flex items-center gap-1 text-xs">
                                     @csrf
                                     <select name="kind" class="rounded px-1 py-1" style="{{ $inputStyle }}"><option value="before">قبل</option><option value="after">بعد</option></select>
-                                    <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="text-xs">
+                                    <x-file-input name="photo" accept="image/jpeg,image/png,image/webp" button-style="border:1px solid var(--admin-border); color:var(--admin-text);" />
                                     <button type="submit" class="px-2 py-1 rounded" style="{{ $ghost }}">بارگذاری</button>
                                 </form>
                             @endif
@@ -142,7 +142,7 @@
                         @csrf @method('PUT')
                         <h2 class="font-bold mb-2" style="color:var(--admin-text);">تمدید مهلت</h2>
                         <div class="flex gap-2">
-                            <input name="expires_at" dir="ltr" placeholder="1406/01/15" class="{{ $input }}" style="{{ $inputStyle }}">
+                            <input name="expires_at" dir="ltr" placeholder="{{ jalali_date(now()->addMonths(3)) }}" class="{{ $input }}" style="{{ $inputStyle }}">
                             <button type="submit" class="px-4 py-2 rounded-lg text-sm" style="{{ $ghost }}">تمدید</button>
                         </div>
                     </form>

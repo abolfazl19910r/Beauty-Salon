@@ -70,7 +70,7 @@
                             <label class="form-label">عکس پروفایل <span style="color:var(--admin-text-light);">(PNG/JPG/WEBP، حداکثر ۲ مگابایت)</span></label>
                             <div class="flex items-center gap-3">
                                 
-                                <input type="file" name="photo" accept="image/png,image/jpeg,image/webp" class="text-sm">
+                                <x-file-input name="photo" accept="image/png,image/jpeg,image/webp" button-style="border:1px solid var(--admin-border); color:var(--admin-text);" />
                             </div>
                             @error('photo') <p class="form-error">{{ $message }}</p> @enderror
                         </div>

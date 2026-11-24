@@ -67,7 +67,7 @@
                         <img id="logo-preview" src="{{ $salon->storedLogoUrl() }}" alt="لوگوی {{ $salon->name }}"
                              class="w-16 h-16 object-contain rounded-lg" style="border:1px solid var(--admin-border); {{ $salon->storedLogoUrl() ? '' : 'display:none;' }}">
                         @if ($salon->hasFeature(\App\Support\Features\Feature::CustomLogo))
-                            <input id="logo" type="file" name="logo" accept="image/png,image/jpeg,image/webp" class="text-sm">
+                            <x-file-input id="logo" name="logo" accept="image/png,image/jpeg,image/webp" button-style="border:1px solid var(--admin-border); color:var(--admin-text);" />
                         @endif
                     </div>
                     @unless ($salon->hasFeature(\App\Support\Features\Feature::CustomLogo))
@@ -88,7 +88,7 @@
                             @if ($salon->storedLogoDarkUrl())
                                 <img src="{{ $salon->storedLogoDarkUrl() }}" alt="لوگوی پس‌زمینه‌ی تیره" class="w-16 h-16 object-contain rounded-lg p-1" style="background:#15110E;">
                             @endif
-                            <input id="logo_dark" type="file" name="logo_dark" accept="image/png,image/jpeg,image/webp" class="text-sm">
+                            <x-file-input id="logo_dark" name="logo_dark" accept="image/png,image/jpeg,image/webp" button-style="border:1px solid var(--admin-border); color:var(--admin-text);" />
                         </div>
                         @error('logo_dark') <p class="text-xs mt-1" style="color:rgb(var(--m-bad));">{{ $message }}</p> @enderror
                         @if ($salon->logo_dark_path)
@@ -172,8 +172,8 @@
                             <label class="flex items-center gap-1 justify-self-end sm:justify-self-auto">
                                 <input type="checkbox" name="working_hours[{{ $day }}][closed]" value="1" @checked(! empty($value['closed']))> تعطیل
                             </label>
-                            <input type="time" name="working_hours[{{ $day }}][open]" value="{{ $value['open'] ?? '09:00' }}" dir="ltr" class="{{ $input }} min-w-0 max-[359px]:col-span-2" style="{{ $inputStyle }}" aria-label="شروع {{ \App\Support\SalonWorkingHours::DAY_NAMES[$day] }}">
-                            <input type="time" name="working_hours[{{ $day }}][close]" value="{{ $value['close'] ?? '21:00' }}" dir="ltr" class="{{ $input }} min-w-0 max-[359px]:col-span-2" style="{{ $inputStyle }}" aria-label="پایان {{ \App\Support\SalonWorkingHours::DAY_NAMES[$day] }}">
+                            <x-time-input name="working_hours[{{ $day }}][open]" :value="$value['open'] ?? '09:00'" :label="'شروع '.\App\Support\SalonWorkingHours::DAY_NAMES[$day]" class="min-w-0 max-[359px]:col-span-2" :select-class="$input" :select-style="$inputStyle" />
+                            <x-time-input name="working_hours[{{ $day }}][close]" :value="$value['close'] ?? '21:00'" :label="'پایان '.\App\Support\SalonWorkingHours::DAY_NAMES[$day]" class="min-w-0 max-[359px]:col-span-2" :select-class="$input" :select-style="$inputStyle" />
                         </div>
                     @endforeach
                     <p class="text-xs" style="color: var(--admin-text-light);">فقط برای نمایش به مشتری‌هاست؛ ساعت‌های قابل رزرو را برنامه‌ی کاری هر متخصص تعیین می‌کند.</p>

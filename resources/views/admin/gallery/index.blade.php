@@ -40,7 +40,7 @@
             @csrf
             <div class="md:col-span-1">
                 <label class="block text-sm mb-1" style="color:var(--admin-text);">تصویر</label>
-                <input type="file" name="image" accept="image/*" required class="w-full text-sm">
+                <x-file-input name="image" accept="image/*" required button-style="border:1px solid var(--admin-border); color:var(--admin-text);" />
             </div>
             <div class="md:col-span-1">
                 <label class="block text-sm mb-1" style="color:var(--admin-text);">عنوان</label>

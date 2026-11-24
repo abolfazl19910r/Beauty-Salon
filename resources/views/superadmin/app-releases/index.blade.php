@@ -41,7 +41,7 @@
                     <input type="hidden" name="variant" value="{{ $variant }}">
                     <div class="md:col-span-2">
                         <label class="sa-label" for="apk-{{ $variant }}">فایل APK (حداکثر <span class="persian-number">{{ to_persian_num((string) $maxMb) }}</span> مگابایت)</label>
-                        <input id="apk-{{ $variant }}" type="file" name="apk" accept=".apk,application/vnd.android.package-archive" required class="sa-input">
+                        <x-file-input id="apk-{{ $variant }}" name="apk" accept=".apk,application/vnd.android.package-archive" required button-style="border:1px solid var(--sa-border); color:var(--sa-text);" />
                     </div>
                     <div>
                         <label class="sa-label" for="vn-{{ $variant }}">نام نسخه (اختیاری)</label>

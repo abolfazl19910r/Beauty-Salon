@@ -172,7 +172,7 @@
                             <input type="text" name="date_from" id="date_from" value="{{ request('date_from') }}"
                                    class="w-full rounded-lg px-4 py-2 cursor-pointer text-[var(--specialist-text)] placeholder-[var(--specialist-inactive)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]"
                                    style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);"
-                                   placeholder="1403/01/01" dir="ltr" autocomplete="off" readonly>
+                                   placeholder="{{ jalali_date(now()->startOfMonth()) }}" dir="ltr" autocomplete="off" readonly>
                             <div class="jcal-popup" id="jcal-popup-date_from"></div>
                         </div>
                     </div>
@@ -183,7 +183,7 @@
                             <input type="text" name="date_to" id="date_to" value="{{ request('date_to') }}"
                                    class="w-full rounded-lg px-4 py-2 cursor-pointer text-[var(--specialist-text)] placeholder-[var(--specialist-inactive)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]"
                                    style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);"
-                                   placeholder="1403/12/29" dir="ltr" autocomplete="off" readonly>
+                                   placeholder="{{ jalali_date(now()) }}" dir="ltr" autocomplete="off" readonly>
                             <div class="jcal-popup" id="jcal-popup-date_to"></div>
                         </div>
                     </div>

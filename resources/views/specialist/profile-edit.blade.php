@@ -50,7 +50,7 @@
                                 @if ($specialist?->photoUrl())
                                     <img src="{{ $specialist->photoUrl() }}" alt="{{ $specialist->name }}" class="w-14 h-14 rounded-full object-cover">
                                 @endif
-                                <input type="file" name="photo" id="photo" accept="image/png,image/jpeg,image/webp" class="text-sm text-[var(--specialist-text)]">
+                                <x-file-input name="photo" id="photo" accept="image/png,image/jpeg,image/webp" button-style="border:1px solid var(--specialist-border); color:var(--specialist-text);" />
                             </div>
                             @if ($specialist?->photo_path)
                                 <label class="flex items-center gap-2 mt-2 text-sm text-[var(--specialist-text-dim)]">

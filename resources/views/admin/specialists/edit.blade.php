@@ -71,7 +71,7 @@
                                 @if ($specialist->photoUrl())
                                     <img src="{{ $specialist->photoUrl() }}" alt="{{ $specialist->name }}" class="w-14 h-14 rounded-full object-cover">
                                 @endif
-                                <input type="file" name="photo" accept="image/png,image/jpeg,image/webp" class="text-sm">
+                                <x-file-input name="photo" accept="image/png,image/jpeg,image/webp" button-style="border:1px solid var(--admin-border); color:var(--admin-text);" />
                             </div>
                             @error('photo') <p class="form-error">{{ $message }}</p> @enderror
                         </div>

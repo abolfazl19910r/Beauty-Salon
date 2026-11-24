@@ -105,7 +105,7 @@
             @method('PUT')
             <div>
                 <label for="dv-file" class="sa-label">فایل اینماد (‎.txt)</label>
-                <input id="dv-file" type="file" name="verification_file" accept=".txt,text/plain" class="sa-input" dir="ltr">
+                <x-file-input id="dv-file" name="verification_file" accept=".txt,text/plain" button-style="border:1px solid var(--sa-border); color:var(--sa-text);" />
             </div>
             <details class="text-sm">
                 <summary style="cursor: pointer; color: var(--sa-text-dim);">یا نام (و اگر هست متن) را دستی بنویسید — برای فایل خالی فقط نام کافی است</summary>

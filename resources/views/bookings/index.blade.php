@@ -68,7 +68,7 @@
                         <label class="block text-xs mb-1" style="color: var(--rasta-gold-light); opacity: 0.8;">تاریخ</label>
                         <div class="jcal-wrapper">
                             <input type="text" id="date_filter" name="date" value="{{ request('date') }}"
-                                   placeholder="1403/09/15" readonly
+                                   placeholder="{{ jalali_date(now()) }}" readonly
                                    class="px-3 py-2 rounded-lg cursor-pointer text-center focus:outline-none focus:ring-2 focus:ring-m-gold"
                                    style="background-color: var(--rasta-dark); border: 1px solid rgb(var(--m-gold) / 0.25); color: var(--rasta-cream); width: 140px;"
                                    dir="ltr" autocomplete="off">

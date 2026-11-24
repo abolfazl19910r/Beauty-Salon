@@ -82,7 +82,7 @@
                             <input type="text" id="date_from" name="date_from" value="{{ request('date_from') }}"
                                    class="w-full rounded-lg px-4 py-2 cursor-pointer text-center text-[var(--specialist-text)] placeholder-[var(--specialist-inactive)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]"
                                    style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);"
-                                   placeholder="1403/09/15" dir="ltr" autocomplete="off" readonly>
+                                   placeholder="{{ jalali_date(now()) }}" dir="ltr" autocomplete="off" readonly>
                             <div class="jcal-popup" id="jcal-popup-date_from"></div>
                         </div>
                     </div>
@@ -93,7 +93,7 @@
                             <input type="text" id="date_to" name="date_to" value="{{ request('date_to') }}"
                                    class="w-full rounded-lg px-4 py-2 cursor-pointer text-center text-[var(--specialist-text)] placeholder-[var(--specialist-inactive)] focus:outline-none focus:ring-2 focus:ring-[var(--specialist-plum-mid)]"
                                    style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);"
-                                   placeholder="1403/09/20" dir="ltr" autocomplete="off" readonly>
+                                   placeholder="{{ jalali_date(now()->addDays(5)) }}" dir="ltr" autocomplete="off" readonly>
                             <div class="jcal-popup" id="jcal-popup-date_to"></div>
                         </div>
                     </div>

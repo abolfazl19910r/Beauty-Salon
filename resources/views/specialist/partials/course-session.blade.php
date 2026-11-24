@@ -84,7 +84,7 @@
                         <form method="POST" action="{{ route('specialist.bookings.course-photos.store', $booking) }}" enctype="multipart/form-data" class="flex items-center gap-2 text-xs">
                             @csrf
                             <select name="kind" class="rounded px-2 py-1 text-[var(--specialist-text)]" style="{{ $field }}"><option value="before">قبل</option><option value="after">بعد</option></select>
-                            <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" capture="environment" class="text-xs text-[var(--specialist-text-dim)]">
+                            <x-file-input name="photo" accept="image/jpeg,image/png,image/webp" capture="environment" button-style="border:1px solid var(--specialist-border); color:var(--specialist-text);" />
                             <button type="submit" class="specialist-cta px-3 py-1 rounded">بارگذاری</button>
                         </form>
                     @endif

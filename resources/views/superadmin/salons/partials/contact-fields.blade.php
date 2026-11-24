@@ -23,7 +23,7 @@
             @if ($salon?->storedLogoUrl())
                 <img src="{{ $salon->storedLogoUrl() }}" alt="لوگوی {{ $salon->name }}" class="w-14 h-14 object-contain rounded border" style="border-color: var(--sa-border);">
             @endif
-            <input type="file" name="logo" accept="image/png,image/jpeg,image/webp" class="text-sm">
+            <x-file-input name="logo" accept="image/png,image/jpeg,image/webp" button-style="border:1px solid var(--sa-border); color:var(--sa-text);" />
         </div>
         @if ($salon?->logo_path)
             <label class="flex items-center gap-2 mt-2 text-sm">
@@ -40,7 +40,7 @@
             @if ($salon?->storedLogoDarkUrl())
                 <img src="{{ $salon->storedLogoDarkUrl() }}" alt="لوگوی پس‌زمینه‌ی تیره" class="w-14 h-14 object-contain rounded p-1" style="background:#15110E;">
             @endif
-            <input type="file" name="logo_dark" accept="image/png,image/jpeg,image/webp" class="text-sm">
+            <x-file-input name="logo_dark" accept="image/png,image/jpeg,image/webp" button-style="border:1px solid var(--sa-border); color:var(--sa-text);" />
         </div>
         @error('logo_dark') <p class="text-xs mt-1" style="color: var(--sa-danger);">{{ $message }}</p> @enderror
         @if ($salon?->logo_dark_path)
@@ -86,8 +86,8 @@
                     <input type="checkbox" name="working_hours[{{ $day }}][closed]" value="1" @checked(! empty($value['closed']))>
                     تعطیل
                 </label>
-                <input type="time" name="working_hours[{{ $day }}][open]" value="{{ $value['open'] ?? '09:00' }}" class="sa-input min-w-0 max-[359px]:col-span-2" dir="ltr">
-                <input type="time" name="working_hours[{{ $day }}][close]" value="{{ $value['close'] ?? '21:00' }}" class="sa-input min-w-0 max-[359px]:col-span-2" dir="ltr">
+                <x-time-input name="working_hours[{{ $day }}][open]" :value="$value['open'] ?? '09:00'" :label="'شروع '.\App\Support\SalonWorkingHours::DAY_NAMES[$day]" class="min-w-0 max-[359px]:col-span-2" select-class="sa-input" />
+                <x-time-input name="working_hours[{{ $day }}][close]" :value="$value['close'] ?? '21:00'" :label="'پایان '.\App\Support\SalonWorkingHours::DAY_NAMES[$day]" class="min-w-0 max-[359px]:col-span-2" select-class="sa-input" />
             </div>
         @endforeach
     </fieldset>

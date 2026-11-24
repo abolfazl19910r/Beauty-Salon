@@ -23,9 +23,11 @@ class WorkingHoursMobileLayoutTest extends TestCase
         $html = $this->get(route('salon-signup.create'))->assertOk()->getContent();
 
         $this->assertStringContainsString('fieldset { border: none; padding: 0; margin: 0 0 1.5rem; min-width: 0; }', $html);
-        $this->assertStringContainsString('.hours-row input[type=time] { padding: .4rem .5rem; direction: ltr; min-width: 0; }', $html);
+        $this->assertStringContainsString('.hours-row [data-ui-time] select { padding: .4rem .5rem; direction: ltr; min-width: 0; }', $html);
         $this->assertMatchesRegularExpression('/@media \(max-width: 520px\) \{\s*\.hours-row \{ grid-template-columns: 1fr 1fr;/', $html);
-        $this->assertStringContainsString('@media (max-width: 359px) { .hours-row input[type=time] { grid-column: 1 / -1; } }', $html);
+        $this->assertStringContainsString('@media (max-width: 359px) { .hours-row [data-ui-time] { grid-column: 1 / -1; } }', $html);
+        // بسته‌ی ۰ (۲۰۲۶-۱۱-۲۴): ساعت ۲۴ساعته‌ی فارسی (x-time-input) به‌جای type=time
+        $this->assertSame(14, preg_match_all('/<input type="hidden"\s+name="working_hours\[\d\]\[(open|close)\]"/', $html));
     }
 
     public function test_admin_salon_settings_hours_wrap_on_phones(): void
@@ -50,6 +52,8 @@ class WorkingHoursMobileLayoutTest extends TestCase
     {
         $this->assertSame(7, substr_count($html, 'class="grid grid-cols-2 sm:grid-cols-[4.5rem_auto_minmax(0,1fr)_minmax(0,1fr)] gap-2'), 'هر هفت روز');
         $this->assertSame(0, substr_count($html, 'class="grid grid-cols-4 gap-2 items-center text-sm"'));
-        $this->assertSame(14, preg_match_all('/<input type="time" name="working_hours\[\d\]\[(open|close)\]"[^>]*min-w-0 max-\[359px\]:col-span-2/', $html));
+        // بسته‌ی ۰ (۲۰۲۶-۱۱-۲۴): هر ساعت یک x-time-input (دو select + input مخفی) با همان کلاس‌های ستون
+        $this->assertSame(14, preg_match_all('/<span class="[^"]*min-w-0 max-\[359px\]:col-span-2[^"]*" data-ui-time/', $html));
+        $this->assertSame(14, preg_match_all('/<input type="hidden"\s+name="working_hours\[\d\]\[(open|close)\]"/', $html));
     }
 }

@@ -36,12 +36,12 @@
             </div>
             <div>
                 <label class="sa-label" for="starts_at">شروع نمایش (شمسی، اختیاری)</label>
-                <input id="starts_at" name="starts_at" class="sa-input" dir="ltr" placeholder="1405/08/01" value="{{ old('starts_at', $announcement->starts_at ? jalali_date($announcement->starts_at) : '') }}">
+                <input id="starts_at" name="starts_at" class="sa-input" dir="ltr" placeholder="{{ jalali_date(now()) }}" value="{{ old('starts_at', $announcement->starts_at ? jalali_date($announcement->starts_at) : '') }}">
                 @error('starts_at')<p class="text-xs mt-1" style="color: var(--sa-danger);">{{ $message }}</p>@enderror
             </div>
             <div>
                 <label class="sa-label" for="ends_at">پایان نمایش (شمسی، اختیاری)</label>
-                <input id="ends_at" name="ends_at" class="sa-input" dir="ltr" placeholder="1405/08/30" value="{{ old('ends_at', $announcement->ends_at ? jalali_date($announcement->ends_at) : '') }}">
+                <input id="ends_at" name="ends_at" class="sa-input" dir="ltr" placeholder="{{ jalali_date(now()->addMonth()) }}" value="{{ old('ends_at', $announcement->ends_at ? jalali_date($announcement->ends_at) : '') }}">
                 @error('ends_at')<p class="text-xs mt-1" style="color: var(--sa-danger);">{{ $message }}</p>@enderror
             </div>
         </div>
