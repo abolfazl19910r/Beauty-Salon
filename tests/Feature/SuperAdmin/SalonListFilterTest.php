@@ -66,8 +66,8 @@ class SalonListFilterTest extends TestCase
         $this->assertSame(['expired-one'], $this->slugs(['status' => 'expired']));
         $this->assertSame(['trial-one'], $this->slugs(['status' => 'trial']));
         $this->assertSame(['soon-one'], $this->slugs(['status' => 'expiring_soon']));
-        $this->assertNotContains('expired-one', $this->slugs(['status' => 'active']));
-        $this->assertNotContains('suspended-one', $this->slugs(['status' => 'active']));
+        // دسته‌ها جدا از هم‌اند (بسته‌ی ۱ ظاهری): «فعال» نه آزمایشی دارد، نه نزدیک انقضا، نه منقضی و تعلیقی
+        $this->assertSame(['active-one'], $this->slugs(['status' => 'active']));
     }
 
     public function test_plan_and_specialist_quota_filters(): void
@@ -86,10 +86,15 @@ class SalonListFilterTest extends TestCase
         $this->assertSame(['active-one'], $this->slugs(['started_to' => $to]));
     }
 
-    public function test_sort_by_nearest_expiry(): void
+    public function test_sort_by_nearest_expiry_puts_valid_salons_first_and_is_the_default(): void
     {
-        $this->assertSame('expired-one', $this->actingAs($this->superAdmin)
-            ->get(route('superadmin.salons.index', ['sort' => 'ends_asc']))->viewData('salons')->items()[0]->slug);
+        foreach ([['sort' => 'ends_asc'], []] as $query) {
+            $slugs = collect($this->actingAs($this->superAdmin)->get(route('superadmin.salons.index', $query))
+                ->viewData('salons')->items())->pluck('slug')->reject(fn ($s) => $s === 'rasta')->values()->all();
+
+            // نزدیک‌ترین انقضای هنوز معتبر اول؛ منقضی آخر
+            $this->assertSame(['soon-one', 'trial-one', 'suspended-one', 'active-one', 'expired-one'], $slugs);
+        }
     }
 
     public function test_trial_badge_and_invalid_filters(): void

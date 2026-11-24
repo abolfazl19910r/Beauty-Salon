@@ -212,6 +212,12 @@ class Salon extends Model
         return $this->hasMany(Invoice::class);
     }
 
+    /** ستون has_paid_invoice برای hasPaidInvoice() بی کوئری جدا (فهرست‌های ابرمدیر) */
+    public function scopeWithPaidInvoiceFlag(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query->withExists(['invoices as has_paid_invoice' => fn ($q) => $q->withoutGlobalScope('salon')->where('status', 'paid')]);
+    }
+
     public const PAUSED_BY_OWNER = 'owner';
 
     public const PAUSED_BY_PLATFORM = 'platform';
@@ -325,6 +331,11 @@ class Salon extends Model
         // ⭐ withoutGlobalScope('salon'): خودِ رابطه از قبل به salon_id همین سالن محدوده؛ scope
         // سراسری BelongsToSalon (بر پایه‌ی CurrentSalon درخواست جاری) اینجا فقط می‌تونه غلط جواب
         // بده — مثلاً وقتی سوپرادمین یا یک Job سالن دیگه‌ای رو بررسی می‌کنه.
+        // فهرست‌های ابرمدیر این را با withPaidInvoiceFlag() یک‌جا بار می‌کنند (بی کوئری جدا برای هر ردیف).
+        if (array_key_exists('has_paid_invoice', $this->attributes)) {
+            return (bool) $this->attributes['has_paid_invoice'];
+        }
+
         return $this->invoices()->withoutGlobalScope('salon')->where('status', 'paid')->exists();
     }
 

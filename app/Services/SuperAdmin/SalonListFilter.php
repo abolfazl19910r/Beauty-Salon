@@ -4,6 +4,7 @@ namespace App\Services\SuperAdmin;
 
 use App\Models\Salon;
 use App\Support\JalaliDateInput;
+use App\Support\SuperAdmin\SalonStatus;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -13,26 +14,23 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class SalonListFilter
 {
-    public const STATUSES = [
-        'active' => 'فعال (همه)',
-        'trial' => 'در دوره‌ی آزمایشی',
-        'expiring_soon' => 'رو به انقضا (۷ روز)',
-        'expired' => 'منقضی',
-        'suspended' => 'تعلیق‌شده',
-    ];
+    /** دسته‌های جدا از هم (بسته‌ی ۱ ظاهری): App\Support\SuperAdmin\SalonStatus */
+    public const STATUSES = SalonStatus::LABELS;
+
+    public const DEFAULT_SORT = 'ends_asc';
 
     public const SORTS = [
+        'ends_asc' => 'نزدیک‌ترین انقضا',
         'name' => 'نام سالن',
         'newest' => 'جدیدترین',
         'oldest' => 'قدیمی‌ترین',
-        'ends_asc' => 'نزدیک‌ترین انقضا',
         'ends_desc' => 'دورترین انقضا',
         'specialists_desc' => 'بیشترین کارشناس',
     ];
 
     public function query(array $filters): Builder
     {
-        $query = Salon::query()->withCount('specialists')->with(['admins', 'plan']);
+        $query = Salon::query()->withCount('specialists')->withPaidInvoiceFlag()->with(['admins', 'plan']);
 
         if ($term = trim((string) ($filters['q'] ?? ''))) {
             $like = '%'.str_replace(['%', '_'], ['\%', '\_'], $term).'%';
@@ -46,19 +44,9 @@ class SalonListFilter
             });
         }
 
-        $now = now();
-        match ($filters['status'] ?? null) {
-            'suspended' => $query->where('is_suspended', true),
-            'expired' => $query->where('is_suspended', false)->where('subscription_ends_at', '<', $now),
-            'active' => $query->where('is_suspended', false)->where('subscription_ends_at', '>=', $now),
-            'expiring_soon' => $query->where('is_suspended', false)
-                ->whereBetween('subscription_ends_at', [$now, $now->copy()->addDays(7)]),
-            'trial' => $query->where('is_suspended', false)
-                ->where('subscription_ends_at', '>=', $now)
-                ->where('trial_ends_at', '>', $now)
-                ->whereDoesntHave('invoices', fn ($i) => $i->withoutGlobalScope('salon')->where('status', 'paid')),
-            default => null,
-        };
+        if (! empty($filters['status'])) {
+            SalonStatus::scope($query, $filters['status']);
+        }
 
         // پلن (بسته‌ی پلن‌ها، ۲۰۲۶-۱۰-۱۴)؛ «none» = سالن‌های بی‌پلن
         if (($filters['plan_id'] ?? null) === 'none') {
@@ -86,10 +74,15 @@ class SalonListFilter
             }
         }
 
-        match ($filters['sort'] ?? 'name') {
+        $now = now();
+        match ($filters['sort'] ?? self::DEFAULT_SORT) {
             'newest' => $query->orderByDesc('salons.created_at')->orderByDesc('salons.id'),
             'oldest' => $query->orderBy('salons.created_at')->orderBy('salons.id'),
-            'ends_asc' => $query->orderBy('subscription_ends_at'),
+            // اول سالن‌های هنوز معتبر (نزدیک به دور)، بعد منقضی‌ها (تازه‌ترین منقضی اول) — مثل ترتیب زمانی نوبت‌ها
+            'ends_asc' => $query
+                ->orderByRaw('CASE WHEN salons.subscription_ends_at >= ? THEN 0 ELSE 1 END', [$now])
+                ->orderByRaw('CASE WHEN salons.subscription_ends_at >= ? THEN salons.subscription_ends_at END ASC', [$now])
+                ->orderByDesc('salons.subscription_ends_at')->orderBy('salons.id'),
             'ends_desc' => $query->orderByDesc('subscription_ends_at'),
             'specialists_desc' => $query->orderByDesc('specialists_count')->orderBy('salons.name'),
             default => $query->orderBy('salons.name'),
