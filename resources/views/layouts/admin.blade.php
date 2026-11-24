@@ -138,17 +138,33 @@
         .adm-cmd kbd{margin-inline-start:auto;font-size:11px;border:1px solid var(--admin-border);border-radius:6px;padding:1px 7px;font-family:inherit}
         .adm--rail .admin-btn-primary,.adm--rail button,.adm--rail .rounded-xl{border-radius:10px}
         /* منوی بالایی */
-        .adm-top{gap:2px;padding:0 12px;border-top:1px solid var(--admin-border);align-items:stretch;flex-wrap:wrap}
+        /* منوی بالایی (بسته‌ی ۲ب): ردیف دوم هدر + کارت‌های کشویی دوستونه */
+        .adm-top{gap:2px;padding:0 16px;border-top:1px solid var(--admin-border);align-items:stretch;flex-wrap:wrap}
         .adm-top__link{display:flex;align-items:center;gap:6px;padding:12px 14px;font-size:14px;color:var(--admin-text-dim);border-bottom:2px solid transparent;cursor:pointer;list-style:none;white-space:nowrap}
         .adm-top__link::-webkit-details-marker{display:none}
         .adm-top__link:hover{color:var(--admin-text)}
+        .adm-top__link:focus-visible{outline:2px solid rgb(var(--m-gold));outline-offset:-4px;border-radius:8px}
         .adm-top__link.is-active{color:var(--admin-text);font-weight:700;border-bottom-color:rgb(var(--m-gold))}
+        .adm-top__group[open] .adm-top__chev{transform:rotate(180deg)}
+        .adm-top__sep{width:1px;margin:12px 8px;background:var(--admin-border)}
         .adm-top__group{position:relative}
-        .adm-top__panel{position:absolute;top:100%;right:0;z-index:50;min-width:15rem;padding:6px;border-radius:14px;background:var(--admin-surface);border:1px solid var(--admin-border);box-shadow:var(--m-sh-soft)}
-        .adm-top__item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;font-size:14px;color:var(--admin-text-dim)}
-        .adm-top__item:hover{background:var(--admin-accent-light);color:var(--admin-text)}
-        .adm-top__item.is-active{background:rgb(var(--m-gold) / .12);color:rgb(var(--m-gold));font-weight:700}
-        .adm--top main{padding-left:max(1rem,calc((100% - 1400px) / 2));padding-right:max(1rem,calc((100% - 1400px) / 2))}
+        .adm-top__panel{position:absolute;top:calc(100% + 4px);right:0;z-index:50;width:min(38rem,calc(100vw - 2rem));padding:12px;border-radius:18px;background:var(--admin-surface);border:1px solid var(--admin-border);box-shadow:0 30px 60px -20px rgba(0,0,0,.45)}
+        .adm-top__panel-head{display:flex;justify-content:space-between;align-items:baseline;padding:4px 10px 10px}
+        .adm-top__panel-head b{font-size:15px;color:var(--admin-text)}
+        .adm-top__panel-head span{font-size:12px;color:var(--admin-text-light)}
+        .adm-top__cards{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+        .adm-top__item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:12px;color:var(--admin-text)}
+        .adm-top__item:hover,.adm-top__item:focus-visible{background:var(--admin-accent-light);outline:none}
+        .adm-top__item.is-active{background:rgb(var(--m-gold) / .12)}
+        .adm-top__item.is-active .adm-top__name{color:rgb(var(--m-gold))}
+        .adm-top__ico{width:34px;height:34px;flex:none;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--admin-accent-light);color:var(--admin-text-dim)}
+        .adm-top__item.is-active .adm-top__ico{background:rgb(var(--m-gold));color:rgb(var(--m-on-solid))}
+        .adm-top__name{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700}
+        .adm-top__hint{display:block;margin-top:2px;font-size:12px;line-height:1.7;color:var(--admin-text-light)}
+        .adm-top__kbd{margin-top:2px;font-size:10.5px;color:var(--admin-text-light)}
+        .adm-sub-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;font-size:12px;background:var(--admin-accent-light);color:var(--admin-text-dim);white-space:nowrap}
+        .adm-sub-pill.is-soon{background:rgb(var(--m-bad) / .12);color:rgb(var(--m-bad))}
+        .adm--top main > *{max-width:1360px;margin-left:auto;margin-right:auto}
         .adm--top .rounded-lg,.adm--top .rounded-xl{border-radius:16px}
         /* فشرده‌ی پرتراکم */
         .adm--dense .adm-drawer{width:13rem}
@@ -218,8 +234,13 @@
                     <a href="{{ route('admin.dashboard') }}" class="hidden md:flex items-center gap-2 font-bold" style="color: var(--admin-text);">
                         @if ($adminSalon)<x-brand-emblem class="w-9 h-9 rounded" pad="3px" />@endif
                         {{ $adminSalon?->name ?? 'پنل مدیریت' }}
+                        @if ($adminSalon?->subscription_ends_at)
+                            @php $subSoon = $adminSalon->subscription_ends_at->lt(now()->addDays(7)); @endphp
+                            <span class="adm-sub-pill {{ $subSoon ? 'is-soon' : '' }}" data-sub-pill>اشتراک تا {{ fa_date($adminSalon->subscription_ends_at) }}</span>
+                        @endif
                     </a>
-                @elseif ($adminShell === 'rail')
+                @endif
+                @if (in_array($adminShell, ['rail', 'top'], true))
                     <button type="button" class="adm-cmd hidden md:flex" data-ui-click="toggleSearchModal">
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">{!! \App\Support\Admin\AdminMenu::ICONS['search'] !!}</svg>
                         <span>جستجوی خدمت، کارشناس یا کاربر…</span>
@@ -867,6 +888,12 @@
         });
         document.addEventListener('click', function (event) {
             topGroups.forEach(function (group) { if (group.open && !group.contains(event.target)) group.open = false; });
+        });
+        document.addEventListener('keydown', function (event) {
+            if (event.key !== 'Escape') return;
+            topGroups.forEach(function (group) {
+                if (group.open) { group.open = false; group.querySelector('summary').focus({ preventScroll: true }); }
+            });
         });
 
         // Ctrl+K / ⌘K: جستجوی سریع پنل

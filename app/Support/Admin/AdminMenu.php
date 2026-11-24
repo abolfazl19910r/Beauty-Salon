@@ -105,6 +105,23 @@ final class AdminMenu
         'support' => 'g k', 'profile' => 'g y',
     ];
 
+    /** توضیح یک‌خطی هر آیتم برای کارت‌های کشویی پوسته‌ی «منوی بالایی» (بسته‌ی ۲ب) */
+    public const HINTS = [
+        'dashboard' => 'نمای امروز و کارهای مانده', 'bookings' => 'نوبت‌های امروز، فردا و هفته', 'customers' => 'فهرست مشتری‌ها و سابقه‌شان',
+        'leaves' => 'درخواست‌های مرخصی کارشناس‌ها', 'notifications' => 'پیام‌ها و رخدادهای تازه',
+        'services' => 'خدمات، قیمت و مدت هر کدام', 'categories' => 'دسته‌بندی خدمات در صفحه‌ی رزرو', 'specialists' => 'کارشناس‌ها و ساعت کاری‌شان',
+        'courses' => 'بسته‌های چندجلسه‌ای درمان', 'gallery' => 'نمونه‌کارها و عکس‌های سالن', 'salon-qr' => 'پوستر و کد QR رزرو آنلاین',
+        'reviews' => 'نظر مشتری‌ها و پاسخ به آن‌ها', 'loyalty' => 'امتیاز و پاداش مشتری‌های وفادار', 'winback' => 'پیامک به مشتری‌هایی که برنگشته‌اند',
+        'discount-codes' => 'ساخت و مدیریت کد تخفیف', 'announcements' => 'اطلاعیه روی صفحه‌ی سالن', 'blog' => 'نوشته‌ها و مقاله‌های سالن',
+        'reports' => 'درآمد، نوبت‌ها و عملکرد', 'wallets' => 'موجودی کیف پول مشتری‌ها', 'withdrawals' => 'تسویه و برداشت از حساب',
+        'wallet-settings' => 'پیش‌پرداخت، کیف پول و تسویه', 'billing' => 'پلن، تمدید و فاکتورها',
+        'salon-settings' => 'نام، نشانی و ساعت کاری', 'appearance' => 'قالب صفحه‌ی سالن و پنل', 'booking-policy' => 'قوانین رزرو، لغو و تأخیر',
+        'payment-gateways' => 'اتصال درگاه پرداخت آنلاین', 'verification' => 'مدارک و نشان تأیید سالن',
+        'notification-settings' => 'پیامک‌ها و متن یادآورها', 'security' => 'رمز، ورود دومرحله‌ای و نشست‌ها', 'users' => 'همکاران و دسترسی به پنل',
+        'permissions' => 'دسترسی‌های هر نقش', 'roles' => 'نقش‌های همکاران',
+        'support' => 'تیکت و پرسش از پشتیبانی', 'profile' => 'اطلاعات حساب شما',
+    ];
+
     /** فقط گروه‌های منوی کناری (بی گروه حساب) */
     public static function sideGroups(array $groups): array
     {
@@ -140,7 +157,7 @@ final class AdminMenu
         ];
     }
 
-    /** @return array{key: string, label: string, url: string, active: bool, icon: string, lock: bool, badge: ?string, count: int, shortcut: ?string} */
+    /** @return array{key: string, label: string, url: string, active: bool, icon: string, lock: bool, badge: ?string, count: int, shortcut: ?string, hint: ?string} */
     private static function item(string $key, string $label, string $route, string $pattern, string $icon, bool $lock = false, ?string $badge = null, int $count = 0): array
     {
         return [
@@ -153,6 +170,7 @@ final class AdminMenu
             'badge' => $badge,
             'count' => $count,
             'shortcut' => self::SHORTCUTS[$key] ?? null,
+            'hint' => self::HINTS[$key] ?? null,
         ];
     }
 
