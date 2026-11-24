@@ -109,24 +109,31 @@
         .adm-link:not(.sidebar-active):hover{background-color:var(--admin-accent-light)}
         .adm-logout{color:var(--admin-text-dim)}
         .adm-logout:hover{background-color:rgb(var(--m-bad) / .1);color:rgb(var(--m-bad))}
-        /* ریل آیکونی */
-        .adm-rail-slot{position:relative;width:72px;flex:0 0 72px}
-        .adm-rail{position:absolute;top:0;right:0;bottom:0;width:72px;z-index:45;overflow-y:auto;overflow-x:hidden;background:var(--admin-surface);border-left:1px solid var(--admin-border);padding:12px 12px;transition:width .2s ease,box-shadow .2s ease;display:flex;flex-direction:column;gap:6px}
-        .adm-rail:hover,.adm-rail:focus-within{width:248px;box-shadow:var(--m-sh-soft)}
-        .adm-rail__brand{display:flex;align-items:center;gap:10px;padding:4px 2px 10px;color:var(--admin-text);white-space:nowrap}
-        .adm-rail__mark{width:36px;height:36px;border-radius:10px;background:var(--m-btn);color:var(--m-on-gold);display:flex;align-items:center;justify-content:center;font-weight:900}
-        .adm-rail__group{display:flex;flex-direction:column;gap:2px;padding-top:6px;border-top:1px solid var(--admin-border)}
-        .adm-rail__glabel{font-size:11px;color:var(--admin-text-light);padding:2px 12px;white-space:nowrap;opacity:0;height:0;overflow:hidden;transition:opacity .15s}
-        .adm-rail:hover .adm-rail__glabel,.adm-rail:focus-within .adm-rail__glabel{opacity:1;height:auto}
-        .adm-rail__item{position:relative;display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;color:var(--admin-text-dim);white-space:nowrap;font-size:14px;width:100%;text-align:right}
-        .adm-rail__item:hover{background:var(--admin-accent-light);color:var(--admin-text)}
-        .adm-rail__item.is-active{background:rgb(var(--m-gold) / .14);color:rgb(var(--m-gold))}
-        .adm-rail__item.is-active::before{content:"";position:absolute;right:-12px;top:10px;bottom:10px;width:3px;border-radius:3px;background:rgb(var(--m-gold))}
-        .adm-rail__label{opacity:0;transition:opacity .15s}
-        .adm-rail:hover .adm-rail__label,.adm-rail:focus-within .adm-rail__label{opacity:1}
-        .adm-rail__badge{position:absolute;top:6px;left:6px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;font-size:10px;font-weight:700;background:rgb(var(--m-bad));color:rgb(var(--m-on-solid));display:flex;align-items:center;justify-content:center}
-        .adm-rail__badge.hidden{display:none}
+        /* ریل آیکونی (بسته‌ی ۲ب): ریل ثابت ۷۶px + پنل کشویی گروه‌ها */
+        .adm-rail-slot{position:relative;width:76px;flex:0 0 76px}
+        .adm-rail{position:absolute;top:0;right:0;bottom:0;width:76px;z-index:45;overflow-y:auto;overflow-x:hidden;background:var(--admin-surface);border-left:1px solid var(--admin-border);padding:14px 0;display:flex;flex-direction:column;align-items:center;gap:6px}
+        .adm-rail__brand{display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+        .adm-rail__mark{width:44px;height:44px;border-radius:14px;background:var(--m-btn);color:var(--m-on-gold);display:flex;align-items:center;justify-content:center;font-weight:900}
+        .adm-rail__icon{position:relative;width:46px;height:46px;flex:none;border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--admin-text-dim);background:transparent;transition:background .15s,color .15s}
+        .adm-rail__icon:hover,.adm-rail__icon.is-open{background:var(--admin-accent-light);color:var(--admin-text)}
+        .adm-rail__icon.is-active{background:rgb(var(--m-gold));color:rgb(var(--m-on-solid))}
+        .adm-rail__icon.is-current{box-shadow:inset -3px 0 0 rgb(var(--m-gold));color:var(--admin-text)}
+        .adm-rail__icon:focus-visible{outline:2px solid rgb(var(--m-gold));outline-offset:2px}
+        .adm-rail__count{position:absolute;top:3px;left:3px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;font-size:10.5px;font-weight:700;background:rgb(var(--m-bad));color:#fff;display:flex;align-items:center;justify-content:center}
+        .adm-rail__count.hidden{display:none}
+        .adm-rail__dot{position:absolute;top:9px;left:9px;width:8px;height:8px;border-radius:50%;background:rgb(var(--m-gold))}
+        .adm-rail__sep{width:28px;height:1px;background:var(--admin-border);margin:8px 0}
         .adm-rail__logout:hover{background:rgb(var(--m-bad) / .1);color:rgb(var(--m-bad))}
+        .adm-rail-panel{position:fixed;z-index:60;width:16rem;padding:10px;border-radius:18px;background:var(--admin-surface);border:1px solid var(--admin-border);box-shadow:0 30px 60px -20px rgba(0,0,0,.55)}
+        .adm-rail-panel[hidden]{display:none}
+        .adm-rail-panel__head{display:flex;justify-content:space-between;align-items:baseline;padding:6px 12px 10px}
+        .adm-rail-panel__head b{font-size:15px;color:var(--admin-text)}
+        .adm-rail-panel__head span{font-size:12px;color:var(--admin-text-light)}
+        .adm-rail-panel__item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;font-size:14px;color:var(--admin-text)}
+        .adm-rail-panel__item:hover,.adm-rail-panel__item:focus-visible{background:var(--admin-accent-light);outline:none}
+        .adm-rail-panel__item.is-active{background:rgb(var(--m-gold) / .14);color:rgb(var(--m-gold));font-weight:700}
+        .adm-rail-panel__kbd{font-size:10.5px;color:var(--admin-text-light)}
+        .adm-rail-panel__note{margin:8px 12px 4px;font-size:12px;line-height:1.8;color:var(--admin-text-light)}
         .adm-cmd{align-items:center;gap:10px;min-width:22rem;min-height:40px;padding:0 14px;border-radius:10px;background:var(--admin-accent-light);color:var(--admin-text-dim);font-size:14px}
         .adm-cmd kbd{margin-inline-start:auto;font-size:11px;border:1px solid var(--admin-border);border-radius:6px;padding:1px 7px;font-family:inherit}
         .adm--rail .admin-btn-primary,.adm--rail button,.adm--rail .rounded-xl{border-radius:10px}
