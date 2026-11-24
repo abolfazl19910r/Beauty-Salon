@@ -48,6 +48,7 @@ final class DomainVerificationFile
     public static function current(): ?array
     {
         $name = PlatformSettings::raw(self::NAME_KEY);
+
         // نام تعیین‌کننده است؛ محتوای خالی (فایل ۰ بایتی اینماد) هم یک فایل ذخیره‌شده است
         return $name !== null ? ['name' => $name, 'content' => (string) (PlatformSettings::stored()[self::CONTENT_KEY] ?? '')] : null;
     }
