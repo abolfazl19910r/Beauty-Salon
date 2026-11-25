@@ -106,6 +106,8 @@ class TemplateHomesTest extends TestCase
         $this->assertStringContainsString('رنگ کامل', $html);
         $this->assertStringContainsString('همه‌ی خدمات و قیمت‌ها', $html);
         $this->assertStringContainsString('نمونه‌کارها، ۳ عکس', $html);
+        $this->assertMatchesRegularExpression('/data-palette-art[^>]*data-ap-gallery|data-ap-gallery[^>]*data-palette-art/', $html, 'کاشی گالری خودش طرح پالت است (نه لایه‌ی absolute)');
+        $this->assertStringContainsString('flex flex-col overflow-x-clip', $html, 'بی اسکرول افقی با نوار پیمایش کلاسیک ویندوز');
     }
 
     public function test_app_hides_blocks_without_data(): void

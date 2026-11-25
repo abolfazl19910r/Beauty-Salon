@@ -139,10 +139,9 @@
             @endif
 
             @if ($apGallery > 0)
-                <div class="relative min-h-[170px] rounded-[26px] overflow-hidden" data-ap-gallery>
-                    <x-palette-art class="absolute inset-0" :src="$template['galleryCover'] ?? null" :variant="3" alt="نمونه‌کار سالن" />
+                <x-palette-art class="min-h-[170px] rounded-[26px]" :src="$template['galleryCover'] ?? null" :variant="3" alt="نمونه‌کار سالن" data-ap-gallery>
                     <span class="absolute bottom-3 right-3.5 text-xs text-white bg-black/25 px-2.5 py-0.5 rounded-full">نمونه‌کارها، {{ fa_num($apGallery) }} عکس</span>
-                </div>
+                </x-palette-art>
             @endif
         </div>
     </div>

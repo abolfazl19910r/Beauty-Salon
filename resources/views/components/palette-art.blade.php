@@ -1,7 +1,7 @@
 {{--
     بسته‌ی ۵الف — «طرح پالت» (قاعده‌ی ۳ و نکته‌ی ۴ بوم «۴ قالب ترکیبی»): جای عکس نبود هرگز قاب خاکستری نیست؛ گرادیان رنگ اصلی ← رنگ دوم
     با الگوی خطی کم‌رنگ. اگر عکس هست همان عکس در همان قاب. $variant (۰…۳) زاویه و ترتیب رنگ‌ها را عوض می‌کند تا کنار هم یکسان نباشند.
-    استفاده: <x-palette-art :src="$specialist->photo_url" :variant="$loop->index" class="h-56 rounded-t-full" alt="..." />
+    محتوای درون (مثلاً برچسب) با عکس یا بی عکس روی قاب می‌آید. استفاده: <x-palette-art :src="$specialist->photo_url" :variant="$loop->index" class="h-56 rounded-t-full" alt="..." />
 --}}
 @props(['src' => null, 'variant' => 0, 'alt' => ''])
 @php
@@ -19,6 +19,6 @@
         <img src="{{ $src }}" alt="{{ $alt }}" loading="lazy">
     @else
         <svg aria-hidden="true"><defs><pattern id="{{ $artId }}" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate({{ $artRotate }})"><path d="M0 11h22" stroke="#FFFFFF" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(#{{ $artId }})"/></svg>
-        {{ $slot }}
     @endif
+    {{ $slot }}
 </div>

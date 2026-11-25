@@ -40,7 +40,7 @@
     @stack('styles')
     @include('partials.ui-handlers')
 </head>
-<body class="font-vazir min-h-screen flex flex-col {{ auth()->check() && \App\Support\Customer\CustomerMenu::isCustomer(auth()->user()) ? 'pb-20 md:pb-0' : '' }}" dir="rtl">
+<body class="font-vazir min-h-screen flex flex-col overflow-x-clip {{ auth()->check() && \App\Support\Customer\CustomerMenu::isCustomer(auth()->user()) ? 'pb-20 md:pb-0' : '' }}" dir="rtl">
 @if (! empty($salonUnverifiedPreview))
     {{-- بسته‌ی مجوز 5د: کادر سالنِ هنوز تأییدنشده پیش‌نمایش می‌بیند --}}
     <div class="bg-m-warn/20 border-b border-m-warn/40 text-center text-sm py-2 px-4" data-unverified-preview role="status">

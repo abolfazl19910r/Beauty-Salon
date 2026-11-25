@@ -20,6 +20,7 @@
     مؤلفه‌های فرم مشترک (بسته‌ی ۰ به‌روزرسانی ظاهری، ۲۰۲۶-۱۱-۲۴):
       data-ui-time                         ← <x-time-input>: دو select ساعت/دقیقه ← input مخفی «HH:MM» (یا خالی) + رویداد change روی آن
       data-ui-file                         ← <x-file-input>: نام فایل‌های انتخاب‌شده در [data-ui-file-name]
+      [data-palette-art] > img (خراب)       ← برداشته می‌شود تا طرح پالت دیده شود (بسته‌ی ۵الف)
     کارهای خاص هر صفحه (تابع‌های خود صفحه، در <script @nonce> همان صفحه):
       data-ui-click|change|input|submit="نام" و data-ui-args (آرایه‌ی JSON، اختیاری) — در Blade:
       data-ui-args="{{ json_encode([...]) }}" (نه @json: آرگومانش را روی «,» می‌شکند و آرایه‌ی چندعضوی خراب می‌شود)
@@ -171,4 +172,9 @@
         }
     }, true);
 })();
+// بسته‌ی ۵الف: عکسِ خراب درون طرح پالت (data-palette-art) برداشته می‌شود تا طرح پالت زیرش دیده شود (رویداد error حباب نمی‌زند؛ capture)
+document.addEventListener('error', function (e) {
+    var t = e.target;
+    if (t && t.tagName === 'IMG' && t.parentElement && t.parentElement.hasAttribute('data-palette-art')) t.remove();
+}, true);
 </script>
