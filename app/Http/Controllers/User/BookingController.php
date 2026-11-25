@@ -33,7 +33,7 @@ class BookingController extends Controller
             'tab' => $tab,
             'tabCounts' => CustomerBookingListFilter::tabCounts($userId),
             'bookings' => CustomerBookingListFilter::paginate($userId, $tab),
-            'mapUrl' => $salon ? \App\Support\SalonMapLocation::neshanUrl($salon) : null,
+            'mapUrl' => $salon ? \App\Support\SalonMapLocation::directionsUrl($salon) : null,
             'salon' => $salon,
         ]);
     }

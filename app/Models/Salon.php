@@ -32,6 +32,7 @@ class Salon extends Model
         'address',
         'map_lat',
         'map_lng',
+        'map_url',
         'phone',
         'established_year',
         'working_hours',

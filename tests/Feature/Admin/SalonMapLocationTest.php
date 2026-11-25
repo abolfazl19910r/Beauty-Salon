@@ -6,11 +6,12 @@ use App\Models\Salon;
 use App\Models\User;
 use App\Support\SalonMapLocation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 /**
  * مکان سالن روی نقشه (بسته‌ی ۴ ظاهری، ۲۰۲۶-۱۱-۲۵): «نشان» فقط لینک نقطه با مختصات دارد، پس مالک در «اطلاعات سالن» لینک
- * اشتراک‌گذاری یا مختصات را می‌چسباند (اختیاری) و «مسیریابی» مشتری لینک nshn.ir می‌سازد.
+ * اشتراک‌گذاری یا مختصات را می‌چسباند (اختیاری). آزمون ویندوز: لینک کوتاه گوگل‌مپ هم پذیرفته و خودش «مسیریابی» می‌شود.
  */
 class SalonMapLocationTest extends TestCase
 {
@@ -26,13 +27,57 @@ class SalonMapLocationTest extends TestCase
         $this->assertSame([35.7, 51.4], SalonMapLocation::parse('۳۵٫۷، ۵۱٫۴'));
         $this->assertSame([35.7, 51.4], SalonMapLocation::parse('51.4, 35.7'), 'عرض و طول جابه‌جا درست می‌شود');
         $this->assertNull(SalonMapLocation::parse('تهران، خیابان ولیعصر'));
+        // مقصد لینک کوتاه گوگل‌مپ: خود نقطه (!3d!4d) بر مرکز نما (@) مقدم است
+        $this->assertSame([35.7012, 51.3911], SalonMapLocation::parse('https://www.google.com/maps/place/Salon/@35.70,51.39,17z/data=!3m1!4b1!4m6!3m5!1s0x0:0x0!8m2!3d35.7012!4d51.3911'));
+        $this->assertSame([35.7, 51.4], SalonMapLocation::parse('https://maps.google.com/?q=35.7,51.4'));
+    }
+
+    public function test_accepts_short_and_full_map_links_only_from_map_hosts(): void
+    {
+        $this->assertSame('https://maps.app.goo.gl/MQ6n73uU3bURTPFx7', SalonMapLocation::mapLink('https://maps.app.goo.gl/MQ6n73uU3bURTPFx7'));
+        $this->assertNotNull(SalonMapLocation::mapLink('https://goo.gl/maps/AbC123'));
+        $this->assertNotNull(SalonMapLocation::mapLink('https://nshn.ir/AbC12x'));
+        $this->assertNotNull(SalonMapLocation::mapLink('https://balad.ir/p/xyz'));
+        $this->assertNotNull(SalonMapLocation::mapLink('https://www.google.com/maps/place/x'));
+        $this->assertNull(SalonMapLocation::mapLink('https://www.google.com/search?q=salon'), 'جستجوی گوگل نقشه نیست');
+        $this->assertNull(SalonMapLocation::mapLink('https://goo.gl/AbC123'));
+        $this->assertNull(SalonMapLocation::mapLink('https://evil.example/maps.app.goo.gl'));
+        $this->assertNull(SalonMapLocation::mapLink('https://maps.app.goo.gl.evil.example/x'));
+        $this->assertNull(SalonMapLocation::mapLink('javascript:alert(1)'));
+    }
+
+    public function test_short_link_is_resolved_through_map_hosts_only(): void
+    {
+        Http::fake([
+            'maps.app.goo.gl/*' => Http::response('', 302, ['Location' => 'https://www.google.com/maps/place/S/data=!3d35.7012!4d51.3911']),
+        ]);
+        $this->assertSame([35.7012, 51.3911], SalonMapLocation::resolve('https://maps.app.goo.gl/MQ6n73uU3bURTPFx7'));
+    }
+
+    public function test_short_link_redirect_to_a_non_map_host_is_not_followed(): void
+    {
+        Http::fake(['*' => Http::response('', 302, ['Location' => 'http://127.0.0.1/admin'])]);
+        $this->assertNull(SalonMapLocation::resolve('https://maps.app.goo.gl/X'), 'ریدایرکت به میزبان غیرنقشه دنبال نمی‌شود');
+        Http::assertSentCount(1);
+    }
+
+    public function test_unreachable_short_link_is_kept_without_coordinates(): void
+    {
+        Http::fake(fn () => throw new \Illuminate\Http\Client\ConnectionException('timeout'));
+
+        $this->assertSame(
+            ['map_url' => 'https://maps.app.goo.gl/MQ6n73uU3bURTPFx7', 'map_lat' => null, 'map_lng' => null],
+            SalonMapLocation::attributesFor('https://maps.app.goo.gl/MQ6n73uU3bURTPFx7')
+        );
+        $this->assertSame(['map_url' => null, 'map_lat' => 35.7, 'map_lng' => 51.4], SalonMapLocation::attributesFor('35.7, 51.4'));
     }
 
     public function test_errors_explain_what_to_paste(): void
     {
         $this->assertNull(SalonMapLocation::error(''));
-        $this->assertStringContainsString('لینک کوتاه', SalonMapLocation::error('https://nshn.ir/AbC12x'));
-        $this->assertStringContainsString('مختصات پیدا نشد', SalonMapLocation::error('خیابان ولیعصر'));
+        $this->assertNull(SalonMapLocation::error('https://maps.app.goo.gl/MQ6n73uU3bURTPFx7'), 'لینک کوتاه پذیرفته می‌شود');
+        $this->assertStringContainsString('لینک نقشه یا مختصات نیست', SalonMapLocation::error('خیابان ولیعصر'));
+        $this->assertStringContainsString('لینک نقشه یا مختصات نیست', SalonMapLocation::error('https://example.com/x'));
         $this->assertStringContainsString('در ایران نیست', SalonMapLocation::error('48.85, 2.35'));
     }
 
@@ -48,7 +93,7 @@ class SalonMapLocationTest extends TestCase
             ->assertRedirect(route('admin.salon-settings.edit'));
         $salon->refresh();
         $this->assertSame('https://nshn.ir/?lat=35.76&lng=51.406', SalonMapLocation::neshanUrl($salon));
-        $this->assertSame('35.76,51.406', SalonMapLocation::forInput($salon));
+        $this->assertSame('https://neshan.org/maps/share/35.76,51.406', SalonMapLocation::forInput($salon), 'لینک نقشه خودش نگه داشته می‌شود');
 
         $this->put(route('admin.salon-settings.update'), $base + ['map_location' => 'خیابان ولیعصر'])->assertSessionHasErrors('map_location');
         $this->assertNotNull($salon->fresh()->map_lat);
@@ -56,7 +101,18 @@ class SalonMapLocationTest extends TestCase
         $this->put(route('admin.salon-settings.update'), $base)->assertRedirect(); // فیلد نیامد ← دست نخورد
         $this->assertNotNull($salon->fresh()->map_lat);
 
+        // لینک کوتاه گوگل‌مپ: خودش ذخیره و «مسیریابی» همان را باز می‌کند؛ مختصات اگر سرور توانست باز کند
+        Http::fake(['maps.app.goo.gl/*' => Http::response('', 302, ['Location' => 'https://www.google.com/maps/place/S/@35.7012,51.3911,17z'])]);
+        $this->put(route('admin.salon-settings.update'), $base + ['map_location' => 'https://maps.app.goo.gl/MQ6n73uU3bURTPFx7'])->assertRedirect();
+        $salon->refresh();
+        $this->assertSame('https://maps.app.goo.gl/MQ6n73uU3bURTPFx7', SalonMapLocation::directionsUrl($salon));
+        $this->assertSame('https://maps.app.goo.gl/MQ6n73uU3bURTPFx7', SalonMapLocation::forInput($salon));
+        $this->assertSame('35.7012, 51.3911', SalonMapLocation::coordinates($salon));
+        $this->get(route('admin.salon-settings.edit'))->assertSee('مختصات خوانده‌شده');
+
         $this->put(route('admin.salon-settings.update'), $base + ['map_location' => ''])->assertRedirect();
-        $this->assertNull(SalonMapLocation::neshanUrl($salon->fresh()));
+        $salon->refresh();
+        $this->assertNull(SalonMapLocation::directionsUrl($salon));
+        $this->assertNull($salon->map_url);
     }
 }

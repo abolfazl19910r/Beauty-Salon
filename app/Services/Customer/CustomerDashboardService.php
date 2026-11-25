@@ -47,7 +47,7 @@ class CustomerDashboardService
             'nextIsToday' => $next?->booking_time->isSameDay($now) ?? false,
             'canChange' => $next ? $next->booking_time->gt($now->copy()->addHours(CustomerPresenter::CANCEL_DEADLINE_HOURS)) : false,
             'changeHours' => CustomerPresenter::CANCEL_DEADLINE_HOURS,
-            'mapUrl' => $salon ? SalonMapLocation::neshanUrl($salon) : null,
+            'mapUrl' => $salon ? SalonMapLocation::directionsUrl($salon) : null,
             'salon' => $salon,
             'walletBalance' => (float) ($user->wallet?->balance ?? 0),
             'loyaltyOn' => $loyaltyOn,
