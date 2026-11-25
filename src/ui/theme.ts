@@ -20,6 +20,8 @@ const light = {
   goldSoft: 'rgba(201,164,85,0.16)',
   button: '#D2B060',
   onGold: '#221A0C',
+  accent2: '#8A6A22',
+  onAccent2: '#FFFFFF',
   success: '#3F7A34',
   successSoft: 'rgba(63,122,52,0.14)',
   warning: '#9A6A00',
@@ -42,6 +44,8 @@ const dark: typeof light = {
   goldSoft: 'rgba(166,127,46,0.16)',
   button: '#D8B96A',
   onGold: '#221A0C',
+  accent2: '#E3C985',
+  onAccent2: '#221A0C',
   success: '#9CC58F',
   successSoft: 'rgba(156,197,143,0.14)',
   warning: '#E0B25C',
@@ -76,6 +80,9 @@ export function applySalonTheme(base: Palette, theme: SalonTheme | null, scheme:
     goldSoft: withAlpha(c.accent, 0.16),
     button: c.accent,
     onGold: c.onAccent,
+    // بسته‌ی ۵الف/۵ب: رنگ دوم پالت؛ سرور قدیمی ← همان رنگ تأکید
+    accent2: c.accent2 ?? (scheme === 'dark' ? c.accentStrong : c.accent),
+    onAccent2: c.onAccent2 ?? c.onAccent,
   };
 }
 
@@ -94,7 +101,7 @@ export const fonts = {
   kufi: 'NotoKufiArabic-ExtraBold',
 };
 
-/** فایل فونت‌ها برای useFonts هر دو اپ (فونت تیتر چیدمان‌های مجله/بنتو/آرام در خود اپ است، نه از اینترنت) */
+/** فایل فونت‌ها برای useFonts هر دو اپ (فونت تیتر قالب‌ها در خود اپ است، نه از اینترنت) */
 export const fontFiles = {
   [fonts.regular]: require('../../assets/fonts/Vazirmatn-Regular.ttf'),
   [fonts.medium]: require('../../assets/fonts/Vazirmatn-Medium.ttf'),
@@ -108,15 +115,15 @@ export const fontFiles = {
 export const radius = { sm: 10, md: 14, lg: 20 };
 
 /**
- * چیدمان قالب در اپ: گردی کارت/دکمه/فیلد و فونت تیترها (همان قواعد partials/theme-layout وب). اپ چیدمان صفحه‌ها را
- * عوض نمی‌کند؛ چند واریانت آماده است.
+ * چیدمان قالب در اپ: گردی کارت/دکمه/فیلد و فونت تیترها (همان قواعد partials/theme-layout وب، بسته‌ی ۵ب). اپ چیدمان صفحه‌ها را
+ * عوض نمی‌کند؛ چند واریانت آماده است. شاهکار و روزنامه‌ی سالن: نسخ و گوشه‌ی تیز؛ نمایشگاه: کوفی و گوشه‌ی نرم؛ اپ: خیلی گرد.
  */
 export const layoutMetrics: Record<ThemeLayout, { radius: typeof radius; display: string; displayWeightLight?: boolean }> = {
   mahru: { radius, display: fonts.bold },
-  vitrin: { radius: { sm: 12, md: 16, lg: 22 }, display: fonts.bold },
-  majalle: { radius: { sm: 2, md: 3, lg: 4 }, display: fonts.naskh },
-  aram: { radius: { sm: 10, md: 12, lg: 16 }, display: fonts.light, displayWeightLight: true },
-  bento: { radius: { sm: 16, md: 22, lg: 28 }, display: fonts.kufi },
+  signature: { radius: { sm: 12, md: 4, lg: 6 }, display: fonts.naskh },
+  editorial: { radius: { sm: 0, md: 0, lg: 0 }, display: fonts.naskh },
+  showcase: { radius: { sm: 14, md: 16, lg: 22 }, display: fonts.kufi },
+  app: { radius: { sm: 14, md: 18, lg: 26 }, display: fonts.bold },
 };
 
 export function useLayoutMetrics() {

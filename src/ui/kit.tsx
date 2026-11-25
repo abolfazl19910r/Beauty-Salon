@@ -255,7 +255,7 @@ export function KeyValue({ label, value }: { label: string; value: ReactNode }) 
 }
 
 export function SectionTitle({ children }: { children: ReactNode }) {
-  // بسته‌ی «و»: فونت تیتر چیدمان قالب (مجله: نسخ، بنتو: کوفی، آرام: نازک)
+  // بسته‌ی «و»/۵ب: فونت تیتر قالب (شاهکار و روزنامه‌ی سالن: نسخ، نمایشگاه: کوفی)
   const { display } = useLayoutMetrics();
   return <T weight="bold" size={16} style={{ marginTop: space(2), fontFamily: display }}>{children}</T>;
 }
