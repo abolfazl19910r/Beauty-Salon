@@ -84,8 +84,13 @@
                         <img src="{{ $service->image_url }}" alt="{{ $service->name }}"
                              loading="lazy" class="img-zoom w-full h-full object-cover">
                     @else
-                        <img src="{{ asset('images/placeholder-service.svg') }}" alt="{{ $service->name }}"
-                             class="w-full h-full object-cover">
+                        {{-- بسته‌ی ۵الف: قالب پولی بی جای خالی (طرح پالت)؛ طلایی ماهرو همان تصویر --}}
+                        @if (app(\App\Support\Themes\CurrentAppearance::class)->get()->isDefaultSite())
+                            <img src="{{ asset('images/placeholder-service.svg') }}" alt="{{ $service->name }}"
+                                 class="w-full h-full object-cover">
+                        @else
+                            <x-palette-art class="w-full h-full" :variant="$loop->index" />
+                        @endif
                     @endif
                     {{-- Category label --}}
                     @if($service->category)
@@ -128,7 +133,7 @@
                         </a>
                         <a href="{{ route('bookings.create', ['service' => $service->id]) }}"
                            class="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold
-                              bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-m-ongold
+                              {{ app(\App\Support\Themes\CurrentAppearance::class)->get()->isDefaultSite() ? 'bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A]' : 'bg-m-gold' }} text-m-ongold
                               hover:shadow-lg hover:shadow-[#C9A24B]/25 transition-all">
                             رزرو نوبت
                         </a>

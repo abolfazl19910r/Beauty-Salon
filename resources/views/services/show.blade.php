@@ -34,8 +34,13 @@
                 </div>
             @else
                 <div class="h-52 bg-m-bg flex items-center justify-center border-b border-m-gold/10">
-                    <img src="{{ asset('images/placeholder-service.svg') }}" alt="{{ $service->name }}"
-                         class="h-full w-full object-cover opacity-60">
+                    {{-- بسته‌ی ۵الف: قالب پولی بی جای خالی (طرح پالت)؛ طلایی ماهرو همان تصویر --}}
+                    @if (app(\App\Support\Themes\CurrentAppearance::class)->get()->isDefaultSite())
+                        <img src="{{ asset('images/placeholder-service.svg') }}" alt="{{ $service->name }}"
+                             class="h-full w-full object-cover opacity-60">
+                    @else
+                        <x-palette-art class="h-full w-full" />
+                    @endif
                 </div>
             @endif
 
@@ -113,7 +118,7 @@
                 <div class="text-center pt-4 border-t border-m-gold/10">
                     <a href="{{ route('bookings.create', ['service' => $service->id]) }}"
                        class="inline-block px-10 py-3.5 rounded-full font-bold text-sm transition-all duration-300
-                          bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-m-ongold
+                          {{ app(\App\Support\Themes\CurrentAppearance::class)->get()->isDefaultSite() ? 'bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A]' : 'bg-m-gold' }} text-m-ongold
                           hover:shadow-xl hover:shadow-[#C9A24B]/30 hover:-translate-y-1">
                         رزرو این خدمت
                     </a>

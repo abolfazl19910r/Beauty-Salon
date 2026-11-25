@@ -118,4 +118,16 @@ class TemplateHomesTest extends TestCase
             ->assertDontSee('data-ap-free', false)->assertDontSee('data-ap-today', false)->assertDontSee('data-ap-gallery', false)
             ->assertDontSee('نظرها');
     }
+
+    public function test_service_pages_use_the_palette_art_and_button_on_paid_templates(): void
+    {
+        $this->choose('signature:rose');
+        $this->get(route('services.index'))->assertOk()->assertSee('data-palette-art', false)
+            ->assertDontSee('placeholder-service.svg')->assertDontSee('from-[#C9A24B]', false);
+        $this->get(route('services.show', $this->service))->assertOk()->assertSee('data-palette-art', false)->assertDontSee('placeholder-service.svg');
+
+        app(CurrentSalon::class)->get()->forceFill(['site_theme' => null])->save();
+        SalonAppearance::flush();
+        $this->get(route('services.index'))->assertOk()->assertSee('placeholder-service.svg')->assertSee('from-[#C9A24B]', false);
+    }
 }

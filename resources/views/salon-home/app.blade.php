@@ -43,6 +43,7 @@
         .ap-slot span{display:block;font-size:12px;opacity:.75}
         .ap-slot b{font-size:17px}
         .ap-tile{display:flex;flex-direction:column;gap:6px;color:rgb(var(--m-tx));min-height:130px}
+        @media (max-width:639px){.ap-tile,.ap-more{min-height:112px;padding:16px;border-radius:20px}.ap-tile b{font-size:16px}.ap-tile__meta{font-size:12.5px}}
         .ap-tile:hover{border-color:var(--m-line2)}
         .ap-tile__cat{font-size:12.5px;color:rgb(var(--m-accent2))}
         .ap-tile__meta{margin-top:auto;padding-top:12px;font-size:14px;color:rgb(var(--m-mu))}
@@ -88,9 +89,9 @@
             </div>
         </aside>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+        <div class="grid grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-5">
             @if ($apNearest !== [])
-                <section class="ap-band sm:col-span-2 xl:col-span-3" aria-labelledby="ap-free" data-ap-free>
+                <section class="ap-band col-span-2 xl:col-span-3" aria-labelledby="ap-free" data-ap-free>
                     <div class="flex flex-wrap justify-between items-center gap-2">
                         <b class="text-lg" id="ap-free">نوبت‌های خالی</b>
                         <span class="text-[13.5px] opacity-75">همه‌ی کارشناسان، همه‌ی خدمات</span>
@@ -121,7 +122,7 @@
             @endif
 
             @if (collect($specialists ?? [])->isNotEmpty())
-                <section class="ap-card sm:col-span-2" aria-labelledby="ap-team">
+                <section class="ap-card col-span-2" aria-labelledby="ap-team">
                     <b class="text-[17px]" id="ap-team">کارشناسان</b>
                     <div class="mt-3.5 flex flex-wrap justify-between gap-4">
                         @foreach ($specialists as $specialist)
