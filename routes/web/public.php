@@ -28,3 +28,6 @@ Route::get('/blog/{post:slug}', [BlogController::class, 'show'])->name('blog.sho
 
 // بنر اطلاعیه‌های سالن در layouts/app (JSON) — از /api/s/{slug}/announcements/active منتقل شد (حذف /api قدیمی، ۲۰۲۶-۱۰-۱۱)
 Route::get('/announcements/active', [\App\Http\Controllers\User\AnnouncementController::class, 'active'])->name('announcements.active');
+
+// بسته‌ی ۵الف: روزها و ساعت‌های خالی فرم رزرو قالب «شاهکار» (بی ورود؛ رزرو قطعی همچنان bookings.create پشت ورود است)
+Route::get('/free-slots', \App\Http\Controllers\User\BookingQuickSlotsController::class)->middleware('throttle:60,1')->name('salon.free-slots');

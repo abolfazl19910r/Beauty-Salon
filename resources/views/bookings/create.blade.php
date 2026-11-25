@@ -431,6 +431,14 @@
                 }
             }
 
+            // بسته‌ی ۵الف: پیش‌انتخاب روز و ساعت از نشانی (فقط بار اول؛ مقدار نادرست نادیده گرفته می‌شود)
+            const prefill = (function () {
+                const q = new URLSearchParams(window.location.search);
+                const date = /^\d{4}-\d{2}-\d{2}$/.test(q.get('date') || '') ? q.get('date') : null;
+                const time = /^\d{2}:\d{2}$/.test(q.get('time') || '') ? q.get('time') : null;
+                return { date: date, time: date ? time : null };
+            })();
+
             async function onServiceChange() {
                 selectedService = document.getElementById('service-select').value || null;
                 selectedSpecialist = null;
@@ -536,13 +544,24 @@
                 }
                 hideEl('dates-empty');
 
+                let prefillBtn = null;
                 dates.forEach(date => {
                     const btn = document.createElement('div');
                     btn.className = 'date-btn text-center p-2.5 rounded-xl text-xs persian-number';
                     btn.innerHTML = formatJalaliDayLabel(date);
                     btn.addEventListener('click', () => selectDate(date, btn));
                     grid.appendChild(btn);
+                    if (prefill.date && String(date).slice(0, 10) === prefill.date) prefillBtn = [date, btn];
                 });
+
+                // بسته‌ی ۵الف: فرم رزرو قالب «شاهکار» و نوار «نوبت‌های خالی» قالب «اپ» روز و ساعت را با ?date=&time= می‌فرستند (یک بار)
+                if (prefillBtn) {
+                    prefill.date = null;
+                    selectDate(prefillBtn[0], prefillBtn[1]);
+                } else {
+                    prefill.date = null;
+                    prefill.time = null;
+                }
             }
 
             function selectDate(date, btnEl) {
@@ -609,7 +628,13 @@
 
                     btn.addEventListener('click', () => selectTime(time, btn));
                     grid.appendChild(btn);
+                    if (prefill.time && time === prefill.time) {
+                        prefill.time = null;
+                        selectTime(time, btn);
+                        document.getElementById('summary-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
                 });
+                prefill.time = null;
             }
 
             function selectTime(time, btnEl) {
