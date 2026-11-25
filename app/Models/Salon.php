@@ -27,6 +27,7 @@ class Salon extends Model
         'logo_tone',
         'logo_dark_path',
         'logo_dark_tone',
+        'cover_path',
         'site_theme',
         'admin_theme',
         'address',
@@ -403,6 +404,12 @@ class Salon extends Model
     public function workingHoursLines(): array
     {
         return \App\Support\SalonWorkingHours::lines($this->working_hours);
+    }
+
+    /** بسته‌ی ۵ب: عکس کاور بارگذاری‌شده یا null (جایگزین‌ها — اولین عکس گالری، طرح پالت — در TemplateHomeData). */
+    public function coverUrl(): ?string
+    {
+        return $this->cover_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->cover_path) : null;
     }
 
     /** ⭐ لوگوی اختصاصی سالن (۲۰۲۶-۰۹-۲۴)؛ null = بدون لوگو (ویوها آیکون پیش‌فرض رو نشون می‌دن). */

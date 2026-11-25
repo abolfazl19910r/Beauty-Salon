@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\SalonSettings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SalonSettings\UpdateSalonSettingsRequest;
+use App\Services\Salon\SalonCoverService;
 use App\Services\Salon\SalonLogoService;
 use App\Support\CurrentSalon;
 use Illuminate\Http\RedirectResponse;
@@ -17,7 +18,10 @@ use Illuminate\View\View;
  */
 class AdminSalonSettingsController extends Controller
 {
-    public function __construct(protected readonly SalonLogoService $logoService) {}
+    public function __construct(
+        protected readonly SalonLogoService $logoService,
+        protected readonly SalonCoverService $coverService,
+    ) {}
 
     public function edit(): View
     {
@@ -51,6 +55,9 @@ class AdminSalonSettingsController extends Controller
         // ⭐ ۲۰۲۶-۰۹-۲۵: کد پذیرنده‌ی زرین‌پال دیگه اینجا نیست — صفحه‌ی «درگاه‌های پرداخت»
         // (AdminPaymentGatewayController) جایگزینش شد؛ مقدار ارسالی به این مسیر نادیده گرفته می‌شه.
         // توکن Payout هم (مرحله‌ی ۳، ۲۰۲۶-۰۹-۲۵) به ویرایش درگاه زرین‌پال در همان صفحه منتقل شد.
+
+        // بسته‌ی ۵ب: عکس کاور اختیاری (قاب بزرگ قالب‌های «روزنامه‌ی سالن» و «نمایشگاه»)
+        $this->coverService->syncFromRequest($salon, $request);
 
         // ⭐ بسته‌ی د: لوگوی اصلی (با سنجش لحن) و لوگوی دوم برای پس‌زمینه‌ی تیره
         if ($error = $this->logoService->syncFromRequest($salon, $request)) {

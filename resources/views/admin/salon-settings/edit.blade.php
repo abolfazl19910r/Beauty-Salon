@@ -98,6 +98,22 @@
                         @endif
                     </div>
                 @endif
+                {{-- بسته‌ی ۵ب: عکس کاور اختیاری برای قالب‌های «روزنامه‌ی سالن» و «نمایشگاه» --}}
+                <div data-cover-field>
+                    <label class="block text-sm mb-1" for="cover">عکس کاور <span style="color:var(--admin-text-light);">(اختیاری — قاب بزرگ قالب‌های «روزنامه‌ی سالن» و «نمایشگاه»؛ افقی، حداقل ۸۰۰×۴۰۰، حداکثر ۳ مگابایت)</span></label>
+                    <div class="flex items-center gap-3">
+                        <img id="cover-preview" src="{{ $salon->coverUrl() }}" alt="عکس کاور {{ $salon->name }}"
+                             class="w-32 h-16 object-cover rounded-lg" style="border:1px solid var(--admin-border); {{ $salon->coverUrl() ? '' : 'display:none;' }}">
+                        <x-file-input id="cover" name="cover" accept="image/png,image/jpeg,image/webp" button-style="border:1px solid var(--admin-border); color:var(--admin-text);" />
+                    </div>
+                    <p class="text-xs mt-1" style="color:var(--admin-text-light);">بدون کاور، اولین عکس گالری و اگر گالری خالی باشد طرحی از رنگ‌های سایت نشان داده می‌شود.</p>
+                    @error('cover') <p class="text-xs mt-1" style="color:rgb(var(--m-bad));">{{ $message }}</p> @enderror
+                    @if ($salon->cover_path)
+                        <label class="flex items-center gap-2 mt-2 text-sm">
+                            <input type="checkbox" name="remove_cover" value="1"> حذف عکس کاور
+                        </label>
+                    @endif
+                </div>
             </section>
 
             {{-- ⭐ مرحله‌ی ۱ چند درگاه (۲۰۲۶-۰۹-۲۵): فیلد تکی کد پذیرنده‌ی زرین‌پال با صفحه‌ی «درگاه‌های پرداخت» جایگزین شد. --}}
@@ -207,12 +223,17 @@
             document.getElementById('working-hours-enabled').addEventListener('change', function () {
                 document.getElementById('working-hours-fieldset').disabled = !this.checked;
             });
-            document.getElementById('logo').addEventListener('change', function () {
-                var preview = document.getElementById('logo-preview');
-                if (this.files && this.files[0]) {
-                    preview.src = URL.createObjectURL(this.files[0]);
-                    preview.style.display = '';
-                }
+            // پیش‌نمایش لوگو و کاور؛ فیلد لوگو بدون امکان «لوگوی اختصاصی» پلن در صفحه نیست
+            [['logo', 'logo-preview'], ['cover', 'cover-preview']].forEach(function (pair) {
+                var input = document.getElementById(pair[0]);
+                if (!input) return;
+                input.addEventListener('change', function () {
+                    var preview = document.getElementById(pair[1]);
+                    if (this.files && this.files[0]) {
+                        preview.src = URL.createObjectURL(this.files[0]);
+                        preview.style.display = '';
+                    }
+                });
             });
         </script>
     @endpush

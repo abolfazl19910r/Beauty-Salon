@@ -41,6 +41,8 @@ class UpdateSalonSettingsRequest extends FormRequest
             'remove_logo' => ['nullable', 'boolean'],
             'logo_dark' => SalonLogoService::DARK_RULES,
             'remove_logo_dark' => ['nullable', 'boolean'],
+            'cover' => \App\Services\Salon\SalonCoverService::RULES,
+            'remove_cover' => ['nullable', 'boolean'],
             // بسته‌ی ۴ ظاهری: مکان روی نقشه برای «مسیریابی» مشتری (اختیاری) — لینک اشتراک‌گذاری (کوتاه یا کامل) گوگل‌مپ/نشان/بلد یا «عرض، طول»
             'map_location' => ['nullable', 'string', 'max:1000', function ($attribute, $value, $fail) {
                 if ($error = \App\Support\SalonMapLocation::error($value)) {
@@ -62,7 +64,7 @@ class UpdateSalonSettingsRequest extends FormRequest
 
     public function messages(): array
     {
-        return $this->salonContactMessages() + SalonLogoService::MESSAGES + SalonLogoService::DARK_MESSAGES + [
+        return $this->salonContactMessages() + SalonLogoService::MESSAGES + SalonLogoService::DARK_MESSAGES + \App\Services\Salon\SalonCoverService::MESSAGES + [
             'name.required' => 'نام سالن را وارد کنید.',
         ];
     }

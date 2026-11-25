@@ -127,4 +127,51 @@ class AdminSalonSettingsTest extends TestCase
 
         $this->get('/s/rasta')->assertOk()->assertSee('سالن راستای جدید')->assertSee('کرج، بلوار جمهوری، پلاک ۵');
     }
+
+    public function test_owner_uploads_replaces_and_removes_the_cover(): void
+    {
+        $this->actingAs($this->owner)->get(route('admin.salon-settings.edit'))->assertOk()->assertSee('name="cover"', false);
+
+        $this->actingAs($this->owner)->put(route('admin.salon-settings.update'), $this->payload([
+            'cover' => UploadedFile::fake()->image('cover.jpg', 1200, 600),
+        ]))->assertSessionHasNoErrors();
+        $first = $this->salon->fresh()->cover_path;
+        $this->assertStringStartsWith("salons/{$this->salon->id}/branding/", $first);
+        Storage::disk('public')->assertExists($first);
+        $this->assertSame(Storage::disk('public')->url($first), $this->salon->fresh()->coverUrl());
+
+        $this->actingAs($this->owner)->put(route('admin.salon-settings.update'), $this->payload([
+            'cover' => UploadedFile::fake()->image('cover2.jpg', 1200, 600),
+        ]));
+        $second = $this->salon->fresh()->cover_path;
+        $this->assertNotSame($first, $second);
+        Storage::disk('public')->assertMissing($first);
+
+        $this->actingAs($this->owner)->put(route('admin.salon-settings.update'), $this->payload(['remove_cover' => '1']));
+        $this->assertNull($this->salon->fresh()->cover_path);
+        $this->assertNull($this->salon->fresh()->coverUrl());
+        Storage::disk('public')->assertMissing($second);
+    }
+
+    public function test_cover_must_be_a_large_enough_raster_image(): void
+    {
+        $this->actingAs($this->owner)->put(route('admin.salon-settings.update'), $this->payload([
+            'cover' => UploadedFile::fake()->image('small.jpg', 300, 200),
+        ]))->assertSessionHasErrors('cover');
+
+        $this->actingAs($this->owner)->put(route('admin.salon-settings.update'), $this->payload([
+            'cover' => UploadedFile::fake()->create('x.svg', 10, 'image/svg+xml'),
+        ]))->assertSessionHasErrors('cover');
+
+        $this->assertNull($this->salon->fresh()->cover_path);
+    }
+
+    public function test_saving_without_a_cover_keeps_the_current_one(): void
+    {
+        $this->salon->update(['cover_path' => "salons/{$this->salon->id}/branding/c.jpg"]);
+
+        $this->actingAs($this->owner)->put(route('admin.salon-settings.update'), $this->payload());
+
+        $this->assertSame("salons/{$this->salon->id}/branding/c.jpg", $this->salon->fresh()->cover_path);
+    }
 }
