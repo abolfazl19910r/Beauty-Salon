@@ -72,7 +72,8 @@ class SpecialistDashboardService
 
     /**
      * کار اصلی یک نوبت در پنل کارشناس — همان نام و همان رنگ همه‌جا (داشبورد، فهرست نوبت‌ها):
-     * منتظر تأیید ← «تأیید»؛ تأییدشده‌ای که ساعتش رسیده ← «انجام شد»؛ بقیه ← «جزئیات» (تصمیم ۱۱-۲۵: «الف»).
+     * منتظر تأیید (آینده) ← «تأیید»؛ تأییدشده‌ای که ساعتش رسیده ← «انجام شد»؛ بقیه ← «جزئیات» (تصمیم ۱۱-۲۵: «الف»).
+     * منتظر تأییدی که ساعتش گذشته «تأیید» نمی‌گیرد (پیامک تأیید برای نوبت گذشته بی‌معناست؛ آزمون ویندوز ۱۱-۲۵) — فقط «لغو نوبت…» در منوی «⋯».
      *
      * @return array{kind: string, label: string, route: string|null}
      */
@@ -81,7 +82,7 @@ class SpecialistDashboardService
         $now ??= Carbon::now();
 
         return match (true) {
-            $booking->status === 'pending' => ['kind' => 'confirm', 'label' => 'تأیید', 'route' => route('specialist.bookings.complete', $booking)],
+            $booking->status === 'pending' && $booking->booking_time->gt($now) => ['kind' => 'confirm', 'label' => 'تأیید', 'route' => route('specialist.bookings.complete', $booking)],
             $booking->status === 'confirmed' && $booking->booking_time->lte($now) => ['kind' => 'complete', 'label' => 'انجام شد', 'route' => route('specialist.bookings.mark-completed', $booking)],
             default => ['kind' => 'details', 'label' => 'جزئیات', 'route' => null],
         };

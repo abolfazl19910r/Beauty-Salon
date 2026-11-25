@@ -114,6 +114,13 @@ class SpecialistBookingListUiTest extends TestCase
         $this->assertStringNotContainsString('data-spec-cancel', $row('atGateway'));
         $this->assertStringContainsString('جزئیات نوبت', $row('atGateway'));
 
+        // منتظر تأییدی که ساعتش گذشته: «جزئیات»، نه «تأیید»؛ لغو در منو می‌ماند (آزمون ویندوز ۱۱-۲۵)
+        $past = $this->list(['tab' => 'past'])->getContent();
+        $this->assertSame(1, preg_match('/data-booking-row="'.$this->b['pendingPast']->id.'".*?<\/li>/s', $past, $pm));
+        $this->assertStringContainsString('data-spec-action="details"', $pm[0]);
+        $this->assertStringNotContainsString('data-spec-action="confirm"', $pm[0]);
+        $this->assertStringContainsString('data-spec-cancel', $pm[0]);
+
         foreach (['todayDone', 'pendingSoon', 'confirmedLater'] as $key) {
             $this->assertStringContainsString('data-spec-cancel', $row($key));
         }
