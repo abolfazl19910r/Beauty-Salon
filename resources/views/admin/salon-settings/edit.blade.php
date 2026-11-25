@@ -149,7 +149,7 @@
                         @php $mapCoords = \App\Support\SalonMapLocation::coordinates($salon); @endphp
                         <p class="text-xs mt-1" data-map-coords style="color: var(--admin-text-light);">
                             @if($mapCoords)
-                                مختصات خوانده‌شده: <span dir="ltr" class="persian-number">{{ \App\Support\Fa::digits($mapCoords) }}</span>
+                                مختصات خوانده‌شده: <span dir="ltr" class="persian-number">{{ str_replace('.', '٫', \App\Support\Fa::digits($mapCoords)) }}</span>
                             @else
                                 مختصات از این لینک خوانده نشد؛ اشکالی ندارد، «مسیریابی» همان لینک را باز می‌کند.
                             @endif

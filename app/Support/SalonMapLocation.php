@@ -48,6 +48,7 @@ final class SalonMapLocation
             '/[?&](?:q|query|ll|destination|center)='.$num.',\s*\+?'.$num.'/i',        // google.com/maps?q=lat,lng
             '/\/(?:place|search|share|dir\/[^\/]*)\/'.$num.',\s*\+?'.$num.'/i',        // google.com/maps/place/lat,lng ، neshan.org/maps/share/lat,lng
             '/@'.$num.','.$num.'/',                                                    // google.com/maps/@lat,lng ، neshan.org/maps/@lat,lng
+            '/#c'.$num.'-'.$num.'-/',                                                  // neshan.org/maps/places/…#c35.705-51.439-15z (مرکز نمای نقشه)
             '/^'.$num.'\s*[,\s]\s*'.$num.'$/',                                          // «35.7, 51.4»
         ];
 

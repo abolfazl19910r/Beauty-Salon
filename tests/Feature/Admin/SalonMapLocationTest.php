@@ -30,6 +30,7 @@ class SalonMapLocationTest extends TestCase
         // مقصد لینک کوتاه گوگل‌مپ: خود نقطه (!3d!4d) بر مرکز نما (@) مقدم است
         $this->assertSame([35.7012, 51.3911], SalonMapLocation::parse('https://www.google.com/maps/place/Salon/@35.70,51.39,17z/data=!3m1!4b1!4m6!3m5!1s0x0:0x0!8m2!3d35.7012!4d51.3911'));
         $this->assertSame([35.7, 51.4], SalonMapLocation::parse('https://maps.google.com/?q=35.7,51.4'));
+        $this->assertSame([35.705, 51.439], SalonMapLocation::parse('https://neshan.org/maps/places/_bvPXeQxucEv#c35.705-51.439-15z-0p'));
     }
 
     public function test_accepts_short_and_full_map_links_only_from_map_hosts(): void
