@@ -469,6 +469,14 @@
                         option.textContent = specialist.name;
                         select.appendChild(option);
                     });
+
+                    // «رزرو دوباره» داشبورد/نوبت‌های من (بسته‌ی ۴ ظاهری): ?specialist= همان کارشناس را از پیش انتخاب می‌کند
+                    const specialistFromUrl = new URLSearchParams(window.location.search).get('specialist');
+                    if (specialistFromUrl && !select.dataset.prefilled && specialists.some(s => String(s.id) === String(specialistFromUrl))) {
+                        select.dataset.prefilled = '1';
+                        select.value = specialistFromUrl;
+                        onSpecialistChange();
+                    }
                 } catch (error) {
                     console.error('خطا در بارگذاری کارشناسان:', error);
                 }

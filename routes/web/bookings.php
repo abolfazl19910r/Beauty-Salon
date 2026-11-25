@@ -41,6 +41,8 @@ Route::prefix('bookings')->name('bookings.')->group(function () {
         Route::post('/{booking}/rate', [BookingController::class, 'rate'])->middleware('throttle:customer-actions')->name('rate');
         Route::post('/{booking}/apply-discount', [BookingDiscountController::class, 'apply'])->middleware('throttle:discount-check')->name('apply-discount');
 
+        // «افزودن به تقویم» (بسته‌ی ۴ ظاهری)
+        Route::get('/{booking}/calendar.ics', \App\Http\Controllers\User\BookingCalendarController::class)->name('calendar');
         Route::get('/{booking}/reschedule', [BookingRescheduleController::class, 'show'])->name('reschedule');
         Route::put('/{booking}/reschedule', [BookingRescheduleController::class, 'update'])->middleware('throttle:customer-actions')->name('update-reschedule');
     });

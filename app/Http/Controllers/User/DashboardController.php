@@ -3,88 +3,19 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\Announcement;
-use App\Repositories\Contracts\BeautyServiceRepositoryInterface;
-use App\Repositories\Contracts\BookingRepositoryInterface;
-use App\Repositories\Contracts\SpecialistRepositoryInterface;
+use App\Services\Customer\CustomerDashboardService;
 use Illuminate\View\View;
 
+/**
+ * داشبورد مشتری (بسته‌ی ۴ ظاهری، ۲۰۲۶-۱۱-۲۵): همه‌ی داده از CustomerDashboardService. «نوبت‌های اخیر» و «پیش رو» (دو فهرست
+ * تکراری)، «پیشنهاد برای شما»، «کارشناسان برتر»، اطلاعیه‌ها (بنر سراسری سایت نشانشان می‌دهد) و «دسترسی سریع» حذف شدند.
+ */
 class DashboardController extends Controller
 {
-    public function __construct(
-        private readonly BeautyServiceRepositoryInterface $beautyServiceRepository,
-        private readonly BookingRepositoryInterface $bookingRepository,
-        private readonly SpecialistRepositoryInterface $specialistRepository,
-    ) {}
+    public function __construct(private readonly CustomerDashboardService $dashboard) {}
 
     public function index(): View
     {
-        $popularServices = $this->beautyServiceRepository->query()
-            ->withCount('bookings')
-            ->orderByDesc('bookings_count')
-            ->take(4)
-            ->get();
-
-        $userBookings = $this->bookingRepository->query()
-            ->where('user_id', auth()->id())
-            ->with(['service', 'specialist'])
-            ->latest()
-            ->take(5)
-            ->get();
-
-        $upcomingBookings = $this->bookingRepository->query()
-            ->where('user_id', auth()->id())
-            ->where('booking_time', '>', now())
-            ->whereNotIn('status', ['cancelled'])
-            ->with(['service', 'specialist'])
-            ->orderBy('booking_time')
-            ->take(3)
-            ->get();
-
-        $announcements = Announcement::active()->byPriority()->take(3)->get();
-
-        $topSpecialists = $this->specialistRepository->query()
-            ->withAvg('bookings', 'rating')
-            ->orderByDesc('bookings_avg_rating')
-            ->whereHas('bookings', function ($query) {
-                $query->whereNotNull('rating');
-            })
-            ->take(3)
-            ->get();
-
-        $recommendations = $this->getRecommendedServices();
-
-        return view('dashboard', compact(
-            'popularServices',
-            'userBookings',
-            'upcomingBookings',
-            'announcements',
-            'topSpecialists',
-            'recommendations'
-        ));
-    }
-
-    protected function getRecommendedServices()
-    {
-        $userServiceIds = $this->bookingRepository->query()
-            ->where('user_id', auth()->id())
-            ->pluck('service_id')
-            ->unique()
-            ->toArray();
-
-        if (empty($userServiceIds)) {
-            return $this->beautyServiceRepository->getLatest(3);
-        }
-
-        return $this->beautyServiceRepository->query()
-            ->whereIn('category_id', function ($query) use ($userServiceIds) {
-                $query->select('category_id')
-                    ->from('beauty_services')
-                    ->whereIn('id', $userServiceIds);
-            })
-            ->whereNotIn('id', $userServiceIds)
-            ->inRandomOrder()
-            ->take(3)
-            ->get();
+        return view('dashboard', $this->dashboard->overview(auth()->user()));
     }
 }

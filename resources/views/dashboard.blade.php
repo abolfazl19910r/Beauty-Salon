@@ -2,261 +2,174 @@
 
 @section('title', 'داشبورد')
 
+{{--
+    بسته‌ی ۴ ظاهری (۲۰۲۶-۱۱-۲۵، پیش‌نمایش CuAfterDash/CuAfterMobile): کارت «نوبت امروز» (یا «نوبت بعدی») با مسیریابی، تقویم و تغییر
+    زمان؛ کیف پول و باشگاه کنارش؛ «نوبت‌های بعدی» در یک فهرست؛ «نظرتان چه بود؟» با ستاره‌ی مستقیم؛ «دوباره رزرو کنید».
+    داده: CustomerDashboardService::overview().
+--}}
 @section('content')
-    <div class="max-w-7xl mx-auto fade-in space-y-8">
+    <div class="max-w-6xl mx-auto fade-in space-y-5" data-customer-dashboard>
+        <div>
+            <h1 class="text-xl md:text-2xl font-extrabold text-m-tx">سلام، {{ auth()->user()->name }}</h1>
+            <p class="mt-1 text-sm text-m-tx/65" data-today-line>
+                {{ $todayPersian }}.
+                @if ($todayCount === 1)
+                    امروز یک نوبت دارید.
+                @elseif ($todayCount > 1)
+                    امروز {{ fa_num($todayCount) }} نوبت دارید.
+                @endif
+            </p>
+        </div>
 
-        {{-- خوش‌آمدگویی --}}
-        <div class="rounded-xl p-6" style="background: linear-gradient(135deg, var(--rasta-brown), var(--rasta-dark)); border: 1px solid rgb(var(--m-gold) / 0.2);">
-            <div class="flex items-center justify-between flex-wrap gap-4">
-                <div>
-                    <h1 class="text-2xl font-bold" style="color: var(--rasta-gold-light);">
-                        سلام، {{ auth()->user()->name }}
-                    </h1>
-                    <p class="mt-1 text-sm persian-number" style="color: var(--rasta-cream); opacity: 0.7;">
-                        {{ fa_jdate(now(), 'l، j F Y') }}
+        <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_19rem]">
+            {{-- نوبت امروز / نوبت بعدی --}}
+            <section class="m-card p-5 md:p-6 flex flex-col gap-4" aria-label="{{ $nextIsToday ? 'نوبت امروز' : 'نوبت بعدی' }}" data-next-booking="{{ $nextBooking?->id }}">
+                @if ($nextBooking)
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex flex-col gap-1 min-w-0">
+                            <span class="text-sm text-m-tx/65">{{ $nextIsToday ? 'نوبت امروز' : 'نوبت بعدی، '.fa_date($nextBooking->booking_time) }}</span>
+                            <b class="text-lg text-m-tx">{{ $nextBooking->service?->name ?? '—' }}</b>
+                            <span class="text-sm text-m-tx/70">{{ implode('، ', array_filter([$nextBooking->specialist ? 'با '.$nextBooking->specialist->name : null, $nextBooking->service?->duration ? fa_num($nextBooking->service->duration).' دقیقه' : null])) }}</span>
+                        </div>
+                        <b class="text-4xl font-black leading-none text-m-tx shrink-0" dir="ltr">{{ fa_time($nextBooking->booking_time) }}</b>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <x-booking-status :status="$nextBooking->status" audience="customer" class="!font-bold !px-3" />
+                        @unless ($nextBooking->customer_course_id)
+                            <x-payment-status :booking="$nextBooking" class="!font-bold !px-3" />
+                        @endunless
+                    </div>
+                    @if ($salon && ($salon->address || $salon->phone))
+                        <p class="text-sm text-m-tx/70 leading-7" data-salon-contact>
+                            {{ $salon->address }}@if ($salon->address && $salon->phone)، @endif
+                            @if ($salon->phone)تلفن سالن <a href="tel:{{ $salon->phone }}" dir="ltr" class="font-bold text-m-tx">{{ \App\Support\Fa::digits($salon->phone) }}</a>@endif
+                        </p>
+                    @endif
+                    <div class="flex flex-wrap gap-2">
+                        @if ($nextBooking->status === 'pending_payment' && ! $nextBooking->customer_course_id)
+                            <a href="{{ route('payment.show', $nextBooking) }}" class="btn-gold px-5 py-2.5 text-sm font-bold" data-next-pay>پرداخت پیش‌پرداخت</a>
+                        @endif
+                        @if ($mapUrl)
+                            <a href="{{ $mapUrl }}" target="_blank" rel="noopener" class="m-btn-ghost px-4 py-2.5 text-sm font-bold" data-directions>مسیریابی</a>
+                        @endif
+                        <a href="{{ route('bookings.calendar', $nextBooking) }}" class="m-btn-ghost px-4 py-2.5 text-sm font-bold" data-add-to-calendar>افزودن به تقویم</a>
+                        @if ($canChange)
+                            <a href="{{ route('bookings.reschedule', $nextBooking) }}" class="m-btn-ghost px-4 py-2.5 text-sm font-bold" data-reschedule>تغییر زمان</a>
+                        @endif
+                    </div>
+                    <p class="text-xs text-m-tx/60 pt-3 border-t border-m-gold/15" data-change-deadline>
+                        @if ($canChange)
+                            تغییر زمان یا لغو تا {{ fa_num($changeHours) }} ساعت پیش از نوبت ممکن است.
+                        @else
+                            کمتر از {{ fa_num($changeHours) }} ساعت به نوبت مانده؛ تغییر زمان یا لغو دیگر از این‌جا ممکن نیست. برای هماهنگی با سالن تماس بگیرید.
+                        @endif
                     </p>
-                </div>
-                <a href="{{ route('services.index') }}"
-                   class="px-5 py-2.5 rounded-xl font-bold transition-opacity hover:opacity-90 flex items-center gap-2"
-                   style="background: var(--m-btn); color: var(--m-on-gold);">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                    </svg>
-                    رزرو نوبت جدید
-                </a>
+                @else
+                    <div class="py-6 text-center">
+                        <p class="font-bold text-m-tx">نوبت پیش رویی ندارید</p>
+                        <p class="mt-1 text-sm text-m-tx/65">هر وقت خواستید، یک نوبت تازه بگیرید.</p>
+                        <a href="{{ route('bookings.create') }}" class="btn-gold inline-block mt-4 px-6 py-2.5 text-sm font-bold">رزرو نوبت</a>
+                    </div>
+                @endif
+            </section>
+
+            {{-- کیف پول و باشگاه (موبایل: دو کارت کوچک کنار هم) --}}
+            <div class="grid grid-cols-2 lg:grid-cols-1 gap-3 content-start">
+                <section class="m-card p-4 flex flex-col gap-2" aria-label="موجودی کیف پول" data-wallet-card>
+                    <span class="text-sm text-m-tx/65">موجودی کیف پول</span>
+                    <b class="text-lg text-m-tx">@money($walletBalance) <span class="text-xs font-medium text-m-tx/60">تومان</span></b>
+                    <a href="{{ route('wallet.charge') }}" class="text-sm font-bold text-m-gold2">شارژ کیف پول</a>
+                </section>
+                @if ($toRate)
+                    {{-- موبایل: «نظر شما» کنار کیف پول؛ دسکتاپ پایین‌تر کارت کامل --}}
+                    <section class="m-card p-4 flex flex-col gap-2 lg:hidden" aria-label="نظر شما">
+                        <span class="text-sm text-m-tx/65">نظر شما</span>
+                        <span class="text-sm text-m-tx truncate">{{ $toRate->service?->name }}، {{ fa_date($toRate->booking_time, weekday: false) }}</span>
+                        <a href="#rate-last" class="text-sm font-bold text-m-gold2">ثبت نظر</a>
+                    </section>
+                @endif
+                @if ($loyaltyOn)
+                    <section class="m-card p-4 flex flex-col gap-2 {{ $toRate ? 'hidden lg:flex' : '' }}" aria-label="باشگاه مشتریان" data-loyalty-card>
+                        <span class="text-sm text-m-tx/65">باشگاه مشتریان</span>
+                        @if ($loyaltyPoints > 0)
+                            <b class="text-lg text-m-tx">{{ fa_num($loyaltyPoints) }} <span class="text-xs font-medium text-m-tx/60">امتیاز</span></b>
+                        @else
+                            <b class="text-sm text-m-tx">هنوز امتیازی ندارید</b>
+                            <span class="text-xs text-m-tx/60 leading-6">بعد از هر نوبت انجام‌شده امتیاز می‌گیرید و با آن کد تخفیف می‌سازید.</span>
+                        @endif
+                        <a href="{{ route('loyalty.index') }}" class="text-sm font-bold text-m-gold2">جزئیات باشگاه</a>
+                    </section>
+                @endif
             </div>
         </div>
 
-        {{-- اعلانات --}}
-        @if($announcements->count() > 0)
-            <div class="space-y-3">
-                @foreach($announcements as $announcement)
-                    <div class="rounded-xl p-4 flex items-start gap-3"
-                         style="background-color: rgb(var(--m-gold) / 0.08); border: 1px solid rgb(var(--m-gold) / 0.25);">
-                        <svg class="w-5 h-5 flex-shrink-0 mt-0.5" style="color: var(--rasta-gold);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                        </svg>
-                        <div>
-                            <p class="text-sm font-semibold" style="color: var(--rasta-gold-light);">{{ $announcement->title }}</p>
-                            <p class="text-xs mt-1" style="color: var(--rasta-cream); opacity: 0.75;">{{ $announcement->content }}</p>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        @endif
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-            {{-- نوبت‌های اخیر --}}
-            <div class="lg:col-span-2">
-                <div class="rounded-xl overflow-hidden" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.2);">
-                    <div class="p-5 border-b flex justify-between items-center" style="border-color: rgb(var(--m-gold) / 0.15);">
-                        <h2 class="font-bold flex items-center gap-2" style="color: var(--rasta-gold-light);">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                            نوبت‌های اخیر
-                        </h2>
-                        <a href="{{ route('bookings.index') }}" class="text-sm transition hover:opacity-80" style="color: var(--rasta-gold);">مشاهده همه</a>
-                    </div>
-
-                    @if($userBookings->isEmpty())
-                        <div class="p-10 text-center">
-                            <p class="text-sm mb-4" style="color: var(--rasta-cream); opacity: 0.5;">هنوز نوبتی رزرو نکرده‌اید</p>
-                            <a href="{{ route('services.index') }}"
-                               class="px-5 py-2 rounded-lg text-sm font-bold transition-opacity hover:opacity-90"
-                               style="background: var(--m-btn); color: var(--m-on-gold);">
-                                رزرو اولین نوبت
-                            </a>
-                        </div>
-                    @else
-                        <div class="divide-y" style="border-color: rgb(var(--m-gold) / 0.1);">
-                            @foreach($userBookings as $booking)
-                                @php
-                                    $statusInfo = \App\Support\Bookings\BookingLabels::statusPill($booking->status, 'customer');
-                                @endphp
-                                <div class="p-4 flex items-center justify-between flex-wrap gap-3">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                                             style="background-color: rgb(var(--m-gold) / 0.12);">
-                                            <svg class="w-5 h-5" style="color: var(--rasta-gold);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm font-medium" style="color: var(--rasta-cream);">{{ $booking->service?->name ?? '—' }}</p>
-                                            <p class="text-xs persian-number" style="color: var(--rasta-cream); opacity: 0.6;">
-                                                {{ fa_date($booking->booking_time, true) }}
-                                                @if($booking->specialist)
-                                                    — {{ $booking->specialist?->name ?? '—' }}
-                                                @endif
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-3">
-                                        <span class="px-3 py-1 rounded-full text-xs font-medium"
-                                              style="background-color: rgb(var(--m-gold) / 0.1); color: {{ $statusInfo['color'] }};">
-                                            {{ $statusInfo['label'] }}
-                                        </span>
-                                        @if($booking->canBeRescheduled())
-                                            <a href="{{ route('bookings.reschedule', $booking->id) }}"
-                                               class="text-xs transition hover:opacity-80" style="color: var(--rasta-gold);">تغییر زمان</a>
-                                        @endif
-                                        <a href="{{ route('bookings.show', $booking->id) }}"
-                                           class="text-xs transition hover:opacity-80" style="color: var(--rasta-cream); opacity: 0.7;">جزئیات</a>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
+        <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_19rem] items-start">
+            {{-- نوبت‌های بعدی --}}
+            <section class="m-card overflow-hidden" aria-labelledby="cu-up-h" data-upcoming>
+                <div class="px-5 py-3.5 flex items-center justify-between border-b border-m-gold/15">
+                    <h2 id="cu-up-h" class="text-base font-extrabold text-m-tx">نوبت‌های بعدی</h2>
+                    <a href="{{ route('bookings.index') }}" class="text-sm font-bold text-m-gold2">همه‌ی نوبت‌ها</a>
                 </div>
-
-                {{-- نوبت‌های آینده --}}
-                @if($upcomingBookings->count() > 0)
-                    <div class="mt-6 rounded-xl overflow-hidden" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.2);">
-                        <div class="p-5 border-b" style="border-color: rgb(var(--m-gold) / 0.15);">
-                            <h2 class="font-bold flex items-center gap-2" style="color: var(--rasta-gold-light);">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                نوبت‌های پیش رو
-                            </h2>
-                        </div>
-                        <div class="divide-y" style="border-color: rgb(var(--m-gold) / 0.1);">
-                            @foreach($upcomingBookings as $booking)
-                                <div class="p-4 flex items-center justify-between flex-wrap gap-3">
-                                    <div>
-                                        <p class="text-sm font-medium" style="color: var(--rasta-cream);">{{ $booking->service?->name ?? '—' }}</p>
-                                        <p class="text-xs persian-number mt-1" style="color: var(--rasta-gold-light); opacity: 0.8;">
-                                            {{ fa_jdate($booking->booking_time, 'l، j F Y — H:i') }}
-                                        </p>
-                                        @if($booking->specialist)
-                                            <p class="text-xs mt-0.5" style="color: var(--rasta-cream); opacity: 0.6;">کارشناس: {{ $booking->specialist?->name ?? '—' }}</p>
-                                        @endif
-                                    </div>
-                                    <a href="{{ route('bookings.show', $booking->id) }}"
-                                       class="px-3 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-90"
-                                       style="background: var(--m-btn); color: var(--m-on-gold);">
-                                        مشاهده
-                                    </a>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
-            </div>
-
-            {{-- ستون کنار: توصیه‌ها + متخصصان برتر --}}
-            <div class="space-y-6">
-
-                {{-- خدمات پیشنهادی --}}
-                @if($recommendations->count() > 0)
-                    <div class="rounded-xl overflow-hidden" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.2);">
-                        <div class="p-5 border-b" style="border-color: rgb(var(--m-gold) / 0.15);">
-                            <h2 class="font-bold flex items-center gap-2" style="color: var(--rasta-gold-light);">
-                                <svg class="w-5 h-5" style="color: var(--rasta-gold);" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                </svg>
-                                پیشنهاد برای شما
-                            </h2>
-                        </div>
-                        <div class="p-4 space-y-3">
-                            @foreach($recommendations as $service)
-                                <a href="{{ route('services.show', $service->id) }}"
-                                   class="flex items-center justify-between p-3 rounded-lg transition hover:bg-m-tx/5">
-                                    <div>
-                                        <p class="text-sm font-medium" style="color: var(--rasta-cream);">{{ $service->name }}</p>
-                                        @if($service->price)
-                                            <p class="text-xs persian-number mt-0.5" style="color: var(--rasta-gold); opacity: 0.85;">{{ fa_num($service->price) }} تومان</p>
-                                        @endif
-                                    </div>
-                                    <svg class="w-4 h-4 flex-shrink-0" style="color: var(--rasta-gold); opacity: 0.5;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-                                    </svg>
+                @if ($upcoming->isNotEmpty())
+                    <ol>
+                        @foreach ($upcoming as $booking)
+                            <li class="flex items-center gap-3 px-5 py-3 border-b border-m-gold/10 last:border-b-0" data-upcoming-booking="{{ $booking->id }}">
+                                @include('bookings.partials.day-box', ['at' => $booking->booking_time])
+                                <a href="{{ route('bookings.show', $booking) }}" class="flex-1 min-w-0 hover:underline">
+                                    <b class="block text-sm text-m-tx truncate">{{ $booking->service?->name ?? '—' }}</b>
+                                    <span class="block text-xs text-m-tx/65">ساعت {{ fa_time($booking->booking_time) }}@if ($booking->specialist)، با {{ $booking->specialist->name }}@endif</span>
                                 </a>
-                            @endforeach
-                        </div>
-                    </div>
+                                @unless ($booking->customer_course_id)
+                                    <x-payment-status :booking="$booking" />
+                                @endunless
+                            </li>
+                        @endforeach
+                    </ol>
+                @else
+                    <p class="px-5 py-8 text-center text-sm text-m-tx/60">نوبت دیگری ندارید.</p>
+                @endif
+            </section>
+
+            <div class="space-y-4">
+                {{-- نظرتان چه بود؟ --}}
+                @if ($toRate)
+                    <section id="rate-last" class="m-card p-5 flex flex-col gap-3" aria-labelledby="cu-rate-h" data-rate-last="{{ $toRate->id }}">
+                        <h2 id="cu-rate-h" class="text-base font-extrabold text-m-tx">نظرتان چه بود؟</h2>
+                        <p class="text-sm text-m-tx/70">{{ $toRate->service?->name }}@if ($toRate->specialist) با {{ $toRate->specialist->name }}@endif، {{ fa_date($toRate->booking_time, weekday: false) }}</p>
+                        <form method="POST" action="{{ route('bookings.rate', $toRate) }}" class="flex gap-1" aria-label="امتیاز از ۱ تا ۵">
+                            @csrf
+                            @for ($i = 1; $i <= 5; $i++)
+                                <button type="submit" name="rating" value="{{ $i }}" class="text-3xl leading-none text-m-tx/25 hover:text-m-gold focus-visible:text-m-gold transition-colors" aria-label="{{ fa_num($i) }} ستاره" data-star="{{ $i }}">★</button>
+                            @endfor
+                        </form>
+                        <a href="{{ route('bookings.show', $toRate) }}" class="text-xs text-m-tx/60 hover:underline">نوشتن نظر کامل</a>
+                    </section>
                 @endif
 
-                {{-- متخصصان برتر --}}
-                @if($topSpecialists->count() > 0)
-                    <div class="rounded-xl overflow-hidden" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.2);">
-                        <div class="p-5 border-b" style="border-color: rgb(var(--m-gold) / 0.15);">
-                            <h2 class="font-bold flex items-center gap-2" style="color: var(--rasta-gold-light);">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                                </svg>
-                                کارشناسان برتر
-                            </h2>
-                        </div>
-                        <div class="p-4 space-y-3">
-                            @foreach($topSpecialists as $specialist)
-                                <div class="flex items-center gap-3 p-3 rounded-lg">
-                                    <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold flex-shrink-0"
-                                         style="background: var(--m-btn); color: var(--m-on-gold);">
-                                        {{ mb_substr($specialist->name, 0, 1) }}
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-medium truncate" style="color: var(--rasta-cream);">{{ $specialist->name }}</p>
-                                        @if($specialist->bookings_avg_rating)
-                                            <div class="flex items-center gap-1 mt-0.5">
-                                                <svg class="w-3 h-3" style="color: var(--rasta-gold);" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                                </svg>
-                                                <span class="text-xs persian-number" style="color: var(--rasta-gold-light);">{{ fa_num($specialist->bookings_avg_rating, 1) }}</span>
-                                            </div>
-                                        @endif
-                                    </div>
+                {{-- دوباره رزرو کنید --}}
+                @if ($rebook?->service || $suggestion)
+                    <section class="m-card p-5 flex flex-col gap-3" aria-labelledby="cu-again-h" data-rebook>
+                        <h2 id="cu-again-h" class="text-base font-extrabold text-m-tx">دوباره رزرو کنید</h2>
+                        @if ($rebook?->service)
+                            <div class="flex items-center justify-between gap-3">
+                                <div class="min-w-0">
+                                    <b class="block text-sm text-m-tx truncate">{{ $rebook->service->name }}</b>
+                                    @if ($rebook->specialist)<span class="text-xs text-m-tx/60">آخرین بار با {{ $rebook->specialist->name }}</span>@endif
                                 </div>
-                            @endforeach
-                        </div>
-                    </div>
+                                <a href="{{ route('bookings.create', array_filter(['service' => $rebook->service_id, 'specialist' => $rebook->specialist_id])) }}" class="m-btn-ghost px-4 py-2 text-sm font-bold shrink-0" data-rebook-last>رزرو</a>
+                            </div>
+                        @endif
+                        @if ($suggestion)
+                            <div class="flex items-center justify-between gap-3">
+                                <div class="min-w-0">
+                                    <b class="block text-sm text-m-tx truncate">{{ $suggestion->name }}</b>
+                                    <span class="text-xs text-m-tx/60">از @money($suggestion->price) تومان</span>
+                                </div>
+                                <a href="{{ route('bookings.create', ['service' => $suggestion->id]) }}" class="m-btn-ghost px-4 py-2 text-sm font-bold shrink-0" data-rebook-suggestion="{{ $suggestion->id }}">رزرو</a>
+                            </div>
+                        @endif
+                    </section>
                 @endif
-
-                {{-- دسترسی سریع --}}
-                <div class="rounded-xl p-5" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.2);">
-                    <h2 class="font-bold mb-4 flex items-center gap-2" style="color: var(--rasta-gold-light);">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7"/>
-                        </svg>
-                        دسترسی سریع
-                    </h2>
-                    <div class="grid grid-cols-2 gap-3">
-                        <a href="{{ route('bookings.index') }}"
-                           class="p-3 rounded-lg text-center transition hover:bg-m-tx/5"
-                           style="border: 1px solid rgb(var(--m-gold) / 0.2);">
-                            <svg class="w-6 h-6 mx-auto mb-1" style="color: var(--rasta-gold);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                            <p class="text-xs" style="color: var(--rasta-cream); opacity: 0.8;">نوبت‌هایم</p>
-                        </a>
-                        <a href="{{ route('wallet.index') }}"
-                           class="p-3 rounded-lg text-center transition hover:bg-m-tx/5"
-                           style="border: 1px solid rgb(var(--m-gold) / 0.2);">
-                            <svg class="w-6 h-6 mx-auto mb-1" style="color: var(--rasta-gold);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                            </svg>
-                            <p class="text-xs" style="color: var(--rasta-cream); opacity: 0.8;">کیف پول</p>
-                        </a>
-                        <a href="{{ route('profile.show') }}"
-                           class="p-3 rounded-lg text-center transition hover:bg-m-tx/5"
-                           style="border: 1px solid rgb(var(--m-gold) / 0.2);">
-                            <svg class="w-6 h-6 mx-auto mb-1" style="color: var(--rasta-gold);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                            </svg>
-                            <p class="text-xs" style="color: var(--rasta-cream); opacity: 0.8;">پروفایل</p>
-                        </a>
-                        <a href="{{ route('loyalty.index') }}"
-                           class="p-3 rounded-lg text-center transition hover:bg-m-tx/5"
-                           style="border: 1px solid rgb(var(--m-gold) / 0.2);">
-                            <svg class="w-6 h-6 mx-auto mb-1" style="color: var(--rasta-gold);" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                            </svg>
-                            <p class="text-xs" style="color: var(--rasta-cream); opacity: 0.8;">امتیازها</p>
-                        </a>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
