@@ -65,6 +65,19 @@
                     </div>
                 </div>
 
+                {{-- QR من (بسته‌ی ۳ ظاهری): QR صفحه‌ی عمومی کارشناس + لینک به صفحه‌ی «QR و پوستر» (PNG اینستاگرام و PDF) --}}
+                @if ($qrTarget)
+                    <div class="specialist-card p-5 flex items-center gap-4" data-profile-qr>
+                        <div class="w-24 h-24 shrink-0 rounded-lg p-1.5" style="background:#fff;" data-salon-qr="{{ $qrTarget['url'] }}" role="img" aria-label="QR صفحه‌ی شما"></div>
+                        <div class="min-w-0 flex-1 space-y-2">
+                            <h2 class="text-sm font-bold text-[var(--specialist-text)]">QR من</h2>
+                            <p class="text-xs leading-6 text-[var(--specialist-text-dim)]">مشتری با اسکن آن صفحه‌ی شما را باز می‌کند و مستقیم با شما نوبت می‌گیرد.</p>
+                            <p class="text-xs truncate text-[var(--specialist-text-dim)]" dir="ltr">{{ $qrTarget['url'] }}</p>
+                            <a href="{{ route('specialist.qr') }}" class="spec-act spec-act--ghost" data-profile-qr-link>QR، پوستر و PDF</a>
+                        </div>
+                    </div>
+                @endif
+
                 {{-- Personal booking stats (as a customer) --}}
                 <div class="grid grid-cols-3 gap-3">
                     <div class="specialist-card p-4 text-center">
@@ -198,4 +211,5 @@
         </div>
     </div>
     @include('partials.bot-connect', ['routePrefix' => 'specialist.profile.bot'])
+    @vite('resources/js/salon-qr.js')
 @endsection

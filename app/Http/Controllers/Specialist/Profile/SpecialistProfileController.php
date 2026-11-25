@@ -48,8 +48,11 @@ class SpecialistProfileController extends Controller
 
         $profileData = $this->profileService->getProfileShowData($user);
 
+        // بسته‌ی ۳ ظاهری (تصمیم ۱۱-۲۵): «پروفایل و QR» یک آیتم منو؛ کارت QR صفحه‌ی عمومی کارشناس همین‌جا با لینک به «QR و پوستر»
+        $qrTarget = $specialist->salon ? app(\App\Services\Qr\SalonQrService::class)->target($specialist->salon, $specialist) : null;
+
         return view('specialist.profile-show', array_merge(
-            compact('user', 'specialist'),
+            compact('user', 'specialist', 'qrTarget'),
             $profileData
         ));
     }

@@ -85,6 +85,17 @@ class SpecialistMenuTest extends TestCase
         $this->assertMatchesRegularExpression('/data-spec-nav-item="profile"\s+aria-current="page"/', $html);
     }
 
+    public function test_profile_page_shows_the_qr_card_with_a_link_to_the_qr_page(): void
+    {
+        $specialist = Specialist::factory()->create();
+
+        $this->actingAs(User::find($specialist->user_id))->get(route('specialist.profile.show'))->assertOk()
+            ->assertSee('data-profile-qr', false)
+            ->assertSee('data-salon-qr="', false)
+            ->assertSee('href="'.route('specialist.qr').'"', false)
+            ->assertSee('QR، پوستر و PDF');
+    }
+
     public function test_no_badge_without_waiting_bookings(): void
     {
         $specialist = Specialist::factory()->create();
