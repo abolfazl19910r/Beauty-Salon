@@ -162,6 +162,22 @@ final class SalonMapLocation
         return $salon->map_url ?: self::neshanUrl($salon);
     }
 
+    /**
+     * نقشه‌ی جاسازی OpenStreetMap برای بخش «آدرس و نقشه» صفحه‌ی اصلی سالن (تصمیم ابوالفضل: بی کلید، در ایران باز می‌شود)
+     * — یا null بی مختصات.
+     */
+    public static function osmEmbedUrl(Salon $salon): ?string
+    {
+        if ($salon->map_lat === null || $salon->map_lng === null) {
+            return null;
+        }
+        $lat = (float) $salon->map_lat;
+        $lng = (float) $salon->map_lng;
+        $bbox = implode(',', array_map(self::fmt(...), [$lng - 0.006, $lat - 0.004, $lng + 0.006, $lat + 0.004]));
+
+        return 'https://www.openstreetmap.org/export/embed.html?bbox='.$bbox.'&layer=mapnik&marker='.self::fmt($lat).','.self::fmt($lng);
+    }
+
     /** لینک نقطه‌ی «نشان» (در اندروید اپ نشان را باز می‌کند و جای دیگر نسخه‌ی وب را) — یا null بی مختصات */
     public static function neshanUrl(Salon $salon): ?string
     {

@@ -340,6 +340,65 @@
         @endif
 
         {{-- =========================================================
+             8.5) آدرس و نقشه (آزمون ویندوز بسته‌ی ۴، تصمیم ابوالفضل): همان آدرس و «مسیریابی»ای که مشتری در داشبورد
+             می‌بیند. نقشه‌ی OpenStreetMap فقط با مختصات و فقط با کلیک بار می‌شود تا صفحه کند نشود.
+        ========================================================= --}}
+        @php
+            $__locSalon = app(\App\Support\CurrentSalon::class)->get();
+            $__directions = $__locSalon ? \App\Support\SalonMapLocation::directionsUrl($__locSalon) : null;
+            $__osm = $__locSalon ? \App\Support\SalonMapLocation::osmEmbedUrl($__locSalon) : null;
+        @endphp
+        @if ($currentSalonAddress || $__directions)
+        <section id="location" class="py-20 px-4 max-w-6xl mx-auto" data-salon-location>
+            <div class="text-center mb-10 fade-up">
+                <h2 class="font-serif-fa text-3xl md:text-5xl font-bold text-m-gold2 mb-4">آدرس و راه‌های تماس</h2>
+                <p class="text-m-tx/70">برای رسیدن به {{ $currentSalonTitle }} مسیریابی کنید یا تماس بگیرید.</p>
+            </div>
+            <div class="grid gap-5 {{ $__osm ? 'md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]' : 'max-w-xl mx-auto' }}">
+                <div class="rounded-2xl border border-m-gold/15 bg-m-card p-6 space-y-5 fade-up">
+                    @if ($currentSalonAddress)
+                        <div>
+                            <div class="text-xs text-m-tx/55 mb-1">آدرس</div>
+                            <p class="text-m-tx leading-7 persian-number">{{ \App\Support\Fa::digits($currentSalonAddress) }}</p>
+                        </div>
+                    @endif
+                    @if ($currentSalonPhone)
+                        <div>
+                            <div class="text-xs text-m-tx/55 mb-1">تلفن</div>
+                            <a href="tel:{{ $currentSalonPhone }}" class="text-m-tx font-bold hover:text-m-gold2 persian-number" dir="ltr">{{ \App\Support\Fa::digits($currentSalonPhone) }}</a>
+                        </div>
+                    @endif
+                    @if ($currentSalonHours)
+                        <div>
+                            <div class="text-xs text-m-tx/55 mb-1">ساعات کاری</div>
+                            <div class="text-sm text-m-tx/85 space-y-1 persian-number">
+                                @foreach ($currentSalonHours as $line)<p>{{ $line }}</p>@endforeach
+                            </div>
+                        </div>
+                    @endif
+                    <div class="flex flex-wrap gap-2 pt-1">
+                        @if ($__directions)
+                            <a href="{{ $__directions }}" target="_blank" rel="noopener" class="btn-gold rounded-full px-5 py-2.5 text-sm font-bold" data-location-directions>مسیریابی</a>
+                        @endif
+                        @if ($currentSalonPhone)
+                            <a href="tel:{{ $currentSalonPhone }}" class="rounded-full px-5 py-2.5 text-sm border border-m-gold/30 text-m-tx hover:bg-m-gold/10">تماس با سالن</a>
+                        @endif
+                    </div>
+                </div>
+                @if ($__osm)
+                    <div class="rounded-2xl border border-m-gold/15 bg-m-card overflow-hidden min-h-[280px] relative fade-up" data-location-map data-src="{{ $__osm }}">
+                        <button type="button" class="absolute inset-0 w-full h-full flex flex-col items-center justify-center gap-3 text-m-tx/80 hover:text-m-tx" data-location-map-load>
+                            <svg class="w-10 h-10 text-m-gold2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
+                            <span class="font-bold">نمایش نقشه</span>
+                            <span class="text-xs text-m-tx/50">نقشه از OpenStreetMap بار می‌شود</span>
+                        </button>
+                    </div>
+                @endif
+            </div>
+        </section>
+        @endif
+
+        {{-- =========================================================
              9) Final CTA section
         ========================================================= --}}
         <section class="cta-bg py-28 px-4 text-center fade-up">
@@ -363,6 +422,18 @@
 
 @push('scripts')
     <script @nonce>
+        // نقشه‌ی بخش «آدرس و نقشه» فقط با کلیک بار می‌شود
+        document.querySelector('[data-location-map-load]')?.addEventListener('click', function () {
+            var box = this.closest('[data-location-map]');
+            var frame = document.createElement('iframe');
+            frame.src = box.dataset.src;
+            frame.title = 'نقشه‌ی محل سالن';
+            frame.loading = 'lazy';
+            frame.referrerPolicy = 'no-referrer';
+            frame.className = 'absolute inset-0 w-full h-full border-0';
+            box.replaceChildren(frame);
+        });
+
         document.addEventListener('DOMContentLoaded', function () {
 
             /* ---------- Navbar scroll effect ---------- */

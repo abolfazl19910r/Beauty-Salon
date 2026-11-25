@@ -112,7 +112,7 @@ class ContentSecurityPolicy
             'media-src' => ["'self'", 'blob:', ...$site],
             'worker-src' => ["'self'", 'blob:'],
             'manifest-src' => ["'self'", ...$site],
-            'frame-src' => ["'self'"],
+            'frame-src' => ["'self'", 'https://www.openstreetmap.org'], // نقشه‌ی بخش «آدرس و نقشه» صفحه‌ی اصلی سالن
             'frame-ancestors' => ["'self'"],
             'object-src' => ["'none'"],
             'base-uri' => ["'self'"],

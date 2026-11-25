@@ -116,4 +116,25 @@ class SalonMapLocationTest extends TestCase
         $this->assertNull(SalonMapLocation::directionsUrl($salon));
         $this->assertNull($salon->map_url);
     }
+
+    public function test_home_page_shows_the_address_and_a_click_to_load_map(): void
+    {
+        $salon = Salon::where('slug', 'rasta')->firstOrFail();
+        $salon->update(['address' => 'تهران، خیابان ولیعصر', 'map_url' => 'https://maps.app.goo.gl/X', 'map_lat' => null, 'map_lng' => null]);
+
+        $html = $this->get(route('home'))->assertOk()->getContent();
+        $this->assertStringContainsString('data-salon-location', $html);
+        $this->assertStringContainsString('href="https://maps.app.goo.gl/X"', $html);
+        $this->assertStringNotContainsString('data-location-map ', $html, 'بی مختصات نقشه‌ای نیست');
+
+        $salon->update(['map_lat' => 35.705, 'map_lng' => 51.439]);
+        $response = $this->get(route('home'))->assertOk();
+        $response->assertSee('data-location-map-load', false);
+        $response->assertSee(e('https://www.openstreetmap.org/export/embed.html?bbox=51.433,35.701,51.445,35.709&layer=mapnik&marker=35.705,51.439'), false);
+        $this->assertStringNotContainsString('<iframe', $response->getContent(), 'نقشه فقط با کلیک بار می‌شود');
+        $this->assertStringContainsString('https://www.openstreetmap.org', (string) $response->headers->get('Content-Security-Policy').(string) $response->headers->get('Content-Security-Policy-Report-Only'));
+
+        $salon->update(['address' => null, 'map_url' => null, 'map_lat' => null, 'map_lng' => null]);
+        $this->get(route('home'))->assertOk()->assertDontSee('data-salon-location', false);
+    }
 }
