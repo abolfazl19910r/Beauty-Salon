@@ -135,9 +135,16 @@ class TemplateHomesTest extends TestCase
 
     public function test_showcase_home_has_the_free_slot_card_catalog_and_gallery_frame(): void
     {
-        GalleryImage::factory()->create(['is_active' => true, 'order' => 1, 'title' => 'نمونه‌ی اول',
+        \Illuminate\Support\Facades\Storage::fake('public');
+        \Illuminate\Support\Facades\Storage::disk('public')->put('gallery/a.jpg', 'x');
+        \Illuminate\Support\Facades\Storage::disk('public')->put('gallery/b.jpg', 'x');
+        GalleryImage::factory()->create(['is_active' => true, 'order' => 1, 'title' => 'نمونه‌ی اول', 'image_path' => 'gallery/a.jpg',
             'service_id' => $this->service->id, 'specialist_id' => $this->specialist->id]);
-        GalleryImage::factory()->create(['is_active' => true, 'order' => 2, 'title' => 'نمونه‌ی دوم']);
+        GalleryImage::factory()->create(['is_active' => true, 'order' => 2, 'title' => 'نمونه‌ی دوم', 'image_path' => 'gallery/b.jpg']);
+        // رکورد بی فایل (مثل seed قدیمی) نه قاب می‌شود نه بندانگشتی
+        GalleryImage::factory()->create(['is_active' => true, 'order' => 0, 'title' => 'بی فایل', 'image_path' => 'gallery/missing.jpg']);
+        // خدمت بی نمونه‌کار با نام الفبایی جلوتر، بعد از خدمت دارای نمونه‌کار می‌آید
+        BeautyService::factory()->create(['name' => 'آرایش ساده']);
         $this->choose('showcase:turquoise');
         $html = $this->get(route('home'))->assertOk()->getContent();
 
@@ -154,6 +161,8 @@ class TemplateHomesTest extends TestCase
         $this->assertStringContainsString('data-sc-expert>سارا</span>', $html);
         $this->assertStringContainsString('data-sc-thumb="1"', $html);
         $this->assertStringContainsString('نوبت خالی: امروز ۱۸:۳۰', $html);
+        $this->assertStringNotContainsString('gallery/missing.jpg', $html);
+        $this->assertLessThan(strpos($html, 'آرایش ساده'), strpos($html, '<b class="block">رنگ کامل</b>'), 'خدمت دارای نمونه‌کار اول');
     }
 
     public function test_showcase_frame_falls_back_to_the_cover_then_palette_art(): void
@@ -231,6 +240,14 @@ class TemplateHomesTest extends TestCase
             ->assertDontSee('data-ed-packages', false)->assertDontSee('data-ed-club', false)
             ->assertDontSee('data-ed-status', false)->assertDontSee('از سال')
             ->assertSee('رزرو در چند ثانیه')->assertSee('data-ed-cover', false);
+    }
+
+    public function test_editorial_dateline_before_opening_says_today_once(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-11-24 07:00:00'));
+        $this->choose('editorial:sage');
+
+        $this->get(route('home'))->assertOk()->assertSee('امروز از ۹، نزدیک‌ترین نوبت ۰۹:۰۰')->assertDontSee('امروز امروز');
     }
 
     public function test_interval_text(): void

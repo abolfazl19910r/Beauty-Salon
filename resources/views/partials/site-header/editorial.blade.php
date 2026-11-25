@@ -7,7 +7,8 @@
     $__edToday = \App\Support\SalonWorkingHours::today($__navSalon?->working_hours);
     $__edNearest = $template['nearest'] ?? null;
     $__edStatus = collect([
-        $__edToday ? 'امروز '.$__edToday['text'] : null,
+        // «باز تا ۲۱» ← «امروز باز تا ۲۱»؛ «امروز از ۹» خودش «امروز» دارد
+        $__edToday ? ($__edToday['open'] ? 'امروز '.$__edToday['text'] : $__edToday['text']) : null,
         is_array($__edNearest) ? 'نزدیک‌ترین نوبت '.($__edNearest['day_label'] === 'امروز' ? '' : $__edNearest['day_label'].' ').$__edNearest['label'] : null,
     ])->filter()->implode('، ');
 @endphp

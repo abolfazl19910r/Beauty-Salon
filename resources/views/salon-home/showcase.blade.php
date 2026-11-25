@@ -14,11 +14,13 @@
 
 @section('content')
     @php
-        $scServices = collect($template['allServices'] ?? [])->take(12)->values();
+        $scSamples = $template['galleryByService'] ?? [];
+        // خدمات دارای نمونه‌کار اول (کاتالوگِ گالری)، بعد بقیه به همان ترتیب نام
+        $scServices = collect($template['allServices'] ?? [])
+            ->sortBy(fn ($s, $i) => [-(int) ($scSamples[$s['id']] ?? 0), $i])->take(12)->values();
         $scCategories = collect($template['categories'] ?? []);
         $scChips = $scServices->pluck('category_id')->filter()->unique()
             ->filter(fn ($id) => $scCategories->has($id))->take(5)->values();
-        $scSamples = $template['galleryByService'] ?? [];
         $scNearest = $template['nearest'] ?? null;
         $scNext = $template['nextFree'] ?? [];
         $scCover = $template['cover'] ?? null;

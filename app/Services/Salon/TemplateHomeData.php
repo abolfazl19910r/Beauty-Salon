@@ -62,7 +62,7 @@ final class TemplateHomeData
             'galleryByService' => GalleryImage::query()->where('is_active', true)->whereNotNull('service_id')
                 ->selectRaw('service_id, count(*) as c')->groupBy('service_id')->pluck('c', 'service_id')
                 ->map(fn ($c) => (int) $c)->all(),
-            'galleryFirst' => GalleryImage::query()->where('is_active', true)->orderBy('order')->orderBy('id')->value('image_path'),
+            'galleryFirst' => self::existingGallery(1)->first()?->image_path,
             'specialists' => Specialist::query()->count(),
         ]);
 
@@ -103,9 +103,7 @@ final class TemplateHomeData
         }
         if ($layout === 'app') {
             $data['nearest'] = $this->freeSlots->nearest($salon, 6);
-            $data['galleryCover'] = $catalog['gallery'] > 0
-                ? GalleryImage::query()->where('is_active', true)->orderBy('order')->first()?->image_url
-                : null;
+            $data['galleryCover'] = $catalog['galleryFirst'] ? asset('storage/'.$catalog['galleryFirst']) : null;
         }
 
         return $data;
@@ -118,10 +116,8 @@ final class TemplateHomeData
      */
     private function showcaseFrames(Salon $salon): array
     {
-        return Cache::remember("home_showcase_gallery:{$salon->id}", 600, fn () => GalleryImage::query()
-            ->where('is_active', true)->orderBy('order')->orderBy('id')
-            ->with(['service:id,name', 'specialist:id,name'])
-            ->take(self::SHOWCASE_FRAMES)->get()
+        return Cache::remember("home_showcase_gallery:{$salon->id}", 600, fn () => self::existingGallery(self::SHOWCASE_FRAMES)
+            ->load(['service:id,name', 'specialist:id,name'])
             ->map(fn (GalleryImage $g) => [
                 'image' => $g->image_url,
                 'title' => (string) $g->title,
@@ -130,6 +126,22 @@ final class TemplateHomeData
                 'specialist_id' => $g->specialist ? (int) $g->specialist->id : null,
                 'specialist' => $g->specialist?->name,
             ])->all());
+    }
+
+    /**
+     * عکس‌های فعال گالری به‌ترتیب که فایلشان واقعاً روی دیسک هست (آزمون Chrome ۲۰۲۶-۱۱-۲۶: رکوردهای نمونه‌ی seed بی فایل،
+     * قاب و بندانگشتی‌های شکسته می‌ساختند). حداکثر ۵ برابر $limit رکورد بررسی می‌شود؛ نتیجه در cache خود صفحه‌ها می‌ماند.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, GalleryImage>
+     */
+    private static function existingGallery(int $limit): \Illuminate\Database\Eloquent\Collection
+    {
+        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+
+        return GalleryImage::query()->where('is_active', true)->orderBy('order')->orderBy('id')
+            ->take($limit * 5)->get()
+            ->filter(fn (GalleryImage $g) => $g->image_path && $disk->exists($g->image_path))
+            ->take($limit)->values();
     }
 
     /**
