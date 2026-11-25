@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
     </div>
 
     <x-auth-session-status class="mb-5" :status="session('status')" />
+    <x-login-door-hint />
 
     <form method="POST" action="{{ route('salon.login') }}" class="space-y-5">
         @csrf
@@ -74,6 +75,10 @@ use Illuminate\Support\Facades\Route;
             <a href="{{ route('salon.register') }}" class="text-m-gold2 hover:text-m-gold transition-colors font-medium mr-1">
                 ثبت نام کنید
             </a>
+        </p>
+        <p class="text-center text-xs text-m-tx/50" data-staff-door>
+            مدیر یا کارشناس سالن هستید؟
+            <a href="{{ \App\Support\CentralUrl::route('login') }}" class="text-m-gold2 hover:text-m-gold transition-colors font-medium mr-1">ورود کارکنان</a>
         </p>
     </form>
 

@@ -62,6 +62,11 @@ class CustomerAuthenticatedController extends Controller
             $this->securityLogService->logLogin(false, $credentials['phone'], $user);
             PasswordLockout::failed($lock);
 
+            // آزمون ویندوز بسته‌ی ۴: رمز درستِ حساب نوع دیگر ← لینک صفحه‌ی ورود درست (فقط بعد از درست بودن رمز)
+            if (! $user && ($hint = \App\Support\Auth\LoginDoorHint::forCustomerPage($credentials['phone'], $credentials['password']))) {
+                return back()->with('login_door_hint', $hint)->withInput($request->only('phone'));
+            }
+
             return back()->withErrors([
                 'phone' => 'اطلاعات وارد شده صحیح نمی‌باشد.',
             ])->withInput($request->only('phone'));

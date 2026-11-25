@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
     </div>
 
     <x-auth-session-status class="mb-5" :status="session('status')" />
+    <x-login-door-hint />
 
     <form method="POST" action="{{ route('login') }}" class="space-y-5">
         @csrf
@@ -78,6 +79,9 @@ use Illuminate\Support\Facades\Route;
             <p data-staff-app-link>
                 روی گوشی راحت‌ترید؟
                 <a href="{{ \App\Support\CentralUrl::route('app-download.staff') }}" class="text-m-gold2 hover:text-m-gold transition-colors font-medium mr-1">اپ ماهرو همکار برای کارشناسان</a>
+            </p>
+            <p data-customer-door>
+                مشتری سالن هستید؟ از صفحه‌ی ورود همان سالن وارد شوید (نشانی سالن، بعد «ورود»).
             </p>
             <p>
                 صاحب سالن هستید؟
