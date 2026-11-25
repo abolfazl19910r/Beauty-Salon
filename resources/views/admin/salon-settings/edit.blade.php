@@ -141,6 +141,12 @@
                     <label class="block text-sm mb-1" for="salon_address">آدرس سالن</label>
                     <textarea id="salon_address" name="salon_address" rows="2" maxlength="500" class="{{ $input }}" style="{{ $inputStyle }}">{{ old('salon_address', $salon->address) }}</textarea>
                 </div>
+                <div data-map-location>
+                    <label class="block text-sm mb-1" for="map_location">مکان سالن روی نقشه <span style="color: var(--admin-text-light);">(اختیاری)</span></label>
+                    <input id="map_location" name="map_location" type="text" dir="ltr" maxlength="1000" value="{{ old('map_location', \App\Support\SalonMapLocation::forInput($salon)) }}" class="{{ $input }}" style="{{ $inputStyle }}" placeholder="https://neshan.org/maps/... یا 35.7000, 51.4000">
+                    <p class="text-xs mt-1" style="color: var(--admin-text-light);">در «نشان» یا گوگل‌مپ سالن را پیدا کنید، «اشتراک‌گذاری» را بزنید و لینک کامل یا مختصات را این‌جا بچسبانید. با آن، دکمه‌ی «مسیریابی» برای مشتری نشان داده می‌شود؛ بی آن، نه.</p>
+                    @error('map_location')<p class="text-xs mt-1 text-m-bad">{{ $message }}</p>@enderror
+                </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm mb-1" for="salon_phone">شماره تماس سالن</label>

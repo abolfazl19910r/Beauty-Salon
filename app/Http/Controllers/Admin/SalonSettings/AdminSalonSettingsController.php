@@ -45,6 +45,7 @@ class AdminSalonSettingsController extends Controller
             'tagline' => $request->validated('tagline'),
             'bio' => $request->validated('bio'),
             ...$request->salonContactAttributes(),
+            ...$request->mapLocationAttributes(),
         ]);
 
         // ⭐ ۲۰۲۶-۰۹-۲۵: کد پذیرنده‌ی زرین‌پال دیگه اینجا نیست — صفحه‌ی «درگاه‌های پرداخت»

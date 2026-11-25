@@ -30,6 +30,8 @@ class Salon extends Model
         'site_theme',
         'admin_theme',
         'address',
+        'map_lat',
+        'map_lng',
         'phone',
         'established_year',
         'working_hours',
@@ -54,6 +56,8 @@ class Salon extends Model
     protected $casts = [
         'module_permissions' => 'array',
         'working_hours' => 'array',
+        'map_lat' => 'decimal:7',
+        'map_lng' => 'decimal:7',
         'established_year' => 'integer',
         'subscription_started_at' => 'datetime',
         'subscription_ends_at' => 'datetime',
