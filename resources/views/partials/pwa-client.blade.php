@@ -8,8 +8,8 @@
     $pwaSw = config('pwa.service_worker') && ! file_exists(public_path('hot'));
 @endphp
 @if ($pwaBanner)
-    <div data-ios-install-banner hidden dir="rtl"
-         style="position:fixed;left:.75rem;right:.75rem;bottom:calc({{ $pwaMode === 'specialist' ? '5rem' : '.75rem' }} + env(safe-area-inset-bottom));z-index:60;background:rgb(var(--m-card));color:rgb(var(--m-tx));border:1px solid rgb(var(--m-gold) / .45);border-radius:1rem;box-shadow:var(--m-sh-soft);padding:.8rem 1rem;font-family:'Mahru',Vazirmatn,sans-serif;">
+    <div data-ios-install-banner data-pwa-hide hidden dir="rtl"
+         style="position:fixed;left:.75rem;right:.75rem;bottom:calc(var(--m-bottom-nav, 0px) + .75rem);z-index:60;background:rgb(var(--m-card));color:rgb(var(--m-tx));border:1px solid rgb(var(--m-gold) / .45);border-radius:1rem;box-shadow:var(--m-sh-soft);padding:.8rem 1rem;font-family:'Mahru',Vazirmatn,sans-serif;">
         <div style="display:flex;align-items:center;gap:.75rem;">
             <div style="flex:1;min-width:0;">
                 <div style="font-weight:700;font-size:.92rem;">{{ $pwaMode === 'specialist' ? 'پنل کارشناس' : $currentSalonName }} روی صفحه‌ی اصلی آیفون</div>

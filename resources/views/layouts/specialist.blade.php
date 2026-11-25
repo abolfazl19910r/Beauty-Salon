@@ -2,11 +2,12 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="rtl" class="rtl">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title') | پنل کارشناس</title>
 
     @include('partials.favicons')
+    @include('partials.pwa-shell')
 
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
 
@@ -92,7 +93,7 @@
     @stack('styles')
     @include('partials.ui-handlers')
 </head>
-<body class="m-panel text-[var(--specialist-text)]" style="background-color: var(--specialist-bg);">
+<body class="m-panel m-nav-offset text-[var(--specialist-text)]" style="background-color: var(--specialist-bg);">
 
 <div class="flex h-screen overflow-hidden">
 
@@ -278,7 +279,7 @@
         @include('partials.platform-announcements', ['panel' => 'specialists'])
         @include('partials.booking-paused-banner', ['panel' => 'specialists'])
 
-        <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6 pb-24 md:pb-6" style="background-color: var(--specialist-bg);">
+        <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6 pb-24 md:pb-6 m-pb-nav" style="background-color: var(--specialist-bg);">
             @if(session('success'))
                 <div id="success-notification" class="mb-4 border-r-4 border-m-ok bg-m-ok/10 p-4 rounded-lg flex items-center justify-between fade-in">
                     <div class="flex items-center">
@@ -323,7 +324,7 @@
     </div>
 </div>
 
-<nav class="md:hidden fixed bottom-0 inset-x-0 z-40 border-t grid grid-cols-4" style="background-color: var(--specialist-surface); border-color: var(--specialist-border);" aria-label="منوی پایین" data-spec-bottom>
+<nav class="md:hidden fixed bottom-0 inset-x-0 z-40 border-t grid grid-cols-4 m-bottom-nav" style="background-color: var(--specialist-surface); border-color: var(--specialist-border);" aria-label="منوی پایین" data-spec-bottom>
     @foreach (\App\Support\Specialist\SpecialistMenu::bottom($__specNav) as $__item)
         <a href="{{ $__item['url'] }}" @if ($__item['active']) aria-current="page" @endif
            class="relative flex flex-col items-center justify-center gap-1 py-2.5 text-xs font-medium {{ $__item['active'] ? 'text-[var(--specialist-plum-light)] font-bold' : 'text-[var(--specialist-text-dim)]' }}">

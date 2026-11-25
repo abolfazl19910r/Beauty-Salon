@@ -2,12 +2,13 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="rtl" class="rtl">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @auth
         <meta name="user-logged-in" content="true">
     @endauth
     @include('partials.favicons')
+    @include('partials.pwa-shell')
 
     <title>@yield('title') | {{ $currentSalonName }}</title>
     {{-- سئو (۲۰۲۶-۱۱-۲۳): صفحه‌های عمومی سالن تأییدشده canonical/description/OG می‌گیرند و خانه JSON-LD ‏BeautySalon؛
@@ -40,7 +41,8 @@
     @stack('styles')
     @include('partials.ui-handlers')
 </head>
-<body class="font-vazir min-h-screen flex flex-col overflow-x-clip {{ auth()->check() && \App\Support\Customer\CustomerMenu::isCustomer(auth()->user()) ? 'pb-20 md:pb-0' : '' }}" dir="rtl">
+{{-- بسته‌ی ۵ج: فاصله‌ی بدنه برای منوی پایین و ناحیه‌ی امن آیفون در partials/pwa-shell --}}
+<body class="font-vazir min-h-screen flex flex-col overflow-x-clip {{ auth()->check() && \App\Support\Customer\CustomerMenu::isCustomer(auth()->user()) ? 'm-has-bottom-nav' : '' }}" dir="rtl">
 @if (! empty($salonUnverifiedPreview))
     {{-- بسته‌ی مجوز 5د: کادر سالنِ هنوز تأییدنشده پیش‌نمایش می‌بیند --}}
     <div class="bg-m-warn/20 border-b border-m-warn/40 text-center text-sm py-2 px-4" data-unverified-preview role="status">
@@ -231,27 +233,11 @@
 ========================================================= --}}
 @if ($__isCustomer)
     {{-- بسته‌ی ۴ ظاهری: منوی پایین ثابت موبایل «خانه / نوبت‌ها / [+ رزرو] / کیف پول / پروفایل» در همه‌ی صفحه‌ها برای مشتری واردشده --}}
-    <nav class="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-m-gold/15 bg-m-bg2/95 backdrop-blur grid grid-cols-5" aria-label="منوی پایین" data-customer-bottom>
-        @foreach (\App\Support\Customer\CustomerMenu::bottom($__accountTabs) as $__item)
-            @if ($__item['key'] === 'book')
-                <a href="{{ $__item['url'] }}" class="flex flex-col items-center justify-center gap-0.5 py-1.5 text-[11px] font-bold text-m-gold2" @if ($__item['active']) aria-current="page" @endif>
-                    <span class="w-11 h-11 -mt-5 rounded-full btn-gold flex items-center justify-center shadow-lg" aria-hidden="true">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"><path stroke-linecap="round" d="{{ $__item['icon'] }}" /></svg>
-                    </span>
-                    {{ $__item['label'] }}
-                </a>
-            @else
-                <a href="{{ $__item['url'] }}" @if ($__item['active']) aria-current="page" @endif
-                   class="relative flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] {{ $__item['active'] ? 'text-m-gold2 font-bold' : 'text-m-tx/70' }}">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $__item['icon'] }}" /></svg>
-                    {{ $__item['label'] }}
-                    @if ($__item['badge'] > 0)
-                        <span class="absolute text-[10px] font-bold rounded-full px-1.5 bg-m-gold text-m-ongold" style="top:4px; right:calc(50% - 24px);" data-account-badge>{{ fa_num($__item['badge']) }}</span>
-                    @endif
-                </a>
-            @endif
-        @endforeach
-    </nav>
+    @include('partials.site-bottom-nav', ['items' => \App\Support\Customer\CustomerMenu::bottom($__accountTabs), 'attr' => 'data-customer-bottom'])
+@endif
+{{-- بنر «باز کردن در اپ» اندروید: صفحه‌ی خانه‌ی همه‌ی قالب‌ها (پیش‌تر فقط طلایی ماهرو) --}}
+@if (request()->routeIs('home') && $__navSalon)
+    @include('partials.open-in-app', ['appSalon' => $__navSalon])
 @endif
 @include($__siteLayout === 'mahru' ? 'partials.site-footer.default' : 'partials.site-footer.palette')
 

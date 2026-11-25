@@ -1,11 +1,11 @@
 {{--
     دکمه‌ی «باز کردن در اپ ماهرو» روی صفحه‌ی وب سالن (بسته‌ی ۳ب، تصمیم ۲۰۲۶-۱۰-۱۴) و «نصب اپ» (بسته‌ی ۵) — فقط اندروید
     (اپ آیفون نداریم؛ آیفون PWA و بنر جدای خودش). پیش‌فرض پنهان است و اسکریپت پایین فقط روی اندروید نشانش می‌دهد؛ بستنش تا پایان همین نشست مرورگر می‌ماند.
-    لینک‌ها: App\Support\CustomerAppLink. ورودی: $appSalon (سالن جاری).
+    لینک‌ها: App\Support\CustomerAppLink. ورودی: $appSalon (سالن جاری). بسته‌ی ۵ج: از layouts/app روی خانه‌ی همه‌ی قالب‌ها، بالای منوی پایین.
 --}}
 @php($appLink = \App\Support\CustomerAppLink::forSalon($appSalon))
-<div data-open-in-app hidden
-     style="position:fixed;left:1rem;right:1rem;bottom:1rem;z-index:60;background:rgb(var(--m-card));color:rgb(var(--m-tx));border:1px solid rgb(var(--m-gold) / .45);border-radius:1rem;box-shadow:var(--m-sh-soft);padding:.85rem 1rem;font-family:"Mahru",Vazirmatn,sans-serif;"
+<div data-open-in-app data-pwa-hide hidden
+     style="position:fixed;left:1rem;right:1rem;bottom:calc(var(--m-bottom-nav, 0px) + 1rem);z-index:60;background:rgb(var(--m-card));color:rgb(var(--m-tx));border:1px solid rgb(var(--m-gold) / .45);border-radius:1rem;box-shadow:var(--m-sh-soft);padding:.85rem 1rem;font-family:"Mahru",Vazirmatn,sans-serif;"
      dir="rtl">
     <div style="display:flex;align-items:center;gap:.75rem;">
         <img src="{{ asset('brand/mahru-customer-app-192.png') }}" alt="" width="40" height="40" style="border-radius:10px;flex-shrink:0;">
@@ -27,7 +27,8 @@
 <script @nonce>
     (function () {
         var box = document.querySelector('[data-open-in-app]');
-        if (!box || !/Android/i.test(navigator.userAgent)) {
+        // بسته‌ی ۵ج: در حالت نصب‌شده (از صفحه‌ی اصلی گوشی) پیشنهاد اپ نه
+        if (!box || !/Android/i.test(navigator.userAgent) || document.documentElement.classList.contains('is-standalone')) {
             return;
         }
         var key = 'mahru-open-in-app-closed';

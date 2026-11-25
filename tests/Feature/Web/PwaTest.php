@@ -83,14 +83,14 @@ class PwaTest extends TestCase
             ->assertSee(url('/s/rasta/manifest.webmanifest'), false)
             ->assertSee('apple-mobile-web-app-capable', false)
             ->assertSee(url('/s/rasta/pwa/icon-180.png'), false)
-            ->assertSee('data-ios-install-banner hidden', false)
+            ->assertSee('data-ios-install-banner data-pwa-hide hidden', false)
             ->assertSee(url('/s/rasta/app'), false)
             ->assertSee("navigator.serviceWorker.register('/sw.js')", false)
             ->assertSee('beforeinstallprompt', false);
 
         // صفحه‌ی ورود سالن: manifest و service worker هست، بنر نه
         $this->get('/s/rasta/login')->assertOk()->assertSee('data-pwa-manifest="salon"', false)
-            ->assertSee("navigator.serviceWorker.register('/sw.js')", false)->assertDontSee('data-ios-install-banner hidden', false);
+            ->assertSee("navigator.serviceWorker.register('/sw.js')", false)->assertDontSee('data-ios-install-banner data-pwa-hide hidden', false);
     }
 
     public function test_admin_panel_has_no_pwa_manifest(): void
