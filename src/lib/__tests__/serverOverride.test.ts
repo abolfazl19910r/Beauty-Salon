@@ -7,7 +7,7 @@ jest.mock('expo-secure-store', () => ({ setItemAsync: jest.fn(), getItemAsync: j
 
 function load(allowServerOverride: boolean) {
   jest.resetModules();
-  jest.doMock('expo-constants', () => ({ __esModule: true, default: { expoConfig: { version: '0.3.9', extra: { allowServerOverride } } } }));
+  jest.doMock('expo-constants', () => ({ __esModule: true, default: { expoConfig: { version: '0.4.0', extra: { allowServerOverride } } } }));
   const mod = require('@react-native-async-storage/async-storage');
   const AsyncStorage = mod.default ?? mod;
   const storage = require('../storage');
