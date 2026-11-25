@@ -16,5 +16,10 @@ interface WalletTransactionRepositoryInterface extends RepositoryInterface
 
     public function sumNetIncomeForWalletInMonth(int $walletId, int $month, int $year): float;
 
+    public function sumNetIncomeForWalletBetween(int $walletId, \DateTimeInterface $from, \DateTimeInterface $to): float;
+
+    /** @return array<string, float> */
+    public function netIncomeByDayForWallet(int $walletId, \DateTimeInterface $from, \DateTimeInterface $to): array;
+
     public function lazyPendingIncomeForSettlement(?int $walletId = null, int $chunkSize = 1000): LazyCollection;
 }

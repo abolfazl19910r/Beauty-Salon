@@ -69,9 +69,12 @@ class SpecialistTodayDetailsTest extends TestCase
         $this->assertSame(1, $response->viewData('todayBookingsCount'));
         $this->assertSame([$cancelled->id], $response->viewData('todayCancelled')->pluck('id')->all());
 
-        $response->assertSee('data-payment="unpaid"', false)
+        // بسته‌ی ۳ ظاهری: نزدیک‌ترین نوبت در کارت «نوبت بعدی» (با مبلغ دریافت در سالن)، بقیه‌ی امروز زیرش
+        $response->assertSee('data-next-booking="'.$manual->id.'"', false)
             ->assertSee(\App\Support\Bookings\BookingLabels::payment($manual))
-            ->assertSee('دریافت در سالن: '.fa_num(400000), false)
+            ->assertSeeInOrder(['data-due-at-salon', 'دریافت در سالن', fa_money(400000).' تومان'], false)
+            ->assertSee('data-today-booking="'.$noShow->id.'"', false)
+            ->assertDontSee('data-today-booking="'.$manual->id.'"', false)
             ->assertSee('نیامد')
             ->assertSee('data-today-cancelled', false)
             ->assertSee('data-cancelled-booking="'.$cancelled->id.'"', false)

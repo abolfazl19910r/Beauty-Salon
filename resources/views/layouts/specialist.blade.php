@@ -69,6 +69,12 @@
         .spec-side__link:hover{background:rgb(var(--m-tx) / .05)}
         .spec-side__link.is-active{background:rgb(var(--m-gold) / .1);font-weight:700;box-shadow:inset -3px 0 0 rgb(var(--m-gold))}
         .spec-side__link--quiet{font-size:13.5px;color:var(--specialist-text-dim);padding:8px 12px}
+        /* کار اصلی نوبت (partials/primary-action): یک رنگ و یک نام همه‌جا */
+        .spec-act{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:0 16px;border-radius:999px;border:1px solid transparent;font:inherit;font-size:13.5px;font-weight:800;white-space:nowrap;cursor:pointer;background:rgb(var(--m-tx));color:rgb(var(--m-bg));text-decoration:none;transition:opacity .15s}
+        .spec-act:hover{opacity:.88}
+        .spec-act--ghost{background:transparent;color:rgb(var(--m-tx));border-color:rgb(var(--m-gold) / .35);font-weight:700}
+        .spec-act--ghost:hover{background:rgb(var(--m-tx) / .05);opacity:1}
+        .spec-act--lg{min-height:46px;font-size:15px;padding:0 20px}
         .spec-badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;padding:0 7px;border-radius:999px;font-size:12px;font-weight:700;line-height:20px;background:rgb(var(--m-gold) / .18);color:rgb(var(--m-gold2))}
     </style>
     @stack('styles')

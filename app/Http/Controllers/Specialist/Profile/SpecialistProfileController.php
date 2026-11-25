@@ -36,7 +36,7 @@ class SpecialistProfileController extends Controller
             return view('specialist.profile-not-found');
         }
 
-        $data = $this->dashboardService->getDashboardData($specialist);
+        $data = $this->dashboardService->getOverviewData($specialist);
 
         return view('specialist.dashboard', array_merge(['specialist' => $specialist], $data));
     }

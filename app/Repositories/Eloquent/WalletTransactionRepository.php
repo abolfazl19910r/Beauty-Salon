@@ -63,6 +63,38 @@ class WalletTransactionRepository extends BaseRepository implements WalletTransa
             ->sum('amount');
     }
 
+    /** درآمد خالص (همان تعریف sumNetIncomeForWalletInMonth) در بازه‌ی [from, to) — برای ماه شمسی (بسته‌ی ۳ ظاهری) */
+    public function sumNetIncomeForWalletBetween(int $walletId, \DateTimeInterface $from, \DateTimeInterface $to): float
+    {
+        return (float) $this->netIncomeQuery($walletId)
+            ->where('created_at', '>=', $from)
+            ->where('created_at', '<', $to)
+            ->sum('amount');
+    }
+
+    /**
+     * درآمد خالص روزبه‌روز در بازه‌ی [from, to)؛ کلید Y-m-d (روز میلادی ثبت تراکنش). روزهای بی تراکنش در خروجی نیستند.
+     *
+     * @return array<string, float>
+     */
+    public function netIncomeByDayForWallet(int $walletId, \DateTimeInterface $from, \DateTimeInterface $to): array
+    {
+        return $this->netIncomeQuery($walletId)
+            ->where('created_at', '>=', $from)
+            ->where('created_at', '<', $to)
+            ->get(['amount', 'created_at'])
+            ->groupBy(fn ($t) => $t->created_at->format('Y-m-d'))
+            ->map(fn ($rows) => (float) $rows->sum('amount'))
+            ->all();
+    }
+
+    private function netIncomeQuery(int $walletId)
+    {
+        return $this->model->where('wallet_id', $walletId)
+            ->where(fn ($q) => $q->where('type', 'income')
+                ->orWhere(fn ($q) => $q->where('type', 'adjustment')->whereNotNull('booking_id')));
+    }
+
     /**
      * درآمدهای pending همه‌ی سالن‌ها (یا یک کیف پول)، تکه‌تکه به ترتیب id. در ۱۰۰۰ سالن ~۹۷ هزار ردیف است و get() یک‌جا تا ۴۵۰ MB
      * حافظه می‌گرفت. lazyById با «id بزرگ‌تر از آخرین» صفحه می‌زند، پس تسویه‌ی ردیف‌های یک تکه (که از شرط pending بیرون‌شان می‌برد)

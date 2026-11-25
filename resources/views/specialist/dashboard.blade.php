@@ -2,30 +2,189 @@
 
 @section('title', 'داشبورد')
 
+{{--
+    بسته‌ی ۳ ظاهری (۲۰۲۶-۱۱-۲۵، پیش‌نمایش SpAfterDash/SpAfterMobile): «نوبت بعدی» بالای صفحه با ساعت درشت و کار مستقیم، سه عدد کنارش
+    (درآمد ماه شمسی از کیف پول، قابل برداشت، امتیاز)، بقیه‌ی امروز (فقط اگر هست)، «۷ روز آینده» و میله‌های درآمد ۷ روز گذشته.
+    «آمار کل» به صفحه‌ی گزارش رفت؛ معرفی اپ یک نوار کوچک پایین صفحه است.
+--}}
 @php
-    $statusLabels = \App\Support\Bookings\BookingLabels::statusOptions();
-
-    $nextBooking = $todaySchedule->first() ?: $upcomingBookings->first();
-    $nextBookingIsToday = $todaySchedule->isNotEmpty()
-        && $nextBooking
-        && $todaySchedule->first()->id === $nextBooking->id;
+    $cancelledBy = ['customer' => 'مشتری', 'specialist' => 'خودتان', 'admin' => 'مدیر سالن', 'system' => 'سیستم (پرداخت نشد)'];
+    $firstName = auth()->user()->name ?? 'کارشناس';
+    $nextIsToday = $nextBooking && $nextBooking->booking_time->isToday();
+    $barMax = max(1, collect($weeklyIncome)->max('total'));
 @endphp
 
 @section('content')
-    <div class="fade-in space-y-6">
+    <div class="fade-in space-y-5" data-spec-dashboard>
 
-        {{-- ۲۰۲۶-۱۱-۰۶: معرفی «ماهرو همکار»؛ قابل‌بستن (۳۰ روز)، و در حالت نصب‌شده (اپ/PWA) دیده نمی‌شود --}}
-        <div class="specialist-card rounded-xl p-4 flex items-center gap-3" data-staff-app-promo hidden>
-            <svg class="w-8 h-8 shrink-0 text-[var(--specialist-plum-light)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                <rect x="6" y="2" width="12" height="20" rx="3" /><path stroke-linecap="round" d="M11 18h2" />
-            </svg>
-            <div class="flex-1 min-w-0">
-                <p class="font-bold text-sm text-[var(--specialist-text)]">پنل را روی گوشی داشته باشید</p>
-                <p class="text-xs text-[var(--specialist-text-dim)] leading-6">اندروید: اپ «ماهرو همکار» با اعلان نوبت‌ها · آیفون: افزودن به صفحه‌ی اصلی</p>
+        <div>
+            <h2 class="text-xl md:text-2xl font-extrabold text-[var(--specialist-text)]">سلام، {{ $firstName }}</h2>
+            <p class="mt-1 text-sm text-[var(--specialist-text-dim)]" data-spec-today-line>
+                {{ $todayPersian }}.
+                @if ($todayBookingsCount > 0)
+                    امروز {{ fa_num($todayBookingsCount) }} نوبت دارید.
+                @else
+                    امروز نوبتی ندارید.
+                @endif
+            </p>
+        </div>
+
+        <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_17rem]">
+            {{-- نوبت بعدی --}}
+            <section class="specialist-card p-5 md:p-6 flex flex-col gap-4" aria-label="نوبت بعدی" data-next-booking="{{ $nextBooking?->id }}">
+                @if ($nextBooking)
+                    <div class="flex items-baseline justify-between gap-3">
+                        <span class="text-sm text-[var(--specialist-text-dim)]">نوبت بعدی، {{ $nextIsToday ? 'امروز' : fa_date($nextBooking->booking_time) }}</span>
+                        <b class="text-4xl font-black leading-none text-[var(--specialist-text)]" dir="ltr">{{ fa_time($nextBooking->booking_time) }}</b>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <b class="text-lg text-[var(--specialist-text)]">{{ $nextBooking->user?->name ?? '—' }}</b>
+                        <span class="text-sm text-[var(--specialist-text-dim)]">
+                            {{ $nextBooking->service?->name ?? '—' }}@if ($nextBooking->service?->duration)، {{ fa_num($nextBooking->service->duration) }} دقیقه@endif
+                            @if ($__courseLabel = $nextBooking->courseSessionLabel())<span class="text-xs mr-1 px-2 py-0.5 rounded-full" style="background:rgb(var(--m-gold) / .15); color:rgb(var(--m-gold2));">{{ $__courseLabel }}</span>@endif
+                        </span>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        @if ($nextBooking->status === 'pending')
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold" style="{{ \App\Support\Bookings\BookingLabels::pillStyle('info') }}" data-booking-status="pending">منتظر تأیید شما</span>
+                        @else
+                            <x-booking-status :status="$nextBooking->status" class="!font-bold !px-3" />
+                        @endif
+                        @unless ($nextBooking->customer_course_id)
+                            <x-payment-status :booking="$nextBooking" class="!font-bold !px-3" />
+                        @endunless
+                    </div>
+                    @if ($nextBooking->due_at_salon > 0)
+                        <div class="flex justify-between pt-3 border-t text-[15px]" style="border-color: var(--specialist-border);" data-due-at-salon>
+                            <span class="text-[var(--specialist-text-dim)]">دریافت در سالن</span>
+                            <b>@money($nextBooking->due_at_salon) تومان</b>
+                        </div>
+                    @endif
+                    <div class="flex flex-wrap gap-2.5">
+                        @include('specialist.partials.primary-action', ['booking' => $nextBooking, 'action' => $nextAction, 'size' => 'lg'])
+                        @if ($nextBooking->user?->phone)
+                            <a href="tel:{{ $nextBooking->user->phone }}" class="spec-act spec-act--ghost spec-act--lg" data-call-customer>تماس با مشتری</a>
+                        @endif
+                    </div>
+                @else
+                    <div class="py-6 text-center">
+                        <p class="font-bold text-[var(--specialist-text)]">نوبت پیش رویی ندارید</p>
+                        <p class="mt-1 text-sm text-[var(--specialist-text-dim)]">نوبت تازه که ثبت شود همین‌جا دیده می‌شود.</p>
+                    </div>
+                @endif
+            </section>
+
+            {{-- سه عدد --}}
+            <div class="grid grid-cols-2 lg:grid-cols-1 gap-3">
+                <div class="specialist-card px-4 py-3.5 flex flex-col lg:flex-row lg:items-center justify-between gap-1" data-stat="month-income">
+                    <span class="text-sm text-[var(--specialist-text-dim)]">درآمد {{ $monthLabel }}</span>
+                    <b class="text-lg">@money($monthIncome) <span class="text-xs font-medium text-[var(--specialist-text-dim)]">تومان</span></b>
+                </div>
+                <a href="{{ route('specialist.wallet.index') }}" class="specialist-card px-4 py-3.5 flex flex-col lg:flex-row lg:items-center justify-between gap-1" data-stat="withdrawable">
+                    <span class="text-sm text-[var(--specialist-text-dim)]">قابل برداشت</span>
+                    <b class="text-lg text-[var(--specialist-text)]">@money($withdrawable) <span class="text-xs font-medium text-[var(--specialist-text-dim)]">تومان</span></b>
+                </a>
+                <div class="specialist-card px-4 py-3.5 hidden lg:flex items-center justify-between gap-1" data-stat="rating">
+                    <span class="text-sm text-[var(--specialist-text-dim)]">امتیاز</span>
+                    @if ($averageRating === null)
+                        <span class="text-sm text-[var(--specialist-text-dim)]">هنوز نظری ثبت نشده</span>
+                    @else
+                        <b class="text-lg">{{ fa_num($averageRating, 1) }} <span class="text-xs font-medium text-[var(--specialist-text-dim)]">از ۵</span></b>
+                    @endif
+                </div>
             </div>
-            <a href="{{ route('specialist.install') }}" class="specialist-cta shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold">نصب</a>
+        </div>
+
+        {{-- بقیه‌ی امروز (نوبت‌های دیگر امروز، نیامده‌ها و لغوشده‌های جمع‌شده؛ ۲۰۲۶-۱۰-۲۲) --}}
+        @if ($todayOthers->isNotEmpty() || $todayCancelled->isNotEmpty())
+            <section class="specialist-card overflow-hidden" aria-labelledby="spec-today-h" data-spec-today>
+                <div class="px-5 py-3.5 border-b" style="border-color: var(--specialist-border);">
+                    <h2 id="spec-today-h" class="text-base font-extrabold">بقیه‌ی امروز</h2>
+                </div>
+                <ol class="text-sm">
+                    @foreach ($todayOthers as $booking)
+                        <li class="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 border-b last:border-b-0 {{ in_array($booking->status, ['no_show', 'completed'], true) ? 'opacity-70' : '' }}" style="border-color: var(--specialist-border);" data-today-booking="{{ $booking->id }}">
+                            <b class="min-w-[3rem]" dir="ltr">{{ fa_time($booking->booking_time) }}</b>
+                            <span class="flex-1 min-w-[10rem]">
+                                <a href="{{ route('specialist.bookings.show', $booking) }}" class="font-bold hover:underline">{{ $booking->user?->name ?? '—' }}</a>،
+                                {{ $booking->service?->name ?? '—' }}
+                                @unless ($booking->customer_course_id)
+                                    @php $__pay = \App\Support\Bookings\BookingLabels::paymentInfo($booking); @endphp
+                                    <span class="block text-xs mt-0.5" data-payment="{{ $booking->payment_status === 'paid' ? 'paid' : 'unpaid' }}">
+                                        <span class="{{ $__pay['class'] }}">{{ $__pay['label'] }}</span>
+                                        @if ($booking->due_at_salon > 0 && $booking->status !== 'no_show')
+                                            <span class="text-[var(--specialist-text-dim)]">؛ دریافت در سالن: {{ fa_num($booking->due_at_salon) }} تومان</span>
+                                        @endif
+                                    </span>
+                                @endunless
+                            </span>
+                            <x-booking-status :status="$booking->status" />
+                        </li>
+                    @endforeach
+                </ol>
+                @if ($todayCancelled->isNotEmpty())
+                    <details class="px-5 py-3 border-t" style="border-color: var(--specialist-border);" data-today-cancelled>
+                        <summary class="cursor-pointer text-sm text-[var(--specialist-text-dim)]">لغوشده‌های امروز ({{ fa_num($todayCancelled->count()) }})</summary>
+                        <div class="space-y-3 mt-3">
+                            @foreach ($todayCancelled as $booking)
+                                <a href="{{ route('specialist.bookings.show', $booking) }}" class="flex justify-between items-start gap-3 text-sm" data-cancelled-booking="{{ $booking->id }}">
+                                    <div>
+                                        <p>{{ $booking->user?->name ?? '—' }} <span class="text-[var(--specialist-text-dim)]">، {{ $booking->service?->name ?? '—' }}</span></p>
+                                        <p class="text-xs text-[var(--specialist-text-dim)]">لغو توسط {{ $cancelledBy[$booking->cancelled_by] ?? 'نامشخص' }}@if ($booking->cancellation_reason)؛ {{ \Illuminate\Support\Str::limit($booking->cancellation_reason, 60) }}@endif</p>
+                                    </div>
+                                    <span class="font-bold text-[var(--specialist-text-dim)]" dir="ltr">{{ fa_time($booking->booking_time) }}</span>
+                                </a>
+                            @endforeach
+                        </div>
+                    </details>
+                @endif
+            </section>
+        @endif
+
+        <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_19rem] items-start">
+            {{-- ۷ روز آینده --}}
+            <section class="specialist-card overflow-hidden" aria-labelledby="spec-up-h" data-spec-upcoming>
+                <div class="px-5 py-3.5 flex items-center justify-between border-b" style="border-color: var(--specialist-border);">
+                    <h2 id="spec-up-h" class="text-base font-extrabold">۷ روز آینده</h2>
+                    <a href="{{ route('specialist.bookings.index') }}" class="text-sm font-bold" style="color: rgb(var(--m-gold2));">همه‌ی نوبت‌ها</a>
+                </div>
+                @if ($upcomingDays->isNotEmpty())
+                    <ol class="text-sm">
+                        @foreach ($upcomingDays as $booking)
+                            <li class="flex flex-wrap md:flex-nowrap items-center gap-x-4 gap-y-1 px-5 py-3 border-b last:border-b-0" style="border-color: var(--specialist-border);" data-upcoming-booking="{{ $booking->id }}">
+                                <span class="md:min-w-[8rem] text-[var(--specialist-text-dim)]">{{ fa_date($booking->booking_time) }}</span>
+                                <b class="min-w-[3rem]" dir="ltr">{{ fa_time($booking->booking_time) }}</b>
+                                <a href="{{ route('specialist.bookings.show', $booking) }}" class="flex-1 min-w-[8rem] hover:underline">{{ $booking->user?->name ?? '—' }}، {{ $booking->service?->name ?? '—' }}</a>
+                                <x-booking-status :status="$booking->status" class="!font-bold" />
+                            </li>
+                        @endforeach
+                    </ol>
+                @else
+                    <p class="px-5 py-8 text-center text-sm text-[var(--specialist-text-dim)]">در ۷ روز آینده نوبتی ندارید.</p>
+                @endif
+            </section>
+
+            {{-- درآمد ۷ روز گذشته (همان منبع کارت «درآمد ماه»: درآمد خالص کیف پول) --}}
+            <section class="specialist-card p-5 flex flex-col gap-3" aria-labelledby="spec-rev-h" data-spec-revenue>
+                <h2 id="spec-rev-h" class="text-base font-extrabold">درآمد ۷ روز گذشته</h2>
+                <div class="flex items-end gap-2 h-32" role="img" aria-label="درآمد روزانه از {{ $weeklyIncome[0]['label'] }} تا {{ $weeklyIncome[6]['label'] }}: @foreach ($weeklyIncome as $d){{ $d['label'] }} {{ fa_money($d['total']) }} تومان{{ $loop->last ? '' : '، ' }}@endforeach">
+                    @foreach ($weeklyIncome as $d)
+                        <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end" title="{{ $d['label'] }}: {{ fa_money($d['total']) }} تومان" data-revenue-day>
+                            <div class="w-full rounded-md" style="height: {{ $d['total'] > 0 ? max(8, (int) round($d['total'] / $barMax * 100)) : 4 }}px; background: {{ $d['total'] <= 0 ? 'rgb(var(--m-tx) / .08)' : ($d['today'] ? 'rgb(var(--m-gold))' : 'rgb(var(--m-gold) / .45)') }};"></div>
+                            <span class="text-[11.5px] {{ $d['today'] ? 'font-bold text-[var(--specialist-text)]' : 'text-[var(--specialist-text-dim)]' }}">{{ $d['today'] ? $d['label'] : $d['day'] }}</span>
+                        </div>
+                    @endforeach
+                </div>
+                <p class="text-sm text-[var(--specialist-text-dim)]">آمار کل نوبت‌ها در <a href="{{ route('specialist.reports.index') }}" class="font-bold" style="color: rgb(var(--m-gold2));">گزارش</a>.</p>
+            </section>
+        </div>
+
+        {{-- ۲۰۲۶-۱۱-۰۶: معرفی «ماهرو همکار»؛ قابل‌بستن (۳۰ روز)، و در حالت نصب‌شده (اپ/PWA) دیده نمی‌شود. بسته‌ی ۳ ظاهری: نوار کوچک پایین صفحه --}}
+        <div class="rounded-2xl px-4 py-3 flex items-center gap-3 text-sm border border-dashed" style="border-color: rgb(var(--m-gold) / .45);" data-staff-app-promo hidden>
+            <span class="flex-1 min-w-0 text-[var(--specialist-text-dim)]">اپ «ماهرو همکار» را نصب کنید تا اعلان نوبت‌ها روی گوشی بیاید.</span>
+            <a href="{{ route('specialist.install') }}" class="font-bold shrink-0" style="color: rgb(var(--m-gold2));">نصب</a>
             <button type="button" data-staff-app-promo-close aria-label="بستن" class="shrink-0 p-1 text-[var(--specialist-inactive)] hover:text-[var(--specialist-text)]">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M6 6l12 12M18 6L6 18" /></svg>
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M6 6l12 12M18 6L6 18" /></svg>
             </button>
         </div>
         <script @nonce>
@@ -46,285 +205,5 @@
                 });
             })();
         </script>
-
-        {{-- Welcome header --}}
-        <div class="flex items-center gap-3">
-            <div class="w-12 h-12 rounded-full specialist-cta flex items-center justify-center text-lg font-bold flex-shrink-0">
-                {{ mb_substr(optional(auth()->user())->name ?? 'کارشناس', 0, 1) }}
-            </div>
-            <div>
-                <h2 class="text-lg font-bold text-[var(--specialist-text)]">سلام، {{ auth()->user()->name ?? 'کارشناس' }}</h2>
-                <p class="text-sm text-[var(--specialist-plum-muted)] persian-number">{{ fa_num($todayPersian) }}</p>
-            </div>
-        </div>
-
-        {{-- 3 key stat cards --}}
-        <div class="grid grid-cols-3 gap-3">
-            <div class="specialist-card p-4 text-center">
-                <p class="text-xs text-[var(--specialist-plum-muted)] mb-1">نوبت امروز</p>
-                <p class="text-xl font-bold text-[var(--specialist-text)] persian-number">{{ fa_num($todayBookingsCount) }}</p>
-            </div>
-            <div class="specialist-card p-4 text-center">
-                <p class="text-xs text-[var(--specialist-plum-muted)] mb-1">درآمد ماه</p>
-                <p class="text-xl font-bold text-[var(--specialist-text)] persian-number">{{ fa_num($monthRevenue) }}</p>
-            </div>
-            <div class="specialist-card p-4 text-center">
-                <p class="text-xs text-[var(--specialist-plum-muted)] mb-1">امتیاز</p>
-                <p class="text-xl font-bold text-[var(--specialist-text)] persian-number">{{ fa_num($averageRating, 1) }}</p>
-            </div>
-        </div>
-
-        {{-- Next appointment --}}
-        <div class="specialist-card p-5 border" style="border-color: var(--specialist-border);">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="text-sm font-bold text-[var(--specialist-plum-light)] font-serif-fa">نوبت بعدی</h3>
-                @if($nextBooking)
-                    <span class="specialist-badge px-3 py-1 text-xs font-medium">{{ $statusLabels[$nextBooking->status] ?? 'نامشخص' }}</span>
-                @endif
-            </div>
-
-            @if($nextBooking)
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="font-semibold text-[var(--specialist-text)]">{{ $nextBooking->user->name }}</p>
-                        <p class="text-sm text-[var(--specialist-text-dim)]">{{ $nextBooking->service->name }}</p>
-                    </div>
-                    <div class="text-left">
-                        <p class="font-bold text-[var(--specialist-plum-mid)] persian-number" dir="ltr">{{ fa_time($nextBooking->booking_time) }}</p>
-                        <p class="text-xs text-[var(--specialist-text-dim)] persian-number">{{ $nextBookingIsToday ? 'امروز' : $nextBooking->booking_date_persian }}</p>
-                    </div>
-                </div>
-            @else
-                <p class="text-center text-[var(--specialist-text-dim)] py-3">نوبتی برای نمایش وجود ندارد</p>
-            @endif
-        </div>
-
-        {{-- Main CTA --}}
-        <a href="{{ route('specialist.bookings.index') }}" class="specialist-cta w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-opacity hover:opacity-90">
-            مدیریت نوبت‌ها
-        </a>
-
-        {{-- Overall stats --}}
-        <div>
-            <div class="flex items-center mb-4">
-                <h2 class="text-base font-bold text-[var(--specialist-plum-light)] font-serif-fa">آمار کل</h2>
-                <div class="flex-grow mr-4 h-px" style="background-color: var(--specialist-border);"></div>
-            </div>
-
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="specialist-card p-5">
-                    <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">کل نوبت‌ها</p>
-                    <h3 class="text-2xl font-bold text-[var(--specialist-text)] persian-number">{{ fa_num($allBookingsCount) }}</h3>
-                </div>
-                <div class="specialist-card p-5">
-                    <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">تایید شده</p>
-                    <h3 class="text-2xl font-bold text-m-ok persian-number">{{ fa_num($confirmedBookingsCount) }}</h3>
-                </div>
-                <div class="specialist-card p-5">
-                    <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">در انتظار تایید</p>
-                    <h3 class="text-2xl font-bold text-m-warn persian-number">{{ fa_num($pendingBookingsCount) }}</h3>
-                </div>
-                <div class="specialist-card p-5">
-                    <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">انجام شده</p>
-                    <h3 class="text-2xl font-bold text-[var(--specialist-plum-light)] persian-number">{{ fa_num($completedBookingsCount) }}</h3>
-                </div>
-            </div>
-        </div>
-
-        {{-- Today's schedule + upcoming + reviews --}}
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <div class="xl:col-span-2 specialist-card overflow-hidden">
-                <div class="p-5 border-b" style="border-color: var(--specialist-border);">
-                    <h2 class="text-base font-semibold text-[var(--specialist-text)]">برنامه کاری امروز</h2>
-                </div>
-                <div class="p-5">
-                    @if($todaySchedule->count() > 0)
-                        <div class="space-y-4">
-                            @foreach($todaySchedule as $booking)
-                                <div class="flex justify-between items-start border-b pb-3 {{ $booking->status === 'no_show' ? 'opacity-60' : '' }}" style="border-color: var(--specialist-border);" data-today-booking="{{ $booking->id }}">
-                                    <div>
-                                        <p class="font-semibold text-[var(--specialist-text)]">{{ $booking->user->name }}</p>
-                                        <p class="text-sm text-[var(--specialist-text-dim)]">{{ $booking->service?->name ?? '—' }} @if ($__courseLabel = $booking->courseSessionLabel())<span class="text-xs mr-1 px-2 py-0.5 rounded-full" style="background:rgb(var(--m-gold) / .15); color:rgb(var(--m-gold2));">{{ $__courseLabel }}</span>@endif</p>
-                                        {{-- پرداخت و مبلغ دریافتی در سالن (۲۰۲۶-۱۰-۲۲) --}}
-                                        @unless ($booking->customer_course_id)
-                                            <p class="text-xs mt-1 persian-number" data-payment="{{ $booking->payment_status === 'paid' ? 'paid' : 'unpaid' }}">
-                                                @php $__pay = \App\Support\Bookings\BookingLabels::paymentInfo($booking); @endphp
-                                                <span class="{{ $__pay['class'] }}">{{ $__pay['label'] }}</span>
-                                                @if ($booking->due_at_salon > 0 && $booking->status !== 'no_show')
-                                                    <span class="text-[var(--specialist-text-dim)]"> · دریافت در سالن: {{ fa_num($booking->due_at_salon) }} تومان</span>
-                                                @endif
-                                            </p>
-                                        @endunless
-                                    </div>
-                                    <div class="text-left">
-                                        <p class="font-bold text-[var(--specialist-plum-mid)] persian-number" dir="ltr">{{ fa_time($booking->booking_time) }}</p>
-                                        <span class="specialist-badge px-2 py-0.5 text-xs">{{ $statusLabels[$booking->status] ?? 'نامشخص' }}</span>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="text-center py-10 text-[var(--specialist-inactive)]">
-                            <svg class="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            <p class="mt-4">برای امروز نوبتی ندارید</p>
-                        </div>
-                    @endif
-
-                    @if($todayCancelled->isNotEmpty())
-                        {{-- لغوشده‌های امروز، جمع‌شده (۲۰۲۶-۱۰-۲۲) --}}
-                        @php $cancelledBy = ['customer' => 'مشتری', 'specialist' => 'خودتان', 'admin' => 'مدیر سالن', 'system' => 'سیستم (پرداخت نشد)']; @endphp
-                        <details class="mt-5 pt-4 border-t" style="border-color: var(--specialist-border);" data-today-cancelled>
-                            <summary class="cursor-pointer text-sm text-[var(--specialist-plum-muted)] persian-number">لغوشده‌های امروز ({{ fa_num($todayCancelled->count()) }})</summary>
-                            <div class="space-y-3 mt-3">
-                                @foreach($todayCancelled as $booking)
-                                    <a href="{{ route('specialist.bookings.show', $booking) }}" class="flex justify-between items-start text-sm" data-cancelled-booking="{{ $booking->id }}">
-                                        <div>
-                                            <p class="text-[var(--specialist-text)]">{{ $booking->user?->name ?? '—' }} <span class="text-[var(--specialist-text-dim)]">— {{ $booking->service?->name ?? '—' }}</span></p>
-                                            <p class="text-xs text-[var(--specialist-text-dim)]">لغو توسط {{ $cancelledBy[$booking->cancelled_by] ?? 'نامشخص' }}@if($booking->cancellation_reason) · {{ \Illuminate\Support\Str::limit($booking->cancellation_reason, 60) }}@endif</p>
-                                        </div>
-                                        <span class="font-bold text-[var(--specialist-plum-muted)] persian-number" dir="ltr">{{ $booking->booking_time->format('H:i') }}</span>
-                                    </a>
-                                @endforeach
-                            </div>
-                        </details>
-                    @endif
-                </div>
-            </div>
-
-            <div class="space-y-6">
-                <div class="specialist-card overflow-hidden">
-                    <div class="p-5 border-b" style="border-color: var(--specialist-border);">
-                        <h2 class="text-base font-semibold text-[var(--specialist-text)]">۷ روز آینده</h2>
-                    </div>
-                    <div class="p-5">
-                        @if($upcomingBookings->count() > 0)
-                            <div class="space-y-3">
-                                @foreach($upcomingBookings->take(5) as $booking)
-                                    <div class="flex justify-between items-start border-b pb-3" style="border-color: var(--specialist-border);">
-                                        <div>
-                                            <p class="font-semibold text-sm text-[var(--specialist-text)] persian-number">{{ fa_num($booking->booking_date_persian) }}</p>
-                                            <p class="text-xs text-[var(--specialist-text-dim)] persian-number" dir="ltr">{{ fa_time($booking->booking_time) }} - {{ $booking->user->name }}</p>
-                                            <p class="text-xs text-[var(--specialist-text-dim)]">{{ $booking->service?->name ?? '—' }}</p>
-                                        </div>
-                                        <span class="specialist-badge px-2 py-1 text-xs">{{ $booking->status_fa }}</span>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <p class="text-center text-[var(--specialist-inactive)] py-4">نوبتی در ۷ روز آینده ندارید</p>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="specialist-card overflow-hidden">
-                    <div class="p-5 border-b" style="border-color: var(--specialist-border);">
-                        <h2 class="text-base font-semibold text-[var(--specialist-text)]">نظرات اخیر</h2>
-                    </div>
-                    <div class="p-5">
-                        @if($recentReviews->count() > 0)
-                            <div class="space-y-4">
-                                @foreach($recentReviews as $review)
-                                    <div class="border-b pb-3" style="border-color: var(--specialist-border);">
-                                        <div class="flex justify-between items-start mb-2">
-                                            <p class="font-semibold text-sm text-[var(--specialist-text)]">{{ $review->user->name }}</p>
-                                            <div class="flex text-m-warn">
-                                                @for($i = 1; $i <= 5; $i++)
-                                                    @if($i <= $review->rating)
-                                                        <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
-                                                    @else
-                                                        <svg class="w-4 h-4 text-[var(--specialist-inactive)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-                                                    @endif
-                                                @endfor
-                                            </div>
-                                        </div>
-                                        <p class="text-sm text-[var(--specialist-text-dim)]">{{ \Illuminate\Support\Str::limit($review->review, 100) }}</p>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <p class="text-center text-[var(--specialist-inactive)] py-4">هنوز نظری ثبت نشده</p>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Revenue chart --}}
-        <div class="specialist-card overflow-hidden">
-            <div class="p-5 border-b" style="border-color: var(--specialist-border);">
-                <h2 class="text-base font-semibold text-[var(--specialist-text)]">نمودار درآمد (۷ روز گذشته)</h2>
-            </div>
-            <div class="p-5">
-                <div id="revenue-chart" class="h-80"></div>
-            </div>
-        </div>
     </div>
 @endsection
-
-@push('scripts')
-    @vite('resources/js/vendor/apexcharts.js')
-    <script @nonce>
-        document.addEventListener('DOMContentLoaded', function() {
-            // بسته‌ی ه: رنگ نمودار از توکن تم؛ با عوض شدن تم صفحه دوباره بار می‌شود تا نمودار هم تم را بگیرد
-            document.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-m-theme-toggle]') && document.querySelector('.apexcharts-canvas')) setTimeout(() => location.reload(), 0); });
-            const weeklyRevenue = @json($weeklyRevenue);
-
-            if (weeklyRevenue && weeklyRevenue.length > 0) {
-                const categories = weeklyRevenue.map(item => item.date);
-                const series = [{
-                    name: 'درآمد',
-                    data: weeklyRevenue.map(item => parseInt(item.total))
-                }];
-
-                const options = {
-                    chart: {
-                        type: 'area',
-                        height: 320,
-                        fontFamily: 'Mahru, Vazirmatn, sans-serif',
-                        toolbar: { show: false },
-                        background: 'transparent'
-                    },
-                    colors: [window.mToken('gold')],
-                    dataLabels: { enabled: false },
-                    stroke: { curve: 'smooth', width: 2 },
-                    fill: {
-                        type: 'gradient',
-                        gradient: {
-                            shadeIntensity: 1,
-                            colorStops: [
-                                { offset: 0, color: window.mToken('gold'), opacity: 0.45 },
-                                { offset: 100, color: window.mToken('bg2'), opacity: 0.05 }
-                            ]
-                        }
-                    },
-                    grid: {
-                        borderColor: window.mToken('tx', .08)
-                    },
-                    xaxis: {
-                        categories: categories,
-                        labels: { style: { fontFamily: 'Mahru, Vazirmatn, sans-serif', colors: window.mToken('mu') } },
-                        axisBorder: { color: window.mToken('tx', .12) },
-                        axisTicks: { color: window.mToken('tx', .12) }
-                    },
-                    yaxis: {
-                        labels: {
-                            formatter: (val) => new Intl.NumberFormat('fa-IR').format(val),
-                            style: { fontFamily: 'Mahru, Vazirmatn, sans-serif', colors: window.mToken('mu') }
-                        }
-                    },
-                    tooltip: {
-                        theme: document.documentElement.dataset.theme === 'light' ? 'light' : 'dark',
-                        y: {
-                            formatter: (val) => new Intl.NumberFormat('fa-IR').format(val) + ' تومان'
-                        }
-                    }
-                };
-
-                const chart = new ApexCharts(document.getElementById('revenue-chart'), { series, ...options });
-                chart.render();
-            }
-        });
-    </script>
-@endpush

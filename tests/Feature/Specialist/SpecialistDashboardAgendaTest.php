@@ -42,7 +42,7 @@ class SpecialistDashboardAgendaTest extends TestCase
         $this->assertSame([$manualUnpaid->id, $paidPending->id], $today);
         $this->assertSame(2, $response->viewData('todayBookingsCount'));
 
-        $upcoming = $response->viewData('upcomingBookings')->pluck('id');
+        $upcoming = $response->viewData('upcomingDays')->pluck('id');
         $this->assertTrue($upcoming->contains($upcomingManual->id));
         $this->assertFalse($upcoming->contains($upcomingCancelled->id));
         $this->assertFalse($upcoming->contains($atGateway->id));
