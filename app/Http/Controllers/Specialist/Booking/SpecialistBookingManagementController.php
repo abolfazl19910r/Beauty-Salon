@@ -5,23 +5,21 @@ namespace App\Http\Controllers\Specialist\Booking;
 use App\Exceptions\InvalidBookingStateException;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
-use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Services\Specialist\SpecialistBookingActions;
-use App\Traits\HasJalaliDates;
+use App\Services\Specialist\SpecialistBookingListFilter;
 use App\Traits\ResolvesSpecialist;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class SpecialistBookingManagementController extends Controller
 {
-    use HasJalaliDates;
     use ResolvesSpecialist;
 
     public function __construct(
-        private readonly BookingRepositoryInterface $bookingRepository,
         private readonly SpecialistBookingActions $bookingActions,
     ) {}
 
@@ -35,16 +33,22 @@ class SpecialistBookingManagementController extends Controller
 
         $this->authorize('manageBookings', $specialist);
 
-        $query = $this->bookingRepository->query()
-            ->where('specialist_id', $specialist->id)
-            ->with(['service', 'user']);
+        // بسته‌ی ۳ ظاهری (۲۰۲۶-۱۱-۲۵): تب + یک جستجو جای فرم فیلتر تاریخ/ساعت/وضعیت/پرداخت
+        $filters = $request->validate([
+            'tab' => ['nullable', Rule::in(array_keys(SpecialistBookingListFilter::TABS))],
+            'q' => ['nullable', 'string', 'max:100'],
+        ]);
+        $tab = $filters['tab'] ?? SpecialistBookingListFilter::DEFAULT_TAB;
+        $search = $filters['q'] ?? null;
 
-        $this->applyFilters($query, $request);
-        $this->applySort($query, (string) $request->get('sort_by', 'upcoming'));
-
-        $bookings = $query->paginate(10)->withQueryString();
-
-        return view('specialist.bookings', compact('specialist', 'bookings'));
+        return view('specialist.bookings', [
+            'specialist' => $specialist,
+            'tab' => $tab,
+            'search' => $search,
+            'tabCounts' => SpecialistBookingListFilter::tabCounts($specialist, $search),
+            'waitingCount' => SpecialistBookingListFilter::waitingCount($specialist),
+            'bookings' => SpecialistBookingListFilter::paginate($specialist, $tab, $search),
+        ]);
     }
 
     public function show(Booking $booking): View
@@ -133,44 +137,5 @@ class SpecialistBookingManagementController extends Controller
 
             return back()->with('error', $errorLabel.': '.$e->getMessage());
         }
-    }
-
-    private function applyFilters($query, Request $request): void
-    {
-        if ($request->filled('date_from')) {
-            if ($dateFrom = $this->parseJalali($request->date_from, context: 'تاریخ از')) {
-                $query->where('booking_time', '>=', $dateFrom->startOfDay());
-            }
-        }
-
-        if ($request->filled('date_to')) {
-            if ($dateTo = $this->parseJalali($request->date_to, context: 'تاریخ تا')) {
-                $query->where('booking_time', '<=', $dateTo->endOfDay());
-            }
-        }
-
-        foreach (['time', 'status', 'payment_status'] as $filter) {
-            if ($request->filled($filter)) {
-                $query->where($filter === 'time' ? 'booking_time' : $filter, $request->$filter);
-            }
-        }
-
-        if ($request->filled('phone')) {
-            $query->whereHas('user', fn ($q) => $q->where('phone', 'like', '%'.$request->phone.'%'));
-        }
-
-        if ($request->filled('customer_name')) {
-            $query->whereHas('user', fn ($q) => $q->where('name', 'like', '%'.$request->customer_name.'%'));
-        }
-    }
-
-    private function applySort($query, string $sortBy): void
-    {
-        match ($sortBy) {
-            'oldest', 'date_asc' => $query->orderBy('booking_time', 'asc'),
-            'date_desc' => $query->orderBy('booking_time', 'desc'),
-            'latest' => $query->latest(),
-            default => $query->chronological(),
-        };
     }
 }

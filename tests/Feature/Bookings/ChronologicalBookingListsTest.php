@@ -66,13 +66,17 @@ class ChronologicalBookingListsTest extends TestCase
             ->assertViewHas('bookings', fn ($bookings) => $bookings->pluck('id')->all() === $this->expected());
     }
 
-    public function test_specialist_bookings_default_to_chronological(): void
+    public function test_specialist_booking_tabs_are_chronological(): void
     {
         $user = User::factory()->create(['phone' => '09121234567']);
         $specialist = Specialist::factory()->create(['phone' => '09121234567', 'user_id' => $user->id]);
         $this->seedBookings(['specialist_id' => $specialist->id]);
 
-        $this->actingAs($user)->get(route('specialist.bookings.index'))->assertOk()->assertViewHas('bookings', fn ($bookings) => $bookings->pluck('id')->all() === $this->expected());
+        // بسته‌ی ۳ ظاهری: «پیش رو» نزدیک به دور، «گذشته» تازه به قدیم
+        $this->actingAs($user)->get(route('specialist.bookings.index'))->assertOk()
+            ->assertViewHas('bookings', fn ($bookings) => $bookings->pluck('id')->all() === array_slice($this->expected(), 0, 2));
+        $this->get(route('specialist.bookings.index', ['tab' => 'past']))->assertOk()
+            ->assertViewHas('bookings', fn ($bookings) => $bookings->pluck('id')->all() === array_slice($this->expected(), 2));
     }
 
     public function test_customer_bookings_are_chronological(): void

@@ -75,6 +75,18 @@
         .spec-act--ghost{background:transparent;color:rgb(var(--m-tx));border-color:rgb(var(--m-gold) / .35);font-weight:700}
         .spec-act--ghost:hover{background:rgb(var(--m-tx) / .05);opacity:1}
         .spec-act--lg{min-height:46px;font-size:15px;padding:0 20px}
+        /* منوی «⋯» ردیف (components/specialist/row-menu) */
+        .spec-menu{position:relative}
+        .spec-menu>summary{list-style:none}
+        .spec-menu>summary::-webkit-details-marker{display:none}
+        .spec-menu__btn{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;cursor:pointer;border:1px solid var(--specialist-border);background:var(--specialist-surface);color:var(--specialist-text)}
+        .spec-menu__btn:hover,.spec-menu[open]>.spec-menu__btn{border-color:rgb(var(--m-gold));background:rgb(var(--m-gold) / .1)}
+        .spec-menu__panel{position:absolute;z-index:45;top:calc(100% + 6px);left:0;width:12.5rem;padding:.35rem;display:flex;flex-direction:column;background:var(--specialist-surface);border:1px solid var(--specialist-border);border-radius:12px;box-shadow:0 18px 40px -18px rgba(0,0,0,.45)}
+        .spec-menu__item{display:block;width:100%;text-align:right;padding:.55rem .65rem;border-radius:8px;font:inherit;font-size:.86rem;color:var(--specialist-text);background:transparent;border:0;cursor:pointer;text-decoration:none}
+        .spec-menu__item:hover,.spec-menu__item:focus-visible{background:rgb(var(--m-gold) / .1);outline:none}
+        .spec-menu__item--danger{color:rgb(var(--m-bad));font-weight:700}
+        .spec-menu__item--danger:hover,.spec-menu__item--danger:focus-visible{background:rgb(var(--m-bad) / .1)}
+        .spec-menu__sep{height:1px;background:var(--specialist-border);margin:.35rem .25rem}
         .spec-badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;padding:0 7px;border-radius:999px;font-size:12px;font-weight:700;line-height:20px;background:rgb(var(--m-gold) / .18);color:rgb(var(--m-gold2))}
     </style>
     @stack('styles')
@@ -575,6 +587,45 @@
 
 {{-- بسته‌ی ۶: PWA (service worker، بنر نصب آیفون) --}}
 @include('partials.pwa-client', ['pwaMode' => 'specialist', 'pwaGuideUrl' => route('specialist.install')])
+<script @nonce>
+    // منوی «⋯» ردیف‌ها (بسته‌ی ۳ ظاهری، همان رفتار پنل مدیر): پنل fixed کنار دکمه، فقط یکی باز، بستن با کلیک بیرون/Escape
+    (function () {
+        var menus = document.querySelectorAll('[data-spec-menu-root]');
+        if (!menus.length) return;
+        function closeAll(except) { menus.forEach(function (m) { if (m !== except) m.open = false; }); }
+        function place(menu) {
+            var r = menu.querySelector('summary').getBoundingClientRect(), panel = menu.querySelector('.spec-menu__panel');
+            panel.style.position = 'fixed';
+            var w = panel.offsetWidth, h = panel.offsetHeight, top = r.bottom + 6;
+            if (top + h > window.innerHeight - 8 && r.top - h - 6 > 8) top = r.top - h - 6;
+            panel.style.left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8)) + 'px';
+            panel.style.top = top + 'px';
+        }
+        menus.forEach(function (menu) {
+            menu.addEventListener('toggle', function () {
+                if (!menu.open) return;
+                closeAll(menu); place(menu);
+                var first = menu.querySelector('[role=menuitem]');
+                if (first) first.focus({ preventScroll: true });
+            });
+        });
+        document.addEventListener('click', function (e) { if (!e.target.closest('[data-spec-menu-root]')) closeAll(null); });
+        document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Escape') return;
+            var open = document.querySelector('[data-spec-menu-root][open]');
+            if (open) { open.open = false; open.querySelector('summary').focus(); }
+        });
+        function follow() {
+            var open = document.querySelector('[data-spec-menu-root][open]');
+            if (!open) return;
+            var r = open.querySelector('summary').getBoundingClientRect();
+            if (r.bottom < 0 || r.top > window.innerHeight || r.right < 0 || r.left > window.innerWidth) { open.open = false; return; }
+            place(open);
+        }
+        window.addEventListener('scroll', follow, true);
+        window.addEventListener('resize', follow);
+    })();
+</script>
 @stack('scripts')
 @include('partials.password-reveal')
 @include('partials.nav-reveal-active')
