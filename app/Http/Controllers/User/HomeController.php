@@ -81,7 +81,12 @@ class HomeController extends Controller
             return ['count' => (clone $query)->count(), 'avg' => round((float) (clone $query)->avg('overall_rating'), 1)];
         });
 
-        return view($appearance->homeView(), compact('services', 'specialists', 'reviewStats'));
+        // ⭐ بسته‌ی ۵الف: «شاهکار» و «اپ» ساعت‌های خالی، کارت سالن و منوی خدمات هم می‌خواهند (فقط داده‌ی واقعی)
+        $template = in_array($appearance->layout, ['signature', 'app'], true)
+            ? app(\App\Services\Salon\TemplateHomeData::class)->for($this->currentSalon->get(), $appearance->layout, $services, $specialists)
+            : [];
+
+        return view($appearance->homeView(), compact('services', 'specialists', 'reviewStats', 'template'));
     }
 
     private static function shortName(string $name): string

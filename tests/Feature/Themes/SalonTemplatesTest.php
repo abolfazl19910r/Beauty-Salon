@@ -231,9 +231,10 @@ class SalonTemplatesTest extends TestCase
     {
         $this->choose('signature:rose');
         $this->get(route('home'))->assertOk()
-            ->assertSee('دیدن ساعت‌های خالی')
+            ->assertSee('data-template-home="signature"', false)
             ->assertDontSee('+۸۰۰۰')
-            ->assertDontSee('از ۰ نظر');
+            ->assertDontSee('از ۰ نظر')
+            ->assertDontSee('سال سابقه');
 
         $this->choose('app:sage');
         $this->get(route('home'))->assertOk()->assertSee('رزرو آنلاین')->assertSee('data-header-book', false);

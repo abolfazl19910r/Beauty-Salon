@@ -114,7 +114,8 @@ class SalonFreeSlotsTest extends TestCase
             ->assertOk()->assertJsonPath('days.0.label', 'امروز')->assertJsonPath('days.0.slots.0.time', '18:30');
 
         $this->getJson(route('salon.free-slots', ['service' => $this->service->id, 'specialist' => $this->second->id]))
-            ->assertOk()->assertJsonCount(1, 'days');
+            ->assertOk()->assertJsonCount(1, 'days')
+            ->assertJsonPath('specialists.0.id', $this->first->id)->assertJsonPath('specialists.1.name', 'کارشناس دوم');
 
         $stranger = Specialist::factory()->create();
         $this->getJson(route('salon.free-slots', ['service' => $this->service->id, 'specialist' => $stranger->id]))->assertNotFound();

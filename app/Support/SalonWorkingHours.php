@@ -142,6 +142,31 @@ class SalonWorkingHours
         }, $groups);
     }
 
+    /**
+     * بسته‌ی ۵الف: وضعیت امروز برای کارت سالن قالب‌ها — «باز تا ۲۱» (الان باز)، «امروز از ۹» (هنوز باز نشده)، null (تعطیل،
+     * ساعت تمام شده یا ساعت کاری ثبت نشده؛ تکه پنهان می‌شود). ساعت گرد بی دقیقه («۲۱»)، وگرنه «۲۱:۳۰».
+     *
+     * @return array{open: bool, text: string}|null
+     */
+    public static function today(?array $hours, ?\DateTimeInterface $now = null): ?array
+    {
+        $now = \Illuminate\Support\Carbon::instance($now ?? now());
+        $value = $hours[$now->dayOfWeek] ?? $hours[(string) $now->dayOfWeek] ?? null;
+        if (! is_array($value) || ! self::isTime($value['open'] ?? null) || ! self::isTime($value['close'] ?? null)) {
+            return null;
+        }
+        $time = $now->format('H:i');
+        $short = fn (string $hm) => to_persian_num(str_ends_with($hm, ':00') ? (string) (int) substr($hm, 0, 2) : $hm);
+        if ($time < $value['open']) {
+            return ['open' => false, 'text' => 'امروز از '.$short($value['open'])];
+        }
+        if ($time < $value['close']) {
+            return ['open' => true, 'text' => 'باز تا '.$short($value['close'])];
+        }
+
+        return null;
+    }
+
     private static function isTime(mixed $value): bool
     {
         return is_string($value) && preg_match('/^([01][0-9]|2[0-3]):[0-5][0-9]$/', $value) === 1;

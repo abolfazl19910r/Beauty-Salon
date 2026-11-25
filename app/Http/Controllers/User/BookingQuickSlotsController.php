@@ -31,6 +31,11 @@ class BookingQuickSlotsController extends Controller
             return response()->json(['days' => []], 404);
         }
 
-        return response()->json(['days' => $freeSlots->daysForService($salon, $service, $specialistId)]);
+        return response()->json([
+            'days' => $freeSlots->daysForService($salon, $service, $specialistId),
+            // کارشناسان همین خدمت برای فهرست «کارشناس» فرم (مسیر bookings.service-specialists پشت ورود است)
+            'specialists' => $service->specialists()->orderBy('specialists.id')->get(['specialists.id', 'specialists.name'])
+                ->map(fn ($s) => ['id' => (int) $s->id, 'name' => (string) $s->name])->values(),
+        ]);
     }
 }

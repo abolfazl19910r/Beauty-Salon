@@ -1,0 +1,90 @@
+<?php
+
+namespace Tests\Feature\Themes;
+
+use App\Models\BeautyService;
+use App\Models\Category;
+use App\Models\Plan;
+use App\Models\Specialist;
+use App\Models\SpecialistSchedule;
+use App\Services\Plans\DefaultPlans;
+use App\Support\CurrentSalon;
+use App\Support\Themes\SalonAppearance;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Queue;
+use Tests\TestCase;
+
+/**
+ * بسته‌ی ۵الف: صفحه‌ی خانه‌ی «شاهکار» و «اپ» با داده‌ی واقعی (فرم رزرو، ساعت‌های خالی، منوی خدمات، کارت سالن، کاشی‌ها).
+ */
+class TemplateHomesTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private BeautyService $service;
+
+    private Specialist $specialist;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Queue::fake();
+        Carbon::setTestNow(Carbon::parse('2026-11-24 18:10:00'));
+        app(DefaultPlans::class)->sync();
+        $salon = app(CurrentSalon::class)->get();
+        $salon->forceFill([
+            'plan_id' => Plan::byKey('clinic')->id, 'subscription_type' => '12m', 'trial_ends_at' => null, 'is_suspended' => false, 'subscription_ends_at' => now()->addYear(),
+            'tagline' => 'زیبایی با آرامش', 'established_year' => now()->year - 11, 'phone' => '02100000002',
+            'working_hours' => [2 => ['open' => '09:00', 'close' => '21:00']],
+        ])->save();
+        $category = Category::factory()->create(['name' => 'مو']);
+        $this->service = BeautyService::factory()->create(['name' => 'رنگ کامل', 'duration' => 60, 'price' => 590000, 'category_id' => $category->id]);
+        $this->specialist = Specialist::factory()->create(['name' => 'سارا']);
+        $this->service->specialists()->attach($this->specialist->id);
+        SpecialistSchedule::factory()->create(['specialist_id' => $this->specialist->id, 'day_of_week' => 2, 'start_time' => '09:00', 'end_time' => '21:00']);
+        Cache::flush();
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
+
+    private function choose(string $key): void
+    {
+        app(CurrentSalon::class)->get()->forceFill(['site_theme' => $key])->save();
+        SalonAppearance::flush();
+        Cache::flush();
+    }
+
+    public function test_signature_home_has_the_booking_form_with_real_slots_and_numbers(): void
+    {
+        $this->choose('signature:rose');
+        $html = $this->get(route('home'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('data-sg-form', $html);
+        $this->assertStringContainsString('زیبایی با آرامش', $html, 'تیتر از tagline');
+        $this->assertStringContainsString('ادامه و ثبت، امروز ۱۸:۳۰', $html);
+        $this->assertStringContainsString('name="date" value="2026-11-24"', $html);
+        $this->assertStringContainsString('name="time" value="18:30"', $html);
+        $this->assertStringContainsString('name="specialist" value="'.$this->specialist->id.'"', $html);
+        $this->assertStringContainsString('<option value="'.$this->specialist->id.'">سارا</option>', $html);
+        $this->assertStringContainsString('۱۱</b><div>سال سابقه', $html);
+        $this->assertStringContainsString('منوی خدمات', $html);
+        $this->assertStringContainsString('۵۹۰٬۰۰۰', $html);
+        $this->assertStringContainsString('نوبت خالی: امروز ۱۸:۳۰', $html);
+        $this->assertStringNotContainsString('از ۰ نظر', $html, 'بی نظر، بی عدد امتیاز');
+        $this->assertStringContainsString('data-palette-art', $html, 'کارشناس بی عکس ← طرح پالت');
+    }
+
+    public function test_signature_without_free_slots_falls_back_to_the_booking_form(): void
+    {
+        $this->specialist->schedules()->delete();
+        $this->choose('signature:sage');
+
+        $this->get(route('home'))->assertOk()->assertSee('انتخاب روز و ساعت')->assertDontSee('نوبت خالی:');
+    }
+}
