@@ -65,7 +65,7 @@ export default function Scan() {
         <View pointerEvents="none" style={{ position: 'absolute', top: '25%', left: '15%', right: '15%', aspectRatio: 1, borderColor: p.gold, borderWidth: 3, borderRadius: radius.lg }} />
       </View>
       <View style={{ gap: space(2) }}>
-        {busy ? <Loading label="در حال پیدا کردن سالن…" /> : <T muted center>QR سالن یا متخصص را داخل کادر بگیرید.</T>}
+        {busy ? <Loading label="در حال پیدا کردن سالن…" /> : <T muted center>QR سالن یا کارشناس را داخل کادر بگیرید.</T>}
         {wrongCode ? <Notice tone="warning" text="این QR مال یک سالن ماهرو نیست." /> : null}
         {error ? <ErrorBox error={error} /> : null}
       </View>

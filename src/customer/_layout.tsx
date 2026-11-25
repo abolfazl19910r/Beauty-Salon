@@ -109,8 +109,8 @@ function Navigator() {
         <Stack.Screen name="club-history" options={{ title: 'تاریخچه‌ی امتیاز' }} />
         <Stack.Screen name="notifications" options={{ title: 'اعلان‌ها' }} />
         <Stack.Screen name="salon-info" options={{ title: 'درباره‌ی سالن' }} />
-        <Stack.Screen name="specialists" options={{ title: 'متخصص‌ها' }} />
-        <Stack.Screen name="specialist/[id]" options={{ title: 'متخصص' }} />
+        <Stack.Screen name="specialists" options={{ title: 'کارشناسان' }} />
+        <Stack.Screen name="specialist/[id]" options={{ title: 'کارشناس' }} />
         <Stack.Screen name="profile" options={{ title: 'نام و شماره' }} />
         <Stack.Screen name="password" options={{ title: 'تغییر رمز' }} />
         <Stack.Screen name="devices" options={{ title: 'دستگاه‌های من' }} />

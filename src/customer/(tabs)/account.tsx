@@ -32,7 +32,7 @@ export default function Account() {
         <MenuRow icon="notifications-outline" title="اعلان‌ها" onPress={() => router.push('/notifications')} trailing={unread > 0 ? <Badge text={faDigits(unread)} tone="gold" /> : null} />
         <MenuRow icon="notifications-circle-outline" title="دریافت اعلان" subtitle="اجازه، اعلان آزمایشی و تنظیم باتری گوشی" onPress={() => router.push('/push')} />
         <MenuRow icon="storefront-outline" title="درباره‌ی سالن" subtitle="آدرس، تلفن، ساعت کاری، قوانین" onPress={() => router.push('/salon-info')} />
-        <MenuRow icon="people-outline" title="متخصص‌ها" onPress={() => router.push('/specialists')} />
+        <MenuRow icon="people-outline" title="کارشناسان" onPress={() => router.push('/specialists')} />
         <MenuRow icon="create-outline" title="نام و شماره" onPress={() => router.push('/profile')} />
         <MenuRow icon="key-outline" title="تغییر رمز" onPress={() => router.push('/password')} />
         <MenuRow icon="phone-portrait-outline" title="دستگاه‌های من" subtitle="خروج از گوشی‌های دیگر" onPress={() => router.push('/devices')} />

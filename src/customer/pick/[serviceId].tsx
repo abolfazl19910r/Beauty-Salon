@@ -46,9 +46,9 @@ export default function Pick() {
         </Card>
       ) : null}
 
-      <SectionTitle>متخصص</SectionTitle>
+      <SectionTitle>کارشناس</SectionTitle>
       {specialists.isPending ? <Loading /> : specialists.error ? <ErrorBox error={specialists.error} onRetry={() => specialists.refetch()} /> : specialists.data.length === 0 ? (
-        <Empty text="فعلاً متخصصی این خدمت را انجام نمی‌دهد." />
+        <Empty text="فعلاً کارشناسی این خدمت را انجام نمی‌دهد." />
       ) : (
         specialists.data.map((s) => (
           <Card key={s.id} onPress={() => chooseSpecialist(s.id)} style={specialistId === s.id ? { borderColor: p.gold, borderWidth: 2 } : undefined}>

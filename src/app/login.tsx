@@ -60,7 +60,7 @@ export default function Login() {
           <Image source={require('../../assets/icon.png')} style={{ width: 88, height: 88, borderRadius: 20 }} />
         </Pressable>
         <T weight="bold" size={22}>ماهرو همکار</T>
-        <T muted>ورود متخصص‌های سالن</T>
+        <T muted>ورود کارشناسان سالن</T>
       </View>
 
       <Field label="شماره موبایل" value={phone} onChangeText={setPhone} keyboardType="phone-pad" autoComplete="tel" placeholder="۰۹۱۲۳۴۵۶۷۸۹" maxLength={14} />
@@ -69,7 +69,7 @@ export default function Login() {
       <Button title="ادامه" onPress={submit} loading={busy} disabled={!phone || !password} />
       <Button kind="ghost" title="رمز را فراموش کرده‌ام" onPress={() => router.push('/forgot')} />
       {/* متخصصی که مدیر با شماره‌ی تازه اضافه کرده هنوز حساب ندارد (۲۰۲۶-۱۰-۲۲) */}
-      <Button kind="secondary" title="حساب ندارم — فعال‌سازی حساب متخصص" onPress={() => router.push('/activate')} />
+      <Button kind="secondary" title="حساب ندارم — فعال‌سازی حساب کارشناس" onPress={() => router.push('/activate')} />
       {ALLOW_SERVER_OVERRIDE ? <Notice text={`سرور: ${serverUrl}`} /> : null}
     </Screen>
   );

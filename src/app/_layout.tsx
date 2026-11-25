@@ -67,7 +67,7 @@ function Navigator() {
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="verify" options={{ title: 'کد تأیید' }} />
         <Stack.Screen name="forgot" options={{ title: 'فراموشی رمز' }} />
-        <Stack.Screen name="activate" options={{ title: 'فعال‌سازی حساب متخصص' }} />
+        <Stack.Screen name="activate" options={{ title: 'فعال‌سازی حساب کارشناس' }} />
         <Stack.Screen name="reset" options={{ title: 'رمز تازه' }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="booking/[id]" options={{ title: 'جزئیات نوبت' }} />

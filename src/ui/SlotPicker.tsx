@@ -31,7 +31,7 @@ export function SlotPicker({
     <View style={{ gap: space(3) }}>
       <SectionTitle>روز</SectionTitle>
       {dates.isPending ? <Loading /> : dates.error ? <ErrorBox error={dates.error} onRetry={() => dates.refetch()} /> : dates.data.length === 0 ? (
-        <Empty text="این متخصص در ۳۰ روز آینده روز کاری آزاد ندارد." />
+        <Empty text="این کارشناس در ۳۰ روز آینده روز کاری آزاد ندارد." />
       ) : (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space(2) }}>
           {dates.data.map((d) => <Chip key={d.date} label={faDigits(d.label)} active={date === d.date} onPress={() => onDate(d.date)} />)}

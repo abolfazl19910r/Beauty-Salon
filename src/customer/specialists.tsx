@@ -19,7 +19,7 @@ export default function Specialists() {
 
   return (
     <Screen>
-      {list.data.length === 0 ? <Empty text="متخصصی ثبت نشده است." /> : list.data.map((s) => (
+      {list.data.length === 0 ? <Empty text="کارشناسی ثبت نشده است." /> : list.data.map((s) => (
         <Card key={s.id} onPress={() => router.push(`/specialist/${s.id}`)}>
           <Row gap={3}>
             {s.photo_url ? <Image source={{ uri: s.photo_url }} style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: p.surfaceMuted }} /> : null}

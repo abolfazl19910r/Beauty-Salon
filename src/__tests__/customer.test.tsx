@@ -380,7 +380,7 @@ it('lets a signed-in customer scan a specialist QR of the same salon from home (
 
   const router = renderRouter('./src/customer', { initialUrl: '/home' });
 
-  fireEvent.press(await screen.findByText('اسکن QR متخصص یا سالن'));
+  fireEvent.press(await screen.findByText('اسکن QR کارشناس یا سالن'));
   await waitFor(() => expect(mockCamera.props?.onBarcodeScanned).toBeTruthy());
   await act(async () => {
     await mockCamera.props.onBarcodeScanned({ data: 'http://192.168.1.2:8000/s/rasta/specialists/5?src=qr' });

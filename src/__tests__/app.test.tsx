@@ -125,7 +125,7 @@ it('a 401 on an authenticated call clears the session and returns to login', asy
 
   renderRouter('./src/app', { initialUrl: '/' });
 
-  await screen.findByText('ورود متخصص‌های سالن');
+  await screen.findByText('ورود کارشناسان سالن');
   await waitFor(() => expect(mockSecure.has('mahru.token')).toBe(false));
 });
 
@@ -344,7 +344,7 @@ it('a new specialist activates the account with a code and lands on today', asyn
 
   renderRouter('./src/app', { initialUrl: '/' });
 
-  fireEvent.press(await screen.findByText('حساب ندارم — فعال‌سازی حساب متخصص'));
+  fireEvent.press(await screen.findByText('حساب ندارم — فعال‌سازی حساب کارشناس'));
   fireEvent.changeText(await screen.findByLabelText('شماره موبایل'), '۰۹۰۵۷۰۱۹۱۶۱');
   fireEvent.changeText(screen.getByLabelText('رمز عبور (حداقل ۸ حرف)'), 'secret123');
   fireEvent.changeText(screen.getByLabelText('تکرار رمز عبور'), 'secret123');

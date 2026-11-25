@@ -55,7 +55,7 @@ export default function Home() {
           )}
 
           {/* QR متخصص یا سالن (کارت ویزیت، پوستر) — پیش از این اسکنر فقط پیش از ورود بود (گزارش ۲۰۲۶-۱۰-۲۱) */}
-          <Button kind="secondary" title="اسکن QR متخصص یا سالن" onPress={() => router.push('/scan')} />
+          <Button kind="secondary" title="اسکن QR کارشناس یا سالن" onPress={() => router.push('/scan')} />
 
           {home.data.features?.includes('treatment_courses') ? (
             <Card onPress={() => router.push('/courses')}>

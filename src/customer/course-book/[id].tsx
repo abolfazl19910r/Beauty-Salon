@@ -58,8 +58,8 @@ export default function CourseBook() {
     <Screen>
       <T weight="bold" size={17}>{c.name} — جلسه‌ی {faDigits(next)} از {faDigits(c.sessions_total)}</T>
 
-      <SectionTitle>متخصص</SectionTitle>
-      {specialists.data.length === 0 ? <Empty text="فعلاً متخصصی برای این دوره نیست؛ با سالن تماس بگیرید." /> : (
+      <SectionTitle>کارشناس</SectionTitle>
+      {specialists.data.length === 0 ? <Empty text="فعلاً کارشناسی برای این دوره نیست؛ با سالن تماس بگیرید." /> : (
         <Row style={{ flexWrap: 'wrap' }}>
           {specialists.data.map((s) => (
             <Chip key={s.id} label={s.name} active={s.id === specialistId} onPress={() => { setSpecialistId(s.id); setDate(null); setTime(null); }} />

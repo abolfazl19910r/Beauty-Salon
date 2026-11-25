@@ -49,7 +49,7 @@ export default function Book() {
           </Card>
         ))
       )}
-      <Button kind="ghost" title="انتخاب بر اساس متخصص" onPress={() => router.push('/specialists')} />
+      <Button kind="ghost" title="انتخاب بر اساس کارشناس" onPress={() => router.push('/specialists')} />
     </Screen>
   );
 }
