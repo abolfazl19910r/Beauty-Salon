@@ -2,336 +2,94 @@
 
 @section('title', 'نوبت‌های من')
 
-@push('styles')
-    <style>
-        .jcal-wrapper { position: relative; }
-        .jcal-popup {
-            display: none;
-            position: absolute;
-            top: calc(100% + 6px);
-            right: 0;
-            z-index: 9999;
-            width: 280px;
-            background-color: var(--rasta-brown);
-            border: 1px solid rgb(var(--m-gold) / 0.25);
-            border-radius: 10px;
-            box-shadow: var(--m-sh-soft);
-            padding: 12px;
-        }
-        .jcal-popup.open { display: block; }
-        .jcal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-        .jcal-header button { background: none; border: none; color: var(--rasta-cream); cursor: pointer; padding: 4px 8px; border-radius: 6px; }
-        .jcal-header button:hover { background-color: rgb(var(--m-gold) / 0.12); }
-        .jcal-title { color: var(--rasta-gold-light); font-weight: bold; font-size: 13px; }
-        .jcal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
-        .jcal-weekday { font-size: 10px; color: var(--rasta-cream); opacity: 0.5; padding: 4px 0; }
-        .jcal-day { font-size: 12px; color: var(--rasta-cream); padding: 6px 0; border-radius: 6px; cursor: pointer; }
-        .jcal-day:hover { background-color: rgb(var(--m-gold) / 0.15); }
-        .jcal-day.jcal-empty { cursor: default; }
-        .jcal-day.jcal-empty:hover { background-color: transparent; }
-        .jcal-day.jcal-selected { background: var(--m-btn); color: var(--m-on-gold); font-weight: bold; }
-        .jcal-day.jcal-today { border: 1px solid var(--rasta-gold); }
-    </style>
-@endpush
+{{--
+    بسته‌ی ۴ ظاهری (۲۰۲۶-۱۱-۲۵، پیش‌نمایش CuAfterBookings): تب «پیش رو / گذشته / لغوشده» با شمار جای فیلتر وضعیت و تاریخ؛ هر ردیف
+    جعبه‌ی روز، ساعت، خدمت و کارشناس، وضعیت و پرداخت به فارسی، یک کار اصلی با نام (CustomerBookingActions::primary) و منوی «⋯»
+    (جزئیات و رسید، افزودن به تقویم، تماس با سالن، جداکننده، «لغو نوبت…» با یک خط پیامد مالی) جای آیکون‌های بی‌برچسب.
+--}}
+@php $now = now(); @endphp
 
 @section('content')
-    <div class="max-w-7xl mx-auto fade-in">
-        <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
-            <h1 class="text-2xl font-bold" style="color: var(--rasta-gold-light);">نوبت‌های من</h1>
-            <a href="{{ route('bookings.create') }}"
-               class="px-5 py-2 rounded-lg font-bold transition-opacity hover:opacity-90 flex items-center"
-               style="background: var(--m-btn); color: var(--m-on-gold);">
-                <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                رزرو نوبت جدید
-            </a>
-        </div>
+    <div class="max-w-5xl mx-auto fade-in space-y-4" data-customer-bookings>
+        <h1 class="text-xl md:text-2xl font-extrabold text-m-tx">نوبت‌های من</h1>
 
-        <div class="rounded-xl overflow-hidden" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.2);">
-            <div class="p-4 border-b" style="border-color: rgb(var(--m-gold) / 0.15);">
-                <form action="{{ route('bookings.index') }}" method="GET" class="flex flex-wrap gap-4 items-end">
-                    <div>
-                        <label class="block text-xs mb-1" style="color: var(--rasta-gold-light); opacity: 0.8;">وضعیت</label>
-                        <select name="status"
-                                class="px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-m-gold"
-                                style="background-color: var(--rasta-dark); border: 1px solid rgb(var(--m-gold) / 0.25); color: var(--rasta-cream);">
-                            <option value="">همه وضعیت‌ها</option>
-                            @foreach(\App\Support\Bookings\BookingLabels::statusOptions('customer') as $statusKey => $statusLabel)
-                                <option value="{{ $statusKey }}" {{ request('status') == $statusKey ? 'selected' : '' }}>{{ $statusLabel }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+        <nav class="flex gap-2 overflow-x-auto pb-1" aria-label="بازه‌ی نوبت‌ها" data-cu-tabs>
+            @foreach (\App\Services\Customer\CustomerBookingListFilter::TABS as $key => $label)
+                <a href="{{ route('bookings.index', ['tab' => $key]) }}" data-cu-tab="{{ $key }}" @if ($tab === $key) aria-current="page" @endif
+                   class="shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold border transition-colors {{ $tab === $key ? 'bg-m-tx text-m-bg border-transparent' : 'border-m-gold/25 text-m-tx hover:bg-m-gold/10' }}">
+                    {{ $label }} <span class="{{ $tab === $key ? 'opacity-80' : 'text-m-tx/55' }}">{{ fa_num($tabCounts[$key]) }}</span>
+                </a>
+            @endforeach
+        </nav>
 
-                    <div>
-                        <label class="block text-xs mb-1" style="color: var(--rasta-gold-light); opacity: 0.8;">تاریخ</label>
-                        <div class="jcal-wrapper">
-                            <input type="text" id="date_filter" name="date" value="{{ request('date') }}"
-                                   placeholder="{{ jalali_date(now()) }}" readonly
-                                   class="px-3 py-2 rounded-lg cursor-pointer text-center focus:outline-none focus:ring-2 focus:ring-m-gold"
-                                   style="background-color: var(--rasta-dark); border: 1px solid rgb(var(--m-gold) / 0.25); color: var(--rasta-cream); width: 140px;"
-                                   dir="ltr" autocomplete="off">
-                            <div class="jcal-popup" id="jcal-popup-date_filter"></div>
-                        </div>
-                    </div>
-
-                    <button type="submit"
-                            class="px-4 py-2 rounded-lg font-bold transition-opacity hover:opacity-90 flex items-center"
-                            style="background: var(--m-btn); color: var(--m-on-gold);">
-                        <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                        </svg>
-                        فیلتر
-                    </button>
-
-                    @if(request()->hasAny(['status', 'date']))
-                        <a href="{{ route('bookings.index') }}"
-                           class="px-4 py-2 rounded-lg transition hover:bg-m-tx/5"
-                           style="border: 1px solid rgb(var(--m-gold) / 0.25); color: var(--rasta-cream); opacity: 0.8;">
-                            حذف فیلترها
-                        </a>
+        <div class="m-card overflow-hidden">
+            @if ($bookings->isEmpty())
+                <div class="py-14 px-4 text-center" data-cu-empty>
+                    <p class="text-m-tx/65">{{ match ($tab) { 'past' => 'هنوز نوبت گذشته‌ای ندارید.', 'cancelled' => 'نوبت لغوشده‌ای ندارید.', default => 'نوبت پیش رویی ندارید.' } }}</p>
+                    @if ($tab === 'upcoming')
+                        <a href="{{ route('bookings.create') }}" class="btn-gold inline-block mt-4 px-6 py-2.5 text-sm font-bold">رزرو نوبت</a>
                     @endif
-                </form>
-            </div>
-
-            @if($bookings->isEmpty())
-                <div class="p-12 text-center">
-                    <svg class="w-16 h-16 mx-auto mb-4" style="color: var(--rasta-brown); opacity: 0.7;" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                    <p style="color: var(--rasta-cream); opacity: 0.6;">نوبتی یافت نشد.</p>
-                    <a href="{{ route('bookings.create') }}" class="mt-4 inline-block transition hover:opacity-80" style="color: var(--rasta-gold);">
-                        رزرو نوبت جدید
-                    </a>
                 </div>
             @else
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead>
-                        <tr style="background-color: var(--rasta-dark);">
-                            <th class="px-6 py-3 text-right" style="color: var(--rasta-gold-light);">خدمت</th>
-                            <th class="px-6 py-3 text-right" style="color: var(--rasta-gold-light);">کارشناس</th>
-                            <th class="px-6 py-3 text-right" style="color: var(--rasta-gold-light);">تاریخ و ساعت</th>
-                            <th class="px-6 py-3 text-right" style="color: var(--rasta-gold-light);">وضعیت پرداخت</th>
-                            <th class="px-6 py-3 text-right" style="color: var(--rasta-gold-light);">وضعیت</th>
-                            <th class="px-6 py-3 text-right" style="color: var(--rasta-gold-light);">عملیات</th>
-                        </tr>
-                        </thead>
-                        <tbody class="divide-y" style="border-color: rgb(var(--m-gold) / 0.1);">
-                        @foreach($bookings as $booking)
-                            <tr class="transition hover:bg-m-tx/5">
-                                <td class="px-6 py-4" style="color: var(--rasta-cream);">{{ $booking->service->name }} @if ($__courseLabel = $booking->courseSessionLabel())<span class="text-xs mr-1 px-2 py-0.5 rounded-full" style="background:rgb(var(--m-gold) / 0.15); color:rgb(var(--m-gold));">{{ $__courseLabel }}</span>@endif</td>
-                                <td class="px-6 py-4" style="color: var(--rasta-cream);">{{ $booking->specialist->name }}</td>
-                                <td class="px-6 py-4 persian-number" dir="ltr" style="color: var(--rasta-cream);">
-                                    {{ fa_date($booking->booking_time, true) }}
-                                </td>
-                                <td class="px-6 py-4">
-                                    <x-payment-status :booking="$booking" />
-                                </td>
-                                <td class="px-6 py-4">
-                                    <x-booking-status :status="$booking->status" audience="customer" />
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-3">
-                                        <a href="{{ route('bookings.show', $booking) }}"
-                                           class="transition hover:opacity-70" style="color: var(--rasta-gold);" title="مشاهده جزئیات">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                            </svg>
-                                        </a>
-
-                                        @if($booking->isPayable())
-                                            <a href="{{ route('payment.show', $booking) }}"
-                                               class="transition hover:opacity-70" style="color: rgb(var(--m-ok));" title="پرداخت">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                                                </svg>
-                                            </a>
-                                        @endif
-
-                                        @if($booking->canBeRescheduled())
-                                            <a href="{{ route('bookings.reschedule', $booking) }}"
-                                               class="transition hover:opacity-70" style="color: var(--rasta-gold-light);" title="تغییر زمان">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                </svg>
-                                            </a>
-                                        @endif
-
-                                        @if(in_array($booking->status, ['pending', 'confirmed', 'pending_payment']) && $booking->booking_time > now()->addHours(24))
-                                            <form action="{{ route('bookings.cancel', $booking) }}" method="POST" class="inline">
-                                                @csrf
-                                                @method('PUT')
-                                                <button type="submit" class="transition hover:opacity-70" style="color: rgb(var(--m-bad));" title="لغو نوبت"
-                                                        data-ui-confirm="آیا مطمئن هستید؟">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                    </svg>
-                                                </button>
-                                            </form>
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="p-4">
-                    {{ $bookings->links() }}
-                </div>
+                <ul>
+                    @foreach ($bookings as $booking)
+                        @php
+                            $actions = \App\Services\Customer\CustomerBookingActions::primary($booking, $mapUrl, $now);
+                            $canCancel = \App\Services\Customer\CustomerBookingActions::canCancel($booking);
+                            $isToday = $booking->booking_time->isSameDay($now);
+                            $isOpen = in_array($booking->status, \App\Services\Customer\CustomerBookingListFilter::OPEN_STATUSES, true);
+                        @endphp
+                        <li class="grid gap-x-4 gap-y-2 px-4 md:px-5 py-4 border-b border-m-gold/10 last:border-b-0 items-center grid-cols-[3.5rem_minmax(0,1fr)] md:grid-cols-[3.5rem_minmax(0,1fr)_auto]" data-cu-row="{{ $booking->id }}">
+                            @include('bookings.partials.day-box', ['at' => $booking->booking_time])
+                            <div class="min-w-0">
+                                <div class="flex items-baseline gap-2 flex-wrap">
+                                    <b class="text-lg leading-tight text-m-tx" dir="ltr">{{ fa_time($booking->booking_time) }}</b>
+                                    <a href="{{ route('bookings.show', $booking) }}" class="font-bold text-m-tx hover:underline">{{ $booking->service?->name ?? '—' }}</a>
+                                    @if ($__courseLabel = $booking->courseSessionLabel())<span class="text-xs px-2 py-0.5 rounded-full bg-m-gold/15 text-m-gold2">{{ $__courseLabel }}</span>@endif
+                                </div>
+                                <p class="text-sm text-m-tx/65 mt-0.5">@if ($booking->specialist)با {{ $booking->specialist->name }}@endif</p>
+                                <div class="flex flex-wrap gap-1.5 mt-2">
+                                    @if ($isToday && $isOpen)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold" style="{{ \App\Support\Bookings\BookingLabels::pillStyle('info') }}">امروز</span>
+                                    @else
+                                        <x-booking-status :status="$booking->status" audience="customer" class="!font-bold" />
+                                    @endif
+                                    @unless ($booking->customer_course_id)
+                                        <x-payment-status :booking="$booking" class="!font-bold" />
+                                    @endunless
+                                </div>
+                            </div>
+                            <div class="col-start-2 md:col-start-auto flex items-center gap-2 md:justify-end">
+                                @foreach ($actions as $__i => $__action)
+                                    <a href="{{ $__action['url'] }}" @if (! empty($__action['external'])) target="_blank" rel="noopener" @endif data-cu-action="{{ $__action['kind'] }}"
+                                       class="{{ $__i === 0 && in_array($__action['kind'], ['pay', 'review'], true) ? 'btn-gold' : 'm-btn-ghost' }} px-4 py-2 text-sm font-bold whitespace-nowrap">{{ $__action['label'] }}</a>
+                                @endforeach
+                                <x-customer.row-menu :label="'کارهای بیشتر برای نوبت '.($booking->service?->name ?? '')">
+                                    <a href="{{ route('bookings.show', $booking) }}" class="cu-menu__item" role="menuitem">جزئیات و رسید</a>
+                                    @if ($isOpen && $booking->booking_time->isFuture())
+                                        <a href="{{ route('bookings.calendar', $booking) }}" class="cu-menu__item" role="menuitem" data-cu-calendar>افزودن به تقویم</a>
+                                    @endif
+                                    @if ($salon?->phone)
+                                        <a href="tel:{{ $salon->phone }}" class="cu-menu__item" role="menuitem">تماس با سالن</a>
+                                    @endif
+                                    @if ($canCancel)
+                                        @php $__note = \App\Services\Customer\CustomerBookingActions::cancelNote($booking); @endphp
+                                        <span class="cu-menu__sep" role="separator"></span>
+                                        <form method="POST" action="{{ route('bookings.cancel', $booking) }}" data-ui-confirm="نوبت «{{ $booking->service?->name }}» ({{ fa_date($booking->booking_time, true) }}) لغو شود؟ {{ $__note }}" data-cu-cancel>
+                                            @csrf @method('PUT')
+                                            <button type="submit" class="cu-menu__item cu-menu__item--danger" role="menuitem">لغو نوبت…</button>
+                                        </form>
+                                        <span class="cu-menu__note" data-cu-cancel-note>{{ $__note }}</span>
+                                    @endif
+                                </x-customer.row-menu>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+                @if ($bookings->hasPages())
+                    <div class="p-4 border-t border-m-gold/10">{{ $bookings->links() }}</div>
+                @endif
             @endif
         </div>
     </div>
 @endsection
-
-@push('scripts')
-    <script @nonce>
-        (function() {
-            function div(a, b) { return Math.trunc(a / b); }
-
-            function gregorianToJalali(gy, gm, gd) {
-                const g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
-                let jy;
-                if (gy > 1600) { jy = 979; gy -= 1600; } else { jy = 0; gy -= 621; }
-                const gy2 = (gm > 2) ? (gy + 1) : gy;
-                let days = (365 * gy) + div(gy2 + 3, 4) - div(gy2 + 99, 100) + div(gy2 + 399, 400) - 80 + gd + g_d_m[gm - 1];
-                jy += 33 * div(days, 12053);
-                days %= 12053;
-                jy += 4 * div(days, 1461);
-                days %= 1461;
-                if (days > 365) { jy += div(days - 1, 365); days = (days - 1) % 365; }
-                const jm = (days < 186) ? 1 + div(days, 31) : 7 + div(days - 186, 30);
-                const jd = 1 + ((days < 186) ? (days % 31) : ((days - 186) % 30));
-                return [jy, jm, jd];
-            }
-
-            function jalaliToGregorian(jy, jm, jd) {
-                let gy;
-                if (jy > 979) { gy = 1600; jy -= 979; } else { gy = 621; }
-                let days = (365 * jy) + (div(jy, 33) * 8) + div((jy % 33) + 3, 4) + 78 + jd + ((jm < 7) ? (jm - 1) * 31 : ((jm - 7) * 30) + 186);
-                gy += 400 * div(days, 146097);
-                days %= 146097;
-                if (days > 36524) {
-                    gy += 100 * div(--days, 36524);
-                    days %= 36524;
-                    if (days >= 365) days++;
-                }
-                gy += 4 * div(days, 1461);
-                days %= 1461;
-                if (days > 365) { gy += div(days - 1, 365); days = (days - 1) % 365; }
-                const gd = days + 1;
-                const isLeap = (gy % 4 === 0 && gy % 100 !== 0) || (gy % 400 === 0);
-                const sal_a = [0, 31, isLeap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-                let gm = 0, remaining = gd;
-                for (gm = 1; gm <= 12; gm++) {
-                    if (remaining <= sal_a[gm]) break;
-                    remaining -= sal_a[gm];
-                }
-                return [gy, gm, remaining];
-            }
-
-            const jMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
-            const jWeekdays = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'];
-
-            function jalaliMonthLength(jy, jm) {
-                if (jm <= 6) return 31;
-                if (jm <= 11) return 30;
-                const g1 = jalaliToGregorian(jy, jm, 29);
-                const g2 = jalaliToGregorian(jy + 1, 1, 1);
-                const d1 = new Date(g1[0], g1[1] - 1, g1[2]);
-                const d2 = new Date(g2[0], g2[1] - 1, g2[2]);
-                const diffDays = Math.round((d2 - d1) / 86400000);
-                return 28 + diffDays;
-            }
-
-            function buildCalendar(input, popup) {
-                const today = new Date();
-                const [tjy, tjm, tjd] = gregorianToJalali(today.getFullYear(), today.getMonth() + 1, today.getDate());
-
-                let viewYear = tjy, viewMonth = tjm;
-                let selectedValue = input.value || '';
-
-                if (selectedValue.match(/^\d{4}\/\d{1,2}\/\d{1,2}$/)) {
-                    const parts = selectedValue.split('/').map(Number);
-                    viewYear = parts[0];
-                    viewMonth = parts[1];
-                }
-
-                function render() {
-                    const firstDayGregorian = jalaliToGregorian(viewYear, viewMonth, 1);
-                    const firstDate = new Date(firstDayGregorian[0], firstDayGregorian[1] - 1, firstDayGregorian[2]);
-                    const jsDay = firstDate.getDay();
-                    const startOffset = (jsDay + 1) % 7;
-
-                    const monthLength = jalaliMonthLength(viewYear, viewMonth);
-
-                    let html = '<div class="jcal-header">';
-                    html += '<button type="button" data-nav="prev">&#9658;</button>';
-                    html += '<span class="jcal-title persian-number">' + jMonths[viewMonth - 1] + ' ' + viewYear + '</span>';
-                    html += '<button type="button" data-nav="next">&#9664;</button>';
-                    html += '</div>';
-                    html += '<div class="jcal-grid">';
-                    jWeekdays.forEach(w => { html += '<div class="jcal-weekday">' + w + '</div>'; });
-
-                    for (let i = 0; i < startOffset; i++) {
-                        html += '<div class="jcal-day jcal-empty"></div>';
-                    }
-                    for (let d = 1; d <= monthLength; d++) {
-                        const isToday = (viewYear === tjy && viewMonth === tjm && d === tjd);
-                        const dayValue = viewYear + '/' + String(viewMonth).padStart(2, '0') + '/' + String(d).padStart(2, '0');
-                        const isSelected = (dayValue === selectedValue);
-                        html += '<div class="jcal-day persian-number' + (isToday ? ' jcal-today' : '') + (isSelected ? ' jcal-selected' : '') + '" data-day="' + d + '">' + d + '</div>';
-                    }
-                    html += '</div>';
-                    popup.innerHTML = html;
-
-                    popup.querySelector('[data-nav="prev"]').addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        viewMonth--;
-                        if (viewMonth < 1) { viewMonth = 12; viewYear--; }
-                        render();
-                    });
-                    popup.querySelector('[data-nav="next"]').addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        viewMonth++;
-                        if (viewMonth > 12) { viewMonth = 1; viewYear++; }
-                        render();
-                    });
-                    popup.querySelectorAll('.jcal-day[data-day]').forEach(function(el) {
-                        el.addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            const d = parseInt(this.dataset.day, 10);
-                            selectedValue = viewYear + '/' + String(viewMonth).padStart(2, '0') + '/' + String(d).padStart(2, '0');
-                            input.value = selectedValue;
-                            popup.classList.remove('open');
-                        });
-                    });
-                }
-
-                render();
-            }
-
-            document.addEventListener('DOMContentLoaded', function() {
-                const input = document.getElementById('date_filter');
-                const popup = document.getElementById('jcal-popup-date_filter');
-                if (input && popup) {
-                    input.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        buildCalendar(input, popup);
-                        popup.classList.add('open');
-                    });
-                }
-                document.addEventListener('click', function() {
-                    document.querySelectorAll('.jcal-popup.open').forEach(p => p.classList.remove('open'));
-                });
-            });
-        })();
-    </script>
-@endpush

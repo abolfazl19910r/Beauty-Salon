@@ -26,7 +26,7 @@ class BookingControllerTest extends TestCase
         $this->user = User::factory()->create();
     }
 
-    public function test_index_orders_upcoming_bookings_nearest_first_regardless_of_status(): void
+    public function test_index_tabs_split_open_past_and_cancelled_nearest_first(): void
     {
         $cancelled = Booking::factory()->create([
             'user_id' => $this->user->id,
@@ -59,27 +59,28 @@ class BookingControllerTest extends TestCase
         $response->assertOk();
         $ids = collect($response->viewData('bookings')->items())->pluck('id')->all();
 
-        // بسته‌ی ۰ (۲۰۲۶-۱۱-۲۴): جای «اولویت وضعیت» قبلی، ترتیب زمانی — همه آینده‌اند، پس از نزدیک به دور (Booking::scopeChronological)
-        $this->assertSame([
-            $pendingOld->id, $confirmedOld->id, $pendingNew->id, $confirmedNew->id, $cancelled->id,
-        ], $ids);
+        // بسته‌ی ۴ ظاهری: تب پیش‌فرض «پیش رو» = باز از امروز به بعد، نزدیک به دور؛ انجام‌شده در «گذشته» و لغوشده در «لغوشده»
+        $this->assertSame([$pendingOld->id, $confirmedOld->id, $pendingNew->id], $ids);
+        $this->assertSame([$confirmedNew->id], collect($this->get(route('bookings.index', ['tab' => 'past']))->viewData('bookings')->items())->pluck('id')->all());
+        $this->assertSame([$cancelled->id], collect($this->get(route('bookings.index', ['tab' => 'cancelled']))->viewData('bookings')->items())->pluck('id')->all());
     }
 
-    public function test_index_filters_by_status(): void
+    public function test_index_cancelled_tab(): void
     {
-        Booking::factory()->create(['user_id' => $this->user->id, 'status' => 'pending']);
-        Booking::factory()->create(['user_id' => $this->user->id, 'status' => 'cancelled']);
+        Booking::factory()->create(['user_id' => $this->user->id, 'status' => 'pending', 'booking_time' => now()->addDay()]);
+        Booking::factory()->create(['user_id' => $this->user->id, 'status' => 'cancelled', 'booking_time' => now()->addDays(2)]);
 
-        $response = $this->actingAs($this->user)->get(route('bookings.index', ['status' => 'cancelled']));
+        $response = $this->actingAs($this->user)->get(route('bookings.index', ['tab' => 'cancelled']));
 
         $this->assertCount(1, $response->viewData('bookings'));
+        $this->get(route('bookings.index', ['tab' => 'nope']))->assertSessionHasErrors('tab');
     }
 
     public function test_index_only_shows_the_authenticated_users_own_bookings(): void
     {
-        Booking::factory()->create(['user_id' => $this->user->id]);
+        Booking::factory()->create(['user_id' => $this->user->id, 'status' => 'confirmed', 'booking_time' => now()->addDay()]);
         $other = User::factory()->create();
-        Booking::factory()->create(['user_id' => $other->id]);
+        Booking::factory()->create(['user_id' => $other->id, 'status' => 'confirmed', 'booking_time' => now()->addDays(2)]);
 
         $response = $this->actingAs($this->user)->get(route('bookings.index'));
 

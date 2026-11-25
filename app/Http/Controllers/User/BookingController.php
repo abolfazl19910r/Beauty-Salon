@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\User\Booking\RateBookingRequest;
 use App\Models\Booking;
 use App\Repositories\Contracts\BookingRepositoryInterface;
+use App\Services\Customer\CustomerBookingListFilter;
 use App\Traits\HasJalaliDates;
 use Exception;
 use Illuminate\Http\RedirectResponse;
@@ -21,22 +22,20 @@ class BookingController extends Controller
 
     public function index(Request $request): View
     {
-        $user = auth()->user();
+        // بسته‌ی ۴ ظاهری (۲۰۲۶-۱۱-۲۵): تب «پیش رو / گذشته / لغوشده» جای فیلتر وضعیت و تاریخ
+        $tab = $request->validate([
+            'tab' => ['nullable', \Illuminate\Validation\Rule::in(array_keys(CustomerBookingListFilter::TABS))],
+        ])['tab'] ?? CustomerBookingListFilter::DEFAULT_TAB;
+        $userId = (int) auth()->id();
+        $salon = app(\App\Support\CurrentSalon::class)->get();
 
-        $filters = [
-            'status' => $request->filled('status') ? $request->status : null,
-            'date' => null,
-        ];
-
-        if ($request->filled('date')) {
-            if ($gregorianDate = $this->parseJalali($request->query('date'))) {
-                $filters['date'] = $gregorianDate->toDateString();
-            }
-        }
-
-        $bookings = $this->bookingRepository->paginateForUser($user->id, $filters, 10);
-
-        return view('bookings.index', compact('bookings'));
+        return view('bookings.index', [
+            'tab' => $tab,
+            'tabCounts' => CustomerBookingListFilter::tabCounts($userId),
+            'bookings' => CustomerBookingListFilter::paginate($userId, $tab),
+            'mapUrl' => $salon ? \App\Support\SalonMapLocation::neshanUrl($salon) : null,
+            'salon' => $salon,
+        ]);
     }
 
     public function show(Booking $booking): View|RedirectResponse

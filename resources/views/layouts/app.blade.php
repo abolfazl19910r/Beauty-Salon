@@ -22,6 +22,21 @@
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
 
     @include('partials.mahru-theme')
+    <style>
+        /* بسته‌ی ۴ ظاهری: منوی «⋯» ردیف «نوبت‌های من» (components/customer/row-menu) */
+        .cu-menu{position:relative}
+        .cu-menu>summary{list-style:none}
+        .cu-menu>summary::-webkit-details-marker{display:none}
+        .cu-menu__btn{width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;cursor:pointer;border:1px solid var(--m-line2);color:rgb(var(--m-tx));background:transparent}
+        .cu-menu__btn:hover,.cu-menu[open]>.cu-menu__btn{border-color:rgb(var(--m-gold));background:rgb(var(--m-gold) / .1)}
+        .cu-menu__panel{position:absolute;z-index:45;top:calc(100% + 6px);left:0;width:15rem;padding:.35rem;display:flex;flex-direction:column;background:rgb(var(--m-bg2));border:1px solid var(--m-line2);border-radius:14px;box-shadow:var(--m-sh-soft)}
+        .cu-menu__item{display:block;width:100%;text-align:right;padding:.55rem .7rem;border-radius:9px;font:inherit;font-size:.88rem;color:rgb(var(--m-tx));background:transparent;border:0;cursor:pointer;text-decoration:none}
+        .cu-menu__item:hover,.cu-menu__item:focus-visible{background:rgb(var(--m-gold) / .1);outline:none}
+        .cu-menu__item--danger{color:rgb(var(--m-bad));font-weight:700}
+        .cu-menu__item--danger:hover,.cu-menu__item--danger:focus-visible{background:rgb(var(--m-bad) / .1)}
+        .cu-menu__note{display:block;padding:0 .7rem .45rem;font-size:.75rem;line-height:1.7;color:rgb(var(--m-tx) / .6)}
+        .cu-menu__sep{height:1px;background:var(--m-line2);margin:.35rem .25rem}
+    </style>
     @stack('styles')
     @include('partials.ui-handlers')
 </head>
@@ -457,6 +472,38 @@
     });
 
     // منوی دسته‌بندی خدمات هدر (بسته‌ی «ح»، ۱۱): کلیک یا نگه داشتن نشانگر؛ کلیک بیرون و Esc می‌بندد
+    (function () {
+        // بسته‌ی ۴ ظاهری: منوی «⋯» ردیف‌ها — پنل fixed کنار دکمه، فقط یکی باز، بستن با کلیک بیرون/Escape
+        var menus = document.querySelectorAll('[data-cu-menu-root]');
+        if (!menus.length) return;
+        function closeAll(except) { menus.forEach(function (m) { if (m !== except) m.open = false; }); }
+        function place(menu) {
+            var r = menu.querySelector('summary').getBoundingClientRect(), panel = menu.querySelector('.cu-menu__panel');
+            panel.style.position = 'fixed';
+            var w = panel.offsetWidth, h = panel.offsetHeight, top = r.bottom + 6;
+            if (top + h > window.innerHeight - 8 && r.top - h - 6 > 8) top = r.top - h - 6;
+            panel.style.left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8)) + 'px';
+            panel.style.top = top + 'px';
+        }
+        menus.forEach(function (menu) {
+            menu.addEventListener('toggle', function () {
+                if (!menu.open) return;
+                closeAll(menu); place(menu);
+                var first = menu.querySelector('[role=menuitem]');
+                if (first) first.focus({ preventScroll: true });
+            });
+        });
+        document.addEventListener('click', function (e) { if (!e.target.closest('[data-cu-menu-root]')) closeAll(null); });
+        document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Escape') return;
+            var open = document.querySelector('[data-cu-menu-root][open]');
+            if (open) { open.open = false; open.querySelector('summary').focus(); }
+        });
+        window.addEventListener('scroll', function () {
+            var open = document.querySelector('[data-cu-menu-root][open]');
+            if (open) place(open);
+        }, true);
+    })();
     (function () {
         // بسته‌ی ۴ ظاهری: منوی حساب سربرگ (<details>) با کلیک بیرون و Escape بسته می‌شود
         var menu = document.querySelector('[data-account-menu]');
