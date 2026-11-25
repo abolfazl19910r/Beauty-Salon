@@ -37,9 +37,7 @@ class SpecialistDashboardService
         $todaySchedule = $this->getTodaySchedule($specialist);
         $nextBooking = $this->getNextBooking($specialist, $now);
 
-        $month = verta($now);
-        $monthStart = Carbon::instance($month->copy()->startMonth()->datetime());
-        $monthEnd = Carbon::instance($month->copy()->endMonth()->datetime())->addSecond()->startOfDay();
+        [$monthStart, $monthEnd, $monthLabel] = SpecialistWalletService::jalaliMonth($now);
         $wallet = $specialist->wallet;
 
         $weekStart = Carbon::today()->subDays(6);
@@ -63,7 +61,7 @@ class SpecialistDashboardService
             'todayOthers' => $todaySchedule->reject(fn ($b) => $nextBooking && $b->id === $nextBooking->id)->values(),
             'nextBooking' => $nextBooking,
             'nextAction' => $nextBooking ? self::primaryAction($nextBooking, $now) : null,
-            'monthLabel' => $month->format('F'),
+            'monthLabel' => $monthLabel,
             'monthIncome' => $wallet ? $this->walletTransactions->sumNetIncomeForWalletBetween($wallet->id, $monthStart, $monthEnd) : 0.0,
             'withdrawable' => (float) ($wallet?->balance ?? 0),
             'averageRating' => $this->getRatingOrNull($specialist),

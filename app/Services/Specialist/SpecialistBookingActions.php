@@ -83,7 +83,7 @@ class SpecialistBookingActions
             }
 
             if ($locked->status !== 'confirmed') {
-                throw InvalidBookingStateException::because('فقط نوبت‌های تایید شده قابل علامت‌گذاری به عنوان «انجام شده» هستند.');
+                throw InvalidBookingStateException::because('فقط نوبت‌های تأیید شده قابل علامت‌گذاری به عنوان «انجام شده» هستند.');
             }
 
             $locked->update(['status' => 'completed']);

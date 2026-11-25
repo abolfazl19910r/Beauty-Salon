@@ -127,7 +127,7 @@ class SpecialistProfileController extends Controller
 
             $message = 'برنامه کاری با موفقیت بروزرسانی شد.';
             if ($specialist->fresh()->auto_confirm_bookings) {
-                $message .= ' تایید خودکار نوبت‌ها فعال شد.';
+                $message .= ' تأیید خودکار نوبت‌ها فعال شد.';
             }
 
             return redirect()->route('specialist.my-dashboard')->with('success', $message);

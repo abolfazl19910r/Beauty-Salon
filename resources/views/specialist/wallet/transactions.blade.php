@@ -138,7 +138,7 @@
                             <div class="flex items-center gap-4">
                                 <span class="text-sm text-[var(--specialist-plum-muted)] persian-number">{{ fa_date($transaction->created_at, true) }}</span>
                                 <span class="persian-number font-semibold {{ $transaction->amount >= 0 ? 'text-m-ok' : 'text-m-bad' }}">
-                                    {{ fa_num($transaction->formatted_amount) }}
+                                    <span dir="rtl" data-tx-amount>{{ fa_money($transaction->amount, unit: true, signed: true) }}</span>
                                 </span>
                             </div>
                         </div>

@@ -86,7 +86,7 @@ class SpecialistLeaveController extends Controller
         $this->authorize('deleteLeave', $leave);
 
         if ($leave->status !== 'pending') {
-            return back()->with('error', 'فقط مرخصی‌های در انتظار تایید قابل حذف هستند.');
+            return back()->with('error', 'فقط مرخصی‌های در انتظار تأیید قابل حذف هستند.');
         }
 
         $this->leaveRepository->delete($leave);

@@ -79,10 +79,10 @@ class SpecialistBookingManagementController extends Controller
         // پذیرش فقط از «در انتظار تأیید» (رفع ۲۰۲۶-۱۰-۱۰) — منطق مشترک با API در SpecialistBookingActions
         return $this->run(
             fn () => $this->bookingActions->confirm($booking),
-            'خطا در تایید نوبت',
+            'خطا در تأیید نوبت',
             $booking,
-            '✓ نوبت تایید شد و پیامک اطلاع‌رسانی ارسال گردید.',
-            'این نوبت قبلاً تایید شده است.',
+            '✓ نوبت تأیید شد و پیامک اطلاع‌رسانی ارسال گردید.',
+            'این نوبت قبلاً تأیید شده است.',
         );
     }
 

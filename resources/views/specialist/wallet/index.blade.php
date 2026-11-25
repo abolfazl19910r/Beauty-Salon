@@ -64,7 +64,7 @@
             <div class="specialist-card p-5">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">درآمد این ماه</p>
+                        <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">درآمد {{ $monthLabel }}</p>
                         <p class="text-xl font-bold text-m-ok persian-number">{{ fa_num($currentMonthIncome) }}</p>
                         <p class="text-xs text-[var(--specialist-text-dim)] mt-1">تومان</p>
                     </div>
@@ -77,7 +77,7 @@
             <div class="specialist-card p-5">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">برداشت این ماه</p>
+                        <p class="text-sm text-[var(--specialist-plum-muted)] mb-1">برداشت {{ $monthLabel }}</p>
                         <p class="text-xl font-bold text-m-info persian-number">{{ fa_num(abs($currentMonthWithdrawals)) }}</p>
                         <p class="text-xs text-[var(--specialist-text-dim)] mt-1">تومان</p>
                     </div>
@@ -143,14 +143,14 @@
                         <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span class="text-sm">شماره شبا تایید شده است</span>
+                        <span class="text-sm">شماره شبا تأیید شده است</span>
                     </div>
                 @else
                     <div class="mt-4 flex items-center text-m-warn">
                         <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span class="text-sm">شماره شبا در انتظار تایید است</span>
+                        <span class="text-sm">شماره شبا در انتظار تأیید است</span>
                     </div>
                 @endif
             </div>
@@ -201,7 +201,7 @@
                             <div class="flex items-center gap-4">
                                 <span class="text-sm text-[var(--specialist-plum-muted)] persian-number">{{ fa_date($transaction->created_at, true) }}</span>
                                 <span class="persian-number font-semibold {{ $transaction->amount >= 0 ? 'text-m-ok' : 'text-m-bad' }}">
-                                    {{ fa_num($transaction->formatted_amount) }}
+                                    <span dir="rtl" data-tx-amount>{{ fa_money($transaction->amount, unit: true, signed: true) }}</span>
                                 </span>
                             </div>
                         </div>

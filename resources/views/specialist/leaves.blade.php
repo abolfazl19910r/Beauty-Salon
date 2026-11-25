@@ -4,8 +4,8 @@
 
 @php
     $leaveStatusMap = [
-        'pending'  => ['label' => 'در انتظار تایید', 'class' => 'bg-m-warn/10 text-m-warn'],
-        'approved' => ['label' => 'تایید شده',       'class' => 'bg-m-ok/10 text-m-ok'],
+        'pending'  => ['label' => 'در انتظار تأیید', 'class' => 'bg-m-warn/10 text-m-warn'],
+        'approved' => ['label' => 'تأیید شده',       'class' => 'bg-m-ok/10 text-m-ok'],
         'rejected' => ['label' => 'رد شده',          'class' => 'bg-m-bad/10 text-m-bad'],
     ];
 @endphp
@@ -118,7 +118,7 @@
     {{-- Delete confirmation modal --}}
     <div id="deleteLeaveModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="specialist-card p-6 max-w-sm w-full border" style="border-color: var(--specialist-border);">
-            <h3 class="text-lg font-bold mb-4 text-m-bad font-serif-fa">تایید حذف درخواست</h3>
+            <h3 class="text-lg font-bold mb-4 text-m-bad font-serif-fa">تأیید حذف درخواست</h3>
             <p class="text-[var(--specialist-text-dim)] mb-6" id="deleteLeaveMessage">
                 آیا از حذف این درخواست مرخصی اطمینان دارید؟ این عملیات قابل بازگشت نیست.
             </p>

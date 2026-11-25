@@ -39,31 +39,21 @@ class WalletTransactionRepository extends BaseRepository implements WalletTransa
         return $this->model->where('wallet_id', $walletId)->latest()->limit($limit)->get();
     }
 
-    public function sumForWalletByTypeAndMonth(int $walletId, string $type, int $month, int $year): float
+    /** جمع یک نوع تراکنش در بازه‌ی [from, to) (مثلاً برداشت‌های ماه شمسی) */
+    public function sumForWalletByTypeBetween(int $walletId, string $type, \DateTimeInterface $from, \DateTimeInterface $to): float
     {
         return (float) $this->model->where('wallet_id', $walletId)
             ->where('type', $type)
-            ->whereMonth('created_at', $month)
-            ->whereYear('created_at', $year)
+            ->where('created_at', '>=', $from)
+            ->where('created_at', '<', $to)
             ->sum('amount');
     }
 
     /**
-     * درآمد خالص ماه: درآمدها منهای برگشت سهمِ نوبت‌های لغوشده (تعدیل‌هایی که به نوبت وصل‌اند).
-     * قبلاً فقط income جمع می‌شد، پس لغو نوبت «کل درآمد» را کم می‌کرد ولی «درآمد این ماه» را نه
-     * و درآمد ماه از کل درآمد بیشتر نشان داده می‌شد. تعدیل دستی ادمین (بدون نوبت) درآمد حساب نمی‌شود.
+     * درآمد خالص در بازه‌ی [from, to): درآمدها منهای برگشت سهمِ نوبت‌های لغوشده (تعدیل‌هایی که به نوبت وصل‌اند).
+     * قبلاً فقط income جمع می‌شد، پس لغو نوبت «کل درآمد» را کم می‌کرد ولی «درآمد این ماه» را نه. تعدیل دستی ادمین (بدون نوبت)
+     * درآمد حساب نمی‌شود. بسته‌ی ۳ ظاهری (۲۰۲۶-۱۱-۲۵): با بازه به‌جای ماه میلادی، تا «ماه» شمسی باشد.
      */
-    public function sumNetIncomeForWalletInMonth(int $walletId, int $month, int $year): float
-    {
-        return (float) $this->model->where('wallet_id', $walletId)
-            ->where(fn ($q) => $q->where('type', 'income')
-                ->orWhere(fn ($q) => $q->where('type', 'adjustment')->whereNotNull('booking_id')))
-            ->whereMonth('created_at', $month)
-            ->whereYear('created_at', $year)
-            ->sum('amount');
-    }
-
-    /** درآمد خالص (همان تعریف sumNetIncomeForWalletInMonth) در بازه‌ی [from, to) — برای ماه شمسی (بسته‌ی ۳ ظاهری) */
     public function sumNetIncomeForWalletBetween(int $walletId, \DateTimeInterface $from, \DateTimeInterface $to): float
     {
         return (float) $this->netIncomeQuery($walletId)

@@ -47,9 +47,9 @@
                     <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
                 <div class="flex-1">
-                    <h3 class="text-sm font-bold text-[var(--specialist-plum-light)] font-serif-fa mb-2">تایید خودکار نوبت‌های رزرو شده</h3>
+                    <h3 class="text-sm font-bold text-[var(--specialist-plum-light)] font-serif-fa mb-2">تأیید خودکار نوبت‌های رزرو شده</h3>
                     <p class="text-sm text-[var(--specialist-text-dim)] mb-4">
-                        با فعال کردن این گزینه، نوبت‌های رزرو شده به صورت خودکار تایید می‌شوند و نیازی به تایید دستی هر نوبت ندارید.
+                        با فعال کردن این گزینه، نوبت‌های رزرو شده به صورت خودکار تأیید می‌شوند و نیازی به تأیید دستی هر نوبت ندارید.
                     </p>
 
                     <label class="inline-flex items-center cursor-pointer gap-3 rounded-lg px-4 py-3" style="background-color: var(--specialist-bg); border: 1px solid var(--specialist-border);">
@@ -63,7 +63,7 @@
                             <span class="toggle-track w-11 h-6 rounded-full block"></span>
                             <span class="toggle-thumb absolute top-0.5 right-0.5 bg-m-card w-5 h-5 rounded-full"></span>
                         </span>
-                        <span class="font-medium text-[var(--specialist-text)]">فعال‌سازی تایید خودکار نوبت‌ها</span>
+                        <span class="font-medium text-[var(--specialist-text)]">فعال‌سازی تأیید خودکار نوبت‌ها</span>
                     </label>
 
                     <div class="mt-4 rounded-lg p-3" style="background-color: var(--specialist-surface); border: 1px solid var(--specialist-border);">
@@ -76,8 +76,8 @@
                             <div>
                                 <strong class="text-[var(--specialist-text)]">توجه:</strong> با فعال کردن این گزینه:
                                 <ul class="list-disc list-inside mt-2 space-y-1">
-                                    <li>نوبت‌های جدید بلافاصله تایید می‌شوند</li>
-                                    <li>پیامک ارسالی به شما لینک تایید/لغو نخواهد داشت</li>
+                                    <li>نوبت‌های جدید بلافاصله تأیید می‌شوند</li>
+                                    <li>پیامک ارسالی به شما لینک تأیید/لغو نخواهد داشت</li>
                                     <li>همچنان می‌توانید از پنل خود نوبت‌ها را مدیریت کنید</li>
                                 </ul>
                             </div>

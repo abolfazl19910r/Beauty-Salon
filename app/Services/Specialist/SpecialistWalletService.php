@@ -35,12 +35,13 @@ class SpecialistWalletService
 
         $withdrawalRequests = $this->withdrawalRequestRepository->paginateForWallet($wallet->id, 10);
 
-        $currentMonthIncome = $this->walletTransactionRepository->sumNetIncomeForWalletInMonth(
-            $wallet->id, now()->month, now()->year
-        );
+        // بسته‌ی ۳ ظاهری (۲۰۲۶-۱۱-۲۵): «این ماه» = ماه شمسی (پیش‌تر ماه میلادی؛ پرداخت ۲۹ آبان در آذر هم شمرده می‌شد)
+        [$monthStart, $monthEnd, $monthLabel] = self::jalaliMonth();
 
-        $currentMonthWithdrawals = $this->walletTransactionRepository->sumForWalletByTypeAndMonth(
-            $wallet->id, 'withdrawal', now()->month, now()->year
+        $currentMonthIncome = $this->walletTransactionRepository->sumNetIncomeForWalletBetween($wallet->id, $monthStart, $monthEnd);
+
+        $currentMonthWithdrawals = $this->walletTransactionRepository->sumForWalletByTypeBetween(
+            $wallet->id, 'withdrawal', $monthStart, $monthEnd
         );
 
         return compact(
@@ -49,8 +50,19 @@ class SpecialistWalletService
             'recentTransactions',
             'withdrawalRequests',
             'currentMonthIncome',
-            'currentMonthWithdrawals'
+            'currentMonthWithdrawals',
+            'monthLabel'
         );
+    }
+
+    /** @return array{0: \Illuminate\Support\Carbon, 1: \Illuminate\Support\Carbon, 2: string} شروع، شروع ماه بعد، نام ماه («آذر») */
+    public static function jalaliMonth(?\DateTimeInterface $at = null): array
+    {
+        $v = verta($at ?? now());
+        $start = \Illuminate\Support\Carbon::instance($v->copy()->startMonth()->datetime())->startOfDay();
+        $end = \Illuminate\Support\Carbon::instance($v->copy()->endMonth()->datetime())->addDay()->startOfDay();
+
+        return [$start, $end, $v->format('F')];
     }
 
     public function getTransactions(Specialist $specialist, array $filters): LengthAwarePaginator

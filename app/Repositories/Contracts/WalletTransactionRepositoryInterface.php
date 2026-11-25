@@ -12,9 +12,7 @@ interface WalletTransactionRepositoryInterface extends RepositoryInterface
 
     public function getRecentForWallet(int $walletId, int $limit = 10): Collection;
 
-    public function sumForWalletByTypeAndMonth(int $walletId, string $type, int $month, int $year): float;
-
-    public function sumNetIncomeForWalletInMonth(int $walletId, int $month, int $year): float;
+    public function sumForWalletByTypeBetween(int $walletId, string $type, \DateTimeInterface $from, \DateTimeInterface $to): float;
 
     public function sumNetIncomeForWalletBetween(int $walletId, \DateTimeInterface $from, \DateTimeInterface $to): float;
 
