@@ -24,10 +24,20 @@
 
         return $out;
     };
+    /*
+     * بسته‌ی ۵الف: پانویس قالب‌های پولی همیشه تیره و به رنگ پالت (بوم): روشن = رنگ متن پالت، تیره = زمینه‌ی تیره‌تر؛ دکمه‌ی
+     * «دریافت اپ» با رنگ روشن پالت (رنگ اصلی حالت تیره) و متن تیره‌ی همان.
+     */
+    $__darker = function (string $channels, float $by): string {
+        $c = array_map('intval', preg_split('/\s+/', trim($channels)) ?: []);
+
+        return implode(' ', array_map(fn ($v) => (int) round($v * (1 - $by)), $c + [0, 0, 0]));
+    };
+    $__foot = '--m-foot-ac:'.($tokens['dark']['gold'] ?? '0 0 0').';--m-foot-on:'.($tokens['dark']['on'] ?? '#000000').';';
 @endphp
 <style data-theme-palette>
-:root,html[data-theme=dark]{ {!! $__vars($tokens['dark']) !!} }
-html[data-theme=light]{ {!! $__vars($tokens['light']) !!} }
+:root,html[data-theme=dark]{ {!! $__vars($tokens['dark']) !!}{!! $__foot !!}--m-foot-bg:{{ $__darker($tokens['dark']['bg'] ?? '0 0 0', .35) }}; }
+html[data-theme=light]{ {!! $__vars($tokens['light']) !!}{!! $__foot !!}--m-foot-bg:{{ $tokens['light']['tx'] ?? '0 0 0' }}; }
 .btn-gold,.m-btn{box-shadow:0 10px 24px -14px rgb(var(--m-gold) / .65)}
 .btn-gold:hover,.m-btn:hover{box-shadow:0 16px 30px -14px rgb(var(--m-gold) / .75)}
 </style>

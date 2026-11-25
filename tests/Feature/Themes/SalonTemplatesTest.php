@@ -460,4 +460,30 @@ class SalonTemplatesTest extends TestCase
         $this->assertSame('majalle:sage', $this->salon->fresh()->site_theme);
         $this->assertSame('["bento","aram","majalle","vitrin"]', \App\Models\PlatformSetting::query()->where('key', 'theme_layout_order')->value('value'));
     }
+
+    public function test_each_paid_template_gets_its_own_header_and_the_palette_footer(): void
+    {
+        $this->choose(null);
+        $html = $this->get(route('home'))->assertOk()->getContent();
+        $this->assertStringNotContainsString('data-palette-footer', $html, 'طلایی ماهرو همان پانویس');
+        $this->assertStringNotContainsString('data-emblem-tinted', $html, 'طلایی ماهرو همان نشان طلایی');
+        $this->assertStringContainsString('data-salon-app-promo', $html);
+
+        foreach (['signature' => 'sg-hdr', 'app' => 'ap-hdr'] as $layout => $class) {
+            $this->choose($layout.':rose');
+            $html = $this->get(route('home'))->assertOk()->getContent();
+            $this->assertStringContainsString('class="fixed top-0 inset-x-0 z-50 '.$class.'"', $html, $layout);
+            $this->assertStringContainsString('data-palette-footer', $html, $layout);
+            $this->assertStringContainsString('data-emblem-tinted', $html, "$layout: نشان پیش‌فرض به رنگ پالت");
+            $this->assertStringContainsString('data-header-book', $html, "$layout: دکمه‌ی رزرو در سربرگ");
+            $this->assertStringContainsString('id="mobile-menu"', $html, "$layout: کشوی موبایل");
+            $this->assertStringContainsString('--m-foot-bg:', $html);
+        }
+
+        // روزنامه‌ی سالن و نمایشگاه تا بسته‌ی ۵ب سربرگ پیش‌فرض ولی پانویس پالت
+        $this->choose('editorial:sage');
+        $html = $this->get(route('home'))->assertOk()->getContent();
+        $this->assertStringContainsString('<header id="main-navbar" class="fixed top-0 inset-x-0 z-50">', $html);
+        $this->assertStringContainsString('data-palette-footer', $html);
+    }
 }
