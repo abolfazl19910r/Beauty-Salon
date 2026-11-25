@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\Plans\DefaultPlans;
 use App\Support\Themes\SalonAppearance;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 /**
@@ -26,6 +27,8 @@ class AdminDeskShellTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // صفحه‌ی نوبت‌ها روی «امروز» باز می‌شود (بسته‌ی ۲)؛ نوبتِ «۳ ساعت بعد» بعد از ساعت ۲۱ به فردا می‌افتاد و تست وابسته به ساعت بود
+        Carbon::setTestNow(Carbon::today()->setTime(10, 0));
         app(DefaultPlans::class)->sync();
         $this->salon = Salon::where('slug', 'rasta')->firstOrFail();
         $this->owner = User::factory()->create(['is_admin' => true]);
@@ -38,6 +41,12 @@ class AdminDeskShellTest extends TestCase
             'trial_ends_at' => null, 'is_suspended' => false, 'admin_theme' => $shell === 'side' ? null : $shell,
         ])->save();
         SalonAppearance::flush();
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
     }
 
     private function pendingBooking(): Booking
