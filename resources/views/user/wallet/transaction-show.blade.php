@@ -53,13 +53,13 @@
                 @if($transaction->booking)
                     <div class="flex justify-between items-center pb-3 border-b" style="border-color: rgb(var(--m-gold) / 0.1);">
                         <span class="text-sm" style="color: var(--rasta-cream); opacity: 0.6;">شماره نوبت</span>
-                        <span class="text-sm font-medium persian-number" style="color: var(--rasta-cream);">#{{ fa_num($transaction->booking_id) }}</span>
+                        <span class="text-sm font-medium persian-number" style="color: var(--rasta-cream);">#{{ \App\Support\Fa::digits($transaction->booking_id) }}</span>
                     </div>
 
                     @if($transaction->booking->payment_reference)
                         <div class="flex justify-between items-center pb-3 border-b" style="border-color: rgb(var(--m-gold) / 0.1);">
                             <span class="text-sm" style="color: var(--rasta-cream); opacity: 0.6;">شماره پیگیری</span>
-                            <span class="text-sm font-medium persian-number" dir="ltr" style="color: var(--rasta-gold-light);">{{ fa_num($transaction->booking->payment_reference) }}</span>
+                            <span class="text-sm font-medium persian-number" dir="ltr" style="color: var(--rasta-gold-light);">{{ \App\Support\Fa::digits($transaction->booking->payment_reference) }}</span>
                         </div>
                     @endif
 

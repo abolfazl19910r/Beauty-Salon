@@ -76,7 +76,7 @@
                                     <div class="flex items-center gap-3 mt-1 text-xs text-[var(--specialist-plum-muted)] flex-wrap">
                                         <span class="persian-number">{{ fa_date($point->created_at, true) }}</span>
                                         @if($point->booking)
-                                            <span class="persian-number">نوبت #{{ fa_num($point->booking_id) }}</span>
+                                            <span class="persian-number">نوبت #{{ \App\Support\Fa::digits($point->booking_id) }}</span>
                                             @if($point->booking->service)
                                                 <span>{{ $point->booking?->service?->name ?? '—' }}</span>
                                             @endif

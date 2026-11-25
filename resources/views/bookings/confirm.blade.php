@@ -32,7 +32,7 @@
                         <div class="flex items-center justify-between px-5 py-3.5 text-sm">
                             <span class="text-m-tx/55">{{ $row['label'] }}</span>
                             <span class="font-medium text-m-tx {{ isset($row['persian']) ? 'persian-number' : '' }}">
-                            {{ fa_num($row['value']) }}
+                            {{ \App\Support\Fa::digits($row['value']) }}
                         </span>
                         </div>
                     @endforeach

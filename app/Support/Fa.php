@@ -54,7 +54,9 @@ final class Fa
         // باگ بسته‌ی ۰: fa_num($row['value']) در صفحه‌ی تأیید رزرو نام خدمت و کارشناس را «۰» و تاریخ را «۱٬۴۰۵» نشان می‌داد.
         if (is_string($value)) {
             $plain = str_replace([',', self::THOUSANDS], '', self::latin(trim($value)));
-            if (! is_numeric($plain)) {
+            // شناسه‌ها هم عدد نیستند: صفر ابتدایی (تلفن ۰۹۱۲…، کد ملی ۰۰۱۲…)، نماد علمی («1e5») یا رشته‌ی خیلی بلند
+            // (کد پیگیری) جداکننده‌ی هزارگان نمی‌گیرند و صفرشان نمی‌افتد — فقط رقم‌هایشان فارسی شود.
+            if (! is_numeric($plain) || preg_match('/^-?0\d/', $plain) || stripos($plain, 'e') !== false || strlen(ltrim($plain, '-')) > 15) {
                 return self::digits($value);
             }
             $value = $plain;

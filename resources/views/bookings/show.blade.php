@@ -102,7 +102,7 @@
                         @if($booking->payment_reference)
                             <div class="flex justify-between">
                                 <span style="color: var(--rasta-cream); opacity: 0.6;">شماره پیگیری:</span>
-                                <span class="font-medium persian-number" dir="ltr" style="color: var(--rasta-gold-light);">{{ fa_num($booking->payment_reference) }}</span>
+                                <span class="font-medium persian-number" dir="ltr" style="color: var(--rasta-gold-light);">{{ \App\Support\Fa::digits($booking->payment_reference) }}</span>
                             </div>
                         @endif
                     </div>

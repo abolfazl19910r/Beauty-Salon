@@ -213,10 +213,10 @@
                                 <div class="flex items-center gap-4 mt-1.5 text-xs flex-wrap" style="color: var(--rasta-cream); opacity: 0.55;">
                                     <span class="persian-number">{{ fa_date($transaction->created_at, true) }}</span>
                                     @if($transaction->booking)
-                                        <span class="persian-number">نوبت #{{ fa_num($transaction->booking_id) }}</span>
+                                        <span class="persian-number">نوبت #{{ \App\Support\Fa::digits($transaction->booking_id) }}</span>
                                         @if($transaction->booking->payment_reference)
                                             <span class="persian-number" dir="ltr" style="color: var(--rasta-gold-light); opacity: 0.85;">
-                                                شماره پیگیری: {{ fa_num($transaction->booking->payment_reference) }}
+                                                شماره پیگیری: {{ \App\Support\Fa::digits($transaction->booking->payment_reference) }}
                                             </span>
                                         @endif
                                     @endif

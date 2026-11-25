@@ -144,7 +144,7 @@
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
                             <span class="text-[var(--specialist-plum-muted)]">شماره نوبت:</span>
-                            <span class="font-bold text-[var(--specialist-text)] mr-2 persian-number">#{{ fa_num($review->booking_id) }}</span>
+                            <span class="font-bold text-[var(--specialist-text)] mr-2 persian-number">#{{ \App\Support\Fa::digits($review->booking_id) }}</span>
                         </div>
                         <div>
                             <span class="text-[var(--specialist-plum-muted)]">تاریخ نوبت:</span>

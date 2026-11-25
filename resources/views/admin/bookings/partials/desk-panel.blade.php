@@ -9,7 +9,7 @@
 @endphp
 <div class="desk-panel__body" data-desk-panel-body="{{ $booking->id }}">
     <div class="flex items-center justify-between gap-2">
-        <b class="text-[15px]" style="color: var(--admin-text);">نوبت {{ fa_num($booking->id) }}</b>
+        <b class="text-[15px]" style="color: var(--admin-text);">نوبت {{ \App\Support\Fa::digits($booking->id) }}</b>
         <x-booking-status :status="$booking->status" />
     </div>
 

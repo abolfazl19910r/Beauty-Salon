@@ -43,6 +43,17 @@ class FaTest extends TestCase
         $this->assertSame('۲۰۰٬۰۰۰', Fa::number('200000.00'));
     }
 
+    public function test_identifiers_keep_their_leading_zero_and_get_no_separator(): void
+    {
+        $this->assertSame('۰۹۱۲۳۴۵۶۷۸۹', Fa::number('09123456789'));
+        $this->assertSame('۰۰۱۲۳۴۵۶۷۸', Fa::number('0012345678'));
+        $this->assertSame('۱e۵', Fa::number('1e5'));
+        $this->assertSame('۱۲۳۴۵۶۷۸۹۰۱۲۳۴۵۶', Fa::number('1234567890123456'));
+        $this->assertSame('۰', Fa::number('0'));
+        $this->assertSame('۰٫۵', Fa::number('0.5', 1));
+        $this->assertSame('۱۵', Fa::number('15'));
+    }
+
     public function test_signed_numbers_stay_glued_to_their_sign_in_rtl(): void
     {
         $this->assertSame("\u{2066}−۵۰٬۰۰۰\u{2069}", Fa::money(-50000));

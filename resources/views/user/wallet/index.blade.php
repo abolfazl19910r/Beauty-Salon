@@ -127,9 +127,9 @@
                                                 {{ fa_date($transaction->created_at, true) }}
                                             </span>
                                             @if($transaction->booking)
-                                                <span class="persian-number">نوبت #{{ fa_num($transaction->booking_id) }}</span>
+                                                <span class="persian-number">نوبت #{{ \App\Support\Fa::digits($transaction->booking_id) }}</span>
                                                 @if($transaction->booking->payment_reference)
-                                                    <span class="persian-number" dir="ltr">پیگیری: {{ fa_num($transaction->booking->payment_reference) }}</span>
+                                                    <span class="persian-number" dir="ltr">پیگیری: {{ \App\Support\Fa::digits($transaction->booking->payment_reference) }}</span>
                                                 @endif
                                             @endif
                                         </div>

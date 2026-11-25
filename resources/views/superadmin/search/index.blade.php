@@ -61,7 +61,7 @@
                     <tbody>
                     @foreach ($results['invoices'] as $invoice)
                         <tr style="border-top: 1px solid var(--sa-border);" data-search-invoice>
-                            <td class="py-2 px-4"><a href="{{ route('superadmin.payments.show', $invoice) }}" class="font-bold" style="color: var(--sa-accent);">#{{ fa_num($invoice->id) }}</a></td>
+                            <td class="py-2 px-4"><a href="{{ route('superadmin.payments.show', $invoice) }}" class="font-bold" style="color: var(--sa-accent);">#{{ \App\Support\Fa::digits($invoice->id) }}</a></td>
                             <td class="py-2 px-4">{{ $invoice->salon?->name ?? '—' }}</td>
                             <td class="py-2 px-3">{{ fa_money($invoice->amount, true) }}</td>
                             <td class="py-2 px-3"><x-sa.pill :tone="['paid' => 'success', 'failed' => 'danger'][$invoice->status] ?? 'warn'">{{ ['paid' => 'پرداخت‌شده', 'pending' => 'در انتظار', 'failed' => 'ناموفق'][$invoice->status] ?? $invoice->status }}</x-sa.pill></td>

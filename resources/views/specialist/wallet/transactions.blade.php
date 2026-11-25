@@ -131,7 +131,7 @@
                                 <div>
                                     <p class="text-sm text-[var(--specialist-text)]">{{ $transaction->description }}</p>
                                     @if($transaction->booking_id)
-                                        <p class="text-xs text-[var(--specialist-plum-muted)] persian-number">نوبت #{{ fa_num($transaction->booking_id) }}</p>
+                                        <p class="text-xs text-[var(--specialist-plum-muted)] persian-number">نوبت #{{ \App\Support\Fa::digits($transaction->booking_id) }}</p>
                                     @endif
                                 </div>
                             </div>
