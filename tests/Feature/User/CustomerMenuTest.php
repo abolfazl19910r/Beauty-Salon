@@ -33,11 +33,11 @@ class CustomerMenuTest extends TestCase
         $make('cancelled', 4, 13);
     }
 
-    public function test_account_page_has_tabs_with_the_upcoming_count_and_one_logout_inside_the_menu(): void
+    public function test_account_page_has_a_sidebar_with_the_upcoming_count_and_one_logout_inside_the_menu(): void
     {
         $html = $this->actingAs($this->user)->get(route('dashboard'))->assertOk()->getContent();
 
-        $this->assertStringContainsString('data-account-tabs', $html);
+        $this->assertStringContainsString('data-account-sidebar', $html);
         preg_match_all('/data-account-tab="([a-z]+)"/', $html, $m);
         $this->assertSame('dashboard', $m[1][0]);
         $this->assertContains('bookings', $m[1]);
@@ -47,7 +47,11 @@ class CustomerMenuTest extends TestCase
         $this->assertMatchesRegularExpression('/data-account-tab="dashboard"\s+aria-current="page"/', $html);
 
         $this->assertMatchesRegularExpression('/<details[^>]*data-account-menu.*?خروج.*?<\/details>/s', $html);
-        $this->assertSame(1, substr_count($html, '>خروج</button>') - substr_count($html, 'block w-full text-right py-2 nav-link">خروج</button>'));
+        $this->assertSame(1, substr_count($html, '>خروج</button>') - substr_count($html, 'block w-full text-right py-2 nav-link">خروج</button>') - substr_count($html, 'data-account-logout>خروج</button>'));
+        // نوار کناری حساب (آزمون ویندوز بسته‌ی ۴): کارت مشتری با موجودی کیف پول، منو با آیکون، رزرو و خروج
+        $this->assertStringContainsString('data-account-card', $html);
+        $this->assertStringContainsString('data-account-wallet', $html);
+        $this->assertSame(1, substr_count($html, 'data-account-logout'));
         $this->assertStringContainsString('data-header-book', $html);
         $this->assertStringNotContainsString('امتیازات من', $html);
     }
@@ -56,7 +60,7 @@ class CustomerMenuTest extends TestCase
     {
         $html = $this->actingAs($this->user)->get(route('services.index'))->assertOk()->getContent();
 
-        $this->assertStringNotContainsString('data-account-tabs', $html);
+        $this->assertStringNotContainsString('data-account-sidebar', $html);
         $this->assertSame(1, preg_match('/<nav[^>]*data-customer-bottom[^>]*>(.*?)<\/nav>/s', $html, $bottom));
         foreach (['خانه', 'نوبت‌ها', 'رزرو', 'کیف پول', 'پروفایل'] as $label) {
             $this->assertStringContainsString($label, $bottom[1]);
@@ -75,7 +79,7 @@ class CustomerMenuTest extends TestCase
     {
         $specialist = Specialist::factory()->create();
         $this->actingAs(User::find($specialist->user_id))->get(route('services.index'))->assertOk()
-            ->assertDontSee('data-customer-bottom', false)->assertDontSee('data-account-tabs', false)
+            ->assertDontSee('data-customer-bottom', false)->assertDontSee('data-account-sidebar', false)
             ->assertSee('data-account-menu', false)->assertSee('پنل کاری');
     }
 

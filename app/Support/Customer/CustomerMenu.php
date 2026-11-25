@@ -10,7 +10,7 @@ use App\Support\Features\Feature;
 
 /**
  * منوی حساب مشتری در سایت سالن (بسته‌ی ۴ ظاهری، ۲۰۲۶-۱۱-۲۵) — یک منبع برای منوی حساب ردیف اول سربرگ، تب‌های حساب
- * (ردیف دوم، فقط در صفحه‌های حساب) و منوی پایین موبایل (همه‌ی صفحه‌ها برای مشتری واردشده؛ تصمیم «الف»).
+ * (نوار کناری دسکتاپ، فقط در صفحه‌های حساب) و منوی پایین موبایل (همه‌ی صفحه‌ها برای مشتری واردشده؛ تصمیم «الف»).
  */
 final class CustomerMenu
 {
@@ -92,7 +92,23 @@ final class CustomerMenu
         return $tabs;
     }
 
-    /** صفحه‌ی فعلی یکی از صفحه‌های حساب است (ردیف دوم سربرگ فقط همین‌جا؛ تصمیم «الف») */
+    /**
+     * کارت مشتری بالای نوار کناری حساب (آزمون ویندوز بسته‌ی ۴، تصمیم ابوالفضل): موجودی کیف پول و امتیاز باشگاه.
+     *
+     * @return array{walletBalance: float, loyaltyOn: bool, loyaltyPoints: int}
+     */
+    public static function summary(User $user): array
+    {
+        $loyaltyOn = app(CurrentSalon::class)->get()?->hasFeature(Feature::Loyalty) ?? false;
+
+        return [
+            'walletBalance' => (float) ($user->wallet?->balance ?? 0),
+            'loyaltyOn' => $loyaltyOn,
+            'loyaltyPoints' => $loyaltyOn ? (int) app(\App\Repositories\Contracts\LoyaltyPointRepositoryInterface::class)->sumForUser($user->id) : 0,
+        ];
+    }
+
+    /** صفحه‌ی فعلی یکی از صفحه‌های حساب است (نوار کناری حساب فقط همین‌جا) */
     public static function isAccountPage(): bool
     {
         foreach (self::TABS as $tab) {
