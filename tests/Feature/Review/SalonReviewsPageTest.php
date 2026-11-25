@@ -60,6 +60,7 @@ class SalonReviewsPageTest extends TestCase
         $this->assertStringContainsString('>۴</div>', $html, 'میانگین (۵+۳)/۲');
         $this->assertSame(2, substr_count($html, 'data-review-card'));
         $this->assertStringNotContainsString('name="rating"', $html, 'ثبت نظر در این صفحه نیست');
+        $this->assertSame(1, preg_match('/<title>نظر مشتری‌ها \| [^|<]+<\/title>/u', $html), 'نام سالن یک بار در عنوان');
     }
 
     public function test_filters_by_expert_and_rating(): void

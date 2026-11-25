@@ -6,7 +6,7 @@
     رنگ‌ها فقط توکن‌های --m-* تا در طلایی ماهرو و هر ۴ پالت درست باشد. داده: SalonReviewController.
 --}}
 
-@section('title', 'نظر مشتری‌ها | '.$currentSalonName)
+@section('title', 'نظر مشتری‌ها')
 
 @section('content')
     @php
