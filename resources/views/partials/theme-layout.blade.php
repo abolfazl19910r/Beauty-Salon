@@ -34,17 +34,23 @@ html[data-layout=editorial] #main-navbar,html[data-layout=editorial] #main-navba
 html[data-layout=editorial] #main-navbar .nav-link{letter-spacing:.02em}
 </style>
 @elseif ($layout === 'showcase')
+{{-- بسته‌ی ۵ب — «نمایشگاه» (استودیو + گالری + کاتالوگ): تیترها با کوفی پررنگ، متن وزیرمتن، گوشه‌های نرم، سربرگ ساده با خط زیرین --}}
+<link rel="preload" href="{{ asset('fonts/mahru/NotoKufiArabic-Bold.woff2') }}" as="font" type="font/woff2" crossorigin>
 <style data-theme-layout="showcase">
-@font-face{font-family:"Mahru";src:url("{{ asset('fonts/mahru/Vazirmatn-ExtraLight.woff2') }}") format("woff2");font-weight:200;font-display:swap}
-@font-face{font-family:"Mahru";src:url("{{ asset('fonts/mahru/Vazirmatn-Light.woff2') }}") format("woff2");font-weight:300;font-display:swap}
-html[data-layout=showcase]{--m-r-lg:16px;--m-r-md:12px;--m-r-sm:10px;--m-display:"Mahru",sans-serif}
-html[data-layout=showcase] .font-serif-fa,html[data-layout=showcase] h1{font-weight:300;letter-spacing:-.01em}
-html[data-layout=showcase] h2{font-weight:500}
-html[data-layout=showcase] main.container{max-width:980px}
-html[data-layout=showcase] .rounded-2xl,html[data-layout=showcase] .rounded-3xl{border-radius:16px}
-html[data-layout=showcase] .btn-gold,html[data-layout=showcase] .m-btn,html[data-layout=showcase] .btn-glass,html[data-layout=showcase] .m-btn-ghost{border-radius:12px!important;font-weight:500;box-shadow:none}
-html[data-layout=showcase] .m-card,html[data-layout=showcase] .auth-card,html[data-layout=showcase] .specialist-card{box-shadow:none;border-color:var(--m-line2)}
-html[data-layout=showcase] #main-navbar,html[data-layout=showcase] #main-navbar.scrolled{background:rgb(var(--m-bg));box-shadow:none;border-bottom:1px solid var(--m-line)}
+@font-face{font-family:"MahruKufi";src:url("{{ asset('fonts/mahru/NotoKufiArabic-Bold.woff2') }}") format("woff2");font-weight:500 700;font-display:swap}
+@font-face{font-family:"MahruKufi";src:url("{{ asset('fonts/mahru/NotoKufiArabic-Black.woff2') }}") format("woff2");font-weight:800 900;font-display:swap}
+html[data-layout=showcase]{--m-r-lg:22px;--m-r-md:16px;--m-r-sm:14px;--m-display:"MahruKufi","Mahru",sans-serif}
+html[data-layout=showcase] .font-serif-fa,html[data-layout=showcase] h1,html[data-layout=showcase] h2{font-family:var(--m-display);font-weight:700;letter-spacing:0}
+html[data-layout=showcase] .rounded-xl{border-radius:16px}
+html[data-layout=showcase] .rounded-2xl{border-radius:22px}
+html[data-layout=showcase] .rounded-3xl{border-radius:30px}
+html[data-layout=showcase] .btn-gold,html[data-layout=showcase] .m-btn,html[data-layout=showcase] .btn-glass,html[data-layout=showcase] .m-btn-ghost{border-radius:14px!important;font-weight:800;box-shadow:none}
+html[data-layout=showcase] .m-card,html[data-layout=showcase] .auth-card,html[data-layout=showcase] .specialist-card,html[data-layout=showcase] .admin-card{border-radius:22px;box-shadow:none;border-color:var(--m-line2)}
+html[data-layout=showcase] #main-navbar,html[data-layout=showcase] #main-navbar.scrolled{background:rgb(var(--m-bg) / .96);border-bottom:1px solid var(--m-line);box-shadow:none}
+.sc-hdr .nav-link{color:rgb(var(--m-tx))}
+.sc-hdr__name{font-family:var(--m-display);font-size:18px;font-weight:700;color:rgb(var(--m-tx))}
+.sc-hdr__book{background:rgb(var(--m-gold));color:var(--m-on-gold);padding:9px 20px;border-radius:14px;font-weight:800}
+.sc-hdr__book:hover{filter:brightness(1.06)}
 </style>
 @elseif ($layout === 'app')
 {{-- بسته‌ی ۵الف — «اپ»: وزیرمتن پررنگ، گوشه‌های خیلی گرد، سربرگ ساده با خط زیرین و دکمه‌ی قرصی پررنگ --}}

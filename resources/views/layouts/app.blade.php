@@ -65,7 +65,7 @@
     // بسته‌ی ۵الف: هر چیدمان سربرگ و پانویس خودش را دارد (partials/site-header/*، partials/site-footer)
     $__siteAppearance = app(\App\Support\Themes\CurrentAppearance::class)->get();
     $__siteLayout = $__siteAppearance->isDefaultSite() ? 'mahru' : $__siteAppearance->layout;
-    $__headerVariant = in_array($__siteLayout, ['signature', 'app'], true) ? $__siteLayout : 'default';
+    $__headerVariant = in_array($__siteLayout, ['signature', 'app', 'showcase'], true) ? $__siteLayout : 'default';
     // بسته‌ی ۵الف: پیوند «نظرها» (پانویس، کشوی موبایل) فقط وقتی سالن نظر تأییدشده دارد
     $__reviewsCount = $__navSalon ? (int) \Illuminate\Support\Facades\Cache::remember("salon_reviews_count:{$__navSalon->id}", 1800, fn () => \App\Models\Review::query()->where('is_approved', true)->count()) : 0;
 @endphp

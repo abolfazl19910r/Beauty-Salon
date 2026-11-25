@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 /**
- * بسته‌ی ۵الف: صفحه‌ی خانه‌ی «شاهکار» و «اپ» با داده‌ی واقعی (فرم رزرو، ساعت‌های خالی، منوی خدمات، کارت سالن، کاشی‌ها).
+ * بسته‌ی ۵الف/۵ب: صفحه‌ی خانه‌ی «شاهکار»، «اپ»، «نمایشگاه» و «روزنامه‌ی سالن» با داده‌ی واقعی.
  */
 class TemplateHomesTest extends TestCase
 {
@@ -131,5 +131,63 @@ class TemplateHomesTest extends TestCase
         app(CurrentSalon::class)->get()->forceFill(['site_theme' => null])->save();
         SalonAppearance::flush();
         $this->get(route('services.index'))->assertOk()->assertSee('placeholder-service.svg')->assertSee('from-[#C9A24B]', false);
+    }
+
+    public function test_showcase_home_has_the_free_slot_card_catalog_and_gallery_frame(): void
+    {
+        GalleryImage::factory()->create(['is_active' => true, 'order' => 1, 'title' => 'نمونه‌ی اول',
+            'service_id' => $this->service->id, 'specialist_id' => $this->specialist->id]);
+        GalleryImage::factory()->create(['is_active' => true, 'order' => 2, 'title' => 'نمونه‌ی دوم']);
+        $this->choose('showcase:turquoise');
+        $html = $this->get(route('home'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('data-template-home="showcase"', $html);
+        $this->assertStringContainsString('class="fixed top-0 inset-x-0 z-50 sc-hdr"', $html, 'سربرگ «نمایشگاه»');
+        $this->assertStringContainsString('زیبایی با آرامش', $html);
+        $this->assertStringContainsString('نزدیک‌ترین نوبت خالی', $html);
+        $this->assertStringContainsString('امروز، ۱۸:۳۰', $html);
+        $this->assertStringContainsString('date=2026-11-24&amp;time=18%3A30', $html);
+        $this->assertStringContainsString('۶۰ دقیقه، <span data-sc-samples>۱ نمونه‌کار</span>', $html, 'شمار نمونه‌کارهای پیوندخورده به خدمت');
+        $this->assertStringContainsString('نمونه‌کار ۱ از ۲، رنگ کامل', $html);
+        $this->assertStringContainsString('این خدمت را با همین کارشناس رزرو کنید', $html);
+        $this->assertStringContainsString('service='.$this->service->id.'&amp;specialist='.$this->specialist->id, $html);
+        $this->assertStringContainsString('data-sc-expert>سارا</span>', $html);
+        $this->assertStringContainsString('data-sc-thumb="1"', $html);
+        $this->assertStringContainsString('نوبت خالی: امروز ۱۸:۳۰', $html);
+    }
+
+    public function test_showcase_frame_falls_back_to_the_cover_then_palette_art(): void
+    {
+        $this->specialist->schedules()->delete();
+        app(CurrentSalon::class)->get()->forceFill(['cover_path' => 'salons/1/branding/cover.jpg'])->save();
+        $this->choose('showcase:rose');
+        $html = $this->get(route('home'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('branding/cover.jpg', $html);
+        $this->assertStringNotContainsString('data-sc-thumb="', $html);
+        $this->assertStringNotContainsString('<span data-sc-samples>', $html);
+        $this->assertStringContainsString('روز و ساعت دلخواه', $html, 'بی نوبت خالی، کارت نوبت آنلاین');
+        $this->assertStringContainsString('نوبت بعدی‌تان را رزرو کنید', $html);
+
+        app(CurrentSalon::class)->get()->forceFill(['cover_path' => null])->save();
+        Cache::flush();
+        $html = $this->get(route('home'))->assertOk()->getContent();
+        $this->assertStringNotContainsString('branding/cover.jpg', $html);
+        $this->assertMatchesRegularExpression('/class="m-art sc-frame__art"[^>]*data-palette-art/', $html);
+    }
+
+    public function test_gallery_changes_refresh_the_showcase_frame(): void
+    {
+        $this->choose('showcase:sage');
+        $this->get(route('home'))->assertOk()->assertDontSee('نمونه‌کار ۱ از');
+
+        $admin = \App\Models\User::factory()->create(['is_admin' => true]);
+        \Illuminate\Support\Facades\Storage::fake('public');
+        $this->actingAs($admin)->post('/admin/gallery', [
+            'title' => 'تازه', 'image' => \Illuminate\Http\UploadedFile::fake()->image('a.jpg'),
+        ]);
+        auth()->logout();
+
+        $this->get(route('home'))->assertOk()->assertSee('نمونه‌کار ۱ از ۱، تازه');
     }
 }

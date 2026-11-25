@@ -47,6 +47,8 @@ class AdminGalleryController extends Controller
             'order' => $this->galleryImageRepository->count() + 1,
         ]);
 
+        \App\Services\Salon\TemplateHomeData::forgetGallery((int) app(\App\Support\CurrentSalon::class)->id());
+
         return redirect()->route('admin.gallery.index')
             ->with('success', 'تصویر با موفقیت اضافه شد.');
     }
@@ -60,6 +62,8 @@ class AdminGalleryController extends Controller
             'specialist_id' => $request->validated('specialist_id'),
         ]);
 
+        \App\Services\Salon\TemplateHomeData::forgetGallery((int) app(\App\Support\CurrentSalon::class)->id());
+
         return redirect()->route('admin.gallery.index')
             ->with('success', 'پیوند نمونه‌کار ذخیره شد.');
     }
@@ -70,6 +74,8 @@ class AdminGalleryController extends Controller
 
         Storage::disk('public')->delete($image->image_path);
         $this->galleryImageRepository->delete($image);
+
+        \App\Services\Salon\TemplateHomeData::forgetGallery((int) app(\App\Support\CurrentSalon::class)->id());
 
         return redirect()->route('admin.gallery.index')
             ->with('success', 'تصویر با موفقیت حذف شد.');
@@ -85,6 +91,8 @@ class AdminGalleryController extends Controller
             $this->swapOrder($image, $previous);
         }
 
+        \App\Services\Salon\TemplateHomeData::forgetGallery((int) app(\App\Support\CurrentSalon::class)->id());
+
         return redirect()->route('admin.gallery.index');
     }
 
@@ -97,6 +105,8 @@ class AdminGalleryController extends Controller
         if ($next) {
             $this->swapOrder($image, $next);
         }
+
+        \App\Services\Salon\TemplateHomeData::forgetGallery((int) app(\App\Support\CurrentSalon::class)->id());
 
         return redirect()->route('admin.gallery.index');
     }
