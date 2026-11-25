@@ -4,7 +4,9 @@ namespace Tests\Feature\Themes;
 
 use App\Models\BeautyService;
 use App\Models\Category;
+use App\Models\GalleryImage;
 use App\Models\Plan;
+use App\Models\Review;
 use App\Models\Specialist;
 use App\Models\SpecialistSchedule;
 use App\Services\Plans\DefaultPlans;
@@ -86,5 +88,34 @@ class TemplateHomesTest extends TestCase
         $this->choose('signature:sage');
 
         $this->get(route('home'))->assertOk()->assertSee('انتخاب روز و ساعت')->assertDontSee('نوبت خالی:');
+    }
+
+    public function test_app_home_has_the_salon_card_free_band_and_tiles(): void
+    {
+        Review::factory()->create(['is_approved' => true, 'overall_rating' => 4]);
+        GalleryImage::factory()->count(3)->create(['is_active' => true]);
+        $this->choose('app:lilac');
+        $html = $this->get(route('home'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('data-ap-salon-card', $html);
+        $this->assertStringContainsString('باز تا ۲۱', $html);
+        $this->assertStringContainsString('۴ از ۱ نظر', $html);
+        $this->assertStringContainsString('href="tel:02100000002"', $html);
+        $this->assertStringContainsString('data-ap-free', $html);
+        $this->assertStringContainsString('date=2026-11-24&amp;time=18%3A30', $html);
+        $this->assertStringContainsString('رنگ کامل', $html);
+        $this->assertStringContainsString('همه‌ی خدمات و قیمت‌ها', $html);
+        $this->assertStringContainsString('نمونه‌کارها، ۳ عکس', $html);
+    }
+
+    public function test_app_hides_blocks_without_data(): void
+    {
+        $this->specialist->schedules()->delete();
+        app(CurrentSalon::class)->get()->forceFill(['working_hours' => null])->save();
+        $this->choose('app:turquoise');
+
+        $this->get(route('home'))->assertOk()
+            ->assertDontSee('data-ap-free', false)->assertDontSee('data-ap-today', false)->assertDontSee('data-ap-gallery', false)
+            ->assertDontSee('نظرها');
     }
 }

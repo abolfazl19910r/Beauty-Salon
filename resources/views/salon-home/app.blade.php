@@ -1,6 +1,12 @@
 @extends('layouts.app')
 
-{{-- ⭐ بسته‌ی «و» — چیدمان «بنتو»: همه‌چیز در کاشی‌های اندازه‌دار مثل یک اپ؛ تیترها با کوفی، گوشه‌های خیلی گرد. --}}
+{{--
+    ⭐ بسته‌ی ۵الف — قالب «اپ» (app = لینک + بنتو + تقویم؛ بوم «۴ قالب ترکیبی»، پیش‌نمایش یاس روشن):
+    ستون کناری چسبان «کارت سالن» (نشان در حلقه، نام، توضیح، امتیاز، «باز تا X»، «رزرو نوبت»، تماس / مسیریابی / نظرها) — همین
+    کارت در موبایل بالای صفحه و مناسب لینک بیو اینستاگرام؛ کنارش نوار تیره‌ی «نوبت‌های خالی» (۶ ساعت نزدیک، همه‌ی کارشناسان)،
+    کاشی‌های خدمات، کاشی رنگ دوم «همه‌ی خدمات و قیمت‌ها»، کاشی کارشناسان با نوبت بعدی و کاشی «نمونه‌کارها، N عکس» (فقط با گالری).
+    هر تکه بی داده‌ی واقعی پنهان است. داده: HomeController + TemplateHomeData.
+--}}
 
 @section('title', $currentSalonName)
 
@@ -8,103 +14,135 @@
 
 @section('content')
     @php
-        $bServices = collect($services ?? []);
-        $bSpecialists = collect($specialists ?? []);
-        $bHero = $bServices->first(fn ($s) => $s->image_url);
+        $apReviews = (int) ($reviewStats['count'] ?? 0);
+        $apToday = $template['today'] ?? null;
+        $apNearest = $template['nearest'] ?? [];
+        $apNext = $template['nextFree'] ?? [];
+        $apTiles = collect($template['menu'] ?? [])->flatMap(fn ($g) => collect($g['services'])->map(fn ($s) => ['service' => $s, 'category' => $g['name']]))->take(5);
+        $apMore = max(0, (int) ($template['serviceCount'] ?? 0) - $apTiles->count());
+        $apCategories = collect($template['menu'] ?? [])->pluck('name')->unique()->take(3)->implode('، ');
+        $apSalon = app(\App\Support\CurrentSalon::class)->get();
+        $apDirections = $apSalon ? \App\Support\SalonMapLocation::directionsUrl($apSalon) : null;
+        $apGallery = (int) ($template['galleryCount'] ?? 0);
     @endphp
     <style>
-        .b-grid{display:grid;gap:14px;grid-template-columns:repeat(2,minmax(0,1fr))}
-        @media (min-width:1024px){.b-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
-        .b-t{background:rgb(var(--m-bg2));border:1px solid var(--m-line);border-radius:28px;padding:22px;overflow:hidden;position:relative}
-        .b-fill{background:var(--m-btn);color:var(--m-on-gold);border-color:transparent}
-        .b-soft{background:rgb(var(--m-gold) / .12);border-color:transparent}
-        .b-lab{font-size:13px;font-weight:600;color:rgb(var(--m-mu))}
-        .b-fill .b-lab{color:inherit;opacity:.8}
-        .b-k{font-family:var(--m-display, "Mahru");font-weight:800}
-        .b-span2{grid-column:span 2}
-        @media (min-width:1024px){.b-hero{grid-column:span 2;grid-row:span 2}}
-        .b-ic{width:46px;height:46px;border-radius:16px;background:rgb(var(--m-gold) / .14);color:rgb(var(--m-gold));display:flex;align-items:center;justify-content:center}
+        .ap{color:rgb(var(--m-tx))}
+        .ap-card{background:rgb(var(--m-bg2));border:1px solid var(--m-line);border-radius:26px;padding:22px}
+        .ap-side{display:flex;flex-direction:column;gap:12px;padding:26px}
+        @media (min-width:1024px){.ap-side{position:sticky;top:96px}}
+        .ap-ring{width:72px;height:72px;border-radius:50%;background:rgb(var(--m-bg3));display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 3px rgb(var(--m-bg2)),0 0 0 5px rgb(var(--m-gold));flex-shrink:0;overflow:hidden}
+        .ap h1{margin:0;font-size:24px;font-weight:900;line-height:1.5}
+        .ap-chip{background:rgb(var(--m-bg3));padding:4px 10px;border-radius:999px;font-size:13px}
+        .ap-chip--ok{background:rgb(var(--m-ok) / .14);color:rgb(var(--m-ok))}
+        .ap-book{text-align:center;background:rgb(var(--m-gold));color:var(--m-on-gold);padding:15px;border-radius:18px;font-weight:800;font-size:16px}
+        .ap-act{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 0;border-radius:16px;background:rgb(var(--m-bg3));color:rgb(var(--m-tx));font-size:13px}
+        .ap-act svg{width:20px;height:20px;color:rgb(var(--m-gold))}
+        .ap-band{background:rgb(var(--m-tx));color:rgb(var(--m-bg));border-radius:26px;padding:24px}
+        .ap-slot{text-align:center;padding:12px 0;border-radius:16px;background:rgb(var(--m-bg) / .08);color:rgb(var(--m-bg))}
+        .ap-slot:first-child{background:rgb(var(--m-bg));color:rgb(var(--m-tx))}
+        .ap-slot span{display:block;font-size:12px;opacity:.75}
+        .ap-slot b{font-size:17px}
+        .ap-tile{display:flex;flex-direction:column;gap:6px;color:rgb(var(--m-tx));min-height:130px}
+        .ap-tile:hover{border-color:var(--m-line2)}
+        .ap-tile__cat{font-size:12.5px;color:rgb(var(--m-accent2))}
+        .ap-tile__meta{margin-top:auto;padding-top:12px;font-size:14px;color:rgb(var(--m-mu))}
+        .ap-more{background:rgb(var(--m-accent2));color:var(--m-on2);border-radius:26px;padding:22px;display:flex;flex-direction:column;justify-content:space-between;min-height:130px}
+        .ap-face{width:60px;height:60px;border-radius:50%}
     </style>
 
-    <div class="max-w-7xl mx-auto px-1 pt-6 pb-14" dir="rtl">
-        <div class="b-grid">
-            <div class="b-t b-span2 b-hero flex flex-col justify-between" style="min-height:320px">
-                <span class="inline-flex self-start text-sm font-semibold px-4 py-2 rounded-full" style="background:rgb(var(--m-gold) / .14);color:rgb(var(--m-gold))">{{ $currentSalonTagline }}</span>
-                <div>
-                    <h1 class="b-k text-4xl md:text-5xl leading-relaxed text-m-tx">{{ $currentSalonName }}</h1>
-                    <p class="text-m-mu leading-8 my-4">{{ \Illuminate\Support\Str::limit($currentSalonBio, 150) }}</p>
-                    <div class="flex flex-wrap gap-3">
-                        <a href="{{ route('bookings.create') }}" class="btn-gold px-7 py-3.5">رزرو نوبت</a>
-                        <a href="{{ route('services.index') }}" class="btn-glass px-6 py-3.5">خدمات و قیمت‌ها</a>
+    <div class="ap max-w-[1240px] mx-auto px-4 md:px-6 pt-6 pb-14 grid gap-5 lg:grid-cols-[380px_1fr] items-start" dir="rtl" data-template-home="app">
+        <aside class="ap-card ap-side" aria-label="کارت سالن" data-ap-salon-card>
+            <div class="flex gap-3.5 items-center">
+                <span class="ap-ring"><x-brand-emblem class="w-11 h-11" pad="2px" /></span>
+                <div class="min-w-0">
+                    <h1>{{ $currentSalonName }}</h1>
+                    @if ($apCategories !== '')
+                        <span class="text-[13.5px] text-m-mu">{{ $apCategories }}</span>
+                    @endif
+                </div>
+            </div>
+            <p class="m-0 text-[14.5px] leading-[1.9] text-m-mu">{{ \Illuminate\Support\Str::limit($currentSalonBio, 160) }}</p>
+            @if ($apReviews > 0 || $apToday)
+                <div class="flex flex-wrap gap-1.5">
+                    @if ($apReviews > 0)
+                        <span class="ap-chip">{{ fa_num($reviewStats['avg'], 1) }} از {{ fa_num($apReviews) }} نظر</span>
+                    @endif
+                    @if ($apToday)
+                        <span class="ap-chip {{ $apToday['open'] ? 'ap-chip--ok' : '' }}" data-ap-today>{{ $apToday['text'] }}</span>
+                    @endif
+                </div>
+            @endif
+            <a href="{{ route('bookings.create') }}" class="ap-book">رزرو نوبت</a>
+            <div class="grid grid-cols-3 gap-2">
+                @if ($currentSalonPhone)
+                    <a href="tel:{{ $currentSalonPhone }}" class="ap-act"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>تماس</a>
+                @endif
+                @if ($apDirections)
+                    <a href="{{ $apDirections }}" target="_blank" rel="noopener" class="ap-act"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>مسیریابی</a>
+                @endif
+                @if ($apReviews > 0)
+                    <a href="{{ route('specialists.top-rated') }}" class="ap-act"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.5a.56.56 0 011.04 0l2.13 4.32 4.77.69a.56.56 0 01.31.96l-3.45 3.36.81 4.75a.56.56 0 01-.81.59L12 15.92l-4.27 2.25a.56.56 0 01-.81-.59l.81-4.75-3.45-3.36a.56.56 0 01.31-.96l4.77-.69z"/></svg>نظرها</a>
+                @else
+                    <a href="{{ route('services.index') }}" class="ap-act"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10"/></svg>خدمات</a>
+                @endif
+            </div>
+        </aside>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+            @if ($apNearest !== [])
+                <section class="ap-band sm:col-span-2 xl:col-span-3" aria-labelledby="ap-free" data-ap-free>
+                    <div class="flex flex-wrap justify-between items-center gap-2">
+                        <b class="text-lg" id="ap-free">نوبت‌های خالی</b>
+                        <span class="text-[13.5px] opacity-75">همه‌ی کارشناسان، همه‌ی خدمات</span>
                     </div>
-                </div>
-            </div>
-
-            <a href="{{ route('bookings.create') }}" class="b-t b-fill flex flex-col justify-between" style="min-height:150px">
-                <span class="b-lab">رزرو آنلاین</span>
-                <span><span class="b-k text-3xl block">همین حالا</span><span class="text-sm font-bold">ساعت خالی را ببینید ←</span></span>
-            </a>
-
-            @if (($reviewStats['count'] ?? 0) > 0)
-                <div class="b-t flex flex-col justify-between">
-                    <span class="b-lab">امتیاز مشتری‌ها</span>
-                    <span><span class="b-k text-5xl text-m-gold block persian-number">{{ fa_num($reviewStats['avg'], 1) }}</span><span class="text-sm text-m-mu">از {{ to_persian_num((string) $reviewStats['count']) }} نظر</span></span>
-                </div>
-            @else
-                <div class="b-t flex flex-col justify-between">
-                    <span class="b-lab">کارشناسان</span>
-                    <span class="b-k text-5xl text-m-gold persian-number">{{ to_persian_num((string) $bSpecialists->count()) }}</span>
-                </div>
-            @endif
-
-            <div class="b-t" style="padding:0;min-height:150px;background:rgb(var(--m-bg3))">
-                @if ($bHero)<img src="{{ $bHero->image_url }}" alt="{{ $bHero->name }}" loading="lazy" class="w-full h-full object-cover">@endif
-            </div>
-
-            <div class="b-t">
-                <span class="b-lab">ساعت کاری</span>
-                <div class="b-k text-lg mt-2 text-m-tx persian-number leading-8">{{ $currentSalonHours[0] ?? 'برای هماهنگی تماس بگیرید' }}</div>
-            </div>
-
-            @forelse ($bServices->take(3) as $service)
-                <a href="{{ route('bookings.create', ['service' => $service->id]) }}" class="b-t flex flex-col gap-4 justify-between">
-                    <span class="b-ic" aria-hidden="true"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><circle cx="6" cy="7" r="3"/><circle cx="6" cy="17" r="3"/><path d="M8.5 8.5L20 18M8.5 15.5L20 6"/></svg></span>
-                    <span><b class="block text-m-tx">{{ $service->name }}</b><span class="text-sm text-m-mu persian-number">{{ to_persian_num((string) $service->duration) }} دقیقه · {{ fa_num($service->price) }} ت</span></span>
-                </a>
-            @empty
-                <div class="b-t b-span2"><p class="text-m-mu">فهرست خدمات به‌زودی اضافه می‌شود.</p></div>
-            @endforelse
-
-            <a href="{{ route('services.index') }}" class="b-t b-soft flex flex-col gap-4 justify-between" id="services">
-                <span class="b-ic" style="background:rgb(var(--m-bg2))" aria-hidden="true"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><path d="M12 5v14M5 12h14"/></svg></span>
-                <span><b class="block text-m-tx">همه‌ی خدمات</b><span class="text-sm text-m-mu">با قیمت و مدت</span></span>
-            </a>
-
-            @if ($bSpecialists->isNotEmpty())
-                <a href="{{ route('specialists.search') }}" class="b-t b-span2 flex items-center justify-between gap-4" id="specialists">
-                    <span><span class="b-lab">کارشناسان</span><span class="b-k text-xl block mt-1 text-m-tx">{{ $bSpecialists->pluck('name')->take(3)->implode('، ') }}</span></span>
-                    <span class="flex -space-x-3 space-x-reverse">
-                        @foreach ($bSpecialists as $specialist)
-                            @if ($specialist->photoUrl())
-                                <img src="{{ $specialist->photoUrl() }}" alt="" class="w-12 h-12 rounded-full object-cover border-2" style="border-color:rgb(var(--m-bg2))">
-                            @else
-                                <span class="w-12 h-12 rounded-full flex items-center justify-center border-2 text-m-gold" style="background:rgb(var(--m-bg3));border-color:rgb(var(--m-bg2))">{{ mb_substr($specialist->name, 0, 1) }}</span>
-                            @endif
+                    <div class="mt-3.5 grid grid-cols-3 md:grid-cols-6 gap-2">
+                        @foreach ($apNearest as $slot)
+                            <a href="{{ route('bookings.create', ['specialist' => $slot['specialist_id'], 'date' => $slot['date'], 'time' => $slot['time']]) }}" class="ap-slot">
+                                <span>{{ $slot['day_label'] }}</span><b>{{ $slot['label'] }}</b>
+                            </a>
                         @endforeach
-                    </span>
+                    </div>
+                </section>
+            @endif
+
+            @foreach ($apTiles as $tile)
+                <a href="{{ route('bookings.create', ['service' => $tile['service']->id]) }}" class="ap-card ap-tile" data-ap-service>
+                    <span class="ap-tile__cat">{{ $tile['category'] }}</span>
+                    <b class="text-lg">{{ $tile['service']->name }}</b>
+                    <span class="ap-tile__meta">{{ fa_num($tile['service']->duration) }} دقیقه، از {{ fa_money($tile['service']->price) }} تومان</span>
+                </a>
+            @endforeach
+
+            @if (($template['serviceCount'] ?? 0) > 0)
+                <a href="{{ route('services.index') }}" class="ap-more" data-ap-all-services>
+                    <span class="text-[13.5px] opacity-85">{{ $apMore > 0 ? fa_num($apMore).' خدمت دیگر' : 'قیمت و مدت هر خدمت' }}</span>
+                    <b class="text-[19px]">همه‌ی خدمات و قیمت‌ها</b>
                 </a>
             @endif
 
-            @if ($currentSalonAddress || $currentSalonPhone)
-                <div class="b-t b-span2 flex items-center gap-4">
-                    <span class="b-ic" style="width:56px;height:56px" aria-hidden="true"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg></span>
-                    <span><span class="b-lab">نشانی و تماس</span><b class="block mt-1 text-m-tx">{{ $currentSalonAddress }}</b>@if ($currentSalonPhone)<a href="tel:{{ $currentSalonPhone }}" class="text-sm text-m-mu" dir="ltr">{{ $currentSalonPhone }}</a>@endif</span>
+            @if (collect($specialists ?? [])->isNotEmpty())
+                <section class="ap-card sm:col-span-2" aria-labelledby="ap-team">
+                    <b class="text-[17px]" id="ap-team">کارشناسان</b>
+                    <div class="mt-3.5 flex flex-wrap justify-between gap-4">
+                        @foreach ($specialists as $specialist)
+                            <a href="{{ route('specialists.show', $specialist) }}" class="flex flex-col items-center gap-1.5 text-m-tx" data-ap-person>
+                                <x-palette-art class="ap-face" :src="$specialist->photoUrl()" :variant="$loop->index" :alt="$specialist->name" />
+                                <b class="text-sm">{{ $specialist->name }}</b>
+                                @if (isset($apNext[$specialist->id]))
+                                    <span class="text-xs text-m-gold">{{ $apNext[$specialist->id]['text'] }}</span>
+                                @endif
+                            </a>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+
+            @if ($apGallery > 0)
+                <div class="relative min-h-[170px] rounded-[26px] overflow-hidden" data-ap-gallery>
+                    <x-palette-art class="absolute inset-0" :src="$template['galleryCover'] ?? null" :variant="3" alt="نمونه‌کار سالن" />
+                    <span class="absolute bottom-3 right-3.5 text-xs text-white bg-black/25 px-2.5 py-0.5 rounded-full">نمونه‌کارها، {{ fa_num($apGallery) }} عکس</span>
                 </div>
             @endif
         </div>
     </div>
-
-    @if ($appSalon = app(\App\Support\CurrentSalon::class)->get())
-        @include('partials.open-in-app', ['appSalon' => $appSalon])
-    @endif
 @endsection

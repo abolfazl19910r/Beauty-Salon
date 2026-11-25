@@ -237,7 +237,8 @@ class SalonTemplatesTest extends TestCase
             ->assertDontSee('سال سابقه');
 
         $this->choose('app:sage');
-        $this->get(route('home'))->assertOk()->assertSee('رزرو آنلاین')->assertSee('data-header-book', false);
+        $this->get(route('home'))->assertOk()->assertSee('data-ap-salon-card', false)->assertSee('data-header-book', false)
+            ->assertDontSee('از ۰ نظر')->assertDontSee('data-ap-gallery', false);
     }
 
     public function test_the_preview_parameter_works_only_for_the_salons_own_admins(): void
