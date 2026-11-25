@@ -266,7 +266,7 @@ class SuperAdminToolsTest extends TestCase
         $this->assertSame(0, Plan::trial()->siteThemeAllowance(null));
 
         $this->actingAs($this->super)->get(route('superadmin.templates.index'))->assertOk()
-            ->assertSee('data-template-plan="clinic"', false)->assertSee('data-template-usage="bento:turquoise"', false);
+            ->assertSee('data-template-plan="clinic"', false)->assertSee('data-template-usage="app:turquoise"', false);
 
         $payload = Plan::query()->get()->mapWithKeys(fn (Plan $p) => [$p->id => $p->only(Plan::THEME_FIELDS)])->all();
         $payload[$pro->id] = ['theme_layouts' => 2, 'theme_palettes' => 2, 'theme_layouts_6m' => 4, 'theme_palettes_6m' => 2, 'theme_layouts_12m' => 4, 'theme_palettes_12m' => 4, 'theme_admin_count' => 1];

@@ -8,7 +8,7 @@ use App\Support\CurrentSalon;
 /**
  * ظاهر سالن جاریِ همین درخواست (برای نماها). یک بار برای هر سالن حساب می‌شود.
  *
- * پیش‌نمایش «ظاهر سالن»: ?theme_preview=vitrin:rose فقط برای مدیر همین سالن (یا ابرمدیر) اثر دارد تا قفل‌شده‌ها را هم ببیند؛
+ * پیش‌نمایش «ظاهر سالن»: ?theme_preview=signature:rose فقط برای مدیر همین سالن (یا ابرمدیر) اثر دارد تا قفل‌شده‌ها را هم ببیند؛
  * برای بقیه نادیده گرفته می‌شود.
  */
 class CurrentAppearance
@@ -42,7 +42,8 @@ class CurrentAppearance
     private function previewFor(?Salon $salon): ?string
     {
         $preview = request()?->query('theme_preview');
-        if (! is_string($preview) || $salon === null || ! ThemeCatalog::isSiteKey($preview)) {
+        $preview = is_string($preview) ? ThemeCatalog::normalizeSiteKey($preview) : null;
+        if ($preview === null || $salon === null || ! ThemeCatalog::isSiteKey($preview)) {
             return null;
         }
         $user = auth()->user();

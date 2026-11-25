@@ -102,9 +102,15 @@ final class SalonAppearance
     {
         $tokens = ThemeCatalog::sitePaletteTokens($this->palette);
 
+        [$legacyLayout, $legacyPalette] = [ThemeCatalog::legacyLayout($this->layout), $this->palette];
+
         return [
-            'key' => $this->site,
-            'layout' => $this->layout,
+            // بسته‌ی ۵الف: اپ‌های نصب‌شده فقط کلیدهای قدیمی چیدمان را می‌شناسند (src/lib/salonTheme.ts)؛ key/layout قدیمی می‌ماند
+            // تا build تازه‌ی ۵ب، کلید تازه در template و template_key
+            'key' => $legacyPalette === null ? $this->site : $legacyLayout.':'.$legacyPalette,
+            'layout' => $legacyLayout,
+            'template' => $this->layout,
+            'template_key' => $this->site,
             'palette' => $this->palette ?? 'mahru',
             'name' => ThemeCatalog::siteName($this->site),
             'colors' => [
@@ -127,12 +133,14 @@ final class SalonAppearance
             $allowedAdmin = ThemeCatalog::allowedAdminKeys($plan->adminThemeAllowance());
         }
 
-        $chosenSite = ThemeCatalog::isSiteKey($salon->site_theme) ? $salon->site_theme : null;
+        $stored = ThemeCatalog::normalizeSiteKey($salon->site_theme);
+        $chosenSite = ThemeCatalog::isSiteKey($stored) ? $stored : null;
         $chosenAdmin = ThemeCatalog::isAdminKey($salon->admin_theme) ? $salon->admin_theme : null;
 
         $site = $chosenSite !== null && ($chosenSite === ThemeCatalog::DEFAULT_SITE || in_array($chosenSite, $allowedSite, true))
             ? $chosenSite : ThemeCatalog::DEFAULT_SITE;
         // پیش‌نمایش «ظاهر سالن» (فقط برای مدیر همین سالن، کنترلر بررسی می‌کند) — قفل‌شده‌ها هم دیده می‌شوند
+        $previewSite = ThemeCatalog::normalizeSiteKey($previewSite);
         if ($previewSite !== null && ThemeCatalog::isSiteKey($previewSite)) {
             $site = $previewSite;
         }

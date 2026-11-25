@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Schema;
 /**
  * ⭐ فهرست قالب‌ها (بسته‌ی «و»): خواندن config/themes.php، ترتیب باز شدن چیدمان‌ها و پالت‌ها (ابرمدیر) و توکن‌ها.
  *
- * کلید قالب سایت: «mahru» (پیش‌فرض) یا «چیدمان:پالت» (vitrin:rose). کلید قالب پنل مدیر: side (پیش‌فرض)، rail، top، dense.
+ * کلید قالب سایت: «mahru» (پیش‌فرض) یا «چیدمان:پالت» (signature:rose). کلید قالب پنل مدیر: side (پیش‌فرض)، rail، top، dense.
  * قالب‌های باز یک پلن = چند چیدمانِ اول × چند پالتِ اول به ترتیبی که ابرمدیر چیده (Plan::siteThemeGrid).
  */
 final class ThemeCatalog
@@ -97,6 +97,45 @@ final class ThemeCatalog
     public static function adminKeys(): array
     {
         return array_keys(self::adminThemes());
+    }
+
+    /**
+     * بسته‌ی ۵الف: کلید قدیمی چیدمان (vitrin/majalle/aram/bento) ← کلید تازه؛ کلید ناشناخته همان برمی‌گردد.
+     * برای مقدارهای ذخیره‌شده پیش از migration نگاشت و پیوندهای پیش‌نمایش قدیمی.
+     */
+    public static function normalizeSiteKey(?string $key): ?string
+    {
+        if ($key === null || ! str_contains($key, ':')) {
+            return $key;
+        }
+        [$layout, $palette] = explode(':', $key, 2);
+        $current = self::layoutForLegacy($layout);
+
+        return $current !== null ? $current.':'.$palette : $key;
+    }
+
+    /** @return array<string, string> کلید قدیمی ← کلید تازه */
+    public static function legacyLayouts(): array
+    {
+        $map = [];
+        foreach ((array) config('themes.layouts') as $key => $layout) {
+            if (! empty($layout['legacy'])) {
+                $map[(string) $layout['legacy']] = (string) $key;
+            }
+        }
+
+        return $map;
+    }
+
+    public static function layoutForLegacy(string $legacy): ?string
+    {
+        return self::legacyLayouts()[$legacy] ?? null;
+    }
+
+    /** کلید قدیمی چیدمان برای اپ‌های نصب‌شده (پیش‌فرض و ناشناخته = همان) */
+    public static function legacyLayout(string $layout): string
+    {
+        return (string) (config("themes.layouts.$layout.legacy") ?: $layout);
     }
 
     public static function isSiteKey(?string $key): bool

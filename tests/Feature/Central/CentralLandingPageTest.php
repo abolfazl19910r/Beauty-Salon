@@ -189,14 +189,14 @@ class CentralLandingPageTest extends TestCase
             ->assertSee('id="templates-table"', false)
             ->assertSee('data-theme-row="trial"', false)
             ->assertSee('data-theme-row="pro"', false)
-            ->assertSee('چیدمان: ویترین، مجله')
+            ->assertSee('چیدمان: شاهکار، روزنامه‌ی سالن')
             ->assertSee('همه‌ی ۱۶ قالب')
             ->assertSee('ریل آیکونی');
 
         $pro = collect($page->viewData('planCards'))->firstWhere('key', 'pro');
-        $this->assertSame(['ویترین', 'مجله'], $pro['periods']['1m']['theme_detail']['layouts']);
+        $this->assertSame(['شاهکار', 'روزنامه‌ی سالن'], $pro['periods']['1m']['theme_detail']['layouts']);
         $this->assertSame(['رز موکا', 'مریم‌گلی'], array_column($pro['periods']['1m']['theme_detail']['palettes'], 'name'));
-        $this->assertSame(['ویترین', 'مجله', 'آرام', 'بنتو'], $pro['periods']['12m']['theme_detail']['layouts']);
+        $this->assertSame(['شاهکار', 'روزنامه‌ی سالن', 'نمایشگاه', 'اپ'], $pro['periods']['12m']['theme_detail']['layouts']);
         $this->assertSame(0, $page->viewData('trialCard')['theme_detail']['count']);
     }
 }

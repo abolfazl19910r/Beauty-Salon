@@ -55,15 +55,15 @@
         .spec-top a{font-size:14px;color:var(--specialist-text-dim);padding:8px 14px;text-decoration:none}
         .spec-top a[aria-current=page]{color:var(--specialist-text);font-weight:700}
         .spec-top .spec-top__site{margin-inline-start:auto}
-        .spec-top--majalle a{border-bottom:2px solid transparent;padding:8px 6px;margin:0 8px}
-        .spec-top--majalle a[aria-current=page]{border-bottom-color:rgb(var(--m-gold))}
-        .spec-top--aram{justify-content:center;background:transparent;border:0;padding-top:14px}
-        .spec-top--aram a{border-radius:12px;background:rgb(var(--m-tx) / .04)}
-        .spec-top--aram a[aria-current=page]{background:rgb(var(--m-bg2));box-shadow:0 1px 3px rgba(0,0,0,.12)}
-        .spec-top--bento{margin:12px 16px 0;border:1px solid var(--specialist-border);border-radius:24px}
-        .spec-top--bento a{border-radius:999px;background:rgb(var(--m-tx) / .05)}
-        .spec-top--bento a[aria-current=page]{background:rgb(var(--m-gold) / .14);color:rgb(var(--m-gold))}
-        html[data-layout=aram] .spec-main-inner{max-width:960px;margin:0 auto}
+        .spec-top--editorial a{border-bottom:2px solid transparent;padding:8px 6px;margin:0 8px}
+        .spec-top--editorial a[aria-current=page]{border-bottom-color:rgb(var(--m-gold))}
+        .spec-top--showcase{justify-content:center;background:transparent;border:0;padding-top:14px}
+        .spec-top--showcase a{border-radius:12px;background:rgb(var(--m-tx) / .04)}
+        .spec-top--showcase a[aria-current=page]{background:rgb(var(--m-bg2));box-shadow:0 1px 3px rgba(0,0,0,.12)}
+        .spec-top--app{margin:12px 16px 0;border:1px solid var(--specialist-border);border-radius:24px}
+        .spec-top--app a{border-radius:999px;background:rgb(var(--m-tx) / .05)}
+        .spec-top--app a[aria-current=page]{background:rgb(var(--m-gold) / .14);color:rgb(var(--m-gold))}
+        html[data-layout=showcase] .spec-main-inner{max-width:960px;margin:0 auto}
         /* بسته‌ی ۳ ظاهری: منوی کناری پنل کارشناس */
         .spec-side__link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:14px;color:var(--specialist-text);text-decoration:none;transition:background-color .15s}
         .spec-side__link:hover{background:rgb(var(--m-tx) / .05)}
@@ -98,12 +98,12 @@
 
     @php
         /*
-         * ⭐ بسته‌ی «و»: پنل کارشناس هم قالب سایت سالن را می‌گیرد: منوی کناری (طلایی ماهرو، ویترین) یا نوار بالایی
-         * (مجله: زبانه‌ی زیرخط‌دار، آرام: کلید قرصی، بنتو: کاشی). روی موبایل همیشه کشو + منوی پایین.
+         * ⭐ بسته‌ی «و»: پنل کارشناس هم قالب سایت سالن را می‌گیرد: منوی کناری (طلایی ماهرو، شاهکار) یا نوار بالایی
+         * (روزنامه‌ی سالن: زبانه‌ی زیرخط‌دار، نمایشگاه: کلید قرصی، اپ: کاشی؛ نام‌های بسته‌ی ۵الف). روی موبایل همیشه کشو + منوی پایین.
          * بسته‌ی ۳ ظاهری (۲۰۲۶-۱۱-۲۵): فهرست منو فقط از App\Support\Specialist\SpecialistMenu (با نشان شمار «نوبت‌ها»).
          */
         $__specLayout = app(\App\Support\Themes\CurrentAppearance::class)->get()->layout;
-        $__specTop = in_array($__specLayout, ['majalle', 'aram', 'bento'], true);
+        $__specTop = in_array($__specLayout, ['editorial', 'showcase', 'app'], true);
         $__specSalon = app(\App\Support\CurrentSalon::class)->get();
         $__specialist = $__specSalon ? auth()->user()?->specialist : null;
         $__specNav = \App\Support\Specialist\SpecialistMenu::items($__specialist);
@@ -266,7 +266,7 @@
             </div>
         </header>
         @if ($__specTop)
-            {{-- بسته‌ی «و»: منوی بالایی پنل متخصص در چیدمان‌های مجله/آرام/بنتو (روی موبایل همان کشو و نوار پایین) --}}
+            {{-- بسته‌ی «و»: منوی بالایی پنل متخصص در چیدمان‌های روزنامه‌ی سالن/نمایشگاه/اپ (روی موبایل همان کشو و نوار پایین) --}}
             <nav class="spec-top spec-top--{{ $__specLayout }} hidden md:flex" aria-label="منوی پنل کارشناس">
                 @foreach ($__specNav as $__item)
                     <a href="{{ $__item['url'] }}" @if ($__item['active']) aria-current="page" @endif>{{ $__item['label'] }}@if ($__item['badge'] > 0) <span class="spec-badge" data-spec-badge>{{ fa_num($__item['badge']) }}</span>@endif</a>

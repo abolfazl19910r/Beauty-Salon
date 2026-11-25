@@ -131,7 +131,7 @@ class SalonTemplatesTest extends TestCase
 
     public function test_site_palette_tokens_write_accent2_and_the_default_keeps_gold2(): void
     {
-        $this->choose('vitrin:turquoise');
+        $this->choose('signature:turquoise');
         $html = $this->get(route('home'))->assertOk()->getContent();
         $this->assertStringContainsString('--m-accent2:164 83 47;', $html, 'رنگ دوم روشن فیروزه');
         $this->assertStringContainsString('--m-accent2:229 154 114;', $html, 'رنگ دوم تیره فیروزه');
@@ -144,14 +144,14 @@ class SalonTemplatesTest extends TestCase
 
     public function test_allowed_templates_follow_the_super_admin_order(): void
     {
-        $this->assertSame(['vitrin:rose', 'vitrin:sage', 'majalle:rose', 'majalle:sage'], ThemeCatalog::allowedSiteKeys(2, 2));
+        $this->assertSame(['signature:rose', 'signature:sage', 'editorial:rose', 'editorial:sage'], ThemeCatalog::allowedSiteKeys(2, 2));
 
-        ThemeCatalog::saveOrder(['bento', 'aram', 'majalle', 'vitrin'], ['turquoise', 'lilac', 'sage', 'rose']);
-        $this->assertSame(['bento:turquoise', 'aram:turquoise'], ThemeCatalog::allowedSiteKeys(2, 1));
+        ThemeCatalog::saveOrder(['app', 'showcase', 'editorial', 'signature'], ['turquoise', 'lilac', 'sage', 'rose']);
+        $this->assertSame(['app:turquoise', 'showcase:turquoise'], ThemeCatalog::allowedSiteKeys(2, 1));
         $this->assertSame(['side', 'rail'], ThemeCatalog::allowedAdminKeys(1));
 
         $this->expectException(\InvalidArgumentException::class);
-        ThemeCatalog::saveOrder(['bento', 'bento', 'majalle', 'vitrin'], ['turquoise', 'lilac', 'sage', 'rose']);
+        ThemeCatalog::saveOrder(['app', 'app', 'editorial', 'signature'], ['turquoise', 'lilac', 'sage', 'rose']);
     }
 
     // ─── ظاهر مؤثر سالن ──────────────────────────────────────────
@@ -159,7 +159,7 @@ class SalonTemplatesTest extends TestCase
     public function test_a_chosen_template_applies_only_while_the_plan_and_period_allow_it(): void
     {
         $this->onPlan('pro', '1m');
-        $this->choose('aram:rose', 'rail');
+        $this->choose('showcase:rose', 'rail');
         $appearance = SalonAppearance::for($this->salon->fresh());
         $this->assertSame('mahru', $appearance->site, 'حرفه‌ای ۱ ماهه: فقط ۲ چیدمان اول');
         $this->assertTrue($appearance->siteChoiceSuspended());
@@ -168,15 +168,15 @@ class SalonTemplatesTest extends TestCase
 
         $this->onPlan('pro', '12m');
         $appearance = SalonAppearance::for($this->salon->fresh());
-        $this->assertSame('aram:rose', $appearance->site, 'حرفه‌ای ۱۲ ماهه: هر ۴ چیدمان × ۲ پالت');
-        $this->assertSame(['aram', 'rose'], [$appearance->layout, $appearance->palette]);
-        $this->assertSame('salon-home.aram', $appearance->homeView());
+        $this->assertSame('showcase:rose', $appearance->site, 'حرفه‌ای ۱۲ ماهه: هر ۴ چیدمان × ۲ پالت');
+        $this->assertSame(['showcase', 'rose'], [$appearance->layout, $appearance->palette]);
+        $this->assertSame('salon-home.showcase', $appearance->homeView());
 
         // پایان اشتراک: پیش‌فرض، انتخاب سر جایش
         $this->onPlan('pro', '12m', ['subscription_ends_at' => now()->subDay()]);
         $appearance = SalonAppearance::for($this->salon->fresh());
         $this->assertSame(['mahru', 'side'], [$appearance->site, $appearance->admin]);
-        $this->assertSame('aram:rose', $this->salon->fresh()->site_theme);
+        $this->assertSame('showcase:rose', $this->salon->fresh()->site_theme);
 
         // آزمایشی و پایه ۱ ماهه: فقط پیش‌فرض
         $this->onPlan('trial', '1m', ['trial_ends_at' => now()->addDays(5)]);
@@ -184,7 +184,7 @@ class SalonTemplatesTest extends TestCase
         $this->onPlan('basic', '1m');
         $this->assertSame([], SalonAppearance::for($this->salon->fresh())->allowedSite);
         $this->onPlan('basic', '12m');
-        $this->assertSame(['vitrin:rose', 'majalle:rose'], SalonAppearance::for($this->salon->fresh())->allowedSite);
+        $this->assertSame(['signature:rose', 'editorial:rose'], SalonAppearance::for($this->salon->fresh())->allowedSite);
 
         // سالن پیش از پلن‌ها: همان دسترسی «کامل»
         $this->salon->forceFill(['plan_id' => null, 'subscription_type' => '1m'])->save();
@@ -229,23 +229,23 @@ class SalonTemplatesTest extends TestCase
 
     public function test_layout_homes_show_real_salon_data_not_invented_numbers(): void
     {
-        $this->choose('vitrin:rose');
+        $this->choose('signature:rose');
         $this->get(route('home'))->assertOk()
             ->assertSee('دیدن ساعت‌های خالی')
             ->assertDontSee('+۸۰۰۰')
             ->assertDontSee('از ۰ نظر');
 
-        $this->choose('bento:sage');
+        $this->choose('app:sage');
         $this->get(route('home'))->assertOk()->assertSee('رزرو آنلاین')->assertSee('data-header-book', false);
     }
 
     public function test_the_preview_parameter_works_only_for_the_salons_own_admins(): void
     {
-        $this->get(route('home', ['theme_preview' => 'majalle:lilac']))->assertOk()->assertDontSee('dataset.layout="majalle"', false);
+        $this->get(route('home', ['theme_preview' => 'editorial:lilac']))->assertOk()->assertDontSee('dataset.layout="editorial"', false);
 
         $this->onPlan('basic', '1m'); // قفل است، ولی پیش‌نمایش باز است
-        $this->actingAs($this->owner)->get(route('home', ['theme_preview' => 'majalle:lilac']))->assertOk()
-            ->assertSee('dataset.layout="majalle"', false);
+        $this->actingAs($this->owner)->get(route('home', ['theme_preview' => 'editorial:lilac']))->assertOk()
+            ->assertSee('dataset.layout="editorial"', false);
         $this->actingAs($this->owner)->get(route('home', ['theme_preview' => 'nope:nope']))->assertOk()
             ->assertDontSee('dataset.layout', false);
     }
@@ -255,11 +255,11 @@ class SalonTemplatesTest extends TestCase
         $specialist = Specialist::factory()->create();
         $user = User::find($specialist->user_id);
 
-        $this->choose('vitrin:rose');
+        $this->choose('signature:rose');
         $this->actingAs($user)->get(route('specialist.my-dashboard'))->assertOk()
             ->assertDontSee('class="spec-top spec-top--', false)->assertSee('hidden md:block', false);
 
-        foreach (['majalle', 'aram', 'bento'] as $layout) {
+        foreach (['editorial', 'showcase', 'app'] as $layout) {
             $this->choose("$layout:sage");
             $this->actingAs($user)->get(route('specialist.my-dashboard'))->assertOk()
                 ->assertSee('class="spec-top spec-top--'.$layout, false)
@@ -271,10 +271,10 @@ class SalonTemplatesTest extends TestCase
     public function test_customer_pages_get_the_palette_and_layout(): void
     {
         $customer = User::factory()->create();
-        $this->choose('majalle:turquoise');
+        $this->choose('editorial:turquoise');
 
         $this->actingAs($customer)->get(route('dashboard'))->assertOk()
-            ->assertSee('dataset.layout="majalle"', false)
+            ->assertSee('dataset.layout="editorial"', false)
             ->assertSee('--m-gold:'.config('themes.palettes.turquoise.dark.gold').';', false);
     }
 
@@ -325,20 +325,20 @@ class SalonTemplatesTest extends TestCase
         $this->onPlan('pro', '1m');
 
         $this->actingAs($this->owner)->get(route('admin.appearance.edit'))->assertOk()
-            ->assertSee('data-site-theme="vitrin:rose" data-locked="0"', false)
-            ->assertSee('data-site-theme="bento:turquoise" data-locked="1"', false)
+            ->assertSee('data-site-theme="signature:rose" data-locked="0"', false)
+            ->assertSee('data-site-theme="app:turquoise" data-locked="1"', false)
             ->assertSee('data-admin-theme="rail" data-locked="0"', false)
             ->assertSee('data-admin-theme="top" data-locked="1"', false)
             ->assertSee('با ارتقا باز می‌شود');
 
-        $this->actingAs($this->owner)->put(route('admin.appearance.update'), ['site_theme' => 'majalle:sage', 'admin_theme' => 'rail'])
+        $this->actingAs($this->owner)->put(route('admin.appearance.update'), ['site_theme' => 'editorial:sage', 'admin_theme' => 'rail'])
             ->assertRedirect(route('admin.appearance.edit'))->assertSessionHas('success');
-        $this->assertSame(['majalle:sage', 'rail'], [$this->salon->fresh()->site_theme, $this->salon->fresh()->admin_theme]);
+        $this->assertSame(['editorial:sage', 'rail'], [$this->salon->fresh()->site_theme, $this->salon->fresh()->admin_theme]);
 
         $this->actingAs($this->owner)->from(route('admin.appearance.edit'))
-            ->put(route('admin.appearance.update'), ['site_theme' => 'bento:turquoise', 'admin_theme' => 'dense'])
+            ->put(route('admin.appearance.update'), ['site_theme' => 'app:turquoise', 'admin_theme' => 'dense'])
             ->assertSessionHasErrors(['site_theme', 'admin_theme']);
-        $this->assertSame('majalle:sage', $this->salon->fresh()->site_theme);
+        $this->assertSame('editorial:sage', $this->salon->fresh()->site_theme);
 
         $this->actingAs($this->owner)->put(route('admin.appearance.update'), ['site_theme' => 'mahru', 'admin_theme' => 'side'])->assertSessionHas('success');
         $this->assertNull($this->salon->fresh()->site_theme, 'پیش‌فرض null ذخیره می‌شود');
@@ -347,15 +347,15 @@ class SalonTemplatesTest extends TestCase
 
     public function test_a_choice_that_became_locked_can_be_kept_and_is_explained(): void
     {
-        $this->choose('bento:turquoise', 'dense');
+        $this->choose('app:turquoise', 'dense');
         $this->onPlan('basic', '1m');
 
         $this->actingAs($this->owner)->get(route('admin.appearance.edit'))->assertOk()->assertSee('data-appearance-suspended', false);
         $this->get(route('home'))->assertOk()->assertDontSee('dataset.layout', false);
 
-        $this->actingAs($this->owner)->put(route('admin.appearance.update'), ['site_theme' => 'bento:turquoise', 'admin_theme' => 'dense'])
+        $this->actingAs($this->owner)->put(route('admin.appearance.update'), ['site_theme' => 'app:turquoise', 'admin_theme' => 'dense'])
             ->assertSessionHas('success');
-        $this->assertSame('bento:turquoise', $this->salon->fresh()->site_theme);
+        $this->assertSame('app:turquoise', $this->salon->fresh()->site_theme);
     }
 
     public function test_staff_admin_cannot_open_the_appearance_page(): void
@@ -364,18 +364,21 @@ class SalonTemplatesTest extends TestCase
         $this->salon->admins()->syncWithoutDetaching([$staff->id => ['role' => 'staff']]);
 
         $this->actingAs($staff)->get(route('admin.appearance.edit'))->assertForbidden();
-        $this->actingAs($staff)->put(route('admin.appearance.update'), ['site_theme' => 'vitrin:rose', 'admin_theme' => 'side'])->assertForbidden();
+        $this->actingAs($staff)->put(route('admin.appearance.update'), ['site_theme' => 'signature:rose', 'admin_theme' => 'side'])->assertForbidden();
     }
 
     // ─── اپ‌ها ───────────────────────────────────────────────────
 
     public function test_the_app_api_carries_the_theme_with_hex_colours(): void
     {
-        $this->choose('aram:lilac');
+        $this->choose('showcase:lilac');
         $card = CustomerPresenter::salonCard($this->salon->fresh());
 
+        // بسته‌ی ۵الف: key/layout قدیمی برای اپ‌های نصب‌شده، کلید تازه در template
         $this->assertSame('aram:lilac', $card['theme']['key']);
         $this->assertSame('aram', $card['theme']['layout']);
+        $this->assertSame('showcase', $card['theme']['template']);
+        $this->assertSame('showcase:lilac', $card['theme']['template_key']);
         $this->assertSame('lilac', $card['theme']['palette']);
         $this->assertSame('#C5B3F6', $card['theme']['colors']['dark']['accent']);
         $this->assertSame('#56419E', $card['theme']['colors']['light']['accent']);
@@ -401,17 +404,60 @@ class SalonTemplatesTest extends TestCase
 
         $this->actingAs($super)->put(route('superadmin.templates.update'), [
             'plans' => $payload,
-            'layout_order' => ['aram', 'vitrin', 'majalle', 'bento'],
+            'layout_order' => ['showcase', 'signature', 'editorial', 'app'],
             'palette_order' => ['sage', 'rose', 'lilac', 'turquoise'],
         ])->assertSessionHas('success');
 
-        $this->assertSame(['aram', 'vitrin', 'majalle', 'bento'], ThemeCatalog::layoutOrder());
+        $this->assertSame(['showcase', 'signature', 'editorial', 'app'], ThemeCatalog::layoutOrder());
         $this->assertSame('sage', ThemeCatalog::paletteOrder()[0]);
         $this->assertSame(1, SuperAdminAuditLog::where('action', 'template_access.updated')->count());
 
         $this->actingAs($super)->from(route('superadmin.templates.index'))->put(route('superadmin.templates.update'), [
             'plans' => $payload,
-            'layout_order' => ['aram', 'aram', 'majalle', 'bento'],
+            'layout_order' => ['showcase', 'showcase', 'editorial', 'app'],
         ])->assertSessionHasErrors('layout_order');
+    }
+
+    // ─── بسته‌ی ۵الف: کلیدهای تازه ──────────────────────────────
+
+    public function test_layout_keys_are_the_four_combined_templates_with_their_legacy_names(): void
+    {
+        $this->assertSame(['signature', 'editorial', 'showcase', 'app'], array_keys((array) config('themes.layouts')));
+        $this->assertSame(['شاهکار', 'روزنامه‌ی سالن', 'نمایشگاه', 'اپ'], array_column((array) config('themes.layouts'), 'name'));
+        $this->assertSame(['vitrin' => 'signature', 'majalle' => 'editorial', 'aram' => 'showcase', 'bento' => 'app'], ThemeCatalog::legacyLayouts());
+        $this->assertSame('signature:rose', ThemeCatalog::normalizeSiteKey('vitrin:rose'));
+        $this->assertSame('app:sage', ThemeCatalog::normalizeSiteKey('app:sage'));
+        $this->assertSame('mahru', ThemeCatalog::normalizeSiteKey('mahru'));
+        $this->assertNull(ThemeCatalog::normalizeSiteKey(null));
+        foreach (['signature', 'editorial', 'showcase', 'app'] as $layout) {
+            $this->assertTrue(view()->exists('salon-home.'.$layout), $layout);
+        }
+    }
+
+    public function test_a_legacy_stored_key_still_resolves_to_the_new_template(): void
+    {
+        $this->choose('bento:turquoise');
+        $appearance = SalonAppearance::for($this->salon->fresh());
+
+        $this->assertSame('app:turquoise', $appearance->site);
+        $this->assertSame('salon-home.app', $appearance->homeView());
+    }
+
+    public function test_the_mapping_migration_renames_stored_keys_and_the_super_admin_order(): void
+    {
+        $this->choose('majalle:sage');
+        $other = Salon::factory()->create(['site_theme' => 'mahru']);
+        \App\Models\PlatformSetting::query()->updateOrCreate(['key' => 'theme_layout_order'], ['value' => json_encode(['bento', 'aram', 'majalle', 'vitrin'])]);
+
+        $migration = require database_path('migrations/2026_11_25_000003_map_site_theme_layout_keys.php');
+        $migration->up();
+
+        $this->assertSame('editorial:sage', $this->salon->fresh()->site_theme);
+        $this->assertSame('mahru', $other->fresh()->site_theme);
+        $this->assertSame(['app', 'showcase', 'editorial', 'signature'], ThemeCatalog::layoutOrder());
+
+        $migration->down();
+        $this->assertSame('majalle:sage', $this->salon->fresh()->site_theme);
+        $this->assertSame('["bento","aram","majalle","vitrin"]', \App\Models\PlatformSetting::query()->where('key', 'theme_layout_order')->value('value'));
     }
 }
